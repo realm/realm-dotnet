@@ -3,6 +3,7 @@
 C# language bindings for TightDB  
 Ver 0.006  
 
+
 This directory and its subdirectories contain the **developer** version of tightdb_csharp - tihs is the project that is needed to produce the **customer** version of tightdb_cshap, that is shipped to customers who access tightdb from within C#.  
 
 ##Build instructions##
