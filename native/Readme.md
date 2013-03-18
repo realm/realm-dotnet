@@ -14,11 +14,11 @@ Versions :
 
 C# binding source stack :
 
-1. *.NET* User program (written in C#, but in principle any .NET language will work)
+1. *.NET platform agnostic* User program (written in C#, but in principle any .NET language will work)
 2. *C# Generic* C# bindings (written in pure C#, code is platform agnostic)
-3. *C# platform dependent* platform specific C# bindings (written in C# but marshals data to/from the c++ DLL, and manages platform differences, error handling etc. Also manages C# to C++ marshalling etc)
+3. *C# platform dependent* C# bindings (written in C# but marshals data to/from the c++ DLL, and manages platform differences, error handling etc. Also manages C# to C++ marshalling etc)
 4. *C++ platform dependent* c++ DLL for C# bindings (written in c++, provides methods specifically for 3. to call, calls on into tightdb, provides error handling , marshalling on the c++ side, etc.)
-5. *C++ platform specific .lib files* containing tightdb (built on the platform by tightdb)
+5. *C++ platform specific* .lib files containing tightdb (built on the platform by tightdb)
 
 
 Physical C# binding stack :
