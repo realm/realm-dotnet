@@ -18,8 +18,8 @@ is needed for a user install
 ##User install contents##
 
 - the tightCSDLL dll file (a c++ DLL), which has the tightdb.lib files built into it  
-- the tightdbCS.dll file (a C# managed DLL), which contains the classes a C# tightdb user will use, and which calls tightCSDLL to get things done. The marshalling calls to tightCSDLL are placed in a protected area of the source, the customre do not have access to these calls, only the provided C# classes and methods.  
+- the tightdbCS.dll file (a C# managed DLL), which contains the classes a C# tightdb user will use, and which calls tightCSDLL to get things done. The marshalling calls to tightCSDLL are placed in a protected area of the source, the customer do not have access to these calls, only the provided C# classes and methods.
 - the unit test for tightdbCS (to be done)  
 - a project with some sample code similar to the web tutorial (to be done)  
-- a readme.txt file explaining step-by-step how to create a new project that uses tightdbCS, as well as how to integrate tightdbCS in an already created project  
-- a support.txt file that contains links and contact info for the tightdb company  
+- a readme.txt file explaining step-by-step how to create a new project that uses tightdbCS, as well as how to integrate tightdbCS in an already created project
+- a support.txt file that contains links and contact info for the tightdb company
