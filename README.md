@@ -1,19 +1,19 @@
 #tightdb_csharp#
 
 C# language bindings for TightDB  
-Ver 0.006  
+Ver 0.007  
 
 
 This directory and its subdirectories contain the **developer** version of tightdb_csharp - tihs is the project that is needed to produce the **customer** version of tightdb_cshap, that is shipped to customers who access tightdb from within C#.  
 
 ##Build instructions##
 
-0) make sure You have visual studio 2010 express installed (as a minimum)  
-1) open a commandline window, cd to the directory tighttdb_csharp  
-2) run the builddist.bat file (will produce fresh dll files)  
-3) run the createdist.bat file in this directory - it will copy the needed files to the DIST directory, which will then contain all that  
+1) make sure You have visual studio 2010 express installed (as a minimum)  
+2) open a commandline window, cd to the directory tighttdb_csharp  
+3) run the builddist.bat file (will produce fresh dll files)  
+4) run the createdist.bat file in this directory - it will copy the needed files to the DIST directory, which will then contain all that  
 is needed for a user install  
-4) (to be done) - run the createinstalldist.bat file  - this will create an archive wiht the DIST directory files, ready for deployment  
+5) (to be done) - run the createinstalldist.bat file  - this will create an archive wiht the DIST directory files, ready for deployment  
 
 ##User install contents##
 
@@ -23,3 +23,12 @@ is needed for a user install
 - a project with some sample code similar to the web tutorial (to be done)  
 - a readme.txt file explaining step-by-step how to create a new project that uses tightdbCS, as well as how to integrate tightdbCS in an already created project
 - a support.txt file that contains links and contact info for the tightdb company
+
+##contents of directory##
+
+- libsVS2010 - tightdb.lib files built with visual studio2010
+- libsVS2012 - tightdb.lib files built with visual studio2012
+- native - C# files that contain p/invoke calls to c++, and the c++ files that export these calls in tightCSDLL
+- TestPinvoke - C# project used to test specifically P/Invoke calls, without calling tightdb c++ code
+- tightdbCS - C# project that results in the tightdbCS.dll file that user projects use
+

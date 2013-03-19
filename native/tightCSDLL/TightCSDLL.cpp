@@ -7,11 +7,9 @@
 
 #include "stdafx.h"
 #include "TightCSDLL.h"
-#include <tightdb.hpp>
-//#include <cstdlib>
-//#include <string>
-//#include "stdint.h" //from tightdb folder
-//using tightdb;
+
+
+using namespace tightdb;
 
 // This is an example of an exported variable
 #ifdef __cplusplus
@@ -47,6 +45,17 @@ TIGHTCSDLL_API char* TestConstantStringReturn()
 {
 	char * statictesttext = "Hello from the DLL!";//I assume the text is static and neither on heap or stack or in need of having to be freed
 	return statictesttext;
+}
+
+//return a newly constructed top level table 
+TIGHTCSDLL_API size_t new_table()
+{
+	return reinterpret_cast<size_t>(LangBindHelper::new_table());	 
+}
+
+TIGHTCSDLL_API void unbind_table_ref(const size_t TablePtr)
+{
+	LangBindHelper::unbind_table_ref(reinterpret_cast<Table*>(TablePtr));
 }
 
 

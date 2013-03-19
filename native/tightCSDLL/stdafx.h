@@ -11,7 +11,10 @@
 // Windows Header Files:
 #define NOMINMAX  //windows.h defines min and max macros, but these macros conflict with STL http://support.microsoft.com/kb/143208
 //#include <windows.h>
-#include <limits>
-#include <iostream>
+//#include <limits>
+//#include <iostream>
 #undef NOMINMAX
+#include <tightdb/lang_bind_helper.hpp>
+#include <tightdb.hpp>
+
 // TODO: reference additional headers your program requires here

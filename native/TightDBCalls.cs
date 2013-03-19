@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Runtime.InteropServices;
 
 //WARNING - this is an old file, it was coded using the old C bindings as a reference point.
 //All the code in here will undergo major changes
+//except a few methods that actually call the newer c++ dll
+//the old code can be recognized by its use of a method calle fakepinvoke
 
 namespace tightdb.Tightdbcsharp
 {
@@ -150,32 +153,32 @@ TightdbDataType;
 
         /*** Table ************************************/
 
- //       Table* table_new();
- 
+ //TIGHTCSDLL_API size_t new_table()
+        //this dll must be manually copied to the location of the testpinvoke program exefile
+        [DllImport("tightCSDLL", CallingConvention = CallingConvention.Cdecl)]
+        private static extern UIntPtr new_table(); 
+
         public static void  table_new(Table table)
-        {
-            UIntPtr TDBTAble = (UIntPtr) fakepinvoke(); //a call to table_new 
-            table.TDBTable = TDBTAble;            
-        }
- 
-//        void table_delete(Table* t);       /* Delete after use of table_new() */
-        public static void table_delete(Table t)
-        {
-            fakepinvoke(t.TDBTable);//replace with call to table_delete
+        {            
+            table.TableHandle = (UIntPtr)new_table(); //a call to table_new 
         }
 
+        //TIGHTCSDLL_API void unbind_table_ref(const size_t TablePtr)
+
+        [DllImport("tightCSDLL", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void unbind_table_ref(UIntPtr TableHandle);
 
 //      void    table_unbind(const Table *t); /* Ref-count delete of table* from table_get_table() */
         public static void table_unbind(Table t)
-        {            
-            fakepinvoke(t.TDBTable);//call table_unbind
+        {
+            unbind_table_ref(t.TableHandle);
         }
 
 
 //        Spec* table_get_spec(Table* t);     /* Use spec_delete() when done */
         public static Spec table_get_spec(Table t)
         {            
-            UIntPtr TDBSpec = (UIntPtr)fakepinvoke(t.TDBTable);
+            UIntPtr TDBSpec = (UIntPtr)fakepinvoke(t.TableHandle);
             Spec ret = new Spec();
             ret.TDBspec = TDBSpec;
             return ret;
@@ -186,14 +189,14 @@ TightdbDataType;
         public static void table_update_from_spec(Table t)
         {
             
-            fakepinvoke(t.TDBTable);
+            fakepinvoke(t.TableHandle);
         }
  
 
 //            size_t      table_register_column(Table *t,  TightdbDataType type, const char *name);
         public static long table_register_column(Table t, TDB type, string name)
         {            
-            UIntPtr col_idx = (UIntPtr) fakepinvoke(t.TDBTable, type, name);
+            UIntPtr col_idx = (UIntPtr) fakepinvoke(t.TableHandle, type, name);
             return (long)col_idx;            
         }
 
@@ -201,14 +204,14 @@ TightdbDataType;
 //            size_t      table_get_column_count(const Table *t);
         public static long table_get_column_count(Table t)
         {
-            UIntPtr column_cnt = (UIntPtr)fakepinvoke(t.TDBTable);
+            UIntPtr column_cnt = (UIntPtr)fakepinvoke(t.TableHandle);
             return (long)column_cnt;
         }
 
 //            size_t      table_get_column_index(const Table *t, const char *name);
         public static long table_get_column_index(Table t, string name)
         {            
-            UIntPtr column_idx = (UIntPtr)fakepinvoke(t.TDBTable, name);
+            UIntPtr column_idx = (UIntPtr)fakepinvoke(t.TableHandle, name);
             return (long)column_idx;
         }
 
@@ -217,14 +220,14 @@ TightdbDataType;
         public static string table_get_column_name(Table t, long column_idx)
         {
             UIntPtr TDBColix = (UIntPtr)column_idx;
-            return (string)fakepinvoke(t.TDBTable, TDBColix);//will likely need some marshalling and postprocessing of the return string
+            return (string)fakepinvoke(t.TableHandle, TDBColix);//will likely need some marshalling and postprocessing of the return string
         }
 
         //    TightdbDataType table_get_column_type(const Table *t, size_t ndx);
         public static TightDbDataType table_get_column_type(Table t, long column_idx)
         {
             UIntPtr TDBColix = (UIntPtr)column_idx;
-            TightDbDataType res = (TightDbDataType)fakepinvoke(t.TDBTable, TDBColix);
+            TightDbDataType res = (TightDbDataType)fakepinvoke(t.TableHandle, TDBColix);
             return res;
         }
 
@@ -233,7 +236,7 @@ TightdbDataType;
         //I assume this one adds an empty colum to the end of the table and returns the ix of that row
         public static long table_add(Table t)
         {
-            UIntPtr colix = (UIntPtr)fakepinvoke(t.TDBTable);
+            UIntPtr colix = (UIntPtr)fakepinvoke(t.TableHandle);
             return (long)colix;
         }
 
@@ -242,19 +245,19 @@ TightdbDataType;
         //I assume this one adds an empty colum to the end of the table and returns the ix of that row
         public static long table_insert(Table t,long col_idx)
         {
-            UIntPtr colix = (UIntPtr)fakepinvoke(t.TDBTable);
+            UIntPtr colix = (UIntPtr)fakepinvoke(t.TableHandle);
             return (long)colix;
         }
 
         public static TightDbDataType table_get_columntype(Table t, long columnindex)
         {
-           UIntPtr datatype =(UIntPtr)fakepinvoke(t.TDBTable,columnindex);
+           UIntPtr datatype =(UIntPtr)fakepinvoke(t.TableHandle,columnindex);
            return (TightDbDataType)datatype;
         }
 
         public static long table_get_int(Table t ,long ColumnIndex,long RecordIndex)
         {
-            UIntPtr res = (UIntPtr)fakepinvoke(t.TDBTable, ColumnIndex, RecordIndex);
+            UIntPtr res = (UIntPtr)fakepinvoke(t.TableHandle, ColumnIndex, RecordIndex);
             return (long)res;
         }
 

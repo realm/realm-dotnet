@@ -32,6 +32,10 @@ TIGHTCSDLL_API size_t TestIntegerParam(size_t intvalue);
 
 TIGHTCSDLL_API size_t TestStringReturn();
 
+TIGHTCSDLL_API size_t new_table();
+
+TIGHTCSDLL_API void unbind_table_ref(const size_t TablePtr);
+
 #ifdef __cplusplus
 }
 #endif
