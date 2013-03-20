@@ -190,7 +190,7 @@ namespace tightdb.Tightdbcsharp
 
         //not accessible by source not in the TightDBCSharp namespace
         internal UIntPtr TableHandle { get; set; }  //handle (in fact a pointer) to a c++ hosted Table. We must unbind this handle if we have acquired it
-        internal bool TableHandleInUse {get; set;} //defaults to false
+        internal bool TableHandleInUse {get; set;} //defaults to false.  TODO:this might need to be encapsulated with a lock to make it thread safe (although several threads *opening or closing* *the same* table object is totally forbidden )
 
         //This method will ask TDB to create a new table object and then store the TDB table objects handle
         //inside this table Should not be called by users, internal use
@@ -218,6 +218,7 @@ namespace tightdb.Tightdbcsharp
             if (TableHandleInUse)
             {
                 TightDBCalls.table_unbind(this);
+                TableHandleInUse = false;
             }
             else
             {
