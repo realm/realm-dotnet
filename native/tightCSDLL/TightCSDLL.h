@@ -21,22 +21,45 @@ public:
 
 //  extern TIGHTCSDLL_API int nTightCSDLL;
 
-
+#include<tightdb/spec.hpp>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+
+//Table
+
+TIGHTCSDLL_API tightdb::Table* new_table();
+
+TIGHTCSDLL_API void unbind_table_ref(tightdb::Table* TablePtr);
+
+TIGHTCSDLL_API size_t table_get_column_count(tightdb::Table* TablePtr);
+
+//Spec
+//type refers to a value taken from DataType values
+TIGHTCSDLL_API size_t spec_add_column(tightdb::Spec* SpecPtr,size_t type, const char* name);
+
+TIGHTCSDLL_API tightdb::Spec* spec_add_subtable_column(tightdb::Spec* SpecPtr, const char* name);
+
+TIGHTCSDLL_API tightdb::Spec* table_get_spec(tightdb::Table* TablePtr);
+
+TIGHTCSDLL_API void spec_deallocate(tightdb::Spec* SpecPtr);
+
+TIGHTCSDLL_API int table_get_column_name(tightdb::Table* TablePtr,size_t column_ndx,char * colname, int bufsize);
+
+
+//non tightdb stuff
 TIGHTCSDLL_API size_t fnTightCSDLL(void);
 
 TIGHTCSDLL_API size_t TestIntegerParam(size_t intvalue);
 
-TIGHTCSDLL_API size_t TestStringReturn();
+TIGHTCSDLL_API char* TestStringReturn();
 
-TIGHTCSDLL_API size_t new_table();
 
-TIGHTCSDLL_API void unbind_table_ref(const size_t TablePtr);
 
 #ifdef __cplusplus
 }
 #endif
+
 

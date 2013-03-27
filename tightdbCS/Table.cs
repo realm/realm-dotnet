@@ -37,32 +37,99 @@ public class TableException : Exception
 
 namespace tightdb.Tightdbcsharp
 {
-    public class TableField1
+    public class TDBField
     {
-        static void setinfo(TableField1 t, String ColumnName, TDB FieldType)
+        static void setinfo(TDBField t, String ColumnName, TDB FieldType)
         {
             t.colname = ColumnName;
             t.type = FieldType;
         }
 
-        public TableField1(String ColumnName, TableField1[] SubtablefieldsArray)
+
+        public TDBField(String ColumnName, params TDBField[] SubtablefieldsArray)
         {
             setinfo(this, ColumnName, TDB.Table);
             subtable.AddRange(SubtablefieldsArray);
         }
 
-        public TableField1(string ColumnName, TDB ColumnType)
+        public TDBField(string ColumnName, TDB ColumnType)
         {
             setinfo(this, ColumnName, ColumnType);
         }
 
+        public TDBField(string ColumnName, String ColumnType)
+        {
+            if (ColumnType.ToUpper()== "STRING")
+            {
+                setinfo(this, ColumnName, TDB.String);
+            }
+            else if (ColumnType.ToUpper() == "INT" || ColumnType.ToUpper() == "INTEGER")
+            {
+                setinfo(this, ColumnName, TDB.Int);
+            }
+            else if (ColumnType.ToUpper() == "MIXED")
+            {
+                setinfo(this, ColumnName, TDB.Mixed);
+            }
+            else if (ColumnType.ToUpper() == "BINARY"  || ColumnType.ToUpper()=="BLOB")
+            {
+                setinfo(this, ColumnName, TDB.Binary);
+            }
+            else if (ColumnType.ToUpper() == "BOOL" || ColumnType.ToUpper()=="BOOLEAN")
+            {
+                setinfo(this, ColumnName, TDB.Bool);
+            }
+            else if (ColumnType.ToUpper() == "DOUBLE" || ColumnType.ToUpper() == "BOOLEAN")
+            {
+                setinfo(this, ColumnName, TDB.type_Double);
+            }
+            else if (ColumnType.ToUpper() == "FLOAT" || ColumnType.ToUpper() == "FLOAT")
+            {
+                setinfo(this, ColumnName, TDB.type_Float);
+            }
+            else
+            {
+                if (ColumnType.ToUpper() == "TABLE" || ColumnType.ToUpper() == "SUBTABLE")
+                {
+                    throw new TableException("Subtables should be specified as an array, cannot create a freestanding subtable field");
+                }
+                throw new TableException(String.Format("Trying to initialize a tablefield with an unknown type specification Fieldname:{0}  type:{1}",ColumnName,ColumnType));
+            }
+        }
 
         public String colname;
         public TDB type;
-        public List<TableField1> subtable = new List<TableField1>();
+        public List<TDBField> subtable = new List<TDBField>();
     }
 
+    
 
+
+
+    public static class myextentions
+    {
+        public static TDBField Int(this String str)
+        {
+            return new TDBField(str, TDB.Int);
+        }
+        public static TDBField String(this String str)
+        {
+            return new TDBField(str, TDB.String);
+        }
+
+        public static TDBField Mixed(this String str)
+        {
+            return new TDBField(str, TDB.Mixed);
+        }
+
+        public static TDBField Subtable(this String str,params TDBField[] fields)
+        {
+            return new TDBField(str,fields);
+        }
+
+     
+    }
+   
 
     public class Table : IDisposable
     {
@@ -72,6 +139,10 @@ namespace tightdb.Tightdbcsharp
 
         //called by users who don't want to use our class anymore.
         //should free managed as well as unmanaged stuff
+        public long getdllversion_CSH()
+        {
+            return 261905;
+        }
 
         private bool IsDisposed { get; set; }
         public void Dispose()
@@ -79,7 +150,7 @@ namespace tightdb.Tightdbcsharp
             Dispose(true);
             GC.SuppressFinalize(this);//tell finalizer it does not have to call dispose or dispose of things -we have done that already
         }
-        //if called from GC  we should not dispose managedas that is unsafe, the bool tells us how we were called
+        //if called from GC  we should not dispose managed as that is unsafe, the bool tells us how we were called
         public void Dispose(bool disposemanagedtoo)
         {
             if (!IsDisposed) 
@@ -90,11 +161,11 @@ namespace tightdb.Tightdbcsharp
 
                 //dispose any unmanaged stuff we have
                 unbind();
+                IsDisposed = true;
             }
-
         }
 
-        //when tihs is called by the GC, unmanaged stuff might not have been freed, and managed stuff could be in the process of being
+        //when this is called by the GC, unmanaged stuff might not have been freed, and managed stuff could be in the process of being
         //freed, so only get rid of unmanaged stuff
         ~Table()
         {
@@ -109,36 +180,45 @@ namespace tightdb.Tightdbcsharp
             }
         }
 
-        
+        //always acquire a table handle
         public Table()
         {
+            table_new();
         }
 
+        //this parameter type allows the user to send a comma seperated list of TableField objects without having
+        //to put them into an array first
+        public Table(params TDBField[] schema)
+        {
+            table_new();
+            Spec spec = get_spec();
+            foreach (TDBField tf in schema)
+            {
+                spec.addfield(tf);
+            }
+            updatefromspec();
+        }
+
+        //allows the user to quickly create a table with a single field of a single type
+        public Table(TDBField schema)
+        {
+            table_new();//allocate a table class in c++
+            Spec spec = get_spec();//get a handle to the table's new empty spec
+            spec.addfield(schema);
+            updatefromspec();//build table from the spec tree structure
+        }
+        
+        /*
+        //allows specifying a treelike structure much like the params constructor, but this
+        //version will have to have an array explicitly specified as the outermost object
         public Table(TableField1[] schema)
         {
             table_new();//allocate a table class in c++
             Spec spec = get_spec();//get a handle to the table's new empty spec
-
-            foreach (TableField1 kvp in schema)
-            {
-                TableField1 t = (TableField1)kvp;
-
-                TDB type = t.type;
-                String columnname = t.colname;
-
-                if (type != TDB.Table)
-                {
-                    register_column(columnname, type);
-                }
-                else
-                {
-                    TableField1[] tfa = kvp.subtable.ToArray();
-                    Table st = new Table(tfa); //create a table with a comitted spec and all from the subtable specification                    
-                    spec.add_column_table(st.get_spec(), columnname);//NOT SURE IF A SUBTABLE IS TO BE DEFINED FROM AN ALREADY CREATED TABLE SPEC. IF NOT THIS MUST BE REFACTORED TO FIRST CREATING SPECS , THEN STITCHING THEM UP
-                }
-            }
-            updatefromspec();//build table from the spec
+            spec.addfields(schema);
+            updatefromspec();//build table from the spec tree structure
         }
+        */
 
         /*
         //Quite fast - types assumed correct when running,but Asstring needs to create an object. not good
@@ -152,13 +232,18 @@ namespace tightdb.Tightdbcsharp
         //if it is a mixed, or a table  such n object is returned
         */
 
+        public long getdllversion_CPP()
+        {
+            return TightDBCalls.tightCSDLLVersion();
+        }
+
         public object this[int RowIndex, String ColumnName]
         {
             get
             {
                 switch (column_type(RowIndex))
                 {
-                    case TightDbDataType.Int:
+                    case TDB.Int:
                         return getInt(RowIndex, get_column_index(ColumnName));
                     default:
                         return null;//we should probably raise an exception here
@@ -167,8 +252,6 @@ namespace tightdb.Tightdbcsharp
             set
             {
             }
-
-
         }
 
         public object this[int RowIndex, int ColumnIndex]
@@ -177,7 +260,7 @@ namespace tightdb.Tightdbcsharp
             {
                 switch (column_type(RowIndex))
                 {
-                    case TightDbDataType.Int:
+                    case TDB.Int:
                         return getInt(ColumnIndex, RowIndex);
                     default:
                         return null;
@@ -189,8 +272,9 @@ namespace tightdb.Tightdbcsharp
         }
 
         //not accessible by source not in the TightDBCSharp namespace
-        internal UIntPtr TableHandle { get; set; }  //handle (in fact a pointer) to a c++ hosted Table. We must unbind this handle if we have acquired it
+        internal IntPtr TableHandle { get; set; }  //handle (in fact a pointer) to a c++ hosted Table. We must unbind this handle if we have acquired it
         internal bool TableHandleInUse {get; set;} //defaults to false.  TODO:this might need to be encapsulated with a lock to make it thread safe (although several threads *opening or closing* *the same* table object is totally forbidden )
+        internal bool TableHandleHasBeenUsed { get; set; } //defaults to false. If this is true, the table handle has been allocated in the lifetime of this object
 
         //This method will ask TDB to create a new table object and then store the TDB table objects handle
         //inside this table Should not be called by users, internal use
@@ -204,6 +288,7 @@ namespace tightdb.Tightdbcsharp
             {
                 TightDBCalls.table_new(this);
                 TableHandleInUse = true;
+                TableHandleHasBeenUsed = true;
             }
         }
 
@@ -222,11 +307,17 @@ namespace tightdb.Tightdbcsharp
             }
             else
             {
-                throw  new TableException("table_unbin called on a table with no table handle active");
+                //  If you simply create a table object and then deallocate it again without ever acquiring a table handle
+                //  then no exception is raised. However, if unbind is called, and there once was a table handle,
+                //  it is assumed an error situation has occoured (too many unbind calls) and an exception is raised
+                if (TableHandleHasBeenUsed)
+                {
+                    throw new TableException("table_unbin called on a table with no table handle active anymore");
+                }
             }
         }
 
-        //Users should not really bother with the spec class so it is intrenal for the TightDBCsharp namespace
+        //Users should not really bother with the spec class so it is internal for the TightDBCsharp namespace
         internal Spec get_spec()
         {
             return TightDBCalls.table_get_spec(this);
@@ -239,7 +330,7 @@ namespace tightdb.Tightdbcsharp
         }
 
 
-        public TightDbDataType column_type(long ColumnIndex)
+        public TDB column_type(long ColumnIndex)
         {
             return TightDBCalls.table_get_column_type(this, ColumnIndex);
         }
@@ -260,7 +351,7 @@ namespace tightdb.Tightdbcsharp
             return TightDBCalls.table_get_column_index(this, name);
         }
 
-        public string get_column_name(long col_idx)
+        public string get_column_name(long col_idx)//unfortunately an int, bc tight might have been built using 32 bits
         {
             return TightDBCalls.table_get_column_name(this, col_idx);
         }

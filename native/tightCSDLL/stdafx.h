@@ -15,6 +15,7 @@
 //#include <iostream>
 #undef NOMINMAX
 #include <tightdb/lang_bind_helper.hpp>
+#include <tightdb/spec.hpp>
 #include <tightdb.hpp>
 
 // TODO: reference additional headers your program requires here
