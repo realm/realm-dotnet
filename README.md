@@ -4,16 +4,17 @@ C# language bindings for TightDB
 Ver 0.007  
 
 
-This directory and its subdirectories contain the **developer** version of tightdb_csharp - tihs is the project that is needed to produce the **customer** version of tightdb_cshap, that is shipped to customers who access tightdb from within C#.  
+This directory and its subdirectories contain the *developer* version of tightdb_csharp - this is the project that is needed to produce the *customer* version of tightdb_cshap, that is shipped to customers who access tightdb from within C#.  
 
 ##Build instructions##
 
+(not done yet)
 1) make sure You have visual studio 2010 express installed (as a minimum)  
-2) open a commandline window, cd to the directory tighttdb_csharp  
+2) open a commandline window, cd to the directory tightcsharp
 3) run the builddist.bat file (will produce fresh dll files)  
 4) run the createdist.bat file in this directory - it will copy the needed files to the DIST directory, which will then contain all that  
 is needed for a user install  
-5) (to be done) - run the createinstalldist.bat file  - this will create an archive wiht the DIST directory files, ready for deployment  
+5) run the createinstalldist.bat file  - this will create an archive wiht the DIST directory files, ready for deployment  
 
 ##User install contents##
 
@@ -26,8 +27,10 @@ is needed for a user install
 
 ##contents of directory##
 
-- libsVS2010 - tightdb.lib files built with visual studio2010
-- libsVS2012 - tightdb.lib files built with visual studio2012
+(see tightdbCS\readme.md for how to populate these directories with stuff)
+
+- libsVS2010 - tightdb.lib files built with visual studio2010 should be placed here
+- libsVS2012 - tightdb.lib files built with visual studio2012 should be placed here
 - native - C# files that contain p/invoke calls to c++, and the c++ files that export these calls in tightCSDLL
-- tightdbCS - C# project that results in the tightdbCS.dll file that user projects use
+- tightdbCS - C# project that results in the tightdbCS.dll file that end users projects use
 - TestTightdbCS - C# project set up as an end user might use the C# binding.

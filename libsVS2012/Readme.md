@@ -13,6 +13,6 @@ Put the VS2012 built .lib files with tightDB in here, namely:
 - tightdb32d.lib
 - tightdb64d.lib
 
-They are referenced from the tightCSDLL solution. The tightCSDLL solutoin creates the tighCSDLL.DLL file, which is uesd as a P/invoke bridge between C# and C++
+They are referenced from the tightCSDLL solution. The tightCSDLL solution creates the tighCSDLL.DLL file, which is uesd as a P/invoke bridge between C# and C++
 
 The .lib files can only be opbtained from a tightdb employee with access to the windows build of tightdb - we don't have them for download anywhere.

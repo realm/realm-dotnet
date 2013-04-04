@@ -27,4 +27,4 @@ Physical C# binding stack :
 2. *C#* tightdbCSHARP.dll contains 2. and 3. from above. 3. is private, shielded from the user
 3. *C++* tightCSDLL.dll contains 4. and 5. built into a DLL, with extern C exported methods
 
-Thus, the only expensive calls are the ones between 2. and 3. in the physical stack (these ar P/Invoke calls)
+Thus, the only expensive calls are the ones between 2. and 3. in the physical stack (these are P/Invoke calls)
