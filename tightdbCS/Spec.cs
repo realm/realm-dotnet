@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+//using System.Threading.Tasks; not portable as of 2013-4-2
 
 //C# SPEC Class. This class is a wrapper of the C++ Spec class.
 //Calls are routed this way :
@@ -166,9 +166,18 @@ namespace tightdb.Tightdbcsharp
         //I assume column_idx is a column with a table in it, or a mixed with a table?
         public Spec get_spec(long column_idx) 
         {
-        //   return TightDBCalls.spec_get_spec(this,column_idx);
-            throw new SpecException("get spec not implemented yet");
+            if (get_column_type(column_idx) == TDB.Table)
+            {
+                return TightDBCalls.spec_get_spec(this, column_idx);
+            }else
+            throw new SpecException("get spec(column_idx) can only be called on a subtable field");
         }
+
+        public TDB get_column_type(long column_idx)
+        {
+            return TightDBCalls.spec_get_column_type(this, column_idx);
+        }
+
 
         public long get_column_count()
         {

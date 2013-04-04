@@ -32,7 +32,7 @@ extern "C" {
 TIGHTCSDLL_API size_t tightCSDLLGetVersion(void){
 
   // Table test;
-	return 261841;
+	return 1304031518;
 }
 	
 	
@@ -83,8 +83,6 @@ TIGHTCSDLL_API void unbind_table_ref(tightdb::Table* TablePtr)
 //note that we have omitted support for attr until we figure what it's for
 TIGHTCSDLL_API size_t spec_add_column(Spec* SpecPtr,size_t type, const char* name) 
 {
-	//Spec* s = reinterpret_cast<Spec*>(SpecPtr);
-	DataType dt = (DataType)type;
 	return SpecPtr->add_column((DataType)type,name);		
 }
 
@@ -117,6 +115,12 @@ TIGHTCSDLL_API  DataType get_column_type(Spec* SpecPtr, const size_t column_ndx)
 TIGHTCSDLL_API  DataType table_get_column_type(Table* TablePtr, const size_t column_ndx)
 {
 	return TablePtr->get_column_type(column_ndx);
+}
+
+
+TIGHTCSDLL_API  DataType spec_get_column_type(Spec* SpecPtr, const size_t column_ndx)
+{
+	return SpecPtr->get_column_type(column_ndx);
 }
 
 
@@ -210,8 +214,15 @@ TIGHTCSDLL_API int table_get_column_name(Table* TablePtr,size_t column_ndx,char 
 {
 	const char* cn= TablePtr->get_column_name(column_ndx);
 	return safecopypchartocsharpstringbuilderbuffer(colname,bufsize, cn);
-
 }
+
+
+TIGHTCSDLL_API int spec_get_column_name(Spec* SpecPtr,size_t column_ndx,char * colname, int bufsize)
+{
+	const char* cn= SpecPtr->get_column_name(column_ndx);
+	return safecopypchartocsharpstringbuilderbuffer(colname,bufsize, cn);
+}
+
 
 
 //    Spec add_subtable_column(const char* name);
@@ -229,6 +240,21 @@ TIGHTCSDLL_API Spec* spec_add_subtable_column(Spec* SpecPtr, const char* name)
 TIGHTCSDLL_API void spec_deallocate(Spec* SpecPtr)
 {
 	delete(SpecPtr);
+}
+
+//FIXME: Should we check here on the c++ side, that column_ix is a subtable column before calling
+//FIXME: Should this spec be deallocated? or is it part of the table structure it comes from? Currently the C# call is set not to call something similar to unbind_table_ref
+TIGHTCSDLL_API Spec* spec_get_spec(Spec* SpecPtr,size_t column_ix)
+{
+    Spec subtablespec = SpecPtr->get_subtable_spec(column_ix);
+    return new Spec(subtablespec);//will be unbound later on
+}
+
+
+
+TIGHTCSDLL_API size_t spec_get_column_count(Spec* SpecPtr)
+{
+    return SpecPtr->get_column_count();
 }
 
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
+//using System.Threading.Tasks; not portable as of 2013-04-02
 
 //Tell compiler to give warnings if we publicise interfaces that are not defined in the cls standard
 //http://msdn.microsoft.com/en-us/library/bhc3fa7f.aspx
@@ -105,24 +105,24 @@ namespace tightdb.Tightdbcsharp
     
 
 
-
+    //todo:Add more types
     public static class myextentions
     {
-        public static TDBField Int(this String str)
+        public static TDBField TDBInt(this String str)
         {
             return new TDBField(str, TDB.Int);
         }
-        public static TDBField String(this String str)
+        public static TDBField TDBString(this String str)
         {
             return new TDBField(str, TDB.String);
         }
 
-        public static TDBField Mixed(this String str)
+        public static TDBField TDBMixed(this String str)
         {
             return new TDBField(str, TDB.Mixed);
         }
 
-        public static TDBField Subtable(this String str,params TDBField[] fields)
+        public static TDBField TDBSubtable(this String str, params TDBField[] fields)
         {
             return new TDBField(str,fields);
         }
@@ -133,17 +133,19 @@ namespace tightdb.Tightdbcsharp
 
     public class Table : IDisposable
     {
+        //manual dll version info. Used when debugging to see if the right DLL is loaded, or an old one
+        //the number is a date and a time (usually last time i debugged something)
+        public long getdllversion_CSH()
+        {
+            return 1304031518;
+        }
+
 
         //following the dispose pattern discussed here http://dave-black.blogspot.dk/2011/03/how-do-you-properly-implement.html
         //a good explanation can be found here http://stackoverflow.com/questions/538060/proper-use-of-the-idisposable-interface
 
         //called by users who don't want to use our class anymore.
         //should free managed as well as unmanaged stuff
-        public long getdllversion_CSH()
-        {
-            return 261905;
-        }
-
         private bool IsDisposed { get; set; }
         public void Dispose()
         {
@@ -221,15 +223,15 @@ namespace tightdb.Tightdbcsharp
         */
 
         /*
+        //random thoughts about various accessor methods
         //Quite fast - types assumed correct when running,but Asstring needs to create an object. not good
         customers.Asstring(12,3)  = "Hans";
         customers.Asstring(12,"Firstname")  ="Hans";
-        //A bit less fast - types have to be lloked up in C# to determine the correct call Asstring could be a property so no object needed
+        //A bit less fast - types have to be looked up in C# to determine the correct call Asstring could be a property so no object needed
         customers[12,"Firstname"].Asstring = "Hans";
-        //untyped, expects object, getter and setter figures what to do
+        //untyped, expects object, getter and setter figures what to do. 
         customers[12,3] = "Hans";
-        costomers[12,"firstname"]  ="Hans";
-        //if it is a mixed, or a table  such n object is returned
+        costomers[12,"firstname"]  ="Hans";        
         */
 
         public long getdllversion_CPP()
@@ -237,6 +239,7 @@ namespace tightdb.Tightdbcsharp
             return TightDBCalls.tightCSDLLVersion();
         }
 
+        //experiments
         public object this[int RowIndex, String ColumnName]
         {
             get
@@ -254,6 +257,7 @@ namespace tightdb.Tightdbcsharp
             }
         }
 
+        //experiments
         public object this[int RowIndex, int ColumnIndex]
         {
             get
@@ -272,12 +276,14 @@ namespace tightdb.Tightdbcsharp
         }
 
         //not accessible by source not in the TightDBCSharp namespace
+        //TableHandle contains the value of a C++ pointer to a C++ table
+        //it is sent as a parameter to calls to the C++ DLL.
+
         internal IntPtr TableHandle { get; set; }  //handle (in fact a pointer) to a c++ hosted Table. We must unbind this handle if we have acquired it
-        internal bool TableHandleInUse {get; set;} //defaults to false.  TODO:this might need to be encapsulated with a lock to make it thread safe (although several threads *opening or closing* *the same* table object is totally forbidden )
+        internal bool TableHandleInUse {get; set;} //defaults to false.  TODO:this might need to be encapsulated with a lock to make it thread safe (although several threads *opening or closing* *the same* table object is probably not happening often)
         internal bool TableHandleHasBeenUsed { get; set; } //defaults to false. If this is true, the table handle has been allocated in the lifetime of this object
 
-        //This method will ask TDB to create a new table object and then store the TDB table objects handle
-        //inside this table Should not be called by users, internal use
+        //This method will ask c++ to create a new table object and then the method will store the table objects handle        
         internal void table_new()
         {
             if (TableHandleInUse)
@@ -293,11 +299,10 @@ namespace tightdb.Tightdbcsharp
         }
 
 
-
-        //This method will ask TDB to dispose of a table object created by table_new.
+        //This method will ask c++ to dispose of a table object created by table_new.
         //this method is for internal use only
-        //it will automatically be called when the table object is disposed
-        //In fact, you should not all it on your own
+        //it will automatically be called when the table object is disposed (or garbage collected)
+        //In fact, you should not at all it on your own
         internal void unbind()
         {
             if (TableHandleInUse)
@@ -317,8 +322,8 @@ namespace tightdb.Tightdbcsharp
             }
         }
 
-        //Users should not really bother with the spec class so it is internal for the TightDBCsharp namespace
-        internal Spec get_spec()
+        //spec getter public bc a user might want to get subtable schema on a totally empty table,and that is only available via spec atm.
+        public Spec get_spec()
         {
             return TightDBCalls.table_get_spec(this);
         }
@@ -329,13 +334,11 @@ namespace tightdb.Tightdbcsharp
             tightdb.Tightdbcsharp.TightDBCalls.table_update_from_spec(this);
         }
 
-
         public TDB column_type(long ColumnIndex)
         {
             return TightDBCalls.table_get_column_type(this, ColumnIndex);
         }
 
-        //            size_t      table_register_column(Table *t,  TightdbDataType type, const char *name);
         public long register_column(String name, TDB type)
         {
             return TightDBCalls.table_register_column(this, type, name);

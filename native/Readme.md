@@ -1,6 +1,6 @@
 #native#
 
-This directory contains C# code that interacts with the tightCSDLL The C# code is not meant to be called by the user of the c# binding, but by the C# binding itself. All P/Invoke and marshalling stuff has been put in files in this directory, these files are likely the only ones that have to change materially between various versions of the C# binding.
+This directory contains C# code that interacts with the tightCSDLL The C# code is not meant to be called by the user of the c# binding, but by the C# binding itself. All P/Invoke and marshalling stuff has been put in files in this directory, these files are likely the only ones that have to change materially between various platforms
 
 Versions :
 
@@ -8,8 +8,8 @@ Versions :
 - 32bit windows - microsoft .net (in progress)
 - 64bit windows - mono (to be done)
 - 32bit windows - mono (to be done)
-- 64bit linux (possibly in several flavors) (to be done)
-- 32bit linux (possibly in several flavors) (to be done)
+- 64bit linux (possibly in several flavors) mono (to be done)
+- 32bit linux (possibly in several flavors) mono (to be done)
 
 
 C# binding source stack :
