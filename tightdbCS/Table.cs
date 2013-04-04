@@ -81,11 +81,11 @@ namespace tightdb.Tightdbcsharp
             }
             else if (ColumnType.ToUpper() == "DOUBLE" || ColumnType.ToUpper() == "BOOLEAN")
             {
-                setinfo(this, ColumnName, TDB.type_Double);
+                setinfo(this, ColumnName, TDB.Double);
             }
             else if (ColumnType.ToUpper() == "FLOAT" || ColumnType.ToUpper() == "FLOAT")
             {
-                setinfo(this, ColumnName, TDB.type_Float);
+                setinfo(this, ColumnName, TDB.Float);
             }
             else
             {
@@ -112,19 +112,44 @@ namespace tightdb.Tightdbcsharp
         {
             return new TDBField(str, TDB.Int);
         }
+
+
+        public static TDBField Int(this String str)
+        {
+            return new TDBField(str, TDB.Int);
+        }
+
+
         public static TDBField TDBString(this String str)
         {
             return new TDBField(str, TDB.String);
         }
+
+        public static TDBField String(this String str)
+        {
+            return new TDBField(str, TDB.String);
+        }
+
 
         public static TDBField TDBMixed(this String str)
         {
             return new TDBField(str, TDB.Mixed);
         }
 
+        public static TDBField Mixed(this String str)
+        {
+            return new TDBField(str, TDB.Mixed);
+        }
+
+
         public static TDBField TDBSubtable(this String str, params TDBField[] fields)
         {
             return new TDBField(str,fields);
+        }
+
+        public static TDBField Subtable(this String str, params TDBField[] fields)
+        {
+            return new TDBField(str, fields);
         }
 
      
@@ -137,7 +162,7 @@ namespace tightdb.Tightdbcsharp
         //the number is a date and a time (usually last time i debugged something)
         public long getdllversion_CSH()
         {
-            return 1304031518;
+            return 1304041703;
         }
 
 
@@ -247,7 +272,7 @@ namespace tightdb.Tightdbcsharp
                 switch (column_type(RowIndex))
                 {
                     case TDB.Int:
-                        return getInt(RowIndex, get_column_index(ColumnName));
+                    //    return getInt(RowIndex, get_column_index(ColumnName));
                     default:
                         return null;//we should probably raise an exception here
                 }
@@ -265,7 +290,7 @@ namespace tightdb.Tightdbcsharp
                 switch (column_type(RowIndex))
                 {
                     case TDB.Int:
-                        return getInt(ColumnIndex, RowIndex);
+                       // return getInt(ColumnIndex, RowIndex);
                     default:
                         return null;
                 }
@@ -331,7 +356,7 @@ namespace tightdb.Tightdbcsharp
         //this will update the table structure to represent whatever the earlier recieved spec has been set up to
         internal void updatefromspec()
         {
-            tightdb.Tightdbcsharp.TightDBCalls.table_update_from_spec(this);
+           // tightdb.Tightdbcsharp.TightDBCalls.table_update_from_spec(this);
         }
 
         public TDB column_type(long ColumnIndex)
@@ -339,39 +364,16 @@ namespace tightdb.Tightdbcsharp
             return TightDBCalls.table_get_column_type(this, ColumnIndex);
         }
 
-        public long register_column(String name, TDB type)
-        {
-            return TightDBCalls.table_register_column(this, type, name);
-        }
 
         public long column_count()
         {
             return TightDBCalls.table_get_column_count(this);
         }
 
-        public long get_column_index(string name)
-        {
-            return TightDBCalls.table_get_column_index(this, name);
-        }
 
         public string get_column_name(long col_idx)//unfortunately an int, bc tight might have been built using 32 bits
         {
             return TightDBCalls.table_get_column_name(this, col_idx);
-        }
-
-        public long add()
-        {
-            return TightDBCalls.table_add(this);
-        }
-
-        public long insert(long ColIx)
-        {
-            return TightDBCalls.table_insert(this, ColIx);
-        }
-
-        public long getInt(long recordix, long colix)
-        {
-            return TightDBCalls.table_get_int(this, colix, recordix);
         }
 
     }
@@ -379,7 +381,7 @@ namespace tightdb.Tightdbcsharp
 }
 
 //various ideas for doing what is done with c++ macros reg. creation of typed tables
-//An extern method that creates the table on any class tha the extern might be called on. The extren would then have to 
+//An extern method that creates the table on any class tha the extern might be called on. The extern would then have to 
 //use reflection to figure what fields should be stored
 //would mean that You annotate all fileds that should go into the table database
 // + easy to use on existing classes,  
@@ -390,3 +392,25 @@ namespace tightdb.Tightdbcsharp
 // + if this was just one of many ways to create a table, it could be okay - in some cases it might be convenient
 
 // see implementation at //EXAMPLE1
+
+
+//use scenarios i can think of : 
+
+//new program, new classes, data known at the time the code is written (like, say, a database of 1 million permutations of something, and their precalculated value)
+
+//new program, new classes, structure known at code time, but contents not known at code time (like, user will have to import a text file where the layout is known)
+
+//new program, new classes, structure (fields etc.) not known at runtime (could be an xml importer or something else where the scema depends on the data the program reads)
+
+//old program, already coded classes with known data at runtime needs to be shifted from technology X  to tightdb
+
+//old program, new classes, structure known at code time, but contents not known at code time, shifted from technology X  to tightdb
+
+//old program, new classes, structure (fields etc.) not known at runtime , shifted from technology X to tightdb
+
+//old program, already coded classes with known data at runtime needs to be shifted from technology X  to tightdb
+
+//Technology X  could be : c# array, C# collection, C# stream, C# dataset
+//the already coded classes could inherit from anything and could have many many properties and members, of which only a subset should be saved in tightdb
+
+//a good tightdb binding will have support for easy transformation in all the above cases

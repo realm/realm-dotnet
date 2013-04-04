@@ -178,7 +178,6 @@ namespace tightdb.Tightdbcsharp
             return TightDBCalls.spec_get_column_type(this, column_idx);
         }
 
-
         public long get_column_count()
         {
             return TightDBCalls.spec_get_column_count(this);

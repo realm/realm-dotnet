@@ -8,7 +8,6 @@ using System.Runtime.InteropServices;
 //WARNING - this is an old file, it was coded using the old C bindings as a reference point.
 //All the code in here will undergo major changes
 //except a few methods that actually call the newer c++ dll
-//the old code can be recognized by its use of a method calle fakepinvoke
 
 namespace tightdb.Tightdbcsharp
 {
@@ -111,15 +110,15 @@ enum DataType {
             return new Spec(SpecHandle,true);//because this spechandle we get here should be deallocated
         }
 
-
-        private static string err_column_not_table = "Spec_get_spec called with a column index that does not contain a table field";
+        //get a spec given a column index. Returns specs for subtables, but not for mixed (as they would need a row index too)
         //Spec       *spec_get_spec(Spec *spec, size_t column_ndx);
         [DllImport("tightCSDLL", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr spec_get_spec(IntPtr spec, IntPtr column_index);
 
-        public static Spec spec_get_spec(Spec spec, long  column_idx)
+        private static string err_column_not_table = "Spec_get_spec called with a column index that does not contain a table field";
+        public static Spec spec_get_spec(Spec spec, long column_idx)
         {
-            if (spec.get_column_type(column_idx)==TDB.Table)//FIXME  a call to spec.get_column_type
+            if (spec.get_column_type(column_idx)==TDB.Table)
             {
                 IntPtr SpecHandle = spec_get_spec((IntPtr)spec.SpecHandle, (IntPtr)column_idx);
                 return new Spec(SpecHandle,true);
@@ -130,7 +129,7 @@ enum DataType {
 
         public static Spec spec_get_spec(Spec spec, int column_idx)
         {
-            if (spec.get_column_type(column_idx) == TDB.Table)//FIXME  a call to spec.get_column_type
+            if (spec.get_column_type(column_idx) == TDB.Table)
             {
                 IntPtr SpecHandle = spec_get_spec((IntPtr)spec.SpecHandle, (IntPtr)column_idx);
                 return new Spec(SpecHandle, true);
@@ -141,48 +140,22 @@ enum DataType {
 
 
         //size_t spec_get_column_count(Spec* spec);
-
         [DllImport("tightCSDLL", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr spec_get_column_count(IntPtr spec);
 
         public static long spec_get_column_count(Spec spec)
         {
-            return (long) spec_get_column_count(spec.SpecHandle);
+            return (long) spec_get_column_count(spec.SpecHandle);//OPTIMIZE  - could be optimized with a 32 or 64 bit specific implementation - see end of file
         }
 
 
 
 
 
-
-        //    size_t      spec_get_column_index(Spec *spec, const char *name);
-
-        public static long spec_get_column_index(Spec spec, String name)
-        {            
-            UIntPtr col_idx = (UIntPtr)fakepinvoke(spec.SpecHandle, name);
-            long res = (long)col_idx;
-            return res;
-        }
-
-/*
-        //methods here below are not in use atm.
-        // c code :    size_t      spec_get_ref(Spec *spec);
-        // expected functionality : unknown (seems to take a pointer to a SpecHandle and return a pointer sized int)
-        // Not sure if that pointer sized int is a pointer to a spec or what it is
-        /*
-        private static Spec spec_get_ref(Spec spec)
-        {
-            //add pinvoke call and marshalling to :     size_t      spec_get_ref(Spec *spec);            
-            UIntPtr SpecHandleresult  = (UIntPtr)fakepinvoke(spec.SpecHandle);
-
-            return new Spec(SpecHandleresult);
-        }
-        */
 
         /*** Table ************************************/
 
- //TIGHTCSDLL_API size_t new_table()
-        //this dll must be manually copied to the location of the testpinvoke program exefile
+        //TIGHTCSDLL_API size_t new_table()
         [DllImport("tightCSDLL", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr new_table(); 
 
@@ -216,21 +189,9 @@ enum DataType {
         }
 
 
- //       void table_update_from_spec(Table* t);
-        public static void table_update_from_spec(Table t)
-        {
-            
-            fakepinvoke(t.TableHandle);
-        }
-
 
         //TIGHTCSDLL_API size_t get_column_count(tightdb::Table* TablePtr)
 
-        public static long table_register_column(Table t, TDB type, string name)
-        {            
-            UIntPtr col_idx = (UIntPtr) fakepinvoke(t.TableHandle, type, name);
-            return (long)col_idx;            
-        }
 
         //            size_t      table_get_column_count(const Table *t);        
         [DllImport("tightCSDLL", CallingConvention = CallingConvention.Cdecl)]
@@ -242,12 +203,6 @@ enum DataType {
             return (long)column_cnt;
         }
 
-//            size_t      table_get_column_index(const Table *t, const char *name);
-        public static long table_get_column_index(Table t, string name)
-        {            
-            UIntPtr column_idx = (UIntPtr)fakepinvoke(t.TableHandle, name);
-            return (long)column_idx;
-        }
 
         //table_get_column_name and spec_get_column_name have some buffer stuff in common. Consider refactoring. Note the DLL method call is
         //different in the two, and one function takes a spec, the other a table
@@ -319,51 +274,9 @@ enum DataType {
         }
 
 
-//             void table_add(Table *t, ...);
-        //I assume this one adds an empty colum to the end of the table and returns the ix of that row
-        public static long table_add(Table t)
-        {
-            UIntPtr colix = (UIntPtr)fakepinvoke(t.TableHandle);
-            return (long)colix;
-        }
 
 
-        //             void table_add(Table *t, ...);
-        //I assume this one adds an empty colum to the end of the table and returns the ix of that row
-        public static long table_insert(Table t,long col_idx)
-        {
-            UIntPtr colix = (UIntPtr)fakepinvoke(t.TableHandle);
-            return (long)colix;
-        }
 
-        public static TightDbDataType table_get_columntype(Table t, long columnindex)
-        {
-           UIntPtr datatype =(UIntPtr)fakepinvoke(t.TableHandle,columnindex);
-           return (TightDbDataType)datatype;
-        }
-
-        public static long table_get_int(Table t ,long ColumnIndex,long RecordIndex)
-        {
-            UIntPtr res = (UIntPtr)fakepinvoke(t.TableHandle, ColumnIndex, RecordIndex);
-            return (long)res;
-        }
-
-        /* Getting values */
-        //    int64_t     table_get_int(const Table *t, size_t column_ndx, size_t ndx);
-        //    bool        table_get_bool(const Table *t, size_t column_ndx, size_t ndx);
-        //    time_t      table_get_date(const Table *t, size_t column_ndx, size_t ndx);
-        //    const char *table_get_string(const Table *t, size_t column_ndx, size_t ndx);
-        //    BinaryData *table_get_binary(const Table *t, size_t column_ndx, size_t ndx);
-        //    Mixed      *table_get_mixed(const Table *t, size_t column_ndx, size_t ndx);
-        //   TightdbDataType table_get_mixed_type(const Table *t, size_t column_ndx, size_t ndx);
-        //    Table       *table_get_subtable(Table *t, size_t column_ndx, size_t ndx);
-        //    const Table *table_get_const_subtable(const Table *t, size_t column_ndx, size_t ndx);
-        /* Use table_unbind() to 'delete' the table after use */
-
-
-        //not used - enables us to write code that resemples the external methods to be created later
-        //fakepinvoke can be calld with any number of parametres of any type and return any kind of object.
-        private static Object fakepinvoke(params object[] parametres) { return null; }
 
 
     }

@@ -5,8 +5,8 @@
 
 */
 
-#include "stdafx.h"
-#include "TightCSDLL.h"
+#include "stdafx.hpp"
+#include "TightCSDLL.hpp"
 
 
 using namespace tightdb;
@@ -32,7 +32,7 @@ extern "C" {
 TIGHTCSDLL_API size_t tightCSDLLGetVersion(void){
 
   // Table test;
-	return 1304031518;
+	return 1304041703;
 }
 	
 	
@@ -86,29 +86,17 @@ TIGHTCSDLL_API size_t spec_add_column(Spec* SpecPtr,size_t type, const char* nam
 	return SpecPtr->add_column((DataType)type,name);		
 }
 
-//reurns the spec that is associated with a table
+//returns the spec that is associated with a table
 //this spec is just a handle to use for spec operations and it does not need to be
 //unbound or disposed of, it is the address of a spec that is managed by its table
 TIGHTCSDLL_API Spec* table_get_spec(Table* TablePtr)
 {
-	Table* t = reinterpret_cast<Table*>(TablePtr);
-	Spec& s = t->get_spec();
+	//Table* t = reinterpret_cast<Table*>(TablePtr);
+	Spec& s = TablePtr->get_spec();
 	Spec* SpecPtr  = &s;
 	return SpecPtr;
-	/*
-	
-	size_t ret = reinterpret_cast<size_t>(SpecPtr);
-    return ret;*/
 }
 
-//    in spec
-//    DataType get_column_type(size_t column_ndx) const TIGHTDB_NOEXCEPT;
-/* - try to avoid use of spec in bindings
-TIGHTCSDLL_API  DataType get_column_type(Spec* SpecPtr, const size_t column_ndx)
-{
-	return SpecPtr->get_column_type(column_ndx);
-}
-*/
 
 
 //    DataType    get_column_type(size_t column_ndx) const TIGHTDB_NOEXCEPT;

@@ -10,6 +10,7 @@ namespace TestTightdbCS
     class Program
     {
 
+        public static int buildnumber = 1304041702;
         public static void testtablescope()
         {
             Table testtbl = new Table();
@@ -25,32 +26,32 @@ namespace TestTightdbCS
         public static void testhandleaquireSeveralFields()
         {
             Table testtbl3 = new Table(
-            "Name".String(),
-            "Age".Int(),
-            "count".Int(),
-            "Whatever".Mixed());
+            "Name".    TDBString(),
+            "Age".     TDBInt(),
+            "count".   TDBInt(),
+            "Whatever".TDBMixed());
             //long  test = testtbl3.getdllversion_CSH();
-            tabledumper("4 Fields, Last Mixed", testtbl3);
+            tabledumper("four columns, Last Mixed", testtbl3);
         }
 
         
         public static void testhandleaquireSeveralFieldsSubtables()
         {
             Table testtbl = new Table(
-                "Name".String(),
-                "Age".Int(),
+                "Name".TDBString(),
+                "Age".TDBInt(),
                 new TDBField("age2", TDB.Int),
                 new TDBField("age3", "Int"),
                 new TDBField("comments",
                               new TDBField("phone#1", TDB.String),
                               new TDBField("phone#2", TDB.String),
                               new TDBField("phone#3", "String"),
-                              "phone#4".String()
+                              "phone#4".TDBString()
                              ),
                 new TDBField("whatever", TDB.Mixed)
                 );
             long  test = testtbl.getdllversion_CSH();
-            tabledumper("6 colums,subtable 4 columns", testtbl);
+            tabledumper("six colums,sub four columns", testtbl);
         }
 
         public static void testcreatetwotables()
@@ -63,17 +64,21 @@ namespace TestTightdbCS
                 new TDBField("phone#2", TDB.String)),
             new TDBField("whatever", TDB.Mixed));
 
-            tabledumper_spec("created with TDBField", testtbl1);
+            tabledumper_spec("four columns , sub two columns (TDBField)", testtbl1);
 
             Table testtbl2 = new Table(
                 new TDBField("name", "String"),
                 new TDBField("age", "Int"),
                 new TDBField("comments",
                          new TDBField("phone#1", "String"),
-                         new TDBField("phone#2", "String")),
+                         new TDBField("phone#2", "String"),
+                         "more stuff".Subtable(
+                            "stuff1".String(),
+                            "stuff2".String(),
+                            "ÆØÅæøå".String())                         
+                         ),
                 new TDBField("whatever", "Mixed"));
-            tabledumper_spec("created with TDBField and strings as types", testtbl2);
-
+            tabledumper_spec("four columns, sub three subsub three", testtbl2);
 
             Table testtbl3 = new Table(
                 "Name".String(),
@@ -83,8 +88,7 @@ namespace TestTightdbCS
                           "Phone#2".String()),
                 "count".Int(),
                 "Whatever".Mixed());
-            tabledumper_spec("created using methods on strings", testtbl3);
-
+            tabledumper_spec("five columns, sub two. using name.Type() ", testtbl3);
         }
 
 
@@ -93,17 +97,17 @@ namespace TestTightdbCS
             //create a table with two columns that are the same name except casing (this might be perfectly legal, I dont know)
             Table badtable= new Table("Age".Int(), "age".Int());
 
-            tabledumper("two fields only case is differnt in their names",badtable);
+            tabledumper("two fields, case is differnt",badtable);
             //Create a table with two columns with the same name and type
 
             Table badtable2= new Table("Age".Int(), "Age".Int());
-            tabledumper("two fields name and type is exactly the same",badtable2);
+            tabledumper("two fields name and type the same",badtable2);
 
             Table Reallybadtable3 = new Table("Age".Int(),
                                               "Age".Int(),
                                               "".String(),
                                               "".String());
-            tabledumper("same names int two empty string names string", Reallybadtable3);
+            tabledumper("same names int two empty string names", Reallybadtable3);
 
             Table Reallybadtable4 = new Table("Age".Int(),
                                   "Age".Mixed(),
@@ -115,19 +119,29 @@ namespace TestTightdbCS
         }
 
 
-        static string headerline = "------------------------------";
+        public static void printheader(string tablename, long count) 
+        {
+            System.Console.WriteLine(headerline);
+            System.Console.WriteLine("Column count: {0}", count);
+            System.Console.WriteLine("Table Name  : {0}", tablename);
+            System.Console.WriteLine(headerline);
+            //            System.Console.WriteLine("{0,2} {2,10}  {1,-20}","#","Name","Type");
+        }
+
+
+        public static void printfooter()
+        {
+            System.Console.WriteLine(headerline);
+            System.Console.WriteLine("");
+        }
+        static string headerline = "------------------------------------------------------";
         //dumps table structure to console for debugging purposes
+        //this version uses the table column information as far as possible, then shifts to spec on subtables
         public static void tabledumper(String TableName,Table T)
         {
             
             long count = T.column_count();
-            System.Console.WriteLine(headerline);
-            System.Console.WriteLine("Column count: {0}",count);
-            System.Console.WriteLine("Table Name  : {0}",TableName);
-            System.Console.WriteLine(headerline);
-            //            System.Console.WriteLine("{0,2} {2,10}  {1,-20}","#","Name","Type");
-
-
+            printheader(TableName, count);
             for (long n = 0; n < count; n++)
             {
                 string name = T.get_column_name(n);
@@ -140,8 +154,7 @@ namespace TestTightdbCS
                     specdumper("   ",subspec,"Subtable");
                 }
             }
-            System.Console.WriteLine(headerline);
-            System.Console.WriteLine("");
+            printfooter();
         }
 
 
@@ -152,10 +165,7 @@ namespace TestTightdbCS
             
             if (indent == "") 
             {
-                System.Console.WriteLine(headerline);
-                System.Console.WriteLine("Column count: {0}", count);
-                System.Console.WriteLine("Table Name  : {0}", TableName);
-                System.Console.WriteLine(headerline);
+                printheader(TableName, count);
             }
 
             for (long n = 0; n < count; n++)
@@ -164,38 +174,47 @@ namespace TestTightdbCS
                 TDB type = s.get_column_type(n);
                 System.Console.WriteLine(indent+"{0,2} {2,10}  {1,-20}", n, name, type);
                 if (type == TDB.Table)
-                {
-                    System.Console.WriteLine(indent + "Subtable");
+                {                
                     Spec subspec = s.get_spec(n);
                     specdumper(indent+"   ",subspec,"Subtable");
                 }
             }
+
+            if (indent == "")
+            {
+                printfooter();
+            }
         }
 
+        //dump the table only using its spec
         public static void tabledumper_spec(String Tablename, Table T)
         {
-            System.Console.WriteLine(headerline);
-
             Spec s = T.get_spec();
             long count = T.column_count();
-            specdumper("",s,Tablename);
-            System.Console.WriteLine(headerline);
+            specdumper("", s, Tablename);
         }
 
 
         static void Main(string[] args)
         {
             Table t = new Table();
-            System.Console.WriteLine("C++DLL build number {0}",t.getdllversion_CPP());
+            System.Console.WriteLine("Testprogram    build number {0}",buildnumber);
+            System.Console.WriteLine("C++DLL         build number {0}",t.getdllversion_CPP());
+            System.Console.WriteLine("C# DLL         build number {0}",t.getdllversion_CSH());
+            OperatingSystem os = Environment.OSVersion;
+            System.Console.WriteLine("OS Version :                {0}" ,os.Version.ToString());
+            System.Console.WriteLine("OS Platform:                {0}", os.Platform.ToString());
+
+            System.Console.WriteLine();
+            System.Console.WriteLine();
+            
             //if the user uses using with the table, it shoud be disposed at the end of the using block
             //using usage should follow these guidelines http://msdn.microsoft.com/en-us/library/yh598w02.aspx
             //You don't *have* to use using, if you don't the c++ table will not be disposed of as quickly as otherwise
             
-//            tabledumper("empty table",t);
             using (Table testtable = new Table())
             {
-                System.Console.WriteLine("C# DLL build number {0}",testtable.getdllversion_CSH());
-                //do operations
+                long columncnt = testtable.column_count();                
             }        //table dispose sb calledautomatically  after table goes out of scope
 
 

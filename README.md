@@ -29,6 +29,5 @@ is needed for a user install
 - libsVS2010 - tightdb.lib files built with visual studio2010
 - libsVS2012 - tightdb.lib files built with visual studio2012
 - native - C# files that contain p/invoke calls to c++, and the c++ files that export these calls in tightCSDLL
-- TestPinvoke - C# project used to test specifically P/Invoke calls, without calling tightdb c++ code
 - tightdbCS - C# project that results in the tightdbCS.dll file that user projects use
-
+- TestTightdbCS - C# project set up as an end user might use the C# binding.
