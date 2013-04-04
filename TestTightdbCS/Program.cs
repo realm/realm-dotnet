@@ -29,12 +29,49 @@ namespace TestTightdbCS
             "Name".    TDBString(),
             "Age".     TDBInt(),
             "count".   TDBInt(),
-            "Whatever".TDBMixed());
+            "Whatever".TDBMixed()                                
+            );
             //long  test = testtbl3.getdllversion_CSH();
             tabledumper("four columns, Last Mixed", testtbl3);
         }
 
-        
+
+        public static void testallkindsoffields()
+        {
+            Table t = new Table(
+        "IntField".Int(),
+        "BoolField".Bool(),
+        "StringField".String(),
+        "BinaryFiel".Binary(),
+        "TableField".Table(
+            "subtablefield1".Int(),
+            "subtablefield2".String()),
+        "MixedField".Mixed(),
+        "DateField".Date(),
+        "FloatField".Float(),
+        "DoubleField".Double()
+        );
+            tabledumper("Table with all allowed types", t);
+        }
+
+        //this kind of call should be legal - it just means we'll get back to specifying the subtable some other time in a more dynamic fashion
+        public static void subtablenofields() 
+        {
+            Table notspecifyingfields = new Table(
+                "subtable".Table()
+                );
+        }
+
+        //it is probably extremely hard, but in theory a user might succeed in having a field definition have its own pointer as a subfield
+        //the compiler will block the user if he just references the field in its own definition, or if he references a field lower down in
+        //the source (in an attempt to cross link two or more fields). However, he might succeed using recursive methods and var parametres
+        //I have decided not to test this with a usecase for now.
+        //if in some way a user succeeds, the call to table.create with such a field will crash, using up all stack space
+        //the recursive field definition problem just might happen if a user creates a field dynamically and somehow messes up his own
+        //code so that a recursion happens in his field definitions, and then call table.create
+
+
+        //test with a subtable
         public static void testhandleaquireSeveralFieldsSubtables()
         {
             Table testtbl = new Table(
@@ -54,6 +91,7 @@ namespace TestTightdbCS
             tabledumper("six colums,sub four columns", testtbl);
         }
 
+        //more tests
         public static void testcreatetwotables()
         {
             Table testtbl1 = new Table(
@@ -225,7 +263,10 @@ namespace TestTightdbCS
             testhandleaquireSeveralFields();
 
             testhandleaquireSeveralFieldsSubtables();
-            testcreatestrangetable();
+
+            testallkindsoffields();
+
+            //testcreatestrangetable();
 
             testcreatetwotables();
 

@@ -37,6 +37,9 @@ public class TableException : Exception
 
 namespace tightdb.Tightdbcsharp
 {
+
+    //TDBField is used only in the table constructor to make it easier for the user to specify any table structure without too much clutter
+    //TDBField constructors of various sort, return field definitions that the table constructor then uses to figure what the table structure is
     public class TDBField
     {
         static void setinfo(TDBField t, String ColumnName, TDB FieldType)
@@ -44,7 +47,6 @@ namespace tightdb.Tightdbcsharp
             t.colname = ColumnName;
             t.type = FieldType;
         }
-
 
         public TDBField(String ColumnName, params TDBField[] SubtablefieldsArray)
         {
@@ -59,47 +61,51 @@ namespace tightdb.Tightdbcsharp
 
         public TDBField(string ColumnName, String ColumnType)
         {
-            if (ColumnType.ToUpper()== "STRING")
+            if (ColumnType.ToUpper() == "INT" || ColumnType.ToUpper() == "INTEGER")
+            {
+                setinfo(this, ColumnName, TDB.Int);
+            }
+            else if (ColumnType.ToUpper() == "BOOL" || ColumnType.ToUpper() == "BOOLEAN")
+            {
+                setinfo(this, ColumnName, TDB.Bool);
+            }
+            else if (ColumnType.ToUpper() == "STRING")
             {
                 setinfo(this, ColumnName, TDB.String);
             }
-            else if (ColumnType.ToUpper() == "INT" || ColumnType.ToUpper() == "INTEGER")
+            else if (ColumnType.ToUpper() == "BINARY" || ColumnType.ToUpper() == "BLOB")
             {
-                setinfo(this, ColumnName, TDB.Int);
+                setinfo(this, ColumnName, TDB.Binary);
             }
             else if (ColumnType.ToUpper() == "MIXED")
             {
                 setinfo(this, ColumnName, TDB.Mixed);
             }
-            else if (ColumnType.ToUpper() == "BINARY"  || ColumnType.ToUpper()=="BLOB")
+
+            else if (ColumnType.ToUpper() == "DATE")
             {
-                setinfo(this, ColumnName, TDB.Binary);
+                setinfo(this, ColumnName, TDB.Date);
             }
-            else if (ColumnType.ToUpper() == "BOOL" || ColumnType.ToUpper()=="BOOLEAN")
-            {
-                setinfo(this, ColumnName, TDB.Bool);
-            }
-            else if (ColumnType.ToUpper() == "DOUBLE" || ColumnType.ToUpper() == "BOOLEAN")
-            {
-                setinfo(this, ColumnName, TDB.Double);
-            }
-            else if (ColumnType.ToUpper() == "FLOAT" || ColumnType.ToUpper() == "FLOAT")
+
+            else if (ColumnType.ToUpper() == "FLOAT")
             {
                 setinfo(this, ColumnName, TDB.Float);
             }
-            else
+            else if (ColumnType.ToUpper() == "DOUBLE")
             {
-                if (ColumnType.ToUpper() == "TABLE" || ColumnType.ToUpper() == "SUBTABLE")
-                {
-                    throw new TableException("Subtables should be specified as an array, cannot create a freestanding subtable field");
-                }
-                throw new TableException(String.Format("Trying to initialize a tablefield with an unknown type specification Fieldname:{0}  type:{1}",ColumnName,ColumnType));
+                setinfo(this, ColumnName, TDB.Double);
             }
+            else if (ColumnType.ToUpper() == "TABLE" || ColumnType.ToUpper() == "SUBTABLE")
+            {
+                throw new TableException("Subtables should be specified as an array, cannot create a freestanding subtable field");
+            }
+            else
+                throw new TableException(String.Format("Trying to initialize a tablefield with an unknown type specification Fieldname:{0}  type:{1}", ColumnName, ColumnType));
         }
 
         public String colname;
         public TDB type;
-        public List<TDBField> subtable = new List<TDBField>();
+        public List<TDBField> subtable = new List<TDBField>();//only used if type is a subtable
     }
 
     
@@ -119,6 +125,15 @@ namespace tightdb.Tightdbcsharp
             return new TDBField(str, TDB.Int);
         }
 
+        public static TDBField Bool(this string str)
+        {
+            return new TDBField(str, TDB.Bool);
+        }
+
+        public static TDBField TDBBool(this string str)
+        {
+            return new TDBField(str, TDB.Bool);
+        }
 
         public static TDBField TDBString(this String str)
         {
@@ -131,6 +146,32 @@ namespace tightdb.Tightdbcsharp
         }
 
 
+        public static TDBField TDBBinary(this String str)
+        {
+            return new TDBField(str, TDB.Binary);
+        }
+
+        public static TDBField Binary(this String str)
+        {
+            return new TDBField(str, TDB.Binary);
+        }
+
+        public static TDBField TDBSubtable(this String str, params TDBField[] fields)
+        {
+            return new TDBField(str,fields);
+        }
+
+        public static TDBField Subtable(this String str, params TDBField[] fields)
+        {
+            return new TDBField(str, fields);
+        }
+
+        //as the TDB has a type called table, we also provide a such named constructor even though it will always be a subtable
+        public static TDBField Table(this String str, params TDBField[] fields)
+        {
+            return new TDBField(str, fields);
+        }
+
         public static TDBField TDBMixed(this String str)
         {
             return new TDBField(str, TDB.Mixed);
@@ -141,15 +182,34 @@ namespace tightdb.Tightdbcsharp
             return new TDBField(str, TDB.Mixed);
         }
 
-
-        public static TDBField TDBSubtable(this String str, params TDBField[] fields)
+        public static TDBField Date(this String str)
         {
-            return new TDBField(str,fields);
+            return new TDBField(str, TDB.Date);
         }
 
-        public static TDBField Subtable(this String str, params TDBField[] fields)
+        public static TDBField TDBDate(this String str)
         {
-            return new TDBField(str, fields);
+            return new TDBField(str, TDB.Date);
+        }
+
+        public static TDBField Float(this string str)
+        {
+            return new TDBField(str, TDB.Float);
+        }
+
+        public static TDBField TDBFloat(this string str)
+        {
+            return new TDBField(str, TDB.Float);
+        }
+
+        public static TDBField Double(this string str)
+        {
+            return new TDBField(str, TDB.Double);
+        }
+
+        public static TDBField TDBDouble(this string str)
+        {
+            return new TDBField(str, TDB.Double);
         }
 
      
@@ -273,6 +333,10 @@ namespace tightdb.Tightdbcsharp
                 {
                     case TDB.Int:
                     //    return getInt(RowIndex, get_column_index(ColumnName));
+
+
+                    //and add support for the rest (see TDB definition)
+
                     default:
                         return null;//we should probably raise an exception here
                 }
@@ -280,6 +344,9 @@ namespace tightdb.Tightdbcsharp
             set
             {
             }
+
+
+
         }
 
         //experiments
@@ -291,6 +358,9 @@ namespace tightdb.Tightdbcsharp
                 {
                     case TDB.Int:
                        // return getInt(ColumnIndex, RowIndex);
+
+                    //and add support for the rest (see TDB definition)
+
                     default:
                         return null;
                 }

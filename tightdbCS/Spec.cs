@@ -135,10 +135,6 @@ namespace tightdb.Tightdbcsharp
             }   
         }
 
-        public Spec add_subtable_column(String colname)
-        {
-           return TightDBCalls.add_subtable_column(this,colname);
-        }
         
         // will add the field list to the current spec
         public void addfields(TDBField[] fields)
@@ -149,6 +145,10 @@ namespace tightdb.Tightdbcsharp
             }
         }
 
+        public Spec add_subtable_column(String colname)
+        {
+            return TightDBCalls.add_subtable_column(this, colname);
+        }
 
 
         public void add_column(TDB type,String name)
@@ -156,12 +156,6 @@ namespace tightdb.Tightdbcsharp
             TightDBCalls.spec_add_column(this, type, name);
         }
 
-        /* try to avoid using spec in bindings
-        public TDB get_column_type(long column_idx)
-        {
-            return TightDBCalls.spec_get_column_type(this, column_idx);
-        }
-        */
 
         //I assume column_idx is a column with a table in it, or a mixed with a table?
         public Spec get_spec(long column_idx) 
@@ -187,9 +181,5 @@ namespace tightdb.Tightdbcsharp
         {
             return TightDBCalls.spec_get_column_name(this, column_idx);
         }
-
-
-
-
     }
 }

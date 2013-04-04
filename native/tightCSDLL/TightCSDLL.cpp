@@ -32,7 +32,7 @@ extern "C" {
 TIGHTCSDLL_API size_t tightCSDLLGetVersion(void){
 
   // Table test;
-	return 1304041703;
+	return 1304041843;
 }
 	
 	

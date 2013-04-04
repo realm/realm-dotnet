@@ -28,7 +28,6 @@ enum DataType {
 };
      */
 
-    //Used exclusively in table constructors
     public enum TDB
     {
         Int        =  0,
@@ -242,7 +241,7 @@ enum DataType {
 
         [DllImport("tightCSDLL", CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr spec_get_column_name(IntPtr SpecHandle, IntPtr column_idx, StringBuilder name, IntPtr bufsize);
-        // const char *spec_get_column_name(Spec *spec, size_t column_idx);
+
         public static String spec_get_column_name(Spec spec, long column_idx)
         {//see table_get_column_name for comments
             StringBuilder B = new StringBuilder(16);
