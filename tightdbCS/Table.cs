@@ -105,7 +105,12 @@ namespace tightdb.Tightdbcsharp
 
         public String colname;
         public TDB type;
-        public List<TDBField> subtable = new List<TDBField>();//only used if type is a subtable
+        private List<TDBField> subtable = new List<TDBField>();//only used if type is a subtable
+
+        internal TDBField[] getsubtablearray()
+        {
+            return subtable.ToArray();            
+        }
     }
 
     

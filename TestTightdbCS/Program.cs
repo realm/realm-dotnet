@@ -62,13 +62,52 @@ namespace TestTightdbCS
                 );
         }
 
-        //it is probably extremely hard, but in theory a user might succeed in having a field definition have its own pointer as a subfield
-        //the compiler will block the user if he just references the field in its own definition, or if he references a field lower down in
-        //the source (in an attempt to cross link two or more fields). However, he might succeed using recursive methods and var parametres
-        //I have decided not to test this with a usecase for now.
-        //if in some way a user succeeds, the call to table.create with such a field will crash, using up all stack space
-        //the recursive field definition problem just might happen if a user creates a field dynamically and somehow messes up his own
-        //code so that a recursion happens in his field definitions, and then call table.create
+        //while You cannot cross-link parents and subtables inside a new table() construct, you can try to do so, by deliberatly changing
+        //the subtable references in TDBField objects that You instantiate yourself -and then call Table.create(Yourfiled) with a 
+        //field definition that is self referencing.
+        //however, currently this is not possible as seen in the example below.
+        //the subtables cannot be changed directly, so all You can do is create new objects that has old already created objects as subtables
+        //therefore a tree structure, no recursion.
+
+        //below is my best shot at someone trying to create a table with custom built cross-linked field definitions (and failing)
+
+        //I did not design the TDBFIeld type to be used on its own like the many examples below. However , none of these weird uses break anything
+        public static void testillegalfielddefinitions()
+        {
+            TDBField f5 = "f5".Int();//create a field reference, type does not matter
+            f5 = "f5".Table(f5);//try to overwrite the field object with a new object that references itself 
+            
+            Table t = new Table(f5);//this will not crash or loop forever the subtable field does not references itself 
+            tabledumper("self-referencing subtable",t);
+
+            TDBField fc = "fc".Int();//create a field reference, type does not matter
+            TDBField fp = "fp".Table(fc);//let fp be the parent table subtable column, fc be the sole field in a subtable
+
+            fc = "fc".Table(fp);//then change the field type from int to subtable and reference the parent
+
+            //You now think You have illegal field definitions in fc and fp as both are subtables and both reference the other as the sole subtable field
+            //however, they are new objects that reference the old classes that they replaced.
+
+            Table t2 = new Table(fc); //should crash too
+            tabledumper("subtable that has subtable that references its parent #1",t2);
+            Table t3 = new Table(fp); //should crash too
+            tabledumper("subtable that has subtable that references its parent #2", t3);
+
+
+            TDBField f10 = "f10".Subtable("f11".Int(), "f12".Int());
+            f10.type = TDB.Int;
+            //at this time, the subtable array still have some subtables in it
+            Table t4 = new Table(f10);
+            tabledumper("just an int field, no subs",t4);
+
+            f10.type = TDB.Table;
+            Table t5 = new Table(f10);
+            tabledumper("subtable with two int fields", t5);//This is sort of okay, first adding a subtable, then
+            //changing mind and making it just and int field, and then changing mind again and setting it as subtable type
+            //and thus resurfacing the two subfields. no harm done.
+
+        }
+
 
 
         //test with a subtable
@@ -266,7 +305,7 @@ namespace TestTightdbCS
 
             testallkindsoffields();
 
-            //testcreatestrangetable();
+            testillegalfielddefinitions();
 
             testcreatetwotables();
 

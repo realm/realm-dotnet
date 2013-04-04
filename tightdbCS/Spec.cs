@@ -129,7 +129,7 @@ namespace tightdb.Tightdbcsharp
             }
             else
             {
-                TDBField[] tfa = schema.subtable.ToArray();
+                TDBField[] tfa = schema.getsubtablearray();
                 Spec subspec =  add_subtable_column(schema.colname);
                 subspec.addfields(tfa);
             }   
