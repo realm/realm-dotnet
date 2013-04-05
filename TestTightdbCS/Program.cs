@@ -7,6 +7,18 @@ using tightdb.Tightdbcsharp;
 
 namespace TestTightdbCS
 {
+    using NUnit.Framework;//can be downloaded from http://www.nunit.org/
+
+
+    [TestFixture]
+    public class TableTest
+    {
+        [Test]
+        public void createtable()
+        {
+        }
+    }
+
     class Program
     {
 
