@@ -7,22 +7,18 @@ using tightdb.Tightdbcsharp;
 
 namespace TestTightdbCS
 {
-    using NUnit.Framework;//can be downloaded from http://www.nunit.org/
+    using System.IO;
 
 
-    [TestFixture]
-    public class TableTest
-    {
-        [Test]
-        public void createtable()
-        {
-        }
-    }
 
+
+             
+    
     class Program
     {
 
         public static int buildnumber = 1304041702;
+
         public static void testtablescope()
         {
             Table testtbl = new Table();
@@ -30,10 +26,17 @@ namespace TestTightdbCS
 
         public static void testhandleacquireOneField()
         {
-            Table testtbl = new Table(new TDBField("name", TDB.String));
-            long  test = testtbl.getdllversion_CSH();
-            tabledumper("NameField", testtbl);
+            Table t = new Table();
+                        Table testtbl = new Table(new TDBField("name", TDB.String));
+                                    long test = testtbl.getdllversion_CSH();
+                                    string actualres=Program.tabledumper("NameField", testtbl);
+                                    File.WriteAllText("testhandleacquireOneField.txt", actualres);
+
+            string expectedres =
+@"To be filled in";
+            
         }
+
 
         public static void testhandleaquireSeveralFields()
         {
@@ -208,79 +211,87 @@ namespace TestTightdbCS
         }
 
 
-        public static void printheader(string tablename, long count) 
+        public static void printheader(StringBuilder res, string tablename, long count) 
         {
-            System.Console.WriteLine(headerline);
-            System.Console.WriteLine("Column count: {0}", count);
-            System.Console.WriteLine("Table Name  : {0}", tablename);
-            System.Console.WriteLine(headerline);
+            res.AppendLine(headerline);
+            res.AppendLine(String.Format("Column count: {0}", count));
+            res.AppendLine(String.Format("Table Name  : {0}", tablename));
+            res.AppendLine(headerline);
             //            System.Console.WriteLine("{0,2} {2,10}  {1,-20}","#","Name","Type");
         }
 
 
-        public static void printfooter()
+        public static void printfooter(StringBuilder res)
         {
-            System.Console.WriteLine(headerline);
-            System.Console.WriteLine("");
+            res.AppendLine(headerline);
+            res.AppendLine("");
         }
+
         static string headerline = "------------------------------------------------------";
-        //dumps table structure to console for debugging purposes
+        
+        
+        //dumps table structure to a string for debugging purposes.
+        //the string is easily human-readable
         //this version uses the table column information as far as possible, then shifts to spec on subtables
-        public static void tabledumper(String TableName,Table T)
+        public static string tabledumper(String TableName,Table T)
         {
+            StringBuilder res = new StringBuilder();//temporary storange of text of dump
             
             long count = T.column_count();
-            printheader(TableName, count);
+            printheader(res,TableName, count);
             for (long n = 0; n < count; n++)
             {
                 string name = T.get_column_name(n);
                 TDB type = T.column_type(n);
-                System.Console.WriteLine("{0,2} {2,10}  {1,-20}", n, name, type);
+                res.AppendLine(String.Format("{0,2} {2,10}  {1,-20}", n, name, type));
                 if (type == TDB.Table)
                 {
                     Spec tblspec = T.get_spec();
                     Spec subspec = tblspec.get_spec(n);
-                    specdumper("   ",subspec,"Subtable");
+                    specdumper(res,"   ",subspec,"Subtable");
                 }
             }
-            printfooter();
+            printfooter(res);
+            System.Console.Write(res.ToString());
+            return res.ToString();
         }
 
 
-        public static void specdumper(String indent,Spec s,string TableName)
+        public static void specdumper(StringBuilder res,String indent,Spec s,string TableName)
         {
 
             long count = s.get_column_count();
             
             if (indent == "") 
             {
-                printheader(TableName, count);
+                printheader(res ,TableName, count);
             }
 
             for (long n = 0; n < count; n++)
             {
                 String name = s.get_column_name(n);
                 TDB type = s.get_column_type(n);
-                System.Console.WriteLine(indent+"{0,2} {2,10}  {1,-20}", n, name, type);
+                res.AppendLine(String.Format(indent+"{0,2} {2,10}  {1,-20}", n, name, type));
                 if (type == TDB.Table)
                 {                
                     Spec subspec = s.get_spec(n);
-                    specdumper(indent+"   ",subspec,"Subtable");
+                    specdumper(res, indent+"   ",subspec,"Subtable");
                 }
             }
 
             if (indent == "")
             {
-                printfooter();
+                printfooter(res);
             }
         }
 
         //dump the table only using its spec
         public static void tabledumper_spec(String Tablename, Table T)
         {
+            StringBuilder res = new StringBuilder();
             Spec s = T.get_spec();
             long count = T.column_count();
-            specdumper("", s, Tablename);
+            specdumper(res, "", s, Tablename);
         }
 
 
@@ -307,9 +318,15 @@ namespace TestTightdbCS
             }        //table dispose sb calledautomatically  after table goes out of scope
 
 
-            testtablescope();
+            //testhandleacquireOneField();
+
+
+            //test the unit test            
 
             testhandleacquireOneField();
+
+
+            testtablescope();            
 
             testhandleaquireSeveralFields();
 

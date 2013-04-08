@@ -392,7 +392,7 @@ namespace tightdb.Tightdbcsharp
             }
             else
             {
-                TightDBCalls.table_new(this);
+                 TightDBCalls.table_new(this);
                 TableHandleInUse = true;
                 TableHandleHasBeenUsed = true;
             }

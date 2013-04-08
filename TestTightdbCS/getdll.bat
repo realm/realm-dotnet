@@ -1,7 +1,8 @@
 @echo off
 :  Copy the c++ DLL to the project dir
-:  Copy the C# DLL to the project dir
 :  This enables easy debugging against the very latest build of c++ tightCSDLL
+:  The C# dll should be copied by the VS2012 project on build, as it is referenced as a C# assembly
+:  The C++ dll cannot be referenced,so is not copied automatically
 echo Copying c++ dll to tightCSDLL.DLL
 : To avoid a file or directory prompt if the target file is not there, we create a file
 echo . > bin\debug\tightCSDLL.dll

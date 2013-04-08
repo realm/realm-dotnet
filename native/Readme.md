@@ -1,15 +1,42 @@
 #native#
 
-This directory contains C# code that interacts with the tightCSDLL The C# code is not meant to be called by the user of the c# binding, but by the C# binding itself. All P/Invoke and marshalling stuff has been put in files in this directory, these files are likely the only ones that have to change materially between various platforms
+This folder and its subfolders contains sourcecode to build the extern "C" dll that the c# language binding uses to access tightdb.
+It also contains the C# soucecode that directly interacts with the extern "C" dll
+
+All P/Invoke and marshalling stuff has been put in files in this directory, these files are likely the only ones that have to change materially between various hardware platforms.
+Al the higher level supporting C# code is in the folder above this one. The higher level supporting C# code might have to change between various .net platforms or .net implementations, so
+it is a benefit that the two sets of source code has been split up.
+
+Some CLI platforms (windows phone 7.5 for instance, windows phone 8.0 is sort of halfway there) do not support P/Invoke yet, in case we need to support such a platform before p/invoke gets ported to it, we will have to rely on c++/CLI,
+which is currently a microsoft only way of calling into a c++ program. In case we need it, we will have to create a c++/CLI wrapper, in ways similar to tight_c_cs.dll and tightdbcalls.cs that wraps the c++ classes into CLR classes
+
 
 Versions :
 
-- 64bit windows - microsoft .net (to be done)
-- 32bit windows - microsoft .net (in progress)
-- 64bit windows - mono (to be done)
-- 32bit windows - mono (to be done)
-- 64bit linux (possibly in several flavors) mono (to be done)
-- 32bit linux (possibly in several flavors) mono (to be done)
+c++ DLL  tight_c_cs.dll
+
+* 32 bit windows release
+* 32 bit windows debug
+* 64 bit windows (r/d to be done)
+* nn bit linux mono (to be done)   (probably not built in visual studio)
+* nn bit windows mono (to be done) 
+* nn bit ios mono (to be done)     (probably not built in visual studio)
+
+
+C# tightdbcalls.cs 
+
+* C# 5.0 / .net 4.5 32 bit release (Using P/Invoke)
+* C# 5.0 / .net 4.5 32 bit debug   (Using P/Invoke)
+* C# 5.0 / .net 4.5 64 bit release (Using P/Invoke) (to be done)
+* C# 5.0 / .net 4.5 64 bit debug   (Using P/Invoke) (to be done)
+* ..Versions tested with other CLI platforms (mono, windowsRT, windows phone, silverlight) to be done
+
+
+
+c++/CLI tight_cpp_CLI.dll
+
+windows (to be done)
+
 
 
 C# binding source stack :
@@ -27,4 +54,4 @@ Physical C# binding stack :
 2. *C#* tightdbCSHARP.dll contains 2. and 3. from above. 3. is private, shielded from the user
 3. *C++* tightCSDLL.dll contains 4. and 5. built into a DLL, with extern C exported methods
 
-Thus, the only expensive calls are the ones between 2. and 3. in the physical stack (these are P/Invoke calls)
+Thus, the only expensive p/invoke calls are the ones between 2. and 3. in the physical stack 

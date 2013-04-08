@@ -1,4 +1,4 @@
-// TightCSDLL.cpp : Defines the exported functions for the DLL application.
+// tightdb_c_cs.cpp : Defines the exported functions for the DLL application.
 /*
     
 
@@ -6,30 +6,21 @@
 */
 
 #include "stdafx.hpp"
-#include "TightCSDLL.hpp"
+#include "tightdb_c_cs.hpp"
 
 
 using namespace tightdb;
 
-// This is an example of an exported variable
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-//TIGHTCSDLL_API int nTightCSDLL=0;
-
-#ifdef __cplusplus
-}
-#endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-// This is an example of an exported function.
-// used for marshalling testing. This one simply returns the value 423 when called
-	
-TIGHTCSDLL_API size_t tightCSDLLGetVersion(void){
+
+// return a (manually changed) constant - used when debugging to manually ensure a newly compiled dll is being linked to
+
+
+ TIGHTDB_C_CS_API size_t tightCSDLLGetVersion(void){
 
   // Table test;
 	return 1304041843;
@@ -37,7 +28,7 @@ TIGHTCSDLL_API size_t tightCSDLLGetVersion(void){
 	
 	
 
-TIGHTCSDLL_API size_t table_get_column_count(tightdb::Table* TablePtr)
+TIGHTDB_C_CS_API size_t table_get_column_count(tightdb::Table* TablePtr)
 {
 	return TablePtr->get_column_count();
 }
@@ -46,7 +37,7 @@ TIGHTCSDLL_API size_t table_get_column_count(tightdb::Table* TablePtr)
 
 //This is an example of an exported function.
 // used for marshalling testing. This one simply returns the value 423 when called
-TIGHTCSDLL_API size_t fnTightCSDLL(void)
+TIGHTDB_C_CS_API size_t fnTightCSDLL(void)
 {
   // Table test;
 	return 423;
@@ -54,25 +45,25 @@ TIGHTCSDLL_API size_t fnTightCSDLL(void)
 
 //test that we can get incoming values
 //returns back the double of the value sent
-TIGHTCSDLL_API size_t TestIntegerParam(size_t intvalue)
+TIGHTDB_C_CS_API size_t TestIntegerParam(size_t intvalue)
 {
 	return intvalue * 2;
 }
 
-TIGHTCSDLL_API char* TestConstantStringReturn()
+TIGHTDB_C_CS_API char* TestConstantStringReturn()
 {
 	char* statictesttext = "Hello from the DLL!";//I assume the text is static and neither on heap or stack or in need of having to be freed
 	return statictesttext;
 }
 
 //return a newly constructed top level table 
-TIGHTCSDLL_API Table* new_table()
+TIGHTDB_C_CS_API Table* new_table()
 {
 	//return reinterpret_cast<size_t>(LangBindHelper::new_table());	 
 	return LangBindHelper::new_table();
 }
 
-TIGHTCSDLL_API void unbind_table_ref(tightdb::Table* TablePtr)
+TIGHTDB_C_CS_API void unbind_table_ref(tightdb::Table* TablePtr)
 {
 	//LangBindHelper::unbind_table_ref(reinterpret_cast<Table*>(TablePtr));
 	LangBindHelper::unbind_table_ref(TablePtr);
@@ -81,7 +72,7 @@ TIGHTCSDLL_API void unbind_table_ref(tightdb::Table* TablePtr)
 
 //    size_t add_column(DataType type, const char* name, ColumnType attr=col_attr_None);
 //note that we have omitted support for attr until we figure what it's for
-TIGHTCSDLL_API size_t spec_add_column(Spec* SpecPtr,size_t type, const char* name) 
+TIGHTDB_C_CS_API size_t spec_add_column(Spec* SpecPtr,size_t type, const char* name) 
 {
 	return SpecPtr->add_column((DataType)type,name);		
 }
@@ -89,7 +80,7 @@ TIGHTCSDLL_API size_t spec_add_column(Spec* SpecPtr,size_t type, const char* nam
 //returns the spec that is associated with a table
 //this spec is just a handle to use for spec operations and it does not need to be
 //unbound or disposed of, it is the address of a spec that is managed by its table
-TIGHTCSDLL_API Spec* table_get_spec(Table* TablePtr)
+TIGHTDB_C_CS_API Spec* table_get_spec(Table* TablePtr)
 {
 	//Table* t = reinterpret_cast<Table*>(TablePtr);
 	Spec& s = TablePtr->get_spec();
@@ -100,13 +91,13 @@ TIGHTCSDLL_API Spec* table_get_spec(Table* TablePtr)
 
 
 //    DataType    get_column_type(size_t column_ndx) const TIGHTDB_NOEXCEPT;
-TIGHTCSDLL_API  DataType table_get_column_type(Table* TablePtr, const size_t column_ndx)
+TIGHTDB_C_CS_API  DataType table_get_column_type(Table* TablePtr, const size_t column_ndx)
 {
 	return TablePtr->get_column_type(column_ndx);
 }
 
 
-TIGHTCSDLL_API  DataType spec_get_column_type(Spec* SpecPtr, const size_t column_ndx)
+TIGHTDB_C_CS_API  DataType spec_get_column_type(Spec* SpecPtr, const size_t column_ndx)
 {
 	return SpecPtr->get_column_type(column_ndx);
 }
@@ -129,11 +120,12 @@ TIGHTCSDLL_API  DataType spec_get_column_type(Spec* SpecPtr, const size_t column
 //also note that this function is used for column names as well as column values, so in case tightdb
 //strings don't change for column names, but for column string data, two methods are needed, one for  char*
 //and one for whatever new stuff we get in tightdb
-int safecopypchartocsharpstringbuilderbuffer(char * dst,int siz,const char * src)
+size_t BSD_strlcpy(char * dst,size_t siz,const char * src)
 {
 	
 	//strlcpy is not supported on many platforms, thus we use the BSD open source version,
 	//without the function header, as we need that functionality (safe copy to buffer, size known)
+    //the function has been changed to return and take size_t instead of int
 
 	//to comply with copyright, the header below must be included.
 
@@ -198,23 +190,23 @@ int safecopypchartocsharpstringbuilderbuffer(char * dst,int siz,const char * src
 //this function will not make buffer overruns even if the column name is longer than the buffer passed
 //c# is responsible for memory management of the buffer
 
-TIGHTCSDLL_API int table_get_column_name(Table* TablePtr,size_t column_ndx,char * colname, int bufsize)
+TIGHTDB_C_CS_API int table_get_column_name(Table* TablePtr,size_t column_ndx,char * colname, size_t bufsize)
 {
 	const char* cn= TablePtr->get_column_name(column_ndx);
-	return safecopypchartocsharpstringbuilderbuffer(colname,bufsize, cn);
+	return BSD_strlcpy(colname,bufsize, cn);
 }
 
 
-TIGHTCSDLL_API int spec_get_column_name(Spec* SpecPtr,size_t column_ndx,char * colname, int bufsize)
+TIGHTDB_C_CS_API int spec_get_column_name(Spec* SpecPtr,size_t column_ndx,char * colname, size_t bufsize)
 {
 	const char* cn= SpecPtr->get_column_name(column_ndx);
-	return safecopypchartocsharpstringbuilderbuffer(colname,bufsize, cn);
+	return BSD_strlcpy(colname,bufsize, cn);
 }
 
 
 
 //    Spec add_subtable_column(const char* name);
-TIGHTCSDLL_API Spec* spec_add_subtable_column(Spec* SpecPtr, const char* name)
+TIGHTDB_C_CS_API Spec* spec_add_subtable_column(Spec* SpecPtr, const char* name)
 {
 	//Spec* s = reinterpret_cast<Spec*>(SpecPtr);
 	Spec subtablespec = SpecPtr->add_subtable_column(name);//will add_subtable_column return the address to a spec?
@@ -225,14 +217,14 @@ TIGHTCSDLL_API Spec* spec_add_subtable_column(Spec* SpecPtr, const char* name)
 }
 
 //deallocate a spec that was allocated in this dll with new
-TIGHTCSDLL_API void spec_deallocate(Spec* SpecPtr)
+TIGHTDB_C_CS_API void spec_deallocate(Spec* SpecPtr)
 {
 	delete(SpecPtr);
 }
 
 //FIXME: Should we check here on the c++ side, that column_ix is a subtable column before calling
 //FIXME: Should this spec be deallocated? or is it part of the table structure it comes from? Currently the C# call is set not to call something similar to unbind_table_ref
-TIGHTCSDLL_API Spec* spec_get_spec(Spec* SpecPtr,size_t column_ix)
+TIGHTDB_C_CS_API Spec* spec_get_spec(Spec* SpecPtr,size_t column_ix)
 {
     Spec subtablespec = SpecPtr->get_subtable_spec(column_ix);
     return new Spec(subtablespec);//will be unbound later on
@@ -240,7 +232,7 @@ TIGHTCSDLL_API Spec* spec_get_spec(Spec* SpecPtr,size_t column_ix)
 
 
 
-TIGHTCSDLL_API size_t spec_get_column_count(Spec* SpecPtr)
+TIGHTDB_C_CS_API size_t spec_get_column_count(Spec* SpecPtr)
 {
     return SpecPtr->get_column_count();
 }
