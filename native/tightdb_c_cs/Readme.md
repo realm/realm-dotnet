@@ -65,32 +65,32 @@ Now, start Microsoft C++ 2010 Express (or 2012 Express)
 mark tools->settings->expert settings if not already marked
 
 
--file->new project->general.  
--mark empty project 
--name:tightdb_c_cs2010
--(vs2012:  name:tightdb_c_cs2012)
--location:same directory as this readme.txt file (on this pc c:\Develope\github\tightcsharp\native\tightdb_c_cs) 
--untick "create directory for solution"  
--click OK  (this should create a set of project files inside C:\Develope\github\tightcsharp\native\tightdb_c_cs\tightdb_c_cs2010)
+- file->new project->general.  
+- mark empty project 
+- name:tightdb_c_cs2010
+- (vs2012:  name:tightdb_c_cs2012)
+- location:same directory as this readme.txt file (on this pc c:\Develope\github\tightcsharp\native\tightdb_c_cs) 
+- untick "create directory for solution"  
+- click OK  (this should create a set of project files inside C:\Develope\github\tightcsharp\native\tightdb_c_cs\tightdb_c_cs2010)
 
 If not already open, select view->solution explorer
 
--In Solution Explorer   
--right click tightdb_c_cs_2010->header files
--select add->existing.  
--navigate up one directory to tightdb_c_cs
--mark and select the following files:
-- -stdafx.hpp
-- -tightdb_c_cs.hpp
--click Add
+- In Solution Explorer   
+- right click tightdb_c_cs_2010->header files
+- select add->existing.  
+- navigate up one directory to tightdb_c_cs
+- mark and select the following files:
+- stdafx.hpp
+- tightdb_c_cs.hpp
+- click Add
 
 
--right click tightdb_c-cs_2010->Source Files.
--select add->existing  
--mark and select the following files:  
--- stdafx.cpp
--- TightCSDLL.cpp
--click Add
+- right click tightdb_c-cs_2010->Source Files.
+- select add->existing  
+- mark and select the following files:  
+- stdafx.cpp
+- TightCSDLL.cpp
+- click Add
 
 
 
@@ -100,14 +100,14 @@ Then...
 
 Now, Check that You have 64 bit c++ compiler support in vs2010 (You need to have opened a c++ project with c++ files in it to check that)
 
--in solution explorer, right click tightdb_c_cs2010, select properties
--in tightdb_c_cs2010 property pages, click configuration manager.
--in the Platform column, click Win32
--if You've got "new" as an option, and if selecting New gets You a small
-dialog from where You can select X64 in the New platform dropdown, You have 64 bit c++ support)
+- in solution explorer, right click tightdb_c_cs2010, select properties
+- in tightdb_c_cs2010 property pages, click configuration manager.
+- in the Platform column, click Win32
+- if You've got "new" as an option, and if selecting New gets You a small dialog from where You can select X64 in the New platform dropdown, You have 64 bit c++ support)
 
--If You don't have 64 bit compiler support (and You are running on a 64 bit OS) then this is a copy of the machine install notes on the machine where I fixed the issue:
--
+if You don't have 64 bit compiler support (and You are running on a 64 bit OS) then this is a copy of the machine install notes on the machine where I fixed the issue:
+
+
 Installation with VS 2010 Express
 
 The ordinary versions of VS 2010 Express does not have support for building x64 versions of c++ programs - but there is a version of VS 2010 Express that do have this support, You have to obtain it from the "Windows SDK 7 for .net framework 4" kit
@@ -125,89 +125,89 @@ Set up the general settings that apply to all kinds of builds  :
 
 First create 64 bit builds as well as the preinstalled 32 bit builds:
 
--In Solution explorer, right click tightdb_c_cs2010, select properties
--in tightdb_c_cs2010 property pages, click configuration manager.
--in configuration manager, in project contexts-Platform column, click Win32
+- In Solution explorer, right click tightdb_c_cs2010, select properties
+- in tightdb_c_cs2010 property pages, click configuration manager.
+- in configuration manager, in project contexts-Platform column, click Win32
 you get a "new" option. click that.
--In the "New Project Platfor" dialog, select x64, and select "Copy settings from Win32". select "create new solution platform.
--In the platform column, select Win32 again.
--In the Active Solution Platform dropdown, select Win32,
--In the Active solution configuration dropdown, select Debug.
--Click close. Click OK to get rid of the final dialog.
+- In the "New Project Platfor" dialog, select x64, and select "Copy settings from Win32". select "create new solution platform.
+- In the platform column, select Win32 again.
+- In the Active Solution Platform dropdown, select Win32,
+- In the Active solution configuration dropdown, select Debug.
+- Click close. Click OK to get rid of the final dialog.
 
 
 View->Property Manager
 (You should now have tightdb_c_cs2010 as a root in a tree, with these 4 nodes :
--Debug|Win32 
--Release|Win32 
--Debug|x64
--Release|x64
+- Debug|Win32 
+- Release|Win32 
+- Debug|x64
+- Release|x64
 )
 
 
 
 right click tightdb_c_cs2010
--select properties 
--In "tightdb_c_cs2010 property pages" select configuration properties->General.
--In the "Configuration" left dropdown box on top of the window  select "All Configurations"
--in the "platform" dropdown on top of the window, select All Platforms.
+- select properties 
+- In "tightdb_c_cs2010 property pages" select configuration properties->General.
+- In the "Configuration" left dropdown box on top of the window  select "All Configurations"
+- in the "platform" dropdown on top of the window, select All Platforms.
 
 
 Set up stuff that is the same for all 4 configurations:
--select Configuration Type, change it to Dynamic Library (.dll)
--click Apply.
+- select Configuration Type, change it to Dynamic Library (.dll)
+- click Apply.
 
 
--select configuration properties->VC++ Directories
--select Library Directories, click the down error and select edit  
--type in ..\..\libsVS2010\   (aka C:\develope\github\tightdbcs\libs\libsVS2010)
+- select configuration properties->VC++ Directories
+- select Library Directories, click the down error and select edit  
+- type in ..\..\libsVS2010\   (aka C:\develope\github\tightdbcs\libs\libsVS2010)
 ( vs2012:type in ..\..\libs2012\ (aka C:\develope\github\tightdbcs\libs\libsVS2012) )
 
 
--select configuration properties->c/C++->Preprocessor
--select Preprocessor Definitions, click arrow down and edit  
--type in TIGHTDB_C_CS_EXPORTS  
--click apply
+- select configuration properties->c/C++->Preprocessor
+- select Preprocessor Definitions, click arrow down and edit  
+- type in TIGHTDB_C_CS_EXPORTS  
+- click apply
 
 in  configuration properties->c/c++->General->additional include directories
 
--click arrow down,select edit. Add:  
--..\..\..\..\..\tightdb\  
--..\..\..\..\..\tightdb\win32\  
--click apply
+- click arrow down,select edit. Add:  
+- ..\..\..\..\..\tightdb\  
+- ..\..\..\..\..\tightdb\win32\  
+- click apply
 
 
 
 Now, this next setting is different for each build combination,It sets up the linker for the specific build to select the correct .lib file with tightdb.
 
 The first two in below list is the settings of Configuration: and Platform: dropdowns. The third column is what must be typed into  Configurration properties->linker->input->Additional Depedencies
--Debug  ,Win32 ,TightDB32d.lib
--Debug  ,x64   ,TightDB64d.lib
--Release,Win32 ,TightDB32.lib
--Release,Win64 ,TightDB64.lib
+- Debug  ,Win32 ,TightDB32d.lib
+- Debug  ,x64   ,TightDB64d.lib
+- Release,Win32 ,TightDB32.lib
+- Release,Win64 ,TightDB64.lib
 
--click apply each time before changing the dropdowns
+- click apply each time before changing the dropdowns
 
 
 Now, let's have the resulting files have slightly different names, and lets put the 32 bit files in a seperate directory like the 64 bit ones are put : The first two in below list is the settings of Configuration: and Platform: dropdowns. The third column is  what must be typed into Configurration properties->General->Target Name
 
--Debug  ,Win32 ,$(ProjectName)32d
--Debug  ,x64   ,$(ProjectName)64d
--Release,Win32 ,$(ProjectName)32
--Release,Win64 ,$(ProjectName)64
--click away from the editbox and apply each time before changing the dropdowns
+- Debug  ,Win32 ,$(ProjectName)32d
+- Debug  ,x64   ,$(ProjectName)64d
+- Release,Win32 ,$(ProjectName)32
+- Release,Win64 ,$(ProjectName)64
+- click away from the editbox and apply each time before changing the dropdowns 
 
 (balance the tree structure - put 32 and 64 bit versions side by side) 
--Select "all configurations" in the left dropdown, and select win32 in the right one
--in configuration properties->general->output directory, type in :
--$(SolutionDir)$(Platform)\$(Configuration)\
--in configuration properties->general->Intermediate Directory, type in
--$(Platform)\$(Configuration)\
+- Select "all configurations" in the left dropdown, and select win32 in the right one
+- in configuration properties->general->output directory, type in :
+- $(SolutionDir)$(Platform)\$(Configuration)\
+- in configuration properties->general->Intermediate Directory, type in
+- $(Platform)\$(Configuration)\
 
 (note:VS2010 express only)
--This setting is for the 64 bit builds only.
--Select all configurations in the left dropdown, and select x64 in the right one.
--in configuration properties->general select Windows7.1.SDK
+- This setting is for the 64 bit builds only.
+- Select all configurations in the left dropdown, and select x64 in the right one.
+- in configuration properties->general select Windows7.1.SDK
 
 
 
@@ -218,10 +218,10 @@ Project->build->batch build->mark all 4, click build.
 
 If batch build succeeds, you should find some new files ():
 
--C:\Develope\github\tightcsharp\native\tightdb_c_cs\tightdb_c_cs2010\Win32\Debug\tightdb_c_cs201032d.dll
--C:\Develope\github\tightcsharp\native\tightdb_c_cs\tightdb_c_cs2010\Win32\Release\tightdb_c_cs201032.dll
--C:\Develope\github\tightcsharp\native\tightdb_c_cs\tightdb_c_cs2010\x64\Debug\tightdb_c_cs201064d.dll
--C:\Develope\github\tightcsharp\native\tightdb_c_cs\tightdb_c_cs2010\x64\Release\tightdb_c_cs201064.dll
+- C:\Develope\github\tightcsharp\native\tightdb_c_cs\tightdb_c_cs2010\Win32\Debug\tightdb_c_cs201032d.dll
+- C:\Develope\github\tightcsharp\native\tightdb_c_cs\tightdb_c_cs2010\Win32\Release\tightdb_c_cs201032.dll
+- C:\Develope\github\tightcsharp\native\tightdb_c_cs\tightdb_c_cs2010\x64\Debug\tightdb_c_cs201064d.dll
+- C:\Develope\github\tightcsharp\native\tightdb_c_cs\tightdb_c_cs2010\x64\Release\tightdb_c_cs201064.dll
 
 This file in its various versions is the c++ part of the language bind.
 
