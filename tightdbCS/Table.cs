@@ -239,9 +239,9 @@ namespace Tightdb.Tightdbcsharp
         //following the dispose pattern discussed here http://dave-black.blogspot.dk/2011/03/how-do-you-properly-implement.html
         //a good explanation can be found here http://stackoverflow.com/questions/538060/proper-use-of-the-idisposable-interface
 
+        public bool IsDisposed {  get;private  set; }
         //called by users who don't want to use our class anymore.
         //should free managed as well as unmanaged stuff
-        private bool IsDisposed { get; set; }
         public void Dispose()
         {
             Dispose(true);
