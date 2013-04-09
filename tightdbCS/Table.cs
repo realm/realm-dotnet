@@ -14,29 +14,31 @@ using System.Runtime.InteropServices;
 //If You plan to save resources, You can use it with the using syntax.
 
 
-//custom exception for Table class. When Table runs into a Table related error, TableException is thrown
-//some system exceptions might also be thrown, in case they have not much to do with Table operation
-//following the pattern described here http://msdn.microsoft.com/en-us/library/87cdya3t.aspx
-public class TableException : Exception
+
+namespace Tightdb.Tightdbcsharp
 {
-    public TableException()
+
+
+    //custom exception for Table class. When Table runs into a Table related error, TableException is thrown
+    //some system exceptions might also be thrown, in case they have not much to do with Table operation
+    //following the pattern described here http://msdn.microsoft.com/en-us/library/87cdya3t.aspx
+    public class TableException : Exception
     {
+        public TableException()
+        {
+        }
+
+        public TableException(string message)
+            : base(message)
+        {
+        }
+
+        public TableException(string message, Exception inner)
+            : base(message, inner)
+        {
+        }
     }
 
-    public TableException(string message)
-        : base(message)
-    {
-    }
-
-    public TableException(string message, Exception inner)
-        : base(message, inner)
-    {
-    }
-}
-
-
-namespace tightdb.Tightdbcsharp
-{
 
     //TDBField is used only in the table constructor to make it easier for the user to specify any table structure without too much clutter
     //TDBField constructors of various sort, return field definitions that the table constructor then uses to figure what the table structure is
@@ -326,7 +328,7 @@ namespace tightdb.Tightdbcsharp
 
         public long getdllversion_CPP()
         {
-            return TightDBCalls.tightCSDLLVersion();
+            return NativeCalls.tightdb_c_csVersion();
         }
 
         //experiments
@@ -392,7 +394,7 @@ namespace tightdb.Tightdbcsharp
             }
             else
             {
-                 TightDBCalls.table_new(this);
+                 NativeCalls.table_new(this);
                 TableHandleInUse = true;
                 TableHandleHasBeenUsed = true;
             }
@@ -407,7 +409,7 @@ namespace tightdb.Tightdbcsharp
         {
             if (TableHandleInUse)
             {
-                TightDBCalls.table_unbind(this);
+                NativeCalls.table_unbind(this);
                 TableHandleInUse = false;
             }
             else
@@ -425,7 +427,7 @@ namespace tightdb.Tightdbcsharp
         //spec getter public bc a user might want to get subtable schema on a totally empty table,and that is only available via spec atm.
         public Spec get_spec()
         {
-            return TightDBCalls.table_get_spec(this);
+            return NativeCalls.table_get_spec(this);
         }
 
         //this will update the table structure to represent whatever the earlier recieved spec has been set up to
@@ -436,19 +438,19 @@ namespace tightdb.Tightdbcsharp
 
         public TDB column_type(long ColumnIndex)
         {
-            return TightDBCalls.table_get_column_type(this, ColumnIndex);
+            return NativeCalls.table_get_column_type(this, ColumnIndex);
         }
 
 
         public long column_count()
         {
-            return TightDBCalls.table_get_column_count(this);
+            return NativeCalls.table_get_column_count(this);
         }
 
 
         public string get_column_name(long col_idx)//unfortunately an int, bc tight might have been built using 32 bits
         {
-            return TightDBCalls.table_get_column_name(this, col_idx);
+            return NativeCalls.table_get_column_name(this, col_idx);
         }
 
     }

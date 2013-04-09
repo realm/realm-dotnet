@@ -20,10 +20,10 @@ extern "C" {
 // return a (manually changed) constant - used when debugging to manually ensure a newly compiled dll is being linked to
 
 
- TIGHTDB_C_CS_API size_t tightCSDLLGetVersion(void){
+ TIGHTDB_C_CS_API size_t tightdb_c_cs_GetVersion(void){
 
   // Table test;
-	return 1304041843;
+	return 1304091004;
 }
 	
 	
@@ -33,28 +33,6 @@ TIGHTDB_C_CS_API size_t table_get_column_count(tightdb::Table* TablePtr)
 	return TablePtr->get_column_count();
 }
 
-
-
-//This is an example of an exported function.
-// used for marshalling testing. This one simply returns the value 423 when called
-TIGHTDB_C_CS_API size_t fnTightCSDLL(void)
-{
-  // Table test;
-	return 423;
-}
-
-//test that we can get incoming values
-//returns back the double of the value sent
-TIGHTDB_C_CS_API size_t TestIntegerParam(size_t intvalue)
-{
-	return intvalue * 2;
-}
-
-TIGHTDB_C_CS_API char* TestConstantStringReturn()
-{
-	char* statictesttext = "Hello from the DLL!";//I assume the text is static and neither on heap or stack or in need of having to be freed
-	return statictesttext;
-}
 
 //return a newly constructed top level table 
 TIGHTDB_C_CS_API Table* new_table()

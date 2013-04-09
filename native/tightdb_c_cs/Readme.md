@@ -193,8 +193,8 @@ Now, let's have the resulting files have slightly different names, and lets put 
 
 - Debug  ,Win32 ,$(ProjectName)32d
 - Debug  ,x64   ,$(ProjectName)64d
-- Release,Win32 ,$(ProjectName)32
-- Release,Win64 ,$(ProjectName)64
+- Release,Win32 ,$(ProjectName)32r
+- Release,Win64 ,$(ProjectName)64r
 - click away from the editbox and apply each time before changing the dropdowns 
 
 (balance the tree structure - put 32 and 64 bit versions side by side) 

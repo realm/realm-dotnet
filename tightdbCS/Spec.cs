@@ -11,7 +11,7 @@ using System.Text;
 //and then internally call on to functions exported from the c++ DLL
 //The design is so, that the C# class does not have any C++ like types or structures, except the SpecHandle variable
 
-namespace tightdb.Tightdbcsharp
+namespace Tightdb.Tightdbcsharp
 {
 
     //custom exception for Table class. When Table runs into a Table related error, TableException is thrown
@@ -91,7 +91,7 @@ namespace tightdb.Tightdbcsharp
         {
             if (SpecHandleInUse)
             {
-                TightDBCalls.spec_deallocate(this);
+                NativeCalls.spec_deallocate(this);
                 SpecHandleInUse = false;
             }
             else
@@ -147,13 +147,13 @@ namespace tightdb.Tightdbcsharp
 
         public Spec add_subtable_column(String colname)
         {
-            return TightDBCalls.add_subtable_column(this, colname);
+            return NativeCalls.add_subtable_column(this, colname);
         }
 
 
         public void add_column(TDB type,String name)
         {
-            TightDBCalls.spec_add_column(this, type, name);
+            NativeCalls.spec_add_column(this, type, name);
         }
 
 
@@ -162,24 +162,24 @@ namespace tightdb.Tightdbcsharp
         {
             if (get_column_type(column_idx) == TDB.Table)
             {
-                return TightDBCalls.spec_get_spec(this, column_idx);
+                return NativeCalls.spec_get_spec(this, column_idx);
             }else
             throw new SpecException("get spec(column_idx) can only be called on a subtable field");
         }
 
         public TDB get_column_type(long column_idx)
         {
-            return TightDBCalls.spec_get_column_type(this, column_idx);
+            return NativeCalls.spec_get_column_type(this, column_idx);
         }
 
         public long get_column_count()
         {
-            return TightDBCalls.spec_get_column_count(this);
+            return NativeCalls.spec_get_column_count(this);
         }
 
         public string get_column_name(long column_idx)
         {
-            return TightDBCalls.spec_get_column_name(this, column_idx);
+            return NativeCalls.spec_get_column_name(this, column_idx);
         }
     }
 }
