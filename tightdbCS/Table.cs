@@ -111,117 +111,120 @@ namespace Tightdb.Tightdbcsharp
 
         internal TDBField[] getsubtablearray()
         {
-            return subtable.ToArray();            
+            return subtable.ToArray();
         }
     }
 
-    
 
-
-    //todo:Add more types
-    public static class myextentions
+    namespace extentions
     {
-        public static TDBField TDBInt(this String str)
+
+        //todo:Add more types
+        public static class myextentions
         {
-            return new TDBField(str, TDB.Int);
+            public static TDBField TDBInt(this String str)
+            {
+                return new TDBField(str, TDB.Int);
+            }
+
+
+            public static TDBField Int(this String str)
+            {
+                return new TDBField(str, TDB.Int);
+            }
+
+            public static TDBField Bool(this string str)
+            {
+                return new TDBField(str, TDB.Bool);
+            }
+
+            public static TDBField TDBBool(this string str)
+            {
+                return new TDBField(str, TDB.Bool);
+            }
+
+            public static TDBField TDBString(this String str)
+            {
+                return new TDBField(str, TDB.String);
+            }
+
+            public static TDBField String(this String str)
+            {
+                return new TDBField(str, TDB.String);
+            }
+
+
+            public static TDBField TDBBinary(this String str)
+            {
+                return new TDBField(str, TDB.Binary);
+            }
+
+            public static TDBField Binary(this String str)
+            {
+                return new TDBField(str, TDB.Binary);
+            }
+
+            public static TDBField TDBSubtable(this String str, params TDBField[] fields)
+            {
+                return new TDBField(str, fields);
+            }
+
+            public static TDBField Subtable(this String str, params TDBField[] fields)
+            {
+                return new TDBField(str, fields);
+            }
+
+            //as the TDB has a type called table, we also provide a such named constructor even though it will always be a subtable
+            public static TDBField Table(this String str, params TDBField[] fields)
+            {
+                return new TDBField(str, fields);
+            }
+
+            public static TDBField TDBMixed(this String str)
+            {
+                return new TDBField(str, TDB.Mixed);
+            }
+
+            public static TDBField Mixed(this String str)
+            {
+                return new TDBField(str, TDB.Mixed);
+            }
+
+            public static TDBField Date(this String str)
+            {
+                return new TDBField(str, TDB.Date);
+            }
+
+            public static TDBField TDBDate(this String str)
+            {
+                return new TDBField(str, TDB.Date);
+            }
+
+            public static TDBField Float(this string str)
+            {
+                return new TDBField(str, TDB.Float);
+            }
+
+            public static TDBField TDBFloat(this string str)
+            {
+                return new TDBField(str, TDB.Float);
+            }
+
+            public static TDBField Double(this string str)
+            {
+                return new TDBField(str, TDB.Double);
+            }
+
+            public static TDBField TDBDouble(this string str)
+            {
+                return new TDBField(str, TDB.Double);
+            }
+
+
         }
-
-
-        public static TDBField Int(this String str)
-        {
-            return new TDBField(str, TDB.Int);
-        }
-
-        public static TDBField Bool(this string str)
-        {
-            return new TDBField(str, TDB.Bool);
-        }
-
-        public static TDBField TDBBool(this string str)
-        {
-            return new TDBField(str, TDB.Bool);
-        }
-
-        public static TDBField TDBString(this String str)
-        {
-            return new TDBField(str, TDB.String);
-        }
-
-        public static TDBField String(this String str)
-        {
-            return new TDBField(str, TDB.String);
-        }
-
-
-        public static TDBField TDBBinary(this String str)
-        {
-            return new TDBField(str, TDB.Binary);
-        }
-
-        public static TDBField Binary(this String str)
-        {
-            return new TDBField(str, TDB.Binary);
-        }
-
-        public static TDBField TDBSubtable(this String str, params TDBField[] fields)
-        {
-            return new TDBField(str,fields);
-        }
-
-        public static TDBField Subtable(this String str, params TDBField[] fields)
-        {
-            return new TDBField(str, fields);
-        }
-
-        //as the TDB has a type called table, we also provide a such named constructor even though it will always be a subtable
-        public static TDBField Table(this String str, params TDBField[] fields)
-        {
-            return new TDBField(str, fields);
-        }
-
-        public static TDBField TDBMixed(this String str)
-        {
-            return new TDBField(str, TDB.Mixed);
-        }
-
-        public static TDBField Mixed(this String str)
-        {
-            return new TDBField(str, TDB.Mixed);
-        }
-
-        public static TDBField Date(this String str)
-        {
-            return new TDBField(str, TDB.Date);
-        }
-
-        public static TDBField TDBDate(this String str)
-        {
-            return new TDBField(str, TDB.Date);
-        }
-
-        public static TDBField Float(this string str)
-        {
-            return new TDBField(str, TDB.Float);
-        }
-
-        public static TDBField TDBFloat(this string str)
-        {
-            return new TDBField(str, TDB.Float);
-        }
-
-        public static TDBField Double(this string str)
-        {
-            return new TDBField(str, TDB.Double);
-        }
-
-        public static TDBField TDBDouble(this string str)
-        {
-            return new TDBField(str, TDB.Double);
-        }
-
-     
     }
-   
+
+
 
     public class Table : IDisposable
     {
@@ -247,9 +250,10 @@ namespace Tightdb.Tightdbcsharp
         //if called from GC  we should not dispose managed as that is unsafe, the bool tells us how we were called
         public void Dispose(bool disposemanagedtoo)
         {
-            if (!IsDisposed) 
+            if (!IsDisposed)
             {
-                if (disposemanagedtoo) {
+                if (disposemanagedtoo)
+                {
                     //dispose any managed members table might have
                 }
 
@@ -301,7 +305,7 @@ namespace Tightdb.Tightdbcsharp
             spec.addfield(schema);
             updatefromspec();//build table from the spec tree structure
         }
-        
+
         /*
         //allows specifying a treelike structure much like the params constructor, but this
         //version will have to have an array explicitly specified as the outermost object
@@ -328,7 +332,7 @@ namespace Tightdb.Tightdbcsharp
 
         public long getdllversion_CPP()
         {
-            return NativeCalls.tightdb_c_csVersion();
+            return NativeCalls.cpplibversion();
         }
 
         //experiments
@@ -364,7 +368,7 @@ namespace Tightdb.Tightdbcsharp
                 switch (column_type(RowIndex))
                 {
                     case TDB.Int:
-                       // return getInt(ColumnIndex, RowIndex);
+                    // return getInt(ColumnIndex, RowIndex);
 
                     //and add support for the rest (see TDB definition)
 
@@ -382,7 +386,7 @@ namespace Tightdb.Tightdbcsharp
         //it is sent as a parameter to calls to the C++ DLL.
 
         internal IntPtr TableHandle { get; set; }  //handle (in fact a pointer) to a c++ hosted Table. We must unbind this handle if we have acquired it
-        internal bool TableHandleInUse {get; set;} //defaults to false.  TODO:this might need to be encapsulated with a lock to make it thread safe (although several threads *opening or closing* *the same* table object is probably not happening often)
+        internal bool TableHandleInUse { get; set; } //defaults to false.  TODO:this might need to be encapsulated with a lock to make it thread safe (although several threads *opening or closing* *the same* table object is probably not happening often)
         internal bool TableHandleHasBeenUsed { get; set; } //defaults to false. If this is true, the table handle has been allocated in the lifetime of this object
 
         //This method will ask c++ to create a new table object and then the method will store the table objects handle        
@@ -394,7 +398,7 @@ namespace Tightdb.Tightdbcsharp
             }
             else
             {
-                 NativeCalls.table_new(this);
+                NativeCalls.table_new(this);
                 TableHandleInUse = true;
                 TableHandleHasBeenUsed = true;
             }
@@ -433,7 +437,7 @@ namespace Tightdb.Tightdbcsharp
         //this will update the table structure to represent whatever the earlier recieved spec has been set up to
         internal void updatefromspec()
         {
-           // tightdb.Tightdbcsharp.TightDBCalls.table_update_from_spec(this);
+            // tightdb.Tightdbcsharp.TightDBCalls.table_update_from_spec(this);
         }
 
         public TDB column_type(long ColumnIndex)
@@ -456,6 +460,7 @@ namespace Tightdb.Tightdbcsharp
     }
 
 }
+
 
 //various ideas for doing what is done with c++ macros reg. creation of typed tables
 //An extern method that creates the table on any class tha the extern might be called on. The extern would then have to 

@@ -51,10 +51,10 @@ enum DataType {
         /**debugging and system info calls**/
         //tightdb_c_cs_API size_t tightdb_c_csGetVersion(void)
         [DllImport("tightdb_c_cs", CallingConvention = CallingConvention.Cdecl)]
-        private static extern UIntPtr tightdb_c_csGetVersion();
+        private static extern UIntPtr tightdb_c_cs_GetVersion();
 
-        public static long tightdb_c_csVersion() {
-            return (long)tightdb_c_csGetVersion();
+        public static long cpplibversion() {
+            return (long)tightdb_c_cs_GetVersion();
         }
 
         /*** Spec ************************************/

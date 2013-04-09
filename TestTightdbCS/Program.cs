@@ -3,54 +3,74 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Tightdb.Tightdbcsharp;
+
 
 namespace TestTightdbCS
 {
     using System.IO;
+    using NUnit.Framework;
+    using Tightdb.Tightdbcsharp;
+    using Tightdb.Tightdbcsharp.extentions;
 
 
 
-
-             
-    
-    class Program
+    [TestFixture]
+    public class createtabletest
     {
-
-        public static int buildnumber = 1304041702;
-
-        public static void testtablescope()
-        {
-            Table testtbl = new Table();
-        }
-
-        public static void testhandleacquireOneField()
+        
+        [Test]
+        public  void testhandleacquireOneField()
         {
             Table t = new Table();
-                        Table testtbl = new Table(new TDBField("name", TDB.String));
-                                    long test = testtbl.getdllversion_CSH();
-                                    string actualres=Program.tabledumper("NameField", testtbl);
-                                    File.WriteAllText("testhandleacquireOneField.txt", actualres);
+            Table testtbl = new Table(new TDBField("name", TDB.String));            
+            string actualres = Program.tabledumper("NameField", testtbl);
+            File.WriteAllText("testhandleacquireOneField.txt", actualres);
 
             string expectedres =
-@"To be filled in";
-            
+@"------------------------------------------------------
+Column count: 1
+Table Name  : NameField
+------------------------------------------------------
+ 0     String  name                
+------------------------------------------------------
+
+";
+            Assert.AreEqual(expectedres, actualres);
         }
 
 
-        public static void testhandleaquireSeveralFields()
+        [Test]
+        public  void testhandleaquireSeveralFields()
         {
             Table testtbl3 = new Table(
-            "Name".    TDBString(),
-            "Age".     TDBInt(),
-            "count".   TDBInt(),
-            "Whatever".TDBMixed()                                
+            "Name".TDBString(),
+            "Age".TDBInt(),
+            "count".TDBInt(),
+            "Whatever".TDBMixed()
             );
             //long  test = testtbl3.getdllversion_CSH();
-            tabledumper("four columns, Last Mixed", testtbl3);
+            String actualres = Program.tabledumper("four columns, Last Mixed", testtbl3);
+            File.WriteAllText("testhandleaquireSeveralFields.txt", actualres);
+
+            string expectedres =
+@"------------------------------------------------------
+Column count: 4
+Table Name  : four columns, Last Mixed
+------------------------------------------------------
+ 0     String  Name                
+ 1        Int  Age                 
+ 2        Int  count               
+ 3      Mixed  Whatever            
+------------------------------------------------------
+
+";
+            Assert.AreEqual(expectedres, actualres);
+
+
         }
 
 
+        [Test]
         public static void testallkindsoffields()
         {
             Table t = new Table(
@@ -66,8 +86,111 @@ namespace TestTightdbCS
         "FloatField".Float(),
         "DoubleField".Double()
         );
-            tabledumper("Table with all allowed types", t);
+
+            String actualres = Program.tabledumper("Table with all allowed types", t);
+            File.WriteAllText("testallkindsoffields.txt", actualres);
+
+            string expectedres =
+@"------------------------------------------------------
+Column count: 9
+Table Name  : Table with all allowed types
+------------------------------------------------------
+ 0        Int  IntField            
+ 1       Bool  BoolField           
+ 2     String  StringField         
+ 3     Binary  BinaryFiel          
+ 4      Table  TableField          
+    0        Int  subtablefield1      
+    1     String  subtablefield2      
+ 5      Mixed  MixedField          
+ 6       Date  DateField           
+ 7      Float  FloatField          
+ 8     Double  DoubleField         
+------------------------------------------------------
+
+";
+            Assert.AreEqual(expectedres, actualres);
+
+
+
         }
+
+
+
+        //test with a subtable
+        [Test]
+        public static void testhandleaquireSeveralFieldsSubtables()
+        {
+            Table testtbl = new Table(
+                "Name".TDBString(),
+                "Age".TDBInt(),
+                new TDBField("age2", TDB.Int),
+                new TDBField("age3", "Int"),
+                new TDBField("comments",
+                              new TDBField("phone#1", TDB.String),
+                              new TDBField("phone#2", TDB.String),
+                              new TDBField("phone#3", "String"),
+                              "phone#4".TDBString()
+                             ),
+                new TDBField("whatever", TDB.Mixed)
+                );
+            long test = testtbl.getdllversion_CSH();
+            String actualres = Program.tabledumper("six colums,sub four columns", testtbl);
+
+
+            File.WriteAllText("testhandleaquireSeveralFieldsSubtables.txt", actualres);
+
+            string expectedres =
+@"------------------------------------------------------
+Column count: 6
+Table Name  : six colums,sub four columns
+------------------------------------------------------
+ 0     String  Name                
+ 1        Int  Age                 
+ 2        Int  age2                
+ 3        Int  age3                
+ 4      Table  comments            
+    0     String  phone#1             
+    1     String  phone#2             
+    2     String  phone#3             
+    3     String  phone#4             
+ 5      Mixed  whatever            
+------------------------------------------------------
+
+";
+            Assert.AreEqual(expectedres, actualres);
+
+        }
+
+
+
+
+        [Test]
+        [NUnit.Framework.Ignore("Need to write tests that test for correct deallocation of table when out of scope")]
+        //scope has been thoroughly debugged and does work perfectly in all imagined cases, but the testing was done before unit tests had been created
+        public static void testtablescope()
+        {
+
+            using (Table testtbl = new Table())
+            {
+                //do a test to see that testtbl has a valid table handle 
+            }
+            //do a test here to see that testtbl now does not have a valid table handle
+
+            
+        }
+
+    }
+
+    
+    class Program
+    {
+
+        public static int buildnumber = 1304041702;
+
+
+
+
 
         //this kind of call should be legal - it just means we'll get back to specifying the subtable some other time in a more dynamic fashion
         public static void subtablenofields() 
@@ -124,26 +247,6 @@ namespace TestTightdbCS
         }
 
 
-
-        //test with a subtable
-        public static void testhandleaquireSeveralFieldsSubtables()
-        {
-            Table testtbl = new Table(
-                "Name".TDBString(),
-                "Age".TDBInt(),
-                new TDBField("age2", TDB.Int),
-                new TDBField("age3", "Int"),
-                new TDBField("comments",
-                              new TDBField("phone#1", TDB.String),
-                              new TDBField("phone#2", TDB.String),
-                              new TDBField("phone#3", "String"),
-                              "phone#4".TDBString()
-                             ),
-                new TDBField("whatever", TDB.Mixed)
-                );
-            long  test = testtbl.getdllversion_CSH();
-            tabledumper("six colums,sub four columns", testtbl);
-        }
 
         //more tests
         public static void testcreatetwotables()
@@ -297,6 +400,14 @@ namespace TestTightdbCS
 
         static void Main(string[] args)
         {
+            /*
+             *  to debug unit tests, uncomment the lines below, and run the test(s) you want to have debugged
+             *  remember to set a breakpoint
+             *  Don't run the program in Nunit, simply debug it in visual studio when it runs like an ordinary program
+             *  */
+            //var test = new createtabletest();
+            //test.testhandleacquireOneField();
+            
             Table t = new Table();
             System.Console.WriteLine("Testprogram    build number {0}",buildnumber);
             System.Console.WriteLine("C++DLL         build number {0}",t.getdllversion_CPP());
@@ -323,16 +434,17 @@ namespace TestTightdbCS
 
             //test the unit test            
 
-            testhandleacquireOneField();
+            //testhandleacquireOneField();
 
 
-            testtablescope();            
+            //testtablescope();            
 
-            testhandleaquireSeveralFields();
+            //testhandleaquireSeveralFields();
 
-            testhandleaquireSeveralFieldsSubtables();
+            
+            //testhandleaquireSeveralFieldsSubtables();
 
-            testallkindsoffields();
+            //testallkindsoffields();
 
             testillegalfielddefinitions();
 
