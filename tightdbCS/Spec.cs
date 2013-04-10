@@ -11,7 +11,7 @@ using System.Text;
 //and then internally call on to functions exported from the c++ DLL
 //The design is so, that the C# class does not have any C++ like types or structures, except the SpecHandle variable
 
-namespace Tightdb.Tightdbcsharp
+namespace TightDb.TightDbCSharp
 {
 
     //custom exception for Table class. When Table runs into a Table related error, TableException is thrown

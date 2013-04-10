@@ -9,8 +9,8 @@ namespace TestTightdbCS
 {
     using System.IO;
     using NUnit.Framework;
-    using Tightdb.Tightdbcsharp;
-    using Tightdb.Tightdbcsharp.extentions;
+    using TightDb.TightDbCSharp;
+    using TightDb.TightDbCSharp.Extensions;
 
 
 

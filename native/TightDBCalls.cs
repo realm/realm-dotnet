@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 //All the code in here will undergo major changes
 //except a few methods that actually call the newer c++ dll
 
-namespace Tightdb.Tightdbcsharp
+namespace TightDb.TightDbCSharp
 {
     //mirrors the enum in the C interface
     /*     

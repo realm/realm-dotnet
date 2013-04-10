@@ -15,7 +15,7 @@ using System.Runtime.InteropServices;
 
 
 
-namespace Tightdb.Tightdbcsharp
+namespace TightDb.TightDbCSharp
 {
 
 
@@ -116,11 +116,11 @@ namespace Tightdb.Tightdbcsharp
     }
 
 
-    namespace extentions
+    namespace Extensions
     {
 
         //todo:Add more types
-        public static class myextentions
+        public static class myextensions
         {
             public static TDBField TDBInt(this String str)
             {
