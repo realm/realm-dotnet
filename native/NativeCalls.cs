@@ -2,12 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-//using System.Threading.Tasks; not portable
+using System.Threading.Tasks; 
 using System.Runtime.InteropServices;
 
-//WARNING - this is an old file, it was coded using the old C bindings as a reference point.
-//All the code in here will undergo major changes
-//except a few methods that actually call the newer c++ dll
 
 namespace TightDb.TightDbCSharp
 {
@@ -47,8 +44,7 @@ enum DataType {
     //values that are suitable for C# (for instance taking a C# Table object parameter and calling on with the C++ Table pointer inside the C# Table Class)
     class NativeCalls
     {
-
-        /**debugging and system info calls**/
+        
         //tightdb_c_cs_API size_t tightdb_c_csGetVersion(void)
         [DllImport("tightdb_c_cs", CallingConvention = CallingConvention.Cdecl)]
         private static extern UIntPtr tightdb_c_cs_GetVersion();
@@ -56,9 +52,6 @@ enum DataType {
         public static long cpplibversion() {
             return (long)tightdb_c_cs_GetVersion();
         }
-
-        /*** Spec ************************************/
-
 
         [DllImport("tightdb_c_cs", CallingConvention = CallingConvention.Cdecl)]
         private static extern void spec_deallocate(IntPtr spec);

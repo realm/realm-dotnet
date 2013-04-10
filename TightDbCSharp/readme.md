@@ -1,25 +1,28 @@
-#tightdbCS#
+#TightDbCSharp#
 
-This directory contains the VS2012 project that results in the C# language bindings DLL that users reference.
+This directory contains the VS2012 project that results in the C# language bindings assembly
 
-The DLL consists of two parts
+The assembly consists of two parts
 
 - ..\native\tightDBCalls.cs - p/invoke calls to tightCSDLL.dll.
-- .\ - The classes that make up the language binding.
+- .\*.* The classes that make up the language binding.
 
 Only files in the native directory contain calls to c++ code.
-Files in this directory are pure clean C#, The only nonstandard stuff is the handle inside the classes that is used to keep track of what c++ class instances they are shadowing.
+
+Files in the .\ directory are pure clean C#, The only nonstandard stuff is the handle inside the classes that is used to keep track of what c++ class instances they are shadowing.
 
 To recreate the project file, follow these steps (VS2012 express)
 
-File->New Project->Portable Class Library
-name:tightdbCS
-location:C:\Develope\github\tightcsharp (that is - the PARENT directory of the location of this readme file. Change drive and path to reflect the actual location)
-UNMARK "Create directory for solution"
-Now don't press OK yet. - VS2012 will not create a project if its directory already exists, so You'll have to cheat a little. Follow these instructions very carefully:
-use explorer to view C:\Develope\github\tightcsharp (that is the checked out tightcsharp directory)
-rename the directory tightdbCS to _tightdbCS (You might need to close this readme file first)
-Press OK in VS2012 - this creates the tightdbCS directory again, and VS2012 continues to the platform selection window
+- File->New Project->Visual C#->Portable Class Library
+- name:TightDbCSharp
+- location:C:\Develope\github\tightcsharp (that is - the PARENT directory of the location of this readme file. Change drive and path to reflect the actual location)
+- UNMARK "Create directory for solution"
+-  Now don't press OK yet. VS2012 will not create a project if its directory already exists, so You'll have to cheat a little. Follow these instructions very carefully:
+- use explorer to view C:\Develope\github\tightcsharp (that is the checked out tightcsharp directory)
+- rename the directory TightDbCSharp to _TightDbCSharp (You might need to close this readme file first)
+- Press OK in VS2012 
+
+The above creates the tightdbCS directory again, and VS2012 continues to the platform selection window
 Now, copy the files in tightcsharp\_tightdbCS to tightcsharp\tightdbCS (open a new explorer window, navigato to _tightdbCS, ctrl+click the files, right-click drag them, select copy in the popup mennu )
 and then, delete the _tightdbCS directory again
 

@@ -61,9 +61,8 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="tightdbCS, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\tightdbCS\bin\x86\Debug\tightdbCS.dll</HintPath>
+    <Reference Include="TightDbCSharp">
+      <HintPath>..\TightDbCSharp\bin\Debug\TightDbCSharp.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
