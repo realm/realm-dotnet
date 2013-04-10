@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 
-namespace TestTightdbCS
+namespace TestTightDbCS
 {
     using System.IO;
     using NUnit.Framework;
