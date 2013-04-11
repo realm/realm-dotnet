@@ -35,6 +35,8 @@ TIGHTDB_C_CS_API void unbind_table_ref(tightdb::Table* TablePtr);
 
 TIGHTDB_C_CS_API size_t table_get_column_count(tightdb::Table* TablePtr);
 
+TIGHTDB_C_CS_API size_t table_add_column(tightdb::Table* TablePtr,size_t type, const char* name);
+
 //Spec
 //type refers to a value taken from DataType values
 TIGHTDB_C_CS_API size_t spec_add_column(tightdb::Spec* SpecPtr,size_t type, const char* name);

@@ -56,7 +56,7 @@ enum DataType {
     //alternatively even proactively copying the dll at startup if we detect that the wrong one is there
     //could be as simple as comparing file sizes or the like
     //because we expect the end user to have deployed the correct c++ dll this assembly is AnyCpu
-    class NativeCalls
+    class UnsafeNativeMethods
     {
         
         //tightdb_c_cs_API size_t tightdb_c_csGetVersion(void)
@@ -79,19 +79,31 @@ enum DataType {
             }
         }
 
+
+
+
 // tightdb_c_cs_API size_t add_column(size_t SpecPtr,DataType type, const char* name) 
 
         //marshalling : not sure the simple enum members have the same size on C# and c++ on all platforms and bit sizes
         //and not sure if the marshaller will fix it for us if they are not of the same size
         //so this must be tested on various platforms and bit sizes, and perhaps specific versions of calls with enums have to be made
         //this one works on windows 7, .net 4.5 32 bit, tightdb 32 bit (on a 64 bit OS, but that shouldn't make a difference)
-        [DllImport("tightdb_c_cs", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("tightdb_c_cs", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         private static extern UIntPtr spec_add_column(IntPtr spechandle, TDB type, string name);
       
-        public static void spec_add_column(Spec spec, TDB type, string name)
+        public static long spec_add_column(Spec spec, TDB type, string name)
         {                   
-            spec_add_column(spec.SpecHandle, type, name);            
+            return (long) spec_add_column(spec.SpecHandle, type, name);            
         }
+
+        [DllImport("tightdb_c_cs", CallingConvention = CallingConvention.Cdecl)]
+        private static extern UIntPtr table_add_column(IntPtr tablehandle, TDB type, string name);
+
+        public static long table_add_column(Table table, TDB type, string name)
+        {
+            return (long)table_add_column(table.TableHandle, type, name);//BM told me that column number sb long always in C#            
+        }
+
 
         [DllImport("tightdb_c_cs", CallingConvention = CallingConvention.Cdecl)]
         private static extern TDB spec_get_column_type(IntPtr spechandle, IntPtr column_index);
@@ -165,9 +177,10 @@ enum DataType {
         [DllImport("tightdb_c_cs", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr new_table(); 
 
+        
         public static void  table_new(Table table)
         {
-                   table.TableHandle = (IntPtr)new_table(); //a call to table_new 
+                table.TableHandle = (IntPtr)new_table(); //a call to table_new             
         }
 
         //tightdb_c_cs_API void unbind_table_ref(const size_t TablePtr)

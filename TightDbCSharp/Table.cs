@@ -22,6 +22,7 @@ namespace TightDb.TightDbCSharp
     //custom exception for Table class. When Table runs into a Table related error, TableException is thrown
     //some system exceptions might also be thrown, in case they have not much to do with Table operation
     //following the pattern described here http://msdn.microsoft.com/en-us/library/87cdya3t.aspx
+    [Serializable]
     public class TableException : Exception
     {
         public TableException()
@@ -232,7 +233,7 @@ namespace TightDb.TightDbCSharp
         //the number is a date and a time (usually last time i debugged something)
         public long getdllversion_CSH()
         {
-            return 1304041703;
+            return 1304111607;
         }
 
 
@@ -248,7 +249,7 @@ namespace TightDb.TightDbCSharp
             GC.SuppressFinalize(this);//tell finalizer it does not have to call dispose or dispose of things -we have done that already
         }
         //if called from GC  we should not dispose managed as that is unsafe, the bool tells us how we were called
-        public void Dispose(bool disposemanagedtoo)
+        protected virtual void Dispose(bool disposemanagedtoo)
         {
             if (!IsDisposed)
             {
@@ -332,7 +333,7 @@ namespace TightDb.TightDbCSharp
 
         public long getdllversion_CPP()
         {
-            return NativeCalls.cpplibversion();
+            return UnsafeNativeMethods.cpplibversion();
         }
 
         //experiments
@@ -398,7 +399,7 @@ namespace TightDb.TightDbCSharp
             }
             else
             {
-                NativeCalls.table_new(this);
+                UnsafeNativeMethods.table_new(this);
                 TableHandleInUse = true;
                 TableHandleHasBeenUsed = true;
             }
@@ -413,7 +414,7 @@ namespace TightDb.TightDbCSharp
         {
             if (TableHandleInUse)
             {
-                NativeCalls.table_unbind(this);
+                UnsafeNativeMethods.table_unbind(this);
                 TableHandleInUse = false;
             }
             else
@@ -431,7 +432,7 @@ namespace TightDb.TightDbCSharp
         //spec getter public bc a user might want to get subtable schema on a totally empty table,and that is only available via spec atm.
         public Spec get_spec()
         {
-            return NativeCalls.table_get_spec(this);
+            return UnsafeNativeMethods.table_get_spec(this);
         }
 
         //this will update the table structure to represent whatever the earlier recieved spec has been set up to
@@ -442,19 +443,26 @@ namespace TightDb.TightDbCSharp
 
         public TDB column_type(long ColumnIndex)
         {
-            return NativeCalls.table_get_column_type(this, ColumnIndex);
+            return UnsafeNativeMethods.table_get_column_type(this, ColumnIndex);
         }
 
 
         public long column_count()
         {
-            return NativeCalls.table_get_column_count(this);
+            return UnsafeNativeMethods.table_get_column_count(this);
         }
 
+        
+        //this will add a column of the specified type, if it is a table type, You will have to populate it yourself later on,
+        //by getting its subspec and working with that
+        public long AddColumn(TDB type, String name)
+        {
+            return UnsafeNativeMethods.table_add_column(this, type, name);
+        }
 
         public string get_column_name(long col_idx)//unfortunately an int, bc tight might have been built using 32 bits
         {
-            return NativeCalls.table_get_column_name(this, col_idx);
+            return UnsafeNativeMethods.table_get_column_name(this, col_idx);
         }
 
     }

@@ -34,9 +34,9 @@ xcopy %sdirx64rel%tightdb_c_cs201064r.* %ddiranyrel%\x64\tightdb_c_cs.*  /v /y /
 xcopy %sdirx86deb%tightdb_c_cs201032d.* %ddiranydeb%\x86\tightdb_c_cs.*  /v /y /f /D
 xcopy %sdirx86rel%tightdb_c_cs201032r.* %ddiranyrel%\x86\tightdb_c_cs.*  /v /y /f /D
 :assume that we run 32 bit on AnyCpu
-:xcopy %sdirx86deb%tightdb_c_cs201032d.* %ddiranydeb%\tightdb_c_cs.*  /v /y /f /D
-:xcopy %sdirx86rel%tightdb_c_cs201032r.* %ddiranyrel%\tightdb_c_cs.*  /v /y /f /D
+xcopy %sdirx86deb%tightdb_c_cs201032d.* %ddiranydeb%\tightdb_c_cs.*  /v /y /f /D
+xcopy %sdirx86rel%tightdb_c_cs201032r.* %ddiranyrel%\tightdb_c_cs.*  /v /y /f /D
 
 :assume that we run 64 bit on AnyCpu
-xcopy %sdirx64deb%tightdb_c_cs201064d.* %ddiranydeb%\tightdb_c_cs.*  /v /y /f /D
-xcopy %sdirx64rel%tightdb_c_cs201064r.* %ddiranyrel%\tightdb_c_cs.*  /v /y /f /D
+:xcopy %sdirx64deb%tightdb_c_cs201064d.* %ddiranydeb%\tightdb_c_cs.*  /v /y /f /D
+:xcopy %sdirx64rel%tightdb_c_cs201064r.* %ddiranyrel%\tightdb_c_cs.*  /v /y /f /D

@@ -17,6 +17,7 @@ namespace TightDb.TightDbCSharp
     //custom exception for Table class. When Table runs into a Table related error, TableException is thrown
     //some system exceptions might also be thrown, in case they have not much to do with Table operation
     //following the pattern described here http://msdn.microsoft.com/en-us/library/87cdya3t.aspx
+    [Serializable]
     public class SpecException : Exception
     {
         public SpecException()
@@ -51,7 +52,7 @@ namespace TightDb.TightDbCSharp
             GC.SuppressFinalize(this);//tell finalizer it does not have to call dispose or dispose of things -we have done that already
         }
         //if called from GC  we should not dispose managedas that is unsafe, the bool tells us how we were called
-        public void Dispose(bool disposemanagedtoo)
+        protected virtual void Dispose(bool disposemanagedtoo)
         {
             if (!IsDisposed) 
             {
@@ -91,7 +92,7 @@ namespace TightDb.TightDbCSharp
         {
             if (SpecHandleInUse)
             {
-                NativeCalls.spec_deallocate(this);
+                UnsafeNativeMethods.spec_deallocate(this);
                 SpecHandleInUse = false;
             }
             else
@@ -147,13 +148,12 @@ namespace TightDb.TightDbCSharp
 
         public Spec add_subtable_column(String colname)
         {
-            return NativeCalls.add_subtable_column(this, colname);
+            return UnsafeNativeMethods.add_subtable_column(this, colname);
         }
 
-
         public void add_column(TDB type,String name)
-        {
-            NativeCalls.spec_add_column(this, type, name);
+        {           
+            UnsafeNativeMethods.spec_add_column(this, type, name);            
         }
 
 
@@ -162,24 +162,24 @@ namespace TightDb.TightDbCSharp
         {
             if (get_column_type(column_idx) == TDB.Table)
             {
-                return NativeCalls.spec_get_spec(this, column_idx);
+                return UnsafeNativeMethods.spec_get_spec(this, column_idx);
             }else
             throw new SpecException("get spec(column_idx) can only be called on a subtable field");
         }
 
         public TDB get_column_type(long column_idx)
         {
-            return NativeCalls.spec_get_column_type(this, column_idx);
+            return UnsafeNativeMethods.spec_get_column_type(this, column_idx);
         }
 
         public long get_column_count()
         {
-            return NativeCalls.spec_get_column_count(this);
+            return UnsafeNativeMethods.spec_get_column_count(this);
         }
 
         public string get_column_name(long column_idx)
         {
-            return NativeCalls.spec_get_column_name(this, column_idx);
+            return UnsafeNativeMethods.spec_get_column_name(this, column_idx);
         }
     }
 }

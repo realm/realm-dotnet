@@ -1,7 +1,9 @@
 // tightdb_c_cs.cpp : Defines the exported functions for the DLL application.
 /*
     
-
+Todo:Create unit tests that stresses tightdb with field names that contains all sorts of unicode caracters
+that are valid in windows, but do not exist in ansi.  Also create cases with 16bit unicode characters with a zero in them
+we should not break easily, and we should know where we have problems.
 
 */
 
@@ -47,6 +49,11 @@ TIGHTDB_C_CS_API void unbind_table_ref(tightdb::Table* TablePtr)
 	LangBindHelper::unbind_table_ref(TablePtr);
 }
 
+
+TIGHTDB_C_CS_API size_t table_add_column(tightdb::Table* TablePtr,size_t type, const char* name)
+{
+    return TablePtr->add_column((DataType)type,name);
+}
 
 //    size_t add_column(DataType type, const char* name, ColumnType attr=col_attr_None);
 //note that we have omitted support for attr until we figure what it's for
