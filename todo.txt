@@ -19,21 +19,6 @@ implement C# classes that mirror the C++ dynamic classes other than table
 implement C# support for Linq using Ienumerator and C#'s own LinQ engine
 (few hours max)
 
-Finish basic setup so that we can build successfully on 32 as well as 64 bit windows:
-create solutions for x64 version of TightDbCs project
-modify solutions for x86 version of TightDbCs project
-Remove the AnyCpu solution  from TightDbCs project
-create solutions for x64 version of TestTightDbCsharp project
-modify solutions for x86 version of TestTightDbCsharp project
-Remove the AnyCpu solution  from TestTightDbCsharp project
-(all the above 6. incl. documentation updates, less than a day, in progress)
-
-Get unit testing of x64 to run at all 
-(few minutes or perhaps few hours)
-
-Get unit testing of x64 to pass without errors 
-(few minutes or perhaps few hours)
-
 implement a typed tightdb vesion in C#
 (?)
 
@@ -41,38 +26,50 @@ implement C# support for LinQ using IQueryable<t>
 (probably a day to figure how long it takes, and what should be done)
 
 
-"create distribution" instructions - should create a zip file with the stuff needed to run on a 32bit windows PC with newest .net and VS2012 (only very light test if the distribution works)
+"create distribution" instructions - should create a zip file with the stuff needed to run on a 32bit windows PC with newest .net and VS2012 (less than 1hr)
 
-"create distribution" instructions - should create a zip file with the stuff needed to run on a 64bit windows PC with newest .net and VS2012 (only very light test if the distribution works)
-(hours)
+"create distribution" instructions - should create a zip file with the stuff needed to run on a 64bit windows PC with newest .net and VS2012 (less than 1hr)
+
+Create virtual 32 bit windows to be used for testing
+(1 day)
+
+Create virtual 64 bit windows to be used for testing
+(1 day)
+
+(most of the time spent in the above 3 tasks is installing windows, .net and visual studio and perhaps nunit - we can save quite some time if we decide just to try it out on existing windows installations we have access to -and wait with the rest to some other time)
 
 verify that the 32bit distribution installs and works well on a freshly installed 32 bit windows .net installation
-(1 day)
+(<1 hour)
 
 verify that the 32bit distribution installs and works well on a freshly installed 64 bit windows (running on WOW64)
-(1 day)
+(<1 hour)
 
-verify that the 32bit distribution installs and works well on a freshly installed 64 bit windows running x64
-(1 day)
-(most of the time spent in the above 3 tasks is installing windows, .net and visual studio and perhaps nunit - we can save quite some time if we decide just to try it out on existing windows installations we have access to)
+verify that the 64bit distribution installs and works well on a freshly installed 64 bit windows running x64
+(<1 hour)
 
-test that bindings runs/works on mono on windows 32bit
+test that AnyCpu user project using TightDbCSharp runs/works on mono on windows 32bit
 (0-2 days, uncertain)
 
-test that 64 bit bindings runs/works on mono on windows 64bit
+test that AnyCpu user project using TightDbCSharp runs/works on mono on windows 64bit
 (0-2 days, uncertain)
 
-test that 32 bit bindings runs/works on mono on windows 64bit
+test that 32bit user project using TightDbCSharp runs/works on mono on windows 32bit
 (0-2 days, uncertain)
 
-support for mono on (a selected common flavor of linux) 32bit (we will need to recompile, perhaps modify the Tight_c_cs c++ dll)
+test that 32bit user project using TightDbCSharp runs/works on mono on windows 64bit
+(0-2 days, uncertain)
+
+test that 64bit user project using TightDbCSharp runs/works on mono on windows 64bit
+(0-2 days, uncertain)
+
+support for mono on (a selected common flavor of linux) 32bit (we will need to recompile, perhaps modify the Tight_c_cs c++ dll and the NativeCalls.cs)
 (? days)
 
-support for mono on (a selected common flavor of linux) linux 64bit (we will need to recompile, perhaps modify the Tight_c_cs c++ dll)
+support for mono on (a selected common flavor of linux) linux 64bit (we will need to recompile, perhaps modify the Tight_c_cs c++ dll and the NativeCalls.cs)
 (? days)
 
-support for mono on Ios 32bit (we will need to recompile, perhaps modify the Tight_c_cs c++ dll)
+support for mono on Ios 32bit (we will need to recompile, perhaps modify the Tight_c_cs c++ dll and the NativeCalls.cs)
 (? days)
 
-support for mono on Ios 64bit (we will need to recompile, perhaps modify the Tight_c_cs c++ dll)
+support for mono on Ios 64bit (we will need to recompile, perhaps modify the Tight_c_cs c++ dll and the NativeCalls.cs)
 (? days)
