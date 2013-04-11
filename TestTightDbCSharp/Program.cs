@@ -13,9 +13,34 @@ namespace TestTightDbCS
     using TightDb.TightDbCSharp.Extensions;
 
 
+    [TestFixture]
+    public class EnvironmentTest
+    {
+        [Test]
+        public void showversionTest()
+        {
+
+            var VmBitness = (IntPtr.Size == 8) ? "64bit" : "32bit";
+
+            System.Console.WriteLine("Testprogram    build number {0}", Program.buildnumber);
+            OperatingSystem os = Environment.OSVersion;
+            System.Console.WriteLine("IntPtr Size :               {0}", IntPtr.Size);
+            System.Console.WriteLine("Process Running as :        {0}", VmBitness);
+            System.Console.WriteLine("OS Version :                {0}", os.Version.ToString());
+            System.Console.WriteLine("OS Platform:                {0}", os.Platform.ToString());
+            Table t = new Table();
+            System.Console.WriteLine("C++DLL         build number {0}", t.getdllversion_CPP());
+            System.Console.WriteLine("C# DLL         build number {0}", t.getdllversion_CSH());
+
+            System.Console.WriteLine();
+            System.Console.WriteLine();
+                     
+        
+        }
+    }
 
     [TestFixture]
-    public class createtabletest
+    public class CreateTableTest
     {
         
         [Test]
@@ -71,14 +96,14 @@ Table Name  : four columns, Last Mixed
 
 
         [Test]
-        public static void testallkindsoffields()
+        public  void testallkindsoffields()
         {
             Table t = new Table(
         "IntField".Int(),
         "BoolField".Bool(),
         "StringField".String(),
         "BinaryFiel".Binary(),
-        "TableField".Table(
+        "TableField".Subtable(
             "subtablefield1".Int(),
             "subtablefield2".String()),
         "MixedField".Mixed(),
@@ -86,6 +111,8 @@ Table Name  : four columns, Last Mixed
         "FloatField".Float(),
         "DoubleField".Double()
         );
+
+            
 
             String actualres = Program.tabledumper("Table with all allowed types", t);
             File.WriteAllText("testallkindsoffields.txt", actualres);
@@ -119,7 +146,7 @@ Table Name  : Table with all allowed types
 
         //test with a subtable
         [Test]
-        public static void testhandleaquireSeveralFieldsSubtables()
+        public  void testhandleaquireSeveralFieldsSubtables()
         {
             Table testtbl = new Table(
                 "Name".TDBString(),
@@ -168,7 +195,7 @@ Table Name  : six colums,sub four columns
         [Test]
         //[NUnit.Framework.Ignore("Need to write tests that test for correct deallocation of table when out of scope")]
         //scope has been thoroughly debugged and does work perfectly in all imagined cases, but the testing was done before unit tests had been created
-        public static void testtablescope()
+        public  void testtablescope()
         {
             Table testtbl;//bad way to code this but i need the reference after the using clause
             using (testtbl = new Table())
@@ -195,7 +222,7 @@ Table Name  : six colums,sub four columns
 
         //I did not design the TDBFIeld type to be used on its own like the many examples below. However , none of these weird uses break anything
         [Test]
-        public static void testillegalfielddefinitions()
+        public  void testillegalfielddefinitions()
         {
             TDBField f5 = "f5".Int();//create a field reference, type does not matter
             f5 = "f5".Table(f5);//try to overwrite the field object with a new object that references itself 
@@ -480,20 +507,15 @@ Table Name  : subtable with two int fields
              *  remember to set a breakpoint
              *  Don't run the program in Nunit, simply debug it in visual studio when it runs like an ordinary program
              *  */
-            //var test = new createtabletest();
-            //test.testhandleacquireOneField();
-            
-            Table t = new Table();
-            System.Console.WriteLine("Testprogram    build number {0}",buildnumber);
-            System.Console.WriteLine("C++DLL         build number {0}",t.getdllversion_CPP());
-            System.Console.WriteLine("C# DLL         build number {0}",t.getdllversion_CSH());
-            OperatingSystem os = Environment.OSVersion;
-            System.Console.WriteLine("OS Version :                {0}" ,os.Version.ToString());
-            System.Console.WriteLine("OS Platform:                {0}", os.Platform.ToString());
 
-            System.Console.WriteLine();
-            System.Console.WriteLine();
+            var test1 = new EnvironmentTest();
+            test1.showversionTest();
+            var test2 = new CreateTableTest();            
+            test2.testhandleacquireOneField();
             
+
+
+
             //if the user uses using with the table, it shoud be disposed at the end of the using block
             //using usage should follow these guidelines http://msdn.microsoft.com/en-us/library/yh598w02.aspx
             //You don't *have* to use using, if you don't the c++ table will not be disposed of as quickly as otherwise

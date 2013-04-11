@@ -1,0 +1,78 @@
+Run automatic code analysis and follow suggestions
+(one day or less, in progress)
+
+implement integer in all user c# classes.
+(1 day)
+
+implement the remainder of the dynamic table part of the tightdb API in tightdb_c_cs.cs, and in NativeCalls.cs, small debugger tests as the work progresses
+(1 day)
+
+implement the C# table class with the methods from NativeCals.cs, create some usage examples as tests
+(few days)
+
+implement the remainder of the dynamic tightdb library API in tightdb_c_cs.cs and in NativeCalls.cs
+(few days, uncertain)
+
+implement C# classes that mirror the C++ dynamic classes other than table
+(few days, uncertain)
+
+implement C# support for Linq using Ienumerator and C#'s own LinQ engine
+(few hours max)
+
+Finish basic setup so that we can build successfully on 32 as well as 64 bit windows:
+create solutions for x64 version of TightDbCs project
+modify solutions for x86 version of TightDbCs project
+Remove the AnyCpu solution  from TightDbCs project
+create solutions for x64 version of TestTightDbCsharp project
+modify solutions for x86 version of TestTightDbCsharp project
+Remove the AnyCpu solution  from TestTightDbCsharp project
+(all the above 6. incl. documentation updates, less than a day, in progress)
+
+Get unit testing of x64 to run at all 
+(few minutes or perhaps few hours)
+
+Get unit testing of x64 to pass without errors 
+(few minutes or perhaps few hours)
+
+implement a typed tightdb vesion in C#
+(?)
+
+implement C# support for LinQ using IQueryable<t>
+(probably a day to figure how long it takes, and what should be done)
+
+
+"create distribution" instructions - should create a zip file with the stuff needed to run on a 32bit windows PC with newest .net and VS2012 (only very light test if the distribution works)
+
+"create distribution" instructions - should create a zip file with the stuff needed to run on a 64bit windows PC with newest .net and VS2012 (only very light test if the distribution works)
+(hours)
+
+verify that the 32bit distribution installs and works well on a freshly installed 32 bit windows .net installation
+(1 day)
+
+verify that the 32bit distribution installs and works well on a freshly installed 64 bit windows (running on WOW64)
+(1 day)
+
+verify that the 32bit distribution installs and works well on a freshly installed 64 bit windows running x64
+(1 day)
+(most of the time spent in the above 3 tasks is installing windows, .net and visual studio and perhaps nunit - we can save quite some time if we decide just to try it out on existing windows installations we have access to)
+
+test that bindings runs/works on mono on windows 32bit
+(0-2 days, uncertain)
+
+test that 64 bit bindings runs/works on mono on windows 64bit
+(0-2 days, uncertain)
+
+test that 32 bit bindings runs/works on mono on windows 64bit
+(0-2 days, uncertain)
+
+support for mono on (a selected common flavor of linux) 32bit (we will need to recompile, perhaps modify the Tight_c_cs c++ dll)
+(? days)
+
+support for mono on (a selected common flavor of linux) linux 64bit (we will need to recompile, perhaps modify the Tight_c_cs c++ dll)
+(? days)
+
+support for mono on Ios 32bit (we will need to recompile, perhaps modify the Tight_c_cs c++ dll)
+(? days)
+
+support for mono on Ios 64bit (we will need to recompile, perhaps modify the Tight_c_cs c++ dll)
+(? days)

@@ -4,10 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks; 
 using System.Runtime.InteropServices;
+//using System.Appdomain;
 
 
 namespace TightDb.TightDbCSharp
 {
+
+    using System.Reflection;
+    using System.IO;
+    
     //mirrors the enum in the C interface
     /*     
    Note: These must be kept in sync with those in
@@ -37,11 +42,20 @@ enum DataType {
         Float      =  9,
        Double      = 10
     }
-   
+
+
+    
+    
 
     //this class contains methods for calling the c++ TightDB system, which has been flattened out as C type calls   
     //The individual public methods call the C inteface using types and values suitable for the C interface, but the methods take and give
     //values that are suitable for C# (for instance taking a C# Table object parameter and calling on with the C++ Table pointer inside the C# Table Class)
+    //it is assumed that the deployment has copied the correct c++ dll into the same dir as where the calling assembly resides.
+    //If this is not the case, a "badimage" exception runtime error will happen
+    //we might want to catch that exception, then copy the correct dll into place, and then see if we can resume operation
+    //alternatively even proactively copying the dll at startup if we detect that the wrong one is there
+    //could be as simple as comparing file sizes or the like
+    //because we expect the end user to have deployed the correct c++ dll this assembly is AnyCpu
     class NativeCalls
     {
         
@@ -152,8 +166,8 @@ enum DataType {
         private static extern IntPtr new_table(); 
 
         public static void  table_new(Table table)
-        {            
-            table.TableHandle = (IntPtr)new_table(); //a call to table_new 
+        {
+                   table.TableHandle = (IntPtr)new_table(); //a call to table_new 
         }
 
         //tightdb_c_cs_API void unbind_table_ref(const size_t TablePtr)
