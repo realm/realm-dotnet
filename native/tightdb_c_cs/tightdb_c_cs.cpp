@@ -81,6 +81,10 @@ TIGHTDB_C_CS_API  DataType table_get_column_type(Table* TablePtr, const size_t c
 	return TablePtr->get_column_type(column_ndx);
 }
 
+TIGHTDB_C_CS_API  void table_update_from_spec(Table* TablePtr)
+{
+    TablePtr->update_from_spec();
+}
 
 TIGHTDB_C_CS_API  DataType spec_get_column_type(Spec* SpecPtr, const size_t column_ndx)
 {

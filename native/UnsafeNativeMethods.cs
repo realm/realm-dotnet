@@ -30,7 +30,7 @@ enum DataType {
 };
      */
 
-    public enum TDB
+    public enum DataType
     {
         Int        =  0,
         Bool       =  1,
@@ -56,21 +56,21 @@ enum DataType {
     //alternatively even proactively copying the dll at startup if we detect that the wrong one is there
     //could be as simple as comparing file sizes or the like
     //because we expect the end user to have deployed the correct c++ dll this assembly is AnyCpu
-    class UnsafeNativeMethods
+    static class UnsafeNativeMethods
     {
         
         //tightdb_c_cs_API size_t tightdb_c_csGetVersion(void)
         [DllImport("tightdb_c_cs", CallingConvention = CallingConvention.Cdecl)]
         private static extern UIntPtr tightdb_c_cs_GetVersion();
 
-        public static long cpplibversion() {
+        public static long CppDllVersion() {
             return (long)tightdb_c_cs_GetVersion();
         }
 
         [DllImport("tightdb_c_cs", CallingConvention = CallingConvention.Cdecl)]
         private static extern void spec_deallocate(IntPtr spec);
 
-        public static void spec_deallocate(Spec s)
+        public static void SpecDeallocate(Spec s)
         {
             if (s.notifycppwhendisposing)//some spec's we get from C++ should not be deallocated by us
             {
@@ -88,43 +88,44 @@ enum DataType {
         //and not sure if the marshaller will fix it for us if they are not of the same size
         //so this must be tested on various platforms and bit sizes, and perhaps specific versions of calls with enums have to be made
         //this one works on windows 7, .net 4.5 32 bit, tightdb 32 bit (on a 64 bit OS, but that shouldn't make a difference)
-        [DllImport("tightdb_c_cs", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        private static extern UIntPtr spec_add_column(IntPtr spechandle, TDB type, string name);
+        [DllImport("tightdb_c_cs", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
+        private static extern UIntPtr spec_add_column(IntPtr spechandle, DataType type, [MarshalAs(UnmanagedType.LPStr)]string name);
       
-        public static long spec_add_column(Spec spec, TDB type, string name)
+        public static long SpecAddColumn(Spec spec, DataType type, string name)
         {                   
-            return (long) spec_add_column(spec.SpecHandle, type, name);            
+            return (long) spec_add_column(spec.SpecHandle, type, name);
         }
 
-        [DllImport("tightdb_c_cs", CallingConvention = CallingConvention.Cdecl)]
-        private static extern UIntPtr table_add_column(IntPtr tablehandle, TDB type, string name);
+        [DllImport("tightdb_c_cs", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
+        private static extern UIntPtr table_add_column(IntPtr tablehandle, DataType type, [MarshalAs(UnmanagedType.LPStr)]string name);
 
-        public static long table_add_column(Table table, TDB type, string name)
+        public static long TableAddColumn(Table table, DataType type, string name)
         {
             return (long)table_add_column(table.TableHandle, type, name);//BM told me that column number sb long always in C#            
         }
 
 
         [DllImport("tightdb_c_cs", CallingConvention = CallingConvention.Cdecl)]
-        private static extern TDB spec_get_column_type(IntPtr spechandle, IntPtr column_index);
+        private static extern DataType spec_get_column_type(IntPtr spechandle, IntPtr column_index);
 
-        public static TDB spec_get_column_type(Spec s, long column_index)
+        public static DataType SpecGetColumnType(Spec s, long column_index)
         {
             return spec_get_column_type(s.SpecHandle, (IntPtr)column_index);//the IntPtr cast of a long works on 32bit .net 4.5
         }
 
-        public static TDB spec_get_column_type(Spec s, int column_index)
+        /* not really needed
+        public static DataType spec_get_column_type(Spec s, int column_index)
         {
             return spec_get_column_type(s.SpecHandle, (IntPtr)column_index);//the IntPtr cast of an int works on 32bit .net 4.5
         }                                                                   //but probably throws an exception or warning on 64bit 
-
+        */
         //Spec add_subtable_column(const char* name);        
-        [DllImport("tightdb_c_cs", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr spec_add_subtable_column(IntPtr spec,string name);
+        [DllImport("tightdb_c_cs", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
+        private static extern IntPtr spec_add_subtable_column(IntPtr spec,[MarshalAs(UnmanagedType.LPStr)] string name);
 
-        public static Spec add_subtable_column(Spec s,String name)
+        public static Spec AddSubTableColumn(Spec spec,String name)
         {
-            IntPtr SpecHandle = spec_add_subtable_column(s.SpecHandle, name);
+            IntPtr SpecHandle = spec_add_subtable_column(spec.SpecHandle, name);
             return new Spec(SpecHandle,true);//because this spechandle we get here should be deallocated
         }
 
@@ -133,35 +134,36 @@ enum DataType {
         [DllImport("tightdb_c_cs", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr spec_get_spec(IntPtr spec, IntPtr column_index);
 
-        private static string err_column_not_table = "Spec_get_spec called with a column index that does not contain a table field";
-        public static Spec spec_get_spec(Spec spec, long column_idx)
+        private static string ErrColumnNotTable = "Spec_get_spec called with a column index that does not contain a table field";
+        public static Spec SpecGetSpec(Spec spec, long columnIndex)
         {
-            if (spec.get_column_type(column_idx)==TDB.Table)
+            if (spec.GetColumnType(columnIndex)==DataType.Table)
             {
-                IntPtr SpecHandle = spec_get_spec((IntPtr)spec.SpecHandle, (IntPtr)column_idx);
+                IntPtr SpecHandle = spec_get_spec((IntPtr)spec.SpecHandle, (IntPtr)columnIndex);
                 return new Spec(SpecHandle,true);
             }
             else
-                throw new SpecException(err_column_not_table);
+                throw new SpecException(ErrColumnNotTable);
         }
 
+        /*not really needed
         public static Spec spec_get_spec(Spec spec, int column_idx)
         {
-            if (spec.get_column_type(column_idx) == TDB.Table)
+            if (spec.get_column_type(column_idx) == DataType.Table)
             {
                 IntPtr SpecHandle = spec_get_spec((IntPtr)spec.SpecHandle, (IntPtr)column_idx);
                 return new Spec(SpecHandle, true);
             }
             else
                 throw new SpecException(err_column_not_table);
-        }
+        }*/
 
 
         //size_t spec_get_column_count(Spec* spec);
         [DllImport("tightdb_c_cs", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr spec_get_column_count(IntPtr spec);
 
-        public static long spec_get_column_count(Spec spec)
+        public static long SpecGetColumnCount(Spec spec)
         {
             return (long) spec_get_column_count(spec.SpecHandle);//OPTIMIZE  - could be optimized with a 32 or 64 bit specific implementation - see end of file
         }
@@ -178,7 +180,7 @@ enum DataType {
         private static extern IntPtr new_table(); 
 
         
-        public static void  table_new(Table table)
+        public static void  TableNew(Table table)
         {
                 table.TableHandle = (IntPtr)new_table(); //a call to table_new             
         }
@@ -189,7 +191,7 @@ enum DataType {
         private static extern void unbind_table_ref(IntPtr TableHandle);
 
 //      void    table_unbind(const Table *t); /* Ref-count delete of table* from table_get_table() */
-        public static void table_unbind(Table t)
+        public static void TableUnbind(Table t)
         {
             unbind_table_ref(t.TableHandle);
             t.TableHandle = IntPtr.Zero;            
@@ -202,7 +204,7 @@ enum DataType {
 
 
         //the spec returned here is live as long as the table itself is live, so don't dispose of the table and keep on using the spec
-        public static Spec table_get_spec(Table t)
+        public static Spec TableGetSpec(Table t)
         {                         
             return new Spec(table_get_spec(t.TableHandle),false);   //this spec should NOT be deallocated after use         
         }
@@ -216,7 +218,7 @@ enum DataType {
         [DllImport("tightdb_c_cs", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr table_get_column_count(IntPtr TableHandle);
 
-        public static long table_get_column_count(Table t)
+        public static long TableGetColumnCount(Table t)
         {
             IntPtr column_cnt = table_get_column_count(t.TableHandle);
             return (long)column_cnt;
@@ -235,12 +237,12 @@ enum DataType {
         //on the c++ side on this platform. marshalling UTF-16 to UTF-16 will result in a buffer copy being saved, c++ would get a pointer directly into the stringbuilder buffer
         // [MarshalAs(UnmanagedType.LPTStr)]
 
-        [DllImport("tightdb_c_cs", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("tightdb_c_cs", CallingConvention = CallingConvention.Cdecl, CharSet=CharSet.Unicode)]
         //            const char *table_get_column_name(const Table *t, size_t ndx);
-        public static extern IntPtr table_get_column_name(IntPtr TableHandle, IntPtr column_idx, StringBuilder name, IntPtr bufsize);
+        private static extern IntPtr table_get_column_name(IntPtr TableHandle, IntPtr column_idx, [MarshalAs(UnmanagedType.LPStr)]StringBuilder name, IntPtr bufsize);
 
 
-        public static string table_get_column_name(Table t, long column_idx)//column_idx not a long bc on the c++ side it might be 32bit long on a 32 bit platform
+        public static string TableGetColumnName(Table t, long column_idx)//column_idx not a long bc on the c++ side it might be 32bit long on a 32 bit platform
         {
             StringBuilder B = new StringBuilder(16);//string builder 16 is just a wild guess that most fields are shorter than this
             bool loop = true;
@@ -259,9 +261,9 @@ enum DataType {
 
 
 
-        [DllImport("tightdb_c_cs", CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr spec_get_column_name(IntPtr SpecHandle, IntPtr column_idx, StringBuilder name, IntPtr bufsize);
-        public static String spec_get_column_name(Spec spec, long column_idx)
+        [DllImport("tightdb_c_cs", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
+        private static extern IntPtr spec_get_column_name(IntPtr SpecHandle, IntPtr column_idx, [MarshalAs(UnmanagedType.LPStr)]StringBuilder name, IntPtr bufsize);
+        public static String SpecGetColumnName(Spec spec, long column_idx)
         {//see table_get_column_name for comments
             StringBuilder B = new StringBuilder(16);
             bool loop = true;
@@ -284,9 +286,9 @@ enum DataType {
         
         //    TightdbDataType table_get_column_type(const Table *t, size_t ndx);
         [DllImport("tightdb_c_cs", CallingConvention = CallingConvention.Cdecl)]
-        public static extern TDB table_get_column_type(IntPtr TablePtr, IntPtr column_idx);
+        private static extern DataType table_get_column_type(IntPtr TablePtr, IntPtr column_idx);
 
-        public static TDB table_get_column_type(Table t, long column_idx)
+        public static DataType TableGetColumnType(Table t, long column_idx)
         {
             return table_get_column_type(t.TableHandle,(IntPtr)column_idx);
         }
@@ -295,7 +297,12 @@ enum DataType {
 
 
 
+        [DllImport("tightdb_c_cs", CallingConvention=CallingConvention.Cdecl)]
+        private static extern void table_update_from_spec(IntPtr TablePtr);
 
-
+        public static void TableUpdateFromSpec(Table table)
+        {
+            table_update_from_spec(table.TableHandle);
+        }
     }
 }

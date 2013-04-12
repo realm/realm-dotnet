@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Runtime.InteropServices;
+using System.Globalization;
+using System.Runtime.Serialization;
 //using System.Threading.Tasks; not portable as of 2013-04-02
 
 //Tell compiler to give warnings if we publicise interfaces that are not defined in the cls standard
@@ -38,187 +40,210 @@ namespace TightDb.TightDbCSharp
             : base(message, inner)
         {
         }
+
+        protected TableException(SerializationInfo serializationInfo, StreamingContext streamingContext)
+            : base(serializationInfo, streamingContext)
+        {
+        }
     }
 
-
+    //Was named TDBField before
+    //now is named Field
+    //I still don't like the name, it is more a colunm type definition or column type specification but what would be a good short word for that?
     //TDBField is used only in the table constructor to make it easier for the user to specify any table structure without too much clutter
     //TDBField constructors of various sort, return field definitions that the table constructor then uses to figure what the table structure is
-    public class TDBField
+    
+    public class Field
     {
-        static void setinfo(TDBField t, String ColumnName, TDB FieldType)
+        static void setinfo(Field t, String columnName, DataType fieldType)
         {
-            t.colname = ColumnName;
-            t.type = FieldType;
+            t.ColumnName = columnName;
+            t.FieldType= fieldType;
         }
 
-        public TDBField(String ColumnName, params TDBField[] SubtablefieldsArray)
+        public Field(string columnName, params Field[] subTableFieldsArray)
         {
-            setinfo(this, ColumnName, TDB.Table);
-            subtable.AddRange(SubtablefieldsArray);
+            setinfo(this, columnName, DataType.Table);
+            subTable.AddRange(subTableFieldsArray);
         }
 
-        public TDBField(string ColumnName, TDB ColumnType)
+        public Field(string columnName, DataType columnType)
         {
-            setinfo(this, ColumnName, ColumnType);
+            setinfo(this, columnName, columnType);
         }
 
-        public TDBField(string ColumnName, String ColumnType)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "tablefield"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "subtable")]
+        public Field(string columnName, String columnType)
         {
-            if (ColumnType.ToUpper() == "INT" || ColumnType.ToUpper() == "INTEGER")
+            if (columnName==null)
             {
-                setinfo(this, ColumnName, TDB.Int);
-            }
-            else if (ColumnType.ToUpper() == "BOOL" || ColumnType.ToUpper() == "BOOLEAN")
-            {
-                setinfo(this, ColumnName, TDB.Bool);
-            }
-            else if (ColumnType.ToUpper() == "STRING")
-            {
-                setinfo(this, ColumnName, TDB.String);
-            }
-            else if (ColumnType.ToUpper() == "BINARY" || ColumnType.ToUpper() == "BLOB")
-            {
-                setinfo(this, ColumnName, TDB.Binary);
-            }
-            else if (ColumnType.ToUpper() == "MIXED")
-            {
-                setinfo(this, ColumnName, TDB.Mixed);
+                throw new ArgumentNullException("columnName");
             }
 
-            else if (ColumnType.ToUpper() == "DATE")
+            if (columnType==null)
             {
-                setinfo(this, ColumnName, TDB.Date);
+                throw new ArgumentNullException("columnType");
+            }
+            if (columnType.ToUpper(CultureInfo.InvariantCulture) == "INT" || columnType.ToUpper(CultureInfo.InvariantCulture) == "INTEGER")
+            {
+                setinfo(this, columnName, DataType.Int);
+            }
+            else if (columnType.ToUpper(CultureInfo.InvariantCulture) == "BOOL" || columnType.ToUpper(CultureInfo.InvariantCulture) == "BOOLEAN")
+            {
+                setinfo(this, columnName, DataType.Bool);
+            }
+            else if (columnType.ToUpper(CultureInfo.InvariantCulture) == "STRING")
+            {
+                setinfo(this, columnName, DataType.String);
+            }
+            else if (columnType.ToUpper(CultureInfo.InvariantCulture) == "BINARY" || columnType.ToUpper(CultureInfo.InvariantCulture) == "BLOB")
+            {
+                setinfo(this, columnName, DataType.Binary);
+            }
+            else if (columnType.ToUpper(CultureInfo.InvariantCulture) == "MIXED")
+            {
+                setinfo(this, columnName, DataType.Mixed);
             }
 
-            else if (ColumnType.ToUpper() == "FLOAT")
+            else if (columnType.ToUpper(CultureInfo.InvariantCulture) == "DATE")
             {
-                setinfo(this, ColumnName, TDB.Float);
+                setinfo(this, columnName, DataType.Date);
             }
-            else if (ColumnType.ToUpper() == "DOUBLE")
+
+            else if (columnType.ToUpper(CultureInfo.InvariantCulture) == "FLOAT")
             {
-                setinfo(this, ColumnName, TDB.Double);
+                setinfo(this, columnName, DataType.Float);
             }
-            else if (ColumnType.ToUpper() == "TABLE" || ColumnType.ToUpper() == "SUBTABLE")
+            else if (columnType.ToUpper(CultureInfo.InvariantCulture) == "DOUBLE")
             {
-                throw new TableException("Subtables should be specified as an array, cannot create a freestanding subtable field");
+                setinfo(this, columnName, DataType.Double);
+            }
+            else if (columnType.ToUpper(CultureInfo.InvariantCulture) == "TABLE" || columnType.ToUpper(CultureInfo.InvariantCulture) == "SUBTABLE")
+            {
+                setinfo(this, columnName, DataType.Table);
+         //       throw new TableException("Subtables should be specified as an array, cannot create a freestanding subtable field");
             }
             else
-                throw new TableException(String.Format("Trying to initialize a tablefield with an unknown type specification Fieldname:{0}  type:{1}", ColumnName, ColumnType));
+                throw new TableException(String.Format(CultureInfo.InvariantCulture,"Trying to initialize a tablefield with an unknown type specification Fieldname:{0}  type:{1}", columnName, columnType));
         }
 
-        public String colname;
-        public TDB type;
-        private List<TDBField> subtable = new List<TDBField>();//only used if type is a subtable
+        public String ColumnName { get; set; }
+        
+        public DataType FieldType {get;set;}
 
-        internal TDBField[] getsubtablearray()
+        private List<Field> subTable = new List<Field>();//only used if type is a subtable
+
+        internal Field[] getsubtablearray()
         {
-            return subtable.ToArray();
+            return subTable.ToArray();
         }
+
+    
     }
 
 
     namespace Extensions
     {
 
-        //todo:Add more types
-        public static class myextensions
+        
+        public static class TightDbExtensions
         {
-            public static TDBField TDBInt(this String str)
+            public static Field TightDbInt(this String fieldName)
             {
-                return new TDBField(str, TDB.Int);
+                return new Field(fieldName, DataType.Int);
             }
 
 
-            public static TDBField Int(this String str)
+            public static Field Int(this String fieldName)
             {
-                return new TDBField(str, TDB.Int);
+                return new Field(fieldName, DataType.Int);
             }
 
-            public static TDBField Bool(this string str)
+            public static Field Bool(this string fieldName)
             {
-                return new TDBField(str, TDB.Bool);
+                return new Field(fieldName, DataType.Bool);
             }
 
-            public static TDBField TDBBool(this string str)
+            public static Field TightDbBool(this string fieldName)
             {
-                return new TDBField(str, TDB.Bool);
+                return new Field(fieldName, DataType.Bool);
             }
 
-            public static TDBField TDBString(this String str)
+            public static Field TightDbString(this String fieldName)
             {
-                return new TDBField(str, TDB.String);
+                return new Field(fieldName, DataType.String);
             }
 
-            public static TDBField String(this String str)
+            public static Field String(this String fieldName)
             {
-                return new TDBField(str, TDB.String);
+                return new Field(fieldName, DataType.String);
             }
 
 
-            public static TDBField TDBBinary(this String str)
+            public static Field TightDbBinary(this String fieldName)
             {
-                return new TDBField(str, TDB.Binary);
+                return new Field(fieldName, DataType.Binary);
             }
 
-            public static TDBField Binary(this String str)
+            public static Field Binary(this String fieldName)
             {
-                return new TDBField(str, TDB.Binary);
+                return new Field(fieldName, DataType.Binary);
             }
 
-            public static TDBField TDBSubtable(this String str, params TDBField[] fields)
+            public static Field TightDbSubTable(this String fieldName, params Field[] fields)
             {
-                return new TDBField(str, fields);
+                return new Field(fieldName, fields);
             }
 
-            public static TDBField Subtable(this String str, params TDBField[] fields)
+            public static Field SubTable(this String fieldName, params Field[] fields)
             {
-                return new TDBField(str, fields);
+                return new Field(fieldName, fields);
             }
 
-            //as the TDB has a type called table, we also provide a such named constructor even though it will always be a subtable
-            public static TDBField Table(this String str, params TDBField[] fields)
+            //as the TightDb has a type called table, we also provide a such named constructor even though it will always be a subtable
+            public static Field Table(this String fieldName, params Field[] fields)
             {
-                return new TDBField(str, fields);
+                return new Field(fieldName, fields);
             }
 
-            public static TDBField TDBMixed(this String str)
+            public static Field TightDbMixed(this String fieldName)
             {
-                return new TDBField(str, TDB.Mixed);
+                return new Field(fieldName, DataType.Mixed);
             }
 
-            public static TDBField Mixed(this String str)
+            public static Field Mixed(this String fieldName)
             {
-                return new TDBField(str, TDB.Mixed);
+                return new Field(fieldName, DataType.Mixed);
             }
 
-            public static TDBField Date(this String str)
+            public static Field Date(this String fieldName)
             {
-                return new TDBField(str, TDB.Date);
+                return new Field(fieldName, DataType.Date);
             }
 
-            public static TDBField TDBDate(this String str)
+            public static Field TightDbDate(this String fieldName)
             {
-                return new TDBField(str, TDB.Date);
+                return new Field(fieldName, DataType.Date);
             }
 
-            public static TDBField Float(this string str)
+            public static Field Float(this string fieldName)
             {
-                return new TDBField(str, TDB.Float);
+                return new Field(fieldName, DataType.Float);
             }
 
-            public static TDBField TDBFloat(this string str)
+            public static Field TightDbFloat(this string fieldName)
             {
-                return new TDBField(str, TDB.Float);
+                return new Field(fieldName, DataType.Float);
             }
 
-            public static TDBField Double(this string str)
+            public static Field Double(this string fieldName)
             {
-                return new TDBField(str, TDB.Double);
+                return new Field(fieldName, DataType.Double);
             }
 
-            public static TDBField TDBDouble(this string str)
+            public static Field TightDbDouble(this string fieldName)
             {
-                return new TDBField(str, TDB.Double);
+                return new Field(fieldName, DataType.Double);
             }
 
 
@@ -231,10 +256,7 @@ namespace TightDb.TightDbCSharp
     {
         //manual dll version info. Used when debugging to see if the right DLL is loaded, or an old one
         //the number is a date and a time (usually last time i debugged something)
-        public long getdllversion_CSH()
-        {
-            return 1304111607;
-        }
+        public  const long GetDllVersionCSharp = 1304120321 ; 
 
 
         //following the dispose pattern discussed here http://dave-black.blogspot.dk/2011/03/how-do-you-properly-implement.html
@@ -249,11 +271,11 @@ namespace TightDb.TightDbCSharp
             GC.SuppressFinalize(this);//tell finalizer it does not have to call dispose or dispose of things -we have done that already
         }
         //if called from GC  we should not dispose managed as that is unsafe, the bool tells us how we were called
-        protected virtual void Dispose(bool disposemanagedtoo)
+        protected virtual void Dispose(bool disposeManagedToo)
         {
             if (!IsDisposed)
             {
-                if (disposemanagedtoo)
+                if (disposeManagedToo)
                 {
                     //dispose any managed members table might have
                 }
@@ -282,28 +304,36 @@ namespace TightDb.TightDbCSharp
         //always acquire a table handle
         public Table()
         {
-            table_new();
+            TableNew();
         }
 
         //this parameter type allows the user to send a comma seperated list of TableField objects without having
         //to put them into an array first
-        public Table(params TDBField[] schema)
+        public Table(params Field[] schema)
         {
-            table_new();
-            Spec spec = get_spec();
-            foreach (TDBField tf in schema)
+            if (schema == null)
             {
-                spec.addfield(tf);
+                throw new ArgumentNullException("schema");
+            }
+            TableNew();
+            //Spec spec = GetSpec();
+            foreach (Field tf in schema)
+            {
+                if (tf == null)
+                {
+                    throw new ArgumentNullException("schema","one or more of the field objects is null");
+                }
+                Spec.AddField(tf);
             }
             updatefromspec();
         }
 
         //allows the user to quickly create a table with a single field of a single type
-        public Table(TDBField schema)
+        public Table(Field schema)
         {
-            table_new();//allocate a table class in c++
-            Spec spec = get_spec();//get a handle to the table's new empty spec
-            spec.addfield(schema);
+            TableNew();//allocate a table class in c++
+            //Spec spec = GetSpec();//get a handle to the table's new empty spec
+            Spec.AddField(schema);
             updatefromspec();//build table from the spec tree structure
         }
 
@@ -331,19 +361,20 @@ namespace TightDb.TightDbCSharp
         costomers[12,"firstname"]  ="Hans";        
         */
 
-        public long getdllversion_CPP()
+        public static long CPlusPlusLibraryVersion()
         {
-            return UnsafeNativeMethods.cpplibversion();
+            return UnsafeNativeMethods.CppDllVersion();
         }
 
         //experiments
+        /*
         public object this[int RowIndex, String ColumnName]
         {
             get
             {
                 switch (column_type(RowIndex))
                 {
-                    case TDB.Int:
+                    case DataType.Int:
                     //    return getInt(RowIndex, get_column_index(ColumnName));
 
 
@@ -360,28 +391,29 @@ namespace TightDb.TightDbCSharp
 
 
         }
-
+        */
         //experiments
-        public object this[int RowIndex, int ColumnIndex]
+        /*
+        public object this[int row, int column]
         {
-            get
-            {
-                switch (column_type(RowIndex))
-                {
-                    case TDB.Int:
-                    // return getInt(ColumnIndex, RowIndex);
+                        get
+                        {
+                            switch (column_type(row,column))
+                            {
+                                case DataType.Int:
+                                // return getInt(ColumnIndex, RowIndex);
 
-                    //and add support for the rest (see TDB definition)
+                                //and add support for the rest (see TDB definition)
 
-                    default:
-                        return null;
-                }
-            }
-            set
-            {
-            }
+                                default:
+                                    return null;
+                            }
+                        }
+                        set
+                        {
+                        }
         }
-
+        */
         //not accessible by source not in the TightDBCSharp namespace
         //TableHandle contains the value of a C++ pointer to a C++ table
         //it is sent as a parameter to calls to the C++ DLL.
@@ -391,15 +423,16 @@ namespace TightDb.TightDbCSharp
         internal bool TableHandleHasBeenUsed { get; set; } //defaults to false. If this is true, the table handle has been allocated in the lifetime of this object
 
         //This method will ask c++ to create a new table object and then the method will store the table objects handle        
-        internal void table_new()
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "TableNew")]
+        internal void TableNew()
         {
             if (TableHandleInUse)
             {
-                throw new TableException("table_new called on a table that already has aqcuired a table handle");
+                throw new TableException("TableNew called on a table that already has acquired a table handle");
             }
             else
             {
-                UnsafeNativeMethods.table_new(this);
+                UnsafeNativeMethods.TableNew(this);
                 TableHandleInUse = true;
                 TableHandleHasBeenUsed = true;
             }
@@ -414,7 +447,7 @@ namespace TightDb.TightDbCSharp
         {
             if (TableHandleInUse)
             {
-                UnsafeNativeMethods.table_unbind(this);
+                UnsafeNativeMethods.TableUnbind(this);
                 TableHandleInUse = false;
             }
             else
@@ -424,45 +457,44 @@ namespace TightDb.TightDbCSharp
                 //  it is assumed an error situation has occoured (too many unbind calls) and an exception is raised
                 if (TableHandleHasBeenUsed)
                 {
-                    throw new TableException("table_unbin called on a table with no table handle active anymore");
+                    throw new TableException("unbind called on a table with no table handle active anymore");
                 }
             }
         }
 
         //spec getter public bc a user might want to get subtable schema on a totally empty table,and that is only available via spec atm.
-        public Spec get_spec()
+        public Spec Spec
         {
-            return UnsafeNativeMethods.table_get_spec(this);
+            get { return UnsafeNativeMethods.TableGetSpec(this); }
         }
-
         //this will update the table structure to represent whatever the earlier recieved spec has been set up to
         internal void updatefromspec()
         {
-            // tightdb.Tightdbcsharp.TightDBCalls.table_update_from_spec(this);
+           UnsafeNativeMethods.TableUpdateFromSpec(this);
         }
 
-        public TDB column_type(long ColumnIndex)
+        public DataType ColumnType(long columnIndex)
         {
-            return UnsafeNativeMethods.table_get_column_type(this, ColumnIndex);
+            return UnsafeNativeMethods.TableGetColumnType(this, columnIndex);
         }
 
 
-        public long column_count()
+        public long ColumnCount
         {
-            return UnsafeNativeMethods.table_get_column_count(this);
+            get  {return UnsafeNativeMethods.TableGetColumnCount(this);}
         }
 
         
         //this will add a column of the specified type, if it is a table type, You will have to populate it yourself later on,
         //by getting its subspec and working with that
-        public long AddColumn(TDB type, String name)
+        public long AddColumn(DataType type, String name)
         {
-            return UnsafeNativeMethods.table_add_column(this, type, name);
+            return UnsafeNativeMethods.TableAddColumn(this, type, name);
         }
 
-        public string get_column_name(long col_idx)//unfortunately an int, bc tight might have been built using 32 bits
+        public string GetColumnName(long columnIndex)//unfortunately an int, bc tight might have been built using 32 bits
         {
-            return UnsafeNativeMethods.table_get_column_name(this, col_idx);
+            return UnsafeNativeMethods.TableGetColumnName(this, columnIndex);
         }
 
     }

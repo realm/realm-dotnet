@@ -49,8 +49,8 @@ namespace TestTightDbCS
 
             using (Table t = new Table())
             {
-                System.Console.WriteLine("C++DLL         build number {0}", t.getdllversion_CPP());
-                System.Console.WriteLine("C# DLL         build number {0}", t.getdllversion_CSH());
+                System.Console.WriteLine("C#  DLL        build number {0}",Table.GetDllVersionCSharp);
+                System.Console.WriteLine("C++ DLL        build number {0}", Table.CPlusPlusLibraryVersion());
             }
             System.Console.WriteLine();
             System.Console.WriteLine();
@@ -58,6 +58,66 @@ namespace TestTightDbCS
         }
     }
 
+    [TestFixture]
+    public static class StringEncodingTest
+    {
+        //Right now this test uses creation of tables as a test - the column name will be set to all sorts of crazy thing, and we want them back that way
+        [Test]
+        public static void TableWithPerThousandSign()
+        {
+            String actualres;
+            using (
+            Table notSpecifyingFields = new Table(
+                "subtable".Table()
+                ))//at this point we have created a table with no fields
+            {
+                notSpecifyingFields.AddColumn(DataType.String, "12345‰7890");
+                actualres = Program.TableDumper(MethodInfo.GetCurrentMethod().Name, "table name is 12345 then the permille sign ISO 10646:8240 then 7890", notSpecifyingFields);
+            }
+            string expectedres =
+@"------------------------------------------------------
+Column count: 2
+Table Name  : table name is 12345 then the permille sign ISO 10646:8240 then 7890
+------------------------------------------------------
+ 0      Table  subtable            
+ 1     String  12345‰7890          
+------------------------------------------------------
+
+";
+            Assert.AreEqual(expectedres,actualres);        
+        }
+    
+
+
+
+        [Test]
+        public static void TableWithJapaneseCharacters()
+        {
+            String actualres;
+            using (
+            Table notSpecifyingFields = new Table(
+                "subtable".Table()
+                ))//at this point we have created a table with no fields
+            {
+                notSpecifyingFields.AddColumn(DataType.String,     "123\u70B9\u83DC678");
+                actualres = Program.TableDumper(MethodInfo.GetCurrentMethod().Name, "column name is 123 then two japanese characters then 678", notSpecifyingFields);
+            }
+            string expectedres =
+@"------------------------------------------------------
+Column count: 2
+Table Name  : column name is 123 then two japanese characters then 678
+------------------------------------------------------
+ 0      Table  subtable            
+ 1     String  123"+"\u70B9\u83DC"+@"678            
+------------------------------------------------------
+
+";
+            Assert.AreEqual( expectedres,actualres);        
+        }
+    }
+
+
+    
     [TestFixture]
     public static class CreateTableTest
     {
@@ -73,7 +133,7 @@ namespace TestTightDbCS
                 "subtable".Table()
                 ))//at this point we have created a table with no fields
             {
-                notSpecifyingFields.AddColumn(TDB.String, "Buksestørrelse");
+                notSpecifyingFields.AddColumn(DataType.String, "Buksestørrelse");
                 actualres = Program.TableDumper(MethodInfo.GetCurrentMethod().Name,"one field Created in two steps with table add column", notSpecifyingFields);
             }
             string expectedres =
@@ -86,7 +146,7 @@ Table Name  : one field Created in two steps with table add column
 ------------------------------------------------------
 
 ";
-            Assert.AreEqual(actualres, expectedres);        
+            Assert.AreEqual(expectedres, actualres);        
         }
 
 
@@ -94,7 +154,7 @@ Table Name  : one field Created in two steps with table add column
         public static void TestHandleAcquireOneField()
         {
             string actualres;
-            using (Table testtbl = new Table(new TDBField("name", TDB.String)))
+            using (Table testtbl = new Table(new Field("name", DataType.String)))
             {
                 actualres = Program.TableDumper(MethodInfo.GetCurrentMethod().Name, "NameField", testtbl);
             }
@@ -116,10 +176,10 @@ Table Name  : NameField
         {
             String actualres;
             using (Table testtbl3 = new Table(
-            "Name".TDBString(),
-            "Age".TDBInt(),
-            "count".TDBInt(),
-            "Whatever".TDBMixed()
+            "Name".TightDbString(),
+            "Age".TightDbInt(),
+            "count".TightDbInt(),
+            "Whatever".TightDbMixed()
             ))
             {
                 //long  test = testtbl3.getdllversion_CSH();
@@ -151,7 +211,7 @@ Table Name  : four columns, Last Mixed
         "BoolField".Bool(),
         "StringField".String(),
         "BinaryFiel".Binary(),
-        "TableField".Subtable(
+        "TableField".SubTable(
             "subtablefield1".Int(),
             "subtablefield2".String()),
         "MixedField".Mixed(),
@@ -196,17 +256,17 @@ Table Name  : Table with all allowed types
             string actualres;
             using (
             Table testtbl = new Table(
-                "Name".TDBString(),
-                "Age".TDBInt(),
-                new TDBField("age2", TDB.Int),
-                new TDBField("age3", "Int"),
-                new TDBField("comments",
-                              new TDBField("phone#1", TDB.String),
-                              new TDBField("phone#2", TDB.String),
-                              new TDBField("phone#3", "String"),
-                              "phone#4".TDBString()
+                "Name".TightDbString(),
+                "Age".TightDbInt(),
+                new Field("age2", DataType.Int),
+                new Field("age3", "Int"),
+                new Field("comments",
+                              new Field("phone#1", DataType.String),
+                              new Field("phone#2", DataType.String),
+                              new Field("phone#3", "String"),
+                              "phone#4".TightDbString()
                              ),
-                new TDBField("whatever", TDB.Mixed)
+                new Field("whatever", DataType.Mixed)
                 ))
             {
                 actualres = Program.TableDumper(MethodInfo.GetCurrentMethod().Name, "six colums,sub four columns", testtbl);
@@ -255,7 +315,7 @@ Table Name  : six colums,sub four columns
 
 
         //while You cannot cross-link parents and subtables inside a new table() construct, you can try to do so, by deliberatly changing
-        //the subtable references in TDBField objects that You instantiate yourself -and then call Table.create(Yourfiled) with a 
+        //the subtable references in Field objects that You instantiate yourself -and then call Table.create(Yourfiled) with a 
         //field definition that is self referencing.
         //however, currently this is not possible as seen in the example below.
         //the subtables cannot be changed directly, so all You can do is create new objects that has old already created objects as subtables
@@ -263,11 +323,11 @@ Table Name  : six colums,sub four columns
 
         //below is my best shot at someone trying to create a table with custom built cross-linked field definitions (and failing)
 
-        //I did not design the TDBFIeld type to be used on its own like the many examples below. However , none of these weird uses break anything
+        //I did not design the Field type to be used on its own like the many examples below. However , none of these weird uses break anything
         [Test]
         public static void TestIllegalFieldDefinitions1()
         {
-            TDBField f5 = "f5".Int();//create a field reference, type does not matter
+            Field f5 = "f5".Int();//create a field reference, type does not matter
             f5 = "f5".Table(f5);//try to overwrite the field object with a new object that references itself 
             string actualres;
             using (
@@ -291,8 +351,8 @@ Table Name  : self-referencing subtable
         [Test]
         public static void TestIllegalFieldDefinitions2()
         {
-            TDBField fc = "fc".Int();//create a field reference, type does not matter
-            TDBField fp = "fp".Table(fc);//let fp be the parent table subtable column, fc be the sole field in a subtable
+            Field fc = "fc".Int();//create a field reference, type does not matter
+            Field fp = "fp".Table(fc);//let fp be the parent table subtable column, fc be the sole field in a subtable
 
             fc = "fc".Table(fp);//then change the field type from int to subtable and reference the parent
 
@@ -322,8 +382,8 @@ Table Name  : subtable that has subtable that references its parent #1
         [Test]
         public static void TestIllegalFieldDefinitions3()
         {
-            TDBField fc = "fc".Int();//create a field reference, type does not matter
-            TDBField fp = "fp".Table(fc);//let fp be the parent table subtable column, fc be the sole field in a subtable
+            Field fc = "fc".Int();//create a field reference, type does not matter
+            Field fp = "fp".Table(fc);//let fp be the parent table subtable column, fc be the sole field in a subtable
             fc = "fc".Table(fp);//then change the field type from int to subtable and reference the parent
 
             String actualres;
@@ -350,8 +410,8 @@ Table Name  : subtable that has subtable that references its parent #2
         public static void TestIllegalFieldDefinitions4()
         {
 
-            TDBField f10 = "f10".Subtable("f11".Int(), "f12".Int());
-            f10.type = TDB.Int;
+            Field f10 = "f10".SubTable("f11".Int(), "f12".Int());
+            f10.FieldType = DataType.Int;
             //at this time, the subtable array still have some subtables in it
             string actualres;
             using (Table t4 = new Table(f10))
@@ -373,8 +433,8 @@ Table Name  : just an int field, no subs
         [Test]
         public static void TestIllegalFieldDefinitions5()
         {
-            TDBField f10 = "f10".Subtable("f11".Int(), "f12".Int());
-            f10.type = TDB.Table;
+            Field f10 = "f10".SubTable("f11".Int(), "f12".Int());
+            f10.FieldType = DataType.Table;
 
             String actualres;
             using (
@@ -417,7 +477,7 @@ Table Name  : two fields, case is differnt
 ------------------------------------------------------
 
 ";
-            Assert.AreEqual(actualres, expectedres);
+            Assert.AreEqual(expectedres,actualres);
         }
         [Test]
         public static void TestCreateStrangeTable2()
@@ -450,28 +510,28 @@ Table Name  : two fields name and type the same
             StringBuilder actualres = new StringBuilder();//we add several table dumps into one compare string in this test
             using (
             Table testtbl1 = new Table(
-            new TDBField("name", TDB.String),
-            new TDBField("age", TDB.Int),
-            new TDBField("comments",
-                new TDBField("phone#1", TDB.String),
-                new TDBField("phone#2", TDB.String)),
-            new TDBField("whatever", TDB.Mixed)))
+            new Field("name", DataType.String),
+            new Field("age", DataType.Int),
+            new Field("comments",
+                new Field("phone#1", DataType.String),
+                new Field("phone#2", DataType.String)),
+            new Field("whatever", DataType.Mixed)))
             {
-                actualres.Append(Program.TableDumperSpec(MethodInfo.GetCurrentMethod().Name, "four columns , sub two columns (TDBField)", testtbl1));
+                actualres.Append(Program.TableDumperSpec(MethodInfo.GetCurrentMethod().Name, "four columns , sub two columns (Field)", testtbl1));
 
                 using (//and we create a second table while the first is in scope
                 Table testtbl2 = new Table(
-                    new TDBField("name", "String"),
-                    new TDBField("age", "Int"),
-                    new TDBField("comments",
-                             new TDBField("phone#1", "String"),
-                             new TDBField("phone#2", "String"),
-                             "more stuff".Subtable(
-                                "stuff1".String(),
+                    new Field("name", "String"),
+                    new Field("age", "Int"),
+                    new Field("comments",
+                             new Field("phone#1", DataType.String),    //one way to declare a string
+                             new Field("phone#2", "String"),           //another way
+                             "more stuff".SubTable(
+                                "stuff1".String(),                     //and yet another way
                                 "stuff2".String(),
                                 "ÆØÅæøå".String())
                              ),
-                    new TDBField("whatever", "Mixed")))
+                    new Field("whatever", DataType.Mixed)))
                 {
                     actualres.Append(Program.TableDumperSpec(MethodInfo.GetCurrentMethod().Name, "four columns, sub three subsub three", testtbl2));
                 }
@@ -480,7 +540,7 @@ Table Name  : two fields name and type the same
             string expectedres =
 @"------------------------------------------------------
 Column count: 4
-Table Name  : four columns , sub two columns (TDBField)
+Table Name  : four columns , sub two columns (Field)
 ------------------------------------------------------
  0     String  name                
  1        Int  age                 
@@ -507,7 +567,7 @@ Table Name  : four columns, sub three subsub three
 ------------------------------------------------------
 
 ";
-            Assert.AreEqual(actualres.ToString(), expectedres);
+            Assert.AreEqual(expectedres,actualres.ToString());
         }
 
         [Test]
@@ -534,7 +594,7 @@ Table Name  : same names int two empty string names
 ------------------------------------------------------
 
 ";
-            Assert.AreEqual(actualres, expectedres);
+            Assert.AreEqual(expectedres,actualres);
         }
 
         [Test]
@@ -561,7 +621,7 @@ Table Name  : same names, empty names, mixed types
 ------------------------------------------------------
 
 ";
-            Assert.AreEqual(actualres, expectedres);
+            Assert.AreEqual(expectedres,actualres);
         }
 
     }
@@ -609,18 +669,17 @@ Table Name  : same names, empty names, mixed types
         {
             StringBuilder res = new StringBuilder();//temporary storange of text of dump
 
-            long count = t.column_count();
+            long count = t.ColumnCount;
             printHeader(res, tableName, count);
             for (long n = 0; n < count; n++)
             {
-                string name = t.get_column_name(n);
-                TDB type = t.column_type(n);
+                string name = t.GetColumnName(n);
+                DataType type = t.ColumnType(n);
                 res.AppendLine(String.Format(CultureInfo.InvariantCulture, "{0,2} {2,10}  {1,-20}", n, name, type));
-                if (type == TDB.Table)
-                {
-                    Spec tblspec = t.get_spec();
-                    Spec subspec = tblspec.get_spec(n);
-                    specdumper(res, "   ", subspec, "Subtable");
+                if (type == DataType.Table)
+                {                    
+                    Spec subSpec =  t.Spec.GetSpec(n);
+                    specdumper(res, "   ", subSpec, "Subtable");
                 }
             }
             printFooter(res);
@@ -633,7 +692,7 @@ Table Name  : same names, empty names, mixed types
         private static void specdumper(StringBuilder res, String indent, Spec s, string TableName)
         {
 
-            long count = s.get_column_count();
+            long count = s.ColumnCount;
 
             if (String.IsNullOrEmpty(indent))
             {
@@ -642,12 +701,12 @@ Table Name  : same names, empty names, mixed types
 
             for (long n = 0; n < count; n++)
             {
-                String name = s.get_column_name(n);
-                TDB type = s.get_column_type(n);
+                String name = s.GetColumnName(n);
+                DataType type = s.GetColumnType(n);
                 res.AppendLine(String.Format(CultureInfo.InvariantCulture, "{0}{1,2} {2,10}  {3,-20}", indent, n, type, name));
-                if (type == TDB.Table)
+                if (type == DataType.Table)
                 {
-                    Spec subspec = s.get_spec(n);
+                    Spec subspec = s.GetSpec(n);
                     specdumper(res, indent + "   ", subspec, "Subtable");
                 }
             }
@@ -661,9 +720,8 @@ Table Name  : same names, empty names, mixed types
         //dump the table only using its spec
         public static String TableDumperSpec(String fileName, String tablename, Table t)
         {
-            StringBuilder res = new StringBuilder();
-            Spec s = t.get_spec();
-            specdumper(res, "", s, tablename);
+            StringBuilder res = new StringBuilder();           
+            specdumper(res, "", t.Spec, tablename);
             File.WriteAllText(fileName + ".txt", res.ToString());
             return res.ToString();
         }
@@ -679,6 +737,9 @@ Table Name  : same names, empty names, mixed types
              *  */
 
             EnvironmentTest.ShowVersionTest();
+
+            StringEncodingTest.TableWithPerThousandSign();
+            StringEncodingTest.TableWithJapaneseCharacters();
 
             CreateTableTest.TestHandleAcquireOneField();
 

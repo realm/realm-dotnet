@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 //using System.Threading.Tasks; not portable as of 2013-4-2
 
@@ -33,6 +34,11 @@ namespace TightDb.TightDbCSharp
             : base(message, inner)
         {
         }
+
+        protected SpecException(SerializationInfo serializationInfo, StreamingContext streamingContext)
+            : base(serializationInfo, streamingContext)
+        {
+        }
     }
 
 
@@ -52,11 +58,11 @@ namespace TightDb.TightDbCSharp
             GC.SuppressFinalize(this);//tell finalizer it does not have to call dispose or dispose of things -we have done that already
         }
         //if called from GC  we should not dispose managedas that is unsafe, the bool tells us how we were called
-        protected virtual void Dispose(bool disposemanagedtoo)
+        protected virtual void Dispose(bool disposeManagedToo)
         {
             if (!IsDisposed) 
             {
-                if (disposemanagedtoo) {
+                if (disposeManagedToo) {
                     //dispose any managed members table might have
                 }
 
@@ -92,7 +98,7 @@ namespace TightDb.TightDbCSharp
         {
             if (SpecHandleInUse)
             {
-                UnsafeNativeMethods.spec_deallocate(this);
+                UnsafeNativeMethods.SpecDeallocate(this);
                 SpecHandleInUse = false;
             }
             else
@@ -102,7 +108,7 @@ namespace TightDb.TightDbCSharp
                 //  it is assumed an error situation has occoured (too many unbind calls) and an exception is raised
                 if (SpecHandleHasBeenUsed)
                 {
-                    throw new TableException("table_unbin called on a table with no table handle active anymore");
+                    throw new TableException("table unbind called on a table with no table handle active anymore");
                 }
             }
         }
@@ -116,70 +122,92 @@ namespace TightDb.TightDbCSharp
         //do not need to be deleted are pointers into structures that are owned by a table
         //This means that a spec that has been gotten from a table should not be used after that table have
         //been deallocated.
-        internal Spec(IntPtr handle,bool notifycppwhendisposing) 
+        internal Spec(IntPtr handle,bool notifycpp) 
         {
-            SpecHandle = handle;            
+            SpecHandle = handle;
+            SpecHandleInUse = true;
+            SpecHandleHasBeenUsed = true;
+            this.notifycppwhendisposing = notifycpp;
         }
 
         //add this field to the current spec. Will add recursively if neeeded
-        public void addfield(TDBField schema)
-        {            
-            if (schema.type != TDB.Table)
+        public void AddField(Field schema)
+        {
+            if (schema != null)
             {
-                add_column(schema.type,schema.colname);
+                if (schema.FieldType != DataType.Table)
+                {
+                    AddColumn(schema.FieldType, schema.ColumnName);
+                }
+                else
+                {
+                    Field[] tfa = schema.getsubtablearray();
+                    Spec subspec = AddSubTableColumn(schema.ColumnName);
+                    subspec.AddFields(tfa);
+                }
             }
             else
             {
-                TDBField[] tfa = schema.getsubtablearray();
-                Spec subspec =  add_subtable_column(schema.colname);
-                subspec.addfields(tfa);
-            }   
+                throw new ArgumentNullException("schema");
+            }
         }
 
         
         // will add the field list to the current spec
-        public void addfields(TDBField[] fields)
+        public void AddFields(Field[] fields)
         {
-            foreach (TDBField field in fields) 
+            if (fields != null)
             {
-                addfield(field);
+                foreach (Field field in fields)
+                {
+                    AddField(field);
+                }
+            }
+            else
+            {
+                throw new ArgumentNullException("fields");
             }
         }
 
-        public Spec add_subtable_column(String colname)
+        public Spec AddSubTableColumn(String columnName)
         {
-            return UnsafeNativeMethods.add_subtable_column(this, colname);
+            return UnsafeNativeMethods.AddSubTableColumn(this, columnName);
         }
 
-        public void add_column(TDB type,String name)
+        public void AddColumn(DataType type,String name)
         {           
-            UnsafeNativeMethods.spec_add_column(this, type, name);            
+            UnsafeNativeMethods.SpecAddColumn(this, type, name);            
         }
 
 
         //I assume column_idx is a column with a table in it, or a mixed with a table?
-        public Spec get_spec(long column_idx) 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "subTable"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "columnIndex")]
+        public Spec GetSpec(long columnIndex) 
         {
-            if (get_column_type(column_idx) == TDB.Table)
+            if (GetColumnType(columnIndex) == DataType.Table)
             {
-                return UnsafeNativeMethods.spec_get_spec(this, column_idx);
+                return UnsafeNativeMethods.SpecGetSpec(this, columnIndex);
             }else
-            throw new SpecException("get spec(column_idx) can only be called on a subtable field");
+            throw new SpecException("get spec(columnIndex) can only be called on a subTable field");
         }
 
-        public TDB get_column_type(long column_idx)
+        public DataType GetColumnType(long columnIndex)
         {
-            return UnsafeNativeMethods.spec_get_column_type(this, column_idx);
+            return UnsafeNativeMethods.SpecGetColumnType(this, columnIndex);
         }
 
-        public long get_column_count()
-        {
-            return UnsafeNativeMethods.spec_get_column_count(this);
-        }
+        
 
-        public string get_column_name(long column_idx)
+        public long ColumnCount
         {
-            return UnsafeNativeMethods.spec_get_column_name(this, column_idx);
+            get { return UnsafeNativeMethods.SpecGetColumnCount(this); }            
+        }
+        
+
+
+        public string GetColumnName(long columnIndex)
+        {
+            return UnsafeNativeMethods.SpecGetColumnName(this, columnIndex);
         }
     }
 }
