@@ -141,7 +141,7 @@ namespace TightDb.TightDbCSharp
                 }
                 else
                 {
-                    Field[] tfa = schema.getsubtablearray();
+                    Field[] tfa = schema.GetSubTableArray();
                     Spec subspec = AddSubTableColumn(schema.ColumnName);
                     subspec.AddFields(tfa);
                 }

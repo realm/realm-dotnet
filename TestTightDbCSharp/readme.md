@@ -37,6 +37,13 @@ in solution explorer :
 
 - right click the project TightDbCSharp, select properties
 - in pre-build event command line, write $(ProjectDir)\getdll.bat
+- in click code analysis
+- set the configuration dropdown to release
+- set the platform to all platforms
+- DESELECT enable code analysis on build
+- set the configuration dropdown to debug
+- SELECT enable code analysis on build
+- select "Microsoft all rules"
 
 build->batch build, select both and click build
 

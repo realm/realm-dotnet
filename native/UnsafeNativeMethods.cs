@@ -125,6 +125,10 @@ enum DataType {
 
         public static Spec AddSubTableColumn(Spec spec,String name)
         {
+            if (name == null)
+            {
+                throw new ArgumentNullException("name","Adding a sub table column with 'name' set to null is not allowed");
+            }
             IntPtr SpecHandle = spec_add_subtable_column(spec.SpecHandle, name);
             return new Spec(SpecHandle,true);//because this spechandle we get here should be deallocated
         }

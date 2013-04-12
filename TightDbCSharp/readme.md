@@ -57,3 +57,12 @@ If the build is successfull,  You will now have two files called :
 TightDbCSharp\Debug\TightDbCsharp.dll
 TightDbCSharp\Release\TightDbCsharp.dll
 Both these files are of the "AnyCpu" type - they will work on 32 as well as 64 bit - but the end user must ensure that the correct tightdb_c_cs.dll file has also been deployed. What file to use depends on wether the program will run as 32 or as 64 bit, and wether the program should run in debug or release mode.
+
+now, set up code analysis
+- right click the project in solution explorer, select properties
+- in configuration select release
+- in platform you can only select active (amy cpu) as this is the only platform we build to
+- DESELECT Enable code analysis on build
+- in configuration select debug
+- SELECT enamble code analysis on build
+- select the ruleset Microsoft All Rules

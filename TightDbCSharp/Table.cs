@@ -53,23 +53,36 @@ namespace TightDb.TightDbCSharp
     //TDBField is used only in the table constructor to make it easier for the user to specify any table structure without too much clutter
     //TDBField constructors of various sort, return field definitions that the table constructor then uses to figure what the table structure is
     
-    public class Field
+    public  class Field
     {
-        static void setinfo(Field t, String columnName, DataType fieldType)
+        protected static void SetInfo(Field someField, String someColumnName, DataType someFieldType)
         {
-            t.ColumnName = columnName;
-            t.FieldType= fieldType;
+            if (someField != null)
+            {
+                someField.ColumnName = someColumnName;
+                someField.FieldType = someFieldType;
+            }
+            else
+                throw new ArgumentNullException("someField");
         }
 
-        public Field(string columnName, params Field[] subTableFieldsArray)
+        //this is internal for a VERY specific reason
+        //when internal, the end user cannot call this function, and thus cannot put in a list of subtable fields containing a field that is parent
+        //to the somefield parameter. If this was merely protected - he could!
+        internal static void AddSubTableFields(Field someField,String someColumnName, Field[] subTableFieldsArray)
         {
-            setinfo(this, columnName, DataType.Table);
-            subTable.AddRange(subTableFieldsArray);
+            SetInfo(someField, someColumnName, DataType.Table);
+            someField.subTable.AddRange(subTableFieldsArray);
         }
 
-        public Field(string columnName, DataType columnType)
+        public Field(string someColumnName, params Field[] subTableFieldsArray)
         {
-            setinfo(this, columnName, columnType);
+            AddSubTableFields(this,someColumnName,subTableFieldsArray);
+        }
+
+        public  Field(string columnName, DataType columnType)
+        {
+            SetInfo(this, columnName, columnType);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "tablefield"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "subtable")]
@@ -86,46 +99,49 @@ namespace TightDb.TightDbCSharp
             }
             if (columnType.ToUpper(CultureInfo.InvariantCulture) == "INT" || columnType.ToUpper(CultureInfo.InvariantCulture) == "INTEGER")
             {
-                setinfo(this, columnName, DataType.Int);
+                SetInfo(this, columnName, DataType.Int);
             }
             else if (columnType.ToUpper(CultureInfo.InvariantCulture) == "BOOL" || columnType.ToUpper(CultureInfo.InvariantCulture) == "BOOLEAN")
             {
-                setinfo(this, columnName, DataType.Bool);
+                SetInfo(this, columnName, DataType.Bool);
             }
             else if (columnType.ToUpper(CultureInfo.InvariantCulture) == "STRING")
             {
-                setinfo(this, columnName, DataType.String);
+                SetInfo(this, columnName, DataType.String);
             }
             else if (columnType.ToUpper(CultureInfo.InvariantCulture) == "BINARY" || columnType.ToUpper(CultureInfo.InvariantCulture) == "BLOB")
             {
-                setinfo(this, columnName, DataType.Binary);
+                SetInfo(this, columnName, DataType.Binary);
             }
             else if (columnType.ToUpper(CultureInfo.InvariantCulture) == "MIXED")
             {
-                setinfo(this, columnName, DataType.Mixed);
+                SetInfo(this, columnName, DataType.Mixed);
             }
 
             else if (columnType.ToUpper(CultureInfo.InvariantCulture) == "DATE")
             {
-                setinfo(this, columnName, DataType.Date);
+                SetInfo(this, columnName, DataType.Date);
             }
 
             else if (columnType.ToUpper(CultureInfo.InvariantCulture) == "FLOAT")
             {
-                setinfo(this, columnName, DataType.Float);
+                SetInfo(this, columnName, DataType.Float);
             }
             else if (columnType.ToUpper(CultureInfo.InvariantCulture) == "DOUBLE")
             {
-                setinfo(this, columnName, DataType.Double);
+                SetInfo(this, columnName, DataType.Double);
             }
             else if (columnType.ToUpper(CultureInfo.InvariantCulture) == "TABLE" || columnType.ToUpper(CultureInfo.InvariantCulture) == "SUBTABLE")
             {
-                setinfo(this, columnName, DataType.Table);
+                SetInfo(this, columnName, DataType.Table);
          //       throw new TableException("Subtables should be specified as an array, cannot create a freestanding subtable field");
             }
             else
                 throw new TableException(String.Format(CultureInfo.InvariantCulture,"Trying to initialize a tablefield with an unknown type specification Fieldname:{0}  type:{1}", columnName, columnType));
         }
+
+        protected  Field() {}//used when IntegerField,StringField etc are constructed
+       
 
         public String ColumnName { get; set; }
         
@@ -133,12 +149,100 @@ namespace TightDb.TightDbCSharp
 
         private List<Field> subTable = new List<Field>();//only used if type is a subtable
 
-        internal Field[] getsubtablearray()
+        //potential trouble. A creative user could subclass Field to get access to getsubtablearray, then call this to get access to a subtable field, then set the subtable field reference to this same class or one of its parents in the field tree
+        //then  call create table and provoke a stack overflow
+        //could be avoided if the toarray did a deep copy
+        //or if the individial items in the subTable could only be set once
+        public Field[] GetSubTableArray()
         {
             return subTable.ToArray();
-        }
+        } 
+    }
 
-    
+    public class SubTableField : Field
+    {
+        public SubTableField(string columnName, params Field[] subTableFieldsArray)
+        {                        
+            AddSubTableFields(this, columnName,subTableFieldsArray);   
+        }
+    }
+
+    public class StringField : Field
+    {
+        public StringField(String columnName)
+        {
+            SetInfo(this,columnName,DataType.String);
+        }
+    }
+
+    public class IntField : Field
+    {
+        protected  IntField() {}//used when descendants of IntegerField are created
+
+        public IntField(String columnName)
+        {
+            SetInfo(this,columnName,DataType.Int);
+        }
+    }
+
+    public class BoolField : Field
+    {
+        protected BoolField() { }//used when descendants of IntegerField are created
+
+        public BoolField(String columnName)
+        {
+            SetInfo(this, columnName, DataType.Bool);
+        }
+    }
+
+    public class BinaryField : Field
+    {
+        protected BinaryField() { }//used when descendants of IntegerField are created
+
+        public BinaryField(String columnName)
+        {
+            SetInfo(this, columnName, DataType.Binary);
+        }
+    }
+
+    public class MixedField : Field
+    {
+        protected MixedField() { }//used when descendants of IntegerField are created
+
+        public MixedField(String columnName)
+        {
+            SetInfo(this, columnName, DataType.Mixed);
+        }
+    }
+
+    public class DateField : Field
+    {
+        protected DateField() { }//used when descendants of IntegerField are created
+
+        public DateField(String columnName)
+        {
+            SetInfo(this, columnName, DataType.Date);
+        }
+    }
+
+    public class FloatField : Field
+    {
+        protected FloatField() { }//used when descendants of IntegerField are created
+
+        public FloatField(String columnName)
+        {
+            SetInfo(this, columnName, DataType.Float);
+        }
+    }
+
+    public class DoubleField : Field
+    {
+        protected DoubleField() { }//used when descendants of IntegerField are created
+
+        public DoubleField(String columnName)
+        {
+            SetInfo(this, columnName, DataType.Double);
+        }
     }
 
 
@@ -245,8 +349,6 @@ namespace TightDb.TightDbCSharp
             {
                 return new Field(fieldName, DataType.Double);
             }
-
-
         }
     }
 

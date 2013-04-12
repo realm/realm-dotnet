@@ -122,6 +122,163 @@ Table Name  : column name is 123 then two japanese characters then 678
     public static class CreateTableTest
     {
 
+        //test with the newest kind of field object constructores - lasse's inherited specialized ones
+
+        [Test]
+        public static void TypedFieldClasses()
+        {
+            String actualres;
+            using (
+            Table newFieldClasses = new Table(
+                new StringField("F1"),
+                new IntField("F2"),
+                new SubTableField("Sub1",
+                   new StringField("F11"),
+                   new IntField("F12"))
+            ))
+            {
+                newFieldClasses.AddColumn(DataType.String, "Buksestørrelse");
+                
+                actualres = Program.TableDumper(MethodInfo.GetCurrentMethod().Name, "table created with all types using the new field classes", newFieldClasses);
+            }
+            string expectedres =
+@"------------------------------------------------------
+Column count: 4
+Table Name  : table created with all types using the new field classes
+------------------------------------------------------
+ 0     String  F1                  
+ 1        Int  F2                  
+ 2      Table  Sub1                
+    0     String  F11                 
+    1        Int  F12                 
+ 3     String  Buksestørrelse      
+------------------------------------------------------
+
+";
+            Assert.AreEqual(expectedres, actualres);
+        }
+
+
+        //illustration of field usage, usecase / unit test
+
+        //The user can decide to create his own field types, that could then be used in several different table definitions, to ensure 
+        //that certain kinds of fields used by common business logic always were of the correct type and setup
+        //For example a field called itemcode that currently hold integers to denote owned item codes in a game,
+        //but perhaps later should be a string field instead
+        //if you have many IntegerField fields in many tables with item codes in them, you could use Itemcode instead, and then effect the change to string
+        //only by changing the ineritance of the Itemcode type from IntegerField to StringField
+        //thus by introducing your own class, You hide the field implementation detail from the users using this field type
+
+        
+        class ItemCode : IntField //whenever ItemCode is specified in a table definition, an IntegerField is created
+        {
+            public ItemCode(String columnName) : base(columnName) { }           
+        }
+
+        //because of a defense against circular field references, the subtablefield cannot be used this way, however you can make a method that returns an often
+        //used subtable specification like this instead :
+
+        //subtable field set used by our general login processing system
+        public static SubTableField OwnedItems()
+        {
+            return new SubTableField(
+                ("OwnedItems"),
+                  new StringField("Item Name"),
+                  new ItemCode("ItemId"),
+                  new IntField("Number Owned"),
+                  new BoolField("ItemPowerLevel"));
+        }
+
+        //game state dataset used by our general game saving system for casual games
+        public static SubTableField GameSaveFields()
+        {
+            return new SubTableField(
+                ("GameState"),
+                  new StringField("SaveDate"),
+                  new IntField("UserId"),
+                  new StringField("Users description"),
+                  new BinaryField("GameData1"),
+                  new StringField("GameData2"));
+        }
+
+
+        //creation of table using user overridden or generated fields (ensuring same subtable structure across applications or tables)
+        [Test]
+        public static void UserCreatedFields()
+        {
+            String actualres;
+
+            using (
+            Table Game1 = new Table(
+                OwnedItems(),
+                new IntField("UserId"), //some game specific stuff. All players are owned by some item, don't ask me why
+                new BinaryField("BoardLayout"), //game specific
+                GameSaveFields())
+                )
+            {
+                actualres = Program.TableDumper(MethodInfo.GetCurrentMethod().Name+"1", "table created user defined types and methods", Game1);
+            }
+            string expectedres =
+@"------------------------------------------------------
+Column count: 4
+Table Name  : table created user defined types and methods
+------------------------------------------------------
+ 0      Table  OwnedItems          
+    0     String  Item Name           
+    1        Int  ItemId              
+    2        Int  Number Owned        
+    3       Bool  ItemPowerLevel      
+ 1        Int  UserId              
+ 2     Binary  BoardLayout         
+ 3      Table  GameState           
+    0     String  SaveDate            
+    1        Int  UserId              
+    2     String  Users description   
+    3     Binary  GameData1           
+    4     String  GameData2           
+------------------------------------------------------
+
+";
+            Assert.AreEqual(expectedres, actualres);        
+
+
+
+
+            using (Table Game2 = new Table(
+            OwnedItems(),
+            new ItemCode("UserId"), //game specific
+            new ItemCode("UsersBestFriend"), //game specific
+            new IntField("Game Character Type"), //game specific
+            GameSaveFields()))
+            {
+                actualres = Program.TableDumper(MethodInfo.GetCurrentMethod().Name + "2", "table created user defined types and methods", Game2);
+            }
+             expectedres =
+@"------------------------------------------------------
+Column count: 5
+Table Name  : table created user defined types and methods
+------------------------------------------------------
+ 0      Table  OwnedItems          
+    0     String  Item Name           
+    1        Int  ItemId              
+    2        Int  Number Owned        
+    3       Bool  ItemPowerLevel      
+ 1        Int  UserId              
+ 2        Int  UsersBestFriend     
+ 3        Int  Game Character Type 
+ 4      Table  GameState           
+    0     String  SaveDate            
+    1        Int  UserId              
+    2     String  Users description   
+    3     Binary  GameData1           
+    4     String  GameData2           
+------------------------------------------------------
+
+";
+            Assert.AreEqual(expectedres, actualres);        
+
+        }
+        
 
         //this kind of creation call should be legal - it creates a totally empty table, then only later sets up a field        
         [Test]
@@ -179,7 +336,7 @@ Table Name  : NameField
             "Name".TightDbString(),
             "Age".TightDbInt(),
             "count".TightDbInt(),
-            "Whatever".TightDbMixed()
+            "Whatever".TightDbMixed()            
             ))
             {
                 //long  test = testtbl3.getdllversion_CSH();
@@ -202,43 +359,43 @@ Table Name  : four columns, Last Mixed
 
         //test the alternative table dumper implementation that does not use table class
         [Test]
-        public static void TestAllFieldTypes()
+        public static void TestAllFieldTypesStringExtensions()
         {
             string actualres1;
             string actualres2;
             using (Table t = new Table(
-        "IntField".Int(),
-        "BoolField".Bool(),
-        "StringField".String(),
-        "BinaryFiel".Binary(),
-        "TableField".SubTable(
-            "subtablefield1".Int(),
-            "subtablefield2".String()),
-        "MixedField".Mixed(),
-        "DateField".Date(),
-        "FloatField".Float(),
-        "DoubleField".Double()
+               "Count".Int(),
+               "Valid".Bool(),
+               "Name".String(),
+               "BLOB".Binary(),
+               "Items".SubTable(
+                   "ItemCount".Int(),
+                   "ItemName".String()),
+               "HtmlPage".Mixed(),
+               "FirstSeen".Date(),
+               "Fraction".Float(),
+               "QuiteLargeNumber".Double()
         ))
             {
-                actualres1 = Program.TableDumper(MethodInfo.GetCurrentMethod().Name, "Table with all allowed types", t);
-                actualres2 = Program.TableDumperSpec(MethodInfo.GetCurrentMethod().Name, "Table with all allowed types", t);
+                actualres1 = Program.TableDumper(MethodInfo.GetCurrentMethod().Name, "Table with all allowed types (String Extensions)", t);
+                actualres2 = Program.TableDumperSpec(MethodInfo.GetCurrentMethod().Name, "Table with all allowed types (String Extensions)", t);
             }
             string expectedres =
 @"------------------------------------------------------
 Column count: 9
-Table Name  : Table with all allowed types
+Table Name  : Table with all allowed types (String Extensions)
 ------------------------------------------------------
- 0        Int  IntField            
- 1       Bool  BoolField           
- 2     String  StringField         
- 3     Binary  BinaryFiel          
- 4      Table  TableField          
-    0        Int  subtablefield1      
-    1     String  subtablefield2      
- 5      Mixed  MixedField          
- 6       Date  DateField           
- 7      Float  FloatField          
- 8     Double  DoubleField         
+ 0        Int  Count               
+ 1       Bool  Valid               
+ 2     String  Name                
+ 3     Binary  BLOB                
+ 4      Table  Items               
+    0        Int  ItemCount           
+    1     String  ItemName            
+ 5      Mixed  HtmlPage            
+ 6       Date  FirstSeen           
+ 7      Float  Fraction            
+ 8     Double  QuiteLargeNumber    
 ------------------------------------------------------
 
 ";
@@ -247,6 +404,100 @@ Table Name  : Table with all allowed types
         }
 
 
+
+        //test the alternative table dumper implementation that does not use table class
+        [Test]
+        public static void TestAllFieldTypesFieldClass()
+        {
+            string actualres1;
+            string actualres2;
+            using (Table t = new Table(
+                     new Field("Count",DataType.Int),
+                     new Field("Valid",DataType.Bool),
+                     new Field("Name",DataType.String),
+                     new Field("BLOB",DataType.Binary),
+                     new Field("Items",
+                          new Field("ItemCount",DataType.Int), 
+                          new Field("ItemName",DataType.String)),        
+                     new Field("HtmlPage", DataType.Mixed),
+                     new Field("FirstSeen",DataType.Date),
+                     new Field("Fraction",DataType.Float),
+                     new Field("QuiteLargeNumber",DataType.Double)
+        ))
+            {
+                actualres1 = Program.TableDumper(MethodInfo.GetCurrentMethod().Name, "Table with all allowed types (Field)", t);
+                actualres2 = Program.TableDumperSpec(MethodInfo.GetCurrentMethod().Name, "Table with all allowed types (Field)", t);
+            }
+            string expectedres =
+@"------------------------------------------------------
+Column count: 9
+Table Name  : Table with all allowed types (Field)
+------------------------------------------------------
+ 0        Int  Count               
+ 1       Bool  Valid               
+ 2     String  Name                
+ 3     Binary  BLOB                
+ 4      Table  Items               
+    0        Int  ItemCount           
+    1     String  ItemName            
+ 5      Mixed  HtmlPage            
+ 6       Date  FirstSeen           
+ 7      Float  Fraction            
+ 8     Double  QuiteLargeNumber    
+------------------------------------------------------
+
+";
+            Assert.AreEqual(expectedres, actualres1);
+            Assert.AreEqual(expectedres, actualres2);
+        }
+
+
+
+        //test the alternative table dumper implementation that does not use table class
+        [Test]
+        public static void TestAllFieldTypesTypedFields()
+        {
+            string actualres1;
+            string actualres2;
+            using (Table t = new Table(
+                     new IntField("Count"),
+                     new BoolField("Valid"),
+                     new StringField("Name"),
+                     new BinaryField("BLOB"),
+                     new SubTableField("Items",
+                          new IntField("ItemCount"),
+                          new StringField("ItemName")),
+                     new MixedField("HtmlPage"),
+                     new DateField("FirstSeen"),
+                     new FloatField("Fraction"),
+                     new DoubleField("QuiteLargeNumber")
+        ))
+            {
+                actualres1 = Program.TableDumper(MethodInfo.GetCurrentMethod().Name, "Table with all allowed types (Typed Field)", t);
+                actualres2 = Program.TableDumperSpec(MethodInfo.GetCurrentMethod().Name, "Table with all allowed types (Typed Field)", t);
+            }
+            string expectedres =
+@"------------------------------------------------------
+Column count: 9
+Table Name  : Table with all allowed types (Typed Field)
+------------------------------------------------------
+ 0        Int  Count               
+ 1       Bool  Valid               
+ 2     String  Name                
+ 3     Binary  BLOB                
+ 4      Table  Items               
+    0        Int  ItemCount           
+    1     String  ItemName            
+ 5      Mixed  HtmlPage            
+ 6       Date  FirstSeen           
+ 7      Float  Fraction            
+ 8     Double  QuiteLargeNumber    
+------------------------------------------------------
+
+";
+            Assert.AreEqual(expectedres, actualres1);
+            Assert.AreEqual(expectedres, actualres2);
+        }
 
 
         //test with a subtable
@@ -260,6 +511,7 @@ Table Name  : Table with all allowed types
                 "Age".TightDbInt(),
                 new Field("age2", DataType.Int),
                 new Field("age3", "Int"),
+//                new IntegerField("Age3"),
                 new Field("comments",
                               new Field("phone#1", DataType.String),
                               new Field("phone#2", DataType.String),
@@ -406,6 +658,94 @@ Table Name  : subtable that has subtable that references its parent #2
             Assert.AreEqual(expectedres, actualres);
 
         }
+
+        //super creative attemt at creating a cyclic graph of Field objects
+        //still it fails because the array being manipulated is from GetSubTableArray and thus NOT the real list inside F1 even though the actual field objects referenced from the array ARE the real objects
+        //point is - You cannot stuff field definitions down into the internal array this way
+        [Test]
+        public static void TestCyclicFieldDefinition1()
+        {
+
+            Field f1 = "f10".SubTable("f11".Int(), "f12".Int());
+            var SubTableElements =  f1.GetSubTableArray();
+            SubTableElements[0] = f1;//and the "f16" field in f1.f15.f16 is now replaced with f1.. recursiveness
+
+
+            string actualres;
+            using (Table t4 = new Table(f1))
+            {
+                actualres = Program.TableDumper(MethodInfo.GetCurrentMethod().Name, "cyclic field definition", t4);
+            }
+            String expectedres =
+@"------------------------------------------------------
+Column count: 1
+Table Name  : cyclic field definition
+------------------------------------------------------
+ 0      Table  f10                 
+    0        Int  f11                 
+    1        Int  f12                 
+------------------------------------------------------
+
+";
+
+            Assert.AreEqual(expectedres, actualres);
+        }
+
+        //dastardly creative terroristic attemt at creating a cyclic graph of Field objects
+        //this creative approach succeeded in creating a stack overflow situation when the table is being created, but now it is not possible as AddSubTableFields has been made
+        //internal, thus unavailable in customer assemblies.
+        
+        class TerroristField : Field
+        {
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "fielddefinitions"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "fieldName")]
+            public  void setsubtablearray(String fieldName, Field[] fielddefinitions)//make the otherwise hidden addsubtablefield public
+            {
+//uncommenting the line below should create a compiletime error (does now) or else this unit test wil bomb the system
+//                AddSubTableFields(this, fieldName,fielddefinitions);
+            }
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "columnName"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "subTableFieldsArray")]
+            public TerroristField(string columnName, params Field[] subTableFieldsArray)
+            {
+                FieldType = DataType.Table;
+            }
+        }
+
+        
+        [Test]
+        [ExpectedException("System.ArgumentNullException")]///while bombing the system with a circular field def is now not possible, we can always try to call in with null in a fieldname
+        public static void TestCyclicFieldDefinition2()
+        {
+
+            TerroristField f1 = new TerroristField("f1",null);//do not care about last parameter we're trying to crash the system
+            Field[] subs= new Field[2];
+            subs[0]=f1;
+            f1.setsubtablearray("f2", subs);
+
+            string actualres;
+            using (Table t4 = new Table(f1))
+            {
+                actualres = Program.TableDumper(MethodInfo.GetCurrentMethod().Name, "cyclic field definition using field inheritance to get at subtable field list", t4);
+            }
+            String expectedres =
+@"------------------------------------------------------
+Column count: 1
+Table Name  : cyclic field definition
+------------------------------------------------------
+ 0      Table  f10                 
+    0        Int  f11                 
+    1        Int  f12                 
+------------------------------------------------------
+
+";
+
+            Assert.AreEqual(expectedres, actualres);
+        }
+
+
+
+
+
+
         [Test]
         public static void TestIllegalFieldDefinitions4()
         {
@@ -737,7 +1077,9 @@ Table Name  : same names, empty names, mixed types
              *  */
 
             EnvironmentTest.ShowVersionTest();
-
+            CreateTableTest.UserCreatedFields();
+            CreateTableTest.TypedFieldClasses();
+          //  CreateTableTest.TestCyclicFieldDefinition2();///this should crash the program
             StringEncodingTest.TableWithPerThousandSign();
             StringEncodingTest.TableWithJapaneseCharacters();
 
@@ -753,7 +1095,7 @@ Table Name  : same names, empty names, mixed types
 
             CreateTableTest.TestMixedConstructorWithSubTables();
 
-            CreateTableTest.TestAllFieldTypes();
+            CreateTableTest.TestAllFieldTypesStringExtensions();
 
             CreateTableTest.TestIllegalFieldDefinitions1();
             CreateTableTest.TestIllegalFieldDefinitions2();
