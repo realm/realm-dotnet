@@ -18,7 +18,7 @@ namespace TestTightDbCS
     [TestFixture]
     public static class EnvironmentTest
     {
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "tightccs"), 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters", MessageId = "System.Console.WriteLine(System.String,System.Object,System.Object)"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "tightccs"), 
          System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters", MessageId = "System.Console.WriteLine(System.String)"),
          System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "ImageFileMachine"),
          System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "PeKind"),
@@ -445,6 +445,84 @@ Table Name  : Table with all allowed types (Field)
  6       Date  FirstSeen           
  7      Float  Fraction            
  8     Double  QuiteLargeNumber    
+------------------------------------------------------
+
+";
+            Assert.AreEqual(expectedres, actualres1);
+            Assert.AreEqual(expectedres, actualres2);
+        }
+
+                //test the alternative table dumper implementation that does not use table class
+        [Test]
+        public static void TestAllFieldTypesFieldClassStrings()
+        {
+            string actualres1;
+            string actualres2;
+            using (Table t = new Table(
+                     new Field("Count1","integer"),
+                     new Field("Count2","Integer"),//Any case is okay
+                     new Field("Count3","int"),
+                     new Field("Count4","INT"),//Any case is okay
+                     new Field("Valid1","boolean"),
+                     new Field("Valid2","bool"),
+                     new Field("Valid3","Boolean"),
+                     new Field("Valid4","Bool"),
+                     new Field("Name1","string"),
+                     new Field("Name2","string"),
+                     new Field("Name3","str"),
+                     new Field("Name4","Str"),
+                     new Field("BLOB1","binary"),
+                     new Field("BLOB2","Binary"),
+                     new Field("BLOB3","blob"),
+                     new Field("BLOB4","Blob"),
+                     new Field("Items",
+                          new Field("ItemCount","integer"), 
+                          new Field("ItemName","string")),        
+                     new Field("HtmlPage1", "mixed"),
+                     new Field("HtmlPage2", "MIXED"),
+                     new Field("FirstSeen1","date"),
+                     new Field("FirstSeen2","daTe"),
+                     new Field("Fraction1","float"),
+                     new Field("Fraction2","Float"),
+                     new Field("QuiteLargeNumber1","double"),
+                     new Field("QuiteLargeNumber2","Double")
+        ))
+            {
+                actualres1 = Program.TableDumper(MethodInfo.GetCurrentMethod().Name, "Table with all allowed types (Field_string)", t);
+                actualres2 = Program.TableDumperSpec(MethodInfo.GetCurrentMethod().Name, "Table with all allowed types (Field_string)", t);
+            }
+            string expectedres =
+@"------------------------------------------------------
+Column count: 25
+Table Name  : Table with all allowed types (Field_string)
+------------------------------------------------------
+ 0        Int  Count1              
+ 1        Int  Count2              
+ 2        Int  Count3              
+ 3        Int  Count4              
+ 4       Bool  Valid1              
+ 5       Bool  Valid2              
+ 6       Bool  Valid3              
+ 7       Bool  Valid4              
+ 8     String  Name1               
+ 9     String  Name2               
+10     String  Name3               
+11     String  Name4               
+12     Binary  BLOB1               
+13     Binary  BLOB2               
+14     Binary  BLOB3               
+15     Binary  BLOB4               
+16      Table  Items               
+    0        Int  ItemCount           
+    1     String  ItemName            
+17      Mixed  HtmlPage1           
+18      Mixed  HtmlPage2           
+19       Date  FirstSeen1          
+20       Date  FirstSeen2          
+21      Float  Fraction1           
+22      Float  Fraction2           
+23     Double  QuiteLargeNumber1   
+24     Double  QuiteLargeNumber2   
 ------------------------------------------------------
 
 ";
@@ -1078,6 +1156,7 @@ Table Name  : same names, empty names, mixed types
              *  */
 
             EnvironmentTest.ShowVersionTest();
+            CreateTableTest.TestAllFieldTypesFieldClassStrings();
             CreateTableTest.UserCreatedFields();
             CreateTableTest.TypedFieldClasses();
             CreateTableTest.TestCyclicFieldDefinition2();///this should crash the program

@@ -105,7 +105,7 @@ namespace TightDb.TightDbCSharp
             {
                 SetInfo(this, columnName, DataType.Bool);
             }
-            else if (columnType.ToUpper(CultureInfo.InvariantCulture) == "STRING")
+            else if (columnType.ToUpper(CultureInfo.InvariantCulture) == "STRING" || columnType.ToUpper(CultureInfo.InvariantCulture) == "STR")
             {
                 SetInfo(this, columnName, DataType.String);
             }
