@@ -49,7 +49,7 @@ TIGHTDB_C_CS_API void spec_deallocate(tightdb::Spec* SpecPtr);
 
 TIGHTDB_C_CS_API int table_get_column_name(tightdb::Table* TablePtr,size_t column_ndx,char * colname, size_t bufsize);
 
-TIGHTDB_C_CS_API size_t tightdb_c_cs_GetVersion(void);
+TIGHTDB_C_CS_API size_t tightdb_c_cs_GetVer(void);
 
 
 

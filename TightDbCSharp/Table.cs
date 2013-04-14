@@ -358,7 +358,7 @@ namespace TightDb.TightDbCSharp
     {
         //manual dll version info. Used when debugging to see if the right DLL is loaded, or an old one
         //the number is a date and a time (usually last time i debugged something)
-        public  const long GetDllVersionCSharp = 1304120321 ; 
+        public  const long GetDllVersionCSharp = 1304142323 ; 
 
 
         //following the dispose pattern discussed here http://dave-black.blogspot.dk/2011/03/how-do-you-properly-implement.html

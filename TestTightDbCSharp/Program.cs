@@ -28,6 +28,7 @@ namespace TestTightDbCS
         {
             var PointerSize = IntPtr.Size;
             var VmBitness = (PointerSize == 8) ? "64bit" : "32bit";
+            var dllsuffix = (PointerSize == 8) ? "64" : "32";
             OperatingSystem os = Environment.OSVersion;
             Assembly executingAssembly = Assembly.GetExecutingAssembly();
             PortableExecutableKinds peKind;
@@ -43,7 +44,7 @@ namespace TestTightDbCS
             System.Console.WriteLine("OS Version :                {0}", os.Version.ToString());
             System.Console.WriteLine("OS Platform:                {0}", os.Platform.ToString());
             System.Console.WriteLine("");
-            System.Console.WriteLine("Now Loading tight_c_cs.dll  - expecting it to be a "+VmBitness+" dll!");
+            System.Console.WriteLine("Now Loading tight_c_cs{0}.dll - expecting it to be a {1} dll" ,dllsuffix, VmBitness);
             //System.Console.WriteLine("Loading "+thisapplocation+"...");
 
 
@@ -1079,9 +1080,8 @@ Table Name  : same names, empty names, mixed types
             EnvironmentTest.ShowVersionTest();
             CreateTableTest.UserCreatedFields();
             CreateTableTest.TypedFieldClasses();
-          //  CreateTableTest.TestCyclicFieldDefinition2();///this should crash the program
+            CreateTableTest.TestCyclicFieldDefinition2();///this should crash the program
             StringEncodingTest.TableWithPerThousandSign();
-            StringEncodingTest.TableWithJapaneseCharacters();
 
             CreateTableTest.TestHandleAcquireOneField();
 
@@ -1102,8 +1102,19 @@ Table Name  : same names, empty names, mixed types
             CreateTableTest.TestIllegalFieldDefinitions3();
             CreateTableTest.TestIllegalFieldDefinitions4();
             CreateTableTest.TestIllegalFieldDefinitions5();
-
-            
+            StringEncodingTest.TableWithJapaneseCharacters();//when we have implemented utf-16 to utf-8 both ways, the following tests should be created:
+            //an empty string back and forth
+            //a string with an illegal utf-16 being sent to the binding (illegal because one of the uft-16 characters is a lead surrogate with no trailing surrogate)
+            //a string with an illegal utf-16 being sent to the binding (illegal because one of the uft-16 characters is a trailing surrogate with no lead surrogate)
+            //if the c++ binding (wrongly) accpets codepoints in the surrogate range, test how the binding handles reading such values)
+            //in all cases with illegal utf-16 strings, a descriptive exception should be raised
+            //round trip of a 7-bit ascii string
+            //round trip of a a string with a unicode codepoint between 129 and 255
+            //round trip of a string with a unicode character that translates to 1 utf-16 character, but 2 utf-8 characters
+            //round trip of a string with a unicode character that translates to 1 utf-16 character, but 3 utf-8 characters
+            //round trip of a string with a unicode character that translates to 2 utf-16 characters,  4 utf-8 characters
+            //round trip of a string with a unicode character that translates to 2 utf-16 characters,  5 utf-8 characters
+                        
             System.Console.WriteLine("Press any key to finish test..");
             System.Console.ReadKey();
         }

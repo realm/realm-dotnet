@@ -22,10 +22,10 @@ extern "C" {
 // return a (manually changed) constant - used when debugging to manually ensure a newly compiled dll is being linked to
 
 
- TIGHTDB_C_CS_API size_t tightdb_c_cs_GetVersion(void){
+ TIGHTDB_C_CS_API size_t tightdb_c_cs_GetVer(void){
 
   // Table test;
-	return 1304091004;
+	return 1304142320;
 }
 	
 	
