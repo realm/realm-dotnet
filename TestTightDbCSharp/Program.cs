@@ -59,6 +59,185 @@ namespace TestTightDbCS
         }
     }
 
+    //this test fixture covers adding rows, deleting rows, altering field values in ordinary tables
+    [TestFixture]
+    public static class TableChangeDataTest
+    {
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters", MessageId = "NUnit.Framework.Assert.AreEqual(System.Int64,System.Int64,System.String,System.Object[])"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "InsertInt")]
+        public static void CheckNumberInIntColumn(Table table, long columnNumber, long rowNumber, long testValue)
+        {
+            if (table == null)
+            {
+                throw new ArgumentNullException("table");   //code analysis made me do this             
+            }
+            table.SetLong(columnNumber, rowNumber, testValue);
+            long GotOut = table.GetLong(columnNumber, rowNumber);
+            Assert.AreEqual(testValue, GotOut, "Table.InsertInt value mismatch sent{} got{}", testValue, GotOut);
+        }
+
+
+        //create a table of only integers, 3 columns.
+        //with 42*42 in {0,0}, with long.minvalue in {1,1} and with long.minvalue+24 in {2,2}
+        //the other fields have never been touched
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate")]
+        public static Table GetTableWithIntegers(bool subTable)
+        {
+            Table t = new Table();
+            Spec S = t.Spec;
+            S.AddIntColumn("IntColumn1");
+            S.AddIntColumn("IntColumn2");
+            S.AddIntColumn("IntColumn3");
+            if (subTable) {            
+                Spec SubSpec =  t.Spec.AddSubTableColumn("SubTableWithInts");
+                SubSpec.AddIntColumn("SubIntColumn1");
+                SubSpec.AddIntColumn("SubIntColumn2");
+                SubSpec.AddIntColumn("SubIntColumn3");
+            }
+           t.UpdateFromSpec();
+
+           long rowindex = t.AddEmptyRow(1);//0
+            long colummnIndex = 0;
+            CheckNumberInIntColumn(t, colummnIndex, rowindex, 0);
+            CheckNumberInIntColumn(t, colummnIndex, rowindex, -0);
+            CheckNumberInIntColumn(t, colummnIndex, rowindex, 42 * 42);
+
+            if (subTable)
+            {
+                Table sub = t.GetSubTable(3, rowindex);
+                sub.AddEmptyRow(3);
+                CheckNumberInIntColumn(sub, colummnIndex,rowindex,2L);
+            }
+
+            colummnIndex=1;
+            rowindex = t.AddEmptyRow(1);//1
+            CheckNumberInIntColumn(t, colummnIndex, rowindex, long.MaxValue);
+            CheckNumberInIntColumn(t, colummnIndex, rowindex, long.MinValue);
+            if (subTable)
+            {
+                Table sub = t.GetSubTable(3, rowindex);
+                sub.AddEmptyRow(3);
+                CheckNumberInIntColumn(sub, colummnIndex, rowindex, 2L);
+            }
+
+
+
+            colummnIndex=2;
+            rowindex = t.AddEmptyRow(1);//2
+            CheckNumberInIntColumn(t, colummnIndex, rowindex, long.MaxValue - 42);
+            CheckNumberInIntColumn(t, colummnIndex, rowindex, long.MinValue + 42);
+            if (subTable)
+            {
+                Table sub = t.GetSubTable(3, rowindex);
+                sub.AddEmptyRow(3);
+                CheckNumberInIntColumn(sub, colummnIndex, rowindex, 2L);
+            }
+
+
+
+
+            return t;
+        }
+
+
+        [Test]
+        public static void TableIntValueTest1()
+        {            
+            Table t = GetTableWithIntegers(false);
+            System.Console.WriteLine(t.Size());
+        }
+
+        [Test]
+        public static void TableIntValueTest2()
+        {
+            String actualres;
+            Table.LoggingEnable("IntValueTest2");
+            using (Table t = GetTableWithIntegers(false))
+            {
+                actualres = Program.TableDumper(MethodInfo.GetCurrentMethod().Name, "table with a few integers in it", t);
+            }
+            Table.LoggingSaveFile("IntValueTest2.log");
+
+            string expectedres =
+@"------------------------------------------------------
+Column count: 3
+Table Name  : table with a few integers in it
+------------------------------------------------------
+ 0        Int  IntColumn1          
+ 1        Int  IntColumn2          
+ 2        Int  IntColumn3          
+------------------------------------------------------
+
+Table Data Dump
+------------------------------------------------------
+{ //Start row0
+Column 0:1764
+Column 1:0
+Column 2:0
+} //End row0
+{ //Start row1
+Column 0:0
+Column 1:-9223372036854775808
+Column 2:0
+} //End row1
+{ //Start row2
+Column 0:0
+Column 1:0
+Column 2:-9223372036854775766
+} //End row2
+------------------------------------------------------
+";
+            Assert.AreEqual(expectedres, actualres);
+        }
+    
+
+    
+            [Test]
+        public static void TableIntValueSubTableTest1()
+        {
+            String actualres;
+            
+            using (Table t = GetTableWithIntegers(true))
+            {
+                actualres = Program.TableDumper(MethodInfo.GetCurrentMethod().Name, "table with a few integers in it", t);
+            }
+
+            string expectedres =
+@"------------------------------------------------------
+Column count: 3
+Table Name  : table with a few integers in it
+------------------------------------------------------
+ 0        Int  IntColumn1          
+ 1        Int  IntColumn2          
+ 2        Int  IntColumn3          
+------------------------------------------------------
+
+Table Data Dump
+------------------------------------------------------
+{ //Start row0
+Column 0:1764
+Column 1:0
+Column 2:0
+} //End row0
+{ //Start row1
+Column 0:0
+Column 1:-9223372036854775808
+Column 2:0
+} //End row1
+{ //Start row2
+Column 0:0
+Column 1:0
+Column 2:-9223372036854775766
+} //End row2
+------------------------------------------------------
+";
+            Assert.AreEqual(expectedres, actualres);
+        }
+    }
+
+
+
+
     [TestFixture]
     public static class StringEncodingTest
     {
@@ -77,13 +256,32 @@ namespace TestTightDbCS
             }
             string expectedres =
 @"------------------------------------------------------
-Column count: 2
-Table Name  : table name is 12345 then the permille sign ISO 10646:8240 then 7890
+Column count: 3
+Table Name  : table with a few integers in it
 ------------------------------------------------------
- 0      Table  subtable            
- 1     String  12345‰7890          
+ 0        Int  IntColumn1          
+ 1        Int  IntColumn2          
+ 2        Int  IntColumn3          
 ------------------------------------------------------
 
+Table Data Dump
+------------------------------------------------------
+{ //Start row0
+field 0:1764
+field 1:0
+field 2:0
+} //End row0
+{ //Start row1
+field 0:0
+field 1:-9223372036854775808
+field 2:0
+} //End row1
+{ //Start row2
+field 0:0
+field 1:0
+field 2:-9223372036854775766
+} //End row2
+------------------------------------------------------
 ";
             Assert.AreEqual(expectedres,actualres);        
         }
@@ -1065,20 +1263,20 @@ Table Name  : same names, empty names, mixed types
 
         private static void printHeader(StringBuilder res, string tablename, long count)
         {
-            res.AppendLine(headerline);
+            res.AppendLine(sectiondelimitor);
             res.AppendLine(String.Format(CultureInfo.InvariantCulture, "Column count: {0}", count));
             res.AppendLine(String.Format(CultureInfo.InvariantCulture, "Table Name  : {0}", tablename));
-            res.AppendLine(headerline);            
+            res.AppendLine(sectiondelimitor);            
         }
 
 
-        private static void printFooter(StringBuilder res)
+        private static void printMetadataFooter(StringBuilder res)
         {
-            res.AppendLine(headerline);
+            res.AppendLine(sectiondelimitor);
             res.AppendLine("");
         }
 
-        static string headerline = "------------------------------------------------------";
+        static string sectiondelimitor = "------------------------------------------------------";
 
 
         //dumps table structure to a string for debugging purposes.
@@ -1101,7 +1299,9 @@ Table Name  : same names, empty names, mixed types
                     specdumper(res, "   ", subSpec, "Subtable");
                 }
             }
-            printFooter(res);
+            printMetadataFooter(res);
+            TableDataDumper(res, t);
+
             System.Console.Write(res.ToString());
             File.WriteAllText(fileName + ".txt", res.ToString());
             return res.ToString();
@@ -1132,7 +1332,7 @@ Table Name  : same names, empty names, mixed types
 
             if (String.IsNullOrEmpty(indent))
             {
-                printFooter(res);
+                printMetadataFooter(res);
             }
         }
 
@@ -1141,49 +1341,90 @@ Table Name  : same names, empty names, mixed types
         {
             StringBuilder res = new StringBuilder();           
             specdumper(res, "", t.Spec, tablename);
+
+            TableDataDumper(res, t);
+            System.Console.WriteLine(res.ToString());
             File.WriteAllText(fileName + ".txt", res.ToString());
             return res.ToString();
         }
 
 
+        public static void TableDataDumper(StringBuilder res, Table table)
+        {
+            var startrow = "{{ //Start row{0}";
+            var endrow = "}} //End row{0}";
+            var startfield = @"Column {0}:";
+            var endfield = "";
+            var firstdatalineprinted = false;
+            foreach (TableRow tr in table )  {
+                if (firstdatalineprinted == false)
+                {
+                    res.AppendLine("Table Data Dump");
+                    res.AppendLine(sectiondelimitor);
+                    firstdatalineprinted = true;
+                }
+                StringBuilder linestr = new StringBuilder();
+                linestr.AppendLine(String.Format(CultureInfo.InvariantCulture,  startrow, tr.Row));//start row marker
+                foreach (TableRowColumn trc in tr)
+                {
+                    linestr.Append(String.Format(CultureInfo.InvariantCulture, startfield, trc.ColumnIndex));
+                    if (trc.ColumnType == DataType.Table)
+                    {
+                        linestr.Append("Subtable dump not implemented yet");
+                    }
+                    else
+                    {
+                        if (trc.ColumnType == DataType.Mixed)
+                        {
+                            linestr.Append("Mixed dump not implemented yet");
+                        }
+                        linestr.Append(trc.Value);
+                    }
+                    linestr.AppendLine(String.Format(CultureInfo.InvariantCulture, endfield));
+                    
+                    //, trc.Value ));  //of course only works because we only have one type of row right now
+                }
+                linestr.AppendLine(String.Format(CultureInfo.InvariantCulture, endrow,tr.Row));//end row marker
+                res.Append(linestr.ToString());
+            }
+            if(firstdatalineprinted) //some data was dumped from the table, so print a footer
+              res.AppendLine(sectiondelimitor);
+        }
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters", MessageId = "System.Console.WriteLine(System.String)")]
         static void Main(/*string[] args*/)
         {
             /*
-             *  to debug unit tests, uncomment the lines below, and run the test(s) you want to have debugged
+             *  to debug unit tests, uncomment the test you want to debug below, and run the program
              *  remember to set a breakpoint
-             *  Don't run the program in Nunit, simply debug it in visual studio when it runs like an ordinary program
+             *  Don't run the program in Nunit to debug, simply debug it in visual studio when it runs like an ordinary program
+             *  To run the unit tests as unit tests, load the assembly in Nunit and run it from there
              *  */
 
             EnvironmentTest.ShowVersionTest();
-            CreateTableTest.TestAllFieldTypesFieldClassStrings();
-            CreateTableTest.UserCreatedFields();
-            CreateTableTest.TypedFieldClasses();
-            CreateTableTest.TestCyclicFieldDefinition2();///this should crash the program
-            StringEncodingTest.TableWithPerThousandSign();
-
-            CreateTableTest.TestHandleAcquireOneField();
-
-            CreateTableTest.TestHandleAcquireOneField();
-
-            CreateTableTest.TestCreateTwoTables();
-            CreateTableTest.TestTableScope();
-
-            CreateTableTest.TestHandleAcquireSeveralFields();
-
-
-            CreateTableTest.TestMixedConstructorWithSubTables();
-
-            CreateTableTest.TestAllFieldTypesStringExtensions();
-
-            CreateTableTest.TestIllegalFieldDefinitions1();
-            CreateTableTest.TestIllegalFieldDefinitions2();
-            CreateTableTest.TestIllegalFieldDefinitions3();
-            CreateTableTest.TestIllegalFieldDefinitions4();
-            CreateTableTest.TestIllegalFieldDefinitions5();
-            StringEncodingTest.TableWithJapaneseCharacters();//when we have implemented utf-16 to utf-8 both ways, the following tests should be created:
-            //an empty string back and forth
-            //a string with an illegal utf-16 being sent to the binding (illegal because one of the uft-16 characters is a lead surrogate with no trailing surrogate)
+            TableChangeDataTest.TableIntValueSubTableTest1();
+    //        TableChangeDataTest.TableIntValueTest1();
+    //        TableChangeDataTest.TableIntValueTest2();
+    //        CreateTableTest.TestAllFieldTypesFieldClassStrings();
+    //        CreateTableTest.UserCreatedFields();
+    //        CreateTableTest.TypedFieldClasses();
+    //        CreateTableTest.TestCyclicFieldDefinition2();///this should crash the program
+    //        StringEncodingTest.TableWithPerThousandSign();
+    //        CreateTableTest.TestHandleAcquireOneField();
+    //        CreateTableTest.TestHandleAcquireOneField();
+    //        CreateTableTest.TestCreateTwoTables();
+    //        CreateTableTest.TestTableScope();
+    //        CreateTableTest.TestHandleAcquireSeveralFields();
+    //        CreateTableTest.TestMixedConstructorWithSubTables();
+    //        CreateTableTest.TestAllFieldTypesStringExtensions();
+    //        CreateTableTest.TestIllegalFieldDefinitions1();
+    //        CreateTableTest.TestIllegalFieldDefinitions2() ;
+    //        CreateTableTest.TestIllegalFieldDefinitions3() ;
+    //        CreateTableTest.TestIllegalFieldDefinitions4(); 
+    //        CreateTableTest.TestIllegalFieldDefinitions5();
+    //        StringEncodingTest.TableWithJapaneseCharacters();//when we have implemented utf-16 to utf-8 both ways, the following tests should be created:
+             //an empty string back and forth
+             //a string with an illegal utf-16 being sent to the binding (illegal because one of the uft-16 characters is a lead surrogate with no trailing surrogate)
             //a string with an illegal utf-16 being sent to the binding (illegal because one of the uft-16 characters is a trailing surrogate with no lead surrogate)
             //if the c++ binding (wrongly) accpets codepoints in the surrogate range, test how the binding handles reading such values)
             //in all cases with illegal utf-16 strings, a descriptive exception should be raised

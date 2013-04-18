@@ -31,25 +31,53 @@ extern "C" {
 
 TIGHTDB_C_CS_API tightdb::Table* new_table();
 
-TIGHTDB_C_CS_API void unbind_table_ref(tightdb::Table* TablePtr);
+TIGHTDB_C_CS_API void unbind_table_ref(tightdb::Table* table_ptr);
 
-TIGHTDB_C_CS_API size_t table_get_column_count(tightdb::Table* TablePtr);
+TIGHTDB_C_CS_API size_t table_get_column_count(tightdb::Table* table_ptr);
 
-TIGHTDB_C_CS_API size_t table_add_column(tightdb::Table* TablePtr,size_t type, const char* name);
+TIGHTDB_C_CS_API size_t table_add_column(tightdb::Table* table_ptr,size_t type, const char* name);
+
+TIGHTDB_C_CS_API size_t table_get_column_name(tightdb::Table* table_ptr,size_t column_ndx,char * colname, size_t bufsize);
+
+//used only when inserting a new row (and then... perhaps it's easier to just use table_set_xxx and start with insert row)
+//i guess perhaps using insert will create the row in an atomic operation, while the other operation will get us a row
+//that is null, until it gets filled up
+TIGHTDB_C_CS_API void table_insert_int(tightdb::Table* table_ptr, size_t column_ndx, size_t row_ndx, int64_t value);
+
+TIGHTDB_C_CS_API size_t table_add_empty_row(tightdb::Table* table_ptr, size_t num_rows);
+         
+TIGHTDB_C_CS_API tightdb::Spec* table_get_spec(tightdb::Table* table_ptr);
+
+//    int64_t     get_int(size_t column_ndx, size_t row_ndx) const TIGHTDB_NOEXCEPT;
+
+TIGHTDB_C_CS_API int64_t table_get_int(tightdb::Table* table_ptr, size_t column_ndx, size_t row_ndx);
+
+//only returns false=0  true=1
+TIGHTDB_C_CS_API int8_t table_get_bool(tightdb::Table* table_ptr, size_t column_ndx, size_t row_ndx);
+
+TIGHTDB_C_CS_API float table_get_float(tightdb::Table* table_ptr, size_t column_ndx, size_t row_ndx);
+
+TIGHTDB_C_CS_API double table_get_double(tightdb::Table* table_ptr, size_t column_ndx, size_t row_ndx);
+
+TIGHTDB_C_CS_API size_t table_get_row_count(tightdb::Table*);
+
+TIGHTDB_C_CS_API size_t table_size(tightdb::Table*) ;
+
+//use these to get data from an already saved row
+TIGHTDB_C_CS_API void table_set_int(tightdb::Table* table_ptr, size_t column_ndx, size_t row_ndx, int64_t value);
+
+TIGHTDB_C_CS_API tightdb::Table* table_get_subtable(tightdb::Table* table_ptr, size_t column_ndx, size_t row_ndx);
 
 //Spec
 //type refers to a value taken from DataType values
-TIGHTDB_C_CS_API size_t spec_add_column(tightdb::Spec* SpecPtr,size_t type, const char* name);
+TIGHTDB_C_CS_API size_t spec_add_column(tightdb::Spec* spec_ptr,size_t type, const char* name);
 
-TIGHTDB_C_CS_API tightdb::Spec* spec_add_subtable_column(tightdb::Spec* SpecPtr, const char* name);
+TIGHTDB_C_CS_API tightdb::Spec* spec_add_subtable_column(tightdb::Spec* spec_ptr, const char* name);
 
-TIGHTDB_C_CS_API tightdb::Spec* table_get_spec(tightdb::Table* TablePtr);
-
-TIGHTDB_C_CS_API void spec_deallocate(tightdb::Spec* SpecPtr);
-
-TIGHTDB_C_CS_API int table_get_column_name(tightdb::Table* TablePtr,size_t column_ndx,char * colname, size_t bufsize);
+TIGHTDB_C_CS_API void spec_deallocate(tightdb::Spec* spec_ptr);
 
 TIGHTDB_C_CS_API size_t tightdb_c_cs_GetVer(void);
+
 
 
 

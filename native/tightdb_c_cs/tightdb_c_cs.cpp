@@ -25,14 +25,14 @@ extern "C" {
  TIGHTDB_C_CS_API size_t tightdb_c_cs_GetVer(void){
 
   // Table test;
-	return 1304142320;
+	return 1304151448;
 }
 	
 	
 
-TIGHTDB_C_CS_API size_t table_get_column_count(tightdb::Table* TablePtr)
+TIGHTDB_C_CS_API size_t table_get_column_count(tightdb::Table* table_ptr)
 {
-	return TablePtr->get_column_count();
+	return table_ptr->get_column_count();
 }
 
 
@@ -43,52 +43,60 @@ TIGHTDB_C_CS_API Table* new_table()
 	return LangBindHelper::new_table();
 }
 
-TIGHTDB_C_CS_API void unbind_table_ref(tightdb::Table* TablePtr)
+
+//   TableRef       get_subtable(size_t column_ndx, size_t row_ndx);
+TIGHTDB_C_CS_API Table* table_get_subtable(Table* table_ptr, size_t column_ndx, size_t row_ndx)
+{    
+    return LangBindHelper::get_subtable_ptr(table_ptr,column_ndx, row_ndx);
+}
+
+TIGHTDB_C_CS_API void unbind_table_ref(tightdb::Table* table_ptr)
 {
-	//LangBindHelper::unbind_table_ref(reinterpret_cast<Table*>(TablePtr));
-	LangBindHelper::unbind_table_ref(TablePtr);
+	//LangBindHelper::unbind_table_ref(reinterpret_cast<Table*>(table_ptr));
+	LangBindHelper::unbind_table_ref(table_ptr);
 }
 
 
-TIGHTDB_C_CS_API size_t table_add_column(tightdb::Table* TablePtr,size_t type, const char* name)
+TIGHTDB_C_CS_API size_t table_add_column(tightdb::Table* table_ptr,size_t type, const char* name)
 {
-    return TablePtr->add_column((DataType)type,name);
+    return table_ptr->add_column((DataType)type,name);
 }
 
 //    size_t add_column(DataType type, const char* name, ColumnType attr=col_attr_None);
 //note that we have omitted support for attr until we figure what it's for
-TIGHTDB_C_CS_API size_t spec_add_column(Spec* SpecPtr,size_t type, const char* name) 
+TIGHTDB_C_CS_API size_t spec_add_column(Spec* spec_ptr,size_t type, const char* name) 
 {
-	return SpecPtr->add_column((DataType)type,name);		
+	return spec_ptr->add_column((DataType)type,name);		
 }
 
 //returns the spec that is associated with a table
 //this spec is just a handle to use for spec operations and it does not need to be
 //unbound or disposed of, it is the address of a spec that is managed by its table
-TIGHTDB_C_CS_API Spec* table_get_spec(Table* TablePtr)
+TIGHTDB_C_CS_API Spec* table_get_spec(Table* table_ptr)
 {
-	//Table* t = reinterpret_cast<Table*>(TablePtr);
-	Spec& s = TablePtr->get_spec();
-	Spec* SpecPtr  = &s;
-	return SpecPtr;
+	//Table* t = reinterpret_cast<Table*>(table_ptr);
+	Spec& s = table_ptr->get_spec();
+	Spec* spec_ptr  = &s;
+	return spec_ptr;
 }
+
 
 
 
 //    DataType    get_column_type(size_t column_ndx) const TIGHTDB_NOEXCEPT;
-TIGHTDB_C_CS_API  DataType table_get_column_type(Table* TablePtr, const size_t column_ndx)
+TIGHTDB_C_CS_API  DataType table_get_column_type(Table* table_ptr, const size_t column_ndx)
 {
-	return TablePtr->get_column_type(column_ndx);
+	return table_ptr->get_column_type(column_ndx);
 }
 
-TIGHTDB_C_CS_API  void table_update_from_spec(Table* TablePtr)
+TIGHTDB_C_CS_API  void table_update_from_spec(Table* table_ptr)
 {
-    TablePtr->update_from_spec();
+    table_ptr->update_from_spec();
 }
 
-TIGHTDB_C_CS_API  DataType spec_get_column_type(Spec* SpecPtr, const size_t column_ndx)
+TIGHTDB_C_CS_API  DataType spec_get_column_type(Spec* spec_ptr, const size_t column_ndx)
 {
-	return SpecPtr->get_column_type(column_ndx);
+	return spec_ptr->get_column_type(column_ndx);
 }
 
 
@@ -179,26 +187,26 @@ size_t BSD_strlcpy(char * dst,size_t siz,const char * src)
 //this function will not make buffer overruns even if the column name is longer than the buffer passed
 //c# is responsible for memory management of the buffer
 
-TIGHTDB_C_CS_API int table_get_column_name(Table* TablePtr,size_t column_ndx,char * colname, size_t bufsize)
+TIGHTDB_C_CS_API size_t table_get_column_name(Table* table_ptr,size_t column_ndx,char * colname, size_t bufsize)
 {
-	const char* cn= TablePtr->get_column_name(column_ndx);
+	const char* cn= table_ptr->get_column_name(column_ndx);
 	return BSD_strlcpy(colname,bufsize, cn);
 }
 
 
-TIGHTDB_C_CS_API int spec_get_column_name(Spec* SpecPtr,size_t column_ndx,char * colname, size_t bufsize)
+TIGHTDB_C_CS_API size_t spec_get_column_name(Spec* spec_ptr,size_t column_ndx,char * colname, size_t bufsize)
 {
-	const char* cn= SpecPtr->get_column_name(column_ndx);
+	const char* cn= spec_ptr->get_column_name(column_ndx);
 	return BSD_strlcpy(colname,bufsize, cn);
 }
 
 
 
 //    Spec add_subtable_column(const char* name);
-TIGHTDB_C_CS_API Spec* spec_add_subtable_column(Spec* SpecPtr, const char* name)
+TIGHTDB_C_CS_API Spec* spec_add_subtable_column(Spec* spec_ptr, const char* name)
 {
-	//Spec* s = reinterpret_cast<Spec*>(SpecPtr);
-	Spec subtablespec = SpecPtr->add_subtable_column(name);//will add_subtable_column return the address to a spec?
+	//Spec* s = reinterpret_cast<Spec*>(spec_ptr);
+	Spec subtablespec = spec_ptr->add_subtable_column(name);//will add_subtable_column return the address to a spec?
 	return new Spec(subtablespec);
 	
 	//if I understand things correctly, SpecReturn will now BE the spec returned from add_subtable_column Spec IS the address of this class	
@@ -206,27 +214,76 @@ TIGHTDB_C_CS_API Spec* spec_add_subtable_column(Spec* SpecPtr, const char* name)
 }
 
 //deallocate a spec that was allocated in this dll with new
-TIGHTDB_C_CS_API void spec_deallocate(Spec* SpecPtr)
+TIGHTDB_C_CS_API void spec_deallocate(Spec* spec_ptr)
 {
-	delete(SpecPtr);
+	delete(spec_ptr);
 }
 
 //FIXME: Should we check here on the c++ side, that column_ix is a subtable column before calling
 //FIXME: Should this spec be deallocated? or is it part of the table structure it comes from? Currently the C# call is set not to call something similar to unbind_table_ref
-TIGHTDB_C_CS_API Spec* spec_get_spec(Spec* SpecPtr,size_t column_ix)
+TIGHTDB_C_CS_API Spec* spec_get_spec(Spec* spec_ptr,size_t column_ix)
 {
-    Spec subtablespec = SpecPtr->get_subtable_spec(column_ix);
+    Spec subtablespec = spec_ptr->get_subtable_spec(column_ix);
     return new Spec(subtablespec);//will be unbound later on
 }
 
 
 
-TIGHTDB_C_CS_API size_t spec_get_column_count(Spec* SpecPtr)
+TIGHTDB_C_CS_API size_t spec_get_column_count(Spec* spec_ptr)
 {
-    return SpecPtr->get_column_count();
+    return spec_ptr->get_column_count();
 }
 
 
+
+TIGHTDB_C_CS_API void table_insert_int(Table* table_ptr, size_t column_ndx, size_t row_ndx, int64_t value)
+{
+    table_ptr->insert_int(column_ndx,row_ndx,value);
+}
+
+TIGHTDB_C_CS_API void table_set_int(Table*  table_ptr, size_t column_ndx, size_t row_ndx, int64_t value)
+{
+    table_ptr->set_int(column_ndx,row_ndx,value);
+}
+
+TIGHTDB_C_CS_API size_t table_add_empty_row(Table* table_ptr, size_t num_rows)
+{
+    return table_ptr->add_empty_row(num_rows);
+}
+
+
+TIGHTDB_C_CS_API int64_t table_get_int(Table* table_ptr, size_t column_ndx, size_t row_ndx)
+{
+    return table_ptr->get_int(column_ndx,row_ndx);
+}
+
+//only returns false=0  true=1
+TIGHTDB_C_CS_API int8_t table_get_bool(Table* table_ptr, size_t column_ndx, size_t row_ndx)
+{    
+    return table_ptr->get_bool(column_ndx,row_ndx);
+}
+
+TIGHTDB_C_CS_API float table_get_float(Table* table_ptr, size_t column_ndx, size_t row_ndx)
+{
+    return table_ptr->get_float(column_ndx,row_ndx);
+}
+
+TIGHTDB_C_CS_API double table_get_double(Table* table_ptr, size_t column_ndx, size_t row_ndx)
+{
+    return table_ptr->get_double(column_ndx,row_ndx);
+}
+
+
+TIGHTDB_C_CS_API size_t table_get_row_count(Table* table_ptr)
+{
+    return table_ptr->get_column_count();
+}
+
+
+TIGHTDB_C_CS_API size_t table_size(Table* table_ptr) 
+{
+    return table_ptr->size();
+}
 
 
 #ifdef __cplusplus
