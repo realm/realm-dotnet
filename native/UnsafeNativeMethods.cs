@@ -325,9 +325,9 @@ enum DataType {
         public static void TableNew(Table table)
         {
             if (is64bit)
-                table.setTableHandle(new_table64()); //a call to table_new             
+                table.setTableHandle(new_table64(),true); //a call to table_new             
             else
-                table.setTableHandle(new_table32()); //a call to table_new             
+                table.setTableHandle(new_table32(),true); //a call to table_new             
         }
 
 
@@ -346,9 +346,9 @@ enum DataType {
                 throw new ArgumentOutOfRangeException("columnIndex", "GetSubTable called with column that is >= number of columns");
             }
             if (is64bit)
-                return new Table(table_get_subtable64(parentTable.tableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex)); //the constructor that takes an UintPtr will use that as a table handle
+                return new Table(table_get_subtable64(parentTable.tableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex),true); //the constructor that takes an UintPtr will use that as a table handle
             else
-                return new Table(table_get_subtable32(parentTable.tableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex)); 
+                return new Table(table_get_subtable32(parentTable.tableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex),true); 
         }
 
 
@@ -384,7 +384,7 @@ enum DataType {
             if(is64bit)  
             return new Spec(table_get_spec64(t.tableHandle),false);   //this spec should NOT be deallocated after use 
             else
-            return new Spec(table_get_spec32(t.tableHandle), false);   //this spec should NOT be deallocated after use         
+            return new Spec(table_get_spec32(t.tableHandle),false);   //this spec should NOT be deallocated after use         
         }
 
 

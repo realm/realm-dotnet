@@ -141,17 +141,64 @@ namespace TestTightDbCS
 
 
         [Test]
-        public static void TableIntValueTest1()
-        {            
-            Table t = GetTableWithIntegers(false);
-            System.Console.WriteLine(t.Size());
+        public static void TableSubTableSubTable()
+        {
+            string actualres1;
+            string actualres2;
+            string actualres3;
+            string actualres4;
+            string actualres5;
+            string actualres6;
+
+            using (Table t =  new Table(
+                "fld1".String(),
+                "root".SubTable(
+                   "fld2".String(),
+                   "fld3".String(),
+                   "s1".SubTable(
+                      "fld4".String(),
+                      "fld5".String(),
+                      "fld6".String(),
+                      "s2".Table(
+                          "fld".Int()))))){
+            
+             //   t.AddEmptyRow(1);
+                t.AddEmptyRow(1);//add empty row
+                actualres1 = Program.TableDumper(MethodInfo.GetCurrentMethod().Name+1, "subtable in subtable with int", t);
+                Assert.AreEqual(1,t.Size());
+                Table root = t.GetSubTable(1, 0);
+                root.AddEmptyRow(1);
+                Assert.AreEqual(1, root.Size());
+                actualres2 = Program.TableDumper(MethodInfo.GetCurrentMethod().Name + 2, "subtable in subtable with int", t);
+                Table s1= root.GetSubTable(2, 0);
+                s1.AddEmptyRow(1);
+                Assert.AreEqual(1, s1.Size());
+                actualres3 = Program.TableDumper(MethodInfo.GetCurrentMethod().Name+3, "subtable in subtable with int", t);
+                Table s2 = s1.GetSubTable(3, 0);
+                s2.AddEmptyRow(1);
+                actualres4 = Program.TableDumper(MethodInfo.GetCurrentMethod().Name + 3, "subtable in subtable with int", t);
+                long valueinserted = 42;
+                s2.SetLong(0, 0,valueinserted);
+                Assert.AreEqual(1, s2.Size());
+                actualres5 = Program.TableDumper(MethodInfo.GetCurrentMethod().Name+4, "subtable in subtable with int", t);
+                //now read back the 42
+                long valueback = t.GetSubTable(0, 0).GetSubTable(0, 0).GetLong(0, 0);
+                Assert.AreEqual (valueback,valueinserted);
+                actualres6 = Program.TableDumper(MethodInfo.GetCurrentMethod().Name+5, "subtable in subtable with int", t);
+            };
+            string expectedres =
+@"";
+            Assert.AreEqual(expectedres, actualres5);
         }
+
+        //TODO:test if getlong is called on a column that is not a column of type int
+
 
         [Test]
         public static void TableIntValueTest2()
         {
             String actualres;
-            Table.LoggingEnable("IntValueTest2");
+            //Table.LoggingEnable("IntValueTest2");
             using (Table t = GetTableWithIntegers(false))
             {
                 actualres = Program.TableDumper(MethodInfo.GetCurrentMethod().Name, "table with a few integers in it", t);
@@ -171,19 +218,19 @@ Table Name  : table with a few integers in it
 Table Data Dump
 ------------------------------------------------------
 { //Start row0
-Column 0:1764
-Column 1:0
-Column 2:0
+IntColumn1:1764,//column 0
+IntColumn2:0,//column 1
+IntColumn3:0,//column 2
 } //End row0
 { //Start row1
-Column 0:0
-Column 1:-9223372036854775808
-Column 2:0
+IntColumn1:0,//column 0
+IntColumn2:-9223372036854775808,//column 1
+IntColumn3:0,//column 2
 } //End row1
 { //Start row2
-Column 0:0
-Column 1:0
-Column 2:-9223372036854775766
+IntColumn1:0,//column 0
+IntColumn2:0,//column 1
+IntColumn3:-9223372036854775766,//column 2
 } //End row2
 ------------------------------------------------------
 ";
@@ -204,30 +251,82 @@ Column 2:-9223372036854775766
 
             string expectedres =
 @"------------------------------------------------------
-Column count: 3
+Column count: 4
 Table Name  : table with a few integers in it
 ------------------------------------------------------
  0        Int  IntColumn1          
  1        Int  IntColumn2          
  2        Int  IntColumn3          
+ 3      Table  SubTableWithInts    
+    0        Int  SubIntColumn1       
+    1        Int  SubIntColumn2       
+    2        Int  SubIntColumn3       
 ------------------------------------------------------
 
 Table Data Dump
 ------------------------------------------------------
 { //Start row0
-Column 0:1764
-Column 1:0
-Column 2:0
+IntColumn1:1764,//column 0
+IntColumn2:0,//column 1
+IntColumn3:0,//column 2
+SubTableWithInts:[   { //Start row0
+   SubIntColumn1:2   ,//column 0
+   SubIntColumn2:0   ,//column 1
+   SubIntColumn3:0   ,//column 2
+   } //End row0
+   { //Start row1
+   SubIntColumn1:0   ,//column 0
+   SubIntColumn2:0   ,//column 1
+   SubIntColumn3:0   ,//column 2
+   } //End row1
+   { //Start row2
+   SubIntColumn1:0   ,//column 0
+   SubIntColumn2:0   ,//column 1
+   SubIntColumn3:0   ,//column 2
+   } //End row2
+],//column 3
 } //End row0
 { //Start row1
-Column 0:0
-Column 1:-9223372036854775808
-Column 2:0
+IntColumn1:0,//column 0
+IntColumn2:-9223372036854775808,//column 1
+IntColumn3:0,//column 2
+SubTableWithInts:[   { //Start row0
+   SubIntColumn1:0   ,//column 0
+   SubIntColumn2:0   ,//column 1
+   SubIntColumn3:0   ,//column 2
+   } //End row0
+   { //Start row1
+   SubIntColumn1:0   ,//column 0
+   SubIntColumn2:2   ,//column 1
+   SubIntColumn3:0   ,//column 2
+   } //End row1
+   { //Start row2
+   SubIntColumn1:0   ,//column 0
+   SubIntColumn2:0   ,//column 1
+   SubIntColumn3:0   ,//column 2
+   } //End row2
+],//column 3
 } //End row1
 { //Start row2
-Column 0:0
-Column 1:0
-Column 2:-9223372036854775766
+IntColumn1:0,//column 0
+IntColumn2:0,//column 1
+IntColumn3:-9223372036854775766,//column 2
+SubTableWithInts:[   { //Start row0
+   SubIntColumn1:0   ,//column 0
+   SubIntColumn2:0   ,//column 1
+   SubIntColumn3:0   ,//column 2
+   } //End row0
+   { //Start row1
+   SubIntColumn1:0   ,//column 0
+   SubIntColumn2:0   ,//column 1
+   SubIntColumn3:0   ,//column 2
+   } //End row1
+   { //Start row2
+   SubIntColumn1:0   ,//column 0
+   SubIntColumn2:0   ,//column 1
+   SubIntColumn3:2   ,//column 2
+   } //End row2
+],//column 3
 } //End row2
 ------------------------------------------------------
 ";
@@ -322,6 +421,37 @@ Table Name  : column name is 123 then two japanese characters then 678
     {
 
         //test with the newest kind of field object constructores - lasse's inherited specialized ones
+
+
+        [Test]
+        public static void TableSubTableSubTable()
+        {
+            string actualres;
+            using (Table t = new Table(
+                "root".SubTable(
+                   "s1".SubTable(
+                      "s2".Table(
+                          "fld".Int())))))
+            {
+                actualres = Program.TableDumper(MethodInfo.GetCurrentMethod().Name, "table with subtable with subtable", t);
+            }
+            string expectedres =
+@"------------------------------------------------------
+Column count: 1
+Table Name  : table with subtable with subtable
+------------------------------------------------------
+ 0      Table  root                
+    0      Table  s1                  
+       0      Table  s2                  
+          0        Int  fld                 
+------------------------------------------------------
+
+";
+            Assert.AreEqual(expectedres, actualres);
+        }
+
+
+
 
         [Test]
         public static void TypedFieldClasses()
@@ -1300,7 +1430,7 @@ Table Name  : same names, empty names, mixed types
                 }
             }
             printMetadataFooter(res);
-            TableDataDumper(res, t);
+            TableDataDumper("",res, t);
 
             System.Console.Write(res.ToString());
             File.WriteAllText(fileName + ".txt", res.ToString());
@@ -1342,53 +1472,73 @@ Table Name  : same names, empty names, mixed types
             StringBuilder res = new StringBuilder();           
             specdumper(res, "", t.Spec, tablename);
 
-            TableDataDumper(res, t);
+            TableDataDumper("",res, t);
             System.Console.WriteLine(res.ToString());
             File.WriteAllText(fileName + ".txt", res.ToString());
             return res.ToString();
         }
 
 
-        public static void TableDataDumper(StringBuilder res, Table table)
+        public static void TableDataDumper(string indent,StringBuilder res, Table table)
         {
             var startrow = "{{ //Start row{0}";
             var endrow = "}} //End row{0}";
-            var startfield = @"Column {0}:";
-            var endfield = "";
+            var startfield = @"{0}:";
+            var endfield = ",//column {0}";
+            var endfieldlast = "//column {0}";//no comma
+            var starttable = "[ //{0} rows";
+            var endtable = "]";
             var firstdatalineprinted = false;
+            long tableSize = table.Size();
             foreach (TableRow tr in table )  {
                 if (firstdatalineprinted == false)
                 {
-                    res.AppendLine("Table Data Dump");
-                    res.AppendLine(sectiondelimitor);
+                    if (String.IsNullOrEmpty(indent))
+                    {
+                        res.Append(indent);
+                        res.AppendLine(String.Format(CultureInfo.InvariantCulture,"Table Data Dump. Rows:{0}",tableSize));
+                        res.Append(indent);
+                        res.AppendLine(sectiondelimitor);
+                    }
                     firstdatalineprinted = true;
                 }
-                StringBuilder linestr = new StringBuilder();
-                linestr.AppendLine(String.Format(CultureInfo.InvariantCulture,  startrow, tr.Row));//start row marker
+                res.Append(indent);                
+                res.AppendLine(String.Format(CultureInfo.InvariantCulture,  startrow, tr.Row));//start row marker
+                long columncount = tr.Owner.ColumnCount;//used to set comma correctly
                 foreach (TableRowColumn trc in tr)
                 {
-                    linestr.Append(String.Format(CultureInfo.InvariantCulture, startfield, trc.ColumnIndex));
+                    res.Append(indent);
+                    string name = trc.Owner.Owner.GetColumnName(trc.ColumnIndex);//so we can see it easily in the debugger
+                    res.Append(String.Format(CultureInfo.InvariantCulture, startfield, name));
                     if (trc.ColumnType == DataType.Table)
                     {
-                        linestr.Append("Subtable dump not implemented yet");
+                        Table sub = table.GetSubTable(trc.ColumnIndex, tr.Row);//size printed here as we had a problem once with size reporting 0 where it should be larger, so nothing returned from call
+                        res.Append(String.Format(CultureInfo.InvariantCulture, starttable,sub.Size()));
+                        TableDataDumper(indent+"   ",res, sub);
+                        res.Append(endtable);
                     }
                     else
                     {
                         if (trc.ColumnType == DataType.Mixed)
                         {
-                            linestr.Append("Mixed dump not implemented yet");
+                            res.Append("Mixed dump not implemented yet");
                         }
-                        linestr.Append(trc.Value);
+                        res.Append(trc.Value);
                     }
-                    linestr.AppendLine(String.Format(CultureInfo.InvariantCulture, endfield));
+                    res.Append(indent);
+                    res.AppendLine(String.Format(CultureInfo.InvariantCulture, trc.IsLastColumn() ? endfieldlast : endfield, trc.ColumnIndex));
                     
                     //, trc.Value ));  //of course only works because we only have one type of row right now
                 }
-                linestr.AppendLine(String.Format(CultureInfo.InvariantCulture, endrow,tr.Row));//end row marker
-                res.Append(linestr.ToString());
+                res.Append(indent);
+                res.AppendLine(String.Format(CultureInfo.InvariantCulture, endrow, tr.Row));//end row marker
+                
             }
-            if(firstdatalineprinted) //some data was dumped from the table, so print a footer
-              res.AppendLine(sectiondelimitor);
+            if (firstdatalineprinted && String.IsNullOrEmpty(indent)) //some data was dumped from the table, so print a footer
+            {
+                res.Append(indent);
+                res.AppendLine(sectiondelimitor);
+            }
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters", MessageId = "System.Console.WriteLine(System.String)")]
@@ -1402,7 +1552,8 @@ Table Name  : same names, empty names, mixed types
              *  */
 
             EnvironmentTest.ShowVersionTest();
-            TableChangeDataTest.TableIntValueSubTableTest1();
+            //CreateTableTest.TableSubtableSubtable();
+            TableChangeDataTest.TableSubTableSubTable();
     //        TableChangeDataTest.TableIntValueTest1();
     //        TableChangeDataTest.TableIntValueTest2();
     //        CreateTableTest.TestAllFieldTypesFieldClassStrings();

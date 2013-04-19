@@ -31,12 +31,20 @@ namespace TightDb.TightDbCSharp
     /// represents a single column in a table row in a table. Not fast due to extra calls, but easy to use
     /// If You need top speed, work directly with TableRow or directly with Table
     /// </summary>
+    /// 
+    //TODO:Implement child types that each are bound to a given DataType. So we got for instance TableIntColumn
+    //why? in some cases We could return TableIntColumn and with that one, we would not have to check if the Table column type is int every time
+    //we read data from the row. So working with typed column fields is somewhat faster
     public class TableRowColumn
     {
         private TableRow _owner;
         public TableRow Owner { get { return _owner; } set { _owner = value; _columntypeloaded = false; } }
         private long _columnIndex;
-        public long ColumnIndex { get { return _columnIndex; } set { _columnIndex = value; _columntypeloaded = false; } }
+        public long ColumnIndex
+        {
+            get { return _columnIndex; }
+            internal set { _columnIndex = value; _columntypeloaded = false; }//internal bc users must not be allowed to change the columnindex. We treat it as already checked in calls
+        }
         public TableRowColumn(TableRow owner,long column)
         {
             Owner = owner;
@@ -46,6 +54,11 @@ namespace TightDb.TightDbCSharp
 
         private DataType _columnType;
         private Boolean _columntypeloaded = false;
+        //this could be optimized by storing columncount in the table class
+        public bool IsLastColumn()
+        {
+           return (Owner.Owner.ColumnCount==ColumnIndex+1);
+        }
         public DataType ColumnType
         {
             get
@@ -71,15 +84,18 @@ namespace TightDb.TightDbCSharp
                 switch (ColumnType)
                 {
                     case DataType.Int:
-                        return GetLong();
+                        return Owner.getLongNoCheck(ColumnIndex);//row and column not user specified so safe, and type checked in switch above so also safe
                     default: return String.Format(CultureInfo.InvariantCulture, "dump for type {0} not implemented yet", ColumnType) ;//so null means the datatype is not fully supported yet
                 }
             }
         }
-        private long GetLong()
-        {
-            return Owner.GetLong(ColumnIndex);
-        }        
+
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "DataType"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "GetLong")]
+        private long getLong()
+        {            
+            return Owner.GetLong(ColumnIndex);//will be type chekced (only) in table class
+        }
     }
 
 
@@ -93,23 +109,36 @@ namespace TightDb.TightDbCSharp
     /// </summary>
     public class TableRow
     {
-        public TableRow(Table owner,long row) {
+        internal TableRow(Table owner,long row) {
             Owner=owner;
             
             /// The Row number of the row this TableRow references
             Row=row;
         }
         public Table Owner { get; set; }
-        public long Row { get; set; }
+        public long Row { get; internal set; }//users should not be allowed to change the row property of a tablerow class
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", MessageId = "long")]
         public long GetLong(long columnNumber) {
-            { return Owner.GetLong(columnNumber,Row);}
+            { return Owner.getLongNoColumnRowCheck(columnNumber,Row);}
+        }
+
+/*
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", MessageId = "long")]
+        internal long getLongNoTypeCheck(long columnNumber)
+        {
+            return Owner.GetLongNoTypeCheck(columnNumber, Row);
+        }
+        */
+        internal long getLongNoCheck(long columnIndex)
+        {
+            return Owner.getLongNoCheck(columnIndex, Row);//we know that Row could not have been set by user code, so it's safe
         }
 
         //allow foreach to traverse a TableRow and get some TableRowColumn objects
+        //if You do a foreach on a tablerow, C# will use the for loop below to do the iteration
         public IEnumerator<TableRowColumn> GetEnumerator()
         {
-            for (long i = 0; i < Owner.Size(); i++)
+            for (long i = 0; i < Owner.ColumnCount; i++)
             {
                 yield return new TableRowColumn(this, i);
             }
@@ -223,9 +252,9 @@ namespace TightDb.TightDbCSharp
         }
 
         //This is used when we want to create a table and we already have the c++ handle that the table should use.  used by GetSubTable
-        internal Table(IntPtr tableHandle)
+        internal Table(IntPtr tableHandle,bool shouldbedisposed)
         {
-            setTableHandle(tableHandle);
+            setTableHandle(tableHandle,shouldbedisposed);
         }
         //will only log in debug mode!
         //marker is a string that will show as the first log line, use this if several places in the code enable logging and disable it again, to
@@ -367,12 +396,13 @@ namespace TightDb.TightDbCSharp
         internal IntPtr tableHandle { get; set; }  //handle (in fact a pointer) to a c++ hosted Table. We must unbind this handle if we have acquired it
         internal bool TableHandleInUse { get; set; } //defaults to false.  TODO:this might need to be encapsulated with a lock to make it thread safe (although several threads *opening or closing* *the same* table object is probably not happening often)
         internal bool TableHandleHasBeenUsed { get; set; } //defaults to false. If this is true, the table handle has been allocated in the lifetime of this object
+        internal bool NotifyCppWhenDisposing { get; set; }//if false, the table handle do not need to be disposed of, on the c++ side
 
 
         //use this function to set the table handle to make sure various booleans are set correctly        
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "SetTableHandle"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "SetTableHandle"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "TableNew")]
-        internal void setTableHandle(IntPtr newTableHandle)
+        internal void setTableHandle(IntPtr newTableHandle,bool ShouldBeDisposed)
         {
             if (TableHandleInUse)
             {
@@ -383,6 +413,7 @@ namespace TightDb.TightDbCSharp
                 tableHandle = newTableHandle;
                 TableHandleInUse = true;
                 TableHandleHasBeenUsed = true;
+                NotifyCppWhenDisposing = ShouldBeDisposed;
             }
         }
 
@@ -403,7 +434,8 @@ namespace TightDb.TightDbCSharp
         {
             if (TableHandleInUse)
             {
-                UnsafeNativeMethods.TableUnbind(this);
+                if (NotifyCppWhenDisposing)
+                  UnsafeNativeMethods.TableUnbind(this);
                 TableHandleInUse = false;
             }
             else
@@ -435,7 +467,7 @@ namespace TightDb.TightDbCSharp
             return UnsafeNativeMethods.TableGetColumnType(this, columnIndex);
         }
 
-
+        //Might be called often, as it only changes if columns are added, perhaps we should cache the value in the Table class
         public long ColumnCount
         {
             get  {return UnsafeNativeMethods.TableGetColumnCount(this);}
@@ -461,6 +493,14 @@ namespace TightDb.TightDbCSharp
 
         public void SetLong(long columnIndex, long rowIndex, long value)
         {
+            if (rowIndex >= Size())
+            {
+                throw new ArgumentOutOfRangeException("rowIndex","Table.SetLong called with a row number >= Table.Size()");
+            }
+            if (columnIndex >= ColumnCount)
+            {
+                throw new ArgumentOutOfRangeException("columnIndex","Table.SetLong called with a columnIndex that is larger than Table.Size");
+            }
             UnsafeNativeMethods.TableSetLong(this, columnIndex, rowIndex, value);
         }
 
@@ -481,21 +521,68 @@ namespace TightDb.TightDbCSharp
             return UnsafeNativeMethods.TableSize(this);
         }
 
+        public void ValidateColumnIndex(long columnIndex)
+        {
+            if (columnIndex >= ColumnCount)
+            {
+                throw new ArgumentOutOfRangeException(String.Format(CultureInfo.InvariantCulture, "columnIndex  GetLong called with illegal columnIndex={0} ", columnIndex));
+            }            
+        }
 
+        //only call if columnIndex is already validated or known to be int
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "DataType"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "GetLong")]
+        internal void ValidateColumnTypeInt(long columnIndex ) 
+        {
+            if (ColumnType(columnIndex) != DataType.Int)
+            {
+                throw new TableException(String.Format(CultureInfo.InvariantCulture, "GetLong at column{0} called on a column of DataType {1}",columnIndex,ColumnType(columnIndex)));
+            }
+        }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", MessageId = "long"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", MessageId = "int")]
+        public void ValidateRowIndex(long rowIndex) 
+        {
+            if (rowIndex >= Size())
+            {
+                throw new ArgumentOutOfRangeException("rowIndex","GetLongNoTypeCheck called with rowIndex>Size()");
+            }
+        }
+
+        //if You call from TableRow or TableColumn, You will save some checking - this is the slowest way
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", MessageId = "long")]
         public long GetLong(long columnIndex, long rowIndex)
         {
-            return UnsafeNativeMethods.TableGetInt(this, columnIndex, rowIndex);
+            ValidateRowIndex(rowIndex);
+            ValidateColumnIndex(columnIndex);
+            ValidateColumnTypeInt(columnIndex);
+            return getLongNoCheck(columnIndex,rowIndex);//could be sped up if we directly call UnsafeNativeMethods
+        }
+
+        //only call this method if You know for sure that RowIndex is less than or equal to table.size()
+        //and that you know for sure that columnIndex is less than or equal to table.columncount
+        internal long getLongNoColumnRowCheck(long columnIndex, long rowIndex)
+        {            
+            ValidateColumnTypeInt(columnIndex);
+            return getLongNoCheck(columnIndex,rowIndex);
+        }
+
+        //only call this one if You know for sure that the field at columnindex,rowindex is in fact an ordinary DataType.Int field (not mixed.integer)
+        internal long GetLongNoTypeCheck(long columnIndex, long rowIndex)
+        {
+            ValidateRowIndex(rowIndex);
+            ValidateColumnIndex(columnIndex);
+            return getLongNoCheck(columnIndex, rowIndex);
+        }
+
+        //only call if You are certain that 1: The field type is Int, 2: The columnIndex is in range, 3: The rowIndex is in range
+        internal long getLongNoCheck(long columnIndex,long rowIndex)
+        {
+            return UnsafeNativeMethods.TableGetInt(this,columnIndex, rowIndex);
         }
 
         public Boolean GetBoolean(long columnIndex, long rowIndex)
         {
             return UnsafeNativeMethods.TableGetBool(this, columnIndex, rowIndex);
         }
-
-
-
     }
 
     //custom exception for Table class. When Table runs into a Table related error, TableException is thrown

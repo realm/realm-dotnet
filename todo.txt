@@ -1,14 +1,21 @@
-Run automatic code analysis and follow suggestions
-(one day or less, in progress)
+implement integer in subtable
+(hours)
 
-implement integer in all user c# classes.
-(1 day)
+implement integer in mixed
+(1 hour)
+
+implement subtable in mixed
+(hours)
+
+implement integer in query
+
+implement integer in tableview
 
 implement the remainder of the dynamic table part of the tightdb API in tightdb_c_cs.cs, and in NativeCalls.cs, small debugger tests as the work progresses
 (1 day)
 
-implement the C# table class with the methods from NativeCals.cs, create some usage examples as tests
-(few days)
+implement the C# table class with the methods from NativeCalls.cs, create some usage examples as tests
+(1 day)
 
 implement the remainder of the dynamic tightdb library API in tightdb_c_cs.cs and in NativeCalls.cs
 (few days, uncertain)
@@ -17,14 +24,13 @@ implement C# classes that mirror the C++ dynamic classes other than table
 (few days, uncertain)
 
 implement C# support for Linq using Ienumerator and C#'s own LinQ engine
-(few hours max)
+(needs testing)
 
 implement a typed tightdb vesion in C#
 (?)
 
 implement C# support for LinQ using IQueryable<t>
 (probably a day to figure how long it takes, and what should be done)
-
 
 "create distribution" instructions - should create a zip file with the stuff needed to run on a 32bit windows PC with newest .net and VS2012 (less than 1hr)
 
@@ -36,7 +42,7 @@ Create virtual 32 bit windows to be used for testing
 Create virtual 64 bit windows to be used for testing
 (1 day)
 
-(most of the time spent in the above 3 tasks is installing windows, .net and visual studio and perhaps nunit - we can save quite some time if we decide just to try it out on existing windows installations we have access to -and wait with the rest to some other time)
+(most of the time spent in the above 2 tasks is installing windows, .net and visual studio and perhaps nunit - we can save quite some time if we decide just to try it out on existing windows installations we have access to -and wait with the rest to some other time)
 
 verify that the 32bit distribution installs and works well on a freshly installed 32 bit windows .net installation
 (<1 hour)
