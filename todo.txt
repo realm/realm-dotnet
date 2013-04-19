@@ -1,36 +1,46 @@
+consider if columntypes aren't always the same for all rows (if mixed is treated as a type). If so - move columntype out of tablerowcolumn and down into table in some seperate (nonchanging,except when columns are added or deleted) structure. Could be as simple as an array of datatype.
+Mixed will probably have to be handled on the row level, or passed on to tightdb
+
 setint should use same validation system as getint
 (lt 1 hr)
 
-implement integer in subtable
-(hours)
+implement integer in subtable (c++,c# binding, c# classes, few basic unit tests)
+(hours - one unit test still fails, but all the others with subtables work fine)
 
-implement integer in mixed
+implement integer in mixed (c++,c# binding, c# classes, few basic unit tests)
 (1 hour)
 
-implement subtable in mixed
+implement subtable in mixed (c++,c# binding, c# classes, few basic unit tests)
 (hours)
 
-implement integer in query
+implement integer in query (c++,c# binding, c# classes, few basic unit tests)
+(hours to get query class going, not so much time to get integer to work in it)
 
-implement integer in tableview
+implement integer in tableview (c++,c# binding, c# classes, few basic unit tests)
+(potentially time consuming if table has to be refactored because of it, not more than a day though)
 
-implement the remainder of the dynamic table part of the tightdb API in tightdb_c_cs.cs, and in NativeCalls.cs, small debugger tests as the work progresses
-(1 day)
+implement TableGroup (c++,c# binding, c# classes, few basic unit tests)
+(hours to get tablegroup class going, not so much time on top of that)
 
-implement the C# table class with the methods from NativeCalls.cs, create some usage examples as tests
-(1 day)
 
-implement the remainder of the dynamic tightdb library API in tightdb_c_cs.cs and in NativeCalls.cs
-(few days, uncertain)
+These next 3 tasks are done im parrallel, each lowlevel function is done on all levels, to ensure it works before carrying on, and to ensure the architecture is sound. While the estimate is 2 days, we'll probably be missing only a few select (difficult) things towards the end.
 
-implement C# classes that mirror the C++ dynamic classes other than table
-(few days, uncertain)
+implement the rest of the types and any other functions in c++
+(2 days)
+
+implement the rest of the types, and any other functions on the c# side
+(2 days)
+
+implement the rest of the types, and any other functions in the C# classes
+(2 days)
+
 
 implement C# support for Linq using Ienumerator and C#'s own LinQ engine
-(needs testing)
+(done in principle (table now supports being enummerated) needs some LINQ specific testing - 1 day, problems could be troublesome to fix)
 
 implement a typed tightdb vesion in C#
-(?)
+(? - I'm not sure this is either feasible, or a good idea, as C# have no macro language. Let's get the more ordinary database interfaces done first)
+(however, we could do some kind of support for ppl that could generate user friendly code for a given table type)
 
 implement C# support for LinQ using IQueryable<t>
 (probably a day to figure how long it takes, and what should be done)
@@ -82,3 +92,13 @@ support for mono on Ios 32bit (we will need to recompile, perhaps modify the Tig
 
 support for mono on Ios 64bit (we will need to recompile, perhaps modify the Tight_c_cs c++ dll and the NativeCalls.cs)
 (? days)
+
+create benchmarks
+
+create documentation
+
+create a full suite of unit tests
+
+create examples of usage, using various features of tightdb
+
+create a test project that shows the binding in action on a "real-life" type problem
