@@ -1,3 +1,6 @@
+setint should use same validation system as getint
+(lt 1 hr)
+
 implement integer in subtable
 (hours)
 
