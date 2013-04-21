@@ -47,7 +47,7 @@ namespace TestTightDbCS
             System.Console.WriteLine("Now Loading tight_c_cs{0}.dll - expecting it to be a {1} dll" ,dllsuffix, VmBitness);
             //System.Console.WriteLine("Loading "+thisapplocation+"...");
 
-
+            //if something is wrong with the DLL (like, if it is gone), we will not even finish the creation of the table below.
             using (Table t = new Table())
             {
                 System.Console.WriteLine("C#  DLL        build number {0}",Table.GetDllVersionCSharp);
@@ -59,7 +59,97 @@ namespace TestTightDbCS
         }
     }
 
-    //this test fixture covers adding rows, deleting rows, altering field values in ordinary tables
+    //this test fixture tests that the C#  binding correctly catches invalid arguments before they are passed on to c++
+    //this test does not at all cover all possibillities, it's just enough to ensure that our validation kicks in at all
+    [TestFixture]
+    public static class TableParameterValidationTest
+    {
+        [Test]
+        [ExpectedException("System.ArgumentOutOfRangeException")]
+        public static void TableTestEmptyTableFieldAccess()
+        {
+            using (Table t = new Table(new IntField("Int1"), new IntField("Int2"), new IntField("Int3")))
+            {
+                //accessing a row on an empty table should not be allowed
+                long value = t.GetLong(0, 0);
+                System.Console.WriteLine(value);
+            }
+        }
+
+
+        [Test]
+        [ExpectedException("System.ArgumentOutOfRangeException")]
+        public static void TableTestRowIndexTooLow()
+        {
+            using (Table t = new Table(new IntField("Int1"), new IntField("Int2"), new IntField("Int3")))
+            {
+                //accessing a row on an empty table should not be allowed
+                t.AddEmptyRow(1);
+                long value = t.GetLong(0,-1);
+                System.Console.WriteLine(value);
+            }
+        }
+
+
+        [Test]
+        [ExpectedException("System.ArgumentOutOfRangeException")]
+        public static void TableTestRowIndexTooHigh()
+        {
+            using (Table t = new Table(new IntField("Int1"), new IntField("Int2"), new IntField("Int3")))
+            {
+                //accessing a row on an empty table should not be allowed
+                t.AddEmptyRow(1);
+                long value = t.GetLong(0,1);
+                System.Console.WriteLine(value);
+            }
+        }
+
+
+        [Test]
+        [ExpectedException("System.ArgumentOutOfRangeException")]
+        public static void TableTestColumnIndexTooLow()
+        {
+            using (Table t = new Table(new IntField("Int1"), new IntField("Int2"), new IntField("Int3")))
+            //accessing an illegal column should also not be allowed
+            {
+                t.AddEmptyRow(1);            
+                long value2 = t.GetLong(-1,0);
+                System.Console.WriteLine(value2);
+            }
+        }
+
+
+        [Test]
+        [ExpectedException("System.ArgumentOutOfRangeException")]
+        public static void TableTestColumnIndexTooHigh()
+        {
+            using (Table t = new Table(new IntField("Int1"), new IntField("Int2"), new IntField("Int3")))
+            //accessing an illegal column should also not be allowed
+            {
+                t.AddEmptyRow(1);
+                long value2 = t.GetLong(3,0);
+                System.Console.WriteLine(value2);
+            }
+        }
+
+
+
+        [Test]
+        [ExpectedException("TightDb.TightDbCSharp.TableException")]
+        public static void TableTestIllegalType()
+        {
+            using (Table t = new Table(new IntField("Int1"), new IntField("Int2"), new IntField("Int3")))
+            //accessing an illegal column should also not be allowed
+            {
+                t.AddEmptyRow(1);
+                //likewise accessing the wrong type should not be allowed
+                Table t2 = t.GetSubTable(1,0);
+                System.Console.WriteLine(t2.Size());//this line should not hit - the above should throw an exception
+            }
+        }
+    }
+
+    //this test fixture covers adding rows, deleting rows, altering field values in ordinary table
     [TestFixture]
     public static class TableChangeDataTest
     {
@@ -143,11 +233,11 @@ namespace TestTightDbCS
         [Test]
         public static void TableSubTableSubTable()
         {
-            string actualres1;
-            string actualres2;
-            string actualres3;
-            string actualres4;
-            string actualres5;
+            //string actualres1;
+            //string actualres2;
+            //string actualres3;
+            //string actualres4;
+            //string actualres5;
             string actualres6;
 
             using (Table t =  new Table(
@@ -164,34 +254,77 @@ namespace TestTightDbCS
             
              //   t.AddEmptyRow(1);
                 t.AddEmptyRow(1);//add empty row
-                actualres1 = Program.TableDumper(MethodInfo.GetCurrentMethod().Name+1, "subtable in subtable with int", t);
+                //actualres1 = Program.TableDumper(MethodInfo.GetCurrentMethod().Name+1, "subtable in subtable with int", t);
                 Assert.AreEqual(1,t.Size());
                 Table root = t.GetSubTable(1, 0);
                 root.AddEmptyRow(1);
                 Assert.AreEqual(1, root.Size());
-                actualres2 = Program.TableDumper(MethodInfo.GetCurrentMethod().Name + 2, "subtable in subtable with int", t);
+                //actualres2 = Program.TableDumper(MethodInfo.GetCurrentMethod().Name + 2, "subtable in subtable with int", t);
                 Table s1= root.GetSubTable(2, 0);
                 s1.AddEmptyRow(1);
                 Assert.AreEqual(1, s1.Size());
-                actualres3 = Program.TableDumper(MethodInfo.GetCurrentMethod().Name+3, "subtable in subtable with int", t);
+                //actualres3 = Program.TableDumper(MethodInfo.GetCurrentMethod().Name+3, "subtable in subtable with int", t);
                 Table s2 = s1.GetSubTable(3, 0);
                 s2.AddEmptyRow(1);
-                actualres4 = Program.TableDumper(MethodInfo.GetCurrentMethod().Name + 3, "subtable in subtable with int", t);
+                //actualres4 = Program.TableDumper(MethodInfo.GetCurrentMethod().Name + 3, "subtable in subtable with int", t);
                 long valueinserted = 42;
                 s2.SetLong(0, 0,valueinserted);
                 Assert.AreEqual(1, s2.Size());
-                actualres5 = Program.TableDumper(MethodInfo.GetCurrentMethod().Name+4, "subtable in subtable with int", t);
+                //actualres5 = Program.TableDumper(MethodInfo.GetCurrentMethod().Name+4, "subtable in subtable with int", t);
                 //now read back the 42
-                long valueback = t.GetSubTable(0, 0).GetSubTable(0, 0).GetLong(0, 0);
+
+                long valueback = t.GetSubTable(1, 0).GetSubTable(2, 0).GetSubTable(3,0).GetLong(0, 0);
+                //                            root               s1                 s2            42
+
+
                 Assert.AreEqual (valueback,valueinserted);
                 actualres6 = Program.TableDumper(MethodInfo.GetCurrentMethod().Name+5, "subtable in subtable with int", t);
             };
             string expectedres =
-@"";
-            Assert.AreEqual(expectedres, actualres5);
+@"------------------------------------------------------
+Column count: 2
+Table Name  : subtable in subtable with int
+------------------------------------------------------
+ 0     String  fld1                
+ 1      Table  root                
+    0     String  fld2                
+    1     String  fld3                
+    2      Table  s1                  
+       0     String  fld4                
+       1     String  fld5                
+       2     String  fld6                
+       3      Table  s2                  
+          0        Int  fld                 
+------------------------------------------------------
+
+Table Data Dump. Rows:1
+------------------------------------------------------
+{ //Start row0
+fld1:dump for type String not implemented yet,//column 0
+root:[ //1 rows   { //Start row0
+   fld2:dump for type String not implemented yet   ,//column 0
+   fld3:dump for type String not implemented yet   ,//column 1
+   s1:[ //1 rows      { //Start row0
+      fld4:dump for type String not implemented yet      ,//column 0
+      fld5:dump for type String not implemented yet      ,//column 1
+      fld6:dump for type String not implemented yet      ,//column 2
+      s2:[ //1 rows         { //Start row0
+         fld:42         //column 0
+         } //End row0
+]      //column 3
+      } //End row0
+]   //column 2
+   } //End row0
+]//column 1
+} //End row0
+------------------------------------------------------
+";
+            Assert.AreEqual(expectedres, actualres6);
         }
 
-        //TODO:test if getlong is called on a column that is not a column of type int
+        
+
+
 
 
         [Test]
@@ -215,22 +348,22 @@ Table Name  : table with a few integers in it
  2        Int  IntColumn3          
 ------------------------------------------------------
 
-Table Data Dump
+Table Data Dump. Rows:3
 ------------------------------------------------------
 { //Start row0
 IntColumn1:1764,//column 0
 IntColumn2:0,//column 1
-IntColumn3:0,//column 2
+IntColumn3:0//column 2
 } //End row0
 { //Start row1
 IntColumn1:0,//column 0
 IntColumn2:-9223372036854775808,//column 1
-IntColumn3:0,//column 2
+IntColumn3:0//column 2
 } //End row1
 { //Start row2
 IntColumn1:0,//column 0
 IntColumn2:0,//column 1
-IntColumn3:-9223372036854775766,//column 2
+IntColumn3:-9223372036854775766//column 2
 } //End row2
 ------------------------------------------------------
 ";
@@ -263,70 +396,70 @@ Table Name  : table with a few integers in it
     2        Int  SubIntColumn3       
 ------------------------------------------------------
 
-Table Data Dump
+Table Data Dump. Rows:3
 ------------------------------------------------------
 { //Start row0
 IntColumn1:1764,//column 0
 IntColumn2:0,//column 1
 IntColumn3:0,//column 2
-SubTableWithInts:[   { //Start row0
+SubTableWithInts:[ //3 rows   { //Start row0
    SubIntColumn1:2   ,//column 0
    SubIntColumn2:0   ,//column 1
-   SubIntColumn3:0   ,//column 2
+   SubIntColumn3:0   //column 2
    } //End row0
    { //Start row1
    SubIntColumn1:0   ,//column 0
    SubIntColumn2:0   ,//column 1
-   SubIntColumn3:0   ,//column 2
+   SubIntColumn3:0   //column 2
    } //End row1
    { //Start row2
    SubIntColumn1:0   ,//column 0
    SubIntColumn2:0   ,//column 1
-   SubIntColumn3:0   ,//column 2
+   SubIntColumn3:0   //column 2
    } //End row2
-],//column 3
+]//column 3
 } //End row0
 { //Start row1
 IntColumn1:0,//column 0
 IntColumn2:-9223372036854775808,//column 1
 IntColumn3:0,//column 2
-SubTableWithInts:[   { //Start row0
+SubTableWithInts:[ //3 rows   { //Start row0
    SubIntColumn1:0   ,//column 0
    SubIntColumn2:0   ,//column 1
-   SubIntColumn3:0   ,//column 2
+   SubIntColumn3:0   //column 2
    } //End row0
    { //Start row1
    SubIntColumn1:0   ,//column 0
    SubIntColumn2:2   ,//column 1
-   SubIntColumn3:0   ,//column 2
+   SubIntColumn3:0   //column 2
    } //End row1
    { //Start row2
    SubIntColumn1:0   ,//column 0
    SubIntColumn2:0   ,//column 1
-   SubIntColumn3:0   ,//column 2
+   SubIntColumn3:0   //column 2
    } //End row2
-],//column 3
+]//column 3
 } //End row1
 { //Start row2
 IntColumn1:0,//column 0
 IntColumn2:0,//column 1
 IntColumn3:-9223372036854775766,//column 2
-SubTableWithInts:[   { //Start row0
+SubTableWithInts:[ //3 rows   { //Start row0
    SubIntColumn1:0   ,//column 0
    SubIntColumn2:0   ,//column 1
-   SubIntColumn3:0   ,//column 2
+   SubIntColumn3:0   //column 2
    } //End row0
    { //Start row1
    SubIntColumn1:0   ,//column 0
    SubIntColumn2:0   ,//column 1
-   SubIntColumn3:0   ,//column 2
+   SubIntColumn3:0   //column 2
    } //End row1
    { //Start row2
    SubIntColumn1:0   ,//column 0
    SubIntColumn2:0   ,//column 1
-   SubIntColumn3:2   ,//column 2
+   SubIntColumn3:2   //column 2
    } //End row2
-],//column 3
+]//column 3
 } //End row2
 ------------------------------------------------------
 ";
@@ -1503,8 +1636,7 @@ Table Name  : same names, empty names, mixed types
                     firstdatalineprinted = true;
                 }
                 res.Append(indent);                
-                res.AppendLine(String.Format(CultureInfo.InvariantCulture,  startrow, tr.Row));//start row marker
-                long columncount = tr.Owner.ColumnCount;//used to set comma correctly
+                res.AppendLine(String.Format(CultureInfo.InvariantCulture,  startrow, tr.Row));//start row marker            
                 foreach (TableRowColumn trc in tr)
                 {
                     res.Append(indent);
@@ -1552,8 +1684,12 @@ Table Name  : same names, empty names, mixed types
              *  */
 
             EnvironmentTest.ShowVersionTest();
+           // TableChangeDataTest.TableIntValueSubTableTest1();
             //CreateTableTest.TableSubtableSubtable();
+            TableChangeDataTest.TableIntValueTest2();
+            TableParameterValidationTest.TableTestColumnIndexTooHigh();
             TableChangeDataTest.TableSubTableSubTable();
+
     //        TableChangeDataTest.TableIntValueTest1();
     //        TableChangeDataTest.TableIntValueTest2();
     //        CreateTableTest.TestAllFieldTypesFieldClassStrings();

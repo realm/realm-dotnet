@@ -506,6 +506,9 @@ namespace TightDb.TightDbCSharp
 
         public Table GetSubTable(long columnIndex, long rowIndex)
         {
+            ValidateColumnIndex(columnIndex);
+            ValidateRowIndex(rowIndex);
+            ValidateColumnTypeSubTable(columnIndex);
             return UnsafeNativeMethods.TableGetSubTable(this,columnIndex,rowIndex);
         }
 
@@ -523,11 +526,18 @@ namespace TightDb.TightDbCSharp
 
         public void ValidateColumnIndex(long columnIndex)
         {
-            if (columnIndex >= ColumnCount)
+            if (columnIndex >= ColumnCount || columnIndex<0)
             {
-                throw new ArgumentOutOfRangeException(String.Format(CultureInfo.InvariantCulture, "columnIndex  GetLong called with illegal columnIndex={0} ", columnIndex));
+                throw new ArgumentOutOfRangeException("columnIndex",String.Format(CultureInfo.InvariantCulture, "illegal columnIndex:{0} Table Column Count:{1}", columnIndex,ColumnCount));
             }            
         }
+
+        //the parameter is the column type that was used on access, and it was not the correct one
+        internal string GetColumnTypeErrorString(long columnIndex, DataType columnType)
+        {
+            return String.Format(CultureInfo.InvariantCulture,"column:{0} invalid data access. Real column DataType:{1} Accessed as {2}", columnIndex, ColumnType(columnIndex), columnType);
+        }
+
 
         //only call if columnIndex is already validated or known to be int
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "DataType"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "GetLong")]
@@ -535,15 +545,24 @@ namespace TightDb.TightDbCSharp
         {
             if (ColumnType(columnIndex) != DataType.Int)
             {
-                throw new TableException(String.Format(CultureInfo.InvariantCulture, "GetLong at column{0} called on a column of DataType {1}",columnIndex,ColumnType(columnIndex)));
+                throw new TableException(GetColumnTypeErrorString(columnIndex,DataType.Int));
+            }
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "subTable"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "subtable")]
+        internal void ValidateColumnTypeSubTable(long columnIndex)
+        {
+            if (ColumnType(columnIndex) != DataType.Table)
+            {
+                throw new TableException(GetColumnTypeErrorString(columnIndex,DataType.Table));
             }
         }
 
         public void ValidateRowIndex(long rowIndex) 
         {
-            if (rowIndex >= Size())
+            if (rowIndex >= Size() || rowIndex<0)
             {
-                throw new ArgumentOutOfRangeException("rowIndex","GetLongNoTypeCheck called with rowIndex>Size()");
+                throw new ArgumentOutOfRangeException("rowIndex",string.Format(CultureInfo.InvariantCulture,"Table accessed with an invalid Row Index{0}. Table Size is:{1}",rowIndex, Size())); //re-calculating when composing error message to avoid creating a variable in a performance sensitive place
             }
         }
 
