@@ -89,6 +89,12 @@ TIGHTDB_C_CS_API  DataType table_get_column_type(Table* table_ptr, const size_t 
 	return table_ptr->get_column_type(column_ndx);
 }
 
+//    DataType    get_column_type(size_t column_ndx) const TIGHTDB_NOEXCEPT;
+TIGHTDB_C_CS_API  DataType table_get_mixed_type(Table* table_ptr, const size_t column_ndx,const size_t row_ndx)
+{
+    return table_ptr->get_mixed_type(column_ndx,row_ndx);
+}
+
 TIGHTDB_C_CS_API  void table_update_from_spec(Table* table_ptr)
 {
     table_ptr->update_from_spec();
@@ -246,6 +252,16 @@ TIGHTDB_C_CS_API void table_set_int(Table*  table_ptr, size_t column_ndx, size_t
     table_ptr->set_int(column_ndx,row_ndx,value);
 }
 
+TIGHTDB_C_CS_API void table_set_mixed_int(Table*  table_ptr, size_t column_ndx, size_t row_ndx, int64_t value)
+{
+    table_ptr->set_mixed(column_ndx,row_ndx,value);
+}
+
+TIGHTDB_C_CS_API int64_t  table_get_mixed_int(Table*  table_ptr, size_t column_ndx, size_t row_ndx)
+{
+    return table_ptr->get_mixed(column_ndx,row_ndx).get_int();    
+}
+
 TIGHTDB_C_CS_API size_t table_add_empty_row(Table* table_ptr, size_t num_rows)
 {
     return table_ptr->add_empty_row(num_rows);
@@ -277,6 +293,25 @@ TIGHTDB_C_CS_API double table_get_double(Table* table_ptr, size_t column_ndx, si
 TIGHTDB_C_CS_API size_t table_get_row_count(Table* table_ptr)
 {
     return table_ptr->get_column_count();
+}
+
+
+
+//    static void set_mixed_subtable(Table& parent, std::size_t col_ndx, std::size_t row_ndx,
+//                                   const Table& source)
+
+
+//This method inserts source into the table handled by table_ptr. If source is null, a new table is inserted instead
+TIGHTDB_C_CS_API void table_set_mixed_subtable(Table* table_ptr,size_t col_ndx, size_t row_ndx,Table* source)
+    {
+        LangBindHelper::set_mixed_subtable(*table_ptr,col_ndx,row_ndx,*source);
+}
+
+TIGHTDB_C_CS_API void table_set_mixed_empty_subtable(Table* table_ptr,size_t col_ndx, size_t row_ndx)
+    {
+        table_ptr->clear_subtable(col_ndx,row_ndx);//todo:verify that I don't have to handle the newly created empty table memory-wise
+        //todo:bonus question - if i read in a subtable in a mixed that was made this way, i should still unbind it?
+        //and if the subtable was created via a specified table to copy via langbindhelper - i should still unbind it the same way?
 }
 
 

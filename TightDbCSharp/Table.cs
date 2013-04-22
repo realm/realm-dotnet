@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.Serialization;
 
@@ -169,10 +170,12 @@ namespace TightDbCSharp
         //{
             //return Owner.GetValue(row, columnNumber);
         //}
-        public void SetLongNoCheck(long columnIndex, long value)
+        internal void SetLongNoCheck(long columnIndex, long value)
         {
             Owner.SetLongNoCheck(columnIndex,Row,value);
         }
+
+
     }
 
     //If You need extra speed, And you know the column schema of the table at compile, you can create a typed record :
@@ -493,6 +496,18 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableGetColumnType(this, columnIndex);
         }
 
+        internal DataType GetMixedTypeNoCheck(long columnIndex, long rowIndex)
+        {
+            return UnsafeNativeMethods.TableGetMixedType(this,columnIndex, rowIndex);
+        }
+
+        public DataType GetMixedType(long columnIndex, long rowIndex)
+        {
+            ValidateColumnTypeMixed(columnIndex, rowIndex); 
+            return GetMixedTypeNoCheck(columnIndex, rowIndex);
+        }
+
+
         //Might be called often, as it only changes if columns are added, perhaps we should cache the value in the Table class
         public long ColumnCount
         {
@@ -533,6 +548,13 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableGetSubTable(this,columnIndex,rowIndex);
         }
 
+        //split into its own method to make the ordinary getsubtable very slightly faster bc it does not have to validate if type is a mixed
+        public Table GetSubTableFromMixed(long columnIndex, long rowIndex)
+        {
+            ValidateColumnTypeMixedSubTable(columnIndex,rowIndex);
+            return UnsafeNativeMethods.TableGetSubTable(this, columnIndex, rowIndex);
+        }
+
         //warning! Use only this one when inserting new rows that are not inserted yet
         public void InsertInt(long columnIndex, long rowIndex, long value)
         {
@@ -570,11 +592,23 @@ namespace TightDbCSharp
             }
         }
 
+        //is this a row with Mixed columns?
+        //todo:unit test
+        internal void ValidateColumnTypeMixed(long columnIndex)
+        {
+            if (ColumnType(columnIndex) != DataType.Mixed)
+            {
+                throw new TableException(GetColumnTypeErrorString(columnIndex, DataType.Mixed));
+            }
+        }
+
+        
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "subTable"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "subtable")]
         internal void ValidateColumnTypeSubTable(long columnIndex)
         {
             if (ColumnType(columnIndex) != DataType.Table)
-            {
+            {                
                 throw new TableException(GetColumnTypeErrorString(columnIndex,DataType.Table));
             }
         }
@@ -627,6 +661,72 @@ namespace TightDbCSharp
         internal void SetLongNoCheck(long columnIndex, long rowIndex, long value)
         {
             UnsafeNativeMethods.TableSetLong(this, columnIndex, rowIndex, value);
+        }
+
+        internal void SetMixedLongNoCheck(long columnIndex, long rowIndex, long value)
+        {
+            UnsafeNativeMethods.TableSetMixedLong(this, columnIndex, rowIndex, value);
+        }
+
+        public void SetMixedLong(long columnIndex, long rowIndex, long value)
+        {
+            ValidateColumnTypeMixed(columnIndex, rowIndex); 
+            SetMixedLongNoCheck(columnIndex, rowIndex, value);
+        }
+
+        //a copy of source will be set into the field
+        internal void SetMixedSubtableNoCheck(long columnIndex, long rowIndex, Table source)
+        {
+            UnsafeNativeMethods.TableSetMixedSubTable(this,columnIndex,rowIndex,source);
+        }
+
+        //might be used if You want an empty subtable set up and then change its contents and layout at a later time
+        internal void SetMixedEmptySubtableNoCheck(long columnIndex, long rowIndex)
+        {
+            UnsafeNativeMethods.TableSetMixedEmptySubTable(this,columnIndex,rowIndex);
+        }
+
+        public void SetMixedSubTable(long columnIndex, long rowIndex, Table source)
+        {
+            ValidateColumnTypeMixed(columnIndex,rowIndex);
+            SetMixedSubtableNoCheck(columnIndex,rowIndex,source);
+        }
+
+        public void ValidateColumnTypeMixed(long columnIndex, long rowIndex)
+        {
+            ValidateColumnIndex(columnIndex);
+            ValidateRowIndex(rowIndex);
+            ValidateColumnTypeMixed(columnIndex);
+        }
+
+        //most expensive subtable validation , and most expensinve mixed validation so it has its own method
+        public void ValidateColumnTypeMixedSubTable(long columnIndex, long rowIndex)
+        {
+            ValidateColumnIndex(columnIndex);
+            ValidateRowIndex(rowIndex);
+            ValidateColumnTypeMixed(columnIndex,rowIndex);
+            if (GetMixedType(columnIndex, rowIndex) != DataType.Table)
+            {
+                throw new ArgumentOutOfRangeException("columnIndex", string.Format(CultureInfo.InvariantCulture,"Attempting to access subtable in mixed, but the datatype in the referenced R:{0},C:{1} mixed is of type {2}",columnIndex,rowIndex, GetMixedTypeNoCheck(columnIndex, rowIndex)));
+            }
+        }
+
+        public void SetMixedEmptySubTable(long columnIndex, long rowIndex)
+        {
+            ValidateColumnTypeMixed(columnIndex,rowIndex);
+            SetMixedEmptySubtableNoCheck(columnIndex,rowIndex);
+        }
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", MessageId = "long")]
+        public long GetMixedLong(long columnIndex, long rowIndex)
+        {
+            ValidateColumnTypeMixed(columnIndex, rowIndex); 
+            return GetMixedLongNoCheck(columnIndex, rowIndex);
+        }
+
+        internal long GetMixedLongNoCheck(long columnIndex , long rowIndex )
+        {
+            return UnsafeNativeMethods.TableGetMixedInt(this, columnIndex, rowIndex);
         }
     }
 

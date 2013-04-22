@@ -28,6 +28,9 @@ extern "C" {
 
 
 //Table
+TIGHTDB_C_CS_API  tightdb::DataType table_get_column_type(tightdb::Table* table_ptr, const size_t column_ndx);
+
+TIGHTDB_C_CS_API  tightdb::DataType table_get_mixed_type(tightdb::Table* table_ptr, const size_t column_ndx,const size_t row_ndx);
 
 TIGHTDB_C_CS_API tightdb::Table* new_table();
 
@@ -66,7 +69,17 @@ TIGHTDB_C_CS_API size_t table_size(tightdb::Table*) ;
 //use these to get data from an already saved row
 TIGHTDB_C_CS_API void table_set_int(tightdb::Table* table_ptr, size_t column_ndx, size_t row_ndx, int64_t value);
 
+TIGHTDB_C_CS_API void table_set_mixed_subtable(tightdb::Table* table_ptr,size_t col_ndx, size_t row_ndx,tightdb::Table* source);
+
+TIGHTDB_C_CS_API void table_set_mixed_empty_subtable(tightdb::Table* table_ptr,size_t col_ndx, size_t row_ndx);
+
+TIGHTDB_C_CS_API void table_set_mixed_int(tightdb::Table*  table_ptr, size_t column_ndx, size_t row_ndx, int64_t value);
+
+TIGHTDB_C_CS_API int64_t table_get_mixed_int(tightdb::Table*  table_ptr, size_t column_ndx, size_t row_ndx);
+
 TIGHTDB_C_CS_API tightdb::Table* table_get_subtable(tightdb::Table* table_ptr, size_t column_ndx, size_t row_ndx);
+
+//TIGHTDB_C_CS_API DataType table_get_int(tightdb::Table* table_ptr, size_t column_ndx, size_t row_ndx);
 
 //Spec
 //type refers to a value taken from DataType values

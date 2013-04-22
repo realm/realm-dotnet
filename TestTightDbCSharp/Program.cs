@@ -129,6 +129,32 @@ namespace TestTightDbCSharp
         }
 
 
+        //
+        [Test]
+        public static void TableTestGetUndefinedMixedType()
+        {
+            using (var t = new Table(new MixedField("MixedField")))
+            {
+                t.AddEmptyRow(1);
+                DataType dt = t.GetMixedType(0, 0);
+                Assert.AreEqual(dt, DataType.Int);
+            }
+        }
+
+
+        [Test]
+        public static void TableTestMixedInt()
+        {
+            using (var t = new Table(new MixedField("MixedField")))
+            {
+                t.AddEmptyRow(1);
+                t.SetMixedLong(0,0,42);
+                DataType dt = t.GetMixedType(0, 0);
+                Assert.AreEqual(dt, DataType.Int);
+                long fortytwo=t.GetMixedLong(0, 0);
+                Assert.AreEqual(42,fortytwo);
+            }
+        }
 
 
         [Test]
@@ -219,7 +245,7 @@ namespace TestTightDbCSharp
 
 
         [Test]
-        [ExpectedException("TightDb.TightDbCSharp.TableException")]
+        [ExpectedException("TightDbCSharp.TableException")]
         public static void TableTestIllegalType()
         {
             using (var t = new Table(new IntField("Int1"), new IntField("Int2"), new IntField("Int3")))
@@ -233,7 +259,7 @@ namespace TestTightDbCSharp
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1702:CompoundWordsShouldBeCasedCorrectly", MessageId = "TypeWrite"), Test]
-        [ExpectedException("TightDb.TightDbCSharp.TableException")]
+        [ExpectedException("TightDbCSharp.TableException")]
         public static void TableTestIllegalTypeWrite()
         {
             using (var t = new Table(new SubTableField("sub1"), new IntField("Int2"), new IntField("Int3")))
@@ -335,6 +361,79 @@ namespace TestTightDbCSharp
         }
 
 
+
+        [Test]
+        public static void TableMixedCreateEmptySubTable()
+        {
+            using (var t = new Table(new MixedField("mixd")))
+            {
+                t.AddEmptyRow(1);
+                t.SetMixedEmptySubTable(0,0);
+                DataType sttype = t.GetMixedType(0, 0);
+                Assert.AreEqual(DataType.Table,sttype);
+            }
+        }
+
+        [Test]
+        public static void TableMixedCreateSubTable()
+        {
+            using (var t = new Table(new MixedField("mix'd")))
+            {
+                using (var subtable = new Table(new IntField("int1")))
+                {
+                    t.AddEmptyRow(1);
+                    t.SetMixedSubTable(0,0,subtable);
+                }                
+                DataType sttype = t.GetMixedType(0, 0);
+                Assert.AreEqual(DataType.Table, sttype);                
+            }
+        }
+
+        [Test]
+        public static void TableMixedSetGetSubTable()
+        {
+            using (var t = new Table(new MixedField("mix'd")))
+            {
+                using (var subtable = new Table(new IntField("int1")))
+                {
+                    t.AddEmptyRow(1);
+                    t.SetMixedSubTable(0, 0, subtable);
+                }
+                DataType sttype = t.GetMixedType(0, 0);
+                Assert.AreEqual(DataType.Table, sttype);
+                Table subback = t.GetSubTableFromMixed(0, 0);
+                Assert.AreEqual(DataType.Int,subback.ColumnType(0));
+                Assert.AreEqual("int1", subback.GetColumnName(0));
+            }
+        }
+
+
+        [Test]
+        public static void TableMixedSetGetSubtableWithData()
+        {
+            using (var t = new Table(new MixedField("mix'd")))
+            {
+                using (var subtable = new Table(new IntField("int1")))
+                {
+                    t.AddEmptyRow(1);
+                    subtable.AddEmptyRow(1);
+                    subtable.SetLong(0,0,42);
+                    t.SetMixedSubTable(0, 0, subtable);
+                }
+                DataType sttype = t.GetMixedType(0, 0);
+                Assert.AreEqual(DataType.Table, sttype);
+                Table subback = t.GetSubTableFromMixed(0, 0);
+                Assert.AreEqual(DataType.Int, subback.ColumnType(0));
+                Assert.AreEqual("int1", subback.GetColumnName(0));
+                long databack = subback.GetLong(0, 0);
+                Assert.AreEqual(42, databack);
+            }
+        }
+
+
+
+
+
         [Test]
         public static void TableSubTableSubTable()
         {
@@ -406,14 +505,14 @@ Table Name  : subtable in subtable with int
 Table Data Dump. Rows:1
 ------------------------------------------------------
 { //Start row0
-fld1:dump for type String not implemented yet,//column 0
+fld1:Getting type String from TableRowColumn not implemented yet,//column 0
 root:[ //1 rows   { //Start row0
-   fld2:dump for type String not implemented yet   ,//column 0
-   fld3:dump for type String not implemented yet   ,//column 1
+   fld2:Getting type String from TableRowColumn not implemented yet   ,//column 0
+   fld3:Getting type String from TableRowColumn not implemented yet   ,//column 1
    s1:[ //1 rows      { //Start row0
-      fld4:dump for type String not implemented yet      ,//column 0
-      fld5:dump for type String not implemented yet      ,//column 1
-      fld6:dump for type String not implemented yet      ,//column 2
+      fld4:Getting type String from TableRowColumn not implemented yet      ,//column 0
+      fld5:Getting type String from TableRowColumn not implemented yet      ,//column 1
+      fld6:Getting type String from TableRowColumn not implemented yet      ,//column 2
       s2:[ //1 rows         { //Start row0
          fld:42         //column 0
          } //End row0
@@ -1837,7 +1936,7 @@ Table Name  : same names, empty names, mixed types
             EnvironmentTest.ShowVersionTest();
            // TableChangeDataTest.TableIntValueSubTableTest1();
             //CreateTableTest.TableSubtableSubtable();
-            TableChangeDataTest.TableRowColumnInsert();
+            TableParameterValidationTest.TableTestMixedInt();
             TableParameterValidationTest.TableTestColumnIndexTooHigh();
             TableChangeDataTest.TableSubTableSubTable();
 
