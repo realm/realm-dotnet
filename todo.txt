@@ -1,17 +1,14 @@
-consider if columntypes aren't always the same for all rows (if mixed is treated as a type). If so - move columntype out of tablerowcolumn and down into table in some seperate (nonchanging,except when columns are added or deleted) structure. Could be as simple as an array of datatype.
-Mixed will probably have to be handled on the row level, or passed on to tightdb
-
 setint should use same validation system as getint
 (lt 1 hr)
 
-implement integer in subtable (c++,c# binding, c# classes, few basic unit tests)
-(hours - one unit test still fails, but all the others with subtables work fine)
+implement handling of mixed (now reduces to get mixed type)
+(1 hour max)
 
 implement integer in mixed (c++,c# binding, c# classes, few basic unit tests)
 (1 hour)
 
 implement subtable in mixed (c++,c# binding, c# classes, few basic unit tests)
-(hours)
+(few hours)
 
 implement integer in query (c++,c# binding, c# classes, few basic unit tests)
 (hours to get query class going, not so much time to get integer to work in it)
@@ -23,31 +20,38 @@ implement TableGroup (c++,c# binding, c# classes, few basic unit tests)
 (hours to get tablegroup class going, not so much time on top of that)
 
 
-These next 3 tasks are done im parrallel, each lowlevel function is done on all levels, to ensure it works before carrying on, and to ensure the architecture is sound. While the estimate is 2 days, we'll probably be missing only a few select (difficult) things towards the end.
+These next 3 tasks are done im parrallel, each lowlevel function is done on all levels, to ensure it works (sb. covered by at least one unit test)
+before carrying on, and to ensure the architecture is sound. While the estimate is 2 days, we'll probably be missing only a few select (difficult) things towards the end.
 
 implement the rest of the types and any other functions in c++
-(2 days)
+(1-2 days)
 
 implement the rest of the types, and any other functions on the c# side
-(2 days)
+(1-2 days)
 
 implement the rest of the types, and any other functions in the C# classes
-(2 days)
+(1-2 days)
 
+consider if columntypes aren't always the same for all rows (if mixed is treated as a type). If so - move columntype out of tablerowcolumn and down into table in some seperate (nonchanging,except when columns are added or deleted) structure. Could be as simple as an array of datatype.
+Mixed will probably have to be handled on the row level, or passed on to tightdb.
+If subsequent columntype lookups at table level can be looked up on the c# side without calling c++ it will likely be faster as we wo't have to do a pinvoke call.
+(2 hr)
 
-implement C# support for Linq using Ienumerator and C#'s own LinQ engine
-(done in principle (table now supports being enummerated) needs some LINQ specific testing - 1 day, problems could be troublesome to fix)
-
-implement a typed tightdb vesion in C#
-(? - I'm not sure this is either feasible, or a good idea, as C# have no macro language. Let's get the more ordinary database interfaces done first)
-(however, we could do some kind of support for ppl that could generate user friendly code for a given table type)
-
-implement C# support for LinQ using IQueryable<t>
-(probably a day to figure how long it takes, and what should be done)
 
 "create distribution" instructions - should create a zip file with the stuff needed to run on a 32bit windows PC with newest .net and VS2012 (less than 1hr)
 
 "create distribution" instructions - should create a zip file with the stuff needed to run on a 64bit windows PC with newest .net and VS2012 (less than 1hr)
+
+implement C# support for Linq using Ienumerator and C#'s own LinQ engine
+(done in principle (table now supports being enummerated) needs some LINQ specific testing - 1 day, problems could be troublesome to fix)
+
+implement C# support for LinQ using IQueryable<t>
+(probably a day to figure how long it takes, and what should be done)
+
+implement a typed tightdb vesion in C#
+(? - I'm not sure this is either feasible, or a good idea, as C# have no macro language. Let's get the more ordinary database interfaces done first)
+(however, we could do some kind of support for ppl that could generate user friendly code for a given table type)
+C# have a framework for working with databases already, we should consider hooking into that,or at least mimic how it works ( dataset["fieldvalue"] and dataset.fields.getinteger("fieldname") and dataset.getinteger(1)).
 
 Create virtual 32 bit windows to be used for testing
 (1 day)

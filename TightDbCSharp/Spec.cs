@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
-using System.Text;
+
+
 //using System.Threading.Tasks; not portable as of 2013-4-2
 
 //C# SPEC Class. This class is a wrapper of the C++ Spec class.
@@ -12,9 +12,8 @@ using System.Text;
 //and then internally call on to functions exported from the c++ DLL
 //The design is so, that the C# class does not have any C++ like types or structures, except the SpecHandle variable
 
-namespace TightDb.TightDbCSharp
+namespace TightDbCSharp
 {
-
     //custom exception for Table class. When Table runs into a Table related error, TableException is thrown
     //some system exceptions might also be thrown, in case they have not much to do with Table operation
     //following the pattern described here http://msdn.microsoft.com/en-us/library/87cdya3t.aspx
@@ -45,56 +44,77 @@ namespace TightDb.TightDbCSharp
     public class Spec : IDisposable
     {
         //not accessible by source not in te TightDBCSharp namespace
-        internal IntPtr SpecHandle {get;set;}  //handle (or pointer) to a c++ hosted spec.
-        internal bool SpecHandleInUse {get; set;} //defaults to false.  TODO:this might need to be encapsulated with a lock to make it thread safe (although several threads *opening or closing* *the same* table object is totally forbidden )        
-        internal bool SpecHandleHasBeenUsed { get; set; } //defaults to false. If this is true, the table handle has been allocated in the lifetime of this object
+        internal Spec(IntPtr handle, bool notifycpp)
+        {
+            SpecHandle = handle;
+            SpecHandleInUse = true;
+            SpecHandleHasBeenUsed = true;
+            Notifycppwhendisposing = notifycpp;
+        }
+
+        internal IntPtr SpecHandle { get; set; } //handle (or pointer) to a c++ hosted spec.
+        internal bool SpecHandleInUse { get; set; }
+        //defaults to false.  TODO:this might need to be encapsulated with a lock to make it thread safe (although several threads *opening or closing* *the same* table object is totally forbidden )        
+        internal bool SpecHandleHasBeenUsed { get; set; }
+        //defaults to false. If this is true, the table handle has been allocated in the lifetime of this object
         private bool IsDisposed { get; set; }
-        internal bool notifycppwhendisposing{get;set;}//if false, the spechandle do not need to be disposed of, on the c++ side
+        internal bool Notifycppwhendisposing { get; set; }
+
+        public long ColumnCount
+        {
+            get { return UnsafeNativeMethods.SpecGetColumnCount(this); }
+        }
+
+        //if false, the spechandle do not need to be disposed of, on the c++ side
         //wether to actually dispose or not is handled in tightdbcalls.cs so the spec object should act as if it should always dispose of itself
-        
+
         public void Dispose()
         {
             Dispose(true);
-            GC.SuppressFinalize(this);//tell finalizer it does not have to call dispose or dispose of things -we have done that already
+            GC.SuppressFinalize(this);
+                //tell finalizer it does not have to call dispose or dispose of things -we have done that already
         }
+
         //if called from GC  we should not dispose managedas that is unsafe, the bool tells us how we were called
         protected virtual void Dispose(bool disposeManagedToo)
         {
-            if (!IsDisposed) 
+            if (!IsDisposed)
             {
-                if (disposeManagedToo) {
+                if (disposeManagedToo)
+                {
                     //dispose any managed members table might have
                 }
 
                 //dispose any unmanaged stuff we have
-                unbind();
+                Unbind();
                 IsDisposed = true;
             }
         }
-        
+
         //when tihs is called by the GC, unmanaged stuff might not have been freed, and managed stuff could be in the process of being
         //freed, so only get rid of unmanaged stuff
-        
+
         ~Spec()
         {
             try
             {
                 Dispose(false);
             }
+// ReSharper disable RedundantEmptyFinallyBlock
             finally
             {
                 // Only use this line if Table starts to inherit from some other class that itself implements dispose
                 //                base.Dispose();
             }
+// ReSharper restore RedundantEmptyFinallyBlock
         }
 
-        
 
         //this method is for internal use only
         //it will automatically be called when the spec object is disposed
         //In fact, you should not at all it on your own
 
-        internal void unbind()
+        internal void Unbind()
         {
             if (SpecHandleInUse)
             {
@@ -112,7 +132,7 @@ namespace TightDb.TightDbCSharp
                 }
             }
         }
-        
+
 
         //Depending on where we get the spec handle from, it could be a structure that should be
         //deleted or a structure that should not be deleted (deallocated) in c++
@@ -122,13 +142,6 @@ namespace TightDb.TightDbCSharp
         //do not need to be deleted are pointers into structures that are owned by a table
         //This means that a spec that has been gotten from a table should not be used after that table have
         //been deallocated.
-        internal Spec(IntPtr handle,bool notifycpp) 
-        {
-            SpecHandle = handle;
-            SpecHandleInUse = true;
-            SpecHandleHasBeenUsed = true;
-            this.notifycppwhendisposing = notifycpp;
-        }
 
         //add this field to the current spec. Will add recursively if neeeded
         public void AddField(Field schema)
@@ -152,7 +165,7 @@ namespace TightDb.TightDbCSharp
             }
         }
 
-        
+
         // will add the field list to the current spec
         public void AddFields(Field[] fields)
         {
@@ -174,9 +187,9 @@ namespace TightDb.TightDbCSharp
             return UnsafeNativeMethods.AddSubTableColumn(this, columnName);
         }
 
-        public void AddColumn(DataType type,String name)
-        {           
-            UnsafeNativeMethods.SpecAddColumn(this, type, name);            
+        public void AddColumn(DataType type, String name)
+        {
+            UnsafeNativeMethods.SpecAddColumn(this, type, name);
         }
 
         //shorthand methods as C# constants doesn't exist so we can't do AddColumn(Type_Int,"name")
@@ -187,28 +200,22 @@ namespace TightDb.TightDbCSharp
         }
 
         //I assume column_idx is a column with a table in it, or a mixed with a table?
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "subTable"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "columnIndex")]
-        public Spec GetSpec(long columnIndex) 
+        [SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "subTable"),
+         SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "columnIndex")]
+        public Spec GetSpec(long columnIndex)
         {
             if (GetColumnType(columnIndex) == DataType.Table)
             {
                 return UnsafeNativeMethods.SpecGetSpec(this, columnIndex);
-            }else
-            throw new SpecException("get spec(columnIndex) can only be called on a subTable field");
+            }
+            else
+                throw new SpecException("get spec(columnIndex) can only be called on a subTable field");
         }
 
         public DataType GetColumnType(long columnIndex)
         {
             return UnsafeNativeMethods.SpecGetColumnType(this, columnIndex);
         }
-
-        
-
-        public long ColumnCount
-        {
-            get { return UnsafeNativeMethods.SpecGetColumnCount(this); }            
-        }
-        
 
 
         public string GetColumnName(long columnIndex)

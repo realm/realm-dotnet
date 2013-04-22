@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Runtime.InteropServices;
 using System.Globalization;
 using System.Runtime.Serialization;
+
+
 //using System.Threading.Tasks; not portable as of 2013-04-02
 
 //Tell compiler to give warnings if we publicise interfaces that are not defined in the cls standard
@@ -17,10 +16,10 @@ using System.Runtime.Serialization;
 
 
 
-namespace TightDb.TightDbCSharp
+namespace TightDbCSharp
 {
 
-
+    //this file contains Table and all its helper classes, except Spec, which has its own file
     //see after the table class for a collection of helper classes, TField, TableException, Extension methods, TableRecord etc.
 
 
@@ -53,7 +52,7 @@ namespace TightDb.TightDbCSharp
         }
 
         private DataType _columnType;
-        private Boolean _columntypeloaded = false;
+        private Boolean _columntypeloaded;
         //this could be optimized by storing columncount in the table class
         public bool IsLastColumn()
         {
@@ -76,7 +75,8 @@ namespace TightDb.TightDbCSharp
         }
         
         //if it is a mixed we return mixed! -not the type of the field
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "TableRowColumn")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming",
+            "CA2204:Literals should be spelled correctly", MessageId = "TableRowColumn")]
         public object Value
         {
             get
@@ -84,18 +84,38 @@ namespace TightDb.TightDbCSharp
                 switch (ColumnType)
                 {
                     case DataType.Int:
-                        return Owner.getLongNoCheck(ColumnIndex);//row and column not user specified so safe, and type checked in switch above so also safe
-                    default: return String.Format(CultureInfo.InvariantCulture, "dump for type {0} not implemented yet", ColumnType) ;//so null means the datatype is not fully supported yet
+                        return Owner.GetLongNoCheck(ColumnIndex);
+                            //row and column not user specified so safe, and type checked in switch above so also safe
+                    default:
+                        return String.Format(CultureInfo.InvariantCulture, "Getting type {0} from TableRowColumn not implemented yet",
+                                             ColumnType); //so null means the datatype is not fully supported yet
+                }
+            }
+            set
+            {
+                switch (ColumnType)
+                {
+                    case DataType.Int:
+                        Owner.SetLongNoCheck(ColumnIndex, (long)value );//the cast will raise an exception if value is not a long, or at least convertible to long
+                        break;
+                    default:
+                        {
+                            throw new TableException(String.Format(CultureInfo.InvariantCulture,
+                                                                   "setting type {0} in TableRowColumn not implemented yet",
+                                                                   ColumnType));
+                        }
                 }
             }
         }
 
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "DataType"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "GetLong")]
-        private long getLong()
+        //[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "DataType"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "GetLong")]
+/*
+        private long GetLong()
         {            
             return Owner.GetLong(ColumnIndex);//will be type chekced (only) in table class
         }
+*/
     }
 
 
@@ -112,14 +132,14 @@ namespace TightDb.TightDbCSharp
         internal TableRow(Table owner,long row) {
             Owner=owner;
             
-            /// The Row number of the row this TableRow references
+            // The Row number of the row this TableRow references
             Row=row;
         }
         public Table Owner { get; set; }
         public long Row { get; internal set; }//users should not be allowed to change the row property of a tablerow class
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", MessageId = "long")]
         public long GetLong(long columnNumber) {
-            { return Owner.getLongNoColumnRowCheck(columnNumber,Row);}
+            { return Owner.GetLongNoColumnRowCheck(columnNumber,Row);}
         }
 
 /*
@@ -129,9 +149,9 @@ namespace TightDb.TightDbCSharp
             return Owner.GetLongNoTypeCheck(columnNumber, Row);
         }
         */
-        internal long getLongNoCheck(long columnIndex)
+        internal long GetLongNoCheck(long columnIndex)
         {
-            return Owner.getLongNoCheck(columnIndex, Row);//we know that Row could not have been set by user code, so it's safe
+            return Owner.GetLongNoCheck(columnIndex, Row);//we know that Row could not have been set by user code, so it's safe
         }
 
         //allow foreach to traverse a TableRow and get some TableRowColumn objects
@@ -149,6 +169,10 @@ namespace TightDb.TightDbCSharp
         //{
             //return Owner.GetValue(row, columnNumber);
         //}
+        public void SetLongNoCheck(long columnIndex, long value)
+        {
+            Owner.SetLongNoCheck(columnIndex,Row,value);
+        }
     }
 
     //If You need extra speed, And you know the column schema of the table at compile, you can create a typed record :
@@ -181,24 +205,24 @@ namespace TightDb.TightDbCSharp
 
         class Enumerator : IEnumerator<TableRow>//probably overkill, current needs could be met by using yield
         {
-            long CurrentRow = -1;
-            Table MyTable;
+            long _currentRow = -1;
+            Table _myTable;
             public Enumerator(Table table)
             {
-                this.MyTable = table;
+                _myTable = table;
             }
-            public TableRow Current { get { return new TableRow(MyTable, CurrentRow); } }
+            public TableRow Current { get { return new TableRow(_myTable, _currentRow); } }
             object System.Collections.IEnumerator.Current { get { return Current; } }
 
             public bool MoveNext()
             {
-                return ++CurrentRow < MyTable.Size();
+                return ++_currentRow < _myTable.Size();
             }
 
-            public void Reset() { CurrentRow = -1; }
+            public void Reset() { _currentRow = -1; }
             public void Dispose()
             {
-                MyTable = null; //remove reference to Table class
+                _myTable = null; //remove reference to Table class
             }
         }
 
@@ -225,7 +249,7 @@ namespace TightDb.TightDbCSharp
                 }
 
                 //dispose any unmanaged stuff we have
-                unbind();
+                Unbind();
                 IsDisposed = true;
             }
         }
@@ -238,11 +262,13 @@ namespace TightDb.TightDbCSharp
             {
                 Dispose(false);
             }
+// ReSharper disable RedundantEmptyFinallyBlock
             finally
             {
                 // Only use this line if Table starts to inherit from some other class that itself implements dispose
                 //                base.Dispose();
             }
+// ReSharper restore RedundantEmptyFinallyBlock
         }
 
         //always acquire a table handle
@@ -254,7 +280,7 @@ namespace TightDb.TightDbCSharp
         //This is used when we want to create a table and we already have the c++ handle that the table should use.  used by GetSubTable
         internal Table(IntPtr tableHandle,bool shouldbedisposed)
         {
-            setTableHandle(tableHandle,shouldbedisposed);
+            SetTableHandle(tableHandle,shouldbedisposed);
         }
         //will only log in debug mode!
         //marker is a string that will show as the first log line, use this if several places in the code enable logging and disable it again, to
@@ -393,7 +419,7 @@ namespace TightDb.TightDbCSharp
         //TableHandle contains the value of a C++ pointer to a C++ table
         //it is sent as a parameter to calls to the C++ DLL.
 
-        internal IntPtr tableHandle { get; set; }  //handle (in fact a pointer) to a c++ hosted Table. We must unbind this handle if we have acquired it
+        internal IntPtr TableHandle { get; set; }  //handle (in fact a pointer) to a c++ hosted Table. We must unbind this handle if we have acquired it
         internal bool TableHandleInUse { get; set; } //defaults to false.  TODO:this might need to be encapsulated with a lock to make it thread safe (although several threads *opening or closing* *the same* table object is probably not happening often)
         internal bool TableHandleHasBeenUsed { get; set; } //defaults to false. If this is true, the table handle has been allocated in the lifetime of this object
         internal bool NotifyCppWhenDisposing { get; set; }//if false, the table handle do not need to be disposed of, on the c++ side
@@ -402,7 +428,7 @@ namespace TightDb.TightDbCSharp
         //use this function to set the table handle to make sure various booleans are set correctly        
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "SetTableHandle"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "SetTableHandle"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "TableNew")]
-        internal void setTableHandle(IntPtr newTableHandle,bool ShouldBeDisposed)
+        internal void SetTableHandle(IntPtr newTableHandle,bool shouldBeDisposed)
         {
             if (TableHandleInUse)
             {
@@ -410,10 +436,10 @@ namespace TightDb.TightDbCSharp
             }
             else
             {
-                tableHandle = newTableHandle;
+                TableHandle = newTableHandle;
                 TableHandleInUse = true;
                 TableHandleHasBeenUsed = true;
-                NotifyCppWhenDisposing = ShouldBeDisposed;
+                NotifyCppWhenDisposing = shouldBeDisposed;
             }
         }
 
@@ -430,7 +456,7 @@ namespace TightDb.TightDbCSharp
         //this method is for internal use only
         //it will automatically be called when the table object is disposed (or garbage collected)
         //In fact, you should not at all it on your own
-        internal void unbind()
+        internal void Unbind()
         {
             if (TableHandleInUse)
             {
@@ -493,15 +519,10 @@ namespace TightDb.TightDbCSharp
 
         public void SetLong(long columnIndex, long rowIndex, long value)
         {
-            if (rowIndex >= Size())
-            {
-                throw new ArgumentOutOfRangeException("rowIndex","Table.SetLong called with a row number >= Table.Size()");
-            }
-            if (columnIndex >= ColumnCount)
-            {
-                throw new ArgumentOutOfRangeException("columnIndex","Table.SetLong called with a columnIndex that is larger than Table.Size");
-            }
-            UnsafeNativeMethods.TableSetLong(this, columnIndex, rowIndex, value);
+            ValidateColumnIndex(columnIndex);
+            ValidateRowIndex(rowIndex);
+            ValidateColumnTypeInt(columnIndex);
+            SetLongNoCheck(columnIndex,rowIndex,value);
         }
 
         public Table GetSubTable(long columnIndex, long rowIndex)
@@ -573,15 +594,15 @@ namespace TightDb.TightDbCSharp
             ValidateRowIndex(rowIndex);
             ValidateColumnIndex(columnIndex);
             ValidateColumnTypeInt(columnIndex);
-            return getLongNoCheck(columnIndex,rowIndex);//could be sped up if we directly call UnsafeNativeMethods
+            return GetLongNoCheck(columnIndex,rowIndex);//could be sped up if we directly call UnsafeNativeMethods
         }
 
         //only call this method if You know for sure that RowIndex is less than or equal to table.size()
         //and that you know for sure that columnIndex is less than or equal to table.columncount
-        internal long getLongNoColumnRowCheck(long columnIndex, long rowIndex)
+        internal long GetLongNoColumnRowCheck(long columnIndex, long rowIndex)
         {            
             ValidateColumnTypeInt(columnIndex);
-            return getLongNoCheck(columnIndex,rowIndex);
+            return GetLongNoCheck(columnIndex,rowIndex);
         }
 
         //only call this one if You know for sure that the field at columnindex,rowindex is in fact an ordinary DataType.Int field (not mixed.integer)
@@ -589,11 +610,11 @@ namespace TightDb.TightDbCSharp
         {
             ValidateRowIndex(rowIndex);
             ValidateColumnIndex(columnIndex);
-            return getLongNoCheck(columnIndex, rowIndex);
+            return GetLongNoCheck(columnIndex, rowIndex);
         }
 
         //only call if You are certain that 1: The field type is Int, 2: The columnIndex is in range, 3: The rowIndex is in range
-        internal long getLongNoCheck(long columnIndex,long rowIndex)
+        internal long GetLongNoCheck(long columnIndex,long rowIndex)
         {
             return UnsafeNativeMethods.TableGetInt(this,columnIndex, rowIndex);
         }
@@ -601,6 +622,11 @@ namespace TightDb.TightDbCSharp
         public Boolean GetBoolean(long columnIndex, long rowIndex)
         {
             return UnsafeNativeMethods.TableGetBool(this, columnIndex, rowIndex);
+        }
+
+        internal void SetLongNoCheck(long columnIndex, long rowIndex, long value)
+        {
+            UnsafeNativeMethods.TableSetLong(this, columnIndex, rowIndex, value);
         }
     }
 
@@ -654,7 +680,7 @@ namespace TightDb.TightDbCSharp
         internal static void AddSubTableFields(Field someField, String someColumnName, Field[] subTableFieldsArray)
         {
             SetInfo(someField, someColumnName, DataType.Table);
-            someField.subTable.AddRange(subTableFieldsArray);
+            someField._subTable.AddRange(subTableFieldsArray);
         }
 
         public Field(string someColumnName, params Field[] subTableFieldsArray)
@@ -729,7 +755,7 @@ namespace TightDb.TightDbCSharp
 
         public DataType FieldType { get; set; }
 
-        private List<Field> subTable = new List<Field>();//only used if type is a subtable
+        private readonly List<Field> _subTable = new List<Field>();//only used if type is a subtable
 
         //potential trouble. A creative user could subclass Field to get access to getsubtablearray, then call this to get access to a subtable field, then set the subtable field reference to this same class or one of its parents in the field tree
         //then  call create table and provoke a stack overflow
@@ -737,7 +763,7 @@ namespace TightDb.TightDbCSharp
         //or if the individial items in the subTable could only be set once
         public Field[] GetSubTableArray()
         {
-            return subTable.ToArray();
+            return _subTable.ToArray();
         }
     }
 
