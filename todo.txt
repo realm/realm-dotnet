@@ -10,7 +10,7 @@ implement integer in query (c++,c# binding, c# classes, few basic unit tests)
 implement TableGroup (c++,c# binding, c# classes, few basic unit tests)
 (hours to get tablegroup class going, not so much time on top of that)
 
-These next 4 tasks are done im parrallel, each lowlevel function is done on all levels, to ensure it works (sb. covered by at least one unit test)
+These next 4 tasks are done in parrallel, each lowlevel function is done on all levels, to ensure it works (sb. covered by at least one unit test)
 before carrying on, and to ensure the architecture is sound. While the estimate is 4-8 days, we'll probably be missing only a few select (difficult) things towards the end. We should have a working system while this task is ongoing.
 
 implement the rest of the types and any other functions in c++
