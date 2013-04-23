@@ -69,6 +69,25 @@ namespace TestTightDbCSharp
         }
     }
 
+        
+    
+    [TestFixture]
+    public static class TableViewTests
+    {
+        [Test]
+        //simple call just to get a tableview (and have it deallocated when it exits scope)
+        public static void TableViewCreation()
+        {
+            using (var t = new Table( "intfield".Int()))
+            {
+                t.AddEmptyRow(1);
+                t.SetLong(0,0,42);
+                TableView tv = t.FindAllInt(0, 42);                
+                Console.WriteLine(tv.TableViewHandle);
+            }            
+        }
+    }
+
     //this test fixture tests that the C#  binding correctly catches invalid arguments before they are passed on to c++
     //this test does not at all cover all possibillities, it's just enough to ensure that our validation kicks in at all
     [TestFixture]
@@ -361,13 +380,30 @@ namespace TestTightDbCSharp
         }
 
 
+        [Test]
+        public static void TableMixedCreateEmptySubTable2()
+        {
+            using (var t = new Table(new MixedField("mixd")))
+            {
+                using (var sub = new Table(new IntField("int")))
+                {
+                    t.AddEmptyRow(1);
+                    t.SetMixedSubTable(0,0,sub);
+                }
+                t.AddEmptyRow(1);
+                t.SetMixedEmptySubTable(0, 0);//i want a new empty subtable in my newly created row
+                DataType sttype = t.GetMixedType(0, 0);
+                Assert.AreEqual(DataType.Table, sttype);
+            }
+        }
+
 
         [Test]
         public static void TableMixedCreateEmptySubTable()
         {
             using (var t = new Table(new MixedField("mixd")))
             {
-                t.AddEmptyRow(1);
+                t.AddEmptyRow(1);                
                 t.SetMixedEmptySubTable(0,0);
                 DataType sttype = t.GetMixedType(0, 0);
                 Assert.AreEqual(DataType.Table,sttype);
@@ -401,16 +437,19 @@ namespace TestTightDbCSharp
                 }
                 DataType sttype = t.GetMixedType(0, 0);
                 Assert.AreEqual(DataType.Table, sttype);
-                Table subback = t.GetSubTableFromMixed(0, 0);
+                Table subback = t.GetMixedSubTable(0, 0);
                 Assert.AreEqual(DataType.Int,subback.ColumnType(0));
                 Assert.AreEqual("int1", subback.GetColumnName(0));
             }
         }
 
 
-        [Test]
-        public static void TableMixedSetGetSubtableWithData()
+        
+        public static void TableMixedSetGetSubTableWithData()
         {
+
+            string actualres;
+
             using (var t = new Table(new MixedField("mix'd")))
             {
                 using (var subtable = new Table(new IntField("int1")))
@@ -420,17 +459,45 @@ namespace TestTightDbCSharp
                     subtable.SetLong(0,0,42);
                     t.SetMixedSubTable(0, 0, subtable);
                 }
+                t.AddEmptyRow(1);
+                t.SetMixedLong(0,1,84);
                 DataType sttype = t.GetMixedType(0, 0);
                 Assert.AreEqual(DataType.Table, sttype);
-                Table subback = t.GetSubTableFromMixed(0, 0);
+                Table subback = t.GetMixedSubTable(0, 0);
                 Assert.AreEqual(DataType.Int, subback.ColumnType(0));
                 Assert.AreEqual("int1", subback.GetColumnName(0));
                 long databack = subback.GetLong(0, 0);
                 Assert.AreEqual(42, databack);
+                Assert.AreEqual(DataType.Int,t.GetMixedType(0,1));
+                Assert.AreEqual(84,t.GetMixedLong(0,1));
+                actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name, "sub in mixed with int", t);
+            
             }
+
+
+            const string expectedres = @"------------------------------------------------------
+Column count: 1
+Table Name  : sub in mixed with int
+------------------------------------------------------
+ 0      Mixed  mix'd               
+------------------------------------------------------
+
+Table Data Dump. Rows:2
+------------------------------------------------------
+{ //Start row0
+mix'd:   { //Start row0
+   int1:42   //column 0
+   } //End row0
+//column 0//Mixed type is Table
+} //End row0
+{ //Start row1
+mix'd:84//column 0//Mixed type is Int
+} //End row1
+------------------------------------------------------
+";
+
+            Assert.AreEqual(expectedres,actualres);
         }
-
-
 
 
 
@@ -1867,10 +1934,11 @@ Table Name  : same names, empty names, mixed types
             const string startrow = "{{ //Start row{0}";
             const string endrow = "}} //End row{0}";
             const string startfield = @"{0}:";
-            const string endfield = ",//column {0}";
-            const string endfieldlast = "//column {0}";//no comma
+            const string endfield = ",//column {0}{1}";
+            const string endfieldlast = "//column {0}{1}";//no comma
             const string starttable = "[ //{0} rows";
             const string endtable = "]";
+            const string mixedcomment = "//Mixed type is {0}";
             var firstdatalineprinted = false;
             long tableSize = table.Size();
             foreach (TableRow tr in table )  {
@@ -1889,28 +1957,39 @@ Table Name  : same names, empty names, mixed types
                 res.AppendLine(String.Format(CultureInfo.InvariantCulture,  startrow, tr.Row));//start row marker            
                 foreach (TableRowColumn trc in tr)
                 {
+                    string extracomment = "";
                     res.Append(indent);
                     string name = trc.Owner.Owner.GetColumnName(trc.ColumnIndex);//so we can see it easily in the debugger
                     res.Append(String.Format(CultureInfo.InvariantCulture, startfield, name));
                     if (trc.ColumnType == DataType.Table)
                     {
-                        Table sub = table.GetSubTable(trc.ColumnIndex, tr.Row);//size printed here as we had a problem once with size reporting 0 where it should be larger, so nothing returned from call
-                        res.Append(String.Format(CultureInfo.InvariantCulture, starttable,sub.Size()));
-                        TableDataDumper(indent+"   ",res, sub);
+                        Table sub = table.GetSubTable(trc.ColumnIndex, tr.Row);
+                            //size printed here as we had a problem once with size reporting 0 where it should be larger, so nothing returned from call
+                        res.Append(String.Format(CultureInfo.InvariantCulture, starttable, sub.Size()));
+                        TableDataDumper(indent + "   ", res, sub);
                         res.Append(endtable);
                     }
                     else
                     {
                         if (trc.ColumnType == DataType.Mixed)
                         {
-                            res.Append("Mixed dump not implemented yet");
+                            extracomment = string.Format(CultureInfo.InvariantCulture,mixedcomment, trc.MixedType());
+                            //dumping a mixed with a simple value is done by simply calling trc.value - it will return the value inside the mixed
+                            if (trc.MixedType() == DataType.Table)
+                            {
+                                Table sub = trc.Value as Table;
+                                TableDataDumper(indent+"   ",res,sub);
+                            }
+                            else
+                            {
+                                res.Append(trc.Value);
+                            }
                         }
-                        res.Append(trc.Value);
+                        else
+                            res.Append(trc.Value);
                     }
                     res.Append(indent);
-                    res.AppendLine(String.Format(CultureInfo.InvariantCulture, trc.IsLastColumn() ? endfieldlast : endfield, trc.ColumnIndex));
-                    
-                    //, trc.Value ));  //of course only works because we only have one type of row right now
+                    res.AppendLine(String.Format(CultureInfo.InvariantCulture, trc.IsLastColumn() ? endfieldlast : endfield, trc.ColumnIndex, extracomment));                                      
                 }
                 res.Append(indent);
                 res.AppendLine(String.Format(CultureInfo.InvariantCulture, endrow, tr.Row));//end row marker
@@ -1936,9 +2015,10 @@ Table Name  : same names, empty names, mixed types
             EnvironmentTest.ShowVersionTest();
            // TableChangeDataTest.TableIntValueSubTableTest1();
             //CreateTableTest.TableSubtableSubtable();
-            TableParameterValidationTest.TableTestMixedInt();
-            TableParameterValidationTest.TableTestColumnIndexTooHigh();
-            TableChangeDataTest.TableSubTableSubTable();
+  //          TableParameterValidationTest.TableTestMixedInt();
+//            TableParameterValidationTest.TableTestColumnIndexTooHigh();
+            TableViewTests.TableViewCreation();
+            //TableChangeDataTest.TableMixedSetGetSubTableWithData();
 
     //        TableChangeDataTest.TableIntValueTest1();
     //        TableChangeDataTest.TableIntValueTest2();

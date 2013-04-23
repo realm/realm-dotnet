@@ -1,27 +1,17 @@
-setint should use same validation system as getint
-(lt 1 hr)
+update github with project files
+(1 hour as project setup now seem to be quite stable)
 
-implement handling of mixed (now reduces to get mixed type)
-(1 hour max)
-
-implement integer in mixed (c++,c# binding, c# classes, few basic unit tests)
-(1 hour)
-
-implement subtable in mixed (c++,c# binding, c# classes, few basic unit tests)
-(few hours)
+implement integer in tableview (c++,c# binding, c# classes, few basic unit tests)
+(1 day, ongoing - table is being split into 3 classes, almost all time will be spent refactoring and writing new unit tests for tableview)
 
 implement integer in query (c++,c# binding, c# classes, few basic unit tests)
 (hours to get query class going, not so much time to get integer to work in it)
 
-implement integer in tableview (c++,c# binding, c# classes, few basic unit tests)
-(potentially time consuming if table has to be refactored because of it, not more than a day though)
-
 implement TableGroup (c++,c# binding, c# classes, few basic unit tests)
 (hours to get tablegroup class going, not so much time on top of that)
 
-
-These next 3 tasks are done im parrallel, each lowlevel function is done on all levels, to ensure it works (sb. covered by at least one unit test)
-before carrying on, and to ensure the architecture is sound. While the estimate is 2 days, we'll probably be missing only a few select (difficult) things towards the end.
+These next 4 tasks are done im parrallel, each lowlevel function is done on all levels, to ensure it works (sb. covered by at least one unit test)
+before carrying on, and to ensure the architecture is sound. While the estimate is 4-8 days, we'll probably be missing only a few select (difficult) things towards the end. We should have a working system while this task is ongoing.
 
 implement the rest of the types and any other functions in c++
 (1-2 days)
@@ -32,11 +22,14 @@ implement the rest of the types, and any other functions on the c# side
 implement the rest of the types, and any other functions in the C# classes
 (1-2 days)
 
-consider if columntypes aren't always the same for all rows (if mixed is treated as a type). If so - move columntype out of tablerowcolumn and down into table in some seperate (nonchanging,except when columns are added or deleted) structure. Could be as simple as an array of datatype.
+create unit tests that touch every c++ function
+(1-2 days)
+
+
+consider that columntypes are always the same for all rows (if mixed is treated as a type). If so - move columntype out of tablerowcolumn and down into table in some seperate (nonchanging,except when columns are added or deleted) structure. Could be as simple as an array of datatype.
 Mixed will probably have to be handled on the row level, or passed on to tightdb.
 If subsequent columntype lookups at table level can be looked up on the c# side without calling c++ it will likely be faster as we wo't have to do a pinvoke call.
 (2 hr)
-
 
 "create distribution" instructions - should create a zip file with the stuff needed to run on a 32bit windows PC with newest .net and VS2012 (less than 1hr)
 
@@ -49,9 +42,7 @@ implement C# support for LinQ using IQueryable<t>
 (probably a day to figure how long it takes, and what should be done)
 
 implement a typed tightdb vesion in C#
-(? - I'm not sure this is either feasible, or a good idea, as C# have no macro language. Let's get the more ordinary database interfaces done first)
-(however, we could do some kind of support for ppl that could generate user friendly code for a given table type)
-C# have a framework for working with databases already, we should consider hooking into that,or at least mimic how it works ( dataset["fieldvalue"] and dataset.fields.getinteger("fieldname") and dataset.getinteger(1)).
+(? days - We might be able to use T4, it seems to be supported in mono too. In the case that T4 will work for our needs, this tasks will then revolve around developing the typed interface in C#. As this is a re-implementation of the java and c++ typed interfaces (so no interop/c++ stuff) We should see a lot of functionality as a function of time spent. I wil get back to a more precise estimate when I have read up on the scope and size of the typed interface) 
 
 Create virtual 32 bit windows to be used for testing
 (1 day)

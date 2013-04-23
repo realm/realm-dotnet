@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.Serialization;
 
@@ -22,6 +21,8 @@ namespace TightDbCSharp
 
     //this file contains Table and all its helper classes, except Spec, which has its own file
     //see after the table class for a collection of helper classes, TField, TableException, Extension methods, TableRecord etc.
+
+
 
 
 
@@ -67,14 +68,20 @@ namespace TightDbCSharp
                 {
                     return _columnType;
                 }
-                else
-                {
-                    _columnType = Owner.Owner.ColumnType(ColumnIndex);
-                    return _columnType;
-                }
+                return _columnType = Owner.Owner.ColumnType(ColumnIndex);                
             }
         }
-        
+
+        public DataType MixedType()
+        {
+            return Owner.MixedTypeCheckType(ColumnIndex);
+        }
+
+        internal DataType MixedTypeNoCheck()
+        {
+            return Owner.GetMixedTypeNoCheck(ColumnIndex);
+        }
+
         //if it is a mixed we return mixed! -not the type of the field
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming",
             "CA2204:Literals should be spelled correctly", MessageId = "TableRowColumn")]
@@ -87,6 +94,19 @@ namespace TightDbCSharp
                     case DataType.Int:
                         return Owner.GetLongNoCheck(ColumnIndex);
                             //row and column not user specified so safe, and type checked in switch above so also safe
+
+                    case DataType.Mixed:
+                        switch (MixedTypeNoCheck())
+                        {
+                            case DataType.Int:
+                                return Owner.GetMixedLongNoCheck(ColumnIndex);
+
+                            case DataType.Table:
+                                return Owner.GetMixedSubtableNoCheck(ColumnIndex);
+                            default:
+                                return string.Format(CultureInfo.InvariantCulture,"mixed with type {0} not supported yet in tabledumper",
+                                                     MixedTypeNoCheck());
+                        }
                     default:
                         return String.Format(CultureInfo.InvariantCulture, "Getting type {0} from TableRowColumn not implemented yet",
                                              ColumnType); //so null means the datatype is not fully supported yet
@@ -143,13 +163,6 @@ namespace TightDbCSharp
             { return Owner.GetLongNoColumnRowCheck(columnNumber,Row);}
         }
 
-/*
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", MessageId = "long")]
-        internal long getLongNoTypeCheck(long columnNumber)
-        {
-            return Owner.GetLongNoTypeCheck(columnNumber, Row);
-        }
-        */
         internal long GetLongNoCheck(long columnIndex)
         {
             return Owner.GetLongNoCheck(columnIndex, Row);//we know that Row could not have been set by user code, so it's safe
@@ -176,6 +189,26 @@ namespace TightDbCSharp
         }
 
 
+        internal DataType GetMixedTypeNoCheck(long columnIndex)
+        {
+            return Owner.GetMixedTypeNoCheck(columnIndex,Row);
+        }
+
+        internal long GetMixedLongNoCheck(long columnIndex)
+        {
+            return Owner.GetMixedLongNoCheck(columnIndex, Row);
+        }
+
+        //call this if You know for sure that columnIndex is valid (but if You are not sure if the type of the column is in fact mixed)
+        internal DataType MixedTypeCheckType(long columnIndex)
+        {
+            return Owner.GetMixedTypeCheckType(columnIndex, Row);//row and column cannot be invalid
+        }
+
+        internal Table GetMixedSubtableNoCheck(long columnIndex)
+        {
+            return Owner.GetMixedSubTable(columnIndex, Row);
+        }
     }
 
     //If You need extra speed, And you know the column schema of the table at compile, you can create a typed record :
@@ -195,8 +228,9 @@ namespace TightDbCSharp
 
 
 
+
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix")]
-    public class Table : IDisposable , IEnumerable<TableRow>
+    public class Table : TableOrView, IDisposable , IEnumerable<TableRow>
     {
         //manual dll version info. Used when debugging to see if the right DLL is loaded, or an old one
         //the number is a date and a time (usually last time i debugged something)
@@ -422,7 +456,7 @@ namespace TightDbCSharp
         //TableHandle contains the value of a C++ pointer to a C++ table
         //it is sent as a parameter to calls to the C++ DLL.
 
-        internal IntPtr TableHandle { get; set; }  //handle (in fact a pointer) to a c++ hosted Table. We must unbind this handle if we have acquired it
+        public IntPtr TableHandle { get; internal set; }  //handle (in fact a pointer) to a c++ hosted Table. We must unbind this handle if we have acquired it
         internal bool TableHandleInUse { get; set; } //defaults to false.  TODO:this might need to be encapsulated with a lock to make it thread safe (although several threads *opening or closing* *the same* table object is probably not happening often)
         internal bool TableHandleHasBeenUsed { get; set; } //defaults to false. If this is true, the table handle has been allocated in the lifetime of this object
         internal bool NotifyCppWhenDisposing { get; set; }//if false, the table handle do not need to be disposed of, on the c++ side
@@ -437,13 +471,10 @@ namespace TightDbCSharp
             {
                 throw new TableException("SetTableHandle called on a table that already has acquired a table handle");
             }
-            else
-            {
-                TableHandle = newTableHandle;
-                TableHandleInUse = true;
-                TableHandleHasBeenUsed = true;
-                NotifyCppWhenDisposing = shouldBeDisposed;
-            }
+            TableHandle = newTableHandle;
+            TableHandleInUse = true;
+            TableHandleHasBeenUsed = true;
+            NotifyCppWhenDisposing = shouldBeDisposed;
         }
 
         //This method will ask c++ to create a new table object and then the method will store the table objects handle        
@@ -549,7 +580,7 @@ namespace TightDbCSharp
         }
 
         //split into its own method to make the ordinary getsubtable very slightly faster bc it does not have to validate if type is a mixed
-        public Table GetSubTableFromMixed(long columnIndex, long rowIndex)
+        public Table GetMixedSubTable(long columnIndex, long rowIndex)
         {
             ValidateColumnTypeMixedSubTable(columnIndex,rowIndex);
             return UnsafeNativeMethods.TableGetSubTable(this, columnIndex, rowIndex);
@@ -728,6 +759,19 @@ namespace TightDbCSharp
         {
             return UnsafeNativeMethods.TableGetMixedInt(this, columnIndex, rowIndex);
         }
+
+        //we know column and row indicies are valid, but need to check if the column is in fact a mixed
+        internal DataType GetMixedTypeCheckType(long columnIndex, long rowIndex)
+        {
+            ValidateColumnTypeMixed(columnIndex);
+            return GetMixedTypeNoCheck(columnIndex, rowIndex);
+        }
+
+        public TableView FindAllInt(long columnIndex, long value)
+        {
+            return UnsafeNativeMethods.TableFindAllInt(this,  columnIndex,  value);
+        }
+
     }
 
     //custom exception for Table class. When Table runs into a Table related error, TableException is thrown

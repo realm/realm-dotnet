@@ -9,7 +9,7 @@ we should not break easily, and we should know where we have problems.
 
 #include "stdafx.hpp"
 #include "tightdb_c_cs.hpp"
-
+#include <iostream>
 
 using namespace tightdb;
 
@@ -43,6 +43,10 @@ TIGHTDB_C_CS_API Table* new_table()
 	return LangBindHelper::new_table();
 }
 
+//todo:tableviews should be invalidated if another tableview or the underlying table is being changed
+//this could be implemented by having a connection class, that is local to each process/thread
+//and then keep track of the number of views on a given table pointer inside this class
+//todo:create unit test that crashes tableview by changing the underlying table
 
 //   TableRef       get_subtable(size_t column_ndx, size_t row_ndx);
 TIGHTDB_C_CS_API Table* table_get_subtable(Table* table_ptr, size_t column_ndx, size_t row_ndx)
@@ -264,7 +268,21 @@ TIGHTDB_C_CS_API int64_t  table_get_mixed_int(Table*  table_ptr, size_t column_n
 
 TIGHTDB_C_CS_API size_t table_add_empty_row(Table* table_ptr, size_t num_rows)
 {
+    std::cerr<<"Added a row\n";
     return table_ptr->add_empty_row(num_rows);
+}
+
+
+TIGHTDB_C_CS_API tightdb::TableView* table_find_all_int(Table * table_ptr , size_t column_ndx, int64_t value)
+{
+     std::cerr<<"fetching tableview \n";
+    return new TableView(table_ptr->find_all_int(column_ndx,value));            
+     std::cerr<<"fetched tableview \n";
+}
+
+TIGHTDB_C_CS_API void tableview_delete(TableView * tableview_ptr )
+{
+    delete(tableview_ptr);
 }
 
 
@@ -300,7 +318,6 @@ TIGHTDB_C_CS_API size_t table_get_row_count(Table* table_ptr)
 //    static void set_mixed_subtable(Table& parent, std::size_t col_ndx, std::size_t row_ndx,
 //                                   const Table& source)
 
-
 //This method inserts source into the table handled by table_ptr. If source is null, a new table is inserted instead
 TIGHTDB_C_CS_API void table_set_mixed_subtable(Table* table_ptr,size_t col_ndx, size_t row_ndx,Table* source)
     {
@@ -308,8 +325,19 @@ TIGHTDB_C_CS_API void table_set_mixed_subtable(Table* table_ptr,size_t col_ndx, 
 }
 
 TIGHTDB_C_CS_API void table_set_mixed_empty_subtable(Table* table_ptr,size_t col_ndx, size_t row_ndx)
-    {
-        table_ptr->clear_subtable(col_ndx,row_ndx);//todo:verify that I don't have to handle the newly created empty table memory-wise
+    {     
+        std::cerr << "test \n";
+        try {
+        table_ptr->set_mixed(col_ndx,row_ndx,Mixed::subtable_tag());//this crashes
+        
+        }
+        catch (std::exception& e)
+        {
+                std::cerr << e.what() << "\n";
+        }
+        //table_ptr->clear_subtable(col_ndx,row_ndx);
+        //above clear_subtable throws exceptions when called
+        //todo:verify that I don't have to handle the newly created empty table memory-wise
         //todo:bonus question - if i read in a subtable in a mixed that was made this way, i should still unbind it?
         //and if the subtable was created via a specified table to copy via langbindhelper - i should still unbind it the same way?
 }

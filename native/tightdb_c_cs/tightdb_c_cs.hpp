@@ -79,6 +79,7 @@ TIGHTDB_C_CS_API int64_t table_get_mixed_int(tightdb::Table*  table_ptr, size_t 
 
 TIGHTDB_C_CS_API tightdb::Table* table_get_subtable(tightdb::Table* table_ptr, size_t column_ndx, size_t row_ndx);
 
+TIGHTDB_C_CS_API tightdb::TableView* table_find_all_int(tightdb::Table*, size_t column_ndx, int64_t value);
 //TIGHTDB_C_CS_API DataType table_get_int(tightdb::Table* table_ptr, size_t column_ndx, size_t row_ndx);
 
 //Spec
