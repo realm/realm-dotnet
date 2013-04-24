@@ -76,6 +76,9 @@ namespace TestTightDbCSharp
     {
         [Test]
         //simple call just to get a tableview (and have it deallocated when it exits scope)
+            //sometimes this seems to fail for no apparent reason. write to protected memory. There could be a bug somewhere
+            //there probably IS a bug - we might have problems if the table class is GC'ed before the view class, the t class could be GC'd as soon as
+            //find all int is done with it, before tv is assigned
         public static void TableViewCreation()
         {
             using (var t = new Table( "intfield".Int()))
@@ -83,10 +86,205 @@ namespace TestTightDbCSharp
                 t.AddEmptyRow(1);
                 t.SetLong(0,0,42);
                 TableView tv = t.FindAllInt(0, 42);                
-                Console.WriteLine(tv.TableViewHandle);
+                Console.WriteLine(tv.Handle);
             }            
         }
+
+        //returns a table with row 0 having ints 0 to 999 ascending
+        //row 1 having ints 0 to 99 ascendig (10 of each)
+        //row 2 having ints 0 to 9 asceding (100 of each)
+        public static Table GetTableWithMultipleIntegers()
+        {
+            var t = new Table(new IntField("intcolumn0"),new IntField("intcolumn1"),new IntField("intcolumn2"));
+            {
+                for (int n = 0; n < 1000; n++)
+                {
+                    long col0 = n;
+                    long col1 = n/10;
+                    long col2 = n/100;
+                    t.AddEmptyRow(1);
+                    t.SetLong(0,n,col0);
+                    t.SetLong(1,n,col1);
+                    t.SetLong(2,n,col2);
+                }
+            }
+            return t;
+        }
+
+        //returns a table with string columns up to index columnIndex, which is an integer column, and then a string column after that
+        //table is populated with null strings and in the int column row 0 has value 0*2, row 1 has value 1*2 , row n has value n*2
+        public static Table GettablewithNintsincolumn(long columnIndex,long numberOfInts)
+        {
+            var t = new Table();
+            for (int n = 0; n < columnIndex; n++)
+            {
+                t.AddColumn(DataType.String , "StringColumn" + n);
+            }
+            t.AddColumn(DataType.Int, "IntColumn");
+            t.AddColumn(DataType.String, "StringcolumnLast");
+
+            for (int n = 0; n < numberOfInts; n++)
+            {
+                t.AddEmptyRow(1);
+                t.SetLong(columnIndex,n,n*2);
+            }
+            return t;
+        }
+
+        [Test]
+        //create table view then search for all ints and return nothing as there is no matches
+        public static void TableViewNoResult()
+        {
+            const long column = 3;
+            using (var t = GettablewithNintsincolumn(column, 100))
+            {
+                TableView tv = t.FindAllInt(column,1001);
+                Assert.AreEqual(0, tv.Size());
+            }
+        }
+
+
+        [Test]
+        //create table view then search for all ints and return nothing as there is no matches
+        public static void TableViewWithOneRow()
+        {
+            const long column = 3;
+            using (var t = GettablewithNintsincolumn(column, 100))
+            {
+                TableView tv = t.FindAllInt(column, 42);
+                Assert.AreEqual(1, tv.Size());                
+            }
+        }
+
+        [Test]
+        //create table view then search for all ints and return nothing as there is no matches
+        public static void TableViewWithManyRows()
+        {
+            using (var t = GetTableWithMultipleIntegers())
+            {
+                TableView tv = t.FindAllInt(1,5);
+                Assert.AreEqual(10, tv.Size());
+            }
+        }
+
+
+        [Test]
+        //make sure tableview returns field values correctly
+        public static void TableViewFindAllReadValues()
+        {
+            using (var t = GetTableWithMultipleIntegers())
+            {
+                TableView tv = t.FindAllInt(2, 9);
+                Assert.AreEqual(100, tv.Size());
+                Assert.AreEqual(900,tv.GetLong(0,0));
+                Assert.AreEqual(999, tv.GetLong(0, 99));
+                tv.SetLong(0,1,42);
+                tv.SetLong(1,0,13);
+                Assert.AreEqual(42,t.GetLong(0,901));
+                Assert.AreEqual(13, t.GetLong(1, 900));
+            }
+        }
+
+        [Test]
+        public static void TableViewDumpView()
+        {
+            string actualres;
+
+            using (var t = GetTableWithMultipleIntegers())
+            {
+                TableView tv = t.FindAllInt(1, 10);
+                actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name, "find 10 integers in larger table", tv);
+
+            }
+            const string expectedres = @"------------------------------------------------------
+Column count: 3
+Table Name  : find 10 integers in larger table
+------------------------------------------------------
+ 0        Int  intcolumn0          
+ 1        Int  intcolumn1          
+ 2        Int  intcolumn2          
+------------------------------------------------------
+
+Table Data Dump. Rows:10
+------------------------------------------------------
+{ //Start row 0
+intcolumn0:100,//column 0
+intcolumn1:10,//column 1
+intcolumn2:1//column 2
+} //End row 0
+{ //Start row 1
+intcolumn0:101,//column 0
+intcolumn1:10,//column 1
+intcolumn2:1//column 2
+} //End row 1
+{ //Start row 2
+intcolumn0:102,//column 0
+intcolumn1:10,//column 1
+intcolumn2:1//column 2
+} //End row 2
+{ //Start row 3
+intcolumn0:103,//column 0
+intcolumn1:10,//column 1
+intcolumn2:1//column 2
+} //End row 3
+{ //Start row 4
+intcolumn0:104,//column 0
+intcolumn1:10,//column 1
+intcolumn2:1//column 2
+} //End row 4
+{ //Start row 5
+intcolumn0:105,//column 0
+intcolumn1:10,//column 1
+intcolumn2:1//column 2
+} //End row 5
+{ //Start row 6
+intcolumn0:106,//column 0
+intcolumn1:10,//column 1
+intcolumn2:1//column 2
+} //End row 6
+{ //Start row 7
+intcolumn0:107,//column 0
+intcolumn1:10,//column 1
+intcolumn2:1//column 2
+} //End row 7
+{ //Start row 8
+intcolumn0:108,//column 0
+intcolumn1:10,//column 1
+intcolumn2:1//column 2
+} //End row 8
+{ //Start row 9
+intcolumn0:109,//column 0
+intcolumn1:10,//column 1
+intcolumn2:1//column 2
+} //End row 9
+------------------------------------------------------
+";
+            Assert.AreEqual(expectedres, actualres);
+        }
+
+
+
+
+        [Test]
+        //make sure tableview returns field values correctly
+        public static void TableViewFindAllChangeValues()
+        {
+            using (var t = GetTableWithMultipleIntegers())
+            {
+                TableView tv = t.FindAllInt(2, 9);
+                Assert.AreEqual(100, tv.Size());
+                Assert.AreEqual(900, tv.GetLong(0, 0));
+                Assert.AreEqual(999, tv.GetLong(0, 99));
+
+
+                
+                
+            }
+        }
+
+
     }
+
 
     //this test fixture tests that the C#  binding correctly catches invalid arguments before they are passed on to c++
     //this test does not at all cover all possibillities, it's just enough to ensure that our validation kicks in at all
@@ -509,7 +707,7 @@ mix'd:84//column 0//Mixed type is Int
             //string actualres3;
             //string actualres4;
             //string actualres5;
-            string actualres6;
+            string actualres;
 
             using (var t = new Table(
                 "fld1".String(),
@@ -526,23 +724,23 @@ mix'd:84//column 0//Mixed type is Int
 
                 //   t.AddEmptyRow(1);
                 t.AddEmptyRow(1); //add empty row
-                //actualres1 = Program.TableDumper(MethodBase.GetCurrentMethod().Name+1, "subtable in subtable with int", t);
+                
                 Assert.AreEqual(1, t.Size());
                 Table root = t.GetSubTable(1, 0);
                 root.AddEmptyRow(1);
                 Assert.AreEqual(1, root.Size());
-                //actualres2 = Program.TableDumper(MethodBase.GetCurrentMethod().Name + 2, "subtable in subtable with int", t);
+                
                 Table s1 = root.GetSubTable(2, 0);
                 s1.AddEmptyRow(1);
                 Assert.AreEqual(1, s1.Size());
-                //actualres3 = Program.TableDumper(MethodBase.GetCurrentMethod().Name+3, "subtable in subtable with int", t);
+                
                 Table s2 = s1.GetSubTable(3, 0);
                 s2.AddEmptyRow(1);
-                //actualres4 = Program.TableDumper(MethodBase.GetCurrentMethod().Name + 3, "subtable in subtable with int", t);
+                
                 const long valueinserted = 42;
                 s2.SetLong(0, 0, valueinserted);
                 Assert.AreEqual(1, s2.Size());
-                //actualres5 = Program.TableDumper(MethodBase.GetCurrentMethod().Name+4, "subtable in subtable with int", t);
+                
                 //now read back the 42
 
                 long valueback = t.GetSubTable(1, 0).GetSubTable(2, 0).GetSubTable(3, 0).GetLong(0, 0);
@@ -550,7 +748,7 @@ mix'd:84//column 0//Mixed type is Int
 
 
                 Assert.AreEqual(valueback, valueinserted);
-                actualres6 = Program.TableDumper(MethodBase.GetCurrentMethod().Name + 5, "subtable in subtable with int",
+                actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name + 5, "subtable in subtable with int",
                                                  t);
             }
             const string expectedres = @"------------------------------------------------------
@@ -571,27 +769,27 @@ Table Name  : subtable in subtable with int
 
 Table Data Dump. Rows:1
 ------------------------------------------------------
-{ //Start row0
+{ //Start row 0
 fld1:Getting type String from TableRowColumn not implemented yet,//column 0
-root:[ //1 rows   { //Start row0
+root:[ //1 rows   { //Start row 0
    fld2:Getting type String from TableRowColumn not implemented yet   ,//column 0
    fld3:Getting type String from TableRowColumn not implemented yet   ,//column 1
-   s1:[ //1 rows      { //Start row0
+   s1:[ //1 rows      { //Start row 0
       fld4:Getting type String from TableRowColumn not implemented yet      ,//column 0
       fld5:Getting type String from TableRowColumn not implemented yet      ,//column 1
       fld6:Getting type String from TableRowColumn not implemented yet      ,//column 2
-      s2:[ //1 rows         { //Start row0
+      s2:[ //1 rows         { //Start row 0
          fld:42         //column 0
-         } //End row0
+         } //End row 0
 ]      //column 3
-      } //End row0
+      } //End row 0
 ]   //column 2
-   } //End row0
+   } //End row 0
 ]//column 1
-} //End row0
+} //End row 0
 ------------------------------------------------------
 ";
-            Assert.AreEqual(expectedres, actualres6);
+            Assert.AreEqual(expectedres, actualres);
         }
 
 
@@ -621,21 +819,21 @@ Table Name  : table with a few integers in it
 
 Table Data Dump. Rows:3
 ------------------------------------------------------
-{ //Start row0
+{ //Start row 0
 IntColumn1:1764,//column 0
 IntColumn2:0,//column 1
 IntColumn3:0//column 2
-} //End row0
-{ //Start row1
+} //End row 0
+{ //Start row 1
 IntColumn1:0,//column 0
 IntColumn2:-9223372036854775808,//column 1
 IntColumn3:0//column 2
-} //End row1
-{ //Start row2
+} //End row 1
+{ //Start row 2
 IntColumn1:0,//column 0
 IntColumn2:0,//column 1
 IntColumn3:-9223372036854775766//column 2
-} //End row2
+} //End row 2
 ------------------------------------------------------
 ";
             Assert.AreEqual(expectedres, actualres);
@@ -668,69 +866,69 @@ Table Name  : table with a few integers in it
 
 Table Data Dump. Rows:3
 ------------------------------------------------------
-{ //Start row0
+{ //Start row 0
 IntColumn1:1764,//column 0
 IntColumn2:0,//column 1
 IntColumn3:0,//column 2
-SubTableWithInts:[ //3 rows   { //Start row0
+SubTableWithInts:[ //3 rows   { //Start row 0
    SubIntColumn1:2   ,//column 0
    SubIntColumn2:0   ,//column 1
    SubIntColumn3:0   //column 2
-   } //End row0
-   { //Start row1
+   } //End row 0
+   { //Start row 1
    SubIntColumn1:0   ,//column 0
    SubIntColumn2:0   ,//column 1
    SubIntColumn3:0   //column 2
-   } //End row1
-   { //Start row2
+   } //End row 1
+   { //Start row 2
    SubIntColumn1:0   ,//column 0
    SubIntColumn2:0   ,//column 1
    SubIntColumn3:0   //column 2
-   } //End row2
+   } //End row 2
 ]//column 3
-} //End row0
-{ //Start row1
+} //End row 0
+{ //Start row 1
 IntColumn1:0,//column 0
 IntColumn2:-9223372036854775808,//column 1
 IntColumn3:0,//column 2
-SubTableWithInts:[ //3 rows   { //Start row0
+SubTableWithInts:[ //3 rows   { //Start row 0
    SubIntColumn1:0   ,//column 0
    SubIntColumn2:0   ,//column 1
    SubIntColumn3:0   //column 2
-   } //End row0
-   { //Start row1
+   } //End row 0
+   { //Start row 1
    SubIntColumn1:0   ,//column 0
    SubIntColumn2:2   ,//column 1
    SubIntColumn3:0   //column 2
-   } //End row1
-   { //Start row2
+   } //End row 1
+   { //Start row 2
    SubIntColumn1:0   ,//column 0
    SubIntColumn2:0   ,//column 1
    SubIntColumn3:0   //column 2
-   } //End row2
+   } //End row 2
 ]//column 3
-} //End row1
-{ //Start row2
+} //End row 1
+{ //Start row 2
 IntColumn1:0,//column 0
 IntColumn2:0,//column 1
 IntColumn3:-9223372036854775766,//column 2
-SubTableWithInts:[ //3 rows   { //Start row0
+SubTableWithInts:[ //3 rows   { //Start row 0
    SubIntColumn1:0   ,//column 0
    SubIntColumn2:0   ,//column 1
    SubIntColumn3:0   //column 2
-   } //End row0
-   { //Start row1
+   } //End row 0
+   { //Start row 1
    SubIntColumn1:0   ,//column 0
    SubIntColumn2:0   ,//column 1
    SubIntColumn3:0   //column 2
-   } //End row1
-   { //Start row2
+   } //End row 1
+   { //Start row 2
    SubIntColumn1:0   ,//column 0
    SubIntColumn2:0   ,//column 1
    SubIntColumn3:2   //column 2
-   } //End row2
+   } //End row 2
 ]//column 3
-} //End row2
+} //End row 2
 ------------------------------------------------------
 ";
             Assert.AreEqual(expectedres, actualres);
@@ -745,9 +943,9 @@ SubTableWithInts:[ //3 rows   { //Start row0
             {
                 t.AddEmptyRow(5);
                 long changeNumber = 0;
-                foreach (TableRow tr in t)
+                foreach (Row tr in t)
                 {
-                    foreach (TableRowColumn trc in tr)
+                    foreach (RowColumn trc in tr)
                     {
                         if(trc.ColumnType==DataType.Int)
                           trc.Value = ++changeNumber;
@@ -771,31 +969,31 @@ Table Name  : integers set from within trc objects
 
 Table Data Dump. Rows:5
 ------------------------------------------------------
-{ //Start row0
+{ //Start row 0
 intfield:1,//column 0
 stringfield:Getting type String from TableRowColumn not implemented yet,//column 1
 intfield2:2//column 2
-} //End row0
-{ //Start row1
+} //End row 0
+{ //Start row 1
 intfield:3,//column 0
 stringfield:Getting type String from TableRowColumn not implemented yet,//column 1
 intfield2:4//column 2
-} //End row1
-{ //Start row2
+} //End row 1
+{ //Start row 2
 intfield:5,//column 0
 stringfield:Getting type String from TableRowColumn not implemented yet,//column 1
 intfield2:6//column 2
-} //End row2
-{ //Start row3
+} //End row 2
+{ //Start row 3
 intfield:7,//column 0
 stringfield:Getting type String from TableRowColumn not implemented yet,//column 1
 intfield2:8//column 2
-} //End row3
-{ //Start row4
+} //End row 3
+{ //Start row 4
 intfield:9,//column 0
 stringfield:Getting type String from TableRowColumn not implemented yet,//column 1
 intfield2:10//column 2
-} //End row4
+} //End row 4
 ------------------------------------------------------
 ";
             Assert.AreEqual(expectedres,actualres);
@@ -1862,7 +2060,7 @@ Table Name  : same names, empty names, mixed types
         //dumps table structure to a string for debugging purposes.
         //the string is easily human-readable
         //this version uses the table column information as far as possible, then shifts to spec on subtables
-        public static string TableDumper(String fileName, String tableName, Table t)
+        public static string TableDumper(String fileName, String tableName, TableOrView t)
         {
             var res = new StringBuilder();//temporary storange of text of dump
 
@@ -1929,10 +2127,10 @@ Table Name  : same names, empty names, mixed types
         }
 
 
-        public static void TableDataDumper(string indent,StringBuilder res, Table table)
+        public static void TableDataDumper(string indent,StringBuilder res, TableOrView table)
         {
-            const string startrow = "{{ //Start row{0}";
-            const string endrow = "}} //End row{0}";
+            const string startrow = "{{ //Start row {0}";
+            const string endrow = "}} //End row {0}";
             const string startfield = @"{0}:";
             const string endfield = ",//column {0}{1}";
             const string endfieldlast = "//column {0}{1}";//no comma
@@ -1941,7 +2139,7 @@ Table Name  : same names, empty names, mixed types
             const string mixedcomment = "//Mixed type is {0}";
             var firstdatalineprinted = false;
             long tableSize = table.Size();
-            foreach (TableRow tr in table )  {
+            foreach (Row tr in table )  {
                 if (firstdatalineprinted == false)
                 {
                     if (String.IsNullOrEmpty(indent))
@@ -1953,9 +2151,9 @@ Table Name  : same names, empty names, mixed types
                     }
                     firstdatalineprinted = true;
                 }
-                res.Append(indent);                
-                res.AppendLine(String.Format(CultureInfo.InvariantCulture,  startrow, tr.Row));//start row marker            
-                foreach (TableRowColumn trc in tr)
+                res.Append(indent);                    
+                res.AppendLine(String.Format(CultureInfo.InvariantCulture,  startrow, tr.MyRow));//start row marker            
+                foreach (RowColumn trc in tr)
                 {
                     string extracomment = "";
                     res.Append(indent);
@@ -1963,7 +2161,7 @@ Table Name  : same names, empty names, mixed types
                     res.Append(String.Format(CultureInfo.InvariantCulture, startfield, name));
                     if (trc.ColumnType == DataType.Table)
                     {
-                        Table sub = table.GetSubTable(trc.ColumnIndex, tr.Row);
+                        Table sub = table.GetSubTable(trc.ColumnIndex, tr.MyRow);
                             //size printed here as we had a problem once with size reporting 0 where it should be larger, so nothing returned from call
                         res.Append(String.Format(CultureInfo.InvariantCulture, starttable, sub.Size()));
                         TableDataDumper(indent + "   ", res, sub);
@@ -1992,7 +2190,7 @@ Table Name  : same names, empty names, mixed types
                     res.AppendLine(String.Format(CultureInfo.InvariantCulture, trc.IsLastColumn() ? endfieldlast : endfield, trc.ColumnIndex, extracomment));                                      
                 }
                 res.Append(indent);
-                res.AppendLine(String.Format(CultureInfo.InvariantCulture, endrow, tr.Row));//end row marker
+                res.AppendLine(String.Format(CultureInfo.InvariantCulture, endrow, tr.MyRow));//end row marker
                 
             }
             if (firstdatalineprinted && String.IsNullOrEmpty(indent)) //some data was dumped from the table, so print a footer

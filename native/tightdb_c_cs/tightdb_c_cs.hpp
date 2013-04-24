@@ -28,6 +28,10 @@ extern "C" {
 
 
 //Table
+TIGHTDB_C_CS_API  tightdb::DataType tableView_get_column_type(tightdb::TableView* tableView_ptr, const size_t column_ndx);
+
+TIGHTDB_C_CS_API int64_t tableView_get_int(tightdb::TableView* tableView_ptr, size_t column_ndx, size_t row_ndx);
+
 TIGHTDB_C_CS_API  tightdb::DataType table_get_column_type(tightdb::Table* table_ptr, const size_t column_ndx);
 
 TIGHTDB_C_CS_API  tightdb::DataType table_get_mixed_type(tightdb::Table* table_ptr, const size_t column_ndx,const size_t row_ndx);
@@ -37,6 +41,8 @@ TIGHTDB_C_CS_API tightdb::Table* new_table();
 TIGHTDB_C_CS_API void unbind_table_ref(tightdb::Table* table_ptr);
 
 TIGHTDB_C_CS_API size_t table_get_column_count(tightdb::Table* table_ptr);
+
+TIGHTDB_C_CS_API size_t tableView_get_column_count(tightdb::TableView* table_ptr);
 
 TIGHTDB_C_CS_API size_t table_add_column(tightdb::Table* table_ptr,size_t type, const char* name);
 
@@ -92,6 +98,7 @@ TIGHTDB_C_CS_API void spec_deallocate(tightdb::Spec* spec_ptr);
 
 TIGHTDB_C_CS_API size_t tightdb_c_cs_GetVer(void);
 
+TIGHTDB_C_CS_API size_t tableview_size(tightdb::TableView* tableview_ptr) ;
 
 
 

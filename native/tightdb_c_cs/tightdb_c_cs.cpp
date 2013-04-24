@@ -25,7 +25,7 @@ extern "C" {
  TIGHTDB_C_CS_API size_t tightdb_c_cs_GetVer(void){
 
   // Table test;
-	return 1304151448;
+	return 1304241028;
 }
 	
 	
@@ -33,6 +33,11 @@ extern "C" {
 TIGHTDB_C_CS_API size_t table_get_column_count(tightdb::Table* table_ptr)
 {
 	return table_ptr->get_column_count();
+}
+
+TIGHTDB_C_CS_API size_t tableView_get_column_count(tightdb::TableView* tableView_ptr)
+{
+	return tableView_ptr->get_column_count();
 }
 
 
@@ -92,6 +97,17 @@ TIGHTDB_C_CS_API  DataType table_get_column_type(Table* table_ptr, const size_t 
 {
 	return table_ptr->get_column_type(column_ndx);
 }
+
+
+TIGHTDB_C_CS_API  tightdb::DataType tableView_get_column_type(tightdb::TableView* tableView_ptr, const size_t column_ndx)
+{
+	return tableView_ptr->get_column_type(column_ndx);
+}
+
+
+
+
+
 
 //    DataType    get_column_type(size_t column_ndx) const TIGHTDB_NOEXCEPT;
 TIGHTDB_C_CS_API  DataType table_get_mixed_type(Table* table_ptr, const size_t column_ndx,const size_t row_ndx)
@@ -203,6 +219,11 @@ TIGHTDB_C_CS_API size_t table_get_column_name(Table* table_ptr,size_t column_ndx
 	return BSD_strlcpy(colname,bufsize, cn);
 }
 
+TIGHTDB_C_CS_API size_t tableView_get_column_name(TableView* tableView_ptr,size_t column_ndx,char * colname, size_t bufsize)
+{
+	const char* cn= tableView_ptr->get_column_name(column_ndx);
+	return BSD_strlcpy(colname,bufsize, cn);
+}
 
 TIGHTDB_C_CS_API size_t spec_get_column_name(Spec* spec_ptr,size_t column_ndx,char * colname, size_t bufsize)
 {
@@ -256,15 +277,34 @@ TIGHTDB_C_CS_API void table_set_int(Table*  table_ptr, size_t column_ndx, size_t
     table_ptr->set_int(column_ndx,row_ndx,value);
 }
 
+TIGHTDB_C_CS_API void tableView_set_int(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx, int64_t value)
+{
+    tableView_ptr->set_int(column_ndx,row_ndx,value);
+}
+
+
 TIGHTDB_C_CS_API void table_set_mixed_int(Table*  table_ptr, size_t column_ndx, size_t row_ndx, int64_t value)
 {
     table_ptr->set_mixed(column_ndx,row_ndx,value);
 }
 
+
+TIGHTDB_C_CS_API void tableView_set_mixed_int(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx, int64_t value)
+{
+    tableView_ptr->set_mixed(column_ndx,row_ndx,value);
+}
+
+
 TIGHTDB_C_CS_API int64_t  table_get_mixed_int(Table*  table_ptr, size_t column_ndx, size_t row_ndx)
 {
     return table_ptr->get_mixed(column_ndx,row_ndx).get_int();    
 }
+
+TIGHTDB_C_CS_API int64_t  tableView_get_mixed_int(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx)
+{
+    return tableView_ptr->get_mixed(column_ndx,row_ndx).get_int();    
+}
+
 
 TIGHTDB_C_CS_API size_t table_add_empty_row(Table* table_ptr, size_t num_rows)
 {
@@ -277,11 +317,11 @@ TIGHTDB_C_CS_API tightdb::TableView* table_find_all_int(Table * table_ptr , size
 {
      std::cerr<<"fetching tableview \n";
     return new TableView(table_ptr->find_all_int(column_ndx,value));            
-     std::cerr<<"fetched tableview \n";
+ 
 }
 
 TIGHTDB_C_CS_API void tableview_delete(TableView * tableview_ptr )
-{
+{     std::cerr<<"tableview_delete called \n";
     delete(tableview_ptr);
 }
 
@@ -290,6 +330,12 @@ TIGHTDB_C_CS_API int64_t table_get_int(Table* table_ptr, size_t column_ndx, size
 {
     return table_ptr->get_int(column_ndx,row_ndx);
 }
+
+TIGHTDB_C_CS_API int64_t tableView_get_int(TableView* tableView_ptr, size_t column_ndx, size_t row_ndx)
+{
+    return tableView_ptr->get_int(column_ndx,row_ndx);
+}
+
 
 //only returns false=0  true=1
 TIGHTDB_C_CS_API int8_t table_get_bool(Table* table_ptr, size_t column_ndx, size_t row_ndx)
@@ -325,27 +371,25 @@ TIGHTDB_C_CS_API void table_set_mixed_subtable(Table* table_ptr,size_t col_ndx, 
 }
 
 TIGHTDB_C_CS_API void table_set_mixed_empty_subtable(Table* table_ptr,size_t col_ndx, size_t row_ndx)
-    {     
-        std::cerr << "test \n";
-        try {
-        table_ptr->set_mixed(col_ndx,row_ndx,Mixed::subtable_tag());//this crashes
-        
-        }
-        catch (std::exception& e)
-        {
-                std::cerr << e.what() << "\n";
-        }
-        //table_ptr->clear_subtable(col_ndx,row_ndx);
-        //above clear_subtable throws exceptions when called
-        //todo:verify that I don't have to handle the newly created empty table memory-wise
-        //todo:bonus question - if i read in a subtable in a mixed that was made this way, i should still unbind it?
-        //and if the subtable was created via a specified table to copy via langbindhelper - i should still unbind it the same way?
+{     
+   table_ptr->set_mixed(col_ndx,row_ndx,Mixed::subtable_tag());//this crashes       
+}
+
+TIGHTDB_C_CS_API void tableView_set_mixed_empty_subtable(TableView* tableView_ptr,size_t col_ndx, size_t row_ndx)
+{     
+   tableView_ptr->set_mixed(col_ndx,row_ndx,Mixed::subtable_tag());//this crashes       
 }
 
 
 TIGHTDB_C_CS_API size_t table_size(Table* table_ptr) 
 {
     return table_ptr->size();
+}
+
+
+TIGHTDB_C_CS_API size_t tableview_size(TableView* tableview_ptr) 
+{
+    return tableview_ptr->size();
 }
 
 
