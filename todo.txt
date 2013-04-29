@@ -1,14 +1,11 @@
 update github with project files
 (1 hour as project setup now seem to be quite stable)
 
-implement integer in query (c++,c# binding, c# classes, few basic unit tests)
-(hours to get query class going, not so much time to get integer to work in it)
-
-implement TableGroup (c++,c# binding, c# classes, few basic unit tests)
-(hours to get tablegroup class going, not so much time on top of that)
-
 These next 4 tasks are done in parrallel, each lowlevel function is done on all levels, to ensure it works (sb. covered by at least one unit test)
 before carrying on, and to ensure the architecture is sound. While the estimate is 4-8 days, we'll probably be missing only a few select (difficult) things towards the end. We should have a working system while this task is ongoing.
+
+implement sharedgroup
+(hours)
 
 implement the rest of the types and any other functions in c++
 (1-2 days)
@@ -21,6 +18,9 @@ implement the rest of the types, and any other functions in the C# classes
 
 create unit tests that touch every c++ function
 (1-2 days)
+
+create unit tests that excercize all C# lines
+(a week?)
 
 consider that columntypes are always the same for all rows (if mixed is treated as a type). If so - move columntype out of tablerowcolumn and down into table in some seperate (nonchanging,except when columns are added or deleted) structure. Could be as simple as an array of datatype.
 Mixed will probably have to be handled on the row level, or passed on to tightdb.
@@ -87,8 +87,6 @@ support for mono on Ios 64bit (we will need to recompile, perhaps modify the Tig
 create benchmarks
 
 create documentation
-
-create a full suite of unit tests
 
 create examples of usage, using various features of tightdb
 
