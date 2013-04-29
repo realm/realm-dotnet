@@ -1,9 +1,6 @@
 update github with project files
 (1 hour as project setup now seem to be quite stable)
 
-implement integer in tableview (c++,c# binding, c# classes, few basic unit tests)
-(2 hours, ongoing - table is being split into 3 classes, almost all time will be spent refactoring and writing new unit tests for tableview)
-
 implement integer in query (c++,c# binding, c# classes, few basic unit tests)
 (hours to get query class going, not so much time to get integer to work in it)
 
@@ -24,7 +21,6 @@ implement the rest of the types, and any other functions in the C# classes
 
 create unit tests that touch every c++ function
 (1-2 days)
-
 
 consider that columntypes are always the same for all rows (if mixed is treated as a type). If so - move columntype out of tablerowcolumn and down into table in some seperate (nonchanging,except when columns are added or deleted) structure. Could be as simple as an array of datatype.
 Mixed will probably have to be handled on the row level, or passed on to tightdb.

@@ -25,9 +25,11 @@ extern "C" {
  TIGHTDB_C_CS_API size_t tightdb_c_cs_GetVer(void){
 
   // Table test;
-	return 1304241028;
+	return 1304251954;
 }
-	
+
+
+
 	
 
 TIGHTDB_C_CS_API size_t table_get_column_count(tightdb::Table* table_ptr)
@@ -38,6 +40,41 @@ TIGHTDB_C_CS_API size_t table_get_column_count(tightdb::Table* table_ptr)
 TIGHTDB_C_CS_API size_t tableView_get_column_count(tightdb::TableView* tableView_ptr)
 {
 	return tableView_ptr->get_column_count();
+}
+
+TIGHTDB_C_CS_API Group* new_group()
+{
+    std::cerr<<"before new group()\n";
+    //works Group* g = new Group(Group::unattached_tag());
+    //fails  Group* g = new Group();
+    Group* g = new Group();
+      std::cerr<<"after new group()\n";
+    return g;
+//    return new Group();        
+}
+
+  TIGHTDB_C_CS_API void test_testacquireanddeletegroup(){
+
+      Group* g  =  new Group("test");     
+	delete(g);
+}
+
+
+
+//new empty group
+//todo:This fails, awaiting new version
+TIGHTDB_C_CS_API Group* new_group_file(const char* name)
+{
+    std::cerr<<"before new_group_file\n";
+    std::cerr<<"called with name ";
+    std::cerr<<name;
+    std::cerr<<"\n";
+
+    //Group* g = new Group(Group::unattached_tag());
+      Group* g = new Group(name);
+      std::cerr<<"after new group\n";
+    return g;
+//    return new Group();        
 }
 
 
@@ -244,6 +281,19 @@ TIGHTDB_C_CS_API Spec* spec_add_subtable_column(Spec* spec_ptr, const char* name
 	//return reinterpret_cast<size_t>(Ret);//are we returning the address of the spec object returned by add_subtable_column?
 }
 
+
+
+TIGHTDB_C_CS_API void table_set_string(Table* table_ptr, size_t column_ndx, size_t row_ndx, const char* value)
+{
+    table_ptr->set_string(column_ndx,row_ndx,value);
+}
+
+TIGHTDB_C_CS_API void tableview_set_string(TableView* tableview_ptr, size_t column_ndx, size_t row_ndx, const char* value)
+{
+    tableview_ptr->set_string(column_ndx,row_ndx,value);
+}
+
+
 //deallocate a spec that was allocated in this dll with new
 TIGHTDB_C_CS_API void spec_deallocate(Spec* spec_ptr)
 {
@@ -308,22 +358,49 @@ TIGHTDB_C_CS_API int64_t  tableView_get_mixed_int(TableView*  tableView_ptr, siz
 
 TIGHTDB_C_CS_API size_t table_add_empty_row(Table* table_ptr, size_t num_rows)
 {
-    std::cerr<<"Added a row\n";
+    
     return table_ptr->add_empty_row(num_rows);
 }
 
 
+
 TIGHTDB_C_CS_API tightdb::TableView* table_find_all_int(Table * table_ptr , size_t column_ndx, int64_t value)
-{
-     std::cerr<<"fetching tableview \n";
+{   
     return new TableView(table_ptr->find_all_int(column_ndx,value));            
- 
 }
 
+
+
+//    TableView      find_all(size_t start=0, size_t end=size_t(-1), size_t limit=size_t(-1));
+TIGHTDB_C_CS_API tightdb::TableView* query_find_all(Query * query_ptr , size_t start, size_t end, size_t limit)
+{   
+    return new TableView( query_ptr->find_all(start,end,limit));
+}
+
+
+TIGHTDB_C_CS_API Query* table_where(Table * table_ptr)
+{   
+    return new Query(table_ptr->where());            
+}
+
+
 TIGHTDB_C_CS_API void tableview_delete(TableView * tableview_ptr )
-{     std::cerr<<"tableview_delete called \n";
+{     std::cerr<<"before delete tableview_ptr \n";
     delete(tableview_ptr);
 }
+
+TIGHTDB_C_CS_API void query_delete(Query* query_ptr )
+{     std::cerr<<"before delete query_ptr \n";
+    delete(query_ptr);
+}
+
+TIGHTDB_C_CS_API void group_delete(Group* group_ptr )
+{
+    std::cerr<<"before delete group_ptr\n";
+    delete(group_ptr);
+}
+
+
 
 
 TIGHTDB_C_CS_API int64_t table_get_int(Table* table_ptr, size_t column_ndx, size_t row_ndx)
@@ -337,11 +414,36 @@ TIGHTDB_C_CS_API int64_t tableView_get_int(TableView* tableView_ptr, size_t colu
 }
 
 
-//only returns false=0  true=1
-TIGHTDB_C_CS_API int8_t table_get_bool(Table* table_ptr, size_t column_ndx, size_t row_ndx)
+//returns false=0  true=1 we use a size_t as it is likely the fastest type to return
+TIGHTDB_C_CS_API size_t tableView_get_bool(TableView* tableView_ptr, size_t column_ndx, size_t row_ndx)
 {    
-    return table_ptr->get_bool(column_ndx,row_ndx);
+    if ( tableView_ptr->get_bool(column_ndx,row_ndx))
+      {return 1;};
+    return 0;//here I assume the compier will convert 1 and 0 to the correct size_t bitsizes
 }
+
+//call with false=0  true=1 we use a size_t as it is likely the fastest type to return
+TIGHTDB_C_CS_API void tableView_set_bool(TableView* tableView_ptr, size_t column_ndx, size_t row_ndx,size_t value)
+{    bool b =(value==1);//here i assume 1 and size_t can be compared in a meaningfull way
+     tableView_ptr->set_bool(column_ndx,row_ndx,b);     
+}
+
+
+//returns false=0  true=1 we use a size_t as it is likely the fastest type to return
+TIGHTDB_C_CS_API size_t table_get_bool(Table* table_ptr, size_t column_ndx, size_t row_ndx)
+{    
+    if ( table_ptr->get_bool(column_ndx,row_ndx))
+      {return 1;};
+    return 0;
+}
+
+//call with false=0  true=1 we use a size_t as it is likely the fastest type to return
+TIGHTDB_C_CS_API void table_set_bool(Table* table_ptr, size_t column_ndx, size_t row_ndx,size_t value)
+{    bool b =(value==1);
+     table_ptr->set_bool(column_ndx,row_ndx,b);     
+}
+
+
 
 TIGHTDB_C_CS_API float table_get_float(Table* table_ptr, size_t column_ndx, size_t row_ndx)
 {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Runtime.InteropServices;
 
 namespace TightDbCSharp
 {
@@ -12,6 +13,20 @@ namespace TightDbCSharp
     //we read data from the row. So working with typed column fields would be somewhat faster
     public class RowColumn
     {
+        //this is a test
+        [DllImport("tightdb_c_cs64", EntryPoint = "test_testacquireanddeletegroup", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void test_testacquireanddeletegroup64();
+        [DllImport("tightdb_c_cs32", EntryPoint = "test_testacquireanddeletegroup", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void test_testacquireanddeletegroup32();
+
+        public static void test_testacquireanddeletegroup()
+        {
+            if (false)
+                test_testacquireanddeletegroup64();
+            test_testacquireanddeletegroup32();
+        }
+        //end of test
+        
         private Row _owner;
         public Row Owner { get { return _owner; } set { _owner = value; _columntypeloaded = false; } }
         private long _columnIndex;
@@ -64,11 +79,13 @@ namespace TightDbCSharp
             get
             {
                 switch (ColumnType)
-                {
+                {//row and column not user specified so safe, and type checked in switch above so also safe
                     case DataType.Int:
-                        return Owner.GetLongNoCheck(ColumnIndex);
-                        //row and column not user specified so safe, and type checked in switch above so also safe
-
+                        return Owner.GetLongNoCheck(ColumnIndex);                        
+                    case DataType.Bool:
+                        return Owner.GetBooleanNoCheck(ColumnIndex);
+                        case DataType.String:
+                        return Owner.GetStringNoCheck(ColumnIndex);
                     case DataType.Mixed:
                         switch (MixedTypeNoCheck())
                         {
@@ -78,11 +95,13 @@ namespace TightDbCSharp
                             case DataType.Table:
                                 return Owner.GetMixedSubtableNoCheck(ColumnIndex);
                             default:
-                                return string.Format(CultureInfo.InvariantCulture,"mixed with type {0} not supported yet in tabledumper",
+                                return string.Format(CultureInfo.InvariantCulture,
+                                                     "mixed with type {0} not supported yet in tabledumper",
                                                      MixedTypeNoCheck());
                         }
-                    default:
-                        return String.Format(CultureInfo.InvariantCulture, "Getting type {0} from TableRowColumn not implemented yet",
+                    default: //todo:implement Table and other missing types
+                        return String.Format(CultureInfo.InvariantCulture,
+                                             "Getting type {0} from TableRowColumn not implemented yet",
                                              ColumnType); //so null means the datatype is not fully supported yet
                 }
             }
@@ -94,7 +113,7 @@ namespace TightDbCSharp
                         Owner.SetLongNoCheck(ColumnIndex, (long)value );//the cast will raise an exception if value is not a long, or at least convertible to long
                         break;
                     default:
-                        {
+                        {//todo:impelement more types
                             throw new TableException(String.Format(CultureInfo.InvariantCulture,
                                                                    "setting type {0} in TableRowColumn not implemented yet",
                                                                    ColumnType));

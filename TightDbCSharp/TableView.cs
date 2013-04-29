@@ -25,6 +25,11 @@ namespace TightDbCSharp
             UnsafeNativeMethods.TableViewUnbind(this);
         }
 
+        public override long GetColumnIndex(String name)
+        {
+            return UnsafeNativeMethods.TableViewGetColumnIndex(this,name);
+        }
+
         internal override Table GetMixedSubTableNoCheck(long columnIndex, long rowIndex)
         {
             return UnsafeNativeMethods.TableViewGetSubTable(this, columnIndex, rowIndex);
@@ -33,6 +38,16 @@ namespace TightDbCSharp
         internal override Table GetSubTableNoCheck(long columnIndex, long rowIndex)
         {
             return UnsafeNativeMethods.TableViewGetSubTable(this, columnIndex, rowIndex);
+        }
+
+        internal override void SetStringNoCheck(long columnIndex, long rowIndex, string value)
+        {
+            UnsafeNativeMethods.TableViewSetString(this , columnIndex, rowIndex, value);
+        }
+
+        internal override String GetStringNoCheck(long columnIndex, long rowIndex)
+        {
+            return UnsafeNativeMethods.TableViewGetStringNoCheck(this, columnIndex, rowIndex);
         }
 
         //might be used if You want an empty subtable set up and then change its contents and layout at a later time
@@ -92,14 +107,25 @@ namespace TightDbCSharp
             return String.Format(CultureInfo.InvariantCulture,"TableView:{0}", Handle);
         }
 
+        
         internal TableView(IntPtr tableViewHandle,bool shouldbedisposed)
         {
             SetHandle(tableViewHandle,shouldbedisposed);
         }
 
-        public override long Size()
+        internal override long GetSize()
         {
             return UnsafeNativeMethods.TableViewSize(this);
+        }
+
+        internal override Boolean GetBooleanNoCheck(long columnIndex, long rowIndex)
+        {
+            return UnsafeNativeMethods.TableViewGetBool(this, columnIndex, rowIndex);
+        }
+
+        internal override void SetBooleanNoCheck(long columnIndex, long rowIndex, Boolean value)
+        {
+            UnsafeNativeMethods.TableViewSetBool(this, columnIndex, rowIndex, value);
         }
 
         //only call if You are certain that 1: The field type is Int, 2: The columnIndex is in range, 3: The rowIndex is in range

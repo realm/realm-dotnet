@@ -61,9 +61,6 @@ TIGHTDB_C_CS_API tightdb::Spec* table_get_spec(tightdb::Table* table_ptr);
 
 TIGHTDB_C_CS_API int64_t table_get_int(tightdb::Table* table_ptr, size_t column_ndx, size_t row_ndx);
 
-//only returns false=0  true=1
-TIGHTDB_C_CS_API int8_t table_get_bool(tightdb::Table* table_ptr, size_t column_ndx, size_t row_ndx);
-
 TIGHTDB_C_CS_API float table_get_float(tightdb::Table* table_ptr, size_t column_ndx, size_t row_ndx);
 
 TIGHTDB_C_CS_API double table_get_double(tightdb::Table* table_ptr, size_t column_ndx, size_t row_ndx);
@@ -85,7 +82,8 @@ TIGHTDB_C_CS_API int64_t table_get_mixed_int(tightdb::Table*  table_ptr, size_t 
 
 TIGHTDB_C_CS_API tightdb::Table* table_get_subtable(tightdb::Table* table_ptr, size_t column_ndx, size_t row_ndx);
 
-TIGHTDB_C_CS_API tightdb::TableView* table_find_all_int(tightdb::Table*, size_t column_ndx, int64_t value);
+TIGHTDB_C_CS_API tightdb::TableView* table_
+    _all_int(tightdb::Table*, size_t column_ndx, int64_t value);
 //TIGHTDB_C_CS_API DataType table_get_int(tightdb::Table* table_ptr, size_t column_ndx, size_t row_ndx);
 
 //Spec

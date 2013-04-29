@@ -36,7 +36,7 @@ C:\Develope\github\tightcsharp\native\tightdb_c_cs\readme.md
 
 Visual studio 2010 Express installed (or better)  
 or
-Visual studio 2012 Express installed (or better) (however, not tested until we get .lib files built with vs2012)
+Visual studio 2012 Express installed (or better)
 
 The library files needed are :
 - tightdb32.lib
@@ -65,19 +65,21 @@ Now, start Microsoft C++ 2010 Express (or 2012 Express)
 mark tools->settings->expert settings if not already marked
 
 
-- file->new project->general.  
+- file->new project->general. (vs2012:new project->installed->templates->visualc++->General)
 - mark empty project 
 - name:tightdb_c_cs2010
 - (vs2012:  name:tightdb_c_cs2012)
 - location:same directory as this readme.txt file (on this pc c:\Develope\github\tightcsharp\native\tightdb_c_cs) 
 - untick "create directory for solution"  
 - click OK  (this should create a set of project files inside C:\Develope\github\tightcsharp\native\tightdb_c_cs\tightdb_c_cs2010)
+- (vs2012 should create a set of project files inside C:\Develope\github\tightcsharp\native\tightdb_c_cs\tightdb_c_cs2012 )
 
 If not already open, select view->solution explorer
 
 - In Solution Explorer   
 - right click tightdb_c_cs_2010->header files
-- select add->existing.  
+- (vs2012: tightdb_c_cs_2012->header files)
+- select add->existing item
 - navigate up one directory to tightdb_c_cs
 - mark and select the following files:
 - stdafx.hpp
@@ -86,10 +88,11 @@ If not already open, select view->solution explorer
 
 
 - right click tightdb_c-cs_2010->Source Files.
+- (vs2012 - tightdb_c_cs_2012->Source Files)
 - select add->existing  
 - mark and select the following files:  
 - stdafx.cpp
-- TightCSDLL.cpp
+- tightdb_c_cs.cpp
 - click Add
 
 
@@ -119,25 +122,25 @@ The road i went down was a bit winding, there are probably better ways to get to
 Even though the SDK install fails towards the end of the installation, VS2010 will now have an option to compile to itanium and x64 however, the property pages for 64 bit builds are empty, to fix this, install this update :
 4) http://www.microsoft.com/en-us/download/details.aspx?id=4422
 
-
+At this point, You should have a visual studio that can build 64bin binaries.
 
 Set up the general settings that apply to all kinds of builds  :
 
 First create 64 bit builds as well as the preinstalled 32 bit builds:
 
-- In Solution explorer, right click tightdb_c_cs2010, select properties
-- in tightdb_c_cs2010 property pages, click configuration manager.
+- In Solution explorer, right click tightdb_c_cs201n, select properties
+- in tightdb_c_cs201n property pages, click configuration manager.
 - in configuration manager, in project contexts-Platform column, click Win32
 you get a "new" option. click that.
 - In the "New Project Platfor" dialog, select x64, and select "Copy settings from Win32". select "create new solution platform.
 - In the platform column, select Win32 again.
 - In the Active Solution Platform dropdown, select Win32,
 - In the Active solution configuration dropdown, select Debug.
-- Click close. Click OK to get rid of the final dialog.
+- Click close. Click OK to get rid of the propert pages dialog
 
 
 View->Property Manager
-(You should now have tightdb_c_cs2010 as a root in a tree, with these 4 nodes :
+(You should now have tightdb_c_cs201n as a root in a tree, with these 4 nodes :
 - Debug|Win32 
 - Release|Win32 
 - Debug|x64
@@ -146,9 +149,9 @@ View->Property Manager
 
 
 
-right click tightdb_c_cs2010
+right click tightdb_c_cs201n
 - select properties 
-- In "tightdb_c_cs2010 property pages" select configuration properties->General.
+- In "tightdb_c_cs201n property pages" select configuration properties->General.
 - In the "Configuration" left dropdown box on top of the window  select "All Configurations"
 - in the "platform" dropdown on top of the window, select All Platforms.
 
@@ -159,9 +162,9 @@ Set up stuff that is the same for all 4 configurations:
 
 
 - select configuration properties->VC++ Directories
-- select Library Directories, click the down error and select edit  
-- type in ..\..\libsVS2010\   (aka C:\develope\github\tightdbcs\libs\libsVS2010)
-( vs2012:type in ..\..\libs2012\ (aka C:\develope\github\tightdbcs\libs\libsVS2012) )
+- select Library Directories, click the down error and select edit  (vs2012:double click the white area to edit)
+- type in ..\..\..\libsVS201n\   (aka C:\develope\github\tightdbcs\libs\libsVS2012)
+- click OK
 
 
 - select configuration properties->c/C++->Preprocessor
@@ -214,14 +217,14 @@ Now, let's have the resulting files have slightly different names, and lets put 
 Then... Try to build!
 
 Project->build->batch build->mark all 4, click build.
-
+(vs2012 build->batch build->mark all 4, click build
 
 If batch build succeeds, you should find some new files ():
 
-- C:\Develope\github\tightcsharp\native\tightdb_c_cs\tightdb_c_cs2010\Win32\Debug\tightdb_c_cs201032d.dll
-- C:\Develope\github\tightcsharp\native\tightdb_c_cs\tightdb_c_cs2010\Win32\Release\tightdb_c_cs201032.dll
-- C:\Develope\github\tightcsharp\native\tightdb_c_cs\tightdb_c_cs2010\x64\Debug\tightdb_c_cs201064d.dll
-- C:\Develope\github\tightcsharp\native\tightdb_c_cs\tightdb_c_cs2010\x64\Release\tightdb_c_cs201064.dll
+- C:\Develope\github\tightcsharp\native\tightdb_c_cs\tightdb_c_cs201n\Win32\Debug\tightdb_c_cs201032d.dll
+- C:\Develope\github\tightcsharp\native\tightdb_c_cs\tightdb_c_cs201n\Win32\Release\tightdb_c_cs201032.dll
+- C:\Develope\github\tightcsharp\native\tightdb_c_cs\tightdb_c_cs201n\x64\Debug\tightdb_c_cs201064d.dll
+- C:\Develope\github\tightcsharp\native\tightdb_c_cs\tightdb_c_cs201n\x64\Release\tightdb_c_cs201064.dll
 
 This file in its various versions is the c++ part of the language bind.
 
@@ -230,8 +233,10 @@ This file in its various versions is the c++ part of the language bind.
 
 If You get "error LNK2038 _MSC_VER value 1600 doesn't match value 1700 link errors when linking,
 it is because the .lib files have been built with VS 2010, and are now being linked with VS 2012
-This is not possible, You'll have to either use VS2010 to link, or use VS2012 to rebuild new .lib files
-The latter option is only possible if You have the entire source-tree for tightdb
+This is not possible, You'll have to either use VS2010 to link, or use VS2012 to rebuild new .lib files The latter option is only possible if You have the entire source-tree for tightdb.
+The current vs2010 source tree can be built with practically no changes, just open the 2010 project
+in vs2012, do a conversion, and build. I do'n remember if i did any changes to get it to build, but
+they must have been minor.
 
 I have not verified that below settings are essential for a successfully working build,
 but they were set to this instead of defaults in the jni c++ project,so I figured I better mention them.

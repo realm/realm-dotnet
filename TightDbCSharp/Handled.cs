@@ -9,27 +9,20 @@ namespace TightDbCSharp
 {
     public abstract class Handled :IDisposable 
     {
+        internal abstract void ReleaseHandle();//overwrite this. This method will be called when c++ can free the object associated with the handle
+        public abstract string ObjectIdentification();//overwrite this to enable the framework to name the class in a human readable way
+
         public IntPtr Handle { get;internal set; }  //handle (in fact a pointer) to a c++ hosted Table. We must unbind this handle if we have acquired it
         internal bool HandleInUse { get; set; } //defaults to false.  TODO:this might need to be encapsulated with a lock to make it thread safe (although several threads *opening or closing* *the same* table object is probably not happening often)
         internal bool HandleHasBeenUsed { get; set; } //defaults to false. If this is true, the table handle has been allocated in the lifetime of this object
         internal bool NotifyCppWhenDisposing { get; set; }//if false, the table handle do not need to be disposed of, on the c++ side
+        public bool IsDisposed { get; private set; }
 
-        //use this function to set the table handle to make sure various booleans are set correctly        
 
         internal Handled()
         {
-
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
-        internal Handled(IntPtr handle,bool shouldbedisposed)
-        {
-            SetHandle(handle,shouldbedisposed);
-        }
-
-        internal abstract void ReleaseHandle();
-
-        //this method sb overwritten and implement the unbinding of the handle with the c++ tighdb api
         public void Unbind()
         {
             if (HandleInUse)
@@ -50,11 +43,11 @@ namespace TightDbCSharp
             }
         }
 
-        public abstract string ObjectIdentification();
-
-
+       
+        //store the pointer to the c++ class, and do neccessary housekeeping
         internal void SetHandle(IntPtr newHandle, bool shouldBeDisposed)
-        {
+        {            
+            Console.WriteLine("Handle being set! "+ObjectIdentification());
             if (HandleInUse)
             {
                 throw new InvalidEnumArgumentException(String.Format(CultureInfo.InvariantCulture,
@@ -65,9 +58,9 @@ namespace TightDbCSharp
             HandleInUse = true;
             HandleHasBeenUsed = true;
             NotifyCppWhenDisposing = shouldBeDisposed;
+            Console.WriteLine("Handle has been set! " + ObjectIdentification());
         }
 
-        public bool IsDisposed {  get;private  set; }
         //called by users who don't want to use our class anymore.
         //should free managed as well as unmanaged stuff
         public void Dispose()

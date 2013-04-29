@@ -15,9 +15,15 @@ namespace TestTightDbCSharp
     [TestFixture]
     public static class EnvironmentTest
     {
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters", MessageId = "System.Console.WriteLine(System.String,System.Object,System.Object)"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters", MessageId = "System.Console.WriteLine(System.String,System.Object)"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization",
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization",
             "CA1303:Do not pass literals as localized parameters",
-            MessageId = "Console.WriteLine(System.String,System.Object,System.Object)"),
+            MessageId = "System.Console.WriteLine(System.String,System.Object,System.Object)"),
+         System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization",
+             "CA1303:Do not pass literals as localized parameters",
+             MessageId = "System.Console.WriteLine(System.String,System.Object)"),
+         System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization",
+             "CA1303:Do not pass literals as localized parameters",
+             MessageId = "Console.WriteLine(System.String,System.Object,System.Object)"),
          System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming",
              "CA2204:Literals should be spelled correctly", MessageId = "tightccs"),
          System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization",
@@ -58,7 +64,7 @@ namespace TestTightDbCSharp
             {
                 Console.WriteLine("C#  DLL        build number {0}", Table.GetDllVersionCSharp);
                 Console.WriteLine("C++ DLL        build number {0}", Table.CPlusPlusLibraryVersion());
-                if (t.Size() != 0)
+                if (t.Size != 0)
                 {
                     throw new TableException("Weird");
                 }
@@ -69,33 +75,70 @@ namespace TestTightDbCSharp
         }
     }
 
-        
-    
+
+
     [TestFixture]
-    public static class TableViewTests
+    public static class GroupTests
     {
+        /*this one fails
+         * It fails because calling group() constructor does not work on windows, tightdb tries to use a filename that is illegal or don't have enough rights
+         * It fails such that when the group is deleted (when the program terminats and g gets gc'ed), then the c++ crash
         [Test]
-        //simple call just to get a tableview (and have it deallocated when it exits scope)
-            //sometimes this seems to fail for no apparent reason. write to protected memory. There could be a bug somewhere
-            //there probably IS a bug - we might have problems if the table class is GC'ed before the view class, the t class could be GC'd as soon as
-            //find all int is done with it, before tv is assigned
-        public static void TableViewCreation()
+        public static void CreateGroupEmptyTest()
         {
-            using (var t = new Table( "intfield".Int()))
+            var g = new Group();
+            Console.WriteLine(g.Handle);//keep it allocated
+        }
+        */
+
+        /*
+         this one crashes too, same reasons - group() doesn't work on windows
+        [Test]
+        public static void CreateGroupEmptyTest()
+        {
+            using (var g = new Group())
             {
-                t.AddEmptyRow(1);
-                t.SetLong(0,0,42);
-                TableView tv = t.FindAllInt(0, 42);                
-                Console.WriteLine(tv.Handle);
+                Console.WriteLine(g.Handle);//keep it allocated                
             }            
         }
+        */
 
+
+        /*
+         this one fails too - not enough rights to work in the root directory
+         
+        [Test]
+        public static void CreateGroupFileNameTest()
+        {
+            var g = new Group(@"C:\Testgroupf");
+            Console.WriteLine(g.Handle);//keep it allocated
+        }
+        */
+
+
+        //this one works. Do we have a filename/directory problem with the windows build?
+        //perhaps we have a problem with locked or illegal files, what to do?
+        //todo:seems like this one works when called from vs but fails when called from the resharper unit test runner 
+        //probably something wrong with the code here too then
+        [Test]
+        public static void CreateGroupFileNameTest()
+        {
+            var g = new Group(@"C:\Develope\Testgroupf");
+            Console.WriteLine(g.ObjectIdentification()); //keep it allocated
+        }
+
+    }
+
+    [TestFixture]
+    public static class QueryTests
+    {
+        //duplicated in some other tests, todo:refactor
         //returns a table with row 0 having ints 0 to 999 ascending
         //row 1 having ints 0 to 99 ascendig (10 of each)
         //row 2 having ints 0 to 9 asceding (100 of each)
         public static Table GetTableWithMultipleIntegers()
         {
-            var t = new Table(new IntField("intcolumn0"),new IntField("intcolumn1"),new IntField("intcolumn2"));
+            var t = new Table(new IntField("intcolumn0"), new IntField("intcolumn1"), new IntField("intcolumn2"));
             {
                 for (int n = 0; n < 1000; n++)
                 {
@@ -103,9 +146,138 @@ namespace TestTightDbCSharp
                     long col1 = n/10;
                     long col2 = n/100;
                     t.AddEmptyRow(1);
-                    t.SetLong(0,n,col0);
-                    t.SetLong(1,n,col1);
-                    t.SetLong(2,n,col2);
+                    t.SetLong(0, n, col0);
+                    t.SetLong(1, n, col1);
+                    t.SetLong(2, n, col2);
+                }
+            }
+            return t;
+        }
+
+
+
+        [Test]
+        [ExpectedException("System.ArgumentOutOfRangeException")]
+        public static void CreateQeuryBadParamsStartNegative()
+        {
+            using (var t = GetTableWithMultipleIntegers())
+            {
+                TableView tv = t.Where().FindAll(-2, 4, 100);
+            }
+        }
+
+        [Test]
+        [ExpectedException("System.ArgumentOutOfRangeException")]
+        public static void CreateQeuryBadParamsEndNegative()
+        {
+            using (var t = GetTableWithMultipleIntegers())
+            {
+                TableView tv = t.Where().FindAll(1, -2, 100);
+            }
+        }
+
+        [Test]
+        [ExpectedException("System.ArgumentOutOfRangeException")]
+        public static void CreateQeuryBadParamsLimitNegative()
+        {
+            using (var t = GetTableWithMultipleIntegers())
+            {
+                TableView tv = t.Where().FindAll(1, 4, -2);
+            }
+        }
+
+        [Test]
+        [ExpectedException("System.ArgumentOutOfRangeException")]
+        public static void CreateQeuryBadParamsEndLessThatStart()
+        {
+            using (var t = GetTableWithMultipleIntegers())
+            {
+                TableView tv = t.Where().FindAll(4, 3, 100);
+            }
+        }
+
+
+
+
+        [Test]
+        public static void CreateQeury()
+        {
+            string actualres;
+            using (var t = GetTableWithMultipleIntegers())
+            {
+                TableView tv = t.Where().FindAll(1, 4, 100);
+                actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name, "calling findall on query on table",
+                                                tv);
+            }
+
+            const string expectedres = @"------------------------------------------------------
+Column count: 3
+Table Name  : calling findall on query on table
+------------------------------------------------------
+ 0        Int  intcolumn0          
+ 1        Int  intcolumn1          
+ 2        Int  intcolumn2          
+------------------------------------------------------
+
+Table Data Dump. Rows:3
+------------------------------------------------------
+{ //Start row 0
+intcolumn0:1,//column 0
+intcolumn1:0,//column 1
+intcolumn2:0//column 2
+} //End row 0
+{ //Start row 1
+intcolumn0:2,//column 0
+intcolumn1:0,//column 1
+intcolumn2:0//column 2
+} //End row 1
+{ //Start row 2
+intcolumn0:3,//column 0
+intcolumn1:0,//column 1
+intcolumn2:0//column 2
+} //End row 2
+------------------------------------------------------
+";
+            Assert.AreEqual(expectedres, actualres);
+
+        }
+    }
+
+    [TestFixture]
+    public static class TableViewTests
+    {
+        [Test]
+        //simple call just to get a tableview (and have it deallocated when it exits scope)
+        //sometimes this seems to fail for no apparent reason. write to protected memory. There could be a bug somewhere
+        //there probably IS a bug - we might have problems if the table class is GC'ed before the view class, the t class could be GC'd as soon as
+        //find all int is done with it, before tv is assigned
+        public static void TableViewCreation()
+        {
+            using (var t = new Table("intfield".Int()))
+            {
+                t.AddEmptyRow(1);
+                t.SetLong(0, 0, 42);
+                TableView tv = t.FindAllInt(0, 42);
+                Console.WriteLine(tv.Handle);
+            }
+        }
+
+        //returns a table with row 0 having ints 0 to 999 ascending
+        //row 1 having ints 0 to 99 ascendig (10 of each)
+        //row 2 having ints 0 to 9 asceding (100 of each)
+        public static Table GetTableWithMultipleIntegers()
+        {
+            var t = new Table(new IntField("intcolumn0"), new IntField("intcolumn1"), new IntField("intcolumn2"));
+            {
+                for (int n = 0; n < 1000; n++)
+                {
+                    long col0 = n;
+                    long col1 = n/10;
+                    long col2 = n/100;
+                    t.AddEmptyRow(1);
+                    t.SetLong(0, n, col0);
+                    t.SetLong(1, n, col1);
+                    t.SetLong(2, n, col2);
                 }
             }
             return t;
@@ -113,12 +285,12 @@ namespace TestTightDbCSharp
 
         //returns a table with string columns up to index columnIndex, which is an integer column, and then a string column after that
         //table is populated with null strings and in the int column row 0 has value 0*2, row 1 has value 1*2 , row n has value n*2
-        public static Table GettablewithNintsincolumn(long columnIndex,long numberOfInts)
+        public static Table GettablewithNintsincolumn(long columnIndex, long numberOfInts)
         {
             var t = new Table();
             for (int n = 0; n < columnIndex; n++)
             {
-                t.AddColumn(DataType.String , "StringColumn" + n);
+                t.AddColumn(DataType.String, "StringColumn" + n);
             }
             t.AddColumn(DataType.Int, "IntColumn");
             t.AddColumn(DataType.String, "StringcolumnLast");
@@ -126,7 +298,7 @@ namespace TestTightDbCSharp
             for (int n = 0; n < numberOfInts; n++)
             {
                 t.AddEmptyRow(1);
-                t.SetLong(columnIndex,n,n*2);
+                t.SetLong(columnIndex, n, n*2);
             }
             return t;
         }
@@ -138,8 +310,8 @@ namespace TestTightDbCSharp
             const long column = 3;
             using (var t = GettablewithNintsincolumn(column, 100))
             {
-                TableView tv = t.FindAllInt(column,1001);
-                Assert.AreEqual(0, tv.Size());
+                TableView tv = t.FindAllInt(column, 1001);
+                Assert.AreEqual(0, tv.Size);
             }
         }
 
@@ -152,7 +324,7 @@ namespace TestTightDbCSharp
             using (var t = GettablewithNintsincolumn(column, 100))
             {
                 TableView tv = t.FindAllInt(column, 42);
-                Assert.AreEqual(1, tv.Size());                
+                Assert.AreEqual(1, tv.Size);
             }
         }
 
@@ -162,8 +334,8 @@ namespace TestTightDbCSharp
         {
             using (var t = GetTableWithMultipleIntegers())
             {
-                TableView tv = t.FindAllInt(1,5);
-                Assert.AreEqual(10, tv.Size());
+                TableView tv = t.FindAllInt(1, 5);
+                Assert.AreEqual(10, tv.Size);
             }
         }
 
@@ -175,12 +347,12 @@ namespace TestTightDbCSharp
             using (var t = GetTableWithMultipleIntegers())
             {
                 TableView tv = t.FindAllInt(2, 9);
-                Assert.AreEqual(100, tv.Size());
-                Assert.AreEqual(900,tv.GetLong(0,0));
+                Assert.AreEqual(100, tv.Size);
+                Assert.AreEqual(900, tv.GetLong(0, 0));
                 Assert.AreEqual(999, tv.GetLong(0, 99));
-                tv.SetLong(0,1,42);
-                tv.SetLong(1,0,13);
-                Assert.AreEqual(42,t.GetLong(0,901));
+                tv.SetLong(0, 1, 42);
+                tv.SetLong(1, 0, 13);
+                Assert.AreEqual(42, t.GetLong(0, 901));
                 Assert.AreEqual(13, t.GetLong(1, 900));
             }
         }
@@ -193,7 +365,8 @@ namespace TestTightDbCSharp
             using (var t = GetTableWithMultipleIntegers())
             {
                 TableView tv = t.FindAllInt(1, 10);
-                actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name, "find 10 integers in larger table", tv);
+                actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name, "find 10 integers in larger table",
+                                                tv);
 
             }
             const string expectedres = @"------------------------------------------------------
@@ -272,13 +445,13 @@ intcolumn2:1//column 2
             using (var t = GetTableWithMultipleIntegers())
             {
                 TableView tv = t.FindAllInt(2, 9);
-                Assert.AreEqual(100, tv.Size());
+                Assert.AreEqual(100, tv.Size);
                 Assert.AreEqual(900, tv.GetLong(0, 0));
                 Assert.AreEqual(999, tv.GetLong(0, 99));
 
 
-                
-                
+
+
             }
         }
 
@@ -365,11 +538,11 @@ intcolumn2:1//column 2
             using (var t = new Table(new MixedField("MixedField")))
             {
                 t.AddEmptyRow(1);
-                t.SetMixedLong(0,0,42);
+                t.SetMixedLong(0, 0, 42);
                 DataType dt = t.GetMixedType(0, 0);
                 Assert.AreEqual(dt, DataType.Int);
-                long fortytwo=t.GetMixedLong(0, 0);
-                Assert.AreEqual(42,fortytwo);
+                long fortytwo = t.GetMixedLong(0, 0);
+                Assert.AreEqual(432, fortytwo);
             }
         }
 
@@ -471,11 +644,12 @@ intcolumn2:1//column 2
                 t.AddEmptyRow(1);
                 //likewise accessing the wrong type should not be allowed
                 Table t2 = t.GetSubTable(1, 0);
-                Console.WriteLine(t2.Size()); //this line should not hit - the above should throw an exception
+                Console.WriteLine(t2.Size); //this line should not hit - the above should throw an exception
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1702:CompoundWordsShouldBeCasedCorrectly", MessageId = "TypeWrite"), Test]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming",
+            "CA1702:CompoundWordsShouldBeCasedCorrectly", MessageId = "TypeWrite"), Test]
         [ExpectedException("TightDbCSharp.TableException")]
         public static void TableTestIllegalTypeWrite()
         {
@@ -485,7 +659,7 @@ intcolumn2:1//column 2
                 t.AddEmptyRow(1);
                 //likewise accessing the wrong type should not be allowed               
                 t.SetLong(0, 0, 42); //should throw                
-                Console.WriteLine(t.Size()); //this line should not hit - the above should throw an exception
+                Console.WriteLine(t.Size); //this line should not hit - the above should throw an exception
             }
         }
     }
@@ -586,10 +760,10 @@ intcolumn2:1//column 2
                 using (var sub = new Table(new IntField("int")))
                 {
                     t.AddEmptyRow(1);
-                    t.SetMixedSubTable(0,0,sub);
+                    t.SetMixedSubTable(0, 0, sub);
                 }
                 t.AddEmptyRow(1);
-                t.SetMixedEmptySubTable(0, 0);//i want a new empty subtable in my newly created row
+                t.SetMixedEmptySubTable(0, 0); //i want a new empty subtable in my newly created row
                 DataType sttype = t.GetMixedType(0, 0);
                 Assert.AreEqual(DataType.Table, sttype);
             }
@@ -601,10 +775,10 @@ intcolumn2:1//column 2
         {
             using (var t = new Table(new MixedField("mixd")))
             {
-                t.AddEmptyRow(1);                
-                t.SetMixedEmptySubTable(0,0);
+                t.AddEmptyRow(1);
+                t.SetMixedEmptySubTable(0, 0);
                 DataType sttype = t.GetMixedType(0, 0);
-                Assert.AreEqual(DataType.Table,sttype);
+                Assert.AreEqual(DataType.Table, sttype);
             }
         }
 
@@ -616,10 +790,10 @@ intcolumn2:1//column 2
                 using (var subtable = new Table(new IntField("int1")))
                 {
                     t.AddEmptyRow(1);
-                    t.SetMixedSubTable(0,0,subtable);
-                }                
+                    t.SetMixedSubTable(0, 0, subtable);
+                }
                 DataType sttype = t.GetMixedType(0, 0);
-                Assert.AreEqual(DataType.Table, sttype);                
+                Assert.AreEqual(DataType.Table, sttype);
             }
         }
 
@@ -636,13 +810,13 @@ intcolumn2:1//column 2
                 DataType sttype = t.GetMixedType(0, 0);
                 Assert.AreEqual(DataType.Table, sttype);
                 Table subback = t.GetMixedSubTable(0, 0);
-                Assert.AreEqual(DataType.Int,subback.ColumnType(0));
+                Assert.AreEqual(DataType.Int, subback.ColumnType(0));
                 Assert.AreEqual("int1", subback.GetColumnName(0));
             }
         }
 
 
-        
+
         public static void TableMixedSetGetSubTableWithData()
         {
 
@@ -654,11 +828,11 @@ intcolumn2:1//column 2
                 {
                     t.AddEmptyRow(1);
                     subtable.AddEmptyRow(1);
-                    subtable.SetLong(0,0,42);
+                    subtable.SetLong(0, 0, 42);
                     t.SetMixedSubTable(0, 0, subtable);
                 }
                 t.AddEmptyRow(1);
-                t.SetMixedLong(0,1,84);
+                t.SetMixedLong(0, 1, 84);
                 DataType sttype = t.GetMixedType(0, 0);
                 Assert.AreEqual(DataType.Table, sttype);
                 Table subback = t.GetMixedSubTable(0, 0);
@@ -666,10 +840,10 @@ intcolumn2:1//column 2
                 Assert.AreEqual("int1", subback.GetColumnName(0));
                 long databack = subback.GetLong(0, 0);
                 Assert.AreEqual(42, databack);
-                Assert.AreEqual(DataType.Int,t.GetMixedType(0,1));
-                Assert.AreEqual(84,t.GetMixedLong(0,1));
+                Assert.AreEqual(DataType.Int, t.GetMixedType(0, 1));
+                Assert.AreEqual(84, t.GetMixedLong(0, 1));
                 actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name, "sub in mixed with int", t);
-            
+
             }
 
 
@@ -694,7 +868,7 @@ mix'd:84//column 0//Mixed type is Int
 ------------------------------------------------------
 ";
 
-            Assert.AreEqual(expectedres,actualres);
+            Assert.AreEqual(expectedres, actualres);
         }
 
 
@@ -724,23 +898,23 @@ mix'd:84//column 0//Mixed type is Int
 
                 //   t.AddEmptyRow(1);
                 t.AddEmptyRow(1); //add empty row
-                
-                Assert.AreEqual(1, t.Size());
+
+                Assert.AreEqual(1, t.Size);
                 Table root = t.GetSubTable(1, 0);
                 root.AddEmptyRow(1);
-                Assert.AreEqual(1, root.Size());
-                
+                Assert.AreEqual(1, root.Size);
+
                 Table s1 = root.GetSubTable(2, 0);
                 s1.AddEmptyRow(1);
-                Assert.AreEqual(1, s1.Size());
-                
+                Assert.AreEqual(1, s1.Size);
+
                 Table s2 = s1.GetSubTable(3, 0);
                 s2.AddEmptyRow(1);
-                
+
                 const long valueinserted = 42;
                 s2.SetLong(0, 0, valueinserted);
-                Assert.AreEqual(1, s2.Size());
-                
+                Assert.AreEqual(1, s2.Size);
+
                 //now read back the 42
 
                 long valueback = t.GetSubTable(1, 0).GetSubTable(2, 0).GetSubTable(3, 0).GetLong(0, 0);
@@ -749,7 +923,7 @@ mix'd:84//column 0//Mixed type is Int
 
                 Assert.AreEqual(valueback, valueinserted);
                 actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name + 5, "subtable in subtable with int",
-                                                 t);
+                                                t);
             }
             const string expectedres = @"------------------------------------------------------
 Column count: 2
@@ -939,7 +1113,8 @@ SubTableWithInts:[ //3 rows   { //Start row 0
         public static void TableRowColumnInsert()
         {
             String actualres;
-            using (var t = new Table(new IntField("intfield"),new StringField("stringfield"),new IntField("intfield2")))
+            using (
+                var t = new Table(new IntField("intfield"), new StringField("stringfield"), new IntField("intfield2")))
             {
                 t.AddEmptyRow(5);
                 long changeNumber = 0;
@@ -947,18 +1122,18 @@ SubTableWithInts:[ //3 rows   { //Start row 0
                 {
                     foreach (RowColumn trc in tr)
                     {
-                        if(trc.ColumnType==DataType.Int)
-                          trc.Value = ++changeNumber;
+                        if (trc.ColumnType == DataType.Int)
+                            trc.Value = ++changeNumber;
 
                     }
                 }
                 actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name,
-                                "integers set from within trc objects", t);
+                                                "integers set from within trc objects", t);
             }
 
 
             const string expectedres =
-@"------------------------------------------------------
+                @"------------------------------------------------------
 Column count: 3
 Table Name  : integers set from within trc objects
 ------------------------------------------------------
@@ -996,7 +1171,7 @@ intfield2:10//column 2
 } //End row 4
 ------------------------------------------------------
 ";
-            Assert.AreEqual(expectedres,actualres);
+            Assert.AreEqual(expectedres, actualres);
         }
     }
 
@@ -1012,12 +1187,14 @@ intfield2:10//column 2
         {
             String actualres;
             using (
-            var notSpecifyingFields = new Table(
-                "subtable".Table()
-                ))//at this point we have created a table with no fields
+                var notSpecifyingFields = new Table(
+                    "subtable".Table()
+                    )) //at this point we have created a table with no fields
             {
                 notSpecifyingFields.AddColumn(DataType.String, "12345‰7890");
-                actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name, "table name is 12345 then the permille sign ISO 10646:8240 then 7890", notSpecifyingFields);
+                actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name,
+                                                "table name is 12345 then the permille sign ISO 10646:8240 then 7890",
+                                                notSpecifyingFields);
             }
             const string expectedres = @"------------------------------------------------------
 Column count: 2
@@ -1028,39 +1205,41 @@ Table Name  : table name is 12345 then the permille sign ISO 10646:8240 then 789
 ------------------------------------------------------
 
 ";
-            Assert.AreEqual(expectedres,actualres);        
+            Assert.AreEqual(expectedres, actualres);
         }
-    
+
 
 
 
         [Test]
-        public static void TableWithJapaneseCharacters()
+        public static void TableWithnonasciiCharacters()
         {
             String actualres;
             using (
-            var notSpecifyingFields = new Table(
-                "subtable".Table()
-                ))//at this point we have created a table with no fields
+                var notSpecifyingFields = new Table(
+                    "subtable".Table()
+                    )) //at this point we have created a table with no fields
             {
-                notSpecifyingFields.AddColumn(DataType.String,     "123\u70B9\u83DC678");
-                actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name, "column name is 123 then two japanese characters then 678", notSpecifyingFields);
+                notSpecifyingFields.AddColumn(DataType.String, "123\u0300\u0301678");
+                actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name,
+                                                "column name is 123 then two non-ascii unicode chars then 678",
+                                                notSpecifyingFields);
             }
             const string expectedres = @"------------------------------------------------------
 Column count: 2
-Table Name  : column name is 123 then two japanese characters then 678
+Table Name  : column name is 123 then two non-ascii unicode chars then 678
 ------------------------------------------------------
  0      Table  subtable            
- 1     String  123"+"\u70B9\u83DC"+@"678            
+ 1     String  123" + "\u0300\u0301" + @"678            
 ------------------------------------------------------
 
 ";
-            Assert.AreEqual( expectedres,actualres);        
+            Assert.AreEqual(expectedres, actualres);
         }
     }
 
 
-    
+
     [TestFixture]
     public static class CreateTableTest
     {
@@ -1074,11 +1253,12 @@ Table Name  : column name is 123 then two japanese characters then 678
             string actualres;
             using (var t = new Table(
                 "root".SubTable(
-                   "s1".SubTable(
-                      "s2".Table(
-                          "fld".Int())))))
+                    "s1".SubTable(
+                        "s2".Table(
+                            "fld".Int())))))
             {
-                actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name, "table with subtable with subtable", t);
+                actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name, "table with subtable with subtable",
+                                                t);
             }
             const string expectedres = @"------------------------------------------------------
 Column count: 1
@@ -1102,17 +1282,19 @@ Table Name  : table with subtable with subtable
         {
             String actualres;
             using (
-            var newFieldClasses = new Table(
-                new StringField("F1"),
-                new IntField("F2"),
-                new SubTableField("Sub1",
-                   new StringField("F11"),
-                   new IntField("F12"))
-            ))
+                var newFieldClasses = new Table(
+                    new StringField("F1"),
+                    new IntField("F2"),
+                    new SubTableField("Sub1",
+                                      new StringField("F11"),
+                                      new IntField("F12"))
+                    ))
             {
                 newFieldClasses.AddColumn(DataType.String, "Buksestørrelse");
-                
-                actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name, "table created with all types using the new field classes", newFieldClasses);
+
+                actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name,
+                                                "table created with all types using the new field classes",
+                                                newFieldClasses);
             }
             const string expectedres = @"------------------------------------------------------
 Column count: 4
@@ -1141,10 +1323,13 @@ Table Name  : table created with all types using the new field classes
         //only by changing the ineritance of the Itemcode type from IntegerField to StringField
         //thus by introducing your own class, You hide the field implementation detail from the users using this field type
 
-        
-        class ItemCode : IntField //whenever ItemCode is specified in a table definition, an IntegerField is created
+
+        private class ItemCode : IntField
+            //whenever ItemCode is specified in a table definition, an IntegerField is created
         {
-            public ItemCode(String columnName) : base(columnName) { }           
+            public ItemCode(String columnName) : base(columnName)
+            {
+            }
         }
 
         //because of a defense against circular field references, the subtablefield cannot be used this way, however you can make a method that returns an often
@@ -1155,10 +1340,10 @@ Table Name  : table created with all types using the new field classes
         {
             return new SubTableField(
                 ("OwnedItems"),
-                  new StringField("Item Name"),
-                  new ItemCode("ItemId"),
-                  new IntField("Number Owned"),
-                  new BoolField("ItemPowerLevel"));
+                new StringField("Item Name"),
+                new ItemCode("ItemId"),
+                new IntField("Number Owned"),
+                new BoolField("ItemPowerLevel"));
         }
 
         //game state dataset used by our general game saving system for casual games
@@ -1166,11 +1351,11 @@ Table Name  : table created with all types using the new field classes
         {
             return new SubTableField(
                 ("GameState"),
-                  new StringField("SaveDate"),
-                  new IntField("UserId"),
-                  new StringField("Users description"),
-                  new BinaryField("GameData1"),
-                  new StringField("GameData2"));
+                new StringField("SaveDate"),
+                new IntField("UserId"),
+                new StringField("Users description"),
+                new BinaryField("GameData1"),
+                new StringField("GameData2"));
         }
 
 
@@ -1181,17 +1366,19 @@ Table Name  : table created with all types using the new field classes
             String actualres;
 
             using (
-            var game1 = new Table(
-                OwnedItems(),
-                new IntField("UserId"), //some game specific stuff. All players are owned by some item, don't ask me why
-                new BinaryField("BoardLayout"), //game specific
-                GameSaveFields())
+                var game1 = new Table(
+                    OwnedItems(),
+                    new IntField("UserId"),
+                    //some game specific stuff. All players are owned by some item, don't ask me why
+                    new BinaryField("BoardLayout"), //game specific
+                    GameSaveFields())
                 )
             {
-                actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name+"1", "table created user defined types and methods", game1);
+                actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name + "1",
+                                                "table created user defined types and methods", game1);
             }
             string expectedres =
-@"------------------------------------------------------
+                @"------------------------------------------------------
 Column count: 4
 Table Name  : table created user defined types and methods
 ------------------------------------------------------
@@ -1211,22 +1398,23 @@ Table Name  : table created user defined types and methods
 ------------------------------------------------------
 
 ";
-            Assert.AreEqual(expectedres, actualres);        
+            Assert.AreEqual(expectedres, actualres);
 
 
 
 
             using (var game2 = new Table(
-            OwnedItems(),
-            new ItemCode("UserId"), //game specific
-            new ItemCode("UsersBestFriend"), //game specific
-            new IntField("Game Character Type"), //game specific
-            GameSaveFields()))
+                OwnedItems(),
+                new ItemCode("UserId"), //game specific
+                new ItemCode("UsersBestFriend"), //game specific
+                new IntField("Game Character Type"), //game specific
+                GameSaveFields()))
             {
-                actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name + "2", "table created user defined types and methods", game2);
+                actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name + "2",
+                                                "table created user defined types and methods", game2);
             }
-              expectedres =
-@"------------------------------------------------------
+            expectedres =
+                @"------------------------------------------------------
 Column count: 5
 Table Name  : table created user defined types and methods
 ------------------------------------------------------
@@ -1247,10 +1435,10 @@ Table Name  : table created user defined types and methods
 ------------------------------------------------------
 
 ";
-            Assert.AreEqual(expectedres, actualres);        
+            Assert.AreEqual(expectedres, actualres);
 
         }
-        
+
 
         //this kind of creation call should be legal - it creates a totally empty table, then only later sets up a field        
         [Test]
@@ -1258,15 +1446,17 @@ Table Name  : table created user defined types and methods
         {
             String actualres;
             using (
-            var notSpecifyingFields = new Table(
-                "subtable".Table()
-                ))//at this point we have created a table with no fields
+                var notSpecifyingFields = new Table(
+                    "subtable".Table()
+                    )) //at this point we have created a table with no fields
             {
                 notSpecifyingFields.AddColumn(DataType.String, "Buksestørrelse");
-                actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name,"one field Created in two steps with table add column", notSpecifyingFields);
+                actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name,
+                                                "one field Created in two steps with table add column",
+                                                notSpecifyingFields);
             }
             const string expectedres =
-@"------------------------------------------------------
+                @"------------------------------------------------------
 Column count: 2
 Table Name  : one field Created in two steps with table add column
 ------------------------------------------------------
@@ -1275,7 +1465,7 @@ Table Name  : one field Created in two steps with table add column
 ------------------------------------------------------
 
 ";
-            Assert.AreEqual(expectedres, actualres);        
+            Assert.AreEqual(expectedres, actualres);
         }
 
 
@@ -1288,7 +1478,7 @@ Table Name  : one field Created in two steps with table add column
                 actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name, "NameField", testtbl);
             }
             const string expectedres =
-@"------------------------------------------------------
+                @"------------------------------------------------------
 Column count: 1
 Table Name  : NameField
 ------------------------------------------------------
@@ -1305,17 +1495,17 @@ Table Name  : NameField
         {
             String actualres;
             using (var testtbl3 = new Table(
-            "Name".TightDbString(),
-            "Age".TightDbInt(),
-            "count".TightDbInt(),
-            "Whatever".TightDbMixed()            
-            ))
+                "Name".TightDbString(),
+                "Age".TightDbInt(),
+                "count".TightDbInt(),
+                "Whatever".TightDbMixed()
+                ))
             {
                 //long  test = testtbl3.getdllversion_CSH();
                 actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name, "four columns, Last Mixed", testtbl3);
             }
             const string expectedres =
-@"------------------------------------------------------
+                @"------------------------------------------------------
 Column count: 4
 Table Name  : four columns, Last Mixed
 ------------------------------------------------------
@@ -1336,24 +1526,26 @@ Table Name  : four columns, Last Mixed
             string actualres1;
             string actualres2;
             using (var t = new Table(
-               "Count".Int(),
-               "Valid".Bool(),
-               "Name".String(),
-               "BLOB".Binary(),
-               "Items".SubTable(
-                   "ItemCount".Int(),
-                   "ItemName".String()),
-               "HtmlPage".Mixed(),
-               "FirstSeen".Date(),
-               "Fraction".Float(),
-               "QuiteLargeNumber".Double()
-        ))
+                "Count".Int(),
+                "Valid".Bool(),
+                "Name".String(),
+                "BLOB".Binary(),
+                "Items".SubTable(
+                    "ItemCount".Int(),
+                    "ItemName".String()),
+                "HtmlPage".Mixed(),
+                "FirstSeen".Date(),
+                "Fraction".Float(),
+                "QuiteLargeNumber".Double()
+                ))
             {
-                actualres1 = Program.TableDumper(MethodBase.GetCurrentMethod().Name, "Table with all allowed types (String Extensions)", t);
-                actualres2 = Program.TableDumperSpec(MethodBase.GetCurrentMethod().Name, "Table with all allowed types (String Extensions)", t);
+                actualres1 = Program.TableDumper(MethodBase.GetCurrentMethod().Name,
+                                                 "Table with all allowed types (String Extensions)", t);
+                actualres2 = Program.TableDumperSpec(MethodBase.GetCurrentMethod().Name,
+                                                     "Table with all allowed types (String Extensions)", t);
             }
             const string expectedres =
-@"------------------------------------------------------
+                @"------------------------------------------------------
 Column count: 9
 Table Name  : Table with all allowed types (String Extensions)
 ------------------------------------------------------
@@ -1384,24 +1576,26 @@ Table Name  : Table with all allowed types (String Extensions)
             string actualres1;
             string actualres2;
             using (var t = new Table(
-                     new Field("Count",DataType.Int),
-                     new Field("Valid",DataType.Bool),
-                     new Field("Name",DataType.String),
-                     new Field("BLOB",DataType.Binary),
-                     new Field("Items",
-                          new Field("ItemCount",DataType.Int), 
-                          new Field("ItemName",DataType.String)),        
-                     new Field("HtmlPage", DataType.Mixed),
-                     new Field("FirstSeen",DataType.Date),
-                     new Field("Fraction",DataType.Float),
-                     new Field("QuiteLargeNumber",DataType.Double)
-        ))
+                new Field("Count", DataType.Int),
+                new Field("Valid", DataType.Bool),
+                new Field("Name", DataType.String),
+                new Field("BLOB", DataType.Binary),
+                new Field("Items",
+                          new Field("ItemCount", DataType.Int),
+                          new Field("ItemName", DataType.String)),
+                new Field("HtmlPage", DataType.Mixed),
+                new Field("FirstSeen", DataType.Date),
+                new Field("Fraction", DataType.Float),
+                new Field("QuiteLargeNumber", DataType.Double)
+                ))
             {
-                actualres1 = Program.TableDumper(MethodBase.GetCurrentMethod().Name, "Table with all allowed types (Field)", t);
-                actualres2 = Program.TableDumperSpec(MethodBase.GetCurrentMethod().Name, "Table with all allowed types (Field)", t);
+                actualres1 = Program.TableDumper(MethodBase.GetCurrentMethod().Name,
+                                                 "Table with all allowed types (Field)", t);
+                actualres2 = Program.TableDumperSpec(MethodBase.GetCurrentMethod().Name,
+                                                     "Table with all allowed types (Field)", t);
             }
             const string expectedres =
-@"------------------------------------------------------
+                @"------------------------------------------------------
 Column count: 9
 Table Name  : Table with all allowed types (Field)
 ------------------------------------------------------
@@ -1423,47 +1617,49 @@ Table Name  : Table with all allowed types (Field)
             Assert.AreEqual(expectedres, actualres2);
         }
 
-                //test the alternative table dumper implementation that does not use table class
+        //test the alternative table dumper implementation that does not use table class
         [Test]
         public static void TestAllFieldTypesFieldClassStrings()
         {
             string actualres1;
             string actualres2;
             using (var t = new Table(
-                     new Field("Count1","integer"),
-                     new Field("Count2","Integer"),//Any case is okay
-                     new Field("Count3","int"),
-                     new Field("Count4","INT"),//Any case is okay
-                     new Field("Valid1","boolean"),
-                     new Field("Valid2","bool"),
-                     new Field("Valid3","Boolean"),
-                     new Field("Valid4","Bool"),
-                     new Field("Name1","string"),
-                     new Field("Name2","string"),
-                     new Field("Name3","str"),
-                     new Field("Name4","Str"),
-                     new Field("BLOB1","binary"),
-                     new Field("BLOB2","Binary"),
-                     new Field("BLOB3","blob"),
-                     new Field("BLOB4","Blob"),
-                     new Field("Items",
-                          new Field("ItemCount","integer"), 
-                          new Field("ItemName","string")),        
-                     new Field("HtmlPage1", "mixed"),
-                     new Field("HtmlPage2", "MIXED"),
-                     new Field("FirstSeen1","date"),
-                     new Field("FirstSeen2","daTe"),
-                     new Field("Fraction1","float"),
-                     new Field("Fraction2","Float"),
-                     new Field("QuiteLargeNumber1","double"),
-                     new Field("QuiteLargeNumber2","Double")
-        ))
+                new Field("Count1", "integer"),
+                new Field("Count2", "Integer"), //Any case is okay
+                new Field("Count3", "int"),
+                new Field("Count4", "INT"), //Any case is okay
+                new Field("Valid1", "boolean"),
+                new Field("Valid2", "bool"),
+                new Field("Valid3", "Boolean"),
+                new Field("Valid4", "Bool"),
+                new Field("Name1", "string"),
+                new Field("Name2", "string"),
+                new Field("Name3", "str"),
+                new Field("Name4", "Str"),
+                new Field("BLOB1", "binary"),
+                new Field("BLOB2", "Binary"),
+                new Field("BLOB3", "blob"),
+                new Field("BLOB4", "Blob"),
+                new Field("Items",
+                          new Field("ItemCount", "integer"),
+                          new Field("ItemName", "string")),
+                new Field("HtmlPage1", "mixed"),
+                new Field("HtmlPage2", "MIXED"),
+                new Field("FirstSeen1", "date"),
+                new Field("FirstSeen2", "daTe"),
+                new Field("Fraction1", "float"),
+                new Field("Fraction2", "Float"),
+                new Field("QuiteLargeNumber1", "double"),
+                new Field("QuiteLargeNumber2", "Double")
+                ))
             {
-                actualres1 = Program.TableDumper(MethodBase.GetCurrentMethod().Name, "Table with all allowed types (Field_string)", t);
-                actualres2 = Program.TableDumperSpec(MethodBase.GetCurrentMethod().Name, "Table with all allowed types (Field_string)", t);
+                actualres1 = Program.TableDumper(MethodBase.GetCurrentMethod().Name,
+                                                 "Table with all allowed types (Field_string)", t);
+                actualres2 = Program.TableDumperSpec(MethodBase.GetCurrentMethod().Name,
+                                                     "Table with all allowed types (Field_string)", t);
             }
             const string expectedres =
-@"------------------------------------------------------
+                @"------------------------------------------------------
 Column count: 25
 Table Name  : Table with all allowed types (Field_string)
 ------------------------------------------------------
@@ -1510,24 +1706,26 @@ Table Name  : Table with all allowed types (Field_string)
             string actualres1;
             string actualres2;
             using (var t = new Table(
-                     new IntField("Count"),
-                     new BoolField("Valid"),
-                     new StringField("Name"),
-                     new BinaryField("BLOB"),
-                     new SubTableField("Items",
-                          new IntField("ItemCount"),
-                          new StringField("ItemName")),
-                     new MixedField("HtmlPage"),
-                     new DateField("FirstSeen"),
-                     new FloatField("Fraction"),
-                     new DoubleField("QuiteLargeNumber")
-        ))
+                new IntField("Count"),
+                new BoolField("Valid"),
+                new StringField("Name"),
+                new BinaryField("BLOB"),
+                new SubTableField("Items",
+                                  new IntField("ItemCount"),
+                                  new StringField("ItemName")),
+                new MixedField("HtmlPage"),
+                new DateField("FirstSeen"),
+                new FloatField("Fraction"),
+                new DoubleField("QuiteLargeNumber")
+                ))
             {
-                actualres1 = Program.TableDumper(MethodBase.GetCurrentMethod().Name, "Table with all allowed types (Typed Field)", t);
-                actualres2 = Program.TableDumperSpec(MethodBase.GetCurrentMethod().Name, "Table with all allowed types (Typed Field)", t);
+                actualres1 = Program.TableDumper(MethodBase.GetCurrentMethod().Name,
+                                                 "Table with all allowed types (Typed Field)", t);
+                actualres2 = Program.TableDumperSpec(MethodBase.GetCurrentMethod().Name,
+                                                     "Table with all allowed types (Typed Field)", t);
             }
             const string expectedres =
-@"------------------------------------------------------
+                @"------------------------------------------------------
 Column count: 9
 Table Name  : Table with all allowed types (Typed Field)
 ------------------------------------------------------
@@ -1556,25 +1754,26 @@ Table Name  : Table with all allowed types (Typed Field)
         {
             string actualres;
             using (
-            var testtbl = new Table(
-                "Name".TightDbString(),
-                "Age".TightDbInt(),
-                new Field("age2", DataType.Int),
-                new Field("age3", "Int"),
+                var testtbl = new Table(
+                    "Name".TightDbString(),
+                    "Age".TightDbInt(),
+                    new Field("age2", DataType.Int),
+                    new Field("age3", "Int"),
 //                new IntegerField("Age3"),
-                new Field("comments",
+                    new Field("comments",
                               new Field("phone#1", DataType.String),
                               new Field("phone#2", DataType.String),
                               new Field("phone#3", "String"),
                               "phone#4".TightDbString()
-                             ),
-                new Field("whatever", DataType.Mixed)
-                ))
+                        ),
+                    new Field("whatever", DataType.Mixed)
+                    ))
             {
-                actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name, "six colums,sub four columns", testtbl);
+                actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name, "six colums,sub four columns",
+                                                testtbl);
             }
             const string expectedres =
-@"------------------------------------------------------
+                @"------------------------------------------------------
 Column count: 6
 Table Name  : six colums,sub four columns
 ------------------------------------------------------
@@ -1602,11 +1801,11 @@ Table Name  : six colums,sub four columns
         //scope has been thoroughly debugged and does work perfectly in all imagined cases, but the testing was done before unit tests had been created
         public static void TestTableScope()
         {
-            Table testTable;//bad way to code this but i need the reference after the using clause
+            Table testTable; //bad way to code this but i need the reference after the using clause
             using (testTable = new Table())
             {
 
-                Assert.False(testTable.IsDisposed);//do a test to see that testtbl has a valid table handle 
+                Assert.False(testTable.IsDisposed); //do a test to see that testtbl has a valid table handle 
             }
             Assert.True(testTable.IsDisposed);
             //do a test here to see that testtbl now does not have a valid table handle
@@ -1629,16 +1828,17 @@ Table Name  : six colums,sub four columns
         [Test]
         public static void TestIllegalFieldDefinitions1()
         {
-            Field f5 = "f5".Int();//create a field reference, type does not matter
-            f5 = "f5".Table(f5);//try to overwrite the field object with a new object that references itself 
+            Field f5 = "f5".Int(); //create a field reference, type does not matter
+            f5 = "f5".Table(f5); //try to overwrite the field object with a new object that references itself 
             string actualres;
             using (
-            var t = new Table(f5))//this will not crash or loop forever the subtable field does not references itself 
+                var t = new Table(f5))
+                //this will not crash or loop forever the subtable field does not references itself 
             {
                 actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name, "self-referencing subtable", t);
             }
             const string expectedres =
-@"------------------------------------------------------
+                @"------------------------------------------------------
 Column count: 1
 Table Name  : self-referencing subtable
 ------------------------------------------------------
@@ -1653,21 +1853,23 @@ Table Name  : self-referencing subtable
         [Test]
         public static void TestIllegalFieldDefinitions2()
         {
-            Field fc = "fc".Int();//create a field reference, type does not matter
-            Field fp = "fp".Table(fc);//let fp be the parent table subtable column, fc be the sole field in a subtable
+            Field fc = "fc".Int(); //create a field reference, type does not matter
+            Field fp = "fp".Table(fc); //let fp be the parent table subtable column, fc be the sole field in a subtable
 
-            fc = "fc".Table(fp);//then change the field type from int to subtable and reference the parent
+            fc = "fc".Table(fp); //then change the field type from int to subtable and reference the parent
 
             //You now think You have illegal field definitions in fc and fp as both are subtables and both reference the other as the sole subtable field
             //however, they are new objects that reference the old classes that they replaced.
             String actualres;
             using (
                 var t2 = new Table(fc))
-            { //should crash too
-                actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name, "subtable that has subtable that references its parent #1", t2);
+            {
+                //should crash too
+                actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name,
+                                                "subtable that has subtable that references its parent #1", t2);
             }
             const String expectedres =
-@"------------------------------------------------------
+                @"------------------------------------------------------
 Column count: 1
 Table Name  : subtable that has subtable that references its parent #1
 ------------------------------------------------------
@@ -1681,23 +1883,26 @@ Table Name  : subtable that has subtable that references its parent #1
 
             Assert.AreEqual(expectedres, actualres);
         }
+
         [Test]
         public static void TestIllegalFieldDefinitions3()
         {
-            Field fc = "fc".Int();//create a field reference, type does not matter
-            Field fp = "fp".Table(fc);//let fp be the parent table subtable column, fc be the sole field in a subtable
+            Field fc = "fc".Int(); //create a field reference, type does not matter
+            Field fp = "fp".Table(fc); //let fp be the parent table subtable column, fc be the sole field in a subtable
 // ReSharper disable RedundantAssignment
-            fc = "fc".Table(fp);//then change the field type from int to subtable and reference the parent
+            fc = "fc".Table(fp); //then change the field type from int to subtable and reference the parent
 // ReSharper restore RedundantAssignment
 
             String actualres;
             using (
-            var t3 = new Table(fp))
-            { //should crash too
-                actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name, "subtable that has subtable that references its parent #2", t3);
+                var t3 = new Table(fp))
+            {
+                //should crash too
+                actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name,
+                                                "subtable that has subtable that references its parent #2", t3);
             }
             const String expectedres =
-@"------------------------------------------------------
+                @"------------------------------------------------------
 Column count: 1
 Table Name  : subtable that has subtable that references its parent #2
 ------------------------------------------------------
@@ -1719,8 +1924,8 @@ Table Name  : subtable that has subtable that references its parent #2
         {
 
             Field f1 = "f10".SubTable("f11".Int(), "f12".Int());
-            var subTableElements =  f1.GetSubTableArray();
-            subTableElements[0] = f1;//and the "f16" field in f1.f15.f16 is now replaced with f1.. recursiveness
+            var subTableElements = f1.GetSubTableArray();
+            subTableElements[0] = f1; //and the "f16" field in f1.f15.f16 is now replaced with f1.. recursiveness
 
 
             string actualres;
@@ -1729,7 +1934,7 @@ Table Name  : subtable that has subtable that references its parent #2
                 actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name, "cyclic field definition", t4);
             }
             const String expectedres =
-@"------------------------------------------------------
+                @"------------------------------------------------------
 Column count: 1
 Table Name  : cyclic field definition
 ------------------------------------------------------
@@ -1746,18 +1951,27 @@ Table Name  : cyclic field definition
         //dastardly creative terroristic attemt at creating a cyclic graph of Field objects
         //this creative approach succeeded in creating a stack overflow situation when the table is being created, but now it is not possible as AddSubTableFields has been made
         //internal, thus unavailable in customer assemblies.
-        
-        class AttemptCircularField : Field
+
+        private class AttemptCircularField : Field
         {
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "fielddefinitions"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "fieldName")]
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic"),
+             System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters",
+                 MessageId = "fielddefinitions"),
+             System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters",
+                 MessageId = "fieldName")]
 // ReSharper disable UnusedParameter.Local
-            public  void setsubtablearray(String fieldName, Field[] fielddefinitions)//make the otherwise hidden addsubtablefield public
+            public void setsubtablearray(String fieldName, Field[] fielddefinitions)
+                //make the otherwise hidden addsubtablefield public
 // ReSharper restore UnusedParameter.Local
             {
 //uncommenting the line below should create a compiletime error (does now) or else this unit test wil bomb the system
 //                AddSubTableFields(this, fieldName,fielddefinitions);
             }
-            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "columnName"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "subTableFieldsArray")]
+
+            [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters",
+                MessageId = "columnName"),
+             System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters",
+                 MessageId = "subTableFieldsArray")]
 // ReSharper disable UnusedParameter.Local
             public AttemptCircularField(string columnName, params Field[] subTableFieldsArray)
 // ReSharper restore UnusedParameter.Local
@@ -1766,24 +1980,27 @@ Table Name  : cyclic field definition
             }
         }
 
-        
+
         [Test]
         [ExpectedException("System.ArgumentNullException")]
         public static void TestCyclicFieldDefinition2()
         {
 
-            var f1 = new AttemptCircularField("f1",null);//do not care about last parameter we're trying to crash the system
-            var subs= new Field[2];
-            subs[0]=f1;
+            var f1 = new AttemptCircularField("f1", null);
+                //do not care about last parameter we're trying to crash the system
+            var subs = new Field[2];
+            subs[0] = f1;
             f1.setsubtablearray("f2", subs);
 
             string actualres;
             using (var t4 = new Table(f1))
             {
-                actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name, "cyclic field definition using field inheritance to get at subtable field list", t4);
+                actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name,
+                                                "cyclic field definition using field inheritance to get at subtable field list",
+                                                t4);
             }
             const String expectedres =
-@"------------------------------------------------------
+                @"------------------------------------------------------
 Column count: 1
 Table Name  : cyclic field definition
 ------------------------------------------------------
@@ -1815,7 +2032,7 @@ Table Name  : cyclic field definition
                 actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name, "just an int field, no subs", t4);
             }
             const String expectedres =
-@"------------------------------------------------------
+                @"------------------------------------------------------
 Column count: 1
 Table Name  : just an int field, no subs
 ------------------------------------------------------
@@ -1826,6 +2043,7 @@ Table Name  : just an int field, no subs
 
             Assert.AreEqual(expectedres, actualres);
         }
+
         [Test]
         public static void TestIllegalFieldDefinitions5()
         {
@@ -1834,12 +2052,13 @@ Table Name  : just an int field, no subs
 
             String actualres;
             using (
-         var t5 = new Table(f10))
+                var t5 = new Table(f10))
             {
-                actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name, "subtable with two int fields", t5);//This is sort of okay, first adding a subtable, then
+                actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name, "subtable with two int fields", t5);
+                    //This is sort of okay, first adding a subtable, then
             }
             const String expectedres =
-@"------------------------------------------------------
+                @"------------------------------------------------------
 Column count: 1
 Table Name  : subtable with two int fields
 ------------------------------------------------------
@@ -1861,10 +2080,11 @@ Table Name  : subtable with two int fields
             String actualres;
             using (var badtable = new Table("Age".Int(), "age".Int()))
             {
-                actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name, "two fields, case is differnt", badtable);
+                actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name, "two fields, case is differnt",
+                                                badtable);
             }
             const String expectedres =
-@"------------------------------------------------------
+                @"------------------------------------------------------
 Column count: 2
 Table Name  : two fields, case is differnt
 ------------------------------------------------------
@@ -1873,8 +2093,9 @@ Table Name  : two fields, case is differnt
 ------------------------------------------------------
 
 ";
-            Assert.AreEqual(expectedres,actualres);
+            Assert.AreEqual(expectedres, actualres);
         }
+
         [Test]
         public static void TestCreateStrangeTable2()
         {
@@ -1882,10 +2103,11 @@ Table Name  : two fields, case is differnt
             String actualres;
             using (var badtable2 = new Table("Age".Int(), "Age".Int()))
             {
-                actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name, "two fields name and type the same", badtable2);
+                actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name, "two fields name and type the same",
+                                                badtable2);
             }
             const string expectedres =
-@"------------------------------------------------------
+                @"------------------------------------------------------
 Column count: 2
 Table Name  : two fields name and type the same
 ------------------------------------------------------
@@ -1903,38 +2125,40 @@ Table Name  : two fields name and type the same
         [Test]
         public static void TestCreateTwoTables()
         {
-            var actualres = new StringBuilder();//we add several table dumps into one compare string in this test
+            var actualres = new StringBuilder(); //we add several table dumps into one compare string in this test
             using (
-            var testtbl1 = new Table(
-            new Field("name", DataType.String),
-            new Field("age", DataType.Int),
-            new Field("comments",
-                new Field("phone#1", DataType.String),
-                new Field("phone#2", DataType.String)),
-            new Field("whatever", DataType.Mixed)))
-            {
-                actualres.Append(Program.TableDumperSpec(MethodBase.GetCurrentMethod().Name, "four columns , sub two columns (Field)", testtbl1));
-
-                using (//and we create a second table while the first is in scope
-                var testtbl2 = new Table(
-                    new Field("name", "String"),
-                    new Field("age", "Int"),
+                var testtbl1 = new Table(
+                    new Field("name", DataType.String),
+                    new Field("age", DataType.Int),
                     new Field("comments",
-                             new Field("phone#1", DataType.String),    //one way to declare a string
-                             new Field("phone#2", "String"),           //another way
-                             "more stuff".SubTable(
-                                "stuff1".String(),                     //and yet another way
-                                "stuff2".String(),
-                                "ÆØÅæøå".String())
-                             ),
+                              new Field("phone#1", DataType.String),
+                              new Field("phone#2", DataType.String)),
                     new Field("whatever", DataType.Mixed)))
+            {
+                actualres.Append(Program.TableDumperSpec(MethodBase.GetCurrentMethod().Name,
+                                                         "four columns , sub two columns (Field)", testtbl1));
+
+                using ( //and we create a second table while the first is in scope
+                    var testtbl2 = new Table(
+                        new Field("name", "String"),
+                        new Field("age", "Int"),
+                        new Field("comments",
+                                  new Field("phone#1", DataType.String), //one way to declare a string
+                                  new Field("phone#2", "String"), //another way
+                                  "more stuff".SubTable(
+                                      "stuff1".String(), //and yet another way
+                                      "stuff2".String(),
+                                      "ÆØÅæøå".String())
+                            ),
+                        new Field("whatever", DataType.Mixed)))
                 {
-                    actualres.Append(Program.TableDumperSpec(MethodBase.GetCurrentMethod().Name, "four columns, sub three subsub three", testtbl2));
+                    actualres.Append(Program.TableDumperSpec(MethodBase.GetCurrentMethod().Name,
+                                                             "four columns, sub three subsub three", testtbl2));
                 }
             }
             File.WriteAllText(MethodBase.GetCurrentMethod().Name + ".txt", actualres.ToString());
             const string expectedres =
-@"------------------------------------------------------
+                @"------------------------------------------------------
 Column count: 4
 Table Name  : four columns , sub two columns (Field)
 ------------------------------------------------------
@@ -1963,7 +2187,7 @@ Table Name  : four columns, sub three subsub three
 ------------------------------------------------------
 
 ";
-            Assert.AreEqual(expectedres,actualres.ToString());
+            Assert.AreEqual(expectedres, actualres.ToString());
         }
 
         [Test]
@@ -1972,11 +2196,12 @@ Table Name  : four columns, sub three subsub three
             string actualres;
             using (
                 var reallybadtable3 = new Table("Age".Int(),
-                                                  "Age".Int(),
-                                                  "".String(),
-                                                  "".String()))
+                                                "Age".Int(),
+                                                "".String(),
+                                                "".String()))
             {
-                actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name, "same names int two empty string names", reallybadtable3);
+                actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name,
+                                                "same names int two empty string names", reallybadtable3);
             }
             const string expectedres = @"------------------------------------------------------
 Column count: 4
@@ -1989,7 +2214,7 @@ Table Name  : same names int two empty string names
 ------------------------------------------------------
 
 ";
-            Assert.AreEqual(expectedres,actualres);
+            Assert.AreEqual(expectedres, actualres);
         }
 
         [Test]
@@ -1998,14 +2223,15 @@ Table Name  : same names int two empty string names
             string actualres;
             using (
                 var reallybadtable4 = new Table("Age".Int(),
-                                      "Age".Mixed(),
-                                      "".String(),
-                                      "".Mixed()))
+                                                "Age".Mixed(),
+                                                "".String(),
+                                                "".Mixed()))
             {
-                actualres=Program.TableDumper(MethodBase.GetCurrentMethod().Name, "same names, empty names, mixed types", reallybadtable4);
+                actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name,
+                                                "same names, empty names, mixed types", reallybadtable4);
             }
             const string expectedres =
-@"------------------------------------------------------
+                @"------------------------------------------------------
 Column count: 4
 Table Name  : same names, empty names, mixed types
 ------------------------------------------------------
@@ -2016,14 +2242,13 @@ Table Name  : same names, empty names, mixed types
 ------------------------------------------------------
 
 ";
-            Assert.AreEqual(expectedres,actualres);
+            Assert.AreEqual(expectedres, actualres);
         }
 
     }
 
 
-
-    class Program
+    internal class Program
     {
 
         public static int Buildnumber = 1304041702;
@@ -2044,7 +2269,7 @@ Table Name  : same names, empty names, mixed types
             res.AppendLine(Sectiondelimitor);
             res.AppendLine(String.Format(CultureInfo.InvariantCulture, "Column count: {0}", count));
             res.AppendLine(String.Format(CultureInfo.InvariantCulture, "Table Name  : {0}", tablename));
-            res.AppendLine(Sectiondelimitor);            
+            res.AppendLine(Sectiondelimitor);
         }
 
 
@@ -2062,7 +2287,7 @@ Table Name  : same names, empty names, mixed types
         //this version uses the table column information as far as possible, then shifts to spec on subtables
         public static string TableDumper(String fileName, String tableName, TableOrView t)
         {
-            var res = new StringBuilder();//temporary storange of text of dump
+            var res = new StringBuilder(); //temporary storange of text of dump
 
             long count = t.ColumnCount;
             PrintHeader(res, tableName, count);
@@ -2072,13 +2297,13 @@ Table Name  : same names, empty names, mixed types
                 DataType type = t.ColumnType(n);
                 res.AppendLine(String.Format(CultureInfo.InvariantCulture, "{0,2} {2,10}  {1,-20}", n, name, type));
                 if (type == DataType.Table)
-                {                    
-                    Spec subSpec =  t.Spec.GetSpec(n);
+                {
+                    Spec subSpec = t.Spec.GetSpec(n);
                     Specdumper(res, "   ", subSpec, "Subtable");
                 }
             }
             PrintMetadataFooter(res);
-            TableDataDumper("",res, t);
+            TableDataDumper("", res, t);
 
             Console.Write(res.ToString());
             File.WriteAllText(fileName + ".txt", res.ToString());
@@ -2100,7 +2325,8 @@ Table Name  : same names, empty names, mixed types
             {
                 String name = s.GetColumnName(n);
                 DataType type = s.GetColumnType(n);
-                res.AppendLine(String.Format(CultureInfo.InvariantCulture, "{0}{1,2} {2,10}  {3,-20}", indent, n, type, name));
+                res.AppendLine(String.Format(CultureInfo.InvariantCulture, "{0}{1,2} {2,10}  {3,-20}", indent, n, type,
+                                             name));
                 if (type == DataType.Table)
                 {
                     Spec subspec = s.GetSpec(n);
@@ -2117,53 +2343,58 @@ Table Name  : same names, empty names, mixed types
         //dump the table only using its spec
         public static String TableDumperSpec(String fileName, String tablename, Table t)
         {
-            var res = new StringBuilder();           
+            var res = new StringBuilder();
             Specdumper(res, "", t.Spec, tablename);
 
-            TableDataDumper("",res, t);
+            TableDataDumper("", res, t);
             Console.WriteLine(res.ToString());
             File.WriteAllText(fileName + ".txt", res.ToString());
             return res.ToString();
         }
 
 
-        public static void TableDataDumper(string indent,StringBuilder res, TableOrView table)
+        public static void TableDataDumper(string indent, StringBuilder res, TableOrView table)
         {
             const string startrow = "{{ //Start row {0}";
             const string endrow = "}} //End row {0}";
             const string startfield = @"{0}:";
             const string endfield = ",//column {0}{1}";
-            const string endfieldlast = "//column {0}{1}";//no comma
+            const string endfieldlast = "//column {0}{1}"; //no comma
             const string starttable = "[ //{0} rows";
             const string endtable = "]";
             const string mixedcomment = "//Mixed type is {0}";
             var firstdatalineprinted = false;
-            long tableSize = table.Size();
-            foreach (Row tr in table )  {
+            long tableSize = table.Size;
+            foreach (Row tr in table)
+            {
                 if (firstdatalineprinted == false)
                 {
                     if (String.IsNullOrEmpty(indent))
                     {
                         res.Append(indent);
-                        res.AppendLine(String.Format(CultureInfo.InvariantCulture,"Table Data Dump. Rows:{0}",tableSize));
+                        res.AppendLine(String.Format(CultureInfo.InvariantCulture, "Table Data Dump. Rows:{0}",
+                                                     tableSize));
                         res.Append(indent);
                         res.AppendLine(Sectiondelimitor);
                     }
                     firstdatalineprinted = true;
                 }
-                res.Append(indent);                    
-                res.AppendLine(String.Format(CultureInfo.InvariantCulture,  startrow, tr.MyRow));//start row marker            
+                res.Append(indent);
+                res.AppendLine(String.Format(CultureInfo.InvariantCulture, startrow, tr.RowIndex)); //start row marker
+
                 foreach (RowColumn trc in tr)
                 {
                     string extracomment = "";
                     res.Append(indent);
-                    string name = trc.Owner.Owner.GetColumnName(trc.ColumnIndex);//so we can see it easily in the debugger
+                    //todo:implement GetColumnName in RowColumn to avoid the owner owner stuff on the line below
+                    string name = trc.Owner.Owner.GetColumnName(trc.ColumnIndex);
+                    //so we can see it easily in the debugger
                     res.Append(String.Format(CultureInfo.InvariantCulture, startfield, name));
                     if (trc.ColumnType == DataType.Table)
                     {
-                        Table sub = table.GetSubTable(trc.ColumnIndex, tr.MyRow);
-                            //size printed here as we had a problem once with size reporting 0 where it should be larger, so nothing returned from call
-                        res.Append(String.Format(CultureInfo.InvariantCulture, starttable, sub.Size()));
+                        Table sub = table.GetSubTable(trc.ColumnIndex, tr.RowIndex); //todo:implement getsubtable in trc
+                        //size printed here as we had a problem once with size reporting 0 where it should be larger, so nothing returned from call
+                        res.Append(String.Format(CultureInfo.InvariantCulture, starttable, sub.Size));
                         TableDataDumper(indent + "   ", res, sub);
                         res.Append(endtable);
                     }
@@ -2171,12 +2402,12 @@ Table Name  : same names, empty names, mixed types
                     {
                         if (trc.ColumnType == DataType.Mixed)
                         {
-                            extracomment = string.Format(CultureInfo.InvariantCulture,mixedcomment, trc.MixedType());
+                            extracomment = string.Format(CultureInfo.InvariantCulture, mixedcomment, trc.MixedType());
                             //dumping a mixed with a simple value is done by simply calling trc.value - it will return the value inside the mixed
                             if (trc.MixedType() == DataType.Table)
                             {
                                 Table sub = trc.Value as Table;
-                                TableDataDumper(indent+"   ",res,sub);
+                                TableDataDumper(indent + "   ", res, sub);
                             }
                             else
                             {
@@ -2187,22 +2418,211 @@ Table Name  : same names, empty names, mixed types
                             res.Append(trc.Value);
                     }
                     res.Append(indent);
-                    res.AppendLine(String.Format(CultureInfo.InvariantCulture, trc.IsLastColumn() ? endfieldlast : endfield, trc.ColumnIndex, extracomment));                                      
+                    res.AppendLine(String.Format(CultureInfo.InvariantCulture,
+                                                 trc.IsLastColumn() ? endfieldlast : endfield, trc.ColumnIndex,
+                                                 extracomment));
                 }
                 res.Append(indent);
-                res.AppendLine(String.Format(CultureInfo.InvariantCulture, endrow, tr.MyRow));//end row marker
-                
+                res.AppendLine(String.Format(CultureInfo.InvariantCulture, endrow, tr.RowIndex)); //end row marker
+
             }
-            if (firstdatalineprinted && String.IsNullOrEmpty(indent)) //some data was dumped from the table, so print a footer
+            if (firstdatalineprinted && String.IsNullOrEmpty(indent))
+                //some data was dumped from the table, so print a footer
             {
                 res.Append(indent);
                 res.AppendLine(Sectiondelimitor);
             }
         }
 
+
+
+        public static void TutorialDynamic()
+        {
+            //create a dynamic table with a subtable in it 
+
+            var peopleTable = new Table(
+                new StringField("name"),
+                new IntField("age"),
+                new BoolField("hired"),
+                new SubTableField("phones", //nested subtable
+                                  new StringField("desc"),
+                                  new StringField("number")
+                    )
+                );
+
+
+            //fill in one row, with two rows in the subtable, which is located at column 3
+
+            long rowno = peopleTable.AddRow("John", 20, true, null); //the null is a subtable we haven't filled in yet
+            peopleTable.GetSubTable(3,rowno).AddRow("mobile", "232-323-3232");
+            peopleTable.GetSubTable(3,rowno).AddRow("work", "434-434-4343");
+
+            //if there are many subtable rows, this is slightly faster as the subtable class only has to be created once
+
+            long rowIndex = peopleTable.AddRow("John", 20, true, null);//the null is a subtable we haven't filled in yet
+            Table rowSub = peopleTable.GetSubTable(3, rowIndex);
+            rowSub.AddRow("mobile", "232-323-3232");
+            rowSub.AddRow("work", "434-434-4343");
+
+            //if memory is a concern, Table support the disposable interface, so You can force C# to deallocate them when they go out of scope
+            //this could be important as the tables also take up c++ resources
+            using (
+
+
+                var peopleTable2 = new Table(
+                    new StringField("name"),
+                    new IntField("age"),
+                    new BoolField("hired"),
+                    new SubTableField("phones", //nested subtable
+                                      new StringField("desc"),
+                                      new StringField("number")
+                        )
+                    )
+
+                )
+            {
+
+                rowIndex = peopleTable.AddRow("John", 20, true, null); //the null is a subtable we haven't filled in yet
+                using (Table rowSub2 = peopleTable2.GetSubTable(3, rowIndex))
+                {
+                    rowSub2.AddRow("mobile", "232-323-3232");
+                    rowSub2.AddRow("work", "434-434-4343");
+                } //You are guarenteed that RowSub is deallocated at this point
+            } //You are guarenteed that PeopleTable2 is deallocated at this point
+
+            //You can also add data to the table field by field:
+
+            var rowindex = peopleTable.AddEmptyRow(1);
+            peopleTable.SetString(0,rowindex,"John");
+            peopleTable.SetLong(1, rowindex, 20);
+            peopleTable.SetBoolean(2,rowindex,true);
+            var subtable = peopleTable.GetSubTable(3, rowindex); //return a subtalbe for column 3
+            subtable.SetString(0, 0, "mobile");
+            subtable.SetString(1, 0, "232-323-3232");
+            subtable.SetString(0, 1, "work");
+            subtable.SetString(1, 1, "434-434-4343");
+
+            //You can also insert rows at specific row positions:
+
+
+            peopleTable.AddRowAt
+                (2, "John", 20, null);
+            //first parameter specifies the row number, the null is the subtable
+            rowSub=peopleTable.GetSubTable(3, 2);
+            rowSub.AddRow("mobile", "232-323-3232");
+            rowSub.AddRow("work", "434-434-4343");
+
+            //Finally subtables can be specified inside the parameter list like this
+
+            peopleTable.AddRow("John", 20,true,
+                 new object[]
+                     {
+                         new object[] {"work", "232-323-3232"},
+                         new object[] {"home", "434-434-4343"}
+                     });
+
+            //the arrays and constans can of course be supplied as variables too like this
+
+            var sub =
+                new object[]
+                    {
+                        new object[] {"work", "232-323-3232"},
+                        new object[] {"home", "434-434-4343"}
+                    };
+            peopleTable.AddRow("John", 20,true,sub);
+
+            long rows = peopleTable.Size;//get the number of rows in a table
+            bool isempty = peopleTable.IsEmpty;//is the table empty?
+
+            //working with individual rows
+            
+            //getting values (untyped)
+            String n = peopleTable[5].GetString("Name");//You can specify the name of the column. It will be looked up at runtime so not so fast as the above
+            long a = peopleTable[5].GetLong("Age");//returns the value of the long field called Age so prints 20
+            Boolean b = peopleTable[5].GetBoolean("Hired");//prints true
+            Console.WriteLine(n,a,b);//writes "John20True"
+            
+            //You can also do this, which is very slightly faster as no row cursor class is created , but harder to read
+            b = peopleTable.GetBoolean("Hired", 5);//get the value of the boolean field Hired at column 5
+
+            //Accessing through a Row saves validation of rowIndex when fetching data, so this is slightly faster if You are reading many columns from
+            //the same row
+            Row row5 = peopleTable[5];
+            n = row5.GetString("name");
+            a = row5.GetLong("Age");
+            b = row5.GetBoolean("Hired");
+            Console.WriteLine(n, a, b);//writes "John20True"
+
+            //accessing when specifying the columnIndex as a number is  faster than specifying a column name.
+            Console.WriteLine(row5.GetBoolean(2));//2 is the columnIndex for the field "Hired"
+
+            //setting values (untyped)
+            peopleTable[5].SetString("Name", "John");//first parameter is the column name, the second parameter is the value
+            peopleTable[5].SetString(0, "John");//columns can be indexed by number too
+            peopleTable[5].SetLong("Age", 20);
+            peopleTable[5].SetBoolean("Hired", true);
+
+
+            //You can also set an entire row by specifying the correct types in order
+            //re-using the subtable sub created earlier, see above
+            peopleTable[5].SetRow("John", 20, true, sub);
+            //this method is not as fast as using SetString etc. as it will have to inspect the parametres and the table to validate type compatibillity
+
+
+            //You can delete a row by calling remove(rowIndex)
+            peopleTable.Remove(3); //removes the 4th row in the table and moves every row index larger than 3 one down
+            peopleTable[3].Remove();//this does the same
+            
+            Row r = peopleTable[3];//another way still
+            r.Remove();
+            //after having removed r, The row object becomes invalid and cannot be used anymore for any functions that involves row numbers
+
+            //iterating over a table is done this way
+            foreach (var row in peopleTable)
+            {
+                Table phones = row.GetSubTable("phones");
+                Console.WriteLine("{0} is {1} years old and has {2} phones:",row.GetString("Name"),row.GetLong("Age"),phones.Size);//writes the name of the current row
+                foreach (var phonerow in phones)
+                {
+                    Console.WriteLine(phonerow.GetString("desc")+": "+phonerow.GetString("number"));
+                }
+            }
+
+            //You can also iterate a table over its fields
+            foreach (Row looprow in peopleTable)
+            {
+                foreach (RowColumn rowColumn in looprow)
+                {
+                    Console.WriteLine(rowColumn.Value);//will write the value of all fields in all rows,except subtables
+                }
+            }
+
+            //find first will return the RowNumber of the first row that matches a search
+            long rowIndex = peopleTable.FindFirstInt("age", 20);
+
+            //find all will return all rows with a given value
+            TableView tv1 = peopleTable.FindAllInt("Age", 20); //will set tableview to point to all rows where the column age has value 20
+            //or with column index
+            TableView tv2 = peopleTable.FindAllInt(1, 20); //will set tableview to point to all rows where the column age has value 20
+
+
+            //queries - untyped queries have the type qualified in the equals, greater, less et. methods
+            //this to add a little type safety in case the user knows the types of some of the columns
+            //this example will be expanded soon
+            Query qr = peopleTable.Where().BoolEquals("Hired", true);
+            TableView tv3 = qr.FindAll(1, 10000, 50);//find all hired people amongst the first 10K records, but return only 50 at most
+
+            //serialization - to be done
+            //transactions - to be done
+
+        }
+
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters", MessageId = "System.Console.WriteLine(System.String)"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters", MessageId = "Console.WriteLine(System.String)")]
         static void Main(/*string[] args*/)
         {
+
+            TutorialDynamic();
             /*
              *  to debug unit tests, uncomment the test you want to debug below, and run the program
              *  remember to set a breakpoint
@@ -2211,11 +2631,20 @@ Table Name  : same names, empty names, mixed types
              *  */
 
             EnvironmentTest.ShowVersionTest();
-           // TableChangeDataTest.TableIntValueSubTableTest1();
+            CreateTableTest.TestTableScope();
+
+            //RowColumn.test_testacquireanddeletegroup();
+            
+
+              //GroupTests.CreateGroupEmptyTest();
+            TableChangeDataTest.TableIntValueSubTableTest1();
+         //    StringEncodingTest.TableWithnonasciiCharacters();//when we have implemented utf-16 to utf-8 both ways, the following tests should be created:
+
+            //GroupTests.CreateGroupFileNameTest();
             //CreateTableTest.TableSubtableSubtable();
   //          TableParameterValidationTest.TableTestMixedInt();
 //            TableParameterValidationTest.TableTestColumnIndexTooHigh();
-            TableViewTests.TableViewCreation();
+           // TableViewTests.TableViewCreation();
             //TableChangeDataTest.TableMixedSetGetSubTableWithData();
 
     //        TableChangeDataTest.TableIntValueTest1();
@@ -2237,7 +2666,6 @@ Table Name  : same names, empty names, mixed types
     //        CreateTableTest.TestIllegalFieldDefinitions3() ;
     //        CreateTableTest.TestIllegalFieldDefinitions4(); 
     //        CreateTableTest.TestIllegalFieldDefinitions5();
-    //        StringEncodingTest.TableWithJapaneseCharacters();//when we have implemented utf-16 to utf-8 both ways, the following tests should be created:
              //an empty string back and forth
              //a string with an illegal utf-16 being sent to the binding (illegal because one of the uft-16 characters is a lead surrogate with no trailing surrogate)
             //a string with an illegal utf-16 being sent to the binding (illegal because one of the uft-16 characters is a trailing surrogate with no lead surrogate)

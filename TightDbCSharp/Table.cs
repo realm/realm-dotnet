@@ -51,7 +51,7 @@ namespace TightDbCSharp
     {
         //manual dll version info. Used when debugging to see if the right DLL is loaded, or an old one
         //the number is a date and a time (usually last time i debugged something)
-        public  const long GetDllVersionCSharp = 1304151452 ;
+        public  const long GetDllVersionCSharp = 1304251818 ;
 
 
         //following the dispose pattern discussed here http://dave-black.blogspot.dk/2011/03/how-do-you-properly-implement.html
@@ -200,7 +200,11 @@ namespace TightDbCSharp
         }
 
 
-        
+        public override long GetColumnIndex(String name)
+        {
+            return UnsafeNativeMethods.TableGetColumnIndex(this,name);
+        }
+
         internal override long GetColumnCount()
         {
             return UnsafeNativeMethods.TableGetColumnCount(this);
@@ -228,6 +232,16 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableGetSubTable(this, columnIndex, rowIndex);
         }
 
+        internal override void SetStringNoCheck(long columnIndex, long rowIndex,string value)
+        {
+            UnsafeNativeMethods.TableSetString(this,columnIndex,rowIndex,value);
+        }
+
+        internal override String GetStringNoCheck(long columnIndex, long rowIndex)
+        {
+            return UnsafeNativeMethods.TableGetStringNoCheck(this, columnIndex, rowIndex);
+        }
+
         internal override Table GetMixedSubTableNoCheck(long columnIndex, long rowIndex)
         {
             return UnsafeNativeMethods.TableGetSubTable(this, columnIndex, rowIndex);            
@@ -240,7 +254,7 @@ namespace TightDbCSharp
         }
 
         //number of records in this table
-        public override long Size()
+        internal override long GetSize()
         {
             return UnsafeNativeMethods.TableSize(this);
         }
@@ -251,9 +265,14 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableGetInt(this,columnIndex, rowIndex);
         }
 
-        public Boolean GetBoolean(long columnIndex, long rowIndex)
+        internal override Boolean GetBooleanNoCheck(long columnIndex, long rowIndex)
         {
             return UnsafeNativeMethods.TableGetBool(this, columnIndex, rowIndex);
+        }
+
+        internal override void SetBooleanNoCheck(long columnIndex, long rowIndex,Boolean value)
+        {
+           UnsafeNativeMethods.TableSetBool(this,columnIndex,rowIndex,value);
         }
 
         internal override void SetLongNoCheck(long columnIndex, long rowIndex, long value)
@@ -289,6 +308,18 @@ namespace TightDbCSharp
         public TableView FindAllInt(long columnIndex, long value)
         {
             return UnsafeNativeMethods.TableFindAllInt(this,  columnIndex,  value);
+        }
+
+        public TableView FindAllInt(string columnName, long value)
+        {
+            long columnIndex=GetColumnIndex(columnName);
+            return UnsafeNativeMethods.TableFindAllInt(this, columnIndex, value);
+        }
+
+
+        public Query Where()
+        {
+            return UnsafeNativeMethods.table_where(this);
         }
 
     }
@@ -619,6 +650,8 @@ namespace TightDbCSharp
             {
                 return new Field(fieldName, DataType.Double);
             }
+
+
         }
     }
 

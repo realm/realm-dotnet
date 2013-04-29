@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Runtime.Serialization;
 
 
@@ -41,24 +42,15 @@ namespace TightDbCSharp
     }
 
 
-    public class Spec : IDisposable
+
+    public class Spec : Handled, IDisposable
     {
         //not accessible by source not in te TightDBCSharp namespace
-        internal Spec(IntPtr handle, bool notifycpp)
+        internal Spec(IntPtr handle, bool shouldbedisposed)
         {
-            SpecHandle = handle;
-            SpecHandleInUse = true;
-            SpecHandleHasBeenUsed = true;
-            Notifycppwhendisposing = notifycpp;
+            SetHandle(handle, shouldbedisposed);
         }
 
-        internal IntPtr SpecHandle { get; set; } //handle (or pointer) to a c++ hosted spec.
-        internal bool SpecHandleInUse { get; set; }
-        //defaults to false.  TODO:this might need to be encapsulated with a lock to make it thread safe (although several threads *opening or closing* *the same* table object is totally forbidden )        
-        internal bool SpecHandleHasBeenUsed { get; set; }
-        //defaults to false. If this is true, the table handle has been allocated in the lifetime of this object
-        private bool IsDisposed { get; set; }
-        internal bool Notifycppwhendisposing { get; set; }
 
         public long ColumnCount
         {
@@ -68,69 +60,19 @@ namespace TightDbCSharp
         //if false, the spechandle do not need to be disposed of, on the c++ side
         //wether to actually dispose or not is handled in tightdbcalls.cs so the spec object should act as if it should always dispose of itself
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-                //tell finalizer it does not have to call dispose or dispose of things -we have done that already
-        }
-
-        //if called from GC  we should not dispose managedas that is unsafe, the bool tells us how we were called
-        protected virtual void Dispose(bool disposeManagedToo)
-        {
-            if (!IsDisposed)
-            {
-                if (disposeManagedToo)
-                {
-                    //dispose any managed members table might have
-                }
-
-                //dispose any unmanaged stuff we have
-                Unbind();
-                IsDisposed = true;
-            }
-        }
-
-        //when tihs is called by the GC, unmanaged stuff might not have been freed, and managed stuff could be in the process of being
-        //freed, so only get rid of unmanaged stuff
-
-        ~Spec()
-        {
-            try
-            {
-                Dispose(false);
-            }
-// ReSharper disable RedundantEmptyFinallyBlock
-            finally
-            {
-                // Only use this line if Table starts to inherit from some other class that itself implements dispose
-                //                base.Dispose();
-            }
-// ReSharper restore RedundantEmptyFinallyBlock
-        }
-
-
+ 
         //this method is for internal use only
         //it will automatically be called when the spec object is disposed
         //In fact, you should not at all it on your own
 
-        internal void Unbind()
+        internal override void ReleaseHandle()
         {
-            if (SpecHandleInUse)
-            {
-                UnsafeNativeMethods.SpecDeallocate(this);
-                SpecHandleInUse = false;
-            }
-            else
-            {
-                //  If you simply create a table object and then deallocate it again without ever acquiring a table handle
-                //  then no exception is raised. However, if unbind is called, and there once was a table handle,
-                //  it is assumed an error situation has occoured (too many unbind calls) and an exception is raised
-                if (SpecHandleHasBeenUsed)
-                {
-                    throw new TableException("table unbind called on a table with no table handle active anymore");
-                }
-            }
+            UnsafeNativeMethods.SpecDeallocate(this);
+        }
+
+        public override string ObjectIdentification()
+        {
+            return string.Format(CultureInfo.InvariantCulture, "Table:" + Handle);
         }
 
 
