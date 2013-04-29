@@ -52,6 +52,12 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.QueryFindAll(this,start, end, limit);
         }
 
+        public Query BoolEquals(string columnName, Boolean value)
+        {
+            //todo:implement
+            throw new NotImplementedException();
+        }
+
         public override string ObjectIdentification()
         {
             return string.Format(CultureInfo.InvariantCulture, "Query:" + Handle);

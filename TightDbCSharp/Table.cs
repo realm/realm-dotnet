@@ -304,6 +304,11 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableGetMixedInt(this, columnIndex, rowIndex);
         }
 
+        public long FindFirstInt(string columnName, long value)
+        {
+            //todo:implement
+            throw new NotImplementedException();
+        }
 
         public TableView FindAllInt(long columnIndex, long value)
         {

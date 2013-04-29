@@ -2454,16 +2454,17 @@ Table Name  : same names, empty names, mixed types
             //fill in one row, with two rows in the subtable, which is located at column 3
 
             long rowno = peopleTable.AddRow("John", 20, true, null); //the null is a subtable we haven't filled in yet
-            peopleTable.GetSubTable(3,rowno).AddRow("mobile", "232-323-3232");
-            peopleTable.GetSubTable(3,rowno).AddRow("work", "434-434-4343");
+            peopleTable.GetSubTable(3, rowno).AddRow("mobile", "232-323-3232");
+            peopleTable.GetSubTable(3, rowno).AddRow("work", "434-434-4343");
 
             //if there are many subtable rows, this is slightly faster as the subtable class only has to be created once
-
-            long rowIndex = peopleTable.AddRow("John", 20, true, null);//the null is a subtable we haven't filled in yet
-            Table rowSub = peopleTable.GetSubTable(3, rowIndex);
-            rowSub.AddRow("mobile", "232-323-3232");
-            rowSub.AddRow("work", "434-434-4343");
-
+            {
+                long rowIndex = peopleTable.AddRow("John", 20, true, null);
+                    //the null is a subtable we haven't filled in yet
+                Table rowSub = peopleTable.GetSubTable(3, rowIndex);
+                rowSub.AddRow("mobile", "232-323-3232");
+                rowSub.AddRow("work", "434-434-4343");
+            }
             //if memory is a concern, Table support the disposable interface, so You can force C# to deallocate them when they go out of scope
             //this could be important as the tables also take up c++ resources
             using (
@@ -2482,7 +2483,7 @@ Table Name  : same names, empty names, mixed types
                 )
             {
 
-                rowIndex = peopleTable.AddRow("John", 20, true, null); //the null is a subtable we haven't filled in yet
+                long rowIndex = peopleTable.AddRow("John", 20, true, null); //the null is a subtable we haven't filled in yet
                 using (Table rowSub2 = peopleTable2.GetSubTable(3, rowIndex))
                 {
                     rowSub2.AddRow("mobile", "232-323-3232");
@@ -2492,11 +2493,11 @@ Table Name  : same names, empty names, mixed types
 
             //You can also add data to the table field by field:
 
-            var rowindex = peopleTable.AddEmptyRow(1);
-            peopleTable.SetString(0,rowindex,"John");
-            peopleTable.SetLong(1, rowindex, 20);
-            peopleTable.SetBoolean(2,rowindex,true);
-            var subtable = peopleTable.GetSubTable(3, rowindex); //return a subtalbe for column 3
+            long rowindex2 = peopleTable.AddEmptyRow(1);
+            peopleTable.SetString(0, rowindex2, "John");
+            peopleTable.SetLong(1, rowindex2, 20);
+            peopleTable.SetBoolean(2, rowindex2, true);
+            var subtable = peopleTable.GetSubTable(3, rowindex2); //return a subtalbe for column 3
             subtable.SetString(0, 0, "mobile");
             subtable.SetString(1, 0, "232-323-3232");
             subtable.SetString(0, 1, "work");
@@ -2508,13 +2509,13 @@ Table Name  : same names, empty names, mixed types
             peopleTable.AddRowAt
                 (2, "John", 20, null);
             //first parameter specifies the row number, the null is the subtable
-            rowSub=peopleTable.GetSubTable(3, 2);
-            rowSub.AddRow("mobile", "232-323-3232");
-            rowSub.AddRow("work", "434-434-4343");
+            Table rowSub3 = peopleTable.GetSubTable(3, 2);
+            rowSub3.AddRow("mobile", "232-323-3232");
+            rowSub3.AddRow("work", "434-434-4343");
 
             //Finally subtables can be specified inside the parameter list like this
 
-            peopleTable.AddRow("John", 20,true,
+            peopleTable.AddRow("John", 20, true,
                  new object[]
                      {
                          new object[] {"work", "232-323-3232"},
@@ -2529,19 +2530,19 @@ Table Name  : same names, empty names, mixed types
                         new object[] {"work", "232-323-3232"},
                         new object[] {"home", "434-434-4343"}
                     };
-            peopleTable.AddRow("John", 20,true,sub);
+            peopleTable.AddRow("John", 20, true, sub);
 
             long rows = peopleTable.Size;//get the number of rows in a table
             bool isempty = peopleTable.IsEmpty;//is the table empty?
 
             //working with individual rows
-            
+
             //getting values (untyped)
             String n = peopleTable[5].GetString("Name");//You can specify the name of the column. It will be looked up at runtime so not so fast as the above
             long a = peopleTable[5].GetLong("Age");//returns the value of the long field called Age so prints 20
             Boolean b = peopleTable[5].GetBoolean("Hired");//prints true
-            Console.WriteLine(n,a,b);//writes "John20True"
-            
+            Console.WriteLine(n, a, b);//writes "John20True"
+
             //You can also do this, which is very slightly faster as no row cursor class is created , but harder to read
             b = peopleTable.GetBoolean("Hired", 5);//get the value of the boolean field Hired at column 5
 
@@ -2572,7 +2573,7 @@ Table Name  : same names, empty names, mixed types
             //You can delete a row by calling remove(rowIndex)
             peopleTable.Remove(3); //removes the 4th row in the table and moves every row index larger than 3 one down
             peopleTable[3].Remove();//this does the same
-            
+
             Row r = peopleTable[3];//another way still
             r.Remove();
             //after having removed r, The row object becomes invalid and cannot be used anymore for any functions that involves row numbers
@@ -2581,10 +2582,10 @@ Table Name  : same names, empty names, mixed types
             foreach (var row in peopleTable)
             {
                 Table phones = row.GetSubTable("phones");
-                Console.WriteLine("{0} is {1} years old and has {2} phones:",row.GetString("Name"),row.GetLong("Age"),phones.Size);//writes the name of the current row
+                Console.WriteLine("{0} is {1} years old and has {2} phones:", row.GetString("Name"), row.GetLong("Age"), phones.Size);//writes the name of the current row
                 foreach (var phonerow in phones)
                 {
-                    Console.WriteLine(phonerow.GetString("desc")+": "+phonerow.GetString("number"));
+                    Console.WriteLine(phonerow.GetString("desc") + ": " + phonerow.GetString("number"));
                 }
             }
 
@@ -2598,7 +2599,7 @@ Table Name  : same names, empty names, mixed types
             }
 
             //find first will return the RowNumber of the first row that matches a search
-            long rowIndex = peopleTable.FindFirstInt("age", 20);
+            long rowIndex4 = peopleTable.FindFirstInt("age", 20);
 
             //find all will return all rows with a given value
             TableView tv1 = peopleTable.FindAllInt("Age", 20); //will set tableview to point to all rows where the column age has value 20
