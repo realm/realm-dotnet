@@ -1,3 +1,46 @@
+
+unit test marshalling:
+create a function that at runtime checks that the size of c++ types matches the size of the C# types we match up the c++ types with.
+For instance, the c++ function would return the size of time_t, and c# would then compare to the size of long (which is the type that c# matches up with .time_t). Add a unit test that calls this function
+(1 hour. perhaps extra time for debugging)
+
+unit test marshalling:
+create a function that at runtime round-trips the types we use in marshalling with some edge cases to ensure that the p/invoke on the current platform
+works as we expect. That is... 
+1) function that return edge cases of values, that originate at the c++ end
+2) call with values from C#, validated at the c++ end
+3) round-trip of values sent from c# and received again
+(3-4 hours)
+
+
+
+Design (naming and operator overload) desicion
+is table similar to an array?
+is it similar to an ArrayList?
+is it similar an List<T>?   (where T is either a RowColumn or a typed something derived from RowColumn)
+
+ArrayList 
+- indexed by number
+- each element can be of any type
+- if the elements implement compareto, arraylist can sort itself
+- grows when more is added
+
+List<T>
+- type safe for type T, that is, each instance of list<T> only takes the T type
+- if we want to use this, we should emulate a list<T> where <T> is Row
+
+- we can also introduce our own type, Table that implements iterator and quacks a bit like an arraylist
+
+Anyway - - 
+
+naming - name table etc. methods after this template :
+1) if the functionality exists in ArrayList, use that name
+2) if not, then use the tightdb c++ naming
+
+
+
+
+
 update github with project files
 (1 hour as project setup now seem to be quite stable)
 

@@ -29,6 +29,11 @@ extern "C" {
 }
 
 
+//maybe this should be a macro or an inline function. Maybe the compiler inlines it automatically
+bool size_t_to_bool(size_t value) 
+{
+    return value==1;//here i assume 1 and size_t can be compared in a meaningfull way. C# sends a size_t = 1 when true,and =0 when false
+}
 
 	
 
@@ -102,6 +107,16 @@ TIGHTDB_C_CS_API void unbind_table_ref(tightdb::Table* table_ptr)
 	LangBindHelper::unbind_table_ref(table_ptr);
 }
 
+TIGHTDB_C_CS_API void table_remove_row(tightdb::Table* table_ptr, size_t row_ndx)
+{
+    table_ptr->remove(row_ndx);
+}
+
+TIGHTDB_C_CS_API void tableView_remove_row(tightdb::TableView* tableView_ptr, size_t row_ndx)
+{
+    tableView_ptr->remove(row_ndx);
+}
+
 
 TIGHTDB_C_CS_API size_t table_add_column(tightdb::Table* table_ptr,size_t type, const char* name)
 {
@@ -130,13 +145,13 @@ TIGHTDB_C_CS_API Spec* table_get_spec(Table* table_ptr)
 
 
 //    DataType    get_column_type(size_t column_ndx) const TIGHTDB_NOEXCEPT;
-TIGHTDB_C_CS_API  DataType table_get_column_type(Table* table_ptr, const size_t column_ndx)
+TIGHTDB_C_CS_API  size_t table_get_column_type(Table* table_ptr, const size_t column_ndx)
 {
 	return table_ptr->get_column_type(column_ndx);
 }
 
 
-TIGHTDB_C_CS_API  tightdb::DataType tableView_get_column_type(tightdb::TableView* tableView_ptr, const size_t column_ndx)
+TIGHTDB_C_CS_API  size_t tableView_get_column_type(tightdb::TableView* tableView_ptr, const size_t column_ndx)
 {
 	return tableView_ptr->get_column_type(column_ndx);
 }
@@ -147,7 +162,7 @@ TIGHTDB_C_CS_API  tightdb::DataType tableView_get_column_type(tightdb::TableView
 
 
 //    DataType    get_column_type(size_t column_ndx) const TIGHTDB_NOEXCEPT;
-TIGHTDB_C_CS_API  DataType table_get_mixed_type(Table* table_ptr, const size_t column_ndx,const size_t row_ndx)
+TIGHTDB_C_CS_API  size_t table_get_mixed_type(Table* table_ptr, const size_t column_ndx,const size_t row_ndx)
 {
     return table_ptr->get_mixed_type(column_ndx,row_ndx);
 }
@@ -256,6 +271,20 @@ TIGHTDB_C_CS_API size_t table_get_column_name(Table* table_ptr,size_t column_ndx
 	return BSD_strlcpy(colname,bufsize, cn);
 }
 
+//todo:Csharp will currently treat the returned data as ansi with the current codepage - this will be fixed at the same time as the new tightdb strings are released,
+//as the conversion from utc-8 to utc-16 will be done on the c++ side
+TIGHTDB_C_CS_API size_t table_get_string(Table* table_ptr, size_t column_ndx, size_t row_ndx, char * datatochsarp, size_t bufsize)
+{
+    const char* fielddata=table_ptr->get_string(column_ndx, row_ndx);
+    return BSD_strlcpy(datatochsarp,bufsize,fielddata);
+}
+
+TIGHTDB_C_CS_API size_t tableview_get_string(TableView* tableview_ptr, size_t column_ndx, size_t row_ndx, char * datatochsarp, size_t bufsize)
+{
+    const char* fielddata=tableview_ptr->get_string(column_ndx, row_ndx);
+    return BSD_strlcpy(datatochsarp,bufsize,fielddata);
+}
+
 TIGHTDB_C_CS_API size_t tableView_get_column_name(TableView* tableView_ptr,size_t column_ndx,char * colname, size_t bufsize)
 {
 	const char* cn= tableView_ptr->get_column_name(column_ndx);
@@ -316,7 +345,6 @@ TIGHTDB_C_CS_API size_t spec_get_column_count(Spec* spec_ptr)
 }
 
 
-
 TIGHTDB_C_CS_API void table_insert_int(Table* table_ptr, size_t column_ndx, size_t row_ndx, int64_t value)
 {
     table_ptr->insert_int(column_ndx,row_ndx,value);
@@ -338,10 +366,37 @@ TIGHTDB_C_CS_API void table_set_mixed_int(Table*  table_ptr, size_t column_ndx, 
     table_ptr->set_mixed(column_ndx,row_ndx,value);
 }
 
+TIGHTDB_C_CS_API void tableView_set_mixed_float(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx, float value)
+{
+    tableView_ptr->set_mixed(column_ndx,row_ndx,value);
+}
+
+
+TIGHTDB_C_CS_API void table_set_mixed_float(Table*  table_ptr, size_t column_ndx, size_t row_ndx, float value)
+{
+    table_ptr->set_mixed(column_ndx,row_ndx,value);
+}
+
 
 TIGHTDB_C_CS_API void tableView_set_mixed_int(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx, int64_t value)
 {
     tableView_ptr->set_mixed(column_ndx,row_ndx,value);
+}
+
+//todo:careful unit test that ensures that the stack size matches up on 64 and 32 bit
+//the time_t will be marshalled from C# as a 64 bit integer. On the few platforms that I know of, time_t does NOT follow size_t when 32bit.
+//if we stumble upon a platform that stores time_t in a 32 bit value, we might have to have a function that returns the size of time_t
+TIGHTDB_C_CS_API void tableView_set_mixed_time(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx, time_t value)
+{
+    tableView_ptr->set_mixed(column_ndx,row_ndx,value);
+}
+
+//todo:careful unit test that ensures that the stack size matches up on 64 and 32 bit
+//the time_t will be marshalled from C# as a 64 bit integer. On the few platforms that I know of, time_t does NOT follow size_t when 32bit.
+//if we stumble upon a platform that stores time_t in a 32 bit value, we might have to have a function that returns the size of time_t
+TIGHTDB_C_CS_API void table_set_mixed_time(Table*  table_ptr, size_t column_ndx, size_t row_ndx, time_t value)
+{
+    table_ptr->set_mixed(column_ndx,row_ndx,value);
 }
 
 
@@ -369,6 +424,12 @@ TIGHTDB_C_CS_API tightdb::TableView* table_find_all_int(Table * table_ptr , size
     return new TableView(table_ptr->find_all_int(column_ndx,value));            
 }
 
+//convert from columnName to columnIndex returns -1 if the string is not a column name
+//assuming that the get_table() does not return anything that must be deleted
+TIGHTDB_C_CS_API size_t query_get_column_index(tightdb::Query* query_ptr,char *  column_name)
+{
+    return query_ptr->get_table()->get_column_index(column_name);
+}
 
 
 //    TableView      find_all(size_t start=0, size_t end=size_t(-1), size_t limit=size_t(-1));
@@ -383,6 +444,13 @@ TIGHTDB_C_CS_API Query* table_where(Table * table_ptr)
     return new Query(table_ptr->where());            
 }
 
+//query_bool_equal64(IntPtr queryPtr, IntPtr columnIndex,IntPtr value);
+
+//todo:unit test
+TIGHTDB_C_CS_API Query* query_bool_equal(Query * query_ptr, size_t columnIndex, size_t value)
+{    
+    return &(query_ptr->equal(columnIndex,size_t_to_bool(value)));//is this okay? will I get the address of a Query object that i can call in another pinvoke?
+}
 
 TIGHTDB_C_CS_API void tableview_delete(TableView * tableview_ptr )
 {     std::cerr<<"before delete tableview_ptr \n";
@@ -422,10 +490,11 @@ TIGHTDB_C_CS_API size_t tableView_get_bool(TableView* tableView_ptr, size_t colu
     return 0;//here I assume the compier will convert 1 and 0 to the correct size_t bitsizes
 }
 
+
 //call with false=0  true=1 we use a size_t as it is likely the fastest type to return
 TIGHTDB_C_CS_API void tableView_set_bool(TableView* tableView_ptr, size_t column_ndx, size_t row_ndx,size_t value)
-{    bool b =(value==1);//here i assume 1 and size_t can be compared in a meaningfull way
-     tableView_ptr->set_bool(column_ndx,row_ndx,b);     
+{    
+     tableView_ptr->set_bool(column_ndx,row_ndx,size_t_to_bool(value));     
 }
 
 
@@ -439,8 +508,8 @@ TIGHTDB_C_CS_API size_t table_get_bool(Table* table_ptr, size_t column_ndx, size
 
 //call with false=0  true=1 we use a size_t as it is likely the fastest type to return
 TIGHTDB_C_CS_API void table_set_bool(Table* table_ptr, size_t column_ndx, size_t row_ndx,size_t value)
-{    bool b =(value==1);
-     table_ptr->set_bool(column_ndx,row_ndx,b);     
+{    
+     table_ptr->set_bool(column_ndx,row_ndx,size_t_to_bool(value));     
 }
 
 
@@ -493,6 +562,144 @@ TIGHTDB_C_CS_API size_t tableview_size(TableView* tableview_ptr)
 {
     return tableview_ptr->size();
 }
+
+
+//these functions are used by unit tests and initialization to ensure that the current p/invoke layer is working as expected.
+//what we check is : 
+//1) that stack size matches for all types used in the p/invoke layer
+//2) that all logical values are translated correctly C# to c++
+//3) that all logical values are translated correctly c++ to c#
+//4) that values send by c# to c++ can be returned again by c++ and not change
+//These tests should report if there is a problem with a new c++ compiler, a new hardware platform , a new C# compiler, a new .net compatible platform, a new marshalling framework etc.
+//for instance the tests would reveal if a c++ binding was compiled with  _USE_32BIT_TIME_T which we would not support, as we expect time_t to always be 64bit size
+
+
+//C# makes some assumptions reg. the size of a size_t, This call relies on the int32_t type being defined, if it is not, at least we get a compile time error
+//it is assumed that sizeof(size_t) will not return a number larger than 2^32 (in fact, 4 or 8 is expected,but one day we might see 12 or 16, who knows)
+//int32_t is mentioned here http://en.cppreference.com/w/cpp/types/integer 
+TIGHTDB_C_CS_API int32_t test_sizeofsize_t()
+{
+    int32_t sizeofsize_t;
+    sizeofsize_t = sizeof(size_t);//i hope the compiles manages to stuff the 64 bit size_t into the 32 bit int32_t when we are on a 64 bit platform
+    return sizeofsize_t;
+}
+
+//this is defined to be always 4 bytes, so it probably will be
+TIGHTDB_C_CS_API size_t test_sizeofint32_t()
+{
+    return sizeof(int32_t);
+}
+
+//defined to follow size of size_t so probably always will C# will simply check that sizeof(size_t) matches sizeof(Table*)
+TIGHTDB_C_CS_API size_t test_sizeoftablepointer()
+{
+    return sizeof(Table*);
+}
+
+//should be defined by size_t so will return 4 or 8 unless something is really strange C# will test in the same way as with Table*
+TIGHTDB_C_CS_API size_t test_sizeofcharptr()
+{
+    return sizeof(char *);
+}
+
+//should be 64 bits always
+TIGHTDB_C_CS_API size_t test_sizeofint64_t()
+{
+    return sizeof(int64_t);
+}
+
+//return the size of a float. Used by the C# binding unit test that ensures that at runtime, the float size we expect is also the one c++ sends
+TIGHTDB_C_CS_API size_t test_sizeoffloat()
+{
+    return sizeof(float);
+}
+
+//return the size of time_t. C# expects this to be 64 bits always, but it might be 32 bit on some compilers, a C# unit test will discover this by calling this function
+//and getting 4 instead of 8
+TIGHTDB_C_CS_API size_t test_sizeoftime_t()
+{
+    return sizeof(time_t);
+}
+
+//this test ensurese that parametres are put on the stack, and read from the stack in the same sequence
+//expects the caller to call with parametres valued (1,2,3,4,5)
+//never returns 0
+//returns 1 if everything is okay, otherwise returns 1+the (1-based) position of the c++ parameter that contained an unexpected value, plus 10* its value
+//so if parameter1 (expected to contain 1) contained 0, 1+1+0*10 is returned
+//and if the sequence is not as expected, reveals what parameter had an unexpected value, and what that value was
+TIGHTDB_C_CS_API size_t test_get_five_parametres(size_t input1,size_t input2,size_t input3, size_t input4, size_t input5)
+{
+    if(input1!=1)
+        return 2+input1*10;
+    if(input2!=2)
+        return 2+input2*10;
+    if(input3!=3)
+        return 3+input3*10;
+    if(input4!=4)
+        return 4+input4*10;
+    if(input5!=5)
+        return 5+input5*10;    
+    return 1;
+}
+
+
+
+//the following tests ensures that the C# types and the mapped c++ types cover the exact same range
+TIGHTDB_C_CS_API size_t test_size_t_max()
+{
+    return std::numeric_limits<size_t>::max();
+}
+
+TIGHTDB_C_CS_API size_t test_size_t_min()
+{
+    return std::numeric_limits<size_t>::min();
+}
+
+//used to test that values can round-trip without being changed
+TIGHTDB_C_CS_API size_t test_return_size_t(size_t input)
+{
+    return input;
+}
+
+
+
+//the following tests ensures that the C# types and the mapped c++ types cover the exact same range
+TIGHTDB_C_CS_API size_t test_int64_t_max()
+{
+    return std::numeric_limits<int64_t>::max();
+}
+
+TIGHTDB_C_CS_API size_t test_int64_t_min()
+{
+    return std::numeric_limits<int64_t>::min();
+}
+
+//used to test that values can round-trip without being changed
+TIGHTDB_C_CS_API size_t test_return_int64_t(size_t input)
+{
+    return input;
+}
+
+
+//the following tests ensures that the C# types and the mapped c++ types cover the exact same range
+TIGHTDB_C_CS_API size_t test_float_max()
+{
+    return std::numeric_limits<float>::max();
+}
+
+TIGHTDB_C_CS_API size_t test_float_min()
+{
+    return std::numeric_limits<float>::min();
+}
+
+//used to test that values can round-trip without being changed
+TIGHTDB_C_CS_API size_t test_return_float(float input)
+{
+    return input;
+}
+
+
+
 
 
 #ifdef __cplusplus

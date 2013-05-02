@@ -11,14 +11,21 @@ namespace TightDbCSharp
     {
         internal abstract long GetSize();
         internal abstract long GetColumnCount();
-        public abstract String GetColumnName(long columnIndex);
+        internal abstract String GetColumnNameNoCheck(long columnIndex);
+        internal abstract void SetColumnNameNoCheck(long columnIndex, string columnName);//change the column name to columnName at the column at index columnIndex
         internal abstract Spec GetSpec();
-        public abstract DataType ColumnType(long columnIndex);
+        internal abstract DataType ColumnTypeNoCheck(long columnIndex);
         internal abstract long GetLongNoCheck(long columnIndex,long rowIndex);//does not validate parametres or types
         internal abstract void SetLongNoCheck(long columnIndex, long rowIndex, long value);//does not validate parametres or types
         internal abstract DataType GetMixedTypeNoCheck(long columnIndex, long rowIndex);
         internal abstract long GetMixedLongNoCheck(long columnIndex, long rowIndex);
         internal abstract void SetMixedLongNoCheck(long columnIndex, long rowIndex, long value);
+        internal abstract void SetMixedFloatNoCheck(long columnIndex, long rowIndex, float value);
+        internal abstract void SetFloatNoCheck(long columnIndex, long rowIndex, float value);
+        internal abstract void SetMixedDoubleNoCheck(long columnIndex, long rowIndex, double value);
+        internal abstract void SetDoubleNoCheck(long columnIndex, long rowIndex, double value);
+        internal abstract void SetMixedDateTimeNoCheck(long columnIndex, long rowIndex, DateTime value);
+        internal abstract void SetDateNoCheck(long columnIndex, long rowIndex, DateTime value);
         internal abstract Table GetMixedSubTableNoCheck(long columnIndex, long rowIndex);
         internal abstract void SetMixedSubtableNoCheck(long columnIndex, long rowIndex, Table source);
         internal abstract void SetMixedEmptySubtableNoCheck(long columnIndex, long rowIndex);
@@ -28,6 +35,10 @@ namespace TightDbCSharp
         internal abstract void SetBooleanNoCheck(long columnIndex, long rowIndex,Boolean value);
         internal abstract String GetStringNoCheck(long columnIndex, long rowIndex);
         public abstract long GetColumnIndex(string name);
+        internal abstract void RemoveNoCheck(long rowIndex);//removes the row at rowIndex, all rows after that have their index reduced by 1
+        //all existing and any new row and rowcolumn classes will point to the new contents of the indicies.
+
+
         //this could also be implemented by calling c++ but the time difference is microscopic
         public Boolean IsEmpty
         {
@@ -38,6 +49,7 @@ namespace TightDbCSharp
         {
             get { return GetSize(); }
         }
+
 
         //the following code enables TableOrView to be enumerated, and makes Row the type You get back from an enummeration
         public IEnumerator<Row> GetEnumerator() { return new Enumerator(this); }
@@ -90,6 +102,14 @@ namespace TightDbCSharp
             }
         }
 
+
+
+        public DataType ColumnType(long columnIndex)
+        {
+            ValidateColumnIndex(columnIndex);
+            return ColumnTypeNoCheck(columnIndex);
+        }     
+
         //most expensive subtable validation , and most expensinve mixed validation so it has its own method
         public void ValidateColumnTypeMixedSubTable(long columnIndex, long rowIndex)
         {            
@@ -98,6 +118,13 @@ namespace TightDbCSharp
             {
                 throw new ArgumentOutOfRangeException("columnIndex", string.Format(CultureInfo.InvariantCulture, "Attempting to access subtable in mixed, but the datatype in the referenced R:{0},C:{1} mixed is of type {2}", columnIndex, rowIndex, GetMixedTypeNoCheck(columnIndex, rowIndex)));
             }
+        }
+
+        //used by tablerow where we know row and column index are valid,but not if the user calls getsubtable on a column that does not have subtables
+        public Table GetSubTableCheckType(long columnIndex, long rowIndex)
+        {
+            ValidateColumnTypeSubTable(columnIndex);
+            return GetSubTableNoCheck(columnIndex, rowIndex);
         }
 
         public Table GetSubTable(long columnIndex, long rowIndex)
@@ -196,7 +223,7 @@ namespace TightDbCSharp
         //the parameter is the column type that was used on access, and it was not the correct one
         internal string GetColumnTypeErrorString(long columnIndex, DataType columnType)
         {
-            return String.Format(CultureInfo.InvariantCulture, "column:{0} invalid data access. Real column DataType:{1} Accessed as {2}", columnIndex, ColumnType(columnIndex), columnType);
+            return String.Format(CultureInfo.InvariantCulture, "column:{0} invalid data access. Real column DataType:{1} Accessed as {2}", columnIndex, ColumnTypeNoCheck(columnIndex), columnType);
         }
 
 
@@ -204,7 +231,7 @@ namespace TightDbCSharp
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "DataType"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "GetLong")]
         internal void ValidateColumnTypeInt(long columnIndex)
         {
-            if (ColumnType(columnIndex) != DataType.Int)
+            if (ColumnTypeNoCheck(columnIndex) != DataType.Int)
             {
                 throw new TableException(GetColumnTypeErrorString(columnIndex, DataType.Int));
             }
@@ -214,7 +241,7 @@ namespace TightDbCSharp
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "DataType"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "GetLong")]
         internal void ValidateColumnTypeString(long columnIndex)
         {
-            if (ColumnType(columnIndex) != DataType.String)
+            if (ColumnTypeNoCheck(columnIndex) != DataType.String)
             {
                 throw new TableException(GetColumnTypeErrorString(columnIndex, DataType.String));
             }
@@ -224,16 +251,16 @@ namespace TightDbCSharp
         //todo:unit test
         internal void ValidateColumnTypeMixed(long columnIndex)
         {
-            if (ColumnType(columnIndex) != DataType.Mixed)
+            if (ColumnTypeNoCheck(columnIndex) != DataType.Mixed)
             {
-                throw new TableException(GetColumnTypeErrorString(columnIndex, DataType.Mixed));
+                throw new ArgumentOutOfRangeException("columnIndex",GetColumnTypeErrorString(columnIndex, DataType.Mixed));
             }
         }
 
         //todo:unit test
         internal void ValidateColumnTypeBool(long columnIndex)
         {
-            if (ColumnType(columnIndex) != DataType.Bool)
+            if (ColumnTypeNoCheck(columnIndex) != DataType.Bool)
             {
                 throw new TableException(GetColumnTypeErrorString(columnIndex, DataType.Bool));
             }
@@ -242,6 +269,8 @@ namespace TightDbCSharp
 
         public void Remove(long rowIndex)
         {
+            ValidateRowIndex(rowIndex);
+            RemoveNoCheck(rowIndex);
             //todo:invalidate any iterators - or?
             throw new NotImplementedException();
         }
@@ -249,12 +278,17 @@ namespace TightDbCSharp
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "subTable"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "subtable")]
         internal void ValidateColumnTypeSubTable(long columnIndex)
         {
-            if (ColumnType(columnIndex) != DataType.Table)
+            if (ColumnTypeNoCheck(columnIndex) != DataType.Table)
             {
                 throw new TableException(GetColumnTypeErrorString(columnIndex, DataType.Table));
             }
         }
 
+        public void SetColumnName(long columnIndex, String columnName)
+        {
+            ValidateColumnIndex(columnIndex);
+            SetColumnNameNoCheck(columnIndex,columnName);
+        }
 
         public void SetLong(long columnIndex, long rowIndex, long value)
         {
@@ -318,6 +352,11 @@ namespace TightDbCSharp
             return GetStringNoCheck(columnIndex, rowIndex);
         }
 
+        public string GetColumnName(long columnIndex)
+        {
+            ValidateColumnIndex(columnIndex);
+            return GetColumnNameNoCheck(columnIndex);
+        }
 
         internal long GetLongCheckType(long columnIndex, long rowIndex)
         {

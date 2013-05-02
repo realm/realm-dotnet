@@ -13,19 +13,6 @@ namespace TightDbCSharp
     //we read data from the row. So working with typed column fields would be somewhat faster
     public class RowColumn
     {
-        //this is a test
-        [DllImport("tightdb_c_cs64", EntryPoint = "test_testacquireanddeletegroup", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void test_testacquireanddeletegroup64();
-        [DllImport("tightdb_c_cs32", EntryPoint = "test_testacquireanddeletegroup", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void test_testacquireanddeletegroup32();
-
-        public static void test_testacquireanddeletegroup()
-        {
-            if (false)
-                test_testacquireanddeletegroup64();
-            test_testacquireanddeletegroup32();
-        }
-        //end of test
         
         private Row _owner;
         public Row Owner { get { return _owner; } set { _owner = value; _columntypeloaded = false; } }
@@ -57,18 +44,30 @@ namespace TightDbCSharp
                 {
                     return _columnType;
                 }
-                return _columnType = Owner.Owner.ColumnType(ColumnIndex);                
+                return _columnType = Owner.Owner.ColumnTypeNoCheck(ColumnIndex);                
             }
         }
 
-        public DataType MixedType()
+        public string ColumnName
         {
-            return Owner.MixedTypeCheckType(ColumnIndex);
+            get { return Owner.GetColumnNameNoCheck(ColumnIndex); }
+            set { Owner.SetColumnNameNoCheck(ColumnIndex, value); }
+        }
+
+        //mixed type will be set automatically when you write data to the mixed field
+        public DataType MixedType
+        {
+            get { return Owner.MixedTypeCheckType(ColumnIndex); }            
         }
 
         internal DataType MixedTypeNoCheck()
         {
             return Owner.GetMixedTypeNoCheck(ColumnIndex);
+        }
+
+        public Table GetSubTable()
+        {
+            return Owner.GetSubTableCheckType(ColumnIndex);//we cannot know for sure if col,row is of the subtable type
         }
 
         //if it is a mixed we return mixed! -not the type of the field

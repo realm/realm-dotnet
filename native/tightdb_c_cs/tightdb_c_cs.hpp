@@ -28,13 +28,8 @@ extern "C" {
 
 
 //Table
-TIGHTDB_C_CS_API  tightdb::DataType tableView_get_column_type(tightdb::TableView* tableView_ptr, const size_t column_ndx);
 
 TIGHTDB_C_CS_API int64_t tableView_get_int(tightdb::TableView* tableView_ptr, size_t column_ndx, size_t row_ndx);
-
-TIGHTDB_C_CS_API  tightdb::DataType table_get_column_type(tightdb::Table* table_ptr, const size_t column_ndx);
-
-TIGHTDB_C_CS_API  tightdb::DataType table_get_mixed_type(tightdb::Table* table_ptr, const size_t column_ndx,const size_t row_ndx);
 
 TIGHTDB_C_CS_API tightdb::Table* new_table();
 
@@ -54,12 +49,15 @@ TIGHTDB_C_CS_API size_t table_get_column_name(tightdb::Table* table_ptr,size_t c
 TIGHTDB_C_CS_API void table_insert_int(tightdb::Table* table_ptr, size_t column_ndx, size_t row_ndx, int64_t value);
 
 TIGHTDB_C_CS_API size_t table_add_empty_row(tightdb::Table* table_ptr, size_t num_rows);
-         
+
+TIGHTDB_C_CS_API void table_remove_row(tightdb::Table* table_ptr, size_t row_ndx);
+
 TIGHTDB_C_CS_API tightdb::Spec* table_get_spec(tightdb::Table* table_ptr);
 
 //    int64_t     get_int(size_t column_ndx, size_t row_ndx) const TIGHTDB_NOEXCEPT;
 
 TIGHTDB_C_CS_API int64_t table_get_int(tightdb::Table* table_ptr, size_t column_ndx, size_t row_ndx);
+
 
 TIGHTDB_C_CS_API float table_get_float(tightdb::Table* table_ptr, size_t column_ndx, size_t row_ndx);
 
@@ -82,8 +80,7 @@ TIGHTDB_C_CS_API int64_t table_get_mixed_int(tightdb::Table*  table_ptr, size_t 
 
 TIGHTDB_C_CS_API tightdb::Table* table_get_subtable(tightdb::Table* table_ptr, size_t column_ndx, size_t row_ndx);
 
-TIGHTDB_C_CS_API tightdb::TableView* table_
-    _all_int(tightdb::Table*, size_t column_ndx, int64_t value);
+TIGHTDB_C_CS_API tightdb::TableView* table_find_all_int(tightdb::Table*, size_t column_ndx, int64_t value);
 //TIGHTDB_C_CS_API DataType table_get_int(tightdb::Table* table_ptr, size_t column_ndx, size_t row_ndx);
 
 //Spec

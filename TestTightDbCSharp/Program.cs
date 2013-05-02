@@ -118,7 +118,7 @@ namespace TestTightDbCSharp
 
         //this one works. Do we have a filename/directory problem with the windows build?
         //perhaps we have a problem with locked or illegal files, what to do?
-        //todo:seems like this one works when called from vs but fails when called from the resharper unit test runner 
+        //
         //probably something wrong with the code here too then
         [Test]
         public static void CreateGroupFileNameTest()
@@ -132,7 +132,7 @@ namespace TestTightDbCSharp
     [TestFixture]
     public static class QueryTests
     {
-        //duplicated in some other tests, todo:refactor
+        
         //returns a table with row 0 having ints 0 to 999 ascending
         //row 1 having ints 0 to 99 ascendig (10 of each)
         //row 2 having ints 0 to 9 asceding (100 of each)
@@ -154,7 +154,33 @@ namespace TestTightDbCSharp
             return t;
         }
 
+    
+        [Test]
+        public static void QueryBoolEqual()
+        {
+            var t = new Table("stringfield".String(),"boolfield".Bool(),"stringfield2".String(),"boolfield2".Bool());
+            t.AddEmptyRow(5);
+            t.SetBoolean(1, 0, true);
+            t.SetBoolean(1, 1, false);
+            t.SetBoolean(1, 2, false);
+            t.SetBoolean(1, 3, true);
+            t.SetBoolean(1, 4, true);
 
+            t.SetBoolean(3, 0, true);
+            t.SetBoolean(3, 1, true);
+            t.SetBoolean(3, 2, true);
+            t.SetBoolean(3, 3, true);
+            t.SetBoolean(3, 4, true);
+
+            TableView tv = t.Where().BoolEqual("boolfield", true).FindAll(0, -1, -1);
+            Assert.AreEqual(tv.Size,3);
+            tv = t.Where().BoolEqual("boolfield", false).FindAll(0, -1, -1);
+            Assert.AreEqual(tv.Size,2);
+            tv = t.Where().BoolEqual("boolfield2", false).FindAll(0, -1, -1);
+            Assert.AreEqual(tv.Size, 0);
+            tv = t.Where().BoolEqual("boolfield2", true).FindAll(0, -1, -1);
+            Assert.AreEqual(tv.Size, 5);
+        }
 
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
@@ -163,6 +189,7 @@ namespace TestTightDbCSharp
             using (var t = GetTableWithMultipleIntegers())
             {
                 TableView tv = t.Where().FindAll(-2, 4, 100);
+                Console.WriteLine(tv.Size);
             }
         }
 
@@ -173,6 +200,7 @@ namespace TestTightDbCSharp
             using (var t = GetTableWithMultipleIntegers())
             {
                 TableView tv = t.Where().FindAll(1, -2, 100);
+                Console.WriteLine(tv.Size);
             }
         }
 
@@ -183,6 +211,7 @@ namespace TestTightDbCSharp
             using (var t = GetTableWithMultipleIntegers())
             {
                 TableView tv = t.Where().FindAll(1, 4, -2);
+                Console.WriteLine(tv.Size);
             }
         }
 
@@ -193,6 +222,7 @@ namespace TestTightDbCSharp
             using (var t = GetTableWithMultipleIntegers())
             {
                 TableView tv = t.Where().FindAll(4, 3, 100);
+                Console.WriteLine(tv.Size);
             }
         }
 
@@ -248,9 +278,6 @@ intcolumn2:0//column 2
     {
         [Test]
         //simple call just to get a tableview (and have it deallocated when it exits scope)
-        //sometimes this seems to fail for no apparent reason. write to protected memory. There could be a bug somewhere
-        //there probably IS a bug - we might have problems if the table class is GC'ed before the view class, the t class could be GC'd as soon as
-        //find all int is done with it, before tv is assigned
         public static void TableViewCreation()
         {
             using (var t = new Table("intfield".Int()))
@@ -464,6 +491,14 @@ intcolumn2:1//column 2
     [TestFixture]
     public static class TableParameterValidationTest
     {
+
+        [Test]
+        [ExpectedException("System.ArgumentOutOfRangeException")]
+        public static void TableGetMixedWithNonMixedField()
+        {
+            
+        }
+
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
         public static void TableTestEmptyTableFieldAccess()
@@ -2385,14 +2420,13 @@ Table Name  : same names, empty names, mixed types
                 foreach (RowColumn trc in tr)
                 {
                     string extracomment = "";
-                    res.Append(indent);
-                    //todo:implement GetColumnName in RowColumn to avoid the owner owner stuff on the line below
-                    string name = trc.Owner.Owner.GetColumnName(trc.ColumnIndex);
+                    res.Append(indent);                    
+                    string name = trc.ColumnName;
                     //so we can see it easily in the debugger
                     res.Append(String.Format(CultureInfo.InvariantCulture, startfield, name));
                     if (trc.ColumnType == DataType.Table)
-                    {
-                        Table sub = table.GetSubTable(trc.ColumnIndex, tr.RowIndex); //todo:implement getsubtable in trc
+                    {                        
+                        Table sub = trc.GetSubTable();
                         //size printed here as we had a problem once with size reporting 0 where it should be larger, so nothing returned from call
                         res.Append(String.Format(CultureInfo.InvariantCulture, starttable, sub.Size));
                         TableDataDumper(indent + "   ", res, sub);
@@ -2402,11 +2436,11 @@ Table Name  : same names, empty names, mixed types
                     {
                         if (trc.ColumnType == DataType.Mixed)
                         {
-                            extracomment = string.Format(CultureInfo.InvariantCulture, mixedcomment, trc.MixedType());
+                            extracomment = string.Format(CultureInfo.InvariantCulture, mixedcomment, trc.MixedType);
                             //dumping a mixed with a simple value is done by simply calling trc.value - it will return the value inside the mixed
-                            if (trc.MixedType() == DataType.Table)
+                            if (trc.MixedType == DataType.Table)
                             {
-                                Table sub = trc.Value as Table;
+                                var sub = trc.Value as Table;
                                 TableDataDumper(indent + "   ", res, sub);
                             }
                             else
@@ -2535,6 +2569,8 @@ Table Name  : same names, empty names, mixed types
             long rows = peopleTable.Size;//get the number of rows in a table
             bool isempty = peopleTable.IsEmpty;//is the table empty?
 
+            Console.WriteLine("PeopleTable has {0} rows and isempty returns{1}",rows, isempty);
+            
             //working with individual rows
 
             //getting values (untyped)
@@ -2545,6 +2581,7 @@ Table Name  : same names, empty names, mixed types
 
             //You can also do this, which is very slightly faster as no row cursor class is created , but harder to read
             b = peopleTable.GetBoolean("Hired", 5);//get the value of the boolean field Hired at column 5
+            Console.WriteLine(n, a, b);//writes "John20True"
 
             //Accessing through a Row saves validation of rowIndex when fetching data, so this is slightly faster if You are reading many columns from
             //the same row
@@ -2601,21 +2638,23 @@ Table Name  : same names, empty names, mixed types
             //find first will return the RowNumber of the first row that matches a search
             long rowIndex4 = peopleTable.FindFirstInt("age", 20);
 
+            Console.WriteLine("First row with age=20 is:{0}",rowIndex4);
             //find all will return all rows with a given value
             TableView tv1 = peopleTable.FindAllInt("Age", 20); //will set tableview to point to all rows where the column age has value 20
             //or with column index
             TableView tv2 = peopleTable.FindAllInt(1, 20); //will set tableview to point to all rows where the column age has value 20
 
+            Console.WriteLine("tv1 size {0}  tv2 size {1} These two should be the same value",tv1.Size,tv2.Size);
 
             //queries - untyped queries have the type qualified in the equals, greater, less et. methods
             //this to add a little type safety in case the user knows the types of some of the columns
             //this example will be expanded soon
-            Query qr = peopleTable.Where().BoolEquals("Hired", true);
+            Query qr = peopleTable.Where().BoolEqual("Hired", true);
             TableView tv3 = qr.FindAll(1, 10000, 50);//find all hired people amongst the first 10K records, but return only 50 at most
 
+            Console.WriteLine("findall returned {0} rows",tv3.Size);
             //serialization - to be done
             //transactions - to be done
-
         }
 
 
@@ -2623,7 +2662,6 @@ Table Name  : same names, empty names, mixed types
         static void Main(/*string[] args*/)
         {
 
-            TutorialDynamic();
             /*
              *  to debug unit tests, uncomment the test you want to debug below, and run the program
              *  remember to set a breakpoint
@@ -2631,6 +2669,7 @@ Table Name  : same names, empty names, mixed types
              *  To run the unit tests as unit tests, load the assembly in Nunit and run it from there
              *  */
 
+            QueryTests.QueryBoolEqual();
             EnvironmentTest.ShowVersionTest();
             CreateTableTest.TestTableScope();
 
@@ -2680,7 +2719,11 @@ Table Name  : same names, empty names, mixed types
             //round trip of a string with a unicode character that translates to 2 utf-16 characters,  5 utf-8 characters
                         
             Console.WriteLine("Press any key to finish test..");
-            Console.ReadKey();
+            ConsoleKeyInfo ki = Console.ReadKey();
+            if (ki.Key==ConsoleKey.T) {
+                TutorialDynamic();
+            }
+
         }
 
     }

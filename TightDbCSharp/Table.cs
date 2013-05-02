@@ -171,7 +171,12 @@ namespace TightDbCSharp
         {
             UnsafeNativeMethods.TableUnbind(this);            
         }
-        
+
+        internal override void SetColumnNameNoCheck(long columnIndex, string columnName)
+        {
+            throw new NotImplementedException();
+        }
+
         internal override Spec GetSpec()
         {
             return UnsafeNativeMethods.TableGetSpec(this); 
@@ -184,7 +189,7 @@ namespace TightDbCSharp
            UnsafeNativeMethods.TableUpdateFromSpec(this);
         }
 
-        public override DataType ColumnType(long columnIndex)
+        internal override DataType ColumnTypeNoCheck(long columnIndex)
         {
             return UnsafeNativeMethods.TableGetColumnType(this, columnIndex);
         }
@@ -205,6 +210,11 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableGetColumnIndex(this,name);
         }
 
+        internal override void RemoveNoCheck(long rowIndex)
+        {
+            UnsafeNativeMethods.TableRemove(this,rowIndex);
+        }
+
         internal override long GetColumnCount()
         {
             return UnsafeNativeMethods.TableGetColumnCount(this);
@@ -217,7 +227,7 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableAddColumn(this, type, name);
         }
 
-        public override string GetColumnName(long columnIndex)//unfortunately an int, bc tight might have been built using 32 bits
+        internal override string GetColumnNameNoCheck(long columnIndex)//unfortunately an int, bc tight might have been built using 32 bits
         {
             return UnsafeNativeMethods.TableGetColumnName(this, columnIndex);
         }
@@ -239,8 +249,42 @@ namespace TightDbCSharp
 
         internal override String GetStringNoCheck(long columnIndex, long rowIndex)
         {
-            return UnsafeNativeMethods.TableGetStringNoCheck(this, columnIndex, rowIndex);
+            return UnsafeNativeMethods.TableGetString(this, columnIndex, rowIndex);
         }
+
+
+
+
+        internal override void SetMixedFloatNoCheck(long columnIndex, long rowIndex, float value)
+        {
+            UnsafeNativeMethods.TablSetMixedFloat(this,columnIndex, rowIndex, value);
+        }
+
+        internal override void SetFloatNoCheck(long columnIndex, long rowIndex, float value)
+        {
+            UnsafeNativeMethods.TableSetFloat(this,columnIndex,rowIndex,value);
+        }
+
+        internal override void SetMixedDoubleNoCheck(long columnIndex, long rowIndex, double value)
+        {
+            UnsafeNativeMethods.TableSetMixedDouble(this,columnIndex,rowIndex,value);
+        }
+
+        internal override void SetDoubleNoCheck(long columnIndex, long rowIndex, double value)
+        {
+            UnsafeNativeMethods.TableSetDouble(this,columnIndex,rowIndex,value);
+        }
+
+        internal override void SetMixedDateTimeNoCheck(long columnIndex, long rowIndex, DateTime value)
+        {
+            UnsafeNativeMethods.TableSetMixedDate(this, columnIndex, rowIndex, value);            
+        }
+
+        internal override void SetDateNoCheck(long columnIndex, long rowIndex, DateTime value)
+        {
+            UnsafeNativeMethods.TableSetDate(this,columnIndex,rowIndex,value);
+        }
+
 
         internal override Table GetMixedSubTableNoCheck(long columnIndex, long rowIndex)
         {

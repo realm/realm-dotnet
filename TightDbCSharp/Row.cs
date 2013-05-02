@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace TightDbCSharp
 {
@@ -24,12 +25,21 @@ namespace TightDbCSharp
         //if You do a foreach on a tablerow, C# will use the for loop below to do the iteration
         public IEnumerator<RowColumn> GetEnumerator()
         {
-            for (long i = 0; i < Owner.ColumnCount; i++)
+            for (long i = 0; i < ColumnCount; i++)
             {
                 yield return new RowColumn(this, i);
             }
         }
 
+        internal DataType ColumnTypeNoCheck(long columnIndex)
+        {
+            return Owner.ColumnTypeNoCheck(columnIndex);
+        }
+
+        public long ColumnCount 
+        {
+            get { return Owner.ColumnCount; }
+        }
 
         //public object GetValue(long columnNumber)
         //{
@@ -81,6 +91,25 @@ namespace TightDbCSharp
             Owner.SetBooleanNoRowCheck(columnName,RowIndex,value);
         }
 
+        internal string GetColumnNameNoCheck(long columnIndex)
+        {
+            return Owner.GetColumnNameNoCheck(columnIndex);
+        }
+
+        internal void SetColumnNameNoCheck(long columnIndex, string columnName)
+        {
+            Owner.SetColumnNameNoCheck(columnIndex,columnName);
+        }
+
+        internal Table GetSubTableNoCheck(long columnIndex)
+        {
+            return Owner.GetSubTableNoCheck(columnIndex, RowIndex);
+        }
+
+        internal Table GetSubTableCheckType(long columnIndex)
+        {
+            return Owner.GetSubTableCheckType(columnIndex, RowIndex);
+        }
 
         public Table GetSubTable(long columnIndex)
         {
@@ -152,13 +181,103 @@ namespace TightDbCSharp
             return Owner.GetStringNoCheck(columnIndex, RowIndex);
         }
 
-        //todo:implement
-        public void SetRow(params object[] x)
+        //todo:unit test
+        public void SetRow(params object[] rowContents)
         {
-            throw new NotImplementedException();
+            if (rowContents.Length!=ColumnCount)
+                throw new ArgumentOutOfRangeException("rowContents",String.Format(CultureInfo.InvariantCulture,"SetRow called with {0} objects, but there are only {1} columns in the table",rowContents.Length,ColumnCount));
+            for (long ix = 0; ix<ColumnCount;ix++ )
+            {
+                object element = rowContents[ix];//element is parameter number ix
+                //first do a switch on directly compatible types
+                Type elementType = element.GetType();//performance hit as it is not neccessarily used, but used many blaces below
+                
+                switch (ColumnTypeNoCheck(ix))
+                {
+                    case DataType.Int:                        
+                        Owner.SetLongNoCheck(ix,RowIndex,(long)element);//this throws exceptions if called with something too weird
+                        break;
+                    case DataType.Bool:
+                        Owner.SetBooleanNoCheck(ix,RowIndex,(Boolean)element);
+                        break;
+                    case DataType.String:
+                        Owner.SetStringNoCheck(ix,RowIndex,(string)element);
+                        break;
+                    case DataType.Binary://todo:implement
+                        break;
+                    case DataType.Table://todo:test thoroughly with unit test, also with invalid data
+                        Table t = Owner.GetSubTableNoCheck(ix, RowIndex);//The type to go into a subtable has to be an array of arrays of objects
+                                                                        
+                        if (element != null)//if You specify null for a subtable we do nothing null means You intend to fill it in later
+                        {
+                            
+
+                            if (elementType != typeof (Array))
+                            {
+                                throw new ArgumentOutOfRangeException(String.Format(CultureInfo.InvariantCulture,
+                                                                                    "SetRow called with a non-array type {0} for the subtable column {1}",
+                                                                                    elementType,
+                                                                                    GetColumnNameNoCheck(ix)));
+                            }
+                            //at this point we know that element is an array of some sort, hopefully containing valid records for our subtable                                                
+                                foreach (Array arow in (Array) element)//typecast because we already ensured element is an array,and that element is not null
+                                {
+                                    t.AddRow(arow);
+                                }
+                        }
+                        break;
+                    case DataType.Mixed://Try to infer the mixed type to use from the type of the object from the user
+                        
+
+                        if (                            
+                            elementType == typeof(Byte) ||//byte Byte
+                            elementType == typeof(Int32) ||//int,int32
+                            elementType == typeof(Int64) ||//long,int64
+                            elementType == typeof(Int16) ||//int16,short
+                            elementType == typeof(SByte) ||//sbyte SByte                           
+                            elementType == typeof(UInt16) ||//ushort,uint16
+                            elementType == typeof(UInt32) ||//uint
+                            elementType == typeof(UInt64)//ulong                            
+                            )
+                        {   
+                            Owner.SetMixedLongNoCheck(ix,RowIndex,(long)element);
+                            break;
+                        }
+
+                        if (elementType == typeof(Single))//float, Single
+                        {
+                            Owner.SetMixedFloatNoCheck(ix, RowIndex, (float) element);
+                            break;
+                        }
+
+                        if (elementType == typeof(Double))
+                        {
+                            Owner.SetMixedDoubleNoCheck(ix, RowIndex, (Double) element);
+                            break;
+                        }
+
+                        if (elementType == typeof(DateTime))
+                        {
+                            Owner.SetMixedDateTimeNoCheck(ix, RowIndex, (DateTime)element);
+                        }
+                        
+                        break;
+                    case DataType.Date:
+                        Owner.SetDateNoCheck(ix, RowIndex, (DateTime)element);
+                        break;
+                    case DataType.Float:
+                        Owner.SetFloatNoCheck(ix, RowIndex, (float) element);
+                        break;
+                    case DataType.Double:
+                        Owner.SetDoubleNoCheck(ix, RowIndex, (Double) element);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException("rowContents",String.Format(CultureInfo.InvariantCulture,"An element ix:{0} of type {1} in a row sent to AddRow, is not of a supported tightdb type ",ix,elementType));
+                }
+            }            
         }
 
-        //todo:implement
+
 
         //todo:implement
         public void Remove()

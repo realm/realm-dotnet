@@ -11,6 +11,11 @@ namespace TightDbCSharp
 
         internal Table TableViewed { get; set; }//used only to make sure that a reference to the table exists until the view is disposed of
 
+        internal override void SetColumnNameNoCheck(long columnIndex, string columnName)
+        {
+            throw new NotImplementedException();
+        }
+
         internal override Spec GetSpec()
         {
             return TableViewed.Spec;
@@ -30,6 +35,43 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableViewGetColumnIndex(this,name);
         }
 
+        internal override void RemoveNoCheck(long rowIndex)
+        {
+            UnsafeNativeMethods.TableViewRemove(this, rowIndex);
+        }
+
+        internal override void SetMixedFloatNoCheck(long columnIndex, long rowIndex, float value)
+        {
+            UnsafeNativeMethods.TableViewSetMixedFloat(this,columnIndex,rowIndex,value);
+        }
+
+        internal override void SetFloatNoCheck(long columnIndex, long rowIndex, float value)
+        {
+            
+        }
+
+        internal override void SetMixedDoubleNoCheck(long columnIndex, long rowIndex, double value)
+        {
+            UnsafeNativeMethods.TableViewSetMixedDouble(this,columnIndex,rowIndex,value);
+        }
+
+        internal override void SetDoubleNoCheck(long columnIndex, long rowIndex, double value)
+        {
+            throw new NotImplementedException();
+        }
+
+        //this method takes a DateTime
+        //the value of DateTime.ToUTC will be stored in the database, as TightDB always store UTC dates
+        internal override void SetMixedDateTimeNoCheck(long columnIndex, long rowIndex, DateTime value)
+        {
+            UnsafeNativeMethods.TableViewSetMixedDate(this,columnIndex,rowIndex,value);
+        }
+
+        internal override void SetDateNoCheck(long columnIndex, long rowIndex, DateTime value)
+        {
+           UnsafeNativeMethods.TableViewSetDate(this,columnIndex,rowIndex,value);
+        }
+
         internal override Table GetMixedSubTableNoCheck(long columnIndex, long rowIndex)
         {
             return UnsafeNativeMethods.TableViewGetSubTable(this, columnIndex, rowIndex);
@@ -47,7 +89,7 @@ namespace TightDbCSharp
 
         internal override String GetStringNoCheck(long columnIndex, long rowIndex)
         {
-            return UnsafeNativeMethods.TableViewGetStringNoCheck(this, columnIndex, rowIndex);
+            return UnsafeNativeMethods.TableviewGetString(this, columnIndex, rowIndex);
         }
 
         //might be used if You want an empty subtable set up and then change its contents and layout at a later time
@@ -55,8 +97,6 @@ namespace TightDbCSharp
         {
             UnsafeNativeMethods.TableViewSetMixedEmptySubTable(this, columnIndex, rowIndex);
         }
-
-
 
         //a copy of source will be set into the field
         internal override void SetMixedSubtableNoCheck(long columnIndex, long rowIndex, Table source)
@@ -85,7 +125,7 @@ namespace TightDbCSharp
             UnsafeNativeMethods.TableViewSetLong(this, columnIndex, rowIndex, value);
         }
 
-        public override string GetColumnName(long columnIndex)//unfortunately an int, bc tight might have been built using 32 bits
+        internal override string GetColumnNameNoCheck(long columnIndex)//unfortunately an int, bc tight might have been built using 32 bits
         {
             return UnsafeNativeMethods.TableViewGetColumnName(this, columnIndex);
         }
@@ -96,10 +136,9 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableViewGetColumnCount(this);
         }
 
-        public override DataType ColumnType(long columnIndex)
+        internal override DataType ColumnTypeNoCheck(long columnIndex)
         {
-            return UnsafeNativeMethods.
-                TableViewGetColumnType(this, columnIndex);
+            return UnsafeNativeMethods.TableViewGetColumnType(this, columnIndex);
         }
 
         public override string ObjectIdentification()

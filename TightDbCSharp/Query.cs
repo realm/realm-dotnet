@@ -29,7 +29,7 @@ namespace TightDbCSharp
                                                               end, limit, errmsg));
                 };
             
-            //todo:unit test these 3
+           
             if (start < -1)
             {
                 thrower("start", "Start must be larger than -2");
@@ -52,10 +52,16 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.QueryFindAll(this,start, end, limit);
         }
 
-        public Query BoolEquals(string columnName, Boolean value)
+        //if the column does not exist, an exception is thrown
+        public long GetColumnIndex(string columnName)
         {
-            //todo:implement
-            throw new NotImplementedException();
+            return UnsafeNativeMethods.QueryGetColumnIndex(this,columnName);
+        }
+
+        //todo:hit with unit test
+        public Query BoolEqual(string columnName, Boolean value)
+        {
+            return UnsafeNativeMethods.QueryBoolEqual(this,GetColumnIndex(columnName), value);                                   
         }
 
         public override string ObjectIdentification()
