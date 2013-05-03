@@ -1571,15 +1571,15 @@ enum DataType {
 
         //todo:hit with unit test
         [DllImport("tightdb_c_cs64", EntryPoint = "query_bool_equal", CallingConvention = CallingConvention.Cdecl)]
-        private static extern Query query_bool_equal64(IntPtr queryPtr, IntPtr columnIndex,IntPtr value);
+        private static extern IntPtr query_bool_equal64(IntPtr queryPtr, IntPtr columnIndex,IntPtr value);
         [DllImport("tightdb_c_cs32", EntryPoint = "query_bool_equal", CallingConvention = CallingConvention.Cdecl)]
-        private static extern Query query_bool_equal32(IntPtr queryPtr, IntPtr columnIndex, IntPtr value);
+        private static extern IntPtr query_bool_equal32(IntPtr queryPtr, IntPtr columnIndex, IntPtr value);
         public static Query QueryBoolEqual(Query q,long columnIndex, bool value)
         {
             var ipValue = BoolToIntPtr(value);
             if (Is64Bit)
-                return query_bool_equal64(q.Handle, (IntPtr)columnIndex, ipValue);
-            return query_bool_equal32(q.Handle, (IntPtr)columnIndex, ipValue);
+                return new Query(query_bool_equal64(q.Handle, (IntPtr)columnIndex, ipValue),false);//assuming that the query& classes in query.hpp should not be deleted after use
+            return new Query(query_bool_equal32(q.Handle, (IntPtr)columnIndex, ipValue),false);    //todo:ask kristian if this is the way to do it
         }
 
 
@@ -1588,9 +1588,9 @@ enum DataType {
 
         //todo:hit with unit test
         [DllImport("tightdb_c_cs64", EntryPoint = "tableview_set_mixed_double", CallingConvention = CallingConvention.Cdecl)]
-        private static extern Query tableview_set_mixed_double64(IntPtr tableViewPtr, IntPtr columnIndex, IntPtr rowIndex, double value);
+        private static extern void tableview_set_mixed_double64(IntPtr tableViewPtr, IntPtr columnIndex, IntPtr rowIndex, double value);
         [DllImport("tightdb_c_cs32", EntryPoint = "tableview_set_mixed_double", CallingConvention = CallingConvention.Cdecl)]
-        private static extern Query tableview_set_mixed_double32(IntPtr tableViewPtr, IntPtr columnIndex, IntPtr rowIndex, double value);
+        private static extern void tableview_set_mixed_double32(IntPtr tableViewPtr, IntPtr columnIndex, IntPtr rowIndex, double value);
 
         public static void TableViewSetMixedDouble(TableView tableView, long columnIndex, long rowIndex, double value)
         {
@@ -1601,9 +1601,9 @@ enum DataType {
 
         //todo:hit with unit test
         [DllImport("tightdb_c_cs64", EntryPoint = "tableview_set_double", CallingConvention = CallingConvention.Cdecl)]
-        private static extern Query tableview_set_double64(IntPtr tableViewPtr, IntPtr columnIndex, IntPtr rowIndex, double value);
+        private static extern void tableview_set_double64(IntPtr tableViewPtr, IntPtr columnIndex, IntPtr rowIndex, double value);
         [DllImport("tightdb_c_cs32", EntryPoint = "tableview_set_double", CallingConvention = CallingConvention.Cdecl)]
-        private static extern Query tableview_set_double32(IntPtr tableViewPtr, IntPtr columnIndex, IntPtr rowIndex, double value);
+        private static extern void tableview_set_double32(IntPtr tableViewPtr, IntPtr columnIndex, IntPtr rowIndex, double value);
 
         public static void TableViewSetDouble(TableView tableView, long columnIndex, long rowIndex, double value)
         {
@@ -1615,9 +1615,9 @@ enum DataType {
 
         //todo:hit with unit test
         [DllImport("tightdb_c_cs64", EntryPoint = "table_set_mixed_double", CallingConvention = CallingConvention.Cdecl)]
-        private static extern Query table_set_mixed_double64(IntPtr tablePtr, IntPtr columnIndex, IntPtr rowIndex, double value);
+        private static extern void table_set_mixed_double64(IntPtr tablePtr, IntPtr columnIndex, IntPtr rowIndex, double value);
         [DllImport("tightdb_c_cs32", EntryPoint = "table_set_mixed_double", CallingConvention = CallingConvention.Cdecl)]
-        private static extern Query table_set_mixed_double32(IntPtr tablePtr, IntPtr columnIndex, IntPtr rowIndex, double value);
+        private static extern void table_set_mixed_double32(IntPtr tablePtr, IntPtr columnIndex, IntPtr rowIndex, double value);
 
         public static void TableSetMixedDouble(Table table, long columnIndex, long rowIndex, double value)
         {
@@ -1628,9 +1628,9 @@ enum DataType {
 
         //todo:hit with unit test
         [DllImport("tightdb_c_cs64", EntryPoint = "table_set_double", CallingConvention = CallingConvention.Cdecl)]
-        private static extern Query table_set_double64(IntPtr tablePtr, IntPtr columnIndex, IntPtr rowIndex, double value);
+        private static extern void table_set_double64(IntPtr tablePtr, IntPtr columnIndex, IntPtr rowIndex, double value);
         [DllImport("tightdb_c_cs32", EntryPoint = "table_set_double", CallingConvention = CallingConvention.Cdecl)]
-        private static extern Query table_set_double32(IntPtr tablePtr, IntPtr columnIndex, IntPtr rowIndex, double value);
+        private static extern void table_set_double32(IntPtr tablePtr, IntPtr columnIndex, IntPtr rowIndex, double value);
 
         public static void TableSetDouble(Table table, long columnIndex, long rowIndex, double value)
         {
@@ -1647,9 +1647,9 @@ enum DataType {
 
         //todo:hit with unit test
         [DllImport("tightdb_c_cs64", EntryPoint = "tableview_set_mixed_float", CallingConvention = CallingConvention.Cdecl)]
-        private static extern Query tableview_set_mixed_float64(IntPtr tablePtr, IntPtr columnIndex, IntPtr rowIndex, float value);
+        private static extern void tableview_set_mixed_float64(IntPtr tablePtr, IntPtr columnIndex, IntPtr rowIndex, float value);
         [DllImport("tightdb_c_cs32", EntryPoint = "tableview_set_mixed_float", CallingConvention = CallingConvention.Cdecl)]
-        private static extern Query tableview_set_mixed_float32(IntPtr tablePtr, IntPtr columnIndex, IntPtr rowIndex, float value);
+        private static extern void tableview_set_mixed_float32(IntPtr tablePtr, IntPtr columnIndex, IntPtr rowIndex, float value);
 
         public static void TableViewSetMixedFloat(TableView tableView, long columnIndex, long rowIndex, float value)
         {

@@ -496,7 +496,15 @@ intcolumn2:1//column 2
         [ExpectedException("System.ArgumentOutOfRangeException")]
         public static void TableGetMixedWithNonMixedField()
         {
-            
+            using (var t= new Table(new IntField("int1"),new MixedField("mixed1")))
+            {
+                t.AddEmptyRow(1);
+                t.SetLong(0,0,42);
+                t.SetMixedLong(1,0,43);
+                long intfromnonmixedfield= t.GetMixedLong(0, 0);
+                Assert.AreEqual(42,intfromnonmixedfield);//we should never get this far
+                Assert.AreNotEqual(42,intfromnonmixedfield);//we should never get this far
+            }
         }
 
         [Test]
@@ -577,7 +585,7 @@ intcolumn2:1//column 2
                 DataType dt = t.GetMixedType(0, 0);
                 Assert.AreEqual(dt, DataType.Int);
                 long fortytwo = t.GetMixedLong(0, 0);
-                Assert.AreEqual(432, fortytwo);
+                Assert.AreEqual(42, fortytwo);
             }
         }
 
@@ -979,14 +987,14 @@ Table Name  : subtable in subtable with int
 Table Data Dump. Rows:1
 ------------------------------------------------------
 { //Start row 0
-fld1:Getting type String from TableRowColumn not implemented yet,//column 0
+fld1:,//column 0
 root:[ //1 rows   { //Start row 0
-   fld2:Getting type String from TableRowColumn not implemented yet   ,//column 0
-   fld3:Getting type String from TableRowColumn not implemented yet   ,//column 1
+   fld2:   ,//column 0
+   fld3:   ,//column 1
    s1:[ //1 rows      { //Start row 0
-      fld4:Getting type String from TableRowColumn not implemented yet      ,//column 0
-      fld5:Getting type String from TableRowColumn not implemented yet      ,//column 1
-      fld6:Getting type String from TableRowColumn not implemented yet      ,//column 2
+      fld4:      ,//column 0
+      fld5:      ,//column 1
+      fld6:      ,//column 2
       s2:[ //1 rows         { //Start row 0
          fld:42         //column 0
          } //End row 0
@@ -1181,27 +1189,27 @@ Table Data Dump. Rows:5
 ------------------------------------------------------
 { //Start row 0
 intfield:1,//column 0
-stringfield:Getting type String from TableRowColumn not implemented yet,//column 1
+stringfield:,//column 1
 intfield2:2//column 2
 } //End row 0
 { //Start row 1
 intfield:3,//column 0
-stringfield:Getting type String from TableRowColumn not implemented yet,//column 1
+stringfield:,//column 1
 intfield2:4//column 2
 } //End row 1
 { //Start row 2
 intfield:5,//column 0
-stringfield:Getting type String from TableRowColumn not implemented yet,//column 1
+stringfield:,//column 1
 intfield2:6//column 2
 } //End row 2
 { //Start row 3
 intfield:7,//column 0
-stringfield:Getting type String from TableRowColumn not implemented yet,//column 1
+stringfield:,//column 1
 intfield2:8//column 2
 } //End row 3
 { //Start row 4
 intfield:9,//column 0
-stringfield:Getting type String from TableRowColumn not implemented yet,//column 1
+stringfield:,//column 1
 intfield2:10//column 2
 } //End row 4
 ------------------------------------------------------

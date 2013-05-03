@@ -449,7 +449,9 @@ TIGHTDB_C_CS_API Query* table_where(Table * table_ptr)
 //todo:unit test
 TIGHTDB_C_CS_API Query* query_bool_equal(Query * query_ptr, size_t columnIndex, size_t value)
 {    
-    return &(query_ptr->equal(columnIndex,size_t_to_bool(value)));//is this okay? will I get the address of a Query object that i can call in another pinvoke?
+   // Query* q = new Query(query_ptr->equal(columnIndex,size_t_to_bool(value)));
+   // return q;
+    //return &(query_ptr->equal(columnIndex,size_t_to_bool(value)));//is this okay? will I get the address of a Query object that i can call in another pinvoke?
 }
 
 TIGHTDB_C_CS_API void tableview_delete(TableView * tableview_ptr )

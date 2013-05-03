@@ -45,7 +45,7 @@ namespace TightDbCSharp
                 thrower("end", "end must be larger than -2");
             }
 
-            if (end < start)
+            if (end < start && end > -1)//-1 means return all in tightdb so if end is -1 it is okay
             {
                 thrower("end", "end must be larger than or equal to start");
             }
