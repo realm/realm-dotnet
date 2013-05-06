@@ -446,11 +446,11 @@ TIGHTDB_C_CS_API Query* table_where(Table * table_ptr)
 
 //query_bool_equal64(IntPtr queryPtr, IntPtr columnIndex,IntPtr value);
 
-//todo:unit test
+//todo:unit test both a false and a positive one
 TIGHTDB_C_CS_API Query* query_bool_equal(Query * query_ptr, size_t columnIndex, size_t value)
 {    
-   // Query* q = new Query(query_ptr->equal(columnIndex,size_t_to_bool(value)));
-   // return q;
+    Query* q = new Query(query_ptr->equal(columnIndex,size_t_to_bool(value)));
+    return q;
     //return &(query_ptr->equal(columnIndex,size_t_to_bool(value)));//is this okay? will I get the address of a Query object that i can call in another pinvoke?
 }
 
@@ -666,36 +666,36 @@ TIGHTDB_C_CS_API size_t test_return_size_t(size_t input)
 
 
 //the following tests ensures that the C# types and the mapped c++ types cover the exact same range
-TIGHTDB_C_CS_API size_t test_int64_t_max()
+TIGHTDB_C_CS_API int64_t test_int64_t_max()
 {
     return std::numeric_limits<int64_t>::max();
 }
 
-TIGHTDB_C_CS_API size_t test_int64_t_min()
+TIGHTDB_C_CS_API int64_t test_int64_t_min()
 {
     return std::numeric_limits<int64_t>::min();
 }
 
 //used to test that values can round-trip without being changed
-TIGHTDB_C_CS_API size_t test_return_int64_t(size_t input)
+TIGHTDB_C_CS_API int64_t test_return_int64_t(int64_t input)
 {
     return input;
 }
 
 
 //the following tests ensures that the C# types and the mapped c++ types cover the exact same range
-TIGHTDB_C_CS_API size_t test_float_max()
+TIGHTDB_C_CS_API float test_float_max()
 {
     return std::numeric_limits<float>::max();
 }
 
-TIGHTDB_C_CS_API size_t test_float_min()
+TIGHTDB_C_CS_API float test_float_min()
 {
     return std::numeric_limits<float>::min();
 }
 
 //used to test that values can round-trip without being changed
-TIGHTDB_C_CS_API size_t test_return_float(float input)
+TIGHTDB_C_CS_API float test_return_float(float input)
 {
     return input;
 }

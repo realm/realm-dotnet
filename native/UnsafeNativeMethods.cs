@@ -517,13 +517,13 @@ enum DataType {
         //      void    table_unbind(const Table *t); /* Ref-count delete of table* from table_get_table() */
         public static void TableUnbind(Table t)
         {
-            Console.WriteLine("Tableunbind calling unbind_table_ref " + t.ObjectIdentification());
+            //Console.WriteLine("Tableunbind calling unbind_table_ref " + t.ObjectIdentification());
             if (Is64Bit)
                 unbind_table_ref64(t.Handle);
             else
                 unbind_table_ref32(t.Handle);
             t.Handle = IntPtr.Zero;
-            Console.WriteLine("Tableunbind called unbind_table_ref " + t.ObjectIdentification());
+            //Console.WriteLine("Tableunbind called unbind_table_ref " + t.ObjectIdentification());
         }
 
 
@@ -539,13 +539,13 @@ enum DataType {
         //      void    table_unbind(const Table *t); /* Ref-count delete of table* from table_get_table() */
         public static void TableViewUnbind(TableView tv)
         {
-            Console.WriteLine("TableViewUnbind calling tableview_delete " + tv.ObjectIdentification());
+            //Console.WriteLine("TableViewUnbind calling tableview_delete " + tv.ObjectIdentification());
             if (Is64Bit)
                 tableview_delete64(tv.Handle);
             else
                 tableview_delete32(tv.Handle);
             tv.Handle = IntPtr.Zero;
-            Console.WriteLine("TableViewUnbind called tableview_delete " + tv.ObjectIdentification());
+            //Console.WriteLine("TableViewUnbind called tableview_delete " + tv.ObjectIdentification());
         }
 
 
@@ -603,14 +603,14 @@ enum DataType {
 
         public static void QueryDelete(Query q)
         {
-            Console.WriteLine("QueryDelete calling query_delete " + q.ObjectIdentification());
+            //Console.WriteLine("QueryDelete calling query_delete " + q.ObjectIdentification());
 
             if (Is64Bit)
                 query_delete64(q.Handle);
             else
                 query_delete32(q.Handle);
             q.Handle = IntPtr.Zero;
-            Console.WriteLine("QueryDelete called query_delete " + q.ObjectIdentification());
+            //Console.WriteLine("QueryDelete called query_delete " + q.ObjectIdentification());
         }
 
 
@@ -1578,8 +1578,8 @@ enum DataType {
         {
             var ipValue = BoolToIntPtr(value);
             if (Is64Bit)
-                return new Query(query_bool_equal64(q.Handle, (IntPtr)columnIndex, ipValue),false);//assuming that the query& classes in query.hpp should not be deleted after use
-            return new Query(query_bool_equal32(q.Handle, (IntPtr)columnIndex, ipValue),false);    //todo:ask kristian if this is the way to do it
+                return new Query(query_bool_equal64(q.Handle, (IntPtr)columnIndex, ipValue),true);//assuming that the query& classes in query.hpp should not be deleted after use
+            return new Query(query_bool_equal32(q.Handle, (IntPtr)columnIndex, ipValue),true);    //todo:ask kristian if this is the way to do it (comment above was the alternative-see c source)
         }
 
 

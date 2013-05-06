@@ -27,8 +27,10 @@ namespace TightDbCSharp
         {
             if (HandleInUse)
             {
-                if (NotifyCppWhenDisposing)
+                if (NotifyCppWhenDisposing){
+                    Console.WriteLine("Handle being released :{0}", ObjectIdentification());
                     ReleaseHandle();
+                }
                 HandleInUse = false;
             }
             else
@@ -47,7 +49,7 @@ namespace TightDbCSharp
         //store the pointer to the c++ class, and do neccessary housekeeping
         internal void SetHandle(IntPtr newHandle, bool shouldBeDisposed)
         {            
-            Console.WriteLine("Handle being set! "+ObjectIdentification());
+            //Console.WriteLine("Handle being set! "+ObjectIdentification());
             if (HandleInUse)
             {
                 throw new InvalidEnumArgumentException(String.Format(CultureInfo.InvariantCulture,
