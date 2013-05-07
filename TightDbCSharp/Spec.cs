@@ -72,7 +72,7 @@ namespace TightDbCSharp
 
         public override string ObjectIdentification()
         {
-            return string.Format(CultureInfo.InvariantCulture, "Table:" + Handle);
+            return string.Format(CultureInfo.InvariantCulture, "Spec:" + Handle);
         }
 
 

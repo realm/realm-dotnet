@@ -148,6 +148,14 @@ namespace TightDbCSharp
         costomers[12,"firstname"]  ="Hans";        
         */
 
+
+        //This method will test basic interop, especially test that the c++ compiler used to build the c++ dll binding uses
+        //the same size and sequence for various types used in interop, as C# and C# marshalling expects
+        public static void TestInterop()
+        {
+            UnsafeNativeMethods.TestInterop();
+        }
+
         public static long CPlusPlusLibraryVersion()
         {
             return UnsafeNativeMethods.CppDllVersion();

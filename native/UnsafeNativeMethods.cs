@@ -175,6 +175,20 @@ enum DataType {
         }
 
 
+        //we have to trust that c++ DataType fills up the same amount of stack space as one of our own DataType enum's
+        //This is the case on windows, visual studio2010 and 2012 but Who knows if some c++ compiler somewhere someday decides to store DataType differently
+        //Marshalling DataType seemed to work very well, but I have chosen to use size_t instead to be 100% sure stack sizes always match. after all, marshalling targets VS2012 on windows specifically
+        //furthermore, the cast from IntPtr has been put in a method of its own to ease any fixes to this later on
+
+        private static DataType IntPtrToDataType(IntPtr value)
+        {
+            return (DataType)value;
+        }
+
+        private static IntPtr DataTypeToIntPtr(DataType value)
+        {
+            return (IntPtr)value;
+        }
 
 
         // tightdb_c_cs_API size_t add_column(size_t SpecPtr,DataType type, const char* name) 
@@ -184,16 +198,16 @@ enum DataType {
         //so this must be tested on various platforms and bit sizes, and perhaps specific versions of calls with enums have to be made
         //this one works on windows 7, .net 4.5 32 bit, tightdb 32 bit (on a 64 bit OS, but that shouldn't make a difference)
         [DllImport("tightdb_c_cs32", EntryPoint = "spec_add_column", CallingConvention = CallingConvention.Cdecl)]
-        private static extern UIntPtr spec_add_column32(IntPtr spechandle, DataType type,[MarshalAs(UnmanagedType.LPStr)] string name);
+        private static extern UIntPtr spec_add_column32(IntPtr spechandle, IntPtr type,[MarshalAs(UnmanagedType.LPStr)] string name);
 
         [DllImport("tightdb_c_cs64", EntryPoint = "spec_add_column", CallingConvention = CallingConvention.Cdecl,CharSet = CharSet.Unicode)]
-        private static extern UIntPtr spec_add_column64(IntPtr spechandle, DataType type,[MarshalAs(UnmanagedType.LPStr)] string name);
+        private static extern UIntPtr spec_add_column64(IntPtr spechandle, IntPtr type, [MarshalAs(UnmanagedType.LPStr)] string name);
 
         public static long SpecAddColumn(Spec spec, DataType type, string name)
         {
             if (Is64Bit)
-                return (long) spec_add_column64(spec.Handle, type, name);
-            return (long) spec_add_column32(spec.Handle, type, name);
+                return (long)spec_add_column64(spec.Handle, DataTypeToIntPtr (type), name);
+            return (long)spec_add_column32(spec.Handle, DataTypeToIntPtr(type), name);
         }
 
 
@@ -230,37 +244,40 @@ enum DataType {
 
         [DllImport("tightdb_c_cs64", EntryPoint = "table_add_column", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode)]
-        private static extern UIntPtr table_add_column64(IntPtr tableHandle, DataType type,
+        private static extern UIntPtr table_add_column64(IntPtr tableHandle, IntPtr type,
                                                          [MarshalAs(UnmanagedType.LPStr)] string name);
 
         [DllImport("tightdb_c_cs32", EntryPoint = "table_add_column", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode)]
-        private static extern UIntPtr table_add_column32(IntPtr tableHandle, DataType type,
+        private static extern UIntPtr table_add_column32(IntPtr tableHandle, IntPtr type,
                                                          [MarshalAs(UnmanagedType.LPStr)] string name);
 
         public static long TableAddColumn(Table table, DataType type, string name)
         {
             if (Is64Bit)
-                return (long) table_add_column64(table.Handle, type, name);
+                return (long)table_add_column64(table.Handle, DataTypeToIntPtr(type), name);
                     //BM told me that column number sb long always in C#            
-            return (long) table_add_column32(table.Handle, type, name);
+            return (long)table_add_column32(table.Handle, DataTypeToIntPtr(type), name);
                 //BM told me that column number sb long always in C#            
         }
 
 
         [DllImport("tightdb_c_cs64", EntryPoint = "spec_get_column_type", CallingConvention = CallingConvention.Cdecl)]
-        private static extern DataType spec_get_column_type64(IntPtr spechandle, IntPtr columnIndex);
+        private static extern IntPtr spec_get_column_type64(IntPtr spechandle, IntPtr columnIndex);
 
         [DllImport("tightdb_c_cs32", EntryPoint = "spec_get_column_type", CallingConvention = CallingConvention.Cdecl)]
-        private static extern DataType spec_get_column_type32(IntPtr spechandle, IntPtr columnIndex);
+        private static extern IntPtr spec_get_column_type32(IntPtr spechandle, IntPtr columnIndex);
 
         public static DataType SpecGetColumnType(Spec s, long columnIndex)
         {
             if (Is64Bit)
-                return spec_get_column_type64(s.Handle, (IntPtr) columnIndex);
-                    //the IntPtr cast of a long works on 32bit .net 4.5
-            return spec_get_column_type32(s.Handle, (IntPtr) columnIndex);
-                //the IntPtr cast of a long works on 32bit .net 4.5
+                return IntPtrToDataType(spec_get_column_type64(s.Handle, (IntPtr)columnIndex));
+            //down here we must be in 32 bit mode (or 16 bit or  more than 64 bit which is NOT supported yet
+            if (columnIndex > Int32.MaxValue)
+            {
+                throw new ArgumentOutOfRangeException("columnIndex",String.Format(CultureInfo.InvariantCulture,"in 32 bit mode, column index must at most be {0} but SpecGetColumnType was called with{1}",Int32.MaxValue,columnIndex) );
+            }
+            return IntPtrToDataType(spec_get_column_type32(s.Handle, (IntPtr)columnIndex));
         }
 
         /* not really needed
@@ -969,9 +986,7 @@ enum DataType {
 
 
 
-        //we have to trust that c++ DataType fills up the same amount of stack space as one of our own DataType enum's
-        //This is the case on windows, visual studio2010 and 2012 but Who knows if some c++ compiler somewhere someday decides to store DataType differently
-        //Marshalling DataType seemed to work very well, but I have chosen to use size_t instead to be 100% sure stack sizes always match
+
         
         [DllImport("tightdb_c_cs64", EntryPoint = "table_get_column_type", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr table_get_column_type64(IntPtr tablePtr, IntPtr columnIndex);
@@ -982,8 +997,8 @@ enum DataType {
         public static DataType TableGetColumnType(Table t, long columnIndex)
         {
             if (Is64Bit)
-                return (DataType)table_get_column_type64(t.Handle, (IntPtr) columnIndex);
-            return (DataType)table_get_column_type32(t.Handle, (IntPtr)columnIndex);
+                return IntPtrToDataType(table_get_column_type64(t.Handle, (IntPtr)columnIndex));
+            return IntPtrToDataType(table_get_column_type32(t.Handle, (IntPtr)columnIndex));
         }
 
         [DllImport("tightdb_c_cs64", EntryPoint = "tableView_get_column_type",
@@ -997,8 +1012,8 @@ enum DataType {
         public static DataType TableViewGetColumnType(TableView tv, long columnIndex)
         {
             if (Is64Bit)
-                return (DataType)tableView_get_column_type64(tv.Handle, (IntPtr) columnIndex);
-            return (DataType)tableView_get_column_type32(tv.Handle, (IntPtr)columnIndex);
+                return IntPtrToDataType(tableView_get_column_type64(tv.Handle, (IntPtr)columnIndex));
+            return IntPtrToDataType(tableView_get_column_type32(tv.Handle, (IntPtr)columnIndex));
         }
 
 
@@ -1017,10 +1032,9 @@ enum DataType {
         public static DataType TableViewGetMixedType(TableView t, long columnIndex, long rowIndex)
         {
             if (Is64Bit)
-                return (DataType)tableView_get_mixed_type64(t.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
-            return (DataType)tableView_get_mixed_type32(t.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex);
+                return IntPtrToDataType(tableView_get_mixed_type64(t.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex));
+            return IntPtrToDataType(tableView_get_mixed_type32(t.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex));
         }
-
 
 
         //we have to trust that c++ DataType fills up the same amount of stack space as one of our own DataType enum's
@@ -1036,8 +1050,8 @@ enum DataType {
         public static DataType TableGetMixedType(Table t, long columnIndex, long rowIndex)
         {
             if (Is64Bit)
-                return (DataType)table_get_mixed_type64(t.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex);
-            return (DataType)table_get_mixed_type32(t.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex);
+                return IntPtrToDataType(table_get_mixed_type64(t.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex));
+            return IntPtrToDataType( table_get_mixed_type32(t.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex));
         }
 
 
@@ -1868,6 +1882,21 @@ enum DataType {
         }
 
 
+        [DllImport("tightdb_c_cs64", EntryPoint = "test_sizeofdouble", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr test_sizeofdouble64();
+        [DllImport("tightdb_c_cs32", EntryPoint = "test_sizeofdouble", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr test_sizeofdouble32();
+
+        public static IntPtr TestSizeOfDouble()
+        {
+            if (Is64Bit)
+                return test_sizeofdouble64();
+            return test_sizeofdouble32();
+        }
+
+        
+
+
         [DllImport("tightdb_c_cs64", EntryPoint = "test_sizeoftime_t", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr test_sizeoftime_t64();
         [DllImport("tightdb_c_cs32", EntryPoint = "test_sizeoftime_t", CallingConvention = CallingConvention.Cdecl)]
@@ -1882,6 +1911,197 @@ enum DataType {
 
 
 
+        [DllImport("tightdb_c_cs64", EntryPoint = "test_get_five_parametres", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr test_get_five_parametres64(IntPtr p1, IntPtr p2,IntPtr p3, IntPtr p4, IntPtr p5);
+        [DllImport("tightdb_c_cs32", EntryPoint = "test_get_five_parametres", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr test_get_five_parametres32(IntPtr p1, IntPtr p2, IntPtr p3, IntPtr p4, IntPtr p5);
+
+        public static IntPtr TestGetFiveParametres(IntPtr p1, IntPtr p2, IntPtr p3, IntPtr p4, IntPtr p5)
+        {
+            if (Is64Bit)
+                return test_get_five_parametres64(p1, p2, p3, p4, p5);
+            return test_get_five_parametres32(p1, p2, p3, p4, p5);
+        }
+
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "test_float_max", CallingConvention = CallingConvention.Cdecl)]
+        private static extern float test_float_max64();
+        [DllImport("tightdb_c_cs32", EntryPoint = "test_float_max", CallingConvention = CallingConvention.Cdecl)]
+        private static extern float test_float_max32();
+
+        public static float TestFloatMax()
+        {
+            if (Is64Bit)
+                return test_float_max64();
+            return test_float_max32();
+        }
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "test_float_min", CallingConvention = CallingConvention.Cdecl)]
+        private static extern float test_float_min64();
+        [DllImport("tightdb_c_cs32", EntryPoint = "test_float_min", CallingConvention = CallingConvention.Cdecl)]
+        private static extern float test_float_min32();
+
+        public static float TestFloatMin()
+        {
+            if (Is64Bit)
+                return test_float_min64();
+            return test_float_min32();
+        }
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "test_float_return", CallingConvention = CallingConvention.Cdecl)]
+        private static extern float test_float_return64(float value);
+        [DllImport("tightdb_c_cs32", EntryPoint = "test_float_return", CallingConvention = CallingConvention.Cdecl)]
+        private static extern float test_float_return32(float value);
+
+        public static float TestFloatReturn(float value)
+        {
+            if (Is64Bit)
+                return test_float_return64(value);
+            return test_float_return32(value);
+        }
+
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "test_double_max", CallingConvention = CallingConvention.Cdecl)]
+        private static extern double test_double_max64();
+        [DllImport("tightdb_c_cs32", EntryPoint = "test_double_max", CallingConvention = CallingConvention.Cdecl)]
+        private static extern double test_double_max32();
+
+        public static double TestDoubleMax()
+        {
+            if (Is64Bit)
+                return test_double_max64();
+            return test_double_max32();
+        }
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "test_double_min", CallingConvention = CallingConvention.Cdecl)]
+        private static extern double test_double_min64();
+        [DllImport("tightdb_c_cs32", EntryPoint = "test_double_min", CallingConvention = CallingConvention.Cdecl)]
+        private static extern double test_double_min32();
+
+        public static double TestDoubleMin()
+        {
+            if (Is64Bit)
+                return test_double_min64();
+            return test_double_min32();
+        }
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "test_double_return", CallingConvention = CallingConvention.Cdecl)]
+        private static extern double test_double_return64(double value);
+        [DllImport("tightdb_c_cs32", EntryPoint = "test_double_return", CallingConvention = CallingConvention.Cdecl)]
+        private static extern double test_double_return32(double value);
+
+        public static double TestDoubleReturn(double value)
+        {
+            if (Is64Bit)
+                return test_double_return64(value);
+            return test_double_return32(value);
+        }
+
+
+
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "test_int64_t_max", CallingConvention = CallingConvention.Cdecl)]
+        private static extern long test_int64_t_max64();
+        [DllImport("tightdb_c_cs32", EntryPoint = "test_int64_t_max", CallingConvention = CallingConvention.Cdecl)]
+        private static extern long test_int64_t_max32();
+
+        public static long TestLongMax()
+        {
+            if (Is64Bit)
+                return test_int64_t_max64();
+            return test_int64_t_max32();
+        }
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "test_int64_t_min", CallingConvention = CallingConvention.Cdecl)]
+        private static extern long test_int64_t_min64();
+        [DllImport("tightdb_c_cs32", EntryPoint = "test_int64_t_min", CallingConvention = CallingConvention.Cdecl)]
+        private static extern long test_int64_t_min32();
+
+        public static long TestLongMin()
+        {
+            if (Is64Bit)
+                return test_int64_t_min64();
+            return test_int64_t_min32();
+        }
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "test_int64_t_return", CallingConvention = CallingConvention.Cdecl)]
+        private static extern long test_int64_t_return64(long value);
+        [DllImport("tightdb_c_cs32", EntryPoint = "test_int64_t_return", CallingConvention = CallingConvention.Cdecl)]
+        private static extern long test_int64_t_return32(long value);
+
+        public static long TestLongReturn(long value)
+        {
+            if (Is64Bit)
+                return test_int64_t_return64(value);
+            return test_int64_t_return32(value);
+        }
+
+
+
+
+
+
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "test_size_t_max", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr test_size_t_max64();
+        [DllImport("tightdb_c_cs32", EntryPoint = "test_size_t_max", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr test_size_t_max32();
+
+        public static IntPtr TestSizeTMax()
+        {
+            if (Is64Bit)
+                return test_size_t_max64();
+            return test_size_t_max32();
+        }
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "test_size_t_min", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr test_size_t_min64();
+        [DllImport("tightdb_c_cs32", EntryPoint = "test_size_t_min", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr test_size_t_min32();
+
+        public static IntPtr TestSizeTMin()
+        {
+            if (Is64Bit)
+                return test_size_t_min64();
+            return test_size_t_min32();
+        }
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "test_size_t_return", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr test_size_t_return64(IntPtr value);
+        [DllImport("tightdb_c_cs32", EntryPoint = "test_size_t_return", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr test_size_t_return32(IntPtr value);
+
+        public static IntPtr TestSizeTReturn(IntPtr value)
+        {
+            if (Is64Bit)
+                return test_size_t_return64(value);
+            return test_size_t_return32(value);
+        }
+
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "test_return_datatype", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr test_return_datatype64(IntPtr value);
+        [DllImport("tightdb_c_cs32", EntryPoint = "test_return__datatype", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr test_return_datatype32(IntPtr value);
+
+        public static DataType TestReturnDataType(DataType value)
+        {
+            if (Is64Bit)
+                return IntPtrToDataType(test_return_datatype64(DataTypeToIntPtr(value)));
+            return IntPtrToDataType(test_return_datatype32(DataTypeToIntPtr(value)));
+        }
+
+
+
         //this can be called when initializing, and it will throw an exception if anything is wrong with the type binding between the  C#
         //program running right now, and the c++ library that has been loaded.
         //The test should reveal if any of the types we use are marshalled wrongly, especially
@@ -1890,7 +2110,7 @@ enum DataType {
         //parametres are sent in the right sequence
         //logical meaning of the basic types we use
 
-        //for instance this test would discover if a date_t on the c++ side is 32 bit, while the C# side expects 64 bits.
+        //for instance this test would discover if a time_t on the c++ side is 32 bit, while the C# side expects 64 bits.
         //The test will be valuable if any of these things change :
         //C# compiler, CLR implementation, c++ compiler that built the c++ part, operating system
         
@@ -1912,9 +2132,9 @@ enum DataType {
         //mono C# compiler target x64
         //mono C# compiler target x32
         //mono C# compiler target AnyCpu
-        //mono C# compiler other targets (SPARC, PowerPC,S390 64 bit, )
+        //mono C# compiler other targets (SPARC, PowerPC,S390 64 bit... )
         
-        //the current C# code is expected to work on these operating systems (system platforms)
+        //the current C# and c++ code is expected and tested to work on these operating systems (system platforms)
         //windows 7 32 bit (using .net, compiled with VS2012 C# and VS2012 c++)
         //windows 7 64 bit (using .net, compiled with VS2012 C# and VS2012 c++)
         
@@ -1927,11 +2147,12 @@ enum DataType {
         //there are many more combinations. To enable a combination to work, the following must be done
         //1) ensure tightdb and the c++ part of the binding can be built on the platform
         //2) ensure there is a CLR on the platform
-        //3) any needed changes to the C# part of the binding must be implemented (could be calling conventions, type sizes, names of library files to load, etc)
-        //4) optional - ensure that the platform C# compiler can build the C# part of tightdb (if the C# platform is not binary compatible with .net)
+        //3) any needed changes to the C# part of the binding must be implemented (could be calling conventions, type sizes, quirks with marshalling, names of library files to load, etc)
+        //4) optional - ensure that the platform C# compiler can build the C# part of tightdb 
+        //  (if the C# platform is not binary compatible with .net we have to build on the specific C# platform, if it is binary compatible this is optional)
        
 
-        //if something is wrong, this method will throw an exception
+        //if something is wrong with interop or C# marshalling, this method will throw an exception
         public static void TestInterop()
         {
             int sizeOfIntPtr = IntPtr.Size;
@@ -1950,16 +2171,16 @@ enum DataType {
             //from here on, we know that size_t maps fine to IntPtr, and Int32_t maps fine to Int32
 
             IntPtr sizeOfTablePointer = TestSizeOfTablePointer();
-            var sizeOfIntPtr2 = (IntPtr) IntPtr.Size;
-            if(sizeOfTablePointer!=sizeOfIntPtr2)
+            var sizeOfIntPtrAsIntPtr = (IntPtr) IntPtr.Size;
+            if(sizeOfTablePointer!=sizeOfIntPtrAsIntPtr)
             {
-                throw new ArgumentException("Table*", String.Format(CultureInfo.InvariantCulture, "The Table* size{0} does not match the size of IntPtr{1}", sizeOfTablePointer, sizeOfIntPtr2));
+                throw new ArgumentException("Table*", String.Format(CultureInfo.InvariantCulture, "The Table* size{0} does not match the size of IntPtr{1}", sizeOfTablePointer, sizeOfIntPtrAsIntPtr));
             }
 
             IntPtr sizeOfCharPointer = TestSizeOfCharPointer();            
-            if (sizeOfTablePointer != sizeOfIntPtr2)
+            if (sizeOfCharPointer != sizeOfIntPtrAsIntPtr)
             {
-                throw new ArgumentException("Char*", String.Format(CultureInfo.InvariantCulture, "The Char* size{0} does not match the size of IntPtr{1}", sizeOfCharPointer, sizeOfIntPtr2));
+                throw new ArgumentException("Char*", String.Format(CultureInfo.InvariantCulture, "The Char* size{0} does not match the size of IntPtr{1}", sizeOfCharPointer, sizeOfIntPtrAsIntPtr));
             }
 
             IntPtr sizeOfInt64T = Testsizeofint64_t();
@@ -1979,14 +2200,144 @@ enum DataType {
             }
 
             IntPtr sizeOfTimeT = TestSizeOfTime_T();
-            var SizeOfTimeTReceiverType = (IntPtr)sizeof(Int64);//we put time_t into an Int64 before we convert it to DateTime - we expect the time_t to be of type 64 bit integer
+            var sizeOfTimeTReceiverType = (IntPtr)sizeof(Int64);//we put time_t into an Int64 before we convert it to DateTime - we expect the time_t to be of type 64 bit integer
 
-            if (sizeOfTimeT != SizeOfTimeTReceiverType)
+            if (sizeOfTimeT != sizeOfTimeTReceiverType)
             {
-                throw new ArgumentException("time_t", String.Format(CultureInfo.InvariantCulture, "The c++ time_t size({0}) does not match the size of the C# recieving type int64 ({1})", sizeOfTimeT, SizeOfTimeTReceiverType));
+                throw new ArgumentException("time_t", String.Format(CultureInfo.InvariantCulture, "The c++ time_t size({0}) does not match the size of the C# recieving type int64 ({1})", sizeOfTimeT, sizeOfTimeTReceiverType));
             }
 
 
+
+            //that was the sizes of the basic types. Now check if parametres are sent and recieved in the correct sequence
+
+
+
+
+            IntPtr testres = TestGetFiveParametres((IntPtr)1, (IntPtr)2, (IntPtr)3, (IntPtr)4, (IntPtr)5);
+            if ((long)testres != 1)
+            {
+                throw new ArgumentException("parameter sequence", String.Format(CultureInfo.InvariantCulture, "The c++ parameter sequence appears to be broken. called test_get_five_parametres(1,2,3,4,5) expected 1 as a return value, got {0}", testres));
+            }
+
+            float floatmaxcpp = TestFloatMax();
+            const float floatmaxcs = float.MaxValue;
+            if (floatmaxcpp > floatmaxcs || floatmaxcpp<floatmaxcs)
+            {
+                throw new ArgumentException("float",
+                                            String.Format(CultureInfo.InvariantCulture,"The c++ max float value seems to be {0:r} while the C# is {1:r}", floatmaxcpp,floatmaxcs));
+            }
+
+            //current documentation on c# Sigle/float http://msdn.microsoft.com/en-us/library/system.single.aspx
+            float floatmincpp = TestFloatMin();
+            const float floatmincs = float.MinValue;
+            if (floatmincpp > floatmincs || floatmincpp < floatmincs)
+            {
+                throw new ArgumentException("float",
+                                            String.Format(CultureInfo.InvariantCulture, "The c++ min float value seems to be {0:r} while the C# is {1:r}", floatmincpp, floatmincs));
+            }
+
+            const float float42 = 42f;
+            float cppfortytwo = TestFloatReturn(float42);
+            if (float42 > cppfortytwo || float42 < cppfortytwo)
+            {
+                throw new ArgumentException("float",
+                                            String.Format(CultureInfo.InvariantCulture, "The c++ float 42f was returned as {0:r} while the C# value is {1:r}", float42, cppfortytwo));
+            }
+
+
+
+
+            double doublemaxcpp = TestDoubleMax();
+            const double doublemaxcs = double.MaxValue;
+            if (doublemaxcpp > doublemaxcs || doublemaxcpp < doublemaxcs)
+            {
+                throw new ArgumentException("double",
+                                            String.Format(CultureInfo.InvariantCulture, "The c++ max double value seems to be {0:r} while the C# is {1:r}", doublemaxcpp, doublemaxcs));
+            }
+
+            
+            double doublemincpp = TestDoubleMin();
+            const double doublemincs = double.MinValue;
+            if (doublemincpp > doublemincs || doublemincpp < doublemincs)
+            {
+                throw new ArgumentException("double",
+                                            String.Format(CultureInfo.InvariantCulture, "The c++ min double value seems to be {0:r} while the C# is {1:r}", doublemincpp, doublemincs));
+            }
+
+            const double double42 = 42f;
+            double cppfortytwodouble = TestDoubleReturn(double42);
+            if (double42 > cppfortytwodouble || double42 < cppfortytwodouble)
+            {
+                throw new ArgumentException("double",
+                                            String.Format(CultureInfo.InvariantCulture, "The c++ double 42f was returned as {0:r} while the C# value is {1:r}", double42, cppfortytwodouble));
+            }
+
+
+
+
+            //very well defined in C#. Should also be so in c++ so this should never fail  http://msdn.microsoft.com/en-us/library/ctetwysk.aspx
+            long longmaxcpp = TestLongMax();
+            const long longmaxcs = long.MaxValue;
+            if (longmaxcpp != longmaxcs)
+            {
+                throw new ArgumentException("long",
+                                            String.Format(CultureInfo.InvariantCulture, "The c++ max int64_t (mapped to long) value seems to be {0:r} while the C# long is {1:r}", longmaxcpp, longmaxcs));
+            }
+
+            
+            long longmincpp = TestLongMin();
+            const long longmincs = long.MinValue;
+            if (longmincpp != longmincs)
+            {
+                throw new ArgumentException("long",
+                                            String.Format(CultureInfo.InvariantCulture, "The c++ min int64_t (mapped to long) value seems to be {0:r} while the C# is {1:r}", longmincpp, longmincs));
+            }
+
+            const long long42 = 42;
+            long cppfortytwolong = TestLongReturn(long42);
+            if (long42!=cppfortytwolong)
+            {
+                throw new ArgumentException("long",
+                                            String.Format(CultureInfo.InvariantCulture, "The c++ int64_t 42 (mapped to long) was returned as {0:r} while the C# value is {1:r}", long42, cppfortytwolong));
+            }
+
+
+
+
+
+            IntPtr sizeTMaxCpp = TestSizeTMax();
+            IntPtr sizeTMaxCs = IntPtr.Zero;
+            sizeTMaxCs = sizeTMaxCs - 1;
+
+            if (sizeTMaxCpp != sizeTMaxCs )
+            {
+                throw new ArgumentException("size_t",
+                                            String.Format(CultureInfo.InvariantCulture, "The c++ max size_t value seems to be {0:r} while the C# is {1:r}", sizeTMaxCpp, sizeTMaxCs));
+            }
+
+            IntPtr sizeTMinCpp = TestSizeTMin();
+            IntPtr sizeTMinCs = IntPtr.Zero;
+            if (sizeTMaxCpp != sizeTMaxCs)
+            {
+                throw new ArgumentException("size_t",
+                                            String.Format(CultureInfo.InvariantCulture, "The c++ min size-t value seems to be {0:r} while the C# is {1:r}", sizeTMinCpp, sizeTMinCs));
+            }
+
+            IntPtr sizeTCs = (IntPtr)42;
+            IntPtr sizeTCpp = TestSizeTReturn(sizeTCs);
+            if (sizeTCpp!=sizeTCs)
+            {
+                throw new ArgumentException("Size_t",
+                                            String.Format(CultureInfo.InvariantCulture, "The c++ size_t 42 was returned as {0:r} while the C# value is {1:r}", sizeTCpp, sizeTCs));
+            }
+
+
+
+
+
+
+            
 
         }
     }

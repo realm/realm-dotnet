@@ -28,8 +28,12 @@ namespace TightDbCSharp
             if (HandleInUse)
             {
                 if (NotifyCppWhenDisposing){
-                    Console.WriteLine("Handle being released :{0}", ObjectIdentification());
+                    Console.WriteLine("Handle being released by calling cpp :{0}", ObjectIdentification());
                     ReleaseHandle();
+                }
+                else
+                {
+                    Console.WriteLine("Handle being released silently :{0}", ObjectIdentification());
                 }
                 HandleInUse = false;
             }
@@ -60,7 +64,7 @@ namespace TightDbCSharp
             HandleInUse = true;
             HandleHasBeenUsed = true;
             NotifyCppWhenDisposing = shouldBeDisposed;
-            Console.WriteLine("Handle has been set! " + ObjectIdentification());
+            Console.WriteLine("Handle has been set:{0}  shouldbedisposed:{1}" , ObjectIdentification(),shouldBeDisposed);
         }
 
         //called by users who don't want to use our class anymore.

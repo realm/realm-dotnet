@@ -68,11 +68,18 @@ namespace TestTightDbCSharp
                 {
                     throw new TableException("Weird");
                 }
+                
             }
             Console.WriteLine();
             Console.WriteLine();
-
         }
+
+                [Test]
+                public static void Testinterop()
+                {
+                    Table.TestInterop();                    
+                }
+
     }
 
 
@@ -158,7 +165,8 @@ namespace TestTightDbCSharp
         [Test]
         public static void QueryBoolEqual()
         {
-            var t = new Table("stringfield".String(),"boolfield".Bool(),"stringfield2".String(),"boolfield2".Bool());
+            using (var t = new Table("stringfield".String(),"boolfield".Bool(),"stringfield2".String(),"boolfield2".Bool())){
+            
             t.AddEmptyRow(5);
             t.SetBoolean(1, 0, true);
             t.SetBoolean(1, 1, false);
@@ -180,6 +188,7 @@ namespace TestTightDbCSharp
             Assert.AreEqual(tv.Size, 0);
             tv = t.Where().BoolEqual("boolfield2", true).FindAll(0, -1, -1);
             Assert.AreEqual(tv.Size, 5);
+            }
         }
 
         [Test]
@@ -2492,6 +2501,16 @@ Table Name  : same names, empty names, mixed types
                     )
                 );
 
+            //for illustration, a table with the same structure,created using our alternative syntax
+            var peoplTableAlt = new Table(
+                "name".String(),
+                "age".Int(),
+                "hired".Date(),
+                "phones".Table(
+                    "desc".String(),
+                    "number".String())
+                );
+            Console.WriteLine(peoplTableAlt.ColumnCount);
 
             //fill in one row, with two rows in the subtable, which is located at column 3
 
@@ -2507,11 +2526,11 @@ Table Name  : same names, empty names, mixed types
                 rowSub.AddRow("mobile", "232-323-3232");
                 rowSub.AddRow("work", "434-434-4343");
             }
+
+
             //if memory is a concern, Table support the disposable interface, so You can force C# to deallocate them when they go out of scope
-            //this could be important as the tables also take up c++ resources
+            //instead of waiting until the GC feels like collecting tables. This could be important as the tables also take up c++ resources
             using (
-
-
                 var peopleTable2 = new Table(
                     new StringField("name"),
                     new IntField("age"),
@@ -2521,7 +2540,6 @@ Table Name  : same names, empty names, mixed types
                                       new StringField("number")
                         )
                     )
-
                 )
             {
 
@@ -2530,10 +2548,10 @@ Table Name  : same names, empty names, mixed types
                 {
                     rowSub2.AddRow("mobile", "232-323-3232");
                     rowSub2.AddRow("work", "434-434-4343");
-                } //You are guarenteed that RowSub is deallocated at this point
-            } //You are guarenteed that PeopleTable2 is deallocated at this point
+                } //Because of the using statement, You are guarenteed that RowSub is deallocated at this point
+            } //Because of the using statement, You are guarenteed that PeopleTable2 is deallocated at this point
 
-            //You can also add data to the table field by field:
+            //You can also add data to a table field by field:
 
             long rowindex2 = peopleTable.AddEmptyRow(1);
             peopleTable.SetString(0, rowindex2, "John");
@@ -2545,17 +2563,7 @@ Table Name  : same names, empty names, mixed types
             subtable.SetString(0, 1, "work");
             subtable.SetString(1, 1, "434-434-4343");
 
-            //You can also insert rows at specific row positions:
-
-
-            peopleTable.AddRowAt
-                (2, "John", 20, null);
-            //first parameter specifies the row number, the null is the subtable
-            Table rowSub3 = peopleTable.GetSubTable(3, 2);
-            rowSub3.AddRow("mobile", "232-323-3232");
-            rowSub3.AddRow("work", "434-434-4343");
-
-            //Finally subtables can be specified inside the parameter list like this
+            //Finally subtables can be specified inside the parameter list (as an array of arrays of object) like this
 
             peopleTable.AddRow("John", 20, true,
                  new object[]
@@ -2614,7 +2622,6 @@ Table Name  : same names, empty names, mixed types
             peopleTable[5].SetRow("John", 20, true, sub);
             //this method is not as fast as using SetString etc. as it will have to inspect the parametres and the table to validate type compatibillity
 
-
             //You can delete a row by calling remove(rowIndex)
             peopleTable.Remove(3); //removes the 4th row in the table and moves every row index larger than 3 one down
             peopleTable[3].Remove();//this does the same
@@ -2639,7 +2646,7 @@ Table Name  : same names, empty names, mixed types
             {
                 foreach (RowColumn rowColumn in looprow)
                 {
-                    Console.WriteLine(rowColumn.Value);//will write the value of all fields in all rows,except subtables
+                    Console.WriteLine(rowColumn.Value);//will write the value of all fields in all rows,except subtables (will write subtable.tostring for the subtable)
                 }
             }
 
@@ -2661,7 +2668,9 @@ Table Name  : same names, empty names, mixed types
             TableView tv3 = qr.FindAll(1, 10000, 50);//find all hired people amongst the first 10K records, but return only 50 at most
 
             Console.WriteLine("findall returned {0} rows",tv3.Size);
+            
             //serialization - to be done
+            
             //transactions - to be done
         }
 
@@ -2679,13 +2688,15 @@ Table Name  : same names, empty names, mixed types
 
             QueryTests.QueryBoolEqual();
             EnvironmentTest.ShowVersionTest();
-            CreateTableTest.TestTableScope();
+            EnvironmentTest.Testinterop();
+
+           // CreateTableTest.TestTableScope();
 
             //RowColumn.test_testacquireanddeletegroup();
             
 
               //GroupTests.CreateGroupEmptyTest();
-            TableChangeDataTest.TableIntValueSubTableTest1();
+          //  TableChangeDataTest.TableIntValueSubTableTest1();
          //    StringEncodingTest.TableWithnonasciiCharacters();//when we have implemented utf-16 to utf-8 both ways, the following tests should be created:
 
             //GroupTests.CreateGroupFileNameTest();

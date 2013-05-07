@@ -35,7 +35,23 @@ bool size_t_to_bool(size_t value)
     return value==1;//here i assume 1 and size_t can be compared in a meaningfull way. C# sends a size_t = 1 when true,and =0 when false
 }
 
-	
+size_t bool_to_size_t(bool value) {
+    if(value) return 1;
+    return 0;
+}
+
+
+//as We've got no idea how the compiler represents an instance of DataType on the stack, perhaps it's better to send back a size_t with the value.
+//we always know the size of a size_t
+DataType size_t_to_datatype(size_t value){
+    return (DataType)value;//todo:ask if this is a valid typecast. Or would it be better to use e.g int64? or reintepret_cast
+}
+
+//as We've got no idea how the compiler represents an instance of DataType on the stack, perhaps it's better to send back a size_t with the value.
+//we always know the size of a size_t
+size_t datatype_to_size_t(DataType value) {
+    return (size_t)value;//todo:ask if this is a valid typecast. Or would it be better to use e.g int64? or reintepret_cast
+}
 
 TIGHTDB_C_CS_API size_t table_get_column_count(tightdb::Table* table_ptr)
 {
@@ -47,7 +63,11 @@ TIGHTDB_C_CS_API size_t tableView_get_column_count(tightdb::TableView* tableView
 	return tableView_ptr->get_column_count();
 }
 
-TIGHTDB_C_CS_API Group* new_group()
+
+//new empty group
+//todo:This fails on windows, awaiting new version (problem is something with the filename, read/write rights where it is put by default)
+
+TIGHTDB_C_CS_API Group* new_group() //should be disposed by calling group_delete
 {
     std::cerr<<"before new group()\n";
     //works Group* g = new Group(Group::unattached_tag());
@@ -66,9 +86,7 @@ TIGHTDB_C_CS_API Group* new_group()
 
 
 
-//new empty group
-//todo:This fails, awaiting new version
-TIGHTDB_C_CS_API Group* new_group_file(const char* name)
+TIGHTDB_C_CS_API Group* new_group_file(const char* name)//should be disposed by calling group_delete
 {
     std::cerr<<"before new_group_file\n";
     std::cerr<<"called with name ";
@@ -84,7 +102,7 @@ TIGHTDB_C_CS_API Group* new_group_file(const char* name)
 
 
 //return a newly constructed top level table 
-TIGHTDB_C_CS_API Table* new_table()
+TIGHTDB_C_CS_API Table* new_table()//should be disposed by calling unbind_table_ref
 {
 	//return reinterpret_cast<size_t>(LangBindHelper::new_table());	 
 	return LangBindHelper::new_table();
@@ -96,14 +114,13 @@ TIGHTDB_C_CS_API Table* new_table()
 //todo:create unit test that crashes tableview by changing the underlying table
 
 //   TableRef       get_subtable(size_t column_ndx, size_t row_ndx);
-TIGHTDB_C_CS_API Table* table_get_subtable(Table* table_ptr, size_t column_ndx, size_t row_ndx)
+TIGHTDB_C_CS_API Table* table_get_subtable(Table* table_ptr, size_t column_ndx, size_t row_ndx)//should be disposed by calling unbind_table_ref
 {    
     return LangBindHelper::get_subtable_ptr(table_ptr,column_ndx, row_ndx);
 }
 
 TIGHTDB_C_CS_API void unbind_table_ref(tightdb::Table* table_ptr)
-{
-	//LangBindHelper::unbind_table_ref(reinterpret_cast<Table*>(table_ptr));
+{	
 	LangBindHelper::unbind_table_ref(table_ptr);
 }
 
@@ -120,20 +137,20 @@ TIGHTDB_C_CS_API void tableView_remove_row(tightdb::TableView* tableView_ptr, si
 
 TIGHTDB_C_CS_API size_t table_add_column(tightdb::Table* table_ptr,size_t type, const char* name)
 {
-    return table_ptr->add_column((DataType)type,name);
+    return table_ptr->add_column(size_t_to_datatype(type),name);
 }
 
 //    size_t add_column(DataType type, const char* name, ColumnType attr=col_attr_None);
 //note that we have omitted support for attr until we figure what it's for
 TIGHTDB_C_CS_API size_t spec_add_column(Spec* spec_ptr,size_t type, const char* name) 
 {
-	return spec_ptr->add_column((DataType)type,name);		
+	return spec_ptr->add_column(size_t_to_datatype(type),name);		
 }
 
 //returns the spec that is associated with a table
 //this spec is just a handle to use for spec operations and it does not need to be
 //unbound or disposed of, it is the address of a spec that is managed by its table
-TIGHTDB_C_CS_API Spec* table_get_spec(Table* table_ptr)
+TIGHTDB_C_CS_API Spec* table_get_spec(Table* table_ptr)//do not do anything when disposing
 {
 	//Table* t = reinterpret_cast<Table*>(table_ptr);
 	Spec& s = table_ptr->get_spec();
@@ -147,13 +164,13 @@ TIGHTDB_C_CS_API Spec* table_get_spec(Table* table_ptr)
 //    DataType    get_column_type(size_t column_ndx) const TIGHTDB_NOEXCEPT;
 TIGHTDB_C_CS_API  size_t table_get_column_type(Table* table_ptr, const size_t column_ndx)
 {
-	return table_ptr->get_column_type(column_ndx);
+	return datatype_to_size_t(table_ptr->get_column_type(column_ndx));
 }
 
 
 TIGHTDB_C_CS_API  size_t tableView_get_column_type(tightdb::TableView* tableView_ptr, const size_t column_ndx)
 {
-	return tableView_ptr->get_column_type(column_ndx);
+	return datatype_to_size_t(tableView_ptr->get_column_type(column_ndx));
 }
 
 
@@ -164,7 +181,7 @@ TIGHTDB_C_CS_API  size_t tableView_get_column_type(tightdb::TableView* tableView
 //    DataType    get_column_type(size_t column_ndx) const TIGHTDB_NOEXCEPT;
 TIGHTDB_C_CS_API  size_t table_get_mixed_type(Table* table_ptr, const size_t column_ndx,const size_t row_ndx)
 {
-    return table_ptr->get_mixed_type(column_ndx,row_ndx);
+    return datatype_to_size_t(table_ptr->get_mixed_type(column_ndx,row_ndx));
 }
 
 TIGHTDB_C_CS_API  void table_update_from_spec(Table* table_ptr)
@@ -172,9 +189,10 @@ TIGHTDB_C_CS_API  void table_update_from_spec(Table* table_ptr)
     table_ptr->update_from_spec();
 }
 
-TIGHTDB_C_CS_API  DataType spec_get_column_type(Spec* spec_ptr, const size_t column_ndx)
+TIGHTDB_C_CS_API  size_t spec_get_column_type(Spec* spec_ptr, const size_t column_ndx)
 {
-	return spec_ptr->get_column_type(column_ndx);
+   
+    return datatype_to_size_t(spec_ptr->get_column_type(column_ndx));
 }
 
 
@@ -300,14 +318,10 @@ TIGHTDB_C_CS_API size_t spec_get_column_name(Spec* spec_ptr,size_t column_ndx,ch
 
 
 //    Spec add_subtable_column(const char* name);
-TIGHTDB_C_CS_API Spec* spec_add_subtable_column(Spec* spec_ptr, const char* name)
-{
-	//Spec* s = reinterpret_cast<Spec*>(spec_ptr);
+TIGHTDB_C_CS_API Spec* spec_add_subtable_column(Spec* spec_ptr, const char* name)//the returned spec should be disposed of by calling spec_deallocate
+{	
 	Spec subtablespec = spec_ptr->add_subtable_column(name);//will add_subtable_column return the address to a spec?
 	return new Spec(subtablespec);
-	
-	//if I understand things correctly, SpecReturn will now BE the spec returned from add_subtable_column Spec IS the address of this class	
-	//return reinterpret_cast<size_t>(Ret);//are we returning the address of the spec object returned by add_subtable_column?
 }
 
 
@@ -329,12 +343,10 @@ TIGHTDB_C_CS_API void spec_deallocate(Spec* spec_ptr)
 	delete(spec_ptr);
 }
 
-//FIXME: Should we check here on the c++ side, that column_ix is a subtable column before calling
-//FIXME: Should this spec be deallocated? or is it part of the table structure it comes from? Currently the C# call is set not to call something similar to unbind_table_ref
-TIGHTDB_C_CS_API Spec* spec_get_spec(Spec* spec_ptr,size_t column_ix)
+TIGHTDB_C_CS_API Spec* spec_get_spec(Spec* spec_ptr,size_t column_ix)//should be disposed by calling spec_deallocate
 {
     Spec subtablespec = spec_ptr->get_subtable_spec(column_ix);
-    return new Spec(subtablespec);//will be unbound later on
+    return new Spec(subtablespec);
 }
 
 
@@ -487,9 +499,7 @@ TIGHTDB_C_CS_API int64_t tableView_get_int(TableView* tableView_ptr, size_t colu
 //returns false=0  true=1 we use a size_t as it is likely the fastest type to return
 TIGHTDB_C_CS_API size_t tableView_get_bool(TableView* tableView_ptr, size_t column_ndx, size_t row_ndx)
 {    
-    if ( tableView_ptr->get_bool(column_ndx,row_ndx))
-      {return 1;};
-    return 0;//here I assume the compier will convert 1 and 0 to the correct size_t bitsizes
+    return bool_to_size_t( tableView_ptr->get_bool(column_ndx,row_ndx));
 }
 
 
@@ -503,9 +513,7 @@ TIGHTDB_C_CS_API void tableView_set_bool(TableView* tableView_ptr, size_t column
 //returns false=0  true=1 we use a size_t as it is likely the fastest type to return
 TIGHTDB_C_CS_API size_t table_get_bool(Table* table_ptr, size_t column_ndx, size_t row_ndx)
 {    
-    if ( table_ptr->get_bool(column_ndx,row_ndx))
-      {return 1;};
-    return 0;
+    return bool_to_size_t(table_ptr->get_bool(column_ndx,row_ndx));
 }
 
 //call with false=0  true=1 we use a size_t as it is likely the fastest type to return
@@ -513,8 +521,6 @@ TIGHTDB_C_CS_API void table_set_bool(Table* table_ptr, size_t column_ndx, size_t
 {    
      table_ptr->set_bool(column_ndx,row_ndx,size_t_to_bool(value));     
 }
-
-
 
 TIGHTDB_C_CS_API float table_get_float(Table* table_ptr, size_t column_ndx, size_t row_ndx)
 {
@@ -572,11 +578,13 @@ TIGHTDB_C_CS_API size_t tableview_size(TableView* tableview_ptr)
 //2) that all logical values are translated correctly C# to c++
 //3) that all logical values are translated correctly c++ to c#
 //4) that values send by c# to c++ can be returned again by c++ and not change
-//These tests should report if there is a problem with a new c++ compiler, a new hardware platform , a new C# compiler, a new .net compatible platform, a new marshalling framework etc.
+//These tests should report if there is a problem with a new c++ compiler, a new hardware platform , a new C# compiler, a new .net compatible platform, 
+//changes by microsoft to the default marshalling behaviou, etc. etc.
 //for instance the tests would reveal if a c++ binding was compiled with  _USE_32BIT_TIME_T which we would not support, as we expect time_t to always be 64bit size
 
 
-//C# makes some assumptions reg. the size of a size_t, This call relies on the int32_t type being defined, if it is not, at least we get a compile time error
+//C# makes some assumptions reg. the size of a size_t, This call double-checks that C# is right about the size of size_t. 
+//This call relies on the int32_t type being defined, if it is not, at least we get a compile time error
 //it is assumed that sizeof(size_t) will not return a number larger than 2^32 (in fact, 4 or 8 is expected,but one day we might see 12 or 16, who knows)
 //int32_t is mentioned here http://en.cppreference.com/w/cpp/types/integer 
 TIGHTDB_C_CS_API int32_t test_sizeofsize_t()
@@ -599,7 +607,7 @@ TIGHTDB_C_CS_API size_t test_sizeoftablepointer()
 }
 
 //should be defined by size_t so will return 4 or 8 unless something is really strange C# will test in the same way as with Table*
-TIGHTDB_C_CS_API size_t test_sizeofcharptr()
+TIGHTDB_C_CS_API size_t test_sizeofcharpointer()
 {
     return sizeof(char *);
 }
@@ -614,6 +622,12 @@ TIGHTDB_C_CS_API size_t test_sizeofint64_t()
 TIGHTDB_C_CS_API size_t test_sizeoffloat()
 {
     return sizeof(float);
+}
+
+//return the size of a float. Used by the C# binding unit test that ensures that at runtime, the float size we expect is also the one c++ sends
+TIGHTDB_C_CS_API size_t test_sizeofdouble()
+{
+    return sizeof(double);
 }
 
 //return the size of time_t. C# expects this to be 64 bits always, but it might be 32 bit on some compilers, a C# unit test will discover this by calling this function
@@ -658,11 +672,57 @@ TIGHTDB_C_CS_API size_t test_size_t_min()
 }
 
 //used to test that values can round-trip without being changed
-TIGHTDB_C_CS_API size_t test_return_size_t(size_t input)
+TIGHTDB_C_CS_API size_t test_size_t_return(size_t input)
 {
     return input;
 }
 
+
+
+//the following tests ensures that the C# types and the mapped c++ types cover the exact same range
+TIGHTDB_C_CS_API float test_float_max()
+{
+    return std::numeric_limits<float>::max();
+}
+
+TIGHTDB_C_CS_API float test_float_min()
+{
+    return std::numeric_limits<float>::lowest();
+}
+
+//used to test that values can round-trip without being changed
+TIGHTDB_C_CS_API float test_float_return(float input)
+{
+    return input;
+}
+
+
+//the following tests ensures that the C# types and the mapped c++ types cover the exact same range
+TIGHTDB_C_CS_API double test_double_max()
+{
+    return std::numeric_limits<double>::max();
+}
+
+TIGHTDB_C_CS_API double test_double_min()
+{
+    return std::numeric_limits<double>::lowest();
+}
+
+//used to test that values can round-trip without being changed
+TIGHTDB_C_CS_API double test_double_return(double input)
+{
+    return input;
+}
+
+//as C++ cannot return the highest allowed value of an enum, we cannot really test the logical enum values
+//we could create a method for each enum, to see if it maps to the same value on the other side, like  get_type_int get_type_bool etc.
+//then call them and check that the values are the expected ones. This will not, however, ensure that we discover if c++ gets a new one,that C# does not
+//know about
+/*
+TIGHTDB_C_CS_API size_t test_datatype_max() {
+    return (size_t)DataType.Max;
+}
+*/
 
 
 //the following tests ensures that the C# types and the mapped c++ types cover the exact same range
@@ -677,30 +737,19 @@ TIGHTDB_C_CS_API int64_t test_int64_t_min()
 }
 
 //used to test that values can round-trip without being changed
-TIGHTDB_C_CS_API int64_t test_return_int64_t(int64_t input)
+TIGHTDB_C_CS_API int64_t test_int64_t_return(int64_t input)
 {
     return input;
 }
 
 
-//the following tests ensures that the C# types and the mapped c++ types cover the exact same range
-TIGHTDB_C_CS_API float test_float_max()
-{
-    return std::numeric_limits<float>::max();
+TIGHTDB_C_CS_API size_t test_return_datatype(size_t value) {
+    return datatype_to_size_t(size_t_to_datatype(value));
 }
 
-TIGHTDB_C_CS_API float test_float_min()
-{
-    return std::numeric_limits<float>::min();
+TIGHTDB_C_CS_API size_t test_return_boolean(size_t value) {
+    return bool_to_size_t(size_t_to_bool(value));
 }
-
-//used to test that values can round-trip without being changed
-TIGHTDB_C_CS_API float test_return_float(float input)
-{
-    return input;
-}
-
-
 
 
 
