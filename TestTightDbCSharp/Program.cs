@@ -1170,7 +1170,7 @@ SubTableWithInts:[ //3 rows   { //Start row 0
             {
                 t.AddEmptyRow(5);
                 long changeNumber = 0;
-                foreach (Row tr in t)
+                foreach (TableRow tr in t)
                 {
                     foreach (RowColumn trc in tr)
                     {
@@ -1291,9 +1291,87 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
     }
 
 
+    [TestFixture]
+    public static class Iteratortest
+    {
+        [Test]
+        public static void TableIterationTest()
+        {
+            using
+                (
+                var t = new Table("stringfield".String())
+                )
+            {
+                t.AddEmptyRow(3);
+                t.SetString(0,0,"firstrow");
+                t.SetString(0,0,"secondrow");
+                t.SetString(0,0,"thirdrow");
+                foreach (TableRow tableRow in  t )
+                {
+                    Assert.IsInstanceOf(typeof(TableRow),tableRow);//assert important as Table's parent also implements an iterator that yields rows. We want TableRows when 
+                    //we expicitly iterate a Table with foreach
+                }
+            }
+
+        }
+
+        [Test]
+        public static void TableViewIterationTest()
+        {
+            using
+                (
+                var t = new Table("stringfield".String())
+                )
+            {
+                t.AddEmptyRow(3);
+                t.SetString(0, 0, "firstrow");
+                t.SetString(0, 0, "secondrow");
+                t.SetString(0, 0, "thirdrow");
+                foreach (Row row in t.Where().FindAll(0, -1, -1)) //loop through a tableview should get os Row classes
+                {
+                    Assert.IsInstanceOf(typeof(Row), row);//assert important as Table's parent also implements an iterator that yields rows. We want TableRows when 
+                    //we expicitly iterate a Table with foreach
+                }
+            }
+        }
+
+
+        public static void IterateTableOrView(TableOrView tov)
+        {
+            foreach (Row row in tov) //loop through a TableOrview should get os Row classes EVEN IF THE UNDERLYING IS A TABLE
+            {
+                Assert.IsInstanceOf(typeof(Row), row);
+                //we expicitly iterate a Table with foreach
+            }            
+        }
+
+        [Test]
+        public static void TableorViewIterationTest()
+        {
+            using
+                (
+                var t = new Table("stringfield".String())
+                )
+            {
+                t.AddEmptyRow(3);
+                t.SetString(0, 0, "firstrow");
+                t.SetString(0, 0, "secondrow");
+                t.SetString(0, 0, "thirdrow");
+                IterateTableOrView(t);
+                IterateTableOrView(t.Where().FindAll(0,-1,-1));
+            }
+        }
+
+
+
+
+
+
+
+    }
 
     [TestFixture]
-    public static class CreateTableTest
+    public static class TableCreateTest
     {
 
         //test with the newest kind of field object constructores - lasse's inherited specialized ones
@@ -2486,6 +2564,18 @@ Table Name  : same names, empty names, mixed types
         }
 
 
+        //this method resembles the java dynamic table example at http://www.tightdb.com/documentation/Java_ref/4/Table/
+        public static void Dynamictable()
+        {
+            var tbl = new Table();
+            tbl.AddColumn(DataType.Int, "myInt");
+            tbl.AddColumn(DataType.String, "myStr");
+            tbl.AddColumn(DataType.Mixed, "myMixed");
+
+            tbl.Add(12, "hello", 2);
+
+        }
+        
 
         public static void TutorialDynamic()
         {
@@ -2514,17 +2604,17 @@ Table Name  : same names, empty names, mixed types
 
             //fill in one row, with two rows in the subtable, which is located at column 3
 
-            long rowno = peopleTable.AddRow("John", 20, true, null); //the null is a subtable we haven't filled in yet
-            peopleTable.GetSubTable(3, rowno).AddRow("mobile", "232-323-3232");
-            peopleTable.GetSubTable(3, rowno).AddRow("work", "434-434-4343");
+            long rowno = peopleTable.Add("John", 20, true, null); //the null is a subtable we haven't filled in yet
+            peopleTable.GetSubTable(3, rowno).Add("mobile", "232-323-3232");
+            peopleTable.GetSubTable(3, rowno).Add("work", "434-434-4343");
 
             //if there are many subtable rows, this is slightly faster as the subtable class only has to be created once
             {
-                long rowIndex = peopleTable.AddRow("John", 20, true, null);
+                long rowIndex = peopleTable.Add("John", 20, true, null);
                     //the null is a subtable we haven't filled in yet
                 Table rowSub = peopleTable.GetSubTable(3, rowIndex);
-                rowSub.AddRow("mobile", "232-323-3232");
-                rowSub.AddRow("work", "434-434-4343");
+                rowSub.Add("mobile", "232-323-3232");
+                rowSub.Add("work", "434-434-4343");
             }
 
 
@@ -2543,11 +2633,11 @@ Table Name  : same names, empty names, mixed types
                 )
             {
 
-                long rowIndex = peopleTable.AddRow("John", 20, true, null); //the null is a subtable we haven't filled in yet
+                long rowIndex = peopleTable.Add("John", 20, true, null); //the null is a subtable we haven't filled in yet
                 using (Table rowSub2 = peopleTable2.GetSubTable(3, rowIndex))
                 {
-                    rowSub2.AddRow("mobile", "232-323-3232");
-                    rowSub2.AddRow("work", "434-434-4343");
+                    rowSub2.Add("mobile", "232-323-3232");
+                    rowSub2.Add("work", "434-434-4343");
                 } //Because of the using statement, You are guarenteed that RowSub is deallocated at this point
             } //Because of the using statement, You are guarenteed that PeopleTable2 is deallocated at this point
 
@@ -2565,7 +2655,7 @@ Table Name  : same names, empty names, mixed types
 
             //Finally subtables can be specified inside the parameter list (as an array of arrays of object) like this
 
-            peopleTable.AddRow("John", 20, true,
+            peopleTable.Add("John", 20, true,
                  new object[]
                      {
                          new object[] {"work", "232-323-3232"},
@@ -2580,7 +2670,7 @@ Table Name  : same names, empty names, mixed types
                         new object[] {"work", "232-323-3232"},
                         new object[] {"home", "434-434-4343"}
                     };
-            peopleTable.AddRow("John", 20, true, sub);
+            peopleTable.Add("John", 20, true, sub);
 
             long rows = peopleTable.Size;//get the number of rows in a table
             bool isempty = peopleTable.IsEmpty;//is the table empty?
@@ -2642,9 +2732,9 @@ Table Name  : same names, empty names, mixed types
             }
 
             //You can also iterate a table over its fields
-            foreach (Row looprow in peopleTable)
+            foreach (var looprow in peopleTable)   //looprow is of type TableRow. If peopletable was a TableView You would get a Row object
             {
-                foreach (RowColumn rowColumn in looprow)
+                foreach (var rowColumn in looprow)  //columns always give You RowColumn types no matter if You are working with Table, TableOrView or TableView
                 {
                     Console.WriteLine(rowColumn.Value);//will write the value of all fields in all rows,except subtables (will write subtable.tostring for the subtable)
                 }
@@ -2685,7 +2775,10 @@ Table Name  : same names, empty names, mixed types
              *  Don't run the program in Nunit to debug, simply debug it in visual studio when it runs like an ordinary program
              *  To run the unit tests as unit tests, load the assembly in Nunit and run it from there
              *  */
-
+            Iteratortest.TableIterationTest();
+            Iteratortest.TableViewIterationTest();
+            Iteratortest.TableorViewIterationTest();
+            
             QueryTests.QueryBoolEqual();
             EnvironmentTest.ShowVersionTest();
             EnvironmentTest.Testinterop();
@@ -2696,7 +2789,7 @@ Table Name  : same names, empty names, mixed types
             
 
               //GroupTests.CreateGroupEmptyTest();
-          //  TableChangeDataTest.TableIntValueSubTableTest1();
+            TableChangeDataTest.TableIntValueSubTableTest1();
          //    StringEncodingTest.TableWithnonasciiCharacters();//when we have implemented utf-16 to utf-8 both ways, the following tests should be created:
 
             //GroupTests.CreateGroupFileNameTest();

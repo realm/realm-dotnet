@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 
@@ -7,7 +8,7 @@ namespace TightDbCSharp
     
     //abstract methods are those that are implemented differently in table and tableview
     //methods implemented here (typically c# add ons), work with both types
-    public abstract class TableOrView : Handled, IEnumerable<Row>
+    public abstract class TableOrView : Handled, IEnumerable
     {
         internal abstract long GetSize();
         internal abstract long GetColumnCount();
@@ -51,32 +52,6 @@ namespace TightDbCSharp
         }
 
 
-        //the following code enables TableOrView to be enumerated, and makes Row the type You get back from an enummeration
-        public IEnumerator<Row> GetEnumerator() { return new Enumerator(this); }
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return new Enumerator(this); }
-
-        class Enumerator : IEnumerator<Row>//probably overkill, current needs could be met by using yield
-        {
-            long _currentRow = -1;
-            TableOrView _myTable;
-            public Enumerator(TableOrView table)
-            {
-                _myTable = table;
-            }
-            public Row Current { get { return new Row(_myTable, _currentRow); } }
-            object System.Collections.IEnumerator.Current { get { return Current; } }
-
-            public bool MoveNext()
-            {
-                return ++_currentRow < _myTable.Size;
-            }
-
-            public void Reset() { _currentRow = -1; }
-            public void Dispose()
-            {
-                _myTable = null; //remove reference to Table class
-            }
-        }
 
 
 
@@ -93,12 +68,129 @@ namespace TightDbCSharp
             get { return GetSpec(); }
         }
 
-        public Row this[long rowIndex]
+
+
+        //the following code enables TableOrView to be enumerated, and makes Row the type You get back from an enummeration
+        public IEnumerator<Row> GetEnumerator() { return new Enumerator(this); }
+        IEnumerator IEnumerable.GetEnumerator() { return new Enumerator(this); }
+
+        class Enumerator : IEnumerator<Row>//probably overkill, current needs could be met by using yield
         {
-            get
+            long _currentRow = -1;
+            TableOrView _myTable;
+            public Enumerator(TableOrView table)
             {
-                ValidateRowIndex(rowIndex);
-                return new Row(this, rowIndex);
+                _myTable = table;
+            }
+            public Row Current { get { return new Row(_myTable, _currentRow); } }
+            object IEnumerator.Current { get { return Current; } }
+
+            public bool MoveNext()
+            {
+                return ++_currentRow < _myTable.Size;
+            }
+
+            public void Reset() { _currentRow = -1; }
+            public void Dispose()
+            {
+                _myTable = null; //remove reference to Table class
+            }
+        }
+
+
+
+        internal void SetRowNoCheck(long rowIndex, params object[] rowContents)
+        {
+            if (rowContents.Length != ColumnCount)
+                throw new ArgumentOutOfRangeException("rowContents", String.Format(CultureInfo.InvariantCulture, "SetRow called with {0} objects, but there are only {1} columns in the table", rowContents.Length, ColumnCount));
+            for (long ix = 0; ix < ColumnCount; ix++)
+            {
+                object element = rowContents[ix];//element is parameter number ix
+                //first do a switch on directly compatible types
+                Type elementType = element.GetType();//performance hit as it is not neccessarily used, but used many blaces below
+
+                switch (ColumnTypeNoCheck(ix))
+                {
+                    case DataType.Int:
+                        SetLongNoCheck(ix, rowIndex, (long)element);//this throws exceptions if called with something too weird
+                        break;
+                    case DataType.Bool:
+                        SetBooleanNoCheck(ix, rowIndex, (Boolean)element);
+                        break;
+                    case DataType.String:
+                        SetStringNoCheck(ix, rowIndex, (string)element);
+                        break;
+                    case DataType.Binary://todo:implement
+                        break;
+                    case DataType.Table://todo:test thoroughly with unit test, also with invalid data
+                        Table t = GetSubTableNoCheck(ix, rowIndex);//The type to go into a subtable has to be an array of arrays of objects
+
+                        if (element != null)//if You specify null for a subtable we do nothing null means You intend to fill it in later
+                        {
+
+
+                            if (elementType != typeof(Array))
+                            {
+                                throw new ArgumentOutOfRangeException(String.Format(CultureInfo.InvariantCulture,
+                                                                                    "SetRow called with a non-array type {0} for the subtable column {1}",
+                                                                                    elementType,
+                                                                                    GetColumnNameNoCheck(ix)));
+                            }
+                            //at this point we know that element is an array of some sort, hopefully containing valid records for our subtable                                                
+                            foreach (Array arow in (Array)element)//typecast because we already ensured element is an array,and that element is not null
+                            {
+                                t.Add(arow);
+                            }
+                        }
+                        break;
+                    case DataType.Mixed://Try to infer the mixed type to use from the type of the object from the user
+
+
+                        if (
+                            elementType == typeof(Byte) ||//byte Byte
+                            elementType == typeof(Int32) ||//int,int32
+                            elementType == typeof(Int64) ||//long,int64
+                            elementType == typeof(Int16) ||//int16,short
+                            elementType == typeof(SByte) ||//sbyte SByte                           
+                            elementType == typeof(UInt16) ||//ushort,uint16
+                            elementType == typeof(UInt32) ||//uint
+                            elementType == typeof(UInt64)//ulong                            
+                            )
+                        {
+                            SetMixedLongNoCheck(ix, rowIndex, (long)element);
+                            break;
+                        }
+
+                        if (elementType == typeof(Single))//float, Single
+                        {
+                            SetMixedFloatNoCheck(ix, rowIndex, (float)element);
+                            break;
+                        }
+
+                        if (elementType == typeof(Double))
+                        {
+                            SetMixedDoubleNoCheck(ix, rowIndex, (Double)element);
+                            break;
+                        }
+
+                        if (elementType == typeof(DateTime))
+                        {
+                            SetMixedDateTimeNoCheck(ix, rowIndex, (DateTime)element);
+                        }
+
+                        break;
+                    case DataType.Date:
+                        SetDateNoCheck(ix, rowIndex, (DateTime)element);
+                        break;
+                    case DataType.Float:
+                        SetFloatNoCheck(ix, rowIndex, (float)element);
+                        break;
+                    case DataType.Double:
+                        SetDoubleNoCheck(ix, rowIndex, (Double)element);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException("rowContents", String.Format(CultureInfo.InvariantCulture, "An element ix:{0} of type {1} in a row sent to AddRow, is not of a supported tightdb type ", ix, elementType));
+                }
             }
         }
 
@@ -272,7 +364,6 @@ namespace TightDbCSharp
             ValidateRowIndex(rowIndex);
             RemoveNoCheck(rowIndex);
             //todo:invalidate any iterators - or?
-            throw new NotImplementedException();
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "subTable"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "subtable")]
@@ -404,16 +495,6 @@ namespace TightDbCSharp
             return GetBooleanNoCheck(columnIndex, rowIndex);
         }
 
-        public int AddRow( params object[] x)
-        {
-            //todo:implement
-            return 0;
-        }
-
-        public void AddRowAt(long rowIndex, params object[] x)
-        {
-            //todo:implement
-        }
         //only call this method if You know for sure that RowIndex is less than or equal to table.size()
         //and that you know for sure that columnIndex is less than or equal to table.columncount
         internal long GetLongNoColumnRowCheck(long columnIndex, long rowIndex)

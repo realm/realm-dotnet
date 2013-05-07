@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 
 namespace TightDbCSharp
 {
 
-    public class TableView : TableOrView 
+    public class TableView : TableOrView
     {
                 //following the dispose pattern discussed here http://dave-black.blogspot.dk/2011/03/how-do-you-properly-implement.html
         //a good explanation can be found here http://stackoverflow.com/questions/538060/proper-use-of-the-idisposable-interface
@@ -20,6 +21,18 @@ namespace TightDbCSharp
         {
             return TableViewed.Spec;
         }
+
+
+        public Row this[long rowIndex]
+        {
+            get
+            {
+                ValidateRowIndex(rowIndex);
+                return new Row(this, rowIndex);
+            }
+        }
+
+
 
         //This method will ask c++ to dispose of a table object created by table_new.
         //this method is for internal use only

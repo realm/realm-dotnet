@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.Serialization;
@@ -47,7 +48,7 @@ namespace TightDbCSharp
 
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix")]
-    public class Table : TableOrView
+    public class Table : TableOrView, IEnumerable
     {
         //manual dll version info. Used when debugging to see if the right DLL is loaded, or an old one
         //the number is a date and a time (usually last time i debugged something)
@@ -69,6 +70,49 @@ namespace TightDbCSharp
         {
             SetHandle(tableHandle,shouldbedisposed);
         }
+
+
+
+        public TableRow this[long rowIndex]
+        {
+            get
+            {
+                ValidateRowIndex(rowIndex);
+                return new TableRow(this, rowIndex);
+            }
+        }
+
+
+
+        //the following code enables Table to be enumerated, and makes Row the type You get back from an enummeration
+        public new IEnumerator<TableRow> GetEnumerator() { return new Enumerator(this); }
+        IEnumerator IEnumerable.GetEnumerator() { return new Enumerator(this); }
+
+        class Enumerator : IEnumerator<TableRow>//probably overkill, current needs could be met by using yield
+        {
+            long _currentRow = -1;
+            Table _myTable;
+            public Enumerator(Table table)
+            {
+                _myTable = table;
+            }
+            public TableRow Current { get { return new TableRow(_myTable, _currentRow); } }
+            object IEnumerator.Current { get { return Current; } }
+
+            public bool MoveNext()
+            {
+                return ++_currentRow < _myTable.Size;
+            }
+
+            public void Reset() { _currentRow = -1; }
+            public void Dispose()
+            {
+                _myTable = null; //remove reference to Table class
+            }
+        }
+
+
+
 
 
 
@@ -233,6 +277,23 @@ namespace TightDbCSharp
         public long AddColumn(DataType type, String name)
         {
             return UnsafeNativeMethods.TableAddColumn(this, type, name);
+        }
+
+        //
+
+        //adds an empty row and filles it out
+        //todo:consider if we should use insert row instead? - ask what's the difference, if any
+        public long Add(params object[] x)
+        {
+            long rowadded = AddEmptyRow(1);
+            SetRowNoCheck(rowadded, x);
+            return rowadded;//return the index of the just added row
+        }
+
+        public void AddRowAt(long rowIndex, params object[] x)
+        {
+            ValidateRowIndex(rowIndex);
+            SetRowNoCheck(rowIndex,x);
         }
 
         internal override string GetColumnNameNoCheck(long columnIndex)//unfortunately an int, bc tight might have been built using 32 bits
@@ -640,7 +701,6 @@ namespace TightDbCSharp
             {
                 return new Field(fieldName, DataType.String);
             }
-
 
             public static Field TightDbBinary(this String fieldName)
             {
