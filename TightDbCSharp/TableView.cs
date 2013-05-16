@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 
 namespace TightDbCSharp
@@ -11,11 +10,6 @@ namespace TightDbCSharp
         //a good explanation can be found here http://stackoverflow.com/questions/538060/proper-use-of-the-idisposable-interface
 
         internal Table TableViewed { get; set; }//used only to make sure that a reference to the table exists until the view is disposed of
-
-        internal override void SetColumnNameNoCheck(long columnIndex, string columnName)
-        {
-            throw new NotImplementedException();
-        }
 
         internal override Spec GetSpec()
         {
@@ -43,9 +37,15 @@ namespace TightDbCSharp
             UnsafeNativeMethods.TableViewUnbind(this);
         }
 
-        public override long GetColumnIndex(String name)
+        internal override DateTime GetMixedDateTimeNoCheck(long columnIndex, long rowIndex)
         {
-            return UnsafeNativeMethods.TableViewGetColumnIndex(this,name);
+            return UnsafeNativeMethods.TableViewGetMixedDateTime(this, columnIndex, rowIndex);
+        }
+
+        //-1 of the column string does not specify a column
+        internal override long GetColumnIndexNoCheck(String name)
+        {
+            return UnsafeNativeMethods.TableViewGetColumnIndex(this,name);            
         }
 
         internal override void RemoveNoCheck(long rowIndex)
@@ -70,7 +70,7 @@ namespace TightDbCSharp
 
         internal override void SetDoubleNoCheck(long columnIndex, long rowIndex, double value)
         {
-            throw new NotImplementedException();
+            UnsafeNativeMethods.TableViewSetDouble(this,columnIndex ,rowIndex,value);
         }
 
         //this method takes a DateTime
@@ -80,11 +80,12 @@ namespace TightDbCSharp
             UnsafeNativeMethods.TableViewSetMixedDate(this,columnIndex,rowIndex,value);
         }
 
-        internal override void SetDateNoCheck(long columnIndex, long rowIndex, DateTime value)
+        internal override void SetDateTimeNoCheck(long columnIndex, long rowIndex, DateTime value)
         {
-           UnsafeNativeMethods.TableViewSetDate(this,columnIndex,rowIndex,value);
+            UnsafeNativeMethods.TableViewSetDate(this,columnIndex,rowIndex,value);
         }
 
+        
         internal override Table GetMixedSubTableNoCheck(long columnIndex, long rowIndex)
         {
             return UnsafeNativeMethods.TableViewGetSubTable(this, columnIndex, rowIndex);
@@ -127,6 +128,20 @@ namespace TightDbCSharp
         {
             return UnsafeNativeMethods.TableViewGetMixedInt(this, columnIndex, rowIndex);
         }
+
+        internal override Double GetMixedDoubleNoCheck(long columnIndex, long rowIndex)
+        {
+            return UnsafeNativeMethods.TableViewGetMixedDouble(this, columnIndex, rowIndex);
+        }
+
+        
+        internal override DateTime GetDateTimeNoCheck(long columnIndex, long rowIndex)
+        {
+            return UnsafeNativeMethods.TableViewGetDateTime(this, columnIndex, rowIndex);
+        }
+
+
+
 
         internal override DataType GetMixedTypeNoCheck(long columnIndex, long rowIndex)
         {
@@ -175,6 +190,11 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableViewGetBool(this, columnIndex, rowIndex);
         }
 
+        internal override TableView FindAllIntNoCheck(long columnIndex, long value)
+        {
+            return UnsafeNativeMethods.TableViewFindAllInt(this,  columnIndex,value);
+        }
+
         internal override void SetBooleanNoCheck(long columnIndex, long rowIndex, Boolean value)
         {
             UnsafeNativeMethods.TableViewSetBool(this, columnIndex, rowIndex, value);
@@ -186,7 +206,44 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableViewGetInt(this, columnIndex, rowIndex);
         }
 
-        
+
+        internal override long FindFirstBinaryNoCheck(long columnIndex, byte[] value)
+        {
+            return UnsafeNativeMethods.TableViewFindFirstBinary(this, columnIndex, value);
+        }
+
+        internal override long FindFirstIntNoCheck(long columnIndex, long value)
+        {
+            return UnsafeNativeMethods.TableViewFindFirstInt(this, columnIndex, value);
+        }
+
+        internal override long FindFirstStringNoCheck(long columnIndex, string value)
+        {
+            return UnsafeNativeMethods.TableViewFindFirstString(this, columnIndex, value);
+        }
+
+        internal override long FindFirstDoubleNoCheck(long columnIndex, double value)
+        {
+            return UnsafeNativeMethods.TableViewFindFirstDouble(this, columnIndex, value);
+        }
+
+        internal override long FindFirstFloatNoCheck(long columnIndex, float value)
+        {
+            return UnsafeNativeMethods.TableViewFindFirstFloat(this, columnIndex, value);
+        }
+
+        internal override long FindFirstDateNoCheck(long columnIndex, DateTime value)
+        {
+            return UnsafeNativeMethods.TableViewFindFirstDate(this, columnIndex, value);
+        }
+
+        internal override long FindFirstBoolNoCheck(long columnIndex, bool value)
+        {
+            return UnsafeNativeMethods.TableViewFindFirstBool(this, columnIndex, value);
+        }
+
+
+
 
     }
 }

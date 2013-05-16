@@ -7,7 +7,7 @@ The tightdb_c_cs.dll file contains extern "C" methods, that call on into c++ tig
 The C# binding use the extern "c" methods in the DLL to access tightdb.
 
 This directory contains two solutions that links to the same sourcefiles :
-tightCSDLL2012.sln - used to build with visual studio 2012 (not there yet, awaiting new lib files)
+tightCSDLL2012.sln - used to build with visual studio 2012
 tightCSDLL2010.sln - used to build with visual studio 2010
 
 

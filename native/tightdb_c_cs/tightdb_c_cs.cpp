@@ -14,6 +14,66 @@ we should not break easily, and we should know where we have problems.
 using namespace tightdb;
 
 
+namespace {
+
+//the followng functions convert to/from the types that we know have these features :
+//* No marshalling involved - the transfer is fast
+//* Blittable to C# types - the transfer is done without changes to the values (fast)
+//* Types, that does not change on the c++ side between compileres and platforms
+//* Types that have a mirror C# type that behaves the same way on different platforms (like IntPtr and size_t)
+
+//maybe this should be a macro or an inline function. Maybe the compiler inlines it automatically
+//bool is stored differently on different c++ compilers so use a size_t instead when p/invoking
+inline bool size_t_to_bool(size_t value) 
+{
+    return value==1;//here i assume 1 and size_t can be compared in a meaningfull way. C# sends a size_t = 1 when true,and =0 when false
+}
+
+inline size_t bool_to_size_t(bool value) {
+    if(value) return 1;
+    return 0;
+}
+
+
+//Date is totally not matched by a C# type, so convert to an int64_t that is interpreted as a 64 bit time_t
+//is this memory-safe - will the Date(value) just allocate on stack, so that after the call the stack contains the return value
+//until the calle decides to pop it?. If Date(value) becomes a pointer to something on the heap or the like, we have a problem.
+inline Date int64_t_to_Date(int64_t value){
+    return Date(time_t(value));
+}
+
+//this call assumes that time_t and int64_t are blittable (same byte size) or that the compiler handles any resizing neccessary
+inline int64_t Date_to_int64_t(Date value) {
+    return value.get_date();
+}
+
+
+//time_t might just in some case have a different size than 64 bits on the c++ side, so let's transfer using int64_t instead
+//these two methods are here bc the tightdb i compile against right now does not have had all its time_t parametres changed to Date yet.
+inline time_t int64_t_to_time_t(int64_t value) {
+    return value;
+}
+
+inline int64_t time_t_to_int64_t(time_t value) {
+    return value;
+}
+
+
+//as We've got no idea how the compiler represents an instance of DataType on the stack, perhaps it's better to send back a size_t with the value.
+//we always know the size of a size_t
+inline DataType size_t_to_Datatype(size_t value){
+    return (DataType)value;//todo:ask if this is a valid typecast. Or would it be better to use e.g int64? or reintepret_cast
+}
+
+//as We've got no idea how the compiler represents an instance of DataType on the stack, perhaps it's better to send back a size_t with the value.
+//we always know the size of a size_t
+inline size_t Datatype_to_size_t(DataType value) {
+    return (size_t)value;//todo:ask if this is a valid typecast. Or would it be better to use e.g int64? or reintepret_cast
+}
+
+
+} //anonymous namespace
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -29,29 +89,6 @@ extern "C" {
 }
 
 
-//maybe this should be a macro or an inline function. Maybe the compiler inlines it automatically
-bool size_t_to_bool(size_t value) 
-{
-    return value==1;//here i assume 1 and size_t can be compared in a meaningfull way. C# sends a size_t = 1 when true,and =0 when false
-}
-
-size_t bool_to_size_t(bool value) {
-    if(value) return 1;
-    return 0;
-}
-
-
-//as We've got no idea how the compiler represents an instance of DataType on the stack, perhaps it's better to send back a size_t with the value.
-//we always know the size of a size_t
-DataType size_t_to_datatype(size_t value){
-    return (DataType)value;//todo:ask if this is a valid typecast. Or would it be better to use e.g int64? or reintepret_cast
-}
-
-//as We've got no idea how the compiler represents an instance of DataType on the stack, perhaps it's better to send back a size_t with the value.
-//we always know the size of a size_t
-size_t datatype_to_size_t(DataType value) {
-    return (size_t)value;//todo:ask if this is a valid typecast. Or would it be better to use e.g int64? or reintepret_cast
-}
 
 TIGHTDB_C_CS_API size_t table_get_column_count(tightdb::Table* table_ptr)
 {
@@ -94,6 +131,7 @@ TIGHTDB_C_CS_API Group* new_group_file(const char* name)//should be disposed by 
     std::cerr<<"\n";
 
     //Group* g = new Group(Group::unattached_tag());
+      
       Group* g = new Group(name);
       std::cerr<<"after new group\n";
     return g;
@@ -137,14 +175,14 @@ TIGHTDB_C_CS_API void tableView_remove_row(tightdb::TableView* tableView_ptr, si
 
 TIGHTDB_C_CS_API size_t table_add_column(tightdb::Table* table_ptr,size_t type, const char* name)
 {
-    return table_ptr->add_column(size_t_to_datatype(type),name);
+    return table_ptr->add_column(size_t_to_Datatype(type),name);
 }
 
 //    size_t add_column(DataType type, const char* name, ColumnType attr=col_attr_None);
 //note that we have omitted support for attr until we figure what it's for
 TIGHTDB_C_CS_API size_t spec_add_column(Spec* spec_ptr,size_t type, const char* name) 
 {
-	return spec_ptr->add_column(size_t_to_datatype(type),name);		
+	return spec_ptr->add_column(size_t_to_Datatype(type),name);		
 }
 
 //returns the spec that is associated with a table
@@ -164,13 +202,13 @@ TIGHTDB_C_CS_API Spec* table_get_spec(Table* table_ptr)//do not do anything when
 //    DataType    get_column_type(size_t column_ndx) const TIGHTDB_NOEXCEPT;
 TIGHTDB_C_CS_API  size_t table_get_column_type(Table* table_ptr, const size_t column_ndx)
 {
-	return datatype_to_size_t(table_ptr->get_column_type(column_ndx));
+	return Datatype_to_size_t(table_ptr->get_column_type(column_ndx));
 }
 
 
 TIGHTDB_C_CS_API  size_t tableView_get_column_type(tightdb::TableView* tableView_ptr, const size_t column_ndx)
 {
-	return datatype_to_size_t(tableView_ptr->get_column_type(column_ndx));
+	return Datatype_to_size_t(tableView_ptr->get_column_type(column_ndx));
 }
 
 
@@ -181,7 +219,9 @@ TIGHTDB_C_CS_API  size_t tableView_get_column_type(tightdb::TableView* tableView
 //    DataType    get_column_type(size_t column_ndx) const TIGHTDB_NOEXCEPT;
 TIGHTDB_C_CS_API  size_t table_get_mixed_type(Table* table_ptr, const size_t column_ndx,const size_t row_ndx)
 {
-    return datatype_to_size_t(table_ptr->get_mixed_type(column_ndx,row_ndx));
+    return Datatype_to_size_t(table_ptr->get_mixed_type(column_ndx,row_ndx));
+
+    //this here below is debug stuff
 }
 
 TIGHTDB_C_CS_API  void table_update_from_spec(Table* table_ptr)
@@ -192,7 +232,7 @@ TIGHTDB_C_CS_API  void table_update_from_spec(Table* table_ptr)
 TIGHTDB_C_CS_API  size_t spec_get_column_type(Spec* spec_ptr, const size_t column_ndx)
 {
    
-    return datatype_to_size_t(spec_ptr->get_column_type(column_ndx));
+    return Datatype_to_size_t(spec_ptr->get_column_type(column_ndx));
 }
 
 
@@ -373,6 +413,21 @@ TIGHTDB_C_CS_API void tableView_set_int(TableView*  tableView_ptr, size_t column
 }
 
 
+
+//assuming that int64_t and time_t are binary compatible and of equal size
+//the int64_t has been set to a valid time_t date by C#
+TIGHTDB_C_CS_API void tableView_set_date(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx, int64_t value)
+{
+    tableView_ptr->set_date(column_ndx,row_ndx,int64_t_to_time_t(value));
+}
+
+//assuming that int64_t and time_t are binary compatible and of equal size
+TIGHTDB_C_CS_API void table_set_date(Table*  table_ptr, size_t column_ndx, size_t row_ndx, int64_t value)
+{
+    table_ptr->set_date(column_ndx,row_ndx,int64_t_to_time_t(value));
+}
+
+
 TIGHTDB_C_CS_API void table_set_mixed_int(Table*  table_ptr, size_t column_ndx, size_t row_ndx, int64_t value)
 {
     table_ptr->set_mixed(column_ndx,row_ndx,value);
@@ -389,6 +444,15 @@ TIGHTDB_C_CS_API void table_set_mixed_float(Table*  table_ptr, size_t column_ndx
     table_ptr->set_mixed(column_ndx,row_ndx,value);
 }
 
+TIGHTDB_C_CS_API void table_set_mixed_double(Table*  table_ptr, size_t column_ndx, size_t row_ndx, double value)
+{
+    table_ptr->set_mixed(column_ndx,row_ndx,value);
+}
+
+TIGHTDB_C_CS_API void tableView_set_mixed_double(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx, double value)
+{
+    tableView_ptr->set_mixed(column_ndx,row_ndx,value);
+}
 
 TIGHTDB_C_CS_API void tableView_set_mixed_int(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx, int64_t value)
 {
@@ -398,28 +462,98 @@ TIGHTDB_C_CS_API void tableView_set_mixed_int(TableView*  tableView_ptr, size_t 
 //todo:careful unit test that ensures that the stack size matches up on 64 and 32 bit
 //the time_t will be marshalled from C# as a 64 bit integer. On the few platforms that I know of, time_t does NOT follow size_t when 32bit.
 //if we stumble upon a platform that stores time_t in a 32 bit value, we might have to have a function that returns the size of time_t
-TIGHTDB_C_CS_API void tableView_set_mixed_time(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx, time_t value)
+TIGHTDB_C_CS_API void tableView_set_mixed_date(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx, int64_t value)
 {
-    tableView_ptr->set_mixed(column_ndx,row_ndx,value);
+    tableView_ptr->set_mixed(column_ndx,row_ndx,int64_t_to_Date(value));
 }
 
 //todo:careful unit test that ensures that the stack size matches up on 64 and 32 bit
 //the time_t will be marshalled from C# as a 64 bit integer. On the few platforms that I know of, time_t does NOT follow size_t when 32bit.
 //if we stumble upon a platform that stores time_t in a 32 bit value, we might have to have a function that returns the size of time_t
-TIGHTDB_C_CS_API void table_set_mixed_time(Table*  table_ptr, size_t column_ndx, size_t row_ndx, time_t value)
+TIGHTDB_C_CS_API void table_set_mixed_date(Table*  table_ptr, size_t column_ndx, size_t row_ndx, int64_t value)
 {
-    table_ptr->set_mixed(column_ndx,row_ndx,value);
+/*    
+       std::cerr<<"table_set_mixed_date got("<<value <<")\n";
+    table_ptr->set_mixed(column_ndx,row_ndx,int64_t_to_Date(value));
+
+    Mixed m = table_ptr->get_mixed(column_ndx,row_ndx);
+    
+    DataType t = m.get_type();
+
+    time_t retval = m.get_date();    
+
+     std::cerr<<"datatype ("<<t<<")";
+     std::cerr<<"retval ("<<retval<<")";
+
+     int64_t retval2 = time_t_to_int64_t(retval);
+
+       std::cerr<<"table_get_mixed_date returns("<<retval2<<")\n";
+       */
+//original code!
+    table_ptr->set_mixed(column_ndx,row_ndx,int64_t_to_Date(value));
+
 }
 
+TIGHTDB_C_CS_API int64_t table_view_get_mixed_date(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx)
+{
+    /*
+    int64_t retval = time_t_to_int64_t(tableView_ptr->get_mixed(column_ndx,row_ndx).get_date());
+
+       std::cerr<<"table_view_get_mixed_date returns("<<retval<<")\n";
+    return retval;
+    */
+    return time_t_to_int64_t(tableView_ptr->get_mixed(column_ndx,row_ndx).get_date());
+}
+
+TIGHTDB_C_CS_API int64_t table_get_mixed_date(Table*  table_ptr, size_t column_ndx, size_t row_ndx)
+{
+    /*
+ int64_t retval = time_t_to_int64_t(table_ptr->get_mixed(column_ndx,row_ndx).get_date());    
+       std::cerr<<"table_get_mixed_date returns("<<retval<<")\n";
+    return retval;
+ */
+   return time_t_to_int64_t(table_ptr->get_mixed(column_ndx,row_ndx).get_date());    
+}
+
+TIGHTDB_C_CS_API int64_t table_view_get_date(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx)
+{
+    return time_t_to_int64_t(tableView_ptr->get_date(column_ndx,row_ndx));
+}
+
+TIGHTDB_C_CS_API int64_t table_get_date(Table*  table_ptr, size_t column_ndx, size_t row_ndx)
+{
+    return time_t_to_int64_t(table_ptr->get_date(column_ndx,row_ndx));
+}
 
 TIGHTDB_C_CS_API int64_t  table_get_mixed_int(Table*  table_ptr, size_t column_ndx, size_t row_ndx)
 {
     return table_ptr->get_mixed(column_ndx,row_ndx).get_int();    
 }
 
+TIGHTDB_C_CS_API double  table_get_mixed_double(Table*  table_ptr, size_t column_ndx, size_t row_ndx)
+{
+    return table_ptr->get_mixed(column_ndx,row_ndx).get_double();    
+}
+
+TIGHTDB_C_CS_API double  table_get_mixed_float(Table*  table_ptr, size_t column_ndx, size_t row_ndx)
+{
+    return table_ptr->get_mixed(column_ndx,row_ndx).get_float();    
+}
+
+
 TIGHTDB_C_CS_API int64_t  tableView_get_mixed_int(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx)
 {
     return tableView_ptr->get_mixed(column_ndx,row_ndx).get_int();    
+}
+
+TIGHTDB_C_CS_API double  tableView_get_mixed_double(Table*  tableView_ptr, size_t column_ndx, size_t row_ndx)
+{
+    return tableView_ptr->get_mixed(column_ndx,row_ndx).get_double();    
+}
+
+TIGHTDB_C_CS_API double  tableView_get_mixed_float(Table*  tableView_ptr, size_t column_ndx, size_t row_ndx)
+{
+    return tableView_ptr->get_mixed(column_ndx,row_ndx).get_float();    
 }
 
 
@@ -429,12 +563,129 @@ TIGHTDB_C_CS_API size_t table_add_empty_row(Table* table_ptr, size_t num_rows)
     return table_ptr->add_empty_row(num_rows);
 }
 
+//find first methods in Table
+/* 
+    size_t         find_first_int(size_t column_ndx, int64_t value) const;
+    size_t         find_first_bool(size_t column_ndx, bool value) const;
+    size_t         find_first_date(size_t column_ndx, time_t value) const;
+    size_t         find_first_float(size_t column_ndx, float value) const;
+    size_t         find_first_double(size_t column_ndx, double value) const;
+    size_t         find_first_string(size_t column_ndx, const char* value) const;
+    size_t         find_first_binary(size_t column_ndx, const char* value, size_t len) const;
+    */
+
+TIGHTDB_C_CS_API size_t table_find_first_binary(Table * table_ptr , size_t column_ndx, char* value, size_t len)
+{   
+    return  table_ptr->find_first_binary(column_ndx,value,len);
+}
+
+
+TIGHTDB_C_CS_API size_t table_find_first_string(Table * table_ptr , size_t column_ndx, char* value)
+{   
+    return  table_ptr->find_first_string(column_ndx,value);
+}
+
+
+
+TIGHTDB_C_CS_API size_t table_find_first_double(Table * table_ptr , size_t column_ndx, double value)
+{   
+    return  table_ptr->find_first_double(column_ndx,value);
+}
+
+
+TIGHTDB_C_CS_API size_t table_find_first_float(Table * table_ptr , size_t column_ndx, float value)
+{   
+    return  table_ptr->find_first_float(column_ndx,value);
+}
+
+//assuming int64_t and time_t are binary compatible.
+TIGHTDB_C_CS_API size_t table_find_first_date(Table * table_ptr , size_t column_ndx, int64_t value)
+{   
+    return  table_ptr->find_first_date(column_ndx,int64_t_to_time_t(value));
+}
+
+TIGHTDB_C_CS_API size_t table_find_first_bool(Table * table_ptr , size_t column_ndx, size_t value)
+{   
+    return  table_ptr->find_first_bool(column_ndx,size_t_to_bool(value));
+}
+
+//size_t         find_first_bool(size_t column_ndx, bool value) const;
+TIGHTDB_C_CS_API size_t table_find_first_int(Table * table_ptr , size_t column_ndx, int64_t value)
+{   
+    return table_ptr->find_first_int(column_ndx,value);
+}
+
+
+/*
+find first methods in tableview
+    size_t find_first_int(size_t column_ndx, int64_t value) const;
+    size_t find_first_bool(size_t column_ndx, bool value) const;
+    size_t find_first_date(size_t column_ndx, time_t value) const;
+    size_t find_first_float(size_t column_ndx, float value) const;
+    size_t find_first_double(size_t column_ndx, double value) const;
+    size_t find_first_string(size_t column_ndx, const char* value) const;
+    find_first_binary is not implemented in tableview yet
+*/
+
+/*
+TIGHTDB_C_CS_API size_t tableView_find_first_binary(TableView * table_ptr , size_t column_ndx, char* value, size_t len)
+{   
+    return  table_ptr->find_first_binary(column_ndx,value,len);
+}
+*/
+
+TIGHTDB_C_CS_API size_t tableView_find_first_string(TableView * table_ptr , size_t column_ndx, char* value)
+{   
+    return  table_ptr->find_first_string(column_ndx,value);
+}
+
+
+
+TIGHTDB_C_CS_API size_t tableView_find_first_double(TableView * table_ptr , size_t column_ndx, double value)
+{   
+    return  table_ptr->find_first_double(column_ndx,value);
+}
+
+
+TIGHTDB_C_CS_API size_t tableView_find_first_float(TableView * table_ptr , size_t column_ndx, float value)
+{   
+    return  table_ptr->find_first_float(column_ndx,value);
+}
+
+//assuming int64_t and time_t are binary compatible.
+TIGHTDB_C_CS_API size_t tableView_find_first_date(TableView * table_ptr , size_t column_ndx, int64_t value)
+{   
+    return  table_ptr->find_first_date(column_ndx,value);
+}
+
+TIGHTDB_C_CS_API size_t tableView_find_first_bool(TableView * table_ptr , size_t column_ndx, size_t value)
+{   
+    return  table_ptr->find_first_bool(column_ndx,size_t_to_bool(value));
+}
+
+//size_t         find_first_bool(size_t column_ndx, bool value) const;
+TIGHTDB_C_CS_API size_t tableView_find_first_int(TableView * table_ptr , size_t column_ndx, int64_t value)
+{   
+    return table_ptr->find_first_int(column_ndx,value);
+}
+
 
 
 TIGHTDB_C_CS_API tightdb::TableView* table_find_all_int(Table * table_ptr , size_t column_ndx, int64_t value)
 {   
     return new TableView(table_ptr->find_all_int(column_ndx,value));            
 }
+
+TIGHTDB_C_CS_API tightdb::TableView* table_distinct(Table * table_ptr , size_t column_ndx)
+{   
+    return new TableView(table_ptr->distinct(column_ndx));
+}
+
+TIGHTDB_C_CS_API void table_set_index(Table * table_ptr , size_t column_ndx)
+{   
+    table_ptr->set_index(column_ndx);
+}
+
 
 //convert from columnName to columnIndex returns -1 if the string is not a column name
 //assuming that the get_table() does not return anything that must be deleted
@@ -443,6 +694,11 @@ TIGHTDB_C_CS_API size_t query_get_column_index(tightdb::Query* query_ptr,char * 
     return query_ptr->get_table()->get_column_index(column_name);
 }
 
+
+TIGHTDB_C_CS_API size_t table_get_column_index(Table* table_ptr,char *  column_name)
+{
+    return table_ptr->get_column_index(column_name);
+}
 
 //    TableView      find_all(size_t start=0, size_t end=size_t(-1), size_t limit=size_t(-1));
 TIGHTDB_C_CS_API tightdb::TableView* query_find_all(Query * query_ptr , size_t start, size_t end, size_t limit)
@@ -744,7 +1000,7 @@ TIGHTDB_C_CS_API int64_t test_int64_t_return(int64_t input)
 
 
 TIGHTDB_C_CS_API size_t test_return_datatype(size_t value) {
-    return datatype_to_size_t(size_t_to_datatype(value));
+    return Datatype_to_size_t(size_t_to_Datatype(value));
 }
 
 TIGHTDB_C_CS_API size_t test_return_boolean(size_t value) {

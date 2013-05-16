@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Globalization;
-using System.Runtime.InteropServices;
 
 namespace TightDbCSharp
 {
@@ -48,10 +47,16 @@ namespace TightDbCSharp
             }
         }
 
+        //Only Table can change a ColumnName, A TableView can only return the current column name
         public string ColumnName
         {
-            get { return Owner.GetColumnNameNoCheck(ColumnIndex); }
-            set { Owner.SetColumnNameNoCheck(ColumnIndex, value); }
+            get { return Owner.GetColumnNameNoCheck(ColumnIndex); }     
+            set {
+                if (Owner.Owner is Table)
+                {
+                    (Owner.Owner as Table).RenameColumn(ColumnIndex,value);
+                }
+            }
         }
 
         //mixed type will be set automatically when you write data to the mixed field
@@ -85,7 +90,7 @@ namespace TightDbCSharp
                         return Owner.GetBooleanNoCheck(ColumnIndex);
                         case DataType.String:
                         return Owner.GetStringNoCheck(ColumnIndex);
-                    case DataType.Mixed:
+                    case DataType.Mixed:                        
                         switch (MixedTypeNoCheck())
                         {
                             case DataType.Int:
@@ -93,6 +98,9 @@ namespace TightDbCSharp
 
                             case DataType.Table:
                                 return Owner.GetMixedSubtableNoCheck(ColumnIndex);
+
+                            case DataType.Date:
+                                return Owner.GetMixedDateTimeNoCheck(ColumnIndex);
                             default:
                                 return string.Format(CultureInfo.InvariantCulture,
                                                      "mixed with type {0} not supported yet in tabledumper",

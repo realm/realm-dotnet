@@ -13,7 +13,7 @@ namespace TightDbCSharp
         public abstract string ObjectIdentification();//overwrite this to enable the framework to name the class in a human readable way
 
         public IntPtr Handle { get;internal set; }  //handle (in fact a pointer) to a c++ hosted Table. We must unbind this handle if we have acquired it
-        internal bool HandleInUse { get; set; } //defaults to false.  TODO:this might need to be encapsulated with a lock to make it thread safe (although several threads *opening or closing* *the same* table object is probably not happening often)
+        internal bool HandleInUse { get; set; } //defaults to false.  
         internal bool HandleHasBeenUsed { get; set; } //defaults to false. If this is true, the table handle has been allocated in the lifetime of this object
         internal bool NotifyCppWhenDisposing { get; set; }//if false, the table handle do not need to be disposed of, on the c++ side
         public bool IsDisposed { get; private set; }

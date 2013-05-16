@@ -43,7 +43,7 @@ namespace TightDbCSharp
 
 
 
-    public class Spec : Handled, IDisposable
+    public class Spec : Handled
     {
         //not accessible by source not in te TightDBCSharp namespace
         internal Spec(IntPtr handle, bool shouldbedisposed)

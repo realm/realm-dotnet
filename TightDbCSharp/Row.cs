@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 
 namespace TightDbCSharp
 {
@@ -72,9 +71,16 @@ namespace TightDbCSharp
             return Owner.GetMixedTypeNoCheck(columnIndex,RowIndex);
         }
 
+        //called from a getter that already is in a switch statement on a mixed, so everything is already validated
         internal long GetMixedLongNoCheck(long columnIndex)
         {
             return Owner.GetMixedLongNoCheck(columnIndex, RowIndex);
+        }
+
+        //called from a switch statement in RowColumn where everything is already validated
+        internal DateTime GetMixedDateTimeNoCheck(long columnIndex)
+        {
+            return Owner.GetMixedDateTimeNoCheck(columnIndex, RowIndex);
         }
 
         //call this if You know for sure that columnIndex is valid (but if You are not sure if the type of the column is in fact mixed)
@@ -101,11 +107,6 @@ namespace TightDbCSharp
         internal string GetColumnNameNoCheck(long columnIndex)
         {
             return Owner.GetColumnNameNoCheck(columnIndex);
-        }
-
-        internal void SetColumnNameNoCheck(long columnIndex, string columnName)
-        {
-            Owner.SetColumnNameNoCheck(columnIndex,columnName);
         }
 
         internal Table GetSubTableNoCheck(long columnIndex)
@@ -159,6 +160,27 @@ namespace TightDbCSharp
             return Owner.GetLongNoRowCheck(name, RowIndex);
         }
 
+        public DateTime GetDateTime(string name)
+        {
+            return Owner.GetDateTimeNoRowCheck(name, RowIndex);
+        }
+
+        public DateTime GetMixedDateTime(string name)
+        {
+            return Owner.GetMixedDateTimeNoRowCheck(name, RowIndex);
+        }
+
+        public DateTime GetMixedDateTime(long columnIndex)
+        {
+            return Owner.GetMixedDateTimeNoRowCheck(columnIndex,RowIndex);
+        }
+
+        public DateTime GetDateTime(long columnIndex)
+        {
+            return Owner.GetDateTimeNoRowCheck(columnIndex, RowIndex);
+        }
+
+
         public Boolean GetBoolean(string columnName)
         {
             return Owner.GetBooleanNoRowCheck(columnName, RowIndex);
@@ -188,16 +210,11 @@ namespace TightDbCSharp
             return Owner.GetStringNoCheck(columnIndex, RowIndex);
         }
 
-        //todo:unit test
-
-
-
-        //todo:implement
+       
         public void Remove()
         {
-            RowIndex = -2;//mark this row as invalid
-
-            throw new NotImplementedException();
+            Owner.RemoveNoCheck(RowIndex);
+            RowIndex = -2;//mark this row as invalid            
         }
     }
 }

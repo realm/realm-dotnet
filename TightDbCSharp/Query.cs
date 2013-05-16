@@ -58,7 +58,7 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.QueryGetColumnIndex(this,columnName);
         }
 
-        //todo:hit with unit test
+        
         public Query BoolEqual(string columnName, Boolean value)
         {
             return UnsafeNativeMethods.QueryBoolEqual(this,GetColumnIndex(columnName), value);                                   

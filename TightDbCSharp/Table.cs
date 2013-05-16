@@ -217,16 +217,14 @@ namespace TightDbCSharp
            UnsafeNativeMethods.TableNew(this);//calls sethandle itself
         }
 
-
+        public void RenameColumn(long columnNumber, String newName)
+        {
+            UnsafeNativeMethods.TableRenameColumn(this,columnNumber,newName);
+        }
         //this one is called from Handled.cs when we have to release the table handle.
         internal override void ReleaseHandle()
         {
             UnsafeNativeMethods.TableUnbind(this);            
-        }
-
-        internal override void SetColumnNameNoCheck(long columnIndex, string columnName)
-        {
-            throw new NotImplementedException();
         }
 
         internal override Spec GetSpec()
@@ -234,10 +232,16 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableGetSpec(this); 
         }
 
+
         //this will update the table structure to represent whatever the earlier recieved spec has been set up to, and altered to
-        //TODO : what if the table contains data
+        //todo : (asana)should not be public, call updatefromspec automatically from methods that change the spec (so find out how to get to the top level table when all you have is a spec)
+        //todo : (asana)updatefromspec is only allowed on the toplevel table, not on subtables within  - bot okay on toplevel tables inside mixed
         public void UpdateFromSpec()
         {
+            if (Size != 0) //it is not legal to call updatefromspec if the table already contains data
+            {
+             throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture,"UpdateFromSpec cannot be called on a table with values in it. this table have {0} data rows",Size));
+            }
            UnsafeNativeMethods.TableUpdateFromSpec(this);
         }
 
@@ -257,9 +261,15 @@ namespace TightDbCSharp
         }
 
 
-        public override long GetColumnIndex(String name)
+        internal override DateTime GetMixedDateTimeNoCheck(long columnIndex, long rowIndex)
         {
-            return UnsafeNativeMethods.TableGetColumnIndex(this,name);
+            return UnsafeNativeMethods.TableGetMixedDateTime(this, columnIndex, rowIndex);
+        }
+
+        //can take invalid name parameter, will then return -1 as the column index
+        internal override long GetColumnIndexNoCheck(String name)
+        {
+            return UnsafeNativeMethods.TableGetColumnIndex(this,name);            
         }
 
         internal override void RemoveNoCheck(long rowIndex)
@@ -282,7 +292,9 @@ namespace TightDbCSharp
         //
 
         //adds an empty row and filles it out
-        //todo:consider if we should use insert row instead? - ask what's the difference, if any
+        //todo:consider if we should use insert row instead? - ask what's the difference, if any (asana)
+        //todo:insert should only be used by the binding, not be exposed to the user (asana)
+        //todo:when we add an entire row, insert is faster. (asana)
         public long Add(params object[] x)
         {
             long rowadded = AddEmptyRow(1);
@@ -349,11 +361,10 @@ namespace TightDbCSharp
             UnsafeNativeMethods.TableSetMixedDate(this, columnIndex, rowIndex, value);            
         }
 
-        internal override void SetDateNoCheck(long columnIndex, long rowIndex, DateTime value)
+        internal override void SetDateTimeNoCheck(long columnIndex, long rowIndex, DateTime value)
         {
             UnsafeNativeMethods.TableSetDate(this,columnIndex,rowIndex,value);
-        }
-
+        }        
 
         internal override Table GetMixedSubTableNoCheck(long columnIndex, long rowIndex)
         {
@@ -417,21 +428,91 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableGetMixedInt(this, columnIndex, rowIndex);
         }
 
-        public long FindFirstInt(string columnName, long value)
+        internal override Double GetMixedDoubleNoCheck(long columnIndex, long rowIndex)
         {
-            //todo:implement
-            throw new NotImplementedException();
+            return UnsafeNativeMethods.TableGetMixedDouble(this, columnIndex, rowIndex);
         }
 
-        public TableView FindAllInt(long columnIndex, long value)
+
+        internal override DateTime GetDateTimeNoCheck(long columnIndex, long rowIndex)
+        {
+            return UnsafeNativeMethods.TableGetDateTime(this, columnIndex, rowIndex);
+        }
+
+
+
+        internal override long FindFirstBinaryNoCheck(long columnIndex, byte[] value)
+        {
+            return UnsafeNativeMethods.TableFindFirstBinary(this, columnIndex, value);
+        }
+
+        internal override long FindFirstIntNoCheck(long columnIndex, long value)
+        {
+            return UnsafeNativeMethods.TableFindFirstInt(this, columnIndex, value);
+        }
+
+        internal override long FindFirstStringNoCheck(long columnIndex, string value)
+        {
+            return UnsafeNativeMethods.TableFindFirstString(this, columnIndex, value);
+        }
+
+        internal override long FindFirstDoubleNoCheck(long columnIndex, double value)
+        {
+            return UnsafeNativeMethods.TableFindFirstDouble(this, columnIndex, value);
+        }
+
+        internal override long FindFirstFloatNoCheck(long columnIndex, float value)
+        {
+            return UnsafeNativeMethods.TableFindFirstFloat(this, columnIndex, value);
+        }
+
+        internal override long FindFirstDateNoCheck(long columnIndex, DateTime value)
+        {
+            return UnsafeNativeMethods.TableFindFirstDate(this, columnIndex, value);
+        }
+
+        internal override long FindFirstBoolNoCheck(long columnIndex, bool value)
+        {
+            return UnsafeNativeMethods.TableFindFirstBool(this, columnIndex, value);
+        }
+
+        internal TableView DistinctNoCheck(long columnIndex)
+        {           
+            return UnsafeNativeMethods.TableDistinct(this, columnIndex);
+        }
+
+        public TableView Distinct(long columnIndex)
+        {
+            ValidateColumnIndex(columnIndex);
+            return DistinctNoCheck(columnIndex);
+        }
+
+        public TableView Distinct(string columnName)
+        {            
+            return DistinctNoCheck(GetColumnIndex(columnName));
+        }
+
+
+        internal void SetIndexNoCheck(long columnIndex)
+        {
+            UnsafeNativeMethods.TableSetIndex(this, columnIndex);
+        }
+
+        public void SetIndex(long columnIndex)
+        {
+            ValidateColumnIndex(columnIndex);
+            SetIndexNoCheck(columnIndex);
+        }
+
+        public void SetIndex(string columnName)
+        {
+            SetIndexNoCheck(GetColumnIndex(columnName));
+        }
+
+
+        internal override TableView FindAllIntNoCheck(long columnIndex, long value)
         {
             return UnsafeNativeMethods.TableFindAllInt(this,  columnIndex,  value);
-        }
-
-        public TableView FindAllInt(string columnName, long value)
-        {
-            long columnIndex=GetColumnIndex(columnName);
-            return UnsafeNativeMethods.TableFindAllInt(this, columnIndex, value);
         }
 
 

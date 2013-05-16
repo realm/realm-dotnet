@@ -84,6 +84,144 @@ namespace TestTightDbCSharp
 
 
 
+    //tightdb Date is date_t which is seconds since 1970,1,1
+    //it is an integer with the number of seconds since 1970,1,1 00:00
+    //negative means before 1970,1,1
+    //the date is always UTC - not local time
+
+
+    //C# DateTime is a lot different. Basically an integer tick count since 0001,1,1 00:00 where a tick is 100 microseconds
+    //As long as the tightdb Date is 64 bits, tightdb Date has enough range to always keep a C# datetime
+    //however the C# datetime has much higher precision, and this precision is lost when stored to tightdb
+    //also, a C# DateTime can be of 3 kinds :
+    // DateTimeKindUnspecified : Probably local time when it was created, but you really don't know - developer haven't been specific about it
+    // DateTimeKindLocal :The time represents a point in time, measured with the currently running machine's culture information and timezone. Daylight rules etc.
+    // DateTimeKindUTC : The time represents a point in time, measured in UTC
+
+    //When storing a DateTime, the binding do this :
+    //* The DateTime is converted to UTC if it is not already UTC
+    //* The time part of the DateTime is truncated to seconds
+    //* A tightdb time variable is created from the now compatible DateTime
+
+    //when fetching back a DateTime from tightdb, the binding do this :
+    //* The tightdb time variable is converted to a DateTime of kind UTC
+
+    //The convention is that tightdb alwas and only store utc datetime values
+    //If You want to store a DateTime unaltered, use DateTime.ToBinary and DateTime.FromBinary and store these values in a int field.(which is always 64 bit)
+
+    
+    [TestFixture]
+    public static class TestDates
+    {
+        [Test]
+        public static void TestSaveAndRetrieveDate()
+        {          
+            //this test might not be that effective if being run on a computer whose local time is == utc
+            var dateToSaveLocal = new DateTime(1979,05,14,1,2,3,DateTimeKind.Local);
+            var dateToSaveUtc = new DateTime(1979, 05, 14, 1, 2, 4, DateTimeKind.Utc);
+            var dateToSaveUnspecified = new DateTime(1979, 05, 14, 1, 2, 5, DateTimeKind.Unspecified);
+
+            var expectedLocal = new DateTime(1979, 05, 14, 1, 2, 3, DateTimeKind.Local).ToUniversalTime();//we expect to get the UTC timepoit resembling the local time we sent
+            var expectedUtc = new DateTime(1979, 05, 14, 1, 2, 4, DateTimeKind.Utc);//we expect to get the exact same timepoint back, measured in utc
+            var expectedUnspecified = new DateTime(1979,05,14,1,2,5,DateTimeKind.Local).ToUniversalTime();//we expect to get the UTC timepoit resembling the local time we sent
+
+            var t = new Table("date1".Date(),"date2".Mixed());//test date in an ordinary date , as well as date in a mixed
+
+            t.AddEmptyRow(1);//in this row we store datetosavelocal
+            t.SetDateTime(0,0,dateToSaveLocal);
+            DateTime fromdb = t.GetDateTime("date1", 0);
+            DateTime fromdb2 = t[0].GetDateTime("date1");
+            Assert.AreEqual(fromdb,fromdb2);
+            Assert.AreEqual(fromdb,expectedLocal);
+
+            t.SetMixedDateTime(1, 0, dateToSaveLocal.AddYears(1));//one year is added to get a time after 1970.1.1 otherwise we would get an exception with the mixed
+            fromdb = t.GetMixedDateTime(1, 0);
+            fromdb2 = t[0].GetMixedDateTime(1);
+            Assert.AreEqual(fromdb, fromdb2);
+            Assert.AreEqual(fromdb, expectedLocal.AddYears(1));
+
+
+            t.AddEmptyRow(1);//in this row we save datetosaveutc
+            t.SetDateTime("date1",1,dateToSaveUtc);
+            fromdb = t.GetDateTime("date1", 1);
+            fromdb2 = t[1].GetDateTime("date1");
+            Assert.AreEqual(fromdb, fromdb2);
+            Assert.AreEqual(fromdb, expectedUtc);
+
+            t.SetMixedDateTime("date2", 1, dateToSaveUtc);
+            fromdb = t.GetMixedDateTime(1, 1);
+            fromdb2 = t[1].GetMixedDateTime(1);
+            Assert.AreEqual(fromdb, fromdb2);
+            Assert.AreEqual(fromdb, expectedUtc);
+
+            t.AddEmptyRow(1);//in this row we save datetosaveunspecified
+            t.SetDateTime(0, 2, dateToSaveUnspecified);
+            fromdb = t.GetDateTime("date1", 2);
+            fromdb2 = t[2].GetDateTime("date1");
+            Assert.AreEqual(fromdb, fromdb2);
+            Assert.AreEqual(fromdb, expectedUnspecified);
+
+            t.SetMixedDateTime(1, 2, dateToSaveUnspecified);
+            fromdb = t.GetMixedDateTime("date2", 2);
+            fromdb2 = t[2].GetMixedDateTime("date2");
+            Assert.AreEqual(fromdb, fromdb2);
+            Assert.AreEqual(fromdb, expectedUnspecified);
+
+            t.SetIndex(0);          
+            TableView tv = t.Distinct("date1");//we need a tableview to be able to test the date methods on table views
+
+
+            
+            tv.SetDateTime(0, 0, dateToSaveLocal);
+            fromdb = tv.GetDateTime("date1", 0);
+            fromdb2 = tv[0].GetDateTime("date1");
+            Assert.AreEqual(fromdb, fromdb2);
+            Assert.AreEqual(fromdb, expectedLocal);
+
+            tv.SetMixedDateTime(1, 0, dateToSaveLocal);
+            fromdb = tv.GetMixedDateTime(1, 0);
+            fromdb2 = tv[0].GetMixedDateTime(1);
+            Assert.AreEqual(fromdb, fromdb2);
+            Assert.AreEqual(fromdb, expectedLocal);
+
+
+            
+            tv.SetDateTime("date1", 1, dateToSaveUtc);
+            fromdb = tv.GetDateTime("date1", 1);
+            fromdb2 = tv[1].GetDateTime("date1");
+            Assert.AreEqual(fromdb, fromdb2);
+            Assert.AreEqual(fromdb, expectedUtc);
+
+            tv.SetMixedDateTime("date2", 1, dateToSaveUtc);
+            fromdb = tv.GetMixedDateTime(1, 1);
+            fromdb2 = tv[1].GetMixedDateTime(1);
+            Assert.AreEqual(fromdb, fromdb2);
+            Assert.AreEqual(fromdb, expectedUtc);
+
+            
+            tv.SetDateTime(0, 2, dateToSaveUnspecified);
+            fromdb = tv.GetDateTime("date1", 2);
+            fromdb2 = tv[2].GetDateTime("date1");
+            Assert.AreEqual(fromdb, fromdb2);
+            Assert.AreEqual(fromdb, expectedUnspecified);
+
+            tv.SetMixedDateTime(1, 2, dateToSaveUnspecified);
+            fromdb = tv.GetMixedDateTime("date2", 2);
+            fromdb2 = tv[2].GetMixedDateTime("date2");
+            Assert.AreEqual(fromdb, fromdb2);
+            Assert.AreEqual(fromdb, expectedUnspecified);
+
+
+            //at this time there should be three rows in the tableview as the three dates are not exactly the same
+
+
+
+
+
+        }
+    }
+
+
     [TestFixture]
     public static class GroupTests
     {
@@ -190,6 +328,20 @@ namespace TestTightDbCSharp
             Assert.AreEqual(tv.Size, 5);
             }
         }
+
+        [Test]        
+        public static void QueryGetColumnName()
+        {
+            using (var t = GetTableWithMultipleIntegers())
+            {
+                Query q = t.Where();
+                long intcolumnix = q.GetColumnIndex("intcolumn1");
+                Console.WriteLine(intcolumnix);
+                Assert.AreEqual(1, intcolumnix);
+            }
+        }
+
+
 
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
@@ -595,6 +747,38 @@ intcolumn2:1//column 2
                 Assert.AreEqual(dt, DataType.Int);
                 long fortytwo = t.GetMixedLong(0, 0);
                 Assert.AreEqual(42, fortytwo);
+            }
+        }
+
+
+
+        [Test]
+        public static void TableTestMixedDateTime()
+        {
+            var testDate = new DateTime(2000, 1, 2, 3, 4, 5, DateTimeKind.Utc);
+            using (var t = new Table(new MixedField("MixedField")))
+            {
+                t.AddEmptyRow(1);
+                t.SetMixedDateTime(0, 0, testDate);
+                DataType dt = t.GetMixedType(0, 0);
+                Assert.AreEqual(DataType.Date,dt);
+                DateTime fromDb = t.GetMixedDateTime(0, 0);
+                Assert.AreEqual(testDate, fromDb);
+            }
+        }
+
+        [Test]
+        public static void TableTestMixedDouble()
+        {
+            const double testDouble = 12.2;
+            using (var t = new Table(new MixedField("MixedField")))
+            {
+                t.AddEmptyRow(1);
+                t.SetMixedDouble(0, 0, testDouble);
+                DataType dt = t.GetMixedType(0, 0);
+                Assert.AreEqual(DataType.Double, dt);
+                double fromDb = t.GetMixedDouble(0, 0);
+                Assert.AreEqual(testDouble, fromDb);
             }
         }
 
@@ -2778,11 +2962,14 @@ Table Name  : same names, empty names, mixed types
             Iteratortest.TableIterationTest();
             Iteratortest.TableViewIterationTest();
             Iteratortest.TableorViewIterationTest();
-            
+
+            TableParameterValidationTest.TableTestMixedDateTime();
+
             QueryTests.QueryBoolEqual();
             EnvironmentTest.ShowVersionTest();
             EnvironmentTest.Testinterop();
 
+            TestDates.TestSaveAndRetrieveDate();
            // CreateTableTest.TestTableScope();
 
             //RowColumn.test_testacquireanddeletegroup();

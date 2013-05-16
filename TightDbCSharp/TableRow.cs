@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-
-namespace TightDbCSharp
+﻿namespace TightDbCSharp
 {
     //methods here are those that only work on a row in a table, not on a row in a tableview. They are here, to make sure the user cannot call them on the Row class
     public class TableRow:Row

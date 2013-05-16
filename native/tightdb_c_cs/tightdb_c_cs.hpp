@@ -27,8 +27,9 @@ extern "C" {
 #endif
 
 
-//Table
+//No need to declare header files, as the code is exposed only through the DLL no need to do double work, copying signatures
 
+    /*
 TIGHTDB_C_CS_API int64_t tableView_get_int(tightdb::TableView* tableView_ptr, size_t column_ndx, size_t row_ndx);
 
 TIGHTDB_C_CS_API tightdb::Table* new_table();
@@ -76,7 +77,8 @@ TIGHTDB_C_CS_API void table_set_mixed_empty_subtable(tightdb::Table* table_ptr,s
 
 TIGHTDB_C_CS_API void table_set_mixed_int(tightdb::Table*  table_ptr, size_t column_ndx, size_t row_ndx, int64_t value);
 
-TIGHTDB_C_CS_API int64_t table_get_mixed_int(tightdb::Table*  table_ptr, size_t column_ndx, size_t row_ndx);
+TIGHTDB_C_CS_API int64_t table_
+ed_int(tightdb::Table*  table_ptr, size_t column_ndx, size_t row_ndx);
 
 TIGHTDB_C_CS_API tightdb::Table* table_get_subtable(tightdb::Table* table_ptr, size_t column_ndx, size_t row_ndx);
 
@@ -96,6 +98,8 @@ TIGHTDB_C_CS_API size_t tightdb_c_cs_GetVer(void);
 TIGHTDB_C_CS_API size_t tableview_size(tightdb::TableView* tableview_ptr) ;
 
 
+
+*/
 
 #ifdef __cplusplus
 }

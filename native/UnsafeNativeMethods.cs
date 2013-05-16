@@ -98,7 +98,6 @@ enum DataType {
             {
                 File.WriteAllText(fileName, _callog.ToString());
             }
-
         }
 
         public static void LoggingDisable()
@@ -114,7 +113,6 @@ enum DataType {
                 _callog.AppendLine(String.Format(CultureInfo.InvariantCulture, "LOGGING ENABLED BY:{0}", marker));
             }
         }
-
 
         public static void Log(string where, string desc, params object[] values)
         {
@@ -217,6 +215,7 @@ enum DataType {
         [DllImport("tightdb_c_cs64", EntryPoint = "table_get_column_index", CallingConvention = CallingConvention.Cdecl)]
         private static extern UIntPtr table_get_column_index64(IntPtr tablehandle, [MarshalAs(UnmanagedType.LPStr)] string name);
 
+        //returns -1 if the column string does not match a column index
         public static long TableGetColumnIndex(Table  table, string name)
         {
             if (Is64Bit)
@@ -236,6 +235,21 @@ enum DataType {
                 return (long)tableView_get_column_index64(tableView.Handle, name);
             return (long)tableView_get_column_index32(tableView.Handle, name);
         }
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "table_rename_column", CallingConvention = CallingConvention.Cdecl,CharSet = CharSet.Unicode)]
+        private static extern UIntPtr table_rename_column64(IntPtr tableHandle, long columnIndex, [MarshalAs(UnmanagedType.LPStr)] string name);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "table_rename_column", CallingConvention = CallingConvention.Cdecl,CharSet = CharSet.Unicode)]
+        private static extern UIntPtr table_rename_column32(IntPtr tableHandle, long columnIndex, [MarshalAs(UnmanagedType.LPStr)] string name);
+
+        public static void TableRenameColumn(Table table, long columnIndex, string name)
+        {
+            if (Is64Bit)
+                table_rename_column64(table.Handle,columnIndex, name);
+            table_rename_column32(table.Handle,columnIndex, name);
+        }
+
 
 
 
@@ -438,7 +452,300 @@ enum DataType {
 
 
 
-        //TIGHTDB_C_CS_API tightdb::TableView* table_find_all_int(Table * table_ptr , size_t column_ndx, int64_t value)
+        //size_t         find_first_int(size_t column_ndx, int64_t value) const;
+        //TIGHTDB_C_CS_API size_t table_find_first_int(Table * table_ptr , size_t column_ndx, int64_t value)
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "table_find_first_int", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_find_first_int64(IntPtr tableHandle, IntPtr columnIndex, long value);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "table_find_first_int", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_find_first_int32(IntPtr tableHandle, IntPtr columnIndex, long value);
+
+
+        public static long TableFindFirstInt(Table table, long columnIndex, long value)
+        {
+            return                
+                    Is64Bit
+                        ? (long)table_find_first_int64(table.Handle, (IntPtr)columnIndex, value)
+                        : (long)table_find_first_int32(table.Handle, (IntPtr)columnIndex, value);
+        }
+
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "table_find_first_string", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_find_first_string64(IntPtr tableHandle, IntPtr columnIndex, [MarshalAs(UnmanagedType.LPStr)] string value);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "table_find_first_string", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_find_first_string32(IntPtr tableHandle, IntPtr columnIndex, [MarshalAs(UnmanagedType.LPStr)] string value);
+
+
+        public static long TableFindFirstString(Table table, long columnIndex, string value)
+        {
+            return
+                    Is64Bit
+                        ? (long)table_find_first_string64(table.Handle, (IntPtr)columnIndex, value)
+                        : (long)table_find_first_string32(table.Handle, (IntPtr)columnIndex, value);
+        }
+
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "table_find_first_binary", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_find_first_binary64(IntPtr tableHandle, IntPtr columnIndex, byte[] value,IntPtr length);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "table_find_first_binary", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_find_first_binary32(IntPtr tableHandle, IntPtr columnIndex, byte[] value,IntPtr length);
+
+
+        public static long TableFindFirstBinary(Table table, long columnIndex, byte[] value)
+        {
+            return
+                    Is64Bit
+                        ? (long)table_find_first_binary64(table.Handle, (IntPtr)columnIndex, value,(IntPtr)value.Length)
+                        : (long)table_find_first_binary32(table.Handle, (IntPtr)columnIndex, value,(IntPtr)value.Length);
+        }
+
+
+
+
+        
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "table_find_first_double", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_find_first_double64(IntPtr tableHandle, IntPtr columnIndex, double value);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "table_find_first_double", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_find_first_double32(IntPtr tableHandle, IntPtr columnIndex, double value);
+
+
+        public static long TableFindFirstDouble(Table table, long columnIndex, double value)
+        {
+            return
+                    Is64Bit
+                        ? (long)table_find_first_double64(table.Handle, (IntPtr)columnIndex, value)
+                        : (long)table_find_first_double32(table.Handle, (IntPtr)columnIndex, value);
+        }
+
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "table_find_first_float", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_find_first_float64(IntPtr tableHandle, IntPtr columnIndex, float value);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "table_find_first_float", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_find_first_float32(IntPtr tableHandle, IntPtr columnIndex, float value);
+
+
+        public static long TableFindFirstFloat(Table table, long columnIndex, float value)
+        {
+            return
+                    Is64Bit
+                        ? (long)table_find_first_float64(table.Handle, (IntPtr)columnIndex, value)
+                        : (long)table_find_first_float32(table.Handle, (IntPtr)columnIndex, value);
+        }
+
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "table_find_first_date", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_find_first_date64(IntPtr tableHandle, IntPtr columnIndex, Int64 value);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "table_find_first_date", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_find_first_date32(IntPtr tableHandle, IntPtr columnIndex, Int64 value);
+
+
+        public static long TableFindFirstDate(Table table, long columnIndex, DateTime value)
+        {
+            return
+                    Is64Bit
+                        ? (long)table_find_first_date64(table.Handle, (IntPtr)columnIndex, ToTightDbTime(value))
+                        : (long)table_find_first_date32(table.Handle, (IntPtr)columnIndex, ToTightDbTime(value));
+        }
+
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "table_find_first_bool", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_find_first_bool64(IntPtr tableHandle, IntPtr columnIndex, IntPtr value);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "table_find_first_bool", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_find_first_bool32(IntPtr tableHandle, IntPtr columnIndex, IntPtr value);
+
+
+        public static long TableFindFirstBool(Table table, long columnIndex, bool value)
+        {
+            return
+                    Is64Bit
+                        ? (long)table_find_first_bool64(table.Handle, (IntPtr)columnIndex, BoolToIntPtr(value))
+                        : (long)table_find_first_bool32(table.Handle, (IntPtr)columnIndex, BoolToIntPtr(value));
+        }
+
+
+
+
+        //find first in tableview
+        //size_t         find_first_int(size_t column_ndx, int64_t value) const;
+        //TIGHTDB_C_CS_API size_t table_find_first_int(Table * table_ptr , size_t column_ndx, int64_t value)
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "tableView_find_first_int", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr tableView_find_first_int64(IntPtr tableViewHandle, IntPtr columnIndex, long value);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "tableView_find_first_int", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr tableView_find_first_int32(IntPtr tableViewHandle, IntPtr columnIndex, long value);
+
+
+        public static long TableViewFindFirstInt(TableView tableView, long columnIndex, long value)
+        {
+            return
+                    Is64Bit
+                        ? (long)tableView_find_first_int64(tableView.Handle, (IntPtr)columnIndex, value)
+                        : (long)tableView_find_first_int32(tableView.Handle, (IntPtr)columnIndex, value);
+        }
+
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "tableView_find_first_string", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr tableView_find_first_string64(IntPtr tableViewHandle, IntPtr columnIndex, [MarshalAs(UnmanagedType.LPStr)] string value);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "tableView_find_first_string", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr tableView_find_first_string32(IntPtr tableViewHandle, IntPtr columnIndex, [MarshalAs(UnmanagedType.LPStr)] string value);
+
+
+        public static long TableViewFindFirstString(TableView tableView, long columnIndex, string value)
+        {
+            return
+                    Is64Bit
+                        ? (long)tableView_find_first_string64(tableView.Handle, (IntPtr)columnIndex, value)
+                        : (long)tableView_find_first_string32(tableView.Handle, (IntPtr)columnIndex, value);
+        }
+
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "tableView_find_first_binary", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr tableView_find_first_binary64(IntPtr tableViewHandle, IntPtr columnIndex, byte[] value, IntPtr length);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "tableView_find_first_binary", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr tableView_find_first_binary32(IntPtr tableViewHandle, IntPtr columnIndex, byte[] value, IntPtr length);
+
+
+        public static long TableViewFindFirstBinary(TableView tableView, long columnIndex, byte[] value)
+        {
+            return
+                    Is64Bit
+                        ? (long)tableView_find_first_binary64(tableView.Handle, (IntPtr)columnIndex, value, (IntPtr)value.Length)
+                        : (long)tableView_find_first_binary32(tableView.Handle, (IntPtr)columnIndex, value, (IntPtr)value.Length);
+        }
+
+
+
+
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "tableView_find_first_double", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr tableView_find_first_double64(IntPtr tableViewHandle, IntPtr columnIndex, double value);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "tableView_find_first_double", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr tableView_find_first_double32(IntPtr tableViewHandle, IntPtr columnIndex, double value);
+
+
+        public static long TableViewFindFirstDouble(TableView tableView, long columnIndex, double value)
+        {
+            return
+                    Is64Bit
+                        ? (long)tableView_find_first_double64(tableView.Handle, (IntPtr)columnIndex, value)
+                        : (long)tableView_find_first_double32(tableView.Handle, (IntPtr)columnIndex, value);
+        }
+
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "tableView_find_first_float", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr tableView_find_first_float64(IntPtr tableViewHandle, IntPtr columnIndex, float value);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "tableView_find_first_float", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr tableView_find_first_float32(IntPtr tableViewHandle, IntPtr columnIndex, float value);
+
+
+        public static long TableViewFindFirstFloat(TableView tableView, long columnIndex, float value)
+        {
+            return
+                    Is64Bit
+                        ? (long)tableView_find_first_float64(tableView.Handle, (IntPtr)columnIndex, value)
+                        : (long)tableView_find_first_float32(tableView.Handle, (IntPtr)columnIndex, value);
+        }
+
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "tableView_find_first_date", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr tableView_find_first_date64(IntPtr tableViewHandle, IntPtr columnIndex, Int64 value);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "tableView_find_first_date", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr tableView_find_first_date32(IntPtr tableViewHandle, IntPtr columnIndex, Int64 value);
+
+
+        public static long TableViewFindFirstDate(TableView tableView, long columnIndex, DateTime value)
+        {
+            return
+                    Is64Bit
+                        ? (long)tableView_find_first_date64(tableView.Handle, (IntPtr)columnIndex, ToTightDbTime(value))
+                        : (long)tableView_find_first_date32(tableView.Handle, (IntPtr)columnIndex, ToTightDbTime(value));
+        }
+
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "tableView_find_first_bool", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr tableView_find_first_bool64(IntPtr tableViewHandle, IntPtr columnIndex, IntPtr value);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "tableView_find_first_bool", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr tableView_find_first_bool32(IntPtr tableViewHandle, IntPtr columnIndex, IntPtr value);
+
+
+        public static long TableViewFindFirstBool(TableView tableView, long columnIndex, bool value)
+        {
+            return
+                    Is64Bit
+                        ? (long)tableView_find_first_bool64(tableView.Handle, (IntPtr)columnIndex, BoolToIntPtr(value))
+                        : (long)tableView_find_first_bool32(tableView.Handle, (IntPtr)columnIndex, BoolToIntPtr(value));
+        }
+
+
+
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "table_distinct", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_distinct64(IntPtr tableHandle, IntPtr columnIndex);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "table_distinct", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_distinct32(IntPtr tableHandle, IntPtr columnIndex);
+
+
+        public static TableView TableDistinct(Table table, long columnIndex)
+        {
+            return
+                new TableView(
+                    Is64Bit
+                        ? table_distinct64(table.Handle, (IntPtr)columnIndex)
+                        : table_distinct32(table.Handle, (IntPtr)columnIndex), true);
+        }
+
+
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "table_set_index", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void table_set_index64(IntPtr tableHandle, IntPtr columnIndex);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "table_set_index", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void table_set_index32(IntPtr tableHandle, IntPtr columnIndex);
+
+
+        public static void TableSetIndex(Table table, long columnIndex)
+        {
+            if (Is64Bit)
+            {
+                table_set_index64(table.Handle, (IntPtr) columnIndex);
+            }
+            table_set_index32(table.Handle, (IntPtr) columnIndex);
+        }
+
+
+
+
+
+
         [DllImport("tightdb_c_cs64", EntryPoint = "table_find_all_int", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr table_find_all_int64(IntPtr tableHandle, IntPtr columnIndex, long value);
 
@@ -454,6 +761,27 @@ enum DataType {
                         ? table_find_all_int64(table.Handle, (IntPtr) columnIndex, value)
                         : table_find_all_int32(table.Handle, (IntPtr) columnIndex, value), true);
         }
+
+
+        //TIGHTDB_C_CS_API tightdb::TableView* table_find_all_int(Table * table_ptr , size_t column_ndx, int64_t value)
+        [DllImport("tightdb_c_cs64", EntryPoint = "tableView_find_all_int", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr tableView_find_all_int64(IntPtr tableViewHandle, IntPtr columnIndex, long value);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "tableView_find_all_int", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr tableView_find_all_int32(IntPtr tableViewHandle, IntPtr columnIndex, long value);
+
+
+        public static TableView TableViewFindAllInt(TableView tableView, long columnIndex, long value)
+        {
+            return
+                new TableView(
+                    Is64Bit
+                        ? tableView_find_all_int64(tableView.Handle, (IntPtr)columnIndex, value)
+                        : tableView_find_all_int32(tableView.Handle, (IntPtr)columnIndex, value), true);
+        }
+
+
+
 
 
 
@@ -1049,9 +1377,11 @@ enum DataType {
 
         public static DataType TableGetMixedType(Table t, long columnIndex, long rowIndex)
         {
+            
             if (Is64Bit)
                 return IntPtrToDataType(table_get_mixed_type64(t.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex));
             return IntPtrToDataType( table_get_mixed_type32(t.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex));
+           
         }
 
 
@@ -1453,23 +1783,100 @@ enum DataType {
         //note even though it's called getint - it does return an int64_t which is a 64 bit signed, that is, similar to C# long
         public static long TableViewGetMixedInt(TableView tableView, long columnIndex, long rowIndex)
         {
-#if DEBUG
-            long retval = Is64Bit
-                              ? tableView_get_mixed_int64(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex)
-                              : tableView_get_mixed_int32(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
-
-            Log(MethodBase.GetCurrentMethod().Name, "(TableView,Column,Row,return)", tableView, columnIndex, rowIndex,
-                retval);
-            return retval;
-#endif
-            // ReSharper disable CSharpWarnings::CS0162
-            // ReSharper disable HeuristicUnreachableCode
             return Is64Bit
                        ? tableView_get_mixed_int64(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex)
                        : tableView_get_mixed_int32(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
-            // ReSharper restore HeuristicUnreachableCode
-            // ReSharper restore CSharpWarnings::CS0162
         }
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "tableView_get_date", CallingConvention = CallingConvention.Cdecl)]
+        private static extern Int64 tableView_get_date64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+        [DllImport("tightdb_c_cs32", EntryPoint = "tableView_get_ate", CallingConvention = CallingConvention.Cdecl)]
+        private static extern Int64 tableView_get_date32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+        public static DateTime TableViewGetDateTime(TableView tableView, long columnIndex, long rowIndex)
+        {
+            Int64 cppdate = Is64Bit
+                                ? tableView_get_date64(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex)
+                                : tableView_get_date32(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex);
+            return ToCSharpTimeUtc(cppdate);
+        }
+                
+        [DllImport("tightdb_c_cs64", EntryPoint = "table_get_date", CallingConvention = CallingConvention.Cdecl)]
+        private static extern Int64 table_get_date64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+        [DllImport("tightdb_c_cs32", EntryPoint = "table_get_date", CallingConvention = CallingConvention.Cdecl)]
+        private static extern Int64 table_get_date32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+        
+        public static DateTime TableGetDateTime(Table table, long columnIndex, long rowIndex)
+        {
+
+            Int64 cppdate =
+             Is64Bit
+                       ? table_get_date64(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex)
+                       : table_get_date32(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex);
+            return ToCSharpTimeUtc(cppdate);
+        }
+
+        
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "tableView_get_mixed_date", CallingConvention = CallingConvention.Cdecl)]
+        private static extern Int64 tableView_get_mixed_date64(IntPtr tableViewPtr, IntPtr columnNdx, IntPtr rowNdx);
+        [DllImport("tightdb_c_cs32", EntryPoint = "tableView_get_mixed_date", CallingConvention = CallingConvention.Cdecl)]
+        private static extern Int64 tableView_get_mixed_date32(IntPtr tableViewPtr, IntPtr columnNdx, IntPtr rowNdx);
+        public static DateTime TableViewGetMixedDateTime(TableView tableView, long columnIndex, long rowIndex)
+        {
+            Int64 cppdate = Is64Bit
+                                ? tableView_get_mixed_date64(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex)
+                                : tableView_get_mixed_date32(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
+            return ToCSharpTimeUtc(cppdate);
+        }
+
+        //the call should return a time_t in 64 bit format (always) so we marshal it as long
+        [DllImport("tightdb_c_cs64", EntryPoint = "table_get_mixed_date", CallingConvention = CallingConvention.Cdecl)]
+        private static extern Int64 table_get_mixed_date64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+        [DllImport("tightdb_c_cs32", EntryPoint = "table_get_mixed_date", CallingConvention = CallingConvention.Cdecl)]
+        private static extern Int64 table_get_mixed_date32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+
+        public static DateTime TableGetMixedDateTime(Table table, long columnIndex, long rowIndex)
+        {
+            
+            Int64 cppdate=
+             Is64Bit
+                       ?  table_get_mixed_date64(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex)
+                       : table_get_mixed_date32(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex);
+            return ToCSharpTimeUtc(cppdate);
+        }
+
+
+
+        //the call should return a time_t in 64 bit format (always) so we marshal it as long
+        [DllImport("tightdb_c_cs64", EntryPoint = "table_get_mixed_double", CallingConvention = CallingConvention.Cdecl)]
+        private static extern Double table_get_mixed_double64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+        [DllImport("tightdb_c_cs32", EntryPoint = "table_get_mixed_double", CallingConvention = CallingConvention.Cdecl)]
+        private static extern Double table_get_mixed_double32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+
+        public static Double TableGetMixedDouble(Table table, long columnIndex, long rowIndex)
+        {
+            return 
+             Is64Bit
+                       ? table_get_mixed_double64(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex)
+                       : table_get_mixed_double32(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex);            
+        }
+
+
+        //the call should return a time_t in 64 bit format (always) so we marshal it as long
+        [DllImport("tightdb_c_cs64", EntryPoint = "tableView_get_mixed_double", CallingConvention = CallingConvention.Cdecl)]
+        private static extern Double tableView_get_mixed_double64(IntPtr tableViewPtr, IntPtr columnNdx, IntPtr rowNdx);
+        [DllImport("tightdb_c_cs32", EntryPoint = "tableView_get_mixed_double", CallingConvention = CallingConvention.Cdecl)]
+        private static extern Double tableView_get_mixed_double32(IntPtr tableViewPtr, IntPtr columnNdx, IntPtr rowNdx);
+
+        public static Double TableViewGetMixedDouble(TableView tableView, long columnIndex, long rowIndex)
+        {
+            return
+             Is64Bit
+                       ? tableView_get_mixed_double64(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex)
+                       : tableView_get_mixed_double32(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex);
+        }
+
 
 
 
@@ -1568,7 +1975,7 @@ enum DataType {
 
 
 
-        //todo:hit with unit test
+        
         [DllImport("tightdb_c_cs64", EntryPoint = "query_get_column_index", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr query_get_column_index64(IntPtr queryPtr, String columnName);
         [DllImport("tightdb_c_cs32", EntryPoint = "query_get_column_index", CallingConvention = CallingConvention.Cdecl)]
@@ -1583,7 +1990,7 @@ enum DataType {
 
 
 
-        //todo:hit with unit test
+        
         [DllImport("tightdb_c_cs64", EntryPoint = "query_bool_equal", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr query_bool_equal64(IntPtr queryPtr, IntPtr columnIndex,IntPtr value);
         [DllImport("tightdb_c_cs32", EntryPoint = "query_bool_equal", CallingConvention = CallingConvention.Cdecl)]
@@ -1723,21 +2130,32 @@ enum DataType {
         //convert a DateTime to a 64 bit integer to be marshalled to a time_t on the other side
         //NOTE THAT TIGHTDB ROUNDS DOWN TO NEAREST SECOND WHEN STORING A DATETIME
         //Note also that the date supplied is converted to UTC - we assume that the user has set the datetimekind.utc if it is already        
+        //ALSO NOTE THAT TIGHTDB CANNOT STORE time_t values that are negative, effectively tighdb is not able to store dates before 1970,1,1
         public static Int64 ToTightDbTime(DateTime date)
         {            
             return (Int64)(date.ToUniversalTime() - Epoch).TotalSeconds;
         }
-    
-        //CppTime is expected to be a time_t (UTC since 1970,1,1)
+
+        public static Int64 ToTightDbMixedTime(DateTime date)
+        {
+            Int64 retval = ToTightDbTime(date);
+            if (retval < 0)
+            {
+                throw new ArgumentOutOfRangeException("date", "The date specified is not a valid tightdb mixed date. Tightdb mixed dates must be positive time_t dates, from jan.1.1970 and onwards ");
+            }
+            return retval;
+        }
+
+        //CppTime is expected to be a time_t (UTC since 1970,1,1). While currently tightdb cannot handle negative time_t, this method will work wiht those just fine
         public static DateTime ToCSharpTimeLocalTime(Int64 cppTime)
         {            
             return  ToCSharpTimeUtc(cppTime).ToLocalTime();
         }
 
-        //CppTime is expected to be a time_t (UTC since 1970,1,1)
+        //CppTime is expected to be a time_t (UTC since 1970,1,1 measured in seconds)
         public static DateTime ToCSharpTimeUtc(Int64 cppTime)
         {
-            return new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(Convert.ToDouble(cppTime));
+            return new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(Convert.ToDouble(cppTime));//unfortunate that addseconds takes a double. Addseconds rounds the double is rounded to nearest millisecond so we should not have problems with loose precision
         }
 
         //todo:hit with unit test
@@ -1749,8 +2167,8 @@ enum DataType {
         public static void TableSetMixedDate(Table table, long columnIndex, long rowIndex, DateTime value)
         {
             if (Is64Bit)
-                table_set_mixed_date64(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, ToTightDbTime(value));
-            table_set_mixed_date32(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, ToTightDbTime(value));
+                table_set_mixed_date64(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, ToTightDbMixedTime(value));
+            table_set_mixed_date32(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, ToTightDbMixedTime(value));
         }
 
         //todo:hit with unit test
@@ -1762,12 +2180,12 @@ enum DataType {
         public static void TableViewSetMixedDate(TableView tableView, long columnIndex, long rowIndex, DateTime value)
         {
             if (Is64Bit)
-                tableview_set_mixed_float64(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, ToTightDbTime(value));
-            tableview_set_mixed_float32(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, ToTightDbTime(value));
+                tableview_set_mixed_date64(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, ToTightDbMixedTime(value));
+            tableview_set_mixed_date32(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, ToTightDbMixedTime(value));
         }
 
 
-        //todo:hit with unit test
+        
         [DllImport("tightdb_c_cs64", EntryPoint = "table_set_date", CallingConvention = CallingConvention.Cdecl)]
         private static extern void table_set_date64(IntPtr tablePtr, IntPtr columnIndex, IntPtr rowIndex, Int64 value);
         [DllImport("tightdb_c_cs32", EntryPoint = "table_set_date", CallingConvention = CallingConvention.Cdecl)]
@@ -2090,7 +2508,7 @@ enum DataType {
 
         [DllImport("tightdb_c_cs64", EntryPoint = "test_return_datatype", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr test_return_datatype64(IntPtr value);
-        [DllImport("tightdb_c_cs32", EntryPoint = "test_return__datatype", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("tightdb_c_cs32", EntryPoint = "test_return_datatype", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr test_return_datatype32(IntPtr value);
 
         public static DataType TestReturnDataType(DataType value)
@@ -2328,16 +2746,21 @@ enum DataType {
             IntPtr sizeTCpp = TestSizeTReturn(sizeTCs);
             if (sizeTCpp!=sizeTCs)
             {
-                throw new ArgumentException("Size_t",
-                                            String.Format(CultureInfo.InvariantCulture, "The c++ size_t 42 was returned as {0:r} while the C# value is {1:r}", sizeTCpp, sizeTCs));
+                throw new ArgumentException("Size_t",String.Format(CultureInfo.InvariantCulture, "The c++ size_t 42 was returned as {0:r} while the C# value is {1:r}", sizeTCpp, sizeTCs));
+            }
+
+
+            
+            DataType test  = DataType.Binary;
+            DataType test2 = TestReturnDataType(test);
+            if (test != test2)
+            {
+                throw new ArgumentException("DataType", String.Format(CultureInfo.InvariantCulture, "The c++ returned Datatype  {0} is not the same as was sent by c# {1}", test2, test));
             }
 
 
 
 
-
-
-            
 
         }
     }
