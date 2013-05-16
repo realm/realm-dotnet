@@ -214,6 +214,11 @@ TIGHTDB_C_CS_API  size_t tableView_get_column_type(tightdb::TableView* tableView
 
 
 
+TIGHTDB_C_CS_API  size_t tableView_get_mixed_type(TableView* tableView_ptr, const size_t column_ndx,const size_t row_ndx)
+{
+    return Datatype_to_size_t(tableView_ptr->get_mixed_type(column_ndx,row_ndx));
+}
+
 
 
 //    DataType    get_column_type(size_t column_ndx) const TIGHTDB_NOEXCEPT;
@@ -494,7 +499,7 @@ TIGHTDB_C_CS_API void table_set_mixed_date(Table*  table_ptr, size_t column_ndx,
 
 }
 
-TIGHTDB_C_CS_API int64_t table_view_get_mixed_date(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx)
+TIGHTDB_C_CS_API int64_t tableView_get_mixed_date(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx)
 {
     /*
     int64_t retval = time_t_to_int64_t(tableView_ptr->get_mixed(column_ndx,row_ndx).get_date());
@@ -515,7 +520,7 @@ TIGHTDB_C_CS_API int64_t table_get_mixed_date(Table*  table_ptr, size_t column_n
    return time_t_to_int64_t(table_ptr->get_mixed(column_ndx,row_ndx).get_date());    
 }
 
-TIGHTDB_C_CS_API int64_t table_view_get_date(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx)
+TIGHTDB_C_CS_API int64_t tableView_get_date(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx)
 {
     return time_t_to_int64_t(tableView_ptr->get_date(column_ndx,row_ndx));
 }
@@ -681,6 +686,7 @@ TIGHTDB_C_CS_API tightdb::TableView* table_distinct(Table * table_ptr , size_t c
     return new TableView(table_ptr->distinct(column_ndx));
 }
 
+//currently only legal with string columns
 TIGHTDB_C_CS_API void table_set_index(Table * table_ptr , size_t column_ndx)
 {   
     table_ptr->set_index(column_ndx);
@@ -699,6 +705,13 @@ TIGHTDB_C_CS_API size_t table_get_column_index(Table* table_ptr,char *  column_n
 {
     return table_ptr->get_column_index(column_name);
 }
+
+TIGHTDB_C_CS_API size_t tableView_get_column_index(TableView* tableView_ptr,char *  column_name)
+{
+    return tableView_ptr->get_column_index(column_name);
+}
+
+
 
 //    TableView      find_all(size_t start=0, size_t end=size_t(-1), size_t limit=size_t(-1));
 TIGHTDB_C_CS_API tightdb::TableView* query_find_all(Query * query_ptr , size_t start, size_t end, size_t limit)

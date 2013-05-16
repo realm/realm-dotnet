@@ -125,9 +125,11 @@ namespace TestTightDbCSharp
             var expectedUtc = new DateTime(1979, 05, 14, 1, 2, 4, DateTimeKind.Utc);//we expect to get the exact same timepoint back, measured in utc
             var expectedUnspecified = new DateTime(1979,05,14,1,2,5,DateTimeKind.Local).ToUniversalTime();//we expect to get the UTC timepoit resembling the local time we sent
 
-            var t = new Table("date1".Date(),"date2".Mixed());//test date in an ordinary date , as well as date in a mixed
+            var t = new Table("date1".Date(),"date2".Mixed(),"stringfield".String());//test date in an ordinary date , as well as date in a mixed
+            t.SetIndex(2);          
 
             t.AddEmptyRow(1);//in this row we store datetosavelocal
+            t.SetString(2,0,"str1");
             t.SetDateTime(0,0,dateToSaveLocal);
             DateTime fromdb = t.GetDateTime("date1", 0);
             DateTime fromdb2 = t[0].GetDateTime("date1");
@@ -142,7 +144,8 @@ namespace TestTightDbCSharp
 
 
             t.AddEmptyRow(1);//in this row we save datetosaveutc
-            t.SetDateTime("date1",1,dateToSaveUtc);
+            t.SetString(2, 1, "str2");
+            t.SetDateTime("date1", 1, dateToSaveUtc);
             fromdb = t.GetDateTime("date1", 1);
             fromdb2 = t[1].GetDateTime("date1");
             Assert.AreEqual(fromdb, fromdb2);
@@ -155,6 +158,7 @@ namespace TestTightDbCSharp
             Assert.AreEqual(fromdb, expectedUtc);
 
             t.AddEmptyRow(1);//in this row we save datetosaveunspecified
+            t.SetString(2, 2, "str3");
             t.SetDateTime(0, 2, dateToSaveUnspecified);
             fromdb = t.GetDateTime("date1", 2);
             fromdb2 = t[2].GetDateTime("date1");
@@ -167,49 +171,49 @@ namespace TestTightDbCSharp
             Assert.AreEqual(fromdb, fromdb2);
             Assert.AreEqual(fromdb, expectedUnspecified);
 
-            t.SetIndex(0);          
-            TableView tv = t.Distinct("date1");//we need a tableview to be able to test the date methods on table views
+            t.SetIndex(2);          
+            TableView tv = t.Distinct("stringfield");//we need a tableview to be able to test the date methods on table views
 
 
             
-            tv.SetDateTime(0, 0, dateToSaveLocal);
+            tv.SetDateTime(0, 0, dateToSaveUtc);
             fromdb = tv.GetDateTime("date1", 0);
             fromdb2 = tv[0].GetDateTime("date1");
             Assert.AreEqual(fromdb, fromdb2);
-            Assert.AreEqual(fromdb, expectedLocal);
+            Assert.AreEqual(fromdb, expectedUtc);
 
-            tv.SetMixedDateTime(1, 0, dateToSaveLocal);
+            tv.SetMixedDateTime(1, 0, dateToSaveUtc);
             fromdb = tv.GetMixedDateTime(1, 0);
             fromdb2 = tv[0].GetMixedDateTime(1);
             Assert.AreEqual(fromdb, fromdb2);
-            Assert.AreEqual(fromdb, expectedLocal);
+            Assert.AreEqual(fromdb, expectedUtc);
 
 
             
-            tv.SetDateTime("date1", 1, dateToSaveUtc);
+            tv.SetDateTime("date1", 1, dateToSaveUnspecified);
             fromdb = tv.GetDateTime("date1", 1);
             fromdb2 = tv[1].GetDateTime("date1");
             Assert.AreEqual(fromdb, fromdb2);
-            Assert.AreEqual(fromdb, expectedUtc);
+            Assert.AreEqual(fromdb, expectedUnspecified);
 
-            tv.SetMixedDateTime("date2", 1, dateToSaveUtc);
+            tv.SetMixedDateTime("date2", 1, dateToSaveUnspecified);
             fromdb = tv.GetMixedDateTime(1, 1);
             fromdb2 = tv[1].GetMixedDateTime(1);
             Assert.AreEqual(fromdb, fromdb2);
-            Assert.AreEqual(fromdb, expectedUtc);
+            Assert.AreEqual(fromdb, expectedUnspecified);
 
             
-            tv.SetDateTime(0, 2, dateToSaveUnspecified);
+            tv.SetDateTime(0, 2, dateToSaveLocal);
             fromdb = tv.GetDateTime("date1", 2);
             fromdb2 = tv[2].GetDateTime("date1");
             Assert.AreEqual(fromdb, fromdb2);
-            Assert.AreEqual(fromdb, expectedUnspecified);
+            Assert.AreEqual(fromdb, expectedLocal);
 
-            tv.SetMixedDateTime(1, 2, dateToSaveUnspecified);
+            tv.SetMixedDateTime(1, 2, dateToSaveLocal);
             fromdb = tv.GetMixedDateTime("date2", 2);
             fromdb2 = tv[2].GetMixedDateTime("date2");
             Assert.AreEqual(fromdb, fromdb2);
-            Assert.AreEqual(fromdb, expectedUnspecified);
+            Assert.AreEqual(fromdb, expectedLocal);
 
 
             //at this time there should be three rows in the tableview as the three dates are not exactly the same

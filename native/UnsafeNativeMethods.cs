@@ -247,6 +247,7 @@ enum DataType {
         {
             if (Is64Bit)
                 table_rename_column64(table.Handle,columnIndex, name);
+            else
             table_rename_column32(table.Handle,columnIndex, name);
         }
 
@@ -735,9 +736,9 @@ enum DataType {
         public static void TableSetIndex(Table table, long columnIndex)
         {
             if (Is64Bit)
-            {
+            
                 table_set_index64(table.Handle, (IntPtr) columnIndex);
-            }
+            else
             table_set_index32(table.Handle, (IntPtr) columnIndex);
         }
 
@@ -990,6 +991,7 @@ enum DataType {
         {
             if (Is64Bit)
                 test_testacquireanddeletegroup64();
+            else
             test_testacquireanddeletegroup32();
         }
 
@@ -1533,7 +1535,7 @@ enum DataType {
         }
 
 
-        [DllImport("tightdb_c_cs64", EntryPoint = "table_set_mixed_subtable",
+        [DllImport("tightdb_c_cs64", EntryPoint = "tableView_set_mixed_subtable",
             CallingConvention = CallingConvention.Cdecl)]
         private static extern void tableView_set_mixed_subtable64(IntPtr tableViewPtr, IntPtr columnNdx, IntPtr rowNdx,
                                                                   IntPtr sourceTablePtr);
@@ -1791,7 +1793,7 @@ enum DataType {
 
         [DllImport("tightdb_c_cs64", EntryPoint = "tableView_get_date", CallingConvention = CallingConvention.Cdecl)]
         private static extern Int64 tableView_get_date64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
-        [DllImport("tightdb_c_cs32", EntryPoint = "tableView_get_ate", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("tightdb_c_cs32", EntryPoint = "tableView_get_date", CallingConvention = CallingConvention.Cdecl)]
         private static extern Int64 tableView_get_date32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
         public static DateTime TableViewGetDateTime(TableView tableView, long columnIndex, long rowIndex)
         {
@@ -2017,6 +2019,7 @@ enum DataType {
         {
             if (Is64Bit)
                 tableview_set_mixed_double64(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
+            else
             tableview_set_mixed_double32(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
         }
 
@@ -2030,6 +2033,7 @@ enum DataType {
         {
             if (Is64Bit)
                 tableview_set_double64(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
+            else
             tableview_set_double32(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
         }
 
@@ -2044,6 +2048,8 @@ enum DataType {
         {
             if (Is64Bit)
                 table_set_mixed_double64(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
+            else
+
             table_set_mixed_double32(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
         }
 
@@ -2057,6 +2063,7 @@ enum DataType {
         {
             if (Is64Bit)
                 table_set_double64(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
+            else
             table_set_double32(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
         }
 
@@ -2076,6 +2083,7 @@ enum DataType {
         {
             if (Is64Bit)
                 tableview_set_mixed_float64(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
+            else
             tableview_set_mixed_float32(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
         }
 
@@ -2090,6 +2098,7 @@ enum DataType {
         {
             if (Is64Bit)
                 table_set_mixed_float64(table.Handle, (IntPtr)columnIndex,(IntPtr) rowIndex, value);
+            else
             table_set_mixed_float32(table.Handle, (IntPtr)columnIndex, (IntPtr) rowIndex, value);            
         }
 
@@ -2104,6 +2113,7 @@ enum DataType {
         {
             if (Is64Bit)
                 tableview_set_float64(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
+            else
             tableview_set_float32(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
         }
 
@@ -2118,6 +2128,7 @@ enum DataType {
         {
             if (Is64Bit)
                 table_set_float64(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
+            else
             table_set_float32(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
         }
 
@@ -2167,21 +2178,25 @@ enum DataType {
         public static void TableSetMixedDate(Table table, long columnIndex, long rowIndex, DateTime value)
         {
             if (Is64Bit)
-                table_set_mixed_date64(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, ToTightDbMixedTime(value));
-            table_set_mixed_date32(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, ToTightDbMixedTime(value));
+                table_set_mixed_date64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, ToTightDbMixedTime(value));
+            else
+                table_set_mixed_date32(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, ToTightDbMixedTime(value));
         }
 
         //todo:hit with unit test
-        [DllImport("tightdb_c_cs64", EntryPoint = "tableview_set_mixed_date", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void tableview_set_mixed_date64(IntPtr tableViewPtr, IntPtr columnIndex, IntPtr rowIndex, Int64 value);
-        [DllImport("tightdb_c_cs32", EntryPoint = "tableview_set_mixed_date", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void tableview_set_mixed_date32(IntPtr tableViewPtr, IntPtr columnIndex, IntPtr rowIndex, Int64 value);
+        [DllImport("tightdb_c_cs64", EntryPoint = "tableView_set_mixed_date", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void tableView_set_mixed_date64(IntPtr tableViewPtr, IntPtr columnIndex, IntPtr rowIndex, Int64 value);
+        [DllImport("tightdb_c_cs32", EntryPoint = "tableView_set_mixed_date", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void tableView_set_mixed_date32(IntPtr tableViewPtr, IntPtr columnIndex, IntPtr rowIndex, Int64 value);
 
         public static void TableViewSetMixedDate(TableView tableView, long columnIndex, long rowIndex, DateTime value)
         {
             if (Is64Bit)
-                tableview_set_mixed_date64(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, ToTightDbMixedTime(value));
-            tableview_set_mixed_date32(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, ToTightDbMixedTime(value));
+                tableView_set_mixed_date64(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex,
+                                           ToTightDbMixedTime(value));
+            else
+                tableView_set_mixed_date32(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex,
+                                           ToTightDbMixedTime(value));
         }
 
 
@@ -2195,19 +2210,21 @@ enum DataType {
         {
             if (Is64Bit)
                 table_set_date64(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, ToTightDbTime(value));
+            else
             table_set_date32(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, ToTightDbTime(value));
         }
 
         //todo:hit with unit test
-        [DllImport("tightdb_c_cs64", EntryPoint = "tableview_set_date", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("tightdb_c_cs64", EntryPoint = "tableView_set_date", CallingConvention = CallingConvention.Cdecl)]
         private static extern void tableview_set_date64(IntPtr tableViewPtr, IntPtr columnIndex, IntPtr rowIndex, Int64 value);
-        [DllImport("tightdb_c_cs32", EntryPoint = "tableview_set_date", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("tightdb_c_cs32", EntryPoint = "tableView_set_date", CallingConvention = CallingConvention.Cdecl)]
         private static extern void tableview_set_date32(IntPtr tableViewPtr, IntPtr columnIndex, IntPtr rowIndex, Int64 value);
 
         public static void TableViewSetDate(TableView tableView, long columnIndex, long rowIndex, DateTime value)
         {
             if (Is64Bit)
                 tableview_set_date64(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, ToTightDbTime(value));
+            else
             tableview_set_date32(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, ToTightDbTime(value));
         }
 

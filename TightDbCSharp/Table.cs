@@ -492,21 +492,23 @@ namespace TightDbCSharp
             return DistinctNoCheck(GetColumnIndex(columnName));
         }
 
-
+        //note - SetIndex is only callable if the column is a string column
         internal void SetIndexNoCheck(long columnIndex)
         {
             UnsafeNativeMethods.TableSetIndex(this, columnIndex);
         }
 
         public void SetIndex(long columnIndex)
-        {
-            ValidateColumnIndex(columnIndex);
+        {            
+            ValidateColumnIndexAndTypeString(columnIndex);
             SetIndexNoCheck(columnIndex);
         }
 
         public void SetIndex(string columnName)
         {
-            SetIndexNoCheck(GetColumnIndex(columnName));
+            long columnIndex = GetColumnIndex(columnName);
+            ValidateTypeString(columnIndex);
+            SetIndexNoCheck(columnIndex);
         }
 
 

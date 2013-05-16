@@ -1,3 +1,20 @@
+installer gitexchange 
+
+Få nogen til at hjælpe mig til at kunne lave nye unit tests til tightdb.
+
+Lav unit tests der beskriver diverse spøjsheder.
+1) new Group() som går ned, når Group.delete kaldes
+2) new Group(illegalt filnavn) som går ned, men først når Group delete kaldes
+3) gem dato før 1970 i table, hent frem igen - det virker. men gem dato før 1970 i mixed, hent frem igen - det fejler - time_t værdien er en helt anden
+4) gem time_t i Date i mixed, og typen ændres til integer (i stedet for date, som man nok ville forvente)
+
+
+
+
+
+
+
+
 
 unit test marshalling:
 create a function that at runtime checks that the size of c++ types matches the size of the C# types we match up the c++ types with.
