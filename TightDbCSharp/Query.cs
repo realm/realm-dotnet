@@ -61,7 +61,8 @@ namespace TightDbCSharp
         
         public Query BoolEqual(string columnName, Boolean value)
         {
-            return UnsafeNativeMethods.QueryBoolEqual(this,GetColumnIndex(columnName), value);                                   
+            UnsafeNativeMethods.QueryBoolEqual(this,GetColumnIndex(columnName), value);
+            return this;
         }
 
         public override string ObjectIdentification()

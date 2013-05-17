@@ -775,14 +775,27 @@ intcolumn2:1//column 2
         public static void TableTestMixedDouble()
         {
             const double testDouble = 12.2;
-            using (var t = new Table(new MixedField("MixedField")))
+            using (var t = new Table(new MixedField("MixedField"),"stringfield".String()))
             {
+                //get and set of a double in a mixed field (test type and value)
                 t.AddEmptyRow(1);
                 t.SetMixedDouble(0, 0, testDouble);
+                t.SetString("stringfield",0,"testdata");//used for creation of tableview in next test
                 DataType dt = t.GetMixedType(0, 0);
                 Assert.AreEqual(DataType.Double, dt);
                 double fromDb = t.GetMixedDouble(0, 0);
                 Assert.AreEqual(testDouble, fromDb);
+
+                const double testDouble2 = 12.2;
+                //get and set of a double in a mixed in a tableview (test type and value).
+                t.SetIndex(1);
+                TableView tv = t.Distinct("stringfield");
+                Assert.AreEqual(1, tv.Size);
+                tv.SetMixedDouble(0, 0, testDouble2);
+                 dt = tv.GetMixedType(0, 0);
+                Assert.AreEqual(DataType.Double, dt);
+                fromDb = tv.GetMixedDouble(0, 0);
+                Assert.AreEqual(testDouble2, fromDb);
             }
         }
 
@@ -2963,12 +2976,14 @@ Table Name  : same names, empty names, mixed types
              *  Don't run the program in Nunit to debug, simply debug it in visual studio when it runs like an ordinary program
              *  To run the unit tests as unit tests, load the assembly in Nunit and run it from there
              *  */
+
+            TableParameterValidationTest.TableTestMixedDouble();
             Iteratortest.TableIterationTest();
             Iteratortest.TableViewIterationTest();
             Iteratortest.TableorViewIterationTest();
 
             TableParameterValidationTest.TableTestMixedDateTime();
-
+             
             QueryTests.QueryBoolEqual();
             EnvironmentTest.ShowVersionTest();
             EnvironmentTest.Testinterop();

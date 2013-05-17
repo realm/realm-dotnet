@@ -613,6 +613,14 @@ namespace TightDbCSharp
             SetStringNoCheck(columnIndex,rowIndex,value);
         }
 
+        public void SetString(string columnName, long rowIndex, string value)
+        {
+            ValidateRowIndex(rowIndex);
+            long columnIndex = GetColumnIndex(columnName);
+            ValidateTypeString(columnIndex);
+            SetStringNoCheck(columnIndex,rowIndex,value);
+        }
+
         //validation of a column index as well as the type of that index. To save a stack parameter with the type, there are one method per type        
         //TODO:ensure that the compiler as expected emits efficient code for calling (that the call is statically linked)
         public void ValidateColumnIndexAndTypeString(long columnIndex)

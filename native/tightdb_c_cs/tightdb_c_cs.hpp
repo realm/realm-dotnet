@@ -38,7 +38,7 @@ TIGHTDB_C_CS_API void unbind_table_ref(tightdb::Table* table_ptr);
 
 TIGHTDB_C_CS_API size_t table_get_column_count(tightdb::Table* table_ptr);
 
-TIGHTDB_C_CS_API size_t tableView_get_column_count(tightdb::TableView* table_ptr);
+TIGHTDB_C_CS_API size_t _column_count(tightdb::TableView* table_ptr);
 
 TIGHTDB_C_CS_API size_t table_add_column(tightdb::Table* table_ptr,size_t type, const char* name);
 
