@@ -629,6 +629,40 @@ intcolumn2:1//column 2
 
 
 
+        [Test]
+        public static void TableViewTestDouble()
+        {
+            const string fn0 = "stringfield";
+            const string fn1 = "doublefield1";
+            const string fn2 = "doublefield2";
+
+            using (var t = new Table(fn0.String(), fn1.Double(),fn2.Double()))
+            {
+                //first test the table gets the doubles right
+                const double testdouble = -42.3;
+                const double testdouble2 = 42.5;
+                t.AddEmptyRow(1);
+                t.SetString(fn0,0,"teststring");
+                t[0].SetDouble(fn1, testdouble);
+                t.SetDouble(2,0, testdouble2);
+                Assert.AreEqual(testdouble,t.GetDouble(fn1,0));
+                Assert.AreEqual(testdouble,t.GetDouble(1,0));
+                Assert.AreEqual(testdouble2,t[0].GetDouble(fn2));
+                Assert.AreEqual(testdouble2,t.GetDouble(2,0));
+                                
+                //then try once again, but with a tableview
+                t.SetIndex(0);
+                TableView tv = t.Distinct(fn0);
+                tv.SetString(fn0, 0, "teststring");
+                tv[0].SetDouble(fn1, testdouble);
+                tv.SetDouble(2, 0, testdouble2);
+                Assert.AreEqual(testdouble, tv.GetDouble(fn1, 0));
+                Assert.AreEqual(testdouble, tv.GetDouble(1, 0));
+                Assert.AreEqual(testdouble2, tv[0].GetDouble(fn2));
+                Assert.AreEqual(testdouble2, tv[0].GetDouble(2));
+            }            
+        }
+
 
         [Test]
         //make sure tableview returns field values correctly
@@ -640,14 +674,8 @@ intcolumn2:1//column 2
                 Assert.AreEqual(100, tv.Size);
                 Assert.AreEqual(900, tv.GetLong(0, 0));
                 Assert.AreEqual(999, tv.GetLong(0, 99));
-
-
-
-
             }
         }
-
-
     }
 
 
@@ -2981,6 +3009,8 @@ Table Name  : same names, empty names, mixed types
             Iteratortest.TableIterationTest();
             Iteratortest.TableViewIterationTest();
             Iteratortest.TableorViewIterationTest();
+
+            TableViewTests.TableViewTestDouble();
 
             TableParameterValidationTest.TableTestMixedDateTime();
              

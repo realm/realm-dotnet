@@ -206,6 +206,16 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableViewGetInt(this, columnIndex, rowIndex);
         }
 
+        internal override Double GetDoubleNoCheck(long columnIndex, long rowIndex)
+        {
+            return UnsafeNativeMethods.TableViewGetDouble(this, columnIndex, rowIndex);
+        }
+
+        internal override float GetFloatNoCheck(long columnIndex, long rowIndex)
+        {
+            return UnsafeNativeMethods.TableViewGetFloat(this, columnIndex, rowIndex);
+        }
+
 
         internal override long FindFirstBinaryNoCheck(long columnIndex, byte[] value)
         {

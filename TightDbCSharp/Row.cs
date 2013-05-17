@@ -51,6 +51,26 @@ namespace TightDbCSharp
             Owner.SetLongNoCheck(columnIndex,RowIndex,value);
         }
 
+        public void SetFloat(long columnIndex, float value)
+        {
+            Owner.SetFloatNoRowCheck(columnIndex, RowIndex, value);
+        }
+
+        public void SetDouble(long columnIndex, double value)
+        {
+            Owner.SetDoubleNoRowCheck(columnIndex, RowIndex, value);
+        }
+
+        public void SetFloat(String  columnName, float value)
+        {
+            Owner.SetFloatNoRowCheck(columnName, RowIndex, value);
+        }
+
+        public void SetDouble(String columnName, double value)
+        {
+            Owner.SetDoubleNoRowCheck(columnName, RowIndex, value);
+        }
+
         public void SetLong(long columnIndex, long value)
         {
             Owner.SetLongNoRowCheck(columnIndex, RowIndex, value);
@@ -178,6 +198,17 @@ namespace TightDbCSharp
         public DateTime GetDateTime(long columnIndex)
         {
             return Owner.GetDateTimeNoRowCheck(columnIndex, RowIndex);
+        }
+
+
+        public Double GetDouble(string columnName)
+        {
+            return Owner.GetDoubleNoRowCheck(columnName, RowIndex);
+        }
+
+        public Double GetDouble(long columnIndex)
+        {
+            return Owner.GetDoubleNoRowCheck(columnIndex, RowIndex);
         }
 
 

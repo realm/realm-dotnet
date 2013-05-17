@@ -189,6 +189,17 @@ enum DataType {
         }
 
 
+
+        private static IntPtr BoolToIntPtr(Boolean value)
+        {
+            return value ? (IntPtr)1 : (IntPtr)0;
+        }
+
+        private static Boolean IntPtrToBool(IntPtr value)
+        {
+            return (IntPtr)1 == value;
+        }
+
         // tightdb_c_cs_API size_t add_column(size_t SpecPtr,DataType type, const char* name) 
 
         //marshalling : not sure the simple enum members have the same size on C# and c++ on all platforms and bit sizes
@@ -1693,20 +1704,8 @@ enum DataType {
         //note even though it's called getint - it does return an int64_t which is a 64 bit signed, that is, similar to C# long
         public static long TableGetInt(Table table, long columnIndex, long rowIndex)
         {
-#if DEBUG
-            long retval = Is64Bit
-                              ? table_get_int64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex)
-                              : table_get_int32(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
-
-            Log(MethodBase.GetCurrentMethod().Name, "(Table,Column,Row,return)", table, columnIndex, rowIndex, retval);
-            return retval;
-#endif
-            // ReSharper disable CSharpWarnings::CS0162
-            // ReSharper disable HeuristicUnreachableCode
             if (Is64Bit) return table_get_int64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
             return table_get_int32(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
-            // ReSharper restore HeuristicUnreachableCode
-            // ReSharper restore CSharpWarnings::CS0162
         }
 
 
@@ -1721,22 +1720,9 @@ enum DataType {
 
         public static long TableViewGetInt(TableView tableView, long columnIndex, long rowIndex)
         {
-#if DEBUG
-            long retval = Is64Bit
-                              ? tableView_get_int64(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex)
-                              : tableView_get_int32(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
-
-            Log(MethodBase.GetCurrentMethod().Name, "(Table,Column,Row,return)", tableView, columnIndex, rowIndex,
-                retval);
-            return retval;
-#endif
-            // ReSharper disable CSharpWarnings::CS0162
-            // ReSharper disable HeuristicUnreachableCode
             return Is64Bit
                        ? tableView_get_int64(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex)
                        : tableView_get_int32(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
-            // ReSharper restore HeuristicUnreachableCode
-            // ReSharper restore CSharpWarnings::CS0162
         }
 
 
@@ -1789,6 +1775,89 @@ enum DataType {
                        ? tableView_get_mixed_int64(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex)
                        : tableView_get_mixed_int32(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
         }
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "table_get_double", CallingConvention = CallingConvention.Cdecl)]
+        private static extern Double table_get_double64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "table_get_double", CallingConvention = CallingConvention.Cdecl)]
+        private static extern Double table_get_double32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+
+
+        //note even though it's called getint - it does return an int64_t which is a 64 bit signed, that is, similar to C# long
+        public static Double TableGetDouble(Table table, long columnIndex, long rowIndex)
+        {
+            if (Is64Bit) return table_get_double64(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex);
+            return table_get_double32(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex);
+        }
+
+
+
+        //TIGHTDB_C_CS_API int64_t table_get_int(Table* TablePtr, size_t column_ndx, size_t row_ndx)
+        [DllImport("tightdb_c_cs64", EntryPoint = "tableview_get_double", CallingConvention = CallingConvention.Cdecl)]
+        private static extern Double tableView_get_double64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "tableview_get_double", CallingConvention = CallingConvention.Cdecl)]
+        private static extern Double tableView_get_double32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+
+
+        public static Double TableViewGetDouble(TableView tableView, long columnIndex, long rowIndex)
+        {
+            return Is64Bit
+                       ? tableView_get_double64(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex)
+                       : tableView_get_double32(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex);
+        }
+
+
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "table_get_float", CallingConvention = CallingConvention.Cdecl)]
+        private static extern float table_get_float64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "table_get_float", CallingConvention = CallingConvention.Cdecl)]
+        private static extern float table_get_float32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+
+
+        //note even though it's called getint - it does return an int64_t which is a 64 bit signed, that is, similar to C# long
+        public static float TableGetFloat(Table table, long columnIndex, long rowIndex)
+        {
+            if (Is64Bit) return table_get_float64(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex);
+            return table_get_float32(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex);
+        }
+
+
+
+        //TIGHTDB_C_CS_API int64_t table_get_int(Table* TablePtr, size_t column_ndx, size_t row_ndx)
+        [DllImport("tightdb_c_cs64", EntryPoint = "tableview_get_float", CallingConvention = CallingConvention.Cdecl)]
+        private static extern float tableView_get_float64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "tableview_get_float", CallingConvention = CallingConvention.Cdecl)]
+        private static extern float tableView_get_float32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+
+
+        public static float TableViewGetFloat(TableView tableView, long columnIndex, long rowIndex)
+        {
+            return Is64Bit
+                       ? tableView_get_float64(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex)
+                       : tableView_get_float32(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex);
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
         [DllImport("tightdb_c_cs64", EntryPoint = "tableview_get_date", CallingConvention = CallingConvention.Cdecl)]
@@ -1908,9 +1977,9 @@ enum DataType {
         {
             if (Is64Bit)
             {
-                return (table_get_bool64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex) == (IntPtr) 1);
+                return IntPtrToBool(table_get_bool64(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex));
             }
-            return (table_get_bool32(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex) == (IntPtr) 1);
+            return IntPtrToBool(table_get_bool32(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex));
         }
 
 
@@ -1926,9 +1995,9 @@ enum DataType {
         {
             if (Is64Bit)
             {
-                return (tableView_get_bool64(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex) == (IntPtr) 1);
+                return IntPtrToBool(tableView_get_bool64(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex));
             }
-            return (tableView_get_bool32(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex) == (IntPtr) 1);
+            return IntPtrToBool(tableView_get_bool32(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex));
         }
 
 
@@ -1942,11 +2011,7 @@ enum DataType {
 
 
 
-        private static IntPtr BoolToIntPtr(Boolean value)
-        {
-            return value ? (IntPtr) 1 : (IntPtr) 0;
-        }
-
+        
         //convert.tobool does not take an IntPtr so we have to convert ourselves we get 1 for true, 0 for false
         public static void TableViewSetBool(TableView tableView, long columnIndex, long rowIndex, Boolean value)
         {            
@@ -2520,7 +2585,6 @@ enum DataType {
         }
 
 
-
         [DllImport("tightdb_c_cs64", EntryPoint = "test_return_datatype", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr test_return_datatype64(IntPtr value);
         [DllImport("tightdb_c_cs32", EntryPoint = "test_return_datatype", CallingConvention = CallingConvention.Cdecl)]
@@ -2532,6 +2596,46 @@ enum DataType {
                 return IntPtrToDataType(test_return_datatype64(DataTypeToIntPtr(value)));
             return IntPtrToDataType(test_return_datatype32(DataTypeToIntPtr(value)));
         }
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "test_return_bool", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr test_return_bool64(IntPtr value);
+        [DllImport("tightdb_c_cs32", EntryPoint = "test_return_bool", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr test_return_bool32(IntPtr value);
+
+        public static Boolean TestReturnBoolean(Boolean value)
+        {
+            if (Is64Bit)
+                return IntPtrToBool(test_return_bool64(BoolToIntPtr(value)));
+            return IntPtrToBool(test_return_bool32(BoolToIntPtr(value)));
+        }
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "test_return_true_bool", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr test_return_true_bool64();
+        [DllImport("tightdb_c_cs32", EntryPoint = "test_return_true_bool", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr test_return_true_bool32();
+
+        public static Boolean TestReturnTrueBool()
+        {
+            if (Is64Bit)
+                return IntPtrToBool(test_return_true_bool64());
+            return IntPtrToBool(test_return_true_bool32());
+        }
+
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "test_return_false_bool", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr test_return_false_bool64();
+        [DllImport("tightdb_c_cs32", EntryPoint = "test_return_false_bool", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr test_return_false_bool32();
+
+        public static Boolean TestReturnFalseBool()
+        {
+            if (Is64Bit)
+                return IntPtrToBool(test_return_false_bool64());
+            return IntPtrToBool(test_return_false_bool32());
+        }
+
 
 
 
@@ -2774,8 +2878,25 @@ enum DataType {
             }
 
 
+            if (TestReturnFalseBool())
+            {
+                throw new ArgumentException("c++ TestReturnFalseBool returned true");
+            }
 
+            if (!TestReturnTrueBool())
+            {
+                throw new ArgumentException("c++ TestReturnTrueBool returned false");
+            }
 
+            if (!TestReturnBoolean(true))
+            {
+                throw new ArgumentException("sent true to testreturnboolean, got false back");
+            }
+
+            if (TestReturnBoolean(false))
+            {
+                throw new ArgumentException("sent false to testreturnboolean, got true back");
+            }
 
         }
     }

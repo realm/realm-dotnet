@@ -417,6 +417,26 @@ TIGHTDB_C_CS_API void tableview_set_int(TableView*  tableView_ptr, size_t column
     tableView_ptr->set_int(column_ndx,row_ndx,value);
 }
 
+TIGHTDB_C_CS_API void table_set_double(Table*  table_ptr, size_t column_ndx, size_t row_ndx, double value)
+{
+    table_ptr->set_double(column_ndx,row_ndx,value);
+}
+
+TIGHTDB_C_CS_API void tableview_set_double(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx, double value)
+{
+    tableView_ptr->set_double(column_ndx,row_ndx,value);
+}
+
+TIGHTDB_C_CS_API void table_set_float(Table*  table_ptr, size_t column_ndx, size_t row_ndx, float value)
+{
+    table_ptr->set_float(column_ndx,row_ndx,value);
+}
+
+TIGHTDB_C_CS_API void tableview_set_float(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx, float value)
+{
+    tableView_ptr->set_float(column_ndx,row_ndx,value);
+}
+
 
 
 //assuming that int64_t and time_t are binary compatible and of equal size
@@ -796,9 +816,19 @@ TIGHTDB_C_CS_API float table_get_float(Table* table_ptr, size_t column_ndx, size
     return table_ptr->get_float(column_ndx,row_ndx);
 }
 
+TIGHTDB_C_CS_API float tableview_get_float(TableView* tableview_ptr, size_t column_ndx, size_t row_ndx)
+{
+    return tableview_ptr->get_float(column_ndx,row_ndx);
+}
+
 TIGHTDB_C_CS_API double table_get_double(Table* table_ptr, size_t column_ndx, size_t row_ndx)
 {
     return table_ptr->get_double(column_ndx,row_ndx);
+}
+
+TIGHTDB_C_CS_API double tableview_get_double(TableView* tableview_ptr, size_t column_ndx, size_t row_ndx)
+{
+    return tableview_ptr->get_double(column_ndx,row_ndx);
 }
 
 
@@ -1016,10 +1046,18 @@ TIGHTDB_C_CS_API size_t test_return_datatype(size_t value) {
     return datatype_to_size_t(size_t_to_datatype(value));
 }
 
-TIGHTDB_C_CS_API size_t test_return_boolean(size_t value) {
+
+TIGHTDB_C_CS_API size_t test_return_bool(size_t value) {
     return bool_to_size_t(size_t_to_bool(value));
 }
 
+TIGHTDB_C_CS_API size_t test_return_true_bool() {
+    return bool_to_size_t(true);
+}
+
+TIGHTDB_C_CS_API size_t test_return_false_bool() {
+    return bool_to_size_t(false);
+}
 
 
 #ifdef __cplusplus

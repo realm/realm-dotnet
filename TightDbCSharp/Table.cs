@@ -389,6 +389,16 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableGetInt(this,columnIndex, rowIndex);
         }
 
+        internal override Double GetDoubleNoCheck(long columnIndex, long rowIndex)
+        {
+            return UnsafeNativeMethods.TableGetDouble(this, columnIndex, rowIndex);
+        }
+
+        internal override float GetFloatNoCheck(long columnIndex, long rowIndex)
+        {
+            return UnsafeNativeMethods.TableGetFloat(this, columnIndex, rowIndex);
+        }
+
         internal override Boolean GetBooleanNoCheck(long columnIndex, long rowIndex)
         {
             return UnsafeNativeMethods.TableGetBool(this, columnIndex, rowIndex);

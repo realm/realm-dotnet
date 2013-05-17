@@ -20,7 +20,9 @@ namespace TightDbCSharp
         internal abstract Table GetSubTableNoCheck(long columnIndex, long rowIndex);
         internal abstract Boolean GetBooleanNoCheck(long columnIndex, long rowIndex);
         internal abstract String GetStringNoCheck(long columnIndex, long rowIndex);
-        internal abstract long GetLongNoCheck(long columnIndex, long rowIndex);//does not validate parametres or types
+        internal abstract long GetLongNoCheck(long columnIndex, long rowIndex);
+        internal abstract Double GetDoubleNoCheck(long columnIndex, long rowIndex);
+        internal abstract float GetFloatNoCheck(long columnIndex, long rowIndex);
         internal abstract long GetMixedLongNoCheck(long columnIndex, long rowIndex);
         internal abstract Double GetMixedDoubleNoCheck(long columnIndex, long rowIndex);
         internal abstract DateTime GetDateTimeNoCheck(long columnIndex, long rowIndex);
@@ -281,7 +283,7 @@ namespace TightDbCSharp
         internal DateTime GetDateTimeNoRowCheck(string columnName, long rowIndex)
         {
             long columnIndex = GetColumnIndex(columnName);
-            ValidateColumnTypeDate(columnIndex);
+            ValidateTypeDate(columnIndex);
             return GetDateTimeNoRowCheck(columnIndex, rowIndex);
         }
 
@@ -343,7 +345,7 @@ namespace TightDbCSharp
         public DateTime GetDateTime(long columnIndex, long rowIndex)
         {
             ValidateColumnAndRowIndex(columnIndex,rowIndex);
-            ValidateColumnTypeDate(columnIndex);
+            ValidateTypeDate(columnIndex);
             return GetDateTimeNoCheck(columnIndex, rowIndex);
         }
 
@@ -512,13 +514,6 @@ namespace TightDbCSharp
             }
         }
 
-        internal void ValidateTypeDate(long columnIndex)
-        {
-            if (ColumnTypeNoCheck(columnIndex) != DataType.Date)
-            {
-                throw new TableException(GetColumnTypeErrorString(columnIndex, DataType.Date));
-            }
-        }
 
 
 
@@ -551,7 +546,7 @@ namespace TightDbCSharp
         }
 
         //only call if columnIndex is already validated         
-        internal void ValidateColumnTypeDate(long columnIndex)
+        internal void ValidateTypeDate(long columnIndex)
         {
             if (ColumnTypeNoCheck(columnIndex) != DataType.Date)
             {
@@ -578,10 +573,34 @@ namespace TightDbCSharp
 
 
         public void SetLong(long columnIndex, long rowIndex, long value)
-        {
-            ValidateRowIndex(rowIndex);
-            ValidateColumnIndexAndTypeInt(columnIndex);
+        {           
+            ValidateColumnAndRowIndex(columnIndex,rowIndex);
+            ValidateTypeInt(columnIndex);
             SetLongNoCheck(columnIndex, rowIndex, value);
+        }
+
+        public void SetLong(String columnName, long rowIndex, long value)
+        {
+            long columnIndex = GetColumnIndex(columnName);
+            ValidateTypeInt(columnIndex);
+            ValidateRowIndex(rowIndex);
+            SetLongNoCheck(columnIndex,rowIndex,value);
+        }
+
+        
+        public void SetDouble(long columnIndex, long rowIndex, double value)
+        {            
+            ValidateColumnAndRowIndex(columnIndex,rowIndex);
+            ValidateTypeDouble(columnIndex);
+            SetDoubleNoCheck(columnIndex, rowIndex, value);
+        }
+
+        public void SetDouble(String columnName, long rowIndex, double value)
+        {            
+            long columnIndex = GetColumnIndex(columnName);
+            ValidateTypeDouble(columnIndex);
+            ValidateRowIndex(rowIndex);
+            SetDoubleNoCheck(columnIndex, rowIndex, value);
         }
 
         public void SetLongNoRowCheck(long columnIndex, long rowIndex, long value)
@@ -597,6 +616,43 @@ namespace TightDbCSharp
             SetLongNoCheck(columnIndex,rowIndex,value);
         }
 
+
+        public void SetFloatNoRowCheck(long columnIndex, long rowIndex, float value)
+        {
+            ValidateColumnIndexAndTypeFloat(columnIndex);
+            SetFloatNoCheck(columnIndex, rowIndex, value);
+        }
+
+        public void SetFloatNoRowCheck(string columnName, long rowIndex, float value)
+        {
+            long columnIndex = GetColumnIndex(columnName);
+            ValidateTypeFloat(columnIndex);
+            SetFloatNoCheck(columnIndex, rowIndex, value);
+        }
+
+
+        //the norowcheck methods are used in row.cs
+        public void SetDoubleNoRowCheck(long columnIndex, long rowIndex, double value)
+        {
+            ValidateColumnIndexAndTypeDouble(columnIndex);
+            SetDoubleNoCheck(columnIndex, rowIndex, value);
+        }
+
+        public void SetDoubleNoRowCheck(string columnName, long rowIndex, double value)
+        {
+            long columnIndex = GetColumnIndex(columnName);
+            ValidateTypeDouble(columnIndex);
+            SetDoubleNoCheck(columnIndex, rowIndex, value);
+        }
+
+
+
+
+
+
+
+
+
         //if You call from TableRow or TableColumn, You will save some checking - this is the slowest way
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", MessageId = "long")]
         public long GetLong(long columnIndex, long rowIndex)
@@ -605,6 +661,41 @@ namespace TightDbCSharp
             ValidateColumnIndexAndTypeInt(columnIndex);            
             return GetLongNoCheck(columnIndex, rowIndex);//could be sped up if we directly call UnsafeNativeMethods
         }
+
+        public long GetLong(String columnName, long rowIndex)
+        {
+            long columnIndex = GetColumnIndex(columnName);
+            ValidateRowIndex(rowIndex);
+            ValidateTypeInt(columnIndex);
+            return GetLongNoCheck(columnIndex, rowIndex);//could be sped up if we directly call UnsafeNativeMethods
+        }
+
+
+        public Double GetDouble(long columnIndex, long rowIndex)
+        {
+            ValidateRowIndex(rowIndex);            
+            return GetDoubleNoRowCheck(columnIndex, rowIndex);
+        }
+
+        public Double GetDouble(String columnName, long rowIndex)
+        {
+            ValidateRowIndex(rowIndex);
+            return GetDoubleNoRowCheck(columnName, rowIndex);
+        }
+
+        public Double GetDoubleNoRowCheck(long columnIndex , long rowIndex)
+        {
+            ValidateColumnIndexAndTypeDouble(columnIndex);
+            return GetDoubleNoCheck(columnIndex, rowIndex);
+        }
+
+        public Double GetDoubleNoRowCheck(String columnName, long rowIndex)
+        {
+            long columnIndex = GetColumnIndex(columnName);
+            ValidateTypeDouble(columnIndex);
+            return GetDoubleNoCheck(columnIndex, rowIndex);
+        }
+
 
         public void SetString(long columnIndex, long rowIndex,string value)
         {
@@ -644,7 +735,7 @@ namespace TightDbCSharp
         public void ValidateColumnIndexAndTypeDate(long columnIndex)
         {
             ValidateColumnIndex(columnIndex);
-            ValidateColumnTypeDate(columnIndex);
+            ValidateTypeDate(columnIndex);
         }
 
         public void ValidateColumnIndexAndTypeBinary(long columnIndex)
@@ -781,14 +872,14 @@ namespace TightDbCSharp
         public void SetDateTime(long columnIndex, long rowIndex, DateTime value)
         {
             ValidateColumnAndRowIndex(columnIndex,rowIndex);
-            ValidateColumnTypeDate(columnIndex);
+            ValidateTypeDate(columnIndex);
             SetDateTimeNoCheck(columnIndex,rowIndex,value);
         }
 
         public void SetDateTime(string columnName, long rowIndex, DateTime value)
         {
             long columnIndex = GetColumnIndex(columnName);
-            ValidateColumnTypeDate(columnIndex);
+            ValidateTypeDate(columnIndex);
             ValidateRowIndex(rowIndex);
             SetDateTimeNoCheck(columnIndex, rowIndex, value);
         }
