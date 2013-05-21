@@ -25,6 +25,7 @@ namespace TightDbCSharp
         internal abstract float GetFloatNoCheck(long columnIndex, long rowIndex);
         internal abstract long GetMixedLongNoCheck(long columnIndex, long rowIndex);
         internal abstract Double GetMixedDoubleNoCheck(long columnIndex, long rowIndex);
+        internal abstract float GetMixedFloatNoCheck(long columnIndex, long rowIndex);
         internal abstract DateTime GetDateTimeNoCheck(long columnIndex, long rowIndex);
         internal abstract DateTime GetMixedDateTimeNoCheck(long columnIndex, long rowIndex);
         internal abstract long GetColumnIndexNoCheck(string name);//-1 if CI does not exists
@@ -309,6 +310,12 @@ namespace TightDbCSharp
         }
 
 
+        public float GetMixedFloat(long columnIndex, long rowIndex)
+        {
+            ValidateColumnRowMixedType(columnIndex, rowIndex, DataType.Float);
+            return GetMixedFloatNoCheck(columnIndex, rowIndex);
+        }
+
         public double GetMixedDouble(long columnIndex, long rowIndex)
         {
             ValidateColumnRowMixedType(columnIndex, rowIndex, DataType.Double);
@@ -382,6 +389,12 @@ namespace TightDbCSharp
         {
             ValidateColumnRowTypeMixed(columnIndex, rowIndex);
             SetMixedDoubleNoCheck(columnIndex, rowIndex, value);
+        }
+
+        public void SetMixedFloat(long columnIndex, long rowIndex, float value)
+        {
+            ValidateColumnRowTypeMixed(columnIndex, rowIndex);
+            SetMixedFloatNoCheck(columnIndex, rowIndex, value);
         }
 
         
@@ -603,6 +616,22 @@ namespace TightDbCSharp
             SetDoubleNoCheck(columnIndex, rowIndex, value);
         }
 
+        public void SetFloat(long columnIndex, long rowIndex, float value)
+        {
+            ValidateColumnAndRowIndex(columnIndex, rowIndex);
+            ValidateTypeFloat(columnIndex);
+            SetFloatNoCheck(columnIndex, rowIndex, value);
+        }
+
+        public void SetFloat(String columnName, long rowIndex, float value)
+        {
+            long columnIndex = GetColumnIndex(columnName);
+            ValidateTypeFloat(columnIndex);
+            ValidateRowIndex(rowIndex);
+            SetFloatNoCheck(columnIndex, rowIndex, value);
+        }
+
+
         public void SetLongNoRowCheck(long columnIndex, long rowIndex, long value)
         {
             ValidateColumnIndexAndTypeInt(columnIndex);
@@ -695,6 +724,33 @@ namespace TightDbCSharp
             ValidateTypeDouble(columnIndex);
             return GetDoubleNoCheck(columnIndex, rowIndex);
         }
+
+
+        public float GetFloat(long columnIndex, long rowIndex)
+        {
+            ValidateRowIndex(rowIndex);
+            return GetFloatNoRowCheck(columnIndex, rowIndex);
+        }
+
+        public float GetFloat(String columnName, long rowIndex)
+        {
+            ValidateRowIndex(rowIndex);
+            return GetFloatNoRowCheck(columnName, rowIndex);
+        }
+
+        public float GetFloatNoRowCheck(long columnIndex, long rowIndex)
+        {
+            ValidateColumnIndexAndTypeFloat(columnIndex);
+            return GetFloatNoCheck(columnIndex, rowIndex);
+        }
+
+        public float GetFloatNoRowCheck(String columnName, long rowIndex)
+        {
+            long columnIndex = GetColumnIndex(columnName);
+            ValidateTypeFloat(columnIndex);
+            return GetFloatNoCheck(columnIndex, rowIndex);
+        }
+
 
 
         public void SetString(long columnIndex, long rowIndex,string value)

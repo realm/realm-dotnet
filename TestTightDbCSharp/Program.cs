@@ -628,9 +628,66 @@ intcolumn2:1//column 2
         }
 
 
+        [Test]
+        public static void TableViewAndTableTestMixedDouble()
+        {
+            const double testDouble = 12.2;
+            using (var t = new Table(new MixedField("MixedField"), "stringfield".String()))
+            {
+                //get and set of a double in a mixed field (test type and value)
+                t.AddEmptyRow(1);
+                t.SetMixedDouble(0, 0, testDouble);
+                t.SetString("stringfield", 0, "testdata");//used for creation of tableview in next test
+                DataType dt = t.GetMixedType(0, 0);
+                Assert.AreEqual(DataType.Double, dt);
+                double fromDb = t.GetMixedDouble(0, 0);
+                Assert.AreEqual(testDouble, fromDb);
+
+                const double testDouble2 = -12.2;
+                //get and set of a double in a mixed in a tableview (test type and value).
+                t.SetIndex(1);
+                TableView tv = t.Distinct("stringfield");
+                Assert.AreEqual(1, tv.Size);
+                tv.SetMixedDouble(0, 0, testDouble2);
+                dt = tv.GetMixedType(0, 0);
+                Assert.AreEqual(DataType.Double, dt);
+                fromDb = tv.GetMixedDouble(0, 0);
+                Assert.AreEqual(testDouble2, fromDb);
+            }
+        }
 
         [Test]
-        public static void TableViewTestDouble()
+        public static void TableViewAndTableTestMixedFloat()
+        {
+            const float testFloat = -12.2f;
+            using (var t = new Table(new MixedField("MixedField"), "stringfield".String()))
+            {
+                //get and set of a double in a mixed field (test type and value)
+                t.AddEmptyRow(1);
+                t.SetMixedFloat(0, 0, testFloat);
+                t.SetString("stringfield", 0, "testdata");//used for creation of tableview in next test
+                DataType dt = t.GetMixedType(0, 0);
+                Assert.AreEqual(DataType.Float, dt);
+                float fromDb = t.GetMixedFloat(0, 0);
+                Assert.AreEqual(testFloat, fromDb);
+
+                const float testFloat2 = -12.2f;
+                //get and set of a double in a mixed in a tableview (test type and value).
+                t.SetIndex(1);
+                TableView tv = t.Distinct("stringfield");
+                Assert.AreEqual(1, tv.Size);
+                tv.SetMixedFloat(0, 0, testFloat2);
+                dt = tv.GetMixedType(0, 0);
+                Assert.AreEqual(DataType.Float, dt);
+                fromDb = tv.GetMixedFloat(0, 0);
+                Assert.AreEqual(testFloat2, fromDb);
+            }
+        }
+
+
+
+        [Test]
+        public static void TableViewAndTableTestDouble()
         {
             const string fn0 = "stringfield";
             const string fn1 = "doublefield1";
@@ -661,6 +718,42 @@ intcolumn2:1//column 2
                 Assert.AreEqual(testdouble2, tv[0].GetDouble(fn2));
                 Assert.AreEqual(testdouble2, tv[0].GetDouble(2));
             }            
+        }
+
+
+
+        [Test]
+        public static void TableViewAndTableTestFloat()
+        {
+            const string fn0 = "stringfield";
+            const string fn1 = "floatfield1";
+            const string fn2 = "floatfield2";
+
+            using (var t = new Table(fn0.String(), fn1.Float(), fn2.Float()))
+            {
+                //first test the table gets the doubles right
+                const float testfloat = -42.3f;
+                const float testfloat2 = 42.5f;
+                t.AddEmptyRow(1);
+                t.SetString(fn0, 0, "teststring");
+                t[0].SetFloat(fn1, testfloat);
+                t.SetFloat(2, 0, testfloat2);
+                Assert.AreEqual(testfloat, t.GetFloat(fn1, 0));
+                Assert.AreEqual(testfloat, t.GetFloat(1, 0));
+                Assert.AreEqual(testfloat2, t[0].GetFloat(fn2));
+                Assert.AreEqual(testfloat2, t.GetFloat(2, 0));
+
+                //then try once again, but with a tableview
+                t.SetIndex(0);
+                TableView tv = t.Distinct(fn0);
+                tv.SetString(fn0, 0, "teststring");
+                tv[0].SetFloat(fn1, testfloat);
+                tv.SetFloat(2, 0, testfloat2);
+                Assert.AreEqual(testfloat, tv.GetFloat(fn1, 0));
+                Assert.AreEqual(testfloat, tv.GetFloat(1, 0));
+                Assert.AreEqual(testfloat2, tv[0].GetFloat(fn2));
+                Assert.AreEqual(testfloat2, tv[0].GetFloat(2));
+            }
         }
 
 
@@ -799,33 +892,6 @@ intcolumn2:1//column 2
             }
         }
 
-        [Test]
-        public static void TableTestMixedDouble()
-        {
-            const double testDouble = 12.2;
-            using (var t = new Table(new MixedField("MixedField"),"stringfield".String()))
-            {
-                //get and set of a double in a mixed field (test type and value)
-                t.AddEmptyRow(1);
-                t.SetMixedDouble(0, 0, testDouble);
-                t.SetString("stringfield",0,"testdata");//used for creation of tableview in next test
-                DataType dt = t.GetMixedType(0, 0);
-                Assert.AreEqual(DataType.Double, dt);
-                double fromDb = t.GetMixedDouble(0, 0);
-                Assert.AreEqual(testDouble, fromDb);
-
-                const double testDouble2 = 12.2;
-                //get and set of a double in a mixed in a tableview (test type and value).
-                t.SetIndex(1);
-                TableView tv = t.Distinct("stringfield");
-                Assert.AreEqual(1, tv.Size);
-                tv.SetMixedDouble(0, 0, testDouble2);
-                 dt = tv.GetMixedType(0, 0);
-                Assert.AreEqual(DataType.Double, dt);
-                fromDb = tv.GetMixedDouble(0, 0);
-                Assert.AreEqual(testDouble2, fromDb);
-            }
-        }
 
 
         [Test]
@@ -2610,7 +2676,7 @@ Table Name  : same names, empty names, mixed types
     internal class Program
     {
 
-        public static int Buildnumber = 1304041702;
+        public static int Buildnumber = 1305211514;
 
 
 
@@ -3004,19 +3070,19 @@ Table Name  : same names, empty names, mixed types
              *  Don't run the program in Nunit to debug, simply debug it in visual studio when it runs like an ordinary program
              *  To run the unit tests as unit tests, load the assembly in Nunit and run it from there
              *  */
+            EnvironmentTest.ShowVersionTest();
+            EnvironmentTest.Testinterop();
 
-            TableParameterValidationTest.TableTestMixedDouble();
+            TableViewTests.TableViewAndTableTestMixedFloat();
             Iteratortest.TableIterationTest();
             Iteratortest.TableViewIterationTest();
             Iteratortest.TableorViewIterationTest();
 
-            TableViewTests.TableViewTestDouble();
+            TableViewTests.TableViewAndTableTestDouble();
 
             TableParameterValidationTest.TableTestMixedDateTime();
              
             QueryTests.QueryBoolEqual();
-            EnvironmentTest.ShowVersionTest();
-            EnvironmentTest.Testinterop();
 
             TestDates.TestSaveAndRetrieveDate();
            // CreateTableTest.TestTableScope();

@@ -52,7 +52,7 @@ namespace TightDbCSharp
     {
         //manual dll version info. Used when debugging to see if the right DLL is loaded, or an old one
         //the number is a date and a time (usually last time i debugged something)
-        public  const long GetDllVersionCSharp = 1304251818 ;
+        public  const long GetDllVersionCSharp = 1305211512 ;
 
 
         //following the dispose pattern discussed here http://dave-black.blogspot.dk/2011/03/how-do-you-properly-implement.html
@@ -338,7 +338,7 @@ namespace TightDbCSharp
 
         internal override void SetMixedFloatNoCheck(long columnIndex, long rowIndex, float value)
         {
-            UnsafeNativeMethods.TablSetMixedFloat(this,columnIndex, rowIndex, value);
+            UnsafeNativeMethods.TableSetMixedFloat(this,columnIndex, rowIndex, value);
         }
 
         internal override void SetFloatNoCheck(long columnIndex, long rowIndex, float value)
@@ -441,6 +441,11 @@ namespace TightDbCSharp
         internal override Double GetMixedDoubleNoCheck(long columnIndex, long rowIndex)
         {
             return UnsafeNativeMethods.TableGetMixedDouble(this, columnIndex, rowIndex);
+        }
+
+        internal override float GetMixedFloatNoCheck(long columnIndex, long rowIndex)
+        {
+            return UnsafeNativeMethods.TableGetMixedFloat(this, columnIndex, rowIndex);
         }
 
 

@@ -134,6 +134,11 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableViewGetMixedDouble(this, columnIndex, rowIndex);
         }
 
+        internal override float GetMixedFloatNoCheck(long columnIndex, long rowIndex)
+        {
+            return UnsafeNativeMethods.TableViewGetMixedFloat(this, columnIndex, rowIndex);
+        }
+
         
         internal override DateTime GetDateTimeNoCheck(long columnIndex, long rowIndex)
         {

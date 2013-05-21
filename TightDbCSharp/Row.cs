@@ -211,6 +211,16 @@ namespace TightDbCSharp
             return Owner.GetDoubleNoRowCheck(columnIndex, RowIndex);
         }
 
+        public float GetFloat(string columnName)
+        {
+            return Owner.GetFloatNoRowCheck(columnName, RowIndex);
+        }
+
+        public float GetFloat(long columnIndex)
+        {
+            return Owner.GetFloatNoRowCheck(columnIndex, RowIndex);
+        }
+
 
         public Boolean GetBoolean(string columnName)
         {

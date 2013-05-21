@@ -1738,21 +1738,9 @@ enum DataType {
         //note even though it's called getint - it does return an int64_t which is a 64 bit signed, that is, similar to C# long
         public static long TableGetMixedInt(Table table, long columnIndex, long rowIndex)
         {
-#if DEBUG
-            long retval = Is64Bit
-                              ? table_get_mixed_int64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex)
-                              : table_get_mixed_int32(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
-
-            Log(MethodBase.GetCurrentMethod().Name, "(Table,Column,Row,return)", table, columnIndex, rowIndex, retval);
-            return retval;
-#endif
-            // ReSharper disable CSharpWarnings::CS0162
-            // ReSharper disable HeuristicUnreachableCode
             if (Is64Bit)
                 return table_get_mixed_int64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
             return table_get_mixed_int32(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
-            // ReSharper restore HeuristicUnreachableCode
-            // ReSharper restore CSharpWarnings::CS0162
         }
 
 
@@ -1919,7 +1907,7 @@ enum DataType {
 
 
 
-        //the call should return a time_t in 64 bit format (always) so we marshal it as long
+        
         [DllImport("tightdb_c_cs64", EntryPoint = "table_get_mixed_double", CallingConvention = CallingConvention.Cdecl)]
         private static extern Double table_get_mixed_double64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
         [DllImport("tightdb_c_cs32", EntryPoint = "table_get_mixed_double", CallingConvention = CallingConvention.Cdecl)]
@@ -1946,6 +1934,44 @@ enum DataType {
              Is64Bit
                        ? tableView_get_mixed_double64(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex)
                        : tableView_get_mixed_double32(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex);
+        }
+
+
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "table_get_mixed_float", CallingConvention = CallingConvention.Cdecl)]
+        private static extern float table_get_mixed_float64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+        [DllImport("tightdb_c_cs32", EntryPoint = "table_get_mixed_float", CallingConvention = CallingConvention.Cdecl)]
+        private static extern float table_get_mixed_float32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+
+        public static float TableGetMixedFloat(Table table, long columnIndex, long rowIndex)
+        {
+
+            return
+             Is64Bit
+                       ? table_get_mixed_float64(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex)
+                       : table_get_mixed_float32(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex);
+
+
+        }
+
+
+
+
+        //the call should return a time_t in 64 bit format (always) so we marshal it as long
+        [DllImport("tightdb_c_cs64", EntryPoint = "tableview_get_mixed_float", CallingConvention = CallingConvention.Cdecl)]
+        private static extern float tableView_get_mixed_float64(IntPtr tableViewPtr, IntPtr columnNdx, IntPtr rowNdx);
+        [DllImport("tightdb_c_cs32", EntryPoint = "tableview_get_mixed_float", CallingConvention = CallingConvention.Cdecl)]
+        private static extern float tableView_get_mixed_float32(IntPtr tableViewPtr, IntPtr columnNdx, IntPtr rowNdx);
+
+        public static float TableViewGetMixedFloat(TableView tableView, long columnIndex, long rowIndex)
+        {
+
+            return
+             Is64Bit
+                       ? tableView_get_mixed_float64(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex)
+                       : tableView_get_mixed_float32(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex);
+
         }
 
 
@@ -2086,7 +2112,7 @@ enum DataType {
             tableview_set_mixed_double32(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
         }
 
-        //todo:hit with unit test
+        
         [DllImport("tightdb_c_cs64", EntryPoint = "tableview_set_double", CallingConvention = CallingConvention.Cdecl)]
         private static extern void tableview_set_double64(IntPtr tableViewPtr, IntPtr columnIndex, IntPtr rowIndex, double value);
         [DllImport("tightdb_c_cs32", EntryPoint = "tableview_set_double", CallingConvention = CallingConvention.Cdecl)]
@@ -2101,7 +2127,7 @@ enum DataType {
         }
 
 
-        //todo:hit with unit test
+        
         [DllImport("tightdb_c_cs64", EntryPoint = "table_set_mixed_double", CallingConvention = CallingConvention.Cdecl)]
         private static extern void table_set_mixed_double64(IntPtr tablePtr, IntPtr columnIndex, IntPtr rowIndex, double value);
         [DllImport("tightdb_c_cs32", EntryPoint = "table_set_mixed_double", CallingConvention = CallingConvention.Cdecl)]
@@ -2116,7 +2142,7 @@ enum DataType {
             table_set_mixed_double32(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
         }
 
-        //todo:hit with unit test
+        
         [DllImport("tightdb_c_cs64", EntryPoint = "table_set_double", CallingConvention = CallingConvention.Cdecl)]
         private static extern void table_set_double64(IntPtr tablePtr, IntPtr columnIndex, IntPtr rowIndex, double value);
         [DllImport("tightdb_c_cs32", EntryPoint = "table_set_double", CallingConvention = CallingConvention.Cdecl)]
@@ -2136,7 +2162,7 @@ enum DataType {
 
 
 
-        //todo:hit with unit test
+        
         [DllImport("tightdb_c_cs64", EntryPoint = "tableview_set_mixed_float", CallingConvention = CallingConvention.Cdecl)]
         private static extern void tableview_set_mixed_float64(IntPtr tablePtr, IntPtr columnIndex, IntPtr rowIndex, float value);
         [DllImport("tightdb_c_cs32", EntryPoint = "tableview_set_mixed_float", CallingConvention = CallingConvention.Cdecl)]
@@ -2144,6 +2170,7 @@ enum DataType {
 
         public static void TableViewSetMixedFloat(TableView tableView, long columnIndex, long rowIndex, float value)
         {
+            Console.WriteLine("Tableviewsetmixedfloat calling with {0}",value);
             if (Is64Bit)
                 tableview_set_mixed_float64(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
             else
@@ -2151,14 +2178,16 @@ enum DataType {
         }
 
 
-        //todo:hit with unit test
+        
         [DllImport("tightdb_c_cs64", EntryPoint = "table_set_mixed_float", CallingConvention = CallingConvention.Cdecl)]
         private static extern void table_set_mixed_float64(IntPtr tablePtr, IntPtr columnIndex,IntPtr rowIndex, float value);
         [DllImport("tightdb_c_cs32", EntryPoint = "table_set_mixed_float", CallingConvention = CallingConvention.Cdecl)]
         private static extern void table_set_mixed_float32(IntPtr tablePtr, IntPtr columnIndex, IntPtr rowIndex, float value);
 
-        public static void TablSetMixedFloat(Table table ,long columnIndex, long rowIndex, float value)
+        public static void TableSetMixedFloat(Table table ,long columnIndex, long rowIndex, float value)
         {
+            Console.WriteLine("TableSetMixedFloat calling with {0}", value);
+
             if (Is64Bit)
                 table_set_mixed_float64(table.Handle, (IntPtr)columnIndex,(IntPtr) rowIndex, value);
             else
@@ -2166,7 +2195,7 @@ enum DataType {
         }
 
 
-        //todo:hit with unit test
+        
         [DllImport("tightdb_c_cs64", EntryPoint = "tableview_set_float", CallingConvention = CallingConvention.Cdecl)]
         private static extern Query tableview_set_float64(IntPtr tableViewPtr, IntPtr columnIndex, IntPtr rowIndex, float value);
         [DllImport("tightdb_c_cs32", EntryPoint = "tableview_set_float", CallingConvention = CallingConvention.Cdecl)]
@@ -2181,7 +2210,7 @@ enum DataType {
         }
 
 
-        //todo:hit with unit test
+        
         [DllImport("tightdb_c_cs64", EntryPoint = "table_set_float", CallingConvention = CallingConvention.Cdecl)]
         private static extern void table_set_float64(IntPtr tablePtr, IntPtr columnIndex, IntPtr rowIndex, float value);
         [DllImport("tightdb_c_cs32", EntryPoint = "table_set_float", CallingConvention = CallingConvention.Cdecl)]
@@ -2232,7 +2261,7 @@ enum DataType {
             return new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(Convert.ToDouble(cppTime));//unfortunate that addseconds takes a double. Addseconds rounds the double is rounded to nearest millisecond so we should not have problems with loose precision
         }
 
-        //todo:hit with unit test
+        
         [DllImport("tightdb_c_cs64", EntryPoint = "table_set_mixed_date", CallingConvention = CallingConvention.Cdecl)]
         private static extern void table_set_mixed_date64(IntPtr tablePtr, IntPtr columnIndex, IntPtr rowIndex, Int64 value);
         [DllImport("tightdb_c_cs32", EntryPoint = "table_set_mixed_date", CallingConvention = CallingConvention.Cdecl)]
@@ -2246,7 +2275,7 @@ enum DataType {
                 table_set_mixed_date32(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, ToTightDbMixedTime(value));
         }
 
-        //todo:hit with unit test
+        
         [DllImport("tightdb_c_cs64", EntryPoint = "tableview_set_mixed_date", CallingConvention = CallingConvention.Cdecl)]
         private static extern void tableView_set_mixed_date64(IntPtr tableViewPtr, IntPtr columnIndex, IntPtr rowIndex, Int64 value);
         [DllImport("tightdb_c_cs32", EntryPoint = "tableview_set_mixed_date", CallingConvention = CallingConvention.Cdecl)]
@@ -2277,7 +2306,7 @@ enum DataType {
             table_set_date32(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, ToTightDbTime(value));
         }
 
-        //todo:hit with unit test
+        
         [DllImport("tightdb_c_cs64", EntryPoint = "tableview_set_date", CallingConvention = CallingConvention.Cdecl)]
         private static extern void tableview_set_date64(IntPtr tableViewPtr, IntPtr columnIndex, IntPtr rowIndex, Int64 value);
         [DllImport("tightdb_c_cs32", EntryPoint = "tableview_set_date", CallingConvention = CallingConvention.Cdecl)]

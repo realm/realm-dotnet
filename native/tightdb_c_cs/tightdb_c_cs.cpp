@@ -85,7 +85,7 @@ extern "C" {
  TIGHTDB_C_CS_API size_t tightdb_c_cs_getver(void){
 
   // Table test;
-	return 1304251954;
+	return 1305211510;
 }
 
 
@@ -106,11 +106,11 @@ TIGHTDB_C_CS_API size_t tableview_get_column_count(tightdb::TableView* tableView
 
 TIGHTDB_C_CS_API Group* new_group() //should be disposed by calling group_delete
 {
-    std::cerr<<"before new group()\n";
+    //std::cerr<<"before new group()\n";
     //works Group* g = new Group(Group::unattached_tag());
     //fails  Group* g = new Group();
     Group* g = new Group();
-      std::cerr<<"after new group()\n";
+//      std::cerr<<"after new group()\n";
     return g;
 //    return new Group();        
 }
@@ -125,15 +125,15 @@ TIGHTDB_C_CS_API Group* new_group() //should be disposed by calling group_delete
 
 TIGHTDB_C_CS_API Group* new_group_file(const char* name)//should be disposed by calling group_delete
 {
-    std::cerr<<"before new_group_file\n";
-    std::cerr<<"called with name ";
-    std::cerr<<name;
-    std::cerr<<"\n";
+//    std::cerr<<"before new_group_file\n";
+//    std::cerr<<"called with name ";
+//    std::cerr<<name;
+//    std::cerr<<"\n";
 
     //Group* g = new Group(Group::unattached_tag());
       
       Group* g = new Group(name);
-      std::cerr<<"after new group\n";
+//      std::cerr<<"after new group\n";
     return g;
 //    return new Group();        
 }
@@ -560,7 +560,7 @@ TIGHTDB_C_CS_API double  table_get_mixed_double(Table*  table_ptr, size_t column
     return table_ptr->get_mixed(column_ndx,row_ndx).get_double();    
 }
 
-TIGHTDB_C_CS_API double  table_get_mixed_float(Table*  table_ptr, size_t column_ndx, size_t row_ndx)
+TIGHTDB_C_CS_API float  table_get_mixed_float(Table*  table_ptr, size_t column_ndx, size_t row_ndx)
 {
     return table_ptr->get_mixed(column_ndx,row_ndx).get_float();    
 }
@@ -576,7 +576,7 @@ TIGHTDB_C_CS_API double  tableview_get_mixed_double(TableView*  tableView_ptr, s
     return tableView_ptr->get_mixed(column_ndx,row_ndx).get_double();    
 }
 
-TIGHTDB_C_CS_API double  tableview_get_mixed_float(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx)
+TIGHTDB_C_CS_API float  tableview_get_mixed_float(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx)
 {
     return tableView_ptr->get_mixed(column_ndx,row_ndx).get_float();    
 }
@@ -756,18 +756,20 @@ TIGHTDB_C_CS_API void query_bool_equal(Query * query_ptr, size_t columnIndex, si
 }
 
 TIGHTDB_C_CS_API void tableview_delete(TableView * tableview_ptr )
-{     std::cerr<<"before delete tableview_ptr \n";
+{
+//    std::cerr<<"before delete tableview_ptr \n";
     delete(tableview_ptr);
 }
 
 TIGHTDB_C_CS_API void query_delete(Query* query_ptr )
-{     std::cerr<<"before delete query_ptr \n";
+{ 
+//    std::cerr<<"before delete query_ptr \n";
     delete(query_ptr);
 }
 
 TIGHTDB_C_CS_API void group_delete(Group* group_ptr )
 {
-    std::cerr<<"before delete group_ptr\n";
+  //  std::cerr<<"before delete group_ptr\n";
     delete(group_ptr);
 }
 
