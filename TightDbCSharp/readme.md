@@ -5,7 +5,7 @@ This directory contains the VS2012 project that results in the C# language bindi
 The assembly consists of two parts
 
 - ..\native\tightDBCalls.cs - p/invoke calls to tightdb_c_cs.dll.
-- .\*.* The classes that make up the language binding.
+- .\\*.* The classes that make up the language binding.
 
 Only files in the native directory contain calls to c++ code.
 
