@@ -80,15 +80,40 @@ namespace TightDbCSharp
             UnsafeNativeMethods.TableViewSetMixedDate(this,columnIndex,rowIndex,value);
         }
 
+        internal override void SetBinaryNoCheck(long columnIndex, long rowIndex, byte[] value)
+        {
+            throw new NotImplementedException();
+        }
+
         internal override void SetDateTimeNoCheck(long columnIndex, long rowIndex, DateTime value)
         {
             UnsafeNativeMethods.TableViewSetDate(this,columnIndex,rowIndex,value);
         }
 
-        
+
+        internal override bool GetMixedBoolNoCheck(long columnIndex, long rowIndex)
+        {
+            return UnsafeNativeMethods.TableViewGetMixedBool(this,columnIndex, rowIndex);
+        }
+
+        internal override String GetMixedStringNoCheck(long columnIndex, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal override byte[] GetMixedBinaryNoCheck(long columnIndex, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
         internal override Table GetMixedSubTableNoCheck(long columnIndex, long rowIndex)
         {
             return UnsafeNativeMethods.TableViewGetSubTable(this, columnIndex, rowIndex);
+        }
+
+        internal override byte[] GetBinaryNoCheck(long columnIndex, long rowIndex)
+        {
+            throw new NotImplementedException();
         }
 
         internal override Table GetSubTableNoCheck(long columnIndex, long rowIndex)
@@ -106,6 +131,25 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableviewGetString(this, columnIndex, rowIndex);
         }
 
+        internal override void SetMixedLongNoCheck(long columnIndex, long rowIndex, long value)
+        {
+            UnsafeNativeMethods.TableViewSetMixedLong(this, columnIndex, rowIndex, value);
+        }
+        internal override void SetMixedBoolNoCheck(long columnIndex, long rowIndex, bool value)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal override void SetMixedStringNoCheck(long columnIndex, long rowIndex, string value)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal override void SetMixedBinaryNoCheck(long columnIndex, long rowIndex, byte[] value)
+        {
+            throw new NotImplementedException();
+        }
+
         //might be used if You want an empty subtable set up and then change its contents and layout at a later time
         internal override void SetMixedEmptySubtableNoCheck(long columnIndex, long rowIndex)
         {
@@ -113,16 +157,13 @@ namespace TightDbCSharp
         }
 
         //a copy of source will be set into the field
+
         internal override void SetMixedSubtableNoCheck(long columnIndex, long rowIndex, Table source)
         {
             UnsafeNativeMethods.TableViewSetMixedSubTable(this, columnIndex, rowIndex, source);
         }
 
 
-        internal override void SetMixedLongNoCheck(long columnIndex, long rowIndex, long value)
-        {
-            UnsafeNativeMethods.TableViewSetMixedLong(this, columnIndex, rowIndex, value);
-        }
 
         internal override long GetMixedLongNoCheck(long columnIndex, long rowIndex)
         {
@@ -190,7 +231,7 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableViewSize(this);
         }
 
-        internal override Boolean GetBooleanNoCheck(long columnIndex, long rowIndex)
+        internal override Boolean GetBoolNoCheck(long columnIndex, long rowIndex)
         {
             return UnsafeNativeMethods.TableViewGetBool(this, columnIndex, rowIndex);
         }
@@ -200,7 +241,7 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableViewFindAllInt(this,  columnIndex,value);
         }
 
-        internal override void SetBooleanNoCheck(long columnIndex, long rowIndex, Boolean value)
+        internal override void SetBoolNoCheck(long columnIndex, long rowIndex, Boolean value)
         {
             UnsafeNativeMethods.TableViewSetBool(this, columnIndex, rowIndex, value);
         }

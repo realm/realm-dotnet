@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 
 
@@ -48,7 +49,7 @@ namespace TightDbCSharp
 
 
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix")]
-    public class Table : TableOrView, IEnumerable
+    public class Table : TableOrView, IEnumerable<Row>
     {
         //manual dll version info. Used when debugging to see if the right DLL is loaded, or an old one
         //the number is a date and a time (usually last time i debugged something)
@@ -146,16 +147,8 @@ namespace TightDbCSharp
             {
                 throw new ArgumentNullException("schema");
             }
-            TableNew();            
-            foreach (Field tf in schema)
-            {
-                if (tf == null)
-                {
-                    throw new ArgumentNullException("schema","one or more of the field objects is null");
-                }
-                Spec.AddField(tf);
-            }
-            UpdateFromSpec();
+            TableNew();
+            DefineSchema(schema);
         }
 
         //allows the user to quickly create a table with a single field of a single type
@@ -163,11 +156,36 @@ namespace TightDbCSharp
         {
             TableNew();//allocate a table class in c++
             //Spec spec = GetSpec();//get a handle to the table's new empty spec
-            Spec.AddField(schema);
-            UpdateFromSpec();//build table from the spec tree structure
+            DefineSchema(schema);
         }
 
-        
+        public Table DefineSchema(params Field[] schema)
+        {
+            if (schema == null)
+            {
+                throw new ArgumentNullException("schema");
+            }
+            ValidateIsEmpty();
+            foreach (Field tf in schema)
+            {
+                if (tf == null)
+                {
+                    throw new ArgumentNullException("schema", "one or more of the field objects is null");
+                }
+                Spec.AddField(tf);
+            }
+            UpdateFromSpecNoCheck();
+            return this;//allow fluent creation of table in a group
+        }
+
+        //this method is intended to be called on a table with no data in it.
+        //the method will create columns in the table, matching the specified schema.
+        public void DefineSchema(Field schema)
+        {
+            ValidateIsEmpty();
+            Spec.AddField(schema);
+            UpdateFromSpecNoCheck();//build table from the spec tree structure            
+        }
         /*
         //allows specifying a treelike structure much like the params constructor, but this
         //version will have to have an array explicitly specified as the outermost object
@@ -204,7 +222,10 @@ namespace TightDbCSharp
         {
             return UnsafeNativeMethods.CppDllVersion();
         }
-
+        public static long TestAddInteger(long value)
+        {
+            return UnsafeNativeMethods.TestIncrementInteger(value);
+        }
 
 
 
@@ -236,13 +257,15 @@ namespace TightDbCSharp
         //this will update the table structure to represent whatever the earlier recieved spec has been set up to, and altered to
         //todo : (asana)should not be public, call updatefromspec automatically from methods that change the spec (so find out how to get to the top level table when all you have is a spec)
         //todo : (asana)updatefromspec is only allowed on the toplevel table, not on subtables within  - bot okay on toplevel tables inside mixed
+        internal void UpdateFromSpecNoCheck()
+        {        
+            UnsafeNativeMethods.TableUpdateFromSpec(this);
+        }
+
         public void UpdateFromSpec()
         {
-            if (Size != 0) //it is not legal to call updatefromspec if the table already contains data
-            {
-             throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture,"UpdateFromSpec cannot be called on a table with values in it. this table have {0} data rows",Size));
-            }
-           UnsafeNativeMethods.TableUpdateFromSpec(this);
+            ValidateIsEmpty();
+            UpdateFromSpecNoCheck();
         }
 
         internal override DataType ColumnTypeNoCheck(long columnIndex)
@@ -291,6 +314,8 @@ namespace TightDbCSharp
 
         //
 
+
+
         //adds an empty row and filles it out
         //todo:consider if we should use insert row instead? - ask what's the difference, if any (asana)
         //todo:insert should only be used by the binding, not be exposed to the user (asana)
@@ -318,6 +343,11 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableAddEmptyRow(this, numberOfRows);
         }
 
+        internal override byte[] GetBinaryNoCheck(long columnIndex, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
         internal override Table GetSubTableNoCheck(long columnIndex, long rowIndex)
         {
             return UnsafeNativeMethods.TableGetSubTable(this, columnIndex, rowIndex);
@@ -326,6 +356,11 @@ namespace TightDbCSharp
         internal override void SetStringNoCheck(long columnIndex, long rowIndex,string value)
         {
             UnsafeNativeMethods.TableSetString(this,columnIndex,rowIndex,value);
+        }
+
+        internal override void SetBinaryNoCheck(long columnIndex, long rowIndex, byte[] value)
+        {
+            throw new NotImplementedException();
         }
 
         internal override String GetStringNoCheck(long columnIndex, long rowIndex)
@@ -364,7 +399,22 @@ namespace TightDbCSharp
         internal override void SetDateTimeNoCheck(long columnIndex, long rowIndex, DateTime value)
         {
             UnsafeNativeMethods.TableSetDate(this,columnIndex,rowIndex,value);
-        }        
+        }
+
+        internal override bool GetMixedBoolNoCheck(long columnIndex, long rowIndex)
+        {
+            return UnsafeNativeMethods.TableGetMixedBool(this, columnIndex, rowIndex);
+        }
+
+        internal override String GetMixedStringNoCheck(long columnIndex, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal override byte[] GetMixedBinaryNoCheck(long columnIndex, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
 
         internal override Table GetMixedSubTableNoCheck(long columnIndex, long rowIndex)
         {
@@ -399,12 +449,12 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableGetFloat(this, columnIndex, rowIndex);
         }
 
-        internal override Boolean GetBooleanNoCheck(long columnIndex, long rowIndex)
+        internal override Boolean GetBoolNoCheck(long columnIndex, long rowIndex)
         {
             return UnsafeNativeMethods.TableGetBool(this, columnIndex, rowIndex);
         }
 
-        internal override void SetBooleanNoCheck(long columnIndex, long rowIndex,Boolean value)
+        internal override void SetBoolNoCheck(long columnIndex, long rowIndex,Boolean value)
         {
            UnsafeNativeMethods.TableSetBool(this,columnIndex,rowIndex,value);
         }
@@ -417,6 +467,21 @@ namespace TightDbCSharp
         internal override void SetMixedLongNoCheck(long columnIndex, long rowIndex, long value)
         {
             UnsafeNativeMethods.TableSetMixedLong(this, columnIndex, rowIndex, value);
+        }
+
+        internal override void SetMixedBoolNoCheck(long columnIndex, long rowIndex, bool value)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal override void SetMixedStringNoCheck(long columnIndex, long rowIndex, string value)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal override void SetMixedBinaryNoCheck(long columnIndex, long rowIndex, byte[] value)
+        {
+            throw new NotImplementedException();
         }
 
 

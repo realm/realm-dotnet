@@ -10,6 +10,9 @@ namespace TightDbCSharp
     //TODO:Implement child types that each are bound to a given DataType. So we got for instance TableIntColumn
     //why? in some cases We could return TableIntColumn and with that one, we would not have to check if the Table column type is int every time
     //we read data from the row. So working with typed column fields would be somewhat faster
+    //TODO:this is just a thought consider implementing Get<T> perhaps we could interop with T to a general method in c++ that return intptr that
+    //then has to be intepreted differently depending on field type and value. Not sure this is a good idea, but might be worth investigating pros and cons
+    //TODO:implement GetString, GetLong etc. etc. to enable users to do for instance row[2].GetString and thus get a typed value back
     public class RowColumn
     {
         
@@ -75,6 +78,7 @@ namespace TightDbCSharp
             return Owner.GetSubTableCheckType(ColumnIndex);//we cannot know for sure if col,row is of the subtable type
         }
 
+        //todo:create a unit test that hits this getter and this setter in all case statements
         //if it is a mixed we return mixed! -not the type of the field
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming",
             "CA2204:Literals should be spelled correctly", MessageId = "TableRowColumn")]
@@ -83,34 +87,65 @@ namespace TightDbCSharp
             get
             {
                 switch (ColumnType)
-                {//row and column not user specified so safe, and type checked in switch above so also safe
+                {
+//row and column not user specified so safe, and type checked in switch above so also safe
                     case DataType.Int:
-                        return Owner.GetLongNoCheck(ColumnIndex);                        
+                        return Owner.GetLongNoCheck(ColumnIndex);
                     case DataType.Bool:
                         return Owner.GetBooleanNoCheck(ColumnIndex);
-                        case DataType.String:
+                    case DataType.String:
                         return Owner.GetStringNoCheck(ColumnIndex);
-                    case DataType.Mixed:                        
+                    case DataType.Binary:
+                        return Owner.GetBinaryNoCheck(ColumnIndex);                        
+                    case DataType.Table:
+                        return Owner.GetSubTableNoCheck(ColumnIndex);
+                    case DataType.Date:
+                        return Owner.GetDateTimeNoCheck(ColumnIndex);
+                    case DataType.Float:
+                        return Owner.GetFloatNoCheck(ColumnIndex);
+                    case DataType.Double:
+                        return Owner.GetDoubleNoCheck(ColumnIndex);
+                        
+                    
+                    case DataType.Mixed:
                         switch (MixedTypeNoCheck())
                         {
                             case DataType.Int:
                                 return Owner.GetMixedLongNoCheck(ColumnIndex);
+
+                            case DataType.Bool:
+                                return Owner.GetMixedBoolNoCheck(ColumnIndex);
+
+                            case DataType.String:
+                                return Owner.GetMixedStringNoCheck(ColumnIndex);
+
+                            case DataType.Binary:
+                                return Owner.GetMixedBinaryNoCheck(ColumnIndex);
 
                             case DataType.Table:
                                 return Owner.GetMixedSubtableNoCheck(ColumnIndex);
 
                             case DataType.Date:
                                 return Owner.GetMixedDateTimeNoCheck(ColumnIndex);
+
+                            case DataType.Float:
+                                return Owner.GetMixedFloatNoCheck(ColumnIndex);
+
+                            case DataType.Double:
+                                return Owner.GetMixedDoubleNoCheck(ColumnIndex);
+
+
                             default:
                                 return string.Format(CultureInfo.InvariantCulture,
-                                                     "mixed with type {0} not supported yet in tabledumper",
+                                                     "mixed with type {0} not supported yet in rowcolumn.value",
                                                      MixedTypeNoCheck());
                         }
-                    default: //todo:implement Table and other missing types
+                    default: 
                         return String.Format(CultureInfo.InvariantCulture,
-                                             "Getting type {0} from TableRowColumn not implemented yet",
+                                             "Getting type {0} from RowColumn not implemented yet",
                                              ColumnType); //so null means the datatype is not fully supported yet
                 }
+
             }
             set
             {
@@ -118,9 +153,34 @@ namespace TightDbCSharp
                 {
                     case DataType.Int:
                         Owner.SetLongNoCheck(ColumnIndex, (long)value );//the cast will raise an exception if value is not a long, or at least convertible to long
+                        break;                        
+                    case DataType.Bool:
+                        Owner.SetBoolNoCheck(ColumnIndex, (bool) value);
+                        break;
+                    case DataType.String:
+                        Owner.SetStringNoCheck(ColumnIndex, (String) value);
+                        break;
+                    case DataType.Binary:
+                        Owner.SetBinaryNoCheck(ColumnIndex, (byte[]) value);                                                
+                        break;
+                    case DataType.Table:
+                        Owner.SetSubTableNoCheck(ColumnIndex,(Object[]) value);
+                        break;
+                    case DataType.Mixed:
+                        Owner.SetMixedNoCheck(ColumnIndex, value);
+                        break;
+                    case DataType.Date:
+                        Owner.SetDateNoCheck(ColumnIndex, (DateTime) value);
+                        break;
+                    case DataType.Float:
+                        Owner.SetFloatNoCheck(ColumnIndex,(float) value);
+                        break;
+                    case DataType.Double:
+                        Owner.SetDoubleNoCheck(ColumnIndex,(Double) value);
                         break;
                     default:
-                        {//todo:impelement more types
+                        {//todo:create case statements for all column types and all mixed types in a nested case as in get
+                            
                             throw new TableException(String.Format(CultureInfo.InvariantCulture,
                                                                    "setting type {0} in TableRowColumn not implemented yet",
                                                                    ColumnType));

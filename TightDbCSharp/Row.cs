@@ -51,6 +51,54 @@ namespace TightDbCSharp
             Owner.SetLongNoCheck(columnIndex,RowIndex,value);
         }
 
+        internal void SetBoolNoCheck(long columnIndex, bool value)
+        {
+            Owner.SetBoolNoCheck(columnIndex, RowIndex, value);
+        }
+
+        internal void SetStringNoCheck(long columnIndex, string value)
+        {
+            Owner.SetStringNoCheck(columnIndex, RowIndex, value);
+        }
+
+        internal void SetBinaryNoCheck(long columnIndex, byte[] value)
+        {
+            Owner.SetBinaryNoCheck(columnIndex, RowIndex, value);
+        }
+
+        //call with an array of objects that match the subtable in this column in types and values and dimension
+        //or set values in subtables like this myrow.GetSubTable(colid).[subcoln][subrown] = value
+        //or set values in subtables like this myrow.GetSubTable(colid).[subcoln][subrown].SetString(value)
+        //or set values in subtables like this myrow.GetSubTable(colid).SetString(subcolid,subrowid,value);
+        //the last two are typechecked in runtime so faster and safer
+
+        internal void SetSubTableNoCheck(long columnIndex, IEnumerable<object> value)
+        {
+            Owner.SetSubTableNoCheck(columnIndex, RowIndex, value);
+        }
+
+        internal void SetMixedNoCheck(long columnIndex, object value)
+        {
+            Owner.SetMixedNoCheck(columnIndex,RowIndex,value);
+        }
+
+        internal void SetDateNoCheck(long columnIndex, DateTime value)
+        {
+            Owner.SetMixedNoCheck(columnIndex, RowIndex, value);
+        }
+
+        internal void SetFloatNoCheck(long columnIndex, float value)
+        {
+            Owner.SetFloatNoCheck(columnIndex, RowIndex, value);
+        }
+
+        internal void SetDoubleNoCheck(long columnIndex, Double value)
+        {
+            Owner.SetDoubleNoCheck(columnIndex, RowIndex, value);
+        }
+
+
+
         public void SetFloat(long columnIndex, float value)
         {
             Owner.SetFloatNoRowCheck(columnIndex, RowIndex, value);
@@ -91,10 +139,31 @@ namespace TightDbCSharp
             return Owner.GetMixedTypeNoCheck(columnIndex,RowIndex);
         }
 
+
         //called from a getter that already is in a switch statement on a mixed, so everything is already validated
-        internal long GetMixedLongNoCheck(long columnIndex)
+        internal long GetMixedLongNoCheck(long columnIndex)                     //Datatype.Int
         {
             return Owner.GetMixedLongNoCheck(columnIndex, RowIndex);
+        }
+
+        internal Boolean GetMixedBoolNoCheck(long columnIndex)//Datatype.Bool
+        {
+            return Owner.GetMixedBoolNoCheck(columnIndex, RowIndex);
+        }
+
+        internal String GetMixedStringNoCheck(long columnIndex)//Datatype.String
+        {
+            return Owner.GetMixedStringNoCheck(columnIndex, RowIndex);
+        }
+
+        internal Byte[] GetMixedBinaryNoCheck(long columnIndex)//Datatype.Binary
+        {
+            return Owner.GetMixedBinaryNoCheck(columnIndex, RowIndex);
+        }
+
+        internal Table GetMixedSubtableNoCheck(long columnIndex)//Datatype.Table
+        {
+            return Owner.GetMixedSubTable(columnIndex, RowIndex);
         }
 
         //called from a switch statement in RowColumn where everything is already validated
@@ -102,6 +171,17 @@ namespace TightDbCSharp
         {
             return Owner.GetMixedDateTimeNoCheck(columnIndex, RowIndex);
         }
+
+        internal float GetMixedFloatNoCheck(long columnIndex)//Datatype.Table
+        {
+            return Owner.GetMixedFloat(columnIndex, RowIndex);
+        }
+
+        internal double GetMixedDoubleNoCheck(long columnIndex)//Datatype.Table
+        {
+            return Owner.GetMixedDouble(columnIndex, RowIndex);
+        }
+
 
         //call this if You know for sure that columnIndex is valid (but if You are not sure if the type of the column is in fact mixed)
         internal DataType MixedTypeCheckType(long columnIndex)
@@ -236,14 +316,10 @@ namespace TightDbCSharp
         {
             return Owner.GetColumnIndex(columnName);
         }
-        internal Table GetMixedSubtableNoCheck(long columnIndex)
-        {
-            return Owner.GetMixedSubTable(columnIndex, RowIndex);
-        }
 
         internal Boolean GetBooleanNoCheck(long columnIndex)
         {
-            return Owner.GetBooleanNoCheck(columnIndex, RowIndex);
+            return Owner.GetBoolNoCheck(columnIndex, RowIndex);
         }
 
         public String GetStringNoCheck(long columnIndex)
@@ -251,11 +327,31 @@ namespace TightDbCSharp
             return Owner.GetStringNoCheck(columnIndex, RowIndex);
         }
 
+        public byte[] GetBinaryNoCheck(long columnIndex)
+        {
+            return Owner.GetBinaryNoCheck(columnIndex, RowIndex);
+        }
        
         public void Remove()
         {
             Owner.RemoveNoCheck(RowIndex);
             RowIndex = -2;//mark this row as invalid            
+        }
+
+        internal DateTime GetDateTimeNoCheck(long columnIndex)
+        {
+            return Owner.GetDateTimeNoCheck(columnIndex, RowIndex);
+        }
+
+
+        internal float GetFloatNoCheck(long columnIndex)
+        {
+            return Owner.GetFloatNoCheck(columnIndex, RowIndex);
+        }
+
+        internal Double GetDoubleNoCheck(long columnIndex)
+        {
+            return Owner.GetDoubleNoCheck(columnIndex, RowIndex);
         }
     }
 }

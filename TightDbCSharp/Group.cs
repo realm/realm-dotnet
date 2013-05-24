@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.IO;
 
 namespace TightDbCSharp
 {
@@ -8,6 +9,21 @@ namespace TightDbCSharp
         public Group()
         {
             UnsafeNativeMethods.GroupNew(this);//calls sethandle itself
+        }
+
+
+        public Table CreateTable(string tableName, params Field[] schema)
+        {
+            if (schema != null)
+            {
+                return UnsafeNativeMethods.GroupGetTable(this, tableName).DefineSchema(schema);
+            }
+            return UnsafeNativeMethods.GroupGetTable(this, tableName);
+        }
+
+        public void Write(string path)
+        {
+            UnsafeNativeMethods.GroupWrite(this, path);
         }
 
         //TODO:erorr handling if user specifies an illegal filename or path.
@@ -23,9 +39,9 @@ namespace TightDbCSharp
         
         //as group files can create problems at any time, any group related calls should probably be wrapped in exception handlers, and
         //should be able to return error codes to C#
-        public Group(string fileName)
+        public Group(string path)
         {            
-            UnsafeNativeMethods.GroupNewFile(this,fileName);
+            UnsafeNativeMethods.GroupNewFile(this,path);
         }
 
         internal override void ReleaseHandle()

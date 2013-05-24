@@ -138,6 +138,11 @@ TIGHTDB_C_CS_API Group* new_group_file(const char* name)//should be disposed by 
 //    return new Group();        
 }
 
+TIGHTDB_C_CS_API Table* group_get_table(Group* group_ptr, char* table_name)//should be disposed by calling unbind_table_ref
+{    
+    return LangBindHelper::get_table_ptr(group_ptr,table_name);
+}
+
 
 //return a newly constructed top level table 
 TIGHTDB_C_CS_API Table* new_table()//should be disposed by calling unbind_table_ref
@@ -156,6 +161,8 @@ TIGHTDB_C_CS_API Table* table_get_subtable(Table* table_ptr, size_t column_ndx, 
 {    
     return LangBindHelper::get_subtable_ptr(table_ptr,column_ndx, row_ndx);
 }
+
+
 
 TIGHTDB_C_CS_API void unbind_table_ref(tightdb::Table* table_ptr)
 {	
@@ -720,6 +727,12 @@ TIGHTDB_C_CS_API size_t query_get_column_index(tightdb::Query* query_ptr,char * 
     return query_ptr->get_table()->get_column_index(column_name);
 }
 
+//todo:implement call that uses all the parametres
+TIGHTDB_C_CS_API double query_average(tightdb::Query* query_ptr,size_t column_index)
+{
+    return query_ptr->average(column_index);//use default values for the defaultable parametres
+}
+
 
 TIGHTDB_C_CS_API size_t table_get_column_index(Table* table_ptr,char *  column_name)
 {
@@ -744,6 +757,12 @@ TIGHTDB_C_CS_API Query* table_where(Table * table_ptr)
 {   
     return new Query(table_ptr->where());            
 }
+
+TIGHTDB_C_CS_API size_t query_find_next(Query * query_ptr, size_t last_match) 
+{
+    return query_ptr->find_next(last_match);
+}
+
 
 //query_bool_equal64(IntPtr queryPtr, IntPtr columnIndex,IntPtr value);
 
@@ -852,12 +871,12 @@ TIGHTDB_C_CS_API void table_set_mixed_subtable(Table* table_ptr,size_t col_ndx, 
 
 TIGHTDB_C_CS_API void table_set_mixed_empty_subtable(Table* table_ptr,size_t col_ndx, size_t row_ndx)
 {     
-   table_ptr->set_mixed(col_ndx,row_ndx,Mixed::subtable_tag());//this crashes       
+   table_ptr->set_mixed(col_ndx,row_ndx,Mixed::subtable_tag());
 }
 
 TIGHTDB_C_CS_API void tableview_set_mixed_empty_subtable(TableView* tableView_ptr,size_t col_ndx, size_t row_ndx)
 {     
-   tableView_ptr->set_mixed(col_ndx,row_ndx,Mixed::subtable_tag());//this crashes       
+   tableView_ptr->set_mixed(col_ndx,row_ndx,Mixed::subtable_tag());
 }
 
 
@@ -1060,6 +1079,11 @@ TIGHTDB_C_CS_API size_t test_return_true_bool() {
 TIGHTDB_C_CS_API size_t test_return_false_bool() {
     return bool_to_size_t(false);
 }
+
+TIGHTDB_C_CS_API int64_t test_increment_integer(int64_t value) {
+    return value++;
+}
+
 
 
 #ifdef __cplusplus

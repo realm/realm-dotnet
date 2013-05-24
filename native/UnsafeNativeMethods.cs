@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Reflection;
 using System.Text;
 using System.Runtime.InteropServices;
+
 
 //using System.Appdomain;
 
@@ -9,8 +11,7 @@ namespace TightDbCSharp
 {
     using System.IO;
     using System.Globalization;
-    using System.Reflection;
-    
+
     //mirrors the enum in the C interface
     /*     
    Note: These must be kept in sync with those in
@@ -407,6 +408,21 @@ enum DataType {
         public static void TableNew(Table table)
         {
             table.SetHandle(Is64Bit ? new_table64() : new_table32(), true);
+        }
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "group_write", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void group_write64([MarshalAs(UnmanagedType.LPStr)] string fileName);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "group_write", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void group_write32([MarshalAs(UnmanagedType.LPStr)] string fileName);
+
+        //todo:test and add Os file operation error handling
+        public static void GroupWrite(Group group, string fileName)
+        {
+            if (Is64Bit) group_write64(fileName);
+            else
+                group_write32(fileName);
         }
 
 
@@ -816,6 +832,45 @@ enum DataType {
 
 
 
+        [DllImport("tightdb_c_cs64", EntryPoint = "query_find_next", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr query_find_next64(IntPtr handle,IntPtr lastMatch);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "query_find_next", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr query_find_next32(IntPtr handle, IntPtr lastMatch);
+
+
+        public static long QueryFindNext(Query query,long lastMatch)
+        {
+            return                
+                    Is64Bit
+                        ? (long)query_find_next64(query.Handle,(IntPtr) lastMatch)
+                        : (long)query_find_next32(query.Handle,(IntPtr) lastMatch);
+        }
+
+
+
+        
+        [DllImport("tightdb_c_cs64", EntryPoint = "query_average", CallingConvention = CallingConvention.Cdecl)]
+        private static extern double query_average64(IntPtr handle, IntPtr columnIndex);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "query_average", CallingConvention = CallingConvention.Cdecl)]
+        private static extern double query_average32(IntPtr handle, IntPtr columnIndex);
+
+
+        public static double QueryAverage(Query query, long columnIndex)
+        {
+            return
+                    Is64Bit
+                        ? query_average64(query.Handle, (IntPtr)columnIndex)
+                        : query_average32(query.Handle, (IntPtr)columnIndex);
+        }
+
+        
+
+
+
+
+
         //tightdb_c_cs_API size_t new_table()
         [DllImport("tightdb_c_cs64", EntryPoint = "table_get_subtable", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr table_get_subtable64(IntPtr tableHandle, IntPtr columnIndex, IntPtr rowIndex);
@@ -836,6 +891,22 @@ enum DataType {
                              true);
         }
 
+
+
+
+        //return a new table, having a name and residing in a group
+        [DllImport("tightdb_c_cs64", EntryPoint = "group_get_table", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr group_get_table64(IntPtr groupHandle, [MarshalAs(UnmanagedType.LPStr)] String tableName);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "group_get_table", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr group_get_table32(IntPtr groupHandle, [MarshalAs(UnmanagedType.LPStr)] String tableName);
+
+        public static Table GroupGetTable(Group group, string tableName)
+        {
+            if (Is64Bit)
+                return new Table(group_get_table64(group.Handle, tableName), true);            
+            return new Table(group_get_table32(group.Handle, tableName),true);
+        }
 
 
 
@@ -1016,7 +1087,7 @@ enum DataType {
 
         public static Query table_where(Table table)
         {
-            return new Query(Is64Bit ? table_where64(table.Handle) : table_where32(table.Handle), true);
+            return new Query(Is64Bit ? table_where64(table.Handle) : table_where32(table.Handle),table, true);
         }
 
 
@@ -1745,6 +1816,27 @@ enum DataType {
 
 
 
+        [DllImport("tightdb_c_cs64", EntryPoint = "table_get_mixed_bool", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_get_mixed_bool64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "table_get_mixed_bool", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_get_mixed_bool32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+
+        //convert.tobool does not take an IntPtr so we have to convert ourselves we get 1 for true, 0 for false
+        public static bool TableGetMixedBool(Table table, long columnIndex, long rowIndex)
+        {
+            if (Is64Bit)
+            {
+                return IntPtrToBool(table_get_mixed_bool64(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex));
+            }
+            return IntPtrToBool(table_get_mixed_bool32(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex));
+        }
+
+
+
+
+
+
 
         //get an int from a mixed
         [DllImport("tightdb_c_cs64", EntryPoint = "tableview_get_mixed_int", CallingConvention = CallingConvention.Cdecl
@@ -1763,6 +1855,27 @@ enum DataType {
                        ? tableView_get_mixed_int64(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex)
                        : tableView_get_mixed_int32(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
         }
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "tableview_get_mixed_bool", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr tableview_get_mixed_bool64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "tableview_get_mixed_bool", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr tableview_get_mixed_bool32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+
+        //convert.tobool does not take an IntPtr so we have to convert ourselves we get 1 for true, 0 for false
+        public static bool TableViewGetMixedBool(TableView tableView, long columnIndex, long rowIndex)
+        {
+            if (Is64Bit)
+            {
+                return IntPtrToBool(tableview_get_mixed_bool64(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex));
+            }
+            return IntPtrToBool(tableview_get_mixed_bool32(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex));
+        }
+
+
+
+
 
 
         [DllImport("tightdb_c_cs64", EntryPoint = "table_get_double", CallingConvention = CallingConvention.Cdecl)]
@@ -2098,6 +2211,26 @@ enum DataType {
                  query_bool_equal32(q.Handle, (IntPtr)columnIndex, ipValue);  
         }
 
+
+
+        //in tightdb c++ this function returns q again, the query object is re-used and keeps its pointer.
+        //so high-level stuff should also return self, to enable stacking of operations query.dothis().dothat()
+        [DllImport("tightdb_c_cs64", EntryPoint = "query_int_between", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void query_int_between64(IntPtr queryPtr, IntPtr columnIndex, long lowValue, long highValue);
+        [DllImport("tightdb_c_cs32", EntryPoint = "query_int_between", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void query_int_between32(IntPtr queryPtr, IntPtr columnIndex, long lowValue, long highValue);
+        public static void QueryIntBetween(Query q, long columnIndex, long lowValue, long highValue)
+        {
+            if (Is64Bit)
+                query_int_between64(q.Handle, (IntPtr)columnIndex, lowValue, highValue);
+            else
+                query_int_between32(q.Handle, (IntPtr)columnIndex, lowValue, highValue);
+        }
+
+
+
+
+
        
         [DllImport("tightdb_c_cs64", EntryPoint = "tableview_set_mixed_double", CallingConvention = CallingConvention.Cdecl)]
         private static extern void tableview_set_mixed_double64(IntPtr tableViewPtr, IntPtr columnIndex, IntPtr rowIndex, double value);
@@ -2170,7 +2303,7 @@ enum DataType {
 
         public static void TableViewSetMixedFloat(TableView tableView, long columnIndex, long rowIndex, float value)
         {
-            Console.WriteLine("Tableviewsetmixedfloat calling with {0}",value);
+            //Console.WriteLine("Tableviewsetmixedfloat calling with {0}",value);
             if (Is64Bit)
                 tableview_set_mixed_float64(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
             else
@@ -2186,7 +2319,7 @@ enum DataType {
 
         public static void TableSetMixedFloat(Table table ,long columnIndex, long rowIndex, float value)
         {
-            Console.WriteLine("TableSetMixedFloat calling with {0}", value);
+            //Console.WriteLine("TableSetMixedFloat calling with {0}", value);
 
             if (Is64Bit)
                 table_set_mixed_float64(table.Handle, (IntPtr)columnIndex,(IntPtr) rowIndex, value);
@@ -2665,6 +2798,17 @@ enum DataType {
             return IntPtrToBool(test_return_false_bool32());
         }
 
+        [DllImport("tightdb_c_cs64", EntryPoint = "test_increment_integer", CallingConvention = CallingConvention.Cdecl)]
+        private static extern long test_increment_integer64(long value);
+        [DllImport("tightdb_c_cs32", EntryPoint = "test_increment_integer", CallingConvention = CallingConvention.Cdecl)]
+        private static extern long test_increment_integer32(long value);
+
+        public static long TestIncrementInteger(long value)
+        {
+            if (Is64Bit)
+                return test_increment_integer64(value);
+            return test_increment_integer32(value);
+        }
 
 
 

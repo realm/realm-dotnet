@@ -7,6 +7,7 @@ using TightDbCSharp;
 using TightDbCSharp.Extensions;
 using System.Globalization;
 using System.Reflection;
+using System.Diagnostics;
 
 [assembly: CLSCompliant(true)] //mark the public interface of this program as cls compliant (can be run from any .net language)
 
@@ -75,14 +76,22 @@ namespace TestTightDbCSharp
         }
 
                 [Test]
-                public static void Testinterop()
+                public static void TestInterop()
                 {
                     Table.TestInterop();                    
                 }
-
     }
 
 
+    [TestFixture]
+    public static class IntegrationTests
+    {
+        [Test]
+        public static void TestTutorial()
+        {
+            Program.TutorialDynamic();
+        }
+    }
 
     //tightdb Date is date_t which is seconds since 1970,1,1
     //it is an integer with the number of seconds since 1970,1,1 00:00
@@ -115,110 +124,111 @@ namespace TestTightDbCSharp
     {
         [Test]
         public static void TestSaveAndRetrieveDate()
-        {          
+        {
             //this test might not be that effective if being run on a computer whose local time is == utc
-            var dateToSaveLocal = new DateTime(1979,05,14,1,2,3,DateTimeKind.Local);
+            var dateToSaveLocal = new DateTime(1979, 05, 14, 1, 2, 3, DateTimeKind.Local);
             var dateToSaveUtc = new DateTime(1979, 05, 14, 1, 2, 4, DateTimeKind.Utc);
             var dateToSaveUnspecified = new DateTime(1979, 05, 14, 1, 2, 5, DateTimeKind.Unspecified);
 
             var expectedLocal = new DateTime(1979, 05, 14, 1, 2, 3, DateTimeKind.Local).ToUniversalTime();//we expect to get the UTC timepoit resembling the local time we sent
             var expectedUtc = new DateTime(1979, 05, 14, 1, 2, 4, DateTimeKind.Utc);//we expect to get the exact same timepoint back, measured in utc
-            var expectedUnspecified = new DateTime(1979,05,14,1,2,5,DateTimeKind.Local).ToUniversalTime();//we expect to get the UTC timepoit resembling the local time we sent
+            var expectedUnspecified = new DateTime(1979, 05, 14, 1, 2, 5, DateTimeKind.Local).ToUniversalTime();//we expect to get the UTC timepoit resembling the local time we sent
 
-            var t = new Table("date1".Date(),"date2".Mixed(),"stringfield".String());//test date in an ordinary date , as well as date in a mixed
-            t.SetIndex(2);          
+            using (var t = new Table("date1".Date(), "date2".Mixed(), "stringfield".String()))//test date in an ordinary date , as well as date in a mixed
+            {
+                t.SetIndex(2);
 
-            t.AddEmptyRow(1);//in this row we store datetosavelocal
-            t.SetString(2,0,"str1");
-            t.SetDateTime(0,0,dateToSaveLocal);
-            DateTime fromdb = t.GetDateTime("date1", 0);
-            DateTime fromdb2 = t[0].GetDateTime("date1");
-            Assert.AreEqual(fromdb,fromdb2);
-            Assert.AreEqual(fromdb,expectedLocal);
+                t.AddEmptyRow(1);//in this row we store datetosavelocal
+                t.SetString(2, 0, "str1");
+                t.SetDateTime(0, 0, dateToSaveLocal);
+                DateTime fromdb = t.GetDateTime("date1", 0);
+                DateTime fromdb2 = t[0].GetDateTime("date1");
+                Assert.AreEqual(fromdb, fromdb2);
+                Assert.AreEqual(fromdb, expectedLocal);
 
-            t.SetMixedDateTime(1, 0, dateToSaveLocal.AddYears(1));//one year is added to get a time after 1970.1.1 otherwise we would get an exception with the mixed
-            fromdb = t.GetMixedDateTime(1, 0);
-            fromdb2 = t[0].GetMixedDateTime(1);
-            Assert.AreEqual(fromdb, fromdb2);
-            Assert.AreEqual(fromdb, expectedLocal.AddYears(1));
-
-
-            t.AddEmptyRow(1);//in this row we save datetosaveutc
-            t.SetString(2, 1, "str2");
-            t.SetDateTime("date1", 1, dateToSaveUtc);
-            fromdb = t.GetDateTime("date1", 1);
-            fromdb2 = t[1].GetDateTime("date1");
-            Assert.AreEqual(fromdb, fromdb2);
-            Assert.AreEqual(fromdb, expectedUtc);
-
-            t.SetMixedDateTime("date2", 1, dateToSaveUtc);
-            fromdb = t.GetMixedDateTime(1, 1);
-            fromdb2 = t[1].GetMixedDateTime(1);
-            Assert.AreEqual(fromdb, fromdb2);
-            Assert.AreEqual(fromdb, expectedUtc);
-
-            t.AddEmptyRow(1);//in this row we save datetosaveunspecified
-            t.SetString(2, 2, "str3");
-            t.SetDateTime(0, 2, dateToSaveUnspecified);
-            fromdb = t.GetDateTime("date1", 2);
-            fromdb2 = t[2].GetDateTime("date1");
-            Assert.AreEqual(fromdb, fromdb2);
-            Assert.AreEqual(fromdb, expectedUnspecified);
-
-            t.SetMixedDateTime(1, 2, dateToSaveUnspecified);
-            fromdb = t.GetMixedDateTime("date2", 2);
-            fromdb2 = t[2].GetMixedDateTime("date2");
-            Assert.AreEqual(fromdb, fromdb2);
-            Assert.AreEqual(fromdb, expectedUnspecified);
-
-            t.SetIndex(2);          
-            TableView tv = t.Distinct("stringfield");//we need a tableview to be able to test the date methods on table views
+                t.SetMixedDateTime(1, 0, dateToSaveLocal.AddYears(1));//one year is added to get a time after 1970.1.1 otherwise we would get an exception with the mixed
+                fromdb = t.GetMixedDateTime(1, 0);
+                fromdb2 = t[0].GetMixedDateTime(1);
+                Assert.AreEqual(fromdb, fromdb2);
+                Assert.AreEqual(fromdb, expectedLocal.AddYears(1));
 
 
-            
-            tv.SetDateTime(0, 0, dateToSaveUtc);
-            fromdb = tv.GetDateTime("date1", 0);
-            fromdb2 = tv[0].GetDateTime("date1");
-            Assert.AreEqual(fromdb, fromdb2);
-            Assert.AreEqual(fromdb, expectedUtc);
+                t.AddEmptyRow(1);//in this row we save datetosaveutc
+                t.SetString(2, 1, "str2");
+                t.SetDateTime("date1", 1, dateToSaveUtc);
+                fromdb = t.GetDateTime("date1", 1);
+                fromdb2 = t[1].GetDateTime("date1");
+                Assert.AreEqual(fromdb, fromdb2);
+                Assert.AreEqual(fromdb, expectedUtc);
 
-            tv.SetMixedDateTime(1, 0, dateToSaveUtc);
-            fromdb = tv.GetMixedDateTime(1, 0);
-            fromdb2 = tv[0].GetMixedDateTime(1);
-            Assert.AreEqual(fromdb, fromdb2);
-            Assert.AreEqual(fromdb, expectedUtc);
+                t.SetMixedDateTime("date2", 1, dateToSaveUtc);
+                fromdb = t.GetMixedDateTime(1, 1);
+                fromdb2 = t[1].GetMixedDateTime(1);
+                Assert.AreEqual(fromdb, fromdb2);
+                Assert.AreEqual(fromdb, expectedUtc);
 
+                t.AddEmptyRow(1);//in this row we save datetosaveunspecified
+                t.SetString(2, 2, "str3");
+                t.SetDateTime(0, 2, dateToSaveUnspecified);
+                fromdb = t.GetDateTime("date1", 2);
+                fromdb2 = t[2].GetDateTime("date1");
+                Assert.AreEqual(fromdb, fromdb2);
+                Assert.AreEqual(fromdb, expectedUnspecified);
 
-            
-            tv.SetDateTime("date1", 1, dateToSaveUnspecified);
-            fromdb = tv.GetDateTime("date1", 1);
-            fromdb2 = tv[1].GetDateTime("date1");
-            Assert.AreEqual(fromdb, fromdb2);
-            Assert.AreEqual(fromdb, expectedUnspecified);
+                t.SetMixedDateTime(1, 2, dateToSaveUnspecified);
+                fromdb = t.GetMixedDateTime("date2", 2);
+                fromdb2 = t[2].GetMixedDateTime("date2");
+                Assert.AreEqual(fromdb, fromdb2);
+                Assert.AreEqual(fromdb, expectedUnspecified);
 
-            tv.SetMixedDateTime("date2", 1, dateToSaveUnspecified);
-            fromdb = tv.GetMixedDateTime(1, 1);
-            fromdb2 = tv[1].GetMixedDateTime(1);
-            Assert.AreEqual(fromdb, fromdb2);
-            Assert.AreEqual(fromdb, expectedUnspecified);
-
-            
-            tv.SetDateTime(0, 2, dateToSaveLocal);
-            fromdb = tv.GetDateTime("date1", 2);
-            fromdb2 = tv[2].GetDateTime("date1");
-            Assert.AreEqual(fromdb, fromdb2);
-            Assert.AreEqual(fromdb, expectedLocal);
-
-            tv.SetMixedDateTime(1, 2, dateToSaveLocal);
-            fromdb = tv.GetMixedDateTime("date2", 2);
-            fromdb2 = tv[2].GetMixedDateTime("date2");
-            Assert.AreEqual(fromdb, fromdb2);
-            Assert.AreEqual(fromdb, expectedLocal);
+                t.SetIndex(2);
+                TableView tv = t.Distinct("stringfield");//we need a tableview to be able to test the date methods on table views
 
 
-            //at this time there should be three rows in the tableview as the three dates are not exactly the same
+                tv.SetDateTime(0, 0, dateToSaveUtc);
+                fromdb = tv.GetDateTime("date1", 0);
+                fromdb2 = tv[0].GetDateTime("date1");
+                Assert.AreEqual(fromdb, fromdb2);
+                Assert.AreEqual(fromdb, expectedUtc);
+
+                tv.SetMixedDateTime(1, 0, dateToSaveUtc);
+                fromdb = tv.GetMixedDateTime(1, 0);
+                fromdb2 = tv[0].GetMixedDateTime(1);
+                Assert.AreEqual(fromdb, fromdb2);
+                Assert.AreEqual(fromdb, expectedUtc);
 
 
+
+                tv.SetDateTime("date1", 1, dateToSaveUnspecified);
+                fromdb = tv.GetDateTime("date1", 1);
+                fromdb2 = tv[1].GetDateTime("date1");
+                Assert.AreEqual(fromdb, fromdb2);
+                Assert.AreEqual(fromdb, expectedUnspecified);
+
+                tv.SetMixedDateTime("date2", 1, dateToSaveUnspecified);
+                fromdb = tv.GetMixedDateTime(1, 1);
+                fromdb2 = tv[1].GetMixedDateTime(1);
+                Assert.AreEqual(fromdb, fromdb2);
+                Assert.AreEqual(fromdb, expectedUnspecified);
+
+
+                tv.SetDateTime(0, 2, dateToSaveLocal);
+                fromdb = tv.GetDateTime("date1", 2);
+                fromdb2 = tv[2].GetDateTime("date1");
+                Assert.AreEqual(fromdb, fromdb2);
+                Assert.AreEqual(fromdb, expectedLocal);
+
+                tv.SetMixedDateTime(1, 2, dateToSaveLocal);
+                fromdb = tv.GetMixedDateTime("date2", 2);
+                fromdb2 = tv[2].GetMixedDateTime("date2");
+                Assert.AreEqual(fromdb, fromdb2);
+                Assert.AreEqual(fromdb, expectedLocal);
+
+
+                //at this time there should be three rows in the tableview as the three dates are not exactly the same
+
+
+            }
 
 
 
@@ -272,8 +282,10 @@ namespace TestTightDbCSharp
         [Test]
         public static void CreateGroupFileNameTest()
         {
-            var g = new Group(@"C:\Develope\Testgroupf");
-            Console.WriteLine(g.ObjectIdentification()); //keep it allocated
+            using (var g = new Group(@"C:\Develope\Testgroupf"))
+            {
+                Console.WriteLine(g.ObjectIdentification()); //keep it allocated
+            }
         }
 
     }
@@ -285,21 +297,22 @@ namespace TestTightDbCSharp
         //returns a table with row 0 having ints 0 to 999 ascending
         //row 1 having ints 0 to 99 ascendig (10 of each)
         //row 2 having ints 0 to 9 asceding (100 of each)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate")]
         public static Table GetTableWithMultipleIntegers()
         {
             var t = new Table(new IntField("intcolumn0"), new IntField("intcolumn1"), new IntField("intcolumn2"));
+
+            for (int n = 0; n < 1000; n++)
             {
-                for (int n = 0; n < 1000; n++)
-                {
-                    long col0 = n;
-                    long col1 = n/10;
-                    long col2 = n/100;
-                    t.AddEmptyRow(1);
-                    t.SetLong(0, n, col0);
-                    t.SetLong(1, n, col1);
-                    t.SetLong(2, n, col2);
-                }
+                long col0 = n;
+                long col1 = n / 10;
+                long col2 = n / 100;
+                t.AddEmptyRow(1);
+                t.SetLong(0, n, col0);
+                t.SetLong(1, n, col1);
+                t.SetLong(2, n, col2);
             }
+
             return t;
         }
 
@@ -322,13 +335,13 @@ namespace TestTightDbCSharp
             t.SetBoolean(3, 3, true);
             t.SetBoolean(3, 4, true);
 
-            TableView tv = t.Where().BoolEqual("boolfield", true).FindAll(0, -1, -1);
+            TableView tv = t.Where().Equal("boolfield", true).FindAll();
             Assert.AreEqual(tv.Size,3);
-            tv = t.Where().BoolEqual("boolfield", false).FindAll(0, -1, -1);
+            tv = t.Where().Equal("boolfield", false).FindAll();
             Assert.AreEqual(tv.Size,2);
-            tv = t.Where().BoolEqual("boolfield2", false).FindAll(0, -1, -1);
+            tv = t.Where().Equal("boolfield2", false).FindAll();
             Assert.AreEqual(tv.Size, 0);
-            tv = t.Where().BoolEqual("boolfield2", true).FindAll(0, -1, -1);
+            tv = t.Where().Equal("boolfield2", true).FindAll();
             Assert.AreEqual(tv.Size, 5);
             }
         }
@@ -349,7 +362,7 @@ namespace TestTightDbCSharp
 
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
-        public static void CreateQeuryBadParamsStartNegative()
+        public static void CreateQueryStartNegative()
         {
             using (var t = GetTableWithMultipleIntegers())
             {
@@ -360,7 +373,7 @@ namespace TestTightDbCSharp
 
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
-        public static void CreateQeuryBadParamsEndNegative()
+        public static void CreateQueryEndNegative()
         {
             using (var t = GetTableWithMultipleIntegers())
             {
@@ -371,7 +384,7 @@ namespace TestTightDbCSharp
 
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
-        public static void CreateQeuryBadParamsLimitNegative()
+        public static void CreateQueryLimitNegative()
         {
             using (var t = GetTableWithMultipleIntegers())
             {
@@ -382,7 +395,7 @@ namespace TestTightDbCSharp
 
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
-        public static void CreateQeuryBadParamsEndLessThatStart()
+        public static void CreateQueryEndSmallerThatStart()
         {
             using (var t = GetTableWithMultipleIntegers())
             {
@@ -395,7 +408,7 @@ namespace TestTightDbCSharp
 
 
         [Test]
-        public static void CreateQeury()
+        public static void CreateQuery()
         {
             string actualres;
             using (var t = GetTableWithMultipleIntegers())
@@ -457,7 +470,7 @@ intcolumn2:0//column 2
         //returns a table with row 0 having ints 0 to 999 ascending
         //row 1 having ints 0 to 99 ascendig (10 of each)
         //row 2 having ints 0 to 9 asceding (100 of each)
-        public static Table GetTableWithMultipleIntegers()
+        public static Table TableWithMultipleIntegers()
         {
             var t = new Table(new IntField("intcolumn0"), new IntField("intcolumn1"), new IntField("intcolumn2"));
             {
@@ -477,7 +490,7 @@ intcolumn2:0//column 2
 
         //returns a table with string columns up to index columnIndex, which is an integer column, and then a string column after that
         //table is populated with null strings and in the int column row 0 has value 0*2, row 1 has value 1*2 , row n has value n*2
-        public static Table GettablewithNintsincolumn(long columnIndex, long numberOfInts)
+        public static Table GetTableWithNIntegersInColumn(long columnIndex, long numberOfIntegers)
         {
             var t = new Table();
             for (int n = 0; n < columnIndex; n++)
@@ -487,7 +500,7 @@ intcolumn2:0//column 2
             t.AddColumn(DataType.Int, "IntColumn");
             t.AddColumn(DataType.String, "StringcolumnLast");
 
-            for (int n = 0; n < numberOfInts; n++)
+            for (int n = 0; n < numberOfIntegers; n++)
             {
                 t.AddEmptyRow(1);
                 t.SetLong(columnIndex, n, n*2);
@@ -500,7 +513,7 @@ intcolumn2:0//column 2
         public static void TableViewNoResult()
         {
             const long column = 3;
-            using (var t = GettablewithNintsincolumn(column, 100))
+            using (var t = GetTableWithNIntegersInColumn(column, 100))
             {
                 TableView tv = t.FindAllInt(column, 1001);
                 Assert.AreEqual(0, tv.Size);
@@ -513,7 +526,7 @@ intcolumn2:0//column 2
         public static void TableViewWithOneRow()
         {
             const long column = 3;
-            using (var t = GettablewithNintsincolumn(column, 100))
+            using (var t = GetTableWithNIntegersInColumn(column, 100))
             {
                 TableView tv = t.FindAllInt(column, 42);
                 Assert.AreEqual(1, tv.Size);
@@ -524,7 +537,7 @@ intcolumn2:0//column 2
         //create table view then search for all ints and return nothing as there is no matches
         public static void TableViewWithManyRows()
         {
-            using (var t = GetTableWithMultipleIntegers())
+            using (var t = TableWithMultipleIntegers())
             {
                 TableView tv = t.FindAllInt(1, 5);
                 Assert.AreEqual(10, tv.Size);
@@ -536,7 +549,7 @@ intcolumn2:0//column 2
         //make sure tableview returns field values correctly
         public static void TableViewFindAllReadValues()
         {
-            using (var t = GetTableWithMultipleIntegers())
+            using (var t = TableWithMultipleIntegers())
             {
                 TableView tv = t.FindAllInt(2, 9);
                 Assert.AreEqual(100, tv.Size);
@@ -554,7 +567,7 @@ intcolumn2:0//column 2
         {
             string actualres;
 
-            using (var t = GetTableWithMultipleIntegers())
+            using (var t = TableWithMultipleIntegers())
             {
                 TableView tv = t.FindAllInt(1, 10);
                 actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name, "find 10 integers in larger table",
@@ -659,6 +672,8 @@ intcolumn2:1//column 2
         [Test]
         public static void TableViewAndTableTestMixedFloat()
         {
+            //performance test
+            for (int n = 0;n<10000;n++) {
             const float testFloat = -12.2f;
             using (var t = new Table(new MixedField("MixedField"), "stringfield".String()))
             {
@@ -681,6 +696,7 @@ intcolumn2:1//column 2
                 Assert.AreEqual(DataType.Float, dt);
                 fromDb = tv.GetMixedFloat(0, 0);
                 Assert.AreEqual(testFloat2, fromDb);
+            }
             }
         }
 
@@ -761,7 +777,7 @@ intcolumn2:1//column 2
         //make sure tableview returns field values correctly
         public static void TableViewFindAllChangeValues()
         {
-            using (var t = GetTableWithMultipleIntegers())
+            using (var t = TableWithMultipleIntegers())
             {
                 TableView tv = t.FindAllInt(2, 9);
                 Assert.AreEqual(100, tv.Size);
@@ -1054,6 +1070,8 @@ intcolumn2:1//column 2
                 subSpec.AddIntColumn("SubIntColumn3");
             }
             t.UpdateFromSpec();
+
+            
 
             long rowindex = t.AddEmptyRow(1); //0
             long colummnIndex = 0;
@@ -1559,7 +1577,7 @@ Table Name  : table name is 12345 then the permille sign ISO 10646:8240 then 789
 
 
         [Test]
-        public static void TableWithnonasciiCharacters()
+        public static void TableWithNotAsciiCharacters()
         {
             String actualres;
             using (
@@ -1622,7 +1640,7 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
                 t.SetString(0, 0, "firstrow");
                 t.SetString(0, 0, "secondrow");
                 t.SetString(0, 0, "thirdrow");
-                foreach (Row row in t.Where().FindAll(0, -1, -1)) //loop through a tableview should get os Row classes
+                foreach (Row row in t.Where().FindAll()) //loop through a tableview should get os Row classes
                 {
                     Assert.IsInstanceOf(typeof(Row), row);//assert important as Table's parent also implements an iterator that yields rows. We want TableRows when 
                     //we expicitly iterate a Table with foreach
@@ -1633,15 +1651,19 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
 
         public static void IterateTableOrView(TableOrView tov)
         {
-            foreach (Row row in tov) //loop through a TableOrview should get os Row classes EVEN IF THE UNDERLYING IS A TABLE
+            if (tov!=null)
             {
-                Assert.IsInstanceOf(typeof(Row), row);
-                //we expicitly iterate a Table with foreach
-            }            
+                foreach (Row row in tov)
+                    //loop through a TableOrview should get os Row classes EVEN IF THE UNDERLYING IS A TABLE
+                {
+                    Assert.IsInstanceOf(typeof (Row), row);
+                    //we explicitly iterate a Table with foreach
+                }
+            }
         }
 
         [Test]
-        public static void TableorViewIterationTest()
+        public static void TableOrViewIterationTest()
         {
             using
                 (
@@ -1653,7 +1675,7 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
                 t.SetString(0, 0, "secondrow");
                 t.SetString(0, 0, "thirdrow");
                 IterateTableOrView(t);
-                IterateTableOrView(t.Where().FindAll(0,-1,-1));
+                IterateTableOrView(t.Where().FindAll());
             }
         }
 
@@ -2751,7 +2773,7 @@ Table Name  : same names, empty names, mixed types
                 String name = s.GetColumnName(n);
                 DataType type = s.GetColumnType(n);
                 res.AppendLine(String.Format(CultureInfo.InvariantCulture, "{0}{1,2} {2,10}  {3,-20}", indent, n, type,
-                                             name));
+                    name));
                 if (type == DataType.Table)
                 {
                     Spec subspec = s.GetSpec(n);
@@ -2798,7 +2820,7 @@ Table Name  : same names, empty names, mixed types
                     {
                         res.Append(indent);
                         res.AppendLine(String.Format(CultureInfo.InvariantCulture, "Table Data Dump. Rows:{0}",
-                                                     tableSize));
+                            tableSize));
                         res.Append(indent);
                         res.AppendLine(Sectiondelimitor);
                     }
@@ -2810,12 +2832,12 @@ Table Name  : same names, empty names, mixed types
                 foreach (RowColumn trc in tr)
                 {
                     string extracomment = "";
-                    res.Append(indent);                    
+                    res.Append(indent);
                     string name = trc.ColumnName;
                     //so we can see it easily in the debugger
                     res.Append(String.Format(CultureInfo.InvariantCulture, startfield, name));
                     if (trc.ColumnType == DataType.Table)
-                    {                        
+                    {
                         Table sub = trc.GetSubTable();
                         //size printed here as we had a problem once with size reporting 0 where it should be larger, so nothing returned from call
                         res.Append(String.Format(CultureInfo.InvariantCulture, starttable, sub.Size));
@@ -2843,8 +2865,8 @@ Table Name  : same names, empty names, mixed types
                     }
                     res.Append(indent);
                     res.AppendLine(String.Format(CultureInfo.InvariantCulture,
-                                                 trc.IsLastColumn() ? endfieldlast : endfield, trc.ColumnIndex,
-                                                 extracomment));
+                        trc.IsLastColumn() ? endfieldlast : endfield, trc.ColumnIndex,
+                        extracomment));
                 }
                 res.Append(indent);
                 res.AppendLine(String.Format(CultureInfo.InvariantCulture, endrow, tr.RowIndex)); //end row marker
@@ -2862,203 +2884,301 @@ Table Name  : same names, empty names, mixed types
         //this method resembles the java dynamic table example at http://www.tightdb.com/documentation/Java_ref/4/Table/
         public static void Dynamictable()
         {
-            var tbl = new Table();
+            using (var tbl = new Table()) {
             tbl.AddColumn(DataType.Int, "myInt");
             tbl.AddColumn(DataType.String, "myStr");
             tbl.AddColumn(DataType.Mixed, "myMixed");
 
             tbl.Add(12, "hello", 2);
-
+            }
         }
-        
+
 
         public static void TutorialDynamic()
         {
             //create a dynamic table with a subtable in it 
 
-            var peopleTable = new Table(
-                new StringField("name"),
-                new IntField("age"),
-                new BoolField("hired"),
-                new SubTableField("phones", //nested subtable
-                                  new StringField("desc"),
-                                  new StringField("number")
-                    )
-                );
-
-            //for illustration, a table with the same structure,created using our alternative syntax
-            var peoplTableAlt = new Table(
-                "name".String(),
-                "age".Int(),
-                "hired".Date(),
-                "phones".Table(
-                    "desc".String(),
-                    "number".String())
-                );
-            Console.WriteLine(peoplTableAlt.ColumnCount);
-
-            //fill in one row, with two rows in the subtable, which is located at column 3
-
-            long rowno = peopleTable.Add("John", 20, true, null); //the null is a subtable we haven't filled in yet
-            peopleTable.GetSubTable(3, rowno).Add("mobile", "232-323-3232");
-            peopleTable.GetSubTable(3, rowno).Add("work", "434-434-4343");
-
-            //if there are many subtable rows, this is slightly faster as the subtable class only has to be created once
-            {
-                long rowIndex = peopleTable.Add("John", 20, true, null);
-                    //the null is a subtable we haven't filled in yet
-                Table rowSub = peopleTable.GetSubTable(3, rowIndex);
-                rowSub.Add("mobile", "232-323-3232");
-                rowSub.Add("work", "434-434-4343");
-            }
-
-
-            //if memory is a concern, Table support the disposable interface, so You can force C# to deallocate them when they go out of scope
-            //instead of waiting until the GC feels like collecting tables. This could be important as the tables also take up c++ resources
             using (
-                var peopleTable2 = new Table(
+                var peopleTable = new Table(
                     new StringField("name"),
                     new IntField("age"),
                     new BoolField("hired"),
                     new SubTableField("phones", //nested subtable
-                                      new StringField("desc"),
-                                      new StringField("number")
+                        new StringField("desc"),
+                        new StringField("number")
+                        )
+                    ))
+            {
+
+                //for illustration, a table with the same structure,created using our alternative syntax
+                var peoplTableAlt = new Table(
+                    "name".String(),
+                    "age".Int(),
+                    "hired".Date(),
+                    "phones".Table(
+                        "desc".String(),
+                        "number".String())
+                    );
+                Console.WriteLine(peoplTableAlt.ColumnCount);
+
+                //fill in one row, with two rows in the subtable, which is located at column 3
+
+                long rowno = peopleTable.Add("John", 20, true, null); //the null is a subtable we haven't filled in yet
+                peopleTable.GetSubTable(3, rowno).Add("mobile", "232-323-3232");
+                peopleTable.GetSubTable(3, rowno).Add("work", "434-434-4343");
+
+                //if there are many subtable rows, this is slightly faster as the subtable class only has to be created once
+                {
+                    long rowIndex = peopleTable.Add("John", 20, true, null);
+                    //the null is a subtable we haven't filled in yet
+                    Table rowSub = peopleTable.GetSubTable(3, rowIndex);
+                    rowSub.Add("mobile", "232-323-3232");
+                    rowSub.Add("work", "434-434-4343");
+                }
+
+
+                //if memory is a concern, Table support the disposable interface, so You can force C# to deallocate them when they go out of scope
+                //instead of waiting until the GC feels like collecting tables. This could be important as the tables also take up c++ resources
+                using (
+                    var peopleTable2 = new Table(
+                        new StringField("name"),
+                        new IntField("age"),
+                        new BoolField("hired"),
+                        new SubTableField("phones", //nested subtable
+                            new StringField("desc"),
+                            new StringField("number")
+                            )
                         )
                     )
-                )
-            {
-
-                long rowIndex = peopleTable.Add("John", 20, true, null); //the null is a subtable we haven't filled in yet
-                using (Table rowSub2 = peopleTable2.GetSubTable(3, rowIndex))
                 {
-                    rowSub2.Add("mobile", "232-323-3232");
-                    rowSub2.Add("work", "434-434-4343");
-                } //Because of the using statement, You are guarenteed that RowSub is deallocated at this point
-            } //Because of the using statement, You are guarenteed that PeopleTable2 is deallocated at this point
 
-            //You can also add data to a table field by field:
-
-            long rowindex2 = peopleTable.AddEmptyRow(1);
-            peopleTable.SetString(0, rowindex2, "John");
-            peopleTable.SetLong(1, rowindex2, 20);
-            peopleTable.SetBoolean(2, rowindex2, true);
-            var subtable = peopleTable.GetSubTable(3, rowindex2); //return a subtalbe for column 3
-            subtable.SetString(0, 0, "mobile");
-            subtable.SetString(1, 0, "232-323-3232");
-            subtable.SetString(0, 1, "work");
-            subtable.SetString(1, 1, "434-434-4343");
-
-            //Finally subtables can be specified inside the parameter list (as an array of arrays of object) like this
-
-            peopleTable.Add("John", 20, true,
-                 new object[]
-                     {
-                         new object[] {"work", "232-323-3232"},
-                         new object[] {"home", "434-434-4343"}
-                     });
-
-            //the arrays and constans can of course be supplied as variables too like this
-
-            var sub =
-                new object[]
+                    long rowIndex = peopleTable.Add("John", 20, true, null);
+                    //the null is a subtable we haven't filled in yet
+                    using (Table rowSub2 = peopleTable2.GetSubTable(3, rowIndex))
                     {
-                        new object[] {"work", "232-323-3232"},
-                        new object[] {"home", "434-434-4343"}
-                    };
-            peopleTable.Add("John", 20, true, sub);
+                        rowSub2.Add("mobile", "232-323-3232");
+                        rowSub2.Add("work", "434-434-4343");
+                    } //Because of the using statement, You are guarenteed that RowSub is deallocated at this point
+                } //Because of the using statement, You are guarenteed that PeopleTable2 is deallocated at this point
 
-            long rows = peopleTable.Size;//get the number of rows in a table
-            bool isempty = peopleTable.IsEmpty;//is the table empty?
+                //You can also add data to a table field by field:
 
-            Console.WriteLine("PeopleTable has {0} rows and isempty returns{1}",rows, isempty);
-            
-            //working with individual rows
+                    long rowindex2 = peopleTable.AddEmptyRow(1);
+                    peopleTable.SetString(0, rowindex2, "John");
+                    peopleTable.SetLong(1, rowindex2, 20);
+                    peopleTable.SetBoolean(2, rowindex2, true);
+                    var subtable = peopleTable.GetSubTable(3, rowindex2); //return a subtalbe for column 3
+                    subtable.SetString(0, 0, "mobile");
+                    subtable.SetString(1, 0, "232-323-3232");
+                    subtable.SetString(0, 1, "work");
+                    subtable.SetString(1, 1, "434-434-4343");
 
-            //getting values (untyped)
-            String n = peopleTable[5].GetString("Name");//You can specify the name of the column. It will be looked up at runtime so not so fast as the above
-            long a = peopleTable[5].GetLong("Age");//returns the value of the long field called Age so prints 20
-            Boolean b = peopleTable[5].GetBoolean("Hired");//prints true
-            Console.WriteLine(n, a, b);//writes "John20True"
+                    //Finally subtables can be specified inside the parameter list (as an array of arrays of object) like this
 
-            //You can also do this, which is very slightly faster as no row cursor class is created , but harder to read
-            b = peopleTable.GetBoolean("Hired", 5);//get the value of the boolean field Hired at column 5
-            Console.WriteLine(n, a, b);//writes "John20True"
+                    peopleTable.Add("John", 20, true,
+                        new object[]
+                        {
+                            new object[] {"work", "232-323-3232"},
+                            new object[] {"home", "434-434-4343"}
+                        });
 
-            //Accessing through a Row saves validation of rowIndex when fetching data, so this is slightly faster if You are reading many columns from
-            //the same row
-            Row row5 = peopleTable[5];
-            n = row5.GetString("name");
-            a = row5.GetLong("Age");
-            b = row5.GetBoolean("Hired");
-            Console.WriteLine(n, a, b);//writes "John20True"
+                    //the arrays and constans can of course be supplied as variables too like this
 
-            //accessing when specifying the columnIndex as a number is  faster than specifying a column name.
-            Console.WriteLine(row5.GetBoolean(2));//2 is the columnIndex for the field "Hired"
+                    var sub =
+                        new object[]
+                        {
+                            new object[] {"work", "232-323-3232"},
+                            new object[] {"home", "434-434-4343"}
+                        };
+                    peopleTable.Add("John", 20, true, sub);
 
-            //setting values (untyped)
-            peopleTable[5].SetString("Name", "John");//first parameter is the column name, the second parameter is the value
-            peopleTable[5].SetString(0, "John");//columns can be indexed by number too
-            peopleTable[5].SetLong("Age", 20);
-            peopleTable[5].SetBoolean("Hired", true);
+                    long rows = peopleTable.Size; //get the number of rows in a table
+                    bool isEmpty = peopleTable.IsEmpty; //is the table empty?
+
+                    Console.WriteLine("PeopleTable has {0} rows and isEmpty returns {1}", rows, isEmpty);
+
+                    //working with individual rows
+
+                    //getting values (untyped)
+                    String n = peopleTable[5].GetString("Name");
+                    //You can specify the name of the column. It will be looked up at runtime so not so fast as the above
+                    long a = peopleTable[5].GetLong("Age");
+                        //returns the value of the long field called Age so prints 20
+                    Boolean b = peopleTable[5].GetBoolean("Hired"); //prints true
+                    Console.WriteLine(n, a, b); //writes "John20True"
+
+                    //You can also do this, which is very slightly faster as no row cursor class is created , but harder to read
+                    b = peopleTable.GetBoolean("Hired", 5); //get the value of the boolean field Hired at column 5
+                    Console.WriteLine(n, a, b); //writes "John20True"
+
+                    //Accessing through a Row saves validation of rowIndex when fetching data, so this is slightly faster if You are reading many columns from
+                    //the same row
+                    Row row5 = peopleTable[5];
+                    n = row5.GetString("name");
+                    a = row5.GetLong("Age");
+                    b = row5.GetBoolean("Hired");
+                    Console.WriteLine(n, a, b); //writes "John20True"
+
+                    //accessing when specifying the columnIndex as a number is  faster than specifying a column name.
+                    Console.WriteLine(row5.GetBoolean(2)); //2 is the columnIndex for the field "Hired"
+
+                    //setting values (untyped)
+                    peopleTable[5].SetString("Name", "John");
+                    //first parameter is the column name, the second parameter is the value
+                    peopleTable[5].SetString(0, "John"); //columns can be indexed by number too
+                    peopleTable[5].SetLong("Age", 20);
+                    peopleTable[5].SetBoolean("Hired", true);
 
 
-            //You can also set an entire row by specifying the correct types in order
-            //re-using the subtable sub created earlier, see above
-            peopleTable[5].SetRow("John", 20, true, sub);
-            //this method is not as fast as using SetString etc. as it will have to inspect the parametres and the table to validate type compatibillity
+                    //You can also set an entire row by specifying the correct types in order
+                    //re-using the subtable sub created earlier, see above
+                    peopleTable[5].SetRow("John", 20, true, sub);
+                    //this method is not as fast as using SetString etc. as it will have to inspect the parametres and the table to validate type compatibillity
 
-            //You can delete a row by calling remove(rowIndex)
-            peopleTable.Remove(3); //removes the 4th row in the table and moves every row index larger than 3 one down
-            peopleTable[3].Remove();//this does the same
+                    //You can delete a row by calling remove(rowIndex)
+                    peopleTable.Remove(3);
+                        //removes the 4th row in the table and moves every row index larger than 3 one down
+                    peopleTable[3].Remove(); //this does the same
 
-            Row r = peopleTable[3];//another way still
-            r.Remove();
-            //after having removed r, The row object becomes invalid and cannot be used anymore for any functions that involves row numbers
+                    Row r = peopleTable[3]; //another way still
+                    r.Remove();
+                    //after having removed r, The row object becomes invalid and cannot be used anymore for any functions that involves row numbers
 
-            //iterating over a table is done this way
-            foreach (var row in peopleTable)
-            {
-                Table phones = row.GetSubTable("phones");
-                Console.WriteLine("{0} is {1} years old and has {2} phones:", row.GetString("Name"), row.GetLong("Age"), phones.Size);//writes the name of the current row
-                foreach (var phonerow in phones)
+                    //iterating over a table is done this way
+                    foreach (var row in peopleTable)
+                    {
+                        Table phones = row.GetSubTable("phones");
+                        Console.WriteLine("{0} is {1} years old and has {2} phones:", row.GetString("Name"),
+                            row.GetLong("Age"),
+                            phones.Size); //writes the name of the current row
+                        foreach (var phonerow in phones)
+                        {
+                            Console.WriteLine(phonerow.GetString("desc") + ": " + phonerow.GetString("number"));
+                        }
+                    }
+
+                    //You can also iterate a table over its fields
+                    foreach (var looprow in peopleTable)
+                        //looprow is of type TableRow. If peopletable was a TableView You would get a Row object
+                    {
+                        foreach (var rowColumn in looprow)
+                            //columns always give You RowColumn types no matter if You are working with Table, TableOrView or TableView
+                        {
+                            Console.WriteLine(rowColumn.Value);
+                            //will write the value of all fields in all rows,except subtables (will write subtable.tostring for the subtable)
+                        }
+                    }
+
+                    //find first will return the RowNumber of the first row that matches a search
+                    long rowIndex4 = peopleTable.FindFirstInt("age", 20);
+
+                    Console.WriteLine("First row with age=20 is:{0}", rowIndex4);
+                    //find all will return all rows with a given value
+                    TableView tv1 = peopleTable.FindAllInt("Age", 20);
+                    //will set tableview to point to all rows where the column age has value 20
+                    //or with column index
+                    TableView tv2 = peopleTable.FindAllInt(1, 20);
+                    //will set tableview to point to all rows where the column age has value 20
+
+                    Console.WriteLine("tv1 size {0}  tv2 size {1} These two should be the same value", tv1.Size,
+                        tv2.Size);
+
+                    Query qr = peopleTable.Where().Equal("Hired", true).Between("Age", 20, 30);
+
+                    //iterate (lazily) over all matching rows in a query
+
+                    foreach (var row in qr)
+                    {
+                        Console.WriteLine("{0} is {1} Years old ", row.GetString(0), row.GetLong(1));
+                            //lookup by field value
+                        Console.WriteLine("{0} is {1} Years old ", row.GetString("Name"), row.GetString("Age"));
+                        //lookup by field name
+                    }
+
+                    //average using tightdb
+                    Console.WriteLine("Average Age is {0}", qr.Average("Age"));
+                    //this Average is not the standard C# LINQ average.
+
+
+
+
+
+
+
+                    //get a view with all the results
+                    TableView tv3 = qr.FindAll(1, 10000, 50);
+                    //find all hired people amongst the first 10K records, but return only 50 at most
+
+                    TableView tv4 = qr.FindAll(); //creates tableview with all matching records
+
+                    Console.WriteLine("findAll limited to 50 returned {0} rows", tv3.Size);
+                    Console.WriteLine("findAll returned {0} rows", tv4.Size);
+
+                    //serialization 
+
+                using (var myGroup = new Group())
                 {
-                    Console.WriteLine(phonerow.GetString("desc") + ": " + phonerow.GetString("number"));
+
+                    //Group returns a new table. The structure is specified as in Table.CreateTable
+                    var myTable2 = myGroup.CreateTable("employees",
+                        "Name".String(),
+                        "Age".Int(),
+                        "Hired".Bool()
+                        );
+
+                    //or fields can be put in just after.
+                    var myOtherTable = myGroup.CreateTable("employees2");
+                    myOtherTable.AddColumn(DataType.String, "Name");
+                    myOtherTable.AddColumn(DataType.Int, "Age");
+                    myOtherTable.AddColumn(DataType.Int, "Hired");
+
+                    //the first method is easier to use when dealing with subtables
+
+                    myTable2.Add(1);//add one empty row
+                    myOtherTable.Add(1);
+                    //write to disk
+                    //todo:document where this file will be located when running on various kinds of windows
+                    //todo:check and handle filesystem errors that happen on the c++ side (wrap into a C# exception like java does)
+                    myGroup.Write("employees.tightdb");
+
+
+
+                }
+                //transactions - to be done
                 }
             }
+        
 
-            //You can also iterate a table over its fields
-            foreach (var looprow in peopleTable)   //looprow is of type TableRow. If peopletable was a TableView You would get a Row object
-            {
-                foreach (var rowColumn in looprow)  //columns always give You RowColumn types no matter if You are working with Table, TableOrView or TableView
-                {
-                    Console.WriteLine(rowColumn.Value);//will write the value of all fields in all rows,except subtables (will write subtable.tostring for the subtable)
-                }
-            }
-
-            //find first will return the RowNumber of the first row that matches a search
-            long rowIndex4 = peopleTable.FindFirstInt("age", 20);
-
-            Console.WriteLine("First row with age=20 is:{0}",rowIndex4);
-            //find all will return all rows with a given value
-            TableView tv1 = peopleTable.FindAllInt("Age", 20); //will set tableview to point to all rows where the column age has value 20
-            //or with column index
-            TableView tv2 = peopleTable.FindAllInt(1, 20); //will set tableview to point to all rows where the column age has value 20
-
-            Console.WriteLine("tv1 size {0}  tv2 size {1} These two should be the same value",tv1.Size,tv2.Size);
-
-            //queries - untyped queries have the type qualified in the equals, greater, less et. methods
-            //this to add a little type safety in case the user knows the types of some of the columns
-            //this example will be expanded soon
-            Query qr = peopleTable.Where().BoolEqual("Hired", true);
-            TableView tv3 = qr.FindAll(1, 10000, 50);//find all hired people amongst the first 10K records, but return only 50 at most
-
-            Console.WriteLine("findall returned {0} rows",tv3.Size);
-            
-            //serialization - to be done
-            
-            //transactions - to be done
+        internal static long  MeasureInteropSpeedHelper(long n)
+        {
+            return (n + 1);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters", MessageId = "System.Console.WriteLine(System.String)")]
+        internal static void MeasureInteropSpeed()
+        {
+            using (
+                var t = new Table("intfield".Int()))
+            {
+                long acc = 0;
+
+                Console.WriteLine("Interop Test started");
+
+                var timer1 = Stopwatch.StartNew();
+                for (long n = 0; n < 1000*100*100; n++)
+                {
+                    //call a c# function that does a very simple arithmetic thing
+                    acc = acc + MeasureInteropSpeedHelper(n); //c# function
+                    //call a similar c++ function using interop
+                    acc = acc + Table.TestAddInteger(n); //c++ function
+                    acc = acc + t.Size; //call into a tightdb table object
+                }
+                timer1.Stop();
+                double seconds = Math.Floor(timer1.Elapsed.TotalSeconds);
+                double milliseconds = timer1.Elapsed.Milliseconds;
+                Console.WriteLine("Interop Test took: {0} seconds, {1} milliseconds.  result {2}", seconds, milliseconds, acc);
+            }
+        }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters", MessageId = "System.Console.WriteLine(System.String)"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters", MessageId = "Console.WriteLine(System.String)")]
         static void Main(/*string[] args*/)
@@ -3070,28 +3190,36 @@ Table Name  : same names, empty names, mixed types
              *  Don't run the program in Nunit to debug, simply debug it in visual studio when it runs like an ordinary program
              *  To run the unit tests as unit tests, load the assembly in Nunit and run it from there
              *  */
+            //for (int n = 0; n < 1000000; n++)
+            //{
+//                Table.TestInterop();
+//            }
+
             EnvironmentTest.ShowVersionTest();
-            EnvironmentTest.Testinterop();
+            EnvironmentTest.TestInterop();
+            //MeasureInteropSpeed();
 
-            TableViewTests.TableViewAndTableTestMixedFloat();
-            Iteratortest.TableIterationTest();
-            Iteratortest.TableViewIterationTest();
-            Iteratortest.TableorViewIterationTest();
-
-            TableViewTests.TableViewAndTableTestDouble();
-
-            TableParameterValidationTest.TableTestMixedDateTime();
-             
             QueryTests.QueryBoolEqual();
 
-            TestDates.TestSaveAndRetrieveDate();
-           // CreateTableTest.TestTableScope();
+           // TableViewTests.TableViewAndTableTestMixedFloat();
+//            Iteratortest.TableIterationTest();
+  //          Iteratortest.TableViewIterationTest();
+    //        Iteratortest.TableorViewIterationTest();
 
-            //RowColumn.test_testacquireanddeletegroup();
+     //       TableViewTests.TableViewAndTableTestDouble();
+
+     //       TableParameterValidationTest.TableTestMixedDateTime();
+             
+     //       QueryTests.QueryBoolEqual();
+
+      //      TestDates.TestSaveAndRetrieveDate();
+      //      TableCreateTest.TestTableScope();
+
+            
             
 
-              //GroupTests.CreateGroupEmptyTest();
-            TableChangeDataTest.TableIntValueSubTableTest1();
+            //GroupTests.CreateGroupFileNameTest();
+     //       TableChangeDataTest.TableIntValueSubTableTest1();
          //    StringEncodingTest.TableWithnonasciiCharacters();//when we have implemented utf-16 to utf-8 both ways, the following tests should be created:
 
             //GroupTests.CreateGroupFileNameTest();
@@ -3132,7 +3260,7 @@ Table Name  : same names, empty names, mixed types
             //round trip of a string with a unicode character that translates to 2 utf-16 characters,  4 utf-8 characters
             //round trip of a string with a unicode character that translates to 2 utf-16 characters,  5 utf-8 characters
                         
-            Console.WriteLine("Press any key to finish test..");
+            Console.WriteLine("Press any key to finish test...");
             ConsoleKeyInfo ki = Console.ReadKey();
             if (ki.Key==ConsoleKey.T) {
                 TutorialDynamic();
