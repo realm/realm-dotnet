@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.Serialization;
 
@@ -124,6 +123,8 @@ namespace TightDbCSharp
             }
         }
 
+        
+
         public Spec AddSubTableColumn(String columnName)
         {
             return UnsafeNativeMethods.AddSubTableColumn(this, columnName);
@@ -141,9 +142,8 @@ namespace TightDbCSharp
             AddColumn(DataType.Int, name);
         }
 
-        //I assume column_idx is a column with a table in it, or a mixed with a table?
-        [SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "subTable"),
-         SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "columnIndex")]
+        //I assume column_idx is a column with a table in it
+        //if it is a mixed with a subtable in it, this method will throw
         public Spec GetSpec(long columnIndex)
         {
             if (GetColumnType(columnIndex) == DataType.Table)
@@ -151,7 +151,7 @@ namespace TightDbCSharp
                 return UnsafeNativeMethods.SpecGetSpec(this, columnIndex);
             }
             else
-                throw new SpecException("get spec(columnIndex) can only be called on a subTable field");
+                throw new SpecException("get spec(columnIndex) can only be called on a SubTable field");
         }
 
         public DataType GetColumnType(long columnIndex)

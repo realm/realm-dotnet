@@ -3,7 +3,10 @@ using System.Globalization;
 
 namespace TightDbCSharp
 {
-
+    //this would probably be called rowcollection or some such if adhering to usual c# conventions. But as tightdb has a tableview term, we 
+    //re-use that term here. TableView can be thought of as a list of pointers to some rows in an underlying table. The view has usually been created using
+    //a query, or some other construct that selects some, but usually not all the underlying rows.
+    //this class wraps a c++ TableView class
     public class TableView : TableOrView
     {
                 //following the dispose pattern discussed here http://dave-black.blogspot.dk/2011/03/how-do-you-properly-implement.html
@@ -60,7 +63,7 @@ namespace TightDbCSharp
 
         internal override void SetFloatNoCheck(long columnIndex, long rowIndex, float value)
         {
-            
+           UnsafeNativeMethods.TableViewSetFloat(this, columnIndex,rowIndex,value);   
         }
 
         internal override void SetMixedDoubleNoCheck(long columnIndex, long rowIndex, double value)

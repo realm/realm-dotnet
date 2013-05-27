@@ -27,14 +27,15 @@ namespace TightDbCSharp
         {
             if (HandleInUse)
             {
-                if (NotifyCppWhenDisposing){
-                 //   Console.WriteLine("Handle being released by calling cpp :{0}", ObjectIdentification());
+                if (NotifyCppWhenDisposing)
+                {
+                    //   Console.WriteLine("Handle being released by calling cpp :{0}", ObjectIdentification());
                     ReleaseHandle();
                 }
-                else
-                {
-                 //   Console.WriteLine("Handle being released silently :{0}", ObjectIdentification());
-                }
+                //                else
+                // {
+                //      Console.WriteLine("Handle being released silently :{0}", ObjectIdentification());
+                //  }
                 HandleInUse = false;
             }
             else
@@ -44,7 +45,8 @@ namespace TightDbCSharp
                 //  it is assumed an error situation has occoured (too many unbind calls) and an exception is raised
                 if (HandleHasBeenUsed)
                 {
-                    throw new TableException(String.Format(CultureInfo.InvariantCulture,"unbind called on {0} with no handle active anymore",ObjectIdentification()));
+                    throw new TableException(String.Format(CultureInfo.InvariantCulture,
+                        "unbind called on {0} with no handle active anymore", ObjectIdentification()));
                 }
             }
         }

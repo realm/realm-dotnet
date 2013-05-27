@@ -7,12 +7,12 @@ namespace TightDbCSharp
     /// represents a single column in a TableOrView row. 
     /// </summary>
     /// 
-    //TODO:Implement child types that each are bound to a given DataType. So we got for instance TableIntColumn
+    //IDEA:Implement child types that each are bound to a given DataType. So we got for instance TableIntColumn
     //why? in some cases We could return TableIntColumn and with that one, we would not have to check if the Table column type is int every time
     //we read data from the row. So working with typed column fields would be somewhat faster
-    //TODO:this is just a thought consider implementing Get<T> perhaps we could interop with T to a general method in c++ that return intptr that
+    //IDEA:this is just a thought consider implementing Get<T> perhaps we could interop with T to a general method in c++ that return intptr that
     //then has to be intepreted differently depending on field type and value. Not sure this is a good idea, but might be worth investigating pros and cons
-    //TODO:implement GetString, GetLong etc. etc. to enable users to do for instance row[2].GetString and thus get a typed value back
+    //IDEA:implement GetString, GetLong etc. etc. to enable users to do for instance row[2].GetString and thus get a typed value back
     public class RowColumn
     {
         
@@ -73,6 +73,7 @@ namespace TightDbCSharp
             return Owner.GetMixedTypeNoCheck(ColumnIndex);
         }
 
+        //not a property because getsubtable could take time, and because it throws an exception if the field is not of subtable type
         public Table GetSubTable()
         {
             return Owner.GetSubTableCheckType(ColumnIndex);//we cannot know for sure if col,row is of the subtable type
@@ -80,8 +81,6 @@ namespace TightDbCSharp
 
         //todo:create a unit test that hits this getter and this setter in all case statements
         //if it is a mixed we return mixed! -not the type of the field
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming",
-            "CA2204:Literals should be spelled correctly", MessageId = "TableRowColumn")]
         public object Value
         {
             get
@@ -179,7 +178,7 @@ namespace TightDbCSharp
                         Owner.SetDoubleNoCheck(ColumnIndex,(Double) value);
                         break;
                     default:
-                        {//todo:create case statements for all column types and all mixed types in a nested case as in get
+                        {
                             
                             throw new TableException(String.Format(CultureInfo.InvariantCulture,
                                                                    "setting type {0} in TableRowColumn not implemented yet",
@@ -190,7 +189,6 @@ namespace TightDbCSharp
         }
 
 
-        //[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "DataType"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "GetLong")]
 /*
         private long GetLong()
         {            

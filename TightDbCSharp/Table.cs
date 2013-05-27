@@ -46,9 +46,8 @@ namespace TightDbCSharp
 */
 
 
-
-
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix")]
+    //Tightdb Table
+    //could have been called RowCollection but is called Table as it in fact is a table and not merely a collection of rows
     public class Table : TableOrView, IEnumerable<Row>
     {
         //manual dll version info. Used when debugging to see if the right DLL is loaded, or an old one
@@ -218,6 +217,13 @@ namespace TightDbCSharp
             UnsafeNativeMethods.TestInterop();
         }
 
+        //test method that will probably be removed in the release. Used to showcase that it's c++ that crashes when group is given a valid file name string with unspecified location
+        public static void TestAcquireAndDeleteGroup()
+        {
+            UnsafeNativeMethods.test_testacquireanddeletegroup();
+        }
+
+
         public static long CPlusPlusLibraryVersion()
         {
             return UnsafeNativeMethods.CppDllVersion();
@@ -317,20 +323,20 @@ namespace TightDbCSharp
 
 
         //adds an empty row and filles it out
-        //todo:consider if we should use insert row instead? - ask what's the difference, if any (asana)
+        //idea:consider if we should use insert row instead? - ask what's the difference, if any (asana)
         //todo:insert should only be used by the binding, not be exposed to the user (asana)
-        //todo:when we add an entire row, insert is faster. (asana)
-        public long Add(params object[] x)
+        //idea:when we add an entire row, insert is faster. (asana)
+        public long Add(params object[] rowData)
         {
-            long rowadded = AddEmptyRow(1);
-            SetRowNoCheck(rowadded, x);
-            return rowadded;//return the index of the just added row
+            long rowAdded = AddEmptyRow(1);
+            SetRowNoCheck(rowAdded, rowData);
+            return rowAdded;//return the index of the just added row
         }
 
-        public void AddRowAt(long rowIndex, params object[] x)
+        public void AddRowAt(long rowIndex, params object[] rowData)
         {
             ValidateRowIndex(rowIndex);
-            SetRowNoCheck(rowIndex,x);
+            SetRowNoCheck(rowIndex,rowData);
         }
 
         internal override string GetColumnNameNoCheck(long columnIndex)//unfortunately an int, bc tight might have been built using 32 bits
@@ -668,7 +674,6 @@ namespace TightDbCSharp
             SetInfo(this, columnName, columnType);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "tablefield"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "subtable")]
         public Field(string columnName, String columnType)
         {
             if (columnName == null)
@@ -680,47 +685,59 @@ namespace TightDbCSharp
             {
                 throw new ArgumentNullException("columnType");
             }
-            if (columnType.ToUpper(CultureInfo.InvariantCulture) == "INT" || columnType.ToUpper(CultureInfo.InvariantCulture) == "INTEGER")
+
+            switch (columnType.ToUpper(CultureInfo.InvariantCulture))
             {
-                SetInfo(this, columnName, DataType.Int);
-            }
-            else if (columnType.ToUpper(CultureInfo.InvariantCulture) == "BOOL" || columnType.ToUpper(CultureInfo.InvariantCulture) == "BOOLEAN")
-            {
-                SetInfo(this, columnName, DataType.Bool);
-            }
-            else if (columnType.ToUpper(CultureInfo.InvariantCulture) == "STRING" || columnType.ToUpper(CultureInfo.InvariantCulture) == "STR")
-            {
-                SetInfo(this, columnName, DataType.String);
-            }
-            else if (columnType.ToUpper(CultureInfo.InvariantCulture) == "BINARY" || columnType.ToUpper(CultureInfo.InvariantCulture) == "BLOB")
-            {
-                SetInfo(this, columnName, DataType.Binary);
-            }
-            else if (columnType.ToUpper(CultureInfo.InvariantCulture) == "MIXED")
-            {
-                SetInfo(this, columnName, DataType.Mixed);
+                case "INT":
+                case "INTEGER":
+                    SetInfo(this, columnName, DataType.Int);
+                    break;
+
+                case "BOOL":
+                case "BOOLEAN":
+                    SetInfo(this, columnName, DataType.Bool);
+                    break;
+
+                case "STRING":
+                case "STR":
+                    SetInfo(this, columnName, DataType.String);
+                    break;
+                
+                case "BINARY":
+                case "BLOB":
+                    SetInfo(this, columnName, DataType.Binary);
+                    break;
+
+                case "SUBTABLE":
+                case "TABLE":
+                    SetInfo(this, columnName, DataType.Table);
+                    break;
+
+                case "MIXED":
+                    SetInfo(this, columnName, DataType.Mixed);
+                    break;
+
+                case "DATE":
+                    SetInfo(this, columnName, DataType.Date);
+                    break;
+
+                case "FLOAT":
+                    SetInfo(this, columnName, DataType.Float);
+                    break;
+
+                case "DOUBLE":
+                    SetInfo(this, columnName, DataType.Double);
+                    break;
+
+
+                default:
+                    throw new TableException(String.Format(CultureInfo.InvariantCulture,
+                        "Trying to initialize a table field with an unknown type specification Fieldname:{0}  type:{1}",
+                        columnName, columnType));
             }
 
-            else if (columnType.ToUpper(CultureInfo.InvariantCulture) == "DATE")
-            {
-                SetInfo(this, columnName, DataType.Date);
-            }
 
-            else if (columnType.ToUpper(CultureInfo.InvariantCulture) == "FLOAT")
-            {
-                SetInfo(this, columnName, DataType.Float);
-            }
-            else if (columnType.ToUpper(CultureInfo.InvariantCulture) == "DOUBLE")
-            {
-                SetInfo(this, columnName, DataType.Double);
-            }
-            else if (columnType.ToUpper(CultureInfo.InvariantCulture) == "TABLE" || columnType.ToUpper(CultureInfo.InvariantCulture) == "SUBTABLE")
-            {
-                SetInfo(this, columnName, DataType.Table);
-                //       throw new TableException("Subtables should be specified as an array, cannot create a freestanding subtable field");
-            }
-            else
-                throw new TableException(String.Format(CultureInfo.InvariantCulture, "Trying to initialize a tablefield with an unknown type specification Fieldname:{0}  type:{1}", columnName, columnType));
+
         }
 
         protected Field() { }//used when IntegerField,StringField etc are constructed

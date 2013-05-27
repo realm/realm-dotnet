@@ -16,26 +16,6 @@ namespace TestTightDbCSharp
     [TestFixture]
     public static class EnvironmentTest
     {
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization",
-            "CA1303:Do not pass literals as localized parameters",
-            MessageId = "System.Console.WriteLine(System.String,System.Object,System.Object)"),
-         System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization",
-             "CA1303:Do not pass literals as localized parameters",
-             MessageId = "System.Console.WriteLine(System.String,System.Object)"),
-         System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization",
-             "CA1303:Do not pass literals as localized parameters",
-             MessageId = "Console.WriteLine(System.String,System.Object,System.Object)"),
-         System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming",
-             "CA2204:Literals should be spelled correctly", MessageId = "tightccs"),
-         System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization",
-             "CA1303:Do not pass literals as localized parameters", MessageId = "Console.WriteLine(System.String)"),
-         System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming",
-             "CA2204:Literals should be spelled correctly", MessageId = "ImageFileMachine"),
-         System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming",
-             "CA2204:Literals should be spelled correctly", MessageId = "PeKind"),
-         System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization",
-             "CA1303:Do not pass literals as localized parameters",
-             MessageId = "Console.WriteLine(System.String,System.Object)")]
         [Test]
         public static void ShowVersionTest()
         {
@@ -91,6 +71,13 @@ namespace TestTightDbCSharp
         {
             Program.TutorialDynamic();
         }
+
+        [Test]
+        public static void TestDynamicTable()
+        {
+            Program.DynamicTable();
+        }
+
     }
 
     //tightdb Date is date_t which is seconds since 1970,1,1
@@ -235,59 +222,77 @@ namespace TestTightDbCSharp
         }
     }
 
-
+    //todo:When we are running on the newest tightdb windows build, check again if the group stuff is behaving badly.
+    //todo:Try to make tightdb or binding fail on group creation instead of group deallocation if the group file is somehow invalid
     [TestFixture]
     public static class GroupTests
     {
         /*this one fails
          * It fails because calling group() constructor does not work on windows, tightdb tries to use a filename that is illegal or don't have enough rights
-         * It fails such that when the group is deleted (when the program terminats and g gets gc'ed), then the c++ crash
+         * It fails such that when the group is deleted (when the program terminats and g gets gc'ed), then the c++ crash*/
         [Test]
         public static void CreateGroupEmptyTest()
         {
+            
+            /*original code
             var g = new Group();
             Console.WriteLine(g.Handle);//keep it allocated
+             */
         }
-        */
+        
 
         /*
-         this one crashes too, same reasons - group() doesn't work on windows
+         this one crashes too, same reasons - group() doesn't work on windows*/
+
         [Test]
-        public static void CreateGroupEmptyTest()
+        public static void CreateGroupEmptyTestUsing()
         {
+        /*
             using (var g = new Group())
             {
                 Console.WriteLine(g.Handle);//keep it allocated                
-            }            
+            }            */
         }
-        */
+        
 
 
         /*
          this one fails too - not enough rights to work in the root directory
-         
+         */
+
         [Test]
         public static void CreateGroupFileNameTest()
         {
+            /* this code fails in the c++ end on deallocation/close
             var g = new Group(@"C:\Testgroupf");
             Console.WriteLine(g.Handle);//keep it allocated
+             */
         }
-        */
+
+        [Test]
+        public static void TestAcquireAndDeleteGroup()
+        {
+            
+            Table.TestAcquireAndDeleteGroup();
+            /* 
+             * The tempTable is not used for anything, it's just a way to call on to UnsafeNativeMethods
+             * What is interesting is that this code throws exceptions or crashes on the c++ end
+             */
+        }
 
 
-        //this one works. Do we have a filename/directory problem with the windows build?
+        //this one works. (if you have a directory called Develope in C:\) Do we have a filename/directory problem with the windows build?
         //perhaps we have a problem with locked or illegal files, what to do?
         //
         //probably something wrong with the code here too then
         [Test]
-        public static void CreateGroupFileNameTest()
+        public static void CreateGroupFileNameTestGoodFile()
         {
             using (var g = new Group(@"C:\Develope\Testgroupf"))
             {
                 Console.WriteLine(g.ObjectIdentification()); //keep it allocated
             }
         }
-
     }
 
     [TestFixture]
@@ -472,8 +477,12 @@ intcolumn2:0//column 2
         //row 2 having ints 0 to 9 asceding (100 of each)
         public static Table TableWithMultipleIntegers()
         {
-            var t = new Table(new IntField("intcolumn0"), new IntField("intcolumn1"), new IntField("intcolumn2"));
+            Table returnTable;
+            Table t=null;
+            try
             {
+                t = new Table(new IntField("intcolumn0"), new IntField("intcolumn1"), new IntField("intcolumn2"));
+
                 for (int n = 0; n < 1000; n++)
                 {
                     long col0 = n;
@@ -484,28 +493,63 @@ intcolumn2:0//column 2
                     t.SetLong(1, n, col1);
                     t.SetLong(2, n, col2);
                 }
+
+                returnTable = t;
+                t = null;
+
             }
-            return t;
+            finally
+            {
+                if (t != null)
+                {
+                    t.Dispose();
+                    returnTable = null;
+                }
+            }
+
+            return returnTable;
         }
 
         //returns a table with string columns up to index columnIndex, which is an integer column, and then a string column after that
         //table is populated with null strings and in the int column row 0 has value 0*2, row 1 has value 1*2 , row n has value n*2
+        //following the pattern for returning a disposable object http://msdn.microsoft.com/query/dev11.query?appId=Dev11IDEF1&l=EN-US&k=k(CA2000);k(TargetFrameworkMoniker-.NETFramework,Version%3Dv4.5);k(DevLang-csharp)&rd=true 
         public static Table GetTableWithNIntegersInColumn(long columnIndex, long numberOfIntegers)
         {
-            var t = new Table();
-            for (int n = 0; n < columnIndex; n++)
+            Table returnTable;
+            Table t = null;
+            try
             {
-                t.AddColumn(DataType.String, "StringColumn" + n);
-            }
-            t.AddColumn(DataType.Int, "IntColumn");
-            t.AddColumn(DataType.String, "StringcolumnLast");
+                t = new Table();
+                for (int n = 0; n < columnIndex; n++)
+                {
+                    t.AddColumn(DataType.String, "StringColumn" + n);
+                }
+                t.AddColumn(DataType.Int, "IntColumn");
+                t.AddColumn(DataType.String, "StringcolumnLast");
 
-            for (int n = 0; n < numberOfIntegers; n++)
-            {
-                t.AddEmptyRow(1);
-                t.SetLong(columnIndex, n, n*2);
+                for (int n = 0; n < numberOfIntegers; n++)
+                {
+                    t.AddEmptyRow(1);
+                    t.SetLong(columnIndex, n, n*2);
+                }
+
+                //if exceptions are raised above this point, returnTable will be null, and t is with errors
+                //finally should in that situation dispose of t gracefully and return null
+                returnTable = t;
+                t = null; //thus, when we are in the finally part, if t is not null some error has cause us to except out before returntable was 
+                //created successfully. so dispose of the broken table
             }
-            return t;
+
+            finally
+            {
+                if (t != null)
+                {
+                    t.Dispose();
+                    returnTable = null;
+                }
+            }
+            
+            return returnTable;
         }
 
         [Test]
@@ -1577,7 +1621,7 @@ Table Name  : table name is 12345 then the permille sign ISO 10646:8240 then 789
 
 
         [Test]
-        public static void TableWithNotAsciiCharacters()
+        public static void TableWithNotAnsiCharacters()
         {
             String actualres;
             using (
@@ -1605,7 +1649,7 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
 
 
     [TestFixture]
-    public static class Iteratortest
+    public static class IteratorTest
     {
         [Test]
         public static void TableIterationTest()
@@ -2880,9 +2924,9 @@ Table Name  : same names, empty names, mixed types
             }
         }
 
-
+        //todo:code the rest
         //this method resembles the java dynamic table example at http://www.tightdb.com/documentation/Java_ref/4/Table/
-        public static void Dynamictable()
+        public static void DynamicTable()
         {
             using (var tbl = new Table()) {
             tbl.AddColumn(DataType.Int, "myInt");
@@ -2911,15 +2955,21 @@ Table Name  : same names, empty names, mixed types
             {
 
                 //for illustration, a table with the same structure,created using our alternative syntax
-                var peoplTableAlt = new Table(
-                    "name".String(),
-                    "age".Int(),
-                    "hired".Date(),
-                    "phones".Table(
-                        "desc".String(),
-                        "number".String())
-                    );
-                Console.WriteLine(peoplTableAlt.ColumnCount);
+
+                using (
+                    var peoplTableAlt = new Table(
+                        "name".String(),
+                        "age".Int(),
+                        "hired".Date(),
+                        "phones".Table(
+                            "desc".String(),
+                            "number".String())
+                        )
+                    )
+                {
+                    Console.WriteLine(peoplTableAlt.ColumnCount);
+                }
+
 
                 //fill in one row, with two rows in the subtable, which is located at column 3
 
@@ -3154,7 +3204,7 @@ Table Name  : same names, empty names, mixed types
             return (n + 1);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters", MessageId = "System.Console.WriteLine(System.String)")]
+        
         internal static void MeasureInteropSpeed()
         {
             using (
@@ -3206,7 +3256,7 @@ Table Name  : same names, empty names, mixed types
   //          Iteratortest.TableViewIterationTest();
     //        Iteratortest.TableorViewIterationTest();
 
-     //       TableViewTests.TableViewAndTableTestDouble();
+            TableViewTests.TableViewAndTableTestFloat();
 
      //       TableParameterValidationTest.TableTestMixedDateTime();
              
@@ -3260,11 +3310,16 @@ Table Name  : same names, empty names, mixed types
             //round trip of a string with a unicode character that translates to 2 utf-16 characters,  4 utf-8 characters
             //round trip of a string with a unicode character that translates to 2 utf-16 characters,  5 utf-8 characters
                         
-            Console.WriteLine("Press any key to finish test...");
+            Console.WriteLine("Press any key to finish test...T=call tutorialdynamic M=call measureinteropspeed ");
             ConsoleKeyInfo ki = Console.ReadKey();
             if (ki.Key==ConsoleKey.T) {
                 TutorialDynamic();
             }
+            if (ki.Key == ConsoleKey.M)
+            {
+                MeasureInteropSpeed();
+            }
+
 
         }
 

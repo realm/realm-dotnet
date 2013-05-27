@@ -115,6 +115,7 @@ enum DataType {
             }
         }
 
+        //idea:consider using some standard log framework, or remove logging altogether (logging was used in early debugging)
         public static void Log(string where, string desc, params object[] values)
         {
             if (LoggingEnabled)
@@ -354,8 +355,6 @@ enum DataType {
         private const string ErrColumnNotTable =
             "SpecGetSpec called with a column index for a column that is not a table";
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming",
-            "CA2204:Literals should be spelled correctly", MessageId = "SpecGetSpec")]
         public static Spec SpecGetSpec(Spec spec, long columnIndex)
         {
             if (spec.GetColumnType(columnIndex) != DataType.Table)
@@ -410,19 +409,19 @@ enum DataType {
             table.SetHandle(Is64Bit ? new_table64() : new_table32(), true);
         }
 
-
+        
         [DllImport("tightdb_c_cs64", EntryPoint = "group_write", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void group_write64([MarshalAs(UnmanagedType.LPStr)] string fileName);
+        private static extern void group_write64(IntPtr groupPtr  , [MarshalAs(UnmanagedType.LPStr)] string fileName);
 
         [DllImport("tightdb_c_cs32", EntryPoint = "group_write", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void group_write32([MarshalAs(UnmanagedType.LPStr)] string fileName);
+        private static extern void group_write32(IntPtr groupPTr, [MarshalAs(UnmanagedType.LPStr)] string fileName);
 
-        //todo:test and add Os file operation error handling
+        //todo:test and add OS file operation error handling
         public static void GroupWrite(Group group, string fileName)
         {
-            if (Is64Bit) group_write64(fileName);
+            if (Is64Bit) group_write64(group.Handle,fileName);
             else
-                group_write32(fileName);
+                group_write32(group.Handle, fileName);
         }
 
 
@@ -452,11 +451,11 @@ enum DataType {
 
         public static void GroupNew(Group group)
         {
-            Console.WriteLine("In GroupNew, about to call group.sethandle(call to new_group)");
+           // Console.WriteLine("In GroupNew, about to call group.sethandle(call to new_group)");
             group.SetHandle(Is64Bit
                                 ? new_group64()
                                 : new_group32(), true);
-            Console.WriteLine("Group got handle {0}", group.ObjectIdentification());
+            //Console.WriteLine("Group got handle {0}", group.ObjectIdentification());
         }
 
 
@@ -894,7 +893,8 @@ enum DataType {
 
 
 
-        //return a new table, having a name and residing in a group
+        //If the name exists in the group, the table associated with the name is returned
+        //if the name does not exist in the group, a new table is created and returned
         [DllImport("tightdb_c_cs64", EntryPoint = "group_get_table", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr group_get_table64(IntPtr groupHandle, [MarshalAs(UnmanagedType.LPStr)] String tableName);
 
@@ -909,6 +909,20 @@ enum DataType {
         }
 
 
+        
+        //
+        [DllImport("tightdb_c_cs64", EntryPoint = "group_has_table", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr group_has_table64(IntPtr groupHandle, [MarshalAs(UnmanagedType.LPStr)] String tableName);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "group_has_table", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr group_has_table32(IntPtr groupHandle, [MarshalAs(UnmanagedType.LPStr)] String tableName);
+
+        public static bool GroupHassTable(Group group, string tableName)
+        {
+            if (Is64Bit)
+                return IntPtrToBool( group_has_table64(group.Handle, tableName));
+            return IntPtrToBool(group_has_table32(group.Handle, tableName));
+        }
 
 
 
@@ -988,13 +1002,13 @@ enum DataType {
         //      void    table_unbind(const Table *t); /* Ref-count delete of table* from table_get_table() */
         public static void TableViewRemove(TableView tv,long rowIndex)
         {
-            Console.WriteLine("TableViewRemove calling tableview_remove " + tv.ObjectIdentification());
+         //   Console.WriteLine("TableViewRemove calling tableview_remove " + tv.ObjectIdentification());
             if (Is64Bit)
                 tableview_remove64(tv.Handle,rowIndex);
             else
                 tableview_remove32(tv.Handle,rowIndex);
             tv.Handle = IntPtr.Zero;
-            Console.WriteLine("TableViewRemove called tableview_remove " + tv.ObjectIdentification());
+           // Console.WriteLine("TableViewRemove called tableview_remove " + tv.ObjectIdentification());
         }
 
 
@@ -1050,14 +1064,14 @@ enum DataType {
 
         public static void GroupDelete(Group g)
         {
-            Console.WriteLine("group delete calling group_delete " + g.ObjectIdentification());           
+        //    Console.WriteLine("group delete calling group_delete " + g.ObjectIdentification());           
                 if (Is64Bit)
                     group_delete64(g.Handle);
                 else
                     group_delete32(g.Handle);
             
             g.Handle = IntPtr.Zero;
-            Console.WriteLine("group delete called group_delete " + g.ObjectIdentification());
+        //    Console.WriteLine("group delete called group_delete " + g.ObjectIdentification());
         }
 
 
@@ -2382,11 +2396,15 @@ enum DataType {
             return retval;
         }
 
+        //not used
         //CppTime is expected to be a time_t (UTC since 1970,1,1). While currently tightdb cannot handle negative time_t, this method will work wiht those just fine
+        /*
         public static DateTime ToCSharpTimeLocalTime(Int64 cppTime)
         {            
             return  ToCSharpTimeUtc(cppTime).ToLocalTime();
         }
+        */
+
 
         //CppTime is expected to be a time_t (UTC since 1970,1,1 measured in seconds)
         public static DateTime ToCSharpTimeUtc(Int64 cppTime)
@@ -2860,45 +2878,53 @@ enum DataType {
         //3) any needed changes to the C# part of the binding must be implemented (could be calling conventions, type sizes, quirks with marshalling, names of library files to load, etc)
         //4) optional - ensure that the platform C# compiler can build the C# part of tightdb 
         //  (if the C# platform is not binary compatible with .net we have to build on the specific C# platform, if it is binary compatible this is optional)
-       
 
-        //if something is wrong with interop or C# marshalling, this method will throw an exception
-        public static void TestInterop()
+
+        public static void TestInteropSizes()
         {
             int sizeOfIntPtr = IntPtr.Size;
             int sizeOfSizeT = TestSizeOfSizeT();
             if (sizeOfIntPtr != sizeOfSizeT)
             {
-                throw new ArgumentException("size_t",String.Format(CultureInfo.InvariantCulture,"The size_t size{0} does not match the size of UintPtr{1}",sizeOfSizeT,sizeOfIntPtr));
+                throw new Exception(String.Format(CultureInfo.InvariantCulture, "The size_t size{0} does not match the size of UintPtr{1}", sizeOfSizeT, sizeOfIntPtr));
             }
 
             IntPtr sizeOfInt32T = TestSizeOfInt32_T();
-            var sizeOfInt32 = (IntPtr) sizeof (Int32);
+            var sizeOfInt32 = (IntPtr)sizeof(Int32);
             if (sizeOfInt32T != sizeOfInt32)
             {
-                throw new ArgumentException("size_t", String.Format(CultureInfo.InvariantCulture, "The int32_t size{0} does not match the size of Int32{1}", sizeOfInt32T, sizeOfInt32));                
+                throw new Exception(String.Format(CultureInfo.InvariantCulture, "The int32_t size{0} does not match the size of Int32{1}", sizeOfInt32T, sizeOfInt32));
             }
             //from here on, we know that size_t maps fine to IntPtr, and Int32_t maps fine to Int32
 
             IntPtr sizeOfTablePointer = TestSizeOfTablePointer();
-            var sizeOfIntPtrAsIntPtr = (IntPtr) IntPtr.Size;
-            if(sizeOfTablePointer!=sizeOfIntPtrAsIntPtr)
+            var sizeOfIntPtrAsIntPtr = (IntPtr)IntPtr.Size;
+            if (sizeOfTablePointer != sizeOfIntPtrAsIntPtr)
             {
-                throw new ArgumentException("Table*", String.Format(CultureInfo.InvariantCulture, "The Table* size{0} does not match the size of IntPtr{1}", sizeOfTablePointer, sizeOfIntPtrAsIntPtr));
+                throw new Exception(String.Format(CultureInfo.InvariantCulture, "The Table* size{0} does not match the size of IntPtr{1}", sizeOfTablePointer, sizeOfIntPtrAsIntPtr));
             }
 
-            IntPtr sizeOfCharPointer = TestSizeOfCharPointer();            
+            IntPtr sizeOfCharPointer = TestSizeOfCharPointer();
             if (sizeOfCharPointer != sizeOfIntPtrAsIntPtr)
             {
-                throw new ArgumentException("Char*", String.Format(CultureInfo.InvariantCulture, "The Char* size{0} does not match the size of IntPtr{1}", sizeOfCharPointer, sizeOfIntPtrAsIntPtr));
+                throw new Exception(String.Format(CultureInfo.InvariantCulture, "The Char* size{0} does not match the size of IntPtr{1}", sizeOfCharPointer, sizeOfIntPtrAsIntPtr));
             }
 
             IntPtr sizeOfInt64T = Testsizeofint64_t();
-            var sizeOfLong = (IntPtr)sizeof (long);
+            var sizeOfLong = (IntPtr)sizeof(long);
 
             if (sizeOfInt64T != sizeOfLong)
             {
-                throw new ArgumentException("Int64_t", String.Format(CultureInfo.InvariantCulture, "The Int64_t size{0} does not match the size of long{1}", sizeOfInt64T, sizeOfLong));
+                throw new Exception(String.Format(CultureInfo.InvariantCulture, "The Int64_t size{0} does not match the size of long{1}", sizeOfInt64T, sizeOfLong));
+            }
+
+
+            IntPtr sizeOfTimeT = TestSizeOfTime_T();
+            var sizeOfTimeTReceiverType = (IntPtr)sizeof(Int64);//we put time_t into an Int64 before we convert it to DateTime - we expect the time_t to be of type 64 bit integer
+
+            if (sizeOfTimeT != sizeOfTimeTReceiverType)
+            {
+                throw new Exception( String.Format(CultureInfo.InvariantCulture, "The c++ time_t size({0}) does not match the size of the C# recieving type int64 ({1})", sizeOfTimeT, sizeOfTimeTReceiverType));
             }
 
             IntPtr sizeOffloatPlus = TestSizeOfFloat();
@@ -2906,23 +2932,29 @@ enum DataType {
 
             if (sizeOffloatPlus != sizeOfFloatSharp)
             {
-                throw new ArgumentException("float", String.Format(CultureInfo.InvariantCulture, "The c++ float size{0} does not match the size of C# float{1}", sizeOffloatPlus, sizeOfFloatSharp));
+                throw new Exception(String.Format(CultureInfo.InvariantCulture, "The c++ float size{0} does not match the size of C# float{1}", sizeOffloatPlus, sizeOfFloatSharp));
             }
 
-            IntPtr sizeOfTimeT = TestSizeOfTime_T();
-            var sizeOfTimeTReceiverType = (IntPtr)sizeof(Int64);//we put time_t into an Int64 before we convert it to DateTime - we expect the time_t to be of type 64 bit integer
+            long sizeOfPlusDouble = (long)TestSizeOfDouble();
+            long sizeOfSharpDouble = sizeof (double);
 
-            if (sizeOfTimeT != sizeOfTimeTReceiverType)
+            if (sizeOfPlusDouble != sizeOfSharpDouble)
             {
-                throw new ArgumentException("time_t", String.Format(CultureInfo.InvariantCulture, "The c++ time_t size({0}) does not match the size of the C# recieving type int64 ({1})", sizeOfTimeT, sizeOfTimeTReceiverType));
+                throw new Exception(String.Format(CultureInfo.InvariantCulture, "The c++ double size({0}) does not match the size of the C# recieving type Double ({1})", sizeOfPlusDouble, sizeOfSharpDouble));
             }
 
 
+
+        }
+
+        //if something is wrong with interop or C# marshalling, this method will throw an exception
+        public static void TestInterop()
+        {
 
             //that was the sizes of the basic types. Now check if parametres are sent and recieved in the correct sequence
 
 
-
+            TestInteropSizes();
 
             IntPtr testres = TestGetFiveParametres((IntPtr)1, (IntPtr)2, (IntPtr)3, (IntPtr)4, (IntPtr)5);
             if ((long)testres != 1)

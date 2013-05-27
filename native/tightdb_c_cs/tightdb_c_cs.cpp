@@ -144,6 +144,12 @@ TIGHTDB_C_CS_API Table* group_get_table(Group* group_ptr, char* table_name)//sho
 }
 
 
+TIGHTDB_C_CS_API size_t group_has_table(Group* group_ptr, char* table_name)//should be disposed by calling unbind_table_ref
+{    
+    return bool_to_size_t(group_ptr->has_table(table_name));
+}
+
+
 //return a newly constructed top level table 
 TIGHTDB_C_CS_API Table* new_table()//should be disposed by calling unbind_table_ref
 {

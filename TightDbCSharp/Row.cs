@@ -19,7 +19,6 @@ namespace TightDbCSharp
         }
         public TableOrView Owner { get; set; }
         public long RowIndex { get; internal set; }//users should not be allowed to change the row property of a tablerow class
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", MessageId = "long")]
 
 
         //allow foreach to traverse a TableRow and get some TableRowColumn objects
@@ -32,10 +31,12 @@ namespace TightDbCSharp
             }
         }
 
+        /* not used anymore
         internal DataType ColumnTypeNoCheck(long columnIndex)
         {
             return Owner.ColumnTypeNoCheck(columnIndex);
         }
+         */
 
         public long ColumnCount 
         {

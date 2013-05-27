@@ -1,5 +1,8 @@
-﻿using System.Globalization;
+﻿using System;
+using System.ComponentModel;
+using System.Globalization;
 using System.IO;
+using System.Runtime.Remoting.Messaging;
 
 namespace TightDbCSharp
 {
@@ -11,7 +14,27 @@ namespace TightDbCSharp
             UnsafeNativeMethods.GroupNew(this);//calls sethandle itself
         }
 
+        
+        public bool HasTable(string tableName)
+        {
+            return UnsafeNativeMethods.GroupHassTable(this, tableName);
+        }
 
+        //use this method to get a table that already exists in the group
+        //will return the table associated with tableName in the group, or if no such table exists, 
+        //an exception is thrown
+        public Table GetTable(string tableName)
+        {
+            if (HasTable(tableName)) {
+            return UnsafeNativeMethods.GroupGetTable(this, tableName);
+            }
+            throw new InvalidEnumArgumentException(String.Format(CultureInfo.InvariantCulture,"Group.GetTable called with a table name that does not exist {0}",tableName));
+        }
+
+
+        //use this method to create new tables in the group
+        //will return the table associated with tableName in the group, or if no such table exists, 
+        //a new table will be created in the group, associated with tableName, and having the schema provided in the second parameter
         public Table CreateTable(string tableName, params Field[] schema)
         {
             if (schema != null)
@@ -26,7 +49,7 @@ namespace TightDbCSharp
             UnsafeNativeMethods.GroupWrite(this, path);
         }
 
-        //TODO:erorr handling if user specifies an illegal filename or path.
+        //TODO:(also in asana)erorr handling if user specifies an illegal filename or path.
         //We will probably have to do the error handling on the c++ side. It is
         //a problem that c++ seems to crash only when an invalid group(file) is freed or used
         //not when created. Perhaps we should do this in c++

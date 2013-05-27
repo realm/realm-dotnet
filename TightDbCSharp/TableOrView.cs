@@ -179,6 +179,7 @@ namespace TightDbCSharp
             Type elementType = element.GetType();//performance hit as it is not neccessarily used, but used many blaces below
 
             //todo:add a throw statement if an unsupported type shows up in the parametres. 
+            //that is - if we ended up not inserting anything.
             //remmeber to fixup the insert in progress first
             //right now, we silently just don't put anything in the mixed if we cannot figure the type to use
             
@@ -219,12 +220,12 @@ namespace TightDbCSharp
                     if (elementType != typeof (Byte[]))//a byte array cannot represent a list of rows - it is instead treated as a binary field
                         if (elementType != typeof (Table))
                         {
-                            //todo:construct a table from the enummerable element, and guess the types and names of the fields
+                            //idea:construct a table from the enummerable element, and guess the types and names of the fields (not high priority)
                             //todo then add the rows in the enummerable to the table
                             //todo then set the mixed to point to a copy of this table
                             //SetMixedSubtableNoCheck(columnIndex,rowIndex,element);
-                            throw new NotSupportedException(
-                                "You can only specify a subtable in a mixed by providing a table object. Encoutered a {}");
+                            throw new NotSupportedException(string.Format(CultureInfo.InvariantCulture,
+                                "You can only specify a subtable in a mixed by providing a table object. Encountered a {0}", elementType));
                         }
                         else
                         {
@@ -252,10 +253,11 @@ namespace TightDbCSharp
         }
 
         //do not check row index
-        //todo:user could send row data as an object array as first parameter, or many parametres that together is the data for a row - handle both cases        
-        //todo:ensure all datatypes are in the switch both mixed and datatype. add todo implement comments if neccesary
+        //todo:user could send row data as an object array as first parameter, or many parametres that together is the data for a row - handle both cases
+        //todo:let the type be ieumerable, allowing user to set with objects in any kind of collection he has
         internal void SetRowNoCheck(long rowIndex, params object[] rowContents)
         {
+
             if (rowContents.Length != ColumnCount)
                 throw new ArgumentOutOfRangeException("rowContents", String.Format(CultureInfo.InvariantCulture, "SetRow called with {0} objects, but there are only {1} columns in the table", rowContents.Length, ColumnCount));
             for (long ix = 0; ix < ColumnCount; ix++)
@@ -370,7 +372,7 @@ namespace TightDbCSharp
             SetMixedEmptySubtableNoCheck(columnIndex, rowIndex);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", MessageId = "long")]
+        
         public long GetMixedLong(long columnIndex, long rowIndex)
         {
             ValidateColumnRowMixedType(columnIndex, rowIndex,DataType.Int);
@@ -553,7 +555,6 @@ namespace TightDbCSharp
 
 
         //only call if columnIndex is already validated or known to be int
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "DataType"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "GetLong")]
         internal void ValidateTypeInt(long columnIndex)
         {
             if (ColumnTypeNoCheck(columnIndex) != DataType.Int)
@@ -563,7 +564,6 @@ namespace TightDbCSharp
         }
 
         //only call if columnIndex is already validated 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "DataType"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "GetLong")]
         internal void ValidateTypeString(long columnIndex)
         {
             if (ColumnTypeNoCheck(columnIndex) != DataType.String)
@@ -648,10 +648,9 @@ namespace TightDbCSharp
         {
             ValidateRowIndex(rowIndex);
             RemoveNoCheck(rowIndex);
-            //todo:invalidate any iterators - or?
+            //todo:invalidate any active iterators. how? they could be iterating a query on a view on this view
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "subTable"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly", MessageId = "subtable")]
         internal void ValidateColumnTypeSubTable(long columnIndex)
         {
             if (ColumnTypeNoCheck(columnIndex) != DataType.Table)
@@ -759,7 +758,6 @@ namespace TightDbCSharp
 
 
         //if You call from TableRow or TableColumn, You will save some checking - this is the slowest way
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", MessageId = "long")]
         public long GetLong(long columnIndex, long rowIndex)
         {
             ValidateRowIndex(rowIndex);
@@ -800,7 +798,6 @@ namespace TightDbCSharp
             ValidateTypeDouble(columnIndex);
             return GetDoubleNoCheck(columnIndex, rowIndex);
         }
-
 
         public float GetFloat(long columnIndex, long rowIndex)
         {
@@ -945,11 +942,13 @@ namespace TightDbCSharp
             return GetLongCheckType(columnIndex, rowIndex);
         }
 
+        /*not used so commented out
         internal String GetStringCheckType(long columnIndex, long rowIndex)
         {
             ValidateTypeString(columnIndex);
             return GetStringNoCheck(columnIndex, rowIndex);
         }
+        */
 
         internal void SetStringCheckType(long columnIndex, long rowIndex, string value)
         {
@@ -972,6 +971,7 @@ namespace TightDbCSharp
             return GetBoolNoCheck(columnIndex, rowIndex);
         }
 
+        /*not used anymore
         //only call this method if You know for sure that RowIndex is less than or equal to table.size()
         //and that you know for sure that columnIndex is less than or equal to table.columncount
         internal long GetLongNoColumnRowCheck(long columnIndex, long rowIndex)
@@ -979,6 +979,8 @@ namespace TightDbCSharp
             ValidateTypeInt(columnIndex);
             return GetLongNoCheck(columnIndex, rowIndex);
         }
+        */
+
 
         internal void ValidateColumnAndRowIndex(long columnIndex, long rowIndex)
         {
@@ -986,13 +988,14 @@ namespace TightDbCSharp
             ValidateRowIndex(rowIndex);
         }
 
+        /*not used anymore
         //only call this one if You know for sure that the field at columnindex,rowindex is in fact an ordinary DataType.Int field (not mixed.integer)
         internal long GetLongNoTypeCheck(long columnIndex, long rowIndex)
         {
             ValidateColumnAndRowIndex(columnIndex,rowIndex);
             return GetLongNoCheck(columnIndex, rowIndex);
         }
-
+        */
 
         public void SetBoolean(long columnIndex, long rowIndex,Boolean value)
         {
