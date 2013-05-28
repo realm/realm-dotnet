@@ -2344,9 +2344,9 @@ enum DataType {
 
         
         [DllImport("tightdb_c_cs64", EntryPoint = "tableview_set_float", CallingConvention = CallingConvention.Cdecl)]
-        private static extern Query tableview_set_float64(IntPtr tableViewPtr, IntPtr columnIndex, IntPtr rowIndex, float value);
+        private static extern void tableview_set_float64(IntPtr tableViewPtr, IntPtr columnIndex, IntPtr rowIndex, float value);
         [DllImport("tightdb_c_cs32", EntryPoint = "tableview_set_float", CallingConvention = CallingConvention.Cdecl)]
-        private static extern Query tableview_set_float32(IntPtr tableViewPtr, IntPtr columnIndex, IntPtr rowIndex, float value);
+        private static extern void tableview_set_float32(IntPtr tableViewPtr, IntPtr columnIndex, IntPtr rowIndex, float value);
 
         public static void TableViewSetFloat(TableView tableView, long columnIndex, long rowIndex, float value)
         {
