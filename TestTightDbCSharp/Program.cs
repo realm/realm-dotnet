@@ -2960,12 +2960,32 @@ Table Name  : same names, empty names, mixed types
         //this method resembles the java dynamic table example at http://www.tightdb.com/documentation/Java_ref/4/Table/
         public static void DynamicTable()
         {
-            using (var tbl = new Table()) {
-            tbl.AddColumn(DataType.Int, "myInt");
-            tbl.AddColumn(DataType.String, "myStr");
-            tbl.AddColumn(DataType.Mixed, "myMixed");
+            using (var tbl = new Table())
+            {
+                tbl.AddColumn(DataType.Int, "myInt");
+                tbl.AddColumn(DataType.String, "myStr");
+                tbl.AddColumn(DataType.Mixed, "myMixed");
 
-            tbl.Add(12, "hello", 2);
+                //add some data by setting whole rows
+                tbl.Add(12, "hello", 2);
+                tbl.Add(-15, "World", "I can be different types...");
+
+                tbl.Insert(0, 64, "I'm now first", true);
+
+                tbl.AddEmptyRow(1);
+                tbl.Set(3, 198, "TightDB",tbl,12.345);
+                tbl.Remove(0);
+                tbl.RemoveLast();
+
+                //Get and set cell values
+                Assert.Equals(15, tbl.GetLong(0, 1));
+                tbl.SetMixedString(2,0,"Changed Long value to String");
+                Assert.AreEqual(DataType.String,tbl.GetMixedType(2,0));
+                Assert.AreEqual(2, tbl.Size);
+                Assert.AreEqual(false, tbl.IsEmpty);
+
+                tbl.RenameColumn(0,"myLong");
+                tbl.RemoveColumn(1);
             }
         }
 
@@ -3280,7 +3300,7 @@ Table Name  : same names, empty names, mixed types
             EnvironmentTest.ShowVersionTest();
             EnvironmentTest.TestInterop();
             //MeasureInteropSpeed();
-
+            IntegrationTests.TestDynamicTable();
             QueryTests.QueryBoolEqual();
 
            // TableViewTests.TableViewAndTableTestMixedFloat();

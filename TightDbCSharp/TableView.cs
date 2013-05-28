@@ -27,6 +27,7 @@ namespace TightDbCSharp
                 ValidateRowIndex(rowIndex);
                 return new Row(this, rowIndex);
             }
+
         }
 
 
@@ -111,7 +112,7 @@ namespace TightDbCSharp
 
         internal override Table GetMixedSubTableNoCheck(long columnIndex, long rowIndex)
         {
-            return UnsafeNativeMethods.TableViewGetSubTable(this, columnIndex, rowIndex);
+            return UnsafeNativeMethods.TableViewGetSubTable(this, columnIndex, rowIndex);//ordinary getsubtable also works with mixed columns
         }
 
         internal override byte[] GetBinaryNoCheck(long columnIndex, long rowIndex)
@@ -140,17 +141,17 @@ namespace TightDbCSharp
         }
         internal override void SetMixedBoolNoCheck(long columnIndex, long rowIndex, bool value)
         {
-            throw new NotImplementedException();
+            UnsafeNativeMethods.TableViewSetMixedBool(this, columnIndex, rowIndex, value);
         }
 
         internal override void SetMixedStringNoCheck(long columnIndex, long rowIndex, string value)
         {
-            throw new NotImplementedException();
+            UnsafeNativeMethods.TableViewSetMixedString(this,columnIndex,rowIndex,value);
         }
 
         internal override void SetMixedBinaryNoCheck(long columnIndex, long rowIndex, byte[] value)
         {
-            throw new NotImplementedException();
+            UnsafeNativeMethods.TableViewSetMixedBinary(this,columnIndex, rowIndex, value);
         }
 
         //might be used if You want an empty subtable set up and then change its contents and layout at a later time

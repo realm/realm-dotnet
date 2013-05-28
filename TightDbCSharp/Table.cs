@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CodeDom;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
@@ -244,9 +245,16 @@ namespace TightDbCSharp
            UnsafeNativeMethods.TableNew(this);//calls sethandle itself
         }
 
-        public void RenameColumn(long columnNumber, String newName)
+        public void RenameColumn(long columnIndex, String newName)
         {
-            UnsafeNativeMethods.TableRenameColumn(this,columnNumber,newName);
+            ValidateColumnIndex(columnIndex);
+            UnsafeNativeMethods.TableRenameColumn(this,columnIndex,newName);
+        }
+
+        public void RemoveColumn(long columnIndex)
+        {
+            ValidateColumnIndex(columnIndex);
+            UnsafeNativeMethods.TableRemoveColumn(this,columnIndex);
         }
         //this one is called from Handled.cs when we have to release the table handle.
         internal override void ReleaseHandle()
@@ -322,7 +330,7 @@ namespace TightDbCSharp
 
 
 
-        //adds an empty row and filles it out
+        //adds an empty row at the end and filles it out
         //idea:consider if we should use insert row instead? - ask what's the difference, if any (asana)
         //todo:insert should only be used by the binding, not be exposed to the user (asana)
         //idea:when we add an entire row, insert is faster. (asana)
@@ -333,9 +341,19 @@ namespace TightDbCSharp
             return rowAdded;//return the index of the just added row
         }
 
-        public void AddRowAt(long rowIndex, params object[] rowData)
+        public void Set(long rowIndex, params object[] rowData)
         {
             ValidateRowIndex(rowIndex);
+            SetRowNoCheck(rowIndex,rowData);
+        }
+        //insert rowdata into a new row that is inserted at rowIndex
+        //rowindex=0 means insert into very first record
+        //rowindex=size means add after last        
+        public void Insert(long rowIndex, params object[] rowData)
+        {
+            if (rowIndex > 0)
+                ValidateRowIndex(rowIndex - 1);                            
+            UnsafeNativeMethods.TableInsertEmptyRow(this,rowIndex,1);                         
             SetRowNoCheck(rowIndex,rowData);
         }
 
@@ -344,6 +362,7 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableGetColumnName(this, columnIndex);
         }
 
+        //add empty row at the end, return the index
         public long AddEmptyRow(long numberOfRows)
         {
             return UnsafeNativeMethods.TableAddEmptyRow(this, numberOfRows);
@@ -433,6 +452,11 @@ namespace TightDbCSharp
             UnsafeNativeMethods.TableInsertInt(this, columnIndex, rowIndex, value);
         }
 
+        public void InsertEmptyRow(long rowIndex, long rowsToInsert)
+        {            
+            UnsafeNativeMethods.TableInsertEmptyRow(this, rowIndex, rowsToInsert);                            
+        }
+
         //number of records in this table
         internal override long GetSize()
         {
@@ -477,17 +501,17 @@ namespace TightDbCSharp
 
         internal override void SetMixedBoolNoCheck(long columnIndex, long rowIndex, bool value)
         {
-            throw new NotImplementedException();
+            UnsafeNativeMethods.TableSetMixedBool(this, columnIndex, rowIndex, value);
         }
 
         internal override void SetMixedStringNoCheck(long columnIndex, long rowIndex, string value)
         {
-            throw new NotImplementedException();
+            UnsafeNativeMethods.TableSetMixedString(this, columnIndex, rowIndex, value);
         }
 
         internal override void SetMixedBinaryNoCheck(long columnIndex, long rowIndex, byte[] value)
         {
-            throw new NotImplementedException();
+            UnsafeNativeMethods.TableSetMixedBinary(this, columnIndex, rowIndex, value);
         }
 
 

@@ -173,7 +173,7 @@ namespace TightDbCSharp
             }
         }
 
-        
+        //add unknown typed object to a mixed
         internal void SetMixedNoCheck(long columnIndex, long rowIndex, object element)
         {
             Type elementType = element.GetType();//performance hit as it is not neccessarily used, but used many blaces below
@@ -184,18 +184,24 @@ namespace TightDbCSharp
             //right now, we silently just don't put anything in the mixed if we cannot figure the type to use
             
             if (
-                elementType == typeof(Byte) ||//byte Byte
-                elementType == typeof(Int32) ||//int,int32
-                elementType == typeof(Int64) ||//long,int64
-                elementType == typeof(Int16) ||//int16,short
-                elementType == typeof(SByte) ||//sbyte SByte                           
-                elementType == typeof(UInt16) ||//ushort,uint16
-                elementType == typeof(UInt32) ||//uint
-                elementType == typeof(UInt64)//ulong                            
+                elementType == typeof (Byte) || //byte Byte
+                elementType == typeof (Int16) || //int16,short
+                elementType == typeof (SByte) || //sbyte SByte                           
+                elementType == typeof (Int32) || //int,int32
+                elementType == typeof (UInt16)  //ushort,uint16
+                )
+            {               
+                SetMixedLongNoCheck(columnIndex, rowIndex, (int)element);//ints cannot be unboxed directly to long
+            }
+
+            if (
+                elementType == typeof (UInt32) || //uint
+                elementType == typeof (Int64) || //long,int64
+                elementType == typeof (UInt64) //ulong                            
                 )
             {
-                SetMixedLongNoCheck(columnIndex, rowIndex, (long)element);                
-            }
+                SetMixedLongNoCheck(columnIndex, rowIndex, (long)element);//ints cannot be unboxed directly to long. But can the larger types?
+            }//todo:unit test by throwing uint32,int64 and UInt64 at the cast above
 
             if (elementType == typeof (Boolean))
             {
@@ -268,7 +274,8 @@ namespace TightDbCSharp
                 switch (ColumnTypeNoCheck(ix))
                 {
                     case DataType.Int:
-                        SetLongNoCheck(ix, rowIndex, (long)element);//this throws exceptions if called with something too weird
+                        if (element is int)
+                           SetLongNoCheck(ix, rowIndex, (long)(int)element);//this throws exceptions if called with something too weird
                         break;
                     case DataType.Bool:
                         SetBoolNoCheck(ix, rowIndex, (Boolean)element);
@@ -360,11 +367,6 @@ namespace TightDbCSharp
 
         
 
-        public void SetMixedSubTable(long columnIndex, long rowIndex, Table source)
-        {
-            ValidateColumnRowTypeMixed(columnIndex, rowIndex);
-            SetMixedSubtableNoCheck(columnIndex, rowIndex, source);
-        }
 
         public void SetMixedEmptySubTable(long columnIndex, long rowIndex)
         {
@@ -448,17 +450,48 @@ namespace TightDbCSharp
             return GetMixedTypeNoCheck(columnIndex, rowIndex);
         }
 
-        
+
         public void SetMixedLong(long columnIndex, long rowIndex, long value)
         {
             ValidateColumnRowTypeMixed(columnIndex, rowIndex);
             SetMixedLongNoCheck(columnIndex, rowIndex, value);
         }
 
-        public void SetMixedDouble(long columnIndex, long rowIndex, double value)
+        public void SetMixedBool(long columnIndex, long rowIndex, bool value)
         {
             ValidateColumnRowTypeMixed(columnIndex, rowIndex);
-            SetMixedDoubleNoCheck(columnIndex, rowIndex, value);
+            SetMixedBoolNoCheck(columnIndex, rowIndex, value);
+        }
+
+        public void SetMixedString(long columnIndex, long rowIndex, string value)
+        {
+            ValidateColumnRowTypeMixed(columnIndex, rowIndex);
+            SetMixedStringNoCheck(columnIndex, rowIndex, value);
+        }
+
+        public void SetMixedBinary(long columnIndex, long rowIndex, byte [] value)//idea:perhaps we should also support the user passing us a stream?
+        {
+            ValidateColumnRowTypeMixed(columnIndex, rowIndex);
+            SetMixedBinaryNoCheck(columnIndex, rowIndex, value);
+        }
+        
+
+        public void SetMixedSubTable(long columnIndex, long rowIndex, Table source)
+        {
+            ValidateColumnRowTypeMixed(columnIndex, rowIndex);
+            SetMixedSubtableNoCheck(columnIndex, rowIndex, source);
+        }
+
+        //setmixedmixed makes no sense
+        public void SetMixedDateTime(long columnIndex, long rowIndex, DateTime value)
+        {
+            ValidateColumnRowTypeMixed(columnIndex, rowIndex);
+            SetMixedDateTimeNoCheck(columnIndex, rowIndex, value);
+        }
+
+        public void SetMixedDateTime(string columnName, long rowIndex, DateTime value)
+        {
+            SetMixedDateTimeNoColumnCheck(GetColumnIndex(columnName), rowIndex, value);
         }
 
         public void SetMixedFloat(long columnIndex, long rowIndex, float value)
@@ -467,17 +500,14 @@ namespace TightDbCSharp
             SetMixedFloatNoCheck(columnIndex, rowIndex, value);
         }
 
-        
-        public void SetMixedDateTime(long columnIndex, long rowIndex, DateTime value)
+        public void SetMixedDouble(long columnIndex, long rowIndex, double value)
         {
             ValidateColumnRowTypeMixed(columnIndex, rowIndex);
-            SetMixedDateTimeNoCheck(columnIndex, rowIndex, value);
+            SetMixedDoubleNoCheck(columnIndex, rowIndex, value);
         }
+
+
         
-        public void SetMixedDateTime(string columnName, long rowIndex, DateTime value)
-        {
-            SetMixedDateTimeNoColumnCheck(GetColumnIndex(columnName),rowIndex,value);
-        }
 
         internal void SetMixedDateTimeNoColumnCheck(long columnIndex, long rowIndex, DateTime value)
         {
@@ -644,6 +674,15 @@ namespace TightDbCSharp
             }
         }
 
+        public void RemoveLast()//this could be a c++ call and save the extra call to get size
+        {
+            long s = Size;
+            if (s>0)
+            {
+                RemoveNoCheck(s - 1);
+            };
+        }
+        
         public void Remove(long rowIndex)
         {
             ValidateRowIndex(rowIndex);

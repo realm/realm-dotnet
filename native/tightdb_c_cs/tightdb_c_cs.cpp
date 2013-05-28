@@ -330,6 +330,17 @@ size_t bsd_strlcpy(char * dst,size_t siz,const char * src)
 }
 
 
+TIGHTDB_C_CS_API void table_rename_column(Table* table_ptr, size_t column_ndx, const char* value)
+{
+    table_ptr->rename_column(column_ndx,value);
+}
+
+TIGHTDB_C_CS_API void table_remove_column(Table* table_ptr, size_t column_ndx)
+{
+    table_ptr->remove_column(column_ndx);
+}
+
+
 //bufsize is the c# capacity that a stringbuilder was created with
 //colname is a buffer of at least that size
 //the function should copy the column name into colname and zero terminate it, and return the number
@@ -383,6 +394,16 @@ TIGHTDB_C_CS_API Spec* spec_add_subtable_column(Spec* spec_ptr, const char* name
 }
 
 
+
+TIGHTDB_C_CS_API void table_set_mixed_string(Table* table_ptr, size_t column_ndx, size_t row_ndx, const char* value)
+{
+    table_ptr->set_mixed(column_ndx,row_ndx,value);
+}
+
+TIGHTDB_C_CS_API void tableview_set_mixed_string(TableView* tableview_ptr, size_t column_ndx, size_t row_ndx, const char* value)
+{
+    tableview_ptr->set_mixed(column_ndx,row_ndx,value);
+}
 
 TIGHTDB_C_CS_API void table_set_string(Table* table_ptr, size_t column_ndx, size_t row_ndx, const char* value)
 {
@@ -596,10 +617,15 @@ TIGHTDB_C_CS_API float  tableview_get_mixed_float(TableView*  tableView_ptr, siz
 
 
 TIGHTDB_C_CS_API size_t table_add_empty_row(Table* table_ptr, size_t num_rows)
-{
-    
+{   
     return table_ptr->add_empty_row(num_rows);
 }
+
+TIGHTDB_C_CS_API void table_insert_empty_row(Table* table_ptr, size_t row_ndx, size_t num_rows)
+{   
+    table_ptr->insert_empty_row(row_ndx,num_rows);
+}
+
 
 //find first methods in Table
 /* 
@@ -823,6 +849,18 @@ TIGHTDB_C_CS_API size_t tableview_get_bool(TableView* tableView_ptr, size_t colu
 TIGHTDB_C_CS_API void tableview_set_bool(TableView* tableView_ptr, size_t column_ndx, size_t row_ndx,size_t value)
 {    
      tableView_ptr->set_bool(column_ndx,row_ndx,size_t_to_bool(value));     
+}
+
+//call with false=0  true=1 we use a size_t as it is likely the fastest type to return
+TIGHTDB_C_CS_API void tableview_set_mixed_bool(TableView* tableView_ptr, size_t column_ndx, size_t row_ndx,size_t value)
+{    
+     tableView_ptr->set_mixed(column_ndx,row_ndx,size_t_to_bool(value));     
+}
+
+//call with false=0  true=1 we use a size_t as it is likely the fastest type to return
+TIGHTDB_C_CS_API void table_set_mixed_bool(Table* table_ptr, size_t column_ndx, size_t row_ndx,size_t value)
+{    
+     table_ptr->set_mixed(column_ndx,row_ndx,size_t_to_bool(value));     
 }
 
 

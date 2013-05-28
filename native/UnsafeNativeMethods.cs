@@ -251,10 +251,10 @@ enum DataType {
 
 
         [DllImport("tightdb_c_cs64", EntryPoint = "table_rename_column", CallingConvention = CallingConvention.Cdecl,CharSet = CharSet.Unicode)]
-        private static extern UIntPtr table_rename_column64(IntPtr tableHandle, long columnIndex, [MarshalAs(UnmanagedType.LPStr)] string name);
+        private static extern void table_rename_column64(IntPtr tableHandle, long columnIndex, [MarshalAs(UnmanagedType.LPStr)] string name);
 
         [DllImport("tightdb_c_cs32", EntryPoint = "table_rename_column", CallingConvention = CallingConvention.Cdecl,CharSet = CharSet.Unicode)]
-        private static extern UIntPtr table_rename_column32(IntPtr tableHandle, long columnIndex, [MarshalAs(UnmanagedType.LPStr)] string name);
+        private static extern void table_rename_column32(IntPtr tableHandle, long columnIndex, [MarshalAs(UnmanagedType.LPStr)] string name);
 
         public static void TableRenameColumn(Table table, long columnIndex, string name)
         {
@@ -265,6 +265,21 @@ enum DataType {
         }
 
 
+
+        
+        [DllImport("tightdb_c_cs64", EntryPoint = "table_remove_column", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
+        private static extern void table_remove_column64(IntPtr tableHandle, long columnIndex);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "table_remove_column", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
+        private static extern void table_remove_column32(IntPtr tableHandle, long columnIndex);
+
+        public static void TableRemoveColumn(Table table, long columnIndex)
+        {
+            if (Is64Bit)
+                table_remove_column64(table.Handle, columnIndex);
+            else
+                table_remove_column32(table.Handle, columnIndex);
+        }
 
 
 
@@ -870,22 +885,19 @@ enum DataType {
 
 
 
-        //tightdb_c_cs_API size_t new_table()
+        //this one work on standard subtable columns as well as on mixed subtable columns.
         [DllImport("tightdb_c_cs64", EntryPoint = "table_get_subtable", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr table_get_subtable64(IntPtr tableHandle, IntPtr columnIndex, IntPtr rowIndex);
 
         [DllImport("tightdb_c_cs32", EntryPoint = "table_get_subtable", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr table_get_subtable32(IntPtr tableHandle, IntPtr columnIndex, IntPtr rowIndex);
 
-        //can throw an exception (at least in debug mode) on the c++ side if not columnindex < number of columns
-        //could be handled by a check here, so that we never call if columindex <  number of coulms
-        //note this also should work on mixed columns with subtables in them
         public static Table TableGetSubTable(Table parentTable, long columnIndex, long rowIndex)
         {
             if (Is64Bit)
                 return new Table(
                     table_get_subtable64(parentTable.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex), true);
-            //the constructor that takes an UintPtr will use that as a table handle
+            
             return new Table(table_get_subtable32(parentTable.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex),
                              true);
         }
@@ -1500,6 +1512,23 @@ enum DataType {
         }
 
 
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "table_insert_empty_row", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void table_insert_empty_row64(IntPtr tablePtr, IntPtr rowIndex,IntPtr numRows);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "table_insert_empty_row", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void table_insert_empty_row32(IntPtr tablePtr, IntPtr rowIndex, IntPtr numRows);
+
+        public static void TableInsertEmptyRow(Table table, long rowIndex,long numberOfRows)
+        {
+            if (Is64Bit)
+                table_insert_empty_row64(table.Handle, (IntPtr) rowIndex, (IntPtr) numberOfRows);
+            else
+                table_insert_empty_row32(table.Handle, (IntPtr) rowIndex, (IntPtr) numberOfRows);
+        }
+
+
+
         //TIGHTDB_C_CS_API size_t table_add_empty_row(Table* TablePtr, size_t num_rows)
 
         [DllImport("tightdb_c_cs64", EntryPoint = "table_add_empty_row", CallingConvention = CallingConvention.Cdecl)]
@@ -1547,15 +1576,58 @@ enum DataType {
 
         public static void TableSetString(Table table, long columnIndex, long rowIndex, string value)
         {
+            /*
 #if DEBUG
             Log(MethodBase.GetCurrentMethod().Name, "(Table,Column,Row,Value)", table, columnIndex, rowIndex, value);
-#endif
+#endif*/
 
             if (Is64Bit)
                 table_set_string64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
             else
                 table_set_string32(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
         }
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "table_set__mixed_string", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void table_set_mixed_string64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx,
+                                                      [MarshalAs(UnmanagedType.LPStr)] string value);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "table_set_mixed_string", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void table_set_mixed_string32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx,
+                                                      [MarshalAs(UnmanagedType.LPStr)] string value);
+
+        public static void TableSetMixedString(Table table, long columnIndex, long rowIndex, string value)
+        {
+
+            if (Is64Bit)
+                table_set_mixed_string64(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
+            else
+                table_set_mixed_string32(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
+        }
+
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "tableview_set__mixed_string", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void tableview_set_mixed_string64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx,
+                                                      [MarshalAs(UnmanagedType.LPStr)] string value);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "tableview_set_mixed_string", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void tableview_set_mixed_string32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx,
+                                                      [MarshalAs(UnmanagedType.LPStr)] string value);
+
+        public static void TableViewSetMixedString(TableView tableView, long columnIndex, long rowIndex, string value)
+        {
+
+            if (Is64Bit)
+                tableview_set_mixed_string64(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
+            else
+                tableview_set_mixed_string32(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
+        }
+
+
+
+
+
 
 
         //        TIGHTDB_C_CS_API void table_set_int(Table* TablePtr, size_t column_ndx, size_t row_ndx, int64_t value)
@@ -1659,7 +1731,15 @@ enum DataType {
 
 
 
+        public static void TableSetMixedBinary(Table table, long columnIndex, long rowIndex, byte[] value)
+        {
+            throw new NotImplementedException("UnsafeNativeMethods.cs TableSetMixedBinary not implemented yet");
+        }
 
+        public static void TableViewSetMixedBinary(TableView tableView, long columnIndex, long rowIndex, byte[] value)
+        {
+            throw new NotImplementedException("UnsafeNativeMethods.cs TableViewSetMixedBinary not implemented yet");
+        }
 
 
         [DllImport("tightdb_c_cs64", EntryPoint = "table_set_mixed_empty_subtable",
@@ -2154,17 +2234,15 @@ enum DataType {
         }
 
 
+
+        
         [DllImport("tightdb_c_cs64", EntryPoint = "tableview_set_bool", CallingConvention = CallingConvention.Cdecl)]
         private static extern void tableView_set_bool64(IntPtr tableViewPtr, IntPtr columnNdx, IntPtr rowNdx,
                                                         IntPtr value);
         [DllImport("tightdb_c_cs32", EntryPoint = "tableview_set_bool", CallingConvention = CallingConvention.Cdecl)]
         private static extern void tableView_set_bool32(IntPtr tableViewPtr, IntPtr columnNdx, IntPtr rowNdx,
                                                         IntPtr value);
-             
-
-
-
-        
+      
         //convert.tobool does not take an IntPtr so we have to convert ourselves we get 1 for true, 0 for false
         public static void TableViewSetBool(TableView tableView, long columnIndex, long rowIndex, Boolean value)
         {            
@@ -2192,6 +2270,55 @@ enum DataType {
             else
                 table_set_bool32(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, ipValue);
         }
+
+
+
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "tableview_set_mixed_bool", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void tableview_set_mixed_bool64(IntPtr tableViewPtr, IntPtr columnNdx, IntPtr rowNdx,
+                                                        IntPtr value);
+        [DllImport("tightdb_c_cs32", EntryPoint = "tableview_set_mixed_bool", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void tableview_set_mixed_bool32(IntPtr tableViewPtr, IntPtr columnNdx, IntPtr rowNdx,
+                                                        IntPtr value);
+
+        //convert.tobool does not take an IntPtr so we have to convert ourselves we get 1 for true, 0 for false
+        public static void TableViewSetMixedBool(TableView tableView, long columnIndex, long rowIndex, Boolean value)
+        {
+            var ipValue = BoolToIntPtr(value);
+            if (Is64Bit)
+                tableview_set_mixed_bool64(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, ipValue);
+            else
+                tableview_set_mixed_bool32(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, ipValue);
+        }
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "table_set_mixed_bool", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void table_set_mixed_bool64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx,
+                                                        IntPtr value);
+        [DllImport("tightdb_c_cs32", EntryPoint = "table_set_mixed_bool", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void table_set_mixed_bool32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx,
+                                                        IntPtr value);
+
+        //convert.tobool does not take an IntPtr so we have to convert ourselves we get 1 for true, 0 for false
+        public static void TableSetMixedBool(Table table, long columnIndex, long rowIndex, Boolean value)
+        {
+            IntPtr ipValue = BoolToIntPtr(value);
+
+            if (Is64Bit)
+                table_set_mixed_bool64(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, ipValue);
+            else
+                table_set_mixed_bool32(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, ipValue);
+        }
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2886,14 +3013,14 @@ enum DataType {
             int sizeOfSizeT = TestSizeOfSizeT();
             if (sizeOfIntPtr != sizeOfSizeT)
             {
-                throw new Exception(String.Format(CultureInfo.InvariantCulture, "The size_t size{0} does not match the size of UintPtr{1}", sizeOfSizeT, sizeOfIntPtr));
+                throw new TableException(String.Format(CultureInfo.InvariantCulture, "The size_t size{0} does not match the size of UintPtr{1}", sizeOfSizeT, sizeOfIntPtr));
             }
 
             IntPtr sizeOfInt32T = TestSizeOfInt32_T();
             var sizeOfInt32 = (IntPtr)sizeof(Int32);
             if (sizeOfInt32T != sizeOfInt32)
             {
-                throw new Exception(String.Format(CultureInfo.InvariantCulture, "The int32_t size{0} does not match the size of Int32{1}", sizeOfInt32T, sizeOfInt32));
+                throw new TableException(String.Format(CultureInfo.InvariantCulture, "The int32_t size{0} does not match the size of Int32{1}", sizeOfInt32T, sizeOfInt32));
             }
             //from here on, we know that size_t maps fine to IntPtr, and Int32_t maps fine to Int32
 
@@ -2901,13 +3028,13 @@ enum DataType {
             var sizeOfIntPtrAsIntPtr = (IntPtr)IntPtr.Size;
             if (sizeOfTablePointer != sizeOfIntPtrAsIntPtr)
             {
-                throw new Exception(String.Format(CultureInfo.InvariantCulture, "The Table* size{0} does not match the size of IntPtr{1}", sizeOfTablePointer, sizeOfIntPtrAsIntPtr));
+                throw new TableException(String.Format(CultureInfo.InvariantCulture, "The Table* size{0} does not match the size of IntPtr{1}", sizeOfTablePointer, sizeOfIntPtrAsIntPtr));
             }
 
             IntPtr sizeOfCharPointer = TestSizeOfCharPointer();
             if (sizeOfCharPointer != sizeOfIntPtrAsIntPtr)
             {
-                throw new Exception(String.Format(CultureInfo.InvariantCulture, "The Char* size{0} does not match the size of IntPtr{1}", sizeOfCharPointer, sizeOfIntPtrAsIntPtr));
+                throw new TableException(String.Format(CultureInfo.InvariantCulture, "The Char* size{0} does not match the size of IntPtr{1}", sizeOfCharPointer, sizeOfIntPtrAsIntPtr));
             }
 
             IntPtr sizeOfInt64T = Testsizeofint64_t();
@@ -2915,7 +3042,7 @@ enum DataType {
 
             if (sizeOfInt64T != sizeOfLong)
             {
-                throw new Exception(String.Format(CultureInfo.InvariantCulture, "The Int64_t size{0} does not match the size of long{1}", sizeOfInt64T, sizeOfLong));
+                throw new TableException(String.Format(CultureInfo.InvariantCulture, "The Int64_t size{0} does not match the size of long{1}", sizeOfInt64T, sizeOfLong));
             }
 
 
@@ -2924,7 +3051,7 @@ enum DataType {
 
             if (sizeOfTimeT != sizeOfTimeTReceiverType)
             {
-                throw new Exception( String.Format(CultureInfo.InvariantCulture, "The c++ time_t size({0}) does not match the size of the C# recieving type int64 ({1})", sizeOfTimeT, sizeOfTimeTReceiverType));
+                throw new TableException(String.Format(CultureInfo.InvariantCulture, "The c++ time_t size({0}) does not match the size of the C# recieving type int64 ({1})", sizeOfTimeT, sizeOfTimeTReceiverType));
             }
 
             IntPtr sizeOffloatPlus = TestSizeOfFloat();
@@ -2932,7 +3059,7 @@ enum DataType {
 
             if (sizeOffloatPlus != sizeOfFloatSharp)
             {
-                throw new Exception(String.Format(CultureInfo.InvariantCulture, "The c++ float size{0} does not match the size of C# float{1}", sizeOffloatPlus, sizeOfFloatSharp));
+                throw new TableException(String.Format(CultureInfo.InvariantCulture, "The c++ float size{0} does not match the size of C# float{1}", sizeOffloatPlus, sizeOfFloatSharp));
             }
 
             long sizeOfPlusDouble = (long)TestSizeOfDouble();
@@ -2940,7 +3067,7 @@ enum DataType {
 
             if (sizeOfPlusDouble != sizeOfSharpDouble)
             {
-                throw new Exception(String.Format(CultureInfo.InvariantCulture, "The c++ double size({0}) does not match the size of the C# recieving type Double ({1})", sizeOfPlusDouble, sizeOfSharpDouble));
+                throw new TableException(String.Format(CultureInfo.InvariantCulture, "The c++ double size({0}) does not match the size of the C# recieving type Double ({1})", sizeOfPlusDouble, sizeOfSharpDouble));
             }
 
 

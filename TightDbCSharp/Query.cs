@@ -93,7 +93,7 @@ namespace TightDbCSharp
         //todo:unittest
         public long FindNext(long lastMatch)
         {
-            return UnsafeNativeMethods.QueryFindNext(this,lastMatch);
+            return UnsafeNativeMethods.QueryFindNext(this,lastMatch);            
         }
 
         //the column index specifies the column in the underlying table that should be averaged (but only records that match the query)
