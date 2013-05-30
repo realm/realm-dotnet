@@ -89,7 +89,7 @@ TIGHTDB_C_CS_API tightdb::TableView* table_find_all_int(tightdb::Table*, size_t 
 //type refers to a value taken from values
 TIGHTDB_C_CS_API size_t spec_add_column(tightdb::Spec* spec_ptr,size_t type, const char* name);
 
-TIGHTDB_C_CS_API tightdb::Spec* spec_add_subtable_column(tightdb::Spec* spec_ptr, const char* name);
+TIGHTDB_C_CS_API tightdb::Spec* spec_add_sublumn(tightdb::Spec* spec_ptr, const char* name);
 
 TIGHTDB_C_CS_API void spec_deallocate(tightdb::Spec* spec_ptr);
 

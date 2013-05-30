@@ -1764,6 +1764,104 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
     }
 
     [TestFixture]
+    public static class TableAggregateTest
+    {
+
+        [Test]
+        public static void TableMaximumDouble()
+        {
+            using (var myTable = new Table("double".Double()))
+            {
+                myTable.Add(1d);
+                Assert.AreEqual(1d,myTable.MaximumDouble(0));
+            }
+        }
+
+        //should probably be split up into more tests, but this one touches all c++ functions which is okay for now
+        [Test]
+        public static void TableAggreate()
+        {
+            using (var myTable = new Table("strfield".String(),
+                "int".Int(),
+                "float".Float(),
+                "double".Double())
+                )
+            {
+                myTable.Add("tv", 1, 3f, 5d);
+                myTable.Add("tv", 3, 9f, 15d);
+                myTable.Add("tv", 5, 15f, 25d);
+                myTable.Add("notv", -1000, -1001f, -1002d);
+
+
+                
+                using (
+                    TableView myTableView = myTable.FindAllString(0, "tv")
+
+                    )
+                {
+                    Assert.AreEqual(3, myTable.CountString(0, "tv"));
+                    Assert.AreEqual(1, myTable.CountLong(1, 3));
+                    Assert.AreEqual(1, myTable.CountFloat(2, 15f));
+                    Assert.AreEqual(1, myTable.CountDouble(3, 15d));
+
+                    Assert.AreEqual(0, myTable.CountString(0, "xtv"));
+                    Assert.AreEqual(0, myTable.CountLong(1, -3));
+                    Assert.AreEqual(0, myTable.CountFloat(2, -15f));
+                    Assert.AreEqual(0, myTable.CountDouble(3, -15d));
+
+
+                    Assert.AreEqual(5, myTable.MaximumLong("int"));
+                    Assert.AreEqual(15f, myTable.MaximumFloat("float"));
+                    Assert.AreEqual(25d, myTable.MaximumDouble(3));
+
+                    Assert.AreEqual(-1000, myTable.MinimumLong(1));
+                    Assert.AreEqual(-1001f, myTable.MinimumFloat(2));
+                    Assert.AreEqual(-1002d, myTable.MinimumDouble("double"));
+
+                    Assert.AreEqual(-1000 + 1 + 3 + 5, myTable.SumLong(1));
+                    Assert.AreEqual(-1001f + 3f + 9f + 15f, myTable.SumFloat(2));
+                    Assert.AreEqual(-1002d + 5d + 15d + 25d, myTable.SumDouble(3));
+
+                    Assert.AreEqual((1 + 3 + 5 - 1000)/4d, myTable.AverageLong(1));
+                    Assert.AreEqual((3f + 9f + 15f - 1001f)/4d, myTable.AverageFloat(2));
+                    Assert.AreEqual((5d + 15d + 25d - 1002d)/4d, myTable.AverageDouble(3));
+
+
+                    Assert.AreEqual(3,myTableView.Size);
+                    //count methods are not implemented in tightdb yet, Until they are implemented, and our c++ binding
+                    //is updated to call them, our c++ binding will just return zero
+                    Assert.AreEqual(0/*3*/, myTableView.CountString(0, "tv"));
+                    Assert.AreEqual(0/*1*/, myTableView.CountLong(1, 3));
+                    Assert.AreEqual(0/*1*/, myTableView.CountFloat(2, 15f));
+                    Assert.AreEqual(0/*1*/, myTableView.CountDouble(3, 15d));
+
+                    Assert.AreEqual(5, myTableView.MaximumLong("int"));
+                    Assert.AreEqual(15f, myTableView.MaximumFloat("float"));
+                    Assert.AreEqual(25d, myTableView.MaximumDouble(3));
+
+                    Assert.AreEqual(1, myTableView.MinimumLong(1));
+                    Assert.AreEqual(3f, myTableView.MinimumFloat(2));
+                    Assert.AreEqual(5d, myTableView.MinimumDouble(3));
+
+                    Assert.AreEqual(1 + 3 + 5, myTableView.SumLong(1));
+                    Assert.AreEqual( 3f + 9f + 15f, myTableView.SumFloat(2));
+                    Assert.AreEqual( 5d + 15d + 25d, myTableView.SumDouble(3));
+
+                    //average methods are not implemented in tightdb yet, Until they are implemented, and our c++ binding
+                    //is updated to call them, our c++ binding will just return zero
+                    Assert.AreEqual(0/*(1 + 3 + 5 )/4*/, myTableView.AverageLong(1));
+                    Assert.AreEqual(0/*(3f + 9f + 15f)/4f*/, myTableView.AverageFloat(2));
+                    Assert.AreEqual(0/*(5d + 15d + 25d )/4d*/, myTableView.AverageDouble(3));
+
+                }
+
+            }
+
+        }
+    }
+
+
+    [TestFixture]
     public static class TableCreateTest
     {
 
@@ -2962,23 +3060,32 @@ Table Name  : same names, empty names, mixed types
         {
             using (var tbl = new Table())
             {
+             long s = tbl.Size;
                 tbl.AddColumn(DataType.Int, "myInt");
                 tbl.AddColumn(DataType.String, "myStr");
                 tbl.AddColumn(DataType.Mixed, "myMixed");
 
+                s = tbl.Size;
                 //add some data by setting whole rows
                 tbl.Add(12, "hello", 2);
                 tbl.Add(-15, "World", "I can be different types...");
 
                 tbl.Insert(0, 64, "I'm now first", true);
 
+
+                s = tbl.Size;
+
+
                 tbl.AddEmptyRow(1);
-                tbl.Set(3, 198, "TightDB",tbl,12.345);
+                s = tbl.Size;
+                tbl.Set(3, 198, "TightDB",12.345);
+                s = tbl.Size;
                 tbl.Remove(0);
+                s = tbl.Size;
                 tbl.RemoveLast();
 
                 //Get and set cell values
-                Assert.Equals(15, tbl.GetLong(0, 1));
+                Assert.AreEqual(-15, tbl.GetLong(0, 1));
                 tbl.SetMixedString(2,0,"Changed Long value to String");
                 Assert.AreEqual(DataType.String,tbl.GetMixedType(2,0));
                 Assert.AreEqual(2, tbl.Size);
@@ -2986,6 +3093,23 @@ Table Name  : same names, empty names, mixed types
 
                 tbl.RenameColumn(0,"myLong");
                 tbl.RemoveColumn(1);
+                tbl.Add(42, "this is the mixed column");
+                tbl.AddColumn(DataType.Binary, "myDouble");//todo:implement binary
+                tbl.Add(-15, "still mixed", 123.45);
+
+                //column introspection
+                Assert.AreEqual(3,tbl.ColumnCount);
+                Assert.AreEqual("myLong",tbl.GetColumnName(0));
+                Assert.AreEqual(1,tbl.GetColumnIndex("myMixed"));
+                Assert.AreEqual(DataType.Double,tbl.ColumnType(2));
+
+                Assert.AreEqual(123.45,tbl.MaximumDouble(2));
+                Assert.AreEqual(24,tbl.SumLong(0));
+                Assert.AreEqual(6.0,tbl.AverageLong(0));
+
+                //simple match search
+
+
             }
         }
 
@@ -3300,9 +3424,10 @@ Table Name  : same names, empty names, mixed types
             EnvironmentTest.ShowVersionTest();
             EnvironmentTest.TestInterop();
             //MeasureInteropSpeed();
-            IntegrationTests.TestDynamicTable();
+            //IntegrationTests.TestDynamicTable();
             QueryTests.QueryBoolEqual();
-
+            TableAggregateTest.TableMaximumDouble();
+            TableAggregateTest.TableAggreate();
            // TableViewTests.TableViewAndTableTestMixedFloat();
 //            Iteratortest.TableIterationTest();
   //          Iteratortest.TableViewIterationTest();

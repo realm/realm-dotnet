@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Runtime.Remoting.Messaging;
 using System.Runtime.Serialization;
 
 
@@ -46,15 +47,15 @@ namespace TightDbCSharp
     }
 */
 
-
     //Tightdb Table
     //could have been called RowCollection but is called Table as it in fact is a table and not merely a collection of rows
     public class Table : TableOrView, IEnumerable<Row>
     {
         //manual dll version info. Used when debugging to see if the right DLL is loaded, or an old one
         //the number is a date and a time (usually last time i debugged something)
-        public  const long GetDllVersionCSharp = 1305211512 ;
+        public  const long GetDllVersionCSharp = 1305301717 ;
 
+        
 
         //following the dispose pattern discussed here http://dave-black.blogspot.dk/2011/03/how-do-you-properly-implement.html
         //a good explanation can be found here http://stackoverflow.com/questions/538060/proper-use-of-the-idisposable-interface
@@ -309,6 +310,89 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableGetColumnIndex(this,name);            
         }
 
+        internal override long SumLongNoCheck(long columnIndex)
+        {
+            return UnsafeNativeMethods.TableSumLong(this, columnIndex);
+        }
+
+        internal override float SumFloatNoCheck(long columnIndex)
+        {
+            return UnsafeNativeMethods.TableSumFloat(this, columnIndex);
+        }
+
+        internal override double SumDoubleNoCheck(long columnIndex)
+        {
+            return UnsafeNativeMethods.TableSumDouble(this, columnIndex);            
+        }
+
+        internal override long MinimumLongNoCheck(long columnIndex)
+        {
+            return UnsafeNativeMethods.TableMinimum(this, columnIndex);
+        }
+
+        internal override float MinimumFloatNoCheck(long columnIndex)
+        {
+            return UnsafeNativeMethods.TableMinimumFloat(this, columnIndex);
+        }
+
+        internal override double MinimumDoubleNoCheck(long columnIndex)
+        {
+            return UnsafeNativeMethods.TableMinimumDouble(this, columnIndex);
+        }
+
+        internal override long MaximumLongNoCheck(long columnIndex)
+        {
+            return UnsafeNativeMethods.TableMaximumLong(this, columnIndex);
+        }
+
+        internal override float MaximumFloatNoCheck(long columnIndex)
+        {
+            return UnsafeNativeMethods.TableMaximumFloat(this, columnIndex);
+        }
+
+        internal override double MaximumDoubleNoCheck(long columnIndex)
+        {
+            return UnsafeNativeMethods.TableMaximumDouble(this, columnIndex);
+        }
+
+        internal override double AverageLongNoCheck(long columnIndex)
+        {
+            return UnsafeNativeMethods.TableAverage(this, columnIndex);
+        }
+
+        internal override double AverageFloatNoCheck(long columnIndex)
+        {
+            return UnsafeNativeMethods.TableAverageFloat(this, columnIndex);
+        }
+
+        internal override double AverageDoubleNoCheck(long columnIndex)
+        {
+            return UnsafeNativeMethods.TableAverageDouble(this, columnIndex);
+        }
+
+        internal override long CountLongNoCheck(long columnIndex, long target)
+        {
+            return UnsafeNativeMethods.TableCountLong(this, columnIndex, target);
+        }
+
+        internal override long CountFloatNoCheck(long columnIndex, float target)
+        {
+            return UnsafeNativeMethods.TableCountFloat(this, columnIndex, target);
+        }
+
+        internal override long CountStringNoCheck(long columnIndex, string target)
+        {
+            return UnsafeNativeMethods.TableCountString(this, columnIndex, target);
+        }
+
+        internal override long CountDoubleNoCheck(long columnIndex, double target)
+        {
+            return UnsafeNativeMethods.TableCountDouble(this, columnIndex, target);
+        }
+
+
+
+
         internal override void RemoveNoCheck(long rowIndex)
         {
             UnsafeNativeMethods.TableRemove(this,rowIndex);
@@ -489,6 +573,7 @@ namespace TightDbCSharp
            UnsafeNativeMethods.TableSetBool(this,columnIndex,rowIndex,value);
         }
 
+
         internal override void SetLongNoCheck(long columnIndex, long rowIndex, long value)
         {
             UnsafeNativeMethods.TableSetLong(this, columnIndex, rowIndex, value);
@@ -626,6 +711,17 @@ namespace TightDbCSharp
         {
             return UnsafeNativeMethods.TableFindAllInt(this,  columnIndex,  value);
         }
+
+
+
+
+        internal override TableView FindAllStringNoCheck(long columnIndex, string value)
+        {
+            return UnsafeNativeMethods.TableFindAllString(this, columnIndex, value);
+        }
+
+
+
 
 
         public Query Where()

@@ -1,5 +1,8 @@
 ﻿using System;
+using System.CodeDom.Compiler;
+using System.ComponentModel;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Runtime.InteropServices;
 
@@ -58,6 +61,12 @@ enum DataType {
     //because we expect the end user to have deployed the correct c++ dll this assembly is AnyCpu
     internal static class UnsafeNativeMethods
     {
+        //This could become a global const as it should only be set once
+        //we are a dll and as such do not have any code that is called on initialization (there is no initialization in a .net assembly)
+        //however we could call a common init method from the few methods that the user can decide to start out with. Such as new table, new group etc.
+        //the call would be called many times but could just return at once, if we were already initialized
+        //and if we were not, we could set the is64bit boolean correctly - and then all other calls (does not call init) could just check that boolean
+        //would speed up interop call overhead about 3-4 percent, currently at about 100 million a second on a 2.6GHZ cpu
         private static bool Is64Bit
         {
             get
@@ -251,17 +260,17 @@ enum DataType {
 
 
         [DllImport("tightdb_c_cs64", EntryPoint = "table_rename_column", CallingConvention = CallingConvention.Cdecl,CharSet = CharSet.Unicode)]
-        private static extern void table_rename_column64(IntPtr tableHandle, long columnIndex, [MarshalAs(UnmanagedType.LPStr)] string name);
+        private static extern void table_rename_column64(IntPtr tableHandle, IntPtr columnIndex, [MarshalAs(UnmanagedType.LPStr)] string name);
 
         [DllImport("tightdb_c_cs32", EntryPoint = "table_rename_column", CallingConvention = CallingConvention.Cdecl,CharSet = CharSet.Unicode)]
-        private static extern void table_rename_column32(IntPtr tableHandle, long columnIndex, [MarshalAs(UnmanagedType.LPStr)] string name);
+        private static extern void table_rename_column32(IntPtr tableHandle, IntPtr columnIndex, [MarshalAs(UnmanagedType.LPStr)] string name);
 
         public static void TableRenameColumn(Table table, long columnIndex, string name)
         {
             if (Is64Bit)
-                table_rename_column64(table.Handle,columnIndex, name);
+                table_rename_column64(table.Handle,(IntPtr)columnIndex, name);
             else
-            table_rename_column32(table.Handle,columnIndex, name);
+                table_rename_column32(table.Handle, (IntPtr)columnIndex, name);
         }
 
 
@@ -767,6 +776,546 @@ enum DataType {
 
 
 
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "table_count_int", CallingConvention = CallingConvention.Cdecl)]
+        private static extern long table_count_int64(IntPtr tableHandle, IntPtr columnIndex,long target);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "table_count_int", CallingConvention = CallingConvention.Cdecl)]
+        private static extern long table_count_int32(IntPtr tableHandle, IntPtr columnIndex, long target);
+
+
+        public static long TableCountLong(Table table, long columnIndex,long target)
+        {
+            if (Is64Bit)
+                return table_count_int64(table.Handle, (IntPtr)columnIndex,target);
+            return table_count_int32(table.Handle, (IntPtr)columnIndex,target);
+        }
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "table_count_float", CallingConvention = CallingConvention.Cdecl)]
+        private static extern long table_count_float64(IntPtr tableHandle, IntPtr columnIndex,float target);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "table_count_float", CallingConvention = CallingConvention.Cdecl)]
+        private static extern long table_count_float32(IntPtr tableHandle, IntPtr columnIndex,float target);
+
+
+        public static long TableCountFloat(Table table, long columnIndex,float target)
+        {
+            if (Is64Bit)
+                return table_count_float64(table.Handle, (IntPtr)columnIndex,target);
+            return table_count_float32(table.Handle, (IntPtr)columnIndex,target);
+        }
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "table_count_double", CallingConvention = CallingConvention.Cdecl)]
+        private static extern long table_count_double64(IntPtr tableHandle, IntPtr columnIndex,double target);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "table_count_double", CallingConvention = CallingConvention.Cdecl)]
+        private static extern long table_count_double32(IntPtr tableHandle, IntPtr columnIndex,double target);
+
+
+        public static long TableCountDouble(Table table, long columnIndex,double target)
+        {
+            if (Is64Bit)
+                return table_count_double64(table.Handle, (IntPtr)columnIndex,target);
+            return table_count_double32(table.Handle, (IntPtr)columnIndex,target);
+        }
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "table_count_string", CallingConvention = CallingConvention.Cdecl)]
+        private static extern long table_count_string64(IntPtr tableHandle, IntPtr columnIndex, [MarshalAs(UnmanagedType.LPStr)] string target);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "table_count_string", CallingConvention = CallingConvention.Cdecl)]
+        private static extern long table_count_string32(IntPtr tableHandle, IntPtr columnIndex, [MarshalAs(UnmanagedType.LPStr)]string target);
+
+
+        public static long TableCountString(Table table, long columnIndex, string target)
+        {
+            if (Is64Bit)
+                return table_count_string64(table.Handle, (IntPtr)columnIndex, target);
+            return table_count_string32(table.Handle, (IntPtr)columnIndex, target);
+        }
+
+
+
+
+
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "table_sum_int", CallingConvention = CallingConvention.Cdecl)]
+        private static extern long table_sum_int64(IntPtr tableHandle, IntPtr columnIndex);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "table_sum_int", CallingConvention = CallingConvention.Cdecl)]
+        private static extern long table_sum_int32(IntPtr tableHandle, IntPtr columnIndex);
+
+
+        public static long TableSumLong(Table table, long columnIndex)
+        {
+            if (Is64Bit)
+                return table_sum_int64(table.Handle, (IntPtr)columnIndex);
+            return table_sum_int32(table.Handle, (IntPtr)columnIndex);
+        }
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "table_sum_float", CallingConvention = CallingConvention.Cdecl)]
+        private static extern float table_sum_float64(IntPtr tableHandle, IntPtr columnIndex);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "table_sum_float", CallingConvention = CallingConvention.Cdecl)]
+        private static extern float table_sum_float32(IntPtr tableHandle, IntPtr columnIndex);
+
+
+        public static float TableSumFloat(Table table, long columnIndex)
+        {
+            if (Is64Bit)
+                return table_sum_float64(table.Handle, (IntPtr)columnIndex);
+            return table_sum_float32(table.Handle, (IntPtr)columnIndex);
+        }
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "table_sum_double", CallingConvention = CallingConvention.Cdecl)]
+        private static extern double table_sum_double64(IntPtr tableHandle, IntPtr columnIndex);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "table_sum_double", CallingConvention = CallingConvention.Cdecl)]
+        private static extern double table_sum_double32(IntPtr tableHandle, IntPtr columnIndex);
+
+
+        public static double TableSumDouble(Table table, long columnIndex)
+        {
+            if (Is64Bit)
+                return table_sum_double64(table.Handle, (IntPtr)columnIndex);
+            return table_sum_double32(table.Handle, (IntPtr)columnIndex);
+        }
+
+
+
+
+
+
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "table_maximum_int", CallingConvention = CallingConvention.Cdecl)]
+        private static extern long table_maximum64(IntPtr tableHandle, IntPtr columnIndex);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "table_maximum_int", CallingConvention = CallingConvention.Cdecl)]
+        private static extern long table_maximum32(IntPtr tableHandle, IntPtr columnIndex);
+
+
+        public static long TableMaximumLong(Table table, long columnIndex)
+        {
+            if (Is64Bit)           
+                return table_maximum64(table.Handle, (IntPtr) columnIndex);            
+            return table_maximum32(table.Handle, (IntPtr) columnIndex);
+        }
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "table_maximum_float", CallingConvention = CallingConvention.Cdecl)]
+        private static extern float table_maximum_float64(IntPtr tableHandle, IntPtr columnIndex);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "table_maximum_float", CallingConvention = CallingConvention.Cdecl)]
+        private static extern float table_maximum_float32(IntPtr tableHandle, IntPtr columnIndex);
+
+
+        public static float TableMaximumFloat(Table table, long columnIndex)
+        {
+            if (Is64Bit)
+                return table_maximum_float64(table.Handle, (IntPtr)columnIndex);
+            return table_maximum_float32(table.Handle, (IntPtr)columnIndex);
+        }
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "table_maximum_double", CallingConvention = CallingConvention.Cdecl)]
+        private static extern double table_maximum_double64(IntPtr tableHandle, IntPtr columnIndex);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "table_maximum_double", CallingConvention = CallingConvention.Cdecl)]
+        private static extern double table_maximum_double32(IntPtr tableHandle, IntPtr columnIndex);
+
+
+        public static double TableMaximumDouble(Table table, long columnIndex)
+        {
+            
+            if (Is64Bit)
+                return table_maximum_double64(table.Handle, (IntPtr)columnIndex);
+            return table_maximum_double32(table.Handle, (IntPtr)columnIndex);
+        }
+
+
+
+
+
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "table_minimum_int", CallingConvention = CallingConvention.Cdecl)]
+        private static extern long table_minimum64(IntPtr tableHandle, IntPtr columnIndex);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "table_minimum_int", CallingConvention = CallingConvention.Cdecl)]
+        private static extern long table_minimum32(IntPtr tableHandle, IntPtr columnIndex);
+
+
+        public static long TableMinimum(Table table, long columnIndex)
+        {
+            if (Is64Bit)
+                return table_minimum64(table.Handle, (IntPtr)columnIndex);
+            return table_minimum32(table.Handle, (IntPtr)columnIndex);
+        }
+
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "table_minimum_float", CallingConvention = CallingConvention.Cdecl)]
+        private static extern float table_minimum_float64(IntPtr tableHandle, IntPtr columnIndex);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "table_minimum_float", CallingConvention = CallingConvention.Cdecl)]
+        private static extern float table_minimum_float32(IntPtr tableHandle, IntPtr columnIndex);
+
+
+        public static float TableMinimumFloat(Table table, long columnIndex)
+        {
+            if (Is64Bit)
+                return table_minimum_float64(table.Handle, (IntPtr)columnIndex);
+            return table_minimum_float32(table.Handle, (IntPtr)columnIndex);
+        }
+
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "table_minimum_double", CallingConvention = CallingConvention.Cdecl)]
+        private static extern double table_minimum_double64(IntPtr tableHandle, IntPtr columnIndex);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "table_minimum_double", CallingConvention = CallingConvention.Cdecl)]
+        private static extern double table_minimum_double32(IntPtr tableHandle, IntPtr columnIndex);
+
+
+        public static double TableMinimumDouble(Table table, long columnIndex)
+        {
+            if (Is64Bit)
+                return table_minimum_double64(table.Handle, (IntPtr)columnIndex);
+            return table_minimum_double32(table.Handle, (IntPtr)columnIndex);
+        }
+
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "table_average_int", CallingConvention = CallingConvention.Cdecl)]
+        private static extern double table_average64(IntPtr tableHandle, IntPtr columnIndex);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "table_average_int", CallingConvention = CallingConvention.Cdecl)]
+        private static extern double table_average32(IntPtr tableHandle, IntPtr columnIndex);
+
+
+        public static double TableAverage(Table table, long columnIndex)
+        {
+            if (Is64Bit)
+                return table_average64(table.Handle, (IntPtr)columnIndex);
+            return table_average32(table.Handle, (IntPtr)columnIndex);
+        }
+
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "table_average_float", CallingConvention = CallingConvention.Cdecl)]
+        private static extern double table_average_float64(IntPtr tableHandle, IntPtr columnIndex);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "table_average_float", CallingConvention = CallingConvention.Cdecl)]
+        private static extern double table_average_float32(IntPtr tableHandle, IntPtr columnIndex);
+
+
+        public static double TableAverageFloat(Table table, long columnIndex)
+        {
+            if (Is64Bit)
+                return table_average_float64(table.Handle, (IntPtr)columnIndex);
+            return table_average_float32(table.Handle, (IntPtr)columnIndex);
+        }
+
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "table_average_double", CallingConvention = CallingConvention.Cdecl)]
+        private static extern double table_average_double64(IntPtr tableHandle, IntPtr columnIndex);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "table_average_double", CallingConvention = CallingConvention.Cdecl)]
+        private static extern double table_average_double32(IntPtr tableHandle, IntPtr columnIndex);
+
+
+        public static double TableAverageDouble(Table table, long columnIndex)
+        {
+            if (Is64Bit)
+                return table_average_double64(table.Handle, (IntPtr)columnIndex);
+            return table_average_double32(table.Handle, (IntPtr)columnIndex);
+        }
+
+
+
+
+
+
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "tableview_maximum_int", CallingConvention = CallingConvention.Cdecl)]
+        private static extern long tableview_maximum64(IntPtr tableHandle, IntPtr columnIndex);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "tableview_maximum_int", CallingConvention = CallingConvention.Cdecl)]
+        private static extern long tableview_maximum32(IntPtr tableHandle, IntPtr columnIndex);
+
+
+        public static long TableViewMaximum(TableView tableView, long columnIndex)
+        {
+            if (Is64Bit)
+                return tableview_maximum64(tableView.Handle, (IntPtr)columnIndex);
+            return tableview_maximum32(tableView.Handle, (IntPtr)columnIndex);
+        }
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "tableview_maximum_float", CallingConvention = CallingConvention.Cdecl)]
+        private static extern float tableview_maximum_float64(IntPtr tableHandle, IntPtr columnIndex);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "tableview_maximum_float", CallingConvention = CallingConvention.Cdecl)]
+        private static extern float tableview_maximum_float32(IntPtr tableHandle, IntPtr columnIndex);
+
+
+        public static float TableViewMaximumFloat(TableView tableView, long columnIndex)
+        {
+            if (Is64Bit)
+                return tableview_maximum_float64(tableView.Handle, (IntPtr)columnIndex);
+            return tableview_maximum_float32(tableView.Handle, (IntPtr)columnIndex);
+        }
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "tableview_maximum_double", CallingConvention = CallingConvention.Cdecl)]
+        private static extern double tableview_maximum_double64(IntPtr tableHandle, IntPtr columnIndex);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "tableview_maximum_double", CallingConvention = CallingConvention.Cdecl)]
+        private static extern double tableview_maximum_double32(IntPtr tableHandle, IntPtr columnIndex);
+
+
+        public static double TableViewMaximumDouble(TableView tableView, long columnIndex)
+        {
+            if (Is64Bit)
+                return tableview_maximum_double64(tableView.Handle, (IntPtr)columnIndex);
+            return tableview_maximum_double32(tableView.Handle, (IntPtr)columnIndex);
+        }
+
+
+
+
+
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "tableview_minimum_int", CallingConvention = CallingConvention.Cdecl)]
+        private static extern long tableview_minimum64(IntPtr tableHandle, IntPtr columnIndex);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "tableview_minimum_int", CallingConvention = CallingConvention.Cdecl)]
+        private static extern long tableview_minimum32(IntPtr tableHandle, IntPtr columnIndex);
+
+
+        public static long TableViewMinimumLong(TableView tableView, long columnIndex)
+        {
+            if (Is64Bit)
+                return tableview_minimum64(tableView.Handle, (IntPtr)columnIndex);
+            return tableview_minimum32(tableView.Handle, (IntPtr)columnIndex);
+        }
+
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "tableview_minimum_float", CallingConvention = CallingConvention.Cdecl)]
+        private static extern float tableview_minimum_float64(IntPtr tableHandle, IntPtr columnIndex);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "tableview_minimum_float", CallingConvention = CallingConvention.Cdecl)]
+        private static extern float tableview_minimum_float32(IntPtr tableHandle, IntPtr columnIndex);
+
+
+        public static float TableViewMinimumFloat(TableView tableView, long columnIndex)
+        {
+            if (Is64Bit)
+                return tableview_minimum_float64(tableView.Handle, (IntPtr)columnIndex);
+            return tableview_minimum_float32(tableView.Handle, (IntPtr)columnIndex);
+        }
+
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "tableview_minimum_double", CallingConvention = CallingConvention.Cdecl)]
+        private static extern double tableview_minimum_double64(IntPtr tableHandle, IntPtr columnIndex);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "tableview_minimum_double", CallingConvention = CallingConvention.Cdecl)]
+        private static extern double tableview_minimum_double32(IntPtr tableHandle, IntPtr columnIndex);
+
+
+        public static double TableViewMinimumDouble(TableView tableView, long columnIndex)
+        {
+            if (Is64Bit)
+                return tableview_minimum_double64(tableView.Handle, (IntPtr)columnIndex);
+            return tableview_minimum_double32(tableView.Handle, (IntPtr)columnIndex);
+        }
+
+
+
+
+
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "tableview_average_int", CallingConvention = CallingConvention.Cdecl)]
+        private static extern double tableview_average64(IntPtr tableHandle, IntPtr columnIndex);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "tableview_average_int", CallingConvention = CallingConvention.Cdecl)]
+        private static extern double tableview_average32(IntPtr tableHandle, IntPtr columnIndex);
+
+
+        public static double TableViewAverageLong(TableView tableView, long columnIndex)
+        {
+            if (Is64Bit)
+                return tableview_average64(tableView.Handle, (IntPtr)columnIndex);
+            return tableview_average32(tableView.Handle, (IntPtr)columnIndex);
+        }
+
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "tableview_average_float", CallingConvention = CallingConvention.Cdecl)]
+        private static extern double tableview_average_float64(IntPtr tableViewHandle, IntPtr columnIndex);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "tableview_average_float", CallingConvention = CallingConvention.Cdecl)]
+        private static extern double tableview_average_float32(IntPtr tableViewHandle, IntPtr columnIndex);
+
+
+        public static double TableViewAverageFloat(TableView tableView, long columnIndex)
+        {
+            if (Is64Bit)
+                return tableview_average_float64(tableView.Handle, (IntPtr)columnIndex);
+            return tableview_average_float32(tableView.Handle, (IntPtr)columnIndex);
+        }
+
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "tableview_average_double", CallingConvention = CallingConvention.Cdecl)]
+        private static extern double tableview_average_double64(IntPtr tableViewHandle, IntPtr columnIndex);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "tableview_average_double", CallingConvention = CallingConvention.Cdecl)]
+        private static extern double tableview_average_double32(IntPtr tableViewHandle, IntPtr columnIndex);
+
+
+        public static double TableViewAverageDouble(TableView tableview, long columnIndex)
+        {
+            if (Is64Bit)
+                return tableview_average_double64(tableview.Handle, (IntPtr)columnIndex);
+            return tableview_average_double32(tableview.Handle, (IntPtr)columnIndex);
+        }
+
+
+
+
+
+
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "tableview_sum_int", CallingConvention = CallingConvention.Cdecl)]
+        private static extern long tableview_sum64(IntPtr tableHandle, IntPtr columnIndex);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "tableview_sum_int", CallingConvention = CallingConvention.Cdecl)]
+        private static extern long tableview_sum32(IntPtr tableHandle, IntPtr columnIndex);
+
+
+        public static long TableViewSumLong(TableView tableView, long columnIndex)
+        {
+            if (Is64Bit)
+                return tableview_sum64(tableView.Handle, (IntPtr)columnIndex);
+            return tableview_sum32(tableView.Handle, (IntPtr)columnIndex);
+        }
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "tableview_sum_float", CallingConvention = CallingConvention.Cdecl)]
+        private static extern float tableview_sum_float64(IntPtr tableViewHandle, IntPtr columnIndex);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "tableview_sum_float", CallingConvention = CallingConvention.Cdecl)]
+        private static extern float tableview_sum_float32(IntPtr tableViewHandle, IntPtr columnIndex);
+
+
+        public static float TableViewSumFloat(TableView tableView, long columnIndex)
+        {
+            if (Is64Bit)
+                return tableview_sum_float64(tableView.Handle, (IntPtr)columnIndex);
+            return tableview_sum_float32(tableView.Handle, (IntPtr)columnIndex);
+        }
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "tableview_sum_double", CallingConvention = CallingConvention.Cdecl)]
+        private static extern double tableview_sum_double64(IntPtr tableViewHandle, IntPtr columnIndex);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "tableview_sum_double", CallingConvention = CallingConvention.Cdecl)]
+        private static extern double tableview_sum_double32(IntPtr tableViewHandle, IntPtr columnIndex);
+
+
+        public static double TableViewSumDouble(TableView tableView, long columnIndex)
+        {
+            if (Is64Bit)
+                return tableview_sum_double64(tableView.Handle, (IntPtr)columnIndex);
+            return tableview_sum_double32(tableView.Handle, (IntPtr)columnIndex);
+        }
+
+
+
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "tableview_count_int", CallingConvention = CallingConvention.Cdecl)]
+        private static extern long tableview_count_int64(IntPtr tableViewHandle, IntPtr columnIndex, long target);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "tableview_count_int", CallingConvention = CallingConvention.Cdecl)]
+        private static extern long tableview_count_int32(IntPtr tableViewHandle, IntPtr columnIndex, long target);
+
+
+        public static long TableViewCountLong(TableView tableView, long columnIndex, long target)
+        {
+            if (Is64Bit)
+                return tableview_count_int64(tableView.Handle, (IntPtr)columnIndex, target);
+            return tableview_count_int32(tableView.Handle, (IntPtr)columnIndex, target);
+        }
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "tableview_count_float", CallingConvention = CallingConvention.Cdecl)]
+        private static extern long tableview_count_float64(IntPtr tableViewHandle, IntPtr columnIndex, float target);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "tableview_count_float", CallingConvention = CallingConvention.Cdecl)]
+        private static extern long tableview_count_float32(IntPtr tableViewHandle, IntPtr columnIndex, float target);
+
+
+        public static long TableViewCountFloat(TableView tableView, long columnIndex, float target)
+        {
+            if (Is64Bit)
+                return tableview_count_float64(tableView.Handle, (IntPtr)columnIndex, target);
+            return tableview_count_float32(tableView.Handle, (IntPtr)columnIndex, target);
+        }
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "tableview_count_double", CallingConvention = CallingConvention.Cdecl)]
+        private static extern long tableview_count_double64(IntPtr tableViewHandle, IntPtr columnIndex, double target);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "tableview_count_double", CallingConvention = CallingConvention.Cdecl)]
+        private static extern long tableview_count_double32(IntPtr tableViewHandle, IntPtr columnIndex, double target);
+
+
+        public static long TableViewCountDouble(TableView tableView, long columnIndex, double target)
+        {
+            if (Is64Bit)
+                return tableview_count_double64(tableView.Handle, (IntPtr)columnIndex, target);
+            return tableview_count_double32(tableView.Handle, (IntPtr)columnIndex, target);
+        }
+
+
+        [DllImport("tightdb_c_cs64", EntryPoint = "tableview_count_string", CallingConvention = CallingConvention.Cdecl)]
+        private static extern long tableview_count_string64(IntPtr tableViewHandle, IntPtr columnIndex, [MarshalAs(UnmanagedType.LPStr)] string target);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "tableview_count_string", CallingConvention = CallingConvention.Cdecl)]
+        private static extern long tableview_count_string32(IntPtr tableViewHandle, IntPtr columnIndex, [MarshalAs(UnmanagedType.LPStr)]string target);
+
+
+        public static long TableViewCountString(TableView tableView, long columnIndex, string target)
+        {
+            if (Is64Bit)
+                return tableview_count_string64(tableView.Handle, (IntPtr)columnIndex, target);
+            return tableview_count_string32(tableView.Handle, (IntPtr)columnIndex, target);
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         [DllImport("tightdb_c_cs64", EntryPoint = "table_set_index", CallingConvention = CallingConvention.Cdecl)]
         private static extern void table_set_index64(IntPtr tableHandle, IntPtr columnIndex);
 
@@ -777,11 +1326,20 @@ enum DataType {
         public static void TableSetIndex(Table table, long columnIndex)
         {
             if (Is64Bit)
-            
-                table_set_index64(table.Handle, (IntPtr) columnIndex);
+
+                table_set_index64(table.Handle, (IntPtr)columnIndex);
             else
-            table_set_index32(table.Handle, (IntPtr) columnIndex);
+                table_set_index32(table.Handle, (IntPtr)columnIndex);
         }
+
+
+
+
+
+
+
+
+
 
 
 
@@ -821,6 +1379,48 @@ enum DataType {
                         ? tableView_find_all_int64(tableView.Handle, (IntPtr)columnIndex, value)
                         : tableView_find_all_int32(tableView.Handle, (IntPtr)columnIndex, value), true);
         }
+
+
+
+
+
+
+        
+        [DllImport("tightdb_c_cs64", EntryPoint = "table_find_all_string", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_find_all_string64(IntPtr tableHandle, IntPtr columnIndex, string value);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "table_find_all_string", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_find_all_string32(IntPtr tableHandle, IntPtr columnIndex, string value);
+
+
+        public static TableView TableFindAllString(Table table, long columnIndex, string value)
+        {
+            return
+                new TableView(
+                    Is64Bit
+                        ? table_find_all_string64(table.Handle, (IntPtr)columnIndex, value)
+                        : table_find_all_string32(table.Handle, (IntPtr)columnIndex, value), true);
+        }
+
+
+
+        //TIGHTDB_C_CS_API tightdb::TableView* table_find_all_int(Table * table_ptr , size_t column_ndx, int64_t value)
+        [DllImport("tightdb_c_cs64", EntryPoint = "tableview_find_all_string", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr tableView_find_all_string64(IntPtr tableViewHandle, IntPtr columnIndex, string value);
+
+        [DllImport("tightdb_c_cs32", EntryPoint = "tableview_find_all_string", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr tableView_find_all_string32(IntPtr tableViewHandle, IntPtr columnIndex, string value);
+
+
+        public static TableView TableViewFindAllString(TableView tableView, long columnIndex, string value)
+        {
+            return
+                new TableView(
+                    Is64Bit
+                        ? tableView_find_all_string64(tableView.Handle, (IntPtr)columnIndex, value)
+                        : tableView_find_all_string32(tableView.Handle, (IntPtr)columnIndex, value), true);
+        }
+
 
 
 
@@ -1024,22 +1624,20 @@ enum DataType {
         }
 
 
-        [DllImport("tightdb_c_cs64", EntryPoint = "table_remove", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void table_remove64(IntPtr tableHandle, long rowIndex);
+        [DllImport("tightdb_c_cs64", EntryPoint = "table_remove_row", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void table_remove_row64(IntPtr tableHandle, long rowIndex);
 
-        [DllImport("tightdb_c_cs32", EntryPoint = "table_remove", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void table_remove32(IntPtr tableHandle, long rowIndex);
-
-        //      void    table_unbind(const Table *t); /* Ref-count delete of table* from table_get_table() */
+        [DllImport("tightdb_c_cs32", EntryPoint = "table_remove_row", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void table_remove_row32(IntPtr tableHandle, long rowIndex);
+       
         public static void TableRemove(Table t, long rowIndex)
         {
-            Console.WriteLine("TableRemove calling table_remove " + t.ObjectIdentification());
+            
             if (Is64Bit)
-                table_remove64(t.Handle, rowIndex);
+                table_remove_row64(t.Handle, rowIndex);
             else
-                table_remove32(t.Handle, rowIndex);
-            t.Handle = IntPtr.Zero;
-            Console.WriteLine("TableRemove called table_remove " + t.ObjectIdentification());
+                table_remove_row32(t.Handle, rowIndex);
+                        
         }
 
 

@@ -52,6 +52,86 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableViewGetColumnIndex(this,name);            
         }
 
+        internal override long SumLongNoCheck(long columnIndex)
+        {
+            return UnsafeNativeMethods.TableViewSumLong(this, columnIndex);
+        }
+
+        internal override float SumFloatNoCheck(long columnIndex)
+        {
+            return UnsafeNativeMethods.TableViewSumFloat(this, columnIndex);
+        }
+
+        internal override double SumDoubleNoCheck(long columnIndex)
+        {
+            return UnsafeNativeMethods.TableViewSumDouble(this, columnIndex);
+        }
+
+        internal override long MinimumLongNoCheck(long columnIndex)
+        {
+            return UnsafeNativeMethods.TableViewMinimumLong(this, columnIndex);
+        }
+
+        internal override float MinimumFloatNoCheck(long columnIndex)
+        {
+            return UnsafeNativeMethods.TableViewMinimumFloat(this, columnIndex);
+        }
+
+        internal override double MinimumDoubleNoCheck(long columnIndex)
+        {
+            return UnsafeNativeMethods.TableViewMinimumDouble(this, columnIndex);
+        }
+
+        internal override long MaximumLongNoCheck(long columnIndex)
+        {
+            return UnsafeNativeMethods.TableViewMaximum(this, columnIndex);
+        }
+
+        internal override float MaximumFloatNoCheck(long columnIndex)
+        {
+            return UnsafeNativeMethods.TableViewMaximumFloat(this, columnIndex);
+        }
+
+        internal override double MaximumDoubleNoCheck(long columnIndex)
+        {
+            return UnsafeNativeMethods.TableViewMaximumDouble(this, columnIndex);
+        }
+
+        internal override double AverageLongNoCheck(long columnIndex)
+        {
+            return UnsafeNativeMethods.TableViewAverageLong(this, columnIndex);
+        }
+
+        internal override double AverageFloatNoCheck(long columnIndex)
+        {
+            return UnsafeNativeMethods.TableViewAverageFloat(this, columnIndex);
+        }
+
+        internal override double AverageDoubleNoCheck(long columnIndex)
+        {
+            return UnsafeNativeMethods.TableViewAverageDouble(this, columnIndex);
+        }
+
+        internal override long CountLongNoCheck(long columnIndex, long target)
+        {
+            return UnsafeNativeMethods.TableViewCountLong(this,columnIndex, target);
+        }
+
+        internal override long CountFloatNoCheck(long columnIndex, float target)
+        {
+            return UnsafeNativeMethods.TableViewCountFloat(this, columnIndex, target);
+        }
+
+        internal override long CountStringNoCheck(long columnIndex, string target)
+        {
+            return UnsafeNativeMethods.TableViewCountString(this, columnIndex, target);
+        }
+
+        internal override long CountDoubleNoCheck(long columnIndex, double target)
+        {
+            return UnsafeNativeMethods.TableViewCountDouble(this, columnIndex, target);
+        }
+
         internal override void RemoveNoCheck(long rowIndex)
         {
             UnsafeNativeMethods.TableViewRemove(this, rowIndex);
@@ -244,6 +324,13 @@ namespace TightDbCSharp
         {
             return UnsafeNativeMethods.TableViewFindAllInt(this,  columnIndex,value);
         }
+
+        internal override TableView FindAllStringNoCheck(long columnIndex, string value)
+        {
+            return UnsafeNativeMethods.TableViewFindAllString(this, columnIndex, value);
+        }
+
+
 
         internal override void SetBoolNoCheck(long columnIndex, long rowIndex, Boolean value)
         {

@@ -85,7 +85,7 @@ extern "C" {
  TIGHTDB_C_CS_API size_t tightdb_c_cs_getver(void){
 
   // Table test;
-	return 1305211510;
+	return 1305301658;
 }
 
 
@@ -740,6 +740,24 @@ TIGHTDB_C_CS_API tightdb::TableView* table_find_all_int(Table * table_ptr , size
     return new TableView(table_ptr->find_all_int(column_ndx,value));            
 }
 
+TIGHTDB_C_CS_API tightdb::TableView* table_find_all_string(Table * table_ptr , size_t column_ndx, char* value)
+{   
+    return new TableView(table_ptr->find_all_string(column_ndx,value));            
+}
+
+TIGHTDB_C_CS_API tightdb::TableView* tableview_find_all_int(TableView * tableview_ptr , size_t column_ndx, int64_t value)
+{   
+    return new TableView(tableview_ptr->find_all_int(column_ndx,value));            
+}
+
+TIGHTDB_C_CS_API tightdb::TableView* tableview_find_all_string(TableView * tableview_ptr , size_t column_ndx, char* value)
+{   
+    return new TableView(tableview_ptr->find_all_string(column_ndx,value));            
+}
+
+
+
+
 TIGHTDB_C_CS_API tightdb::TableView* table_distinct(Table * table_ptr , size_t column_ndx)
 {   
     return new TableView(table_ptr->distinct(column_ndx));
@@ -750,6 +768,176 @@ TIGHTDB_C_CS_API void table_set_index(Table * table_ptr , size_t column_ndx)
 {   
     table_ptr->set_index(column_ndx);
 }
+
+
+TIGHTDB_C_CS_API int64_t table_count_int(Table * table_ptr , size_t column_ndx,int64_t target)
+{   
+    return table_ptr->count_int(column_ndx,target);
+}
+
+TIGHTDB_C_CS_API int64_t table_count_string(Table * table_ptr , size_t column_ndx,char * target)
+{   
+    std::cerr<<"col "<<column_ndx<<" target "<<target<<"\n";
+    return table_ptr->count_string(column_ndx,target);    
+}
+
+TIGHTDB_C_CS_API int64_t table_count_float(Table * table_ptr , size_t column_ndx,float target)
+{   
+    return table_ptr->count_float(column_ndx,target);
+}
+
+TIGHTDB_C_CS_API int64_t table_count_double(Table * table_ptr , size_t column_ndx,double target)
+{   
+    return table_ptr->count_double(column_ndx,target);
+}
+
+
+
+
+
+TIGHTDB_C_CS_API int64_t table_sum_int(Table * table_ptr , size_t column_ndx)
+{   
+    return table_ptr->sum(column_ndx);
+}
+TIGHTDB_C_CS_API double table_sum_float(Table * table_ptr , size_t column_ndx)
+{   
+    return table_ptr->sum_float(column_ndx);
+}
+TIGHTDB_C_CS_API double table_sum_double(Table * table_ptr , size_t column_ndx)
+{   
+    return table_ptr->sum_double(column_ndx);
+}
+
+TIGHTDB_C_CS_API int64_t table_maximum_int(Table * table_ptr , size_t column_ndx)
+{   
+    return table_ptr->maximum(column_ndx);
+}
+TIGHTDB_C_CS_API float table_maximum_float(Table * table_ptr , size_t column_ndx)
+{   
+    return table_ptr->maximum_float(column_ndx);
+}
+
+TIGHTDB_C_CS_API double table_maximum_double(Table * table_ptr , size_t column_ndx)
+{   
+    std::cerr<<"table_maximum_double"<<column_ndx <<" \n";
+    return table_ptr->maximum_double(column_ndx);
+}
+
+TIGHTDB_C_CS_API int64_t table_minimum_int(Table * table_ptr , size_t column_ndx)
+{   
+    return table_ptr->minimum(column_ndx);
+}
+TIGHTDB_C_CS_API float table_minimum_float(Table * table_ptr , size_t column_ndx)
+{   
+    return table_ptr->minimum_float(column_ndx);
+}
+TIGHTDB_C_CS_API double table_minimum_double(Table * table_ptr , size_t column_ndx)
+{   
+    return table_ptr->minimum_double(column_ndx);
+}
+
+TIGHTDB_C_CS_API double table_average_int(Table * table_ptr , size_t column_ndx)
+{   
+    return table_ptr->average(column_ndx);
+}
+TIGHTDB_C_CS_API double table_average_float(Table * table_ptr , size_t column_ndx)
+{   
+    return table_ptr->average_float(column_ndx);
+}
+TIGHTDB_C_CS_API double table_average_double(Table * table_ptr , size_t column_ndx)
+{   
+    return table_ptr->average_double(column_ndx);
+}
+
+
+
+//these 4 are not implemented in tightdb yet, but when they are ready, just uncomment and test
+TIGHTDB_C_CS_API int64_t tableview_count_int(TableView * tableview_ptr , size_t column_ndx,int64_t target)
+{   
+//    return tableview_ptr->count_int(column_ndx,target);
+    return 0;
+}
+
+TIGHTDB_C_CS_API int64_t tableview_count_string(TableView * tableview_ptr , size_t column_ndx,char * target)
+{   
+  //  return tableview_ptr->count_string(column_ndx,target);
+        return 0;
+}
+
+TIGHTDB_C_CS_API int64_t tableview_count_float(TableView * tableview_ptr , size_t column_ndx,float target)
+{   
+//    return tableview_ptr->count_float(column_ndx,target);
+        return 0;
+}
+
+TIGHTDB_C_CS_API int64_t tableview_count_double(TableView * tableview_ptr , size_t column_ndx,double target)
+{   
+//    return tableview_ptr->count_double(column_ndx,target);
+        return 0;
+}
+
+
+
+TIGHTDB_C_CS_API int64_t tableview_sum_int(TableView * tableview_ptr , size_t column_ndx)
+{   
+    return tableview_ptr->sum(column_ndx);
+}
+TIGHTDB_C_CS_API double tableview_sum_float(TableView * tableview_ptr , size_t column_ndx)
+{   
+    return tableview_ptr->sum_float(column_ndx);
+}
+TIGHTDB_C_CS_API double tableview_sum_double(TableView * tableview_ptr , size_t column_ndx)
+{   
+    return tableview_ptr->sum_double(column_ndx);
+}
+
+
+TIGHTDB_C_CS_API int64_t tableview_maximum_int(TableView * tableview_ptr , size_t column_ndx)
+{   
+    return tableview_ptr->maximum(column_ndx);
+}
+TIGHTDB_C_CS_API float tableview_maximum_float(TableView * tableview_ptr , size_t column_ndx)
+{   
+    return tableview_ptr->maximum_float(column_ndx);
+}
+TIGHTDB_C_CS_API double tableview_maximum_double(TableView * tableview_ptr , size_t column_ndx)
+{   
+    return tableview_ptr->maximum_double(column_ndx);
+}
+
+TIGHTDB_C_CS_API int64_t tableview_minimum_int(TableView * tableview_ptr , size_t column_ndx)
+{   
+    return tableview_ptr->minimum(column_ndx);
+}
+TIGHTDB_C_CS_API float tableview_minimum_float(TableView * tableview_ptr , size_t column_ndx)
+{   
+    return tableview_ptr->minimum_float(column_ndx);
+}
+TIGHTDB_C_CS_API double tableview_minimum_double(TableView * tableview_ptr , size_t column_ndx)
+{   
+    return tableview_ptr->minimum_double(column_ndx);
+}
+
+
+
+//these methods are not implemented in tightdb yet, when they are ready, remove the comments and test
+TIGHTDB_C_CS_API double tableview_average_int(TableView * tableview_ptr , size_t column_ndx)
+{   
+//    return tableview_ptr->average(column_ndx);
+    return 0;
+}
+TIGHTDB_C_CS_API double tableview_average_float(TableView * tableview_ptr , size_t column_ndx)
+{   
+//    return tableview_ptr->average_float(column_ndx);
+        return 0;
+}
+TIGHTDB_C_CS_API double tableview_average_double(TableView * tableview_ptr , size_t column_ndx)
+{   
+//    return tableview_ptr->average_double(column_ndx);
+        return 0;
+}
+
+
 
 
 //convert from columnName to columnIndex returns -1 if the string is not a column name
