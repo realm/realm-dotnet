@@ -391,7 +391,10 @@ namespace TightDbCSharp
         }
 
 
-
+        public override string ToJson()
+        {
+            return UnsafeNativeMethods.TableToJson(this);
+        }
 
         internal override void RemoveNoCheck(long rowIndex)
         {
@@ -750,7 +753,7 @@ namespace TightDbCSharp
             : base(message, inner)
         {
         }
-
+        
         protected TableException(SerializationInfo serializationInfo, StreamingContext streamingContext)
             : base(serializationInfo, streamingContext)
         {

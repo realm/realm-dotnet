@@ -84,9 +84,28 @@ namespace TightDbCSharp
             return this;
         }
 
+        public long Count(long start=0, long end=-1, long limit=-1)
+        {
+            return UnsafeNativeMethods.QueryCount(this, start, end, limit);
+        }
+
+        public Query Between(long columnIndex, long lowValue, long highValue)
+        {
+            _sourceTable.ValidateColumnIndex(columnIndex);
+            BetweenNoCheck(columnIndex, lowValue, highValue);
+            return this;
+        }
+
+        //if You call this one, remember to return this to your caller
+        internal void BetweenNoCheck(long columnIndex, long lowValue, long highValue)
+        {
+            UnsafeNativeMethods.QueryIntBetween(this, columnIndex, lowValue, highValue);            
+        }
+
         public Query Between(string columnName, long lowValue, long highValue)
         {
-            UnsafeNativeMethods.QueryIntBetween(this, GetColumnIndex(columnName), lowValue, highValue);
+            long columnIndex = GetColumnIndex(columnName);
+            BetweenNoCheck(columnIndex, lowValue, highValue);
             return this;
         }
 

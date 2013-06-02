@@ -4,6 +4,11 @@ This solution contains unit tests for the TightDbCSharp binding
 
 The solution also contains stubs that call the individual tests directly, making it possible to debug the unit tests
 
+If You install the NUnit Test Adapter (Beta 5) then You will be able to run unit tests inside VS
+The same applies if You install ReSharpre
+Both tools are highly recommended
+
+
 To create this solution from scratch, You would need to do the following :
 
 

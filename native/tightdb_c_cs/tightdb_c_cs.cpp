@@ -10,6 +10,7 @@ we should not break easily, and we should know where we have problems.
 #include "stdafx.hpp"
 #include "tightdb_c_cs.hpp"
 #include <iostream>
+#include <sstream>
 
 using namespace tightdb;
 
@@ -940,6 +941,28 @@ TIGHTDB_C_CS_API double tableview_average_double(TableView * tableview_ptr , siz
 
 
 
+//multiple issues with this one
+//decide wether to implement an endpoint C# stream that then reads from the c++ stream output from to_json
+//or just to put the to_json(ss) output into a std:string and then convert it to utf-16 and return it as a normal c# string
+//the latter is of course more simple
+//as strings will be changed very soon, this method right now just returns the entire stream contents in an utf-8 buffer, like all other
+//string returns.
+//todo : ensure this doesn't memoryleak. The c++ unit tests do basically the same as i do here (re. ss and str not being on the stack)
+//the c++ part of the java binding do the same as I do reg the str.c_str() call
+//note that calling from C# it is probably best to guess the buffer size large enough, as the alternative is that the tightdb to_json method is called twice
+//THIS WILL BE REWRITTEN VERY SOON WHEN I IMPLEMENT THE NEW STRINGS. the next version will not call tighdb->to_json twice
+TIGHTDB_C_CS_API size_t table_to_json(Table* table_ptr,size_t column_ndx,char * colname, size_t bufsize)
+{
+   // Write table to string in JSON format
+   std::ostringstream ss;
+   ss.sync_with_stdio(false); // for performance
+   table_ptr->to_json(ss);
+   
+   const std::string str = ss.str(); 
+   return bsd_strlcpy(colname,bufsize, str.c_str());
+}
+
+
 //convert from columnName to columnIndex returns -1 if the string is not a column name
 //assuming that the get_table() does not return anything that must be deleted
 TIGHTDB_C_CS_API size_t query_get_column_index(tightdb::Query* query_ptr,char *  column_name)
@@ -952,6 +975,13 @@ TIGHTDB_C_CS_API double query_average(tightdb::Query* query_ptr,size_t column_in
 {
     return query_ptr->average(column_index);//use default values for the defaultable parametres
 }
+
+TIGHTDB_C_CS_API size_t query_count(tightdb::Query* query_ptr,size_t start,size_t end,size_t limit)
+{
+    return query_ptr->count(start,end,limit);//use default values for the defaultable parametres
+}
+
+
 
 
 TIGHTDB_C_CS_API size_t table_get_column_index(Table* table_ptr,char *  column_name)

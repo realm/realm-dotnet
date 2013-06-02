@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 
 using System.IO;
@@ -3094,7 +3096,7 @@ Table Name  : same names, empty names, mixed types
                 tbl.RenameColumn(0,"myLong");
                 tbl.RemoveColumn(1);
                 tbl.Add(42, "this is the mixed column");
-                tbl.AddColumn(DataType.Binary, "myDouble");//todo:implement binary
+                tbl.AddColumn(DataType.Double, "myDouble");
                 tbl.Add(-15, "still mixed", 123.45);
 
                 //column introspection
@@ -3108,7 +3110,25 @@ Table Name  : same names, empty names, mixed types
                 Assert.AreEqual(6.0,tbl.AverageLong(0));
 
                 //simple match search
+                Assert.AreEqual(1,tbl.FindFirstInt(0,-15));//search for -15 in column0
+                TableView view = tbl.FindAllInt(0, -15);
+                Assert.AreEqual(2,view.Size);
 
+                Query q = tbl.Where();
+                Assert.AreEqual(2,q.Between(0,0,100).Count());
+
+                //set index and get distinct values
+                var tbl2 =  new Table();
+                long strColumn = tbl2.AddColumn(DataType.String,"new Strings");
+                tbl2.SetIndex(strColumn);
+                tbl2.Add("MyString");
+                tbl2.Add("MyString2");
+                tbl2.Add("MyString");
+                TableView view2 = tbl2.Distinct(strColumn);
+                Assert.AreEqual(2, view2.Size);
+
+                String json = tbl.ToJson();
+                Console.Out.WriteLine("JSON: "+json);
 
             }
         }
@@ -3424,7 +3444,7 @@ Table Name  : same names, empty names, mixed types
             EnvironmentTest.ShowVersionTest();
             EnvironmentTest.TestInterop();
             //MeasureInteropSpeed();
-            //IntegrationTests.TestDynamicTable();
+            IntegrationTests.TestDynamicTable();
             QueryTests.QueryBoolEqual();
             TableAggregateTest.TableMaximumDouble();
             TableAggregateTest.TableAggreate();

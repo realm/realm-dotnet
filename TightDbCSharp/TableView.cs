@@ -132,6 +132,12 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableViewCountDouble(this, columnIndex, target);
         }
 
+        public override string ToJson()
+        {
+            return UnsafeNativeMethods.TableViewToJson(this);
+        }
+
+
         internal override void RemoveNoCheck(long rowIndex)
         {
             UnsafeNativeMethods.TableViewRemove(this, rowIndex);

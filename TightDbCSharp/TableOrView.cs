@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq.Expressions;
 using System.Xml.Schema;
 
 namespace TightDbCSharp
@@ -122,6 +123,10 @@ namespace TightDbCSharp
         internal abstract void SetMixedDoubleNoCheck(long columnIndex, long rowIndex, double value);
 
 
+        public abstract string ToJson();
+                
+        
+
         internal abstract void RemoveNoCheck(long rowIndex);//removes the row at rowIndex, all rows after that have their index reduced by 1
         //all existing and any new row and rowcolumn classes will point to the new contents of the indicies.
 
@@ -136,7 +141,6 @@ namespace TightDbCSharp
         {
             get { return GetSize(); }
         }
-
 
 
 
@@ -324,8 +328,17 @@ namespace TightDbCSharp
                     case DataType.String:
                         SetStringNoCheck(ix, rowIndex, (string)element);
                         break;
-                    case DataType.Binary:
-                        SetBinaryNoCheck(ix, rowIndex, (byte[])element);
+                    case DataType.Binary://currently you HAVE to send a byte[] in the array with binary data
+                                         //later we might support that You put in other types, that can be changed to binary data
+                        Byte[] data = element as byte[];
+                        if (data == null)
+                        {
+                             if (element is float)
+                             {
+                                 
+                             }
+                        }
+                        SetBinaryNoCheck(ix, rowIndex,   data);
                         break;
                     case DataType.Table://todo:test thoroughly with unit test, also with invalid data
 
