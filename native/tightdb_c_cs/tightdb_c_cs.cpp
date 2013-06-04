@@ -800,10 +800,11 @@ TIGHTDB_C_CS_API int64_t table_sum_int(Table * table_ptr , size_t column_ndx)
 {   
     return table_ptr->sum(column_ndx);
 }
-TIGHTDB_C_CS_API double table_sum_float(Table * table_ptr , size_t column_ndx)
+TIGHTDB_C_CS_API float table_sum_float(Table * table_ptr , size_t column_ndx)
 {   
     return table_ptr->sum_float(column_ndx);
 }
+
 TIGHTDB_C_CS_API double table_sum_double(Table * table_ptr , size_t column_ndx)
 {   
     return table_ptr->sum_double(column_ndx);
@@ -883,7 +884,7 @@ TIGHTDB_C_CS_API int64_t tableview_sum_int(TableView * tableview_ptr , size_t co
 {   
     return tableview_ptr->sum(column_ndx);
 }
-TIGHTDB_C_CS_API double tableview_sum_float(TableView * tableview_ptr , size_t column_ndx)
+TIGHTDB_C_CS_API float tableview_sum_float(TableView * tableview_ptr , size_t column_ndx)
 {   
     return tableview_ptr->sum_float(column_ndx);
 }

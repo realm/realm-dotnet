@@ -1,10 +1,7 @@
 ﻿using System;
-using System.CodeDom;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Runtime.CompilerServices;
-using System.Runtime.Remoting.Messaging;
 using System.Runtime.Serialization;
 
 
@@ -317,7 +314,7 @@ namespace TightDbCSharp
 
         internal override float SumFloatNoCheck(long columnIndex)
         {
-            return UnsafeNativeMethods.TableSumFloat(this, columnIndex);
+            return UnsafeNativeMethods.TableSumFloat(this, columnIndex);           
         }
 
         internal override double SumDoubleNoCheck(long columnIndex)
@@ -424,7 +421,7 @@ namespace TightDbCSharp
         public long Add(params object[] rowData)
         {
             long rowAdded = AddEmptyRow(1);
-            SetRowNoCheck(rowAdded, rowData);
+            SetRowNoCheck(rowAdded, rowData);//because the only thing that could be checked at this level is the row number.
             return rowAdded;//return the index of the just added row
         }
 

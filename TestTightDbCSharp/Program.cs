@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Linq;
-using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 
 using System.IO;
@@ -1793,7 +1791,50 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
                 myTable.Add("tv", 3, 9f, 15d);
                 myTable.Add("tv", 5, 15f, 25d);
                 myTable.Add("notv", -1000, -1001f, -1002d);
+                
+                string actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name, "table with testdata for TableAggregate",
+                    myTable);
 
+            const string    expectedres =
+    @"------------------------------------------------------
+Column count: 4
+Table Name  : table with testdata for TableAggregate
+------------------------------------------------------
+ 0     String  strfield            
+ 1        Int  int                 
+ 2      Float  float               
+ 3     Double  double              
+------------------------------------------------------
+
+Table Data Dump. Rows:4
+------------------------------------------------------
+{ //Start row 0
+strfield:tv,//column 0
+int:1,//column 1
+float:3,//column 2
+double:5//column 3
+} //End row 0
+{ //Start row 1
+strfield:tv,//column 0
+int:3,//column 1
+float:9,//column 2
+double:15//column 3
+} //End row 1
+{ //Start row 2
+strfield:tv,//column 0
+int:5,//column 1
+float:15,//column 2
+double:25//column 3
+} //End row 2
+{ //Start row 3
+strfield:notv,//column 0
+int:-1000,//column 1
+float:-1001,//column 2
+double:-1002//column 3
+} //End row 3
+------------------------------------------------------
+";
+                Assert.AreEqual(expectedres,actualres);
 
                 
                 using (
@@ -1820,9 +1861,17 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
                     Assert.AreEqual(-1001f, myTable.MinimumFloat(2));
                     Assert.AreEqual(-1002d, myTable.MinimumDouble("double"));
 
-                    Assert.AreEqual(-1000 + 1 + 3 + 5, myTable.SumLong(1));
-                    Assert.AreEqual(-1001f + 3f + 9f + 15f, myTable.SumFloat(2));
-                    Assert.AreEqual(-1002d + 5d + 15d + 25d, myTable.SumDouble(3));
+                    long sl = myTable.SumLong(1);
+                    Assert.AreEqual(3f,myTable.GetFloat(2,0));
+                    Assert.AreEqual(9f, myTable.GetFloat(2, 1));
+                    Assert.AreEqual(15f, myTable.GetFloat(2, 2));
+                    Assert.AreEqual(-1001f, myTable.GetFloat(2, 3));
+                    float sf = myTable.SumFloat(2);
+                    double sd = myTable.SumDouble(3);
+
+                    Assert.AreEqual(-1000 + 1 + 3 + 5,sl);                    
+                    Assert.AreEqual(-1001f + 3f + 9f + 15f, sf);
+                    Assert.AreEqual(-1002d + 5d + 15d + 25d, sd);
 
                     Assert.AreEqual((1 + 3 + 5 - 1000)/4d, myTable.AverageLong(1));
                     Assert.AreEqual((3f + 9f + 15f - 1001f)/4d, myTable.AverageFloat(2));
@@ -3062,75 +3111,122 @@ Table Name  : same names, empty names, mixed types
         {
             using (var tbl = new Table())
             {
-             long s = tbl.Size;
+                
                 tbl.AddColumn(DataType.Int, "myInt");
                 tbl.AddColumn(DataType.String, "myStr");
                 tbl.AddColumn(DataType.Mixed, "myMixed");
-
-                s = tbl.Size;
+                
+                //
                 //add some data by setting whole rows
+                //
+                //add some data
                 tbl.Add(12, "hello", 2);
                 tbl.Add(-15, "World", "I can be different types...");
-
-                tbl.Insert(0, 64, "I'm now first", true);
-
-
-                s = tbl.Size;
-
-
-                tbl.AddEmptyRow(1);
-                s = tbl.Size;
-                tbl.Set(3, 198, "TightDB",12.345);
-                s = tbl.Size;
-                tbl.Remove(0);
-                s = tbl.Size;
-                tbl.RemoveLast();
+                tbl.Insert(0, 64, "I'm now first", true);     //data in order of columns
+                tbl.AddEmptyRow(1);                           //append row at end of table - default values
+                tbl.Set(3, 198, "TightDB", 12.345);           //set values in row 3
+                tbl[3].SetRow(198,"TightDB",12.345);          //alternative syntax, specifying row as an index into the table
+                tbl.Remove(0);                                //remove row 0
+                tbl.RemoveLast();                             //remove last row
 
                 //Get and set cell values
                 Assert.AreEqual(-15, tbl.GetLong(0, 1));
-                tbl.SetMixedString(2,0,"Changed Long value to String");
-                Assert.AreEqual(DataType.String,tbl.GetMixedType(2,0));
+                tbl.SetMixedString(2, 0, "Changed Long value to String");//third parameter type must be string
+                tbl.SetMixedString("myMixed", 0, "Changed Long value to String");//alternative syntax,specifying the column by name
+                tbl.SetMixed(2,0,"Changed long value to String");//untyped, mixed will adopt whatever Tightdb type matches best with the data in the last parameter, in this case DataType.String
+
+                Assert.AreEqual(DataType.String, tbl.GetMixedType(2, 0)); //the mixed field should be a string mixed now
                 Assert.AreEqual(2, tbl.Size);
                 Assert.AreEqual(false, tbl.IsEmpty);
 
-                tbl.RenameColumn(0,"myLong");
+                tbl.RenameColumn(0, "myLong");
                 tbl.RemoveColumn(1);
-                tbl.Add(42, "this is the mixed column");
+                tbl.Add(42, "this is the mixed column");  //add a row
                 tbl.AddColumn(DataType.Double, "myDouble");
                 tbl.Add(-15, "still mixed", 123.45);
 
                 //column introspection
-                Assert.AreEqual(3,tbl.ColumnCount);
-                Assert.AreEqual("myLong",tbl.GetColumnName(0));
-                Assert.AreEqual(1,tbl.GetColumnIndex("myMixed"));
-                Assert.AreEqual(DataType.Double,tbl.ColumnType(2));
+                Assert.AreEqual(3, tbl.ColumnCount);
+                Assert.AreEqual("myLong", tbl.GetColumnName(0));
+                Assert.AreEqual(1, tbl.GetColumnIndex("myMixed"));
+                Assert.AreEqual(DataType.Double, tbl.ColumnType(2));
 
-                Assert.AreEqual(123.45,tbl.MaximumDouble(2));
-                Assert.AreEqual(24,tbl.SumLong(0));
-                Assert.AreEqual(6.0,tbl.AverageLong(0));
+                Assert.AreEqual(123.45, tbl.MaximumDouble(2));
+                Assert.AreEqual(24, tbl.SumLong(0));
+                Assert.AreEqual(6.0, tbl.AverageLong(0));
 
                 //simple match search
-                Assert.AreEqual(1,tbl.FindFirstInt(0,-15));//search for -15 in column0
+                Assert.AreEqual(1, tbl.FindFirstInt(0, -15)); //search for -15 in column0
                 TableView view = tbl.FindAllInt(0, -15);
-                Assert.AreEqual(2,view.Size);
+                Assert.AreEqual(2, view.Size);
 
                 Query q = tbl.Where();
-                Assert.AreEqual(2,q.Between(0,0,100).Count());
+                Assert.AreEqual(2, q.Between(0, 0, 100).Count());
 
                 //set index and get distinct values
-                var tbl2 =  new Table();
-                long strColumn = tbl2.AddColumn(DataType.String,"new Strings");
-                tbl2.SetIndex(strColumn);
-                tbl2.Add("MyString");
-                tbl2.Add("MyString2");
-                tbl2.Add("MyString");
-                TableView view2 = tbl2.Distinct(strColumn);
-                Assert.AreEqual(2, view2.Size);
+                using (var tbl2 = new Table())
+                {
 
+                    long strColumn = tbl2.AddColumn(DataType.String, "new Strings");
+                    tbl2.SetIndex(strColumn);
+                    tbl2.Add("MyString");
+                    tbl2.Add("MyString2");
+                    tbl2.Add("MyString");
+                    TableView view2 = tbl2.Distinct(strColumn);
+                
+                Assert.AreEqual(2, view2.Size);
+                }//using tbl2 ends here. tbl2 will be disposed here
                 String json = tbl.ToJson();
                 Console.Out.WriteLine("JSON: "+json);
 
-            }
+
+            }//using tbl ends here. tbl will be disposed here
+
+            //--------------------------------------------------------
+            //working with subtables
+            //--------------------------------------------------------
+
+
+            //subtables can be created as part of their parent table definition
+            var tbl3 = new Table
+                ("name".String(),
+                 "subtable".SubTable(
+                   "key".String(),
+                   "value".Mixed())
+                 );
+            
+
+            //alternative syntax, not using extension methods on String
+            var tbl3B = new Table
+                (new StringField("name"),
+                 new SubTableField("subtable",
+                   new StringField("key"),
+                   new MixedField("value"))
+                );
+
+            Console.WriteLine(tbl3B.Size);//
+
+            //add two rows - first with two rows in its' subtable cell
+
+            //create a structure for the subtable, consisting of two rows with key and value field data
+            object[][] sub = 
+            {
+              new object[] {"firstkey", 12},
+              new object[] {"secondkey", "hi - I'm mixed"}
+            };
+
+            tbl3.Add("first", sub);
+            tbl3.Add("second", null);
+            Assert.AreEqual(2,tbl3.GetSubTable(1,0).Size);
+
+            //add some rows to the empty subtable in the second row
+            Table subTbl1 = tbl3.GetSubTable("subtable", 1);//or tbl3.GetSubTable(1,1);
+
+            //now you can work with the subtable as any other table
+
+            subTbl1.Add("key1", 23);
+            Assert.AreEqual("key1",subTbl1.GetString(0,0));
+
         }
 
 
