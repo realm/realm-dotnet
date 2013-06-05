@@ -3540,7 +3540,7 @@ Table Name  : same names, empty names, mixed types
             EnvironmentTest.ShowVersionTest();
             EnvironmentTest.TestInterop();
             //MeasureInteropSpeed();
-            IntegrationTests.TestDynamicTable();
+            IntegrationTests.TestTutorial();
             QueryTests.QueryBoolEqual();
             TableAggregateTest.TableMaximumDouble();
             TableAggregateTest.TableAggreate();
