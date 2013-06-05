@@ -33,14 +33,9 @@ namespace TightDbCSharp
             return FindAll(0, -1, -1);//Methods that use default parameters are allowed under the Common Language Specification (CLS); however, the CLS allows compilers to ignore the values that are assigned to these parameters. 
         }
 
-        //start = first record number in underlying table to return
-        //end = first record number in underlying table not to return
-        //limit = maximum number of records to return.
-        //for paging through a database , set limit to number of results per page, and after each page received, set start to the row number
-        //of the last received row (underlying table row number)
-        public TableView FindAll(long start, long end, long limit)
+        internal void ValidateStartEndLimit(long start, long end, long limit) 
         {
-            Action<string, string> thrower = (errparam, errmsg) =>
+                        Action<string, string> thrower = (errparam, errmsg) =>
                 {
                     throw new ArgumentOutOfRangeException(errparam,
                                                           string.Format(CultureInfo.InvariantCulture,
@@ -73,6 +68,23 @@ namespace TightDbCSharp
             {
                 thrower("end", "end must be less than the size of the underlying table");
             }
+
+        }
+
+        public long Count(long start = 0, long end = -1, long limit = -1)
+        {
+            ValidateStartEndLimit(start,end,limit);
+            return UnsafeNativeMethods.QueryCount(this, start, end, limit);
+        }
+
+        //start = first record number in underlying table to return
+        //end = first record number in underlying table not to return
+        //limit = maximum number of records to return.
+        //for paging through a database , set limit to number of results per page, and after each page received, set start to the row number
+        //of the last received row (underlying table row number)
+        public TableView FindAll(long start, long end, long limit)
+        {
+            ValidateStartEndLimit(start,end,limit);
             return UnsafeNativeMethods.QueryFindAll(this,start, end, limit);
         }
 
@@ -100,10 +112,6 @@ namespace TightDbCSharp
             return this;
         }
 
-        public long Count(long start=0, long end=-1, long limit=-1)
-        {
-            return UnsafeNativeMethods.QueryCount(this, start, end, limit);
-        }
 
         public Query Between(long columnIndex, long lowValue, long highValue)
         {
