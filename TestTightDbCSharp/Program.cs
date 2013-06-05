@@ -3472,9 +3472,9 @@ Table Name  : same names, empty names, mixed types
 
 
 
-
+                    TableView tv3 = qr.FindAll();
                     //get a view with all the results
-                    TableView tv3 = qr.FindAll(1, 10000, 50);
+                    tv3 = qr.FindAll(0, -1, 50);
                     //find all hired people amongst the first 10K records, but return only 50 at most
 
                     TableView tv4 = qr.FindAll(); //creates tableview with all matching records
@@ -3484,6 +3484,7 @@ Table Name  : same names, empty names, mixed types
 
                     //serialization 
 
+                //this new Group call currently crashes tightdb on windows 7.
                 using (var myGroup = new Group())
                 {
 

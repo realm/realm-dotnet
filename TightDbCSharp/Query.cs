@@ -68,6 +68,11 @@ namespace TightDbCSharp
             {
                 thrower("end", "end must be larger than or equal to start");
             }
+
+            if (end >= this._sourceTable.Size)
+            {
+                thrower("end", "end must be less than the size of the underlying table");
+            }
             return UnsafeNativeMethods.QueryFindAll(this,start, end, limit);
         }
 
