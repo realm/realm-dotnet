@@ -3294,7 +3294,7 @@ Table Name  : same names, empty names, mixed types
                     )
                 {
 
-                    long rowIndex = peopleTable.Add("John", 20, true, null);
+                    long rowIndex = peopleTable2.Add("John", 20, true, null);
                     //the null is a subtable we haven't filled in yet
                     using (Table rowSub2 = peopleTable2.GetSubTable(3, rowIndex))
                     {
@@ -3540,7 +3540,8 @@ Table Name  : same names, empty names, mixed types
             EnvironmentTest.ShowVersionTest();
             EnvironmentTest.TestInterop();
             //MeasureInteropSpeed();
-            IntegrationTests.TestDynamicTable();
+//            IntegrationTests.TestDynamicTable();
+            IntegrationTests.TestTutorial();
             QueryTests.QueryBoolEqual();
             TableAggregateTest.TableMaximumDouble();
             TableAggregateTest.TableAggreate();
