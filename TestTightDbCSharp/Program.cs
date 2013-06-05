@@ -3291,7 +3291,7 @@ Table Name  : same names, empty names, mixed types
                             new StringField("number")
                             )
                         )
-                    )
+                    )//end of table creation 
                 {
 
                     long rowIndex = peopleTable2.Add("John", 20, true, null);
@@ -3310,10 +3310,11 @@ Table Name  : same names, empty names, mixed types
                     peopleTable.SetLong(1, rowindex2, 20);
                     peopleTable.SetBoolean(2, rowindex2, true);
                     var subtable = peopleTable.GetSubTable(3, rowindex2); //return a subtalbe for column 3
-                    subtable.SetString(0, 0, "mobile");
-                    subtable.SetString(1, 0, "232-323-3232");
-                    subtable.SetString(0, 1, "work");
-                    subtable.SetString(1, 1, "434-434-4343");
+                    long firstRowIdAdded=subtable.AddEmptyRow(2);
+                    subtable.SetString(0, firstRowIdAdded, "mobile");                   
+                    subtable.SetString(1, firstRowIdAdded, "232-323-3232");                    
+                    subtable.SetString(0, 1+firstRowIdAdded, "work");
+                    subtable.SetString(1, 1+firstRowIdAdded, "434-434-4343");
 
                     //Finally subtables can be specified inside the parameter list (as an array of arrays of object) like this
 
@@ -3334,6 +3335,12 @@ Table Name  : same names, empty names, mixed types
                         };
                     peopleTable.Add("John", 20, true, sub);
 
+                    //in fact the class that holds the list of rows can be of any type, as long
+                    //as that type implements IEnummerable. However, a row has to be represented by an object[]
+                    //this might be relaxed in the future (we would detect if the row implemented an interface that allows
+                    //us to get the size, and then use that interface to get the size - and after that use IEnummerable to get
+                    //the individual field values.
+
                     long rows = peopleTable.Size; //get the number of rows in a table
                     bool isEmpty = peopleTable.IsEmpty; //is the table empty?
 
@@ -3342,39 +3349,36 @@ Table Name  : same names, empty names, mixed types
                     //working with individual rows
 
                     //getting values (untyped)
-                    String n = peopleTable[5].GetString("Name");
+                    String n = peopleTable[4].GetString(0);
                     //You can specify the name of the column. It will be looked up at runtime so not so fast as the above
-                    long a = peopleTable[5].GetLong("Age");
-                        //returns the value of the long field called Age so prints 20
-                    Boolean b = peopleTable[5].GetBoolean("Hired"); //prints true
+                    long a = peopleTable[4].GetLong("age");  //returns the value of the long field called Age so prints 20
+                    Boolean b = peopleTable[4].GetBoolean("hired"); //prints true
                     Console.WriteLine(n, a, b); //writes "John20True"
 
                     //You can also do this, which is very slightly faster as no row cursor class is created , but harder to read
-                    b = peopleTable.GetBoolean("Hired", 5); //get the value of the boolean field Hired at column 5
+                    b = peopleTable.GetBoolean("hired", 4); //get the value of the boolean field Hired in row 4
                     Console.WriteLine(n, a, b); //writes "John20True"
 
                     //Accessing through a Row saves validation of rowIndex when fetching data, so this is slightly faster if You are reading many columns from
                     //the same row
-                    Row row5 = peopleTable[5];
+                    Row row5 = peopleTable[4];
                     n = row5.GetString("name");
-                    a = row5.GetLong("Age");
-                    b = row5.GetBoolean("Hired");
+                    a = row5.GetLong("age");
+                    b = row5.GetBoolean("hired");
                     Console.WriteLine(n, a, b); //writes "John20True"
 
                     //accessing when specifying the columnIndex as a number is  faster than specifying a column name.
                     Console.WriteLine(row5.GetBoolean(2)); //2 is the columnIndex for the field "Hired"
 
                     //setting values (untyped)
-                    peopleTable[5].SetString("Name", "John");
-                    //first parameter is the column name, the second parameter is the value
-                    peopleTable[5].SetString(0, "John"); //columns can be indexed by number too
-                    peopleTable[5].SetLong("Age", 20);
-                    peopleTable[5].SetBoolean("Hired", true);
-
+                    peopleTable[4].SetString("name", "John");//first parameter is the column name, the second parameter is the value
+                    peopleTable[4].SetString(0, "John"); //columns can be indexed by number too
+                    peopleTable[4].SetLong("age", 20);
+                    peopleTable[4].SetBoolean("hired", true);
 
                     //You can also set an entire row by specifying the correct types in order
                     //re-using the subtable sub created earlier, see above
-                    peopleTable[5].SetRow("John", 20, true, sub);
+                    peopleTable[4].SetRow("John", 20, true, sub);
                     //this method is not as fast as using SetString etc. as it will have to inspect the parametres and the table to validate type compatibillity
 
                     //You can delete a row by calling remove(rowIndex)
@@ -3382,17 +3386,37 @@ Table Name  : same names, empty names, mixed types
                         //removes the 4th row in the table and moves every row index larger than 3 one down
                     peopleTable[3].Remove(); //this does the same
 
-                    Row r = peopleTable[3]; //another way still
+                    Row r = peopleTable[2]; //another way still
                     r.Remove();
                     //after having removed r, The row object becomes invalid and cannot be used anymore for any functions that involves row numbers
+
+                    //we better put in some data now we deleted a lot of rows
+                    peopleTable.Add("Johanna", 20, true, sub);
+
+                    peopleTable.Add("Rasmus", 23, true,
+                    new object[]
+                        {
+                            new object[] {"work", "434-424-4242"},
+                            new object[] {"home", "555-444-3333"}
+                        });
+
+                    peopleTable.Add("Per", 53, true,
+                    new object[]
+                        {
+                            new object[] {"work", "314-159-2653"},
+                            new object[] {"home", "589-793-2385"}
+                        });
+
+                    peopleTable.Add("Kirsten", 13, false, null);
+
+
 
                     //iterating over a table is done this way
                     foreach (var row in peopleTable)
                     {
                         Table phones = row.GetSubTable("phones");
-                        Console.WriteLine("{0} is {1} years old and has {2} phones:", row.GetString("Name"),
-                            row.GetLong("Age"),
-                            phones.Size); //writes the name of the current row
+                        Console.WriteLine("{0} is {1} years old and has {2} phones:", row.GetString("name"),
+                            row.GetLong("age"), phones.Size); //writes the name of the current row
                         foreach (var phonerow in phones)
                         {
                             Console.WriteLine(phonerow.GetString("desc") + ": " + phonerow.GetString("number"));
@@ -3416,7 +3440,7 @@ Table Name  : same names, empty names, mixed types
 
                     Console.WriteLine("First row with age=20 is:{0}", rowIndex4);
                     //find all will return all rows with a given value
-                    TableView tv1 = peopleTable.FindAllInt("Age", 20);
+                    TableView tv1 = peopleTable.FindAllInt("age", 20);
                     //will set tableview to point to all rows where the column age has value 20
                     //or with column index
                     TableView tv2 = peopleTable.FindAllInt(1, 20);
@@ -3425,20 +3449,22 @@ Table Name  : same names, empty names, mixed types
                     Console.WriteLine("tv1 size {0}  tv2 size {1} These two should be the same value", tv1.Size,
                         tv2.Size);
 
-                    Query qr = peopleTable.Where().Equal("Hired", true).Between("Age", 20, 30);
+                    Query qr = peopleTable.Where().Equal("hired", true).Between("age", 20, 30);
 
                     //iterate (lazily) over all matching rows in a query
 
+                    long size = qr.FindAll().Size;
+                    Console.WriteLine(size);
                     foreach (var row in qr)
                     {
                         Console.WriteLine("{0} is {1} Years old ", row.GetString(0), row.GetLong(1));
                             //lookup by field value
-                        Console.WriteLine("{0} is {1} Years old ", row.GetString("Name"), row.GetString("Age"));
+                        Console.WriteLine("{0} is {1} Years old ", row.GetString("name"), row.GetLong("age"));
                         //lookup by field name
                     }
 
                     //average using tightdb
-                    Console.WriteLine("Average Age is {0}", qr.Average("Age"));
+                    Console.WriteLine("Average Age is {0}", qr.Average("age"));
                     //this Average is not the standard C# LINQ average.
 
 

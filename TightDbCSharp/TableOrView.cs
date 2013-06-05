@@ -189,7 +189,9 @@ namespace TightDbCSharp
         public long GetColumnIndex(String name)
         {
             long columnIndex = GetColumnIndexNoCheck(name);
-            if (columnIndex == -1) { throw new ArgumentOutOfRangeException("name", "column name specified is not a valid column in this table"); }
+            if (columnIndex == -1) { 
+                throw new ArgumentOutOfRangeException("name", String.Format(CultureInfo.InvariantCulture,"column name specified ({0}) does not exist in this table.",name)); 
+            }
             return columnIndex;
         }
 

@@ -71,12 +71,23 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.QueryFindAll(this,start, end, limit);
         }
 
-        //if the column does not exist, an exception is thrown
-        public long GetColumnIndex(string columnName)
+        //if the column does not exist, -1 is returned
+        internal long GetColumnIndexNoCheck(string columnName)
         {
             return UnsafeNativeMethods.QueryGetColumnIndex(this,columnName);
         }
 
+        //if no column exists with name=columnName , an exception is thrown
+        //returns the index of the column with the specified name
+        public long GetColumnIndex(string columnName)
+        {
+            long columnIndex = GetColumnIndexNoCheck(columnName);
+            if (columnIndex == -1)
+            {
+                throw new ArgumentOutOfRangeException("columnName", String.Format("Query column specified with {0} but that column does not exist in the underlying table", columnName));
+            }
+            return columnIndex;
+        }
         //todo: implement a generic equal that infers the type to use from the type of the column, looked up by the column name. second parameter is then an object       
         public Query Equal(string columnName, Boolean value)
         {
