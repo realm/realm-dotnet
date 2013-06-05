@@ -134,7 +134,6 @@ enum DataType {
                     string typestr = o.GetType().ToString();
                     string valuestr = o.ToString();
                     //if something doesn't auto.generate into readable code, we can test on o, and create custom more readable values
-                    Type oType = o.GetType();
 
                     var handled = o as Handled;//if o is not Handled, handled will be null
                     if (handled != null) valuestr = handled.ObjectIdentification();
@@ -860,11 +859,14 @@ enum DataType {
         private static extern float table_sum_float32(IntPtr tableHandle, IntPtr columnIndex);
 
 
+        //todo:remove debug code, remove res
         public static float TableSumFloat(Table table, long columnIndex)
         {
+
             if (Is64Bit)
-                return table_sum_float64(table.Handle, (IntPtr)columnIndex);
-            return table_sum_float32(table.Handle, (IntPtr)columnIndex);
+                return table_sum_float64(table.Handle, (IntPtr) columnIndex);    
+            return table_sum_float32(table.Handle, (IntPtr) columnIndex);
+            
         }
 
         [DllImport(L64, EntryPoint = "table_sum_double", CallingConvention = CallingConvention.Cdecl)]
@@ -2192,7 +2194,7 @@ enum DataType {
         }
 
 
-        [DllImport(L64, EntryPoint = "table_set__mixed_string", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(L64, EntryPoint = "table_set_mixed_string", CallingConvention = CallingConvention.Cdecl)]
         private static extern void table_set_mixed_string64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx,
                                                       [MarshalAs(UnmanagedType.LPStr)] string value);
 
@@ -3753,8 +3755,8 @@ enum DataType {
                 throw new TableException(String.Format(CultureInfo.InvariantCulture, "The c++ float size{0} does not match the size of C# float{1}", sizeOffloatPlus, sizeOfFloatSharp));
             }
 
-            long sizeOfPlusDouble = (long)TestSizeOfDouble();
-            long sizeOfSharpDouble = sizeof (double);
+            var sizeOfPlusDouble = (long)TestSizeOfDouble();
+            const long sizeOfSharpDouble = sizeof (double);
 
             if (sizeOfPlusDouble != sizeOfSharpDouble)
             {

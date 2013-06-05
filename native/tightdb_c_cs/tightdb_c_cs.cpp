@@ -800,10 +800,11 @@ TIGHTDB_C_CS_API int64_t table_sum_int(Table * table_ptr , size_t column_ndx)
 {   
     return table_ptr->sum(column_ndx);
 }
-TIGHTDB_C_CS_API double table_sum_float(Table * table_ptr , size_t column_ndx)
+TIGHTDB_C_CS_API float table_sum_float(Table * table_ptr , size_t column_ndx)
 {   
     return table_ptr->sum_float(column_ndx);
 }
+
 TIGHTDB_C_CS_API double table_sum_double(Table * table_ptr , size_t column_ndx)
 {   
     return table_ptr->sum_double(column_ndx);
@@ -883,7 +884,7 @@ TIGHTDB_C_CS_API int64_t tableview_sum_int(TableView * tableview_ptr , size_t co
 {   
     return tableview_ptr->sum(column_ndx);
 }
-TIGHTDB_C_CS_API double tableview_sum_float(TableView * tableview_ptr , size_t column_ndx)
+TIGHTDB_C_CS_API float tableview_sum_float(TableView * tableview_ptr , size_t column_ndx)
 {   
     return tableview_ptr->sum_float(column_ndx);
 }
@@ -951,7 +952,7 @@ TIGHTDB_C_CS_API double tableview_average_double(TableView * tableview_ptr , siz
 //the c++ part of the java binding do the same as I do reg the str.c_str() call
 //note that calling from C# it is probably best to guess the buffer size large enough, as the alternative is that the tightdb to_json method is called twice
 //THIS WILL BE REWRITTEN VERY SOON WHEN I IMPLEMENT THE NEW STRINGS. the next version will not call tighdb->to_json twice
-TIGHTDB_C_CS_API size_t table_to_json(Table* table_ptr,size_t column_ndx,char * colname, size_t bufsize)
+TIGHTDB_C_CS_API size_t table_to_json(Table* table_ptr,char * data, size_t bufsize)
 {
    // Write table to string in JSON format
    std::ostringstream ss;
@@ -959,7 +960,7 @@ TIGHTDB_C_CS_API size_t table_to_json(Table* table_ptr,size_t column_ndx,char * 
    table_ptr->to_json(ss);
    
    const std::string str = ss.str(); 
-   return bsd_strlcpy(colname,bufsize, str.c_str());
+   return bsd_strlcpy(data,bufsize, str.c_str());
 }
 
 
@@ -1023,6 +1024,14 @@ TIGHTDB_C_CS_API void query_bool_equal(Query * query_ptr, size_t columnIndex, si
     query_ptr->equal(columnIndex,size_t_to_bool(value));    
     //return &(query_ptr->equal(columnIndex,size_t_to_bool(value)));//is this okay? will I get the address of a Query object that i can call in another pinvoke?
 }
+
+TIGHTDB_C_CS_API void query_int_between(Query * query_ptr, size_t columnIndex, int64_t lowValue, int64_t highValue)
+
+{    
+    query_ptr->between(columnIndex,lowValue,highValue);    
+}
+
+
 
 TIGHTDB_C_CS_API void tableview_delete(TableView * tableview_ptr )
 {
