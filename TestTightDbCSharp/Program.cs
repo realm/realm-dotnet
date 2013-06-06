@@ -3487,36 +3487,43 @@ Table Name  : same names, empty names, mixed types
                 //this new Group call currently crashes tightdb on windows 7 with the tightdb libraries built in march
                 //as the same call does not crash with c++ wit the libraries built in may, I have allowed myself to curcumvent
                 //the crash by specifying a (usually) valid file name
-                //using (var myGroup = new Group())  //this crashes
-                //todo:reinsert correct line above that does not specify a file name
-                using (var myGroup = new Group(@"C:\ProgramData\tightdbtest.tightdb"))
+
+                if (false)
                 {
+                    //using (var myGroup = new Group())  //this crashes
+                    //todo:reinsert correct line above that does not specify a file name
+                    using (var myGroup = new Group(@"C:\ProgramData\tightdbtest.tightdb"))
+                    {
 
-                    //Group returns a new table. The structure is specified as in Table.CreateTable
-                    var myTable2 = myGroup.CreateTable("employees",
-                        "Name".String(),
-                        "Age".Int(),
-                        "Hired".Bool()
-                        );
+                        //Group returns a new table. The structure is specified as in Table.CreateTable
+                        //okay the mar. code crashes here now, when i specified a writable filename above.
+                        //i think i'll postpone further investigation until i'm up running with the newest tightdb release
+                        var myTable2 = myGroup.CreateTable("employees",
+                            "Name".String(),
+                            "Age".Int(),
+                            "Hired".Bool()
+                            );
 
-                    //or fields can be put in just after.
-                    var myOtherTable = myGroup.CreateTable("employees2");
-                    myOtherTable.AddColumn(DataType.String, "Name");
-                    myOtherTable.AddColumn(DataType.Int, "Age");
-                    myOtherTable.AddColumn(DataType.Int, "Hired");
+                        //or fields can be put in just after.
+                        var myOtherTable = myGroup.CreateTable("employees2");
+                        myOtherTable.AddColumn(DataType.String, "Name");
+                        myOtherTable.AddColumn(DataType.Int, "Age");
+                        myOtherTable.AddColumn(DataType.Int, "Hired");
 
-                    //the first method is easier to use when dealing with subtables
+                        //the first method is easier to use when dealing with subtables
 
-                    myTable2.Add(1);//add one empty row
-                    myOtherTable.Add(1);
-                    //write to disk
-                    //todo:document where this file will be located when running on various kinds of windows
-                    //todo:check and handle filesystem errors that happen on the c++ side (wrap into a C# exception like java does)
-                    myGroup.Write("employees.tightdb");
+                        myTable2.Add(1); //add one empty row
+                        myOtherTable.Add(1);
+                        //write to disk
+                        //todo:document where this file will be located when running on various kinds of windows
+                        //todo:check and handle filesystem errors that happen on the c++ side (wrap into a C# exception like java does)
+                        myGroup.Write("employees.tightdb");
 
-
+                    }
 
                 }
+
+
                 //transactions - to be done
                 }
             }
