@@ -3484,8 +3484,12 @@ Table Name  : same names, empty names, mixed types
 
                     //serialization 
 
-                //this new Group call currently crashes tightdb on windows 7.
-                using (var myGroup = new Group())
+                //this new Group call currently crashes tightdb on windows 7 with the tightdb libraries built in march
+                //as the same call does not crash with c++ wit the libraries built in may, I have allowed myself to curcumvent
+                //the crash by specifying a (usually) valid file name
+                //using (var myGroup = new Group())  //this crashes
+                //todo:reinsert correct line above that does not specify a file name
+                using (var myGroup = new Group(@"C:\ProgramData\tightdbtest.tightdb"))
                 {
 
                     //Group returns a new table. The structure is specified as in Table.CreateTable
