@@ -195,6 +195,13 @@ namespace TightDbCSharp
             return columnIndex;
         }
 
+        //returns -1 if the column name does not exist (instead of throwing an exception)
+        public long GetColumnIndexNoThrow(String name)
+        {
+            return GetColumnIndexNoCheck(name);
+        }
+
+
         //todo:unit test this
         //column and row must point to a field that is of type subtable
         //the values are then put into that subtable in this manner :

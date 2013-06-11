@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Runtime.InteropServices;
 
@@ -1777,55 +1778,34 @@ enum DataType {
 
 
 
-        //table_get_column_name and spec_get_column_name have some buffer stuff in common. Consider refactoring. Note the DLL method call is
-        //different in the two, and one function takes a spec, the other a table
 
-
-        //tightdb_c_cs_API int get_column_name(Table* TablePtr,size_t column_ndx,char * colname, int bufsize)
-
-        //Ignore comment below. Doesn't work wit MarshalAs for some reason
-        //the MarshalAs LPTStr is set to let c# know that its 16 bit UTF-16 characters should be fit into a char* that uses 8 bit ANSI strings
-        //In theory we *could* add a method to the DLL that takes and gives UTF-16 or similar, and a function that tells c# if UTF-16 is supported
-        //on the c++ side on this platform. marshalling UTF-16 to UTF-16 will result in a buffer copy being saved, c++ would get a pointer directly into the stringbuilder buffer
-        // [MarshalAs(UnmanagedType.LPTStr)]
 
         //            const char *table_get_column_name(const Table *t, size_t ndx);
-        [DllImport(L64, EntryPoint = "table_get_column_name", CallingConvention = CallingConvention.Cdecl,CharSet = CharSet.Unicode)]
-        private static extern IntPtr table_get_column_name64(IntPtr tableHandle, IntPtr columnIndex,[MarshalAs(UnmanagedType.LPStr)] StringBuilder name,IntPtr bufsize);
+        [DllImport(L64, EntryPoint = "table_get_column_name", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_get_column_name64(IntPtr tableHandle, IntPtr columnIndex,IntPtr buffer,IntPtr bufsize);
 
-        [DllImport(L32, EntryPoint = "table_get_column_name", CallingConvention = CallingConvention.Cdecl,CharSet = CharSet.Unicode)]
-        private static extern IntPtr table_get_column_name32(IntPtr tableHandle, IntPtr columnIndex,[MarshalAs(UnmanagedType.LPStr)] StringBuilder name,IntPtr bufsize);
+        [DllImport(L32, EntryPoint = "table_get_column_name", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_get_column_name32(IntPtr tableHandle, IntPtr columnIndex,IntPtr buffer,IntPtr bufsize);
 
 
         public static string TableGetColumnName(Table t, long columnIndex)
-            //ColumnIndex not a long bc on the c++ side it might be 32bit long on a 32 bit platform
+            
         {
-            var b = new StringBuilder(16);
-            //string builder 16 is just a wild guess that most fields are shorter than this
-            bool loop = true;
+            long bufferSizeNeededChars = 16;
+            IntPtr buffer;
+            long currentBufferSizeChars;   
+                    
             do
             {
-                int bufszneed;
+                buffer = StrAllocateBuffer(out currentBufferSizeChars, bufferSizeNeededChars);
+                
                 if (Is64Bit)
-                    bufszneed =
-                        (int) table_get_column_name64(t.Handle, (IntPtr) columnIndex, b, (IntPtr) b.Capacity);
-                    //the intptr cast of the long *might* loose the high 32 bits on a 32 bits platform as tight c++ will only have support for 32 bit wide column counts on 32 bit
+                    bufferSizeNeededChars =(long) table_get_column_name64(t.Handle, (IntPtr) columnIndex, buffer, (IntPtr) currentBufferSizeChars);
                 else
-                    bufszneed =
-                        (int) table_get_column_name32(t.Handle, (IntPtr) columnIndex, b, (IntPtr) b.Capacity);
-                //the intptr cast of the long *might* loose the high 32 bits on a 32 bits platform as tight c++ will only have support for 32 bit wide column counts on 32 bit
+                    bufferSizeNeededChars = (long)table_get_column_name32(t.Handle, (IntPtr)columnIndex, buffer, (IntPtr)currentBufferSizeChars);
 
-                if (b.Capacity <= bufszneed)
-                    //Capacity is in .net chars, each of size 16 bits, while bufszneed is in bytes. HOWEVER stringbuilder often store common chars using only 8 bits, making precise calculations troublesome and slow
-                {
-                    //what we know for sure is that the stringbuilder will hold AT LEAST capacity number of bytes. The c++ dll counts in bytes, so there is always room enough.
-                    b.Capacity = bufszneed + 1;
-                    //allocate an array that is at least as large as what is needed, plus an extra 0 terminator.
-                }
-                else
-                    loop = false;
-            } while (loop);
-            return b.ToString();
+            } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
+            return StrBufToStr(buffer, (int)bufferSizeNeededChars);
             //in c# this does NOT result in a copy, we get a string that points to the B buffer (If the now immutable string inside b is reused , it will get itself a new buffer
         }
 
@@ -1839,139 +1819,117 @@ enum DataType {
 
 
         [DllImport(L64, EntryPoint = "tableview_get_column_name",
-            CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
+            CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr tableView_get_column_name64(IntPtr handle, IntPtr columnIndex,
-                                                                 [MarshalAs(UnmanagedType.LPStr)] StringBuilder name,
+                                                                 IntPtr buffer,
                                                                  IntPtr bufsize);
 
         [DllImport(L32, EntryPoint = "tableview_get_column_name",
             CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
         private static extern IntPtr tableView_get_column_name32(IntPtr handle, IntPtr columnIndex,
-                                                                 [MarshalAs(UnmanagedType.LPStr)] StringBuilder name,
+                                                                 IntPtr buffer,
                                                                  IntPtr bufsize);
 
 
-        public static string TableViewGetColumnName(TableView tv, long columnIndex)
-            //ColumnIndex not a long bc on the c++ side it might be 32bit long on a 32 bit platform
+        public static string TableViewGetColumnName(TableView tv, long columnIndex)            
         {
-            var b = new StringBuilder(16);
-            //string builder 16 is just a wild guess that most fields are shorter than this
-            bool loop = true;
+            long bufferSizeNeededChars = 16;
+            IntPtr buffer;
+            long currentBufferSizeChars;                          
+            
             do
             {
-                int bufszneed;
+                buffer = StrAllocateBuffer(out currentBufferSizeChars, bufferSizeNeededChars); 
+                
                 if (Is64Bit)
-                    bufszneed =
-                        (int) tableView_get_column_name64(tv.Handle, (IntPtr) columnIndex, b, (IntPtr) b.Capacity);
-                    //the intptr cast of the long *might* loose the high 32 bits on a 32 bits platform as tight c++ will only have support for 32 bit wide column counts on 32 bit
+                    bufferSizeNeededChars =(long) tableView_get_column_name64(tv.Handle, (IntPtr) columnIndex, buffer, (IntPtr) currentBufferSizeChars);
+                
                 else
-                    bufszneed =
-                        (int) tableView_get_column_name32(tv.Handle, (IntPtr) columnIndex, b, (IntPtr) b.Capacity);
-                //the intptr cast of the long *might* loose the high 32 bits on a 32 bits platform as tight c++ will only have support for 32 bit wide column counts on 32 bit
+                    bufferSizeNeededChars = (long)tableView_get_column_name32(tv.Handle, (IntPtr)columnIndex, buffer, (IntPtr)currentBufferSizeChars);
 
-                if (b.Capacity <= bufszneed)
-                    //Capacity is in .net chars, each of size 16 bits - usually encoding one unicode codepoint, sometimes two are used to code one codepoint, while bufszneed is in bytes. 
-                {
-                    //what we know for sure is that the stringbuilder will hold AT LEAST capacity number of bytes. The c++ dll counts in bytes, so there is always room enough.
-                    b.Capacity = bufszneed + 1;
-                    //allocate an array that is at least as large as what is needed, plus an extra 0 terminator.
-                }
-                else
-                    loop = false;
-            } while (loop);
-            return b.ToString();
-            //in c# this does NOT result in a copy, we get a string that points to the B buffer (If the now immutable string inside b is reused , it will get itself a new buffer
+            } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
+            return StrBufToStr(buffer, (int)bufferSizeNeededChars);            
         }
 
 
 
         [DllImport(L64, EntryPoint = "table_get_string",CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_get_string64(IntPtr handle, IntPtr columnIndex,IntPtr rowIndex,
-                                                                 [MarshalAs(UnmanagedType.LPStr)] StringBuilder name,
-                                                                 IntPtr bufsize);
+        private static extern IntPtr table_get_string64(IntPtr handle, IntPtr columnIndex,IntPtr rowIndex,IntPtr buffer,IntPtr bufsize);
 
         [DllImport(L32, EntryPoint = "table_get_string",CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_get_string32(IntPtr handle, IntPtr columnIndex,IntPtr rowIndex,
-                                                                 [MarshalAs(UnmanagedType.LPStr)] StringBuilder name,
-                                                                 IntPtr bufsize);
+        private static extern IntPtr table_get_string32(IntPtr handle, IntPtr columnIndex, IntPtr rowIndex, IntPtr buffer, IntPtr bufsize);
 
 
         public static string TableGetString(Table t, long columnIndex,long rowIndex)
             //ColumnIndex not a long bc on the c++ side it might be 32bit long on a 32 bit platform
         {
-            var b = new StringBuilder(16);
-            //string builder 16 is just a wild guess that most fields are shorter than this
-            bool loop = true;
+            long bufferSizeNeededChars = 16;
+            IntPtr buffer;
+            long currentBufferSizeChars;   
+            
+            
             do
             {
-                int bufszneed;
+                buffer = StrAllocateBuffer(out currentBufferSizeChars, bufferSizeNeededChars); 
+                
                 if (Is64Bit)
-                    bufszneed =
-                        (int) table_get_string64(t.Handle, (IntPtr) columnIndex,(IntPtr)rowIndex, b, (IntPtr) b.Capacity);
-                    //the intptr cast of the long *might* loose the high 32 bits on a 32 bits platform as tight c++ will only have support for 32 bit wide column counts on 32 bit
+                    bufferSizeNeededChars =
+                        (long) table_get_string64(t.Handle, (IntPtr) columnIndex,(IntPtr)rowIndex, buffer, (IntPtr) currentBufferSizeChars);
+                    
                 else
-                    bufszneed =
-                        (int) table_get_string32(t.Handle, (IntPtr) columnIndex,(IntPtr)rowIndex, b, (IntPtr) b.Capacity);
-                //the intptr cast of the long *might* loose the high 32 bits on a 32 bits platform as tight c++ will only have support for 32 bit wide column counts on 32 bit
+                    bufferSizeNeededChars =
+                        (long)table_get_string32(t.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, buffer, (IntPtr)currentBufferSizeChars);
+                
 
-                if (b.Capacity <= bufszneed)
-                    //Capacity is in .net chars, each of size 16 bits - usually encoding one unicode codepoint, sometimes two are used to code one codepoint, while bufszneed is in bytes. 
-                {
-                    //what we know for sure is that the stringbuilder will hold AT LEAST capacity number of bytes. The c++ dll counts in bytes, so there is always room enough.
-                    b.Capacity = bufszneed + 1;
-                    //allocate an array that is at least as large as what is needed, plus an extra 0 terminator.
-                }
-                else
-                    loop = false;
-            } while (loop);
-            return b.ToString();
-            //in c# this does NOT result in a copy, we get a string that points to the B buffer (If the now immutable string inside b is reused , it will get itself a new buffer
+            } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
+            return StrBufToStr(buffer, (int)bufferSizeNeededChars);
+            
         }
 
 
 
-
+        //this is a commented version of a typical string returning call. Other calls are without comments
+        //documented string returning call. string return
         [DllImport(L64, EntryPoint = "tableview_get_string", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr tableview_get_string64(IntPtr handle, IntPtr columnIndex, IntPtr rowIndex,
-                                                                 [MarshalAs(UnmanagedType.LPStr)] StringBuilder name,
+                                                                 IntPtr buffer,
                                                                  IntPtr bufsize);
 
         [DllImport(L32, EntryPoint = "tableview_get_string", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr tableview_get_string32(IntPtr handle, IntPtr columnIndex, IntPtr rowIndex,
-                                                                 [MarshalAs(UnmanagedType.LPStr)] StringBuilder name,
+                                                                 IntPtr buffer,
                                                                  IntPtr bufsize);
 
 
         public static string TableviewGetString(TableView tv, long columnIndex, long rowIndex)
-        //ColumnIndex not a long bc on the c++ side it might be 32bit long on a 32 bit platform
+            
         {
-            var b = new StringBuilder(16);
-            //string builder 16 is just a wild guess that most fields are shorter than this
-            bool loop = true;
+            long bufferSizeNeededChars = 16;
+                //in 16 bit chars - in reality won't go near 2^32 as .net only allows 2GB structures anyways and this is 16Bit elements so about 2^31 elements max           
+            IntPtr buffer; //unmanaged buffer for c++ to put an utf-16 string into (on .net)
+            long currentBufferSizeChars; //holds the size of the buffer right now
             do
             {
-                int bufszneed;
+                buffer = StrAllocateBuffer(out currentBufferSizeChars, bufferSizeNeededChars);
+                    //allocates buffer on the heap, and sets currentbuffersizechars to the size.             
                 if (Is64Bit)
-                    bufszneed =
-                        (int)tableview_get_string64(tv.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, b, (IntPtr)b.Capacity);
-                //the intptr cast of the long *might* loose the high 32 bits on a 32 bits platform as tight c++ will only have support for 32 bit wide column counts on 32 bit
-                else
-                    bufszneed =
-                        (int)tableview_get_string32(tv.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, b, (IntPtr)b.Capacity);
-                //the intptr cast of the long *might* loose the high 32 bits on a 32 bits platform as tight c++ will only have support for 32 bit wide column counts on 32 bit
+                    bufferSizeNeededChars =
+                        (long)
+                            tableview_get_string64(tv.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, buffer,
+                                (IntPtr) currentBufferSizeChars);
 
-                if (b.Capacity <= bufszneed)
-                //Capacity is in .net chars, each of size 16 bits - usually encoding one unicode codepoint, sometimes two are used to code one codepoint, while bufszneed is in bytes. 
-                {
-                    //what we know for sure is that the stringbuilder will hold AT LEAST capacity number of bytes. The c++ dll counts in bytes, so there is always room enough.
-                    b.Capacity = bufszneed + 1;
-                    //allocate an array that is at least as large as what is needed, plus an extra 0 terminator.
-                }
                 else
-                    loop = false;
-            } while (loop);
-            return b.ToString();
-            //in c# this does NOT result in a copy, we get a string that points to the B buffer (If the now immutable string inside b is reused , it will get itself a new buffer
+                    bufferSizeNeededChars =
+                        (long)
+                            tableview_get_string32(tv.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, buffer,
+                                (IntPtr) currentBufferSizeChars);
+
+
+            } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
+                //return true if buffer was too small, also deallocates the too small buffer
+
+            return StrBufToStr(buffer, (int) bufferSizeNeededChars);
+                //converts buffer to a C# string and return it, also deallocates the unmanaged buffer
         }
 
 
@@ -1988,44 +1946,36 @@ enum DataType {
 
 
 
-        [DllImport(L64, EntryPoint = "spec_get_column_name", CallingConvention = CallingConvention.Cdecl,
-            CharSet = CharSet.Unicode)]
+        [DllImport(L64, EntryPoint = "spec_get_column_name", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr spec_get_column_name64(IntPtr specHandle, IntPtr columnIndex,
-                                                            [MarshalAs(UnmanagedType.LPStr)] StringBuilder name,
-                                                            IntPtr bufsize);
+                                                           IntPtr b, IntPtr bufsize);
 
-        [DllImport(L32, EntryPoint = "spec_get_column_name", CallingConvention = CallingConvention.Cdecl,
-            CharSet = CharSet.Unicode)]
+        [DllImport(L32, EntryPoint = "spec_get_column_name", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr spec_get_column_name32(IntPtr specHandle, IntPtr columnIndex,
-                                                            [MarshalAs(UnmanagedType.LPStr)] StringBuilder name,
-                                                            IntPtr bufsize);
+                                                            IntPtr b, IntPtr bufsize);
 
 
         public static String SpecGetColumnName(Spec spec, long columnIndex)
         {
-            //see table_get_column_name for comments
-            var b = new StringBuilder(16);
-            bool loop = true;
+
+            long bufferSizeNeededChars = 16;
+            //in 16 bit chars - in reality won't go near 2^32 as .net only allows 2GB structures anyways and this is 16Bit elements so about 2^31 elements max           
+            IntPtr buffer; //unmanaged buffer for c++ to put an utf-16 string into (on .net)
+            long currentBufferSizeChars; //holds the size of the buffer right now
             do
             {
-                int bufszneed;
+                buffer = StrAllocateBuffer(out currentBufferSizeChars, bufferSizeNeededChars);
+                
                 if (Is64Bit)
-                    bufszneed =
-                        (int) spec_get_column_name64(spec.Handle, (IntPtr) columnIndex, b, (IntPtr) b.Capacity);
+                    bufferSizeNeededChars =
+                        (long) spec_get_column_name64(spec.Handle, (IntPtr) columnIndex, buffer, (IntPtr) currentBufferSizeChars);
                 else
-                    bufszneed =
-                        (int) spec_get_column_name32(spec.Handle, (IntPtr) columnIndex, b, (IntPtr) b.Capacity);
+                    bufferSizeNeededChars =
+                        (long)spec_get_column_name32(spec.Handle, (IntPtr)columnIndex, buffer, (IntPtr)currentBufferSizeChars);
 
+            } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
 
-                if (b.Capacity <= bufszneed)
-                {
-                    b.Capacity = bufszneed + 1;
-                }
-                else
-                    loop = false;
-            } while (loop);
-
-            return b.ToString();
+            return StrBufToStr(buffer, (int)bufferSizeNeededChars);
         }
 
 
@@ -3571,79 +3521,200 @@ enum DataType {
 
 
 
+
+        //I am not sure wether the string will be pinned and c will get a pointer to its buffer
+        //or if the string wil be copied to somewhere and then a pointer to the copy is passed
+        //it is also unclear wether the string will only be served to c++ up to its first null character
+        //or if the entire string is available.
+        //As these things are barely documented, we have to test and probably handle different platforms differently
+        
+        [DllImport(L64, EntryPoint = "test_string_to_cpp", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr test_string_to_cpp_64([MarshalAs(UnmanagedType.LPWStr)]String s,IntPtr len);
+        [DllImport(L32, EntryPoint = "test_string_to_cpp", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr test_string_to_cpp_32([MarshalAs(UnmanagedType.LPWStr)]String s, IntPtr len);
+
+        public static long TestStringToCpp(String str)
+        {
+                if (Is64Bit)
+                     return (long)test_string_to_cpp_64(str, (IntPtr)str.Length);
+                return (long)test_string_to_cpp_32(str, (IntPtr)str.Length);
+        }
+
+
+
+
+
+        //a very simple "do we have some kind of connection test that returns the string "Hello, World!" from c++ to c#
+        //more demanding unit tests will be done elsewhere - the purpose of this test is to make sure the most basic stuff works (8/16 bits chars etc)
+        //this example uses Marshal to provide an unmanaged piece of memory for c++. Eventually data is copied back into a managed string.
+        //this method is used as a template for copying wherever we return a string 
+        [DllImport(L64, EntryPoint = "test_string_from_cpp", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr test_string_from_cpp_ptr64(IntPtr b, IntPtr bufsize);
+        [DllImport(L32, EntryPoint = "test_string_from_cpp", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr test_string_from_cpp_ptr32(IntPtr b , IntPtr bufsize);
+
+        public static string TestStringFromCppUsingPointers()
+        {
+
+            long bufferSizeNeededChars = 16;
+            IntPtr buffer;
+            long currentBufferSizeChars;
+
+            do
+            {
+                buffer = StrAllocateBuffer(out currentBufferSizeChars, bufferSizeNeededChars);
+
+                if (Is64Bit)
+                    bufferSizeNeededChars = (long) test_string_from_cpp_ptr64(buffer, (IntPtr) currentBufferSizeChars);
+                else
+                    bufferSizeNeededChars = (long) test_string_from_cpp_ptr32(buffer, (IntPtr) currentBufferSizeChars);
+
+            } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
+
+            return StrBufToStr(buffer, (int) bufferSizeNeededChars);
+
+        }
+
+
+        //after the call currentBufferSizeChars is the size of the buffer. Before the call, bufferSizeNeededChars holds the requested size
+        //while currentbuffersizeChars holds the size from last time the buffer was created
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static IntPtr StrAllocateBuffer(out long currentBufferSizeChars,long bufferSizeNeededChars)
+        {
+            currentBufferSizeChars = bufferSizeNeededChars;
+           return Marshal.AllocHGlobal( (IntPtr)(bufferSizeNeededChars * sizeof(char)) );//allocHGlobal instead of  AllocCoTaskMem because allcHGlobal allows lt 2 gig on 64 bit (not that .net supports that right now, but at least this allocation will work with lt 32 bit strings)   
+        }
+
+        //uses the marshaller to copy a unicode utf-16string inside an umnanaged buffer into a C# string
+        //after the copy operation, the buffer is released using Marshal.FreeHGlobal(allocated in strallocatebuffer just above with Marshal.AllcHGlobal)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static string StrBufToStr(IntPtr buffer, int bufferSizeNeededChars)
+        {
+            string retStr = bufferSizeNeededChars > 0 ? Marshal.PtrToStringUni(buffer, bufferSizeNeededChars) : "";//return "" if the string is empty, otherwise copy data from the buffer
+            Marshal.FreeHGlobal(buffer);
+            return retStr;
+        }
+
+        //determines if the buffer was large enough by looking at requested size and current size. if not large enough, free the buffer and return
+        //true which makes the calling method loop once more
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Boolean StrBufferOverflow(IntPtr buffer,long currentBufferSizeChars, long bufferSizeNeededChars)
+        {
+            if (currentBufferSizeChars < bufferSizeNeededChars)
+            {
+                Marshal.FreeHGlobal(buffer);
+                
+                return true;
+            }
+            return false;
+        }
+
+
+        /*
+
+        //a very simple "do we have some kind of StringBuilder connection test that returns the string "Hello, World!" from c++ to c#
+        //more demanding unit tests will be done elsewhere - the purpose of this test is to make sure the most basic stuff works (8/16 bits chars etc)
+        //note that this string return example uses stringbuilder, and that stringbuilder will marshal such that the first null in the string, terminates the string
+        //so this C#-c++ platform ivocation string transfer works only with strings without null characters inside (null terminated ones are okay)
+        //the c++ side provides us with a bufszneed value that indicates the actual length of the string returned
+        [DllImport(L64, EntryPoint = "test_string_from_cpp", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr test_string_from_cpp64([MarshalAs(UnmanagedType.LPWStr)]StringBuilder b, IntPtr bufsize);
+        [DllImport(L32, EntryPoint = "test_string_from_cpp", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr test_string_from_cpp32([MarshalAs(UnmanagedType.LPWStr)]StringBuilder b, IntPtr bufsize);
+
+        public static string TestStringFromCppUsingStringBuilder()
+        {
+            var b = new StringBuilder(16);
+
+            bool loop = true;
+            do
+            {
+                long bufszneed;//in 16 bit chars
+                if (Is64Bit)
+                    bufszneed =
+                        (long)test_string_from_cpp64( b, (IntPtr)b.Capacity);
+                else
+                    bufszneed =
+                        (long)test_string_from_cpp32(b, (IntPtr)b.Capacity);
+
+                if (b.Capacity < bufszneed)
+                //Capacity is in .net chars, each of size 16 bits, bufszneed is also in 16 bit chars
+                {
+                    //what we know for sure is that the stringbuilder will hold AT LEAST capacity number of bytes. The c++ dll counts in bytes, so there is always room enough.
+                    if (bufszneed + 1 <= b.MaxCapacity)
+                        b.Capacity = (int)bufszneed + 1;
+                    else
+                    {
+                        throw new ArgumentOutOfRangeException("columnIndex", String.Format(CultureInfo.InvariantCulture, "trying to recieve a string from tightdb, but the string length in 16 bit characters ({0}) is larger than the maximum string length supported by stringbuilder in .net ({1})", bufszneed, b.MaxCapacity));
+                    }
+                    //not 100% sure the +1 is neccessary, but by providing the extra 1 char, we allow the c++  end to null terminate without getting in trouble                    
+                }
+                else{
+                    loop = false;
+                    b.Length = (int)bufszneed;
+                }
+            } while (loop);
+            return b.ToString();
+            //in c# this does NOT result in a copy, we get a string that points to the B buffer (If the now immutable string inside b is reused , it will get itself a new buffer
+        }
+        */
+
+
         
         [DllImport(L64, EntryPoint = "table_to_json", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
-        private static extern IntPtr table_to_json64(IntPtr tableHandle,  [MarshalAs(UnmanagedType.LPStr)] StringBuilder name, IntPtr bufsize);
+        private static extern IntPtr table_to_json64(IntPtr tableHandle,  IntPtr buffer, IntPtr bufsize);
 
         [DllImport(L32, EntryPoint = "table_to_json", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
-        private static extern IntPtr table_to_json32(IntPtr tableHandle,  [MarshalAs(UnmanagedType.LPStr)] StringBuilder name, IntPtr bufsize);
+        private static extern IntPtr table_to_json32(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize);
 
 
         public static string TableToJson(Table t)
         
         {
-            //try to guess the size of the stringbuilder to use - data should be able to be there
-            var b = new StringBuilder(16);
-            
-            bool loop = true;
+            long bufferSizeNeededChars = 16;
+            IntPtr buffer;
+            long currentBufferSizeChars;
             do
             {
-                int bufszneed;
+                buffer = StrAllocateBuffer(out currentBufferSizeChars, bufferSizeNeededChars);
+                
                 if (Is64Bit)
-                    bufszneed =
-                        (int)table_to_json64(t.Handle,  b, (IntPtr)b.Capacity);                
+                    bufferSizeNeededChars =
+                        (int)table_to_json64(t.Handle,  buffer, (IntPtr)currentBufferSizeChars);                
                 else
-                    bufszneed =
-                        (int)table_to_json32(t.Handle, b, (IntPtr)b.Capacity);
-                if (b.Capacity <= bufszneed)
-                //Capacity is in .net chars, each of size 16 bits, while bufszneed is in bytes. HOWEVER stringbuilder often store common chars using only 8 bits, making precise calculations troublesome and slow
-                {
-                    //what we know for sure is that the stringbuilder will hold AT LEAST capacity number of bytes. The c++ dll counts in bytes, so there is always room enough.
-                    b.Capacity = bufszneed + 1;
-                    //allocate an array that is at least as large as what is needed, plus an extra 0 terminator.
-                }
-                else
-                    loop = false;
-            } while (loop);
-            return b.ToString();
-            //in c# this does NOT result in a copy, we get a string that points to the B buffer (If the now immutable string inside b is reused , it will get itself a new buffer
+                    bufferSizeNeededChars =
+                        (int)table_to_json32(t.Handle, buffer, (IntPtr)currentBufferSizeChars);
+
+            } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
+            return StrBufToStr(buffer, (int)bufferSizeNeededChars);
+            
         }
 
 
         [DllImport(L64, EntryPoint = "tableview_to_json", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
-        private static extern IntPtr tableview_to_json64(IntPtr tableHandle, [MarshalAs(UnmanagedType.LPStr)] StringBuilder name, IntPtr bufsize);
+        private static extern IntPtr tableview_to_json64(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize);
 
         [DllImport(L32, EntryPoint = "tableview_to_json", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
-        private static extern IntPtr tableview_to_json32(IntPtr tableHandle, [MarshalAs(UnmanagedType.LPStr)] StringBuilder name, IntPtr bufsize);
-
+        private static extern IntPtr tableview_to_json32(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize);
 
         public static string TableViewToJson(TableView t)
-        {
-            //try to guess the size of the stringbuilder to use - data should be able to be there
+        {           
             var b = new StringBuilder(16);
-
-            bool loop = true;
+            long bufferSizeNeededChars = 16;
+            IntPtr buffer;
+            long currentBufferSizeChars;
             do
             {
-                int bufszneed;
+                buffer = StrAllocateBuffer(out currentBufferSizeChars, bufferSizeNeededChars);
                 if (Is64Bit)
-                    bufszneed =
-                        (int)tableview_to_json64(t.Handle, b, (IntPtr)b.Capacity);
+                    bufferSizeNeededChars =
+                        (long)tableview_to_json64(t.Handle, buffer,(IntPtr) currentBufferSizeChars);
                 else
-                    bufszneed =
-                        (int)tableview_to_json32(t.Handle, b, (IntPtr)b.Capacity);
-                if (b.Capacity <= bufszneed)
-                //Capacity is in .net chars, each of size 16 bits, while bufszneed is in bytes. HOWEVER stringbuilder often store common chars using only 8 bits, making precise calculations troublesome and slow
-                {
-                    //what we know for sure is that the stringbuilder will hold AT LEAST capacity number of bytes. The c++ dll counts in bytes, so there is always room enough.
-                    b.Capacity = bufszneed + 1;
-                    //allocate an array that is at least as large as what is needed, plus an extra 0 terminator.
-                }
-                else
-                    loop = false;
-            } while (loop);
-            return b.ToString();
-            //in c# this does NOT result in a copy, we get a string that points to the B buffer (If the now immutable string inside b is reused , it will get itself a new buffer
+                    bufferSizeNeededChars =
+                        (long)tableview_to_json32(t.Handle, buffer, (IntPtr) currentBufferSizeChars);
+
+            } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
+            return StrBufToStr(buffer, (int)bufferSizeNeededChars);            
         }
 
 
@@ -3922,6 +3993,25 @@ enum DataType {
             {
                 throw new ArgumentException("sent false to testreturnboolean, got true back");
             }
+
+
+            //strings
+
+            //testing calling and receiving a string, no tightdb involved
+            var resultstring2 = TestStringFromCppUsingPointers();
+            if (!resultstring2.Equals("Hello, World!"))
+            {
+                throw new ArgumentException(String.Format(CultureInfo.InvariantCulture,"cpp returned Hello, World! but C# recieved{0}",resultstring2));
+            }
+
+            //testing calling c++ with a string parameter. method returns 42 if the parameter is "Hello, World!"
+
+            const string testtext = "Hello, World!";
+            if (42!=TestStringToCpp(testtext))
+            {
+                throw new ArgumentException("Test string sent to cpp didn't show up as expected. Cpp did not return 42 when sent 'Hello, World!' ");
+            }
+
 
         }
     }

@@ -9,6 +9,8 @@ we should not break easily, and we should know where we have problems.
 
 #include "stdafx.hpp"
 #include "tightdb_c_cs.hpp"
+#include "tightdb/utf8.hpp"
+#include <tightdb/unique_ptr.hpp>
 #include <iostream>
 #include <sstream>
 
@@ -73,6 +75,9 @@ inline size_t datatype_to_size_t(DataType value) {
 }
 
 
+//adapted from tightdb_java2/tightdb_jni/src/util.cpp. Used by utf8 to utf16 conversions
+
+
 } //anonymous namespace
 
 #ifdef __cplusplus
@@ -86,7 +91,7 @@ extern "C" {
  TIGHTDB_C_CS_API size_t tightdb_c_cs_getver(void){
 
   // Table test;
-	return 1305301658;
+	return 1306071446;
 }
 
 
@@ -342,6 +347,165 @@ TIGHTDB_C_CS_API void table_remove_column(Table* table_ptr, size_t column_ndx)
 }
 
 
+
+
+
+class CSStringAccessor {
+public:
+    CSStringAccessor(uint16_t *, size_t);
+
+    operator tightdb::StringData() const TIGHTDB_NOEXCEPT
+    {
+        return tightdb::StringData(m_data.get(), m_size);
+    }
+    bool error;
+private:
+    tightdb::UniquePtr<char[]> m_data;
+    std::size_t m_size;
+};
+
+
+
+CSStringAccessor::CSStringAccessor(uint16_t* csbuffer, size_t csbufsize)
+{
+    // For efficiency, if the incoming UTF-16 string is sufficiently
+    // small, we will choose an UTF-8 output buffer whose size (in
+    // bytes) is simply 4 times the number of 16-bit elements in the
+    // input. This is guaranteed to be enough. However, to avoid
+    // excessive over allocation, this is not done for larger input
+    // strings.
+    
+    error=false;
+    typedef Utf8x16<uint16_t,std::char_traits<char16_t>>Xcode;    //This might not work in old compilers (the std::char_traits<char16_t> ).     
+    size_t max_project_size = 48;
+
+    TIGHTDB_ASSERT(max_project_size <= numeric_limits<size_t>::max()/4);
+    size_t u8buf_size;
+    if (csbufsize <= max_project_size) {
+        u8buf_size = csbufsize * 4;
+    }
+    else {
+        const uint16_t* begin = csbuffer;
+        const uint16_t* end   = csbuffer + csbufsize;
+        u8buf_size = Xcode::find_utf8_buf_size(begin, end);
+    }
+    m_data.reset(new char[u8buf_size]);
+    {
+        const uint16_t* in_begin = csbuffer;
+        const uint16_t* in_end   = csbuffer + csbufsize;
+        char* out_begin = m_data.get();
+        char* out_end   = m_data.get() + u8buf_size;
+        if (!Xcode::to_utf8(in_begin, in_end, out_begin, out_end)){
+           m_size=0;
+           error=true;
+           return;//calling method should handle this. We can't throw exceptions
+        }
+        TIGHTDB_ASSERT(in_begin == in_end);
+        m_size = out_begin - m_data.get();
+    }
+}
+
+
+
+//stringdata is utf8
+//cshapbuffer is a c# stringbuilder buffer marshalled as utf16 bufsize is the size of the csharp buffer measured in 16 bit words. The buffer is in fact one char larger than that, to make room for a terminating null character
+//this method will transcode the utf8 string data inside stringdata to utf16 and put the transcoded data in the buffer. the return value is the size of the buffer that was
+//actually used, measured in 16 bit characters, excluding a null terminator that is also put in
+//if the return sizee is larger than bufsize_in_16bit_words, the buffer was too small, this is a request to be called again with a larger buffer
+//note that this implementation will preserve null characters inside the string - but the C# interop marshalling stuff will truncate the string at the first null character anyways
+//To get around that, we would have to work with an untyped pointer.
+
+//possible return values :
+//-1            :The utf8 data pointed to by str cannot be translated to utf16. it is invalid
+//>=0;<=bufsize :The data in str has been converted to data in csharpbuffer - return value is number of 16 bit characters in cshapbuffer that contains the converted data
+//>bufsize      :The buffer size is too small for the translated string. Please call again with a buffer of at least the size of the return value
+size_t stringdata_to_csharpstringbuffer(StringData str, uint16_t * csharpbuffer, size_t bufsize) //note bufsize is _in_16bit_words 
+{
+    //fast check. If the buffer is very likely too small, just return immediatly with a request for a larger buffer
+    if(str.size()>bufsize) {
+        return str.size();
+    }
+
+    //fast check. Empty strings are handled by just returning zero, not even touching the buffer
+    if(str.size()<=0) {
+        return 0;
+    }
+    const char* in_begin = str.data();
+    const char* in_end = str.data() +str.size();
+
+    uint16_t* out_begin = csharpbuffer;    
+    uint16_t* out_end = csharpbuffer+bufsize;
+    
+    typedef Utf8x16<uint16_t,std::char_traits<char16_t>>Xcode;    //This might not work in old compilers (the std::char_traits<char16_t> ). 
+    
+    size_t size  = Xcode::find_utf16_buf_size(in_begin,in_end);//Figure how much space is actually needed
+    
+    if(in_begin!=in_end) {
+        std::cerr<<str.data();
+      return -1;//bad uft8 data    
+    }
+    if(size>bufsize) 
+        return size; //bufsize is too small. Return needed size
+    
+    //the transcoded string fits in the buffer
+
+     in_begin = str.data();
+     in_end = str.data() +str.size();
+
+    if (Xcode::to_utf16(in_begin,in_end,out_begin,out_end))  {
+        size_t chars_used =out_begin-csharpbuffer;
+        //csharpbuffer[chars_used-5]=0; //slightly ugly hack. C# looks for a null terminated string in the buffer, so we have to null terminate this string for C# to pick up where the end is
+        return (chars_used);        //transcode complete. return the number of 16-bit characters used in the buffer,excluding the null terminator
+    }
+    return -1;//bad utf8 data. this cannot happen
+}
+
+//returns 42 if we got "Hellow, World!" otherwise return -42
+TIGHTDB_C_CS_API size_t test_string_to_cpp(uint16_t * str,size_t bufsize)
+{
+    CSStringAccessor CSString(str,bufsize);
+    //csharpstringbuffer_to_stringdata(stringdata, str,bufsize);
+    StringData sd=CSString;
+    if (sd==("Hello, World!")) {
+        return 42;
+    }
+    std::cerr<<sd;
+    return -42;    
+}
+    
+//stringdata is the destination. str is the source (array of 16 bit unicode chars, could be with nulls in it) bufsize is the number of 16 bit unicode chars present
+//str is owned by C# so do not deallocate it.
+//this code is very much inspired from the java jni src
+void csharpstringbuffer_to_stringdata(StringData stringdata, uint16_t* str, size_t bufsize) 
+{
+    typedef Utf8x16<uint16_t,std::char_traits<char16_t>>Xcode;    //This might not work in old compilers (the std::char_traits<char16_t> ). 
+     size_t max_project_size = 48;
+
+     size_t buf_size;
+     if (bufsize <= max_project_size) {
+        buf_size = bufsize * 4;
+    }
+    else {
+        const uint16_t* begin = str;
+        const uint16_t* end   = str + bufsize;
+        buf_size = Xcode::find_utf8_buf_size(begin, end);
+    }
+
+
+
+
+}
+
+
+TIGHTDB_C_CS_API size_t test_string_from_cpp(uint16_t * buffer, size_t bufsize)
+{
+    StringData str = StringData("Hello, World!");
+    return stringdata_to_csharpstringbuffer(str,buffer, bufsize);    
+    //size_t retval= stringdata_to_csharpstringbuffer(str,buffer, bufsize);    
+    //std::cerr<<"retval("<<retval<<") bufsize("<<bufsize<<")\n";
+    //return retval;
+}
+
 //bufsize is the c# capacity that a stringbuilder was created with
 //colname is a buffer of at least that size
 //the function should copy the column name into colname and zero terminate it, and return the number
@@ -353,47 +517,45 @@ TIGHTDB_C_CS_API void table_remove_column(Table* table_ptr, size_t column_ndx)
 //this function will not make buffer overruns even if the column name is longer than the buffer passed
 //c# is responsible for memory management of the buffer
 
-TIGHTDB_C_CS_API size_t table_get_column_name(Table* table_ptr,size_t column_ndx,char * colname, size_t bufsize)
+TIGHTDB_C_CS_API size_t table_get_column_name(Table* table_ptr,size_t column_ndx,uint16_t * colname, size_t bufsize)
 {
-	const char* cn= table_ptr->get_column_name(column_ndx);
-	return bsd_strlcpy(colname,bufsize, cn);
+    StringData str= table_ptr->get_column_name(column_ndx);   
+    return stringdata_to_csharpstringbuffer(str,colname,bufsize);
 }
 
 //todo:Csharp will currently treat the returned data as ansi with the current codepage - this will be fixed at the same time as the new tightdb strings are released,
 //as the conversion from utc-8 to utc-16 will be done on the c++ side
-TIGHTDB_C_CS_API size_t table_get_string(Table* table_ptr, size_t column_ndx, size_t row_ndx, char * datatochsarp, size_t bufsize)
+TIGHTDB_C_CS_API size_t table_get_string(Table* table_ptr, size_t column_ndx, size_t row_ndx, uint16_t * datatochsarp, size_t bufsize)
 {
-    const char* fielddata=table_ptr->get_string(column_ndx, row_ndx);
-    return bsd_strlcpy(datatochsarp,bufsize,fielddata);
+    StringData fielddata=table_ptr->get_string(column_ndx, row_ndx);
+    return stringdata_to_csharpstringbuffer(fielddata, datatochsarp,bufsize);
 }
 
-TIGHTDB_C_CS_API size_t tableview_get_string(TableView* tableview_ptr, size_t column_ndx, size_t row_ndx, char * datatochsarp, size_t bufsize)
+TIGHTDB_C_CS_API size_t tableview_get_string(TableView* tableview_ptr, size_t column_ndx, size_t row_ndx, uint16_t * datatocsharp, size_t bufsize)
 {
-    const char* fielddata=tableview_ptr->get_string(column_ndx, row_ndx);
-    return bsd_strlcpy(datatochsarp,bufsize,fielddata);
+    StringData fielddata=tableview_ptr->get_string(column_ndx, row_ndx);
+    return stringdata_to_csharpstringbuffer(fielddata,datatocsharp,bufsize);
 }
 
-TIGHTDB_C_CS_API size_t tableview_get_column_name(TableView* tableView_ptr,size_t column_ndx,char * colname, size_t bufsize)
+TIGHTDB_C_CS_API size_t tableview_get_column_name(TableView* tableView_ptr,size_t column_ndx,uint16_t * colname, size_t bufsize)
 {
-	const char* cn= tableView_ptr->get_column_name(column_ndx);
-	return bsd_strlcpy(colname,bufsize, cn);
+    StringData cn= tableView_ptr->get_column_name(column_ndx);
+    return stringdata_to_csharpstringbuffer(cn, colname,bufsize);
 }
 
-TIGHTDB_C_CS_API size_t spec_get_column_name(Spec* spec_ptr,size_t column_ndx,char * colname, size_t bufsize)
+TIGHTDB_C_CS_API size_t spec_get_column_name(Spec* spec_ptr,size_t column_ndx,uint16_t * colname, size_t bufsize)
 {
-	const char* cn= spec_ptr->get_column_name(column_ndx);
-	return bsd_strlcpy(colname,bufsize, cn);
+	StringData cn= spec_ptr->get_column_name(column_ndx);
+    return stringdata_to_csharpstringbuffer(cn,colname,bufsize);
 }
-
-
 
 //    Spec add_subtable_column(const char* name);
+//todo:utf16 to utf8 the name parameter.
 TIGHTDB_C_CS_API Spec* spec_add_subtable_column(Spec* spec_ptr, const char* name)//the returned spec should be disposed of by calling spec_deallocate
 {	
 	Spec subtablespec = spec_ptr->add_subtable_column(name);//will add_subtable_column return the address to a spec?
 	return new Spec(subtablespec);
 }
-
 
 
 TIGHTDB_C_CS_API void table_set_mixed_string(Table* table_ptr, size_t column_ndx, size_t row_ndx, const char* value)
@@ -562,7 +724,7 @@ TIGHTDB_C_CS_API int64_t tableview_get_mixed_date(TableView*  tableView_ptr, siz
        std::cerr<<"table_view_get_mixed_date returns("<<retval<<")\n";
     return retval;
     */
-    return time_t_to_int64_t(tableView_ptr->get_mixed(column_ndx,row_ndx).get_date());
+    return date_to_int64_t(tableView_ptr->get_mixed(column_ndx,row_ndx).get_date());
 }
 
 TIGHTDB_C_CS_API int64_t table_get_mixed_date(Table*  table_ptr, size_t column_ndx, size_t row_ndx)
@@ -572,17 +734,17 @@ TIGHTDB_C_CS_API int64_t table_get_mixed_date(Table*  table_ptr, size_t column_n
        std::cerr<<"table_get_mixed_date returns("<<retval<<")\n";
     return retval;
  */
-   return time_t_to_int64_t(table_ptr->get_mixed(column_ndx,row_ndx).get_date());    
+   return date_to_int64_t(table_ptr->get_mixed(column_ndx,row_ndx).get_date());    
 }
 
 TIGHTDB_C_CS_API int64_t tableview_get_date(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx)
 {
-    return time_t_to_int64_t(tableView_ptr->get_date(column_ndx,row_ndx));
+    return date_to_int64_t(tableView_ptr->get_date(column_ndx,row_ndx));
 }
 
 TIGHTDB_C_CS_API int64_t table_get_date(Table*  table_ptr, size_t column_ndx, size_t row_ndx)
 {
-    return time_t_to_int64_t(table_ptr->get_date(column_ndx,row_ndx));
+    return date_to_int64_t(table_ptr->get_date(column_ndx,row_ndx));
 }
 
 TIGHTDB_C_CS_API int64_t  table_get_mixed_int(Table*  table_ptr, size_t column_ndx, size_t row_ndx)
@@ -639,9 +801,10 @@ TIGHTDB_C_CS_API void table_insert_empty_row(Table* table_ptr, size_t row_ndx, s
     size_t         find_first_binary(size_t column_ndx, const char* value, size_t len) const;
     */
 
-TIGHTDB_C_CS_API size_t table_find_first_binary(Table * table_ptr , size_t column_ndx, char* value, size_t len)
+TIGHTDB_C_CS_API size_t table_find_first_binary(Table * table_ptr , size_t column_ndx, char * value, size_t len)
 {   
-    return  table_ptr->find_first_binary(column_ndx,value,len);
+    BinaryData bd = BinaryData(value,len);
+    return  table_ptr->find_first_binary(column_ndx,bd);
 }
 
 
@@ -800,7 +963,7 @@ TIGHTDB_C_CS_API int64_t table_sum_int(Table * table_ptr , size_t column_ndx)
 {   
     return table_ptr->sum(column_ndx);
 }
-TIGHTDB_C_CS_API float table_sum_float(Table * table_ptr , size_t column_ndx)
+TIGHTDB_C_CS_API double table_sum_float(Table * table_ptr , size_t column_ndx)
 {   
     return table_ptr->sum_float(column_ndx);
 }
@@ -884,7 +1047,7 @@ TIGHTDB_C_CS_API int64_t tableview_sum_int(TableView * tableview_ptr , size_t co
 {   
     return tableview_ptr->sum(column_ndx);
 }
-TIGHTDB_C_CS_API float tableview_sum_float(TableView * tableview_ptr , size_t column_ndx)
+TIGHTDB_C_CS_API double tableview_sum_float(TableView * tableview_ptr , size_t column_ndx)
 {   
     return tableview_ptr->sum_float(column_ndx);
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 
 using System.IO;
@@ -1622,6 +1623,59 @@ intfield2:10//column 2
     [TestFixture]
     public static class StringEncodingTest
     {
+
+
+        [Test]
+        public static void TableGetColumnName()
+        {
+            var testFieldNames = new List<String>
+            {
+                "fieldname",
+                "",
+                "1",
+                "\\",
+                "ÆØÅæøå",
+                "0123456789abcdefghijklmnopqrstuvwxyz"
+            };
+            using (var testTable = new Table())
+            {
+                int n = 0;
+                foreach (string str in testFieldNames)
+                {
+                    testTable.AddColumn(DataType.String, str);
+                    Assert.AreEqual(str, testTable.GetColumnName(n++));
+                }
+            }
+        }
+
+
+        [Test]
+        public static void TableGetColumnIndex()
+        {
+
+            var testFieldNames = new List<String>
+            {
+                "fieldname",
+                "",
+                "1",
+                "\\",
+                "ÆØÅæøå",
+                "0123456789abcdefghijklmnopqrstuvwxyz"
+            };
+            using (var testTable = new Table())
+            {
+                var n = 0;
+                foreach (var str in testFieldNames)
+                {
+                    testTable.AddColumn(DataType.String, str);
+                    Assert.AreEqual(n++, testTable.GetColumnIndex(str));
+                }
+            }
+        }
+
+
+
+
         //Right now this test uses creation of tables as a test - the column name will be set to all sorts of crazy thing, and we want them back that way
         [Test]
         public static void TableWithPerThousandSign()
@@ -3575,20 +3629,23 @@ Table Name  : same names, empty names, mixed types
 //                Table.TestInterop();
 //            }
 
+          //  TableCreateTest.SubTableNoFields();
             EnvironmentTest.ShowVersionTest();
             EnvironmentTest.TestInterop();
+            StringEncodingTest.TableGetColumnName();
+
             //MeasureInteropSpeed();
-            IntegrationTests.TestDynamicTable();
-            IntegrationTests.TestTutorial();
-            QueryTests.QueryBoolEqual();
-            TableAggregateTest.TableMaximumDouble();
-            TableAggregateTest.TableAggreate();
+            //IntegrationTests.TestDynamicTable();
+            //IntegrationTests.TestTutorial();
+            //QueryTests.QueryBoolEqual();
+            //TableAggregateTest.TableMaximumDouble();
+            //TableAggregateTest.TableAggreate();
            // TableViewTests.TableViewAndTableTestMixedFloat();
 //            Iteratortest.TableIterationTest();
   //          Iteratortest.TableViewIterationTest();
     //        Iteratortest.TableorViewIterationTest();
 
-            TableViewTests.TableViewAndTableTestFloatSimple();
+            //TableViewTests.TableViewAndTableTestFloatSimple();
 
      //       TableParameterValidationTest.TableTestMixedDateTime();
              
@@ -3596,7 +3653,6 @@ Table Name  : same names, empty names, mixed types
 
       //      TestDates.TestSaveAndRetrieveDate();
       //      TableCreateTest.TestTableScope();
-
             
             
 
