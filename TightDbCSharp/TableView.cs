@@ -57,7 +57,7 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableViewSumLong(this, columnIndex);
         }
 
-        internal override float SumFloatNoCheck(long columnIndex)
+        internal override double SumFloatNoCheck(long columnIndex)
         {
             return UnsafeNativeMethods.TableViewSumFloat(this, columnIndex);
         }

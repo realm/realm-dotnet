@@ -454,11 +454,11 @@ enum DataType {
 
         public static void GroupNewFile(Group group, string fileName)
         {
-            Console.Error.WriteLine("groupnewfile called");
+            //Console.Error.WriteLine("groupnewfile called");
             group.SetHandle(Is64Bit
                                 ? new_group_file64(fileName, (IntPtr)fileName.Length)
                                 : new_group_file32(fileName, (IntPtr)fileName.Length), true);
-            Console.Error.WriteLine("after new_group_file");
+            //Console.Error.WriteLine("after new_group_file");
         }
 
         [DllImport(L64, EntryPoint = "new_group", CallingConvention = CallingConvention.Cdecl)]
@@ -850,14 +850,14 @@ enum DataType {
         }
 
         [DllImport(L64, EntryPoint = "table_sum_float", CallingConvention = CallingConvention.Cdecl)]
-        private static extern float table_sum_float64(IntPtr tableHandle, IntPtr columnIndex);
+        private static extern double table_sum_float64(IntPtr tableHandle, IntPtr columnIndex);
 
         [DllImport(L32, EntryPoint = "table_sum_float", CallingConvention = CallingConvention.Cdecl)]
-        private static extern float table_sum_float32(IntPtr tableHandle, IntPtr columnIndex);
+        private static extern double table_sum_float32(IntPtr tableHandle, IntPtr columnIndex);
 
 
-        //todo:remove debug code, remove res
-        public static float TableSumFloat(Table table, long columnIndex)
+      
+        public static double TableSumFloat(Table table, long columnIndex)
         {
 
             if (Is64Bit)
@@ -1205,13 +1205,13 @@ enum DataType {
         }
 
         [DllImport(L64, EntryPoint = "tableview_sum_float", CallingConvention = CallingConvention.Cdecl)]
-        private static extern float tableview_sum_float64(IntPtr tableViewHandle, IntPtr columnIndex);
+        private static extern double tableview_sum_float64(IntPtr tableViewHandle, IntPtr columnIndex);
 
         [DllImport(L32, EntryPoint = "tableview_sum_float", CallingConvention = CallingConvention.Cdecl)]
-        private static extern float tableview_sum_float32(IntPtr tableViewHandle, IntPtr columnIndex);
+        private static extern double tableview_sum_float32(IntPtr tableViewHandle, IntPtr columnIndex);
 
 
-        public static float TableViewSumFloat(TableView tableView, long columnIndex)
+        public static double TableViewSumFloat(TableView tableView, long columnIndex)
         {
             if (Is64Bit)
                 return tableview_sum_float64(tableView.Handle, (IntPtr)columnIndex);
@@ -1672,31 +1672,39 @@ enum DataType {
 
         public static void GroupDelete(Group g)
         {
-        //    Console.WriteLine("group delete calling group_delete " + g.ObjectIdentification());           
+//            Console.WriteLine("group delete calling group_delete " + g.ObjectIdentification());           
                 if (Is64Bit)
                     group_delete64(g.Handle);
                 else
                     group_delete32(g.Handle);
             
             g.Handle = IntPtr.Zero;
-        //    Console.WriteLine("group delete called group_delete " + g.ObjectIdentification());
+  //          Console.WriteLine("group delete called group_delete " + g.ObjectIdentification());
         }
 
 
+
+        public static void TestGroupStuff()
+        {
+//            string fn = @"c:\Develope\tightdbf";
+//            IntPtr handle = new_group_file64(fn, (IntPtr)fn.Length);
+ //           group_delete64(handle);
+        }
+
         [DllImport(L64, EntryPoint = "test_testacquireanddeletegroup",
             CallingConvention = CallingConvention.Cdecl)]
-        private static extern void test_testacquireanddeletegroup64();
+        private static extern void test_testacquireanddeletegroup64([MarshalAs(UnmanagedType.LPWStr)]String fn, IntPtr len);
 
         [DllImport(L32, EntryPoint = "test_testacquireanddeletegroup",
             CallingConvention = CallingConvention.Cdecl)]
-        private static extern void test_testacquireanddeletegroup32();
+        private static extern void test_testacquireanddeletegroup32([MarshalAs(UnmanagedType.LPWStr)]String fn, IntPtr len);
 
-        public static void test_testacquireanddeletegroup()
+        public static void test_testacquireanddeletegroup(String filename)
         {
             if (Is64Bit)
-                test_testacquireanddeletegroup64();
+                test_testacquireanddeletegroup64(filename, (IntPtr) filename.Length);
             else
-            test_testacquireanddeletegroup32();
+                test_testacquireanddeletegroup32(filename, (IntPtr)filename.Length);
         }
 
 
@@ -4074,7 +4082,7 @@ enum DataType {
             ReturnStringTest("This is so long that it does not fit inside 48 bytes when converted to UTF-8");//Quite long string that overruns the 48 byte preallocated buffer in cpp to c, and forces a real calculation of the length before UTF16 to UTF conversion
             ReturnStringTest("This string has a null here:\x0000And more data afterwards" );//null characters inside a string should be preserved
             ReturnStringTest("This string ends with a null characer and has a null here:\x0000The End\x0000");//null characters inside a string should be preserved, also if they are the last character in the string
-
+            ReturnStringTest("拉亂𠀀蠟螺𠀁嵐æøå珞藍𠀂𠀃foo𠀄洛𠀅𠀆邏𠀇𠀈𠀉𠀊欄𠀋𠀌𠀍蘭𠀎𠀏羅");
         }
     }
 }

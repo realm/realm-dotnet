@@ -59,7 +59,7 @@ namespace TightDbCSharp
         internal abstract long CountDoubleNoCheck(long columnIndex, Double target);
 
         internal abstract long SumLongNoCheck(long columnIndex);
-        internal abstract float SumFloatNoCheck(long columnIndex);
+        internal abstract double SumFloatNoCheck(long columnIndex);
         internal abstract double SumDoubleNoCheck(long columnIndex);
 
         internal abstract long MinimumLongNoCheck(long columnIndex);
@@ -1232,7 +1232,7 @@ namespace TightDbCSharp
             ValidateColumnIndex(columnIndex);
             return SumLongNoCheck(columnIndex);
         }
-        public float SumFloat(long columnIndex)
+        public double SumFloat(long columnIndex)
         {
             ValidateColumnIndex(columnIndex);
             return SumFloatNoCheck(columnIndex);            
@@ -1322,7 +1322,7 @@ namespace TightDbCSharp
             long columnIndex = GetColumnIndex(columnName);
             return SumLongNoCheck(columnIndex);
         }
-        public float SumFloat(string columnName)
+        public double SumFloat(string columnName)
         {
             long columnIndex = GetColumnIndex(columnName);
             return SumFloatNoCheck(columnIndex);

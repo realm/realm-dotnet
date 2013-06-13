@@ -270,17 +270,14 @@ namespace TestTightDbCSharp
              */
         }
 
+        /*
         [Test]
         public static void TestAcquireAndDeleteGroup()
         {
             
-            Table.TestAcquireAndDeleteGroup();
-            /* 
-             * The tempTable is not used for anything, it's just a way to call on to UnsafeNativeMethods
-             * What is interesting is that this code throws exceptions or crashes on the c++ end
-             */
-        }
-
+            //Table.TestAcquireAndDeleteGroup("");
+        }*/
+    
 
         //this one works. (if you have a directory called Develope in C:\) Do we have a filename/directory problem with the windows build?
         //perhaps we have a problem with locked or illegal files, what to do?
@@ -1920,10 +1917,11 @@ double:-1002//column 3
                     Assert.AreEqual(9f, myTable.GetFloat(2, 1));
                     Assert.AreEqual(15f, myTable.GetFloat(2, 2));
                     Assert.AreEqual(-1001f, myTable.GetFloat(2, 3));
-                    float sf = myTable.SumFloat(2);
+                    double sf = myTable.SumFloat(2);
                     double sd = myTable.SumDouble(3);
+                    double sftv = myTableView.SumFloat(2);
 
-                    Assert.AreEqual(-1000 + 1 + 3 + 5,sl);                    
+                    Assert.AreEqual(-1000 + 1 + 3 + 5,sl);
                     Assert.AreEqual(-1001f + 3f + 9f + 15f, sf);
                     Assert.AreEqual(-1002d + 5d + 15d + 25d, sd);
 
@@ -1949,7 +1947,7 @@ double:-1002//column 3
                     Assert.AreEqual(5d, myTableView.MinimumDouble(3));
 
                     Assert.AreEqual(1 + 3 + 5, myTableView.SumLong(1));
-                    Assert.AreEqual( 3f + 9f + 15f, myTableView.SumFloat(2));
+                    Assert.AreEqual( 3f + 9f + 15f, sftv);
                     Assert.AreEqual( 5d + 15d + 25d, myTableView.SumDouble(3));
 
                     //average methods are not implemented in tightdb yet, Until they are implemented, and our c++ binding
@@ -3630,6 +3628,8 @@ Table Name  : same names, empty names, mixed types
 //            }
 
           //  TableCreateTest.SubTableNoFields();
+            TableAggregateTest.TableAggreate();
+            TableAggregateTest.TableMaximumDouble();
             EnvironmentTest.ShowVersionTest();
             EnvironmentTest.TestInterop();
             StringEncodingTest.TableGetColumnName();
@@ -3653,10 +3653,10 @@ Table Name  : same names, empty names, mixed types
 
       //      TestDates.TestSaveAndRetrieveDate();
       //      TableCreateTest.TestTableScope();
-            
-            
 
-            //GroupTests.CreateGroupFileNameTest();
+            Table.TestAcquireAndDeleteGroup(@"C:\Develope\Tightdbf");
+            //Table.TestGroupStuff();
+           // GroupTests.CreateGroupFileNameTestGoodFile();
      //       TableChangeDataTest.TableIntValueSubTableTest1();
          //    StringEncodingTest.TableWithnonasciiCharacters();//when we have implemented utf-16 to utf-8 both ways, the following tests should be created:
 

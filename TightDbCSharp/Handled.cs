@@ -55,7 +55,7 @@ namespace TightDbCSharp
         //store the pointer to the c++ class, and do neccessary housekeeping
         internal void SetHandle(IntPtr newHandle, bool shouldBeDisposed)
         {            
-            //Console.WriteLine("Handle being set! "+ObjectIdentification());
+//            Console.WriteLine("Handle being set to newhandle:{0}h shouldBeDisposed:{1} ",newHandle.ToString("X"),shouldBeDisposed);
             if (HandleInUse)
             {
                 throw new InvalidEnumArgumentException(String.Format(CultureInfo.InvariantCulture,
@@ -66,7 +66,7 @@ namespace TightDbCSharp
             HandleInUse = true;
             HandleHasBeenUsed = true;
             NotifyCppWhenDisposing = shouldBeDisposed;
-            //Console.WriteLine("Handle has been set:{0}  shouldbedisposed:{1}" , ObjectIdentification(),shouldBeDisposed);
+  //          Console.WriteLine("Handle has been set:{0}  shouldbedisposed:{1}" , ObjectIdentification(),shouldBeDisposed);
         }
 
         //called by users who don't want to use our class anymore.

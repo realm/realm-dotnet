@@ -68,13 +68,15 @@ namespace TightDbCSharp
         }
 
         internal override void ReleaseHandle()
-        {
+        {            
+            Console.WriteLine("ReleaseHandle called "+ObjectIdentification());
             UnsafeNativeMethods.GroupDelete(this);
+            Console.WriteLine("Returned from c++ " + ObjectIdentification());
         }
 
         public override string ObjectIdentification()
         {
-            return string.Format(CultureInfo.InvariantCulture, "Group:" + Handle);
+            return string.Format(CultureInfo.InvariantCulture, "Group:({0:d}d)  ({1}h)" ,Handle,Handle.ToString("X"));
         }
     }
 }

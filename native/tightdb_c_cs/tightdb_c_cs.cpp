@@ -112,7 +112,7 @@ TIGHTDB_C_CS_API size_t tableview_get_column_count(tightdb::TableView* tableView
 
 TIGHTDB_C_CS_API Group* new_group() //should be disposed by calling group_delete
 {
-    //std::cerr<<"before new group()\n";
+//    std::cerr<<"before new group()\n";
     //works Group* g = new Group(Group::unattached_tag());
     //fails  Group* g = new Group();
     Group* g = new Group();
@@ -121,11 +121,6 @@ TIGHTDB_C_CS_API Group* new_group() //should be disposed by calling group_delete
 //    return new Group();        
 }
 
-  TIGHTDB_C_CS_API void test_testacquireanddeletegroup(){
-
-      Group* g  =  new Group("test");     
-	delete(g);
-}
 
 
   class CSStringAccessor {
@@ -145,22 +140,25 @@ private:
 
   TIGHTDB_C_CS_API Group* new_group_file(uint16_t * name, size_t name_len)//should be disposed by calling group_delete
 {  
-    CSStringAccessor name2(name,name_len);    
+    CSStringAccessor name2(name,name_len);
     Group* g = new Group(StringData(name2));
+//    std::cerr<<"Message from c++. Group created. address: ("<<g <<") filename ("<<name2<<")\n";
     return g;
 }
+
+
 
 //should be disposed by calling unbind_table_ref
 TIGHTDB_C_CS_API Table* group_get_table(Group* group_ptr,uint16_t* table_name,size_t table_name_len)
 {   
-    StringData str = CSStringAccessor(table_name,table_name_len);
+    CSStringAccessor str(table_name,table_name_len);
     return LangBindHelper::get_table_ptr(group_ptr,str);
 }
 
 
 TIGHTDB_C_CS_API size_t group_has_table(Group* group_ptr, uint16_t * table_name,size_t table_name_len)//should be disposed by calling unbind_table_ref
 {    
-    StringData str = CSStringAccessor(table_name,table_name_len);
+    CSStringAccessor str(table_name,table_name_len);
     return bool_to_size_t(group_ptr->has_table(str));
 }
 
@@ -222,7 +220,7 @@ TIGHTDB_C_CS_API size_t table_add_column(tightdb::Table* table_ptr,size_t type, 
 //note that we have omitted support for attr until we figure what it's for
 TIGHTDB_C_CS_API size_t spec_add_column(Spec* spec_ptr,size_t type, uint16_t * name,size_t name_len) 
 {
-    StringData str = CSStringAccessor(name,name_len);
+    CSStringAccessor str(name,name_len);
 	return spec_ptr->add_column(size_t_to_datatype(type),str);		
 }
 
@@ -288,7 +286,7 @@ TIGHTDB_C_CS_API  size_t spec_get_column_type(Spec* spec_ptr, const size_t colum
 
 TIGHTDB_C_CS_API void table_rename_column(Table* table_ptr, size_t column_ndx, uint16_t* value, size_t value_len)
 {
-    StringData str = CSStringAccessor(value,value_len);
+    CSStringAccessor str(value,value_len);
     table_ptr->rename_column(column_ndx,str);
 }
 
@@ -475,7 +473,7 @@ TIGHTDB_C_CS_API size_t spec_get_column_name(Spec* spec_ptr,size_t column_ndx,ui
 //todo:utf16 to utf8 the name parameter.
 TIGHTDB_C_CS_API Spec* spec_add_subtable_column(Spec* spec_ptr,uint16_t* name,size_t name_len)//the returned spec should be disposed of by calling spec_deallocate
 {	
-    StringData str = CSStringAccessor(name,name_len);
+    CSStringAccessor str(name,name_len);
 	Spec subtablespec = spec_ptr->add_subtable_column(str);//will add_subtable_column return the address to a spec?
 	return new Spec(subtablespec);
 }
@@ -483,25 +481,27 @@ TIGHTDB_C_CS_API Spec* spec_add_subtable_column(Spec* spec_ptr,uint16_t* name,si
 
 TIGHTDB_C_CS_API void table_set_mixed_string(Table* table_ptr, size_t column_ndx, size_t row_ndx, uint16_t* value,size_t value_len)
 {
-    StringData str = CSStringAccessor(value,value_len);
-    table_ptr->set_mixed(column_ndx,row_ndx,str);
+    CSStringAccessor str(value,value_len);
+    StringData strd = str;
+    table_ptr->set_mixed(column_ndx,row_ndx,strd);
 }
 
 TIGHTDB_C_CS_API void tableview_set_mixed_string(TableView* tableview_ptr, size_t column_ndx, size_t row_ndx, uint16_t* value,size_t value_len)
 {
-    StringData str = CSStringAccessor(value,value_len);
-    tableview_ptr->set_mixed(column_ndx,row_ndx,str);
+    CSStringAccessor str(value,value_len);
+    StringData strd = str;
+    tableview_ptr->set_mixed(column_ndx,row_ndx,strd);
 }
 
 TIGHTDB_C_CS_API void table_set_string(Table* table_ptr, size_t column_ndx, size_t row_ndx,uint16_t* value,size_t value_len)
 {
-    StringData str = CSStringAccessor(value,value_len);
+    CSStringAccessor str(value,value_len);
     table_ptr->set_string(column_ndx,row_ndx,str);
 }
 
 TIGHTDB_C_CS_API void tableview_set_string(TableView* tableview_ptr, size_t column_ndx, size_t row_ndx,uint16_t* value,size_t value_len)
 {
-    StringData str = CSStringAccessor(value,value_len);
+    CSStringAccessor str (value,value_len);
     tableview_ptr->set_string(column_ndx,row_ndx,str);
 }
 
@@ -707,7 +707,7 @@ TIGHTDB_C_CS_API size_t table_find_first_binary(Table * table_ptr , size_t colum
 
 TIGHTDB_C_CS_API size_t table_find_first_string(Table * table_ptr , size_t column_ndx, uint16_t * value,size_t value_len)
 {   
-    StringData str = CSStringAccessor(value,value_len);
+    CSStringAccessor str(value,value_len);
     return  table_ptr->find_first_string(column_ndx,str);
 }
 
@@ -762,7 +762,7 @@ TIGHTDB_C_CS_API size_t tableView_find_first_binary(TableView * table_ptr , size
 
 TIGHTDB_C_CS_API size_t tableview_find_first_string(TableView * table_ptr , size_t column_ndx, uint16_t* value,size_t value_len)
 {   
-    StringData str = CSStringAccessor(value,value_len);
+    CSStringAccessor str(value,value_len);
     return  table_ptr->find_first_string(column_ndx,str);
 }
 
@@ -804,7 +804,7 @@ TIGHTDB_C_CS_API tightdb::TableView* table_find_all_int(Table * table_ptr , size
 
 TIGHTDB_C_CS_API tightdb::TableView* table_find_all_string(Table * table_ptr , size_t column_ndx, uint16_t* value,size_t value_len)
 {   
-    StringData str = CSStringAccessor(value,value_len);
+    CSStringAccessor str(value,value_len);
     return new TableView(table_ptr->find_all_string(column_ndx,str));            
 }
 
@@ -815,7 +815,7 @@ TIGHTDB_C_CS_API tightdb::TableView* tableview_find_all_int(TableView * tablevie
 
 TIGHTDB_C_CS_API tightdb::TableView* tableview_find_all_string(TableView * tableview_ptr , size_t column_ndx, uint16_t* value,size_t value_len)
 {   
-    StringData str = CSStringAccessor(value,value_len);
+    CSStringAccessor str(value,value_len);
     return new TableView(tableview_ptr->find_all_string(column_ndx,str));
 }
 
@@ -838,7 +838,7 @@ TIGHTDB_C_CS_API int64_t table_count_int(Table * table_ptr , size_t column_ndx,i
 
 TIGHTDB_C_CS_API int64_t table_count_string(Table * table_ptr , size_t column_ndx,uint16_t * target,size_t target_len)
 {   
-    StringData str = CSStringAccessor(target,target_len);
+    CSStringAccessor str(target,target_len);
     return table_ptr->count_string(column_ndx,str);    
 }
 
@@ -923,7 +923,7 @@ TIGHTDB_C_CS_API int64_t tableview_count_int(TableView * tableview_ptr , size_t 
 //waiting for this to be implemented in tightdb c++ bindings/core
 TIGHTDB_C_CS_API int64_t tableview_count_string(TableView * tableview_ptr , size_t column_ndx,uint16_t * target,size_t target_len)
 {   
-//    StringData str = CSStringAccessor(target,target_len);
+//    CSStringAccessor str(target,target_len);
 //    return tableview_ptr->count_string(column_ndx,str);  
     return 0;
 }
@@ -1024,7 +1024,7 @@ TIGHTDB_C_CS_API size_t table_to_json(Table* table_ptr,uint16_t * data, size_t b
 //assuming that the get_table() does not return anything that must be deleted
 TIGHTDB_C_CS_API size_t query_get_column_index(tightdb::Query* query_ptr,uint16_t *  column_name,size_t column_name_len)
 {
-    CSStringAccessor str = CSStringAccessor(column_name,column_name_len);
+     CSStringAccessor str(column_name,column_name_len);
     return query_ptr->get_table()->get_column_index(str);
 }
 
@@ -1104,9 +1104,44 @@ TIGHTDB_C_CS_API void query_delete(Query* query_ptr )
 
 TIGHTDB_C_CS_API void group_delete(Group* group_ptr )
 {
+//    std::cerr<<"Message from c++. Group to be deleted. address: ("<<group_ptr <<")\n";
+//    std::cerr<<group_ptr->size()<<"\n";//use g
+    
     delete(group_ptr);
+//    std::cerr<<"deleted group "<<group_ptr;
 }
 
+
+void test_test_test() {
+     uint16_t *  test =(uint16_t * ) L"C:\\Develope\\Testgroupf";
+    
+    size_t namelen=22;
+//    Group * g  = new_group_file(test,namelen);
+    Group * g = new_group();
+//        Group * g  = new_group_file(test,namelen);
+//    Group* g = reinterpret_cast<Group*>(new int);
+    g->get_table("hep");
+
+    std::cerr<<g->size();//use g
+
+    group_delete(g);
+}
+
+
+  TIGHTDB_C_CS_API void test_testacquireanddeletegroup(uint16_t * name, size_t len)
+  
+  {
+//    std::cerr<<"Message from c++  callling test_test_test \n";
+
+      test_test_test();
+    std::cerr<<"Message from c++  call received with len "<<len<<"\n";
+    Group* g = new_group_file(name,len);
+    std::cerr<<"Message from c++  After call to new_group_file. g is("<<g<<") \n";
+    group_delete(g);
+    std::cerr<<"Message from c++  After call to group_delete";
+//      Group* g  =  new Group("test");     
+//	delete(g);
+}
 
 
 

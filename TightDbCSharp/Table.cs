@@ -216,10 +216,16 @@ namespace TightDbCSharp
             UnsafeNativeMethods.TestInterop();
         }
 
-        //test method that will probably be removed in the release. Used to showcase that it's c++ that crashes when group is given a valid file name string with unspecified location
-        public static void TestAcquireAndDeleteGroup()
+        public static void TestGroupStuff()
         {
-            UnsafeNativeMethods.test_testacquireanddeletegroup();
+            UnsafeNativeMethods.TestGroupStuff();
+        }
+
+
+        //test method that will probably be removed in the release. Used to showcase that it's c++ that crashes when group is given a valid file name string with unspecified location
+        public static void TestAcquireAndDeleteGroup(string filename)
+        {
+            UnsafeNativeMethods.test_testacquireanddeletegroup(filename);
         }
 
 
@@ -312,7 +318,7 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableSumLong(this, columnIndex);
         }
 
-        internal override float SumFloatNoCheck(long columnIndex)
+        internal override double SumFloatNoCheck(long columnIndex)
         {
             return UnsafeNativeMethods.TableSumFloat(this, columnIndex);           
         }
