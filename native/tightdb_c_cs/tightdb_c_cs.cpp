@@ -128,31 +128,40 @@ TIGHTDB_C_CS_API Group* new_group() //should be disposed by calling group_delete
 }
 
 
+  class CSStringAccessor {
+public:
+    CSStringAccessor(uint16_t *, size_t);
 
-TIGHTDB_C_CS_API Group* new_group_file(const char* name)//should be disposed by calling group_delete
-{
-//    std::cerr<<"before new_group_file\n";
-//    std::cerr<<"called with name ";
-//    std::cerr<<name;
-//    std::cerr<<"\n";
+    operator tightdb::StringData() const TIGHTDB_NOEXCEPT
+    {
+        return tightdb::StringData(m_data.get(), m_size);
+    }
+    bool error;
+private:
+    tightdb::UniquePtr<char[]> m_data;
+    std::size_t m_size;
+};
 
-    //Group* g = new Group(Group::unattached_tag());
-      
-      Group* g = new Group(name);
-//      std::cerr<<"after new group\n";
+
+  TIGHTDB_C_CS_API Group* new_group_file(uint16_t * name, size_t name_len)//should be disposed by calling group_delete
+{  
+    CSStringAccessor name2(name,name_len);    
+    Group* g = new Group(StringData(name2));
     return g;
-//    return new Group();        
 }
 
-TIGHTDB_C_CS_API Table* group_get_table(Group* group_ptr, char* table_name)//should be disposed by calling unbind_table_ref
-{    
-    return LangBindHelper::get_table_ptr(group_ptr,table_name);
+//should be disposed by calling unbind_table_ref
+TIGHTDB_C_CS_API Table* group_get_table(Group* group_ptr,uint16_t* table_name,size_t table_name_len)
+{   
+    StringData str = CSStringAccessor(table_name,table_name_len);
+    return LangBindHelper::get_table_ptr(group_ptr,str);
 }
 
 
-TIGHTDB_C_CS_API size_t group_has_table(Group* group_ptr, char* table_name)//should be disposed by calling unbind_table_ref
+TIGHTDB_C_CS_API size_t group_has_table(Group* group_ptr, uint16_t * table_name,size_t table_name_len)//should be disposed by calling unbind_table_ref
 {    
-    return bool_to_size_t(group_ptr->has_table(table_name));
+    StringData str = CSStringAccessor(table_name,table_name_len);
+    return bool_to_size_t(group_ptr->has_table(str));
 }
 
 
@@ -191,17 +200,30 @@ TIGHTDB_C_CS_API void tableview_remove_row(tightdb::TableView* tableView_ptr, si
     tableView_ptr->remove(row_ndx);
 }
 
+/*
 
-TIGHTDB_C_CS_API size_t table_add_column(tightdb::Table* table_ptr,size_t type, const char* name)
+//the value returned is the number of chars that are in use in the fromcppbuffer
+TIGHTDB_C_CS_API size_t test_string_returner(uint16_t* tocppbuffer, size_t tocppbuffersize, uint16_t* fromcppbuffer,size_t fromcppbuffersize) 
 {
-    return table_ptr->add_column(size_t_to_datatype(type),name);
+    CSStringAccessor CSString(tocppbuffer,tocppbuffersize);//acquire the cs string , convert to UTF-8 and put it into CSString
+    StringData fromcs = CSString;//create a StringData wrapper around the string
+    return stringdata_to_csharpstringbuffer(fromcs,fromcppbuffer,fromcppbuffersize);//fill up the return buffer with the UTF-16 version of the UTF-8 fromcs
+}
+
+*/
+
+TIGHTDB_C_CS_API size_t table_add_column(tightdb::Table* table_ptr,size_t type,  uint16_t * name,size_t name_len)
+{
+    CSStringAccessor str(name,name_len);
+    return table_ptr->add_column(size_t_to_datatype(type),str);
 }
 
 //    size_t add_column(DataType type, const char* name, ColumnType attr=col_attr_None);
 //note that we have omitted support for attr until we figure what it's for
-TIGHTDB_C_CS_API size_t spec_add_column(Spec* spec_ptr,size_t type, const char* name) 
+TIGHTDB_C_CS_API size_t spec_add_column(Spec* spec_ptr,size_t type, uint16_t * name,size_t name_len) 
 {
-	return spec_ptr->add_column(size_t_to_datatype(type),name);		
+    StringData str = CSStringAccessor(name,name_len);
+	return spec_ptr->add_column(size_t_to_datatype(type),str);		
 }
 
 //returns the spec that is associated with a table
@@ -262,83 +284,12 @@ TIGHTDB_C_CS_API  size_t spec_get_column_type(Spec* spec_ptr, const size_t colum
 
 
 
-//#1 if the string (incl. nulll termination) does not fill in bufsize
-//this function returns the desired bufsize needed to hold the string
-//also, the buffer might have been updated with data,so the buffer contents is undefined
-//in reality as much data as could fit in the buffer has been copied over
-//however, the buffer is guarenteed not to have been overrun reg. bufsize
-//#2 if the string did fit (including null termination is smaller or eq to bufsize)
-//then sbuffer has been filled with the string, and the return value is the size of the string
-//null termination excluded
-//in general speed is dependent on the size of the src string, not on the size of the buffer
-//as it would if strncpy had been used. Also, we do not create a buffer overrun as if strcpy had
-//been used, and the string is too small compared to the buffer
-//be aware that this code will likely change as soon as tightdb string representation changes
-//also note that this function is used for column names as well as column values, so in case tightdb
-//strings don't change for column names, but for column string data, two methods are needed, one for  char*
-//and one for whatever new stuff we get in tightdb
-size_t bsd_strlcpy(char * dst,size_t siz,const char * src)
+
+
+TIGHTDB_C_CS_API void table_rename_column(Table* table_ptr, size_t column_ndx, uint16_t* value, size_t value_len)
 {
-	
-	//strlcpy is not supported on many platforms, thus we use the BSD open source version,
-	//without the function header, as we need that functionality (safe copy to buffer, size known)
-    //the function has been changed to return and take size_t instead of int
-
-	//to comply with copyright, the header below must be included.
-
-/*	$OpenBSD: strlcpy.c,v 1.11 2006/05/05 15:27:38 millert Exp $	*/
-/*
- * Copyright (c) 1998 Todd C. Miller <Todd.Miller@courtesan.com>
- *
- * Permission to use, copy, modify, and distribute this software for any
- * purpose with or without fee is hereby granted, provided that the above
- * copyright notice and this permission notice appear in all copies.
- *
- * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
- * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
- * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
- * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- */
-
-
-/*
- * Copy src to string dst of size siz.  At most siz-1 characters
- * will be copied.  Always NUL terminates (unless siz == 0).
- * Returns strlen(src); if retval >= siz, truncation occurred.
- */
-//size_t
-//strlcpy(char *dst, const char *src, size_t siz)
-//{
-	char *d = dst;
-	const char *s = src;
-	size_t n = siz;
-
-	/* Copy as many bytes as will fit */
-	if (n != 0) {
-		while (--n != 0) {
-			if ((*d++ = *s++) == '\0')
-				break;
-		}
-	}
-
-	/* Not enough room in dst, add NUL and traverse rest of src */
-	if (n == 0) {
-		if (siz != 0)
-			*d = '\0';		/* NUL-terminate dst */
-		while (*s++)
-			;
-	}
-
-	return(s - src - 1);	/* count does not include NUL */
-}
-
-
-TIGHTDB_C_CS_API void table_rename_column(Table* table_ptr, size_t column_ndx, const char* value)
-{
-    table_ptr->rename_column(column_ndx,value);
+    StringData str = CSStringAccessor(value,value_len);
+    table_ptr->rename_column(column_ndx,str);
 }
 
 TIGHTDB_C_CS_API void table_remove_column(Table* table_ptr, size_t column_ndx)
@@ -350,19 +301,6 @@ TIGHTDB_C_CS_API void table_remove_column(Table* table_ptr, size_t column_ndx)
 
 
 
-class CSStringAccessor {
-public:
-    CSStringAccessor(uint16_t *, size_t);
-
-    operator tightdb::StringData() const TIGHTDB_NOEXCEPT
-    {
-        return tightdb::StringData(m_data.get(), m_size);
-    }
-    bool error;
-private:
-    tightdb::UniquePtr<char[]> m_data;
-    std::size_t m_size;
-};
 
 
 
@@ -472,38 +410,22 @@ TIGHTDB_C_CS_API size_t test_string_to_cpp(uint16_t * str,size_t bufsize)
     std::cerr<<sd;
     return -42;    
 }
-    
-//stringdata is the destination. str is the source (array of 16 bit unicode chars, could be with nulls in it) bufsize is the number of 16 bit unicode chars present
-//str is owned by C# so do not deallocate it.
-//this code is very much inspired from the java jni src
-void csharpstringbuffer_to_stringdata(StringData stringdata, uint16_t* str, size_t bufsize) 
+
+
+
+
+//the value returned is the number of chars that are in use in the fromcppbuffer
+TIGHTDB_C_CS_API size_t test_string_returner(uint16_t* tocppbuffer, size_t tocppbuffersize, uint16_t* fromcppbuffer,size_t fromcppbuffersize) 
 {
-    typedef Utf8x16<uint16_t,std::char_traits<char16_t>>Xcode;    //This might not work in old compilers (the std::char_traits<char16_t> ). 
-     size_t max_project_size = 48;
-
-     size_t buf_size;
-     if (bufsize <= max_project_size) {
-        buf_size = bufsize * 4;
-    }
-    else {
-        const uint16_t* begin = str;
-        const uint16_t* end   = str + bufsize;
-        buf_size = Xcode::find_utf8_buf_size(begin, end);
-    }
-
-
-
-
+    CSStringAccessor CSString(tocppbuffer,tocppbuffersize);//acquire the cs string , convert to UTF-8 and put it into CSString
+    StringData fromcs = CSString;//create a StringData wrapper around the string
+    return stringdata_to_csharpstringbuffer(fromcs,fromcppbuffer,fromcppbuffersize);//fill up the return buffer with the UTF-16 version of the UTF-8 fromcs
 }
-
 
 TIGHTDB_C_CS_API size_t test_string_from_cpp(uint16_t * buffer, size_t bufsize)
 {
     StringData str = StringData("Hello, World!");
     return stringdata_to_csharpstringbuffer(str,buffer, bufsize);    
-    //size_t retval= stringdata_to_csharpstringbuffer(str,buffer, bufsize);    
-    //std::cerr<<"retval("<<retval<<") bufsize("<<bufsize<<")\n";
-    //return retval;
 }
 
 //bufsize is the c# capacity that a stringbuilder was created with
@@ -551,31 +473,36 @@ TIGHTDB_C_CS_API size_t spec_get_column_name(Spec* spec_ptr,size_t column_ndx,ui
 
 //    Spec add_subtable_column(const char* name);
 //todo:utf16 to utf8 the name parameter.
-TIGHTDB_C_CS_API Spec* spec_add_subtable_column(Spec* spec_ptr, const char* name)//the returned spec should be disposed of by calling spec_deallocate
+TIGHTDB_C_CS_API Spec* spec_add_subtable_column(Spec* spec_ptr,uint16_t* name,size_t name_len)//the returned spec should be disposed of by calling spec_deallocate
 {	
-	Spec subtablespec = spec_ptr->add_subtable_column(name);//will add_subtable_column return the address to a spec?
+    StringData str = CSStringAccessor(name,name_len);
+	Spec subtablespec = spec_ptr->add_subtable_column(str);//will add_subtable_column return the address to a spec?
 	return new Spec(subtablespec);
 }
 
 
-TIGHTDB_C_CS_API void table_set_mixed_string(Table* table_ptr, size_t column_ndx, size_t row_ndx, const char* value)
+TIGHTDB_C_CS_API void table_set_mixed_string(Table* table_ptr, size_t column_ndx, size_t row_ndx, uint16_t* value,size_t value_len)
 {
-    table_ptr->set_mixed(column_ndx,row_ndx,value);
+    StringData str = CSStringAccessor(value,value_len);
+    table_ptr->set_mixed(column_ndx,row_ndx,str);
 }
 
-TIGHTDB_C_CS_API void tableview_set_mixed_string(TableView* tableview_ptr, size_t column_ndx, size_t row_ndx, const char* value)
+TIGHTDB_C_CS_API void tableview_set_mixed_string(TableView* tableview_ptr, size_t column_ndx, size_t row_ndx, uint16_t* value,size_t value_len)
 {
-    tableview_ptr->set_mixed(column_ndx,row_ndx,value);
+    StringData str = CSStringAccessor(value,value_len);
+    tableview_ptr->set_mixed(column_ndx,row_ndx,str);
 }
 
-TIGHTDB_C_CS_API void table_set_string(Table* table_ptr, size_t column_ndx, size_t row_ndx, const char* value)
+TIGHTDB_C_CS_API void table_set_string(Table* table_ptr, size_t column_ndx, size_t row_ndx,uint16_t* value,size_t value_len)
 {
-    table_ptr->set_string(column_ndx,row_ndx,value);
+    StringData str = CSStringAccessor(value,value_len);
+    table_ptr->set_string(column_ndx,row_ndx,str);
 }
 
-TIGHTDB_C_CS_API void tableview_set_string(TableView* tableview_ptr, size_t column_ndx, size_t row_ndx, const char* value)
+TIGHTDB_C_CS_API void tableview_set_string(TableView* tableview_ptr, size_t column_ndx, size_t row_ndx,uint16_t* value,size_t value_len)
 {
-    tableview_ptr->set_string(column_ndx,row_ndx,value);
+    StringData str = CSStringAccessor(value,value_len);
+    tableview_ptr->set_string(column_ndx,row_ndx,str);
 }
 
 
@@ -694,46 +621,16 @@ TIGHTDB_C_CS_API void tableview_set_mixed_date(TableView*  tableView_ptr, size_t
 //if we stumble upon a platform that stores time_t in a 32 bit value, we might have to have a function that returns the size of time_t
 TIGHTDB_C_CS_API void table_set_mixed_date(Table*  table_ptr, size_t column_ndx, size_t row_ndx, int64_t value)
 {
-/*    
-       std::cerr<<"table_set_mixed_date got("<<value <<")\n";
-    table_ptr->set_mixed(column_ndx,row_ndx,int64_t_to_Date(value));
-
-    Mixed m = table_ptr->get_mixed(column_ndx,row_ndx);
-    
-    DataType t = m.get_type();
-
-    time_t retval = m.get_date();    
-
-     std::cerr<<"datatype ("<<t<<")";
-     std::cerr<<"retval ("<<retval<<")";
-
-     int64_t retval2 = time_t_to_int64_t(retval);
-
-       std::cerr<<"table_get_mixed_date returns("<<retval2<<")\n";
-       */
-//original code!
     table_ptr->set_mixed(column_ndx,row_ndx,int64_t_to_date(value));
-
 }
 
 TIGHTDB_C_CS_API int64_t tableview_get_mixed_date(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx)
 {
-    /*
-    int64_t retval = time_t_to_int64_t(tableView_ptr->get_mixed(column_ndx,row_ndx).get_date());
-
-       std::cerr<<"table_view_get_mixed_date returns("<<retval<<")\n";
-    return retval;
-    */
     return date_to_int64_t(tableView_ptr->get_mixed(column_ndx,row_ndx).get_date());
 }
 
 TIGHTDB_C_CS_API int64_t table_get_mixed_date(Table*  table_ptr, size_t column_ndx, size_t row_ndx)
 {
-    /*
- int64_t retval = time_t_to_int64_t(table_ptr->get_mixed(column_ndx,row_ndx).get_date());    
-       std::cerr<<"table_get_mixed_date returns("<<retval<<")\n";
-    return retval;
- */
    return date_to_int64_t(table_ptr->get_mixed(column_ndx,row_ndx).get_date());    
 }
 
@@ -808,9 +705,10 @@ TIGHTDB_C_CS_API size_t table_find_first_binary(Table * table_ptr , size_t colum
 }
 
 
-TIGHTDB_C_CS_API size_t table_find_first_string(Table * table_ptr , size_t column_ndx, char* value)
+TIGHTDB_C_CS_API size_t table_find_first_string(Table * table_ptr , size_t column_ndx, uint16_t * value,size_t value_len)
 {   
-    return  table_ptr->find_first_string(column_ndx,value);
+    StringData str = CSStringAccessor(value,value_len);
+    return  table_ptr->find_first_string(column_ndx,str);
 }
 
 
@@ -862,11 +760,11 @@ TIGHTDB_C_CS_API size_t tableView_find_first_binary(TableView * table_ptr , size
 }
 */
 
-TIGHTDB_C_CS_API size_t tableview_find_first_string(TableView * table_ptr , size_t column_ndx, char* value)
+TIGHTDB_C_CS_API size_t tableview_find_first_string(TableView * table_ptr , size_t column_ndx, uint16_t* value,size_t value_len)
 {   
-    return  table_ptr->find_first_string(column_ndx,value);
+    StringData str = CSStringAccessor(value,value_len);
+    return  table_ptr->find_first_string(column_ndx,str);
 }
-
 
 
 TIGHTDB_C_CS_API size_t tableview_find_first_double(TableView * table_ptr , size_t column_ndx, double value)
@@ -904,9 +802,10 @@ TIGHTDB_C_CS_API tightdb::TableView* table_find_all_int(Table * table_ptr , size
     return new TableView(table_ptr->find_all_int(column_ndx,value));            
 }
 
-TIGHTDB_C_CS_API tightdb::TableView* table_find_all_string(Table * table_ptr , size_t column_ndx, char* value)
+TIGHTDB_C_CS_API tightdb::TableView* table_find_all_string(Table * table_ptr , size_t column_ndx, uint16_t* value,size_t value_len)
 {   
-    return new TableView(table_ptr->find_all_string(column_ndx,value));            
+    StringData str = CSStringAccessor(value,value_len);
+    return new TableView(table_ptr->find_all_string(column_ndx,str));            
 }
 
 TIGHTDB_C_CS_API tightdb::TableView* tableview_find_all_int(TableView * tableview_ptr , size_t column_ndx, int64_t value)
@@ -914,13 +813,11 @@ TIGHTDB_C_CS_API tightdb::TableView* tableview_find_all_int(TableView * tablevie
     return new TableView(tableview_ptr->find_all_int(column_ndx,value));            
 }
 
-TIGHTDB_C_CS_API tightdb::TableView* tableview_find_all_string(TableView * tableview_ptr , size_t column_ndx, char* value)
+TIGHTDB_C_CS_API tightdb::TableView* tableview_find_all_string(TableView * tableview_ptr , size_t column_ndx, uint16_t* value,size_t value_len)
 {   
-    return new TableView(tableview_ptr->find_all_string(column_ndx,value));            
+    StringData str = CSStringAccessor(value,value_len);
+    return new TableView(tableview_ptr->find_all_string(column_ndx,str));
 }
-
-
-
 
 TIGHTDB_C_CS_API tightdb::TableView* table_distinct(Table * table_ptr , size_t column_ndx)
 {   
@@ -939,10 +836,10 @@ TIGHTDB_C_CS_API int64_t table_count_int(Table * table_ptr , size_t column_ndx,i
     return table_ptr->count_int(column_ndx,target);
 }
 
-TIGHTDB_C_CS_API int64_t table_count_string(Table * table_ptr , size_t column_ndx,char * target)
+TIGHTDB_C_CS_API int64_t table_count_string(Table * table_ptr , size_t column_ndx,uint16_t * target,size_t target_len)
 {   
-    std::cerr<<"col "<<column_ndx<<" target "<<target<<"\n";
-    return table_ptr->count_string(column_ndx,target);    
+    StringData str = CSStringAccessor(target,target_len);
+    return table_ptr->count_string(column_ndx,str);    
 }
 
 TIGHTDB_C_CS_API int64_t table_count_float(Table * table_ptr , size_t column_ndx,float target)
@@ -1023,10 +920,12 @@ TIGHTDB_C_CS_API int64_t tableview_count_int(TableView * tableview_ptr , size_t 
     return 0;
 }
 
-TIGHTDB_C_CS_API int64_t tableview_count_string(TableView * tableview_ptr , size_t column_ndx,char * target)
+//waiting for this to be implemented in tightdb c++ bindings/core
+TIGHTDB_C_CS_API int64_t tableview_count_string(TableView * tableview_ptr , size_t column_ndx,uint16_t * target,size_t target_len)
 {   
-  //  return tableview_ptr->count_string(column_ndx,target);
-        return 0;
+//    StringData str = CSStringAccessor(target,target_len);
+//    return tableview_ptr->count_string(column_ndx,str);  
+    return 0;
 }
 
 TIGHTDB_C_CS_API int64_t tableview_count_float(TableView * tableview_ptr , size_t column_ndx,float target)
@@ -1109,29 +1008,24 @@ TIGHTDB_C_CS_API double tableview_average_double(TableView * tableview_ptr , siz
 //decide wether to implement an endpoint C# stream that then reads from the c++ stream output from to_json
 //or just to put the to_json(ss) output into a std:string and then convert it to utf-16 and return it as a normal c# string
 //the latter is of course more simple
-//as strings will be changed very soon, this method right now just returns the entire stream contents in an utf-8 buffer, like all other
-//string returns.
-//todo : ensure this doesn't memoryleak. The c++ unit tests do basically the same as i do here (re. ss and str not being on the stack)
-//the c++ part of the java binding do the same as I do reg the str.c_str() call
 //note that calling from C# it is probably best to guess the buffer size large enough, as the alternative is that the tightdb to_json method is called twice
-//THIS WILL BE REWRITTEN VERY SOON WHEN I IMPLEMENT THE NEW STRINGS. the next version will not call tighdb->to_json twice
-TIGHTDB_C_CS_API size_t table_to_json(Table* table_ptr,char * data, size_t bufsize)
+//we could also create a class holding the string, and return a handle to it to C# and have another method that copies data once the buffer is large enough
+TIGHTDB_C_CS_API size_t table_to_json(Table* table_ptr,uint16_t * data, size_t bufsize)
 {
    // Write table to string in JSON format
    std::ostringstream ss;
    ss.sync_with_stdio(false); // for performance
-   table_ptr->to_json(ss);
-   
-   const std::string str = ss.str(); 
-   return bsd_strlcpy(data,bufsize, str.c_str());
+   table_ptr->to_json(ss);   
+   StringData str = ss.str(); 
+   return stringdata_to_csharpstringbuffer(str,data,bufsize);
 }
-
 
 //convert from columnName to columnIndex returns -1 if the string is not a column name
 //assuming that the get_table() does not return anything that must be deleted
-TIGHTDB_C_CS_API size_t query_get_column_index(tightdb::Query* query_ptr,char *  column_name)
+TIGHTDB_C_CS_API size_t query_get_column_index(tightdb::Query* query_ptr,uint16_t *  column_name,size_t column_name_len)
 {
-    return query_ptr->get_table()->get_column_index(column_name);
+    CSStringAccessor str = CSStringAccessor(column_name,column_name_len);
+    return query_ptr->get_table()->get_column_index(str);
 }
 
 //todo:implement call that uses all the parametres
@@ -1148,14 +1042,16 @@ TIGHTDB_C_CS_API size_t query_count(tightdb::Query* query_ptr,size_t start,size_
 
 
 
-TIGHTDB_C_CS_API size_t table_get_column_index(Table* table_ptr,char *  column_name)
+TIGHTDB_C_CS_API size_t table_get_column_index(Table* table_ptr,uint16_t *  column_name,size_t column_name_len)
 {
-    return table_ptr->get_column_index(column_name);
+    CSStringAccessor str = CSStringAccessor(column_name,column_name_len);
+    return table_ptr->get_column_index(str);
 }
 
-TIGHTDB_C_CS_API size_t tableview_get_column_index(TableView* tableView_ptr,char *  column_name)
+TIGHTDB_C_CS_API size_t tableview_get_column_index(TableView* tableView_ptr,uint16_t *  column_name,size_t column_name_len)
 {
-    return tableView_ptr->get_column_index(column_name);
+    CSStringAccessor str = CSStringAccessor(column_name,column_name_len);
+    return tableView_ptr->get_column_index(str);
 }
 
 
@@ -1198,19 +1094,16 @@ TIGHTDB_C_CS_API void query_int_between(Query * query_ptr, size_t columnIndex, i
 
 TIGHTDB_C_CS_API void tableview_delete(TableView * tableview_ptr )
 {
-//    std::cerr<<"before delete tableview_ptr \n";
     delete(tableview_ptr);
 }
 
 TIGHTDB_C_CS_API void query_delete(Query* query_ptr )
 { 
-//    std::cerr<<"before delete query_ptr \n";
     delete(query_ptr);
 }
 
 TIGHTDB_C_CS_API void group_delete(Group* group_ptr )
 {
-  //  std::cerr<<"before delete group_ptr\n";
     delete(group_ptr);
 }
 

@@ -217,59 +217,59 @@ enum DataType {
         //so this must be tested on various platforms and bit sizes, and perhaps specific versions of calls with enums have to be made
         //this one works on windows 7, .net 4.5 32 bit, tightdb 32 bit (on a 64 bit OS, but that shouldn't make a difference)
         [DllImport(L32, EntryPoint = "spec_add_column", CallingConvention = CallingConvention.Cdecl)]
-        private static extern UIntPtr spec_add_column32(IntPtr spechandle, IntPtr type,[MarshalAs(UnmanagedType.LPStr)] string name);
+        private static extern UIntPtr spec_add_column32(IntPtr spechandle, IntPtr type,[MarshalAs(UnmanagedType.LPWStr)] string name,IntPtr nameLen);
 
         [DllImport(L64, EntryPoint = "spec_add_column", CallingConvention = CallingConvention.Cdecl,CharSet = CharSet.Unicode)]
-        private static extern UIntPtr spec_add_column64(IntPtr spechandle, IntPtr type, [MarshalAs(UnmanagedType.LPStr)] string name);
+        private static extern UIntPtr spec_add_column64(IntPtr spechandle, IntPtr type, [MarshalAs(UnmanagedType.LPWStr)] string name,IntPtr nameLen);
 
         public static long SpecAddColumn(Spec spec, DataType type, string name)
         {
             if (Is64Bit)
-                return (long)spec_add_column64(spec.Handle, DataTypeToIntPtr (type), name);
-            return (long)spec_add_column32(spec.Handle, DataTypeToIntPtr(type), name);
+                return (long)spec_add_column64(spec.Handle, DataTypeToIntPtr (type), name,(IntPtr)name.Length);
+            return (long)spec_add_column32(spec.Handle, DataTypeToIntPtr(type), name, (IntPtr)name.Length);
         }
 
 
         [DllImport(L32, EntryPoint = "table_get_column_index", CallingConvention = CallingConvention.Cdecl)]
-        private static extern UIntPtr table_get_column_index32(IntPtr tablehandle, [MarshalAs(UnmanagedType.LPStr)] string name);
+        private static extern UIntPtr table_get_column_index32(IntPtr tablehandle, [MarshalAs(UnmanagedType.LPWStr)] string name,IntPtr nameLen);
 
         [DllImport(L64, EntryPoint = "table_get_column_index", CallingConvention = CallingConvention.Cdecl)]
-        private static extern UIntPtr table_get_column_index64(IntPtr tablehandle, [MarshalAs(UnmanagedType.LPStr)] string name);
+        private static extern UIntPtr table_get_column_index64(IntPtr tablehandle, [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
 
         //returns -1 if the column string does not match a column index
         public static long TableGetColumnIndex(Table  table, string name)
         {
             if (Is64Bit)
-                return (long)table_get_column_index64(table.Handle, name);
-            return (long)table_get_column_index32(table.Handle, name);
+                return (long)table_get_column_index64(table.Handle, name,(IntPtr)name.Length);
+            return (long)table_get_column_index32(table.Handle, name, (IntPtr)name.Length);
         }
 
         [DllImport(L32, EntryPoint = "tableview_get_column_index", CallingConvention = CallingConvention.Cdecl)]
-        private static extern UIntPtr tableView_get_column_index32(IntPtr tableViehandle, [MarshalAs(UnmanagedType.LPStr)] string name);
+        private static extern UIntPtr tableView_get_column_index32(IntPtr tableViehandle, [MarshalAs(UnmanagedType.LPWStr)] string name,IntPtr nameLen);
 
         [DllImport(L64, EntryPoint = "tableview_get_column_index", CallingConvention = CallingConvention.Cdecl)]
-        private static extern UIntPtr tableView_get_column_index64(IntPtr tableViewhandle, [MarshalAs(UnmanagedType.LPStr)] string name);
+        private static extern UIntPtr tableView_get_column_index64(IntPtr tableViewhandle, [MarshalAs(UnmanagedType.LPWStr)] string name,IntPtr nameLen);
 
         public static long TableViewGetColumnIndex(TableView tableView, string name)
         {
             if (Is64Bit)
-                return (long)tableView_get_column_index64(tableView.Handle, name);
-            return (long)tableView_get_column_index32(tableView.Handle, name);
+                return (long)tableView_get_column_index64(tableView.Handle, name,(IntPtr) name.Length);
+            return (long)tableView_get_column_index32(tableView.Handle, name,(IntPtr) name.Length);
         }
 
 
         [DllImport(L64, EntryPoint = "table_rename_column", CallingConvention = CallingConvention.Cdecl,CharSet = CharSet.Unicode)]
-        private static extern void table_rename_column64(IntPtr tableHandle, IntPtr columnIndex, [MarshalAs(UnmanagedType.LPStr)] string name);
+        private static extern void table_rename_column64(IntPtr tableHandle, IntPtr columnIndex, [MarshalAs(UnmanagedType.LPWStr)] string name,IntPtr nameLen);
 
         [DllImport(L32, EntryPoint = "table_rename_column", CallingConvention = CallingConvention.Cdecl,CharSet = CharSet.Unicode)]
-        private static extern void table_rename_column32(IntPtr tableHandle, IntPtr columnIndex, [MarshalAs(UnmanagedType.LPStr)] string name);
+        private static extern void table_rename_column32(IntPtr tableHandle, IntPtr columnIndex, [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
 
         public static void TableRenameColumn(Table table, long columnIndex, string name)
         {
             if (Is64Bit)
-                table_rename_column64(table.Handle,(IntPtr)columnIndex, name);
+                table_rename_column64(table.Handle,(IntPtr)columnIndex, name,(IntPtr) name.Length);
             else
-                table_rename_column32(table.Handle, (IntPtr)columnIndex, name);
+                table_rename_column32(table.Handle, (IntPtr)columnIndex, name,(IntPtr) name.Length);
         }
 
 
@@ -293,23 +293,19 @@ enum DataType {
 
 
 
-        [DllImport(L64, EntryPoint = "table_add_column", CallingConvention = CallingConvention.Cdecl,
-            CharSet = CharSet.Unicode)]
+        [DllImport(L64, EntryPoint = "table_add_column", CallingConvention = CallingConvention.Cdecl)]
         private static extern UIntPtr table_add_column64(IntPtr tableHandle, IntPtr type,
-                                                         [MarshalAs(UnmanagedType.LPStr)] string name);
+                                                         [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
 
-        [DllImport(L32, EntryPoint = "table_add_column", CallingConvention = CallingConvention.Cdecl,
-            CharSet = CharSet.Unicode)]
+        [DllImport(L32, EntryPoint = "table_add_column", CallingConvention = CallingConvention.Cdecl)]
         private static extern UIntPtr table_add_column32(IntPtr tableHandle, IntPtr type,
-                                                         [MarshalAs(UnmanagedType.LPStr)] string name);
+            [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
 
         public static long TableAddColumn(Table table, DataType type, string name)
         {
             if (Is64Bit)
-                return (long)table_add_column64(table.Handle, DataTypeToIntPtr(type), name);
-                    //BM told me that column number sb long always in C#            
-            return (long)table_add_column32(table.Handle, DataTypeToIntPtr(type), name);
-                //BM told me that column number sb long always in C#            
+                return (long) table_add_column64(table.Handle, DataTypeToIntPtr(type), name,(IntPtr)name.Length);            
+            return (long)table_add_column32(table.Handle, DataTypeToIntPtr(type), name, (IntPtr)name.Length);            
         }
 
 
@@ -339,14 +335,14 @@ enum DataType {
         */
         //Spec add_subtable_column(const char* name);        
         [DllImport(L64, EntryPoint = "spec_add_subtable_column",
-            CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
+            CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr spec_add_subtable_column64(IntPtr spec,
-                                                                [MarshalAs(UnmanagedType.LPStr)] string name);
+                                                                [MarshalAs(UnmanagedType.LPWStr)] string name,IntPtr nameLen);
 
         [DllImport(L32, EntryPoint = "spec_add_subtable_column",
-            CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
+            CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr spec_add_subtable_column32(IntPtr spec,
-                                                                [MarshalAs(UnmanagedType.LPStr)] string name);
+                                                                [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
 
 
 
@@ -360,8 +356,8 @@ enum DataType {
                                                 "Adding a sub table column with 'name' set to null is not allowed");
             }
             IntPtr specHandle = Is64Bit
-                                    ? spec_add_subtable_column64(spec.Handle, name)
-                                    : spec_add_subtable_column32(spec.Handle, name);
+                ? spec_add_subtable_column64(spec.Handle, name, (IntPtr) name.Length)
+                : spec_add_subtable_column32(spec.Handle, name, (IntPtr) name.Length);
 
             return new Spec(specHandle, true); //because this spechandle we get here should be deallocated
         }
@@ -434,34 +430,34 @@ enum DataType {
 
         
         [DllImport(L64, EntryPoint = "group_write", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void group_write64(IntPtr groupPtr  , [MarshalAs(UnmanagedType.LPStr)] string fileName);
+        private static extern void group_write64(IntPtr groupPtr  , [MarshalAs(UnmanagedType.LPWStr)] string fileName,IntPtr fileNameLen);
 
         [DllImport(L32, EntryPoint = "group_write", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void group_write32(IntPtr groupPTr, [MarshalAs(UnmanagedType.LPStr)] string fileName);
+        private static extern void group_write32(IntPtr groupPTr, [MarshalAs(UnmanagedType.LPWStr)] string fileName, IntPtr fileNameLen);
 
         //todo:test and add OS file operation error handling
         public static void GroupWrite(Group group, string fileName)
         {
-            if (Is64Bit) group_write64(group.Handle,fileName);
+            if (Is64Bit) group_write64(group.Handle,fileName, (IntPtr)fileName.Length);
             else
-                group_write32(group.Handle, fileName);
+                group_write32(group.Handle, fileName, (IntPtr)fileName.Length);
         }
 
 
 
         [DllImport(L64, EntryPoint = "new_group_file", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr new_group_file64([MarshalAs(UnmanagedType.LPStr)] string fileName);
+        private static extern IntPtr new_group_file64([MarshalAs(UnmanagedType.LPWStr)]  string fileName, IntPtr fileNameLen);
 
         [DllImport(L32, EntryPoint = "new_group_file", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr new_group_file32([MarshalAs(UnmanagedType.LPStr)] string fileName);
+        private static extern IntPtr new_group_file32([MarshalAs(UnmanagedType.LPWStr)] string fileName, IntPtr fileNameLen);
 
 
         public static void GroupNewFile(Group group, string fileName)
         {
             Console.Error.WriteLine("groupnewfile called");
             group.SetHandle(Is64Bit
-                                ? new_group_file64(fileName)
-                                : new_group_file32(fileName), true);
+                                ? new_group_file64(fileName, (IntPtr)fileName.Length)
+                                : new_group_file32(fileName, (IntPtr)fileName.Length), true);
             Console.Error.WriteLine("after new_group_file");
         }
 
@@ -523,18 +519,18 @@ enum DataType {
 
 
         [DllImport(L64, EntryPoint = "table_find_first_string", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_find_first_string64(IntPtr tableHandle, IntPtr columnIndex, [MarshalAs(UnmanagedType.LPStr)] string value);
+        private static extern IntPtr table_find_first_string64(IntPtr tableHandle, IntPtr columnIndex, [MarshalAs(UnmanagedType.LPWStr)] string value,IntPtr valueLen);
 
         [DllImport(L32, EntryPoint = "table_find_first_string", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_find_first_string32(IntPtr tableHandle, IntPtr columnIndex, [MarshalAs(UnmanagedType.LPStr)] string value);
+        private static extern IntPtr table_find_first_string32(IntPtr tableHandle, IntPtr columnIndex, [MarshalAs(UnmanagedType.LPWStr)] string value,IntPtr valueLen);
 
 
         public static long TableFindFirstString(Table table, long columnIndex, string value)
         {
             return
                     Is64Bit
-                        ? (long)table_find_first_string64(table.Handle, (IntPtr)columnIndex, value)
-                        : (long)table_find_first_string32(table.Handle, (IntPtr)columnIndex, value);
+                        ? (long)table_find_first_string64(table.Handle, (IntPtr)columnIndex, value,(IntPtr)value.Length)
+                        : (long)table_find_first_string32(table.Handle, (IntPtr)columnIndex, value, (IntPtr)value.Length);
         }
 
 
@@ -650,18 +646,18 @@ enum DataType {
 
 
         [DllImport(L64, EntryPoint = "tableview_find_first_string", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr tableView_find_first_string64(IntPtr tableViewHandle, IntPtr columnIndex, [MarshalAs(UnmanagedType.LPStr)] string value);
+        private static extern IntPtr tableView_find_first_string64(IntPtr tableViewHandle, IntPtr columnIndex, [MarshalAs(UnmanagedType.LPWStr)] string value,IntPtr valueLen);
 
         [DllImport(L32, EntryPoint = "tableview_find_first_string", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr tableView_find_first_string32(IntPtr tableViewHandle, IntPtr columnIndex, [MarshalAs(UnmanagedType.LPStr)] string value);
+        private static extern IntPtr tableView_find_first_string32(IntPtr tableViewHandle, IntPtr columnIndex, [MarshalAs(UnmanagedType.LPWStr)] string value,IntPtr valueLen);
 
 
         public static long TableViewFindFirstString(TableView tableView, long columnIndex, string value)
         {
             return
                     Is64Bit
-                        ? (long)tableView_find_first_string64(tableView.Handle, (IntPtr)columnIndex, value)
-                        : (long)tableView_find_first_string32(tableView.Handle, (IntPtr)columnIndex, value);
+                        ? (long)tableView_find_first_string64(tableView.Handle, (IntPtr)columnIndex, value,(IntPtr) value.Length)
+                        : (long)tableView_find_first_string32(tableView.Handle, (IntPtr)columnIndex, value, (IntPtr)value.Length);
         }
 
 
@@ -820,17 +816,17 @@ enum DataType {
 
 
         [DllImport(L64, EntryPoint = "table_count_string", CallingConvention = CallingConvention.Cdecl)]
-        private static extern long table_count_string64(IntPtr tableHandle, IntPtr columnIndex, [MarshalAs(UnmanagedType.LPStr)] string target);
+        private static extern long table_count_string64(IntPtr tableHandle, IntPtr columnIndex, [MarshalAs(UnmanagedType.LPWStr)] string target,IntPtr targetLen);
 
         [DllImport(L32, EntryPoint = "table_count_string", CallingConvention = CallingConvention.Cdecl)]
-        private static extern long table_count_string32(IntPtr tableHandle, IntPtr columnIndex, [MarshalAs(UnmanagedType.LPStr)]string target);
+        private static extern long table_count_string32(IntPtr tableHandle, IntPtr columnIndex, [MarshalAs(UnmanagedType.LPWStr)]string target, IntPtr targetLen);
 
 
         public static long TableCountString(Table table, long columnIndex, string target)
         {
             if (Is64Bit)
-                return table_count_string64(table.Handle, (IntPtr)columnIndex, target);
-            return table_count_string32(table.Handle, (IntPtr)columnIndex, target);
+                return table_count_string64(table.Handle, (IntPtr)columnIndex, target, (IntPtr)target.Length);
+            return table_count_string32(table.Handle, (IntPtr)columnIndex, target, (IntPtr)target.Length);
         }
 
 
@@ -1284,17 +1280,17 @@ enum DataType {
 
 
         [DllImport(L64, EntryPoint = "tableview_count_string", CallingConvention = CallingConvention.Cdecl)]
-        private static extern long tableview_count_string64(IntPtr tableViewHandle, IntPtr columnIndex, [MarshalAs(UnmanagedType.LPStr)] string target);
+        private static extern long tableview_count_string64(IntPtr tableViewHandle, IntPtr columnIndex, [MarshalAs(UnmanagedType.LPWStr)] string target,IntPtr targetLen);
 
         [DllImport(L32, EntryPoint = "tableview_count_string", CallingConvention = CallingConvention.Cdecl)]
-        private static extern long tableview_count_string32(IntPtr tableViewHandle, IntPtr columnIndex, [MarshalAs(UnmanagedType.LPStr)]string target);
+        private static extern long tableview_count_string32(IntPtr tableViewHandle, IntPtr columnIndex, [MarshalAs(UnmanagedType.LPWStr)]string target, IntPtr targetLen);
 
 
         public static long TableViewCountString(TableView tableView, long columnIndex, string target)
         {
             if (Is64Bit)
-                return tableview_count_string64(tableView.Handle, (IntPtr)columnIndex, target);
-            return tableview_count_string32(tableView.Handle, (IntPtr)columnIndex, target);
+                return tableview_count_string64(tableView.Handle, (IntPtr)columnIndex, target, (IntPtr)target.Length);
+            return tableview_count_string32(tableView.Handle, (IntPtr)columnIndex, target, (IntPtr)target.Length);
         }
 
 
@@ -1389,10 +1385,10 @@ enum DataType {
 
         
         [DllImport(L64, EntryPoint = "table_find_all_string", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_find_all_string64(IntPtr tableHandle, IntPtr columnIndex, string value);
+        private static extern IntPtr table_find_all_string64(IntPtr tableHandle, IntPtr columnIndex, [MarshalAs(UnmanagedType.LPWStr)] string value,IntPtr valueLen);
 
         [DllImport(L32, EntryPoint = "table_find_all_string", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_find_all_string32(IntPtr tableHandle, IntPtr columnIndex, string value);
+        private static extern IntPtr table_find_all_string32(IntPtr tableHandle, IntPtr columnIndex, [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
 
 
         public static TableView TableFindAllString(Table table, long columnIndex, string value)
@@ -1400,18 +1396,18 @@ enum DataType {
             return
                 new TableView(
                     Is64Bit
-                        ? table_find_all_string64(table.Handle, (IntPtr)columnIndex, value)
-                        : table_find_all_string32(table.Handle, (IntPtr)columnIndex, value), true);
+                        ? table_find_all_string64(table.Handle, (IntPtr)columnIndex, value,(IntPtr) value.Length)
+                        : table_find_all_string32(table.Handle, (IntPtr)columnIndex, value, (IntPtr)value.Length), true);
         }
 
 
 
         //TIGHTDB_C_CS_API tightdb::TableView* table_find_all_int(Table * table_ptr , size_t column_ndx, int64_t value)
         [DllImport(L64, EntryPoint = "tableview_find_all_string", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr tableView_find_all_string64(IntPtr tableViewHandle, IntPtr columnIndex, string value);
+        private static extern IntPtr tableView_find_all_string64(IntPtr tableViewHandle, IntPtr columnIndex, [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
 
         [DllImport(L32, EntryPoint = "tableview_find_all_string", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr tableView_find_all_string32(IntPtr tableViewHandle, IntPtr columnIndex, string value);
+        private static extern IntPtr tableView_find_all_string32(IntPtr tableViewHandle, IntPtr columnIndex, [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
 
 
         public static TableView TableViewFindAllString(TableView tableView, long columnIndex, string value)
@@ -1419,8 +1415,8 @@ enum DataType {
             return
                 new TableView(
                     Is64Bit
-                        ? tableView_find_all_string64(tableView.Handle, (IntPtr)columnIndex, value)
-                        : tableView_find_all_string32(tableView.Handle, (IntPtr)columnIndex, value), true);
+                        ? tableView_find_all_string64(tableView.Handle, (IntPtr)columnIndex, value, (IntPtr)value.Length)
+                        : tableView_find_all_string32(tableView.Handle, (IntPtr)columnIndex, value, (IntPtr)value.Length), true);
         }
 
 
@@ -1510,32 +1506,32 @@ enum DataType {
         //If the name exists in the group, the table associated with the name is returned
         //if the name does not exist in the group, a new table is created and returned
         [DllImport(L64, EntryPoint = "group_get_table", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr group_get_table64(IntPtr groupHandle, [MarshalAs(UnmanagedType.LPStr)] String tableName);
+        private static extern IntPtr group_get_table64(IntPtr groupHandle, [MarshalAs(UnmanagedType.LPWStr)] String tableName,IntPtr tableNameLen);
 
         [DllImport(L32, EntryPoint = "group_get_table", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr group_get_table32(IntPtr groupHandle, [MarshalAs(UnmanagedType.LPStr)] String tableName);
+        private static extern IntPtr group_get_table32(IntPtr groupHandle, [MarshalAs(UnmanagedType.LPWStr)] String tableName, IntPtr tableNameLen);
 
         public static Table GroupGetTable(Group group, string tableName)
         {
             if (Is64Bit)
-                return new Table(group_get_table64(group.Handle, tableName), true);            
-            return new Table(group_get_table32(group.Handle, tableName),true);
+                return new Table(group_get_table64(group.Handle, tableName,(IntPtr) tableName.Length), true);            
+            return new Table(group_get_table32(group.Handle, tableName,(IntPtr) tableName.Length),true);
         }
 
 
         
         //
         [DllImport(L64, EntryPoint = "group_has_table", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr group_has_table64(IntPtr groupHandle, [MarshalAs(UnmanagedType.LPStr)] String tableName);
+        private static extern IntPtr group_has_table64(IntPtr groupHandle, [MarshalAs(UnmanagedType.LPWStr)] String tableName,IntPtr tableNameLen);
 
         [DllImport(L32, EntryPoint = "group_has_table", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr group_has_table32(IntPtr groupHandle, [MarshalAs(UnmanagedType.LPStr)] String tableName);
+        private static extern IntPtr group_has_table32(IntPtr groupHandle, [MarshalAs(UnmanagedType.LPWStr)] String tableName, IntPtr tableNameLen);
 
         public static bool GroupHassTable(Group group, string tableName)
         {
             if (Is64Bit)
-                return IntPtrToBool( group_has_table64(group.Handle, tableName));
-            return IntPtrToBool(group_has_table32(group.Handle, tableName));
+                return IntPtrToBool( group_has_table64(group.Handle, tableName,(IntPtr) tableName.Length));
+            return IntPtrToBool(group_has_table32(group.Handle, tableName, (IntPtr)tableName.Length));
         }
 
 
@@ -1825,7 +1821,7 @@ enum DataType {
                                                                  IntPtr bufsize);
 
         [DllImport(L32, EntryPoint = "tableview_get_column_name",
-            CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
+            CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr tableView_get_column_name32(IntPtr handle, IntPtr columnIndex,
                                                                  IntPtr buffer,
                                                                  IntPtr bufsize);
@@ -2123,61 +2119,55 @@ enum DataType {
 
         //        TIGHTDB_C_CS_API void table_set_int(Table* TablePtr, size_t column_ndx, size_t row_ndx, int64_t value)
         [DllImport(L64, EntryPoint = "table_set_string", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void table_set_string64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx,
-                                                      [MarshalAs(UnmanagedType.LPStr)] string value);
+        private static extern void table_set_string64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx,[MarshalAs(UnmanagedType.LPWStr)] string value,IntPtr valueLen );
 
         [DllImport(L32, EntryPoint = "table_set_string", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void table_set_string32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx,
-                                                      [MarshalAs(UnmanagedType.LPStr)] string value);
+        private static extern void table_set_string32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx, [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
 
         public static void TableSetString(Table table, long columnIndex, long rowIndex, string value)
         {
-            /*
-#if DEBUG
-            Log(MethodBase.GetCurrentMethod().Name, "(Table,Column,Row,Value)", table, columnIndex, rowIndex, value);
-#endif*/
 
             if (Is64Bit)
-                table_set_string64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
+                table_set_string64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, value,(IntPtr)value.Length);
             else
-                table_set_string32(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
+                table_set_string32(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, value, (IntPtr)value.Length);
         }
 
 
         [DllImport(L64, EntryPoint = "table_set_mixed_string", CallingConvention = CallingConvention.Cdecl)]
         private static extern void table_set_mixed_string64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx,
-                                                      [MarshalAs(UnmanagedType.LPStr)] string value);
+                                                      [MarshalAs(UnmanagedType.LPWStr)] string value,IntPtr valueLen);
 
         [DllImport(L32, EntryPoint = "table_set_mixed_string", CallingConvention = CallingConvention.Cdecl)]
         private static extern void table_set_mixed_string32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx,
-                                                      [MarshalAs(UnmanagedType.LPStr)] string value);
+                                                      [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
 
         public static void TableSetMixedString(Table table, long columnIndex, long rowIndex, string value)
         {
 
             if (Is64Bit)
-                table_set_mixed_string64(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
+                table_set_mixed_string64(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, value,(IntPtr)value.Length);
             else
-                table_set_mixed_string32(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
+                table_set_mixed_string32(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, value, (IntPtr)value.Length);
         }
 
 
 
         [DllImport(L64, EntryPoint = "tableview_set__mixed_string", CallingConvention = CallingConvention.Cdecl)]
         private static extern void tableview_set_mixed_string64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx,
-                                                      [MarshalAs(UnmanagedType.LPStr)] string value);
+                                                      [MarshalAs(UnmanagedType.LPWStr)] string value,IntPtr valueLen);
 
         [DllImport(L32, EntryPoint = "tableview_set_mixed_string", CallingConvention = CallingConvention.Cdecl)]
         private static extern void tableview_set_mixed_string32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx,
-                                                      [MarshalAs(UnmanagedType.LPStr)] string value);
+                                                       [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
 
         public static void TableViewSetMixedString(TableView tableView, long columnIndex, long rowIndex, string value)
         {
 
             if (Is64Bit)
-                tableview_set_mixed_string64(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
+                tableview_set_mixed_string64(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, value,(IntPtr) value.Length);
             else
-                tableview_set_mixed_string32(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
+                tableview_set_mixed_string32(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, value, (IntPtr)value.Length);
         }
 
 
@@ -2189,11 +2179,11 @@ enum DataType {
         //        TIGHTDB_C_CS_API void table_set_int(Table* TablePtr, size_t column_ndx, size_t row_ndx, int64_t value)
         [DllImport(L64, EntryPoint = "tableview_set_string", CallingConvention = CallingConvention.Cdecl)]
         private static extern void tableView_set_string64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx,
-                                                          [MarshalAs(UnmanagedType.LPStr)] string value);
+                                                          [MarshalAs(UnmanagedType.LPWStr)] string value,IntPtr valueLen);
 
         [DllImport(L32, EntryPoint = "tableview_set_string", CallingConvention = CallingConvention.Cdecl)]
         private static extern void tableView_set_string32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx,
-                                                          [MarshalAs(UnmanagedType.LPStr)] string value);
+                                                         [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
 
         public static void TableViewSetString(TableView tableView, long columnIndex, long rowIndex, string value)
         {
@@ -2203,9 +2193,9 @@ enum DataType {
 #endif
 
             if (Is64Bit)
-                tableView_set_string64(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
+                tableView_set_string64(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, value,(IntPtr)value.Length);
             else
-                tableView_set_string32(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
+                tableView_set_string32(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, value, (IntPtr)value.Length);
         }
 
 
@@ -2880,15 +2870,15 @@ enum DataType {
 
         
         [DllImport(L64, EntryPoint = "query_get_column_index", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr query_get_column_index64(IntPtr queryPtr, String columnName);
+        private static extern IntPtr query_get_column_index64(IntPtr queryPtr, [MarshalAs(UnmanagedType.LPWStr)] String columnName, IntPtr columnNameLen);
         [DllImport(L32, EntryPoint = "query_get_column_index", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr query_get_column_index32(IntPtr queryPtr, String columnName);
+        private static extern IntPtr query_get_column_index32(IntPtr queryPtr, [MarshalAs(UnmanagedType.LPWStr)] String columnName, IntPtr columnNameLen);
 
         public static long QueryGetColumnIndex(Query q, String columnName)
         {
             if(Is64Bit)
-                return (long) query_get_column_index64(q.Handle,columnName);
-            return (long) query_get_column_index32(q.Handle, columnName);
+                return (long) query_get_column_index64(q.Handle,columnName,(IntPtr) columnName.Length);
+            return (long)query_get_column_index32(q.Handle, columnName, (IntPtr)columnName.Length);
         }
 
 
@@ -3541,6 +3531,44 @@ enum DataType {
         }
 
 
+        //this test method will round-trip a string into a c++ StringData and back again to c++
+        //great for testing that all string conversion is working
+        [DllImport(L64, EntryPoint = "test_string_returner", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr test_string_returner64([MarshalAs(UnmanagedType.LPWStr)]String s,IntPtr slength, IntPtr b, IntPtr bufsize);
+        [DllImport(L32, EntryPoint = "test_string_returner", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr test_string_returner32([MarshalAs(UnmanagedType.LPWStr)]String s,IntPtr slength, IntPtr b, IntPtr bufsize);
+
+        public static string TestStringReturner(String str)
+        {
+            long bufferSizeNeededChars = 16;
+            IntPtr buffer;
+            long currentBufferSizeChars;
+
+            do
+            {
+                buffer = StrAllocateBuffer(out currentBufferSizeChars, bufferSizeNeededChars);
+
+                if (Is64Bit)
+                    bufferSizeNeededChars = (long) test_string_returner64(str,(IntPtr) str.Length,  buffer, (IntPtr) currentBufferSizeChars);
+                else
+                    bufferSizeNeededChars = (long)test_string_returner32(str, (IntPtr)str.Length, buffer, (IntPtr)currentBufferSizeChars);
+
+            } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
+
+            return StrBufToStr(buffer, (int) bufferSizeNeededChars);
+
+        }
+
+
+        public static void ReturnStringTest(string stringtotest)
+        {
+            string returnedstring = TestStringReturner(stringtotest);
+            if (returnedstring != stringtotest)
+            {
+                throw new ArgumentOutOfRangeException("stringtotest",String.Format(CultureInfo.InvariantCulture,
+                "Sent {0} to cpp but got {1} back",stringtotest,returnedstring));
+            }
+        }
 
 
 
@@ -3572,7 +3600,6 @@ enum DataType {
             } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
 
             return StrBufToStr(buffer, (int) bufferSizeNeededChars);
-
         }
 
 
@@ -3838,6 +3865,140 @@ enum DataType {
 
         }
 
+
+        internal static void TestMaxMin()
+        {
+            float floatmaxcpp = TestFloatMax();
+            const float floatmaxcs = float.MaxValue;
+            if (floatmaxcpp > floatmaxcs || floatmaxcpp < floatmaxcs)
+            {
+                throw new ArgumentException("float",
+                    String.Format(CultureInfo.InvariantCulture,
+                        "The c++ max float value seems to be {0:r} while the C# is {1:r}", floatmaxcpp, floatmaxcs));
+            }
+
+            //current documentation on c# Sigle/float http://msdn.microsoft.com/en-us/library/system.single.aspx
+            float floatmincpp = TestFloatMin();
+            const float floatmincs = float.MinValue;
+            if (floatmincpp > floatmincs || floatmincpp < floatmincs)
+            {
+                throw new ArgumentException("float",
+                    String.Format(CultureInfo.InvariantCulture,
+                        "The c++ min float value seems to be {0:r} while the C# is {1:r}", floatmincpp, floatmincs));
+            }
+
+            const float float42 = 42f;
+            float cppfortytwo = TestFloatReturn(float42);
+            if (float42 > cppfortytwo || float42 < cppfortytwo)
+            {
+                throw new ArgumentException("float",
+                    String.Format(CultureInfo.InvariantCulture,
+                        "The c++ float 42f was returned as {0:r} while the C# value is {1:r}", float42, cppfortytwo));
+            }
+
+
+
+
+            double doublemaxcpp = TestDoubleMax();
+            const double doublemaxcs = double.MaxValue;
+            if (doublemaxcpp > doublemaxcs || doublemaxcpp < doublemaxcs)
+            {
+                throw new ArgumentException("double",
+                    String.Format(CultureInfo.InvariantCulture,
+                        "The c++ max double value seems to be {0:r} while the C# is {1:r}", doublemaxcpp, doublemaxcs));
+            }
+
+
+            double doublemincpp = TestDoubleMin();
+            const double doublemincs = double.MinValue;
+            if (doublemincpp > doublemincs || doublemincpp < doublemincs)
+            {
+                throw new ArgumentException("double",
+                    String.Format(CultureInfo.InvariantCulture,
+                        "The c++ min double value seems to be {0:r} while the C# is {1:r}", doublemincpp, doublemincs));
+            }
+
+            const double double42 = 42f;
+            double cppfortytwodouble = TestDoubleReturn(double42);
+            if (double42 > cppfortytwodouble || double42 < cppfortytwodouble)
+            {
+                throw new ArgumentException("double",
+                    String.Format(CultureInfo.InvariantCulture,
+                        "The c++ double 42f was returned as {0:r} while the C# value is {1:r}", double42,
+                        cppfortytwodouble));
+            }
+
+
+
+
+            //very well defined in C#. Should also be so in c++ so this should never fail  http://msdn.microsoft.com/en-us/library/ctetwysk.aspx
+            long longmaxcpp = TestLongMax();
+            const long longmaxcs = long.MaxValue;
+            if (longmaxcpp != longmaxcs)
+            {
+                throw new ArgumentException("long",
+                    String.Format(CultureInfo.InvariantCulture,
+                        "The c++ max int64_t (mapped to long) value seems to be {0:r} while the C# long is {1:r}",
+                        longmaxcpp, longmaxcs));
+            }
+
+
+            long longmincpp = TestLongMin();
+            const long longmincs = long.MinValue;
+            if (longmincpp != longmincs)
+            {
+                throw new ArgumentException("long",
+                    String.Format(CultureInfo.InvariantCulture,
+                        "The c++ min int64_t (mapped to long) value seems to be {0:r} while the C# is {1:r}", longmincpp,
+                        longmincs));
+            }
+
+            const long long42 = 42;
+            long cppfortytwolong = TestLongReturn(long42);
+            if (long42 != cppfortytwolong)
+            {
+                throw new ArgumentException("long",
+                    String.Format(CultureInfo.InvariantCulture,
+                        "The c++ int64_t 42 (mapped to long) was returned as {0:r} while the C# value is {1:r}", long42,
+                        cppfortytwolong));
+            }
+
+
+
+
+
+            IntPtr sizeTMaxCpp = TestSizeTMax();
+            IntPtr sizeTMaxCs = IntPtr.Zero;
+            sizeTMaxCs = sizeTMaxCs - 1;
+
+            if (sizeTMaxCpp != sizeTMaxCs)
+            {
+                throw new ArgumentException("size_t",
+                    String.Format(CultureInfo.InvariantCulture,
+                        "The c++ max size_t value seems to be {0:r} while the C# is {1:r}", sizeTMaxCpp, sizeTMaxCs));
+            }
+
+            IntPtr sizeTMinCpp = TestSizeTMin();
+            IntPtr sizeTMinCs = IntPtr.Zero;
+            if (sizeTMaxCpp != sizeTMaxCs)
+            {
+                throw new ArgumentException("size_t",
+                    String.Format(CultureInfo.InvariantCulture,
+                        "The c++ min size-t value seems to be {0:r} while the C# is {1:r}", sizeTMinCpp, sizeTMinCs));
+            }
+
+            var sizeTCs = (IntPtr) 42;
+            var sizeTCpp = TestSizeTReturn(sizeTCs);
+            if (sizeTCpp != sizeTCs)
+            {
+                throw new ArgumentException("Size_t",
+                    String.Format(CultureInfo.InvariantCulture,
+                        "The c++ size_t 42 was returned as {0:r} while the C# value is {1:r}", sizeTCpp, sizeTCs));
+            }
+
+
+        }
+
         //if something is wrong with interop or C# marshalling, this method will throw an exception
         public static void TestInterop()
         {
@@ -3853,118 +4014,8 @@ enum DataType {
                 throw new ArgumentException("parameter sequence", String.Format(CultureInfo.InvariantCulture, "The c++ parameter sequence appears to be broken. called test_get_five_parametres(1,2,3,4,5) expected 1 as a return value, got {0}", testres));
             }
 
-            float floatmaxcpp = TestFloatMax();
-            const float floatmaxcs = float.MaxValue;
-            if (floatmaxcpp > floatmaxcs || floatmaxcpp<floatmaxcs)
-            {
-                throw new ArgumentException("float",
-                                            String.Format(CultureInfo.InvariantCulture,"The c++ max float value seems to be {0:r} while the C# is {1:r}", floatmaxcpp,floatmaxcs));
-            }
 
-            //current documentation on c# Sigle/float http://msdn.microsoft.com/en-us/library/system.single.aspx
-            float floatmincpp = TestFloatMin();
-            const float floatmincs = float.MinValue;
-            if (floatmincpp > floatmincs || floatmincpp < floatmincs)
-            {
-                throw new ArgumentException("float",
-                                            String.Format(CultureInfo.InvariantCulture, "The c++ min float value seems to be {0:r} while the C# is {1:r}", floatmincpp, floatmincs));
-            }
-
-            const float float42 = 42f;
-            float cppfortytwo = TestFloatReturn(float42);
-            if (float42 > cppfortytwo || float42 < cppfortytwo)
-            {
-                throw new ArgumentException("float",
-                                            String.Format(CultureInfo.InvariantCulture, "The c++ float 42f was returned as {0:r} while the C# value is {1:r}", float42, cppfortytwo));
-            }
-
-
-
-
-            double doublemaxcpp = TestDoubleMax();
-            const double doublemaxcs = double.MaxValue;
-            if (doublemaxcpp > doublemaxcs || doublemaxcpp < doublemaxcs)
-            {
-                throw new ArgumentException("double",
-                                            String.Format(CultureInfo.InvariantCulture, "The c++ max double value seems to be {0:r} while the C# is {1:r}", doublemaxcpp, doublemaxcs));
-            }
-
-            
-            double doublemincpp = TestDoubleMin();
-            const double doublemincs = double.MinValue;
-            if (doublemincpp > doublemincs || doublemincpp < doublemincs)
-            {
-                throw new ArgumentException("double",
-                                            String.Format(CultureInfo.InvariantCulture, "The c++ min double value seems to be {0:r} while the C# is {1:r}", doublemincpp, doublemincs));
-            }
-
-            const double double42 = 42f;
-            double cppfortytwodouble = TestDoubleReturn(double42);
-            if (double42 > cppfortytwodouble || double42 < cppfortytwodouble)
-            {
-                throw new ArgumentException("double",
-                                            String.Format(CultureInfo.InvariantCulture, "The c++ double 42f was returned as {0:r} while the C# value is {1:r}", double42, cppfortytwodouble));
-            }
-
-
-
-
-            //very well defined in C#. Should also be so in c++ so this should never fail  http://msdn.microsoft.com/en-us/library/ctetwysk.aspx
-            long longmaxcpp = TestLongMax();
-            const long longmaxcs = long.MaxValue;
-            if (longmaxcpp != longmaxcs)
-            {
-                throw new ArgumentException("long",
-                                            String.Format(CultureInfo.InvariantCulture, "The c++ max int64_t (mapped to long) value seems to be {0:r} while the C# long is {1:r}", longmaxcpp, longmaxcs));
-            }
-
-            
-            long longmincpp = TestLongMin();
-            const long longmincs = long.MinValue;
-            if (longmincpp != longmincs)
-            {
-                throw new ArgumentException("long",
-                                            String.Format(CultureInfo.InvariantCulture, "The c++ min int64_t (mapped to long) value seems to be {0:r} while the C# is {1:r}", longmincpp, longmincs));
-            }
-
-            const long long42 = 42;
-            long cppfortytwolong = TestLongReturn(long42);
-            if (long42!=cppfortytwolong)
-            {
-                throw new ArgumentException("long",
-                                            String.Format(CultureInfo.InvariantCulture, "The c++ int64_t 42 (mapped to long) was returned as {0:r} while the C# value is {1:r}", long42, cppfortytwolong));
-            }
-
-
-
-
-
-            IntPtr sizeTMaxCpp = TestSizeTMax();
-            IntPtr sizeTMaxCs = IntPtr.Zero;
-            sizeTMaxCs = sizeTMaxCs - 1;
-
-            if (sizeTMaxCpp != sizeTMaxCs )
-            {
-                throw new ArgumentException("size_t",
-                                            String.Format(CultureInfo.InvariantCulture, "The c++ max size_t value seems to be {0:r} while the C# is {1:r}", sizeTMaxCpp, sizeTMaxCs));
-            }
-
-            IntPtr sizeTMinCpp = TestSizeTMin();
-            IntPtr sizeTMinCs = IntPtr.Zero;
-            if (sizeTMaxCpp != sizeTMaxCs)
-            {
-                throw new ArgumentException("size_t",
-                                            String.Format(CultureInfo.InvariantCulture, "The c++ min size-t value seems to be {0:r} while the C# is {1:r}", sizeTMinCpp, sizeTMinCs));
-            }
-
-            var sizeTCs = (IntPtr)42;
-            var sizeTCpp = TestSizeTReturn(sizeTCs);
-            if (sizeTCpp!=sizeTCs)
-            {
-                throw new ArgumentException("Size_t",String.Format(CultureInfo.InvariantCulture, "The c++ size_t 42 was returned as {0:r} while the C# value is {1:r}", sizeTCpp, sizeTCs));
-            }
-
-
+            TestMaxMin();
             
             const DataType test = DataType.Binary;
             var test2 = TestReturnDataType(test);
@@ -4012,6 +4063,17 @@ enum DataType {
                 throw new ArgumentException("Test string sent to cpp didn't show up as expected. Cpp did not return 42 when sent 'Hello, World!' ");
             }
 
+
+            ReturnStringTest("Hello, World!");//Just an ordinary string
+            ReturnStringTest("Is 15 chars long");//small enough to not trigger roundtrip code
+            ReturnStringTest("Is 16 chars long!");//exactly the bordercase for buffer overflow
+            ReturnStringTest("Is 16+1 chars long");//overflows 16 char buffer and demands a new call
+            ReturnStringTest("");//an empty string
+            ReturnStringTest("κόσμε");//unicode sample that would not work with ANSI
+            ReturnStringTest("To be Done");//unicode sample that will involve two 16 bit chars to encode one codepoint
+            ReturnStringTest("This is so long that it does not fit inside 48 bytes when converted to UTF-8");//Quite long string that overruns the 48 byte preallocated buffer in cpp to c, and forces a real calculation of the length before UTF16 to UTF conversion
+            ReturnStringTest("This string has a null here:\x0000And more data afterwards" );//null characters inside a string should be preserved
+            ReturnStringTest("This string ends with a null characer and has a null here:\x0000The End\x0000");//null characters inside a string should be preserved, also if they are the last character in the string
 
         }
     }
