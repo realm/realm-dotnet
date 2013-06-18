@@ -120,6 +120,8 @@ namespace TightDbCSharp
         internal abstract void SetMixedFloatNoCheck(long columnIndex, long rowIndex, float value);
         internal abstract void SetMixedDoubleNoCheck(long columnIndex, long rowIndex, double value);
 
+        internal abstract void ClearSubTableNoCheck(long columnIndex, long rowIndex);
+        
 
         public abstract string ToJson();
                 
@@ -202,6 +204,7 @@ namespace TightDbCSharp
         }
 
 
+        
         //todo:unit test this
         //column and row must point to a field that is of type subtable
         //the values are then put into that subtable in this manner :
@@ -367,9 +370,14 @@ namespace TightDbCSharp
                         break;
                     case DataType.Table://todo:test thoroughly with unit test, also with invalid data
 
-                        if (element != null)//if You specify null for a subtable we do nothing null means You intend to fill it in later
+                        if (element == null)
+                            //if You specify null for a subtable we do nothing null means You intend to fill it in later
                         {
-                            SetSubTableNoCheck(ix, rowIndex, (IEnumerable<object>)element);
+                            ClearSubTableNoCheck(ix, rowIndex);//if the user specifies null it means create a new empty subtable, not let the old one stay!
+                        }
+                        else
+                        {
+                            SetSubTableNoCheck(ix, rowIndex, (IEnumerable<object>)element);                            
                         }
                         break;
                     case DataType.Mixed://Try to infer the mixed type to use from the type of the object from the user
@@ -435,6 +443,14 @@ namespace TightDbCSharp
             ValidateColumnTypeSubTable(columnIndex);
             return GetSubTableNoCheck(columnIndex, rowIndex);
         }
+
+        public void ClearSubTable(long columnIndex, long rowIndex)
+        {
+            ValidateColumnIndexAndTypeSubTable(columnIndex);
+            ValidateRowIndex(rowIndex);
+            ClearSubTableNoCheck(columnIndex,rowIndex);
+        }
+
 
         internal DateTime GetDateTimeNoRowCheck(long columnIndex, long rowIndex)
         {

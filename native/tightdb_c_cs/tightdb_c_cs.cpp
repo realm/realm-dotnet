@@ -95,6 +95,15 @@ extern "C" {
 }
 
 
+ TIGHTDB_C_CS_API Table* table_copy_table(tightdb::Table* table_ptr)
+ {
+     return LangBindHelper::copy_table(*table_ptr);
+ }
+
+ TIGHTDB_C_CS_API size_t table_is_valid(Table* table_ptr)
+ {
+     return size_t_to_bool(table_ptr->is_valid());
+ }
 
 TIGHTDB_C_CS_API size_t table_get_column_count(tightdb::Table* table_ptr)
 {
@@ -181,6 +190,16 @@ TIGHTDB_C_CS_API Table* table_get_subtable(Table* table_ptr, size_t column_ndx, 
     return LangBindHelper::get_subtable_ptr(table_ptr,column_ndx, row_ndx);
 }
 
+
+TIGHTDB_C_CS_API void table_clear_subtable(Table* table_ptr, size_t column_ndx, size_t row_ndx) 
+{
+    table_ptr->clear_subtable(column_ndx,row_ndx);
+}
+
+TIGHTDB_C_CS_API void tableview_clear_subtable(TableView* tableView_ptr, size_t column_ndx, size_t row_ndx) 
+{
+    tableView_ptr->clear_subtable(column_ndx,row_ndx);
+}
 
 
 TIGHTDB_C_CS_API void unbind_table_ref(tightdb::Table* table_ptr)

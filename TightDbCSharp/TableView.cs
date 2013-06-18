@@ -211,6 +211,11 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableViewGetSubTable(this, columnIndex, rowIndex);
         }
 
+        internal override void ClearSubTableNoCheck(long columnIndex, long rowIndex)
+        {
+            UnsafeNativeMethods.TableViewClearSubTable(this,columnIndex,rowIndex);
+        }
+
         internal override void SetStringNoCheck(long columnIndex, long rowIndex, string value)
         {
             UnsafeNativeMethods.TableViewSetString(this , columnIndex, rowIndex, value);

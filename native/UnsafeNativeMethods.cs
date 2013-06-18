@@ -167,6 +167,38 @@ enum DataType {
         }
 
 
+       
+        //TIGHTDB_C_CS_API Table* table_copy_table(tightdb::Table* table_ptr)
+        //NOTE!!! The C++ dll uses langbindhelper!
+        [DllImport(L64, EntryPoint = "table_copy_table", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_copy_table64(IntPtr tablePtr);
+
+        [DllImport(L32, EntryPoint = "table_copy_table", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_copy_table32(IntPtr tablePtr);
+
+        public static Table CopyTable(Table table)
+        {
+            return  new Table(Is64Bit ? table_copy_table64(table.Handle) : table_copy_table32(table.Handle), true);
+        }
+
+
+
+        [DllImport(L64, EntryPoint = "table_is_valid", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_is_valid64(IntPtr tablePtr);
+
+        [DllImport(L32, EntryPoint = "table_is_valid", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_is_valid32(IntPtr tablePtr);
+
+        public static bool IsValid(Table table)
+        {
+            return IntPtrToBool(Is64Bit ? table_is_valid64(table.Handle) : table_is_valid32(table.Handle));
+        }
+
+
+
+
+
+
         [DllImport(L64, EntryPoint = "spec_deallocate", CallingConvention = CallingConvention.Cdecl)]
         private static extern void spec_deallocate64(IntPtr spec);
 
@@ -1477,8 +1509,38 @@ enum DataType {
                         : query_average32(query.Handle, (IntPtr)columnIndex);
         }
 
-        
 
+
+
+        //todo:unit test
+        [DllImport(L64, EntryPoint = "table_clear_subtable", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void table_clear_subtable64(IntPtr tableHandle, IntPtr columnIndex, IntPtr rowIndex);
+
+        [DllImport(L32, EntryPoint = "table_clear_subtable", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void table_clear_subtable32(IntPtr tableHandle, IntPtr columnIndex, IntPtr rowIndex);
+
+        public static void TableClearSubTable(Table parentTable, long columnIndex, long rowIndex)
+        {
+            if (Is64Bit)
+                table_clear_subtable64(parentTable.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
+            else
+                table_clear_subtable32(parentTable.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
+        }
+
+        //todo:unit test
+        [DllImport(L64, EntryPoint = "tableview_clear_subtable", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void tableview_clear_subtable64(IntPtr tableHandle, IntPtr columnIndex, IntPtr rowIndex);
+
+        [DllImport(L32, EntryPoint = "tableview_clear_subtable", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void tableview_clear_subtable32(IntPtr tableHandle, IntPtr columnIndex, IntPtr rowIndex);
+
+        public static void TableViewClearSubTable(TableView parentTableView, long columnIndex, long rowIndex)
+        {
+            if (Is64Bit)
+                tableview_clear_subtable64(parentTableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex);
+            else
+              tableview_clear_subtable32(parentTableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex);
+        }
 
 
 

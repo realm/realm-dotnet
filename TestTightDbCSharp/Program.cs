@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Text;
 
@@ -1407,6 +1408,100 @@ root:[ //1 rows   { //Start row 0
 
 
 
+        [Test]
+        public static void TableSubTableSubTableClone()
+        {
+            //string actualres1;
+            //string actualres2;
+            //string actualres3;
+            //string actualres4;
+            //string actualres5;
+            string actualres;
+
+            using (var t = new Table(
+                "fld1".String(),
+                "root".SubTable(
+                    "fld2".String(),
+                    "fld3".String(),
+                    "s1".SubTable(
+                        "fld4".String(),
+                        "fld5".String(),
+                        "fld6".String(),
+                        "s2".Table(
+                            "fld".Int())))))
+            {
+
+                //   t.AddEmptyRow(1);
+                t.AddEmptyRow(1); //add empty row
+
+                Assert.AreEqual(1, t.Size);
+                Table root = t.GetSubTable(1, 0);
+                root.AddEmptyRow(1);
+                Assert.AreEqual(1, root.Size);
+
+                Table s1 = root.GetSubTable(2, 0);
+                s1.AddEmptyRow(1);
+                Assert.AreEqual(1, s1.Size);
+
+                Table s2 = s1.GetSubTable(3, 0);
+                s2.AddEmptyRow(1);
+
+                const long valueinserted = 42;
+                s2.SetLong(0, 0, valueinserted);
+                Assert.AreEqual(1, s2.Size);
+
+                //now read back the 42
+
+                long valueback = t.GetSubTable(1, 0).GetSubTable(2, 0).GetSubTable(3, 0).GetLong(0, 0);
+                //                            root               s1                 s2            42
+
+
+                Assert.AreEqual(valueback, valueinserted);
+                actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name + 5, "subtable in subtable with int",
+                                                t.Clone() as Table);
+            }
+            const string expectedres = @"------------------------------------------------------
+Column count: 2
+Table Name  : subtable in subtable with int
+------------------------------------------------------
+ 0     String  fld1                
+ 1      Table  root                
+    0     String  fld2                
+    1     String  fld3                
+    2      Table  s1                  
+       0     String  fld4                
+       1     String  fld5                
+       2     String  fld6                
+       3      Table  s2                  
+          0        Int  fld                 
+------------------------------------------------------
+
+Table Data Dump. Rows:1
+------------------------------------------------------
+{ //Start row 0
+fld1:,//column 0
+root:[ //1 rows   { //Start row 0
+   fld2:   ,//column 0
+   fld3:   ,//column 1
+   s1:[ //1 rows      { //Start row 0
+      fld4:      ,//column 0
+      fld5:      ,//column 1
+      fld6:      ,//column 2
+      s2:[ //1 rows         { //Start row 0
+         fld:42         //column 0
+         } //End row 0
+]      //column 3
+      } //End row 0
+]   //column 2
+   } //End row 0
+]//column 1
+} //End row 0
+------------------------------------------------------
+";
+            Assert.AreEqual(expectedres, actualres);
+        }
+
+
 
 
 
@@ -1968,8 +2063,40 @@ double:-1002//column 3
     public static class TableCreateTest
     {
 
-        //test with the newest kind of field object constructores - lasse's inherited specialized ones
 
+        [Test]
+        public static void TableTestIsValid()
+        {
+            using (var t = new Table())
+            {
+                Assert.AreEqual(true,t.IsValid());
+                t.AddColumn(DataType.Int,"do'h");
+                Assert.AreEqual(true, t.IsValid());
+                using (var sub = new Table())
+                {
+                    t.AddColumn(DataType.Table, "sub");
+                    t.Add(42, sub);
+                    Assert.AreEqual(true, sub.IsValid());
+                    t.Set(0,43,null);
+                    Table sub2 = t.GetSubTable(1,0);
+                    Assert.AreEqual(true, sub2.IsValid());
+                    Assert.AreEqual(true, sub.IsValid());
+                    t.Add(42, sub);
+                    Table sub3 = t.GetSubTable(1, 1);
+                    t.Set(1, 45, null);
+                    Assert.AreEqual(false, sub3.IsValid());
+                    t.Set(1, 45, sub);
+                    Assert.AreEqual(false, sub3.IsValid());
+                    sub.AddColumn(DataType.Int,"intfield");
+                    t.Set(1, 45, sub);
+                    Assert.AreEqual(false, sub3.IsValid());
+
+                }
+            }
+        }
+
+
+        //test with the newest kind of field object constructores - lasse's inherited specialized ones
 
         [Test]
         public static void TableSubTableSubTable()
@@ -2019,6 +2146,188 @@ Table Name  : table with subtable with subtable
                 actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name,
                                                 "table created with all types using the new field classes",
                                                 newFieldClasses);
+            }
+            const string expectedres = @"------------------------------------------------------
+Column count: 4
+Table Name  : table created with all types using the new field classes
+------------------------------------------------------
+ 0     String  F1                  
+ 1        Int  F2                  
+ 2      Table  Sub1                
+    0     String  F11                 
+    1        Int  F12                 
+ 3     String  Buksestørrelse      
+------------------------------------------------------
+
+";
+            Assert.AreEqual(expectedres, actualres);
+        }
+
+
+
+
+
+        [Test]
+        public static void TableCloneLostFieldNameTest()
+        {
+            const string fnsub =
+            "sub";
+            const string fnsubsub = "subsub";
+            String actualres="";
+            using (var smallTable = new Table(fnsub.Table(fnsubsub.Table())))
+            {
+                smallTable.Add(new Table(fnsub.Table()));
+                Assert.AreEqual(fnsub, smallTable.GetColumnName(0));
+                Assert.AreEqual(fnsubsub,smallTable.GetSubTable(0,0).GetColumnName(0));
+                Spec spec1 = smallTable.Spec;
+                Assert.AreEqual(fnsub,spec1.GetColumnName(0));
+                Spec spec2 = spec1.GetSpec(0);
+                Assert.AreEqual(fnsubsub,spec2.GetColumnName(0));
+                Console.WriteLine("so far so good");
+                var clonedTable = smallTable.Clone() as Table;
+                if (clonedTable != null)
+                {
+                    Assert.AreEqual(fnsub, clonedTable.GetColumnName(0));
+                    Assert.AreEqual(fnsubsub, clonedTable.GetSubTable(0, 0).GetColumnName(0));
+                    Spec spec1S = smallTable.Spec;
+                    Assert.AreEqual(fnsub, spec1S.GetColumnName(0));
+                    Spec spec2S = spec1S.GetSpec(0);
+                    Assert.AreEqual(fnsubsub, spec2S.GetColumnName(0));
+
+
+                    actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name,
+                                "tableclone subsub fieldnames test",
+                                smallTable.Clone() as Table);
+
+
+
+                }
+                else
+                {
+                    {Assert.AreEqual("clonedTable was null","it should have contained data");}
+                }
+
+            }
+            const string expectedres = @"------------------------------------------------------
+Column count: 1
+Table Name  : tableclone subsub fieldnames test
+------------------------------------------------------
+ 0      Table  sub                 
+    0      Table  subsub              
+------------------------------------------------------
+
+Table Data Dump. Rows:1
+------------------------------------------------------
+{ //Start row 0
+sub:[ //0 rows]//column 0
+} //End row 0
+------------------------------------------------------
+";
+            Assert.AreEqual(expectedres, actualres);
+        }
+
+
+        //todo:this test fails, update when the base library has fixed the field name bug
+        [Test]
+        public static void TableCloneTest4()
+        {
+            String actualres;
+            using (
+                var newFieldClasses = new Table(
+                //new StringField("F1"),
+                //new IntField("F2"),
+                    new SubTableField("Sub1"//),
+                //                      new StringField("F11"),
+                //                      new IntField("F12"))
+                    )))
+            {
+                newFieldClasses.AddColumn(DataType.String, "Buksestørrelse");
+                
+                actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name,
+                                                "table created with all types using the new field classes",
+                                                newFieldClasses.Clone() );
+            }
+            const string expectedres = @" no reasonable output as the test fails currently
+";
+            Assert.AreEqual(expectedres, actualres);
+        }
+
+
+
+
+        [Test]
+        public static void TableCloneTest3()
+        {
+            String actualres;
+            using (
+                var newFieldClasses = new Table(
+                //new StringField("F1"),
+                //new IntField("F2"),
+                //    new SubTableField("Sub1",
+                //                      new StringField("F11"),
+                //                      new IntField("F12"))
+                    ))
+            {
+                newFieldClasses.AddColumn(DataType.String, "Buksestørrelse");
+
+
+                actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name,
+                                                "table created with all types using the new field classes",
+                                                newFieldClasses.Clone() );
+            }
+            const string expectedres = @" no reasonable output as the test fails currently
+";
+            Assert.AreEqual(expectedres, actualres);
+        }
+
+
+
+
+        [Test]
+        public static void TableCloneTest2()
+        {
+            String actualres;
+            using (
+                var newFieldClasses = new Table(
+                    //new StringField("F1"),
+                    //new IntField("F2"),
+                    new SubTableField("Sub1",
+                                      new StringField("F11"),
+                                      new IntField("F12"))
+                    ))
+            {
+                newFieldClasses.AddColumn(DataType.String, "Buksestørrelse");
+
+
+                actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name,
+                                                "table created with all types using the new field classes",
+                                                newFieldClasses.Clone() );
+            }
+            const string expectedres = @" no reasonable output as the test fails currently
+";
+            Assert.AreEqual(expectedres, actualres);
+        }
+
+
+        [Test]
+        public static void TableCloneTest()
+        {
+            String actualres;
+            using (
+                var newFieldClasses = new Table(
+                    new StringField("F1"),
+                    new IntField("F2"),
+                    new SubTableField("Sub1",
+                                      new StringField("F11"),
+                                      new IntField("F12"))
+                    ))
+            {
+                newFieldClasses.AddColumn(DataType.String, "Buksestørrelse");
+
+                
+                actualres = Program.TableDumper(MethodBase.GetCurrentMethod().Name,
+                                                "table created with all types using the new field classes",
+                                                newFieldClasses.Clone() );
             }
             const string expectedres = @"------------------------------------------------------
 Column count: 4
@@ -3628,6 +3937,14 @@ Table Name  : same names, empty names, mixed types
 //            }
 
           //  TableCreateTest.SubTableNoFields();
+            TableCreateTest.TableTestIsValid();
+            TableCreateTest.TableCloneTest4();
+            TableCreateTest.TableCloneTest3();
+            TableCreateTest.TableCloneTest2();
+            TableCreateTest.TableCloneLostFieldNameTest();
+            TableChangeDataTest.TableSubTableSubTableClone();
+            TableCreateTest.TypedFieldClasses();
+            TableCreateTest.TableCloneTest();
             TableAggregateTest.TableAggreate();
             TableAggregateTest.TableMaximumDouble();
             EnvironmentTest.ShowVersionTest();

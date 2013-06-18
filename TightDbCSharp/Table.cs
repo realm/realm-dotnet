@@ -46,7 +46,7 @@ namespace TightDbCSharp
 
     //Tightdb Table
     //could have been called RowCollection but is called Table as it in fact is a table and not merely a collection of rows
-    public class Table : TableOrView, IEnumerable<Row>
+    public class Table : TableOrView, IEnumerable<Row>, ICloneable
     {
         //manual dll version info. Used when debugging to see if the right DLL is loaded, or an old one
         //the number is a date and a time (usually last time i debugged something)
@@ -64,13 +64,31 @@ namespace TightDbCSharp
             TableNew();
         }
 
+        
         //This is used when we want to create a table and we already have the c++ handle that the table should use.  used by GetSubTable
         internal Table(IntPtr tableHandle,bool shouldbedisposed)
         {
             SetHandle(tableHandle,shouldbedisposed);
         }
 
+        //implements ICloneable - this method is called Copy in the c++ binding
+        //also implements a typed Clone that will be used unless a caller 
+        public Table Clone()
+        {
+            return UnsafeNativeMethods.CopyTable(this);
+        }
 
+        
+        object ICloneable.Clone()
+        {
+            return Clone();
+        }
+
+
+        public bool IsValid()
+        {
+            return UnsafeNativeMethods.IsValid(this);
+        }
 
         public TableRow this[long rowIndex]
         {
@@ -466,6 +484,11 @@ namespace TightDbCSharp
         internal override Table GetSubTableNoCheck(long columnIndex, long rowIndex)
         {
             return UnsafeNativeMethods.TableGetSubTable(this, columnIndex, rowIndex);
+        }
+
+        internal override void ClearSubTableNoCheck(long columnIndex, long rowIndex)
+        {
+            UnsafeNativeMethods.TableClearSubTable(this, columnIndex, rowIndex);
         }
 
         internal override void SetStringNoCheck(long columnIndex, long rowIndex,string value)
