@@ -324,7 +324,7 @@ namespace TightDbCSharp
 
 
         //do not check row index
-        
+        //todo:handle the special case where a user sends a null as a parameter - this is not valid except if the table has only one column that is a subtable.
         //todo:let the type be ieumerable, allowing user to set with objects in any kind of collection he has
           internal void SetRowNoCheck(long rowIndex, params object[] rowContents)
         //experimental        internal void SetRowNoCheck(long rowIndex, IEnumerable<object> rowContents)

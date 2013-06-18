@@ -2094,6 +2094,30 @@ double:-1002//column 3
                 }
             }
         }
+        
+        [Test]
+        public static void TableSharedSpecTest()
+        {
+            //create a table1 with a subtable1 column in it, with an int in it. The subtable with an int will 
+            //have a shared spec, as subtable1 spec is part of the table1 and thus tableSharedSpec should return true
+
+            using (var table1 = new Table("subtable".Table(
+                                            "int".Int()
+                                            )
+                                         )
+                  ){
+                      Assert.AreEqual(false, table1.has_shared_spec());
+                      table1.AddEmptyRow(1);//add an empty subtalbe to the first column in the table
+                      //todo:test subtable in table definition writeover situations 
+                      //table1.ClearSubTable(0, 0);//somehow i think this is not legal? similarily putting in a subtable that does not match the spec of the master table
+            
+                      using (Table sub = table1.GetSubTable(0, 0))
+                      {
+                          sub.Add(42);//add row with the int 42 in it
+                          Assert.AreEqual(true, sub.has_shared_spec());
+                      }
+            }
+        }
 
 
         //test with the newest kind of field object constructores - lasse's inherited specialized ones
@@ -3937,6 +3961,7 @@ Table Name  : same names, empty names, mixed types
 //            }
 
           //  TableCreateTest.SubTableNoFields();
+            TableCreateTest.TableSharedSpecTest();
             TableCreateTest.TableTestIsValid();
             TableCreateTest.TableCloneTest4();
             TableCreateTest.TableCloneTest3();

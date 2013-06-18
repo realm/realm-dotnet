@@ -105,6 +105,10 @@ extern "C" {
      return size_t_to_bool(table_ptr->is_valid());
  }
 
+//     bool has_shared_spec() const;
+ TIGHTDB_C_CS_API size_t table_has_shared_spec(Table* table_ptr) {
+	 return table_ptr->has_shared_spec();
+ }
 TIGHTDB_C_CS_API size_t table_get_column_count(tightdb::Table* table_ptr)
 {
 	return table_ptr->get_column_count();

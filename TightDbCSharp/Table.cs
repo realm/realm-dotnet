@@ -87,7 +87,13 @@ namespace TightDbCSharp
 
         public bool IsValid()
         {
-            return UnsafeNativeMethods.IsValid(this);
+            return UnsafeNativeMethods.TableIsValid(this);
+        }
+
+
+        public bool has_shared_spec()
+        {
+            return UnsafeNativeMethods.TableHasSharedSpec(this);
         }
 
         public TableRow this[long rowIndex]
@@ -100,6 +106,7 @@ namespace TightDbCSharp
         }
 
 
+        
 
         //the following code enables Table to be enumerated, and makes Row the type You get back from an enummeration
         public new IEnumerator<TableRow> GetEnumerator() { return new Enumerator(this); }

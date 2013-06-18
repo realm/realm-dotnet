@@ -189,12 +189,22 @@ enum DataType {
         [DllImport(L32, EntryPoint = "table_is_valid", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr table_is_valid32(IntPtr tablePtr);
 
-        public static bool IsValid(Table table)
+        public static bool TableIsValid(Table table)
         {
             return IntPtrToBool(Is64Bit ? table_is_valid64(table.Handle) : table_is_valid32(table.Handle));
         }
 
+        //todo:unit test
+        [DllImport(L64, EntryPoint = "table_has_shared_spec", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_has_shared_spec64(IntPtr tablePtr);
 
+        [DllImport(L32, EntryPoint = "table_has_shared_spec", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_has_shared_spec32(IntPtr tablePtr);
+
+        public static bool TableHasSharedSpec(Table table)
+        {
+            return IntPtrToBool(Is64Bit ? table_has_shared_spec64(table.Handle) : table_has_shared_spec32(table.Handle));
+        }
 
 
 
