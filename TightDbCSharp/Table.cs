@@ -567,6 +567,7 @@ namespace TightDbCSharp
         }
 
         //warning! Use only this one when inserting new rows that are not inserted yet
+        //todo:implement the rest of the insert api for inserting (currently only addemptyrow and setxx is implemented)
         public void InsertInt(long columnIndex, long rowIndex, long value)
         {
             UnsafeNativeMethods.TableInsertInt(this, columnIndex, rowIndex, value);
