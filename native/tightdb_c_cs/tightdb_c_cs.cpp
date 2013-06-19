@@ -78,6 +78,116 @@ inline size_t datatype_to_size_t(DataType value) {
 //adapted from tightdb_java2/tightdb_jni/src/util.cpp. Used by utf8 to utf16 conversions
 
 
+  class CSStringAccessor {
+public:
+    CSStringAccessor(uint16_t *, size_t);
+
+    operator tightdb::StringData() const TIGHTDB_NOEXCEPT
+    {
+        return tightdb::StringData(m_data.get(), m_size);
+    }
+    bool error;
+private:
+    tightdb::UniquePtr<char[]> m_data;
+    std::size_t m_size;
+};
+
+
+  
+CSStringAccessor::CSStringAccessor(uint16_t* csbuffer, size_t csbufsize)
+{
+    // For efficiency, if the incoming UTF-16 string is sufficiently
+    // small, we will choose an UTF-8 output buffer whose size (in
+    // bytes) is simply 4 times the number of 16-bit elements in the
+    // input. This is guaranteed to be enough. However, to avoid
+    // excessive over allocation, this is not done for larger input
+    // strings.
+    
+    error=false;
+    typedef Utf8x16<uint16_t,std::char_traits<char16_t>>Xcode;    //This might not work in old compilers (the std::char_traits<char16_t> ).     
+    size_t max_project_size = 48;
+
+    TIGHTDB_ASSERT(max_project_size <= numeric_limits<size_t>::max()/4);
+    size_t u8buf_size;
+    if (csbufsize <= max_project_size) {
+        u8buf_size = csbufsize * 4;
+    }
+    else {
+        const uint16_t* begin = csbuffer;
+        const uint16_t* end   = csbuffer + csbufsize;
+        u8buf_size = Xcode::find_utf8_buf_size(begin, end);
+    }
+    m_data.reset(new char[u8buf_size]);
+    {
+        const uint16_t* in_begin = csbuffer;
+        const uint16_t* in_end   = csbuffer + csbufsize;
+        char* out_begin = m_data.get();
+        char* out_end   = m_data.get() + u8buf_size;
+        if (!Xcode::to_utf8(in_begin, in_end, out_begin, out_end)){
+           m_size=0;
+           error=true;
+           return;//calling method should handle this. We can't throw exceptions
+        }
+        TIGHTDB_ASSERT(in_begin == in_end);
+        m_size = out_begin - m_data.get();
+    }
+}
+
+
+//stringdata is utf8
+//cshapbuffer is a c# stringbuilder buffer marshalled as utf16 bufsize is the size of the csharp buffer measured in 16 bit words. The buffer is in fact one char larger than that, to make room for a terminating null character
+//this method will transcode the utf8 string data inside stringdata to utf16 and put the transcoded data in the buffer. the return value is the size of the buffer that was
+//actually used, measured in 16 bit characters, excluding a null terminator that is also put in
+//if the return sizee is larger than bufsize_in_16bit_words, the buffer was too small, this is a request to be called again with a larger buffer
+//note that this implementation will preserve null characters inside the string - but the C# interop marshalling stuff will truncate the string at the first null character anyways
+//To get around that, we would have to work with an untyped pointer.
+
+//possible return values :
+//-1            :The utf8 data pointed to by str cannot be translated to utf16. it is invalid
+//>=0;<=bufsize :The data in str has been converted to data in csharpbuffer - return value is number of 16 bit characters in cshapbuffer that contains the converted data
+//>bufsize      :The buffer size is too small for the translated string. Please call again with a buffer of at least the size of the return value
+size_t stringdata_to_csharpstringbuffer(StringData str, uint16_t * csharpbuffer, size_t bufsize) //note bufsize is _in_16bit_words 
+{
+    //fast check. If the buffer is very likely too small, just return immediatly with a request for a larger buffer
+    if(str.size()>bufsize) {
+        return str.size();
+    }
+
+    //fast check. Empty strings are handled by just returning zero, not even touching the buffer
+    if(str.size()<=0) {
+        return 0;
+    }
+    const char* in_begin = str.data();
+    const char* in_end = str.data() +str.size();
+
+    uint16_t* out_begin = csharpbuffer;    
+    uint16_t* out_end = csharpbuffer+bufsize;
+    
+    typedef Utf8x16<uint16_t,std::char_traits<char16_t>>Xcode;    //This might not work in old compilers (the std::char_traits<char16_t> ). 
+    
+    size_t size  = Xcode::find_utf16_buf_size(in_begin,in_end);//Figure how much space is actually needed
+    
+    if(in_begin!=in_end) {
+        std::cerr<<str.data();
+      return -1;//bad uft8 data    
+    }
+    if(size>bufsize) 
+        return size; //bufsize is too small. Return needed size
+    
+    //the transcoded string fits in the buffer
+
+     in_begin = str.data();
+     in_end = str.data() +str.size();
+
+    if (Xcode::to_utf16(in_begin,in_end,out_begin,out_end))  {
+        size_t chars_used =out_begin-csharpbuffer;
+        //csharpbuffer[chars_used-5]=0; //slightly ugly hack. C# looks for a null terminated string in the buffer, so we have to null terminate this string for C# to pick up where the end is
+        return (chars_used);        //transcode complete. return the number of 16-bit characters used in the buffer,excluding the null terminator
+    }
+    return -1;//bad utf8 data. this cannot happen
+}
+
+
 } //anonymous namespace
 
 #ifdef __cplusplus
@@ -302,19 +412,6 @@ TIGHTDB_C_CS_API Group* new_group() //should be disposed by calling group_delete
 
 
 
-  class CSStringAccessor {
-public:
-    CSStringAccessor(uint16_t *, size_t);
-
-    operator tightdb::StringData() const TIGHTDB_NOEXCEPT
-    {
-        return tightdb::StringData(m_data.get(), m_size);
-    }
-    bool error;
-private:
-    tightdb::UniquePtr<char[]> m_data;
-    std::size_t m_size;
-};
 
 
   TIGHTDB_C_CS_API Group* new_group_file(uint16_t * name, size_t name_len)//should be disposed by calling group_delete
@@ -448,99 +545,6 @@ TIGHTDB_C_CS_API  size_t spec_get_column_type(Spec* spec_ptr, const size_t colum
 
 
 
-CSStringAccessor::CSStringAccessor(uint16_t* csbuffer, size_t csbufsize)
-{
-    // For efficiency, if the incoming UTF-16 string is sufficiently
-    // small, we will choose an UTF-8 output buffer whose size (in
-    // bytes) is simply 4 times the number of 16-bit elements in the
-    // input. This is guaranteed to be enough. However, to avoid
-    // excessive over allocation, this is not done for larger input
-    // strings.
-    
-    error=false;
-    typedef Utf8x16<uint16_t,std::char_traits<char16_t>>Xcode;    //This might not work in old compilers (the std::char_traits<char16_t> ).     
-    size_t max_project_size = 48;
-
-    TIGHTDB_ASSERT(max_project_size <= numeric_limits<size_t>::max()/4);
-    size_t u8buf_size;
-    if (csbufsize <= max_project_size) {
-        u8buf_size = csbufsize * 4;
-    }
-    else {
-        const uint16_t* begin = csbuffer;
-        const uint16_t* end   = csbuffer + csbufsize;
-        u8buf_size = Xcode::find_utf8_buf_size(begin, end);
-    }
-    m_data.reset(new char[u8buf_size]);
-    {
-        const uint16_t* in_begin = csbuffer;
-        const uint16_t* in_end   = csbuffer + csbufsize;
-        char* out_begin = m_data.get();
-        char* out_end   = m_data.get() + u8buf_size;
-        if (!Xcode::to_utf8(in_begin, in_end, out_begin, out_end)){
-           m_size=0;
-           error=true;
-           return;//calling method should handle this. We can't throw exceptions
-        }
-        TIGHTDB_ASSERT(in_begin == in_end);
-        m_size = out_begin - m_data.get();
-    }
-}
-
-
-
-//stringdata is utf8
-//cshapbuffer is a c# stringbuilder buffer marshalled as utf16 bufsize is the size of the csharp buffer measured in 16 bit words. The buffer is in fact one char larger than that, to make room for a terminating null character
-//this method will transcode the utf8 string data inside stringdata to utf16 and put the transcoded data in the buffer. the return value is the size of the buffer that was
-//actually used, measured in 16 bit characters, excluding a null terminator that is also put in
-//if the return sizee is larger than bufsize_in_16bit_words, the buffer was too small, this is a request to be called again with a larger buffer
-//note that this implementation will preserve null characters inside the string - but the C# interop marshalling stuff will truncate the string at the first null character anyways
-//To get around that, we would have to work with an untyped pointer.
-
-//possible return values :
-//-1            :The utf8 data pointed to by str cannot be translated to utf16. it is invalid
-//>=0;<=bufsize :The data in str has been converted to data in csharpbuffer - return value is number of 16 bit characters in cshapbuffer that contains the converted data
-//>bufsize      :The buffer size is too small for the translated string. Please call again with a buffer of at least the size of the return value
-size_t stringdata_to_csharpstringbuffer(StringData str, uint16_t * csharpbuffer, size_t bufsize) //note bufsize is _in_16bit_words 
-{
-    //fast check. If the buffer is very likely too small, just return immediatly with a request for a larger buffer
-    if(str.size()>bufsize) {
-        return str.size();
-    }
-
-    //fast check. Empty strings are handled by just returning zero, not even touching the buffer
-    if(str.size()<=0) {
-        return 0;
-    }
-    const char* in_begin = str.data();
-    const char* in_end = str.data() +str.size();
-
-    uint16_t* out_begin = csharpbuffer;    
-    uint16_t* out_end = csharpbuffer+bufsize;
-    
-    typedef Utf8x16<uint16_t,std::char_traits<char16_t>>Xcode;    //This might not work in old compilers (the std::char_traits<char16_t> ). 
-    
-    size_t size  = Xcode::find_utf16_buf_size(in_begin,in_end);//Figure how much space is actually needed
-    
-    if(in_begin!=in_end) {
-        std::cerr<<str.data();
-      return -1;//bad uft8 data    
-    }
-    if(size>bufsize) 
-        return size; //bufsize is too small. Return needed size
-    
-    //the transcoded string fits in the buffer
-
-     in_begin = str.data();
-     in_end = str.data() +str.size();
-
-    if (Xcode::to_utf16(in_begin,in_end,out_begin,out_end))  {
-        size_t chars_used =out_begin-csharpbuffer;
-        //csharpbuffer[chars_used-5]=0; //slightly ugly hack. C# looks for a null terminated string in the buffer, so we have to null terminate this string for C# to pick up where the end is
-        return (chars_used);        //transcode complete. return the number of 16-bit characters used in the buffer,excluding the null terminator
-    }
-    return -1;//bad utf8 data. this cannot happen
-}
 
 //returns 42 if we got "Hellow, World!" otherwise return -42
 TIGHTDB_C_CS_API size_t test_string_to_cpp(uint16_t * str,size_t bufsize)
