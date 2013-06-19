@@ -456,6 +456,12 @@ namespace TightDbCSharp
             return rowAdded;//return the index of the just added row
         }
 
+        /* won't work in a using scenario as using does not like the object being used to be assigned inside the using scope
+        public static Table operator +(Table left,  object[]  right) {
+            left.Add(right);
+            return left;
+        }
+        */
         public void Set(long rowIndex, params object[] rowData)
         {
             ValidateRowIndex(rowIndex);
