@@ -3704,19 +3704,19 @@ Table Name  : same names, empty names, mixed types
                     //Finally subtables can be specified inside the parameter list (as an array of arrays of object) like this
 
                     peopleTable.Add("John", 20, true,
-                        new object[]
+                        new []
                         {
-                            new object[] {"work", "232-323-3232"},
-                            new object[] {"home", "434-434-4343"}
+                            new [] {"work", "232-323-3232"},
+                            new [] {"home", "434-434-4343"}
                         });
 
                     //the arrays and constans can of course be supplied as variables too like this
 
                     var sub =
-                        new object[]
+                        new []
                         {
-                            new object[] {"work", "232-323-3232"},
-                            new object[] {"home", "434-434-4343"}
+                            new [] {"work", "232-323-3232"},
+                            new [] {"home", "434-434-4343"}
                         };
                     peopleTable.Add("John", 20, true, sub);
 
@@ -3779,17 +3779,17 @@ Table Name  : same names, empty names, mixed types
                     peopleTable.Add("Johanna", 20, true, sub);
 
                     peopleTable.Add("Rasmus", 23, true,
-                    new object[]
+                    new []
                         {
-                            new object[] {"work", "434-424-4242"},
-                            new object[] {"home", "555-444-3333"}
+                            new [] {"work", "434-424-4242"},
+                            new [] {"home", "555-444-3333"}
                         });
 
                     peopleTable.Add("Per", 53, true,
-                    new object[]
+                    new []
                         {
-                            new object[] {"work", "314-159-2653"},
-                            new object[] {"home", "589-793-2385"}
+                            new [] {"work", "314-159-2653"},
+                            new [] {"home", "589-793-2385"}
                         });
 
                     peopleTable.Add("Kirsten", 13, false, null);
