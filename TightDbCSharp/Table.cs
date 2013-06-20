@@ -182,6 +182,10 @@ namespace TightDbCSharp
             DefineSchema(schema);
         }
 
+        public Table(params object[] fielddescriptions)
+        {
+        }
+
         public Table DefineSchema(params Field[] schema)
         {
             if (schema == null)

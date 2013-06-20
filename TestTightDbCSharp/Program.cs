@@ -481,7 +481,7 @@ intcolumn2:0//column 2
             try
             {
                 t = new Table(new IntField("intcolumn0"), new IntField("intcolumn1"), new IntField("intcolumn2"));
-
+                t = new Table(new { intcolumn0 = DataType.Binary, intcolumn1 = DataType.Bool, intcolumn2 = DataType.Double });
                 for (int n = 0; n < 1000; n++)
                 {
                     long col0 = n;
