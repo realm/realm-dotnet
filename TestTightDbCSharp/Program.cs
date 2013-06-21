@@ -15,6 +15,7 @@ using System.Diagnostics;
 
 namespace TestTightDbCSharp
 {
+
     [TestFixture]
     public static class EnvironmentTest
     {
@@ -450,7 +451,7 @@ intcolumn2:0//column 2
 } //End row 2
 ------------------------------------------------------
 ";
-            Assert.AreEqual(expectedres, actualres);
+            Program.Cmp(expectedres, actualres);
 
         }
     }
@@ -481,7 +482,7 @@ intcolumn2:0//column 2
             try
             {
                 t = new Table(new IntField("intcolumn0"), new IntField("intcolumn1"), new IntField("intcolumn2"));
-                t = new Table(new { intcolumn0 = DataType.Binary, intcolumn1 = DataType.Bool, intcolumn2 = DataType.Double });
+                //t = new Table(new { intcolumn0 = DataType.Binary, intcolumn1 = DataType.Bool, intcolumn2 = DataType.Double });
                 for (int n = 0; n < 1000; n++)
                 {
                     long col0 = n;
@@ -680,7 +681,7 @@ intcolumn2:1//column 2
 } //End row 9
 ------------------------------------------------------
 ";
-            Assert.AreEqual(expectedres, actualres);
+            Program.Cmp(expectedres, actualres);
         }
 
 
@@ -1308,7 +1309,7 @@ mix'd:84//column 0//Mixed type is Int
 ------------------------------------------------------
 ";
 
-            Assert.AreEqual(expectedres, actualres);
+            Program.Cmp(expectedres, actualres);
         }
 
 
@@ -1403,7 +1404,7 @@ root:[ //1 rows   { //Start row 0
 } //End row 0
 ------------------------------------------------------
 ";
-            Assert.AreEqual(expectedres, actualres);
+            Program.Cmp(expectedres, actualres);
         }
 
 
@@ -1498,7 +1499,7 @@ root:[ //1 rows   { //Start row 0
 } //End row 0
 ------------------------------------------------------
 ";
-            Assert.AreEqual(expectedres, actualres);
+            Program.Cmp(expectedres, actualres);
         }
 
 
@@ -1544,7 +1545,7 @@ IntColumn3:-9223372036854775766//column 2
 } //End row 2
 ------------------------------------------------------
 ";
-            Assert.AreEqual(expectedres, actualres);
+            Program.Cmp(expectedres, actualres);
         }
 
 
@@ -1639,7 +1640,7 @@ SubTableWithInts:[ //3 rows   { //Start row 0
 } //End row 2
 ------------------------------------------------------
 ";
-            Assert.AreEqual(expectedres, actualres);
+            Program.Cmp(expectedres, actualres);
         }
 
 
@@ -1705,7 +1706,7 @@ intfield2:10//column 2
 } //End row 4
 ------------------------------------------------------
 ";
-            Assert.AreEqual(expectedres, actualres);
+            Program.Cmp(expectedres, actualres);
         }
     }
 
@@ -1792,7 +1793,7 @@ Table Name  : table name is 12345 then the permille sign ISO 10646:8240 then 789
 ------------------------------------------------------
 
 ";
-            Assert.AreEqual(expectedres, actualres);
+            Program.Cmp(expectedres, actualres);
         }
 
 
@@ -1821,7 +1822,7 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
 ------------------------------------------------------
 
 ";
-            Assert.AreEqual(expectedres, actualres);
+            Program.Cmp(expectedres, actualres);
         }
     }
 
@@ -1980,7 +1981,7 @@ double:-1002//column 3
 } //End row 3
 ------------------------------------------------------
 ";
-                Assert.AreEqual(expectedres,actualres);
+            Program.Cmp(expectedres, actualres);
 
                 
                 using (
@@ -2146,7 +2147,7 @@ Table Name  : table with subtable with subtable
 ------------------------------------------------------
 
 ";
-            Assert.AreEqual(expectedres, actualres);
+            Program.Cmp(expectedres, actualres);
         }
 
 
@@ -2184,7 +2185,7 @@ Table Name  : table created with all types using the new field classes
 ------------------------------------------------------
 
 ";
-            Assert.AreEqual(expectedres, actualres);
+            Program.Cmp(expectedres, actualres);
         }
 
 
@@ -2247,7 +2248,7 @@ sub:[ //0 rows]//column 0
 } //End row 0
 ------------------------------------------------------
 ";
-            Assert.AreEqual(expectedres, actualres);
+            Program.Cmp(expectedres, actualres);
         }
 
 
@@ -2273,7 +2274,7 @@ sub:[ //0 rows]//column 0
             }
             const string expectedres = @" no reasonable output as the test fails currently
 ";
-            Assert.AreEqual(expectedres, actualres);
+            Program.Cmp(expectedres, actualres);
         }
 
 
@@ -2301,7 +2302,7 @@ sub:[ //0 rows]//column 0
             }
             const string expectedres = @" no reasonable output as the test fails currently
 ";
-            Assert.AreEqual(expectedres, actualres);
+            Program.Cmp(expectedres, actualres);
         }
 
 
@@ -2329,7 +2330,7 @@ sub:[ //0 rows]//column 0
             }
             const string expectedres = @" no reasonable output as the test fails currently
 ";
-            Assert.AreEqual(expectedres, actualres);
+            Program.Cmp(expectedres, actualres);
         }
 
 
@@ -2366,7 +2367,7 @@ Table Name  : table created with all types using the new field classes
 ------------------------------------------------------
 
 ";
-            Assert.AreEqual(expectedres, actualres);
+            Program.Cmp(expectedres, actualres);
         }
 
 
@@ -2455,7 +2456,7 @@ Table Name  : table created user defined types and methods
 ------------------------------------------------------
 
 ";
-            Assert.AreEqual(expectedres, actualres);
+            Program.Cmp(expectedres, actualres);
 
 
 
@@ -2492,7 +2493,7 @@ Table Name  : table created user defined types and methods
 ------------------------------------------------------
 
 ";
-            Assert.AreEqual(expectedres, actualres);
+            Program.Cmp(expectedres, actualres);
 
         }
 
@@ -2522,7 +2523,7 @@ Table Name  : one field Created in two steps with table add column
 ------------------------------------------------------
 
 ";
-            Assert.AreEqual(expectedres, actualres);
+            Program.Cmp(expectedres, actualres);
         }
 
 
@@ -2543,7 +2544,7 @@ Table Name  : NameField
 ------------------------------------------------------
 
 ";
-            Assert.AreEqual(expectedres, actualres);
+            Program.Cmp(expectedres, actualres);
         }
 
 
@@ -2573,7 +2574,7 @@ Table Name  : four columns, Last Mixed
 ------------------------------------------------------
 
 ";
-            Assert.AreEqual(expectedres, actualres);
+            Program.Cmp(expectedres, actualres);
         }
 
         //test the alternative table dumper implementation that does not use table class
@@ -2620,8 +2621,8 @@ Table Name  : Table with all allowed types (String Extensions)
 ------------------------------------------------------
 
 ";
-            Assert.AreEqual(expectedres, actualres1);
-            Assert.AreEqual(expectedres, actualres2);
+            Program.Cmp(expectedres, actualres1);
+            Program.Cmp(expectedres, actualres2);
         }
 
 
@@ -2670,8 +2671,8 @@ Table Name  : Table with all allowed types (Field)
 ------------------------------------------------------
 
 ";
-            Assert.AreEqual(expectedres, actualres1);
-            Assert.AreEqual(expectedres, actualres2);
+            Program.Cmp(expectedres, actualres1);
+            Program.Cmp(expectedres, actualres2);
         }
 
         //test the alternative table dumper implementation that does not use table class
@@ -2750,8 +2751,8 @@ Table Name  : Table with all allowed types (Field_string)
 ------------------------------------------------------
 
 ";
-            Assert.AreEqual(expectedres, actualres1);
-            Assert.AreEqual(expectedres, actualres2);
+            Program.Cmp(expectedres, actualres1);
+            Program.Cmp(expectedres, actualres2);
         }
 
 
@@ -2800,8 +2801,8 @@ Table Name  : Table with all allowed types (Typed Field)
 ------------------------------------------------------
 
 ";
-            Assert.AreEqual(expectedres, actualres1);
-            Assert.AreEqual(expectedres, actualres2);
+            Program.Cmp(expectedres, actualres1);
+            Program.Cmp(expectedres, actualres2);
         }
 
 
@@ -2847,7 +2848,7 @@ Table Name  : six colums,sub four columns
 ------------------------------------------------------
 
 ";
-            Assert.AreEqual(expectedres, actualres);
+            Program.Cmp(expectedres, actualres);
         }
 
 
@@ -2904,7 +2905,7 @@ Table Name  : self-referencing subtable
 ------------------------------------------------------
 
 ";
-            Assert.AreEqual(expectedres, actualres);
+            Program.Cmp(expectedres, actualres);
         }
 
         [Test]
@@ -2938,7 +2939,7 @@ Table Name  : subtable that has subtable that references its parent #1
 ";
 
 
-            Assert.AreEqual(expectedres, actualres);
+            Program.Cmp(expectedres, actualres);
         }
 
         [Test]
@@ -2969,7 +2970,7 @@ Table Name  : subtable that has subtable that references its parent #2
 
 ";
 
-            Assert.AreEqual(expectedres, actualres);
+            Program.Cmp(expectedres, actualres);
 
         }
 
@@ -3002,7 +3003,7 @@ Table Name  : cyclic field definition
 
 ";
 
-            Assert.AreEqual(expectedres, actualres);
+            Program.Cmp(expectedres, actualres);
         }
 
         //dastardly creative terroristic attemt at creating a cyclic graph of Field objects
@@ -3068,7 +3069,7 @@ Table Name  : cyclic field definition
 
 ";
 
-            Assert.AreEqual(expectedres, actualres);
+            Program.Cmp(expectedres, actualres);
         }
 
 
@@ -3098,7 +3099,7 @@ Table Name  : just an int field, no subs
 
 ";
 
-            Assert.AreEqual(expectedres, actualres);
+            Program.Cmp(expectedres, actualres);
         }
 
         [Test]
@@ -3125,7 +3126,7 @@ Table Name  : subtable with two int fields
 ------------------------------------------------------
 
 ";
-            Assert.AreEqual(expectedres, actualres);
+            Program.Cmp(expectedres, actualres);
             //changing mind and making it just and int field, and then changing mind again and setting it as subtable type
             //and thus resurfacing the two subfields. no harm done.
         }
@@ -3150,7 +3151,7 @@ Table Name  : two fields, case is differnt
 ------------------------------------------------------
 
 ";
-            Assert.AreEqual(expectedres, actualres);
+            Program.Cmp(expectedres, actualres);
         }
 
         [Test]
@@ -3173,7 +3174,7 @@ Table Name  : two fields name and type the same
 ------------------------------------------------------
 
 ";
-            Assert.AreEqual(expectedres, actualres);
+            Program.Cmp(expectedres, actualres);
 
         }
 
@@ -3244,7 +3245,7 @@ Table Name  : four columns, sub three subsub three
 ------------------------------------------------------
 
 ";
-            Assert.AreEqual(expectedres, actualres.ToString());
+            Program.Cmp(expectedres, actualres.ToString());
         }
 
         [Test]
@@ -3271,7 +3272,7 @@ Table Name  : same names int two empty string names
 ------------------------------------------------------
 
 ";
-            Assert.AreEqual(expectedres, actualres);
+            Program.Cmp(expectedres, actualres);
         }
 
         [Test]
@@ -3299,7 +3300,7 @@ Table Name  : same names, empty names, mixed types
 ------------------------------------------------------
 
 ";
-            Assert.AreEqual(expectedres, actualres);
+            Program.Cmp(expectedres, actualres);
         }
 
     }
@@ -3314,8 +3315,12 @@ Table Name  : same names, empty names, mixed types
 
 
 
-
-
+        //custom string assert that removes \r from expected as the text files have accidentially had their cr's removed by github
+        //by removing \r from both files, CRLF or just LF differences will not break unit tests
+        public static void Cmp(String s1, String s2)
+        {
+         Assert.AreEqual(s1.Replace("\r",""),s2.Replace("\r",""));   
+        }
 
 
 

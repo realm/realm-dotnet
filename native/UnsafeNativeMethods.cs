@@ -149,8 +149,23 @@ enum DataType {
             }
         }
 
-        private const String L64 = "tightdb_c_cs64";
-        private const String L32 = "tightdb_c_cs32";
+#if (DEBUG)
+        private const string Buildmode = "d";
+#else
+        private const string Buildmode = "r";
+#endif
+
+
+        //the .net library wil always use a c dll that is called tightdb_c_cs2012[32/64][r/d]
+        //this dll could have been built with vs2012 or 2010 - we don't really care as long as the C interface is the same, which it will be
+        //if built from the same source.
+
+        private const String L64 = "tightdb_c_cs201264"+Buildmode;
+        private const String L32 = "tightdb_c_cs201232"+Buildmode;
+
+
+
+
 
         //tightdb_c_cs_API size_t tightdb_c_csGetVersion(void)
         [DllImport(L64, EntryPoint = "tightdb_c_cs_getver", CallingConvention = CallingConvention.Cdecl)]

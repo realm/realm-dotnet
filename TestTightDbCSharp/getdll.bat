@@ -13,11 +13,7 @@
 
 set projdir=%1
 set dllname=tightdb_c_cs2012
-echo Copying new c++ dlls to tightdb_c_cs
-:set sdirx86deb=%projdir%..\native\tightdb_c_cs\tightdb_c_cs2010\Win32\Debug\
-:set sdirx86rel=%projdir%..\native\tightdb_c_cs\tightdb_c_cs2010\Win32\Release\
-:set sdirx64deb=%projdir%..\native\tightdb_c_cs\tightdb_c_cs2010\x64\Debug\
-:set sdirx64rel=%projdir%..\native\tightdb_c_cs\tightdb_c_cs2010\x64\Release\
+echo Copying new c dlls to project bin directory
 
 set sdirx86deb=%projdir%..\native\tightdb_c_cs\%dllname%\Win32\Debug\
 set sdirx86rel=%projdir%..\native\tightdb_c_cs\%dllname%\Win32\Release\
@@ -35,17 +31,14 @@ set ddiranyrel=%projdir%\bin\release\
 
 
 
-xcopy %sdirx86deb%%dllname%32d.* %ddirx86deb%tightdb_c_cs32.*  /v /y /f /D
-xcopy %sdirx86rel%%dllname%32r.* %ddirx86rel%tightdb_c_cs32.*  /v /y /f /D
-xcopy %sdirx64deb%%dllname%64d.* %ddirx64deb%tightdb_c_cs64.*  /v /y /f /D
-xcopy %sdirx64rel%%dllname%64r.* %ddirx64rel%tightdb_c_cs64.*  /v /y /f /D
-:xcopy %sdirx64deb%%dllname%64d.* %ddiranydeb%\x64\tightdb_c_cs64.*  /v /y /f /D
-:xcopy %sdirx64rel%%dllname%64r.* %ddiranyrel%\x64\tightdb_c_cs64.*  /v /y /f /D
-:xcopy %sdirx86deb%%dllname%32d.* %ddiranydeb%\x86\tightdb_c_cs32.*  /v /y /f /D
-:xcopy %sdirx86rel%%dllname%32r.* %ddiranyrel%\x86\tightdb_c_cs32.*  /v /y /f /D
+xcopy %sdirx86deb%%dllname%32d.* %ddirx86deb% /v /y /f /D
+xcopy %sdirx86deb%%dllname%32d.* %ddiranydeb%  /v /y /f /D
 
-xcopy %sdirx86deb%%dllname%32d.* %ddiranydeb%\tightdb_c_cs32.*  /v /y /f /D
-xcopy %sdirx86rel%%dllname%32r.* %ddiranyrel%\tightdb_c_cs32.*  /v /y /f /D
+xcopy %sdirx86rel%%dllname%32r.* %ddirx86rel%  /v /y /f /D
+xcopy %sdirx86rel%%dllname%32r.* %ddiranyrel%  /v /y /f /D
 
-xcopy %sdirx64deb%%dllname%64d.* %ddiranydeb%\tightdb_c_cs64.*  /v /y /f /D
-xcopy %sdirx64rel%%dllname%64r.* %ddiranyrel%\tightdb_c_cs64.*  /v /y /f /D
+xcopy %sdirx64rel%%dllname%64r.* %ddirx64rel%  /v /y /f /D
+xcopy %sdirx64rel%%dllname%64r.* %ddiranyrel% /v /y /f /D
+
+xcopy %sdirx64deb%%dllname%64d.* %ddiranydeb%  /v /y /f /D
+xcopy %sdirx64deb%%dllname%64d.* %ddirx64deb%  /v /y /f /D

@@ -4,20 +4,22 @@ TightDB developer :
 
 has windows 7 and VS2012  ultimate installed in newest versions
 builds tightdb core
-makes tightdb c++ static library release (static library .lib files and header files)
+makes tightdb c++ binding static library release (static library .lib files and header files)
 uses build.bat to make the library release
 
-TightDB C# language binding developer (tightdb c++ dll part ):
+TightDB C# language binding developer (tightdb c dll part ):
 has windows 7 and VS2012 ultimate installed in newest versions
-uses tightdb c++ static library release
-builds c++ dll which contains tightdb API for his C# language binding
-makes a tightdb c++ dll release (various dll files,debug/release/32/64bit)
+uses tightdb c++ static binding release
+builds c dll which contains tightdb C API for his C# language binding
+uses build.bat to make a tightdb c dll release (various dll files,debug/release/32/64bit)
 
 TightDB language binding developer (C# part)
 has windows 7 and VS2012 ultimate installed in newest versions
-uses c++ dll release
+uses c dll release
 builds C# assembly, which contains binding API library to be used by customer .net developers
-creates assembly release, meant to be used by customer C# and .net developers
+uses build.bat to create c# assembly release, meant to be used by customer C# and .net developers
+(todo:the build.bat should include the c dll files needed for our customer to get up running so that
+he only have one archive to install to get started)
 
 customer developer using tightdb C# .net language binding
 has at least VS2012 express C# installed, and windows 7 - new versions
@@ -30,19 +32,17 @@ end customer
 Has windows 7
 installs customer developers' deployment
 runs customer developers program, which in turn calls our assembly which in turn calls our c++ dll.
+we should inform our customer developer how to correctly deploy anything we ourself depend upon.
 
-End customer do not have VS installed, do not neccesarily have .net installed, do not neccessarily have a n english windows, could run 32 or 64 bits. Probably runs a configuration very different from custom developer.
+End customer do not have VS installed, do not neccesarily have .net installed, do not neccessarily have a n english windows, could run 32 or 64 bits. Probably runs a configuration very different from custom developer. Do not have pkzip or rar installed.
 
-
-As we don't really control the method of deployment from customer developer to end customer, we should try to leave all options open for customer developer regarding method of deployment. It would be super nice if we leave customer developer with just the raw files needed for deployment, as well as a few tips as how to do it easily, given he has VS2012
+As we don't really control the method of deployment from customer developer to end customer, we should try to leave all options open for customer developer regarding method of deployment. It would be nice if we leave customer developer with just the raw files needed for deployment, as well as a few tips as how to do it easily, given he has VS2012
 
 The procedure below is a raw-file solution to all deployments above. 
 
 This will likely be the base for creating more advanced kinds of deployments. It is work in progress, and does not handle all situations, for example installation of c++ reddistributables that are neccessary for customer developer to install, if he only has VS2012 C# express and no c++. (this will be fixed of course)
 
-
 config lib info
-
 
 todo : batch fil der laver 3 pakker til customer developer
 en pakke med C# bindingen i, som han kan referere til
@@ -57,7 +57,9 @@ todo : VS2012 kan ikke installeres på windows vista, så vi understøtter pt ikke 
 
 
 
-PS. Dette er nedskrevede arbejdsgange fra allerførste forsøg på at bygge en helt uafhængig applikation fra grunden af, det bliver meget nemmere meget snart
+PS. Dette er nedskrevede arbejdsgange fra allerførste forsøg på at bygge en helt uafhængig applikation fra grunden af, det bliver meget nemmere meget snart.
+
+Generelt.. hvor der er en .sln fil, er der også en build.bat som p.t. varetager at bygge en distribution/release udfra el allerede builded solution.
 
 
 Total build af C# binding, helt fra grunden foregår i step-1 til step-3
@@ -87,7 +89,7 @@ I release\vs2012\release finder du herefter filerne der skal bruges af VS2012 c+
 
 
 
-step-2  byg tightdb c++ binding delen med VS2012
+step-2  byg c delen af tightdb .net binding med VS2012 c++
 
 xyz er det directory du normalt checker tightdb github ting ud i 
 
@@ -99,13 +101,11 @@ xyz er det directory du normalt checker tightdb github ting ud i
 
 4) build->batch build->marker de 4 nederste configurations, tightdb_c_cs2012 og vælg rebuild
 
+5) kør build.batch
 
-pak alle filerne i xyz\tightdb_csharp\native\tightdb_c_cs\tightdb_c_cs2012\Win32 og 
-alle filerne i xyz\tightdb_csharp\native\tightdb_c_cs\tightdb_c_cs2012\x64 
-ned i et arkiv. (nemmest at stå i tightdb_c_cs2012 så markere win32 og x64 dir, og højreklik og add to archive (hvis du har winrar installeret) navngiv som eks. tightdb_c_cs2012-2013-06-18-18-50-DFbuild
-
-Dette er en foreløbig c++ delen af c# binding distribution (der skal fjernes filer fra de to dirs, som ikke skal med i en rigtig distribution)
-
+kataloget xyz\tightdb_csharp\native\tightdb_c_cs2012\tightdb_c_cs2012\release\release indeholder
+en release af windows C dll tightdb interfacet - dette interface kan bruges af alle windows sprog,
+hvis der laves en sprog specifik binding.
 
 
 
@@ -113,26 +113,23 @@ Dette er en foreløbig c++ delen af c# binding distribution (der skal fjernes fil
 step-3 byg tightdb_csharp delen af bindingen
 
 gå til xyz\tightdb_csharp\TightDbCSharp
-åbn TightDbCSharp.sln
 
-build->batch build->marker begge to->rebuild
+1) åbn TightDbCSharp.sln
 
+2) build->batch build->marker begge to->rebuild
 
-xyz\tightdb_csharp\TightDbCSharp\bin kataloget er C# binding releaset pak det ned.
+3) kør build.bat
 
+xyz\tightdb_csharp\TightDbCSharp\release\kataloget er C# binding distributionen
 
 
 
 
 Nu har du 3 arkiver :
 
-A) lib filer og headerfiler, som er c++ bindingen
-B) dll filer og skrald, som er c++ DLL delen af C# bindingen
-C) et arkiv med et bin katalog, som er C# delen af C# bindingen
-
-
-
-Arkiverne vil senere hen blive med meget færre filer, jeg skal lige finde ud af hvad der egentlig er nødvendigt for at køre en ordentlig release og en ordentlig debug. specielt i debug kan der være filer der skal bruges kun nogen gange i visse specielle debug tilfælde.P.T er det hele bare med.
+A) c++ binding distributionen 
+B) c API distributionen       
+C) C# binding distributionen  
 
 
 
@@ -140,12 +137,15 @@ Arkiverne vil senere hen blive med meget færre filer, jeg skal lige finde ud af 
 step-4 lav et testprojekt, svarende til hvis du havde et eksisterende projekt der skulle bruge tightdb
 
 
-lad os prøve at oprette et helt nyt C# projekt
+Denne gennemgang opretter et helt nyt C# console program i VS2012
 
-start VS2012 igen og vælg new project
+
+1) lav tomt program
+
+start VS2012 og vælg new project
 vælg Other langauges->Visual C#
 vælg Console  Application
-jeg valgte foreslåede placering hvilket er et eller andet sært sted u mit user directory
+vælg foreslåede placering, hvilket er et eller andet sted i dit windows user directory.
 
 
 Sanity-check
@@ -153,14 +153,22 @@ Build->batch build og byg begge versioner (som begge er Any CPU)
 klik på start for at køre den helt tomme applikation
 et commandline vindue burde gerne dukke op meget kort tid,og forsvinde igen
 
-tilføj følgende i Program.cs efter { i static void Main 
-(burde være fremme på skærmen, ellers ConsoleApplcation1->Program.CS i solution explorer)
+
+
+2) udvid med en Hello, World agtig pause
+
+(program.cs burde være fremme på skærmen, ellers ConsoleApplcation1->Program.CS i solution explorer)
+tilføj følgende linie i Program.cs efter linien med { i static void Main 
 
             Console.WriteLine("Press any key to finish test... ");
             var ki = Console.ReadKey();
 
 
-klik start og noter at nu bliver vinduet stående indtil man trykker en tast.
+sanity-check
+klik start og noter at nu bliver vinduet stående indtil man klikker på det og trykker en tast.
+klik på programvinduet og tryk en tast for at lukke programmet igen
+
+
 
 
 
@@ -170,38 +178,35 @@ Så skal vi ha' brugt TightDB i vores projekt.
 
 
 
-
 step-5 tilpas eksisternede projekt til at bruge tightdb
 
+(dette eksempel fortsætter i VS2012 med programmet fra step-4)
 
 1) højreklik ConsoleApplcation1 solution i solution explorer og vælg "open solution directory in explorer)
 
 2) installer filer til brug for at benytte C# delen af bindingen
 
  i et andet explorer vindue finder du frem til arkiv C , som du lavede i step-3
-det burde hedde Tightdb_csharp-bin-yyyy-mm-dd-hh-mm-builder.rar og det bør indeholde en træstruktur med filer i, hvor roden hedder bin.
+det burde hedde Tightdb_csharp-bin-yyyy-mm-dd-hh-mm-builder.7z og det bør indeholde en træstruktur med filer i, hvor roden hedder bin.
 
 pak hele arkivet ud i kataloget OVER det katalog der indeholder testprogrammet, eks hos mig er testprojektet 
 
 C:\Users\wincoder\Documents\visual studio 2012\Projects\ConsoleApplication1
 så pak ud i C:\Users\wincoder\Documents\visual studio 2012\Projects\
-(navnet bliver nok ændret fra bin til noget smartere senere hen)
+
 
 
 3) installer filer til brug for at C# bindingen kan kalde c++ bindingen
 
- i andet (end ovenstående) explorer vindue finder du frem til arkiv B, som du lavede i step-2
+I andet (end ovenstående) explorer vindue finder du frem til arkiv B, som du lavede i step-2
 det burde hedde noget i retning af tightdb_c_cs2012-2013-06-18-18-51-DFBUILD.rar
 
-fra arkivet skal du gøre følgende : 
-kopier  tightdb_c_cs201264r.* fra kataloget x64\Release, ud i consoleapplication1\bin\Release
-kopier  tightdb_c_cs201264r.* fra kataloget Win32\Release, ud i consoleapplication1\bin\Release
-kopier  tightdb_c_cs201232d.* fra kataloget x64\Debug, ud i consoleapplication1\bin\debug
-kopier  tightdb_c_cs201232d.* fra kataloget Win32\Debug, ud i consoleapplication1\bin\debug
+extract alle filer i arkivet der slutter på r.dll til kataloget consoleapplication1\bin\Release
+extract alle filer i arkivet der slutter på d.dll til kataloget consoleapplication1\bin\debug
 
 (dette vil snarst blive fixet i form af build og build-compiler-awareness i koden)
 rename alle filerne du lige har kopieret, der slutter på 2012xxr i x64\release til ikke at indeholde 2012 og ikke at slutte på r
-rename alle filerne du lige har kopieret, der slutter på d i x64\release til ikke at indeholde 2012 og ikke slutte på r
+rename alle filerne du lige har kopieret, der slutter på d i x64\release til ikke at indeholde 2012 og ikke slutte på d
 
 
 4) i ConsoleApplication højreklikker du references og vælger 
@@ -210,10 +215,11 @@ klik browse
 naviger til ConsoleApplcation1\..\bin\debug  (vær forsigtig)  find TightDbCSharp.dll vælg den, klik add
 
 5) sanity check. Vælg build->build all. skulle meget gerne stadig builde
-6) sanity check. kør programmet.
+6) sanity check. kør programmet. Det burde stadig køre præcist som før
 
 7) tilføj i Program.cs
-på linie 6 skriver du using TightDbCsharp
+på linie 6 skriver du 
+using TightDbCsharp
 på linien før console.WriteLine("press any key to finish") skriver du :
             var t = new Table("test".Int());
             Console.WriteLine(t.Size);
@@ -235,37 +241,6 @@ tightdb filerne er allerede at finde i dit debug eller release katalog.
 
 Bemærk specielt at programmet kan køre på både 32 og 64 bit med samme exefil (med mindre du laver specifikke 32 og 64 bit builds - så skal du bare kopiere dll'erne ned i disse nye builds' output dirs, ved at gentage punkt 3
 
-Senere releases vil indeholder færre filer der skal kopieres videre til slutbrugeren. et kørende program kan bestå af :
-ConsoleApplication1.exe
-tightdb_c_cs32.dll
-tightdb_c_cs64.dll
-TightDbCSharp.dll
 
-og det vil så virke både på 32 og på 64bit. Programmet Skal ikke installeres, der skal ingenting skrives til registry. programmet skal bare kopieres ind et sted og startes.
+Jeg skal have checket tightdb c++ dll'erne for dependencies med STL library filer eller andet, som evt. også skal installeres med. Målet er slet ikke at have noget OS specifikt i C++ dll'en. Måske er vi allerede nået dertil. Dog ser det ud til at tightdb c++ binding bruger microsoft dll'er, som jeg ikke har helt styr på, om altid findes på en enduser maskine. Dette er egentlig i første omgang en opgave for c++ bindingen (at sikre at der er dokumentation for hvilke ting en pc skal have før den kan køre noget der bruger tightdb core libraries)
 
-Jeg skal have checket c++ dll'erne for dependencies med STL library filer eller andet, som evt. også skal installeres med. Målet er slet ikke at have noget OS specifikt i C++ dll'en. Måske er vi allerede nået dertil. Dog ser det ud til at tightdb c++ binding bruger microsoft dll'er, som jeg ikke har helt styr på, om altid findes på en enduser maskine. Dette er egentlig i første omgang en opgave for c++ bindingen (at sikre at der er dokumentation for hvilke ting en pc skal have før den kan køre noget der bruger tightdb core libraries)
-
-
-
-
-
-
-
-
-
-
-Havneholmen.  Tjah - unødig luxus, men RET seje lejligheder, suveræn central placering lige overfor fisketorvet, direkte til vandet.
-Med broen til islands brygge kan man ikke være ret meget mere centralt, samtidig med at man har havudsigt.
-
-http://www.havneholmen.dk/boligoversigt-leje
-
-Frederikskaj  - ganske okay beliggenhed nabo til nokia bygningen, men der er faktisk en god cykeltur til der hvor det sker i kbh. Har man bil er det måske underordnet. Flotte lejligheder der bogstavelig talt ligger i vandet. http://www.poulerikbech.dk/421/5
-
-søgning generelt i kbh. området efter boliger til leje over 80 kvm over 2 værelser. der er både privat og projekt og boligforenings udlejning i een søgning. bøvlet at gå videre til boligen da man redirectes til betalingsside, men godt for overblikket. Tit kan man søge boligen specifkt på nettet når man først ved hvor ca. den er, og dermed finde udlejeren.
-
-http://www.indexa.dk/boligprojekter/
-her er en liste over firmaer der muligvis har boliger til leje
-"projektudviklere" man må ind på hvert enkelt, vælge bolig og så se om der er nogen lejeboliger knap. Det sker de får bygget noget de ikke lige kan sælge, og så lejer de noget af det ud.
-
-http://www.orestad.dk/da-DK/Indhold/Boliger/Boliger+byparken.aspx
-godt overblik over boligblokke og hvem der lejer ud fra dem, lejligheder rundt om ørestaden. Her er kun listet projektboliger, ikke dem der lejes ud privat, men det kan stadig være interessant (hvis man gider at bo helt ude ved fields)

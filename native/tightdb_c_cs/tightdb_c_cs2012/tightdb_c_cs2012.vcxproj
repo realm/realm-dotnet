@@ -135,7 +135,7 @@
       <AdditionalIncludeDirectories>..\..\..\libsVS2012\src\tightdb;..\..\..\libsVS2012\src\win32;..\..\..\libsVS2012\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>TightDB64.lib;%(AdditionalDependencies)</AdditionalDependencies>

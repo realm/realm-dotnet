@@ -39,8 +39,6 @@ inline size_t bool_to_size_t(bool value) {
 
 
 //Date is totally not matched by a C# type, so convert to an int64_t that is interpreted as a 64 bit time_t
-//is this memory-safe - will the Date(value) just allocate on stack, so that after the call the stack contains the return value
-//until the calle decides to pop it?. If Date(value) becomes a pointer to something on the heap or the like, we have a problem.
 inline Date int64_t_to_date(int64_t value){
     return Date(time_t(value));
 }
