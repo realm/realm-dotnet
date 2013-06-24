@@ -20,29 +20,6 @@ using System.Runtime.Serialization;
 namespace TightDbCSharp
 {
 
-    //this file contains Table and all its helper classes, except Spec, which has its own file
-    //see after the table class for a collection of helper classes, TField, TableException, Extension methods, TableRecord etc.
-
-
-    //represents one row in a table. Access to the individual columns are handled by the associated Table
-    //Currently, only access by column number is supported
-    //currently only reading is supported
-    //this is the TableRecord type You get back from foreach if you foreach(TableRow tr in mytable) {tr.operation()}
-
-    //If You need extra speed, And you know the column schema of the table at compile, you can create a typed record :
-    //note that the number 2 is then expected to be the at compile time known column number of the field containing the CustomerId
-    //this is equally fast as writing 
-    //Long CustId= MyRecord.GetLong(2) 
-    //but it is syntactically easier to read
-    //long CustId = MyRecord.CustomerId;
-    //Alternatively, you can create a set of constants and call
-    //long CustId = Myrecord.GetLong(CUSTID);
-    /*
-    class CustomerTableRecord : TableRecord
-    {
-        public long DiscountTokens { get { return Owner.GetLong(Row, 2); } {set { Owner.SetLong(CurrentRow,2,value) }} }
-    }
-*/
 
     //Tightdb Table
     //could have been called RowCollection but is called Table as it in fact is a table and not merely a collection of rows
@@ -52,12 +29,7 @@ namespace TightDbCSharp
         //the number is a date and a time (usually last time i debugged something)
         public  const long GetDllVersionCSharp = 1305301717 ;
 
-        
-
-        //following the dispose pattern discussed here http://dave-black.blogspot.dk/2011/03/how-do-you-properly-implement.html
-        //a good explanation can be found here http://stackoverflow.com/questions/538060/proper-use-of-the-idisposable-interface
-
-
+     
         //always acquire a table handle
         public Table()
         {
@@ -71,8 +43,7 @@ namespace TightDbCSharp
             SetHandle(tableHandle,shouldbedisposed);
         }
 
-        //implements ICloneable - this method is called Copy in the c++ binding
-        //also implements a typed Clone that will be used unless a caller 
+        //implements ICloneable - this method is called Copy in the c++ binding        
         public Table Clone()
         {
             return UnsafeNativeMethods.CopyTable(this);
@@ -95,16 +66,33 @@ namespace TightDbCSharp
         {
             return UnsafeNativeMethods.TableHasSharedSpec(this);
         }
-
+        //see tableview for further interesting comments
         public TableRow this[long rowIndex]
         {
             get
             {
                 ValidateRowIndex(rowIndex);
-                return new TableRow(this, rowIndex);
+                return RowForIndexNoCheck(rowIndex);
             }
         }
 
+        //* not in c++ binding so removed from here. Is in Java tutorial which is why I was tricked into coding it here in the first place
+        //see similar implementation in TableView  todo:refactor if possible
+        public TableRow Last()
+        {
+            long s = Size;
+            if (s > 0)
+            {
+                return RowForIndexNoCheck(s - 1);
+            }
+            throw new InvalidOperationException("Last called on a TableView with no rows in it");
+        }
+       // */
+
+        internal TableRow RowForIndexNoCheck(long rowIndex)
+        {
+            return new TableRow(this, rowIndex);
+        }
 
         
 

@@ -105,7 +105,8 @@ CSStringAccessor::CSStringAccessor(uint16_t* csbuffer, size_t csbufsize)
     typedef Utf8x16<uint16_t,std::char_traits<char16_t>>Xcode;    //This might not work in old compilers (the std::char_traits<char16_t> ).     
     size_t max_project_size = 48;
 
-    TIGHTDB_ASSERT(max_project_size <= numeric_limits<size_t>::max()/4);
+    TIGHTDB_ASSERT(max_project_size <= std::numeric_limits<size_t>::max()/4);
+
     size_t u8buf_size;
     if (csbufsize <= max_project_size) {
         u8buf_size = csbufsize * 4;

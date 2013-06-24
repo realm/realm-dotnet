@@ -9,8 +9,6 @@ namespace TightDbCSharp
     //this class wraps a c++ TableView class
     public class TableView : TableOrView
     {
-                //following the dispose pattern discussed here http://dave-black.blogspot.dk/2011/03/how-do-you-properly-implement.html
-        //a good explanation can be found here http://stackoverflow.com/questions/538060/proper-use-of-the-idisposable-interface
 
         internal Table TableViewed { get; set; }//used only to make sure that a reference to the table exists until the view is disposed of
 
@@ -19,17 +17,36 @@ namespace TightDbCSharp
             return TableViewed.Spec;
         }
 
-
+        //we need something to invalidate all table views if an underlying table is modified after the view has been created
+        //Invalidating a tableview should also invalidate all row objects connected to it
+        //in fact, if a tableview is modified through itself in a way that could change the meaning of row or column numbers, all connected rows should be invalidated
         public Row this[long rowIndex]
         {
             get
             {
                 ValidateRowIndex(rowIndex);
-                return new Row(this, rowIndex);
+                return RowForIndexNoCheck(rowIndex);
             }
-
         }
 
+        internal Row RowForIndexNoCheck(long rowIndex)
+        {
+            return new Row(this, rowIndex);            
+        }
+        //*not in c++ binding so removed here. Is in java binding
+        //if multiple processes acess the table, this have to be inside a transaction, or else another process could delete some rows after s is assigned,but before
+        //this[s-1] is called, that would make this[s-1] throw an exception bc [s-1] would be equal to or larger than size.
+        //see similar implementation in Table  todo:refactor if possible
+        public Row Last()
+        {
+            long s = Size;
+            if (s > 0)
+            {
+                  return RowForIndexNoCheck(s-1);
+            }
+            throw new InvalidOperationException("Last called on a TableView with no rows in it");
+        }
+        //*/
 
 
         //This method will ask c++ to dispose of a table object created by table_new.

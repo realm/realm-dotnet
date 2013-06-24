@@ -9,6 +9,9 @@ namespace TightDbCSharp
 {
     public abstract class Handled :IDisposable 
     {
+        //following the dispose pattern discussed here http://dave-black.blogspot.dk/2011/03/how-do-you-properly-implement.html
+        //a good explanation can be found here http://stackoverflow.com/questions/538060/proper-use-of-the-idisposable-interface
+
         internal abstract void ReleaseHandle();//overwrite this. This method will be called when c++ can free the object associated with the handle
         public abstract string ObjectIdentification();//overwrite this to enable the framework to name the class in a human readable way
 
