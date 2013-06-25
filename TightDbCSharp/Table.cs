@@ -76,7 +76,7 @@ namespace TightDbCSharp
             }
         }
 
-        //* not in c++ binding so removed from here. Is in Java tutorial which is why I was tricked into coding it here in the first place
+        //resembling the typed back() method or the untyped last method in python (that returns a cursor object)
         //see similar implementation in TableView  todo:refactor if possible
         public TableRow Last()
         {

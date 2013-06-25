@@ -20,6 +20,20 @@ namespace TightDbCSharp
         public TableOrView Owner { get; set; }
         public long RowIndex { get; internal set; }//users should not be allowed to change the row property of a tablerow class
 
+        //by indexing you can get and set values as objects (if they match the type that is)
+        public  object this[long columnIndex]
+        {
+            get
+            {   Owner.ValidateColumnIndex(columnIndex);
+                return new RowColumn(this, columnIndex).Value;//todo: consider optimize by having the value logic moved to table or to tableview or even tableorview. Then we could spare the rowcolumn class creation
+            }
+            set
+            {
+                Owner.ValidateColumnIndex(columnIndex);
+                new RowColumn(this, columnIndex).Value = value;//todo:refactor value out to tableorview and save an RowColumn creation
+            }
+        }
+
 
         //allow foreach to traverse a TableRow and get some TableRowColumn objects
         //if You do a foreach on a tablerow, C# will use the for loop below to do the iteration
