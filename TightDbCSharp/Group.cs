@@ -69,9 +69,9 @@ namespace TightDbCSharp
 
         internal override void ReleaseHandle()
         {            
-            Console.WriteLine("ReleaseHandle called "+ObjectIdentification());
+        //    Console.WriteLine("ReleaseHandle called "+ObjectIdentification());
             UnsafeNativeMethods.GroupDelete(this);
-            Console.WriteLine("Returned from c++ " + ObjectIdentification());
+        //    Console.WriteLine("Returned from c++ " + ObjectIdentification());
         }
 
         public override string ObjectIdentification()

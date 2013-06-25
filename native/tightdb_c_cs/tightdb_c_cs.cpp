@@ -421,6 +421,20 @@ TIGHTDB_C_CS_API Group* new_group() //should be disposed by calling group_delete
     return g;
 }
 
+//write group to specified file
+TIGHTDB_C_CS_API size_t group_write(Group* group_ptr,uint16_t * name, size_t name_len)
+
+{   
+    try {
+    CSStringAccessor str(name,name_len);    
+    group_ptr->write(StringData(str));
+    return 0;//0 means no exception thrown
+    }
+    //if the file is already there, or other file related trouble
+   catch (File::AccessError) {             
+       return 1;//1 means IO problem exception was thrown. C# always use IOException in cases like this anyways so no need to detail it out further
+   }
+}
 
 
 //should be disposed by calling unbind_table_ref
@@ -1142,6 +1156,11 @@ TIGHTDB_C_CS_API size_t query_count(tightdb::Query* query_ptr,size_t start,size_
     return query_ptr->count(start,end,limit);//use default values for the defaultable parametres
 }
 
+//caller should return wrappers pointer
+TIGHTDB_C_CS_API void query_int_greater(tightdb::Query* query_ptr,size_t column_Index,int64_t value)
+{
+    query_ptr->greater(column_Index,value);
+}
 
 
 

@@ -112,6 +112,11 @@ namespace TightDbCSharp
             return this;
         }
 
+        public Query Greater(string columnName, long value)
+        {
+            UnsafeNativeMethods.query_int_greater(this,GetColumnIndex(columnName),value);
+            return this;
+        }
 
         public Query Between(long columnIndex, long lowValue, long highValue)
         {

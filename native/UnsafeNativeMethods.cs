@@ -487,17 +487,24 @@ enum DataType {
 
         
         [DllImport(L64, EntryPoint = "group_write", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void group_write64(IntPtr groupPtr  , [MarshalAs(UnmanagedType.LPWStr)] string fileName,IntPtr fileNameLen);
+        private static extern IntPtr group_write64(IntPtr groupPtr  , [MarshalAs(UnmanagedType.LPWStr)] string fileName,IntPtr fileNameLen);
 
         [DllImport(L32, EntryPoint = "group_write", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void group_write32(IntPtr groupPTr, [MarshalAs(UnmanagedType.LPWStr)] string fileName, IntPtr fileNameLen);
+        private static extern IntPtr group_write32(IntPtr groupPTr, [MarshalAs(UnmanagedType.LPWStr)] string fileName, IntPtr fileNameLen);
 
-        //todo:test and add OS file operation error handling
+        //todo:test 
+        //the unmanaged function returns an IntPtr whose value indicates an error if it is nonzero
+        //see c++ file for error codes and their meaning
         public static void GroupWrite(Group group, string fileName)
         {
-            if (Is64Bit) group_write64(group.Handle,fileName, (IntPtr)fileName.Length);
-            else
-                group_write32(group.Handle, fileName, (IntPtr)fileName.Length);
+             var res = (Is64Bit)
+                ? group_write64(group.Handle, fileName, (IntPtr) fileName.Length)
+                : group_write32(group.Handle, fileName, (IntPtr) fileName.Length);
+
+            if (res.ToInt64() == 1)
+            {
+                throw new IOException("GroupWrite called with an existing file (or other IO error)");
+            }
         }
 
 
@@ -2976,6 +2983,21 @@ enum DataType {
             return (long)query_get_column_index32(q.Handle, columnName, (IntPtr)columnName.Length);
         }
 
+
+
+        //in tightdb c++ this function returns q again, the query object is re-used and keeps its pointer.
+        //so high-level stuff should also return self, to enable stacking of operations query.dothis().dothat()
+        [DllImport(L64, EntryPoint = "query_int_greater", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void query_int_greater64(IntPtr queryPtr, IntPtr columnIndex, long value);
+        [DllImport(L32, EntryPoint = "query_int_greater", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void query_int_greater32(IntPtr queryPtr, IntPtr columnIndex, long value);
+        public static void query_int_greater(Query q, long columnIndex, long value)
+        {
+            if (Is64Bit)
+                query_int_greater64(q.Handle, (IntPtr)columnIndex, value);
+            else
+                query_int_greater32(q.Handle, (IntPtr)columnIndex, value);
+        }
 
 
         //in tightdb c++ this function returns q again, the query object is re-used and keeps its pointer.
