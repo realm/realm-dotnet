@@ -56,11 +56,10 @@ echo copying release files to release directory
 :copy the archiver to the release directory
 :copy %zipper% %releasedestination%
 :copy C# dll assembly files to the files directory
-xcopy %location%bin\*.dll %filesdestination%\bin /s
-xcopy %location%bin\*.pdb %filesdestination%\bin /s
-echo on
+xcopy %location%bin\*.dll %filesdestination%\bin /s /y
+xcopy %location%bin\*.pdb %filesdestination%\bin /s /y
 :copy C dlls with tightdb core
-xcopy %location%..\native\tightdb_c_cs\tightdb_c_cs2012\release\files\*.* %filesdestination%\dll
+xcopy %location%..\native\tightdb_c_cs\tightdb_c_cs2012\release\files\*.* %filesdestination%\dll /y
 
 copy %location%Build_note_Daily.txt %filesdestination%\readme_DailyBuild.txt
 copy %location%Install_note.txt %filesdestination%\readme.txt
@@ -80,3 +79,4 @@ copy %location%Install_note.txt %releasedestination%\readme.txt
 pause
 :0.04 added some readme files to the release
 :0.05 create bin directory
+:0.06 removed an echo on
