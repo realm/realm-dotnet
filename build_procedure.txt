@@ -3,9 +3,8 @@ Scenarie (windows) :
 TightDB developer : 
 
 has windows 7 and VS2012  ultimate installed in newest versions
-builds tightdb core
-makes tightdb c++ binding static library release (static library .lib files and header files)
-uses build.bat to make the library release
+builds tightdb core (manually, no documentation exists)
+uses build.bat(being reviewed by brian at the moment, so not in our main branch) to make tightdb c++ binding static library release (static library .lib files and header files)
 
 TightDB C# language binding developer (tightdb c dll part ):
 has windows 7 and VS2012 ultimate installed in newest versions
@@ -15,18 +14,18 @@ uses build.bat to make a tightdb c dll release (various dll files,debug/release/
 
 TightDB language binding developer (C# part)
 has windows 7 and VS2012 ultimate installed in newest versions
+(VS2012 express is sufficient for C# builds, but unit tests and code analysis and profiling is not supported in the free version, so 3rdparty stuff is needed.)
 uses c dll release
 builds C# assembly, which contains binding API library to be used by customer .net developers
 uses build.bat to create c# assembly release, meant to be used by customer C# and .net developers
-(todo:the build.bat should include the c dll files needed for our customer to get up running so that
-he only have one archive to install to get started)
 
 customer developer using tightdb C# .net language binding
 has at least VS2012 express C# installed, and windows 7 - new versions
 uses our C# API library
 -our C# API library must include stuff so that the customer developer can debug and run on his own machine, even though he has no VS2012 c++ compiler installed
 Builds his own application
-creates his own application release, which must contain enough stuff so that his own application can run (C# and .net stuff) , as well as our binding (C# and c++ stuff) we have to supply him with files and documentation on how to to add whatever is needed by our c++ dll and our assembly to get them working.
+creates his own application release, which must contain enough stuff so that his own application can run (C# and .net stuff) , as well as our binding (C# and c++ stuff) we have to supply him with files and documentation on how to to add whatever is needed by our c++ dll and our assembly to get them working. We need to test if anything is needed, like c++ runtime libraries for vs2012 c++
+
 
 end customer
 Has windows 7
@@ -34,20 +33,21 @@ installs customer developers' deployment
 runs customer developers program, which in turn calls our assembly which in turn calls our c++ dll.
 we should inform our customer developer how to correctly deploy anything we ourself depend upon.
 
-End customer do not have VS installed, do not neccesarily have .net installed, do not neccessarily have a n english windows, could run 32 or 64 bits. Probably runs a configuration very different from custom developer. Do not have pkzip or rar installed.
+
+
+End customer do not have VS installed, do not neccesarily have .net installed, do not neccessarily have a n english windows, could run 32 or 64 bits, or in a virtual box. Probably runs a configuration very different from custom developer. Do not have pkzip or rar installed.
 
 As we don't really control the method of deployment from customer developer to end customer, we should try to leave all options open for customer developer regarding method of deployment. It would be nice if we leave customer developer with just the raw files needed for deployment, as well as a few tips as how to do it easily, given he has VS2012
 
 The procedure below is a raw-file solution to all deployments above. 
 
-This will likely be the base for creating more advanced kinds of deployments. It is work in progress, and does not handle all situations, for example installation of c++ reddistributables that are neccessary for customer developer to install, if he only has VS2012 C# express and no c++. (this will be fixed of course)
+
+
+This will likely be the base for creating more advanced kinds of deployments. It is work in progress, and does not handle all situations, for example installation of c++ reddistributables that are neccessary for customer developer to install, if he only has VS2012 C# express and no c++. 
 
 config lib info
 
 todo : batch fil der laver 3 pakker til customer developer
-en pakke med C# bindingen i, som han kan referere til
-en pakke med C++ filer som skal i hans debug directories
-en pakke med c++ filer som skal i hans release directories
 todo : build time valg af dll filnavn sæt udfra den compiler der builder
 todo : generelt eliminer så meget som muligt manuelt.
 todo : fjern diverse filer fra arkiver som ikke skal bruges.
@@ -66,8 +66,11 @@ Total build af C# binding, helt fra grunden foregår i step-1 til step-3
 
 Test af denne build med en hello world foregår i step-4 og step-5
 
+Denne beskrivelse er en lille smule outdated, men burde være en god guide i forhold til ingenting.
 
 Step-1  byg VS2012 c++ binding distribution med statiske libraries med tightdb core og headerfiler
+
+0) du skal have en VS2012 der er bedre end VS2012 Express - express har toolset problemer med 64 bit når du bygger c++ projekter, og build af core virker ikke p.t. altid med vs2012 Express.
 
 1) hent master tightdb - placer i xyz\tightdb
 

@@ -1,68 +1,23 @@
 #TightDbCSharp#
 
-This directory contains the VS2012 project that results in the C# language bindings assembly
+This directory contains the VS2012 Ultimate project that results in the C# language bindings assembly
+it also contains the build.bat file that must be run after VS2012 has built the project. build.bat will assemble a release in the release directory, ready for deployment.
 
-The assembly consists of two parts
+to build :
 
-- ..\native\tightDBCalls.cs - p/invoke calls to tightdb_c_cs.dll.
-- .\\*.* The classes that make up the language binding.
+1) Open VS2012
 
-Only files in the native directory contain calls to c++ code.
+2) select Build->Batch Build
 
-Files in the .\ directory are pure clean C#, The only nonstandard stuff is the handle inside the classes that is used to keep track of what c++ class instances they are shadowing.
+3) mark both configurations
 
-To recreate the project file, follow these steps (VS2012 express)
+4) hit rebuild
 
-- File->New Project->Visual C#->Class Library
-- name:TightDbCSharp
-- location:C:\Develope\github\tightcsharp (that is - the PARENT directory of the location of this readme file. Change drive and path to reflect the actual location)
-- UNMARK "Create directory for solution"
--  Now don't press OK yet. VS2012 will not create a project if its directory already exists, so You'll have to cheat a little. Follow these instructions very carefully:
-- use explorer to view C:\Develope\github\tightcsharp (that is the checked out tightcsharp directory)
-- rename the directory TightDbCSharp to _TightDbCSharp (You might need to close this readme file first)
-- Press OK in VS2012 
+5) vie solution explorer, right click TightDbCsharp, selct Open in File Explorer
 
-The above creates the tightdbCS directory again
+6) in the file explorer window that popped up, double click build.bat
 
-Now, copy the files in tightcsharp\_TightDbCSharp to tightcsharp\TightDbCSharp :
+7) answer All if asked, and Yes if asked and All is not an option
 
-- click tightdbcsharp\TightDbCSharp in an explorer window - it should show an empty folder
-- open another explorer window, 
-- navigate to _tightdbCS, 
-- ctrl+A to select all files and directories 
-- right-click drag them to the empty folder, select copy in the popup mennu 
-- and then, delete the _tightdbCS directory again
+8) Your release is ready for deployment in the release directory. The zip file in release\release is all You need to ship, the directory structure in release\files is just the uncompressed contents of the zip file.
 
-- In solution explorer, in the resulting project, mark the Class1.cs file and select delete
-
-- Now, in tools->options->Text Editor->All Languages->Tabs
-- select Smart
-- Select Insert spaces
-- then OK
-
-in Solution explorer, right click TightDbCSharp
-- select add->existing item->mark and select spec.cs amnd table.cs accept with ADD
-- select add->existing item-> navigate to ..\native mark NativeCalls.cs AND THEN SELECT ADD AS LINK in the add button (don't just click add)
-
-(the above add as link ensures that the file is not copied to this project, but instead we use the file in the "native" directory.)
-(TO-BE-DONE on a test environment, create a test project for windows phone 8 and see if it will build TightDBCalls.cs reg. P/Invoke calls)
-
-Now do a Build->Rebuild application to check that all is okay
-
-At this point You should have a working AnyCpu version of TightDbCSharp assembly that passes all the unit tests in TestTightdbCS.sln (also AnyCpu) on windows 7, 64 bit, running as a 64 bit process if started from the 64 bit Nunit unit tester.
-
-Select build->batch build, mark the two projects and click build.
-
-If the build is successfull,  You will now have two files called :
-TightDbCSharp\Debug\TightDbCsharp.dll
-TightDbCSharp\Release\TightDbCsharp.dll
-Both these files are of the "AnyCpu" type - they will work on 32 as well as 64 bit - but the end user must ensure that the correct tightdb_c_cs.dll file has also been deployed. What file to use depends on wether the program will run as 32 or as 64 bit, and wether the program should run in debug or release mode.
-
-now, set up code analysis
-- right click the project in solution explorer, select properties
-- in configuration select release
-- in platform you can only select active (amy cpu) as this is the only platform we build to
-- DESELECT Enable code analysis on build
-- in configuration select debug
-- SELECT enamble code analysis on build
-- select the ruleset Microsoft All Rules

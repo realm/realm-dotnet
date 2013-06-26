@@ -1,6 +1,9 @@
 #Directory : LibsVS2010#
 
-This directory is used when building the windows version of the C# bindings  
+(to be done, the issue is with the c++ part. The C# part ought to work, but we may need to do a 
+special compile, targetting th earlier .net version shipped with vs2010)
+
+This directory is used when building the windows version of the C# bindings for use with VS2010
 
 As VS2010 will only build using VS2010 built libs, and VS2012 will only build using VS2012 build libs - this directory exists in two versions, called LIBSVS2010 and LIBSVS2012
 

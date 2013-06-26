@@ -1,36 +1,40 @@
 #tightdb_csharp#
 
 C# language bindings for TightDB  
-Ver 0.007  
-
+Ver 0.1
 
 This directory and its subdirectories contain the *developer* version of tightdb_csharp - this is the project that is needed to produce the *customer* version of tightdb_cshap, that is shipped to customers who access tightdb from within C#.  
 
 ##Build instructions##
 
-(not done yet)
-1) make sure You have visual studio 2010 express installed (as a minimum)  
-2) open a commandline window, cd to the directory tightcsharp
-3) run the builddist.bat file (will produce fresh dll files)  
-4) run the createdist.bat file in this directory - it will copy the needed files to the DIST directory, which will then contain all that  
-is needed for a user install  
-5) run the createinstalldist.bat file  - this will create an archive wiht the DIST directory files, ready for deployment  
 
-##User install contents##
+These instructions use file paths as examples, these paths are of course relative, but an example for
+the case where You have chekced out tightdb_csharp from github into H:\Wincoder\Develope\tightdb_csharp
 
-- the tightCSDLL dll file (a c++ DLL), which has the tightdb.lib files built into it  
-- the tightdbCS.dll file (a C# managed DLL), which contains the classes a C# tightdb user will use, and which calls tightCSDLL to get things done. The marshalling calls to tightCSDLL are placed in a protected area of the source, the customer do not have access to these calls, only the provided C# classes and methods.
-- the unit test for tightdbCS (to be done)  
-- a project with some sample code similar to the web tutorial (to be done)  
-- a readme.txt file explaining step-by-step how to create a new project that uses tightdbCS, as well as how to integrate tightdbCS in an already created project
-- a support.txt file that contains links and contact info for the tightdb company
+1) You need a copy of the release dir from a VS2012 built C++ binding distribution.
+Currently this can be obtained by asking Lasse or Dennis or Brian for a VS2012 release. Building the c++ binding in windows with VS2012 (not express) is not documented for now.
 
-##contents of directory##
+2) This release dir should contain a zipped file, for instance :
+H:\Wincoder\Develope\tightdb\release\vs2012\release\tightdb_cpp_VS2012___.zip
+3) extract that file into H:\Wincoder\Develope\tightdb_csharp\libsVS2012 so that libsvs2012 now contain
+tightDB32d.lib and 3 other similar named lib files, as well as a src directory structure with header files in it.
+4) Open up the tightdb_c_cs2012 solution found in H:\Wincoder\Develope\tightdb_csharp\native\tightdb_c_cs\tightdb_c_cs2012
+5) select build->batch build. select the 4 projects called tightdb_c-cs2012
+6) click rebuild.
+7) when VS2012 shows Rebuild All: 4 succeeded, open file explorer (click start button, click computer) , go to the directory 
+H:\Wincoder\Develope\tightdb_csharp\native\tightdb_c_cs\tightdb_c_cs2012 click the file build.bat
+if prompted, type Yes or All where applicable
+You have now built the C++ part of the C# binding, and created a release of that, in the 
+H:\Wincoder\Develope\tightdb_csharp\native\tightdb_c_cs\tightdb_c_cs2012\release directory
 
-(see tightdbCS\readme.md for how to populate these directories with stuff)
+The files in the release directory will be used by programs that use the C# binding, but they are not used when building the binding itself.
 
-- libsVS2010 - tightdb.lib files built with visual studio2010 should be placed here
-- libsVS2012 - tightdb.lib files built with visual studio2012 should be placed here
-- native - C# files that contain p/invoke calls to c++, and the c++ files that export these calls in tightCSDLL
-- tightdbCS - C# project that results in the tightdbCS.dll file that end users projects use
-- TestTightdbCS - C# project set up as an end user might use the C# binding.
+
+To build the binding :
+
+navigate to H:\Wincoder\Develope\tightdb_csharp\TightDbCSharp  and click the TightDbCsharp.sln solution.
+select build->batch build and select both configurations. then click rebuild.
+when You get Rebuild all: 2 succeeded, open file explorer (click start button, click computer) and navigate to H:\Wincoder\Develope\tightdb_csharp\TightDbCSharp and click build.bat. Anser All if asked, or Yes if asked and All cannot be answered (yea' this is a hack - it's work in progress)
+
+At this point You have a release of the C# binding in the H:\Wincoder\Develope\tightdb_csharp\TightDbCSharp\release directory. This release is all that You need to ship to a customer.
+

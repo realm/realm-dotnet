@@ -1778,29 +1778,6 @@ enum DataType {
 
 
 
-        public static void TestGroupStuff()
-        {
-//            string fn = @"c:\Develope\tightdbf";
-//            IntPtr handle = new_group_file64(fn, (IntPtr)fn.Length);
- //           group_delete64(handle);
-        }
-
-        [DllImport(L64, EntryPoint = "test_testacquireanddeletegroup",
-            CallingConvention = CallingConvention.Cdecl)]
-        private static extern void test_testacquireanddeletegroup64([MarshalAs(UnmanagedType.LPWStr)]String fn, IntPtr len);
-
-        [DllImport(L32, EntryPoint = "test_testacquireanddeletegroup",
-            CallingConvention = CallingConvention.Cdecl)]
-        private static extern void test_testacquireanddeletegroup32([MarshalAs(UnmanagedType.LPWStr)]String fn, IntPtr len);
-
-        public static void test_testacquireanddeletegroup(String filename)
-        {
-            if (Is64Bit)
-                test_testacquireanddeletegroup64(filename, (IntPtr) filename.Length);
-            else
-                test_testacquireanddeletegroup32(filename, (IntPtr)filename.Length);
-        }
-
 
         [DllImport(L64, EntryPoint = "table_where", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr table_where64(IntPtr handle);
@@ -3843,7 +3820,6 @@ enum DataType {
 
         public static string TableViewToJson(TableView t)
         {           
-            var b = new StringBuilder(16);
             long bufferSizeNeededChars = 16;
             IntPtr buffer;
             long currentBufferSizeChars;

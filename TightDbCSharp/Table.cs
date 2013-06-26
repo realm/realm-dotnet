@@ -62,7 +62,7 @@ namespace TightDbCSharp
         }
 
 
-        public bool has_shared_spec()
+        public bool HasSharedSpec()
         {
             return UnsafeNativeMethods.TableHasSharedSpec(this);
         }
@@ -170,9 +170,9 @@ namespace TightDbCSharp
             DefineSchema(schema);
         }
 
-        public Table(params object[] fielddescriptions)
-        {
-        }
+    //    public Table(params object[] fieldDescriptions)
+    //    {
+    //    }
 
         public Table DefineSchema(params Field[] schema)
         {
@@ -231,18 +231,6 @@ namespace TightDbCSharp
         public static void TestInterop()
         {
             UnsafeNativeMethods.TestInterop();
-        }
-
-        public static void TestGroupStuff()
-        {
-            UnsafeNativeMethods.TestGroupStuff();
-        }
-
-
-        //test method that will probably be removed in the release. Used to showcase that it's c++ that crashes when group is given a valid file name string with unspecified location
-        public static void TestAcquireAndDeleteGroup(string filename)
-        {
-            UnsafeNativeMethods.test_testacquireanddeletegroup(filename);
         }
 
 

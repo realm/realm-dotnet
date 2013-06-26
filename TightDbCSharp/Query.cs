@@ -71,10 +71,18 @@ namespace TightDbCSharp
 
         }
 
-        public long Count(long start = 0, long end = -1, long limit = -1)
+        //default values are advised against by microsoft http://msdn.microsoft.com/query/dev11.query?appId=Dev11IDEF1&l=EN-US&k=k(CA1026);k(TargetFrameworkMoniker-.NETFramework,Version%3Dv4.5);k(DevLang-csharp)&rd=true
+        public long Count(long start, long end , long limit)
         {
             ValidateStartEndLimit(start,end,limit);
             return UnsafeNativeMethods.QueryCount(this, start, end, limit);
+        }
+
+
+        public long Count()
+        {
+            ValidateStartEndLimit(0,-1,-1);
+            return UnsafeNativeMethods.QueryCount(this, 0, -1, -1);
         }
 
         //start = first record number in underlying table to return
@@ -101,7 +109,7 @@ namespace TightDbCSharp
             long columnIndex = GetColumnIndexNoCheck(columnName);
             if (columnIndex == -1)
             {
-                throw new ArgumentOutOfRangeException("columnName", String.Format("Query column specified with {0} but that column does not exist in the underlying table", columnName));
+                throw new ArgumentOutOfRangeException("columnName", String.Format(CultureInfo.InvariantCulture,"Query column specified with {0} but that column does not exist in the underlying table", columnName));
             }
             return columnIndex;
         }

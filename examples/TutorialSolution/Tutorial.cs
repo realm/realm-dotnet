@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Linq;
-using System.Security.Permissions;
+using System.IO;
 using TightDbCSharp;
 using TightDbCSharp.Extensions;
 
@@ -9,7 +8,7 @@ namespace TutorialSolution
     //@@Example:create_table @@
     internal class Tutorial
     {
-        private static void Main(string[] args)
+        private static void Main()
         {
             using (
                 var table = new Table(
@@ -23,9 +22,6 @@ namespace TutorialSolution
                     ))
             {
                 //@@EndExample
-
-
-                /****************************** BASIC OPERATIONS *************************/
 
                 // @@Example: insert_rows @@
                 table.Add("Mary", 21, false, new[]
@@ -57,12 +53,7 @@ namespace TutorialSolution
                 Console.WriteLine(table.IsEmpty ? "Empty" : "Not Empty");//=>Not Empty
                 // @@EndExample@@
 
-
-                /****************************** GETTERS AND SETTERS **********************/
-
-
-
-
+        
 
                 // @@Example: accessing_rows @@                
                 //getting values.
@@ -156,8 +147,13 @@ namespace TutorialSolution
                     table2.Add("Phil", 43, false);
                     table2.Add("Anni", 54, true);
 
-                    group.Write(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)+@"\employees2.tightdb");
-                    //group.Write(System.IO.Path.GetTempPath() + "employees2.tightdb");
+                    //a group file cannot be written to, if it exists already, so we delete it explicitly here
+                    String fileName = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) +
+                               @"\employees2.tightdb";
+
+                    File.Delete(fileName);
+
+                    group.Write(fileName);
                 }
 
                 //under construction
@@ -198,7 +194,7 @@ with db.write("employees") as table:
                  * 
                  */
                 Console.WriteLine("Finished. Any key to close console window");
-                var ki = Console.ReadKey();//keep console window open to inspect results
+                Console.ReadKey();//keep console window open to inspect results
             }
         }
     }

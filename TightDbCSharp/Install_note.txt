@@ -14,8 +14,8 @@ to install, simply follow these instructions :
 2) extract all files in this archive into that directory
 
 3) The extracted files will be organized in a BIN directory and a DLL directory
-   The files in the DLL directory must be copied to the directory of the application that
-   You want to be set up to use tightdb:
+   The files in the DLL directory must be copied to the output directories of the VS2012 C# solution where You would like to use tightdb:
+*  open Your C# solution, and solution explorer
 
 *  right click your C# project.
  
@@ -23,13 +23,13 @@ to install, simply follow these instructions :
 
 *  select build
 
-*  scroll doun, locate Output path, note down the directory stated there. e.g. bin\Debug
+*  scroll down, locate Output path, note down the directory stated there. e.g. bin\Debug
 
 *  right click the project in solution explorer and select open folder in file explorer.
 
 *  go to the directory noted just before, e.g. bin\Debug
 
-*  copy the 4 files from the archive dll directory into this directory
+*  copy the 4 files from the release dll directory into this directory (tightdb_c_cs2012??.dll)
 
 *  repeat for every build configuration in this project.
 
@@ -54,15 +54,15 @@ to install, simply follow these instructions :
    dll files to all the output directories of the projects using C# bindings. 
 
 
-
 4) In the VS2012 C# solution where You would like to use tightdb, do the following :
 
 * Right click the C# project that should use tightdb, select properties
 
 * select Add Reference, then navigate to the extracted files from 2), and select the 
-bin\Debug\TightDbCSharp.dll file
+bin\Release\TightDbCSharp.dll file
 
   This sets up Your project to be able to reference the TightDb binding.
+  It is okay to refer to the Release TightDBCsharp dll in a debug build. In fact it is recommended,   unless You suspect an error in the binding, and not in Your own code.
 
 
 * in the sourcefile where You intend to call tightdb, add this in the list of includes :
@@ -79,3 +79,4 @@ If things work, this line above will print 0 when run.
 If things does not work, you will likely get a DLL not found error, or an exception. Check that You
 have copied the dll's from the archive into the project output directory that is in use
 
+Happy testing..

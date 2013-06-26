@@ -49,6 +49,7 @@ rem earlier builds, we should not delete those
 echo creating release directory structure
 md %location%release
 md %location%release\files\
+md %location%release\files\bin\
 md %location%release\files\dll\
 md %location%release\release\
 echo copying release files to release directory
@@ -78,3 +79,4 @@ copy %location%Install_note.txt %releasedestination%\readme.txt
 :although we only take dll and pdb files
 pause
 :0.04 added some readme files to the release
+:0.05 create bin directory
