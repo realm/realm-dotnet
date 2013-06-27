@@ -23,11 +23,15 @@ echo any key to start creating the pre-setup examples release zip file
 pause
 :copy needed C# binding files to example projects - note that c++ and C# libararies are distributed in release versions
 :user can still debug his own stuff, but our stuff is not meant to be debugged by the user.
+md %location%examples
+md %location%examples\lib
 copy %location%TightDbCSharp\release\files\dll\tightdb_c_cs2012??r.dll %location%examples\TutorialSolution\bin\Release
 copy %location%TightDbCSharp\release\files\dll\tightdb_c_cs2012??r.dll %location%examples\TutorialSolution\bin\Debug
 copy %location%TightDbCSharp\release\files\bin\Release\*.* %location%examples\lib
 :zip entire examples directory to a zip file
 del %location%examples.zip
-%location%7z.exe a -tzip -r %location%examples.zip %location%examples*.*
+echo on
+:this one fails on my other pc, creates an empty zip file
+%location%7z.exe a -tzip -r %location%examples.zip %location%examples\*.*
 echo Finished! Any key....
 pause
