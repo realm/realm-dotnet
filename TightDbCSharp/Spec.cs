@@ -42,12 +42,40 @@ namespace TightDbCSharp
 
 
 
-    public class Spec : Handled
+    public class Spec : Handled 
     {
         //not accessible by source not in te TightDBCSharp namespace
         internal Spec(IntPtr handle, bool shouldbedisposed)
         {
             SetHandle(handle, shouldbedisposed);
+        }
+
+        public override bool Equals(object obj)
+        {
+            Spec spec = (Spec) obj;
+            if (spec == null)
+            {
+                return false;
+            }
+            return Equals(spec);
+        }
+
+        public bool Equals(Spec spec)
+        {
+            return UnsafeNativeMethods.SpecEquals(this,spec);
+        }
+
+        //this is pretty slow due to two interop calls, but still faster than if all field names were used in the hash.
+        //a spec will have a hash consisting of the column count XOR'ed with the string name of the last column in the table
+        public override int GetHashCode()
+        {
+            int res = 0;
+            long n = ColumnCount;
+            if (n > 0)
+            {
+                res = res ^ GetColumnName(n-1).GetHashCode();
+            }
+            return res;
         }
 
 
@@ -149,9 +177,8 @@ namespace TightDbCSharp
             if (GetColumnType(columnIndex) == DataType.Table)
             {
                 return UnsafeNativeMethods.SpecGetSpec(this, columnIndex);
-            }
-            else
-                throw new SpecException("get spec(columnIndex) can only be called on a SubTable field");
+            }            
+           throw new SpecException("get spec(columnIndex) can only be called on a SubTable field");
         }
 
         public DataType GetColumnType(long columnIndex)
@@ -159,6 +186,7 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.SpecGetColumnType(this, columnIndex);
         }
 
+        
 
         public string GetColumnName(long columnIndex)
         {

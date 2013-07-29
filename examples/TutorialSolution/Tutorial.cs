@@ -6,7 +6,7 @@ using TightDbCSharp.Extensions;
 namespace TutorialSolution
 {
     //@@Example:create_table @@
-    internal class Tutorial
+    internal static class Tutorial
     {
         private static void Main()
         {

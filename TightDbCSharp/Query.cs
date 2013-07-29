@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+//using TightDbCSharp.Annotations;
 
 namespace TightDbCSharp
 {
@@ -15,25 +16,43 @@ namespace TightDbCSharp
         internal Query(IntPtr handle,Table underlyingTable, bool shouldbedisposed)
         {
             SetHandle(handle, shouldbedisposed);
-            _sourceTable = underlyingTable;
+            UnderlyingTable = underlyingTable;
         }
 
         
         //a tableview has a private pointer to its ultimate source table, to enable its iterator to yield table records from that table
         //idea:consider if it would be better to yield table records from the tableorview being queried. I think not. too slow and too much code
+
+        private Table _underlyingTable;
+        public Table UnderlyingTable
+        {
+            get { return _underlyingTable; }
+            private set
+            {
+                if (value != null && _underlyingTable == null)
+                {
+                    _underlyingTable = value;
+                }
+                else
+                {
+                    throw new ArgumentException("TableViewed can only be set once, and cannot be set to null");
+                }
+            }
+
+        }//used only to make sure that a reference to the table exists until the view is disposed of
         
-        private readonly Table _sourceTable;//the table that this query queries.
 
         //assuming that i do not have to validate start and end, except they should not be smaller than -1 (-1 is used for defaults)
 
 
         //calling FindAll with no parametres will return a tableview with all matching rows in it
+
         public TableView FindAll()
         {
             return FindAll(0, -1, -1);//Methods that use default parameters are allowed under the Common Language Specification (CLS); however, the CLS allows compilers to ignore the values that are assigned to these parameters. 
         }
 
-        internal void ValidateStartEndLimit(long start, long end, long limit) 
+        private void ValidateStartEndLimit(long start, long end, long limit) 
         {
                         Action<string, string> thrower = (errparam, errmsg) =>
                 {
@@ -64,14 +83,15 @@ namespace TightDbCSharp
                 thrower("end", "end must be larger than or equal to start");
             }
 
-            if (end >= this._sourceTable.Size)
+            if (end >= UnderlyingTable.Size)
             {
                 thrower("end", "end must be less than the size of the underlying table");
             }
 
         }
 
-        //default values are advised against by microsoft http://msdn.microsoft.com/query/dev11.query?appId=Dev11IDEF1&l=EN-US&k=k(CA1026);k(TargetFrameworkMoniker-.NETFramework,Version%3Dv4.5);k(DevLang-csharp)&rd=true
+        //default values are advised against by microsoft http://msdn.microsoft.com/query/dev11.query?appId=Dev11IDEF1&l=EN-US&k=k(CA1026);k(TargetFrameworkMoniker-.NETFramework,Version%3Dv4.5);k(DevLang-csharp)&rd=true        
+// ReSharper disable once UnusedMember.Global
         public long Count(long start, long end , long limit)
         {
             ValidateStartEndLimit(start,end,limit);
@@ -79,6 +99,7 @@ namespace TightDbCSharp
         }
 
 
+// ReSharper disable once UnusedMember.Global
         public long Count()
         {
             ValidateStartEndLimit(0,-1,-1);
@@ -90,6 +111,7 @@ namespace TightDbCSharp
         //limit = maximum number of records to return.
         //for paging through a database , set limit to number of results per page, and after each page received, set start to the row number
         //of the last received row (underlying table row number)
+// ReSharper disable once MemberCanBePrivate.Global
         public TableView FindAll(long start, long end, long limit)
         {
             ValidateStartEndLimit(start,end,limit);
@@ -128,7 +150,7 @@ namespace TightDbCSharp
 
         public Query Between(long columnIndex, long lowValue, long highValue)
         {
-            _sourceTable.ValidateColumnIndex(columnIndex);
+            UnderlyingTable.ValidateColumnIndex(columnIndex);
             BetweenNoCheck(columnIndex, lowValue, highValue);
             return this;
         }
@@ -171,7 +193,7 @@ namespace TightDbCSharp
             long nextix = -1;//-1 means start all over, means that prior call returned no value. I hope the long -1 gets translated to a intptr -1 correctly when the intptr is only 32bits
             while ((nextix = FindNext(nextix)) != -1)
             {
-                yield return new TableRow(_sourceTable, nextix);
+                yield return new TableRow(UnderlyingTable, nextix);
             }
         }
 

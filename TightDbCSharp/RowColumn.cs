@@ -17,12 +17,12 @@ namespace TightDbCSharp
     {
         
         private Row _owner;
-        public Row Owner { get { return _owner; } set { _owner = value; _columntypeloaded = false; } }
+        private Row Owner { get { return _owner; } set { _owner = value; _columntypeloaded = false; } }
         private long _columnIndex;
         public long ColumnIndex
         {
             get { return _columnIndex; }
-            internal set { _columnIndex = value; _columntypeloaded = false; }//internal bc users must not be allowed to change the columnindex. We treat it as already checked in calls
+            private set { _columnIndex = value; _columntypeloaded = false; }//internal bc users must not be allowed to change the columnindex. We treat it as already checked in calls
         }
         public RowColumn(Row owner,long column)
         {

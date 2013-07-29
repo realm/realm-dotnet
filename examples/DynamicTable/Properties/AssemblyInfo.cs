@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("TestTightDbCSharp")]
+[assembly: AssemblyTitle("DynamicTable")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("TestTightDbCSharp")]
+[assembly: AssemblyProduct("DynamicTable")]
 [assembly: AssemblyCopyright("Copyright ©  2013")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("a5daaaad-9515-4776-a72a-47f16db7e02c")]
+[assembly: Guid("0b6ac32b-af80-4515-b638-fd27f32e43c7")]
 
 // Version information for an assembly consists of the following four values:
 //

@@ -9,12 +9,26 @@ namespace TightDbCSharp
     //this class wraps a c++ TableView class
     public class TableView : TableOrView
     {
-
-        internal Table TableViewed { get; set; }//used only to make sure that a reference to the table exists until the view is disposed of
+        private Table _underlyingTable;
+        public Table UnderlyingTable {
+            get { return _underlyingTable; }
+            private set
+            {
+                if (value != null && _underlyingTable==null)
+                {
+                    _underlyingTable = value;
+                }
+                else
+                {
+                    throw new ArgumentException("TableViewed can only be set once, and cannot be set to null");
+                }
+            }
+            
+        }//used only to make sure that a reference to the table exists until the view is disposed of
 
         internal override Spec GetSpec()
         {
-            return TableViewed.Spec;
+            return UnderlyingTable.Spec;
         }
 
         //we need something to invalidate all table views if an underlying table is modified after the view has been created
@@ -29,7 +43,7 @@ namespace TightDbCSharp
             }
         }
 
-        internal Row RowForIndexNoCheck(long rowIndex)
+        private Row RowForIndexNoCheck(long rowIndex)
         {
             return new Row(this, rowIndex);            
         }
@@ -192,6 +206,11 @@ namespace TightDbCSharp
             throw new NotImplementedException();
         }
 
+        internal override void SetSubTableNoCheck(long columnIndex, long rowIndex, Table value)
+        {
+            UnsafeNativeMethods.TableViewSetSubTable(this,columnIndex,rowIndex,value);
+        }
+
         internal override void SetDateTimeNoCheck(long columnIndex, long rowIndex, DateTime value)
         {
             UnsafeNativeMethods.TableViewSetDate(this,columnIndex,rowIndex,value);
@@ -205,7 +224,7 @@ namespace TightDbCSharp
 
         internal override String GetMixedStringNoCheck(long columnIndex, long rowIndex)
         {
-            throw new NotImplementedException();
+            return UnsafeNativeMethods.TableViewGetMixedString(this, columnIndex, rowIndex);
         }
 
         internal override byte[] GetMixedBinaryNoCheck(long columnIndex, long rowIndex)
@@ -333,8 +352,9 @@ namespace TightDbCSharp
         }
 
         
-        internal TableView(IntPtr tableViewHandle,bool shouldbedisposed)
+        internal TableView(Table underlyingTableBeing, IntPtr tableViewHandle,bool shouldbedisposed)
         {
+            UnderlyingTable = underlyingTableBeing;
             SetHandle(tableViewHandle,shouldbedisposed);
         }
 

@@ -128,28 +128,8 @@ namespace TightDbCSharp
 
 
 
-        //will only log in debug mode!
-        //marker is a string that will show as the first log line, use this if several places in the code enable logging and disable it again, to
-        //easily see what section we're in
-        //will be replaced by normal c# logging when i get around to it
-        public static void LoggingEnable()
-        {
-            LoggingEnable("");
-        }
-        public static void LoggingEnable(string marker)
-        {
-            UnsafeNativeMethods.LoggingEnable(marker);
-        }
 
-        public static void LoggingSaveFile(string fileName)
-        {
-            UnsafeNativeMethods.LoggingSaveFile(fileName);
-        }
 
-        public static void LoggingDisable()
-        {
-            UnsafeNativeMethods.LoggingDisable();
-        }
         //this parameter type allows the user to send a comma seperated list of TableField objects without having
         //to put them into an array first
         public Table(params Field[] schema)
@@ -494,6 +474,11 @@ namespace TightDbCSharp
             throw new NotImplementedException();
         }
 
+        internal override void SetSubTableNoCheck(long columnIndex, long rowIndex, Table value)
+        {
+            UnsafeNativeMethods.TableSetSubTable(this,columnIndex,rowIndex,value);            
+        }
+
         internal override String GetStringNoCheck(long columnIndex, long rowIndex)
         {
             return UnsafeNativeMethods.TableGetString(this, columnIndex, rowIndex);
@@ -539,7 +524,7 @@ namespace TightDbCSharp
 
         internal override String GetMixedStringNoCheck(long columnIndex, long rowIndex)
         {
-            throw new NotImplementedException();
+            return UnsafeNativeMethods.TableGetMixedString(this, columnIndex, rowIndex);
         }
 
         internal override byte[] GetMixedBinaryNoCheck(long columnIndex, long rowIndex)

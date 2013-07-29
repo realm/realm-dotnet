@@ -5,6 +5,8 @@ using System.Text;
 using System.Runtime.InteropServices;
 
 
+
+
 //using System.Appdomain;
 
 
@@ -74,80 +76,6 @@ enum DataType {
             }
         }
 
-        private static StringBuilder _callog; //used to collect call data when debugging small unit tests
-
-        private static bool _loggingEnabled;
-
-        private static bool LoggingEnabled
-        {
-            get { return _loggingEnabled; }
-            set
-            {
-                if (value)
-                {
-                    if (_callog == null)
-                    {
-                        _callog = new StringBuilder();
-                    }
-                    _callog.AppendLine("--------LOGGING HAS BEEN ENABLED----------");
-                    _loggingEnabled = true;
-                }
-                else
-                {
-                    _callog.AppendLine("--------LOGGING HAS BEEN DISABLED----------");
-                    _loggingEnabled = false;
-                }
-            }
-        }
-
-        public static void LoggingSaveFile(String fileName)
-        {
-            if (LoggingEnabled)
-            {
-                File.WriteAllText(fileName, _callog.ToString());
-            }
-        }
-
-        public static void LoggingDisable()
-        {
-            LoggingEnabled = false;
-        }
-
-        public static void LoggingEnable(string marker)
-        {
-            LoggingEnabled = true;
-            if (!String.IsNullOrEmpty(marker))
-            {
-                _callog.AppendLine(String.Format(CultureInfo.InvariantCulture, "LOGGING ENABLED BY:{0}", marker));
-            }
-        }
-
-        //idea:consider using some standard log framework, or remove logging altogether (logging was used in early debugging)
-        public static void Log(string where, string desc, params object[] values)
-        {
-            if (LoggingEnabled)
-            {
-                _callog.Append(String.Format(CultureInfo.InvariantCulture, "{0:yyyy-MM-dd HH:mm:ss} {1} {2}",
-                                             DateTime.UtcNow, where, desc));
-                _callog.AppendLine(":");
-                foreach (object o in values)
-                {
-                    string typestr = o.GetType().ToString();
-                    string valuestr = o.ToString();
-                    //if something doesn't auto.generate into readable code, we can test on o, and create custom more readable values
-
-                    var handled = o as Handled;//if o is not Handled, handled will be null
-                    if (handled != null) valuestr = handled.ObjectIdentification();
-
-
-                    _callog.Append("Type(");
-                    _callog.Append(typestr);
-                    _callog.Append(") Value(");
-                    _callog.Append(valuestr);
-                    _callog.AppendLine(")");
-                }
-            }
-        }
 
 #if (DEBUG)
         private const string Buildmode = "d";
@@ -384,12 +312,24 @@ enum DataType {
             return IntPtrToDataType(spec_get_column_type32(s.Handle, (IntPtr)columnIndex));
         }
 
-        /* not really needed
-        public static DataType spec_get_column_type(Spec s, int columnIndex)
+
+
+        [DllImport(L64, EntryPoint = "spec_equals", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr spec_equals64(IntPtr spechandle, IntPtr spechandle2);
+
+        [DllImport(L32, EntryPoint = "spec_equals", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr spec_equals32(IntPtr spechandle, IntPtr spechandle2);
+
+        public static bool SpecEquals(Spec spec1, Spec spec2)
         {
-            return spec_get_column_type(s.SpecHandle, (IntPtr)columnIndex);//the IntPtr cast of an int works on 32bit .net 4.5
-        }                                                                   //but probably throws an exception or warning on 64bit 
-        */
+            if (Is64Bit)
+                return IntPtrToBool(spec_equals64(spec1.Handle, spec2.Handle));
+            return IntPtrToBool(spec_equals32(spec1.Handle, spec2.Handle));
+        }
+
+
+
+
         //Spec add_subtable_column(const char* name);        
         [DllImport(L64, EntryPoint = "spec_add_subtable_column",
             CallingConvention = CallingConvention.Cdecl)]
@@ -518,11 +458,15 @@ enum DataType {
 
         public static void GroupNewFile(Group group, string fileName)
         {
-            //Console.Error.WriteLine("groupnewfile called");
+            try {
             group.SetHandle(Is64Bit
                                 ? new_group_file64(fileName, (IntPtr)fileName.Length)
                                 : new_group_file32(fileName, (IntPtr)fileName.Length), true);
-            //Console.Error.WriteLine("after new_group_file");
+            }
+            catch (SEHException ex)
+            {
+                throw new System.IO.IOException(String.Format("IO error creating group file {0} (read/write access is needed)  c++ exception thrown :{1}",fileName,ex.Message));
+            }            
         }
 
         [DllImport(L64, EntryPoint = "new_group", CallingConvention = CallingConvention.Cdecl)]
@@ -826,7 +770,7 @@ enum DataType {
         public static TableView TableDistinct(Table table, long columnIndex)
         {
             return
-                new TableView(
+                new TableView(table,
                     Is64Bit
                         ? table_distinct64(table.Handle, (IntPtr)columnIndex)
                         : table_distinct32(table.Handle, (IntPtr)columnIndex), true);
@@ -1418,7 +1362,7 @@ enum DataType {
         public static TableView TableFindAllInt(Table table, long columnIndex, long value)
         {
             return
-                new TableView(
+                new TableView(table,
                     Is64Bit
                         ? table_find_all_int64(table.Handle, (IntPtr) columnIndex, value)
                         : table_find_all_int32(table.Handle, (IntPtr) columnIndex, value), true);
@@ -1436,7 +1380,7 @@ enum DataType {
         public static TableView TableViewFindAllInt(TableView tableView, long columnIndex, long value)
         {
             return
-                new TableView(
+                new TableView(tableView.UnderlyingTable,
                     Is64Bit
                         ? tableView_find_all_int64(tableView.Handle, (IntPtr)columnIndex, value)
                         : tableView_find_all_int32(tableView.Handle, (IntPtr)columnIndex, value), true);
@@ -1458,7 +1402,7 @@ enum DataType {
         public static TableView TableFindAllString(Table table, long columnIndex, string value)
         {
             return
-                new TableView(
+                new TableView(table,
                     Is64Bit
                         ? table_find_all_string64(table.Handle, (IntPtr)columnIndex, value,(IntPtr) value.Length)
                         : table_find_all_string32(table.Handle, (IntPtr)columnIndex, value, (IntPtr)value.Length), true);
@@ -1477,7 +1421,7 @@ enum DataType {
         public static TableView TableViewFindAllString(TableView tableView, long columnIndex, string value)
         {
             return
-                new TableView(
+                new TableView(tableView.UnderlyingTable,
                     Is64Bit
                         ? tableView_find_all_string64(tableView.Handle, (IntPtr)columnIndex, value, (IntPtr)value.Length)
                         : tableView_find_all_string32(tableView.Handle, (IntPtr)columnIndex, value, (IntPtr)value.Length), true);
@@ -1500,7 +1444,7 @@ enum DataType {
         public static TableView QueryFindAll(Query query, long start, long end, long limit)
         {
             return
-                new TableView(
+                new TableView(query.UnderlyingTable,
                     Is64Bit
                         ? query_find_all64(query.Handle, (IntPtr) start, (IntPtr) end, (IntPtr) limit)
                         : query_find_all32(query.Handle, (IntPtr) start, (IntPtr) end, (IntPtr) limit), true);
@@ -1957,9 +1901,79 @@ enum DataType {
                 
 
             } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
-            return StrBufToStr(buffer, (int)bufferSizeNeededChars);
-            
+            return StrBufToStr(buffer, (int)bufferSizeNeededChars);           
         }
+
+
+
+        [DllImport(L64, EntryPoint = "table_get_mixed_string", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_get_mixed_string64(IntPtr handle, IntPtr columnIndex, IntPtr rowIndex, IntPtr buffer, IntPtr bufsize);
+
+        [DllImport(L32, EntryPoint = "table_get_mixed_string", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_get_mixed_string32(IntPtr handle, IntPtr columnIndex, IntPtr rowIndex, IntPtr buffer, IntPtr bufsize);
+
+
+        public static string TableGetMixedString(Table t, long columnIndex, long rowIndex)
+        //ColumnIndex not a long bc on the c++ side it might be 32bit long on a 32 bit platform
+        {
+            long bufferSizeNeededChars = 16;
+            IntPtr buffer;
+            long currentBufferSizeChars;
+
+
+            do
+            {
+                buffer = StrAllocateBuffer(out currentBufferSizeChars, bufferSizeNeededChars);
+
+                if (Is64Bit)
+                    bufferSizeNeededChars =
+                        (long)table_get_mixed_string64(t.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, buffer, (IntPtr)currentBufferSizeChars);
+
+                else
+                    bufferSizeNeededChars =
+                        (long)table_get_mixed_string32(t.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, buffer, (IntPtr)currentBufferSizeChars);
+
+
+            } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
+            return StrBufToStr(buffer, (int)bufferSizeNeededChars);
+        }
+
+
+
+
+        [DllImport(L64, EntryPoint = "tableview_get_mixed_string", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr tableview_get_mixed_string64(IntPtr handle, IntPtr columnIndex, IntPtr rowIndex, IntPtr buffer, IntPtr bufsize);
+
+        [DllImport(L32, EntryPoint = "tableview_get_mixed_string", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr tableview_get_mixed_string32(IntPtr handle, IntPtr columnIndex, IntPtr rowIndex, IntPtr buffer, IntPtr bufsize);
+
+
+        public static string TableViewGetMixedString(TableView t, long columnIndex, long rowIndex)
+        //ColumnIndex not a long bc on the c++ side it might be 32bit long on a 32 bit platform
+        {
+            long bufferSizeNeededChars = 16;
+            IntPtr buffer;
+            long currentBufferSizeChars;
+
+
+            do
+            {
+                buffer = StrAllocateBuffer(out currentBufferSizeChars, bufferSizeNeededChars);
+
+                if (Is64Bit)
+                    bufferSizeNeededChars =
+                        (long)tableview_get_mixed_string64(t.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, buffer, (IntPtr)currentBufferSizeChars);
+
+                else
+                    bufferSizeNeededChars =
+                        (long)tableview_get_mixed_string32(t.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, buffer, (IntPtr)currentBufferSizeChars);
+
+
+            } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
+            return StrBufToStr(buffer, (int)bufferSizeNeededChars);
+        }
+
+
 
 
 
@@ -2185,9 +2199,6 @@ enum DataType {
 
         public static void TableSetLong(Table table, long columnIndex, long rowIndex, long value)
         {
-#if DEBUG
-            Log(MethodBase.GetCurrentMethod().Name, "(Table,Column,Row,Value)", table, columnIndex, rowIndex, value);
-#endif
 
             if (Is64Bit)
                 table_set_int64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
@@ -2266,10 +2277,6 @@ enum DataType {
 
         public static void TableViewSetString(TableView tableView, long columnIndex, long rowIndex, string value)
         {
-#if DEBUG
-            Log(MethodBase.GetCurrentMethod().Name, "(TableView,Column,Row,Value)", tableView, columnIndex, rowIndex,
-                value);
-#endif
 
             if (Is64Bit)
                 tableView_set_string64(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, value,(IntPtr)value.Length);
@@ -2289,10 +2296,6 @@ enum DataType {
 
         public static void TableViewSetLong(TableView tableView, long columnIndex, long rowIndex, long value)
         {
-#if DEBUG
-            Log(MethodBase.GetCurrentMethod().Name, "(TableView,Column,Row,Value)", tableView, columnIndex, rowIndex,
-                value);
-#endif
 
             if (Is64Bit)
                 tableView_set_int64(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
@@ -2301,6 +2304,46 @@ enum DataType {
         }
 
 
+
+        [DllImport(L64, EntryPoint = "table_set_subtable",
+            CallingConvention = CallingConvention.Cdecl)]
+        private static extern void table_set_subtable64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx,
+                                                              IntPtr sourceTablePtr);
+
+        [DllImport(L32, EntryPoint = "table_set_subtable",
+            CallingConvention = CallingConvention.Cdecl)]
+        private static extern void table_set_subtable32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx,
+                                                              IntPtr sourceTablePtr);
+
+        public static void TableSetSubTable(Table table, long columnIndex, long rowIndex, Table sourceTable)
+        {
+
+            if (Is64Bit)
+                table_set_subtable64(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, sourceTable.Handle);
+            else
+                table_set_subtable32(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, sourceTable.Handle);
+        }
+
+
+
+        [DllImport(L64, EntryPoint = "tableview_set_subtable",
+    CallingConvention = CallingConvention.Cdecl)]
+        private static extern void tableview_set_subtable64(IntPtr tableviewPtr, IntPtr columnNdx, IntPtr rowNdx,
+                                                              IntPtr sourceTablePtr);
+
+        [DllImport(L32, EntryPoint = "tableview_set_subtable",
+            CallingConvention = CallingConvention.Cdecl)]
+        private static extern void tableview_set_subtable32(IntPtr tableviewPtr, IntPtr columnNdx, IntPtr rowNdx,
+                                                              IntPtr sourceTablePtr);
+
+        public static void TableViewSetSubTable(TableView tableView, long columnIndex, long rowIndex, Table sourceTable)
+        {
+
+            if (Is64Bit)
+                tableview_set_subtable64(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, sourceTable.Handle);
+            else
+                tableview_set_subtable32(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, sourceTable.Handle);
+        }
 
 
 
@@ -2317,9 +2360,6 @@ enum DataType {
 
         public static void TableSetMixedSubTable(Table table, long columnIndex, long rowIndex, Table sourceTable)
         {
-#if DEBUG
-            Log(MethodBase.GetCurrentMethod().Name, "(Table,Column,Row)", table, columnIndex, rowIndex);
-#endif
 
             if (Is64Bit)
                 table_set_mixed_subtable64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, sourceTable.Handle);
@@ -2341,10 +2381,6 @@ enum DataType {
         public static void TableViewSetMixedSubTable(TableView tableView, long columnIndex, long rowIndex,
                                                      Table sourceTable)
         {
-#if DEBUG
-            Log(MethodBase.GetCurrentMethod().Name, "(TableView,Column,Row)", tableView, columnIndex, rowIndex);
-#endif
-
             if (Is64Bit)
                 tableView_set_mixed_subtable64(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex,
                                                sourceTable.Handle);
@@ -2377,9 +2413,6 @@ enum DataType {
 
         public static void TableSetMixedEmptySubTable(Table table, long columnIndex, long rowIndex)
         {
-#if DEBUG
-            Log(MethodBase.GetCurrentMethod().Name, "(Table,Column,Row)", table, columnIndex, rowIndex);
-#endif
 
             if (Is64Bit)
                 table_set_mixed_empty_subtable64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
@@ -2401,9 +2434,6 @@ enum DataType {
 
         public static void TableViewSetMixedEmptySubTable(TableView tableView, long columnIndex, long rowIndex)
         {
-#if DEBUG
-            Log(MethodBase.GetCurrentMethod().Name, "(Tableview,Column,Row)", tableView, columnIndex, rowIndex);
-#endif
 
             if (Is64Bit)
                 tableView_set_mixed_empty_subtable64(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
@@ -2429,10 +2459,6 @@ enum DataType {
 
         public static void TableViewSetMixedLong(TableView tableView, long columnIndex, long rowIndex, long value)
         {
-#if DEBUG
-            Log(MethodBase.GetCurrentMethod().Name, "(Tableview,Column,Row,Value)", tableView, columnIndex, rowIndex,
-                value);
-#endif
 
             if (Is64Bit)
                 tableView_set_mixed_int64(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
@@ -2450,9 +2476,6 @@ enum DataType {
 
         public static void TableSetMixedLong(Table table, long columnIndex, long rowIndex, long value)
         {
-#if DEBUG
-            Log(MethodBase.GetCurrentMethod().Name, "(Table,Column,Row,Value)", table, columnIndex, rowIndex, value);
-#endif
 
             if (Is64Bit)
                 table_set_mixed_int64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
@@ -2471,9 +2494,6 @@ enum DataType {
 
         public static void TableInsertInt(Table table, long columnIndex, long rowIndex, long value)
         {
-#if DEBUG
-            Log(MethodBase.GetCurrentMethod().Name, "(Table,Column,Row,Value)", table, columnIndex, rowIndex, value);
-#endif
 
             if (Is64Bit)
                 table_insert_int64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);

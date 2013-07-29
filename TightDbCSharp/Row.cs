@@ -89,7 +89,7 @@ namespace TightDbCSharp
 
         internal void SetSubTableNoCheck(long columnIndex, IEnumerable<object> value)
         {
-            Owner.SetSubTableNoCheck(columnIndex, RowIndex, value);
+            Owner.SetSubTableNoCheckHighLevel(columnIndex, RowIndex, value);
         }
 
         internal void SetMixedNoCheck(long columnIndex, object value)

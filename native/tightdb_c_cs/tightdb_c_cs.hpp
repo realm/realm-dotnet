@@ -49,7 +49,9 @@ TIGHTDB_C_CS_API size_t table_get_column_name(tightdb::Table* table_ptr,size_t c
 //that is null, until it gets filled up
 TIGHTDB_C_CS_API void table_insert_int(tightdb::Table* table_ptr, size_t column_ndx, size_t row_ndx, int64_t value);
 
-TIGHTDB_C_CS_API size_t table_add_empty_row(tightdb::Table* table_ptr, size_t num_rows);
+TIGHTDB_C_CS_API size_t 
+
+_empty_row(tightdb::Table* table_ptr, size_t num_rows);
 
 TIGHTDB_C_CS_API void table_remove_row(tightdb::Table* table_ptr, size_t row_ndx);
 

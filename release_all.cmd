@@ -13,11 +13,13 @@ echo An examples release in examples.zip
 echo Any key to start creating the c++ release
 pause
 set location=%~dp0
-call %location%native\tightdb_c_cs\tightdb_c_cs2012\build.bat
+call %location%native\tightdb_c_cs\tightdb_c_cs2012\build.cmd 
+
 set location=%~dp0
 echo any key to start creating the c# release
 pause
-call %location%TightDbCSharp\build.bat
+call %location%TightDbCSharp\build.cmd
+
 set location=%~dp0
 echo any key to start creating the pre-setup examples release zip file
 pause
@@ -27,6 +29,8 @@ md %location%examples
 md %location%examples\lib
 copy %location%TightDbCSharp\release\files\dll\tightdb_c_cs2012??r.dll %location%examples\TutorialSolution\bin\Release
 copy %location%TightDbCSharp\release\files\dll\tightdb_c_cs2012??r.dll %location%examples\TutorialSolution\bin\Debug
+copy %location%TightDbCSharp\release\files\dll\tightdb_c_cs2012??r.dll %location%examples\Experimental\bin\Release
+copy %location%TightDbCSharp\release\files\dll\tightdb_c_cs2012??r.dll %location%examples\Experimental\bin\Debug
 copy %location%TightDbCSharp\release\files\bin\Release\*.* %location%examples\lib
 :zip entire examples directory to a zip file
 del %location%examples.zip

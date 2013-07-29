@@ -1,3 +1,4 @@
+
 // tightdb_c_cs.cpp : Defines the exported functions for the DLL application.
 /*
     
@@ -234,9 +235,9 @@ TIGHTDB_C_CS_API Table* new_table()//should be disposed by calling unbind_table_
 TIGHTDB_C_CS_API Spec* table_get_spec(Table* table_ptr)//do not do anything when disposing
 {
 	//Table* t = reinterpret_cast<Table*>(table_ptr);
-	Spec& s = table_ptr->get_spec();
-	Spec* spec_ptr  = &s;
-	return spec_ptr;
+	//before : Spec& s = table_ptr->get_spec();
+    //in langbindhelper :        static Spec& get_spec(Table&);    
+     return    &LangBindHelper::get_spec(*table_ptr);
 }
 
 
@@ -259,7 +260,7 @@ TIGHTDB_C_CS_API void table_remove_column(Table* table_ptr, size_t column_ndx)
     table_ptr->remove_column(column_ndx);
 }
 
-//todo:implement     size_t      add_subcolumn(const std::vector<size_t>& column_path, DataType type, StringData name);
+//todo:void        remove_column(const std::vector<std::size_t>& column_path);
 
 TIGHTDB_C_CS_API void table_rename_column(Table* table_ptr, size_t column_ndx, uint16_t* value, size_t value_len)
 {
@@ -372,8 +373,6 @@ TIGHTDB_C_CS_API double table_get_double(Table* table_ptr, size_t column_ndx, si
     return table_ptr->get_double(column_ndx,row_ndx);
 }
 
-//todo:Csharp will currently treat the returned data as ansi with the current codepage - this will be fixed at the same time as the new tightdb strings are released,
-//as the conversion from utc-8 to utc-16 will be done on the c++ side
 TIGHTDB_C_CS_API size_t table_get_string(Table* table_ptr, size_t column_ndx, size_t row_ndx, uint16_t * datatochsarp, size_t bufsize)
 {
     StringData fielddata=table_ptr->get_string(column_ndx, row_ndx);
@@ -381,290 +380,46 @@ TIGHTDB_C_CS_API size_t table_get_string(Table* table_ptr, size_t column_ndx, si
 }
 
 
+
+
 //todo:implement table get binary      BinaryData  get_binary(size_t column_ndx, size_t row_ndx) const; // FIXME: Should be modified so it never throws
 
 
-
-//hertil
-
-
-
-TIGHTDB_C_CS_API size_t tableview_get_column_count(tightdb::TableView* tableView_ptr)
+TIGHTDB_C_CS_API int64_t  table_get_mixed_int(Table*  table_ptr, size_t column_ndx, size_t row_ndx)
 {
-	return tableView_ptr->get_column_count();
+    return table_ptr->get_mixed(column_ndx,row_ndx).get_int();    
 }
 
+//todo:implement table_get_mixed_bool
 
-//new empty group
-//todo:This fails on windows, awaiting new version (problem is something with the filename, read/write rights where it is put by default)
-
-TIGHTDB_C_CS_API Group* new_group() //should be disposed by calling group_delete
+TIGHTDB_C_CS_API int64_t table_get_mixed_date(Table*  table_ptr, size_t column_ndx, size_t row_ndx)
 {
-//    std::cerr<<"before new group()\n";
-    //works Group* g = new Group(Group::unattached_tag());
-    //fails  Group* g = new Group();
-    Group* g = new Group();
-//      std::cerr<<"after new group()\n";
-    return g;
-//    return new Group();        
+   return date_to_int64_t(table_ptr->get_mixed(column_ndx,row_ndx).get_date());    
 }
 
-
-
-
-
-  TIGHTDB_C_CS_API Group* new_group_file(uint16_t * name, size_t name_len)//should be disposed by calling group_delete
-{  
-    CSStringAccessor name2(name,name_len);
-    Group* g = new Group(StringData(name2));
-//    std::cerr<<"Message from c++. Group created. address: ("<<g <<") filename ("<<name2<<")\n";
-    return g;
-}
-
-//write group to specified file
-TIGHTDB_C_CS_API size_t group_write(Group* group_ptr,uint16_t * name, size_t name_len)
-
-{   
-    try {
-    CSStringAccessor str(name,name_len);    
-    group_ptr->write(StringData(str));
-    return 0;//0 means no exception thrown
-    }
-    //if the file is already there, or other file related trouble
-   catch (File::AccessError) {             
-       return 1;//1 means IO problem exception was thrown. C# always use IOException in cases like this anyways so no need to detail it out further
-   }
-}
-
-
-//should be disposed by calling unbind_table_ref
-TIGHTDB_C_CS_API Table* group_get_table(Group* group_ptr,uint16_t* table_name,size_t table_name_len)
-{   
-    CSStringAccessor str(table_name,table_name_len);
-    return LangBindHelper::get_table_ptr(group_ptr,str);
-}
-
-
-TIGHTDB_C_CS_API size_t group_has_table(Group* group_ptr, uint16_t * table_name,size_t table_name_len)//should be disposed by calling unbind_table_ref
-{    
-    CSStringAccessor str(table_name,table_name_len);
-    return bool_to_size_t(group_ptr->has_table(str));
-}
-
-
-
-//todo:tableviews should be invalidated if another tableview or the underlying table is being changed
-//this could be implemented by having a connection class, that is local to each process/thread
-//and then keep track of the number of views on a given table pointer inside this class
-//todo:create unit test that crashes tableview by changing the underlying table
-
-//   TableRef       get_subtable(size_t column_ndx, size_t row_ndx);
-TIGHTDB_C_CS_API Table* table_get_subtable(Table* table_ptr, size_t column_ndx, size_t row_ndx)//should be disposed by calling unbind_table_ref
-{    
-    return LangBindHelper::get_subtable_ptr(table_ptr,column_ndx, row_ndx);
-}
-
-
-TIGHTDB_C_CS_API void table_clear_subtable(Table* table_ptr, size_t column_ndx, size_t row_ndx) 
+TIGHTDB_C_CS_API float  table_get_mixed_float(Table*  table_ptr, size_t column_ndx, size_t row_ndx)
 {
-    table_ptr->clear_subtable(column_ndx,row_ndx);
+    return table_ptr->get_mixed(column_ndx,row_ndx).get_float();    
 }
 
-TIGHTDB_C_CS_API void tableview_clear_subtable(TableView* tableView_ptr, size_t column_ndx, size_t row_ndx) 
+TIGHTDB_C_CS_API double  table_get_mixed_double(Table*  table_ptr, size_t column_ndx, size_t row_ndx)
 {
-    tableView_ptr->clear_subtable(column_ndx,row_ndx);
+    return table_ptr->get_mixed(column_ndx,row_ndx).get_double();    
 }
 
+//implement table get mixed binary
 
-TIGHTDB_C_CS_API void unbind_table_ref(tightdb::Table* table_ptr)
-{	
-	LangBindHelper::unbind_table_ref(table_ptr);
-}
-
-
-TIGHTDB_C_CS_API void tableview_remove_row(tightdb::TableView* tableView_ptr, size_t row_ndx)
+TIGHTDB_C_CS_API size_t table_get_mixed_string(Table* table_ptr, size_t column_ndx, size_t row_ndx, uint16_t * datatochsarp, size_t bufsize)
 {
-    tableView_ptr->remove(row_ndx);
-}
-
-/*
-
-//the value returned is the number of chars that are in use in the fromcppbuffer
-TIGHTDB_C_CS_API size_t test_string_returner(uint16_t* tocppbuffer, size_t tocppbuffersize, uint16_t* fromcppbuffer,size_t fromcppbuffersize) 
-{
-    CSStringAccessor CSString(tocppbuffer,tocppbuffersize);//acquire the cs string , convert to UTF-8 and put it into CSString
-    StringData fromcs = CSString;//create a StringData wrapper around the string
-    return stringdata_to_csharpstringbuffer(fromcs,fromcppbuffer,fromcppbuffersize);//fill up the return buffer with the UTF-16 version of the UTF-8 fromcs
-}
-
-*/
-
-
-//    size_t add_column(DataType type, const char* name, ColumnType attr=col_attr_None);
-//note that we have omitted support for attr until we figure what it's for
-TIGHTDB_C_CS_API size_t spec_add_column(Spec* spec_ptr,size_t type, uint16_t * name,size_t name_len) 
-{
-    CSStringAccessor str(name,name_len);
-	return spec_ptr->add_column(size_t_to_datatype(type),str);		
+    StringData fielddata=table_ptr->get_mixed(column_ndx, row_ndx).get_string();
+    return stringdata_to_csharpstringbuffer(fielddata, datatochsarp,bufsize);
 }
 
 
-
-
-
-
-
-TIGHTDB_C_CS_API  size_t tableview_get_column_type(tightdb::TableView* tableView_ptr, const size_t column_ndx)
-{
-	return datatype_to_size_t(tableView_ptr->get_column_type(column_ndx));
-}
-
-
-
-
-TIGHTDB_C_CS_API  size_t tableview_get_mixed_type(TableView* tableView_ptr, const size_t column_ndx,const size_t row_ndx)
-{
-    return datatype_to_size_t(tableView_ptr->get_mixed_type(column_ndx,row_ndx));
-}
-
-
-
-//    DataType    get_column_type(size_t column_ndx) const TIGHTDB_NOEXCEPT;
 TIGHTDB_C_CS_API  size_t table_get_mixed_type(Table* table_ptr, const size_t column_ndx,const size_t row_ndx)
 {
     return datatype_to_size_t(table_ptr->get_mixed_type(column_ndx,row_ndx));
-
-    //this here below is debug stuff
 }
-
-
-TIGHTDB_C_CS_API  size_t spec_get_column_type(Spec* spec_ptr, const size_t column_ndx)
-{
-   
-    return datatype_to_size_t(spec_ptr->get_column_type(column_ndx));
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//returns 42 if we got "Hellow, World!" otherwise return -42
-TIGHTDB_C_CS_API size_t test_string_to_cpp(uint16_t * str,size_t bufsize)
-{
-    CSStringAccessor CSString(str,bufsize);
-    //csharpstringbuffer_to_stringdata(stringdata, str,bufsize);
-    StringData sd=CSString;
-    if (sd==("Hello, World!")) {
-        return 42;
-    }
-    std::cerr<<sd;
-    return -42;    
-}
-
-
-
-
-//the value returned is the number of chars that are in use in the fromcppbuffer
-TIGHTDB_C_CS_API size_t test_string_returner(uint16_t* tocppbuffer, size_t tocppbuffersize, uint16_t* fromcppbuffer,size_t fromcppbuffersize) 
-{
-    CSStringAccessor CSString(tocppbuffer,tocppbuffersize);//acquire the cs string , convert to UTF-8 and put it into CSString
-    StringData fromcs = CSString;//create a StringData wrapper around the string
-    return stringdata_to_csharpstringbuffer(fromcs,fromcppbuffer,fromcppbuffersize);//fill up the return buffer with the UTF-16 version of the UTF-8 fromcs
-}
-
-TIGHTDB_C_CS_API size_t test_string_from_cpp(uint16_t * buffer, size_t bufsize)
-{
-    StringData str = StringData("Hello, World!");
-    return stringdata_to_csharpstringbuffer(str,buffer, bufsize);    
-}
-
-
-
-TIGHTDB_C_CS_API size_t tableview_get_string(TableView* tableview_ptr, size_t column_ndx, size_t row_ndx, uint16_t * datatocsharp, size_t bufsize)
-{
-    StringData fielddata=tableview_ptr->get_string(column_ndx, row_ndx);
-    return stringdata_to_csharpstringbuffer(fielddata,datatocsharp,bufsize);
-}
-
-TIGHTDB_C_CS_API size_t tableview_get_column_name(TableView* tableView_ptr,size_t column_ndx,uint16_t * colname, size_t bufsize)
-{
-    StringData cn= tableView_ptr->get_column_name(column_ndx);
-    return stringdata_to_csharpstringbuffer(cn, colname,bufsize);
-}
-
-TIGHTDB_C_CS_API size_t spec_get_column_name(Spec* spec_ptr,size_t column_ndx,uint16_t * colname, size_t bufsize)
-{
-	StringData cn= spec_ptr->get_column_name(column_ndx);
-    return stringdata_to_csharpstringbuffer(cn,colname,bufsize);
-}
-
-//    Spec add_subtable_column(const char* name);
-//todo:utf16 to utf8 the name parameter.
-TIGHTDB_C_CS_API Spec* spec_add_subtable_column(Spec* spec_ptr,uint16_t* name,size_t name_len)//the returned spec should be disposed of by calling spec_deallocate
-{	
-    CSStringAccessor str(name,name_len);
-	Spec subtablespec = spec_ptr->add_subtable_column(str);//will add_subtable_column return the address to a spec?
-	return new Spec(subtablespec);
-}
-
-
-TIGHTDB_C_CS_API void table_set_mixed_string(Table* table_ptr, size_t column_ndx, size_t row_ndx, uint16_t* value,size_t value_len)
-{
-    CSStringAccessor str(value,value_len);
-    StringData strd = str;
-    table_ptr->set_mixed(column_ndx,row_ndx,strd);
-}
-
-TIGHTDB_C_CS_API void tableview_set_mixed_string(TableView* tableview_ptr, size_t column_ndx, size_t row_ndx, uint16_t* value,size_t value_len)
-{
-    CSStringAccessor str(value,value_len);
-    StringData strd = str;
-    tableview_ptr->set_mixed(column_ndx,row_ndx,strd);
-}
-
-TIGHTDB_C_CS_API void table_set_string(Table* table_ptr, size_t column_ndx, size_t row_ndx,uint16_t* value,size_t value_len)
-{
-    CSStringAccessor str(value,value_len);
-    table_ptr->set_string(column_ndx,row_ndx,str);
-}
-
-TIGHTDB_C_CS_API void tableview_set_string(TableView* tableview_ptr, size_t column_ndx, size_t row_ndx,uint16_t* value,size_t value_len)
-{
-    CSStringAccessor str (value,value_len);
-    tableview_ptr->set_string(column_ndx,row_ndx,str);
-}
-
-
-//deallocate a spec that was allocated in this dll with new
-TIGHTDB_C_CS_API void spec_deallocate(Spec* spec_ptr)
-{
-	delete(spec_ptr);
-}
-
-TIGHTDB_C_CS_API Spec* spec_get_spec(Spec* spec_ptr,size_t column_ix)//should be disposed by calling spec_deallocate
-{
-    Spec subtablespec = spec_ptr->get_subtable_spec(column_ix);
-    return new Spec(subtablespec);
-}
-
-
-
-TIGHTDB_C_CS_API size_t spec_get_column_count(Spec* spec_ptr)
-{
-    return spec_ptr->get_column_count();
-}
-
 
 
 TIGHTDB_C_CS_API void table_set_int(Table*  table_ptr, size_t column_ndx, size_t row_ndx, int64_t value)
@@ -672,38 +427,10 @@ TIGHTDB_C_CS_API void table_set_int(Table*  table_ptr, size_t column_ndx, size_t
     table_ptr->set_int(column_ndx,row_ndx,value);
 }
 
-TIGHTDB_C_CS_API void tableview_set_int(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx, int64_t value)
-{
-    tableView_ptr->set_int(column_ndx,row_ndx,value);
-}
-
-TIGHTDB_C_CS_API void table_set_double(Table*  table_ptr, size_t column_ndx, size_t row_ndx, double value)
-{
-    table_ptr->set_double(column_ndx,row_ndx,value);
-}
-
-TIGHTDB_C_CS_API void tableview_set_double(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx, double value)
-{
-    tableView_ptr->set_double(column_ndx,row_ndx,value);
-}
-
-TIGHTDB_C_CS_API void table_set_float(Table*  table_ptr, size_t column_ndx, size_t row_ndx, float value)
-{
-    table_ptr->set_float(column_ndx,row_ndx,value);
-}
-
-TIGHTDB_C_CS_API void tableview_set_float(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx, float value)
-{
-    tableView_ptr->set_float(column_ndx,row_ndx,value);
-}
-
-
-
-//assuming that int64_t and time_t are binary compatible and of equal size
-//the int64_t has been set to a valid time_t date by C#
-TIGHTDB_C_CS_API void tableview_set_date(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx, int64_t value)
-{
-    tableView_ptr->set_date(column_ndx,row_ndx,int64_t_to_time_t(value));
+//call with false=0  true=1 we use a size_t as it is likely the fastest type to return
+TIGHTDB_C_CS_API void table_set_bool(Table* table_ptr, size_t column_ndx, size_t row_ndx,size_t value)
+{    
+     table_ptr->set_bool(column_ndx,row_ndx,size_t_to_bool(value));     
 }
 
 //assuming that int64_t and time_t are binary compatible and of equal size
@@ -713,16 +440,46 @@ TIGHTDB_C_CS_API void table_set_date(Table*  table_ptr, size_t column_ndx, size_
 }
 
 
+TIGHTDB_C_CS_API void table_set_float(Table*  table_ptr, size_t column_ndx, size_t row_ndx, float value)
+{
+    table_ptr->set_float(column_ndx,row_ndx,value);
+}
+
+TIGHTDB_C_CS_API void table_set_double(Table*  table_ptr, size_t column_ndx, size_t row_ndx, double value)
+{
+    table_ptr->set_double(column_ndx,row_ndx,value);
+}
+
+
+TIGHTDB_C_CS_API void table_set_string(Table* table_ptr, size_t column_ndx, size_t row_ndx,uint16_t* value,size_t value_len)
+{
+    CSStringAccessor str(value,value_len);
+    table_ptr->set_string(column_ndx,row_ndx,str);
+}
+
+
+//todo:implement table_set_binary
+
+
+//set_mixed is split up in the binding - one method per DataType that a mixed can hold
+
+
 TIGHTDB_C_CS_API void table_set_mixed_int(Table*  table_ptr, size_t column_ndx, size_t row_ndx, int64_t value)
 {
     table_ptr->set_mixed(column_ndx,row_ndx,value);
 }
 
-TIGHTDB_C_CS_API void tableview_set_mixed_float(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx, float value)
-{
-    tableView_ptr->set_mixed(column_ndx,row_ndx,value);
+//call with false=0  true=1 we use a size_t as it is likely the fastest type to return
+TIGHTDB_C_CS_API void table_set_mixed_bool(Table* table_ptr, size_t column_ndx, size_t row_ndx,size_t value)
+{    
+     table_ptr->set_mixed(column_ndx,row_ndx,size_t_to_bool(value));     
 }
 
+
+TIGHTDB_C_CS_API void table_set_mixed_date(Table*  table_ptr, size_t column_ndx, size_t row_ndx, int64_t value)
+{
+    table_ptr->set_mixed(column_ndx,row_ndx,int64_t_to_date(value));
+}
 
 TIGHTDB_C_CS_API void table_set_mixed_float(Table*  table_ptr, size_t column_ndx, size_t row_ndx, float value)
 {
@@ -734,226 +491,48 @@ TIGHTDB_C_CS_API void table_set_mixed_double(Table*  table_ptr, size_t column_nd
     table_ptr->set_mixed(column_ndx,row_ndx,value);
 }
 
-TIGHTDB_C_CS_API void tableview_set_mixed_double(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx, double value)
+TIGHTDB_C_CS_API void table_set_mixed_string(Table* table_ptr, size_t column_ndx, size_t row_ndx, uint16_t* value,size_t value_len)
 {
-    tableView_ptr->set_mixed(column_ndx,row_ndx,value);
-}
-
-TIGHTDB_C_CS_API void tableview_set_mixed_int(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx, int64_t value)
-{
-    tableView_ptr->set_mixed(column_ndx,row_ndx,value);
-}
-
-//todo:careful unit test that ensures that the stack size matches up on 64 and 32 bit
-//the time_t will be marshalled from C# as a 64 bit integer. On the few platforms that I know of, time_t does NOT follow size_t when 32bit.
-//if we stumble upon a platform that stores time_t in a 32 bit value, we might have to have a function that returns the size of time_t
-TIGHTDB_C_CS_API void tableview_set_mixed_date(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx, int64_t value)
-{
-    tableView_ptr->set_mixed(column_ndx,row_ndx,int64_t_to_date(value));
-}
-
-//todo:careful unit test that ensures that the stack size matches up on 64 and 32 bit
-//the time_t will be marshalled from C# as a 64 bit integer. On the few platforms that I know of, time_t does NOT follow size_t when 32bit.
-//if we stumble upon a platform that stores time_t in a 32 bit value, we might have to have a function that returns the size of time_t
-TIGHTDB_C_CS_API void table_set_mixed_date(Table*  table_ptr, size_t column_ndx, size_t row_ndx, int64_t value)
-{
-    table_ptr->set_mixed(column_ndx,row_ndx,int64_t_to_date(value));
-}
-
-TIGHTDB_C_CS_API int64_t tableview_get_mixed_date(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx)
-{
-    return date_to_int64_t(tableView_ptr->get_mixed(column_ndx,row_ndx).get_date());
-}
-
-TIGHTDB_C_CS_API int64_t table_get_mixed_date(Table*  table_ptr, size_t column_ndx, size_t row_ndx)
-{
-   return date_to_int64_t(table_ptr->get_mixed(column_ndx,row_ndx).get_date());    
-}
-
-TIGHTDB_C_CS_API int64_t tableview_get_date(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx)
-{
-    return date_to_int64_t(tableView_ptr->get_date(column_ndx,row_ndx));
-}
-
-
-TIGHTDB_C_CS_API int64_t  table_get_mixed_int(Table*  table_ptr, size_t column_ndx, size_t row_ndx)
-{
-    return table_ptr->get_mixed(column_ndx,row_ndx).get_int();    
-}
-
-TIGHTDB_C_CS_API double  table_get_mixed_double(Table*  table_ptr, size_t column_ndx, size_t row_ndx)
-{
-    return table_ptr->get_mixed(column_ndx,row_ndx).get_double();    
-}
-
-TIGHTDB_C_CS_API float  table_get_mixed_float(Table*  table_ptr, size_t column_ndx, size_t row_ndx)
-{
-    return table_ptr->get_mixed(column_ndx,row_ndx).get_float();    
-}
-
-
-TIGHTDB_C_CS_API int64_t  tableview_get_mixed_int(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx)
-{
-    return tableView_ptr->get_mixed(column_ndx,row_ndx).get_int();    
-}
-
-TIGHTDB_C_CS_API double  tableview_get_mixed_double(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx)
-{
-    return tableView_ptr->get_mixed(column_ndx,row_ndx).get_double();    
-}
-
-TIGHTDB_C_CS_API float  tableview_get_mixed_float(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx)
-{
-    return tableView_ptr->get_mixed(column_ndx,row_ndx).get_float();    
-}
-
-
-
-
-
-//find first methods in Table
-/* 
-    size_t         find_first_int(size_t column_ndx, int64_t value) const;
-    size_t         find_first_bool(size_t column_ndx, bool value) const;
-    size_t         find_first_date(size_t column_ndx, time_t value) const;
-    size_t         find_first_float(size_t column_ndx, float value) const;
-    size_t         find_first_double(size_t column_ndx, double value) const;
-    size_t         find_first_string(size_t column_ndx, const char* value) const;
-    size_t         find_first_binary(size_t column_ndx, const char* value, size_t len) const;
-    */
-
-TIGHTDB_C_CS_API size_t table_find_first_binary(Table * table_ptr , size_t column_ndx, char * value, size_t len)
-{   
-    BinaryData bd = BinaryData(value,len);
-    return  table_ptr->find_first_binary(column_ndx,bd);
-}
-
-
-TIGHTDB_C_CS_API size_t table_find_first_string(Table * table_ptr , size_t column_ndx, uint16_t * value,size_t value_len)
-{   
     CSStringAccessor str(value,value_len);
-    return  table_ptr->find_first_string(column_ndx,str);
+    StringData strd = str;
+    table_ptr->set_mixed(column_ndx,row_ndx,strd);
+}
+
+
+//table_set_mixed is implemented by the various typed functions above.
+
+//todo:implement table_add_int
+
+
+TIGHTDB_C_CS_API void table_set_subtable(Table* table_ptr, size_t column_ndx, size_t row_ndx,Table* table_with_data)
+{    
+    table_ptr->set_subtable(column_ndx,row_ndx,table_with_data);
+}
+
+
+//todo:tableviews should be invalidated if the underlying table is being changed
+//todo:create unit test that crashes tableview by changing the underlying table
+//   TableRef       get_subtable(size_t column_ndx, size_t row_ndx);
+TIGHTDB_C_CS_API Table* table_get_subtable(Table* table_ptr, size_t column_ndx, size_t row_ndx)//should be disposed by calling unbind_table_ref
+{    
+    return LangBindHelper::get_subtable_ptr(table_ptr,column_ndx, row_ndx);
 }
 
 
 
-TIGHTDB_C_CS_API size_t table_find_first_double(Table * table_ptr , size_t column_ndx, double value)
-{   
-    return  table_ptr->find_first_double(column_ndx,value);
+TIGHTDB_C_CS_API void table_clear_subtable(Table* table_ptr, size_t column_ndx, size_t row_ndx) 
+{
+    table_ptr->clear_subtable(column_ndx,row_ndx);
 }
 
 
-TIGHTDB_C_CS_API size_t table_find_first_float(Table * table_ptr , size_t column_ndx, float value)
-{   
-    return  table_ptr->find_first_float(column_ndx,value);
-}
-
-//assuming int64_t and time_t are binary compatible.
-TIGHTDB_C_CS_API size_t table_find_first_date(Table * table_ptr , size_t column_ndx, int64_t value)
-{   
-    return  table_ptr->find_first_date(column_ndx,int64_t_to_time_t(value));
-}
-
-TIGHTDB_C_CS_API size_t table_find_first_bool(Table * table_ptr , size_t column_ndx, size_t value)
-{   
-    return  table_ptr->find_first_bool(column_ndx,size_t_to_bool(value));
-}
-
-//size_t         find_first_bool(size_t column_ndx, bool value) const;
-TIGHTDB_C_CS_API size_t table_find_first_int(Table * table_ptr , size_t column_ndx, int64_t value)
-{   
-    return table_ptr->find_first_int(column_ndx,value);
-}
-
-
-/*
-find first methods in tableview
-    size_t find_first_int(size_t column_ndx, int64_t value) const;
-    size_t find_first_bool(size_t column_ndx, bool value) const;
-    size_t find_first_date(size_t column_ndx, time_t value) const;
-    size_t find_first_float(size_t column_ndx, float value) const;
-    size_t find_first_double(size_t column_ndx, double value) const;
-    size_t find_first_string(size_t column_ndx, const char* value) const;
-    find_first_binary is not implemented in tableview yet
-*/
-
-/*
-TIGHTDB_C_CS_API size_t tableView_find_first_binary(TableView * table_ptr , size_t column_ndx, char* value, size_t len)
-{   
-    return  table_ptr->find_first_binary(column_ndx,value,len);
-}
-*/
-
-TIGHTDB_C_CS_API size_t tableview_find_first_string(TableView * table_ptr , size_t column_ndx, uint16_t* value,size_t value_len)
-{   
-    CSStringAccessor str(value,value_len);
-    return  table_ptr->find_first_string(column_ndx,str);
-}
-
-
-TIGHTDB_C_CS_API size_t tableview_find_first_double(TableView * table_ptr , size_t column_ndx, double value)
-{   
-    return  table_ptr->find_first_double(column_ndx,value);
-}
-
-
-TIGHTDB_C_CS_API size_t tableview_find_first_float(TableView * table_ptr , size_t column_ndx, float value)
-{   
-    return  table_ptr->find_first_float(column_ndx,value);
-}
-
-//assuming int64_t and time_t are binary compatible.
-TIGHTDB_C_CS_API size_t tableview_find_first_date(TableView * table_ptr , size_t column_ndx, int64_t value)
-{   
-    return  table_ptr->find_first_date(column_ndx,value);
-}
-
-TIGHTDB_C_CS_API size_t tableview_find_first_bool(TableView * table_ptr , size_t column_ndx, size_t value)
-{   
-    return  table_ptr->find_first_bool(column_ndx,size_t_to_bool(value));
-}
-
-//size_t         find_first_bool(size_t column_ndx, bool value) const;
-TIGHTDB_C_CS_API size_t tableview_find_first_int(TableView * table_ptr , size_t column_ndx, int64_t value)
-{   
-    return table_ptr->find_first_int(column_ndx,value);
-}
-
-
-
-TIGHTDB_C_CS_API tightdb::TableView* table_find_all_int(Table * table_ptr , size_t column_ndx, int64_t value)
-{   
-    return new TableView(table_ptr->find_all_int(column_ndx,value));            
-}
-
-TIGHTDB_C_CS_API tightdb::TableView* table_find_all_string(Table * table_ptr , size_t column_ndx, uint16_t* value,size_t value_len)
-{   
-    CSStringAccessor str(value,value_len);
-    return new TableView(table_ptr->find_all_string(column_ndx,str));            
-}
-
-TIGHTDB_C_CS_API tightdb::TableView* tableview_find_all_int(TableView * tableview_ptr , size_t column_ndx, int64_t value)
-{   
-    return new TableView(tableview_ptr->find_all_int(column_ndx,value));            
-}
-
-TIGHTDB_C_CS_API tightdb::TableView* tableview_find_all_string(TableView * tableview_ptr , size_t column_ndx, uint16_t* value,size_t value_len)
-{   
-    CSStringAccessor str(value,value_len);
-    return new TableView(tableview_ptr->find_all_string(column_ndx,str));
-}
-
-TIGHTDB_C_CS_API tightdb::TableView* table_distinct(Table * table_ptr , size_t column_ndx)
-{   
-    return new TableView(table_ptr->distinct(column_ndx));
-}
+//todo:implement table_has_index
 
 //currently only legal with string columns
 TIGHTDB_C_CS_API void table_set_index(Table * table_ptr , size_t column_ndx)
 {   
     table_ptr->set_index(column_ndx);
 }
-
 
 TIGHTDB_C_CS_API int64_t table_count_int(Table * table_ptr , size_t column_ndx,int64_t target)
 {   
@@ -1035,98 +614,89 @@ TIGHTDB_C_CS_API double table_average_double(Table * table_ptr , size_t column_n
     return table_ptr->average_double(column_ndx);
 }
 
+//todo:implement table_lookup
 
-
-//these 4 are not implemented in tightdb yet, but when they are ready, just uncomment and test
-TIGHTDB_C_CS_API int64_t tableview_count_int(TableView * tableview_ptr , size_t column_ndx,int64_t target)
+//size_t         find_first_bool(size_t column_ndx, bool value) const;
+TIGHTDB_C_CS_API size_t table_find_first_int(Table * table_ptr , size_t column_ndx, int64_t value)
 {   
-//    return tableview_ptr->count_int(column_ndx,target);
-    return 0;
+    return table_ptr->find_first_int(column_ndx,value);
 }
 
-//waiting for this to be implemented in tightdb c++ bindings/core
-TIGHTDB_C_CS_API int64_t tableview_count_string(TableView * tableview_ptr , size_t column_ndx,uint16_t * target,size_t target_len)
+TIGHTDB_C_CS_API size_t table_find_first_bool(Table * table_ptr , size_t column_ndx, size_t value)
 {   
-//    CSStringAccessor str(target,target_len);
-//    return tableview_ptr->count_string(column_ndx,str);  
-    return 0;
+    return  table_ptr->find_first_bool(column_ndx,size_t_to_bool(value));
 }
 
-TIGHTDB_C_CS_API int64_t tableview_count_float(TableView * tableview_ptr , size_t column_ndx,float target)
+//assuming int64_t and time_t are binary compatible.
+TIGHTDB_C_CS_API size_t table_find_first_date(Table * table_ptr , size_t column_ndx, int64_t value)
 {   
-//    return tableview_ptr->count_float(column_ndx,target);
-        return 0;
+    return  table_ptr->find_first_date(column_ndx,int64_t_to_time_t(value));
 }
 
-TIGHTDB_C_CS_API int64_t tableview_count_double(TableView * tableview_ptr , size_t column_ndx,double target)
+TIGHTDB_C_CS_API size_t table_find_first_float(Table * table_ptr , size_t column_ndx, float value)
 {   
-//    return tableview_ptr->count_double(column_ndx,target);
-        return 0;
+    return  table_ptr->find_first_float(column_ndx,value);
 }
 
-
-
-TIGHTDB_C_CS_API int64_t tableview_sum_int(TableView * tableview_ptr , size_t column_ndx)
+TIGHTDB_C_CS_API size_t table_find_first_double(Table * table_ptr , size_t column_ndx, double value)
 {   
-    return tableview_ptr->sum(column_ndx);
+    return  table_ptr->find_first_double(column_ndx,value);
 }
-TIGHTDB_C_CS_API double tableview_sum_float(TableView * tableview_ptr , size_t column_ndx)
+
+TIGHTDB_C_CS_API size_t table_find_first_string(Table * table_ptr , size_t column_ndx, uint16_t * value,size_t value_len)
 {   
-    return tableview_ptr->sum_float(column_ndx);
-}
-TIGHTDB_C_CS_API double tableview_sum_double(TableView * tableview_ptr , size_t column_ndx)
-{   
-    return tableview_ptr->sum_double(column_ndx);
+    CSStringAccessor str(value,value_len);
+    return  table_ptr->find_first_string(column_ndx,str);
 }
 
 
-TIGHTDB_C_CS_API int64_t tableview_maximum_int(TableView * tableview_ptr , size_t column_ndx)
+TIGHTDB_C_CS_API size_t table_find_first_binary(Table * table_ptr , size_t column_ndx, char * value, size_t len)
 {   
-    return tableview_ptr->maximum(column_ndx);
-}
-TIGHTDB_C_CS_API float tableview_maximum_float(TableView * tableview_ptr , size_t column_ndx)
-{   
-    return tableview_ptr->maximum_float(column_ndx);
-}
-TIGHTDB_C_CS_API double tableview_maximum_double(TableView * tableview_ptr , size_t column_ndx)
-{   
-    return tableview_ptr->maximum_double(column_ndx);
+    BinaryData bd = BinaryData(value,len);
+    return  table_ptr->find_first_binary(column_ndx,bd);
 }
 
-TIGHTDB_C_CS_API int64_t tableview_minimum_int(TableView * tableview_ptr , size_t column_ndx)
+//todo:table_find_sorted_int
+
+TIGHTDB_C_CS_API tightdb::TableView* table_find_all_int(Table * table_ptr , size_t column_ndx, int64_t value)
 {   
-    return tableview_ptr->minimum(column_ndx);
-}
-TIGHTDB_C_CS_API float tableview_minimum_float(TableView * tableview_ptr , size_t column_ndx)
-{   
-    return tableview_ptr->minimum_float(column_ndx);
-}
-TIGHTDB_C_CS_API double tableview_minimum_double(TableView * tableview_ptr , size_t column_ndx)
-{   
-    return tableview_ptr->minimum_double(column_ndx);
+    return new TableView(table_ptr->find_all_int(column_ndx,value));            
 }
 
 
+//todo:table_find_all_bool
 
-//these methods are not implemented in tightdb yet, when they are ready, remove the comments and test
-TIGHTDB_C_CS_API double tableview_average_int(TableView * tableview_ptr , size_t column_ndx)
+//todo:table_find_all_date
+
+//todo:table_find_all_float
+
+//todo:table_find_all_double
+
+TIGHTDB_C_CS_API tightdb::TableView* table_find_all_string(Table * table_ptr , size_t column_ndx, uint16_t* value,size_t value_len)
 {   
-//    return tableview_ptr->average(column_ndx);
-    return 0;
-}
-TIGHTDB_C_CS_API double tableview_average_float(TableView * tableview_ptr , size_t column_ndx)
-{   
-//    return tableview_ptr->average_float(column_ndx);
-        return 0;
-}
-TIGHTDB_C_CS_API double tableview_average_double(TableView * tableview_ptr , size_t column_ndx)
-{   
-//    return tableview_ptr->average_double(column_ndx);
-        return 0;
+    CSStringAccessor str(value,value_len);
+    return new TableView(table_ptr->find_all_string(column_ndx,str));            
 }
 
+//todo:implement table_find_all_binary
 
 
+TIGHTDB_C_CS_API tightdb::TableView* table_distinct(Table * table_ptr , size_t column_ndx)
+{   
+    return new TableView(table_ptr->distinct(column_ndx));
+}
+
+
+//todo:implement table_get_sorted_view
+
+
+TIGHTDB_C_CS_API Query* table_where(Table * table_ptr)
+{   
+    return new Query(table_ptr->where());            
+}
+
+
+//todo:implement table_optimize
 
 //multiple issues with this one
 //decide wether to implement an endpoint C# stream that then reads from the c++ stream output from to_json
@@ -1143,6 +713,711 @@ TIGHTDB_C_CS_API size_t table_to_json(Table* table_ptr,uint16_t * data, size_t b
    StringData str = ss.str(); 
    return stringdata_to_csharpstringbuffer(str,data,bufsize);
 }
+
+//todo:table_to_string
+
+//todo:implement row_to_string
+
+
+//todo: operator == should be overridden and call c++ operator==
+
+//todo: operator != should be overridden and call c++ operator!=
+
+
+//todo table_verify (only available in debug builds)
+//todo table_to_dot (only available in debug builds)
+//todo table_print (only available in debug builds)
+//todo table_stats (only in debug mode)
+
+//todo:implement table_GetColumnBase
+//todo:implement table_get_real_column_type
+
+
+
+
+
+
+
+//TABLEVIEW
+
+
+//todo:implement tableview_is_empty
+
+
+TIGHTDB_C_CS_API size_t tableview_size(TableView* tableview_ptr) 
+{
+    return tableview_ptr->size();
+}
+
+
+//todo:table_get_subtable_size
+
+
+TIGHTDB_C_CS_API size_t tableview_get_column_count(tightdb::TableView* tableView_ptr)
+{
+	return tableView_ptr->get_column_count();
+}
+
+
+//todo implement tableview_get_column_index
+
+
+TIGHTDB_C_CS_API  size_t tableview_get_column_type(tightdb::TableView* tableView_ptr, const size_t column_ndx)
+{
+	return datatype_to_size_t(tableView_ptr->get_column_type(column_ndx));
+}
+
+TIGHTDB_C_CS_API int64_t tableview_get_int(TableView* tableView_ptr, size_t column_ndx, size_t row_ndx)
+{
+    return tableView_ptr->get_int(column_ndx,row_ndx);
+}
+
+
+
+//returns false=0  true=1 we use a size_t as it is likely the fastest type to return
+TIGHTDB_C_CS_API size_t tableview_get_bool(TableView* tableView_ptr, size_t column_ndx, size_t row_ndx)
+{    
+    return bool_to_size_t( tableView_ptr->get_bool(column_ndx,row_ndx));
+}
+
+
+TIGHTDB_C_CS_API int64_t tableview_get_date(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx)
+{
+    return date_to_int64_t(tableView_ptr->get_date(column_ndx,row_ndx));
+}
+
+
+TIGHTDB_C_CS_API float tableview_get_float(TableView* tableview_ptr, size_t column_ndx, size_t row_ndx)
+{
+    return tableview_ptr->get_float(column_ndx,row_ndx);
+}
+
+
+TIGHTDB_C_CS_API double tableview_get_double(TableView* tableview_ptr, size_t column_ndx, size_t row_ndx)
+{
+    return tableview_ptr->get_double(column_ndx,row_ndx);
+}
+
+
+
+TIGHTDB_C_CS_API size_t tableview_get_string(TableView* tableview_ptr, size_t column_ndx, size_t row_ndx, uint16_t * datatocsharp, size_t bufsize)
+{
+    StringData fielddata=tableview_ptr->get_string(column_ndx, row_ndx);
+    return stringdata_to_csharpstringbuffer(fielddata,datatocsharp,bufsize);
+}
+
+//todo:implement tableview_get_binary
+
+TIGHTDB_C_CS_API int64_t  tableview_get_mixed_int(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx)
+{
+    return tableView_ptr->get_mixed(column_ndx,row_ndx).get_int();    
+}
+
+//todo:implement tableview_get_mixed_bool
+
+TIGHTDB_C_CS_API int64_t tableview_get_mixed_date(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx)
+{
+    return date_to_int64_t(tableView_ptr->get_mixed(column_ndx,row_ndx).get_date());
+}
+
+
+TIGHTDB_C_CS_API float  tableview_get_mixed_float(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx)
+{
+    return tableView_ptr->get_mixed(column_ndx,row_ndx).get_float();    
+}
+
+TIGHTDB_C_CS_API double  tableview_get_mixed_double(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx)
+{
+    return tableView_ptr->get_mixed(column_ndx,row_ndx).get_double();    
+}
+
+TIGHTDB_C_CS_API size_t tableview_get_mixed_string(TableView* tableview_ptr, size_t column_ndx, size_t row_ndx, uint16_t * datatocsharp, size_t bufsize)
+{
+    StringData fielddata=tableview_ptr->get_mixed(column_ndx,row_ndx).get_string();
+    return stringdata_to_csharpstringbuffer(fielddata,datatocsharp,bufsize);
+}
+
+
+//todo:tableview_get_mixed_binary
+
+
+TIGHTDB_C_CS_API  size_t tableview_get_mixed_type(TableView* tableView_ptr, const size_t column_ndx,const size_t row_ndx)
+{
+    return datatype_to_size_t(tableView_ptr->get_mixed_type(column_ndx,row_ndx));
+}
+
+//todo:implement tableview_get_subtable_size
+
+//size_t         find_first_bool(size_t column_ndx, bool value) const;
+TIGHTDB_C_CS_API size_t tableview_find_first_int(TableView * table_ptr , size_t column_ndx, int64_t value)
+{   
+    return table_ptr->find_first_int(column_ndx,value);
+}
+
+
+TIGHTDB_C_CS_API size_t tableview_find_first_bool(TableView * table_ptr , size_t column_ndx, size_t value)
+{   
+    return  table_ptr->find_first_bool(column_ndx,size_t_to_bool(value));
+}
+
+
+//assuming int64_t and time_t are binary compatible.
+TIGHTDB_C_CS_API size_t tableview_find_first_date(TableView * table_ptr , size_t column_ndx, int64_t value)
+{   
+    return  table_ptr->find_first_date(column_ndx,value);
+}
+
+
+TIGHTDB_C_CS_API size_t tableview_find_first_float(TableView * table_ptr , size_t column_ndx, float value)
+{   
+    return  table_ptr->find_first_float(column_ndx,value);
+}
+
+
+TIGHTDB_C_CS_API size_t tableview_find_first_double(TableView * table_ptr , size_t column_ndx, double value)
+{   
+    return  table_ptr->find_first_double(column_ndx,value);
+}
+
+TIGHTDB_C_CS_API size_t tableview_find_first_string(TableView * table_ptr , size_t column_ndx, uint16_t* value,size_t value_len)
+{   
+    CSStringAccessor str(value,value_len);
+    return  table_ptr->find_first_string(column_ndx,str);
+}
+
+
+//todo:implement tightdb find_first_binary
+/*
+TIGHTDB_C_CS_API size_t tableView_find_first_binary(TableView * table_ptr , size_t column_ndx, char* value, size_t len)
+{   
+    return  table_ptr->find_first_binary(column_ndx,value,len);
+}
+*/
+
+TIGHTDB_C_CS_API int64_t tableview_sum_int(TableView * tableview_ptr , size_t column_ndx)
+{   
+    return tableview_ptr->sum(column_ndx);
+}
+
+TIGHTDB_C_CS_API int64_t tableview_maximum_int(TableView * tableview_ptr , size_t column_ndx)
+{   
+    return tableview_ptr->maximum(column_ndx);
+}
+
+TIGHTDB_C_CS_API int64_t tableview_minimum_int(TableView * tableview_ptr , size_t column_ndx)
+{   
+    return tableview_ptr->minimum(column_ndx);
+}
+
+TIGHTDB_C_CS_API double tableview_average_int(TableView * tableview_ptr , size_t column_ndx)
+{   
+    return tableview_ptr->average(column_ndx);
+
+}
+
+TIGHTDB_C_CS_API int64_t tableview_count_int(TableView * tableview_ptr , size_t column_ndx,int64_t target)
+{   
+    return tableview_ptr->count_int(column_ndx,target);
+}
+
+
+TIGHTDB_C_CS_API double tableview_sum_float(TableView * tableview_ptr , size_t column_ndx)
+{   
+    return tableview_ptr->sum_float(column_ndx);
+}
+
+TIGHTDB_C_CS_API float tableview_maximum_float(TableView * tableview_ptr , size_t column_ndx)
+{   
+    return tableview_ptr->maximum_float(column_ndx);
+}
+
+TIGHTDB_C_CS_API float tableview_minimum_float(TableView * tableview_ptr , size_t column_ndx)
+{   
+    return tableview_ptr->minimum_float(column_ndx);
+}
+
+TIGHTDB_C_CS_API double tableview_average_float(TableView * tableview_ptr , size_t column_ndx)
+{   
+    return tableview_ptr->average_float(column_ndx);
+}
+
+TIGHTDB_C_CS_API int64_t tableview_count_float(TableView * tableview_ptr , size_t column_ndx,float target)
+{   
+    return tableview_ptr->count_float(column_ndx,target);
+}
+
+TIGHTDB_C_CS_API double tableview_sum_double(TableView * tableview_ptr , size_t column_ndx)
+{   
+    return tableview_ptr->sum_double(column_ndx);
+}
+
+TIGHTDB_C_CS_API double tableview_maximum_double(TableView * tableview_ptr , size_t column_ndx)
+{   
+    return tableview_ptr->maximum_double(column_ndx);
+}
+
+TIGHTDB_C_CS_API double tableview_minimum_double(TableView * tableview_ptr , size_t column_ndx)
+{   
+    return tableview_ptr->minimum_double(column_ndx);
+}
+
+TIGHTDB_C_CS_API double tableview_average_double(TableView * tableview_ptr , size_t column_ndx)
+{   
+    return tableview_ptr->average_double(column_ndx);
+}
+
+
+TIGHTDB_C_CS_API int64_t tableview_count_double(TableView * tableview_ptr , size_t column_ndx,double target)
+{   
+    return tableview_ptr->count_double(column_ndx,target);
+}
+
+//todo:implement tableview_maximum_date
+
+//todo:implement tableview_minimum_date
+
+//todo:implement tableview_sort
+
+//todo:implement tableview_get_source_ndx
+
+//todo:implement tableview_to_json
+
+//todo:implement tableview_to_string
+
+TIGHTDB_C_CS_API Table* tableview_get_subtable(TableView* tableview_ptr, size_t column_ndx, size_t row_ndx)
+{
+    return LangBindHelper::get_subtable_ptr(tableview_ptr,column_ndx,row_ndx);    
+}
+
+TIGHTDB_C_CS_API void tableview_clear_subtable(TableView* tableView_ptr, size_t column_ndx, size_t row_ndx) 
+{
+    tableView_ptr->clear_subtable(column_ndx,row_ndx);
+}
+
+
+TIGHTDB_C_CS_API void tableview_set_int(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx, int64_t value)
+{
+    tableView_ptr->set_int(column_ndx,row_ndx,value);
+}
+
+
+//todo:implement tableview_set_bool
+
+
+TIGHTDB_C_CS_API void tableview_set_date(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx, int64_t value)
+{
+    tableView_ptr->set_date(column_ndx,row_ndx,int64_t_to_time_t(value));
+}
+
+TIGHTDB_C_CS_API void tableview_set_float(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx, float value)
+{
+    tableView_ptr->set_float(column_ndx,row_ndx,value);
+}
+
+TIGHTDB_C_CS_API void tableview_set_double(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx, double value)
+{
+    tableView_ptr->set_double(column_ndx,row_ndx,value);
+}
+
+TIGHTDB_C_CS_API void tableview_set_string(TableView* tableview_ptr, size_t column_ndx, size_t row_ndx,uint16_t* value,size_t value_len)
+{
+    CSStringAccessor str (value,value_len);
+    tableview_ptr->set_string(column_ndx,row_ndx,str);
+}
+
+//todo:implement tableview_set_binary
+
+
+TIGHTDB_C_CS_API void tableview_set_mixed_int(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx, int64_t value)
+{
+    tableView_ptr->set_mixed(column_ndx,row_ndx,value);
+}
+
+//todo:implement tableview_set_mixed_bool
+
+TIGHTDB_C_CS_API void tableview_set_mixed_date(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx, int64_t value)
+{
+    tableView_ptr->set_mixed(column_ndx,row_ndx,int64_t_to_date(value));
+}
+
+TIGHTDB_C_CS_API void tableview_set_mixed_float(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx, float value)
+{
+    tableView_ptr->set_mixed(column_ndx,row_ndx,value);
+}
+
+TIGHTDB_C_CS_API void tableview_set_mixed_double(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx, double value)
+{
+    tableView_ptr->set_mixed(column_ndx,row_ndx,value);
+}
+
+TIGHTDB_C_CS_API void tableview_set_mixed_string(TableView* tableview_ptr, size_t column_ndx, size_t row_ndx, uint16_t* value,size_t value_len)
+{
+    CSStringAccessor str(value,value_len);
+    StringData strd = str;
+    tableview_ptr->set_mixed(column_ndx,row_ndx,strd);
+}
+
+//todo:implement tableview_set_mixed_binary
+
+TIGHTDB_C_CS_API void tableview_set_subtable(TableView* tableview_ptr, size_t column_ndx, size_t row_ndx,Table* table_with_data)
+{    
+    tableview_ptr->set_subtable(column_ndx,row_ndx,table_with_data);
+}
+
+
+//todo:implement tableview_add_int
+
+
+//todo:implement tableview_clear
+
+//todo:implement tableview_remove_last
+
+TIGHTDB_C_CS_API void tableview_remove_row(tightdb::TableView* tableView_ptr, size_t row_ndx)
+{
+    tableView_ptr->remove(row_ndx);
+}
+
+
+TIGHTDB_C_CS_API tightdb::TableView* tableview_find_all_int(TableView * tableview_ptr , size_t column_ndx, int64_t value)
+{   
+    return new TableView(tableview_ptr->find_all_int(column_ndx,value));            
+}
+
+
+//todo:implement tableview_find_all_bool
+
+//todo:implement tableview_find_all_date
+
+//todo:implement tableview_find_all_float
+
+//todo:implement tableview_find_all_double
+
+TIGHTDB_C_CS_API tightdb::TableView* tableview_find_all_string(TableView * tableview_ptr , size_t column_ndx, uint16_t* value,size_t value_len)
+{   
+    CSStringAccessor str(value,value_len);
+    return new TableView(tableview_ptr->find_all_string(column_ndx,str));
+}
+
+
+//todo:implement tableview_get_parent
+
+
+
+//GROUP IMPLEMENTATION
+
+
+
+
+
+
+
+
+//LANGBINDHELPER IMPLEMENTATION THAT DOES NOT FIT LOGICALLY IN TABLE OR TABLEVIEW OR ELSEWHERE
+
+TIGHTDB_C_CS_API Group* new_group() //should be disposed by calling group_delete
+{
+//    std::cerr<<"before new group()\n";
+    //works Group* g = new Group(Group::unattached_tag());
+    //fails  Group* g = new Group();
+    Group* g = new Group();
+//      std::cerr<<"after new group()\n";
+    return g;
+//    return new Group();        
+}
+
+
+
+
+
+  TIGHTDB_C_CS_API Group* new_group_file(uint16_t * name, size_t name_len)//should be disposed by calling group_delete
+{  
+    CSStringAccessor name2(name,name_len);
+    Group* g = new Group(StringData(name2));
+//    std::cerr<<"Message from c++. Group created. address: ("<<g <<") filename ("<<name2<<")\n";
+    return g;
+}
+
+//write group to specified file
+TIGHTDB_C_CS_API size_t group_write(Group* group_ptr,uint16_t * name, size_t name_len)
+
+{   
+    try {
+    CSStringAccessor str(name,name_len);    
+    group_ptr->write(StringData(str));
+    return 0;//0 means no exception thrown
+    }
+    //if the file is already there, or other file related trouble
+   catch (File::AccessError) {             
+       return 1;//1 means IO problem exception was thrown. C# always use IOException in cases like this anyways so no need to detail it out further
+   }
+}
+
+
+//should be disposed by calling unbind_table_ref
+TIGHTDB_C_CS_API Table* group_get_table(Group* group_ptr,uint16_t* table_name,size_t table_name_len)
+{   
+    CSStringAccessor str(table_name,table_name_len);
+    return LangBindHelper::get_table_ptr(group_ptr,str);
+}
+
+
+TIGHTDB_C_CS_API size_t group_has_table(Group* group_ptr, uint16_t * table_name,size_t table_name_len)//should be disposed by calling unbind_table_ref
+{    
+    CSStringAccessor str(table_name,table_name_len);
+    return bool_to_size_t(group_ptr->has_table(str));
+}
+
+
+
+
+
+
+
+
+
+
+TIGHTDB_C_CS_API void unbind_table_ref(tightdb::Table* table_ptr)
+{	
+	LangBindHelper::unbind_table_ref(table_ptr);
+}
+
+
+
+/*
+
+//the value returned is the number of chars that are in use in the fromcppbuffer
+TIGHTDB_C_CS_API size_t test_string_returner(uint16_t* tocppbuffer, size_t tocppbuffersize, uint16_t* fromcppbuffer,size_t fromcppbuffersize) 
+{
+    CSStringAccessor CSString(tocppbuffer,tocppbuffersize);//acquire the cs string , convert to UTF-8 and put it into CSString
+    StringData fromcs = CSString;//create a StringData wrapper around the string
+    return stringdata_to_csharpstringbuffer(fromcs,fromcppbuffer,fromcppbuffersize);//fill up the return buffer with the UTF-16 version of the UTF-8 fromcs
+}
+
+*/
+
+
+//    size_t add_column(DataType type, const char* name, ColumnType attr=col_attr_None);
+//note that we have omitted support for attr until we figure what it's for
+TIGHTDB_C_CS_API size_t spec_add_column(Spec* spec_ptr,size_t type, uint16_t * name,size_t name_len) 
+{
+    CSStringAccessor str(name,name_len);
+	return spec_ptr->add_column(size_t_to_datatype(type),str);		
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+TIGHTDB_C_CS_API  size_t spec_get_column_type(Spec* spec_ptr, const size_t column_ndx)
+{
+   
+    return datatype_to_size_t(spec_ptr->get_column_type(column_ndx));
+}
+
+//c# expects this to be honored :
+//x == x returns true
+//x == y && y == z  =>    x==z
+//successive invocations of x==y return same value as long as non are modified
+//x == null returns false
+//x == y returns the same as y==x
+TIGHTDB_C_CS_API  size_t spec_equals(Spec* spec_ptr1, Spec* spec_ptr2)
+{
+    return bool_to_size_t(*spec_ptr1==*spec_ptr2);    //== is overridden in Spec and do a type and name comparison
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//returns 42 if we got "Hellow, World!" otherwise return -42
+TIGHTDB_C_CS_API size_t test_string_to_cpp(uint16_t * str,size_t bufsize)
+{
+    CSStringAccessor CSString(str,bufsize);
+    //csharpstringbuffer_to_stringdata(stringdata, str,bufsize);
+    StringData sd=CSString;
+    if (sd==("Hello, World!")) {
+        return 42;
+    }
+    std::cerr<<sd;
+    return -42;    
+}
+
+
+
+
+//the value returned is the number of chars that are in use in the fromcppbuffer
+TIGHTDB_C_CS_API size_t test_string_returner(uint16_t* tocppbuffer, size_t tocppbuffersize, uint16_t* fromcppbuffer,size_t fromcppbuffersize) 
+{
+    CSStringAccessor CSString(tocppbuffer,tocppbuffersize);//acquire the cs string , convert to UTF-8 and put it into CSString
+    StringData fromcs = CSString;//create a StringData wrapper around the string
+    return stringdata_to_csharpstringbuffer(fromcs,fromcppbuffer,fromcppbuffersize);//fill up the return buffer with the UTF-16 version of the UTF-8 fromcs
+}
+
+TIGHTDB_C_CS_API size_t test_string_from_cpp(uint16_t * buffer, size_t bufsize)
+{
+    StringData str = StringData("Hello, World!");
+    return stringdata_to_csharpstringbuffer(str,buffer, bufsize);    
+}
+
+
+
+
+
+
+
+
+TIGHTDB_C_CS_API size_t tableview_get_column_name(TableView* tableView_ptr,size_t column_ndx,uint16_t * colname, size_t bufsize)
+{
+    StringData cn= tableView_ptr->get_column_name(column_ndx);
+    return stringdata_to_csharpstringbuffer(cn, colname,bufsize);
+}
+
+TIGHTDB_C_CS_API size_t spec_get_column_name(Spec* spec_ptr,size_t column_ndx,uint16_t * colname, size_t bufsize)
+{
+	StringData cn= spec_ptr->get_column_name(column_ndx);
+    return stringdata_to_csharpstringbuffer(cn,colname,bufsize);
+}
+
+//    Spec add_subtable_column(const char* name);
+//todo:utf16 to utf8 the name parameter.
+TIGHTDB_C_CS_API Spec* spec_add_subtable_column(Spec* spec_ptr,uint16_t* name,size_t name_len)//the returned spec should be disposed of by calling spec_deallocate
+{	
+    CSStringAccessor str(name,name_len);
+	Spec subtablespec = spec_ptr->add_subtable_column(str);//will add_subtable_column return the address to a spec?
+	return new Spec(subtablespec);
+}
+
+
+
+
+
+
+
+//deallocate a spec that was allocated in this dll with new
+TIGHTDB_C_CS_API void spec_deallocate(Spec* spec_ptr)
+{
+	delete(spec_ptr);
+}
+
+TIGHTDB_C_CS_API Spec* spec_get_spec(Spec* spec_ptr,size_t column_ix)//should be disposed by calling spec_deallocate
+{
+    Spec subtablespec = spec_ptr->get_subtable_spec(column_ix);
+    return new Spec(subtablespec);
+}
+
+
+
+TIGHTDB_C_CS_API size_t spec_get_column_count(Spec* spec_ptr)
+{
+    return spec_ptr->get_column_count();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//waiting for this to be implemented in tightdb c++ bindings/core
+TIGHTDB_C_CS_API int64_t tableview_count_string(TableView * tableview_ptr , size_t column_ndx,uint16_t * target,size_t target_len)
+{   
+ //   CSStringAccessor str(target,target_len);
+ //   return tableview_ptr->count_string(column_ndx,str);  
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 //todo:implement call that uses all the parametres
@@ -1185,10 +1460,6 @@ TIGHTDB_C_CS_API tightdb::TableView* query_find_all(Query * query_ptr , size_t s
 }
 
 
-TIGHTDB_C_CS_API Query* table_where(Table * table_ptr)
-{   
-    return new Query(table_ptr->where());            
-}
 
 TIGHTDB_C_CS_API size_t query_find_next(Query * query_ptr, size_t last_match) 
 {
@@ -1268,19 +1539,6 @@ void test_test_test() {
 
 
 
-TIGHTDB_C_CS_API int64_t tableview_get_int(TableView* tableView_ptr, size_t column_ndx, size_t row_ndx)
-{
-    return tableView_ptr->get_int(column_ndx,row_ndx);
-}
-
-
-
-//returns false=0  true=1 we use a size_t as it is likely the fastest type to return
-TIGHTDB_C_CS_API size_t tableview_get_bool(TableView* tableView_ptr, size_t column_ndx, size_t row_ndx)
-{    
-    return bool_to_size_t( tableView_ptr->get_bool(column_ndx,row_ndx));
-}
-
 
 //call with false=0  true=1 we use a size_t as it is likely the fastest type to return
 TIGHTDB_C_CS_API void tableview_set_bool(TableView* tableView_ptr, size_t column_ndx, size_t row_ndx,size_t value)
@@ -1288,38 +1546,19 @@ TIGHTDB_C_CS_API void tableview_set_bool(TableView* tableView_ptr, size_t column
      tableView_ptr->set_bool(column_ndx,row_ndx,size_t_to_bool(value));     
 }
 
+
 //call with false=0  true=1 we use a size_t as it is likely the fastest type to return
 TIGHTDB_C_CS_API void tableview_set_mixed_bool(TableView* tableView_ptr, size_t column_ndx, size_t row_ndx,size_t value)
 {    
      tableView_ptr->set_mixed(column_ndx,row_ndx,size_t_to_bool(value));     
 }
 
-//call with false=0  true=1 we use a size_t as it is likely the fastest type to return
-TIGHTDB_C_CS_API void table_set_mixed_bool(Table* table_ptr, size_t column_ndx, size_t row_ndx,size_t value)
-{    
-     table_ptr->set_mixed(column_ndx,row_ndx,size_t_to_bool(value));     
-}
 
 
 
-//call with false=0  true=1 we use a size_t as it is likely the fastest type to return
-TIGHTDB_C_CS_API void table_set_bool(Table* table_ptr, size_t column_ndx, size_t row_ndx,size_t value)
-{    
-     table_ptr->set_bool(column_ndx,row_ndx,size_t_to_bool(value));     
-}
 
 
 
-TIGHTDB_C_CS_API float tableview_get_float(TableView* tableview_ptr, size_t column_ndx, size_t row_ndx)
-{
-    return tableview_ptr->get_float(column_ndx,row_ndx);
-}
-
-
-TIGHTDB_C_CS_API double tableview_get_double(TableView* tableview_ptr, size_t column_ndx, size_t row_ndx)
-{
-    return tableview_ptr->get_double(column_ndx,row_ndx);
-}
 
 
 TIGHTDB_C_CS_API size_t table_get_row_count(Table* table_ptr)
@@ -1351,10 +1590,6 @@ TIGHTDB_C_CS_API void tableview_set_mixed_empty_subtable(TableView* tableView_pt
 
 
 
-TIGHTDB_C_CS_API size_t tableview_size(TableView* tableview_ptr) 
-{
-    return tableview_ptr->size();
-}
 
 
 //these functions are used by unit tests and initialization to ensure that the current p/invoke layer is working as expected.

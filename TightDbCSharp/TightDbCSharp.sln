@@ -3,6 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TightDbCSharp", "TightDbCSharp.csproj", "{278D5BDB-4645-4DF1-91BF-2BB9AC4A875F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TightDbCSharpTest", "..\TightDbCSharpTest\TightDbCSharpTest.csproj", "{7B41354D-64EE-4BC2-AF33-009FDC081EDE}"
+	ProjectSection(ProjectDependencies) = postProject
+		{278D5BDB-4645-4DF1-91BF-2BB9AC4A875F} = {278D5BDB-4645-4DF1-91BF-2BB9AC4A875F}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -13,6 +18,10 @@ Global
 		{278D5BDB-4645-4DF1-91BF-2BB9AC4A875F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{278D5BDB-4645-4DF1-91BF-2BB9AC4A875F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{278D5BDB-4645-4DF1-91BF-2BB9AC4A875F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7B41354D-64EE-4BC2-AF33-009FDC081EDE}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{7B41354D-64EE-4BC2-AF33-009FDC081EDE}.Debug|Any CPU.Build.0 = Debug|x86
+		{7B41354D-64EE-4BC2-AF33-009FDC081EDE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7B41354D-64EE-4BC2-AF33-009FDC081EDE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
