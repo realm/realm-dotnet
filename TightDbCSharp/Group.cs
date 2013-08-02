@@ -1,20 +1,59 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Globalization;
-using System.IO;
-using System.Runtime.Remoting.Messaging;
 
 namespace TightDbCSharp
 {
     public class Group:Handled
     {
-        //constructor called by customers
-        public Group()
-        {
-            UnsafeNativeMethods.GroupNew(this);//calls sethandle itself
-        }
 
         
+        //constructor called by customers. It will create a c++ class to wrap
+        //this group will be unattached and without transactions and readwrite
+        public Group()
+        {
+            AcquireHandle(false);
+        }
+
+        //this constructor is called by transaction to avoid group() being called, which would 
+        //create a new c++ group class which the transaction does not need as it gets its handle
+        //from shared group        
+        internal Group(Boolean isReadOnly)
+        {
+            ReadOnly = isReadOnly;
+        }
+
+        //actually acquire the handle to this group
+        //the caller must know if this group is readonly or not
+        private void AcquireHandle(bool readOnly)
+        {
+            UnsafeNativeMethods.GroupNew(this); //calls sethandle itself
+            ReadOnly = readOnly;
+        }
+
+        /*
+        //calld by sharedgroup to get a transaction:group class without the handle set
+        //because the handle is then set to the group that the c++ sharedgroup returns
+        //in the transaction constructor.
+        //if acquirehandle is false, handle will be set to GroupHandle
+        internal Group(Boolean acquirehandle,Boolean readOnly)
+        {
+            if (acquirehandle)
+            {
+                AcquireHandle(readOnly);
+            }
+            else
+            {
+                
+            }
+        }
+        */
+
+        //a group that is part of a readonly transaction will have readonly set to true
+        public Boolean ReadOnly { get; set; }
+
+        public Boolean Invalid { get; set; }//if true, some unexpected error condition exists and this group should never be used
+
         public bool HasTable(string tableName)
         {
             return UnsafeNativeMethods.GroupHassTable(this, tableName);
@@ -31,12 +70,17 @@ namespace TightDbCSharp
             throw new InvalidEnumArgumentException(String.Format(CultureInfo.InvariantCulture,"Group.GetTable called with a table name that does not exist {0}",tableName));
         }
 
+        public void ValidateReadOnly()
+        {
+            if (ReadOnly) throw new InvalidOperationException("Read/Write operation initiated on a Readolny Group");
+        }
 
         //use this method to create new tables in the group
         //will return the table associated with tableName in the group, or if no such table exists, 
         //a new table will be created in the group, associated with tableName, and having the schema provided in the second parameter
         public Table CreateTable(string tableName, params Field[] schema)
         {
+            ValidateReadOnly();
             if (schema != null)
             {
                 return UnsafeNativeMethods.GroupGetTable(this, tableName).DefineSchema(schema);
@@ -69,9 +113,7 @@ namespace TightDbCSharp
 
         internal override void ReleaseHandle()
         {            
-        //    Console.WriteLine("ReleaseHandle called "+ObjectIdentification());
             UnsafeNativeMethods.GroupDelete(this);
-        //    Console.WriteLine("Returned from c++ " + ObjectIdentification());
         }
 
         public override string ObjectIdentification()

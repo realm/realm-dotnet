@@ -38,6 +38,20 @@ inline size_t bool_to_size_t(bool value) {
     return 0;
 }
 
+//a size_t sent from C# with value 0 means durability_full, other values means durabillity_memonly, but please
+//use 1 for durabillity_memonly to make room for later extensions
+inline SharedGroup::DurabilityLevel size_t_to_durabilitylevel(size_t value) {
+    if (value==0) 
+        return SharedGroup::durability_Full;
+    return SharedGroup::durability_MemOnly;
+}
+
+//this will work on all compilers, all platforms
+inline size_t  durabilitylevel_to_sizet(SharedGroup::DurabilityLevel value){
+    if(value==SharedGroup::durability_Full) 
+        return 0;
+    return 1;
+}
 
 //Date is totally not matched by a C# type, so convert to an int64_t that is interpreted as a 64 bit time_t
 inline Date int64_t_to_date(int64_t value){
@@ -1109,20 +1123,84 @@ TIGHTDB_C_CS_API tightdb::TableView* tableview_find_all_string(TableView * table
 
 
 
+//SHARED GROUP IMPLEMENTATION
+
+TIGHTDB_C_CS_API SharedGroup* new_shared_group_file(uint16_t * name,size_t name_len,size_t no_create,size_t durabillity_level)
+{
+    CSStringAccessor str(name,name_len);
+    return new SharedGroup(StringData(str),size_t_to_bool(no_create), size_t_to_durabilitylevel(durabillity_level));   
+}
+
+//return an unattached shared group
+TIGHTDB_C_CS_API SharedGroup* new_shared_group_unattached() {
+    return new SharedGroup(SharedGroup::unattached_tag());    
+}
 
 
+TIGHTDB_C_CS_API void shared_group_delete(SharedGroup* g) {
+    delete g;
+}
+
+TIGHTDB_C_CS_API void shared_group_open(SharedGroup* shared_group_ptr,uint16_t * name,size_t name_len,size_t no_create,size_t durabillity_level)
+{
+    CSStringAccessor str(name,name_len);
+    shared_group_ptr->open(StringData(str),size_t_to_bool(no_create), size_t_to_durabilitylevel(durabillity_level));   
+}
+
+TIGHTDB_C_CS_API size_t shared_group_is_attached(SharedGroup* shared_group_ptr) 
+{
+    return bool_to_size_t(shared_group_ptr->is_attached());
+}
+
+TIGHTDB_C_CS_API size_t shared_group_has_changed(SharedGroup* shared_group_ptr) 
+{
+    return bool_to_size_t(shared_group_ptr->has_changed());
+}
+
+//binding must ensure that the returned group is never modified
+TIGHTDB_C_CS_API const Group* shared_group_begin_read(SharedGroup* shared_group_ptr)
+{
+    return &shared_group_ptr->begin_read();    
+}
+
+//binding must ensure that the returned group is never modified
+TIGHTDB_C_CS_API void shared_group_end_read(SharedGroup* shared_group_ptr)
+{
+    shared_group_ptr->end_read();
+}
+
+//binding must ensure that the returned group is never modified
+TIGHTDB_C_CS_API const Group* shared_group_begin_write(SharedGroup* shared_group_ptr)
+{
+    return &shared_group_ptr->begin_write();    
+}
+
+
+//binding must ensure that the returned group is never modified
+TIGHTDB_C_CS_API void shared_group_commit(SharedGroup* shared_group_ptr)
+{
+    shared_group_ptr->commit();
+}
+
+
+//binding must ensure that the returned group is never modified
+TIGHTDB_C_CS_API void shared_group_rollback(SharedGroup* shared_group_ptr)
+{
+    shared_group_ptr->rollback();
+}
+
+
+//fixme:implement
+//TIGHTDB_C_CS_API Group* shared_group_begin_read()
+//{
+//    
+//}
 
 //LANGBINDHELPER IMPLEMENTATION THAT DOES NOT FIT LOGICALLY IN TABLE OR TABLEVIEW OR ELSEWHERE
 
 TIGHTDB_C_CS_API Group* new_group() //should be disposed by calling group_delete
 {
-//    std::cerr<<"before new group()\n";
-    //works Group* g = new Group(Group::unattached_tag());
-    //fails  Group* g = new Group();
-    Group* g = new Group();
-//      std::cerr<<"after new group()\n";
-    return g;
-//    return new Group();        
+    return  new Group();    
 }
 
 
@@ -1132,9 +1210,7 @@ TIGHTDB_C_CS_API Group* new_group() //should be disposed by calling group_delete
   TIGHTDB_C_CS_API Group* new_group_file(uint16_t * name, size_t name_len)//should be disposed by calling group_delete
 {  
     CSStringAccessor name2(name,name_len);
-    Group* g = new Group(StringData(name2));
-//    std::cerr<<"Message from c++. Group created. address: ("<<g <<") filename ("<<name2<<")\n";
-    return g;
+    return new Group(StringData(name2));    
 }
 
 //write group to specified file
@@ -1783,6 +1859,8 @@ TIGHTDB_C_CS_API size_t test_return_false_bool() {
 TIGHTDB_C_CS_API int64_t test_increment_integer(int64_t value) {
     return value++;
 }
+
+
 
 
 

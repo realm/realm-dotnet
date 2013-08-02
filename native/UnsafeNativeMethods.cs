@@ -1,7 +1,6 @@
-﻿using System;
-using System.Reflection;
+﻿
+using System;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Runtime.InteropServices;
 
 
@@ -1710,14 +1709,12 @@ enum DataType {
 
         public static void GroupDelete(Group g)
         {
-//            Console.WriteLine("group delete calling group_delete " + g.ObjectIdentification());           
                 if (Is64Bit)
                     group_delete64(g.Handle);
                 else
                     group_delete32(g.Handle);
             
             g.Handle = IntPtr.Zero;
-  //          Console.WriteLine("group delete called group_delete " + g.ObjectIdentification());
         }
 
 
@@ -4189,5 +4186,230 @@ enum DataType {
             ReturnStringTest("This string ends with a null characer and has a null here:\x0000The End\x0000");//null characters inside a string should be preserved, also if they are the last character in the string
             ReturnStringTest("拉亂𠀀蠟螺𠀁嵐æøå珞藍𠀂𠀃foo𠀄洛𠀅𠀆邏𠀇𠀈𠀉𠀊欄𠀋𠀌𠀍蘭𠀎𠀏羅");
         }
+
+
+        //shared group implementation
+
+        [DllImport(L64, EntryPoint = "new_shared_group_unattached", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr new_shared_group_unattached64();
+
+        [DllImport(L32, EntryPoint = "new_shared_group_unattached", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr new_shared_group_unattached32();
+
+
+        public static void NewSharedGroupUnattached(SharedGroup sharedGroup)
+        {        
+            sharedGroup.SetHandle(Is64Bit
+                                ? new_shared_group_unattached64()
+                                : new_shared_group_unattached32(), true);        
+        }
+
+
+
+
+        [DllImport(L64, EntryPoint = "new_shared_group_file", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr new_shared_group_file64([MarshalAs(UnmanagedType.LPWStr)]  string fileName, IntPtr fileNameLen,IntPtr noCreate, IntPtr durabilityLevel );
+
+        [DllImport(L32, EntryPoint = "new_shared_group_file", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr new_shared_group_file32([MarshalAs(UnmanagedType.LPWStr)] string fileName, IntPtr fileNameLen, IntPtr noCreate, IntPtr durabilityLevel);
+
+
+        public static void NewSharedGroupFile(SharedGroup group, string fileName,bool noCreate, DurabilityLevel durabilityLevel)
+        {
+            try
+            {
+                group.SetHandle(Is64Bit
+                    ? new_shared_group_file64(fileName, (IntPtr) fileName.Length, BoolToIntPtr(noCreate),
+                        SharedGroup.DurabilityLevelToIntPtr(durabilityLevel))
+                    : new_shared_group_file32(fileName, (IntPtr) fileName.Length, BoolToIntPtr(noCreate),
+                        SharedGroup.DurabilityLevelToIntPtr(durabilityLevel)), true);
+            }
+            catch (SEHException ex)
+            {
+                throw new System.IO.IOException(
+                    String.Format(
+                        "IO error creating group file {0} (read/write access is needed)  c++ exception thrown :{1}",
+                        fileName, ex.Message));
+            }
+        }
+
+
+
+
+
+
+        [DllImport(L64, EntryPoint = "shared_group_delete", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void shared_group_delete64(IntPtr handle);
+
+        [DllImport(L32, EntryPoint = "shared_group_delete", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void shared_group_delete32(IntPtr handle);
+
+        public static void SharedGroupDelete(SharedGroup sharedGroup)
+        {
+            if (Is64Bit)
+                shared_group_delete64(sharedGroup.Handle);
+            else
+                shared_group_delete32(sharedGroup.Handle);
+
+            sharedGroup.Handle = IntPtr.Zero;
+        }
+
+
+        [DllImport(L64, EntryPoint = "shared_group_open", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr shared_group_open64(IntPtr sharedGroupHandle, [MarshalAs(UnmanagedType.LPWStr)]  string fileName, IntPtr fileNameLen, IntPtr noCreate, IntPtr durabilityLevel);
+
+        [DllImport(L32, EntryPoint = "shared_group_open", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr shared_group_open32(IntPtr sharedGroupHandle, [MarshalAs(UnmanagedType.LPWStr)] string fileName, IntPtr fileNameLen, IntPtr noCreate, IntPtr durabilityLevel);
+
+
+        public static void SharedGroupOpen(SharedGroup group, string fileName, bool noCreate, DurabilityLevel durabilityLevel)
+        {
+            try
+            {
+                if (Is64Bit) 
+                    shared_group_open64(group.Handle,fileName, (IntPtr)fileName.Length, BoolToIntPtr(noCreate),
+                        SharedGroup.DurabilityLevelToIntPtr(durabilityLevel));
+
+                    shared_group_open32(group.Handle,fileName, (IntPtr)fileName.Length, BoolToIntPtr(noCreate),
+                        SharedGroup.DurabilityLevelToIntPtr(durabilityLevel));
+            }
+            catch (SEHException ex)
+            {
+                throw new System.IO.IOException(
+                    String.Format(
+                        "IO error creating or reading group file {0} (read/write access is needed)  c++ exception thrown :{1}",
+                        fileName, ex.Message));
+            }
+        }
+
+
+        [DllImport(L64, EntryPoint = "shared_group_is_attached", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr shared_group_is_attached64(IntPtr handle);
+
+        [DllImport(L32, EntryPoint = "shared_group_is_attached", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr shared_group_is_attached32(IntPtr handle);
+
+        public static Boolean SharedGroupIsAttached(SharedGroup sharedGroup)
+        {
+            if (Is64Bit)
+                return IntPtrToBool(shared_group_is_attached64(sharedGroup.Handle));
+            return IntPtrToBool(shared_group_is_attached32(sharedGroup.Handle));            
+        }
+
+
+
+        [DllImport(L64, EntryPoint = "shared_group_has_changed", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr shared_group_has_changed64(IntPtr handle);
+
+        [DllImport(L32, EntryPoint = "shared_group_has_changed", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr shared_group_has_changed32(IntPtr handle);
+
+        public static Boolean SharedGroupHasChanged(SharedGroup sharedGroup)
+        {
+            if (Is64Bit)
+                return IntPtrToBool(shared_group_has_changed64(sharedGroup.Handle));
+            return IntPtrToBool(shared_group_has_changed32(sharedGroup.Handle));
+        }
+
+
+        [DllImport(L64, EntryPoint = "shared_group_begin_read", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr shared_group_begin_read64(IntPtr sharedGroupPtr);
+
+        [DllImport(L32, EntryPoint = "shared_group_begin_read", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr shared_group_begin_read32(IntPtr sharedGroupPtr);
+
+
+        public static Transaction SharedGroupBeginRead(SharedGroup sharedGroup)
+        {
+            try
+            {
+                IntPtr handle = Is64Bit ? shared_group_begin_read64(sharedGroup.Handle)
+                    : shared_group_begin_read32(sharedGroup.Handle);
+                return new Transaction(handle, sharedGroup, TransactionType.Read);
+            }
+            catch (SEHException ex)
+            {
+                sharedGroup.Invalid = true;
+                throw new System.IO.IOException(
+                    String.Format("IO error starting read transaction {0}",ex.Message));
+            }
+        }
+
+
+
+        [DllImport(L64, EntryPoint = "shared_group_begin_write", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr shared_group_begin_write64(IntPtr sharedGroupPtr);
+
+        [DllImport(L32, EntryPoint = "shared_group_begin_write", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr shared_group_begin_write32(IntPtr sharedGroupPtr);
+
+        public static Transaction SharedGroupBeginWrite(SharedGroup sharedGroup)
+        {
+            try
+            {
+                IntPtr handle = Is64Bit ? shared_group_begin_write64(sharedGroup.Handle)
+                    : shared_group_begin_write32(sharedGroup.Handle);
+                return new Transaction(handle, sharedGroup, TransactionType.Write);
+            }
+            catch (SEHException ex)
+            {
+                sharedGroup.Invalid = true;
+                throw new System.IO.IOException(
+                    String.Format("IO error starting write transaction {0}", ex.Message));
+            }
+        }
+
+
+        [DllImport(L64, EntryPoint = "shared_group_commit", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void shared_group_commit64(IntPtr handle);
+
+        [DllImport(L32, EntryPoint = "shared_group_commit", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void shared_group_commit32(IntPtr handle);
+
+        public static void SharedGroupCommit(SharedGroup sharedGroup)
+        {
+            try
+            {
+                if (Is64Bit)
+                    shared_group_commit64(sharedGroup.Handle);
+                else
+                    shared_group_commit32(sharedGroup.Handle);            
+            }
+            catch (SEHException ex)//other things than IO could go wrong too, we might want to inspect and throw a more precise error msg
+            {
+                throw new System.IO.IOException(String.Format("IO error comitting data (read/write access is needed)  c++ exception thrown :{0}",  ex.Message));
+            }            
+        }
+
+
+        [DllImport(L64, EntryPoint = "shared_group_rollback", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void shared_group_rollback64(IntPtr handle);
+
+        [DllImport(L32, EntryPoint = "shared_group_rollback", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void shared_group_rollback32(IntPtr handle);
+
+        public static void SharedGroupRollback(SharedGroup sharedGroup)
+        {
+            if (Is64Bit)
+                shared_group_rollback64(sharedGroup.Handle);
+            else
+                shared_group_rollback32(sharedGroup.Handle);
+        }
+
+        [DllImport(L64, EntryPoint = "shared_group_end_read", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void shared_group_end_read64(IntPtr handle);
+
+        [DllImport(L32, EntryPoint = "shared_group_end_read", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void shared_group_end_read32(IntPtr handle);
+
+        public static void SharedGroupEndRead(SharedGroup sharedGroup)
+        {
+            if (Is64Bit)
+                shared_group_end_read64(sharedGroup.Handle);
+            else
+                shared_group_end_read32(sharedGroup.Handle);
+        }
+
+
     }
 }

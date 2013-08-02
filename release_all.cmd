@@ -13,7 +13,7 @@ echo An examples release in examples.zip
 echo Any key to start creating the c++ release
 pause
 set location=%~dp0
-call %location%native\tightdb_c_cs\tightdb_c_cs2012\build.cmd 
+call %location%native\tightdb_c_cs\tightdb_c_cs2012\release.cmd 
 
 set location=%~dp0
 echo any key to start creating the c# release

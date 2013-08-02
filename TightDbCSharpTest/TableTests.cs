@@ -1737,6 +1737,22 @@ double:-1002//column 3
 
         }
 
+        const string field01text = "Data for first field";
+        const string field02text = "Data for second field";
+        const string field03text = "Data for third field";
+        [Test]
+        public static void TableAddTest1()
+        {
+            using (var table = new Table(new StringField("StringColumn1"),
+                new StringField("StringColumn2"),
+                new StringField("StringColumn3")))
+            {
+                table.Add(field01text);
+                table.Add(field02text);
+                table.Add(field03text);
+            }
+
+        }
 
         //report data on screen reg. environment
         [Test]
@@ -1825,9 +1841,9 @@ double:-1002//column 3
 
             using (var t = new Table("date1".Date(), "date2".Mixed(), "stringfield".String()))//test date in an ordinary date , as well as date in a mixed
             {
-                t.SetIndex(2);
 
                 t.AddEmptyRow(1);//in this row we store datetosavelocal
+                t.SetIndex(2);
                 t.SetString(2, 0, "str1");
                 t.SetDateTime(0, 0, dateToSaveLocal);
                 DateTime fromdb = t.GetDateTime("date1", 0);

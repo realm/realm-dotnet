@@ -37,9 +37,7 @@ namespace PerformanceTest
                         case DataType.Date:
                             t.Add(dt);
                             break;
-
                     }
-
                 }
                 timer1.Stop();
                 double seconds = Math.Floor(timer1.Elapsed.TotalSeconds);

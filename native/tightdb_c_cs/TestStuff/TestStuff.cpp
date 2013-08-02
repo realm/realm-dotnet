@@ -89,17 +89,11 @@ void group_delete(Group* group_ptr )
 
 
 int _tmain(int argc, _TCHAR* argv[])
-{///std::wstring
-//     uint16_t *  test =(uint16_t * ) L"C:\\Develope\\Testgroupf";
-    
- //   size_t namelen=22;
-//    Group * g  = new_group_file(test,namelen);
+{
   
-    Group * g  = new Group();
-  //  g->get_table("hep");
-  //  std::cerr<<g->size();//use g
+    SharedGroup* sg = new SharedGroup(SharedGroup::unattached_tag());
+    delete sg;
 
-  //  group_delete(g);
     
     return 0;
 }

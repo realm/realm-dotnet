@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<VisualState xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ShowCheckBoxes="false">
+  <TopNode>[0-1000]H:\Wincoder\Develope\tightdb_csharp\TightDbCSharpTest\TightDbCSharpTest.csproj</TopNode>
+  <SelectedNode>[0-1000]H:\Wincoder\Develope\tightdb_csharp\TightDbCSharpTest\TightDbCSharpTest.csproj</SelectedNode>
+  <ExcludeCategories>false</ExcludeCategories>
+  <Nodes>
+    <Node UniqueName="[0-1000]H:\Wincoder\Develope\tightdb_csharp\TightDbCSharpTest\TightDbCSharpTest.csproj" Expanded="true" />
+    <Node UniqueName="[0-1101]H:\Wincoder\Develope\tightdb_csharp\TightDbCSharpTest\bin\x64\Release\TightDbCSharpTest.dll" Expanded="true" />
+    <Node UniqueName="[0-1102]TightDbCSharpTest" Expanded="true" />
+    <Node UniqueName="[0-1000]TightDbCSharpTest.GroupTests" Expanded="true" />
+    <Node UniqueName="[0-1006]TightDbCSharpTest.QueryTests" Expanded="true" />
+    <Node UniqueName="[0-1014]TightDbCSharpTest.TableTests" Expanded="true" />
+  </Nodes>
+</VisualState>
