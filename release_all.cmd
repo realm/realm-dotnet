@@ -31,7 +31,10 @@ copy %location%TightDbCSharp\release\files\dll\tightdb_c_cs2012??r.dll %location
 copy %location%TightDbCSharp\release\files\dll\tightdb_c_cs2012??r.dll %location%examples\TutorialSolution\bin\Debug
 copy %location%TightDbCSharp\release\files\dll\tightdb_c_cs2012??r.dll %location%examples\Experimental\bin\Release
 copy %location%TightDbCSharp\release\files\dll\tightdb_c_cs2012??r.dll %location%examples\Experimental\bin\Debug
+copy %location%TightDbCSharp\release\files\dll\tightdb_c_cs2012??r.dll %location%examples\ForexBackTester\ForexBacktester\bin\Release
+copy %location%TightDbCSharp\release\files\dll\tightdb_c_cs2012??r.dll %location%examples\ForexBackTester\ForexBacktester\bin\Debug
 copy %location%TightDbCSharp\release\files\bin\Release\*.* %location%examples\lib
+pause
 :zip entire examples directory to a zip file
 del %location%examples.zip
 echo on

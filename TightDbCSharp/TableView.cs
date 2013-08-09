@@ -206,7 +206,7 @@ namespace TightDbCSharp
             throw new NotImplementedException();
         }
 
-        internal override void SetSubTableNoCheck(long columnIndex, long rowIndex, Table value)
+        public override void SetSubTableNoCheck(long columnIndex, long rowIndex, Table value)
         {
             UnsafeNativeMethods.TableViewSetSubTable(this,columnIndex,rowIndex,value);
         }
@@ -242,7 +242,7 @@ namespace TightDbCSharp
             throw new NotImplementedException();
         }
 
-        internal override Table GetSubTableNoCheck(long columnIndex, long rowIndex)
+        public override Table GetSubTableNoCheck(long columnIndex, long rowIndex)
         {
             return UnsafeNativeMethods.TableViewGetSubTable(this, columnIndex, rowIndex);
         }

@@ -10,22 +10,6 @@ namespace TightDbCSharpTest
     [TestFixture]
     internal class SharedGroupTest
     {
-        [Test]
-        public void CreateSharedGroupTetst()
-        {
-            try
-            {
-                using (var sharedGroup = new SharedGroup())
-                {
-                    Console.WriteLine(String.Format(CultureInfo.InvariantCulture, "Hello from sharedgroup {0}",
-                        sharedGroup.ObjectIdentification()));
-                }
-            }
-            catch (SEHException e)
-            {
-                Assert.Fail("c++ threw an exception when creating an unattached shared group and freeing it again");
-            }
-        }
 
 
 
@@ -45,21 +29,6 @@ namespace TightDbCSharpTest
             }
         }
 
-        //create-open-dispose test
-        [Test]
-        public void CreateSharedGroupOpenTest()
-        {
-            const string sharedgroupfilename = @"UnitTestSharedGroup";
-            File.Delete(sharedgroupfilename);
-
-            using (var sharedGroup = new SharedGroup())
-            {
-                Assert.AreEqual(false, sharedGroup.Invalid); //C# construct, so legal even on an unattached shared group
-                sharedGroup.Open(sharedgroupfilename, false, DurabilityLevel.DurabilityFull);
-                Console.WriteLine(String.Format(CultureInfo.InvariantCulture, "Hello from sharedgroup {0}",
-                    sharedGroup.ObjectIdentification()));
-            }
-        }
 
 
         [Test]
@@ -117,9 +86,9 @@ namespace TightDbCSharpTest
                     transaction.Commit();                    
                 }
 
-                using (var transaction = sharedGroup.BeginRead())
+                using (var group = sharedGroup.BeginRead())
                 {
-                    using (var table = transaction.GetTable("TestTable"))
+                    using (var table = group.GetTable("TestTable"))
                     {
                         Assert.AreEqual(Field01Text, table.GetString(0, 0));
                         Assert.AreEqual(Field02Text, table.GetString(1, 0));
@@ -131,9 +100,9 @@ namespace TightDbCSharpTest
 
                 //alternative syntax example1, anonymous function wrapped
 
-                sharedGroup.ExecuteInWriteTransaction(( transaction ) =>
+                sharedGroup.ExecuteInWriteTransaction(( group ) =>
                 {
-                    using (var table = transaction.CreateTable("TestTable2", new StringField("StringColumn1"),
+                    using (var table = group.CreateTable("TestTable2", new StringField("StringColumn1"),
                                                                             new StringField("StringColumn2"),
                                                                             new StringField("StringColumn3")))
                     {
@@ -224,37 +193,9 @@ namespace TightDbCSharpTest
 
 
 
-        //test illegal method calls on unattached        
-        [Test]
-        [ExpectedException("System.InvalidOperationException")]
-        public void SharedGroupIllegalUnattachedCallsTestHasChanged()
-        {
-            using (var sharedGroupUnattached = new SharedGroup())
-            {
-                Assert.AreEqual(false, sharedGroupUnattached.HasChanged); //throws
-            }
-        }
 
 
 
-        //test illegal method calls on unattached - first test that legal calls don't create exceptions
-        //note that the test if ~sharedgroup on the c++ side is working is done in the allocate-deallocate test
-        [Test]
-        public void SharedGroupLegalUnattachedCallsTest()
-        {
-            const string sharedgroupfilename = @"UnitTestSharedGroup";
-            File.Delete(sharedgroupfilename);
-
-            using (var sharedGroupUnattached = new SharedGroup())
-            {
-                //these calls are legal on unattached
-                Assert.AreEqual(false, sharedGroupUnattached.IsAttached);
-
-                sharedGroupUnattached.Open(sharedgroupfilename, false, DurabilityLevel.DurabilityFull);
-                Console.WriteLine(String.Format(CultureInfo.InvariantCulture, "Hello from sharedgroup {0}",
-                    sharedGroupUnattached.ObjectIdentification()));
-            }
-        }
 
 
         //It should not be possible to modify a group that is returned by a read transaction

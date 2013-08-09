@@ -32,10 +32,10 @@ namespace TightDbCSharp
         }
 
         //creates an empty shared group. Usually You will use SharedGroup(string filename,boolean NoCreate, Durabilitylevel durabilitylevel)
-        public SharedGroup()
-        {
-            UnsafeNativeMethods.NewSharedGroupUnattached(this); //calls sethandle itself
-        }
+//        public SharedGroup()
+ //       {
+  //          UnsafeNativeMethods.NewSharedGroupUnattached(this); //calls sethandle itself
+   //     }
 
 
         internal override void ReleaseHandle()
@@ -44,11 +44,7 @@ namespace TightDbCSharp
         }
 
 
-        public void Open(String filename, Boolean noCreate, DurabilityLevel durabillityLevel)
-        {
-            UnsafeNativeMethods.SharedGroupOpen(this, filename, noCreate, durabillityLevel);
-        }
-
+        
         public Boolean IsAttached
         {
             get { return UnsafeNativeMethods.SharedGroupIsAttached(this); }

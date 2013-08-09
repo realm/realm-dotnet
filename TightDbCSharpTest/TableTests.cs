@@ -774,7 +774,7 @@ Table Name  : NameField
 
         [Test]
         public static void TestHandleAcquireSeveralFields()
-        {
+        {            
             String actualres;
             using (var testtbl3 = new Table(
                 "Name".TightDbString(),
@@ -1029,6 +1029,91 @@ Table Name  : Table with all allowed types (Typed Field)
             TestHelper.Cmp(expectedres, actualres2);
         }
 
+        /*
+        //test the alternative table dumper implementation that does not use table class
+        [Test]
+        public static void TestAllFieldTypesFieldMethods()
+        {
+            string actualres1;
+            string actualres2;
+            using (var t = new Table(
+                Table.intfield("Count1"),
+                Table.Field<String>("blah"),
+                Table.Field<float>("blah"),
+                Table.Field<int>("blah"),
+                Table.Field<Table>("blah"),
+                
+                new Field("Count3", "int"),
+                new Field("Count4", "INT"), //Any case is okay
+                new Field("Valid1", "boolean"),
+                new Field("Valid2", "bool"),
+                new Field("Valid3", "Boolean"),
+                new Field("Valid4", "Bool"),
+                new Field("Name1", "string"),
+                new Field("Name2", "string"),
+                new Field("Name3", "str"),
+                new Field("Name4", "Str"),
+                new Field("BLOB1", "binary"),
+                new Field("BLOB2", "Binary"),
+                new Field("BLOB3", "blob"),
+                new Field("BLOB4", "Blob"),
+                new Field("Items",
+                          new Field("ItemCount", "integer"),
+                          new Field("ItemName", "string")),
+                new Field("HtmlPage1", "mixed"),
+                new Field("HtmlPage2", "MIXED"),
+                new Field("FirstSeen1", "date"),
+                new Field("FirstSeen2", "daTe"),
+                new Field("Fraction1", "float"),
+                new Field("Fraction2", "Float"),
+                new Field("QuiteLargeNumber1", "double"),
+                new Field("QuiteLargeNumber2", "Double")
+                ))
+            {
+                actualres1 = TestHelper.TableDumper(MethodBase.GetCurrentMethod().Name,
+                                                 "Table with all allowed types (Field_string)", t);
+                actualres2 = TestHelper.TableDumperSpec(MethodBase.GetCurrentMethod().Name,
+                                                     "Table with all allowed types (Field_string)", t);
+            }
+            const string expectedres =
+                @"------------------------------------------------------
+Column count: 25
+Table Name  : Table with all allowed types (Field_string)
+------------------------------------------------------
+ 0        Int  Count1              
+ 1        Int  Count2              
+ 2        Int  Count3              
+ 3        Int  Count4              
+ 4       Bool  Valid1              
+ 5       Bool  Valid2              
+ 6       Bool  Valid3              
+ 7       Bool  Valid4              
+ 8     String  Name1               
+ 9     String  Name2               
+10     String  Name3               
+11     String  Name4               
+12     Binary  BLOB1               
+13     Binary  BLOB2               
+14     Binary  BLOB3               
+15     Binary  BLOB4               
+16      Table  Items               
+    0        Int  ItemCount           
+    1     String  ItemName            
+17      Mixed  HtmlPage1           
+18      Mixed  HtmlPage2           
+19       Date  FirstSeen1          
+20       Date  FirstSeen2          
+21      Float  Fraction1           
+22      Float  Fraction2           
+23     Double  QuiteLargeNumber1   
+24     Double  QuiteLargeNumber2   
+------------------------------------------------------
+
+";
+            TestHelper.Cmp(expectedres, actualres1);
+            TestHelper.Cmp(expectedres, actualres2);
+        }
+        */
 
         //test with a subtable
         [Test]
@@ -1737,22 +1822,60 @@ double:-1002//column 3
 
         }
 
-        const string field01text = "Data for first field";
-        const string field02text = "Data for second field";
-        const string field03text = "Data for third field";
+
+        //This test fails and it should, but note the weird wording in the exception message 
+        //like parameter name: tableA ???
         [Test]
-        public static void TableAddTest1()
+        public static void ManyAddSubtable()
         {
-            using (var table = new Table(new StringField("StringColumn1"),
-                new StringField("StringColumn2"),
-                new StringField("StringColumn3")))
+            const int rows = 8000000;
+            const int subtables = 1600000;
+
+            Group g = new Group();
+
+
+            g.CreateTable("Systems",
+                "Cash".Double(),
+                "Position".TightDbInt(),
+                "Borrrowed".Double(),
+                "NAV".Double());
+
+            
+            g.CreateTable("TICKS",
+                "date".TightDbDate(),
+                "Bid".Double(),
+                "Ask".Double(),
+                "systemresults".Table(
+                    "Cash".Double(),
+                    "Position".TightDbInt(),
+                    "Borrrowed".Double(),
+                    "NAV".Double()));
+
+            //var st = new Table("field".Double());
+            //var rt = new Table("st".SubTable("field".Double()));
+            var st = g.GetTable("Systems");
+            var rt = g.GetTable("TICKS");
+
+            st.AddEmptyRow(1);
+            st.Add(1.0,1,1.0,1.0);
+            st.AddEmptyRow(1);
+            st.Add(11212.1, 1, 1211.2, 1322.4);
+            st.AddEmptyRow(1);
+            st.Add(1000.0,1000,1000.0,1000.0);
+
+            for (var n = 0; n < rows; n++)
             {
-                table.Add(field01text);
-                table.Add(field02text);
-                table.Add(field03text);
+                rt.AddEmptyRow(1);
             }
 
+            for (var n = 0; n < subtables; n++)
+            {
+                rt.SetSubTable(3, n, st);//error here is due to a c++ bug
+            }
         }
+
+
+        
 
         //report data on screen reg. environment
         [Test]
@@ -2698,6 +2821,91 @@ intfield2:10//column 2
                 Console.WriteLine(t2.Size); //this line should not hit - the above should throw an exception
             }
         }
+
+
+
+        [Test]
+        public static void Tablesetsubtablebug()
+        {
+
+           
+
+            Group g = new Group();
+
+            g.CreateTable("Systems",
+              //  "Cash".Double(),
+               // "Position".TightDbInt(),
+//                "Borrrowed".Double(),
+                "NAV".Int());
+
+            g.CreateTable("TICKS",
+//                "date".TightDbDate(),
+//                "Bid".Double(),
+//                "Ask".Double(),
+                "systemresults".Table(
+                 //   "Cash".Double(),
+                 //   "Position".TightDbInt(),
+//                    "Borrrowed".Double(),
+                    "NAV".Int()));
+
+
+
+            Table ticks = g.GetTable("TICKS");
+            ticks.AddEmptyRow(1);
+
+            Table systems = g.GetTable("Systems");
+            for (var n = 0; n <= 1024 * 1024 * 8; n++)
+            {
+                try
+                {
+                 //   using (var t = ticks.GetSubTableNoCheck(0, 0))
+                    {
+
+                        {
+                          //  ticks.ValidateEqualScheme(t, systems, "SetSubTable");
+                            ticks.SetSubTableNoCheck(0, 0, systems);
+                        }
+                    }
+                    //ticks.SetSubTable(3, 0, systems);
+                }
+                catch (Exception x)//error here is due to an error in core.
+                {
+                    Console.WriteLine(string.Format("BackTest finished with errors from tightdb {0}  tick.rowindex was {1} intptr.size {2}", x.Message, n, IntPtr.Size));
+                    throw;
+                }
+            }          
+        }
+
+
+
+
+        [Test]
+        public static void Tablesetsubtablebugnogroup()
+        {            
+
+          Table systems = new Table("NAV".Int());
+
+            Table ticks = new Table(
+                "systemresults".Table(
+                    "NAV".Int()));
+          
+            ticks.AddEmptyRow(1);
+          
+            for (var n = 0; n <= 1024 * 1024 * 16; n++)//error here is due to a core bug
+            {
+                try
+                {
+                            ticks.SetSubTableNoCheck(0, 0, systems);
+                }
+                catch (Exception x)
+                {
+                    Console.WriteLine(string.Format("BackTest finished with errors from tightdb {0}  tick.rowindex was {1} intptr.size {2}", x.Message, n, IntPtr.Size));
+                    throw;
+                }
+            }
+        }
+
+
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming",
             "CA1702:CompoundWordsShouldBeCasedCorrectly", MessageId = "TypeWrite"), Test]

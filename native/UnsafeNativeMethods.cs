@@ -2314,14 +2314,32 @@ enum DataType {
 
         public static void TableSetSubTable(Table table, long columnIndex, long rowIndex, Table sourceTable)
         {
+          //  try
+            {
+                if (Is64Bit)
+                    table_set_subtable64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, sourceTable.Handle);
+                else
+                    table_set_subtable32(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, sourceTable.Handle);
 
-            if (Is64Bit)
-                table_set_subtable64(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, sourceTable.Handle);
-            else
-                table_set_subtable32(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, sourceTable.Handle);
+            }
+
+
+            /*
+                        catch (SEHException ex)
+                        {
+                            throw new Exception(
+                                String.Format("TightDb Core was unable to set a subtable in col {0}  row {1} (TableSetSubTable)",
+                                    columnIndex, rowIndex));
+                        }
+
+                        catch (Exception  e)
+                        {
+                            throw new Exception("exception thrown while marshalling TableSetSubtable ");
+                        }
+                        */
         }
 
-
+            
 
         [DllImport(L64, EntryPoint = "tableview_set_subtable",
     CallingConvention = CallingConvention.Cdecl)]

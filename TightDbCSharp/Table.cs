@@ -1,14 +1,18 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
+using System.Reflection;
+using System.Runtime.Remoting.Messaging;
 using System.Runtime.Serialization;
-
-
 //using System.Threading.Tasks; not portable as of 2013-04-02
 
 //Tell compiler to give warnings if we publicise interfaces that are not defined in the cls standard
 //http://msdn.microsoft.com/en-us/library/bhc3fa7f.aspx
+using TightDbCSharp;
+using TightDbCSharp.Extensions;
+
 [assembly: CLSCompliant(true)]
 
 //Table class. The class represents a tightdb table.
@@ -153,6 +157,8 @@ namespace TightDbCSharp
     //    public Table(params object[] fieldDescriptions)
     //    {
     //    }
+
+//        public Table(String fieldname1, DataType type1,String fieldname2)
 
         public Table DefineSchema(params Field[] schema)
         {
@@ -454,7 +460,7 @@ namespace TightDbCSharp
             throw new NotImplementedException();
         }
 
-        internal override Table GetSubTableNoCheck(long columnIndex, long rowIndex)
+        public override Table GetSubTableNoCheck(long columnIndex, long rowIndex)
         {
             return UnsafeNativeMethods.TableGetSubTable(this, columnIndex, rowIndex);
         }
@@ -474,7 +480,7 @@ namespace TightDbCSharp
             throw new NotImplementedException();
         }
 
-        internal override void SetSubTableNoCheck(long columnIndex, long rowIndex, Table value)
+        public override void SetSubTableNoCheck(long columnIndex, long rowIndex, Table value)
         {
             UnsafeNativeMethods.TableSetSubTable(this,columnIndex,rowIndex,value);            
         }
@@ -714,13 +720,21 @@ namespace TightDbCSharp
             SetIndexNoCheck(columnIndex);
         }
 
+        public static StringField stringfield(string name)
+        {
+            return new StringField(name);
+        }
+
+        public static IntField intfield(string name)
+        {
+            return new IntField(name);
+        }
+
 
         internal override TableView FindAllIntNoCheck(long columnIndex, long value)
         {
             return UnsafeNativeMethods.TableFindAllInt(this,  columnIndex,  value);
         }
-
-
 
 
         internal override TableView FindAllStringNoCheck(long columnIndex, string value)
@@ -729,7 +743,36 @@ namespace TightDbCSharp
         }
 
 
+        public static Field Field<T>(string name)
+        {
+            if (typeof (T) == typeof (String))
+            {
+                return new StringField(name);
+            }
 
+            if (typeof(T) == typeof(DateTime))
+            {
+                return new DateField(name);
+            }
+
+            if (typeof(T) == typeof(Double))
+            {
+                return new DoubleField(name);
+            }
+
+            if (typeof(T) == typeof(float))
+            {
+                return new FloatField(name);
+            }
+
+
+            throw new Exception("fieldtype not supported natively in tightdb binding");
+
+
+
+
+
+    }
 
 
         public Query Where()
@@ -764,6 +807,10 @@ namespace TightDbCSharp
         {
         }
     }
+
+
+
+
     //Was named TDBField before
     //now is named Field
     //I still don't like the name, it is more a colunm type definition or column type specification but what would be a good short word for that?
@@ -772,6 +819,9 @@ namespace TightDbCSharp
 
     public class Field
     {
+
+        
+
         protected static void SetInfo(Field someField, String someColumnName, DataType someFieldType)
         {
             if (someField != null)

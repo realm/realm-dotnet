@@ -24,7 +24,7 @@ namespace TightDbCSharp
         internal abstract Boolean GetBoolNoCheck(long columnIndex, long rowIndex);
         internal abstract String GetStringNoCheck(long columnIndex, long rowIndex);
         internal abstract byte[] GetBinaryNoCheck(long columnIndex, long rowIndex);
-        internal abstract Table GetSubTableNoCheck(long columnIndex, long rowIndex);
+        public abstract Table GetSubTableNoCheck(long columnIndex, long rowIndex);//fixme sb internal, was public for debugging purposes
         //mixed is handled by type named GetMixedxxxx methods below
         internal abstract DateTime GetDateTimeNoCheck(long columnIndex, long rowIndex);
         internal abstract float GetFloatNoCheck(long columnIndex, long rowIndex);
@@ -106,7 +106,7 @@ namespace TightDbCSharp
         internal abstract void SetBoolNoCheck(long columnIndex, long rowIndex, Boolean value);
         internal abstract void SetStringNoCheck(long columnIndex, long rowIndex, string value);
         internal abstract void SetBinaryNoCheck(long columnIndex, long rowIndex, byte[] value);
-        internal abstract void SetSubTableNoCheck(long columnIndex, long rowIndex, Table value);
+        public abstract void SetSubTableNoCheck(long columnIndex, long rowIndex, Table value);//fixme sb internal changed for debugging
         internal abstract void SetDateTimeNoCheck(long columnIndex, long rowIndex, DateTime value);
         internal abstract void SetDoubleNoCheck(long columnIndex, long rowIndex, double value);
         internal abstract void SetFloatNoCheck(long columnIndex, long rowIndex, float value);
@@ -233,20 +233,20 @@ namespace TightDbCSharp
 
         //takes a message to enable us to give a customized error message if the validation fails.
         //this validation could go wrong if someone change table scheme while the method is running
-        public void ValidateEqualScheme(Table tableA, Table tableB,string message)
+        public void ValidateEqualScheme(Table tableA, Table tableB, string message)
         {
             if (tableA == null || tableB == null)
             {
-                throw new ArgumentNullException("ValidateEqualScheme called with table object that was null "+
-                    ((tableA == null) ? "TableA was Null" : "") +
-                    ((tableB == null) ? "TableB was Null" : ""));
+                throw new ArgumentNullException("ValidateEqualScheme called with table object that was null " +
+                                                ((tableA == null) ? "TableA was Null" : "") +
+                                                ((tableB == null) ? "TableB was Null" : ""));
             }
 
             if (!tableA.IsValid() || !tableB.IsValid())
             {
                 throw new ArgumentNullException("ValidateEqualScheme called with table.isValid()==false " +
-                    ((tableA.IsValid()) ? "TableA was not valid" : "") +
-                    ((tableB.IsValid()) ? "TableB was not valid" : ""));
+                                                ((tableA.IsValid()) ? "TableA was not valid" : "") +
+                                                ((tableB.IsValid()) ? "TableB was not valid" : ""));
             }
 
             //fixme clean up, this was split up for debugging purposes
@@ -265,9 +265,9 @@ namespace TightDbCSharp
 
             if (!UnsafeNativeMethods.SpecEquals(specA, specB))
             {
-                throw new ArgumentOutOfRangeException("tableA",
-     String.Format(CultureInfo.InvariantCulture,
-         "the operation {0} could not be executed as the two tables do not have similar specs", message));
+                throw new ArgumentOutOfRangeException(
+                    String.Format(CultureInfo.InvariantCulture,
+                        "the operation {0} could not be performed as the two tables do not have similar specs", message));
             }
         }
 
@@ -277,48 +277,52 @@ namespace TightDbCSharp
         }
 
         //todo:unit test this
-               //column and row must point to a field that is of type subtable
-               //note that in case the subtable scheme does not fit well with the passed object, the subtable will be half filled wit data up to the point where there was a mismatch,
-               //for instalce if called with an array of 10 rows, where the last row have one more field (or is missing a field)
-               //if schemes does not match up with data an exeption is thrown when the mismatch is discovered.
-               //It is possible to back out of this operation using transactions (aborting the ongoing one)
-               //if You pass a Table, schema is validated before any data is changed
-               //if You pass some kind of ienummerable data structure, the data is not first validated against the subtable structure.
+        //column and row must point to a field that is of type subtable
+        //note that in case the subtable scheme does not fit well with the passed object, the subtable will be half filled wit data up to the point where there was a mismatch,
+        //for instalce if called with an array of 10 rows, where the last row have one more field (or is missing a field)
+        //if schemes does not match up with data an exeption is thrown when the mismatch is discovered.
+        //It is possible to back out of this operation using transactions (aborting the ongoing one)
+        //if You pass a Table, schema is validated before any data is changed
+        //if You pass some kind of ienummerable data structure, the data is not first validated against the subtable structure.
 
-               //there is also a lowlevel SetSubTableNoCheck - this one takes almost anything and figures what to do with it
-        
-           internal void SetSubTableNoCheckHighLevel(long columnIndex, long rowIndex, IEnumerable<object> element)
+        //there is also a lowlevel SetSubTableNoCheck - this one takes almost anything and figures what to do with it
+
+        internal void SetSubTableNoCheckHighLevel(long columnIndex, long rowIndex, IEnumerable<object> element)
         {
-            if (element == null)  //if You specify null for a subtable we do nothing null means You intend to fill it in later
+            if (element == null)
+                //if You specify null for a subtable we do nothing null means You intend to fill it in later
             {
                 ClearSubTableNoCheck(columnIndex, rowIndex);
-                return;//done!;
+                return; //done!;
                 //if the user specifies null it means create a new empty subtable, not let the old one stay!
             }
 
             //user did not specify null. It could be a table or it could be an ienummerable structure of data that fits the schema in the subtable
 
-            Table t = GetSubTableNoCheck(columnIndex, rowIndex);
-
-            var elemTable = (element as Table);
-               if (elemTable != null)
-               {
-                   ValidateEqualScheme(t, elemTable, "SetSubTable");
-                   SetSubTableNoCheck(columnIndex, rowIndex, elemTable);  //call table or tableview lowlevel implementation                 
-                   return; //done! if elem is null element was not a Table but something else
-               }
-
-               //each element in the enumerable list must be a row, so call addrow with the element. Let Arow decide if it is useful as row data
-            foreach (IEnumerable<object> arow in element)
-                //typecast because we already ensured element is an array,and that element is not null
+            using (var t = GetSubTableNoCheck(columnIndex, rowIndex))
             {
-                t.Add(arow);
+
+                var elemTable = (element as Table);
+                if (elemTable != null)
+                {
+                    ValidateEqualScheme(t, elemTable, "SetSubTable");
+                    SetSubTableNoCheck(columnIndex, rowIndex, elemTable);
+                    //call table or tableview lowlevel implementation                 
+                    return; //done! if elem is null element was not a Table but something else
+                }
+
+                //each element in the enumerable list must be a row, so call addrow with the element. Let Arow decide if it is useful as row data
+                foreach (IEnumerable<object> arow in element)
+                    //typecast because we already ensured element is an array,and that element is not null
+                {
+                    t.Add(arow);
+                }
             }
         }
+    
 
 
-
-        //add unknown typed object to a mixed
+    //add unknown typed object to a mixed
         internal void SetMixedNoCheck(long columnIndex, long rowIndex, object element)
         {
             Type elementType = element.GetType();
