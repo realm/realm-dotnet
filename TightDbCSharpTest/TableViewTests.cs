@@ -26,7 +26,7 @@ namespace TightDbCSharpTest
 
         //returns a table with row 0 having ints 0 to 999 ascending
         //row 1 having ints 0 to 99 ascendig (10 of each)
-        //row 2 having ints 0 to 9 asceding (100 of each)
+        //row 2 having ints 0 to 9 asceding (100 of each)     
         private static Table TableWithMultipleIntegers()
         {
             Table returnTable;
@@ -115,6 +115,45 @@ namespace TightDbCSharpTest
                 Assert.AreEqual(0, tv.Size);
             }
         }
+
+        [Test]
+        public static void TableViewMixedString()
+        {
+            //this first part just populates a table with two mixed string fields
+            using (var t = new Table(new MixedField("StringField"),new IntField("intfield")))
+            {
+                const string setWithAdd = "SetWithAdd";
+                const string setWithSetMixed = "SetWithSetMixed";
+                const string setWithViewSetMixed = "SetWithViewSetMixed";
+                const string notInView = "notInView";
+                t.Add(setWithAdd,42);
+                DataType dtRow0 = t.GetMixedType(0, 0);
+                Assert.AreEqual(DataType.String, dtRow0);//mixed from empty rows added are int as a default
+                String row0 = t.GetMixedString(0, 0);
+                Assert.AreEqual(setWithAdd, row0);
+
+                t.AddEmptyRow(1);
+                t.SetMixedString(0, 1, setWithSetMixed);
+                t.SetLong(1,1,42);
+                DataType dtRow1 = t.GetMixedType(0, 1);
+                Assert.AreEqual(DataType.String, dtRow1);
+                String row1 = t.GetMixedString(0, 1);
+                Assert.AreEqual(setWithSetMixed, row1);
+
+                t.Add(notInView, 43);
+                t.Add(notInView, 44);
+                //create tableview with all the '42' rows, and do mixed string operations on the tableview
+                using (var view = t.FindAllInt(1, 42))
+                {                   
+                    view.SetMixedString(0, 1, setWithViewSetMixed);                    
+                    DataType dtvRow1 = view.GetMixedType(0, 1);
+                    Assert.AreEqual(DataType.String, dtvRow1);
+                    String viewRow1 = view.GetMixedString(0, 1);
+                    Assert.AreEqual(setWithViewSetMixed, viewRow1);
+                }
+            }
+        }
+
 
 
         [Test]
@@ -433,6 +472,50 @@ intcolumn2:1//column 2
                     Table subreturnedchanged = view.GetSubTable(1, 0);//                    
                     Assert.AreEqual(changedString,subreturnedchanged.GetString(1,1));
 
+                    //now, try to set the subtable values via a tableview
+                }
+            }
+        }
+
+
+
+        //ensure that TableView ClearSubtable clears the subtable
+        [Test]
+        public static void TableViewClearSubtable()
+        {
+            using (var t = new Table(
+                                     "do'h".Int(),
+                                     "sub".SubTable(
+                                                      "substringfield1".String(),
+                                                      "substringfield2".String()
+                                                   ),
+                                     "mazda".Int()
+                                    )
+                   )
+            {
+                using (var sub = new Table(
+                                                      "substringfield1".String(),
+                                                      "substringfield2".String()
+                                           )
+                      )
+                {
+                    const string string00 = "stringvalueC0R0";
+                    sub.Add(string00, "stringvalue2R0");
+                    sub.Add("stringvalue1R1", "stringvalue2R1");
+                    t.Add(42, sub, 43);//a row with the subtable in it
+                    TableView view = t.FindAllInt(0, 42); //tableview now has the one row with the subtable
+                    Table subreturned = view.GetSubTable(1, 0);//testing getsubtable
+                    Assert.AreEqual(string00, subreturned.GetString(0, 0));
+
+                    const string changedString = "Changed";
+                    sub.SetString(1, 1, changedString);
+                    view.SetSubTable(1, 0, sub);
+                    Table subreturnedchanged = view.GetSubTable(1, 0);//                    
+                    Assert.AreEqual(changedString, subreturnedchanged.GetString(1, 1));
+
+                    view.ClearSubTable(1,0);
+                    Table clearedSubReturned = view.GetSubTable(1, 0);
+                    Assert.AreEqual(0,clearedSubReturned.Size);
                     //now, try to set the subtable values via a tableview
                 }
             }

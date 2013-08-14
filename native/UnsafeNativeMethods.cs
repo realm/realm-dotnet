@@ -136,7 +136,7 @@ enum DataType {
             return IntPtrToBool(Is64Bit ? table_is_valid64(table.Handle) : table_is_valid32(table.Handle));
         }
 
-        //todo:unit test
+        
         [DllImport(L64, EntryPoint = "table_has_shared_spec", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr table_has_shared_spec64(IntPtr tablePtr);
 
@@ -431,7 +431,7 @@ enum DataType {
         [DllImport(L32, EntryPoint = "group_write", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr group_write32(IntPtr groupPTr, [MarshalAs(UnmanagedType.LPWStr)] string fileName, IntPtr fileNameLen);
 
-        //todo:test 
+        
         //the unmanaged function returns an IntPtr whose value indicates an error if it is nonzero
         //see c++ file for error codes and their meaning
         public static void GroupWrite(Group group, string fileName)
@@ -464,7 +464,7 @@ enum DataType {
             }
             catch (SEHException ex)
             {
-                throw new System.IO.IOException(String.Format("IO error creating group file {0} (read/write access is needed)  c++ exception thrown :{1}",fileName,ex.Message));
+                throw new IOException(String.Format("IO error creating group file {0} (read/write access is needed)  c++ exception thrown :{1}",fileName,ex.Message));
             }            
         }
 
@@ -541,7 +541,7 @@ enum DataType {
         }
 
 
-
+        //todo:Unittest
         [DllImport(L64, EntryPoint = "table_find_first_binary", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr table_find_first_binary64(IntPtr tableHandle, IntPtr columnIndex,[In] byte[] value,IntPtr length);
 
@@ -668,7 +668,7 @@ enum DataType {
         }
 
 
-
+        //todo:unit test
         [DllImport(L64, EntryPoint = "tableview_find_first_binary", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr tableView_find_first_binary64(IntPtr tableViewHandle, IntPtr columnIndex, [In] byte[] value, IntPtr length);
 
@@ -1487,7 +1487,8 @@ enum DataType {
 
 
 
-        //todo:unit test
+        
+
         [DllImport(L64, EntryPoint = "table_clear_subtable", CallingConvention = CallingConvention.Cdecl)]
         private static extern void table_clear_subtable64(IntPtr tableHandle, IntPtr columnIndex, IntPtr rowIndex);
 
@@ -1502,7 +1503,7 @@ enum DataType {
                 table_clear_subtable32(parentTable.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
         }
 
-        //todo:unit test
+
         [DllImport(L64, EntryPoint = "tableview_clear_subtable", CallingConvention = CallingConvention.Cdecl)]
         private static extern void tableview_clear_subtable64(IntPtr tableHandle, IntPtr columnIndex, IntPtr rowIndex);
 
@@ -1902,6 +1903,38 @@ enum DataType {
         }
 
 
+        //not using automatic marshalling (which might lead to copying in some cases),
+        //The SizePtr variable must be a pointer to C# allocated and pinned memory where c++ can write the size
+        //of the data (length in bytes)
+        //the call will return a pointer to the array data, and the IntPtr that SizePtr pointed to will have changed
+        //to contain the length of the data
+        [DllImport(L64, EntryPoint = "table_get_binary", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_get_binary64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx, out IntPtr Size);
+
+        [DllImport(L32, EntryPoint = "table_get_binary", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_get_binary32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx, out IntPtr Size);
+
+
+        public static byte[] TableGetBinary(Table table, long columnIndex, long rowIndex)
+        {
+            IntPtr datalength;
+
+            IntPtr data =
+                (Is64Bit)
+                    ? table_get_binary64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, out datalength)
+                    : table_get_binary32(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, out datalength);
+
+            //now, datalength should contain number of bytes in data,
+            //and data should be a pointer to those bytes
+            //as data is managed on the c++ side, we will now copy data over to managed memory
+            //if datalength is 0 marshal.copy wil copy nothing and we will return a byte[0]
+            long numBytes = datalength.ToInt64();
+            byte[] ret = new byte[numBytes];
+            Marshal.Copy(data, ret, 0, (int) datalength);
+            return ret;
+        }
+
+
 
         [DllImport(L64, EntryPoint = "table_get_mixed_string", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr table_get_mixed_string64(IntPtr handle, IntPtr columnIndex, IntPtr rowIndex, IntPtr buffer, IntPtr bufsize);
@@ -2240,7 +2273,7 @@ enum DataType {
 
 
 
-        [DllImport(L64, EntryPoint = "tableview_set__mixed_string", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(L64, EntryPoint = "tableview_set_mixed_string", CallingConvention = CallingConvention.Cdecl)]
         private static extern void tableview_set_mixed_string64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx,
                                                       [MarshalAs(UnmanagedType.LPWStr)] string value,IntPtr valueLen);
 
@@ -2406,9 +2439,39 @@ enum DataType {
 
 
 
+        //not using automatic marshalling (which might lead to copying in some cases),
+        //but ensuring no copying of the array data is done, by getting a pinned pointer to the array supplied by the user.
+        [DllImport(L64, EntryPoint = "table_set_binary", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void table_set_binary64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx, IntPtr value,IntPtr bytes);
+
+        [DllImport(L32, EntryPoint = "table_set_binary", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void table_set_binary32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx, IntPtr value,  IntPtr bytes);
+
+        
+        public static void TableSetBinary(Table table, long columnIndex, long rowIndex, Byte[] value)
+        {
+            GCHandle handle = GCHandle.Alloc(value, GCHandleType.Pinned);//now value cannot be moved or garbage collected by garbage collector
+            IntPtr valuePointer = handle.AddrOfPinnedObject();
+            try
+            {
+                if (Is64Bit)
+                    table_set_binary64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, valuePointer,
+                        (IntPtr) value.Length);
+                else
+                    table_set_binary32(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, valuePointer,
+                        (IntPtr) value.Length);
+            }
+            finally
+            {
+                handle.Free();//allow Garbage collector to move and deallocate value as it wishes
+            }
+        }
+
+
 
         public static void TableSetMixedBinary(Table table, long columnIndex, long rowIndex, [In] byte[] value)
         {
+            
             throw new NotImplementedException("UnsafeNativeMethods.cs TableSetMixedBinary not implemented yet");
         }
 

@@ -16,6 +16,7 @@ we should not break easily, and we should know where we have problems.
 #include <sstream>
 
 using namespace tightdb;
+using namespace std;
 
 
 namespace {
@@ -396,8 +397,18 @@ TIGHTDB_C_CS_API size_t table_get_string(Table* table_ptr, size_t column_ndx, si
 
 
 
-//todo:implement table get binary      BinaryData  get_binary(size_t column_ndx, size_t row_ndx) const; // FIXME: Should be modified so it never throws
-
+//function returns a pointer to the data. 
+//This pointer is live until the table is changed, so there is enough time for C# to copy the data to managed
+//the size parameter returns the size of the array. This parameter is marshalled by C# as an out parameter.
+//end result is that the caller gets both the pointer to the data, and the lenght
+//the C# caller will immediatly copy the data from the returned pointer to managed memory, the C# caller will not
+//free any memory. The C# marshaller will not try to free the returned char*, as we call this as an intptr returning function
+TIGHTDB_C_CS_API const char * table_get_binary(Table*  table_ptr, size_t column_ndx, size_t row_ndx,  size_t* size)
+{
+    BinaryData bd=table_ptr->get_binary(column_ndx,row_ndx);
+    *size = bd.size();
+    return  bd.data();//pointer to all the data;
+}
 
 TIGHTDB_C_CS_API int64_t  table_get_mixed_int(Table*  table_ptr, size_t column_ndx, size_t row_ndx)
 {
@@ -472,11 +483,18 @@ TIGHTDB_C_CS_API void table_set_string(Table* table_ptr, size_t column_ndx, size
 }
 
 
-//todo:implement table_set_binary
+//C# will call with a pinned array of bytes and its size. no copying occours except inside tightdb where the data is of course
+//copied down into the table. The data pointed to by data must not be accessed after this call is finished.
+TIGHTDB_C_CS_API void table_set_binary(Table*  table_ptr, size_t column_ndx, size_t row_ndx,  const char* data, std::size_t size)
+{
+    BinaryData bd(data,size);
+    table_ptr->set_binary(column_ndx,row_ndx,bd);
+}
+
+
 
 
 //set_mixed is split up in the binding - one method per DataType that a mixed can hold
-
 
 TIGHTDB_C_CS_API void table_set_mixed_int(Table*  table_ptr, size_t column_ndx, size_t row_ndx, int64_t value)
 {
@@ -722,9 +740,8 @@ TIGHTDB_C_CS_API size_t table_to_json(Table* table_ptr,uint16_t * data, size_t b
 {
    // Write table to string in JSON format
    std::ostringstream ss;
-   ss.sync_with_stdio(false); // for performance
    table_ptr->to_json(ss);   
-   StringData str = ss.str(); 
+   string str = ss.str();   
    return stringdata_to_csharpstringbuffer(str,data,bufsize);
 }
 

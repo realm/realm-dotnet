@@ -158,16 +158,16 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.AddSubTableColumn(this, columnName);
         }
 
-        public void AddColumn(DataType type, String name)
+        public long AddColumn(DataType type, String name)
         {
-            UnsafeNativeMethods.SpecAddColumn(this, type, name);
+            return UnsafeNativeMethods.SpecAddColumn(this, type, name);
         }
 
         //shorthand methods as C# constants doesn't exist so we can't do AddColumn(Type_Int,"name")
         //instead we have AddIntColumn("name") which is sort of almost just as good
-        public void AddIntColumn(String name)
+        public long AddIntColumn(String name)
         {
-            AddColumn(DataType.Int, name);
+            return AddColumn(DataType.Int, name);
         }
 
         //I assume column_idx is a column with a table in it

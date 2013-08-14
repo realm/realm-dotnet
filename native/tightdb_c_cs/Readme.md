@@ -8,7 +8,10 @@ The C# binding use the extern "c" methods in the DLL to access tightdb.
 
 This directory contains two solutions that links to the same sourcefiles :
 tightCSDLL2012.sln - used to build with visual studio 2012
-tightCSDLL2010.sln - used to build with visual studio 2010
+tightCSDLL2010.sln - used to build with visual studio 2010 (Not maintained at the moment)
+
+
+The description below this point is only if You want to create a new .sln file. It is recommended that You just use the checked in sln file instead, then You can skip the rest of this readme file.
 
 
 ###Getting VS2010 or VS2012 ready to build the project###

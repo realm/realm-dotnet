@@ -9,20 +9,22 @@ TightDB developer :
 
 has windows 7 and VS2012  ultimate installed in newest versions
 builds tightdb core static libaries (manually, no documentation exists)
-uses build.bat(being reviewed by brian at the moment, so not in our main branch) to make tightdb c++ binding static library release (static library .lib files and header files)
+uses winrelease.cmd to make tightdb c++ binding static library release (static library .lib files and header files)
+
 
 TightDB C# language binding developer (tightdb c dll part ):
+
 has windows 7 and VS2012 ultimate installed in newest versions
 uses tightdb c++ static binding release
 builds a set of c dll files which contains tightdb C API for the C# language binding
-uses build.bat to make a tightdb c dll release (various dll files,debug/release/32/64bit)
+uses build.cmd to make a tightdb c dll release (various dll files,debug/release/32/64bit)
 
 TightDB language binding developer (C# part)
 has windows 7 and VS2012 ultimate installed in newest versions
 (VS2012 express is sufficient for C# builds, but unit tests and code analysis and profiling is not supported in the free version, so 3rdparty stuff is needed.)
 builds C# assembly, which contains binding API library to be used by customer .net developers
-uses build.bat to create c# assembly release, meant to be used by customer C# and .net developers
-only uses the c dll's for running usecases and for testing. c dll is not used to build the C# part of the binding itself
+uses build.cmd to create c# assembly release, meant to be used by customer C# and .net developers
+only uses c dll's for running usecases and for testing. c dll is not used to build the C# part of the binding itself
 
 customer developer using tightdb C# .net language binding
 has at least VS2012 express C# installed, and windows 7 - new versions
@@ -44,7 +46,7 @@ End customer do not have VS installed, do not neccesarily have .net installed, d
 
 As we don't really control the method of deployment from customer developer to end customer, we should try to leave all options open for customer developer regarding method of deployment. It would be nice if we leave customer developer with just the raw files needed for deployment, as well as a few tips as how to do it easily, given he has VS2012
 
-The procedure below is a raw-file solution to all deployments above. 
+The procedure below is a file-only solution to all deployments above. 
 
 
 
@@ -62,76 +64,70 @@ todo : VS2012 kan ikke installeres på windows vista, så vi understøtter pt ikke 
 
 
 
-PS. Dette er nedskrevede arbejdsgange fra allerførste forsøg på at bygge en helt uafhængig applikation fra grunden af, det bliver meget nemmere meget snart.
 
-Generelt.. hvor der er en .sln fil, er der også en build.bat som p.t. varetager at bygge en distribution/release udfra el allerede builded solution.
+In general, where .sln files reside, we also have a buld.cmd file. The buld.cmd file can be run after a build, it creates a release of the solution, in the release\files and relase\release directories (release containing a zip file, files containing the files unzipped)
 
 
-Total build af C# binding, helt fra grunden foregår i step-1 til step-3
+Total buld of the C# binding, inclusive of a build of tightdb core is described in step-1 until step-3
 
-Test af denne build med en hello world foregår i step-4 og step-5
+Test of this build with a hello world application is done in step-4 and step-5
 
-Denne beskrivelse er en lille smule outdated, men burde være en god guide i forhold til ingenting.
+Step-1  build VS2012 c++ static librlibraries with tightdb core and headerfiles
 
-Step-1  byg VS2012 c++ binding distribution med statiske libraries med tightdb core og headerfiler
+0) You need VS2012 better than VS2012 Express - express have toolset problems with 64 bit in c++ projects, therefore  core build will not work with certain vs2012 express installs (depending on SDK installs and seviceback installs)
 
-0) du skal have en VS2012 der er bedre end VS2012 Express - express har toolset problemer med 64 bit når du bygger c++ projekter, og build af core virker ikke p.t. altid med vs2012 Express.
+1) check out master tightdb from github - place it in xyz\tightdb  (xyz is a path of Your own choice)
 
-1) hent master tightdb fra github - placer i xyz\tightdb
+2) build the 4 static libraries in vs2012 :
+* start VS2012 by right clicking xyz\tightdb\TightDB.sln
+* In solution explorer, right click TightDB solution, choose update vc++ projects. click update.
+* select menu->build->batch build, select the 4 static library tightdb builds, click clean
+* select menu->build->batch build, select the 4 static library tightdb builds, click rebuild
 
-2) build de 4 static libraries i vs2012 :
-* start VS2012 ved at klikke på TightDB.sln
-* I solution explorer, højreklik TightDB solution, vælg update vc++ projects. klik update i den dialog der fremkommer
-* vælg menu->build->batch build, select de 4 static library tightdb builds, vælg clean
-* vælg menu->build->batch build, select de 4 static library tightdb builds, vælg rebuild
+3) run winrelease.cmd
 
-3) kør build.bat
+* in windows explorer, double click winrelase.cmd
 
-* brug explorer til at se tightdb directoriet, dobbeltklik build.bat
-
-I release\vs2012\release finder du herefter filerne der skal bruges af VS2012 c++ binding brugere 
+xyz\tightdb\release\vs2012\release will now contian the files we need to make the VS2012 c++ binding
 
 
 
 
-step-2  byg c delen af tightdb .net binding med VS2012 c++
+step-2  build the c part of tightdb .net binding with VS2012 c++
 
-xyz er det directory du normalt checker tightdb github ting ud i 
+xyz er det directory du normalt checker tightdb projekter ud i.
 
-1) hent tightdb_csharp master, placer i xyz\tightdb_csharp
+1) check out tightdb_csharp master, place it in xyz\tightdb_csharp
 
-2) installer c++ binding distributionen : extract arkivet fra step-1 3) ind i kataloget xyz\tightdb_csharp\libsVS2012
+2) install the c++ binding distribution: extract the archive from step-1 3) inside the directory xyz\tightdb_csharp\libsVS2012
 
-* Kan gøres ved at kopiere tightdb\release\vs2012\files\*.* til tightdb_csharp\libsVS2012\*.*
+*a copy tightdb\release\vs2012\files\*.* to tightdb_csharp\libsVS2012\*.* (one optin)
+*b or copy the .zip file from tightdb\release\vs2012\release\tightdb_cpp_VS2012___.zip to tightdb_csharp\libsVS2012\ and then extract it, by right clicking it and selecting extract here.
 
-3) åbn xyz\tightdb_csharp\native\tightdb_c_cs2012\tightdb_c_cs2012.sln
+3) open xyz\tightdb_csharp\native\tightdb_c_cs2012\tightdb_c_cs2012.sln
 
-4) build->batch build->marker de 4 nederste configurations, tightdb_c_cs2012 og vælg clean
-build->batch build->marker de 4 nederste configurations, tightdb_c_cs2012 og vælg rebuild
+4) build->batch build->mark the lowest 4 configurations, tightdb_c_cs2012 and click clean
+build->batch build->marker the lowest 4 configurations, tightdb_c_cs2012 and click rebuild
 
-5) kør build.batch
+5) run xyz\tightdb_csharp\native\tightdb_c_cs2012\release.cmd
 
-kataloget xyz\tightdb_csharp\native\tightdb_c_cs2012\tightdb_c_cs2012\release\release indeholder
-en release af windows C dll tightdb interfacet - dette interface kan bruges af alle windows sprog,
-hvis der laves en sprog specifik binding.
-
+directory xyz\tightdb_csharp\native\tightdb_c_cs2012\tightdb_c_cs2012\release\release will now contan a  release of the windows C dll tightdb interface - this interface can be used by almost all windows programs, in order to make a language specific binding.
 
 
+step-3 build the tightdb_csharp part of the binding
 
-step-3 byg tightdb_csharp delen af bindingen
+in windows explorer, open xyz\tightdb_csharp\TightDbCSharp
 
-gå til xyz\tightdb_csharp\TightDbCSharp
+1) open TightDbCSharp.sln
 
-1) åbn TightDbCSharp.sln
+2) menu->build->batch build->mark both configurations->rebuild
 
-2) build->batch build->marker begge to->rebuild
+3) run build.cmd in the same directory as where you opened TightDbCSharp.sln
 
-3) kør build.bat
-
-xyz\tightdb_csharp\TightDbCSharp\release\kataloget er C# binding distributionen
-
+after this, xyz\tightdb_csharp\TightDbCSharp\release\   will contain the C# binding distribution
 
 
+(the rest is not in English, will be transalted in time)
 
 Nu har du 3 arkiver :
 

@@ -166,6 +166,7 @@ namespace TightDbCSharp
             {
                 throw new ArgumentNullException("schema");
             }
+            //ValidateNoColumns();
             ValidateIsEmpty();
             foreach (Field tf in schema)
             {
@@ -183,6 +184,7 @@ namespace TightDbCSharp
         //the method will create columns in the table, matching the specified schema.
         public void DefineSchema(Field schema)
         {
+            //ValidateNoColumns();
             ValidateIsEmpty();
             Spec.AddField(schema);
             UpdateFromSpecNoCheck();//build table from the spec tree structure            
@@ -273,10 +275,18 @@ namespace TightDbCSharp
 
         public void UpdateFromSpec()
         {
+            //ValidateNoColumns(); 
             ValidateIsEmpty();
             UpdateFromSpecNoCheck();
         }
 
+        internal void ValidateNoColumns()
+        {
+            if (GetColumnCount() > 0)
+            {
+                throw new InvalidOperationException("Updatefromspec can only be called on a table with no existing columns");
+            }
+        }
         internal override DataType ColumnTypeNoCheck(long columnIndex)
         {
             return UnsafeNativeMethods.TableGetColumnType(this, columnIndex);
@@ -457,7 +467,7 @@ namespace TightDbCSharp
 
         internal override byte[] GetBinaryNoCheck(long columnIndex, long rowIndex)
         {
-            throw new NotImplementedException();
+            return UnsafeNativeMethods.TableGetBinary(this,columnIndex,rowIndex);
         }
 
         public override Table GetSubTableNoCheck(long columnIndex, long rowIndex)
@@ -477,7 +487,7 @@ namespace TightDbCSharp
 
         internal override void SetBinaryNoCheck(long columnIndex, long rowIndex, byte[] value)
         {
-            throw new NotImplementedException();
+            UnsafeNativeMethods.TableSetBinary(this, columnIndex, rowIndex, value);
         }
 
         public override void SetSubTableNoCheck(long columnIndex, long rowIndex, Table value)

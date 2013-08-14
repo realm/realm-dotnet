@@ -1085,8 +1085,20 @@ namespace TightDbCSharp
         }
 
 
+        public byte[] GetBinary(long columnIndex, long rowIndex)
+        {
+            ValidateRowIndex(rowIndex);
+            ValidateColumnIndexAndTypeBinary(columnIndex);
+            return GetBinaryNoCheck(columnIndex, rowIndex);
+        }
 
-
+        public byte[] GetBinary(String columnName, long rowIndex)
+        {
+            long columnIndex = GetColumnIndex(columnName);
+            ValidateRowIndex(rowIndex);
+            ValidateTypeBinary(columnIndex);
+            return GetBinaryNoCheck(columnIndex, rowIndex);
+        }
 
 
 
@@ -1156,6 +1168,24 @@ namespace TightDbCSharp
             ValidateTypeString(columnIndex);
             SetStringNoCheck(columnIndex, rowIndex, value);
         }
+
+        public void SetBinary(long columnIndex, long rowIndex, byte[] value)
+        {
+            ValidateRowIndex(rowIndex);
+            ValidateColumnIndexAndTypeBinary(columnIndex);
+            SetBinaryNoCheck(columnIndex, rowIndex, value);
+        }
+
+        public void SetBinary(string columnName, long rowIndex, byte[] value)
+        {
+            ValidateRowIndex(rowIndex);
+            long columnIndex = GetColumnIndex(columnName);
+            ValidateTypeBinary(columnIndex);
+            SetBinaryNoCheck(columnIndex, rowIndex, value);
+        }
+
+
+
 
         //validation of a column index as well as the type of that index. To save a stack parameter with the type, there are one method per type        
 
