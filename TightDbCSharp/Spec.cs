@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
-using System.Runtime.Serialization;
 
 
 //using System.Threading.Tasks; not portable as of 2013-4-2
@@ -14,7 +14,8 @@ using System.Runtime.Serialization;
 
 namespace TightDbCSharp
 {
-    //custom exception for Table class. When Table runs into a Table related error, TableException is thrown
+    /*
+    //custom exception for Spec class. When Table runs into a Table related error, TableException is thrown
     //some system exceptions might also be thrown, in case they have not much to do with Table operation
     //following the pattern described here http://msdn.microsoft.com/en-us/library/87cdya3t.aspx
     [Serializable]
@@ -39,20 +40,30 @@ namespace TightDbCSharp
         {
         }
     }
-
+    */
 
 
     public class Spec : Handled 
     {
         //not accessible by source not in te TightDBCSharp namespace
-        internal Spec(IntPtr handle, bool shouldbedisposed)
+        internal Spec(Table ownerRootTable,IntPtr handle, bool shouldbedisposed)
         {
+            OwnerRootTable = ownerRootTable;
             SetHandle(handle, shouldbedisposed);
         }
 
+        //if spec is the spec for a root table, OwnerTable is that root table
+        //if spec is the spec for a table in a cell in a mixed column then OwnerTable is that table in that cell
+        //if spec is the spec for a non-mixed subtable in a table, then OwnerTable is ***NOT*** that subtable
+        //as all the subtables in that column share the same spec. Instead OwnerTable is the ultimate table that has this spec
+        //as a subcolumn spec.
+        //this reference will keep a table alive as long as we have spec's pointing to it, and it is used
+        //for validation of spec operations
+        public Table OwnerRootTable { get; private set; }
+
         public override bool Equals(object obj)
         {
-            Spec spec = (Spec) obj;
+            var spec = (Spec) obj;
             if (spec == null)
             {
                 return false;
@@ -60,7 +71,7 @@ namespace TightDbCSharp
             return Equals(spec);
         }
 
-        public bool Equals(Spec spec)
+        private bool Equals(Spec spec)
         {
             return UnsafeNativeMethods.SpecEquals(this,spec);
         }
@@ -136,7 +147,7 @@ namespace TightDbCSharp
 
 
         // will add the field list to the current spec
-        public void AddFields(Field[] fields)
+        private void AddFields(IEnumerable<Field> fields)
         {
             if (fields != null)
             {
@@ -153,22 +164,76 @@ namespace TightDbCSharp
 
         
 
-        public Spec AddSubTableColumn(String columnName)
+        public Spec AddSubTableColumn(String name)
         {
-            return UnsafeNativeMethods.AddSubTableColumn(this, columnName);
+            ValidateNoColumns();
+            return UnsafeNativeMethods.AddSubTableColumn(this, name);
+        }
+
+        private void ValidateNoColumns()
+        {
+            OwnerRootTable.ValidateNoColumns();
         }
 
         public long AddColumn(DataType type, String name)
         {
+            ValidateNoColumns();
             return UnsafeNativeMethods.SpecAddColumn(this, type, name);
         }
 
-        //shorthand methods as C# constants doesn't exist so we can't do AddColumn(Type_Int,"name")
-        //instead we have AddIntColumn("name") which is sort of almost just as good
+        //The reason we have a specific AddSubTableColumn is bc it returns
+        //the spec of the subtable that is being added (to enable sub sub columns)
+        //You could also call AddColumn(Datatype.Table,"name") and that would work,
+        //but then You would have to read back the subtable spec manually afterwards
+        //To balance the interface, the methods below has been added so that You can 
+        //add all types without having to specify a DataType constant
+        public long AddBinaryColumn(String name)
+        {
+            return AddColumn(DataType.Binary, name);
+        }
+
+        public long AddBoolColumn(String name)
+        {
+            return AddColumn(DataType.Bool, name);
+        }
+
+        public long AddDateColumn(String name)
+        {
+            return AddColumn(DataType.Date, name);
+        }
+
+        public long AddDoubleColumn(String name)
+        {
+            return AddColumn(DataType.Double, name);
+        }
+
+        public long AddFloatColumn(String name)
+        {
+            return AddColumn(DataType.Float, name);
+        }
+
         public long AddIntColumn(String name)
         {
             return AddColumn(DataType.Int, name);
         }
+
+        public long AddMixedColumn(String name)
+        {
+            return AddColumn(DataType.Mixed, name);
+        }
+
+        public long AddStringColumn(String name)
+        {
+            return AddColumn(DataType.String, name);
+        }
+
+        public long AddTableColumn(String name)
+        {
+            return AddColumn(DataType.Table, name);
+        }
+
+
+
 
         //I assume column_idx is a column with a table in it
         //if it is a mixed with a subtable in it, this method will throw
@@ -178,7 +243,7 @@ namespace TightDbCSharp
             {
                 return UnsafeNativeMethods.SpecGetSpec(this, columnIndex);
             }            
-           throw new SpecException("get spec(columnIndex) can only be called on a SubTable field");
+           throw new  ArgumentOutOfRangeException("columnIndex",columnIndex,"get spec(columnIndex) can only be called on a SubTable field");
         }
 
         public DataType GetColumnType(long columnIndex)

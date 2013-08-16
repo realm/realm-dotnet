@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 //this project has access to all the unit tests. You can use it to run selected unit tests in a more 
 //controlled way than with the unit test runner, and to run the binding in a console window app, as this is
@@ -10,11 +6,13 @@ using System.Threading.Tasks;
 //as many unit test runners don't have support for showing console output.
 namespace Test
 {
-    class Program
+    static class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
             TightDbCSharpTest.TableTests1.TableSetBinary();
+            TightDbCSharpTest.TableTests1.TestInterop();
+            Console.ReadKey();
         }
     }
 }

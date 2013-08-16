@@ -24,7 +24,7 @@ namespace TightDbCSharp
         internal abstract Boolean GetBoolNoCheck(long columnIndex, long rowIndex);
         internal abstract String GetStringNoCheck(long columnIndex, long rowIndex);
         internal abstract byte[] GetBinaryNoCheck(long columnIndex, long rowIndex);
-        public abstract Table GetSubTableNoCheck(long columnIndex, long rowIndex);//fixme sb internal, was public for debugging purposes
+        internal abstract Table GetSubTableNoCheck(long columnIndex, long rowIndex);
         //mixed is handled by type named GetMixedxxxx methods below
         internal abstract DateTime GetDateTimeNoCheck(long columnIndex, long rowIndex);
         internal abstract float GetFloatNoCheck(long columnIndex, long rowIndex);
@@ -106,7 +106,7 @@ namespace TightDbCSharp
         internal abstract void SetBoolNoCheck(long columnIndex, long rowIndex, Boolean value);
         internal abstract void SetStringNoCheck(long columnIndex, long rowIndex, string value);
         internal abstract void SetBinaryNoCheck(long columnIndex, long rowIndex, byte[] value);
-        public abstract void SetSubTableNoCheck(long columnIndex, long rowIndex, Table value);//fixme sb internal changed for debugging
+        internal abstract void SetSubTableNoCheck(long columnIndex, long rowIndex, Table value);
         internal abstract void SetDateTimeNoCheck(long columnIndex, long rowIndex, DateTime value);
         internal abstract void SetDoubleNoCheck(long columnIndex, long rowIndex, double value);
         internal abstract void SetFloatNoCheck(long columnIndex, long rowIndex, float value);
@@ -127,8 +127,7 @@ namespace TightDbCSharp
 
         // ReSharper restore MemberCanBeProtected.Global
 
-        public abstract string ToJson();
-
+        
 
 
         internal abstract void RemoveNoCheck(long rowIndex);
@@ -225,15 +224,10 @@ namespace TightDbCSharp
             return columnIndex;
         }
 
-        //returns -1 if the column name does not exist (instead of throwing an exception)
-        public long GetColumnIndexNoThrow(String name)
-        {
-            return GetColumnIndexNoCheck(name);
-        }
 
         //takes a message to enable us to give a customized error message if the validation fails.
         //this validation could go wrong if someone change table scheme while the method is running
-        public void ValidateEqualScheme(Table tableA, Table tableB, string message)
+        private void ValidateEqualScheme(Table tableA, Table tableB, string message)
         {
             if (tableA == null || tableB == null)
             {
@@ -249,20 +243,8 @@ namespace TightDbCSharp
                                                 ((tableB.IsValid()) ? "TableB was not valid" : ""));
             }
 
-            //fixme clean up, this was split up for debugging purposes
             Spec specA = tableA.Spec;
-            var x = specA.ColumnCount;
-
-            var y = specA.ColumnCount;
-
-            var z = tableB.ColumnCount;
-
-            var zz = tableB.IsValid();
-
             Spec specB = tableB.Spec;
-            var xx = specB.ColumnCount;
-
-
             if (!UnsafeNativeMethods.SpecEquals(specA, specB))
             {
                 throw new ArgumentOutOfRangeException(
@@ -272,14 +254,10 @@ namespace TightDbCSharp
         }
 
 
-        private void ValidateSubTableForSetting(Table recievingsubtable, Table subtoInsert)
-        {
-        }
-
         //todo:unit test this
         //column and row must point to a field that is of type subtable
         //note that in case the subtable scheme does not fit well with the passed object, the subtable will be half filled wit data up to the point where there was a mismatch,
-        //for instalce if called with an array of 10 rows, where the last row have one more field (or is missing a field)
+        //for instance if called with an array of 10 rows, where the last row have one more field (or is missing a field)
         //if schemes does not match up with data an exeption is thrown when the mismatch is discovered.
         //It is possible to back out of this operation using transactions (aborting the ongoing one)
         //if You pass a Table, schema is validated before any data is changed
@@ -311,12 +289,9 @@ namespace TightDbCSharp
                     return; //done! if elem is null element was not a Table but something else
                 }
 
-                //each element in the enumerable list must be a row, so call addrow with the element. Let Arow decide if it is useful as row data
-                foreach (IEnumerable<object> arow in element)
-                    //typecast because we already ensured element is an array,and that element is not null
-                {
-                    t.Add(arow);
-                }
+                //each element in the enumerable list must be a row, 
+                //so call AddMany to add them
+                t.AddMany(element);
             }
         }
     
@@ -420,26 +395,55 @@ namespace TightDbCSharp
             SetMixedNoCheck(columnIndex, rowIndex, value);
         }
 
+        //special case as we only handle object arrays in the general case of adding an array to a row
+        //however, when specifying arrays in array, the user can easily accidentially specify an array that
+        //is not boxed and is a real physical array with values, such an array is detected in the structure we get
+        //and handled here.
+        private void SetIntArrayInRowNoCheck(long rowIndex, Int32[] ints)
+        {
+            ValidateSetRowNumColumns(ints.Length);
+            int ix = 0;
+            foreach (var i in ints)
+            {
+                SetLongNoCheck(ix,rowIndex, i);
+                ix++;
+            }
+        }
+
+        //helper shared with a few methods
+        private void ValidateSetRowNumColumns(int arrayLength)
+        {
+            if (arrayLength != ColumnCount)
+                throw new ArgumentOutOfRangeException(
+                    String.Format(CultureInfo.InvariantCulture,
+                        "SetRow called with {0} objects, but there are only {1} columns in the table",
+                        arrayLength, ColumnCount));
+   
+        }
 
         //do not check row index
         //todo:handle the special case where a user sends a null as a parameter - this is not valid except if the table has only one column that is a subtable.
         //todo:let the type be ieumerable, allowing user to set with objects in any kind of collection he has
         internal void SetRowNoCheck(long rowIndex, params object[] rowContents)
             //experimental        internal void SetRowNoCheck(long rowIndex, IEnumerable<object> rowContents)
-        {
-
+        {        
             //user could send row data as an object array as first parameter, or many parametres that together is the data for a row/
             //handle both cases by making sure rowContents is always an array of field values to be put in
             if (rowContents.Length == 1 && ColumnCount > 1 && rowContents.GetType() == typeof (object[]))
             {
-                rowContents = (object[]) rowContents[0];
-            }
+                if (rowContents[0].GetType() == typeof(Int32[]))//bc if you specify a subtable row as new [] {1,2,3} C# will compile it as an System.int32[] which is not at all compatible with object[]
+                {
+                    SetIntArrayInRowNoCheck(rowIndex, (Int32[])rowContents[0]);
+                    return;
+                }
 
-            if (rowContents.Length != ColumnCount)
-                throw new ArgumentOutOfRangeException("rowContents",
-                    String.Format(CultureInfo.InvariantCulture,
-                        "SetRow called with {0} objects, but there are only {1} columns in the table",
-                        rowContents.Length, ColumnCount));
+                if (rowContents[0].GetType() == typeof(object[]))
+                {
+                  rowContents = (object[]) rowContents[0];
+                }
+            }
+            
+            ValidateSetRowNumColumns(rowContents.Length);
             for (long ix = 0; ix < ColumnCount; ix++)
             {
                 object element = rowContents[ix]; //element is parameter number ix
@@ -447,8 +451,7 @@ namespace TightDbCSharp
 
                 switch (ColumnTypeNoCheck(ix))
                 {
-                    case DataType.Int:
-                        if (element is int)
+                    case DataType.Int:                       
                             SetLongNoCheck(ix, rowIndex, (int) element);
                                 //this throws exceptions if called with something too weird
                         break;
@@ -626,6 +629,21 @@ namespace TightDbCSharp
         }
 
 
+        public byte[] GetMixedBinary(long columnIndex, long rowIndex)
+        {
+            ValidateColumnRowMixedType(columnIndex, rowIndex, DataType.Binary);
+            return GetMixedBinaryNoCheck(columnIndex, rowIndex);
+        }
+
+        public byte[] GetMixedBinary(string columnName, long rowIndex)
+        {
+            long columnIndex = GetColumnIndex(columnName);
+            ValidateRowIndex(rowIndex);
+            ValidateMixedType(columnIndex, rowIndex, DataType.Binary);
+            return GetMixedBinaryNoCheck(columnIndex, rowIndex);
+        }
+
+
 
         internal DateTime GetMixedDateTimeNoRowCheck(long columnIndex, long rowIndex)
         {
@@ -637,6 +655,7 @@ namespace TightDbCSharp
         {
             return GetMixedDateTimeNoRowCheck(GetColumnIndex(columnName), rowIndex);
         }
+
 
 
         public DateTime GetDateTime(long columnIndex, long rowIndex)

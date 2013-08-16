@@ -1,17 +1,16 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.ComponentModel;
 using System.Globalization;
 using System.Reflection;
-using System.Runtime.Remoting.Messaging;
+using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 //using System.Threading.Tasks; not portable as of 2013-04-02
 
 //Tell compiler to give warnings if we publicise interfaces that are not defined in the cls standard
 //http://msdn.microsoft.com/en-us/library/bhc3fa7f.aspx
-using TightDbCSharp;
-using TightDbCSharp.Extensions;
+using System.Text;
 
 [assembly: CLSCompliant(true)]
 
@@ -31,10 +30,10 @@ namespace TightDbCSharp
     {
         //manual dll version info. Used when debugging to see if the right DLL is loaded, or an old one
         //the number is a date and a time (usually last time i debugged something)
-        public  const long GetDllVersionCSharp = 1305301717 ;
+        private const long GetDllVersionCSharp = 1305301717 ;
 
      
-        //always acquire a table handle
+        //this is not called if constructed with parametres
         public Table()
         {
             TableNew();
@@ -70,6 +69,26 @@ namespace TightDbCSharp
         {
             return UnsafeNativeMethods.TableHasSharedSpec(this);
         }
+
+        //Used to block calls to updatefromspec if the table already have columns that
+        //have been saved with updatefromspec. Coded here because c++ Table.ColumnCount also
+        //counts rows that have not been "saved" with a call to updatefromspec
+        //this bool defaults to false,and is set to true when addcolumn or
+        //updatefromspec is called
+        internal bool HasColumns { private get; set; }
+
+        //allow end users to query a table to figure if it is okay to add colums to that table using spec
+        //if returns false, user will have to use table column operations only
+        //false means that this table's spec as well as any subspec you can get from it, cannot be used
+        //to alter columns.
+        //however, altering mixed subtables is determined by calling the mixed subtable.SpecModifyable
+        //the check for HasSharedSpec is to ensure that all subtables taken out from table rows will always return false
+        public bool SpecModifyable()
+        {
+            return (!HasColumns && !HasSharedSpec());
+        }
+
+
         //see tableview for further interesting comments
         public TableRow this[long rowIndex]
         {
@@ -81,7 +100,7 @@ namespace TightDbCSharp
         }
 
         //resembling the typed back() method or the untyped last method in python (that returns a cursor object)
-        //see similar implementation in TableView  todo:refactor if possible
+        //see similar implementation in TableView 
         public TableRow Last()
         {
             long s = Size;
@@ -93,7 +112,7 @@ namespace TightDbCSharp
         }
        // */
 
-        internal TableRow RowForIndexNoCheck(long rowIndex)
+        private TableRow RowForIndexNoCheck(long rowIndex)
         {
             return new TableRow(this, rowIndex);
         }
@@ -166,7 +185,7 @@ namespace TightDbCSharp
             {
                 throw new ArgumentNullException("schema");
             }
-            //ValidateNoColumns();
+            ValidateNoColumns();
             ValidateIsEmpty();
             foreach (Field tf in schema)
             {
@@ -182,9 +201,9 @@ namespace TightDbCSharp
 
         //this method is intended to be called on a table with no data in it.
         //the method will create columns in the table, matching the specified schema.
-        public void DefineSchema(Field schema)
+        private void DefineSchema(Field schema)
         {
-            //ValidateNoColumns();
+            ValidateNoColumns();
             ValidateIsEmpty();
             Spec.AddField(schema);
             UpdateFromSpecNoCheck();//build table from the spec tree structure            
@@ -219,16 +238,79 @@ namespace TightDbCSharp
         public static void TestInterop()
         {
             UnsafeNativeMethods.TestInterop();
+            
         }
 
 
-        public static long CPlusPlusLibraryVersion()
+        //this dll call is only used in ShowVersionTest. 
+        //will probably not work with mono so at that time should be inside a define
+        //as should the line below using it
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
+        private static extern IntPtr GetModuleHandle(string lpModuleName);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [PreserveSig]
+        private static extern uint GetModuleFileName
+        (
+            [In] IntPtr hModule,
+            [Out] StringBuilder lpFilename,
+            [In][MarshalAs(UnmanagedType.U4)] int nSize
+        );
+
+
+        //dump various OS diagnostics to console
+        public static void ShowVersionTest()
+        {
+            var pointerSize = IntPtr.Size;
+            var vmBitness = (pointerSize == 8) ? "64bit" : "32bit";            
+            var dllstring = (pointerSize == 8) ? UnsafeNativeMethods.L64 : UnsafeNativeMethods.L32;
+            
+            OperatingSystem os = Environment.OSVersion;
+            Assembly executingAssembly = Assembly.GetExecutingAssembly();
+            PortableExecutableKinds peKind;
+            ImageFileMachine machine;
+            executingAssembly.ManifestModule.GetPEKind(out peKind, out machine);
+            // String thisapplocation = executingAssembly.Location;
+
+            Console.WriteLine("Pointer Size :              {0}", pointerSize);
+            Console.WriteLine("Process Running as :        {0}", vmBitness);
+            Console.WriteLine("Built as PeKind :           {0}", peKind);
+            Console.WriteLine("Built as ImageFileMachine : {0}", machine);
+            Console.WriteLine("OS Version :                {0}", os.Version);
+            Console.WriteLine("OS Platform:                {0}", os.Platform);
+            Console.WriteLine("");
+            Console.WriteLine("Now Loading {0} - expecting it to be a {1} dll", dllstring,  vmBitness);
+            //Console.WriteLine("Loading "+thisapplocation+"...");
+
+            //if something is wrong with the DLL (like, if it is gone), we will not even finish the creation of the table below.
+            using (var t = new Table())
+            {
+                //the DLL must have loaded correctly
+
+                const int maxPath = 260;
+                var builder = new StringBuilder(maxPath);
+                var hModule = GetModuleHandle(dllstring);
+                if (hModule != IntPtr.Zero)//could be zero if the dll has never been called, but then we would not be here in the first place
+                {
+                    GetModuleFileName(hModule, builder, builder.Capacity);
+                }
+
+                Console.WriteLine("DLL File Actually Loaded :\n {0}", builder);
+                Console.WriteLine("C#  DLL        build number {0}", GetDllVersionCSharp);
+                Console.WriteLine("C++ DLL        build number {0}", CPlusPlusLibraryVersion());
+                if (t.Size != 0)
+                {
+                    throw new TableException("Weird");
+                }
+            }
+            Console.WriteLine();
+            Console.WriteLine();
+        }
+
+
+        private static long CPlusPlusLibraryVersion()
         {
             return UnsafeNativeMethods.CppDllVersion();
-        }
-        public static long TestAddInteger(long value)
-        {
-            return UnsafeNativeMethods.TestIncrementInteger(value);
         }
 
 
@@ -237,7 +319,7 @@ namespace TightDbCSharp
         //TableHandle contains the value of a C++ pointer to a C++ table
         //it is sent as a parameter to calls to the C++ DLL.
 
-        internal void TableNew()
+        private void TableNew()
         {
            UnsafeNativeMethods.TableNew(this);//calls sethandle itself
         }
@@ -253,6 +335,8 @@ namespace TightDbCSharp
             ValidateColumnIndex(columnIndex);
             UnsafeNativeMethods.TableRemoveColumn(this,columnIndex);
         }
+
+
         //this one is called from Handled.cs when we have to release the table handle.
         internal override void ReleaseHandle()
         {
@@ -269,24 +353,28 @@ namespace TightDbCSharp
         //todo : (asana)should not be public, call updatefromspec automatically from methods that change the spec (so find out how to get to the top level table when all you have is a spec)
         //todo : (asana)updatefromspec is only allowed on the toplevel table, not on subtables within  - bot okay on toplevel tables inside mixed
         internal void UpdateFromSpecNoCheck()
-        {        
+        {
+            
             UnsafeNativeMethods.TableUpdateFromSpec(this);
+            HasColumns = true;
         }
 
         public void UpdateFromSpec()
         {
-            //ValidateNoColumns(); 
-            ValidateIsEmpty();
+            ValidateNoColumns(); //updatefromspec can only be called once, to create the table structure, so no prior columns
+            ValidateIsEmpty();//of course the table must also be empty (although i fail to see how a table can have no columns and be not-empty)
+            ValidateNotSharedSpec();//updatefromspec can only be called on a root table
             UpdateFromSpecNoCheck();
         }
 
         internal void ValidateNoColumns()
         {
-            if (GetColumnCount() > 0)
+            if (HasColumns)
             {
                 throw new InvalidOperationException("Updatefromspec can only be called on a table with no existing columns");
             }
         }
+
         internal override DataType ColumnTypeNoCheck(long columnIndex)
         {
             return UnsafeNativeMethods.TableGetColumnType(this, columnIndex);
@@ -395,7 +483,7 @@ namespace TightDbCSharp
         }
 
 
-        public override string ToJson()
+        public  string ToJson()
         {
             return UnsafeNativeMethods.TableToJson(this);
         }
@@ -409,24 +497,77 @@ namespace TightDbCSharp
         {
             return UnsafeNativeMethods.TableGetColumnCount(this);
         }
+
+        private void ValidateNotSharedSpec()
+        {
+            if (HasSharedSpec())
+            {
+                throw new InvalidOperationException("It is illegal to alter the column structure of subtables that has been read in from a table row");
+            }
+        }
         
         //this will add a column of the specified type, if it is a table type, You will have to populate it yourself later on,
         //by getting its subspec and working with that
+        //it is not allowed in the c++ binding to call AddColumn on a subtable that has been taken out
+        //from a column,row - unless it is a mixed column.
+        //we check this, this way :
+        //if we have rows, addcolumn is not allowed - throw
+        //if we have a shared spec, we are a subtable inside a row - throw
+        //otherwise we must be a root or a table from a mixed row.
         public long AddColumn(DataType type, String name)
-        {
-            return UnsafeNativeMethods.TableAddColumn(this, type, name);
+        {            
+            ValidateIsEmpty();
+            ValidateNotSharedSpec();             
+            long colIx =  UnsafeNativeMethods.TableAddColumn(this, type, name);
+            HasColumns = true;
+            return colIx;
         }
 
-        //
+        private Boolean HasIndexNoCheck(long columnIndex )
+        {        
+            return UnsafeNativeMethods.TableHasIndex(this,columnIndex);
+        }
 
+        //only legal to call this with a string column index
+        public Boolean HasIndex(long columnIndex)
+        {
+            ValidateColumnIndexAndTypeString(columnIndex);
+            return HasIndexNoCheck(columnIndex);
+        }
 
+        //only legal to call this with a string column index
+        public Boolean HasIndex(String columnName)
+        {
+            long columnIndex = GetColumnIndex(columnName);
+            ValidateTypeString(columnIndex);
+            return HasIndexNoCheck (columnIndex);
+        }
+
+        //expects the columnIndex to already have been validated as legal and type string
+        private void ValidateMustHaveIndexNoColCheck(long columnIndex)
+        {            
+            if (!HasIndexNoCheck(columnIndex))
+            {
+                throw new TableException(String.Format("Column Index {0} must specify a string column that is indexed", columnIndex));
+            }
+        }
+
+        //will throw exception if an object in arr is not row-compatible with the table - but rows up to that
+        //point will have been added. Put the call in a transaction and rollback if you get an exception
+        public void AddMany(IEnumerable arr)
+        {
+            foreach (var row in arr )
+            {
+                Add(row);
+            }
+        }
 
         //adds an empty row at the end and filles it out
         //idea:consider if we should use insert row instead? - ask what's the difference, if any (asana)
         //todo:insert should only be used by the binding, not be exposed to the user (asana)
         //idea:when we add an entire row, insert is faster. (asana)
         public long Add(params object[] rowData)
-        {
+        {           
             long rowAdded = AddEmptyRow(1);
             SetRowNoCheck(rowAdded, rowData);//because the only thing that could be checked at this level is the row number.
             return rowAdded;//return the index of the just added row
@@ -443,13 +584,22 @@ namespace TightDbCSharp
             ValidateRowIndex(rowIndex);
             SetRowNoCheck(rowIndex,rowData);
         }
+
+
+        private void ValidateInsertRowIndex(long rowIndex)
+        {
+                        if (rowIndex < 0 || rowIndex > Size)
+            {
+                throw new ArgumentOutOfRangeException("rowIndex",String.Format("Table.Insert - row Index out of range. Table size {0}  index specified {1}",Size,rowIndex));
+            }                
+
+        }
         //insert rowdata into a new row that is inserted at rowIndex
         //rowindex=0 means insert into very first record
         //rowindex=size means add after last        
         public void Insert(long rowIndex, params object[] rowData)
         {
-            if (rowIndex > 0)
-                ValidateRowIndex(rowIndex - 1);                            
+            ValidateInsertRowIndex(rowIndex);
             UnsafeNativeMethods.TableInsertEmptyRow(this,rowIndex,1);                         
             SetRowNoCheck(rowIndex,rowData);
         }
@@ -470,9 +620,11 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableGetBinary(this,columnIndex,rowIndex);
         }
 
-        public override Table GetSubTableNoCheck(long columnIndex, long rowIndex)
+        internal override Table GetSubTableNoCheck(long columnIndex, long rowIndex)
         {
-            return UnsafeNativeMethods.TableGetSubTable(this, columnIndex, rowIndex);
+            Table fromSubtableCell =  UnsafeNativeMethods.TableGetSubTable(this, columnIndex, rowIndex);
+            fromSubtableCell.HasColumns = fromSubtableCell.ColumnCount > 0;
+            return fromSubtableCell;
         }
 
         internal override void ClearSubTableNoCheck(long columnIndex, long rowIndex)
@@ -490,7 +642,7 @@ namespace TightDbCSharp
             UnsafeNativeMethods.TableSetBinary(this, columnIndex, rowIndex, value);
         }
 
-        public override void SetSubTableNoCheck(long columnIndex, long rowIndex, Table value)
+        internal override void SetSubTableNoCheck(long columnIndex, long rowIndex, Table value)
         {
             UnsafeNativeMethods.TableSetSubTable(this,columnIndex,rowIndex,value);            
         }
@@ -545,23 +697,26 @@ namespace TightDbCSharp
 
         internal override byte[] GetMixedBinaryNoCheck(long columnIndex, long rowIndex)
         {
-            throw new NotImplementedException();
+            return UnsafeNativeMethods.TableGetMixedBinary(this, columnIndex, rowIndex);
         }
 
         internal override Table GetMixedSubTableNoCheck(long columnIndex, long rowIndex)
         {
-            return UnsafeNativeMethods.TableGetSubTable(this, columnIndex, rowIndex);            
+            var mixedSubTable= UnsafeNativeMethods.TableGetSubTable(this, columnIndex, rowIndex);
+            mixedSubTable.HasColumns = mixedSubTable.ColumnCount > 0;//if it has columns, mark it down for usuitable to work with spec modifications
+            return mixedSubTable;
         }
 
         //warning! Use only this one when inserting new rows that are not inserted yet
-        //todo:implement the rest of the insert api for inserting (currently only addemptyrow and setxx is implemented)
-        public void InsertInt(long columnIndex, long rowIndex, long value)
+        //todo:implement the rest of the insert api for inserting - but only for internal use
+        private void InsertInt(long columnIndex, long rowIndex, long value)
         {
             UnsafeNativeMethods.TableInsertInt(this, columnIndex, rowIndex, value);
         }
 
         public void InsertEmptyRow(long rowIndex, long rowsToInsert)
         {            
+            ValidateInsertRowIndex(rowIndex);
             UnsafeNativeMethods.TableInsertEmptyRow(this, rowIndex, rowsToInsert);                            
         }
 
@@ -695,36 +850,43 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableFindFirstBool(this, columnIndex, value);
         }
 
-        internal TableView DistinctNoCheck(long columnIndex)
+        private TableView DistinctNoCheck(long columnIndex)
         {           
             return UnsafeNativeMethods.TableDistinct(this, columnIndex);
         }
 
         public TableView Distinct(long columnIndex)
         {
-            ValidateColumnIndex(columnIndex);
+            ValidateColumnIndexAndTypeString(columnIndex);
+            ValidateMustHaveIndexNoColCheck(columnIndex);
             return DistinctNoCheck(columnIndex);
         }
 
+        //currently c++ core only supports index on string, and only Distinct on indexed columns so we disallow anything but indexed string fields
         public TableView Distinct(string columnName)
-        {            
-            return DistinctNoCheck(GetColumnIndex(columnName));
+        {
+            long columnIndex = GetColumnIndex(columnName);
+            ValidateTypeString(columnIndex);
+            ValidateMustHaveIndexNoColCheck(columnIndex);
+            return DistinctNoCheck(columnIndex);
         }
 
         //note - SetIndex is only callable if the column is a string column
-        internal void SetIndexNoCheck(long columnIndex)
+        private void SetIndexNoCheck(long columnIndex)
         {
             UnsafeNativeMethods.TableSetIndex(this, columnIndex);
         }
 
         public void SetIndex(long columnIndex)
         {            
+            ValidateNotSharedSpec();//core does not support indexes on colums in non-mixed subtables
             ValidateColumnIndexAndTypeString(columnIndex);
             SetIndexNoCheck(columnIndex);
         }
 
         public void SetIndex(string columnName)
         {
+            ValidateNotSharedSpec();//core does not support indexes on colums in non-mixed subtables
             long columnIndex = GetColumnIndex(columnName);
             ValidateTypeString(columnIndex);
             SetIndexNoCheck(columnIndex);

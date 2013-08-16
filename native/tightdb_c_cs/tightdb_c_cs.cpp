@@ -441,6 +441,22 @@ TIGHTDB_C_CS_API size_t table_get_mixed_string(Table* table_ptr, size_t column_n
 }
 
 
+//function returns a pointer to the data. 
+//This pointer is live until the table is changed, so there is enough time for C# to copy the data to managed
+//the size parameter returns the size of the array. This parameter is marshalled by C# as an out parameter.
+//end result is that the caller gets both the pointer to the data, and the lenght
+//the C# caller will immediatly copy the data from the returned pointer to managed memory, the C# caller will not
+//free any memory. The C# marshaller will not try to free the returned char*, as we call this as an intptr returning function
+TIGHTDB_C_CS_API const char * table_get_mixed_binary(Table*  table_ptr, size_t column_ndx, size_t row_ndx,  size_t* size)
+{
+    BinaryData bd=table_ptr->get_mixed(column_ndx,row_ndx).get_binary();
+    *size = bd.size();
+    return  bd.data();//pointer to all the data;
+}
+
+
+
+
 TIGHTDB_C_CS_API  size_t table_get_mixed_type(Table* table_ptr, const size_t column_ndx,const size_t row_ndx)
 {
     return datatype_to_size_t(table_ptr->get_mixed_type(column_ndx,row_ndx));
@@ -530,6 +546,15 @@ TIGHTDB_C_CS_API void table_set_mixed_string(Table* table_ptr, size_t column_ndx
     table_ptr->set_mixed(column_ndx,row_ndx,strd);
 }
 
+//C# will call with a pinned array of bytes and its size. no copying occours except inside tightdb where the data is of course
+//copied down into the table. The data pointed to by data must not be accessed after this call is finished.
+TIGHTDB_C_CS_API void table_set_mixed_binary(Table*  table_ptr, size_t column_ndx, size_t row_ndx,  const char* data, std::size_t size)
+{
+    BinaryData bd(data,size);
+    table_ptr->set_mixed(column_ndx,row_ndx,bd);
+}
+
+
 
 //table_set_mixed is implemented by the various typed functions above.
 
@@ -558,7 +583,11 @@ TIGHTDB_C_CS_API void table_clear_subtable(Table* table_ptr, size_t column_ndx, 
 }
 
 
-//todo:implement table_has_index
+TIGHTDB_C_CS_API size_t table_has_index(Table* table_ptr, size_t column_ndx)
+{
+    return bool_to_size_t(table_ptr->has_index(column_ndx));
+}
+
 
 //currently only legal with string columns
 TIGHTDB_C_CS_API void table_set_index(Table * table_ptr , size_t column_ndx)
@@ -872,6 +901,8 @@ TIGHTDB_C_CS_API size_t tableview_get_mixed_string(TableView* tableview_ptr, siz
 //todo:tableview_get_mixed_binary
 
 
+
+
 TIGHTDB_C_CS_API  size_t tableview_get_mixed_type(TableView* tableView_ptr, const size_t column_ndx,const size_t row_ndx)
 {
     return datatype_to_size_t(tableView_ptr->get_mixed_type(column_ndx,row_ndx));
@@ -1011,7 +1042,21 @@ TIGHTDB_C_CS_API int64_t tableview_count_double(TableView * tableview_ptr , size
 
 //todo:implement tableview_get_source_ndx
 
-//todo:implement tableview_to_json
+//multiple issues with this one
+//decide wether to implement an endpoint C# stream that then reads from the c++ stream output from to_json
+//or just to put the to_json(ss) output into a std:string and then convert it to utf-16 and return it as a normal c# string
+//the latter is of course more simple
+//note that calling from C# it is probably best to guess the buffer size large enough, as the alternative is that the tightdb to_json method is called twice
+//we could also create a class holding the string, and return a handle to it to C# and have another method that copies data once the buffer is large enough
+TIGHTDB_C_CS_API size_t tableview_to_json(TableView* tableview_ptr,uint16_t * data, size_t bufsize)
+{
+   // Write table to string in JSON format
+   std::ostringstream ss;
+   tableview_ptr->to_json(ss);   
+   string str = ss.str();   
+   return stringdata_to_csharpstringbuffer(str,data,bufsize);
+}
+
 
 //todo:implement tableview_to_string
 

@@ -118,11 +118,11 @@ namespace TightDbCSharp
                 work(transaction);
                 transaction.Commit();
             }
-            catch (Exception e)
+            catch (Exception )
             {
                 transaction.Rollback();//will likely be called again when transaction goes out of scope        
                 throw;
-            }            
+            }
         }
 
         public void ExecuteInReadTransaction(Action<Group> work)

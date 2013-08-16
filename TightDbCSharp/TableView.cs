@@ -50,7 +50,7 @@ namespace TightDbCSharp
         //*not in c++ binding so removed here. Is in java binding
         //if multiple processes acess the table, this have to be inside a transaction, or else another process could delete some rows after s is assigned,but before
         //this[s-1] is called, that would make this[s-1] throw an exception bc [s-1] would be equal to or larger than size.
-        //see similar implementation in Table  todo:refactor if possible
+        //see similar implementation in Table  
         public Row Last()
         {
             long s = Size;
@@ -163,7 +163,7 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableViewCountDouble(this, columnIndex, target);
         }
 
-        public override string ToJson()
+        public  string ToJson()
         {
             return UnsafeNativeMethods.TableViewToJson(this);
         }
@@ -206,7 +206,7 @@ namespace TightDbCSharp
             throw new NotImplementedException();
         }
 
-        public override void SetSubTableNoCheck(long columnIndex, long rowIndex, Table value)
+        internal override void SetSubTableNoCheck(long columnIndex, long rowIndex, Table value)
         {
             UnsafeNativeMethods.TableViewSetSubTable(this,columnIndex,rowIndex,value);
         }
@@ -242,7 +242,7 @@ namespace TightDbCSharp
             throw new NotImplementedException();
         }
 
-        public override Table GetSubTableNoCheck(long columnIndex, long rowIndex)
+        internal override Table GetSubTableNoCheck(long columnIndex, long rowIndex)
         {
             return UnsafeNativeMethods.TableViewGetSubTable(this, columnIndex, rowIndex);
         }

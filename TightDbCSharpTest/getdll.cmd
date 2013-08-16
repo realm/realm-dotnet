@@ -42,3 +42,5 @@ xcopy %sdirx64rel%%dllname%64r.* %ddiranyrel% /v /y /f /D
 
 xcopy %sdirx64deb%%dllname%64d.* %ddiranydeb%  /v /y /f /D
 xcopy %sdirx64deb%%dllname%64d.* %ddirx64deb%  /v /y /f /D
+xcopy %sdirx64deb%%dllname%64d.* %ddirx66deb%  /v /y /f /D
+:The last line here is an experiment to get unit tests to work.They seem to be loading the dll from strange places

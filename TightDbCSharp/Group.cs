@@ -50,9 +50,9 @@ namespace TightDbCSharp
         */
 
         //a group that is part of a readonly transaction will have readonly set to true
-        public Boolean ReadOnly { get; set; }
+        public Boolean ReadOnly { get; internal set; }
 
-        public Boolean Invalid { get; set; }//if true, some unexpected error condition exists and this group should never be used
+        public Boolean Invalid { get; internal set; }//if true, some unexpected error condition exists and this group should never be used
 
         public bool HasTable(string tableName)
         {
@@ -65,12 +65,14 @@ namespace TightDbCSharp
         public Table GetTable(string tableName)
         {
             if (HasTable(tableName)) {
-            return UnsafeNativeMethods.GroupGetTable(this, tableName);
+            Table fromGroup = UnsafeNativeMethods.GroupGetTable(this, tableName);
+            fromGroup.HasColumns = fromGroup.ColumnCount > 0;//will set HasColumns true if there are columns, even if they are uncomitted as c++ reports uncomitted as well as comitted
+                return fromGroup;                            //therefore, the user is expected to call updatefromspec on the same table wrapper that he used to do spec.addcolumn
             }
             throw new InvalidEnumArgumentException(String.Format(CultureInfo.InvariantCulture,"Group.GetTable called with a table name that does not exist {0}",tableName));
         }
 
-        public void ValidateReadOnly()
+        private void ValidateReadOnly()
         {
             if (ReadOnly) throw new InvalidOperationException("Read/Write operation initiated on a Readolny Group");
         }
@@ -81,7 +83,7 @@ namespace TightDbCSharp
         public Table CreateTable(string tableName, params Field[] schema)
         {
             ValidateReadOnly();
-            if (schema != null)
+            if (schema != null && schema.Length>0)
             {
                 return UnsafeNativeMethods.GroupGetTable(this, tableName).DefineSchema(schema);
             }

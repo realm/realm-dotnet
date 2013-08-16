@@ -35,7 +35,7 @@ namespace TightDbCSharpTest
                 int n = 0;
                 foreach (string str in testFieldNames)
                 {
-                    testTable.AddColumn(DataType.String, str);
+                    Assert.AreEqual(n,testTable.AddColumn(DataType.String, str));
                     Assert.AreEqual(str, testTable.GetColumnName(n++));
                 }
             }
@@ -60,7 +60,7 @@ namespace TightDbCSharpTest
                 var n = 0;
                 foreach (var str in testFieldNames)
                 {
-                    testTable.AddColumn(DataType.String, str);
+                    Assert.AreEqual(n,testTable.AddColumn(DataType.String, str));
                     Assert.AreEqual(n++, testTable.GetColumnIndex(str));
                 }
             }
@@ -212,7 +212,6 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
 
 
         [Test]
-        //[ExpectedException("System.InvalidOperationException")] //updatefromspec on a table with existing columns
         public static void TableAddColumnAndSpecTest()
         {
             var t = new Table();
@@ -220,41 +219,131 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
             s.AddIntColumn("IntColumn1");
             s.AddIntColumn("IntColumn2");
             s.AddIntColumn("IntColumn3");
-            
-                Spec subSpec = t.Spec.AddSubTableColumn("SubTableWithInts");
-                subSpec.AddIntColumn("SubIntColumn1");
-                subSpec.AddIntColumn("SubIntColumn2");
-                subSpec.AddIntColumn("SubIntColumn3");
-            
-            t.UpdateFromSpec();//this should fail because You are not allowed to call updatefromspec if there are any columns in the table
-            t.AddEmptyRow(1);
-            var sub = t.GetSubTable(3, 0);
-            Assert.AreEqual(0,sub.Size);//remove compiler warning
-        }
 
-
-        //this test fails bc there is no way to check if calling updatefromspec is allowed
-        //specifically we cannot call c++ and get a column count that excludes the changes made to the spec
-        //one way to get around this might be to have all spec operations work immediatly by
-        //using the path based syntax behind the scenes, and by not caching the spec instance on the c++ side
-        //to ensure I always get a totally up to date view when calling spec functions
-        //and of course by exposing as much as i can in the table interface to avoid forcing ppl to
-        //use spec.
-        //updatefromspec rules are that a table can only be updated from spec once, when it has no columns to begin with
-        [Test]
-        [ExpectedException("System.InvalidOperationException")] //updatefromspec on a table with existing columns
-        public static void TableAddColumnAndSpecTestsimple()
-        {
-            var t = new Table();
-            t.AddColumn(DataType.Int, "IntColumn1");
             Spec subSpec = t.Spec.AddSubTableColumn("SubTableWithInts");
-            Assert.AreEqual(subSpec.Handle , subSpec.Handle + 1);//avoid compiler warning
+            subSpec.AddIntColumn("SubIntColumn1");
+            subSpec.AddIntColumn("SubIntColumn2");
+            subSpec.AddIntColumn("SubIntColumn3");
+
             t.UpdateFromSpec();
             t.AddEmptyRow(1);
-            Table sub = t.GetSubTable(1, 0);
-            Assert.AreEqual(sub.Size,0);//avoid compiler warning
+            var sub = t.GetSubTable("SubTableWithInts", 0);
+            Assert.AreEqual(0, sub.Size); //remove compiler warning
         }
 
+
+        //tests various cases of subtable array types, value and reference contents
+        [Test]
+        public static void TableAddIntArray()
+        {
+            var t = new Table();
+            var s = t.Spec;
+            s.AddIntColumn("IntColumn1");
+            s.AddIntColumn("IntColumn2");
+            s.AddIntColumn("IntColumn3");
+
+            Spec subSpec = t.Spec.AddSubTableColumn("SubTableWithInts");
+            subSpec.AddIntColumn("SubIntColumn1");
+            subSpec.AddIntColumn("SubIntColumn2");
+            subSpec.AddIntColumn("SubIntColumn3");
+
+            t.UpdateFromSpec();
+
+            t.AddEmptyRow(1);
+            var tr = t.Add(1, 2, 3, null);
+            Assert.AreEqual(1,tr);//add should return the row being added to
+            t.Add(3, 4, 5,
+                new object[] //compiler will make this an object array
+                {
+                    new[] {4, 5, 6}, //compiler will make this an int array
+                    new object[] {12, 13, 14} //and this is an object array with ints - both should work
+                });
+
+            t.Add(3, 4, 5,
+                new[] //compiler will make this a pointer array!
+                {
+                    new[] {14, 5, 6}, //compiler will make this an int array
+                    new[] {12, 113, 14} //and this too
+                });
+            Assert.AreEqual(0, t.GetSubTable("SubTableWithInts", 0).Size);
+
+            Assert.AreEqual(1, t.GetLong("IntColumn1", 1));
+            Assert.AreEqual(2, t.GetLong("IntColumn2", 1));
+            Assert.AreEqual(3, t.GetLong("IntColumn3", 1));
+            Assert.AreEqual(0, t.GetSubTable("SubTableWithInts", 1).Size);
+
+            Assert.AreEqual(3, t.GetLong("IntColumn1", 2));
+            Assert.AreEqual(4, t.GetLong("IntColumn2", 2));
+            Assert.AreEqual(5, t.GetLong("IntColumn3", 2));
+            using (var sub = t.GetSubTable("SubTableWithInts", 2))
+            {
+                Assert.AreEqual(4, sub.GetLong("SubIntColumn1", 0));
+                Assert.AreEqual(5, sub.GetLong("SubIntColumn2", 0));
+                Assert.AreEqual(6, sub.GetLong("SubIntColumn3", 0));
+
+                Assert.AreEqual(12, sub.GetLong("SubIntColumn1", 1));
+                Assert.AreEqual(13, sub.GetLong("SubIntColumn2", 1));
+                Assert.AreEqual(14, sub.GetLong("SubIntColumn3", 1));
+            }
+
+            using (var sub = t.GetSubTable("SubTableWithInts", 3))
+            {
+                Assert.AreEqual(14, sub.GetLong("SubIntColumn1", 0));
+                Assert.AreEqual(5, sub.GetLong("SubIntColumn2", 0));
+                Assert.AreEqual(6, sub.GetLong("SubIntColumn3", 0));
+
+                Assert.AreEqual(12, sub.GetLong("SubIntColumn1", 1));
+                Assert.AreEqual(113, sub.GetLong("SubIntColumn2", 1));
+                Assert.AreEqual(14, sub.GetLong("SubIntColumn3", 1));
+            }
+
+        }
+
+
+        [Test]
+        public static void TableRemoveColumnTest()
+        {
+            using (var t = new Table())
+            {
+                t.AddColumn(DataType.Int, "intcolumn");
+                Assert.AreEqual(1,t.ColumnCount);
+                t.RemoveColumn(0);
+                Assert.AreEqual(0, t.ColumnCount);
+
+                t.AddColumn(DataType.Int, "c1");
+                t.AddColumn(DataType.String, "c2");
+                t.AddColumn(DataType.Date, "c3");
+
+                Assert.AreEqual(DataType.Int, t.ColumnType(0));
+                Assert.AreEqual(DataType.String, t.ColumnType(1));
+                Assert.AreEqual(DataType.Date, t.ColumnType(2));
+
+                t.RemoveColumn(1);
+                Assert.AreEqual(DataType.Int, t.ColumnType(0));               
+                Assert.AreEqual(DataType.Date, t.ColumnType(1));
+            }
+        }
+
+
+        [Test]
+        public static void TableLast()
+        {
+            using (var t = new Table("intfeld".Int()))
+            {
+                t.AddMany(new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
+                Assert.AreEqual(11,t.Size);
+                int n = 0;
+                foreach (var tr in t)
+                {
+                    Assert.AreEqual(tr.RowIndex, n);
+                    n++;
+                }
+                Assert.AreEqual(10, t.Last().RowIndex);
+                Assert.AreEqual(10, t.Last().GetLong(0));
+            }
+        }
+
+        
 
         [Test]
         public static void TableIterationTest()
@@ -367,10 +456,9 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
         }
 
 
-        //test if we allow chaning the spec of a non-mixed subtable (should be illegal)
-        //
+        //test if we allow chaning the spec of a non-mixed subtable (should be illegal)       
         [Test]
-        [ExpectedException("InvalidOperationException")]
+        [ExpectedException("System.InvalidOperationException")]
         public static void TableSharedSpecChangeTest()
         {
             //create a table1 with a subtable1 column in it, with an int in it. The subtable with an int will 
@@ -386,13 +474,60 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
                 table1.AddEmptyRow(1); //add an empty subtalbe to the first column in the table
                 using (Table sub = table1.GetSubTable(0, 0))
                 {
-                    sub.AddColumn(DataType.Int, "intcolumn");
-                        //this is illegal and should throw an exception                    
+                        sub.AddColumn(DataType.Int, "intcolumn"); //this is illegal and should throw an exception                    
                 } //the control mechanism sb that the spec for sub is readonly, or that addcolumn will not work
             } //on a table that is a non-root subtable
         }
 
 
+        //test that we allow changing the spec of a mixed subtable (should be legal)
+        [Test]       
+        public static void TableMixedSpecChangeTest()
+        {
+            //create a table1 with a subtable1 column in it, with an int in it. The subtable with an int will 
+            //have a shared spec, as subtable1 spec is part of the table1 and thus tableSharedSpec should return true
+
+            using (var table1 = new Table("mixedfield".Mixed()))
+            {
+                Assert.AreEqual(false, table1.HasSharedSpec());
+                table1.AddEmptyRow(1); 
+                table1.SetMixedEmptySubTable(0,0);//create an empty subtable in the mixed row
+                using (Table sub = table1.GetMixedSubTable(0, 0))
+                {
+                        sub.AddColumn(DataType.Int, "intcolumn");
+                    //this is legal as the table in the mixed is its own root
+                } 
+            } 
+        }
+
+
+
+        //test that we block changing the spec of a mixed subtable with updatefromspec
+        //if it already have comitted columns and if the columns were added before we read
+        //the table in from the subspec
+        [Test]
+        public static void TableMixedSpecChangeAfterGet()
+        {
+            using (var table1 = new Table("mixedfield".Mixed()))
+            {
+                Assert.AreEqual(false, table1.HasSharedSpec());
+                Assert.AreEqual(false,table1.SpecModifyable());
+                table1.AddEmptyRow(1);
+                table1.SetMixedEmptySubTable(0, 0);//create an empty subtable in the mixed row
+                using (Table sub = table1.GetMixedSubTable(0, 0))
+                {
+                    Assert.AreEqual(true, sub.SpecModifyable());
+                    sub.AddColumn(DataType.Int, "intcolumn");
+                    //this is legal as the table in the mixed is its own root
+                    Assert.AreEqual(false,sub.SpecModifyable());
+                }
+                using (Table sub = table1.GetMixedSubTable(0, 0))
+                {
+                    Assert.AreEqual(false, sub.SpecModifyable());
+                }
+
+            }
+        }
 
 
 
@@ -1501,6 +1636,205 @@ Table Name  : cyclic field definition
             }
         }
 
+        [Test]
+        public static void TableInsert()
+        {
+            using (var table = new Table("IntField".Int()))
+            {                
+                table.Insert(0,42);//42
+                table.Insert(0,1);//1,42
+                table.Insert(0,2);//2,1,42
+                table.Insert(0, 3);//3,2,1,42
+                table.Insert(0, 4);//4,3,2,1,42
+                table.Insert(3, 100);//4,3,2,100,1,42
+                table.Insert(3, 101);//4,3,2,101,100,1,42
+                Assert.AreEqual(4,table.GetLong(0,0));
+                Assert.AreEqual(3, table.GetLong(0, 1));
+                Assert.AreEqual(2, table.GetLong(0, 2));
+                Assert.AreEqual(101, table.GetLong(0, 3));
+                Assert.AreEqual(100, table.GetLong(0, 4));
+                Assert.AreEqual(1, table.GetLong(0, 5));
+                Assert.AreEqual(42, table.GetLong(0, 6));                
+            }
+        }
+
+        [Test]
+        [ExpectedException ("System.ArgumentOutOfRangeException")]
+        public static void TableInsertTooLowIndex()
+        {
+            using (var table = new Table("IntField".Int()))
+            {
+                table.Insert(-1, 42);//throws
+            }
+        }
+
+        [Test]
+        [ExpectedException("System.ArgumentOutOfRangeException")]
+        public static void TableInsertTooHighIndex()
+        {
+            using (var table = new Table("IntField".Int()))
+            {
+                try {
+                table.Add(0);
+                table.Add(1);
+                table.Insert(2, 42);//okay - inserts after last
+                    } catch //none of the above should throw anything
+                    {
+                        throw new ApplicationException();
+                    }
+                table.Insert(4, 42);//Bad - throws
+            }
+        }
+
+
+
+        //todo:This distinct thing only works on indexed string columns, and lacks documentation. Wait for core to tcatch up.
+        //until then, we have to make sure users only calls distinct on indexed string columns
+        //this unit test tests exactly that scenario
+        [Test]
+        public static void TableDistinct()
+        {
+            using (var table = new Table("IntField".Int(),"StringField".String()))
+            {
+                table.SetIndex(1);
+                table.Add( 1,"A");
+                table.Add( 2,"B");
+                table.Add( 3,"C");
+                table.Add( 4,"A");
+                table.Add( 5,"B");
+                table.Add( 6, "C");
+                table.Add( 7, "B");
+                table.Add( 8, "B");
+                table.Add( 9, "B");
+                table.Add(10, "D");
+                table.Add(11, "x");
+                TableView tv = table.Distinct("StringField");
+                Assert.AreEqual(5, tv.Size);
+                Assert.AreEqual("A", tv.GetString(1, 0));
+                Assert.AreEqual("B", tv.GetString(1, 1));
+                Assert.AreEqual("C", tv.GetString(1, 2));
+                Assert.AreEqual("D", tv.GetString(1, 3));
+                Assert.AreEqual("x", tv.GetString(1, 4));
+                Assert.AreEqual(1, tv.GetLong(0, 0));
+                Assert.AreEqual(2, tv.GetLong(0, 1));
+                Assert.AreEqual(3, tv.GetLong(0, 2));
+                Assert.AreEqual(10, tv.GetLong(0, 3));
+                Assert.AreEqual(11, tv.GetLong(0, 4));
+            }
+        }
+
+
+        [Test]
+        [ExpectedException("TightDbCSharp.TableException")]//type validation
+        public static void TableDistinctBadType()
+        {
+            using (var table = new Table("IntField".Int(), "StringField".String()))
+            {
+                table.SetIndex(1);
+                table.Add(1, "A");
+                TableView tv = table.Distinct("IntField");//throws bc intfield must be an indexed stringfield
+            }
+        }
+
+
+        [Test]
+        [ExpectedException("TightDbCSharp.TableException")]
+        public static void TableDistinctNoIndex()
+        {
+            using (var table = new Table("IntField".Int(), "StringField".String()))
+            {                
+                table.Add(1, "A");
+                TableView tv = table.Distinct("StringField");//throws bc intfield must be an indexed stringfield
+            }
+        }
+
+        [Test]
+        [ExpectedException("TightDbCSharp.TableException")]//must throw tyepe validation exception
+        public static void TableSetIndexTypeError()
+        {               
+            using (var table = new Table("IntField".Int(), "StringField".String()))
+            {                
+                table.SetIndex(0);//throws bc col 0 is not a string column
+            }                   
+        }
+
+        [Test]
+        [ExpectedException("System.InvalidOperationException")]//must throw because core does not support indexes in non-mixed subtables yet
+        public static void TableSetIndexSubTableError()
+        {
+            using (var table = new Table("IntField".Int(), "subfield".Table("substringfield".String())))
+            {
+                table.AddEmptyRow(1);
+                using (var sub = table.GetSubTable(1, 0))
+                {
+                    sub.SetIndex(0);//throws
+                }
+            }
+        }
+
+
+
+
+        [Test]
+        public static void TableInsertEmptyRow()
+        {
+            using (var table = new Table("IntField".Int()))
+            {
+                table.Add(42);                
+                table.Add(43);
+                table.Add(44);
+                table.Add(45);
+                table.InsertEmptyRow(0, 1);//0 42 43 44 45
+                table.InsertEmptyRow(3, 2);//0 42 43 0 0 44 45
+                table.InsertEmptyRow(7, 1);//0 42 43 0 0 44 45
+                Assert.AreEqual(0, table.GetLong(0, 0));
+                Assert.AreEqual(42, table.GetLong(0, 1));
+                Assert.AreEqual(43, table.GetLong(0, 2));
+                Assert.AreEqual(0, table.GetLong(0, 3));
+                Assert.AreEqual(0, table.GetLong(0, 4));
+                Assert.AreEqual(44, table.GetLong(0, 5));
+                Assert.AreEqual(45, table.GetLong(0, 6));
+            }
+        }
+
+        [Test]
+        [ExpectedException("System.ArgumentOutOfRangeException")]
+        public static void TableInsertEmptyTooLowIndex()
+        {
+            using (var table = new Table("IntField".Int()))
+            {
+                table.InsertEmptyRow(-1,10);//throws
+            }
+        }
+
+        [Test]
+        [ExpectedException("System.ArgumentOutOfRangeException")]
+        public static void TableInsertEmptyTooHighIndex()
+        {
+            using (var table = new Table("IntField".Int()))
+            {
+                try
+                {
+                    table.Add(0);
+                    table.Add(1);
+                    table.InsertEmptyRow(2, 1);//okay - inserts after last
+                }
+                catch //none of the above should throw anything
+                {
+                    throw new ApplicationException();
+                }
+                table.InsertEmptyRow(4, 1);//Bad - throws
+            }
+        }
+
+
+
+
+
+
+
+
+
 
 
         [Test]
@@ -1517,6 +1851,26 @@ Table Name  : cyclic field definition
                 Assert.AreEqual(42, testReturned[0]);
             }            
         }
+
+
+        [Test]
+        public static void TableSetMixedBinary()
+        {
+            using (var table = new Table("matadormix".Mixed()))
+            {
+                byte[] testArray = { 01,12,36,22 };
+                table.AddEmptyRow(1);
+                table.SetMixedBinary(0, 0, testArray);
+
+                byte[] testReturned = table.GetMixedBinary(0, 0);
+                Assert.AreEqual(4, testReturned.Length);
+                Assert.AreEqual(1, testReturned[0]);
+                Assert.AreEqual(12, testReturned[1]);
+                Assert.AreEqual(36, testReturned[2]);
+                Assert.AreEqual(22, testReturned[3]);
+            }
+        }
+
 
 
         [Test]
@@ -1969,38 +2323,7 @@ double:-1002//column 3
         [Test]
         public static void ShowVersionTest()
         {
-            var pointerSize = IntPtr.Size;
-            var vmBitness = (pointerSize == 8) ? "64bit" : "32bit";
-            var dllsuffix = (pointerSize == 8) ? "64" : "32";
-            OperatingSystem os = Environment.OSVersion;
-            Assembly executingAssembly = Assembly.GetExecutingAssembly();
-            PortableExecutableKinds peKind;
-            ImageFileMachine machine;
-            executingAssembly.ManifestModule.GetPEKind(out peKind, out machine);
-            // String thisapplocation = executingAssembly.Location;
-            
-            Console.WriteLine("Pointer Size :              {0}", pointerSize);
-            Console.WriteLine("Process Running as :        {0}", vmBitness);
-            Console.WriteLine("Built as PeKind :           {0}", peKind);
-            Console.WriteLine("Built as ImageFileMachine : {0}", machine);
-            Console.WriteLine("OS Version :                {0}", os.Version);
-            Console.WriteLine("OS Platform:                {0}", os.Platform);
-            Console.WriteLine("");
-            Console.WriteLine("Now Loading tight_c_cs{0}.dll - expecting it to be a {1} dll", dllsuffix, vmBitness);
-            //Console.WriteLine("Loading "+thisapplocation+"...");
-
-            //if something is wrong with the DLL (like, if it is gone), we will not even finish the creation of the table below.
-            using (var t = new Table())
-            {
-                Console.WriteLine("C#  DLL        build number {0}", Table.GetDllVersionCSharp);
-                Console.WriteLine("C++ DLL        build number {0}", Table.CPlusPlusLibraryVersion());
-                if (t.Size != 0)
-                {
-                    throw new TableException("Weird");
-                }
-            }
-            Console.WriteLine();
-            Console.WriteLine();
+            Table.ShowVersionTest();
         }
 
 
@@ -2790,7 +3113,8 @@ intfield2:10//column 2
                 Assert.AreEqual(DataType.String,dtRow0);//mixed from empty rows added are int as a default
                 String row0 = t.GetMixedString(0, 0);
                 Assert.AreEqual(setWithAdd, row0);
-
+                row0 = t.GetMixedString("StringField", 0);
+                Assert.AreEqual(setWithAdd, row0);
                 t.AddEmptyRow(1);
                 t.SetMixedString(0, 1, setWithSetMixed);               
                 DataType dtRow1 = t.GetMixedType(0, 1);
@@ -2817,7 +3141,16 @@ intfield2:10//column 2
             }
         }
 
-
+        [Test]
+        public static void TableLast()
+        {
+            using (var t = new Table("i".Int()))
+            {
+                t.AddEmptyRow(10);
+                var cursor = t.Last();
+                Assert.AreEqual(9, cursor.RowIndex);
+            }
+        }
 
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
@@ -2905,6 +3238,7 @@ intfield2:10//column 2
         }
 
 
+        //both tableview and table tojson is tested here
         [Test]
         public static void TableToJsonTest()
         {
@@ -2913,14 +3247,20 @@ intfield2:10//column 2
                 new IntField("Int2"), 
                 new IntField("Int3"),
                 new IntField("Int4")))
-            //accessing an illegal column should also not be allowed
             {
                 t.Add(42,7,3,2);
+                t.Add(12, 1, 2, 1);
                 string actualres = t.ToJson();
 
-                const string expectedres = "[{\"Int1\":42,\"Int2\":7,\"Int3\":3,\"Int4\":2}]";
+                const string expectedres = "[{\"Int1\":42,\"Int2\":7,\"Int3\":3,\"Int4\":2},{\"Int1\":12,\"Int2\":1,\"Int3\":2,\"Int4\":1}]";
                 TestHelper.Cmp(expectedres, actualres);
-            }            
+
+                TableView tv = t.FindAllInt(0, 42);
+                actualres = tv.ToJson();
+                const string expectedres2 = "[{\"Int1\":42,\"Int2\":7,\"Int3\":3,\"Int4\":2}]";
+                TestHelper.Cmp(expectedres2, actualres);
+
+            }
         }
 
 

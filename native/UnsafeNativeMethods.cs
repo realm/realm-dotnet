@@ -1,4 +1,5 @@
 ﻿
+
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -87,8 +88,8 @@ enum DataType {
         //this dll could have been built with vs2012 or 2010 - we don't really care as long as the C interface is the same, which it will be
         //if built from the same source.
 
-        private const String L64 = "tightdb_c_cs201264"+Buildmode;
-        private const String L32 = "tightdb_c_cs201232"+Buildmode;
+        internal const String L64 = "tightdb_c_cs201264"+Buildmode;
+        internal const String L32 = "tightdb_c_cs201232"+Buildmode;
 
 
 
@@ -287,6 +288,7 @@ enum DataType {
 
         public static long TableAddColumn(Table table, DataType type, string name)
         {
+
             if (Is64Bit)
                 return (long) table_add_column64(table.Handle, DataTypeToIntPtr(type), name,(IntPtr)name.Length);            
             return (long)table_add_column32(table.Handle, DataTypeToIntPtr(type), name, (IntPtr)name.Length);            
@@ -343,7 +345,7 @@ enum DataType {
 
 
 
-
+        //must NOT be used to add subtables into mixed
         public static Spec AddSubTableColumn(Spec spec, String name)
         {
             if (name == null)
@@ -354,8 +356,11 @@ enum DataType {
             IntPtr specHandle = Is64Bit
                 ? spec_add_subtable_column64(spec.Handle, name, (IntPtr) name.Length)
                 : spec_add_subtable_column32(spec.Handle, name, (IntPtr) name.Length);
-
-            return new Spec(specHandle, true); //because this spechandle we get here should be deallocated
+            
+            //the subtable will not have been created at this point bc we are before updatefromspec
+            //Fortunately we only have to provide the root owner table, which is the same as our own
+            //
+            return new Spec(spec.OwnerRootTable,specHandle, true); 
         }
 
         //get a spec given a column index. Returns specs for subtables, but not for mixed (as they would need a row index too)
@@ -374,11 +379,13 @@ enum DataType {
         {
             if (spec.GetColumnType(columnIndex) != DataType.Table)
             {
-                throw new SpecException(ErrColumnNotTable);
+                throw new ArgumentOutOfRangeException("columnIndex",columnIndex,ErrColumnNotTable);
             }
+            
+
             if (Is64Bit)
-                return new Spec(spec_get_spec64(spec.Handle, (IntPtr) columnIndex), true);
-            return new Spec(spec_get_spec32(spec.Handle, (IntPtr) columnIndex), true);
+                return new Spec(spec.OwnerRootTable,spec_get_spec64(spec.Handle, (IntPtr) columnIndex), true);
+            return new Spec(spec.OwnerRootTable,spec_get_spec32(spec.Handle, (IntPtr) columnIndex), true);
         }
 
         /*not really needed
@@ -1747,9 +1754,9 @@ enum DataType {
         public static Spec TableGetSpec(Table t)
         {
             if (Is64Bit)
-                return new Spec(table_get_spec64(t.Handle), false);
+                return new Spec(t,table_get_spec64(t.Handle), false);
             //this spec should NOT be deallocated after use 
-            return new Spec(table_get_spec32(t.Handle), false);
+            return new Spec(t,table_get_spec32(t.Handle), false);
             //this spec should NOT be deallocated after use         
         }
 
@@ -1933,6 +1940,41 @@ enum DataType {
             Marshal.Copy(data, ret, 0, (int) datalength);
             return ret;
         }
+
+
+        //not using automatic marshalling (which might lead to copying in some cases),
+        //The SizePtr variable must be a pointer to C# allocated and pinned memory where c++ can write the size
+        //of the data (length in bytes)
+        //the call will return a pointer to the array data, and the IntPtr that SizePtr pointed to will have changed
+        //to contain the length of the data
+        [DllImport(L64, EntryPoint = "table_get_mixed_binary", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_get_mixed_binary64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx, out IntPtr size);
+
+        [DllImport(L32, EntryPoint = "table_get_mixed_binary", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_get_mixed_binary32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx, out IntPtr size);
+
+
+        public static byte[] TableGetMixedBinary(Table table, long columnIndex, long rowIndex)
+        {
+            IntPtr datalength;
+
+            IntPtr data =
+                (Is64Bit)
+                    ? table_get_mixed_binary64(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, out datalength)
+                    : table_get_mixed_binary32(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, out datalength);
+
+            //now, datalength should contain number of bytes in data,
+            //and data should be a pointer to those bytes
+            //as data is managed on the c++ side, we will now copy data over to managed memory
+            //if datalength is 0 marshal.copy wil copy nothing and we will return a byte[0]
+            long numBytes = datalength.ToInt64();
+            var ret = new byte[numBytes];
+            Marshal.Copy(data, ret, 0, (int)datalength);
+            return ret;
+        }
+
+
+
 
 
 
@@ -2185,6 +2227,18 @@ enum DataType {
             else
                 table_update_from_spec32(table.Handle);
         }
+
+        [DllImport(L64, EntryPoint = "table_has_index", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_has_index64(IntPtr tablePtr,IntPtr columnNdx);
+
+        [DllImport(L32, EntryPoint = "table_has_index", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_has_index32(IntPtr tablePtr,IntPtr columnNdx);
+
+        public static bool TableHasIndex(Table table,long columnIndex)
+        {
+            return IntPtrToBool(Is64Bit ? table_has_index64(table.Handle, (IntPtr)columnIndex) : table_has_index32(table.Handle, (IntPtr)columnIndex));
+        }
+
 
 
 
@@ -2469,10 +2523,32 @@ enum DataType {
 
 
 
-        public static void TableSetMixedBinary(Table table, long columnIndex, long rowIndex, [In] byte[] value)
+        //not using automatic marshalling (which might lead to copying in some cases),
+        //but ensuring no copying of the array data is done, by getting a pinned pointer to the array supplied by the user.
+        [DllImport(L64, EntryPoint = "table_set_mixed_binary", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void table_set_mixed_binary64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx, IntPtr value, IntPtr bytes);
+
+        [DllImport(L32, EntryPoint = "table_set_mixed_binary", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void table_set_mixed_binary32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx, IntPtr value, IntPtr bytes);
+
+
+        public static void TableSetMixedBinary(Table table, long columnIndex, long rowIndex, Byte[] value)
         {
-            
-            throw new NotImplementedException("UnsafeNativeMethods.cs TableSetMixedBinary not implemented yet");
+            GCHandle handle = GCHandle.Alloc(value, GCHandleType.Pinned);//now value cannot be moved or garbage collected by garbage collector
+            IntPtr valuePointer = handle.AddrOfPinnedObject();
+            try
+            {
+                if (Is64Bit)
+                    table_set_mixed_binary64(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, valuePointer,
+                        (IntPtr)value.Length);
+                else
+                    table_set_mixed_binary32(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, valuePointer,
+                        (IntPtr)value.Length);
+            }
+            finally
+            {
+                handle.Free();//allow Garbage collector to move and deallocate value as it wishes
+            }
         }
 
         public static void TableViewSetMixedBinary(TableView tableView, long columnIndex, long rowIndex, [In] byte[] value)

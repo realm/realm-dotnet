@@ -52,7 +52,7 @@
     <OutputPath>bin\x86\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
@@ -80,7 +80,9 @@
     <Compile Include="GroupTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueryTests.cs" />
+    <Compile Include="RowTests.cs" />
     <Compile Include="SharedGroupTest.cs" />
+    <Compile Include="SpecTests.cs" />
     <Compile Include="TableTests.cs" />
     <Compile Include="TableViewTests.cs" />
     <Compile Include="TestHelper.cs" />
