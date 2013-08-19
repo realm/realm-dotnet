@@ -118,7 +118,7 @@ namespace TightDbCSharpTest
                 Assert.AreEqual(5, subSpec.AddIntColumn("int"));
                 Assert.AreEqual(6, subSpec.AddMixedColumn("mixed"));
                 Assert.AreEqual(7, subSpec.AddStringColumn("string"));
-                Assert.AreEqual(0, subSpec.AddSubTableColumn("table").ColumnCount);
+                Assert.AreEqual(8, subSpec.AddTableColumn("table"));
                 table.UpdateFromSpec();
                 Assert.AreEqual(false, table.HasSharedSpec());//shared spec is false for root tables
                 Assert.AreEqual(DataType.Binary, table.ColumnType(0));

@@ -317,6 +317,7 @@ namespace TightDbCSharp
                 )
             {
                 SetMixedLongNoCheck(columnIndex, rowIndex, (int) element); //ints cannot be unboxed directly to long
+                return;
             }
 
             if (
@@ -326,22 +327,26 @@ namespace TightDbCSharp
                 )
             {
                 SetMixedLongNoCheck(columnIndex, rowIndex, (long) element);
+                return;
                     //ints cannot be unboxed directly to long. But can the larger types?
             } //todo:unit test by throwing uint32,int64 and UInt64 at the cast above
 
             if (elementType == typeof (Boolean))
             {
                 SetMixedBoolNoCheck(columnIndex, rowIndex, (bool) element);
+                return;
             }
 
             if (elementType == typeof (string))
             {
                 SetMixedStringNoCheck(columnIndex, rowIndex, (String) element);
+                return;
             }
 
             if (elementType == typeof (byte[])) //todo:unit test if this type check actually works as intended
             {
                 SetMixedBinaryNoCheck(columnIndex, rowIndex, (byte[]) element);
+                return;
             }
 
 
@@ -372,16 +377,19 @@ namespace TightDbCSharp
             if (elementType == typeof (DateTime))
             {
                 SetMixedDateTimeNoCheck(columnIndex, rowIndex, (DateTime) element);
+                return;
             }
 
             if (elementType == typeof (Single)) //float, Single
             {
                 SetMixedFloatNoCheck(columnIndex, rowIndex, (float) element);
+                return;
             }
 
             if (elementType == typeof (Double))
             {
                 SetMixedDoubleNoCheck(columnIndex, rowIndex, (Double) element);
+                return;
             }
 
 
@@ -645,15 +653,117 @@ namespace TightDbCSharp
 
 
 
+        internal long GetMixedLongNoRowCheck(long columnIndex, long rowIndex)
+        {
+            ValidateColumnIndex(columnIndex);
+            ValidateColumnMixedType(columnIndex, rowIndex, DataType.Int);
+            return GetMixedLongNoCheck(columnIndex, rowIndex);
+        }
+
+        internal long GetMixedLongNoRowCheck(string columnName, long rowIndex)
+        {
+            long columnIndex = GetColumnIndex(columnName);
+            ValidateColumnMixedType(columnIndex, rowIndex, DataType.Int);
+            return GetMixedLongNoCheck(columnIndex, rowIndex);
+        }
+
+        internal bool GetMixedBooleanNoRowCheck(long columnIndex, long rowIndex)
+        {
+            ValidateColumnIndex(columnIndex);
+            ValidateColumnMixedType(columnIndex, rowIndex, DataType.Bool);
+            return GetMixedBoolNoCheck(columnIndex, rowIndex);
+        }
+
+        internal bool GetMixedBooleanNoRowCheck(string columnName, long rowIndex)
+        {
+            long columnIndex = GetColumnIndex(columnName);
+            ValidateColumnMixedType(columnIndex, rowIndex, DataType.Bool);
+            return GetMixedBoolNoCheck(columnIndex, rowIndex);
+        }
+
+        internal float GetMixedFloatNoRowCheck(long columnIndex, long rowIndex)
+        {
+            ValidateColumnIndex(columnIndex);
+            ValidateColumnMixedType(columnIndex, rowIndex, DataType.Float);
+            return GetMixedFloatNoCheck(columnIndex, rowIndex);
+        }
+
+        internal float GetMixedFloatNoRowCheck(string columnName, long rowIndex)
+        {
+            long columnIndex = GetColumnIndex(columnName);
+            ValidateColumnMixedType(columnIndex, rowIndex, DataType.Float);
+            return GetMixedFloatNoCheck(columnIndex, rowIndex);
+        }
+
+        internal Double GetMixedDoubleNoRowCheck(long columnIndex, long rowIndex)
+        {
+            ValidateColumnIndex(columnIndex);
+            ValidateColumnMixedType(columnIndex, rowIndex, DataType.Double);
+            return GetMixedDoubleNoCheck(columnIndex, rowIndex);
+        }
+
+        internal Double GetMixedDoubleNoRowCheck(string columnName, long rowIndex)
+        {
+            long columnIndex = GetColumnIndex(columnName);
+            ValidateColumnMixedType(columnIndex, rowIndex, DataType.Double);
+            return GetMixedDoubleNoCheck(columnIndex, rowIndex);
+        }
+                      
+        internal String GetMixedStringNoRowCheck(long columnIndex, long rowIndex)
+        {
+            ValidateColumnIndex(columnIndex);
+            ValidateColumnMixedType(columnIndex, rowIndex, DataType.String);
+            return GetMixedStringNoCheck(columnIndex, rowIndex);
+        }
+
+        internal String GetMixedStringNoRowCheck(string columnName, long rowIndex)
+        {
+            long columnIndex = GetColumnIndex(columnName);
+            ValidateColumnMixedType(columnIndex, rowIndex, DataType.String);
+            return GetMixedStringNoCheck(columnIndex, rowIndex);
+        }
+
+        internal byte[] GetMixedBinaryNoRowCheck(long columnIndex, long rowIndex)
+        {
+            ValidateColumnIndex(columnIndex);
+            ValidateColumnMixedType(columnIndex, rowIndex, DataType.Binary);
+            return GetMixedBinaryNoCheck(columnIndex, rowIndex);
+        }
+
+        internal byte[] GetMixedBinaryNoRowCheck(string columnName, long rowIndex)
+        {
+            long columnIndex = GetColumnIndex(columnName);
+            ValidateColumnMixedType(columnIndex, rowIndex, DataType.Binary);
+            return GetMixedBinaryNoCheck(columnIndex, rowIndex);
+        }
+
+
         internal DateTime GetMixedDateTimeNoRowCheck(long columnIndex, long rowIndex)
         {
+            ValidateColumnIndex(columnIndex);
             ValidateColumnMixedType(columnIndex, rowIndex, DataType.Date);
             return GetMixedDateTimeNoCheck(columnIndex, rowIndex);
         }
 
         internal DateTime GetMixedDateTimeNoRowCheck(string columnName, long rowIndex)
         {
-            return GetMixedDateTimeNoRowCheck(GetColumnIndex(columnName), rowIndex);
+            long columnIndex = GetColumnIndex(columnName);
+            ValidateColumnMixedType(columnIndex,rowIndex,DataType.Date);
+            return GetMixedDateTimeNoCheck(columnIndex, rowIndex);
+        }
+
+        internal Table GetMixedTableNoRowCheck(long columnIndex, long rowIndex)
+        {
+            ValidateColumnIndex(columnIndex);
+            ValidateColumnMixedType(columnIndex, rowIndex, DataType.Table);
+            return GetMixedSubTableNoCheck(columnIndex, rowIndex);
+        }
+
+        internal Table GetMixedTableNoRowCheck(string columnName, long rowIndex)
+        {
+            long columnIndex = GetColumnIndex(columnName);
+            ValidateColumnMixedType(columnIndex, rowIndex, DataType.Table);
+            return GetMixedSubTableNoCheck(columnIndex, rowIndex);
         }
 
 
@@ -773,7 +883,7 @@ namespace TightDbCSharp
             ValidateTypeMixed(columnIndex);
         }
 
-        internal void ValidateMixedType(long columnIndex, long rowIndex, DataType mixedType)
+        private void ValidateMixedType(long columnIndex, long rowIndex, DataType mixedType)
         {
 
             if (GetMixedType(columnIndex, rowIndex) != mixedType)
@@ -843,7 +953,7 @@ namespace TightDbCSharp
         {
             if (ColumnTypeNoCheck(columnIndex) != DataType.Int)
             {
-                throw new TableException(GetColumnTypeErrorString(columnIndex, DataType.Int));
+                throw new ArgumentException(GetColumnTypeErrorString(columnIndex, DataType.Int));
             }
         }
 
@@ -852,7 +962,7 @@ namespace TightDbCSharp
         {
             if (ColumnTypeNoCheck(columnIndex) != DataType.String)
             {
-                throw new TableException(GetColumnTypeErrorString(columnIndex, DataType.String));
+                throw new ArgumentException(GetColumnTypeErrorString(columnIndex, DataType.String));
             }
         }
 
@@ -860,7 +970,7 @@ namespace TightDbCSharp
         {
             if (ColumnTypeNoCheck(columnIndex) != DataType.Binary)
             {
-                throw new TableException(GetColumnTypeErrorString(columnIndex, DataType.Binary));
+                throw new ArgumentException(GetColumnTypeErrorString(columnIndex, DataType.Binary));
             }
         }
 
@@ -868,7 +978,7 @@ namespace TightDbCSharp
         {
             if (ColumnTypeNoCheck(columnIndex) != DataType.Double)
             {
-                throw new TableException(GetColumnTypeErrorString(columnIndex, DataType.Double));
+                throw new ArgumentException(GetColumnTypeErrorString(columnIndex, DataType.Double));
             }
         }
 
@@ -876,7 +986,7 @@ namespace TightDbCSharp
         {
             if (ColumnTypeNoCheck(columnIndex) != DataType.Float)
             {
-                throw new TableException(GetColumnTypeErrorString(columnIndex, DataType.Float));
+                throw new ArgumentException(GetColumnTypeErrorString(columnIndex, DataType.Float));
             }
         }
 
@@ -909,7 +1019,7 @@ namespace TightDbCSharp
         {
             if (ColumnTypeNoCheck(columnIndex) != DataType.Bool)
             {
-                throw new TableException(GetColumnTypeErrorString(columnIndex, DataType.Bool));
+                throw new ArgumentException(GetColumnTypeErrorString(columnIndex, DataType.Bool));
             }
         }
 
@@ -918,7 +1028,7 @@ namespace TightDbCSharp
         {
             if (ColumnTypeNoCheck(columnIndex) != DataType.Date)
             {
-                throw new TableException(GetColumnTypeErrorString(columnIndex, DataType.Date));
+                throw new ArgumentException(GetColumnTypeErrorString(columnIndex, DataType.Date));
             }
         }
 
@@ -955,7 +1065,7 @@ namespace TightDbCSharp
         {
             if (ColumnTypeNoCheck(columnIndex) != DataType.Table)
             {
-                throw new TableException(GetColumnTypeErrorString(columnIndex, DataType.Table));
+                throw new ArgumentException(GetColumnTypeErrorString(columnIndex, DataType.Table));
             }
         }
 
@@ -1226,7 +1336,7 @@ namespace TightDbCSharp
             ValidateTypeBool(columnIndex);
         }
 
-        public void ValidateColumnIndexAndTypeDate(long columnIndex)
+        private void ValidateColumnIndexAndTypeDate(long columnIndex)
         {
             ValidateColumnIndex(columnIndex);
             ValidateTypeDate(columnIndex);
@@ -1281,6 +1391,20 @@ namespace TightDbCSharp
             ValidateTypeString(columnIndex);
             return GetStringNoCheck(columnIndex, rowIndex);
         }
+
+        internal byte[] GetBinaryNoRowCheck(long columnIndex, long rowIndex)
+        {
+            ValidateColumnIndexAndTypeBinary(columnIndex);
+            return GetBinaryNoCheck(columnIndex, rowIndex);
+        }
+
+        internal byte[] GetBinaryNoRowCheck(string columnName, long rowIndex)
+        {
+            long columnIndex = GetColumnIndex(columnName);
+            ValidateTypeString(columnIndex);
+            return GetBinaryNoCheck(columnIndex, rowIndex);
+        }
+
 
         public string GetColumnName(long columnIndex)
         {

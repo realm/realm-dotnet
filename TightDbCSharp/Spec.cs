@@ -103,7 +103,7 @@ namespace TightDbCSharp
         //it will automatically be called when the spec object is disposed
         //In fact, you should not at all it on your own
 
-        internal override void ReleaseHandle()
+        protected override void ReleaseHandle()
         {
             UnsafeNativeMethods.SpecDeallocate(this);
         }

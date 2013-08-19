@@ -3,15 +3,14 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-
-
-
-
 //using System.Appdomain;
+using System.Windows.Forms;
 
 
+
+[assembly: InternalsVisibleTo("Test")]
 namespace TightDbCSharp
-{
+{    
     using System.IO;
     using System.Globalization;
 
@@ -46,10 +45,10 @@ enum DataType {
     }
 
 
-    
-    
-    
 
+
+
+        
     //this class contains methods for calling the c++ TightDB system, which has been flattened out as C type calls   
     //The individual public methods call the C inteface using types and values suitable for the C interface, but the methods take and give
     //values that are suitable for C# (for instance taking a C# Table object parameter and calling on with the C++ Table pointer inside the C# Table Class)
@@ -548,20 +547,40 @@ enum DataType {
         }
 
 
-        //todo:Unittest
+        
         [DllImport(L64, EntryPoint = "table_find_first_binary", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_find_first_binary64(IntPtr tableHandle, IntPtr columnIndex,[In] byte[] value,IntPtr length);
+        private static extern IntPtr table_find_first_binary64(IntPtr tableHandle, IntPtr columnIndex,IntPtr value,IntPtr bytes);
 
         [DllImport(L32, EntryPoint = "table_find_first_binary", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_find_first_binary32(IntPtr tableHandle, IntPtr columnIndex, [In] byte[] value, IntPtr length);
+        private static extern IntPtr table_find_first_binary32(IntPtr tableHandle, IntPtr columnIndex, IntPtr value, IntPtr bytes);
 
 
         public static long TableFindFirstBinary(Table table, long columnIndex, byte[] value)
         {
-            return
+            throw new NotImplementedException("Find First Binary not implemented in c++ core yet");//remove when ff has been implemented in core
+
+            GCHandle handle = GCHandle.Alloc(value, GCHandleType.Pinned);
+            IntPtr valuePointer = handle.AddrOfPinnedObject();
+            try
+            {
+                return
                     Is64Bit
-                        ? (long)table_find_first_binary64(table.Handle, (IntPtr)columnIndex, value,(IntPtr)value.Length)
-                        : (long)table_find_first_binary32(table.Handle, (IntPtr)columnIndex, value,(IntPtr)value.Length);
+                        ? (long)
+                            table_find_first_binary64(table.Handle, (IntPtr) columnIndex, valuePointer, (IntPtr) value.Length)
+                        : (long)
+                            table_find_first_binary32(table.Handle, (IntPtr) columnIndex, valuePointer, (IntPtr) value.Length);
+            }
+            catch (Exception e)//debugging stuff - remove
+            {
+                Console.WriteLine(e.Message);
+                Application.DoEvents();
+                return 0; //fixme bug this is a debug catch, remove it
+            }
+
+            finally//this must stay. Do not remove
+            {
+                handle.Free();
+            }
         }
 
 
@@ -685,6 +704,7 @@ enum DataType {
 
         public static long TableViewFindFirstBinary(TableView tableView, long columnIndex, byte[] value)
         {
+            throw new NotImplementedException("core has not implemented tableview_find_first_binary yet");
             return
                     Is64Bit
                         ? (long)tableView_find_first_binary64(tableView.Handle, (IntPtr)columnIndex, value, (IntPtr)value.Length)
@@ -1916,10 +1936,10 @@ enum DataType {
         //the call will return a pointer to the array data, and the IntPtr that SizePtr pointed to will have changed
         //to contain the length of the data
         [DllImport(L64, EntryPoint = "table_get_binary", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_get_binary64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx, out IntPtr Size);
+        private static extern IntPtr table_get_binary64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx, out IntPtr size);
 
         [DllImport(L32, EntryPoint = "table_get_binary", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_get_binary32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx, out IntPtr Size);
+        private static extern IntPtr table_get_binary32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx, out IntPtr size);
 
 
         public static byte[] TableGetBinary(Table table, long columnIndex, long rowIndex)
@@ -1936,7 +1956,7 @@ enum DataType {
             //as data is managed on the c++ side, we will now copy data over to managed memory
             //if datalength is 0 marshal.copy wil copy nothing and we will return a byte[0]
             long numBytes = datalength.ToInt64();
-            byte[] ret = new byte[numBytes];
+            var ret = new byte[numBytes];
             Marshal.Copy(data, ret, 0, (int) datalength);
             return ret;
         }
@@ -2043,6 +2063,40 @@ enum DataType {
 
             } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
             return StrBufToStr(buffer, (int)bufferSizeNeededChars);
+        }
+
+
+
+
+        //not using automatic marshalling (which might lead to copying in some cases),
+        //The SizePtr variable must be a pointer to C# allocated and pinned memory where c++ can write the size
+        //of the data (length in bytes)
+        //the call will return a pointer to the array data, and the IntPtr that SizePtr pointed to will have changed
+        //to contain the length of the data
+        [DllImport(L64, EntryPoint = "tableview_get_mixed_binary", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr tableview_get_mixed_binary64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx, out IntPtr size);
+
+        [DllImport(L32, EntryPoint = "tableview_get_mixed_binary", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr tableview_get_mixed_binary32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx, out IntPtr size);
+
+
+        public static byte[] TableViewGetMixedBinary(TableView tableView, long columnIndex, long rowIndex)
+        {
+            IntPtr datalength;
+
+            IntPtr data =
+                (Is64Bit)
+                    ? tableview_get_mixed_binary64(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, out datalength)
+                    : tableview_get_mixed_binary32(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, out datalength);
+
+            //now, datalength should contain number of bytes in data,
+            //and data should be a pointer to those bytes
+            //as data is managed on the c++ side, we will now copy data over to managed memory
+            //if datalength is 0 marshal.copy wil copy nothing and we will return a byte[0]
+            long numBytes = datalength.ToInt64();
+            var ret = new byte[numBytes];
+            Marshal.Copy(data, ret, 0, (int)datalength);
+            return ret;
         }
 
 
@@ -2551,9 +2605,33 @@ enum DataType {
             }
         }
 
-        public static void TableViewSetMixedBinary(TableView tableView, long columnIndex, long rowIndex, [In] byte[] value)
+
+
+        //not using automatic marshalling (which might lead to copying in some cases),
+        //but ensuring no copying of the array data is done, by getting a pinned pointer to the array supplied by the user.
+        [DllImport(L64, EntryPoint = "tableview_set_mixed_binary", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void tableview_set_mixed_binary64(IntPtr tableViewPtr, IntPtr columnNdx, IntPtr rowNdx, IntPtr value, IntPtr bytes);
+
+        [DllImport(L32, EntryPoint = "tableview_set_mixed_binary", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void tableview_set_mixed_binary32(IntPtr tableViewPtr, IntPtr columnNdx, IntPtr rowNdx, IntPtr value, IntPtr bytes);
+
+        public static void TableViewSetMixedBinary(TableView tableView, long columnIndex, long rowIndex, Byte[] value)
         {
-            throw new NotImplementedException("UnsafeNativeMethods.cs TableViewSetMixedBinary not implemented yet");
+            GCHandle handle = GCHandle.Alloc(value, GCHandleType.Pinned);//now value cannot be moved or garbage collected by garbage collector
+            IntPtr valuePointer = handle.AddrOfPinnedObject();
+            try
+            {
+                if (Is64Bit)
+                    tableview_set_mixed_binary64(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, valuePointer,
+                        (IntPtr)value.Length);
+                else
+                    tableview_set_mixed_binary32(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, valuePointer,
+                        (IntPtr)value.Length);
+            }
+            finally
+            {
+                handle.Free();//allow Garbage collector to move and deallocate value as it wishes
+            }
         }
 
 
@@ -3328,14 +3406,15 @@ enum DataType {
 
         //convert a DateTime to a 64 bit integer to be marshalled to a time_t on the other side
         //NOTE THAT TIGHTDB ROUNDS DOWN TO NEAREST SECOND WHEN STORING A DATETIME
-        //Note also that the date supplied is converted to UTC - we assume that the user has set the datetimekind.utc if it is already        
+        //Note also that the date supplied is converted to UTC - we assume that the user has set the datetimekind.utc 
+        
         //ALSO NOTE THAT TIGHTDB CANNOT STORE time_t values that are negative, effectively tighdb is not able to store dates before 1970,1,1
         public static Int64 ToTightDbTime(DateTime date)
         {            
             return (Int64)(date.ToUniversalTime() - Epoch).TotalSeconds;
         }
 
-        public static Int64 ToTightDbMixedTime(DateTime date)
+        private static Int64 ToTightDbMixedTime(DateTime date)
         {
             Int64 retval = ToTightDbTime(date);
             if (retval < 0)
@@ -3439,7 +3518,7 @@ enum DataType {
         [DllImport(L32, EntryPoint = "test_sizeofsize_t", CallingConvention = CallingConvention.Cdecl)]
         private static extern Int32 test_sizeofsize_t32();
 
-        public static Int32 TestSizeOfSizeT()
+        private static Int32 TestSizeOfSizeT()
         {
             if (Is64Bit)
                 return test_sizeofsize_t64();
@@ -3451,7 +3530,7 @@ enum DataType {
         [DllImport(L32, EntryPoint = "test_sizeofint32_t", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr test_sizeofint32_t32();
 
-        public static IntPtr TestSizeOfInt32_T()
+        private static IntPtr TestSizeOfInt32_T()
         {
             if (Is64Bit)
                 return test_sizeofint32_t64();
@@ -3463,7 +3542,7 @@ enum DataType {
         [DllImport(L32, EntryPoint = "test_sizeoftablepointer", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr test_sizeoftablepointer32();
 
-        public static IntPtr TestSizeOfTablePointer()
+        private static IntPtr TestSizeOfTablePointer()
         {
             if (Is64Bit)
                 return test_sizeoftablepointer64();
@@ -3475,7 +3554,7 @@ enum DataType {
         [DllImport(L32, EntryPoint = "test_sizeofcharpointer", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr test_sizeofcharpointer32();
 
-        public static IntPtr TestSizeOfCharPointer()
+        private static IntPtr TestSizeOfCharPointer()
         {
             if (Is64Bit)
                 return test_sizeofcharpointer64();
@@ -3487,7 +3566,7 @@ enum DataType {
         [DllImport(L32, EntryPoint = "test_sizeofint64_t", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr test_sizeofint64_t32();
 
-        public static IntPtr Testsizeofint64_t()
+        private static IntPtr Testsizeofint64_t()
         {
             if (Is64Bit)
                 return test_sizeofint64_t64();
@@ -3501,7 +3580,7 @@ enum DataType {
         [DllImport(L32, EntryPoint = "test_sizeoffloat", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr test_sizeoffloat32();
 
-        public static IntPtr TestSizeOfFloat()
+        private static IntPtr TestSizeOfFloat()
         {
             if (Is64Bit)
                 return test_sizeoffloat64();
@@ -3514,7 +3593,7 @@ enum DataType {
         [DllImport(L32, EntryPoint = "test_sizeofdouble", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr test_sizeofdouble32();
 
-        public static IntPtr TestSizeOfDouble()
+        private static IntPtr TestSizeOfDouble()
         {
             if (Is64Bit)
                 return test_sizeofdouble64();
@@ -3529,7 +3608,7 @@ enum DataType {
         [DllImport(L32, EntryPoint = "test_sizeoftime_t", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr test_sizeoftime_t32();
 
-        public static IntPtr TestSizeOfTime_T()
+        private static IntPtr TestSizeOfTime_T()
         {
             if (Is64Bit)
                 return test_sizeoftime_t64();
@@ -3543,7 +3622,7 @@ enum DataType {
         [DllImport(L32, EntryPoint = "test_get_five_parametres", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr test_get_five_parametres32(IntPtr p1, IntPtr p2, IntPtr p3, IntPtr p4, IntPtr p5);
 
-        public static IntPtr TestGetFiveParametres(IntPtr p1, IntPtr p2, IntPtr p3, IntPtr p4, IntPtr p5)
+        private static IntPtr TestGetFiveParametres(IntPtr p1, IntPtr p2, IntPtr p3, IntPtr p4, IntPtr p5)
         {
             if (Is64Bit)
                 return test_get_five_parametres64(p1, p2, p3, p4, p5);
@@ -3557,7 +3636,7 @@ enum DataType {
         [DllImport(L32, EntryPoint = "test_float_max", CallingConvention = CallingConvention.Cdecl)]
         private static extern float test_float_max32();
 
-        public static float TestFloatMax()
+        private static float TestFloatMax()
         {
             if (Is64Bit)
                 return test_float_max64();
@@ -3569,7 +3648,7 @@ enum DataType {
         [DllImport(L32, EntryPoint = "test_float_min", CallingConvention = CallingConvention.Cdecl)]
         private static extern float test_float_min32();
 
-        public static float TestFloatMin()
+        private static float TestFloatMin()
         {
             if (Is64Bit)
                 return test_float_min64();
@@ -3582,7 +3661,7 @@ enum DataType {
         [DllImport(L32, EntryPoint = "test_float_return", CallingConvention = CallingConvention.Cdecl)]
         private static extern float test_float_return32(float value);
 
-        public static float TestFloatReturn(float value)
+        private static float TestFloatReturn(float value)
         {
             if (Is64Bit)
                 return test_float_return64(value);
@@ -3596,7 +3675,7 @@ enum DataType {
         [DllImport(L32, EntryPoint = "test_double_max", CallingConvention = CallingConvention.Cdecl)]
         private static extern double test_double_max32();
 
-        public static double TestDoubleMax()
+        private static double TestDoubleMax()
         {
             if (Is64Bit)
                 return test_double_max64();
@@ -3608,7 +3687,7 @@ enum DataType {
         [DllImport(L32, EntryPoint = "test_double_min", CallingConvention = CallingConvention.Cdecl)]
         private static extern double test_double_min32();
 
-        public static double TestDoubleMin()
+        private static double TestDoubleMin()
         {
             if (Is64Bit)
                 return test_double_min64();
@@ -3621,7 +3700,7 @@ enum DataType {
         [DllImport(L32, EntryPoint = "test_double_return", CallingConvention = CallingConvention.Cdecl)]
         private static extern double test_double_return32(double value);
 
-        public static double TestDoubleReturn(double value)
+        private static double TestDoubleReturn(double value)
         {
             if (Is64Bit)
                 return test_double_return64(value);
@@ -3637,7 +3716,7 @@ enum DataType {
         [DllImport(L32, EntryPoint = "test_int64_t_max", CallingConvention = CallingConvention.Cdecl)]
         private static extern long test_int64_t_max32();
 
-        public static long TestLongMax()
+        private static long TestLongMax()
         {
             if (Is64Bit)
                 return test_int64_t_max64();
@@ -3649,7 +3728,7 @@ enum DataType {
         [DllImport(L32, EntryPoint = "test_int64_t_min", CallingConvention = CallingConvention.Cdecl)]
         private static extern long test_int64_t_min32();
 
-        public static long TestLongMin()
+        private static long TestLongMin()
         {
             if (Is64Bit)
                 return test_int64_t_min64();
@@ -3662,7 +3741,7 @@ enum DataType {
         [DllImport(L32, EntryPoint = "test_int64_t_return", CallingConvention = CallingConvention.Cdecl)]
         private static extern long test_int64_t_return32(long value);
 
-        public static long TestLongReturn(long value)
+        private static long TestLongReturn(long value)
         {
             if (Is64Bit)
                 return test_int64_t_return64(value);
@@ -3681,7 +3760,7 @@ enum DataType {
         [DllImport(L32, EntryPoint = "test_size_t_max", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr test_size_t_max32();
 
-        public static IntPtr TestSizeTMax()
+        private static IntPtr TestSizeTMax()
         {
             if (Is64Bit)
                 return test_size_t_max64();
@@ -3693,7 +3772,7 @@ enum DataType {
         [DllImport(L32, EntryPoint = "test_size_t_min", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr test_size_t_min32();
 
-        public static IntPtr TestSizeTMin()
+        private static IntPtr TestSizeTMin()
         {
             if (Is64Bit)
                 return test_size_t_min64();
@@ -3706,7 +3785,7 @@ enum DataType {
         [DllImport(L32, EntryPoint = "test_size_t_return", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr test_size_t_return32(IntPtr value);
 
-        public static IntPtr TestSizeTReturn(IntPtr value)
+        private static IntPtr TestSizeTReturn(IntPtr value)
         {
             if (Is64Bit)
                 return test_size_t_return64(value);
@@ -3719,7 +3798,7 @@ enum DataType {
         [DllImport(L32, EntryPoint = "test_return_datatype", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr test_return_datatype32(IntPtr value);
 
-        public static DataType TestReturnDataType(DataType value)
+        private static DataType TestReturnDataType(DataType value)
         {
             if (Is64Bit)
                 return IntPtrToDataType(test_return_datatype64(DataTypeToIntPtr(value)));
@@ -3732,7 +3811,7 @@ enum DataType {
         [DllImport(L32, EntryPoint = "test_return_bool", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr test_return_bool32(IntPtr value);
 
-        public static Boolean TestReturnBoolean(Boolean value)
+        private static Boolean TestReturnBoolean(Boolean value)
         {
             if (Is64Bit)
                 return IntPtrToBool(test_return_bool64(BoolToIntPtr(value)));
@@ -3744,7 +3823,7 @@ enum DataType {
         [DllImport(L32, EntryPoint = "test_return_true_bool", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr test_return_true_bool32();
 
-        public static Boolean TestReturnTrueBool()
+        private static Boolean TestReturnTrueBool()
         {
             if (Is64Bit)
                 return IntPtrToBool(test_return_true_bool64());
@@ -3758,25 +3837,26 @@ enum DataType {
         [DllImport(L32, EntryPoint = "test_return_false_bool", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr test_return_false_bool32();
 
-        public static Boolean TestReturnFalseBool()
+        private static Boolean TestReturnFalseBool()
         {
             if (Is64Bit)
                 return IntPtrToBool(test_return_false_bool64());
             return IntPtrToBool(test_return_false_bool32());
         }
 
+        /*depricated - was used for testing purposes
         [DllImport(L64, EntryPoint = "test_increment_integer", CallingConvention = CallingConvention.Cdecl)]
         private static extern long test_increment_integer64(long value);
         [DllImport(L32, EntryPoint = "test_increment_integer", CallingConvention = CallingConvention.Cdecl)]
         private static extern long test_increment_integer32(long value);
 
-        public static long TestIncrementInteger(long value)
+        private static long TestIncrementInteger(long value)//warning okay - was used for test purposes earlier. may be deleted entirely soon
         {
             if (Is64Bit)
                 return test_increment_integer64(value);
             return test_increment_integer32(value);
         }
-
+        */
 
 
 
@@ -3791,7 +3871,7 @@ enum DataType {
         [DllImport(L32, EntryPoint = "test_string_to_cpp", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr test_string_to_cpp_32([MarshalAs(UnmanagedType.LPWStr)]String s, IntPtr len);
 
-        public static long TestStringToCpp(String str)
+        private static long TestStringToCpp(String str)
         {
                 if (Is64Bit)
                      return (long)test_string_to_cpp_64(str, (IntPtr)str.Length);
@@ -3806,7 +3886,7 @@ enum DataType {
         [DllImport(L32, EntryPoint = "test_string_returner", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr test_string_returner32([MarshalAs(UnmanagedType.LPWStr)]String s,IntPtr slength, IntPtr b, IntPtr bufsize);
 
-        public static string TestStringReturner(String str)
+        private static string TestStringReturner(String str)
         {
             long bufferSizeNeededChars = 16;
             IntPtr buffer;
@@ -3828,7 +3908,7 @@ enum DataType {
         }
 
 
-        public static void ReturnStringTest(string stringtotest)
+        private static void ReturnStringTest(string stringtotest)
         {
             string returnedstring = TestStringReturner(stringtotest);
             if (returnedstring != stringtotest)
@@ -3849,7 +3929,7 @@ enum DataType {
         [DllImport(L32, EntryPoint = "test_string_from_cpp", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr test_string_from_cpp_ptr32(IntPtr b , IntPtr bufsize);
 
-        public static string TestStringFromCppUsingPointers()
+        private static string TestStringFromCppUsingPointers()
         {
 
             long bufferSizeNeededChars = 16;
@@ -3874,7 +3954,7 @@ enum DataType {
         //after the call currentBufferSizeChars is the size of the buffer. Before the call, bufferSizeNeededChars holds the requested size
         //while currentbuffersizeChars holds the size from last time the buffer was created
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static IntPtr StrAllocateBuffer(out long currentBufferSizeChars,long bufferSizeNeededChars)
+        private static IntPtr StrAllocateBuffer(out long currentBufferSizeChars,long bufferSizeNeededChars)
         {
             currentBufferSizeChars = bufferSizeNeededChars;
            return Marshal.AllocHGlobal( (IntPtr)(bufferSizeNeededChars * sizeof(char)) );//allocHGlobal instead of  AllocCoTaskMem because allcHGlobal allows lt 2 gig on 64 bit (not that .net supports that right now, but at least this allocation will work with lt 32 bit strings)   
@@ -3883,7 +3963,7 @@ enum DataType {
         //uses the marshaller to copy a unicode utf-16string inside an umnanaged buffer into a C# string
         //after the copy operation, the buffer is released using Marshal.FreeHGlobal(allocated in strallocatebuffer just above with Marshal.AllcHGlobal)
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static string StrBufToStr(IntPtr buffer, int bufferSizeNeededChars)
+        private static string StrBufToStr(IntPtr buffer, int bufferSizeNeededChars)
         {
             string retStr = bufferSizeNeededChars > 0 ? Marshal.PtrToStringUni(buffer, bufferSizeNeededChars) : "";//return "" if the string is empty, otherwise copy data from the buffer
             Marshal.FreeHGlobal(buffer);
@@ -3893,7 +3973,7 @@ enum DataType {
         //determines if the buffer was large enough by looking at requested size and current size. if not large enough, free the buffer and return
         //true which makes the calling method loop once more
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static Boolean StrBufferOverflow(IntPtr buffer,long currentBufferSizeChars, long bufferSizeNeededChars)
+        private static Boolean StrBufferOverflow(IntPtr buffer,long currentBufferSizeChars, long bufferSizeNeededChars)
         {
             if (currentBufferSizeChars < bufferSizeNeededChars)
             {
@@ -4065,20 +4145,20 @@ enum DataType {
         //  (if the C# platform is not binary compatible with .net we have to build on the specific C# platform, if it is binary compatible this is optional)
 
 
-        public static void TestInteropSizes()
+        private static void TestInteropSizes()
         {
             int sizeOfIntPtr = IntPtr.Size;
             int sizeOfSizeT = TestSizeOfSizeT();
             if (sizeOfIntPtr != sizeOfSizeT)
             {
-                throw new TableException(String.Format(CultureInfo.InvariantCulture, "The size_t size{0} does not match the size of UintPtr{1}", sizeOfSizeT, sizeOfIntPtr));
+                throw new ApplicationException(String.Format(CultureInfo.InvariantCulture, "The size_t size{0} does not match the size of UintPtr{1}", sizeOfSizeT, sizeOfIntPtr));
             }
 
             IntPtr sizeOfInt32T = TestSizeOfInt32_T();
             var sizeOfInt32 = (IntPtr)sizeof(Int32);
             if (sizeOfInt32T != sizeOfInt32)
             {
-                throw new TableException(String.Format(CultureInfo.InvariantCulture, "The int32_t size{0} does not match the size of Int32{1}", sizeOfInt32T, sizeOfInt32));
+                throw new ApplicationException(String.Format(CultureInfo.InvariantCulture, "The int32_t size{0} does not match the size of Int32{1}", sizeOfInt32T, sizeOfInt32));
             }
             //from here on, we know that size_t maps fine to IntPtr, and Int32_t maps fine to Int32
 
@@ -4086,13 +4166,13 @@ enum DataType {
             var sizeOfIntPtrAsIntPtr = (IntPtr)IntPtr.Size;
             if (sizeOfTablePointer != sizeOfIntPtrAsIntPtr)
             {
-                throw new TableException(String.Format(CultureInfo.InvariantCulture, "The Table* size{0} does not match the size of IntPtr{1}", sizeOfTablePointer, sizeOfIntPtrAsIntPtr));
+                throw new ApplicationException(String.Format(CultureInfo.InvariantCulture, "The Table* size{0} does not match the size of IntPtr{1}", sizeOfTablePointer, sizeOfIntPtrAsIntPtr));
             }
 
             IntPtr sizeOfCharPointer = TestSizeOfCharPointer();
             if (sizeOfCharPointer != sizeOfIntPtrAsIntPtr)
             {
-                throw new TableException(String.Format(CultureInfo.InvariantCulture, "The Char* size{0} does not match the size of IntPtr{1}", sizeOfCharPointer, sizeOfIntPtrAsIntPtr));
+                throw new ApplicationException(String.Format(CultureInfo.InvariantCulture, "The Char* size{0} does not match the size of IntPtr{1}", sizeOfCharPointer, sizeOfIntPtrAsIntPtr));
             }
 
             IntPtr sizeOfInt64T = Testsizeofint64_t();
@@ -4100,7 +4180,7 @@ enum DataType {
 
             if (sizeOfInt64T != sizeOfLong)
             {
-                throw new TableException(String.Format(CultureInfo.InvariantCulture, "The Int64_t size{0} does not match the size of long{1}", sizeOfInt64T, sizeOfLong));
+                throw new ApplicationException(String.Format(CultureInfo.InvariantCulture, "The Int64_t size{0} does not match the size of long{1}", sizeOfInt64T, sizeOfLong));
             }
 
 
@@ -4109,7 +4189,7 @@ enum DataType {
 
             if (sizeOfTimeT != sizeOfTimeTReceiverType)
             {
-                throw new TableException(String.Format(CultureInfo.InvariantCulture, "The c++ time_t size({0}) does not match the size of the C# recieving type int64 ({1})", sizeOfTimeT, sizeOfTimeTReceiverType));
+                throw new ApplicationException(String.Format(CultureInfo.InvariantCulture, "The c++ time_t size({0}) does not match the size of the C# recieving type int64 ({1})", sizeOfTimeT, sizeOfTimeTReceiverType));
             }
 
             IntPtr sizeOffloatPlus = TestSizeOfFloat();
@@ -4117,7 +4197,7 @@ enum DataType {
 
             if (sizeOffloatPlus != sizeOfFloatSharp)
             {
-                throw new TableException(String.Format(CultureInfo.InvariantCulture, "The c++ float size{0} does not match the size of C# float{1}", sizeOffloatPlus, sizeOfFloatSharp));
+                throw new ApplicationException(String.Format(CultureInfo.InvariantCulture, "The c++ float size{0} does not match the size of C# float{1}", sizeOffloatPlus, sizeOfFloatSharp));
             }
 
             var sizeOfPlusDouble = (long)TestSizeOfDouble();
@@ -4125,7 +4205,7 @@ enum DataType {
 
             if (sizeOfPlusDouble != sizeOfSharpDouble)
             {
-                throw new TableException(String.Format(CultureInfo.InvariantCulture, "The c++ double size({0}) does not match the size of the C# recieving type Double ({1})", sizeOfPlusDouble, sizeOfSharpDouble));
+                throw new ApplicationException(String.Format(CultureInfo.InvariantCulture, "The c++ double size({0}) does not match the size of the C# recieving type Double ({1})", sizeOfPlusDouble, sizeOfSharpDouble));
             }
 
 
@@ -4133,7 +4213,7 @@ enum DataType {
         }
 
 
-        internal static void TestMaxMin()
+        private static void TestMaxMin()
         {
             float floatmaxcpp = TestFloatMax();
             const float floatmaxcs = float.MaxValue;
@@ -4346,7 +4426,7 @@ enum DataType {
 
 
         //shared group implementation
-
+        /* deprecated - not neccesary in binding, group can never be unattached
         [DllImport(L64, EntryPoint = "new_shared_group_unattached", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr new_shared_group_unattached64();
 
@@ -4361,7 +4441,7 @@ enum DataType {
                                 : new_shared_group_unattached32(), true);        
         }
 
-
+        */
 
 
         [DllImport(L64, EntryPoint = "new_shared_group_file", CallingConvention = CallingConvention.Cdecl)]
@@ -4383,7 +4463,7 @@ enum DataType {
             }
             catch (SEHException ex)
             {
-                throw new System.IO.IOException(
+                throw new IOException(
                     String.Format(
                         "IO error creating group file {0} (read/write access is needed)  c++ exception thrown :{1}",
                         fileName, ex.Message));
@@ -4411,14 +4491,14 @@ enum DataType {
             sharedGroup.Handle = IntPtr.Zero;
         }
 
-
+        /* depricated
         [DllImport(L64, EntryPoint = "shared_group_open", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr shared_group_open64(IntPtr sharedGroupHandle, [MarshalAs(UnmanagedType.LPWStr)]  string fileName, IntPtr fileNameLen, IntPtr noCreate, IntPtr durabilityLevel);
 
         [DllImport(L32, EntryPoint = "shared_group_open", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr shared_group_open32(IntPtr sharedGroupHandle, [MarshalAs(UnmanagedType.LPWStr)] string fileName, IntPtr fileNameLen, IntPtr noCreate, IntPtr durabilityLevel);
 
-
+        
         public static void SharedGroupOpen(SharedGroup group, string fileName, bool noCreate, DurabilityLevel durabilityLevel)
         {
             try
@@ -4432,13 +4512,13 @@ enum DataType {
             }
             catch (SEHException ex)
             {
-                throw new System.IO.IOException(
+                throw new IOException(
                     String.Format(
                         "IO error creating or reading group file {0} (read/write access is needed)  c++ exception thrown :{1}",
                         fileName, ex.Message));
             }
         }
-
+        */
 
         [DllImport(L64, EntryPoint = "shared_group_is_attached", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr shared_group_is_attached64(IntPtr handle);
@@ -4487,7 +4567,7 @@ enum DataType {
             catch (SEHException ex)
             {
                 sharedGroup.Invalid = true;
-                throw new System.IO.IOException(
+                throw new IOException(
                     String.Format("IO error starting read transaction {0}",ex.Message));
             }
         }
@@ -4511,7 +4591,7 @@ enum DataType {
             catch (SEHException ex)
             {
                 sharedGroup.Invalid = true;
-                throw new System.IO.IOException(
+                throw new IOException(
                     String.Format("IO error starting write transaction {0}", ex.Message));
             }
         }
@@ -4534,7 +4614,7 @@ enum DataType {
             }
             catch (SEHException ex)//other things than IO could go wrong too, we might want to inspect and throw a more precise error msg
             {
-                throw new System.IO.IOException(String.Format("IO error comitting data (read/write access is needed)  c++ exception thrown :{0}",  ex.Message));
+                throw new IOException(String.Format("IO error comitting data (read/write access is needed)  c++ exception thrown :{0}",  ex.Message));
             }            
         }
 

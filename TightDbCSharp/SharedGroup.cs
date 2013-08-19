@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Globalization;
-using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices.WindowsRuntime;
 
 namespace TightDbCSharp
 {
@@ -17,10 +14,9 @@ namespace TightDbCSharp
     //Finished : A read or write transaction has finished, and the shared group is ready
     //to start a new transaction and go into InTransaction mode
     internal enum TransactionState : byte
-    {
-        Never,        
-        InTransaction,
-        Ready
+    {              
+        Ready,
+        InTransaction
     }
 
     public class SharedGroup : Handled
@@ -31,14 +27,22 @@ namespace TightDbCSharp
             UnsafeNativeMethods.NewSharedGroupFile(this, filename, noCreate, durabillityLevel);
         }
 
+
+        
         //creates an empty shared group. Usually You will use SharedGroup(string filename,boolean NoCreate, Durabilitylevel durabilitylevel)
 //        public SharedGroup()
  //       {
   //          UnsafeNativeMethods.NewSharedGroupUnattached(this); //calls sethandle itself
    //     }
 
+        /*depricated - specify file when creating the class instead
+        public void Open(string fileName, bool noCreate, DurabilityLevel durabilityLevel)
+        {
+            UnsafeNativeMethods.SharedGroupOpen(this,fileName,noCreate,durabilityLevel);
+        }
+        */
 
-        internal override void ReleaseHandle()
+        protected override void ReleaseHandle()
         {
             UnsafeNativeMethods.SharedGroupDelete(this);
         }
@@ -78,7 +82,8 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.SharedGroupBeginWrite(this);
         }
 
-        
+        //todo:unit test with two threads - create SG, check it has not changed. create thread and run that thread (it then updates the sg) and then await it, and when it is finishe,
+        //todo:finally check to see if the SG has changed.
         //note - throws if accessed in a SharedGroup that is not attached yet.
         public Boolean HasChanged
         {

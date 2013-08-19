@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -233,6 +234,17 @@ namespace TightDbCSharp
         */
 
 
+        //todo: remove these debug methods
+        public static Int64 DebugToTightDbTime(DateTime date)
+        {
+            return UnsafeNativeMethods.ToTightDbTime(date);
+        }
+
+        public static DateTime DebugToCSharpTimeUtc(Int64 cppTime)
+        {
+            return UnsafeNativeMethods.ToCSharpTimeUtc(cppTime);
+        }
+
         //This method will test basic interop, especially test that the c++ compiler used to build the c++ dll binding uses
         //the same size and sequence for various types used in interop, as C# and C# marshalling expects
         public static void TestInterop()
@@ -296,12 +308,8 @@ namespace TightDbCSharp
                 }
 
                 Console.WriteLine("DLL File Actually Loaded :\n {0}", builder);
-                Console.WriteLine("C#  DLL        build number {0}", GetDllVersionCSharp);
+                Console.WriteLine("C#  DLL        build number {0}", GetDllVersionCSharp+t.Size);//t.size is 0, but use t to make the compiler happy
                 Console.WriteLine("C++ DLL        build number {0}", CPlusPlusLibraryVersion());
-                if (t.Size != 0)
-                {
-                    throw new TableException("Weird");
-                }
             }
             Console.WriteLine();
             Console.WriteLine();
@@ -338,7 +346,7 @@ namespace TightDbCSharp
 
 
         //this one is called from Handled.cs when we have to release the table handle.
-        internal override void ReleaseHandle()
+        protected override void ReleaseHandle()
         {
             UnsafeNativeMethods.TableUnbind(this);            
         }
@@ -548,7 +556,7 @@ namespace TightDbCSharp
         {            
             if (!HasIndexNoCheck(columnIndex))
             {
-                throw new TableException(String.Format("Column Index {0} must specify a string column that is indexed", columnIndex));
+                throw new InvalidOperationException(String.Format("Column Index {0} must specify a string column that is indexed", columnIndex));
             }
         }
 
@@ -892,16 +900,7 @@ namespace TightDbCSharp
             SetIndexNoCheck(columnIndex);
         }
 
-        public static StringField stringfield(string name)
-        {
-            return new StringField(name);
-        }
-
-        public static IntField intfield(string name)
-        {
-            return new IntField(name);
-        }
-
+        
 
         internal override TableView FindAllIntNoCheck(long columnIndex, long value)
         {
@@ -914,7 +913,7 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableFindAllString(this, columnIndex, value);
         }
 
-
+/* experiment
         public static Field Field<T>(string name)
         {
             if (typeof (T) == typeof (String))
@@ -940,12 +939,8 @@ namespace TightDbCSharp
 
             throw new Exception("fieldtype not supported natively in tightdb binding");
 
-
-
-
-
     }
-
+*/
 
         public Query Where()
         {
@@ -954,9 +949,12 @@ namespace TightDbCSharp
 
     }
 
+    /*
     //custom exception for Table class. When Table runs into a Table related error, TableException is thrown
     //some system exceptions might also be thrown, in case they have not much to do with Table operation
     //following the pattern described here http://msdn.microsoft.com/en-us/library/87cdya3t.aspx
+    //after some consideration I am contemplating writing out the TableException from the project.
+    //The already existing exception types are good enough, and we will have a little less bloat
     [Serializable]
     public class TableException : Exception
     {
@@ -979,8 +977,7 @@ namespace TightDbCSharp
         {
         }
     }
-
-
+    */
 
 
     //Was named TDBField before
@@ -1008,7 +1005,7 @@ namespace TightDbCSharp
         //this is internal for a VERY specific reason
         //when internal, the end user cannot call this function, and thus cannot put in a list of subtable fields containing a field that is parent
         //to the somefield parameter. If this was merely protected - he could!
-        internal static void AddSubTableFields(Field someField, String someColumnName, Field[] subTableFieldsArray)
+        internal static void AddSubTableFields(Field someField, String someColumnName, IEnumerable<Field> subTableFieldsArray)
         {
             SetInfo(someField, someColumnName, DataType.Table);
             someField._subTable.AddRange(subTableFieldsArray);
@@ -1081,7 +1078,7 @@ namespace TightDbCSharp
 
 
                 default:
-                    throw new TableException(String.Format(CultureInfo.InvariantCulture,
+                    throw new ArgumentException(String.Format(CultureInfo.InvariantCulture,
                         "Trying to initialize a table field with an unknown type specification Fieldname:{0}  type:{1}",
                         columnName, columnType));
             }
@@ -1093,7 +1090,7 @@ namespace TightDbCSharp
         protected Field() { }//used when IntegerField,StringField etc are constructed
 
 
-        public String ColumnName { get; set; }
+        public String ColumnName { get; private set; }
 
         public DataType FieldType { get; set; }
 
@@ -1127,7 +1124,7 @@ namespace TightDbCSharp
 
     public class IntField : Field
     {
-        protected IntField() { }//used when descendants of IntegerField are created
+        protected IntField() { }//used when descendants of IntField are created
 
         public IntField(String columnName)
         {
@@ -1137,7 +1134,9 @@ namespace TightDbCSharp
 
     public class BoolField : Field
     {
-        protected BoolField() { }//used when descendants of IntegerField are created
+// ReSharper disable UnusedMember.Global
+        protected BoolField() { }//used when descendants of BoolField are created
+// ReSharper restore UnusedMember.Global
 
         public BoolField(String columnName)
         {
@@ -1147,7 +1146,9 @@ namespace TightDbCSharp
 
     public class BinaryField : Field
     {
-        protected BinaryField() { }//used when descendants of IntegerField are created
+// ReSharper disable UnusedMember.Global
+        protected BinaryField() { }//used when descendants of BinaryField are created
+// ReSharper restore UnusedMember.Global
 
         public BinaryField(String columnName)
         {
@@ -1157,7 +1158,9 @@ namespace TightDbCSharp
 
     public class MixedField : Field
     {
-        protected MixedField() { }//used when descendants of IntegerField are created
+// ReSharper disable UnusedMember.Global
+        protected MixedField() { }//used when descendants of MixedField are created
+// ReSharper restore UnusedMember.Global
 
         public MixedField(String columnName)
         {
@@ -1167,7 +1170,9 @@ namespace TightDbCSharp
 
     public class DateField : Field
     {
-        protected DateField() { }//used when descendants of IntegerField are created
+// ReSharper disable UnusedMember.Global
+        protected DateField() { }//used when descendants of DateField are created
+// ReSharper restore UnusedMember.Global
 
         public DateField(String columnName)
         {
@@ -1177,7 +1182,9 @@ namespace TightDbCSharp
 
     public class FloatField : Field
     {
-        protected FloatField() { }//used when descendants of IntegerField are created
+// ReSharper disable UnusedMember.Global
+        protected FloatField() { }//used when descendants of FloatField are created
+// ReSharper restore UnusedMember.Global
 
         public FloatField(String columnName)
         {
@@ -1187,7 +1194,8 @@ namespace TightDbCSharp
 
     public class DoubleField : Field
     {
-        protected DoubleField() { }//used when descendants of IntegerField are created
+// ReSharper disable once UnusedMember.Global
+        protected DoubleField() { }//used when descendants of DoubleField are created
 
         public DoubleField(String columnName)
         {

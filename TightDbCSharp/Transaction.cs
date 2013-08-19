@@ -104,7 +104,7 @@ namespace TightDbCSharp
         //this is a bit of a hack. A transaction is a group. The group pointer should NOT be
         //freed as it is in fact a group inside a shared group, and this group is managed by
         //the shared group
-        internal override void ReleaseHandle()
+        protected override void ReleaseHandle()
         {
             if (SharedGroup != null) {//we simply cannot rollback if shared group is null
             if (SharedGroup.TransactionState==TransactionState.InTransaction)

@@ -67,7 +67,7 @@ namespace TightDbCSharp
         //this method is for internal use only
         //it will automatically be called when the table object is disposed (or garbage collected)
         //In fact, you should not at all it on your own
-        internal  override void ReleaseHandle()
+        protected override void ReleaseHandle()
         {
             UnsafeNativeMethods.TableViewUnbind(this);
         }
@@ -229,7 +229,7 @@ namespace TightDbCSharp
 
         internal override byte[] GetMixedBinaryNoCheck(long columnIndex, long rowIndex)
         {
-            throw new NotImplementedException();
+            return UnsafeNativeMethods.TableViewGetMixedBinary(this, columnIndex, rowIndex);
         }
 
         internal override Table GetMixedSubTableNoCheck(long columnIndex, long rowIndex)

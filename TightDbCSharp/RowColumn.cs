@@ -180,7 +180,7 @@ namespace TightDbCSharp
                     default:
                         {
                             
-                            throw new TableException(String.Format(CultureInfo.InvariantCulture,
+                            throw new NotImplementedException(String.Format(CultureInfo.InvariantCulture,
                                                                    "setting type {0} in TableRowColumn not implemented yet",
                                                                    ColumnType));
                         }

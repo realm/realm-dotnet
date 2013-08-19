@@ -113,7 +113,7 @@ namespace TightDbCSharp
             UnsafeNativeMethods.GroupNewFile(this,path);
         }
 
-        internal override void ReleaseHandle()
+        protected override void ReleaseHandle()
         {            
             UnsafeNativeMethods.GroupDelete(this);
         }

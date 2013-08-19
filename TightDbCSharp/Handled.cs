@@ -12,13 +12,13 @@ namespace TightDbCSharp
         //following the dispose pattern discussed here http://dave-black.blogspot.dk/2011/03/how-do-you-properly-implement.html
         //a good explanation can be found here http://stackoverflow.com/questions/538060/proper-use-of-the-idisposable-interface
 
-        internal abstract void ReleaseHandle();//overwrite this. This method will be called when c++ can free the object associated with the handle
+        protected abstract void ReleaseHandle();//overwrite this. This method will be called when c++ can free the object associated with the handle
         public abstract string ObjectIdentification();//overwrite this to enable the framework to name the class in a human readable way
 
         public IntPtr Handle { get;internal set; }  //handle (in fact a pointer) to a c++ hosted Table. We must unbind this handle if we have acquired it
-        internal bool HandleInUse { get; set; } //defaults to false.  
-        internal bool HandleHasBeenUsed { get; set; } //defaults to false. If this is true, the table handle has been allocated in the lifetime of this object
-        internal bool NotifyCppWhenDisposing { get; set; }//if false, the table handle do not need to be disposed of, on the c++ side
+        private bool HandleInUse { get; set; } //defaults to false.  
+        private bool HandleHasBeenUsed { get; set; } //defaults to false. If this is true, the table handle has been allocated in the lifetime of this object
+        private bool NotifyCppWhenDisposing { get; set; }//if false, the table handle do not need to be disposed of, on the c++ side
         public bool IsDisposed { get; private set; }
 
 
@@ -26,7 +26,7 @@ namespace TightDbCSharp
         {
         }
 
-        public void Unbind()
+        private void Unbind()
         {
             if (HandleInUse)
             {
@@ -48,7 +48,7 @@ namespace TightDbCSharp
                 //  it is assumed an error situation has occoured (too many unbind calls) and an exception is raised
                 if (HandleHasBeenUsed)
                 {
-                    throw new TableException(String.Format(CultureInfo.InvariantCulture,
+                    throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture,
                         "unbind called on {0} with no handle active anymore", ObjectIdentification()));
                 }
             }
@@ -80,7 +80,7 @@ namespace TightDbCSharp
             GC.SuppressFinalize(this);//tell finalizer it does not have to call dispose or dispose of things -we have done that already
         }
         //if called from GC  we should not dispose managed as that is unsafe, the bool tells us how we were called
-        protected virtual void Dispose(bool disposeManagedToo)
+        private void Dispose(bool disposeManagedToo)  //was protected virtual earlier on, can be set back to protected virtual if the need arises
         {
             if (!IsDisposed)
             {

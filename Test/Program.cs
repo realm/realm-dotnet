@@ -10,8 +10,9 @@ namespace Test
     {
         static void Main()
         {
-            TightDbCSharpTest.TableTests1.TableSetBinary();
-            TightDbCSharpTest.TableTests1.TestInterop();
+        //    TightDbCSharpTest.TableTests1.TableSetBinary();
+        //    TightDbCSharpTest.TableTests1.TestInterop();
+            //TightDbCSharpTest.TableTests1.TableFindFirstBinaryCoreBug();
             Console.ReadKey();
         }
     }

@@ -710,7 +710,7 @@ TIGHTDB_C_CS_API size_t table_find_first_string(Table * table_ptr , size_t colum
     return  table_ptr->find_first_string(column_ndx,str);
 }
 
-
+//WARNNIG!!! This is implemented to throw an exception in core  - not implemented in core yet
 TIGHTDB_C_CS_API size_t table_find_first_binary(Table * table_ptr , size_t column_ndx, char * value, size_t len)
 {   
     BinaryData bd = BinaryData(value,len);
@@ -898,7 +898,18 @@ TIGHTDB_C_CS_API size_t tableview_get_mixed_string(TableView* tableview_ptr, siz
 }
 
 
-//todo:tableview_get_mixed_binary
+//function returns a pointer to the data. 
+//This pointer is live until the table is changed, so there is enough time for C# to copy the data to managed
+//the size parameter returns the size of the array. This parameter is marshalled by C# as an out parameter.
+//end result is that the caller gets both the pointer to the data, and the lenght
+//the C# caller will immediatly copy the data from the returned pointer to managed memory, the C# caller will not
+//free any memory. The C# marshaller will not try to free the returned char*, as we call this as an intptr returning function
+TIGHTDB_C_CS_API const char * tableview_get_mixed_binary(TableView*  tableview_ptr, size_t column_ndx, size_t row_ndx,  size_t* size)
+{
+    BinaryData bd=tableview_ptr->get_mixed(column_ndx,row_ndx).get_binary();
+    *size = bd.size();
+    return  bd.data();//pointer to all the data;
+}
 
 
 
@@ -1133,7 +1144,13 @@ TIGHTDB_C_CS_API void tableview_set_mixed_string(TableView* tableview_ptr, size_
     tableview_ptr->set_mixed(column_ndx,row_ndx,strd);
 }
 
-//todo:implement tableview_set_mixed_binary
+//C# will call with a pinned array of bytes and its size. no copying occours except inside tightdb where the data is of course
+//copied down into the table. The data pointed to by data must not be accessed after this call is finished.
+TIGHTDB_C_CS_API void tableview_set_mixed_binary(TableView*  tableview_ptr, size_t column_ndx, size_t row_ndx,  const char* data, std::size_t size)
+{
+    BinaryData bd(data,size);
+    tableview_ptr->set_mixed(column_ndx,row_ndx,bd);
+}
 
 TIGHTDB_C_CS_API void tableview_set_subtable(TableView* tableview_ptr, size_t column_ndx, size_t row_ndx,Table* table_with_data)
 {    
@@ -1918,9 +1935,10 @@ TIGHTDB_C_CS_API size_t test_return_false_bool() {
     return bool_to_size_t(false);
 }
 
-TIGHTDB_C_CS_API int64_t test_increment_integer(int64_t value) {
-    return value++;
-}
+//was used for test purposes earlier
+//TIGHTDB_C_CS_API int64_t test_increment_integer(int64_t value) {
+//    return value++;
+//}
 
 
 

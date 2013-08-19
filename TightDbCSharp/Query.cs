@@ -8,7 +8,7 @@ namespace TightDbCSharp
 {
     public class Query : Handled, IEnumerable<TableRow>
     {
-        internal override void ReleaseHandle()
+        protected override void ReleaseHandle()
         {
             UnsafeNativeMethods.QueryDelete(this);
         }

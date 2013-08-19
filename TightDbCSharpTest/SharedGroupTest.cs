@@ -53,19 +53,21 @@ namespace TightDbCSharpTest
             }
         }
 
+
+
         const string Field01Text = "Data for first field";
         const string Field02Text = "Data for second field";
         const string Field03Text = "Data for third field";
+        const string Sharedgroupfilename = @"UnitTestSharedGroup";
         //successfull usage case check
         [Test]
         public void CreateSharedGroupOpenReadWrite()
         {
-            const string sharedgroupfilename = @"UnitTestSharedGroup";
-            File.Delete(sharedgroupfilename);
+            File.Delete(Sharedgroupfilename);
 
 
 
-            using (var sharedGroup = new SharedGroup(sharedgroupfilename, false, DurabilityLevel.DurabilityFull))
+            using (var sharedGroup = new SharedGroup(Sharedgroupfilename, false, DurabilityLevel.DurabilityFull))
             {
                 //first we need to create a table and put a little data into it
                 Assert.AreEqual(false, sharedGroup.Invalid);//C# construct, so legal even on an unattached shared group                
@@ -122,24 +124,25 @@ namespace TightDbCSharpTest
                 });
 
 
-                //C# supports using function parametres
+                //C# supports using function parametres in addition to the anonymous example above
                 sharedGroup.ExecuteInReadTransaction(TestHelperRead2);
-
 
                 //the using pattern can also use function methods
                 using (var transaction = sharedGroup.BeginRead())
                   TestHelperRead2(transaction);
                 
-                //example with calling function to write
+                //ExecuteInWriteTransaction takes a method of type "void blabla(Group t)"
+                sharedGroup.ExecuteInWriteTransaction(TestHelperWriter3);
+
+                //example with calling function to write with using syntax
                 using (var transaction = sharedGroup.BeginWrite())
                 {
-                    TestHelperWriter3(transaction);
+                    TestHelperWriter4(transaction);
                     transaction.Commit();
                 }
 
                 //Another example with calling function to write
-                sharedGroup.ExecuteInWriteTransaction(TestHelperWriter4);
-
+                sharedGroup.ExecuteInWriteTransaction(TestHelperWriter5);
             }
         }
 
@@ -181,6 +184,19 @@ namespace TightDbCSharpTest
         void TestHelperWriter4(Group t)
         {
             using (var table = t.CreateTable("TestTable4", new StringField("StringColumn1"),
+                                                          new StringField("StringColumn2"),
+                                                           new StringField("StringColumn3")))
+            {
+                table.AddEmptyRow(3);
+                table.SetString(0, 0, Field01Text);
+                table.SetString(1, 0, Field02Text);
+                table.SetString(2, 0, Field03Text);
+            }
+        }
+
+        void TestHelperWriter5(Group t)
+        {
+            using (var table = t.CreateTable("TestTable5", new StringField("StringColumn1"),
                                                           new StringField("StringColumn2"),
                                                            new StringField("StringColumn3")))
             {

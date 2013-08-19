@@ -2,18 +2,17 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using NUnit.Framework;
 using TightDbCSharp;
 using TightDbCSharp.Extensions;
 
 
+[assembly: InternalsVisibleTo("Test")]
 
 namespace TightDbCSharpTest
 {
-
-
-
     [TestFixture]
     public class TableTests1
     {
@@ -95,6 +94,61 @@ Table Name  : table name is 12345 then the permille sign ISO 10646:8240 then 789
 ";
             TestHelper.Cmp(expectedres, actualres);
         }
+
+        //http://msdn.microsoft.com/en-us/library/system.datetime.kind.aspx    about datetime.kind
+        //http://msdn.microsoft.com/en-us/library/ms973825.aspx  old doc. with best practices from bf datetime.kind was introduced
+
+        //Note that when You send just a date to tightdb, tightdb assumes it is system local time, and converts it to UTC before storing
+        //If You create your datetime with DateTimeKind.Utc then it will be saved without any modification
+        //The rules are :
+        //Tightdb always returns dates as DateTimeKind.Utc
+        //Tightdb stores dates set with DateTimeKind.Utc with no changes
+        //Tightdb changes dates set with DateTimeKind.Local to Utc before they are stored
+        //Tightdb assumes that dates where DateTimeKind.Unknown is set, are system local, and converts them to Utc
+        //This behavior ensures that dates are always stored as Utc, and that originaldate.ToUniversalTime() == originaldate back from database.ToUniversalTime()
+
+        [Test]
+        public static void DatetimeTest()
+        {
+            var myDateTime = new DateTime(1980, 1, 2);
+
+            Int64 tightdbdate = Table.DebugToTightDbTime(myDateTime);
+            DateTime returnedDateTime = Table.DebugToCSharpTimeUtc(tightdbdate);//1980,1,1,23:00, kind = UTC
+            Assert.AreEqual(myDateTime.ToUniversalTime(), returnedDateTime.ToUniversalTime());
+        }
+        
+        [Test]
+        public static void DatetimeTestUnspecified()
+        {            
+            var myDateTime = new DateTime(1980,1,2,0,0,0,DateTimeKind.Unspecified);
+
+            Int64 tightdbdate = Table.DebugToTightDbTime(myDateTime);
+            DateTime returnedDateTime = Table.DebugToCSharpTimeUtc(tightdbdate);//1980,1,1,23:00, kind = UTC
+            Assert.AreEqual(myDateTime.ToUniversalTime(), returnedDateTime.ToUniversalTime());
+        }
+
+        [Test]
+        public static void DatetimeTestLocal()
+        {
+            var myDateTime = new DateTime(1980,1,2,0,0,0,DateTimeKind.Local);
+
+
+            Int64 tightdbdate = Table.DebugToTightDbTime(myDateTime);
+            DateTime returnedDateTime = Table.DebugToCSharpTimeUtc(tightdbdate);//1980,1,1,23:00, kind = UTC
+            Assert.AreEqual(myDateTime.ToUniversalTime(), returnedDateTime.ToUniversalTime());
+        }
+
+        [Test]
+        public static void DatetimeTestUtc()
+        {
+            var myDateTime = new DateTime(1980, 1, 2, 0, 0, 0, DateTimeKind.Utc);
+
+
+            Int64 tightdbdate = Table.DebugToTightDbTime(myDateTime);
+            DateTime returnedDateTime = Table.DebugToCSharpTimeUtc(tightdbdate);
+            Assert.AreEqual(myDateTime, returnedDateTime);//1980,1,2,00:00, kind = UTC
+        }
+
 
 
 
@@ -1028,9 +1082,9 @@ Table Name  : four columns, Last Mixed
             string actualres2;
             using (var t = new Table(
                 "Count".Int(),
-                "Valid".Bool(),
+                "Valid".TightDbBool(),
                 "Name".String(),
-                "BLOB".Binary(),
+                "BLOB".TightDbBinary(),
                 "Items".SubTable(
                     "ItemCount".Int(),
                     "ItemName".String()),
@@ -1688,7 +1742,7 @@ Table Name  : cyclic field definition
 
 
 
-        //todo:This distinct thing only works on indexed string columns, and lacks documentation. Wait for core to tcatch up.
+        //todo:This distinct thing only works on indexed string columns, and lacks documentation. Wait for core to catch up.
         //until then, we have to make sure users only calls distinct on indexed string columns
         //this unit test tests exactly that scenario
         [Test]
@@ -1725,7 +1779,7 @@ Table Name  : cyclic field definition
 
 
         [Test]
-        [ExpectedException("TightDbCSharp.TableException")]//type validation
+        [ExpectedException("System.ArgumentException")]//type validation
         public static void TableDistinctBadType()
         {
             using (var table = new Table("IntField".Int(), "StringField".String()))
@@ -1733,29 +1787,31 @@ Table Name  : cyclic field definition
                 table.SetIndex(1);
                 table.Add(1, "A");
                 TableView tv = table.Distinct("IntField");//throws bc intfield must be an indexed stringfield
+                Assert.AreEqual(0,tv.Size);//we should never get this far
             }
         }
 
 
         [Test]
-        [ExpectedException("TightDbCSharp.TableException")]
+        [ExpectedException("System.InvalidOperationException")]
         public static void TableDistinctNoIndex()
         {
             using (var table = new Table("IntField".Int(), "StringField".String()))
             {                
                 table.Add(1, "A");
                 TableView tv = table.Distinct("StringField");//throws bc intfield must be an indexed stringfield
+                Assert.AreEqual(0, tv.Size);//we should never get this far
             }
         }
 
         [Test]
-        [ExpectedException("TightDbCSharp.TableException")]//must throw tyepe validation exception
+        [ExpectedException("System.ArgumentException")]//must throw tyepe validation exception
         public static void TableSetIndexTypeError()
-        {               
+        {
             using (var table = new Table("IntField".Int(), "StringField".String()))
-            {                
+            {
                 table.SetIndex(0);//throws bc col 0 is not a string column
-            }                   
+            }
         }
 
         [Test]
@@ -1868,6 +1924,26 @@ Table Name  : cyclic field definition
                 Assert.AreEqual(12, testReturned[1]);
                 Assert.AreEqual(36, testReturned[2]);
                 Assert.AreEqual(22, testReturned[3]);
+            }
+        }
+
+
+        [Test]
+        [ExpectedException("System.NotImplementedException") ]//when implemented in core, remove this expectation and the throw in UnsafeNativeMethods.TableFindFirstBinary
+        public static void TableFindFirstBinary()
+        {
+            using (var table = new Table("radio".Binary() , "int".Int()))
+            {
+                byte[] testArray = { 01, 12, 36, 22 };
+                table.AddEmptyRow(1);
+                table.AddEmptyRow(1);
+                table.SetBinary(0, 1, testArray);
+                table.SetLong(1, 1, 42);
+
+                byte[] arrayToFind = {01, 12, 36, 22};
+                var rowNo = table.FindFirstBinary(0,arrayToFind);
+                
+                Assert.AreEqual(1, rowNo);
             }
         }
 
@@ -2175,7 +2251,7 @@ Table Name  : same names, empty names, mixed types
         [Test]
         public static void TableMaximumDouble()
         {
-            using (var myTable = new Table("double".Double()))
+            using (var myTable = new Table("double".TightDbDouble()))
             {
                 myTable.Add(1d);
                 Assert.AreEqual(1d, myTable.MaximumDouble(0));
@@ -2188,7 +2264,7 @@ Table Name  : same names, empty names, mixed types
         {
             using (var myTable = new Table("strfield".String(),
                 "int".Int(),
-                "float".Float(),
+                "float".TightDbFloat(),
                 "double".Double())
                 )
             {
@@ -2373,7 +2449,7 @@ double:-1002//column 3
             var expectedUtc = new DateTime(1979, 05, 14, 1, 2, 4, DateTimeKind.Utc);//we expect to get the exact same timepoint back, measured in utc
             var expectedUnspecified = new DateTime(1979, 05, 14, 1, 2, 5, DateTimeKind.Local).ToUniversalTime();//we expect to get the UTC timepoit resembling the local time we sent
 
-            using (var t = new Table("date1".Date(), "date2".Mixed(), "stringfield".String()))//test date in an ordinary date , as well as date in a mixed
+            using (var t = new Table("date1".TightDbDate(), "date2".Mixed(), "stringfield".String()))//test date in an ordinary date , as well as date in a mixed
             {
 
                 t.AddEmptyRow(1);//in this row we store datetosavelocal
@@ -2609,7 +2685,7 @@ mix'd:84//column 0//Mixed type is Int
 
             using (var t = new Table(
                 "fld1".String(),
-                "root".SubTable(
+                "root".TightDbSubTable(
                     "fld2".String(),
                     "fld3".String(),
                     "s1".SubTable(
@@ -3265,7 +3341,7 @@ intfield2:10//column 2
 
 
         [Test]
-        [ExpectedException("TightDbCSharp.TableException")]
+        [ExpectedException("System.ArgumentException")]
         public static void TableIllegalType()
         {
             using (var t = new Table(new IntField("Int1"), new IntField("Int2"), new IntField("Int3")))
@@ -3367,7 +3443,7 @@ intfield2:10//column 2
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming",
             "CA1702:CompoundWordsShouldBeCasedCorrectly", MessageId = "TypeWrite"), Test]
-        [ExpectedException("TightDbCSharp.TableException")]
+        [ExpectedException("System.ArgumentException")]
         public static void TableIllegalTypeWrite()
         {
             using (var t = new Table(new SubTableField("sub1"), new IntField("Int2"), new IntField("Int3")))

@@ -17,8 +17,8 @@ namespace TightDbCSharp
             // The Row number of the row this TableRow references
             RowIndex=row;
         }
-        public TableOrView Owner { get; set; }
-        public long RowIndex { get; internal set; }//users should not be allowed to change the row property of a tablerow class
+        public TableOrView Owner { get; private set; }
+        public long RowIndex { get; private set; }//users should not be allowed to change the row property of a tablerow class
 
         //by indexing you can get and set values as objects (if they match the type that is)
         public  object this[long columnIndex]
@@ -28,7 +28,7 @@ namespace TightDbCSharp
                 return new RowColumn(this, columnIndex).Value;//todo: consider optimize by having the value logic moved to table or to tableview or even tableorview. Then we could spare the rowcolumn class creation
             }
             set
-            {
+            {   
                 Owner.ValidateColumnIndex(columnIndex);
                 new RowColumn(this, columnIndex).Value = value;//todo:refactor value out to tableorview and save an RowColumn creation
             }
@@ -260,6 +260,18 @@ namespace TightDbCSharp
             return Owner.GetStringNoRowCheck(columnName,RowIndex);
         }
 
+
+        public byte[] GetBinary(long columnIndex)//column and type of field will be checked
+        {
+            return Owner.GetBinaryNoRowCheck(columnIndex, RowIndex);
+        }
+
+        public byte[] GetBinary(string columnName)
+        {
+            return Owner.GetBinaryNoRowCheck(columnName, RowIndex);
+        }
+
+
         public long GetLong(long columnNumber)
         {
             return Owner.GetLongNoRowCheck(columnNumber, RowIndex);
@@ -280,6 +292,59 @@ namespace TightDbCSharp
             return Owner.GetDateTimeNoRowCheck(name, RowIndex);
         }
 
+        public long GetMixedLong(string name)
+        {
+            return Owner.GetMixedLongNoRowCheck(name, RowIndex);
+        }
+
+        public long GetMixedLong(long columnIndex)
+        {
+            return Owner.GetMixedLongNoRowCheck(columnIndex, RowIndex);
+        }
+
+
+        public Boolean GetMixedBoolean(string name)
+        {
+            return Owner.GetMixedBooleanNoRowCheck(name, RowIndex);
+        }
+
+        public Boolean GetMixedBoolean(long columnIndex)
+        {
+            return Owner.GetMixedBooleanNoRowCheck(columnIndex, RowIndex);
+        }
+
+
+        public float GetMixedFloat(string name)
+        {
+            return Owner.GetMixedFloatNoRowCheck(name, RowIndex);
+        }
+
+        public float GetMixedFloat(long columnIndex)
+        {
+            return Owner.GetMixedFloatNoRowCheck(columnIndex, RowIndex);
+        }
+
+        public Double GetMixedDouble(string name)
+        {
+            return Owner.GetMixedDoubleNoRowCheck(name, RowIndex);
+        }
+
+        public Double GetMixedDouble(long columnIndex)
+        {
+            return Owner.GetMixedDoubleNoRowCheck(columnIndex, RowIndex);
+        }
+
+        public String GetMixedString(string name)
+        {
+            return Owner.GetMixedStringNoRowCheck(name, RowIndex);
+        }
+
+        public String GetMixedString(long columnIndex)
+        {
+            return Owner.GetMixedStringNoRowCheck(columnIndex, RowIndex);
+        }
+
+
         public DateTime GetMixedDateTime(string name)
         {
             return Owner.GetMixedDateTimeNoRowCheck(name, RowIndex);
@@ -289,6 +354,18 @@ namespace TightDbCSharp
         {
             return Owner.GetMixedDateTimeNoRowCheck(columnIndex,RowIndex);
         }
+
+        public Table GetMixedTable(string name)
+        {
+            return Owner.GetMixedTableNoRowCheck(name, RowIndex);
+        }
+
+        public Table GetMixedTable(long columnIndex)
+        {
+            return Owner.GetMixedTableNoRowCheck(columnIndex, RowIndex);
+        }
+
+
 
         public DateTime GetDateTime(long columnIndex)
         {

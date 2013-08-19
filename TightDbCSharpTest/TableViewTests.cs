@@ -523,6 +523,29 @@ intcolumn2:1//column 2
 
 
 
+        [Test]
+        public static void TableViewSetMixedBinary()
+        {
+            using (var table = new Table("matadormix".Mixed(),"int".Int()))
+            {
+                byte[] testArray = { 01, 12, 36, 22 };
+                table.AddEmptyRow(1);
+                table.AddEmptyRow(1);
+                table.SetMixedBinary(0, 1, testArray);
+                table.SetLong(1,1,42);
+
+                TableView tableView = table.FindAllInt(1, 42);
+
+                byte[] testReturned = tableView.GetMixedBinary(0, 0);
+                Assert.AreEqual(4, testReturned.Length);
+                Assert.AreEqual(1, testReturned[0]);
+                Assert.AreEqual(12, testReturned[1]);
+                Assert.AreEqual(36, testReturned[2]);
+                Assert.AreEqual(22, testReturned[3]);
+            }
+        }
+
+
 
         [Test]
         public static void TableViewIterationTest()
