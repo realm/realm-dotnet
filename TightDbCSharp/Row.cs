@@ -99,7 +99,7 @@ namespace TightDbCSharp
 
         internal void SetDateNoCheck(long columnIndex, DateTime value)
         {
-            Owner.SetMixedNoCheck(columnIndex, RowIndex, value);
+            Owner.SetDateTimeNoCheck(columnIndex, RowIndex, value);
         }
 
         internal void SetFloatNoCheck(long columnIndex, float value)
@@ -111,8 +111,6 @@ namespace TightDbCSharp
         {
             Owner.SetDoubleNoCheck(columnIndex, RowIndex, value);
         }
-
-
 
         public void SetFloat(long columnIndex, float value)
         {
@@ -414,12 +412,12 @@ namespace TightDbCSharp
             return Owner.GetBoolNoCheck(columnIndex, RowIndex);
         }
 
-        public String GetStringNoCheck(long columnIndex)
+        internal String GetStringNoCheck(long columnIndex)
         {
             return Owner.GetStringNoCheck(columnIndex, RowIndex);
         }
 
-        public byte[] GetBinaryNoCheck(long columnIndex)
+        internal byte[] GetBinaryNoCheck(long columnIndex)
         {
             return Owner.GetBinaryNoCheck(columnIndex, RowIndex);
         }

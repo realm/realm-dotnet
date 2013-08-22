@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -1750,8 +1751,14 @@ Table Name  : cyclic field definition
         {
             using (var table = new Table("IntField".Int(),"StringField".String()))
             {
+                Assert.AreEqual(false,table.HasIndex(1));
+                Assert.AreEqual(false, table.HasIndex(0));
+                Assert.AreEqual(false, table.HasIndex("StringField"));
+                Assert.AreEqual(false, table.HasIndex("IntField"));
                 table.SetIndex(1);
-                table.Add( 1,"A");
+                Assert.AreEqual(true, table.HasIndex("StringField"));
+                Assert.AreEqual(false, table.HasIndex("IntField"));
+                table.Add(1, "A");
                 table.Add( 2,"B");
                 table.Add( 3,"C");
                 table.Add( 4,"A");
@@ -1926,6 +1933,39 @@ Table Name  : cyclic field definition
                 Assert.AreEqual(22, testReturned[3]);
             }
         }
+
+
+
+        [Test]
+        public static void TableSetGetEmptyBinary()
+        {
+            using (var table = new Table(new BinaryField("bin")))
+            {
+                //reading back a binarydata that was added with addempty row
+                table.AddEmptyRow(1);
+                Array binaryData = table.GetBinary(0, 0);
+                Assert.AreEqual(0,binaryData.Length);
+
+                //setting null, getting an empty binary data back
+                table.Add(null);
+                Array binaryData2 = table.GetBinary(0, 1);
+                Assert.AreEqual(0, binaryData2.Length);
+
+                //setting null, getting an empty binary data back
+                table.SetBinary(0,1,null);
+                Array binaryData5 = table.GetBinary(0, 1);
+                Assert.AreEqual(0, binaryData5.Length);
+
+
+                //setting empty binary data, and getting that back again
+                Array binaryData3 = new Byte[] {};
+                table.Add(binaryData3);
+                Array binaryData4 = table.GetBinary(0, 2);
+                Assert.AreEqual(0,binaryData4.Length);
+            }
+            //the 3 above for tableview are to be found in TableViewTests
+        }
+
 
 
         [Test]
@@ -2612,6 +2652,159 @@ double:-1002//column 3
                 Assert.AreEqual("int1", subback.GetColumnName(0));
             }
         }
+
+
+        //test setting all types to a mixed, and getting them back again correctly
+        [Test]
+        public static void TableMixedSetTypes()
+        {
+            using (var table = new Table("mixedfield".Mixed()))
+            {
+                //listed below are all C# built in value types http://msdn.microsoft.com/en-us/library/ya5y69ds.aspx
+                //we should be able to handle them gracefully when sent to a mixed, both when an applicable type is specified, and when
+                //we get them as a parameter where we must guess the mixed type to use
+
+                bool testbool = (table.Size == 1);
+                const byte testByte = byte.MaxValue;
+                const sbyte testSByte = sbyte.MinValue;
+                const char testChar = char.MaxValue;
+                const decimal testDecimal = decimal.MaxValue;
+                const double testDouble = double.MinValue;
+                const float testFloat = float.MaxValue;
+                const int testInt = int.MinValue;
+                const uint testUInt = uint.MaxValue;
+                const long testLong = long.MinValue;
+                ulong testULong = ulong.MaxValue;
+                const short testShort = short.MinValue;
+                const ushort testUShort = ushort.MaxValue;
+                //these types below are C# reference types that match various tightdb types
+                byte[] testBinary ={1, 3, 5, 7, 11, 13, 17, 23};
+                const string testString = "blah"; //in fact not a value type , but a reference type
+                DateTime testDateTime = new DateTime(1990,1,1).ToUniversalTime();
+
+
+                table.AddEmptyRow(1);
+                //setting and getting mixed values where tightdb type is specified
+
+                
+                
+                
+                
+                table.SetMixedBool(0,0,testbool);
+                Assert.AreEqual(testbool, table.GetMixedBool(0, 0));
+                table.Set(0,testbool);
+                Assert.AreEqual(testbool, table.GetMixedBool(0, 0));
+                
+                
+
+                //tightdb does not have a byte column, long is optimized for small values, but of course You don't have 
+                //a guarentee that You don't get a value back from a DataType.Int column that is larger than byte size
+                table.SetMixedLong(0, 0, testByte);
+                Assert.AreEqual(testByte, table.GetMixedLong(0, 0));
+                table.Set(0, testByte);
+                Assert.AreEqual(testByte, table.GetMixedLong(0, 0));
+
+
+                table.SetMixedLong(0, 0, testSByte);
+                Assert.AreEqual(testSByte, table.GetMixedLong(0, 0));
+                table.Set(0, testSByte);
+                Assert.AreEqual(testSByte, table.GetMixedLong(0, 0));
+
+
+                //we do not have any method for storing and getting back a char
+                //A string can be "" or several chars, so getting a string field back into a char have unsupported scenarios (string length<>1)
+                //A long can have a value that is larger than what a char can contain, or the long can be negative - but it is probably the best fit
+                //so this test uses a long
+                
+                table.SetMixedLong(0, 0, testChar);
+                Assert.AreEqual(testChar,(char) table.GetMixedLong(0, 0));
+                table.Set(0, testChar);
+                Assert.AreEqual(testChar, (char)table.GetMixedLong(0, 0));
+
+                //we also do not have an applicable database type for decimal.
+                //A user would probably stuff them into longs to get them saved
+                //or, if he really needs the precision, convert them back and forth to string
+                String testdecimalstring = testDecimal.ToString(CultureInfo.InvariantCulture);
+                table.SetMixedString(0, 0, testdecimalstring);
+                string decimalstringreturned = table.GetMixedString(0, 0);
+                Assert.AreEqual(testDecimal, Decimal.Parse(decimalstringreturned));
+                table.Set(0, testdecimalstring);
+                Assert.AreEqual(testDecimal, Decimal.Parse(decimalstringreturned));
+
+
+                table.SetMixedDouble(0, 0, testDouble);
+                Assert.AreEqual(testDouble,table.GetMixedDouble(0, 0));
+                table.Set(0, testDouble);
+                Assert.AreEqual(testDouble, table.GetMixedDouble(0, 0));
+
+
+                table.SetMixedFloat(0, 0, testFloat);
+                Assert.AreEqual(testFloat, table.GetMixedFloat(0, 0));
+                table.Set(0, testFloat);
+                Assert.AreEqual(testFloat, table.GetMixedFloat(0, 0));
+
+
+
+                table.SetMixedLong(0, 0, testInt);
+                Assert.AreEqual(testInt, table.GetMixedLong(0, 0));
+                table.Set(0, testInt);
+                Assert.AreEqual(testInt, table.GetMixedLong(0, 0));
+
+
+                table.SetMixedLong(0, 0, testUInt);
+                Assert.AreEqual(testUInt, table.GetMixedLong(0, 0));
+                table.Set(0, testUInt);
+                Assert.AreEqual(testUInt, table.GetMixedLong(0, 0));
+
+
+                table.SetMixedLong(0, 0, testLong);
+                Assert.AreEqual(testLong, table.GetMixedLong(0, 0));
+                table.Set(0, testLong);
+                Assert.AreEqual(testLong, table.GetMixedLong(0, 0));
+
+
+                //as Tightdb internally uses long, we can't really store an ULong if it is larger than long.Maxvalue
+                //also note that reading back a negative long from a column into an ULong is an error
+                if (testULong > long.MaxValue)
+                {
+                    testULong = long.MaxValue;//or throw. 
+                }
+
+                table.SetMixedLong(0, 0, (long)testULong);
+                Assert.AreEqual(testULong, table.GetMixedLong(0, 0));
+                table.Set(0, testULong);
+                Assert.AreEqual(testULong, table.GetMixedLong(0, 0));
+
+
+                table.SetMixedLong(0, 0, testShort);
+                Assert.AreEqual(testShort, table.GetMixedLong(0, 0));
+                table.Set(0, testShort);
+                Assert.AreEqual(testShort, table.GetMixedLong(0, 0));
+
+                table.SetMixedLong(0, 0, testUShort);
+                Assert.AreEqual(testUShort, table.GetMixedLong(0, 0));
+                table.Set(0, testUShort);
+                Assert.AreEqual(testUShort, table.GetMixedLong(0, 0));
+
+                table.SetMixedBinary(0, 0, testBinary);
+                Assert.AreEqual(testBinary, table.GetMixedBinary(0, 0));
+                table.Set(0, testBinary);
+                Assert.AreEqual(testBinary, table.GetMixedBinary(0, 0));
+
+                table.SetMixedString(0, 0, testString);
+                Assert.AreEqual(testString, table.GetMixedString(0, 0));
+                table.Set(0, testString);
+                Assert.AreEqual(testString, table.GetMixedString(0, 0));
+
+                table.SetMixedDateTime(0, 0, testDateTime);
+                Assert.AreEqual(testDateTime.ToUniversalTime(), table.GetMixedDateTime(0, 0).ToUniversalTime());
+                table.Set(0, testDateTime);
+                Assert.AreEqual(testDateTime.ToUniversalTime(), table.GetMixedDateTime(0, 0).ToUniversalTime());
+
+
+            }
+        }
+
 
 
         [Test]

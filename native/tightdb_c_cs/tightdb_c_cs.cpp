@@ -415,7 +415,10 @@ TIGHTDB_C_CS_API int64_t  table_get_mixed_int(Table*  table_ptr, size_t column_n
     return table_ptr->get_mixed(column_ndx,row_ndx).get_int();    
 }
 
-//todo:implement table_get_mixed_bool
+TIGHTDB_C_CS_API size_t  table_get_mixed_bool(Table*  table_ptr, size_t column_ndx, size_t row_ndx)
+{
+    return size_t_to_bool(table_ptr->get_mixed(column_ndx,row_ndx).get_bool());    
+}
 
 TIGHTDB_C_CS_API int64_t table_get_mixed_date(Table*  table_ptr, size_t column_ndx, size_t row_ndx)
 {
@@ -832,8 +835,6 @@ TIGHTDB_C_CS_API int64_t tableview_get_int(TableView* tableView_ptr, size_t colu
     return tableView_ptr->get_int(column_ndx,row_ndx);
 }
 
-
-
 //returns false=0  true=1 we use a size_t as it is likely the fastest type to return
 TIGHTDB_C_CS_API size_t tableview_get_bool(TableView* tableView_ptr, size_t column_ndx, size_t row_ndx)
 {    
@@ -858,15 +859,18 @@ TIGHTDB_C_CS_API double tableview_get_double(TableView* tableview_ptr, size_t co
     return tableview_ptr->get_double(column_ndx,row_ndx);
 }
 
-
-
 TIGHTDB_C_CS_API size_t tableview_get_string(TableView* tableview_ptr, size_t column_ndx, size_t row_ndx, uint16_t * datatocsharp, size_t bufsize)
 {
     StringData fielddata=tableview_ptr->get_string(column_ndx, row_ndx);
     return stringdata_to_csharpstringbuffer(fielddata,datatocsharp,bufsize);
 }
 
-//todo:implement tableview_get_binary
+TIGHTDB_C_CS_API const char * tableview_get_binary(TableView*  tableview_ptr, size_t column_ndx, size_t row_ndx,  size_t* size)
+{
+    BinaryData bd=tableview_ptr->get_binary(column_ndx,row_ndx);
+    *size = bd.size();
+    return  bd.data();//pointer to all the data;
+}
 
 TIGHTDB_C_CS_API int64_t  tableview_get_mixed_int(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx)
 {
@@ -959,13 +963,12 @@ TIGHTDB_C_CS_API size_t tableview_find_first_string(TableView * table_ptr , size
 }
 
 
-//todo:implement tightdb find_first_binary
-/*
-TIGHTDB_C_CS_API size_t tableView_find_first_binary(TableView * table_ptr , size_t column_ndx, char* value, size_t len)
+TIGHTDB_C_CS_API size_t tableview_find_first_binary(TableView * table_ptr , size_t column_ndx, char* value, size_t len)
 {   
-    return  table_ptr->find_first_binary(column_ndx,value,len);
+    BinaryData bd(value,len);
+    return  table_ptr->find_first_binary(column_ndx,bd);
 }
-*/
+
 
 TIGHTDB_C_CS_API int64_t tableview_sum_int(TableView * tableview_ptr , size_t column_ndx)
 {   
@@ -1112,7 +1115,13 @@ TIGHTDB_C_CS_API void tableview_set_string(TableView* tableview_ptr, size_t colu
     tableview_ptr->set_string(column_ndx,row_ndx,str);
 }
 
-//todo:implement tableview_set_binary
+//C# will call with a pinned array of bytes and its size. no copying occours except inside tightdb where the data is of course
+//copied down into the table. The data pointed to by data must not be accessed after this call is finished.
+TIGHTDB_C_CS_API void tableview_set_binary(TableView*  tableview_ptr, size_t column_ndx, size_t row_ndx,  const char* data, std::size_t size)
+{
+    BinaryData bd(data,size);
+    tableview_ptr->set_binary(column_ndx,row_ndx,bd);
+}
 
 
 TIGHTDB_C_CS_API void tableview_set_mixed_int(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx, int64_t value)

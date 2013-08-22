@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Globalization;
 using System.IO;
-using System.Runtime.InteropServices;
 using TightDbCSharp;
 using NUnit.Framework;
 
@@ -61,7 +60,7 @@ namespace TightDbCSharpTest
         const string Sharedgroupfilename = @"UnitTestSharedGroup";
         //successfull usage case check
         [Test]
-        public void CreateSharedGroupOpenReadWrite()
+        public void SharedGroupTransactions()
         {
             File.Delete(Sharedgroupfilename);
 
@@ -102,7 +101,7 @@ namespace TightDbCSharpTest
 
                 //alternative syntax example1, anonymous function wrapped
 
-                sharedGroup.ExecuteInWriteTransaction(( group ) =>
+                sharedGroup.ExecuteInWriteTransaction(group =>
                 {
                     using (var table = group.CreateTable("TestTable2", new StringField("StringColumn1"),
                                                                             new StringField("StringColumn2"),
@@ -113,7 +112,7 @@ namespace TightDbCSharpTest
                 });
 
 
-                sharedGroup.ExecuteInReadTransaction((transaction) =>
+                sharedGroup.ExecuteInReadTransaction(transaction =>
                 {
                     using (var table = transaction.GetTable("TestTable2"))                                      
                     {
@@ -146,16 +145,6 @@ namespace TightDbCSharpTest
             }
         }
 
-
-        void TestHelperRead3(Group t)
-        {
-            using (var table = t.GetTable("TestTable3"))
-            {
-                Assert.AreEqual(Field01Text, table.GetString(0, 0));
-                Assert.AreEqual(Field02Text, table.GetString(1, 0));
-                Assert.AreEqual(Field03Text, table.GetString(2, 0));
-            }            
-        }
 
         void TestHelperRead2(Group t)
         {
@@ -260,8 +249,8 @@ namespace TightDbCSharpTest
                     Assert.AreEqual(false, transaction.Invalid);
                     try
                     {
-                        Table t = transaction.CreateTable("must fail");
-                        Assert.Fail("create on a read transaction didn't fail");
+                        var fail = transaction.CreateTable("must fail");
+                        Assert.AreEqual(fail.Size,0);//we should never get this far. assert put in to remove compiler warning
                     }
                     catch (InvalidOperationException)
                     {
@@ -302,6 +291,7 @@ namespace TightDbCSharpTest
                     {
                         using (var transaction2 = sharedGroup.BeginWrite())
                         {
+                            Assert.AreEqual(transaction2.ToString(), transaction2.ToString());//we should never get this far.line added to keep compiler happy
                             Assert.Fail("starting a transaction while another one is still active did not fail");
                         }
                     }

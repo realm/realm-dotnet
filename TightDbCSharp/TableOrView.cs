@@ -254,7 +254,7 @@ namespace TightDbCSharp
         }
 
 
-        //todo:unit test this
+        
         //column and row must point to a field that is of type subtable
         //note that in case the subtable scheme does not fit well with the passed object, the subtable will be half filled wit data up to the point where there was a mismatch,
         //for instance if called with an array of 10 rows, where the last row have one more field (or is missing a field)
@@ -301,27 +301,88 @@ namespace TightDbCSharp
         internal void SetMixedNoCheck(long columnIndex, long rowIndex, object element)
         {
             Type elementType = element.GetType();
-                //performance hit as it is not neccessarily used, but used many blaces below
+             //these tests are sorted in order of most likely types being encountered in an add ir set call
+            //Some tests are however dependent on other tests having been done before
+            //if they depend on other test done before, it is noted in a comment
 
-            //todo:add a throw statement if an unsupported type shows up in the parametres. 
-            //that is - if we ended up not inserting anything.
-            //remmeber to fixup the insert in progress first
-            //right now, we silently just don't put anything in the mixed if we cannot figure the type to use
+            if (elementType == typeof(Int32))
+            {
+                SetMixedLongNoCheck(columnIndex, rowIndex, (Int32)element); 
+                return;
+            }
 
-            if (
-                elementType == typeof (Byte) || //byte Byte
+
+            if (elementType == typeof(string))
+            {
+                SetMixedStringNoCheck(columnIndex, rowIndex, (String)element);
+                return;
+            }
+
+
+            if (elementType == typeof(DateTime))
+            {
+                SetMixedDateTimeNoCheck(columnIndex, rowIndex, (DateTime)element);
+                return;
+            }
+
+            if (elementType == typeof(Double))
+            {
+                SetMixedDoubleNoCheck(columnIndex, rowIndex, (Double)element);
+                return;
+            }
+
+            if (elementType == typeof(Boolean))
+            {
+                SetMixedBoolNoCheck(columnIndex, rowIndex, (bool)element);
+                return;
+            }
+
+
+            if (elementType == typeof(Single)) //float, Single
+            {
+                SetMixedFloatNoCheck(columnIndex, rowIndex, (float)element);
+                return;
+            }
+
+
+            if (elementType == typeof (byte))
+            {
+                SetMixedLongNoCheck(columnIndex, rowIndex, (byte)element); 
+                return;
+            }
+
+            if (elementType == typeof(SByte))
+            {
+                SetMixedLongNoCheck(columnIndex, rowIndex, (SByte)element);
+                return;
+            }
+
+
+            if (elementType == typeof(UInt32))//uint
+            {
+                SetMixedLongNoCheck(columnIndex, rowIndex, Convert.ToInt64(element));
+                return;
+            }
+
+            if (elementType == typeof(UInt64))//uint
+            {
+                SetMixedLongNoCheck(columnIndex, rowIndex, Convert.ToInt64(element));//possible datloss if the uint64 is larger than int.maxsize
+                return;
+            }
+
+
+            if (                
                 elementType == typeof (Int16) || //int16,short
                 elementType == typeof (SByte) || //sbyte SByte                           
                 elementType == typeof (Int32) || //int,int32
                 elementType == typeof (UInt16) //ushort,uint16
                 )
             {
-                SetMixedLongNoCheck(columnIndex, rowIndex, (int) element); //ints cannot be unboxed directly to long
+                SetMixedLongNoCheck(columnIndex, rowIndex, Convert.ToInt64(element)); 
                 return;
             }
 
-            if (
-                elementType == typeof (UInt32) || //uint
+            if (                
                 elementType == typeof (Int64) || //long,int64
                 elementType == typeof (UInt64) //ulong                            
                 )
@@ -329,34 +390,26 @@ namespace TightDbCSharp
                 SetMixedLongNoCheck(columnIndex, rowIndex, (long) element);
                 return;
                     //ints cannot be unboxed directly to long. But can the larger types?
-            } //todo:unit test by throwing uint32,int64 and UInt64 at the cast above
+            } 
 
-            if (elementType == typeof (Boolean))
+            if (elementType == typeof(char))
             {
-                SetMixedBoolNoCheck(columnIndex, rowIndex, (bool) element);
+                SetMixedLongNoCheck(columnIndex, rowIndex, Convert.ToInt64(element)); 
                 return;
             }
 
-            if (elementType == typeof (string))
-            {
-                SetMixedStringNoCheck(columnIndex, rowIndex, (String) element);
-                return;
-            }
 
-            if (elementType == typeof (byte[])) //todo:unit test if this type check actually works as intended
+
+            if (elementType == typeof (byte[])) 
             {
                 SetMixedBinaryNoCheck(columnIndex, rowIndex, (byte[]) element);
                 return;
             }
 
 
+            //depends on string and byte[] having been handled higher op so we never get those down here
             if (element as IEnumerable != null) //check if it is an array of stuff that could be row contents
             {
-                if (elementType != typeof (string))
-                    //a string cannot represent  a list of rows - it is instead treated as a string field
-                {
-                    if (elementType != typeof (Byte[]))
-                        //a byte array cannot represent a list of rows - it is instead treated as a binary field
                         if (elementType != typeof (Table))
                         {
                             //idea:construct a table from the enummerable element, and guess the types and names of the fields (not high priority)
@@ -371,27 +424,13 @@ namespace TightDbCSharp
                         {
                             SetMixedSubtableNoCheck(columnIndex, rowIndex, element as Table);
                         }
-                }
-            }
-            //mixed in mixed makes no sense
-            if (elementType == typeof (DateTime))
-            {
-                SetMixedDateTimeNoCheck(columnIndex, rowIndex, (DateTime) element);
-                return;
+                
             }
 
-            if (elementType == typeof (Single)) //float, Single
-            {
-                SetMixedFloatNoCheck(columnIndex, rowIndex, (float) element);
-                return;
-            }
 
-            if (elementType == typeof (Double))
-            {
-                SetMixedDoubleNoCheck(columnIndex, rowIndex, (Double) element);
-                return;
-            }
 
+
+            throw new ArgumentException(String.Format("SetMixed called with a unsupported c#type {0}",elementType));
 
         }
 
@@ -435,9 +474,14 @@ namespace TightDbCSharp
         internal void SetRowNoCheck(long rowIndex, params object[] rowContents)
             //experimental        internal void SetRowNoCheck(long rowIndex, IEnumerable<object> rowContents)
         {        
+            //special case if rowContents is null
+            if (rowContents == null)
+            {
+                rowContents = new object[] { null };//so the rest of the code gets an array with a null inside. Some types accept null.
+            }
             //user could send row data as an object array as first parameter, or many parametres that together is the data for a row/
             //handle both cases by making sure rowContents is always an array of field values to be put in
-            if (rowContents.Length == 1 && ColumnCount > 1 && rowContents.GetType() == typeof (object[]))
+            if ( rowContents.Length == 1 && ColumnCount > 1 && rowContents.GetType() == typeof (object[]))
             {
                 if (rowContents[0].GetType() == typeof(Int32[]))//bc if you specify a subtable row as new [] {1,2,3} C# will compile it as an System.int32[] which is not at all compatible with object[]
                 {
@@ -450,11 +494,12 @@ namespace TightDbCSharp
                   rowContents = (object[]) rowContents[0];
                 }
             }
-            
-            ValidateSetRowNumColumns(rowContents.Length);
+                        
+            ValidateSetRowNumColumns(rowContents.Length);            
+
             for (long ix = 0; ix < ColumnCount; ix++)
             {
-                object element = rowContents[ix]; //element is parameter number ix
+                  object element = rowContents[ix]; //element is parameter number ix
                 //first do a switch on directly compatible types
 
                 switch (ColumnTypeNoCheck(ix))
@@ -592,6 +637,12 @@ namespace TightDbCSharp
         {
             ValidateColumnRowMixedType(columnIndex, rowIndex, DataType.Int);
             return GetMixedLongNoCheck(columnIndex, rowIndex);
+        }
+
+        public bool GetMixedBool(long columnIndex, long rowIndex)
+        {
+            ValidateColumnRowMixedType(columnIndex, rowIndex, DataType.Bool);
+            return GetMixedBoolNoCheck(columnIndex, rowIndex);
         }
 
 

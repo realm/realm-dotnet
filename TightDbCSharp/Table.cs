@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Runtime.Serialization;
 //using System.Threading.Tasks; not portable as of 2013-04-02
 
 //Tell compiler to give warnings if we publicise interfaces that are not defined in the cls standard
@@ -120,7 +117,7 @@ namespace TightDbCSharp
 
         
 
-        //the following code enables Table to be enumerated, and makes Row the type You get back from an enummeration
+        //the following code enables Table to be enumerated, and makes TableRow the type You get back from an enummeration
         public new IEnumerator<TableRow> GetEnumerator() { return new Enumerator(this); }
         IEnumerator IEnumerable.GetEnumerator() { return new Enumerator(this); }
 
@@ -186,15 +183,14 @@ namespace TightDbCSharp
             {
                 throw new ArgumentNullException("schema");
             }
-            ValidateNoColumns();
-            ValidateIsEmpty();
+            ValidateSpecChangeIsOkay();
             foreach (Field tf in schema)
             {
                 if (tf == null)
                 {
                     throw new ArgumentNullException("schema", "one or more of the field objects is null");
                 }
-                Spec.AddField(tf);
+                Spec.AddFieldNoCheck(tf);
             }
             UpdateFromSpecNoCheck();
             return this;//allow fluent creation of table in a group
@@ -204,9 +200,8 @@ namespace TightDbCSharp
         //the method will create columns in the table, matching the specified schema.
         private void DefineSchema(Field schema)
         {
-            ValidateNoColumns();
-            ValidateIsEmpty();
-            Spec.AddField(schema);
+            ValidateSpecChangeIsOkay();
+            Spec.AddFieldNoCheck(schema);
             UpdateFromSpecNoCheck();//build table from the spec tree structure            
         }
         /*
@@ -233,8 +228,8 @@ namespace TightDbCSharp
         costomers[12,"firstname"]  ="Hans";        
         */
 
-
-        //todo: remove these debug methods
+        
+        //to do: remove these debug methods
         public static Int64 DebugToTightDbTime(DateTime date)
         {
             return UnsafeNativeMethods.ToTightDbTime(date);
@@ -244,7 +239,7 @@ namespace TightDbCSharp
         {
             return UnsafeNativeMethods.ToCSharpTimeUtc(cppTime);
         }
-
+        
         //This method will test basic interop, especially test that the c++ compiler used to build the c++ dll binding uses
         //the same size and sequence for various types used in interop, as C# and C# marshalling expects
         public static void TestInterop()
@@ -357,22 +352,37 @@ namespace TightDbCSharp
         }
 
 
+        //only call this method if You are sure Updatefromspec is legal (having checked shared tables, readonly etc.)
         //this will update the table structure to represent whatever the earlier recieved spec has been set up to, and altered to
-        //todo : (asana)should not be public, call updatefromspec automatically from methods that change the spec (so find out how to get to the top level table when all you have is a spec)
-        //todo : (asana)updatefromspec is only allowed on the toplevel table, not on subtables within  - bot okay on toplevel tables inside mixed
-        internal void UpdateFromSpecNoCheck()
-        {
-            
+        private void UpdateFromSpecNoCheck()
+        {            
             UnsafeNativeMethods.TableUpdateFromSpec(this);
             HasColumns = true;
         }
 
-        public void UpdateFromSpec()
+        //note that this call can be made on a root table as well as on a subtable or a mixed subtable
+        public void ValidateSpecChangeIsOkay()
         {
+            ValidateIsValid();
             ValidateNoColumns(); //updatefromspec can only be called once, to create the table structure, so no prior columns
             ValidateIsEmpty();//of course the table must also be empty (although i fail to see how a table can have no columns and be not-empty)
-            ValidateNotSharedSpec();//updatefromspec can only be called on a root table
+            ValidateNotSharedSpec();//updatefromspec can only be called on a root table, if we are called on a subtable, changes are not legal
+        }
+
+
+        //todo : (asana)should not be public, call updatefromspec automatically from methods that change the spec (so find out how to get to the top level table when all you have is a spec)        
+        public void UpdateFromSpec()
+        {
+            ValidateSpecChangeIsOkay();
             UpdateFromSpecNoCheck();
+        }
+
+        internal void ValidateIsValid()
+        {
+            if (! IsValid())
+            {
+                throw new InvalidOperationException("Table accessor is no longer valid. No operations except calling IsValid is allowed");
+            }
         }
 
         internal void ValidateNoColumns()
@@ -537,18 +547,31 @@ namespace TightDbCSharp
         }
 
         //only legal to call this with a string column index
+        //however, later on the other columns will also have indicies and then it will
+        //be legal to call with more types, eventually all types
+        //right now, just return false for non-string columns, and otherwise
+        //ask core if there is an index
         public Boolean HasIndex(long columnIndex)
         {
-            ValidateColumnIndexAndTypeString(columnIndex);
-            return HasIndexNoCheck(columnIndex);
+            ValidateIsValid();
+            ValidateColumnIndex(columnIndex);
+            if (ColumnType(columnIndex) == DataType.String)
+            {
+                return HasIndexNoCheck(columnIndex);                
+            }
+            return false;
         }
 
         //only legal to call this with a string column index
+        //right now return false if it is not a string column, otherwise
+        //ask core. See HasIndex(long columnIndex)
         public Boolean HasIndex(String columnName)
         {
+            ValidateIsValid();
             long columnIndex = GetColumnIndex(columnName);
-            ValidateTypeString(columnIndex);
-            return HasIndexNoCheck (columnIndex);
+            if (ColumnType(columnIndex)==DataType.String)            
+              return HasIndexNoCheck (columnIndex);
+            return false;
         }
 
         //expects the columnIndex to already have been validated as legal and type string

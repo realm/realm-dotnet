@@ -124,7 +124,7 @@ namespace TightDbCSharp
         //been deallocated.
 
         //add this field to the current spec. Will add recursively if neeeded
-        public void AddField(Field schema)
+        internal void AddFieldNoCheck(Field schema)
         {
             if (schema != null)
             {
@@ -136,7 +136,7 @@ namespace TightDbCSharp
                 {
                     Field[] tfa = schema.GetSubTableArray();
                     Spec subspec = AddSubTableColumn(schema.ColumnName);
-                    subspec.AddFields(tfa);
+                    subspec.AddFieldsNoCheck(tfa);
                 }
             }
             else
@@ -145,15 +145,23 @@ namespace TightDbCSharp
             }
         }
 
+        public void AddField(Field schema)
+        {
+            OwnerRootTable.ValidateSpecChangeIsOkay();
+            //if we are a subtable taken out from a row, then the above check will catch the situation as we must have columns and that makes spec changes not okay
+            //if we are a spec gotten get spec.getsubspec etc then it is valid to add a field if the root table has no columns
+           
+            AddFieldNoCheck(schema);
+        }
 
         // will add the field list to the current spec
-        private void AddFields(IEnumerable<Field> fields)
+        private void AddFieldsNoCheck(IEnumerable<Field> fields)
         {
             if (fields != null)
             {
                 foreach (Field field in fields)
                 {
-                    AddField(field);
+                    AddFieldNoCheck(field);
                 }
             }
             else
@@ -166,18 +174,24 @@ namespace TightDbCSharp
 
         public Spec AddSubTableColumn(String name)
         {
-            ValidateNoColumns();
+            ValidateOkayToModify();//updatefromspec can only be called once, on a table with no comitted columns.
             return UnsafeNativeMethods.AddSubTableColumn(this, name);
         }
 
-        private void ValidateNoColumns()
+
+        private void ValidateOkayToModify()
         {
-            OwnerRootTable.ValidateNoColumns();
+            OwnerRootTable.ValidateNoColumns();//because updatefromspec can only be called once, on a root table, to create all the fields
+            OwnerRootTable.ValidateIsValid();//of course our root table must be valid
+            //in other words, the root table must have no rows, and ... no prior specified columns
+            //The only way to use a spec to modify a table is via Updatefromspec, so we preemptively stop the user from modifying a spec
+            //if we know in advance that update will fail on the root table
+            //todo:we should also verify that the root table is not readonly (could realistically happen if You get a ST from a mixed in a readonly transaction)
         }
 
         public long AddColumn(DataType type, String name)
         {
-            ValidateNoColumns();
+            ValidateOkayToModify();
             return UnsafeNativeMethods.SpecAddColumn(this, type, name);
         }
 

@@ -203,7 +203,7 @@ namespace TightDbCSharp
 
         internal override void SetBinaryNoCheck(long columnIndex, long rowIndex, byte[] value)
         {
-            throw new NotImplementedException();
+            UnsafeNativeMethods.TableViewSetBinary(this, columnIndex, rowIndex, value);
         }
 
         internal override void SetSubTableNoCheck(long columnIndex, long rowIndex, Table value)
@@ -239,7 +239,7 @@ namespace TightDbCSharp
 
         internal override byte[] GetBinaryNoCheck(long columnIndex, long rowIndex)
         {
-            throw new NotImplementedException();
+            return UnsafeNativeMethods.TableViewGetBinary(this, columnIndex, rowIndex);
         }
 
         internal override Table GetSubTableNoCheck(long columnIndex, long rowIndex)

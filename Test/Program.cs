@@ -13,6 +13,7 @@ namespace Test
         //    TightDbCSharpTest.TableTests1.TableSetBinary();
         //    TightDbCSharpTest.TableTests1.TestInterop();
             //TightDbCSharpTest.TableTests1.TableFindFirstBinaryCoreBug();
+            TightDbCSharpTest.TableTests1.TableMixedSetTypes();
             Console.ReadKey();
         }
     }

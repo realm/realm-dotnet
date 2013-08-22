@@ -4,8 +4,6 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 //using System.Appdomain;
-using System.Windows.Forms;
-
 
 
 [assembly: InternalsVisibleTo("Test")]
@@ -547,7 +545,7 @@ enum DataType {
         }
 
 
-        
+        //resharper warning okay, ffb is not implemented in table core
         [DllImport(L64, EntryPoint = "table_find_first_binary", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr table_find_first_binary64(IntPtr tableHandle, IntPtr columnIndex,IntPtr value,IntPtr bytes);
 
@@ -558,7 +556,7 @@ enum DataType {
         public static long TableFindFirstBinary(Table table, long columnIndex, byte[] value)
         {
             throw new NotImplementedException("Find First Binary not implemented in c++ core yet");//remove when ff has been implemented in core
-
+            /*
             GCHandle handle = GCHandle.Alloc(value, GCHandleType.Pinned);
             IntPtr valuePointer = handle.AddrOfPinnedObject();
             try
@@ -581,6 +579,7 @@ enum DataType {
             {
                 handle.Free();
             }
+             */
         }
 
 
@@ -704,7 +703,7 @@ enum DataType {
 
         public static long TableViewFindFirstBinary(TableView tableView, long columnIndex, byte[] value)
         {
-            throw new NotImplementedException("core has not implemented tableview_find_first_binary yet");
+            
             return
                     Is64Bit
                         ? (long)tableView_find_first_binary64(tableView.Handle, (IntPtr)columnIndex, value, (IntPtr)value.Length)
@@ -2150,6 +2149,38 @@ enum DataType {
 
 
 
+        //not using automatic marshalling (which might lead to copying in some cases),
+        //The SizePtr variable must be a pointer to C# allocated and pinned memory where c++ can write the size
+        //of the data (length in bytes)
+        //the call will return a pointer to the array data, and the IntPtr that SizePtr pointed to will have changed
+        //to contain the length of the data
+        [DllImport(L64, EntryPoint = "tableview_get_binary", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr tableview_get_binary64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx, out IntPtr size);
+
+        [DllImport(L32, EntryPoint = "tableview_get_binary", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr tableview_get_binary32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx, out IntPtr size);
+
+
+        public static byte[] TableViewGetBinary(TableView tableView, long columnIndex, long rowIndex)
+        {
+            IntPtr datalength;
+
+            IntPtr data =
+                (Is64Bit)
+                    ? tableview_get_binary64(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, out datalength)
+                    : tableview_get_binary32(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, out datalength);
+
+            //now, datalength should contain number of bytes in data,
+            //and data should be a pointer to those bytes
+            //as data is managed on the c++ side, we will now copy data over to managed memory
+            //if datalength is 0 marshal.copy wil copy nothing and we will return a byte[0]
+            long numBytes = datalength.ToInt64();
+            var ret = new byte[numBytes];
+            Marshal.Copy(data, ret, 0, (int)datalength);
+            return ret;
+        }
+
+
 
 
 
@@ -2426,6 +2457,56 @@ enum DataType {
 
 
 
+
+        //not using automatic marshalling (which might lead to copying in some cases),
+        //but ensuring no copying of the array data is done, by getting a pinned pointer to the array supplied by the user.
+        [DllImport(L64, EntryPoint = "tableview_set_binary", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void tableview_set_binary64(IntPtr tableViewPtr, IntPtr columnNdx, IntPtr rowNdx, IntPtr value, IntPtr bytes);
+
+        [DllImport(L32, EntryPoint = "tableview_set_binary", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void tableview_set_binary32(IntPtr tableViewPtr, IntPtr columnNdx, IntPtr rowNdx, IntPtr value, IntPtr bytes);
+
+
+        public static void TableViewSetBinary(TableView tableView, long columnIndex, long rowIndex, Byte[] value)
+        {
+            //special case if we get called with null (which means add a binarydata of size 0
+            //core will ignore the pointer and concentrate on size=0
+            //reason for the special case is an easy way around the try finally block 
+            if (value == null)
+            {
+                if (Is64Bit)
+                    tableview_set_binary64(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, IntPtr.Zero, IntPtr.Zero);
+                else
+                    tableview_set_binary32(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, IntPtr.Zero, IntPtr.Zero);
+                return;
+            }
+
+            GCHandle handle = GCHandle.Alloc(value, GCHandleType.Pinned);//now value cannot be moved or garbage collected by garbage collector
+            IntPtr valuePointer = handle.AddrOfPinnedObject();
+            try
+            {
+                if (Is64Bit)
+                    tableview_set_binary64(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, valuePointer,
+                        (IntPtr)value.Length);
+                else
+                    tableview_set_binary32(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, valuePointer,
+                        (IntPtr)value.Length);
+            }
+            finally
+            {
+                handle.Free();//allow Garbage collector to move and deallocate value as it wishes
+            }
+        }
+
+
+
+
+
+
+
+
+
+
         [DllImport(L64, EntryPoint = "tableview_set_int", CallingConvention = CallingConvention.Cdecl)]
         private static extern void tableView_set_int64(IntPtr tableViewPtr, IntPtr columnNdx, IntPtr rowNdx, long value);
 
@@ -2558,6 +2639,17 @@ enum DataType {
         
         public static void TableSetBinary(Table table, long columnIndex, long rowIndex, Byte[] value)
         {
+            //special case if we get called with null (which means add a binarydata of size 0
+            //core will ignore the pointer and concentrate on size=0
+            if (value == null)
+            {
+                if (Is64Bit)
+                    table_set_binary64(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, IntPtr.Zero, IntPtr.Zero);
+                else
+                    table_set_binary32(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, IntPtr.Zero, IntPtr.Zero);
+                return;
+            }
+
             GCHandle handle = GCHandle.Alloc(value, GCHandleType.Pinned);//now value cannot be moved or garbage collected by garbage collector
             IntPtr valuePointer = handle.AddrOfPinnedObject();
             try
@@ -2588,6 +2680,17 @@ enum DataType {
 
         public static void TableSetMixedBinary(Table table, long columnIndex, long rowIndex, Byte[] value)
         {
+
+            if (value == null)
+            {
+                if (Is64Bit)
+                    table_set_mixed_binary64(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, IntPtr.Zero, IntPtr.Zero);
+                else
+                    table_set_mixed_binary32(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, IntPtr.Zero, IntPtr.Zero);
+                return;
+            }
+
+
             GCHandle handle = GCHandle.Alloc(value, GCHandleType.Pinned);//now value cannot be moved or garbage collected by garbage collector
             IntPtr valuePointer = handle.AddrOfPinnedObject();
             try
@@ -2617,6 +2720,17 @@ enum DataType {
 
         public static void TableViewSetMixedBinary(TableView tableView, long columnIndex, long rowIndex, Byte[] value)
         {
+
+
+            if (value == null)
+            {
+                if (Is64Bit)
+                    tableview_set_mixed_binary64(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, IntPtr.Zero, IntPtr.Zero);
+                else
+                    tableview_set_mixed_binary32(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, IntPtr.Zero, IntPtr.Zero);
+                return;
+            }
+
             GCHandle handle = GCHandle.Alloc(value, GCHandleType.Pinned);//now value cannot be moved or garbage collected by garbage collector
             IntPtr valuePointer = handle.AddrOfPinnedObject();
             try

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using NUnit.Framework;
 using TightDbCSharp;
 using TightDbCSharp.Extensions;
@@ -150,6 +151,93 @@ namespace TightDbCSharpTest
                     Assert.AreEqual(DataType.String, dtvRow1);
                     String viewRow1 = view.GetMixedString(0, 1);
                     Assert.AreEqual(setWithViewSetMixed, viewRow1);
+                }
+            }
+        }
+
+
+        [Test]
+        public static void TableViewSetGetEmptyBinary()
+        {
+            using (var table = new Table(new BinaryField("bin"),new IntField("int")))
+            {
+                table.AddEmptyRow(1);//empty row
+                table.AddEmptyRow(1);
+                table.SetLong(1,1,42);//empty binary set by addemptyrow but int = 42                
+                table.Add(null, 42);  //empty binary set with null
+                Array binaryData3 = new Byte[] { };
+                table.Add(binaryData3,42);//empty binary set with an empty byte array
+
+                using (var tableView = table.FindAllInt(1, 42))
+                {
+                    //reading back a binarydata that was added with addempty row
+                    Array binaryData = tableView.GetBinary(0, 0);
+                    Assert.AreEqual(0, binaryData.Length);
+
+                    //setting null, getting an empty binary data back
+                    Array binaryData2 = tableView.GetBinary(0, 1);
+                    Assert.AreEqual(0, binaryData2.Length);
+
+                    //setting null, getting an empty binary data back
+                    tableView.SetBinary(0, 1, null);
+                    Array binaryData5 = tableView.GetBinary(0, 1);
+                    Assert.AreEqual(0, binaryData5.Length);
+
+                    //setting empty binary data, and getting that back again
+                    Array binaryData4 = tableView.GetBinary(0, 2);
+                    Assert.AreEqual(0, binaryData4.Length);                    
+                }
+                //accessing through a row cursor
+                using (var tableView = table.FindAllInt(1, 42))
+                {
+                    //reading back a binarydata that was added with addempty row
+                    Array binaryData = tableView[0].GetBinary(0);
+                    Assert.AreEqual(0, binaryData.Length);
+
+                    //setting null, getting an empty binary data back
+                    Array binaryData2 = tableView[1].GetBinary(0);
+                    Assert.AreEqual(0, binaryData2.Length);
+
+                    //setting null, getting an empty binary data back
+                    tableView.SetBinary(0, 1, null);
+                    Array binaryData5 = tableView[1].GetBinary(0);
+                    Assert.AreEqual(0, binaryData5.Length);
+
+                    //setting empty binary data, and getting that back again
+                    Array binaryData4 = tableView[2].GetBinary(0);
+                    Assert.AreEqual(0, binaryData4.Length);
+                }                
+
+            
+            }
+            //the 3 above for table are to be found in TableTests
+        }
+
+
+        [Test]        
+        public static void TableViewFindFirstBinary()
+        {
+            using (var table = new Table("radio".Binary(), "int".Int()))
+            {
+                byte[] testArray1 = { 01, 12, 36, 22 };
+                byte[] testArray2 = { 02, 12, 36, 22 };
+                byte[] testArray3 = { 03, 12, 36, 22 };
+                byte[] testArray4 = { 04, 12, 36, 22 };
+                table.Add(testArray1, 1);
+                table.Add(testArray1, 2);
+                table.Add(testArray2, 1);
+                table.Add(testArray2, 2);
+                table.Add(testArray3, 1);
+                table.Add(testArray3, 2);
+                table.Add(testArray4, 1);
+                table.Add(testArray4, 2);
+
+                byte[] arrayToFind = { 02, 12, 36, 22 };
+                using (var view = table.FindAllInt(1, 1))
+                {
+                    Assert.AreEqual(4,view.Size);
+                    var rowIndex  = view.FindFirstBinary(0, arrayToFind);
+                    Assert.AreEqual(1,rowIndex);
                 }
             }
         }
@@ -523,6 +611,7 @@ intcolumn2:1//column 2
 
 
 
+
         [Test]
         public static void TableViewSetMixedBinary()
         {
@@ -567,6 +656,82 @@ intcolumn2:1//column 2
             }
         }
 
+
+        //test that stacked tableviews return the correct rows
+        //also verify that enumerating a tableview returns Row objects where the rowix matches the tableview rownumbers (not the table rownumbers)
+        [Test]
+        public static void TableViewStackedViewsSimplified()
+        {
+            using (var table = new Table(new IntField("i1"), new IntField("i2"), new StringField("S1")))
+            {
+                table.Add(1, 2, "C");
+                table.Add(2, 2, "I");
+                using (var view = table.FindAllInt(0, 2))
+                {
+                    Assert.AreEqual(1,view.Size);
+                    using (var view2 = view.FindAllInt(1, 2))
+                    {
+                        Assert.AreEqual("I", view2.GetString(2, 0));//fails here bc of a core bug
+                    }
+                }
+            }
+        }
+
+
+        //test that stacked tableviews return the correct rows
+        //also verify that enumerating a tableview returns Row objects where the rowix matches the tableview rownumbers (not the table rownumbers)
+        [Test]
+        public static void TableViewStackedViews()
+        {
+            using (var table = new Table(new IntField("i1"), new IntField("i2"), new StringField("S1")))
+            {
+                table.Add(1, 1, "A");
+                table.Add(1, 1, "B");
+                table.Add(1, 2, "C");
+                table.Add(1, 2, "D");
+                table.Add(1, 3, "E");
+                table.Add(1, 3, "F");
+                table.Add(2, 1, "G");
+                table.Add(2, 1, "H");
+                table.Add(2, 2, "I");
+                table.Add(2, 2, "J");
+                table.Add(2, 3, "K");
+                table.Add(2, 3, "L");
+                table.Add(3, 1, "M");
+                table.Add(3, 1, "N");
+                table.Add(3, 2, "O");
+                table.Add(3, 2, "P");
+                table.Add(3, 3, "Q");
+                table.Add(3, 3, "R");
+                using (var view = table.FindAllInt(0, 2))
+                {
+                    Assert.AreEqual(6,view.Size);//assert that the view returned the right records
+                    Assert.AreEqual("G",view.GetString(2,0));
+                    //check that the row indicies in the row cursor are relative to the view rows, not the table rows
+                    var rno = 0;
+                    foreach (var row in view)
+                    {
+                        Assert.AreEqual(rno,row.RowIndex);
+                        Assert.AreEqual(2,row.GetLong("i1"));
+                        rno++;
+                    }
+                    string actualres2;
+                    using (var view2 =  view.FindAllInt(1,2))
+                    {
+                        Assert.AreEqual(2, view2.Size);//assert that the view returned the right records
+                        Assert.AreEqual("I", view2.GetString(2,0));
+                        //check that the row indicies in the row cursor are relative to the view rows, not the table rows
+                        rno = 0;
+                        foreach (var row in view2)
+                        {
+                            Assert.AreEqual(rno, row.RowIndex);
+                            Assert.AreEqual(2, row.GetLong("i2"));
+                            rno++;
+                        }                        
+                    }
+                }
+            }
+        }
 
         [Test]
         //make sure tableview returns field values correctly

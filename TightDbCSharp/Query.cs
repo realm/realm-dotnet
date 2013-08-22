@@ -20,9 +20,7 @@ namespace TightDbCSharp
         }
 
         
-        //a tableview has a private pointer to its ultimate source table, to enable its iterator to yield table records from that table
-        //idea:consider if it would be better to yield table records from the tableorview being queried. I think not. too slow and too much code
-
+        
         private Table _underlyingTable;
         public Table UnderlyingTable
         {

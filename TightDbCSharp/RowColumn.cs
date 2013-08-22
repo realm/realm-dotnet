@@ -80,7 +80,7 @@ namespace TightDbCSharp
         }
 
         //todo:create a unit test that hits this getter and this setter in all case statements
-        //if it is a mixed we return mixed! -not the type of the field
+       
         public object Value
         {
             get
@@ -151,7 +151,7 @@ namespace TightDbCSharp
                 switch (ColumnType)
                 {
                     case DataType.Int:
-                        Owner.SetLongNoCheck(ColumnIndex, (long)value );//the cast will raise an exception if value is not a long, or at least convertible to long
+                        Owner.SetLongNoCheck(ColumnIndex, Convert.ToInt64(value));//the cast will raise an exception if value is not a long, or at least convertible to long
                         break;                        
                     case DataType.Bool:
                         Owner.SetBoolNoCheck(ColumnIndex, (bool) value);
