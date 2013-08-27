@@ -138,7 +138,7 @@ namespace TightDbCSharpTest
                 res.Append(indent);
                 res.AppendLine(String.Format(CultureInfo.InvariantCulture, startrow, tr.RowIndex)); //start row marker
 
-                foreach (RowColumn trc in tr)
+                foreach (RowCell trc in tr)
                 {
                     string extracomment = "";
                     res.Append(indent);

@@ -47,7 +47,7 @@ namespace TightDbCSharp
 
         public TableView FindAll()
         {
-            return FindAll(0, -1, -1);//Methods that use default parameters are allowed under the Common Language Specification (CLS); however, the CLS allows compilers to ignore the values that are assigned to these parameters. 
+            return UnsafeNativeMethods.QueryFindAll_np(this);//Methods that use default parameters are allowed under the Common Language Specification (CLS); however, the CLS allows compilers to ignore the values that are assigned to these parameters. 
         }
 
         private void ValidateStartEndLimit(long start, long end, long limit) 
@@ -117,7 +117,7 @@ namespace TightDbCSharp
         }
 
         //if the column does not exist, -1 is returned
-        internal long GetColumnIndexNoCheck(string columnName)
+        private long GetColumnIndexNoCheck(string columnName)
         {
             return UnsafeNativeMethods.QueryGetColumnIndex(this,columnName);
         }
@@ -133,7 +133,8 @@ namespace TightDbCSharp
             }
             return columnIndex;
         }
-        //todo: implement a generic equal that infers the type to use from the type of the column, looked up by the column name. second parameter is then an object       
+        //idea: implement a generic equal that infers the type to use from the type of the column, looked up by the column name. second parameter is then an object       
+        //not sure it is faster or even nicer to use - so just test it out, profile and then decide
         public Query Equal(string columnName, Boolean value)
         {
             UnsafeNativeMethods.QueryBoolEqual(this,GetColumnIndex(columnName), value);
@@ -154,7 +155,7 @@ namespace TightDbCSharp
         }
 
         //if You call this one, remember to return this to your caller
-        internal void BetweenNoCheck(long columnIndex, long lowValue, long highValue)
+        private void BetweenNoCheck(long columnIndex, long lowValue, long highValue)
         {
             UnsafeNativeMethods.QueryIntBetween(this, columnIndex, lowValue, highValue);            
         }
@@ -166,7 +167,7 @@ namespace TightDbCSharp
             return this;
         }
 
-        //todo:unittest
+        
         public long FindNext(long lastMatch)
         {
             return UnsafeNativeMethods.QueryFindNext(this,lastMatch);            
@@ -178,14 +179,14 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.QueryAverage(this, columnIndex);            
         }
 
-        //todo:unittest
+       
         public Double Average(string columnName)
         {
             long columnIndex = GetColumnIndex(columnName);
             return UnsafeNativeMethods.QueryAverage(this,columnIndex);            
         }
 
-        //todo:unit test this - esp. the while part
+        
         public IEnumerator<TableRow> GetEnumerator()
         {
             long nextix = -1;//-1 means start all over, means that prior call returned no value. I hope the long -1 gets translated to a intptr -1 correctly when the intptr is only 32bits

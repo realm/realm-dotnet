@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 //using System.Threading.Tasks; not portable as of 2013-04-02
@@ -279,12 +281,13 @@ namespace TightDbCSharp
             executingAssembly.ManifestModule.GetPEKind(out peKind, out machine);
             // String thisapplocation = executingAssembly.Location;
 
-            Console.WriteLine("Pointer Size :              {0}", pointerSize);
-            Console.WriteLine("Process Running as :        {0}", vmBitness);
-            Console.WriteLine("Built as PeKind :           {0}", peKind);
+            Console.WriteLine("");
+            Console.WriteLine("Pointer Size              : {0}", pointerSize);
+            Console.WriteLine("Process Running as        : {0}", vmBitness);
+            Console.WriteLine("Built as PeKind           : {0}", peKind);
             Console.WriteLine("Built as ImageFileMachine : {0}", machine);
-            Console.WriteLine("OS Version :                {0}", os.Version);
-            Console.WriteLine("OS Platform:                {0}", os.Platform);
+            Console.WriteLine("OS Version                : {0}", os.Version);
+            Console.WriteLine("OS Platform               : {0}", os.Platform);
             Console.WriteLine("");
             Console.WriteLine("Now Loading {0} - expecting it to be a {1} dll", dllstring,  vmBitness);
             //Console.WriteLine("Loading "+thisapplocation+"...");
@@ -302,8 +305,8 @@ namespace TightDbCSharp
                     GetModuleFileName(hModule, builder, builder.Capacity);
                 }
 
-                Console.WriteLine("DLL File Actually Loaded :\n {0}", builder);
-                Console.WriteLine("C#  DLL        build number {0}", GetDllVersionCSharp+t.Size);//t.size is 0, but use t to make the compiler happy
+                Console.WriteLine("\nDLL File Actually Loaded :\n {0}", builder);
+                Console.WriteLine("\nC#  DLL        build number {0}", GetDllVersionCSharp+t.Size);//t.size is 0, but use t to make the compiler happy
                 Console.WriteLine("C++ DLL        build number {0}", CPlusPlusLibraryVersion());
             }
             Console.WriteLine();
@@ -811,7 +814,7 @@ namespace TightDbCSharp
 
 
         //a copy of source will be set into the field
-        internal override void SetMixedSubtableNoCheck(long columnIndex, long rowIndex, Table source)
+        internal override void SetMixedSubTableNoCheck(long columnIndex, long rowIndex, Table source)
         {
             UnsafeNativeMethods.TableSetMixedSubTable(this,columnIndex,rowIndex,source);
         }
@@ -923,7 +926,129 @@ namespace TightDbCSharp
             SetIndexNoCheck(columnIndex);
         }
 
-        
+        //todo : unit tests that check this validator reg. invalid scenarios.  bad top index, bad 2nd level index, pointing to non-subtable columns,
+        //todo : if the boolean is handled correctly
+        private void ValidateColumnPath(IList<int> path,Boolean lastMustAlsoBeASubTable)//in 64 bit mode, artificially reducing the max. number of columns from 2^64 to 2^32, as the core uses size_t column indicies
+        {
+            if (path == null)
+            {
+                throw new ArgumentNullException("path","Column path must not be null");
+            }
+
+            //if path is empty it is very hard to argue it points to a subtable so that is an error always
+            if (path.Count == 0)
+            {
+                throw new ArgumentOutOfRangeException("path","subcolumn path is of length zero -must be at least of length one");
+            }
+            
+            {
+                int firstbelowzero=-1;
+                for (var n = 0; n < path.Count; n++)
+                {
+                    if (path[n] < 0)
+                    {
+                        firstbelowzero = n;
+                        break;//exit for loop
+                    }
+                }                
+
+                if(firstbelowzero!=-1){
+                throw new ArgumentOutOfRangeException("path", string.Format("path supplied contains a negative column number at index {0} with value {1}. Only non-negative indexes are allowed", firstbelowzero, path[firstbelowzero]));
+                }
+            }
+
+         //for each level 
+            //validate that the index into this level is valid (not too large, is a subtable (not a mixed subtable))
+            //todo:this method awaits core support for getting information on subtable stuff. Until we get that, we use a temporary spec implementation.
+            //todo:this could be implemented recursively and probably look a bit tidier
+            Spec levelSpec = null;
+
+            for (int level = 0; level < path.Count; level++)
+            {
+
+                if (level == 0)
+                {
+                    levelSpec = Spec;//the spec of the root table
+                }else
+                {
+                    Debug.Assert(levelSpec != null, "levelSpec != null");
+                    Spec newLevelSpec = levelSpec.GetSpec(path[level-1]);//get the spec of the subtable this part of path is identifying by index
+                    levelSpec = newLevelSpec;
+                }
+
+                //validate current path index is a legal column index
+
+                if (levelSpec.ColumnCount <= path[level])
+                {
+                    throw new ArgumentOutOfRangeException(String.Format("at level : {0}, the path supplied contains too large an index : {1}. Number of columns : {2}",level, path[level], levelSpec.ColumnCount));
+                }
+
+
+
+                if (!lastMustAlsoBeASubTable && level == path.Count - 1)
+                    return;//at last level, accept any type if that behavior is specified (used when path poits to an ordinary column)
+
+                if (levelSpec.GetColumnType(path[level]) != DataType.Table)
+                {
+                    throw new ArgumentException(
+                        String.Format(
+                            "at level {0}, the path supplied contains index {1} that points not to a SubTable column, but column \"{2}\" of type {3}",
+                            level,path[level],levelSpec.GetColumnName(path[level]) ,levelSpec.GetColumnType(path[level])));
+                }
+            }
+        }
+
+        //ArrayWithPath = CalculateArrayWithPath() ;//call complex logic that calculates the path to the table where we want to add a column
+        //call like this  AddSubColumn(ArrayWithPath,DataType.String, "stringcolumn") 
+        //todo:create a plausible dynamic example where path is nicer than parametres
+        //this method is cumbersome if You want to specify the path in the call itself, like this AddSubColumn(new []{2,1,0},DataType.String,"Name");
+        //It is recommended to use the alternative:  AddSubColumn(DataType.String, "Name",2,1,0);//path is specified  as the last many int parametres
+        public long AddSubColumn(IList<int> path, DataType datatype, string name)
+        {
+            ValidateIsValid();
+            ValidateIsEmpty();//cannot change scheme if there is data in the table
+            ValidateNotSharedSpec();//You must alter shared spec tables through their top table
+            ValidateColumnPath(path,true);
+            return UnsafeNativeMethods.TableAddSubColumn(this, path, datatype, name);
+        }
+
+        //use this if You want to specify the path directly in code , it is much easier, path must be specified as a number of int parametres in the end of the call
+        public long AddSubColumn(DataType columnDataType, string columnName, params int[] path)
+        {
+            return AddSubColumn(path, columnDataType, columnName);
+        }
+
+        public void RenameSubColumn(IList<int> path, string name)
+        {
+            ValidateIsValid();
+            ValidateIsEmpty();//cannot change scheme if there is data in the table
+            ValidateNotSharedSpec();//You must alter shared spec tables through their top table
+            ValidateColumnPath(path,false);           
+            UnsafeNativeMethods.TableRenameSubColumn(this, path, name);
+        }
+
+        public void RenameSubColumn(String columnName, params int[] path)
+        {
+            RenameSubColumn(path,columnName);
+        }
+
+
+        public void RemoveSubColumn(IList<int> path)
+        {
+            ValidateIsValid();
+            ValidateIsEmpty();//cannot change scheme if there is data in the table
+            ValidateNotSharedSpec();//You must alter shared spec tables through their top table
+            ValidateColumnPath(path, false);
+            UnsafeNativeMethods.TableRemoveSubColumn(this, path);
+        }
+
+        public void RemoveSubColumn( params int[] path)
+        {
+            RemoveSubColumn((IList<int>) path);
+        }
+
+
+
 
         internal override TableView FindAllIntNoCheck(long columnIndex, long value)
         {

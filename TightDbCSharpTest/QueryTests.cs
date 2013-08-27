@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using NUnit.Framework;
 using TightDbCSharp;
 using TightDbCSharp.Extensions;
@@ -20,7 +17,7 @@ namespace TightDbCSharpTest
         //row 1 having ints 0 to 99 ascendig (10 of each)
         //row 2 having ints 0 to 9 asceding (100 of each)
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate")]
-        public static Table GetTableWithMultipleIntegers()
+        private static Table GetTableWithMultipleIntegers()
         {
             var t = new Table(new IntField("intcolumn0"), new IntField("intcolumn1"), new IntField("intcolumn2"));
 
@@ -36,6 +33,139 @@ namespace TightDbCSharpTest
             }
 
             return t;
+        }
+
+
+        //return a table with 4 columns
+        //each column can be 1 2 or 3
+        //all combinations exist
+        //1  1   1  1
+        //1  1   1  2
+        //1  1   1  3
+        //1  1   2  1
+        //1  1   2  2 
+        //1  1   2  3  
+        //1  1   3  1  
+        //1  1   3  2
+        //1  1   3  3
+        //1  2   1  1    etc. etc.. up to..
+        //3  3   3  3
+
+        //in all 72 rows
+
+
+        
+        private static Table GetTableWithCombinations()
+        {
+            var t = new Table(new IntField("intcolumn0"), new IntField("intcolumn1"), new IntField("intcolumn2"),new IntField("intcolumn3"));
+
+            for (int n = 0; n < 3*3*3*3; n++)
+            {
+                long col0 =1+ (n/3/3/3)%3;
+                long col1 =1+ (n/3/3)%3;
+                long col2 =1+ (n/3)%3;
+                long col3 =1+ n %3;
+                t.Add(col0, col1, col2, col3);
+            }
+            Assert.AreEqual(1, t.GetLong(0, 0));
+            Assert.AreEqual(3, t.GetLong(3, 71));
+            Assert.AreEqual(3, t.GetLong(0, 71));
+            Assert.AreEqual(2, t.GetLong(2,3 ));
+            Assert.AreEqual(1, t.GetLong(3, 69));            
+            return t;
+        }
+
+
+        [Test]
+        public static void QueryAverage()
+        {
+            {
+                var combitable = GetTableWithCombinations();
+                Assert.AreEqual(2, combitable.Where().Greater("intcolumn2", 1).Average(3));
+                Assert.AreEqual(2, combitable.Where().Greater("intcolumn0", 1).Average(2));
+                Assert.AreEqual(3, combitable.Where().Greater("intcolumn0", 2).Average(0));
+            }
+            {
+                var combitable = GetTableWithCombinations();
+                Assert.AreEqual(2, combitable.Where().Greater("intcolumn2", 1).Average("intcolumn3"));
+                Assert.AreEqual(2, combitable.Where().Greater("intcolumn0", 1).Average("intcolumn2"));
+                Assert.AreEqual(3, combitable.Where().Greater("intcolumn0", 2).Average("intcolumn0"));
+            }
+        }
+
+        [Test]
+        public static void QueryTestEnummerator()
+        {
+            var combitable = GetTableWithCombinations();
+            int n = 0;
+            foreach (TableRow tableRow in combitable)
+            {
+                int col0 = 1+  (n/(3*3*3))%3;
+                int col1 = 1 + (n/(3*3))%3;
+                int col2 = 1 + (n/3) %3;
+                int col3 = 1 + n%3;
+                Assert.AreEqual(col0,tableRow.GetLong(0));
+                Assert.AreEqual(col1, tableRow.GetLong(1));
+                Assert.AreEqual(col2, tableRow.GetLong(2));
+                Assert.AreEqual(col3, tableRow.GetLong(3));
+                n++;
+            }
+        }
+
+        [Test]
+        public static void QueryFindNext()
+        {
+            var combitable = GetTableWithCombinations();
+            Query combiquery = combitable.Where().Greater("intcolumn2",1);
+            Assert.AreEqual(3, combiquery.FindNext(-1));
+            Assert.AreEqual(4, combiquery.FindNext(3));
+            Assert.AreEqual(5, combiquery.FindNext(4));
+            Assert.AreEqual(6, combiquery.FindNext(5));
+            Assert.AreEqual(7, combiquery.FindNext(6));
+            Assert.AreEqual(8, combiquery.FindNext(7));
+            Assert.AreEqual(12, combiquery.FindNext(8));
+            Assert.AreEqual(13, combiquery.FindNext(12));
+            Assert.AreEqual(14, combiquery.FindNext(13));
+        }
+
+
+        [Test]
+        public static void QueryGreater()
+        {
+            var inttable = GetTableWithMultipleIntegers();
+            var query = inttable.Where().Greater("intcolumn0", 500);
+            Assert.AreEqual(query.Count( r =>r.GetLong("intcolumn0")>500),499);           
+            foreach (TableRow tr in query)
+            {
+                Assert.Greater(tr.GetLong("intcolumn0"),500);
+            }
+        }
+
+
+
+        [Test]
+        public static void QueryBetween()
+        {
+            {
+            var inttable = GetTableWithMultipleIntegers();
+            var query = inttable.Where().Between("intcolumn0",100,199);
+            Assert.AreEqual(query.Count(r => r.GetLong("intcolumn0") > 100 && r.GetLong("intcolumn0")<200), 99);
+            foreach (TableRow tr in query)
+            {
+                Assert.IsTrue(tr.GetLong("intcolumn0")>=100 && tr.GetLong("intcolumn0")<200);
+                Assert.AreEqual(1,tr.GetLong("intcolumn2"));
+            }
+            }
+            {
+            var inttable = GetTableWithMultipleIntegers();
+            var query = inttable.Where().Between(0, 100, 199);
+            Assert.AreEqual(query.Count(r => r.GetLong("intcolumn0") > 100 && r.GetLong("intcolumn0") < 200), 99);
+            foreach (TableRow tr in query)
+            {
+                Assert.IsTrue(tr.GetLong("intcolumn0") >= 100 && tr.GetLong("intcolumn0") < 200);
+                Assert.AreEqual(1, tr.GetLong("intcolumn2"));
+            }
+            }
         }
 
 
@@ -70,7 +200,7 @@ namespace TightDbCSharpTest
         }
 
         [Test]
-        public static void QueryGetColumnName()
+        public static void QueryGetColumnIndex()
         {
             using (var t = GetTableWithMultipleIntegers())
             {

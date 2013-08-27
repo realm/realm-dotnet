@@ -289,7 +289,7 @@ namespace TightDbCSharp
 
         //a copy of source will be set into the field
 
-        internal override void SetMixedSubtableNoCheck(long columnIndex, long rowIndex, Table source)
+        internal override void SetMixedSubTableNoCheck(long columnIndex, long rowIndex, Table source)
         {
             UnsafeNativeMethods.TableViewSetMixedSubTable(this, columnIndex, rowIndex, source);
         }

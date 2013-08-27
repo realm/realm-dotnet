@@ -1,19 +1,29 @@
 ﻿using System;
-
 //this project has access to all the unit tests. You can use it to run selected unit tests in a more 
 //controlled way than with the unit test runner, and to run the binding in a console window app, as this is
 //running in a console window app makes it easier to see cerr and cout and console.writeln() output,
 //as many unit test runners don't have support for showing console output.
+using System.IO;
+using System.Windows.Forms;
+
+
 namespace Test
 {
     static class Program
     {
         static void Main()
         {
-        //    TightDbCSharpTest.TableTests1.TableSetBinary();
-        //    TightDbCSharpTest.TableTests1.TestInterop();
+            Console.WriteLine("current directory : " + Directory.GetCurrentDirectory());
+            Console.WriteLine("starting tests");
+            TightDbCSharpTest.TableTests1.TestInterop();//low level system integrity check
+            TightDbCSharpTest.TableTests1.ShowVersionTest();//show various system details on screen
+            //    TightDbCSharpTest.TableTests1.TableSetBinary();
             //TightDbCSharpTest.TableTests1.TableFindFirstBinaryCoreBug();
-            TightDbCSharpTest.TableTests1.TableMixedSetTypes();
+            //TightDbCSharpTest.TableTests1.TableAddSubtableUsingPath();
+            TightDbCSharpTest.TableTests1.TableRenameSubtableUsingparametres();
+            Application.DoEvents();
+            Console.WriteLine("Finished. Any key...");
+
             Console.ReadKey();
         }
     }

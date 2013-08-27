@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.InteropServices;
 using NUnit.Framework;
 using TightDbCSharp;
 using TightDbCSharp.Extensions;
@@ -448,7 +447,7 @@ intcolumn2:1//column 2
 
                 //then try once again, but with a tableview
                 t.SetIndex(0);
-                TableView tv = t.Distinct(fn0);
+                TableView tv = t.Distinct(0);
                 tv.SetString(fn0, 0, "teststring");
                 tv[0].SetDouble(fn1, testdouble);
                 tv.SetDouble(2, 0, testdouble2);
@@ -715,7 +714,6 @@ intcolumn2:1//column 2
                         Assert.AreEqual(2,row.GetLong("i1"));
                         rno++;
                     }
-                    string actualres2;
                     using (var view2 =  view.FindAllInt(1,2))
                     {
                         Assert.AreEqual(2, view2.Size);//assert that the view returned the right records
@@ -745,6 +743,22 @@ intcolumn2:1//column 2
                 Assert.AreEqual(999, tv.GetLong(0, 99));
             }
         }
+
+
+        [Test]
+        //make sure tableview returns field values correctly
+        public static void TableViewLast()
+        {
+            using (var t = TableWithMultipleIntegers())
+            {
+                TableView tv = t.FindAllInt(2, 9);
+                var row = tv.Last();
+                Assert.AreEqual(999,row.GetLong(0));
+                Assert.AreEqual(99, row.GetLong(1));
+                Assert.AreEqual(9, row.GetLong(2));
+            }
+        }
+
 
     }
 }

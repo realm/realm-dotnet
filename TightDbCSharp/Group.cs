@@ -50,7 +50,7 @@ namespace TightDbCSharp
         */
 
         //a group that is part of a readonly transaction will have readonly set to true
-        public Boolean ReadOnly { get; internal set; }
+        public Boolean ReadOnly { get; private set; }
 
         public Boolean Invalid { get; internal set; }//if true, some unexpected error condition exists and this group should never be used
 

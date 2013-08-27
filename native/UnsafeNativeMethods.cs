@@ -1,6 +1,7 @@
 ﻿
 
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 //using System.Appdomain;
@@ -290,6 +291,111 @@ enum DataType {
                 return (long) table_add_column64(table.Handle, DataTypeToIntPtr(type), name,(IntPtr)name.Length);            
             return (long)table_add_column32(table.Handle, DataTypeToIntPtr(type), name, (IntPtr)name.Length);            
         }
+
+
+
+
+        [DllImport(L64, EntryPoint = "table_add_subcolumn", CallingConvention = CallingConvention.Cdecl)]
+        private static extern UIntPtr table_add_subcolumn64(IntPtr tableHandle, IntPtr pathLength, IntPtr pathArrayPtr, IntPtr type, [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
+
+        [DllImport(L32, EntryPoint = "table_add_subcolumn", CallingConvention = CallingConvention.Cdecl)]
+        private static extern UIntPtr table_add_subcolumn32(IntPtr tableHandle, IntPtr pathLength, IntPtr pathArrayPtr, IntPtr type, [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
+
+        public static long TableAddSubColumn(Table table, IList<int> path, DataType type, string name)
+        {
+            var pathForCpp=new IntPtr[path.Count];
+            var n = 0;
+            foreach (var pathIndex in path)
+            {
+                pathForCpp[n] = (IntPtr)pathIndex;
+                n++;
+            }
+
+            GCHandle handle = GCHandle.Alloc(pathForCpp, GCHandleType.Pinned);
+            IntPtr valuePointer = handle.AddrOfPinnedObject();
+
+            try
+            {
+                if (Is64Bit)
+                    return(long)table_add_subcolumn64(table.Handle, (IntPtr) pathForCpp.Length, valuePointer,DataTypeToIntPtr(type), name, (IntPtr) name.Length);
+                return(long)table_add_subcolumn32(table.Handle, (IntPtr) pathForCpp.Length, valuePointer, DataTypeToIntPtr(type),name, (IntPtr) name.Length);
+            }
+            finally
+            {
+                handle.Free();
+            }
+        }
+
+        [DllImport(L64, EntryPoint = "table_rename_subcolumn", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void table_rename_subcolumn64(IntPtr tableHandle, IntPtr pathLength, IntPtr pathArrayPtr,[MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
+
+        [DllImport(L32, EntryPoint = "table_rename_subcolumn", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void table_rename_subcolumn32(IntPtr tableHandle, IntPtr pathLength, IntPtr pathArrayPtr, [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
+
+        public static void TableRenameSubColumn(Table table, IList<int> path,  string name)
+        {
+            var pathForCpp = new IntPtr[path.Count];
+            var n = 0;
+            foreach (var pathIndex in path)
+            {
+                pathForCpp[n] = (IntPtr)pathIndex;
+                n++;
+            }
+
+            GCHandle handle = GCHandle.Alloc(pathForCpp, GCHandleType.Pinned);
+            IntPtr valuePointer = handle.AddrOfPinnedObject();
+
+            try
+            {
+                if (Is64Bit)
+                    table_rename_subcolumn64(table.Handle, (IntPtr) pathForCpp.Length, valuePointer, name,
+                        (IntPtr) name.Length);
+                else
+                    table_rename_subcolumn32(table.Handle, (IntPtr) pathForCpp.Length, valuePointer, name,
+                        (IntPtr) name.Length);
+            }
+            finally
+            {
+                handle.Free();
+            }
+        }
+
+
+        [DllImport(L64, EntryPoint = "table_remove_subcolumn", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void table_remove_subcolumn64(IntPtr tableHandle, IntPtr pathLength, IntPtr pathArrayPtr );
+
+        [DllImport(L32, EntryPoint = "table_remove_subcolumn", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void table_remove_subcolumn32(IntPtr tableHandle, IntPtr pathLength, IntPtr pathArrayPtr );
+
+        public static void TableRemoveSubColumn(Table table, IList<int> path)
+        {
+            var pathForCpp = new IntPtr[path.Count];
+            var n = 0;
+            foreach (var pathIndex in path)
+            {
+                pathForCpp[n] = (IntPtr)pathIndex;
+                n++;
+            }
+
+            GCHandle handle = GCHandle.Alloc(pathForCpp, GCHandleType.Pinned);
+            IntPtr valuePointer = handle.AddrOfPinnedObject();
+
+            try
+            {
+                if (Is64Bit)
+                    table_remove_subcolumn64(table.Handle, (IntPtr)pathForCpp.Length, valuePointer);
+                else
+                    table_remove_subcolumn32(table.Handle, (IntPtr)pathForCpp.Length, valuePointer);
+            }
+            finally
+            {
+                handle.Free();
+            }
+        }
+
+
+
+
 
 
         [DllImport(L64, EntryPoint = "spec_get_column_type", CallingConvention = CallingConvention.Cdecl)]
@@ -693,7 +799,7 @@ enum DataType {
         }
 
 
-        //todo:unit test
+        
         [DllImport(L64, EntryPoint = "tableview_find_first_binary", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr tableView_find_first_binary64(IntPtr tableViewHandle, IntPtr columnIndex, [In] byte[] value, IntPtr length);
 
@@ -1473,6 +1579,24 @@ enum DataType {
                     Is64Bit
                         ? query_find_all64(query.Handle, (IntPtr) start, (IntPtr) end, (IntPtr) limit)
                         : query_find_all32(query.Handle, (IntPtr) start, (IntPtr) end, (IntPtr) limit), true);
+        }
+
+
+        //        TIGHTDB_C_CS_API tightdb::TableView* query_find_all_int(Query * query_ptr , size_t start, size_t end, size_t limit)
+        [DllImport(L64, EntryPoint = "query_find_all_np", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr query_find_all_np64(IntPtr handle);
+
+        [DllImport(L32, EntryPoint = "query_find_all_np", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr query_find_all_np32(IntPtr handle);
+
+
+        public static TableView QueryFindAll_np(Query query)
+        {
+            return
+                new TableView(query.UnderlyingTable,
+                    Is64Bit
+                        ? query_find_all_np64(query.Handle )
+                        : query_find_all_np32(query.Handle ), true);
         }
 
 
@@ -3385,6 +3509,7 @@ enum DataType {
                 return (long)query_count64(q.Handle, (IntPtr)start, (IntPtr)end, (IntPtr)limit);
             return (long)query_count32(q.Handle, (IntPtr)start, (IntPtr)end, (IntPtr)limit);
         }
+
 
        
         [DllImport(L64, EntryPoint = "tableview_set_mixed_double", CallingConvention = CallingConvention.Cdecl)]

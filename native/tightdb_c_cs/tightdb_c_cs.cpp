@@ -270,12 +270,39 @@ TIGHTDB_C_CS_API size_t table_add_column(tightdb::Table* table_ptr,size_t type, 
 
 //todo:implement size_t      add_subcolumn(const std::vector<size_t>& column_path, DataType type, StringData name);
 
+
+TIGHTDB_C_CS_API size_t table_add_subcolumn(Table* table_ptr, size_t path_length, size_t * path_array,size_t data_type,uint16_t * column_name, size_t name_len ) 
+{
+    //set up a vector from the array sent over
+    std::vector<size_t> path ;
+    for (size_t n=0;n<path_length;n++) {
+        path.push_back(path_array[n]);
+    }
+    //set up a StringData with the column name
+    CSStringAccessor str(column_name,name_len);
+    return table_ptr->add_subcolumn(path, size_t_to_datatype(data_type),str);
+}
+
+
+
+
+
 TIGHTDB_C_CS_API void table_remove_column(Table* table_ptr, size_t column_ndx)
 {
     table_ptr->remove_column(column_ndx);
 }
 
-//todo:void        remove_column(const std::vector<std::size_t>& column_path);
+TIGHTDB_C_CS_API void table_remove_subcolumn(Table* table_ptr, size_t path_length, size_t * path_array ) 
+{
+    //set up a vector from the array sent over
+    //todo:this 3-line code exists in several methods. refactor
+    std::vector<size_t> path ;
+    for (size_t n=0;n<path_length;n++) {
+        path.push_back(path_array[n]);
+    }
+    //set up a StringData with the new column name
+    table_ptr->remove_subcolumn(path);
+}
 
 TIGHTDB_C_CS_API void table_rename_column(Table* table_ptr, size_t column_ndx, uint16_t* value, size_t value_len)
 {
@@ -283,7 +310,18 @@ TIGHTDB_C_CS_API void table_rename_column(Table* table_ptr, size_t column_ndx, u
     table_ptr->rename_column(column_ndx,str);
 }
 
-//todo:implement     void        rename_column(const std::vector<size_t>& column_path, StringData name);
+TIGHTDB_C_CS_API void table_rename_subcolumn(Table* table_ptr, size_t path_length, size_t * path_array,uint16_t * column_name, size_t name_len ) 
+{
+    //set up a vector from the array sent over
+    //todo:this 3-line code exists in several methods. refactor
+    std::vector<size_t> path ;
+    for (size_t n=0;n<path_length;n++) {
+        path.push_back(path_array[n]);
+    }
+    //set up a StringData with the new column name
+    CSStringAccessor str(column_name,name_len);
+    table_ptr->rename_subcolumn(path, str);
+}
 
 //todo:isempty is implemented in C# with a call to size. Perhaps better if we call c++ is_empty itself
 
@@ -1500,65 +1538,6 @@ TIGHTDB_C_CS_API size_t spec_get_column_count(Spec* spec_ptr)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //waiting for this to be implemented in tightdb c++ bindings/core
 TIGHTDB_C_CS_API int64_t tableview_count_string(TableView * tableview_ptr , size_t column_ndx,uint16_t * target,size_t target_len)
 {   
@@ -1566,20 +1545,6 @@ TIGHTDB_C_CS_API int64_t tableview_count_string(TableView * tableview_ptr , size
  //   return tableview_ptr->count_string(column_ndx,str);  
     return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1623,6 +1588,10 @@ TIGHTDB_C_CS_API tightdb::TableView* query_find_all(Query * query_ptr , size_t s
     return new TableView( query_ptr->find_all(start,end,limit));
 }
 
+TIGHTDB_C_CS_API tightdb::TableView* query_find_all_np(Query * query_ptr )
+{   
+    return new TableView( query_ptr->find_all());
+}
 
 
 TIGHTDB_C_CS_API size_t query_find_next(Query * query_ptr, size_t last_match) 
