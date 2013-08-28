@@ -6,7 +6,7 @@ namespace TightDbCSharp
     /// represents a single column in a TableOrView row. 
     /// </summary>
     /// 
-    //IDEA:Implement child types that each are bound to a given DataType. So we got for instance TableIntColumn
+    //IDEA:Implement child types that each are bound to a given DataType. So we got for instance TableIntCell
     //why? in some cases We could return TableIntColumn and with that one, we would not have to check if the Table column type is int every time
     //we read data from the row. So working with typed column fields would be somewhat faster
     //IDEA:this is just a thought consider implementing Get<T> perhaps we could interop with T to a general method in c++ that return intptr that
@@ -66,17 +66,12 @@ namespace TightDbCSharp
             }
         }
 
-        //Only Table can change a ColumnName, A TableView can only return the current column name
+        //A rowcell can only be part of an existing row
+        //A table with rows cannot have its column names changed
+        //so no setter
         public string ColumnName
         {
             get { return Owner.GetColumnNameNoCheck(ColumnIndex); }
-            set
-            {
-                if (Owner.Owner is Table)
-                {
-                    (Owner.Owner as Table).RenameColumn(ColumnIndex, value);
-                }
-            }
         }
 
         //mixed type will be set automatically when you write data to the mixed field

@@ -51,7 +51,7 @@
     <Compile Include="Handled.cs" />
     <Compile Include="Query.cs" />
     <Compile Include="Row.cs" />
-    <Compile Include="RowColumn.cs" />
+    <Compile Include="RowCell.cs" />
     <Compile Include="SharedGroup.cs" />
     <Compile Include="TableOrView.cs" />
     <Compile Include="TableRow.cs" />

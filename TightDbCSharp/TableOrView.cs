@@ -125,6 +125,8 @@ namespace TightDbCSharp
 
         internal abstract void ClearSubTableNoCheck(long columnIndex, long rowIndex);
 
+        internal abstract void ValidateIsValid();//tables will call on , TableView's will ask their Table
+
         // ReSharper restore MemberCanBeProtected.Global
 
 
@@ -483,8 +485,7 @@ namespace TightDbCSharp
 
         }
 
-        //do not check row index
-        //todo:handle the special case where a user sends a null as a parameter - this is not valid except if the table has only one column that is a subtable.
+        //do not check row index       
         //todo:let the type be ieumerable, allowing user to set with objects in any kind of collection he has
         internal void SetRowNoCheck(long rowIndex, params object[] rowContents)
             //experimental        internal void SetRowNoCheck(long rowIndex, IEnumerable<object> rowContents)
@@ -657,6 +658,14 @@ namespace TightDbCSharp
             return GetMixedLongNoCheck(columnIndex, rowIndex);
         }
 
+        public long GetMixedLong(string columnName, long rowIndex)
+        {
+            var columnIndex = GetColumnIndex(columnName);
+            ValidateRowIndex(rowIndex);
+            ValidateMixedType(columnIndex, rowIndex, DataType.Int);
+            return GetMixedLongNoCheck(columnIndex, rowIndex);
+        }
+
         public bool GetMixedBool(long columnIndex, long rowIndex)
         {
             ValidateColumnRowMixedType(columnIndex, rowIndex, DataType.Bool);
@@ -670,9 +679,24 @@ namespace TightDbCSharp
             return GetMixedFloatNoCheck(columnIndex, rowIndex);
         }
 
+        public float GetMixedFloat(string columnName, long rowIndex)
+        {
+            var columnIndex = GetColumnIndex(columnName);
+            ValidateMixedType(columnIndex, rowIndex, DataType.Float);
+            return GetMixedFloatNoCheck(columnIndex, rowIndex);
+        }
+
         public double GetMixedDouble(long columnIndex, long rowIndex)
         {
             ValidateColumnRowMixedType(columnIndex, rowIndex, DataType.Double);
+            return GetMixedDoubleNoCheck(columnIndex, rowIndex);
+        }
+
+        public double GetMixedDouble(String columnName, long rowIndex)
+        {
+            var columnIndex = GetColumnIndex(columnName);
+            ValidateRowIndex(rowIndex);
+            ValidateMixedType(columnIndex,rowIndex,DataType.Double);            
             return GetMixedDoubleNoCheck(columnIndex, rowIndex);
         }
 
@@ -945,7 +969,7 @@ namespace TightDbCSharp
             SetMixedDoubleNoCheck(columnIndex, rowIndex, value);
         }
 
-        internal void SetMixedDateTimeNoColumnCheck(long columnIndex, long rowIndex, DateTime value)
+        private void SetMixedDateTimeNoColumnCheck(long columnIndex, long rowIndex, DateTime value)
         {
             ValidateTypeMixed(columnIndex); //only checks that the CI points to a mixed
             ValidateRowIndex(rowIndex); //only checks that the row is valid
@@ -975,7 +999,7 @@ namespace TightDbCSharp
         }
 
         //Used when called directly from tableorview by the user. validates that column and row are legal indexes and that the type is mixed. Used for instance when user wants to store some type to a mixed (then the type of mixed does not matter as it will get overwritten)
-        internal void ValidateColumnRowTypeMixed(long columnIndex, long rowIndex)
+        private void ValidateColumnRowTypeMixed(long columnIndex, long rowIndex)
         {
             ValidateColumnAndRowIndex(columnIndex, rowIndex);
             ValidateTypeMixed(columnIndex);
@@ -994,28 +1018,21 @@ namespace TightDbCSharp
         }
 
         //used when reading data from a mixed - we've go to check the type of the mixed before attempting to read from it
-        internal void ValidateColumnRowMixedType(long columnIndex, long rowIndex, DataType mixedType)
+        private void ValidateColumnRowMixedType(long columnIndex, long rowIndex, DataType mixedType)
         {
             ValidateColumnRowTypeMixed(columnIndex, rowIndex); //we only progress if the field is mixed
             ValidateMixedType(columnIndex, rowIndex, mixedType);
         }
 
         //used when reading data from a mixed via a row, so we know the row index is fine and should not be checked
-        internal void ValidateColumnMixedType(long columnIndex, long rowIndex, DataType mixedType)
+        private void ValidateColumnMixedType(long columnIndex, long rowIndex, DataType mixedType)
         {
             ValidateTypeMixed(columnIndex); //we only progress if the field is mixed
             ValidateMixedType(columnIndex, rowIndex, mixedType);
         }
 
 
-
-
-
-
-
-
-
-        public void ValidateRowIndex(long rowIndex)
+        internal void ValidateRowIndex(long rowIndex)
         {
             if (rowIndex >= Size || rowIndex < 0)
             {
@@ -1038,7 +1055,7 @@ namespace TightDbCSharp
         }
 
         //the parameter is the column type that was used on access, and it was not the correct one
-        internal string GetColumnTypeErrorString(long columnIndex, DataType columnType)
+        private string GetColumnTypeErrorString(long columnIndex, DataType columnType)
         {
             return String.Format(CultureInfo.InvariantCulture,
                 "column:{0} invalid data access. Real column DataType:{1} Accessed as {2}", columnIndex,
@@ -1047,7 +1064,7 @@ namespace TightDbCSharp
 
 
         //only call if columnIndex is already validated or known to be int
-        internal void ValidateTypeInt(long columnIndex)
+        private void ValidateTypeInt(long columnIndex)
         {
             if (ColumnTypeNoCheck(columnIndex) != DataType.Int)
             {
@@ -1064,7 +1081,7 @@ namespace TightDbCSharp
             }
         }
 
-        internal void ValidateTypeBinary(long columnIndex)
+        private void ValidateTypeBinary(long columnIndex)
         {
             if (ColumnTypeNoCheck(columnIndex) != DataType.Binary)
             {
@@ -1072,7 +1089,7 @@ namespace TightDbCSharp
             }
         }
 
-        internal void ValidateTypeDouble(long columnIndex)
+        private void ValidateTypeDouble(long columnIndex)
         {
             if (ColumnTypeNoCheck(columnIndex) != DataType.Double)
             {
@@ -1080,7 +1097,7 @@ namespace TightDbCSharp
             }
         }
 
-        internal void ValidateTypeFloat(long columnIndex)
+        private void ValidateTypeFloat(long columnIndex)
         {
             if (ColumnTypeNoCheck(columnIndex) != DataType.Float)
             {
@@ -1092,7 +1109,7 @@ namespace TightDbCSharp
 
 
         //only call if columnIndex is already validated         
-        internal void ValidateTypeMixed(long columnIndex)
+        private void ValidateTypeMixed(long columnIndex)
         {
             if (ColumnTypeNoCheck(columnIndex) != DataType.Mixed)
             {
@@ -1101,7 +1118,7 @@ namespace TightDbCSharp
             }
         }
 
-        internal void ValidateTypeSubTable(long columnIndex)
+        private void ValidateTypeSubTable(long columnIndex)
         {
             if (ColumnTypeNoCheck(columnIndex) != DataType.Table)
             {
@@ -1111,9 +1128,8 @@ namespace TightDbCSharp
         }
 
 
-        //only call if columnIndex is already validated 
-        //todo:unit test
-        internal void ValidateTypeBool(long columnIndex)
+        //only call if columnIndex is already validated       
+        private void ValidateTypeBool(long columnIndex)
         {
             if (ColumnTypeNoCheck(columnIndex) != DataType.Bool)
             {
@@ -1122,7 +1138,7 @@ namespace TightDbCSharp
         }
 
         //only call if columnIndex is already validated         
-        internal void ValidateTypeDate(long columnIndex)
+        private void ValidateTypeDate(long columnIndex)
         {
             if (ColumnTypeNoCheck(columnIndex) != DataType.Date)
             {
@@ -1131,8 +1147,11 @@ namespace TightDbCSharp
         }
 
         //throw if the table contains any rows
+        //this is always called before other methods when it is called so ValidateIsValid is stuffed in here too,
+        //to reduce clutter where ValidateIsEmpty is called.
         internal void ValidateIsEmpty()
-        {
+        {            
+            ValidateIsValid();
             if (Size != 0)
             {
                 throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture,
@@ -1429,7 +1448,7 @@ namespace TightDbCSharp
             ValidateTypeInt(columnIndex);
         }
 
-        public void ValidateColumnIndexAndTypeBool(long columnIndex)
+        private void ValidateColumnIndexAndTypeBool(long columnIndex)
         {
             ValidateColumnIndex(columnIndex);
             ValidateTypeBool(columnIndex);
@@ -1465,7 +1484,7 @@ namespace TightDbCSharp
             ValidateTypeSubTable(columnIndex);
         }
 
-        public void ValidateColumnIndexAndTypeMixed(long columnIndex)
+        private void ValidateColumnIndexAndTypeMixed(long columnIndex)
         {
             ValidateColumnIndex(columnIndex);
             ValidateTypeMixed(columnIndex);

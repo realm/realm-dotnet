@@ -66,7 +66,7 @@ namespace TightDbCSharp
         {
             if (HasTable(tableName)) {
             Table fromGroup = UnsafeNativeMethods.GroupGetTable(this, tableName);
-            fromGroup.HasColumns = fromGroup.ColumnCount > 0;//will set HasColumns true if there are columns, even if they are uncomitted as c++ reports uncomitted as well as comitted
+//            fromGroup.HasColumns = fromGroup.ColumnCount > 0;//will set HasColumns true if there are columns, even if they are uncomitted as c++ reports uncomitted as well as comitted
                 return fromGroup;                            //therefore, the user is expected to call updatefromspec on the same table wrapper that he used to do spec.addcolumn
             }
             throw new InvalidEnumArgumentException(String.Format(CultureInfo.InvariantCulture,"Group.GetTable called with a table name that does not exist {0}",tableName));

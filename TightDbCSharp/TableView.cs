@@ -9,7 +9,7 @@ namespace TightDbCSharp
     //this class wraps a c++ TableView class
     public class TableView : TableOrView
     {
-        private Table _underlyingTable;
+        private Table _underlyingTable;//the table this view ultimately is viewing (not the view it is viewing, the final table being viewed. Could be a subtable)
         public Table UnderlyingTable {
             get { return _underlyingTable; }
             private set
@@ -62,6 +62,10 @@ namespace TightDbCSharp
         }
         //*/
 
+        internal override void ValidateIsValid()
+        {
+            UnderlyingTable.ValidateIsValid();
+        }
 
         //This method will ask c++ to dispose of a table object created by table_new.
         //this method is for internal use only

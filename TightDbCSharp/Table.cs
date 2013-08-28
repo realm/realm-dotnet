@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 //using System.Threading.Tasks; not portable as of 2013-04-02
@@ -68,24 +67,6 @@ namespace TightDbCSharp
         public bool HasSharedSpec()
         {
             return UnsafeNativeMethods.TableHasSharedSpec(this);
-        }
-
-        //Used to block calls to updatefromspec if the table already have columns that
-        //have been saved with updatefromspec. Coded here because c++ Table.ColumnCount also
-        //counts rows that have not been "saved" with a call to updatefromspec
-        //this bool defaults to false,and is set to true when addcolumn or
-        //updatefromspec is called
-        internal bool HasColumns { private get; set; }
-
-        //allow end users to query a table to figure if it is okay to add colums to that table using spec
-        //if returns false, user will have to use table column operations only
-        //false means that this table's spec as well as any subspec you can get from it, cannot be used
-        //to alter columns.
-        //however, altering mixed subtables is determined by calling the mixed subtable.SpecModifyable
-        //the check for HasSharedSpec is to ensure that all subtables taken out from table rows will always return false
-        public bool SpecModifyable()
-        {
-            return (!HasColumns && !HasSharedSpec());
         }
 
 
@@ -185,26 +166,76 @@ namespace TightDbCSharp
             {
                 throw new ArgumentNullException("schema");
             }
-            ValidateSpecChangeIsOkay();
+            ValidateColumnChangeIsOkay();
             foreach (Field tf in schema)
             {
                 if (tf == null)
                 {
                     throw new ArgumentNullException("schema", "one or more of the field objects is null");
                 }
-                Spec.AddFieldNoCheck(tf);
+                AddFieldNoCheck(new List<long>(),tf );
             }
-            UpdateFromSpecNoCheck();
+            //UpdateFromSpecNoCheck();
             return this;//allow fluent creation of table in a group
         }
 
+
+        //attempt to do a non-spec based AddField
+        //this addfield must be called on the top table, but bc of the path parameter, it can add columns to any subtable recursively
+        //should not really be called NoCheck as it ought to check a lot, and in fact it does (AddSubColumn does)
+        private void AddFieldNoCheck(List<long> path, Field schema)
+        {
+            if (schema != null)
+            {
+                if (schema.FieldType != DataType.Table)
+                {
+                    AddColumn(path,schema.FieldType, schema.ColumnName);
+                }
+                else
+                {
+                    Field[] tfa = schema.GetSubTableArray();
+                    var columnNumber = AddColumn(path, DataType.Table, schema.ColumnName);
+                    path.Add((int)columnNumber);//limits number of columns to IntPtr - 2^32 ALSO on 64 bit machines, where core supports 2^64
+                    AddFieldsNoCheck(path,tfa);
+                }
+            }
+            else
+            {
+                throw new ArgumentNullException("schema");
+            }
+        }
+
+
+        // will add the field list to the current spec
+        private void AddFieldsNoCheck(List<long> path, IEnumerable<Field> fields)
+        {
+            if (fields != null)
+            {
+                foreach (Field field in fields)
+                {
+                    AddFieldNoCheck(path,field);
+                }
+            }
+            else
+            {
+                throw new ArgumentNullException("fields");
+            }
+        }
+
+
         //this method is intended to be called on a table with no data in it.
-        //the method will create columns in the table, matching the specified schema.
+        //the method will create columns in the table, matching the specified schema.        
+        //currently the demands on the table are the same as with updatefromspec - but they will probably be lifted
+        //note that if there are existing columns in the table - the path must reflect this. Adding to subtable in column 4 will need a path starting with 3
+        //fields with no path will be added after the current fields. If You then add stuff into these newly added fields, remember that the path
+        //must count all fields, old as well as new.
         private void DefineSchema(Field schema)
         {
-            ValidateSpecChangeIsOkay();
-            Spec.AddFieldNoCheck(schema);
-            UpdateFromSpecNoCheck();//build table from the spec tree structure            
+            //ValidateSpecChangeIsOkay();
+            ValidateColumnChangeIsOkay();//ensure this is the top table (not shared spec) and that it is with no rows
+            //Spec.AddFieldNoCheck(schema);
+            AddFieldNoCheck(new List<long>(),schema );//pass empty list -  this table is validated to be the top table
+            //UpdateFromSpecNoCheck();//build table from the spec tree structure            
         }
         /*
         //allows specifying a treelike structure much like the params constructor, but this
@@ -331,8 +362,10 @@ namespace TightDbCSharp
         }
 
         public void RenameColumn(long columnIndex, String newName)
-        {
+        {            
+            ValidateIsEmpty();
             ValidateColumnIndex(columnIndex);
+            ValidateNotSharedSpec();
             UnsafeNativeMethods.TableRenameColumn(this,columnIndex,newName);
         }
 
@@ -354,33 +387,14 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableGetSpec(this); 
         }
 
-
-        //only call this method if You are sure Updatefromspec is legal (having checked shared tables, readonly etc.)
-        //this will update the table structure to represent whatever the earlier recieved spec has been set up to, and altered to
-        private void UpdateFromSpecNoCheck()
-        {            
-            UnsafeNativeMethods.TableUpdateFromSpec(this);
-            HasColumns = true;
-        }
-
-        //note that this call can be made on a root table as well as on a subtable or a mixed subtable
-        public void ValidateSpecChangeIsOkay()
+        private void ValidateColumnChangeIsOkay()
         {
-            ValidateIsValid();
-            ValidateNoColumns(); //updatefromspec can only be called once, to create the table structure, so no prior columns
-            ValidateIsEmpty();//of course the table must also be empty (although i fail to see how a table can have no columns and be not-empty)
-            ValidateNotSharedSpec();//updatefromspec can only be called on a root table, if we are called on a subtable, changes are not legal
+            ValidateIsEmpty();
+            ValidateNotSharedSpec();
         }
 
 
-        //todo : (asana)should not be public, call updatefromspec automatically from methods that change the spec (so find out how to get to the top level table when all you have is a spec)        
-        public void UpdateFromSpec()
-        {
-            ValidateSpecChangeIsOkay();
-            UpdateFromSpecNoCheck();
-        }
-
-        internal void ValidateIsValid()
+        internal override void ValidateIsValid()
         {
             if (! IsValid())
             {
@@ -388,6 +402,7 @@ namespace TightDbCSharp
             }
         }
 
+        /*
         internal void ValidateNoColumns()
         {
             if (HasColumns)
@@ -395,6 +410,8 @@ namespace TightDbCSharp
                 throw new InvalidOperationException("Updatefromspec can only be called on a table with no existing columns");
             }
         }
+        */
+
 
         internal override DataType ColumnTypeNoCheck(long columnIndex)
         {
@@ -540,8 +557,103 @@ namespace TightDbCSharp
             ValidateIsEmpty();
             ValidateNotSharedSpec();             
             long colIx =  UnsafeNativeMethods.TableAddColumn(this, type, name);
-            HasColumns = true;
+            //HasColumns = true;
             return colIx;
+        }
+
+
+
+        public long AddBinaryColumn(String name)
+        {
+            return AddColumn(DataType.Binary, name);
+        }
+
+        public long AddBinaryColumn(List<long>path,String name)
+        {
+            return AddColumn(path,DataType.Binary, name);
+        }
+
+        public long AddBoolColumn(String name)
+        {
+            return AddColumn(DataType.Bool, name);
+        }
+
+        public long AddBoolColumn(List<long> path,String name)
+        {
+            return AddColumn(path, DataType.Bool, name);
+        }
+
+        public long AddDateColumn(String name)
+        {
+            return AddColumn(DataType.Date, name);
+        }
+
+        public long AddDateColumn(List<long> path,String name)
+        {
+            return AddColumn(path,DataType.Date, name);
+        }
+
+        public long AddDoubleColumn(String name)
+        {
+            return AddColumn(DataType.Double, name);
+        }
+
+        public long AddDoubleColumn(List<long> path, String name)
+        {
+            return AddColumn(path,DataType.Double, name);
+        }
+
+        public long AddFloatColumn(String name)
+        {
+            return AddColumn(DataType.Float, name);
+        }
+
+        public long AddFloatColumn(List<long> path,String name)
+        {
+            return AddColumn(path,DataType.Float, name);
+        }
+
+        public long AddIntColumn(String name)
+        {
+            return AddColumn(DataType.Int, name);
+        }
+
+        public long AddIntColumn(List<long> path, String name)
+        {
+            return AddColumn(path, DataType.Int, name);
+        }
+
+        public long AddMixedColumn(String name)
+        {
+            return AddColumn(DataType.Mixed, name);
+        }
+
+        public long AddMixedColumn(List<long> path,String name)
+        {
+            return AddColumn(path,DataType.Mixed, name);
+        }
+
+        public long AddStringColumn(String name)
+        {
+            return AddColumn(DataType.String, name);
+        }
+
+        public long AddStringColumn(List<long> path,String name)
+        {
+            return AddColumn(path,DataType.String, name);
+        }
+
+        //returns a path that can be used to call AddColumn to add columns to the subtable
+        public List<long> AddSubTableColumn(String name)
+        {
+            return new List<long> {AddColumn(DataType.Table, name)};
+        }
+
+        //returns a path that can be used to call AddColumn to add columns to the subtable
+        public List<long> AddSubTableColumn(List<long> path, String name)
+        {
+            var newpath = new List<long>(path) {AddColumn(path, DataType.Table, name)};//this adds the index of the column to a copy of the path we got down, in effect creating a new path that points to the subtable, ready for adding more columns
+            return newpath;
         }
 
         private Boolean HasIndexNoCheck(long columnIndex )
@@ -657,7 +769,7 @@ namespace TightDbCSharp
         internal override Table GetSubTableNoCheck(long columnIndex, long rowIndex)
         {
             Table fromSubtableCell =  UnsafeNativeMethods.TableGetSubTable(this, columnIndex, rowIndex);
-            fromSubtableCell.HasColumns = fromSubtableCell.ColumnCount > 0;
+            //fromSubtableCell.HasColumns = fromSubtableCell.ColumnCount > 0;
             return fromSubtableCell;
         }
 
@@ -737,7 +849,7 @@ namespace TightDbCSharp
         internal override Table GetMixedSubTableNoCheck(long columnIndex, long rowIndex)
         {
             var mixedSubTable= UnsafeNativeMethods.TableGetSubTable(this, columnIndex, rowIndex);
-            mixedSubTable.HasColumns = mixedSubTable.ColumnCount > 0;//if it has columns, mark it down for usuitable to work with spec modifications
+            //mixedSubTable.HasColumns = mixedSubTable.ColumnCount > 0;//if it has columns, mark it down for usuitable to work with spec modifications
             return mixedSubTable;
         }
 
@@ -926,19 +1038,23 @@ namespace TightDbCSharp
             SetIndexNoCheck(columnIndex);
         }
 
-        //todo : unit tests that check this validator reg. invalid scenarios.  bad top index, bad 2nd level index, pointing to non-subtable columns,
-        //todo : if the boolean is handled correctly
-        private void ValidateColumnPath(IList<int> path,Boolean lastMustAlsoBeASubTable)//in 64 bit mode, artificially reducing the max. number of columns from 2^64 to 2^32, as the core uses size_t column indicies
+        
+        private void ValidateColumnPath(IList<long> path,Boolean lastMustAlsoBeASubTable)//in 64 bit mode, artificially reducing the max. number of columns from 2^64 to 2^32, as the core uses size_t column indicies
         {
             if (path == null)
             {
                 throw new ArgumentNullException("path","Column path must not be null");
             }
 
-            //if path is empty it is very hard to argue it points to a subtable so that is an error always
+            //if path is empty it is very hard to argue it points to a subtable. However, recursive calls will often start with defining the top table
+            //so allow an empty path to mean simply start up with adding columns to the top table
+            
             if (path.Count == 0)
             {
-                throw new ArgumentOutOfRangeException("path","subcolumn path is of length zero -must be at least of length one");
+                if (lastMustAlsoBeASubTable)//this means that the path points to a table, not a specific column so that's fine
+                    return;
+                //else throw an exception as the path is supposed to indentify a column (rename for instance) empty path does not specify any column
+                    throw new ArgumentOutOfRangeException("path","subcolumn path is of length zero -must be at least of length one");
             }
             
             {
@@ -963,7 +1079,8 @@ namespace TightDbCSharp
             //todo:this could be implemented recursively and probably look a bit tidier
             Spec levelSpec = null;
 
-            for (int level = 0; level < path.Count; level++)
+
+            for (var level = 0; level < path.Count; level++)
             {
 
                 if (level == 0)
@@ -998,56 +1115,64 @@ namespace TightDbCSharp
             }
         }
 
-        //ArrayWithPath = CalculateArrayWithPath() ;//call complex logic that calculates the path to the table where we want to add a column
-        //call like this  AddSubColumn(ArrayWithPath,DataType.String, "stringcolumn") 
-        //todo:create a plausible dynamic example where path is nicer than parametres
-        //this method is cumbersome if You want to specify the path in the call itself, like this AddSubColumn(new []{2,1,0},DataType.String,"Name");
-        //It is recommended to use the alternative:  AddSubColumn(DataType.String, "Name",2,1,0);//path is specified  as the last many int parametres
-        public long AddSubColumn(IList<int> path, DataType datatype, string name)
+        //returns the index of the added column in the subtable where it is placed (or in the top table where it is placed)
+        public long AddColumn(IList<long> path, DataType datatype, string columnName)
         {
-            ValidateIsValid();
+            if (columnName == null)
+            {
+                throw new ArgumentNullException("columnName","column name cannot be null");
+            }
             ValidateIsEmpty();//cannot change scheme if there is data in the table
             ValidateNotSharedSpec();//You must alter shared spec tables through their top table
             ValidateColumnPath(path,true);
-            return UnsafeNativeMethods.TableAddSubColumn(this, path, datatype, name);
+            return path.Count == 0 ? UnsafeNativeMethods.TableAddColumn(this, datatype, columnName) : UnsafeNativeMethods.TableAddSubColumn(this, path, datatype, columnName);
         }
 
         //use this if You want to specify the path directly in code , it is much easier, path must be specified as a number of int parametres in the end of the call
-        public long AddSubColumn(DataType columnDataType, string columnName, params int[] path)
+        public long AddColumn(DataType columnDataType, string columnName, params long[] path)
         {
-            return AddSubColumn(path, columnDataType, columnName);
+            return AddColumn(path, columnDataType, columnName);            
         }
 
-        public void RenameSubColumn(IList<int> path, string name)
+        public void RenameColumn(IList<long> path, string name)
         {
-            ValidateIsValid();
-            ValidateIsEmpty();//cannot change scheme if there is data in the table
-            ValidateNotSharedSpec();//You must alter shared spec tables through their top table
-            ValidateColumnPath(path,false);           
-            UnsafeNativeMethods.TableRenameSubColumn(this, path, name);
-        }
 
-        public void RenameSubColumn(String columnName, params int[] path)
-        {
-            RenameSubColumn(path,columnName);
-        }
-
-
-        public void RemoveSubColumn(IList<int> path)
-        {
-            ValidateIsValid();
-            ValidateIsEmpty();//cannot change scheme if there is data in the table
-            ValidateNotSharedSpec();//You must alter shared spec tables through their top table
+            ValidateIsEmpty(); //cannot change scheme if there is data in the table
+            ValidateNotSharedSpec(); //You must alter shared spec tables through their top table
             ValidateColumnPath(path, false);
-            UnsafeNativeMethods.TableRemoveSubColumn(this, path);
+            if (path.Count > 1) //this test bc tablerenamesubcolumn does not work with a path of length 1
+            {
+                UnsafeNativeMethods.TableRenameSubColumn(this, path, name);
+            }
+            else
+                UnsafeNativeMethods.TableRenameColumn(this, path[0], name);
         }
 
-        public void RemoveSubColumn( params int[] path)
+        public void RenameColumn(String columnName, params long[] path)
         {
-            RemoveSubColumn((IList<int>) path);
+            RenameColumn(path,columnName);
         }
 
 
+        public void RemoveColumn(IList<long> path)
+        {
+            ValidateIsEmpty(); //cannot change scheme if there is data in the table
+            ValidateNotSharedSpec(); //You must alter shared spec tables through their top table
+            ValidateColumnPath(path, false);
+            if (path.Count > 1) //this test because TableRemoveSubcolumn does not accept a path with only one number
+            {
+                UnsafeNativeMethods.TableRemoveSubColumn(this, path);
+            }
+            else
+            {
+                UnsafeNativeMethods.TableRemoveColumn(this, path[0]);
+            }
+        }
+
+        public void RemoveColumn( params long[] path)
+        {
+            RemoveColumn((IList<long>) path);
+        }
 
 
         internal override TableView FindAllIntNoCheck(long columnIndex, long value)

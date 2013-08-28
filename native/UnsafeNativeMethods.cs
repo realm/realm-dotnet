@@ -193,25 +193,7 @@ enum DataType {
             return (IntPtr)1 == value;
         }
 
-        // tightdb_c_cs_API size_t add_column(size_t SpecPtr,DataType type, const char* name) 
-
-        //marshalling : not sure the simple enum members have the same size on C# and c++ on all platforms and bit sizes
-        //and not sure if the marshaller will fix it for us if they are not of the same size
-        //so this must be tested on various platforms and bit sizes, and perhaps specific versions of calls with enums have to be made
-        //this one works on windows 7, .net 4.5 32 bit, tightdb 32 bit (on a 64 bit OS, but that shouldn't make a difference)
-        [DllImport(L32, EntryPoint = "spec_add_column", CallingConvention = CallingConvention.Cdecl)]
-        private static extern UIntPtr spec_add_column32(IntPtr spechandle, IntPtr type,[MarshalAs(UnmanagedType.LPWStr)] string name,IntPtr nameLen);
-
-        [DllImport(L64, EntryPoint = "spec_add_column", CallingConvention = CallingConvention.Cdecl,CharSet = CharSet.Unicode)]
-        private static extern UIntPtr spec_add_column64(IntPtr spechandle, IntPtr type, [MarshalAs(UnmanagedType.LPWStr)] string name,IntPtr nameLen);
-
-        public static long SpecAddColumn(Spec spec, DataType type, string name)
-        {
-            if (Is64Bit)
-                return (long)spec_add_column64(spec.Handle, DataTypeToIntPtr (type), name,(IntPtr)name.Length);
-            return (long)spec_add_column32(spec.Handle, DataTypeToIntPtr(type), name, (IntPtr)name.Length);
-        }
-
+        
 
         [DllImport(L32, EntryPoint = "table_get_column_index", CallingConvention = CallingConvention.Cdecl)]
         private static extern UIntPtr table_get_column_index32(IntPtr tablehandle, [MarshalAs(UnmanagedType.LPWStr)] string name,IntPtr nameLen);
@@ -301,7 +283,7 @@ enum DataType {
         [DllImport(L32, EntryPoint = "table_add_subcolumn", CallingConvention = CallingConvention.Cdecl)]
         private static extern UIntPtr table_add_subcolumn32(IntPtr tableHandle, IntPtr pathLength, IntPtr pathArrayPtr, IntPtr type, [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
 
-        public static long TableAddSubColumn(Table table, IList<int> path, DataType type, string name)
+        public static long TableAddSubColumn(Table table, IList<long> path, DataType type, string name)
         {
             var pathForCpp=new IntPtr[path.Count];
             var n = 0;
@@ -332,7 +314,7 @@ enum DataType {
         [DllImport(L32, EntryPoint = "table_rename_subcolumn", CallingConvention = CallingConvention.Cdecl)]
         private static extern void table_rename_subcolumn32(IntPtr tableHandle, IntPtr pathLength, IntPtr pathArrayPtr, [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
 
-        public static void TableRenameSubColumn(Table table, IList<int> path,  string name)
+        public static void TableRenameSubColumn(Table table, IList<long> path,  string name)
         {
             var pathForCpp = new IntPtr[path.Count];
             var n = 0;
@@ -367,7 +349,7 @@ enum DataType {
         [DllImport(L32, EntryPoint = "table_remove_subcolumn", CallingConvention = CallingConvention.Cdecl)]
         private static extern void table_remove_subcolumn32(IntPtr tableHandle, IntPtr pathLength, IntPtr pathArrayPtr );
 
-        public static void TableRemoveSubColumn(Table table, IList<int> path)
+        public static void TableRemoveSubColumn(Table table, IList<long> path)
         {
             var pathForCpp = new IntPtr[path.Count];
             var n = 0;
@@ -434,37 +416,9 @@ enum DataType {
 
 
 
-        //Spec add_subtable_column(const char* name);        
-        [DllImport(L64, EntryPoint = "spec_add_subtable_column",
-            CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr spec_add_subtable_column64(IntPtr spec,
-                                                                [MarshalAs(UnmanagedType.LPWStr)] string name,IntPtr nameLen);
-
-        [DllImport(L32, EntryPoint = "spec_add_subtable_column",
-            CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr spec_add_subtable_column32(IntPtr spec,
-                                                                [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
 
 
 
-
-        //must NOT be used to add subtables into mixed
-        public static Spec AddSubTableColumn(Spec spec, String name)
-        {
-            if (name == null)
-            {
-                throw new ArgumentNullException("name",
-                                                "Adding a sub table column with 'name' set to null is not allowed");
-            }
-            IntPtr specHandle = Is64Bit
-                ? spec_add_subtable_column64(spec.Handle, name, (IntPtr) name.Length)
-                : spec_add_subtable_column32(spec.Handle, name, (IntPtr) name.Length);
-            
-            //the subtable will not have been created at this point bc we are before updatefromspec
-            //Fortunately we only have to provide the root owner table, which is the same as our own
-            //
-            return new Spec(spec.OwnerRootTable,specHandle, true); 
-        }
 
         //get a spec given a column index. Returns specs for subtables, but not for mixed (as they would need a row index too)
         //Spec       *spec_get_spec(Spec *spec, size_t column_ndx);
@@ -2421,21 +2375,6 @@ enum DataType {
         }
 
 
-        [DllImport(L64, EntryPoint = "table_update_from_spec", CallingConvention = CallingConvention.Cdecl)
-        ]
-        private static extern void table_update_from_spec64(IntPtr tablePtr);
-
-        [DllImport(L32, EntryPoint = "table_update_from_spec", CallingConvention = CallingConvention.Cdecl)
-        ]
-        private static extern void table_update_from_spec32(IntPtr tablePtr);
-
-        public static void TableUpdateFromSpec(Table table)
-        {
-            if (Is64Bit)
-                table_update_from_spec64(table.Handle);
-            else
-                table_update_from_spec32(table.Handle);
-        }
 
         [DllImport(L64, EntryPoint = "table_has_index", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr table_has_index64(IntPtr tablePtr,IntPtr columnNdx);

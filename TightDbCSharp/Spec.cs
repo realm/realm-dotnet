@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 
 
@@ -114,140 +113,7 @@ namespace TightDbCSharp
         }
 
 
-        //Depending on where we get the spec handle from, it could be a structure that should be
-        //deleted or a structure that should not be deleted (deallocated) in c++
-        //the second parameter in the constructor is indication of this spec handle should be deallocated
-        //by a call to spec_delete or if c# should do nothing when the spec handle is no longer in use in c#
-        //(the spec handles that need to be deleted have been allocated as new structures, the ones that
-        //do not need to be deleted are pointers into structures that are owned by a table
-        //This means that a spec that has been gotten from a table should not be used after that table have
-        //been deallocated.
-
-        //add this field to the current spec. Will add recursively if neeeded
-        internal void AddFieldNoCheck(Field schema)
-        {
-            if (schema != null)
-            {
-                if (schema.FieldType != DataType.Table)
-                {
-                    AddColumn(schema.FieldType, schema.ColumnName);
-                }
-                else
-                {
-                    Field[] tfa = schema.GetSubTableArray();
-                    Spec subspec = AddSubTableColumn(schema.ColumnName);
-                    subspec.AddFieldsNoCheck(tfa);
-                }
-            }
-            else
-            {
-                throw new ArgumentNullException("schema");
-            }
-        }
-
-        public void AddField(Field schema)
-        {
-            OwnerRootTable.ValidateSpecChangeIsOkay();
-            //if we are a subtable taken out from a row, then the above check will catch the situation as we must have columns and that makes spec changes not okay
-            //if we are a spec gotten get spec.getsubspec etc then it is valid to add a field if the root table has no columns
-           
-            AddFieldNoCheck(schema);
-        }
-
-        // will add the field list to the current spec
-        private void AddFieldsNoCheck(IEnumerable<Field> fields)
-        {
-            if (fields != null)
-            {
-                foreach (Field field in fields)
-                {
-                    AddFieldNoCheck(field);
-                }
-            }
-            else
-            {
-                throw new ArgumentNullException("fields");
-            }
-        }
-
         
-
-        public Spec AddSubTableColumn(String name)
-        {
-            ValidateOkayToModify();//updatefromspec can only be called once, on a table with no comitted columns.
-            return UnsafeNativeMethods.AddSubTableColumn(this, name);
-        }
-
-
-        private void ValidateOkayToModify()
-        {
-            OwnerRootTable.ValidateNoColumns();//because updatefromspec can only be called once, on a root table, to create all the fields
-            OwnerRootTable.ValidateIsValid();//of course our root table must be valid
-            //in other words, the root table must have no rows, and ... no prior specified columns
-            //The only way to use a spec to modify a table is via Updatefromspec, so we preemptively stop the user from modifying a spec
-            //if we know in advance that update will fail on the root table
-            //todo:we should also verify that the root table is not readonly (could realistically happen if You get a ST from a mixed in a readonly transaction)
-        }
-
-        public long AddColumn(DataType type, String name)
-        {
-            ValidateOkayToModify();
-            return UnsafeNativeMethods.SpecAddColumn(this, type, name);
-        }
-
-        //The reason we have a specific AddSubTableColumn is bc it returns
-        //the spec of the subtable that is being added (to enable sub sub columns)
-        //You could also call AddColumn(Datatype.Table,"name") and that would work,
-        //but then You would have to read back the subtable spec manually afterwards
-        //To balance the interface, the methods below has been added so that You can 
-        //add all types without having to specify a DataType constant
-        public long AddBinaryColumn(String name)
-        {
-            return AddColumn(DataType.Binary, name);
-        }
-
-        public long AddBoolColumn(String name)
-        {
-            return AddColumn(DataType.Bool, name);
-        }
-
-        public long AddDateColumn(String name)
-        {
-            return AddColumn(DataType.Date, name);
-        }
-
-        public long AddDoubleColumn(String name)
-        {
-            return AddColumn(DataType.Double, name);
-        }
-
-        public long AddFloatColumn(String name)
-        {
-            return AddColumn(DataType.Float, name);
-        }
-
-        public long AddIntColumn(String name)
-        {
-            return AddColumn(DataType.Int, name);
-        }
-
-        public long AddMixedColumn(String name)
-        {
-            return AddColumn(DataType.Mixed, name);
-        }
-
-        public long AddStringColumn(String name)
-        {
-            return AddColumn(DataType.String, name);
-        }
-
-        public long AddTableColumn(String name)
-        {
-            return AddColumn(DataType.Table, name);
-        }
-
-
-
 
         //I assume column_idx is a column with a table in it
         //if it is a mixed with a subtable in it, this method will throw
@@ -264,7 +130,6 @@ namespace TightDbCSharp
         {
             return UnsafeNativeMethods.SpecGetColumnType(this, columnIndex);
         }
-
         
 
         public string GetColumnName(long columnIndex)
