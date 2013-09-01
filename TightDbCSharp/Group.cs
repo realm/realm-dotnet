@@ -74,7 +74,7 @@ namespace TightDbCSharp
 
         private void ValidateReadOnly()
         {
-            if (ReadOnly) throw new InvalidOperationException("Read/Write operation initiated on a Readolny Group");
+            if (ReadOnly) throw new InvalidOperationException("Read/Write operation initiated on a Read Only Group");
         }
 
         //use this method to create new tables in the group

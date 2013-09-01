@@ -3,10 +3,10 @@ using System.Globalization;
 
 namespace TightDbCSharp
 {
-    public enum DurabilityLevel : byte
+    public enum DurabilityLevel
     {
         DurabilityFull,
-        DurabilityMemOnly
+        DurabilityMemoryOnly
     }
 
     //Never : this sharedgroup has never finished a transaction, neither started one
@@ -22,9 +22,9 @@ namespace TightDbCSharp
     public class SharedGroup : Handled
     {
 
-        public SharedGroup(String filename, Boolean noCreate, DurabilityLevel durabillityLevel)
+        public SharedGroup(String fileName, Boolean noCreate, DurabilityLevel durabilityLevel)
         {
-            UnsafeNativeMethods.NewSharedGroupFile(this, filename, noCreate, durabillityLevel);
+            UnsafeNativeMethods.NewSharedGroupFile(this, fileName, noCreate, durabilityLevel);
         }
 
 
@@ -93,7 +93,7 @@ namespace TightDbCSharp
                 {
                     return UnsafeNativeMethods.SharedGroupHasChanged(this);
                 }
-                throw new InvalidOperationException("SharedGroup HasChanged cannot be accessed on unattached SharedGroup");
+                throw new InvalidOperationException("Shared Group.Has Changed cannot be accessed on unattached Shared Group");
             }
         }
 
@@ -109,15 +109,15 @@ namespace TightDbCSharp
             {
                 default:
                     return (IntPtr) 0;
-                case DurabilityLevel.DurabilityMemOnly:
+                case DurabilityLevel.DurabilityMemoryOnly:
                     return (IntPtr) 1;
             }
         }
 
         //work is the acutal code that will be run inside the transaction
-        private void Transaction(Action<Transaction> work,TransactionType kind)
+        private void Transaction(Action<Transaction> work,TransactionKind kind)
         {
-            using (var transaction = (kind == TransactionType.Read) ? BeginRead() : BeginWrite())
+            using (var transaction = (kind == TransactionKind.Read) ? BeginRead() : BeginWrite())
             try
             {
                 work(transaction);
@@ -132,12 +132,12 @@ namespace TightDbCSharp
 
         public void ExecuteInReadTransaction(Action<Group> work)
         {
-            Transaction(work, TransactionType.Read);
+            Transaction(work, TransactionKind.Read);
         }
 
         public void ExecuteInWriteTransaction(Action<Group> work)
         {
-            Transaction(work, TransactionType.Write);
+            Transaction(work, TransactionKind.Write);
         }
     }
 

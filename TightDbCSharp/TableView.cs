@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Globalization;
 
 namespace TightDbCSharp
@@ -7,7 +9,7 @@ namespace TightDbCSharp
     //re-use that term here. TableView can be thought of as a list of pointers to some rows in an underlying table. The view has usually been created using
     //a query, or some other construct that selects some, but usually not all the underlying rows.
     //this class wraps a c++ TableView class
-    public class TableView : TableOrView
+    public class TableView : TableOrView, IEnumerable<Row>
     {
         private Table _underlyingTable;//the table this view ultimately is viewing (not the view it is viewing, the final table being viewed. Could be a subtable)
         public Table UnderlyingTable {
@@ -26,6 +28,73 @@ namespace TightDbCSharp
             
         }//used only to make sure that a reference to the table exists until the view is disposed of
 
+
+
+        public IEnumerator<Row> GetEnumerator()
+        {
+            ValidateIsValid();
+            return new Enumerator(this);
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return new Enumerator(this);
+        }
+
+        private class Enumerator : IEnumerator<Row> //probably overkill, current needs could be met by using yield
+        {
+            private long _currentRow = -1;
+            private readonly TableView _myTableView;//the table or view we are iterating            
+            private readonly int _myTableVersion;//version of the underlying table we are viewing
+            private readonly Table _myUnderlyingTable;
+
+            public Enumerator(TableView tableView)
+            {
+                _myTableView = tableView;
+                _myUnderlyingTable=tableView.UnderlyingTable;
+                _myTableVersion = _myUnderlyingTable.Version;
+            }
+
+            //todo:peformance test if inlining this manually will do any good
+            
+            private void ValidateVersion()
+            {
+                if (_myTableVersion != _myUnderlyingTable.Version)
+                    throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture,"Table View Iteration failed at row {0} because the table had rows inserted or deleted", _currentRow));
+            }
+
+            public Row Current
+            {
+                get
+                {         
+                    ValidateVersion();
+                    return new Row(_myTableView, _currentRow);
+                }
+            }
+
+            object IEnumerator.Current
+            {
+                get { return Current; }
+            }
+
+            public bool MoveNext()
+            {
+                ValidateVersion();
+                return ++_currentRow < _myTableView.Size;
+            }
+
+            public void Reset()
+            {
+                _currentRow = -1;
+            }
+
+            public void Dispose()
+            {
+                //_myTableView = null; //remove reference to Table class
+            }
+        }
+
+
         internal override Spec GetSpec()
         {
             return UnderlyingTable.Spec;
@@ -38,6 +107,7 @@ namespace TightDbCSharp
         {
             get
             {
+                ValidateIsValid();
                 ValidateRowIndex(rowIndex);
                 return RowForIndexNoCheck(rowIndex);
             }
@@ -53,6 +123,7 @@ namespace TightDbCSharp
         //see similar implementation in Table  
         public Row Last()
         {
+            ValidateIsValid();
             long s = Size;
             if (s > 0)
             {
@@ -61,10 +132,24 @@ namespace TightDbCSharp
             throw new InvalidOperationException("Last called on a TableView with no rows in it");
         }
         //*/
+ 
 
+        public bool IsValid()
+        {
+            //call to core to get info if this tableview is attached or not (not implemented in core)
+            //until core has such functionality, we do better than nothing and check that the table version is
+            //unchanged since the tableview was created
+            return  UnderlyingTable.IsValid() && (UnderlyingTable.Version==Version);
+        }
+
+        //this can throw if the underlying table had inserted or removed rows or if the underlying table has become invalid itself
         internal override void ValidateIsValid()
         {
-            UnderlyingTable.ValidateIsValid();
+            if (!IsValid())
+            {
+                throw new InvalidOperationException("Table view is no longer valid. No operations except calling Is Valid is allowed");
+
+            }            
         }
 
         //This method will ask c++ to dispose of a table object created by table_new.
@@ -169,13 +254,28 @@ namespace TightDbCSharp
 
         public  string ToJson()
         {
+            ValidateIsValid();
             return UnsafeNativeMethods.TableViewToJson(this);
-        }
+        }                              
+
+        //Todo:Unit tests if tableview invalidation works when the underlying table was modified through the tableview
+        //what i mean:  test it is legal to delete a row through the tableview
+        //test that the tableview invalidates if a row is deleted through the table
+        //test that the tableview invaiddates if a row is deleted thorugh tanother table in the group
+
+
+        //todo:make note in asana that optimally, subtables and tableviews should be unique per handle - that is group should return
+        //the same table object if called and asked for the same table object one time more
+        //and table should do the same with subtables.
+        //this will fix the above mentioned unit test state bug
 
 
         internal override void RemoveNoCheck(long rowIndex)
         {
-            UnsafeNativeMethods.TableViewRemove(this, rowIndex);
+            UnsafeNativeMethods.TableViewRemoveRow(this, rowIndex);
+            ++UnderlyingTable.Version;//this is a seperate object            
+            ++Version;//this is this tableview's version (currently not being checked for in the itereator, but in the future
+            //perhaps a tableview can somehow change while the underlying table did in fact not change at all
         }
 
         internal override void SetMixedFloatNoCheck(long columnIndex, long rowIndex, float value)
@@ -255,6 +355,7 @@ namespace TightDbCSharp
         {
             UnsafeNativeMethods.TableViewClearSubTable(this,columnIndex,rowIndex);
         }
+        //todo:unit test that after clear subtable, earlier subtable wrappers to the cleared table are invalidated
 
         internal override void SetStringNoCheck(long columnIndex, long rowIndex, string value)
         {
@@ -290,6 +391,8 @@ namespace TightDbCSharp
         {
             UnsafeNativeMethods.TableViewSetMixedEmptySubTable(this, columnIndex, rowIndex);
         }
+        //todo:unit test that checks if subtables taken out from the mixed are invalidated when a new subtable is put into the mixed
+        //todo also test that invalidation of iterators, and row columns and rowcells work ok
 
         //a copy of source will be set into the field
 
@@ -352,6 +455,7 @@ namespace TightDbCSharp
 
         public override string ObjectIdentification()
         {
+            ValidateIsValid();
             return String.Format(CultureInfo.InvariantCulture,"TableView:{0}", Handle);
         }
 
@@ -359,6 +463,7 @@ namespace TightDbCSharp
         internal TableView(Table underlyingTableBeing, IntPtr tableViewHandle,bool shouldbedisposed)
         {
             UnderlyingTable = underlyingTableBeing;
+            Version = underlyingTableBeing.Version;//this tableview should invalidate itself if that version changes
             SetHandle(tableViewHandle,shouldbedisposed);
         }
 

@@ -1,9 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 using TightDbCSharp;
 using TightDbCSharp.Extensions;
 using System.Reflection;
-
 
 
 namespace TightDbCSharpTest
@@ -27,7 +28,7 @@ namespace TightDbCSharpTest
         //returns a table with row 0 having ints 0 to 999 ascending
         //row 1 having ints 0 to 99 ascendig (10 of each)
         //row 2 having ints 0 to 9 asceding (100 of each)     
-        private static Table TableWithMultipleIntegers()
+        internal static Table TableWithMultipleIntegers()
         {
             Table returnTable;
             Table t = null;
@@ -74,10 +75,10 @@ namespace TightDbCSharpTest
                 t = new Table();
                 for (int n = 0; n < columnIndex; n++)
                 {
-                    t.AddColumn(DataType.String, "StringColumn" + n);
+                    t.AddStringColumn("StringColumn" + n);
                 }
-                t.AddColumn(DataType.Int, "IntColumn");
-                t.AddColumn(DataType.String, "StringcolumnLast");
+                t.AddIntColumn( "IntColumn");
+                t.AddStringColumn( "StringcolumnLast");
 
                 for (int n = 0; n < numberOfIntegers; n++)
                 {
@@ -179,7 +180,7 @@ namespace TightDbCSharpTest
 
                     //setting null, getting an empty binary data back
                     tableView.SetBinary(0, 1, null);
-                    Array binaryData5 = tableView.GetBinary(0, 1);
+                    Array binaryData5 = tableView.GetBinary("bin", 1);
                     Assert.AreEqual(0, binaryData5.Length);
 
                     //setting empty binary data, and getting that back again
@@ -234,9 +235,15 @@ namespace TightDbCSharpTest
                 byte[] arrayToFind = { 02, 12, 36, 22 };
                 using (var view = table.FindAllInt(1, 1))
                 {
-                    Assert.AreEqual(4,view.Size);
-                    var rowIndex  = view.FindFirstBinary(0, arrayToFind);
-                    Assert.AreEqual(1,rowIndex);
+                    Assert.AreEqual(4, view.Size);
+                    {
+                        var rowIndex = view.FindFirstBinary(0, arrayToFind);
+                        Assert.AreEqual(1, rowIndex);
+                    }
+                    {
+                        var rowIndex = view.FindFirstBinary("radio", arrayToFind);
+                        Assert.AreEqual(1, rowIndex);
+                    }
                 }
             }
         }
@@ -261,8 +268,15 @@ namespace TightDbCSharpTest
         {
             using (var t = TableWithMultipleIntegers())
             {
-                TableView tv = t.FindAllInt(1, 5);
-                Assert.AreEqual(10, tv.Size);
+                {
+                    TableView tv = t.FindAllInt(1, 5);
+                    Assert.AreEqual(10, tv.Size);
+                }
+                {
+                    TableView tv = t.FindAllInt("intcolumn1", 5);
+                    Assert.AreEqual(10, tv.Size);
+                }
+
             }
         }
 
@@ -450,7 +464,7 @@ intcolumn2:1//column 2
                 TableView tv = t.Distinct(0);
                 tv.SetString(fn0, 0, "teststring");
                 tv[0].SetDouble(fn1, testdouble);
-                tv.SetDouble(2, 0, testdouble2);
+                tv.SetDouble(fn2, 0, testdouble2);
                 Assert.AreEqual(testdouble, tv.GetDouble(fn1, 0));
                 Assert.AreEqual(testdouble, tv.GetDouble(1, 0));
                 Assert.AreEqual(testdouble2, tv[0].GetDouble(fn2));
@@ -596,7 +610,7 @@ intcolumn2:1//column 2
 
                     const string changedString = "Changed";
                     sub.SetString(1, 1, changedString);
-                    view.SetSubTable(1, 0, sub);
+                    view.SetSubTable("sub", 0, sub);
                     Table subreturnedchanged = view.GetSubTable(1, 0);//                    
                     Assert.AreEqual(changedString, subreturnedchanged.GetString(1, 1));
 
@@ -730,6 +744,289 @@ intcolumn2:1//column 2
                 }
             }
         }
+
+        //this iteration should work fine - no rows are shuffled around
+        [Test]
+        public static void TableViewIteratorInvalidation1Legal()
+        {
+            using (var table = new Table("intfield".Int(),"findfield".Int()))
+            {                
+                const int rows = 300;
+                table.AddEmptyRow(rows);
+                for (var f = 0; f < rows; f++)
+                {
+                    table.Set(f,f,0);//first field is 0 to rows, second field is always zero
+                }
+                
+                using (var tableview=table.FindAllInt(1,0))//select all rows
+                {
+                    var cnt = tableview.Aggregate<Row, long>(0, (current, row) => current + row.GetLong(0));//using linq, which uses iterators
+                    Assert.AreEqual(rows - 1, table.Last().GetLong(0));
+                    Assert.AreEqual((rows/2)*(rows-1),cnt);
+                }
+            }
+        }
+
+
+
+        //this iteration should fail.  a row is removed in the loop, earlier than where the iterator is
+        //this iteration should work fine - no rows are shuffled around
+        [Test]
+        [ExpectedException("System.InvalidOperationException")]
+        public static void TableViewIteratorInvalidation2TableAdd()
+        {
+            using (var table = new Table("intfield".Int(), "findfield".Int()))
+            {
+                const int rows = 300;
+                Assert.Greater(rows,3);//don't change rows to below 3, the rest of the code will not work well
+                table.AddEmptyRow(rows);
+                for (var f = 0; f < rows; f++)
+                {
+                    table.Set(f, f, 0);//first field is 0 to rows, second field is always zero
+                }
+
+                using (var tableview = table.FindAllInt(1, 0))//select all rows
+                {
+                    long cnt = 0;
+                    foreach (var row in tableview){
+                        cnt = cnt + row.GetLong(0);
+                        if (row.RowIndex > rows/2)
+                        {
+                            table.Remove(row.RowIndex-2);//do not set rows to a very low number,or this will fail                             
+                        }
+                    }
+                    Assert.AreEqual(rows - 1, table.Last().GetLong(0));//should never get this far
+                }
+            }
+        }
+
+        //modification through a tableview is okay
+        [Test]
+        public static void TableViewIsValidLegal()
+        {
+            using (var table = new Table(new IntField("test")) {1, 2,2, 3, 2,4})
+            using (var tableview = table.FindAllInt(0,2))
+            {
+                Assert.AreEqual(3,tableview.Size);
+                tableview.Remove(1);
+                Assert.AreEqual(2, tableview.Size);
+            }
+        }
+
+
+        [Test]
+        [ExpectedException("System.InvalidOperationException")]
+        public static void TableViewIsValidNotLegalThroughTable()
+        {
+            using (var table = new Table(new IntField("test")) { 1, 2, 2, 3, 2, 4 })
+            using (var tableview = table.FindAllInt(0, 2))
+            {
+                Assert.AreEqual(3, tableview.Size);
+                table.Remove(1);
+                Assert.AreEqual(false,tableview.IsValid());
+                long size = tableview.Size;//this should throw
+                Assert.AreEqual(2, size);//this should not run
+            }
+        }
+
+        //check that tableview gets invalidtaed if a table is changed in a object taken out form tablegroup 
+        //and  the view is from antoher instance of same table from same group
+        [Test]
+   [ExpectedException("System.InvalidOperationException")]
+        public static void TableViewIsValidNotLegalThroughGroup()
+        {
+            using (var group = new  Group())
+            using (var table =  group.CreateTable("T1",new IntField("test")))
+            using (var table2 = group.GetTable("T1"))
+            {
+                table.AddMany(new List<long> {1, 2, 3, 4, 5, 6, 7, 8, 9, 10,2,2,2,2});//add many takes a collection of row values
+                using (var tableview = table.FindAllInt(0, 2)){
+                Assert.AreEqual(5, tableview.Size);
+                table2.Remove(1);
+                Assert.AreEqual(13,table.Size);
+                Assert.AreEqual(false, tableview.IsValid());//this should return false
+                long size = tableview.Size;//this should throw
+                Assert.AreEqual(2, size);//this should not run
+                }
+            }
+        }
+
+
+
+
+
+        //this iteration should fail.  a row is removed in the loop, earlier than where the iterator is
+        //this iteration should work fine - no rows are shuffled around
+        [Test]
+        [ExpectedException("System.InvalidOperationException")]
+        public static void TableViewIteratorInvalidation3TableRemove()
+        {
+            using (var table = new Table("intfield".Int(), "findfield".Int()))
+            {
+                const int rows = 300;
+                Assert.Greater(rows, 3);//don't change rows to below 3, the rest of the code will not work well
+                table.AddEmptyRow(rows);
+                for (var f = 0; f < rows; f++)
+                {
+                    table.Set(f, f, 0);//first field is 0 to rows, second field is always zero
+                }
+
+                using (var tableview = table.FindAllInt(1, 0))//select all rows
+                {
+                    long cnt = 0;
+                    foreach (var row in tableview)
+                    {
+                        cnt = cnt + row.GetLong(0);
+                        if (row.RowIndex > rows / 2)
+                        {
+                            table.Remove(row.RowIndex + 2);//do not set rows to a very low number,or this will fail                             
+                        }
+                    }
+                    Assert.AreEqual(rows - 1, table.Last().GetLong(0));//should never get this far
+                }
+            }
+        }
+
+
+
+
+        //this iteration should fail.  a row is removed in the loop, earlier than where the iterator is
+        //this iteration should fail.  a row is removed in the loop, earlier than where the iterator is
+        //this iteration should work fine - no rows are shuffled around
+        [Test]
+        [ExpectedException("System.InvalidOperationException")]
+        public static void TableViewIteratorInvalidation4Insert()
+        {
+            using (var table = new Table("intfield".Int(), "findfield".Int()))
+            {
+                const int rows = 300;
+                Assert.Greater(rows, 3);//don't change rows to below 3, the rest of the code will not work well
+                table.AddEmptyRow(rows);
+                for (var f = 0; f < rows; f++)
+                {
+                    table.Set(f, f, 0);//first field is 0 to rows, second field is always zero
+                }
+
+                using (var tableview = table.FindAllInt(1, 0))//select all rows
+                {
+                    long cnt = 0;
+                    foreach (var row in tableview)
+                    {
+                        cnt = cnt + row.GetLong(0);
+                        if (row.RowIndex > rows / 2)
+                        {
+                            table.Insert(row.RowIndex - 2,42,42);//do not set rows to a very low number,or this will fail                             
+                        }
+                    }
+                    Assert.AreEqual(rows - 1, table.Last().GetLong(0));//should never get this far
+                }
+            }
+        }
+
+
+        //this iteration should fail.  a row is removed in the loop, earlier than where the iterator is
+        //this iteration should fail.  a row is removed in the loop, earlier than where the iterator is
+        //this iteration should work fine - no rows are shuffled around
+        [Test]
+        [ExpectedException("System.InvalidOperationException")]
+        public static void TableViewIteratorInvalidation5Insert()
+        {
+            using (var table = new Table("intfield".Int(), "findfield".Int()))
+            {
+                const int rows = 300;
+                Assert.Greater(rows, 3);//don't change rows to below 3, the rest of the code will not work well
+                table.AddEmptyRow(rows);
+                for (var f = 0; f < rows; f++)
+                {
+                    table.Set(f, f, 0);//first field is 0 to rows, second field is always zero
+                }
+
+                using (var tableview = table.FindAllInt(1, 0))//select all rows
+                {
+                    long cnt = 0;
+                    foreach (var row in tableview)
+                    {
+                        cnt = cnt + row.GetLong(0);
+                        if (row.RowIndex > rows / 2)
+                        {
+                            table.Insert(row.RowIndex + 2, 42, 42);//do not set rows to a very low number,or this will fail                             
+                        }
+                    }
+                    Assert.AreEqual(rows - 1, table.Last().GetLong(0));//should never get this far
+                }
+            }
+        }
+
+
+
+        //this iteration should fail.  a row is removed in the loop, earlier than where the iterator is
+        //this iteration should fail.  a row is removed in the loop, earlier than where the iterator is
+        //this iteration should work fine - no rows are shuffled around
+        [Test]
+        [ExpectedException("System.InvalidOperationException")]
+        public static void TableViewIteratorInvalidation6AddEmptyRow()
+        {
+            using (var table = new Table("intfield".Int(), "findfield".Int()))
+            {
+                const int rows = 300;
+                Assert.Greater(rows, 3);//don't change rows to below 3, the rest of the code will not work well
+                table.AddEmptyRow(rows);
+                for (var f = 0; f < rows; f++)
+                {
+                    table.Set(f, f, 0);//first field is 0 to rows, second field is always zero
+                }
+
+                using (var tableview = table.FindAllInt(1, 0))//select all rows
+                {
+                    long cnt = 0;
+                    foreach (var row in tableview)
+                    {
+                        cnt = cnt + row.GetLong(0);
+                        if (row.RowIndex > rows / 2)
+                        {
+                            table.AddEmptyRow(1);
+                        }
+                    }
+                    Assert.AreEqual(rows - 1, table.Last().GetLong(0));//should never get this far
+                }
+            }
+        }
+
+
+        //this iteration should fail.  a row is removed in the loop, earlier than where the iterator is
+        //this iteration should fail.  a row is removed in the loop, earlier than where the iterator is
+        //this iteration should work fine - no rows are shuffled around
+        [Test]
+        [ExpectedException("System.InvalidOperationException")]
+        public static void TableViewIteratorInvalidation7RemoveLast()
+        {
+            using (var table = new Table("intfield".Int(), "findfield".Int()))
+            {
+                const int rows = 300;
+                Assert.Greater(rows, 3);//don't change rows to below 3, the rest of the code will not work well
+                table.AddEmptyRow(rows);
+                for (var f = 0; f < rows; f++)
+                {
+                    table.Set(f, f, 0);//first field is 0 to rows, second field is always zero
+                }
+
+                using (var tableview = table.FindAllInt(1, 0))//select all rows
+                {
+                    long cnt = 0;
+                    foreach (var row in tableview)
+                    {
+                        cnt = cnt + row.GetLong(0);
+                        if (row.RowIndex > rows / 2)
+                        {
+                            table.RemoveLast();
+                        }
+                    }
+                    Assert.AreEqual(rows - 1, table.Last().GetLong(0));//should never get this far
+                }
+            }
+        }
+
+
 
         [Test]
         //make sure tableview returns field values correctly

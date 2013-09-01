@@ -2,9 +2,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 //using System.Appdomain;
+using System.Text;
+using System.Windows.Forms;
 
 
 [assembly: InternalsVisibleTo("Test")]
@@ -59,48 +62,20 @@ enum DataType {
     //because we expect the end user to have deployed the correct c++ dll this assembly is AnyCpu
     internal static class UnsafeNativeMethods
     {
-        //This could become a global const as it should only be set once
-        //we are a dll and as such do not have any code that is called on initialization (there is no initialization in a .net assembly)
-        //however we could call a common init method from the few methods that the user can decide to start out with. Such as new table, new group etc.
-        //the call would be called many times but could just return at once, if we were already initialized
-        //and if we were not, we could set the is64bit boolean correctly - and then all other calls (does not call init) could just check that boolean
-        //would speed up interop call overhead about 3-4 percent, currently at about 100 million a second on a 2.6GHZ cpu
-        private static bool Is64Bit
-        {
-            get
-            {
-                return (UIntPtr.Size == 8);
-                    //if this is evaluated every time, a faster way could be implemented. Size is cost when we are running though so perhaps it gets inlined by the JITter
-            }
-        }
 
-
-#if (DEBUG)
-        private const string Buildmode = "d";
-#else
-        private const string Buildmode = "r";
-#endif
-
-
-        //the .net library wil always use a c dll that is called tightdb_c_cs2012[32/64][r/d]
-        //this dll could have been built with vs2012 or 2010 - we don't really care as long as the C interface is the same, which it will be
-        //if built from the same source.
-
-        internal const String L64 = "tightdb_c_cs201264"+Buildmode;
-        internal const String L32 = "tightdb_c_cs201232"+Buildmode;
-
-
-
+        //manual dll version info. Used when debugging to see if the right DLL is loaded, or an old one
+        //the number is a date and a time (usually last time i debugged something)
+        private const long GetDllVersionCSharp = 3108132132;
 
 
         //tightdb_c_cs_API size_t tightdb_c_csGetVersion(void)
         [DllImport(L64, EntryPoint = "tightdb_c_cs_getver", CallingConvention = CallingConvention.Cdecl)]
-        private static extern UIntPtr tightdb_c_cs_DllVer64();
+        private static extern IntPtr tightdb_c_cs_DllVer64();
 
         [DllImport(L32, EntryPoint = "tightdb_c_cs_getver", CallingConvention = CallingConvention.Cdecl)]
-        private static extern UIntPtr tightdb_c_cs_DllVer32();
+        private static extern IntPtr tightdb_c_cs_DllVer32();
 
-        public static long CppDllVersion()
+        private static long CppDllVersion()
         {
             if (Is64Bit)
                 return (long) tightdb_c_cs_DllVer64();
@@ -196,24 +171,25 @@ enum DataType {
         
 
         [DllImport(L32, EntryPoint = "table_get_column_index", CallingConvention = CallingConvention.Cdecl)]
-        private static extern UIntPtr table_get_column_index32(IntPtr tablehandle, [MarshalAs(UnmanagedType.LPWStr)] string name,IntPtr nameLen);
+        private static extern IntPtr table_get_column_index32(IntPtr tablehandle, [MarshalAs(UnmanagedType.LPWStr)] string name,IntPtr nameLen);
 
         [DllImport(L64, EntryPoint = "table_get_column_index", CallingConvention = CallingConvention.Cdecl)]
-        private static extern UIntPtr table_get_column_index64(IntPtr tablehandle, [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
+        private static extern IntPtr table_get_column_index64(IntPtr tablehandle, [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
 
         //returns -1 if the column string does not match a column index
         public static long TableGetColumnIndex(Table  table, string name)
         {
             if (Is64Bit)
-                return (long)table_get_column_index64(table.Handle, name,(IntPtr)name.Length);
+                return (long)table_get_column_index64(table.Handle, name,(IntPtr)name.Length); 
+            
             return (long)table_get_column_index32(table.Handle, name, (IntPtr)name.Length);
         }
 
         [DllImport(L32, EntryPoint = "tableview_get_column_index", CallingConvention = CallingConvention.Cdecl)]
-        private static extern UIntPtr tableView_get_column_index32(IntPtr tableViehandle, [MarshalAs(UnmanagedType.LPWStr)] string name,IntPtr nameLen);
+        private static extern IntPtr tableView_get_column_index32(IntPtr tableViehandle, [MarshalAs(UnmanagedType.LPWStr)] string name,IntPtr nameLen);
 
         [DllImport(L64, EntryPoint = "tableview_get_column_index", CallingConvention = CallingConvention.Cdecl)]
-        private static extern UIntPtr tableView_get_column_index64(IntPtr tableViewhandle, [MarshalAs(UnmanagedType.LPWStr)] string name,IntPtr nameLen);
+        private static extern IntPtr tableView_get_column_index64(IntPtr tableViewhandle, [MarshalAs(UnmanagedType.LPWStr)] string name,IntPtr nameLen);
 
         public static long TableViewGetColumnIndex(TableView tableView, string name)
         {
@@ -259,11 +235,11 @@ enum DataType {
 
 
         [DllImport(L64, EntryPoint = "table_add_column", CallingConvention = CallingConvention.Cdecl)]
-        private static extern UIntPtr table_add_column64(IntPtr tableHandle, IntPtr type,
+        private static extern IntPtr table_add_column64(IntPtr tableHandle, IntPtr type,
                                                          [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
 
         [DllImport(L32, EntryPoint = "table_add_column", CallingConvention = CallingConvention.Cdecl)]
-        private static extern UIntPtr table_add_column32(IntPtr tableHandle, IntPtr type,
+        private static extern IntPtr table_add_column32(IntPtr tableHandle, IntPtr type,
             [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
 
         public static long TableAddColumn(Table table, DataType type, string name)
@@ -278,10 +254,10 @@ enum DataType {
 
 
         [DllImport(L64, EntryPoint = "table_add_subcolumn", CallingConvention = CallingConvention.Cdecl)]
-        private static extern UIntPtr table_add_subcolumn64(IntPtr tableHandle, IntPtr pathLength, IntPtr pathArrayPtr, IntPtr type, [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
+        private static extern IntPtr table_add_subcolumn64(IntPtr tableHandle, IntPtr pathLength, IntPtr pathArrayPtr, IntPtr type, [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
 
         [DllImport(L32, EntryPoint = "table_add_subcolumn", CallingConvention = CallingConvention.Cdecl)]
-        private static extern UIntPtr table_add_subcolumn32(IntPtr tableHandle, IntPtr pathLength, IntPtr pathArrayPtr, IntPtr type, [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
+        private static extern IntPtr table_add_subcolumn32(IntPtr tableHandle, IntPtr pathLength, IntPtr pathArrayPtr, IntPtr type, [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
 
         public static long TableAddSubColumn(Table table, IList<long> path, DataType type, string name)
         {
@@ -399,22 +375,20 @@ enum DataType {
         }
 
 
+                 
+        //spec colmparison
+        [DllImport(L64, EntryPoint = "table_spec_equals_spec", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_spec_equals_spec64(IntPtr tablehandle1, IntPtr tablehandle2);
 
-        [DllImport(L64, EntryPoint = "spec_equals", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr spec_equals64(IntPtr spechandle, IntPtr spechandle2);
+        [DllImport(L32, EntryPoint = "table_spec_equals_spec", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_spec_equals_spec32(IntPtr tablehandle1, IntPtr tablehandle2);
 
-        [DllImport(L32, EntryPoint = "spec_equals", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr spec_equals32(IntPtr spechandle, IntPtr spechandle2);
-
-        public static bool SpecEquals(Spec spec1, Spec spec2)
+        public static bool SpecEqualsSpec(Table table1, Table table2)
         {
             if (Is64Bit)
-                return IntPtrToBool(spec_equals64(spec1.Handle, spec2.Handle));
-            return IntPtrToBool(spec_equals32(spec1.Handle, spec2.Handle));
+                return IntPtrToBool(table_spec_equals_spec64(table1.Handle, table2.Handle));
+            return IntPtrToBool(table_spec_equals_spec32(table1.Handle, table2.Handle));
         }
-
-
-
 
 
 
@@ -528,7 +502,7 @@ enum DataType {
             }
             catch (SEHException ex)
             {
-                throw new IOException(String.Format("IO error creating group file {0} (read/write access is needed)  c++ exception thrown :{1}",fileName,ex.Message));
+                throw new IOException(String.Format(CultureInfo.InvariantCulture,"IO error creating group file {0} (read/write access is needed)  c++ exception thrown :{1}",fileName,ex.Message));
             }            
         }
 
@@ -612,11 +586,11 @@ enum DataType {
         [DllImport(L32, EntryPoint = "table_find_first_binary", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr table_find_first_binary32(IntPtr tableHandle, IntPtr columnIndex, IntPtr value, IntPtr bytes);
 
-
+        //not implemented in core c++ dll will return -1 until it is implemented
         public static long TableFindFirstBinary(Table table, long columnIndex, byte[] value)
         {
-            throw new NotImplementedException("Find First Binary not implemented in c++ core yet");//remove when ff has been implemented in core
-            /*
+          
+            
             GCHandle handle = GCHandle.Alloc(value, GCHandleType.Pinned);
             IntPtr valuePointer = handle.AddrOfPinnedObject();
             try
@@ -628,18 +602,19 @@ enum DataType {
                         : (long)
                             table_find_first_binary32(table.Handle, (IntPtr) columnIndex, valuePointer, (IntPtr) value.Length);
             }
-            catch (Exception e)//debugging stuff - remove
+            catch (SEHException e)//debugging stuff - remove
             {
                 Console.WriteLine(e.Message);
                 Application.DoEvents();
-                return 0; //fixme bug this is a debug catch, remove it
+                throw new NotImplementedException("Table Find First has not been implemented in this version ");
+                
             }
 
             finally//this must stay. Do not remove
             {
                 handle.Free();
             }
-             */
+             
         }
 
 
@@ -1692,7 +1667,7 @@ enum DataType {
             if (Is64Bit)
                 return new Table(
                     tableView_get_subtable64(parentTableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex), true);
-            //the constructor that takes an UintPtr will use that as a table handle
+            //the constructor that takes an IntPtr will use that as a table handle
             return new Table(tableView_get_subtable32(parentTableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex),
                              true);
         }
@@ -1745,22 +1720,19 @@ enum DataType {
 
 
 
-        [DllImport(L64, EntryPoint = "tableview_remove", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void tableview_remove64(IntPtr tableViewHandle,long rowIndex);
+        [DllImport(L64, EntryPoint = "tableview_remove_row", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void tableview_remove_row64(IntPtr tableViewHandle,long rowIndex);
 
-        [DllImport(L32, EntryPoint = "tableview_remove", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void tableview_remove32(IntPtr tableViewHandle,long rowIndex);
+        [DllImport(L32, EntryPoint = "tableview_remove_row", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void tableview_remove_row32(IntPtr tableViewHandle,long rowIndex);
 
-        //      void    table_unbind(const Table *t); /* Ref-count delete of table* from table_get_table() */
-        public static void TableViewRemove(TableView tv,long rowIndex)
-        {
-         //   Console.WriteLine("TableViewRemove calling tableview_remove " + tv.ObjectIdentification());
+        
+        public static void TableViewRemoveRow(TableView tv,long rowIndex)
+        {         
             if (Is64Bit)
-                tableview_remove64(tv.Handle,rowIndex);
+                tableview_remove_row64(tv.Handle,rowIndex);
             else
-                tableview_remove32(tv.Handle,rowIndex);
-            tv.Handle = IntPtr.Zero;
-           // Console.WriteLine("TableViewRemove called tableview_remove " + tv.ObjectIdentification());
+                tableview_remove_row32(tv.Handle,rowIndex);           
         }
 
 
@@ -4329,14 +4301,14 @@ enum DataType {
             int sizeOfSizeT = TestSizeOfSizeT();
             if (sizeOfIntPtr != sizeOfSizeT)
             {
-                throw new ApplicationException(String.Format(CultureInfo.InvariantCulture, "The size_t size{0} does not match the size of UintPtr{1}", sizeOfSizeT, sizeOfIntPtr));
+                throw new ContextMarshalException(String.Format(CultureInfo.InvariantCulture, "The size_t size{0} does not match the size of IntPtr{1}", sizeOfSizeT, sizeOfIntPtr));
             }
 
             IntPtr sizeOfInt32T = TestSizeOfInt32_T();
             var sizeOfInt32 = (IntPtr)sizeof(Int32);
             if (sizeOfInt32T != sizeOfInt32)
             {
-                throw new ApplicationException(String.Format(CultureInfo.InvariantCulture, "The int32_t size{0} does not match the size of Int32{1}", sizeOfInt32T, sizeOfInt32));
+                throw new ContextMarshalException(String.Format(CultureInfo.InvariantCulture, "The int32_t size{0} does not match the size of Int32{1}", sizeOfInt32T, sizeOfInt32));
             }
             //from here on, we know that size_t maps fine to IntPtr, and Int32_t maps fine to Int32
 
@@ -4344,13 +4316,13 @@ enum DataType {
             var sizeOfIntPtrAsIntPtr = (IntPtr)IntPtr.Size;
             if (sizeOfTablePointer != sizeOfIntPtrAsIntPtr)
             {
-                throw new ApplicationException(String.Format(CultureInfo.InvariantCulture, "The Table* size{0} does not match the size of IntPtr{1}", sizeOfTablePointer, sizeOfIntPtrAsIntPtr));
+                throw new ContextMarshalException(String.Format(CultureInfo.InvariantCulture, "The Table* size{0} does not match the size of IntPtr{1}", sizeOfTablePointer, sizeOfIntPtrAsIntPtr));
             }
 
             IntPtr sizeOfCharPointer = TestSizeOfCharPointer();
             if (sizeOfCharPointer != sizeOfIntPtrAsIntPtr)
             {
-                throw new ApplicationException(String.Format(CultureInfo.InvariantCulture, "The Char* size{0} does not match the size of IntPtr{1}", sizeOfCharPointer, sizeOfIntPtrAsIntPtr));
+                throw new ContextMarshalException(String.Format(CultureInfo.InvariantCulture, "The Char* size{0} does not match the size of IntPtr{1}", sizeOfCharPointer, sizeOfIntPtrAsIntPtr));
             }
 
             IntPtr sizeOfInt64T = Testsizeofint64_t();
@@ -4358,7 +4330,7 @@ enum DataType {
 
             if (sizeOfInt64T != sizeOfLong)
             {
-                throw new ApplicationException(String.Format(CultureInfo.InvariantCulture, "The Int64_t size{0} does not match the size of long{1}", sizeOfInt64T, sizeOfLong));
+                throw new ContextMarshalException(String.Format(CultureInfo.InvariantCulture, "The Int64_t size{0} does not match the size of long{1}", sizeOfInt64T, sizeOfLong));
             }
 
 
@@ -4367,7 +4339,7 @@ enum DataType {
 
             if (sizeOfTimeT != sizeOfTimeTReceiverType)
             {
-                throw new ApplicationException(String.Format(CultureInfo.InvariantCulture, "The c++ time_t size({0}) does not match the size of the C# recieving type int64 ({1})", sizeOfTimeT, sizeOfTimeTReceiverType));
+                throw new ContextMarshalException(String.Format(CultureInfo.InvariantCulture, "The c++ time_t size({0}) does not match the size of the C# recieving type int64 ({1})", sizeOfTimeT, sizeOfTimeTReceiverType));
             }
 
             IntPtr sizeOffloatPlus = TestSizeOfFloat();
@@ -4375,7 +4347,7 @@ enum DataType {
 
             if (sizeOffloatPlus != sizeOfFloatSharp)
             {
-                throw new ApplicationException(String.Format(CultureInfo.InvariantCulture, "The c++ float size{0} does not match the size of C# float{1}", sizeOffloatPlus, sizeOfFloatSharp));
+                throw new ContextMarshalException(String.Format(CultureInfo.InvariantCulture, "The c++ float size{0} does not match the size of C# float{1}", sizeOffloatPlus, sizeOfFloatSharp));
             }
 
             var sizeOfPlusDouble = (long)TestSizeOfDouble();
@@ -4383,7 +4355,7 @@ enum DataType {
 
             if (sizeOfPlusDouble != sizeOfSharpDouble)
             {
-                throw new ApplicationException(String.Format(CultureInfo.InvariantCulture, "The c++ double size({0}) does not match the size of the C# recieving type Double ({1})", sizeOfPlusDouble, sizeOfSharpDouble));
+                throw new ContextMarshalException(String.Format(CultureInfo.InvariantCulture, "The c++ double size({0}) does not match the size of the C# recieving type Double ({1})", sizeOfPlusDouble, sizeOfSharpDouble));
             }
 
 
@@ -4524,6 +4496,108 @@ enum DataType {
 
         }
 
+
+
+
+        //this dll call is only used in ShowVersionTest. 
+        //will probably not work with mono so at that time should be inside a define
+        //as should the line below using it
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
+        private static extern IntPtr GetModuleHandle(string lpModuleName);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        [PreserveSig]
+        private static extern uint GetModuleFileName
+        (
+            [In] IntPtr hModule,
+            [Out] StringBuilder lpFilename,
+            [In][MarshalAs(UnmanagedType.U4)] int nSize
+        );
+
+
+
+        //This could become a global const as it should only be set once
+        //we are a dll and as such do not have any code that is called on initialization (there is no initialization in a .net assembly)
+        //however we could call a common init method from the few methods that the user can decide to start out with. Such as new table, new group etc.
+        //the call would be called many times but could just return at once, if we were already initialized
+        //and if we were not, we could set the is64bit boolean correctly - and then all other calls (does not call init) could just check that boolean
+        //would speed up interop call overhead about 3-4 percent, currently at about 100 million a second on a 2.6GHZ cpu
+        private static bool Is64Bit
+        {
+            get
+            {
+                return (IntPtr.Size == 8);
+                //if this is evaluated every time, a faster way could be implemented. Size is cost when we are running though so perhaps it gets inlined by the JITter
+            }
+        }
+
+
+#if (DEBUG)
+        private const string Buildmode = "d";
+#else
+        private const string Buildmode = "r";
+#endif
+
+
+        //the .net library wil always use a c dll that is called tightdb_c_cs2012[32/64][r/d]
+        //this dll could have been built with vs2012 or 2010 - we don't really care as long as the C interface is the same, which it will be
+        //if built from the same source.
+
+        private const String L64 = "tightdb_c_cs201264" + Buildmode;
+        private const String L32 = "tightdb_c_cs201232" + Buildmode;
+
+
+
+
+        //dump various OS diagnostics to console
+        public static void ShowVersionTest()
+        {
+            var pointerSize = IntPtr.Size;
+            var vmBitness = (pointerSize == 8) ? "64bit" : "32bit";
+            var dllstring = (pointerSize == 8) ? L64 : L32;
+
+            OperatingSystem os = Environment.OSVersion;
+            Assembly executingAssembly = Assembly.GetExecutingAssembly();
+            PortableExecutableKinds peKind;
+            ImageFileMachine machine;
+            executingAssembly.ManifestModule.GetPEKind(out peKind, out machine);
+            // String thisapplocation = executingAssembly.Location;
+            
+            Console.WriteLine("");
+            Console.WriteLine("Pointer Size              : {0}", pointerSize);
+            Console.WriteLine("Process Running as        : {0}", vmBitness);
+            Console.WriteLine("Built as PeKind           : {0}", peKind);
+            Console.WriteLine("Built as ImageFileMachine : {0}", machine);
+            Console.WriteLine("OS Version                : {0}", os.Version);
+            Console.WriteLine("OS Platform               : {0}", os.Platform);
+            Console.WriteLine("");
+            Console.WriteLine("Now Loading {0} - expecting it to be a {1} dll", dllstring, vmBitness);
+            //Console.WriteLine("Loading "+thisapplocation+"...");
+
+            //if something is wrong with the DLL (like, if it is gone), we will not even finish the creation of the table below.
+            using (var t = new Table())
+            {
+                //the DLL must have loaded correctly
+
+                const int maxPath = 260;
+                var builder = new StringBuilder(maxPath);
+                var hModule = GetModuleHandle(dllstring);
+                uint hresult = 0;
+                if (hModule != IntPtr.Zero)//could be zero if the dll has never been called, but then we would not be here in the first place
+                {
+                   hresult= GetModuleFileName(hModule, builder, builder.Capacity);
+                }
+                if(hresult!=0){
+                Console.WriteLine("\nDLL File Actually Loaded :\n {0}", builder);
+                }
+                Console.WriteLine("\nC#  DLL        build number {0}", GetDllVersionCSharp + t.Size);//t.size is 0, but use t to make the compiler happy
+                Console.WriteLine("C++ DLL        build number {0}", CppDllVersion());
+            }
+            Console.WriteLine();
+            Console.WriteLine();
+        }
+
+
         //if something is wrong with interop or C# marshalling, this method will throw an exception
         public static void TestInterop()
         {
@@ -4642,7 +4716,7 @@ enum DataType {
             catch (SEHException ex)
             {
                 throw new IOException(
-                    String.Format(
+                    String.Format(CultureInfo.InvariantCulture,
                         "IO error creating group file {0} (read/write access is needed)  c++ exception thrown :{1}",
                         fileName, ex.Message));
             }
@@ -4740,13 +4814,13 @@ enum DataType {
             {
                 IntPtr handle = Is64Bit ? shared_group_begin_read64(sharedGroup.Handle)
                     : shared_group_begin_read32(sharedGroup.Handle);
-                return new Transaction(handle, sharedGroup, TransactionType.Read);
+                return new Transaction(handle, sharedGroup, TransactionKind.Read);
             }
             catch (SEHException ex)
             {
                 sharedGroup.Invalid = true;
                 throw new IOException(
-                    String.Format("IO error starting read transaction {0}",ex.Message));
+                    String.Format(CultureInfo.InvariantCulture, "IO error starting read transaction {0}", ex.Message));
             }
         }
 
@@ -4764,13 +4838,13 @@ enum DataType {
             {
                 IntPtr handle = Is64Bit ? shared_group_begin_write64(sharedGroup.Handle)
                     : shared_group_begin_write32(sharedGroup.Handle);
-                return new Transaction(handle, sharedGroup, TransactionType.Write);
+                return new Transaction(handle, sharedGroup, TransactionKind.Write);
             }
             catch (SEHException ex)
             {
                 sharedGroup.Invalid = true;
                 throw new IOException(
-                    String.Format("IO error starting write transaction {0}", ex.Message));
+                    String.Format(CultureInfo.InvariantCulture,"IO error starting write transaction {0}", ex.Message));
             }
         }
 
@@ -4792,7 +4866,7 @@ enum DataType {
             }
             catch (SEHException ex)//other things than IO could go wrong too, we might want to inspect and throw a more precise error msg
             {
-                throw new IOException(String.Format("IO error comitting data (read/write access is needed)  c++ exception thrown :{0}",  ex.Message));
+                throw new IOException(String.Format(CultureInfo.InvariantCulture,"IO error when committing data (read/write access is needed)  c++ exception thrown :{0}",  ex.Message));
             }            
         }
 

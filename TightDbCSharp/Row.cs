@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
 
 namespace TightDbCSharp
 {
@@ -12,14 +14,25 @@ namespace TightDbCSharp
     {
         internal Row(TableOrView owner,long row) {
             Owner=owner;
-            
+            var ownerAsTableView = owner as TableView;
+            if (ownerAsTableView!=null)
+            {
+                _underlyingTable = ownerAsTableView.UnderlyingTable;
+            }
+            else
+            {
+                Debug.Assert(owner != null);//this only happens if owner is neither table nor tableview
+                _underlyingTable = (Table)owner ;
+            }
+            _underlyingTableVersion = _underlyingTable.Version;
             
             // The Row number of the row this TableRow references
             RowIndex=row;
         }
         public TableOrView Owner { get; private set; }
         public long RowIndex { get; private set; }//users should not be allowed to change the row property of a tablerow class
-
+        private readonly int _underlyingTableVersion;
+        private readonly Table _underlyingTable;
         //by indexing you can get and set values as objects (if they match the type that is)
         public  object this[long columnIndex]
         {
@@ -40,10 +53,23 @@ namespace TightDbCSharp
         {
             for (long i = 0; i < ColumnCount; i++)
             {
+                ValidateIsValid();
                 yield return new RowCell(this, i);
             }
         }
 
+        public Boolean IsValid()
+        {
+            return (_underlyingTableVersion == _underlyingTable.Version);
+        }
+
+        private void ValidateIsValid()
+        {
+            if (!IsValid())
+            {
+                throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture,"Table row accessor with row index {0} used after the table had rows inserted or deleted", RowIndex));
+            }
+        }
 
         public long ColumnCount 
         {
@@ -52,36 +78,43 @@ namespace TightDbCSharp
 
         public void SetFloat(long columnIndex, float value)
         {
+            ValidateIsValid();
             Owner.SetFloatNoRowCheck(columnIndex, RowIndex, value);
         }
 
         public void SetDouble(long columnIndex, double value)
         {
+            ValidateIsValid();
             Owner.SetDoubleNoRowCheck(columnIndex, RowIndex, value);
         }
 
         public void SetFloat(String  columnName, float value)
         {
+            ValidateIsValid();
             Owner.SetFloatNoRowCheck(columnName, RowIndex, value);
         }
 
         public void SetDouble(String columnName, double value)
         {
+            ValidateIsValid();
             Owner.SetDoubleNoRowCheck(columnName, RowIndex, value);
         }
 
         public void SetLong(long columnIndex, long value)
         {
+            ValidateIsValid();
             Owner.SetLongNoRowCheck(columnIndex, RowIndex, value);
         }
 
         public void SetRow(params object[] rowContents) //setting field values does not apply to tightdb tableview
         {
+            ValidateIsValid();
             Owner.SetRowNoCheck(RowIndex, rowContents);
         }
 
         public void SetLong(String columnName, long value)
         {
+            ValidateIsValid();
             Owner.SetLongNoRowCheck(columnName,RowIndex,value);
         }
 
@@ -138,194 +171,224 @@ namespace TightDbCSharp
         //call this if You know for sure that columnIndex is valid (but if You are not sure if the type of the column is in fact mixed)
         internal DataType MixedTypeCheckType(long columnIndex)
         {
+            ValidateIsValid();
             return Owner.GetMixedTypeCheckType(columnIndex, RowIndex);//row and column cannot be invalid
         }
 
         public void SetString(long columnIndex, string value)
         {
+            ValidateIsValid();
             Owner.SetStringNoRowCheck(columnIndex,RowIndex,value);
         }
 
         public void SetBoolean(long columnIndex, Boolean value)
         {
+            ValidateIsValid();
             Owner.SetBooleanNoRowCheck(columnIndex,RowIndex,value);
         }
 
         public void SetBoolean(string columnName, Boolean value)
         {
+            ValidateIsValid();
             Owner.SetBooleanNoRowCheck(columnName,RowIndex,value);
         }
 
 
         public void SetMixed(long columnIndex, object value)
         {
+            ValidateIsValid();
             Owner.SetMixedNoRowCheck(columnIndex,RowIndex,value);
         }
 
         public object GetMixed(long columnIndex)
         {
+            ValidateIsValid();
             return Owner.GetMixedNoRowCheck(columnIndex,RowIndex);
+        }
+
+        public object GetMixed(string  columnName)
+        {
+            ValidateIsValid();
+            return Owner.GetMixedNoRowCheck(columnName, RowIndex);
         }
         
 
         internal string GetColumnNameNoCheck(long columnIndex)
         {
+            ValidateIsValid();
             return Owner.GetColumnNameNoCheck(columnIndex);
-        }
-
-        internal Table GetSubTableNoCheck(long columnIndex)
-        {
-            return Owner.GetSubTableNoCheck(columnIndex, RowIndex);
         }
 
         internal Table GetSubTableCheckType(long columnIndex)
         {
+            ValidateIsValid();
             return Owner.GetSubTableCheckType(columnIndex, RowIndex);
         }
 
         public Table GetSubTable(long columnIndex)
         {
+            ValidateIsValid();
             return Owner.GetSubTableNoRowCheck(columnIndex, RowIndex);
         }
 
         public Table GetSubTable(string columnName)
         {
+            ValidateIsValid();
             return Owner.GetSubTableNoRowCheck(columnName, RowIndex);
         }
 
         public void SetString(string name, string value)
         {
-            var columnIndex = GetColumnIndex(name);            
-            Owner.SetStringCheckType(columnIndex,RowIndex,value);
+            ValidateIsValid();
+            Owner.SetStringNoRowCheck(name,RowIndex,value);
         }
 
         public String GetString(long columnIndex)//column and type of field will be checked
         {
+            ValidateIsValid();
             return Owner.GetStringNoRowCheck(columnIndex, RowIndex);
         }
 
         public String GetString(string columnName)
-        {                     
+        {
+            ValidateIsValid();
             return Owner.GetStringNoRowCheck(columnName,RowIndex);
         }
 
 
         public byte[] GetBinary(long columnIndex)//column and type of field will be checked
         {
+            ValidateIsValid();
             return Owner.GetBinaryNoRowCheck(columnIndex, RowIndex);
         }
 
         public byte[] GetBinary(string columnName)
         {
+            ValidateIsValid();
             return Owner.GetBinaryNoRowCheck(columnName, RowIndex);
         }
 
         public void SetBinary(long columnIndex,byte [] value)//column and type of field will be checked
         {
+            ValidateIsValid();
              Owner.SetBinaryNoRowCheck(columnIndex, RowIndex,value);
         }
 
         public void SetBinary(string columnName, byte[] value)
         {
+            ValidateIsValid();
              Owner.SetBinaryNoRowCheck(columnName, RowIndex,value);
         }
 
 
         public long GetLong(long columnNumber)
         {
+            ValidateIsValid();
             return Owner.GetLongNoRowCheck(columnNumber, RowIndex);
         }
 
-        internal long GetLongNoCheck(long columnIndex)
-        {
-            return Owner.GetLongNoCheck(columnIndex, RowIndex);
-        }
-
         public long GetLong(string name)
-        {            
+        {
+            ValidateIsValid();
             return Owner.GetLongNoRowCheck(name, RowIndex);
         }
 
         public DateTime GetDateTime(string name)
         {
+            ValidateIsValid();
             return Owner.GetDateTimeNoRowCheck(name, RowIndex);
         }
 
         public DateTime GetDateTime(long columnIndex)
         {
+            ValidateIsValid();
             return Owner.GetDateTimeNoRowCheck(columnIndex, RowIndex);
         }
 
         public  void SetDateTime(string name,DateTime dateTime)
         {
+            ValidateIsValid();
             Owner.SetDateTimeNoRowCheck(name, RowIndex,dateTime);
         }
 
         public void SetDateTime(long columnIndex,DateTime dateTime)
         {
+            ValidateIsValid();
              Owner.SetDateTimeNoRowCheck(columnIndex, RowIndex,dateTime);
         }
 
 
         public long GetMixedLong(string name)
         {
+            ValidateIsValid();
             return Owner.GetMixedLongNoRowCheck(name, RowIndex);
         }
 
         public long GetMixedLong(long columnIndex)
         {
+            ValidateIsValid();
             return Owner.GetMixedLongNoRowCheck(columnIndex, RowIndex);
         }
 
 
         public Boolean GetMixedBoolean(string name)
         {
+            ValidateIsValid();
             return Owner.GetMixedBooleanNoRowCheck(name, RowIndex);
         }
 
         public Boolean GetMixedBoolean(long columnIndex)
         {
+            ValidateIsValid();
             return Owner.GetMixedBooleanNoRowCheck(columnIndex, RowIndex);
         }
 
 
         public float GetMixedFloat(string name)
         {
+            ValidateIsValid();
             return Owner.GetMixedFloatNoRowCheck(name, RowIndex);
         }
 
         public float GetMixedFloat(long columnIndex)
         {
+            ValidateIsValid();
             return Owner.GetMixedFloatNoRowCheck(columnIndex, RowIndex);
         }
 
         public Double GetMixedDouble(string name)
         {
+            ValidateIsValid();
             return Owner.GetMixedDoubleNoRowCheck(name, RowIndex);
         }
 
         public Double GetMixedDouble(long columnIndex)
         {
+            ValidateIsValid();
             return Owner.GetMixedDoubleNoRowCheck(columnIndex, RowIndex);
         }
 
         public String GetMixedString(string name)
         {
+            ValidateIsValid();
             return Owner.GetMixedStringNoRowCheck(name, RowIndex);
         }
 
         public String GetMixedString(long columnIndex)
         {
+            ValidateIsValid();
             return Owner.GetMixedStringNoRowCheck(columnIndex, RowIndex);
         }
 
         public byte[] GetMixedBinary(long columnIndex)
         {
+            ValidateIsValid();
             return Owner.GetMixedBinaryNoRowCheck(columnIndex, RowIndex);
         }
 
         public byte[] GetMixedBinary(string columnName)
         {
+            ValidateIsValid();
             return Owner.GetMixedBinaryNoRowCheck(columnName, RowIndex);
         }
 
@@ -333,32 +396,38 @@ namespace TightDbCSharp
 
         public void SetMixedString(string name,String value)
         {
+            ValidateIsValid();
              Owner.SetMixedStringNoRowCheck(name, RowIndex,value);
         }
 
         public void SetMixedString(long columnIndex,string value)
         {
+            ValidateIsValid();
              Owner.SetMixedStringNoRowCheck(columnIndex, RowIndex,value);
         }
 
 
         public DateTime GetMixedDateTime(string name)
         {
+            ValidateIsValid();
             return Owner.GetMixedDateTimeNoRowCheck(name, RowIndex);
         }
 
         public DateTime GetMixedDateTime(long columnIndex)
         {
+            ValidateIsValid();
             return Owner.GetMixedDateTimeNoRowCheck(columnIndex,RowIndex);
         }
 
         public void SetMixedDateTime(string columnName,DateTime dateTime)
         {
+            ValidateIsValid();
             Owner.SetMixedDateTimeNoRowCheck(columnName, RowIndex,dateTime);
         }
 
         public void SetMixedDateTime(long columnIndex,DateTime dateTime)
         {
+            ValidateIsValid();
             Owner.SetMixedDateTimeNoRowCheck(columnIndex, RowIndex,dateTime);
         }
 
@@ -366,11 +435,13 @@ namespace TightDbCSharp
 
         public Table GetMixedTable(string name)
         {
-            return Owner.GetMixedTableNoRowCheck(name, RowIndex);
+            ValidateIsValid();
+            return  Owner.GetMixedTableNoRowCheck(name, RowIndex);
         }
 
         public Table GetMixedTable(long columnIndex)
         {
+            ValidateIsValid();
             return Owner.GetMixedTableNoRowCheck(columnIndex, RowIndex);
         }
 
@@ -379,75 +450,53 @@ namespace TightDbCSharp
 
         public Double GetDouble(string columnName)
         {
+            ValidateIsValid();
             return Owner.GetDoubleNoRowCheck(columnName, RowIndex);
         }
 
         public Double GetDouble(long columnIndex)
         {
+            ValidateIsValid();
             return Owner.GetDoubleNoRowCheck(columnIndex, RowIndex);
         }
 
         public float GetFloat(string columnName)
         {
+            ValidateIsValid();
             return Owner.GetFloatNoRowCheck(columnName, RowIndex);
         }
 
         public float GetFloat(long columnIndex)
         {
+            ValidateIsValid();
             return Owner.GetFloatNoRowCheck(columnIndex, RowIndex);
         }
 
 
         public Boolean GetBoolean(string columnName)
         {
+            ValidateIsValid();
             return Owner.GetBooleanNoRowCheck(columnName, RowIndex);
         }
 
         public Boolean GetBoolean(long columnIndex)
         {
+            ValidateIsValid();
             return Owner.GetBooleanNoRowCheck(columnIndex,RowIndex);
         }
 
         public long GetColumnIndex(string columnName)
         {
+            ValidateIsValid();
             return Owner.GetColumnIndex(columnName);
         }
 
-        internal Boolean GetBooleanNoCheck(long columnIndex)
-        {
-            return Owner.GetBoolNoCheck(columnIndex, RowIndex);
-        }
-
-        internal String GetStringNoCheck(long columnIndex)
-        {
-            return Owner.GetStringNoCheck(columnIndex, RowIndex);
-        }
-
-        internal byte[] GetBinaryNoCheck(long columnIndex)
-        {
-            return Owner.GetBinaryNoCheck(columnIndex, RowIndex);
-        }
        
         public void Remove()
         {
-            Owner.RemoveNoCheck(RowIndex);
-            RowIndex = -2;//mark this row as invalid            
+            ValidateIsValid();
+            Owner.RemoveNoCheck(RowIndex);            
         }
 
-        internal DateTime GetDateTimeNoCheck(long columnIndex)
-        {
-            return Owner.GetDateTimeNoCheck(columnIndex, RowIndex);
-        }
-
-
-        internal float GetFloatNoCheck(long columnIndex)
-        {
-            return Owner.GetFloatNoCheck(columnIndex, RowIndex);
-        }
-
-        internal Double GetDoubleNoCheck(long columnIndex)
-        {
-            return Owner.GetDoubleNoCheck(columnIndex, RowIndex);
-        }
     }
 }

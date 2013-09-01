@@ -24,9 +24,9 @@ namespace DynamicTable
             using (var tbl = new Table())
             {
 
-                tbl.AddColumn(DataType.Int, "myInt");
-                tbl.AddColumn(DataType.String, "myStr");
-                tbl.AddColumn(DataType.Mixed, "myMixed");
+                tbl.AddIntColumn( "myInt");
+                tbl.AddStringColumn( "myStr");
+                tbl.AddMixedColumn("myMixed");
 
                 //
                 //add some data by setting whole rows
@@ -37,7 +37,7 @@ namespace DynamicTable
                 tbl.Insert(0, 64, "I'm now first", true);     //data in order of columns
                 tbl.AddEmptyRow(1);                           //append row at end of table - default values
                 tbl.Set(3, 198, "TightDB", 12.345);           //set values in row 3
-                tbl[3].SetRow(198, "TightDB", 12.345);          //alternative syntax, specifying row as an index into the table
+                tbl[3].SetRow(198, "TightDB", 12.345);        //alternative syntax, specifying row as an index into the table                
                 tbl.Remove(0);                                //remove row 0
                 tbl.RemoveLast();                             //remove last row
 
@@ -54,7 +54,7 @@ namespace DynamicTable
                 tbl.RenameColumn(0, "myLong");
                 tbl.RemoveColumn(1);
                 tbl.Add(42, "this is the mixed column");  //add a row
-                tbl.AddColumn(DataType.Double, "myDouble");
+                tbl.AddDoubleColumn("myDouble");
                 tbl.Add(-15, "still mixed", 123.45);
 
                 //column introspection
@@ -78,8 +78,7 @@ namespace DynamicTable
                 //set index and get distinct values
                 using (var tbl2 = new Table())
                 {
-
-                    long strColumn = tbl2.AddColumn(DataType.String, "new Strings");
+                    long strColumn = tbl2.AddStringColumn( "new Strings");
                     tbl2.SetIndex(strColumn);
                     tbl2.Add("MyString");
                     tbl2.Add("MyString2");
@@ -107,7 +106,6 @@ namespace DynamicTable
                    "value".Mixed())
                  );
 
-
             //alternative syntax, not using extension methods on String
             var tbl3B = new Table
                 (new StringField("name"),
@@ -115,6 +113,16 @@ namespace DynamicTable
                    new StringField("key"),
                    new MixedField("value"))
                 );
+
+            //you can also create subtables programmatically:
+            var tbl3C = new Table();
+            tbl3C.AddStringColumn("name");
+            var subtablepath=tbl3C.AddSubTableColumn("subtable");
+            {
+                tbl3C.AddStringColumn(subtablepath, "key");
+                tbl3C.AddMixedColumn(subtablepath, "value");
+            }
+
 
             Console.WriteLine(tbl3B.Size);//
 
@@ -139,7 +147,8 @@ namespace DynamicTable
             subTbl1.Add("key1", 23);
             Assert("key1"== subTbl1.GetString(0, 0));
 
-
+            Console.WriteLine("press any key");
+            Console.ReadKey();
         }
     }
 }

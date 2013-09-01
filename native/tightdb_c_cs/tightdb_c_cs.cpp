@@ -256,10 +256,6 @@ TIGHTDB_C_CS_API Spec* table_get_spec(Table* table_ptr)//do not do anything when
 }
 
 
-TIGHTDB_C_CS_API  void table_update_from_spec(Table* table_ptr)
-{
-    table_ptr->update_from_spec();
-}
 
 TIGHTDB_C_CS_API size_t table_add_column(tightdb::Table* table_ptr,size_t type,  uint16_t * name,size_t name_len)
 {
@@ -1385,37 +1381,6 @@ TIGHTDB_C_CS_API void unbind_table_ref(tightdb::Table* table_ptr)
 
 
 
-/*
-
-//the value returned is the number of chars that are in use in the fromcppbuffer
-TIGHTDB_C_CS_API size_t test_string_returner(uint16_t* tocppbuffer, size_t tocppbuffersize, uint16_t* fromcppbuffer,size_t fromcppbuffersize) 
-{
-    CSStringAccessor CSString(tocppbuffer,tocppbuffersize);//acquire the cs string , convert to UTF-8 and put it into CSString
-    StringData fromcs = CSString;//create a StringData wrapper around the string
-    return stringdata_to_csharpstringbuffer(fromcs,fromcppbuffer,fromcppbuffersize);//fill up the return buffer with the UTF-16 version of the UTF-8 fromcs
-}
-
-*/
-
-
-//    size_t add_column(DataType type, const char* name, ColumnType attr=col_attr_None);
-//note that we have omitted support for attr until we figure what it's for
-TIGHTDB_C_CS_API size_t spec_add_column(Spec* spec_ptr,size_t type, uint16_t * name,size_t name_len) 
-{
-    CSStringAccessor str(name,name_len);
-	return spec_ptr->add_column(size_t_to_datatype(type),str);		
-}
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1438,7 +1403,17 @@ TIGHTDB_C_CS_API  size_t spec_equals(Spec* spec_ptr1, Spec* spec_ptr2)
     return bool_to_size_t(*spec_ptr1==*spec_ptr2);    //== is overridden in Spec and do a type and name comparison
 }
 
-
+//this method is used to get rid of spec reg. table equality by sending the table pointers and let c++ 
+//work with the specs
+TIGHTDB_C_CS_API  size_t table_spec_equals_spec(Table* table_ptr1, Table* table_ptr2)
+{
+    Spec* s1 = &LangBindHelper::get_spec(*table_ptr1);
+    Spec* s2 = &LangBindHelper::get_spec(*table_ptr2);//the two spec pointers we get are pointing to specs that are managed in core so we should not free them
+    
+    size_t res = bool_to_size_t(*s1==*s2);    //== is overridden in Spec and do a type and name comparison
+    
+    return res;
+}
 
 
 

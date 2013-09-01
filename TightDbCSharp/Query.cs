@@ -89,7 +89,7 @@ namespace TightDbCSharp
         }
 
         //default values are advised against by microsoft http://msdn.microsoft.com/query/dev11.query?appId=Dev11IDEF1&l=EN-US&k=k(CA1026);k(TargetFrameworkMoniker-.NETFramework,Version%3Dv4.5);k(DevLang-csharp)&rd=true        
-// ReSharper disable once UnusedMember.Global
+
         public long Count(long start, long end , long limit)
         {
             ValidateStartEndLimit(start,end,limit);
@@ -97,7 +97,7 @@ namespace TightDbCSharp
         }
 
 
-// ReSharper disable once UnusedMember.Global
+
         public long Count()
         {
             ValidateStartEndLimit(0,-1,-1);

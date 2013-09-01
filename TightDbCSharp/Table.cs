@@ -3,13 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.Reflection;
-using System.Runtime.InteropServices;
 //using System.Threading.Tasks; not portable as of 2013-04-02
 
 //Tell compiler to give warnings if we publicise interfaces that are not defined in the cls standard
 //http://msdn.microsoft.com/en-us/library/bhc3fa7f.aspx
-using System.Text;
 
 [assembly: CLSCompliant(true)]
 
@@ -27,9 +24,6 @@ namespace TightDbCSharp
     //could have been called RowCollection but is called Table as it in fact is a table and not merely a collection of rows
     public class Table : TableOrView, IEnumerable<Row>, ICloneable
     {
-        //manual dll version info. Used when debugging to see if the right DLL is loaded, or an old one
-        //the number is a date and a time (usually last time i debugged something)
-        private const long GetDllVersionCSharp = 1305301717 ;
 
      
         //this is not called if constructed with parametres
@@ -48,6 +42,7 @@ namespace TightDbCSharp
         //implements ICloneable - this method is called Copy in the c++ binding        
         public Table Clone()
         {
+            ValidateIsValid();
             return UnsafeNativeMethods.CopyTable(this);
         }
 
@@ -66,15 +61,21 @@ namespace TightDbCSharp
 
         public bool HasSharedSpec()
         {
-            return UnsafeNativeMethods.TableHasSharedSpec(this);
+            ValidateIsValid();
+            return HasSharedSpecNoCheck();
         }
 
+        private bool HasSharedSpecNoCheck()
+        {
+            return UnsafeNativeMethods.TableHasSharedSpec(this);            
+        }
 
         //see tableview for further interesting comments
         public TableRow this[long rowIndex]
         {
             get
             {
+                ValidateIsValid();
                 ValidateRowIndex(rowIndex);
                 return RowForIndexNoCheck(rowIndex);
             }
@@ -84,6 +85,7 @@ namespace TightDbCSharp
         //see similar implementation in TableView 
         public TableRow Last()
         {
+            ValidateIsValid();
             long s = Size;
             if (s > 0)
             {
@@ -101,23 +103,44 @@ namespace TightDbCSharp
         
 
         //the following code enables Table to be enumerated, and makes TableRow the type You get back from an enummeration
-        public new IEnumerator<TableRow> GetEnumerator() { return new Enumerator(this); }
+        public IEnumerator<Row> GetEnumerator() { ValidateIsValid(); return new Enumerator(this); }
         IEnumerator IEnumerable.GetEnumerator() { return new Enumerator(this); }
 
-        class Enumerator : IEnumerator<TableRow>//probably overkill, current needs could be met by using yield
+        class Enumerator : IEnumerator<Row>//probably overkill, current needs could be met by using yield
         {
             long _currentRow = -1;
             Table _myTable;
+            private readonly int _myTableVersion;            
             public Enumerator(Table table)
             {
                 _myTable = table;
+                _myTableVersion = table.Version;
             }
-            public TableRow Current { get { return new TableRow(_myTable, _currentRow); } }
+
+            //todo:peformance test if inlining this manually will do any good
+            private void ValidateVersion()
+            {
+                if(_myTableVersion != _myTable.Version)                
+                  throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture,"Table Iteration failed at row {0} because the table had rows inserted or deleted", _currentRow));
+            }
+            //as per msft guidelines, current does not throw an error even if the iterator is invalidated
+            //however, here we DO throw an error as current would otherwise return a TableRow with a potentially illegal rowIndex inside
+            //note we return TableRow from tables (they derive from Row). TableView returns Row
+            public Row Current 
+            {
+                get
+                {
+                    ValidateVersion();
+                    return new TableRow(_myTable, _currentRow);                 
+                } 
+            }
+
             object IEnumerator.Current { get { return Current; } }
 
             public bool MoveNext()
             {
-                return ++_currentRow < _myTable.Size;
+                ValidateVersion();
+                return ++_currentRow < _myTable.Size;                
             }
 
             public void Reset() { _currentRow = -1; }
@@ -129,7 +152,10 @@ namespace TightDbCSharp
 
 
 
-
+        public static void ShowVersionTest()
+        {
+            UnsafeNativeMethods.ShowVersionTest();
+        }
 
 
 
@@ -160,8 +186,9 @@ namespace TightDbCSharp
 
 //        public Table(String fieldname1, DataType type1,String fieldname2)
 
-        public Table DefineSchema(params Field[] schema)
+        internal Table DefineSchema(params Field[] schema)
         {
+        
             if (schema == null)
             {
                 throw new ArgumentNullException("schema");
@@ -179,7 +206,7 @@ namespace TightDbCSharp
             return this;//allow fluent creation of table in a group
         }
 
-
+        //this method must be called by someone who already has called ValidateIsValid
         //attempt to do a non-spec based AddField
         //this addfield must be called on the top table, but bc of the path parameter, it can add columns to any subtable recursively
         //should not really be called NoCheck as it ought to check a lot, and in fact it does (AddSubColumn does)
@@ -189,12 +216,12 @@ namespace TightDbCSharp
             {
                 if (schema.FieldType != DataType.Table)
                 {
-                    AddColumn(path,schema.FieldType, schema.ColumnName);
+                    AddColumnNoValidCheck(path,schema.FieldType, schema.ColumnName);
                 }
                 else
                 {
                     Field[] tfa = schema.GetSubTableArray();
-                    var columnNumber = AddColumn(path, DataType.Table, schema.ColumnName);
+                    var columnNumber = AddColumnNoValidCheck(path, DataType.Table, schema.ColumnName);
                     path.Add((int)columnNumber);//limits number of columns to IntPtr - 2^32 ALSO on 64 bit machines, where core supports 2^64
                     AddFieldsNoCheck(path,tfa);
                 }
@@ -262,15 +289,15 @@ namespace TightDbCSharp
         */
 
         
-        //to do: remove these debug methods
+        //only used by unit tests
         public static Int64 DebugToTightDbTime(DateTime date)
         {
             return UnsafeNativeMethods.ToTightDbTime(date);
         }
 
-        public static DateTime DebugToCSharpTimeUtc(Int64 cppTime)
+        public static DateTime DebugToCSharpTimeUtc(Int64 linuxTime)
         {
-            return UnsafeNativeMethods.ToCSharpTimeUtc(cppTime);
+            return UnsafeNativeMethods.ToCSharpTimeUtc(linuxTime);
         }
         
         //This method will test basic interop, especially test that the c++ compiler used to build the c++ dll binding uses
@@ -281,74 +308,6 @@ namespace TightDbCSharp
             
         }
 
-
-        //this dll call is only used in ShowVersionTest. 
-        //will probably not work with mono so at that time should be inside a define
-        //as should the line below using it
-        [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
-        private static extern IntPtr GetModuleHandle(string lpModuleName);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        [PreserveSig]
-        private static extern uint GetModuleFileName
-        (
-            [In] IntPtr hModule,
-            [Out] StringBuilder lpFilename,
-            [In][MarshalAs(UnmanagedType.U4)] int nSize
-        );
-
-
-        //dump various OS diagnostics to console
-        public static void ShowVersionTest()
-        {
-            var pointerSize = IntPtr.Size;
-            var vmBitness = (pointerSize == 8) ? "64bit" : "32bit";            
-            var dllstring = (pointerSize == 8) ? UnsafeNativeMethods.L64 : UnsafeNativeMethods.L32;
-            
-            OperatingSystem os = Environment.OSVersion;
-            Assembly executingAssembly = Assembly.GetExecutingAssembly();
-            PortableExecutableKinds peKind;
-            ImageFileMachine machine;
-            executingAssembly.ManifestModule.GetPEKind(out peKind, out machine);
-            // String thisapplocation = executingAssembly.Location;
-
-            Console.WriteLine("");
-            Console.WriteLine("Pointer Size              : {0}", pointerSize);
-            Console.WriteLine("Process Running as        : {0}", vmBitness);
-            Console.WriteLine("Built as PeKind           : {0}", peKind);
-            Console.WriteLine("Built as ImageFileMachine : {0}", machine);
-            Console.WriteLine("OS Version                : {0}", os.Version);
-            Console.WriteLine("OS Platform               : {0}", os.Platform);
-            Console.WriteLine("");
-            Console.WriteLine("Now Loading {0} - expecting it to be a {1} dll", dllstring,  vmBitness);
-            //Console.WriteLine("Loading "+thisapplocation+"...");
-
-            //if something is wrong with the DLL (like, if it is gone), we will not even finish the creation of the table below.
-            using (var t = new Table())
-            {
-                //the DLL must have loaded correctly
-
-                const int maxPath = 260;
-                var builder = new StringBuilder(maxPath);
-                var hModule = GetModuleHandle(dllstring);
-                if (hModule != IntPtr.Zero)//could be zero if the dll has never been called, but then we would not be here in the first place
-                {
-                    GetModuleFileName(hModule, builder, builder.Capacity);
-                }
-
-                Console.WriteLine("\nDLL File Actually Loaded :\n {0}", builder);
-                Console.WriteLine("\nC#  DLL        build number {0}", GetDllVersionCSharp+t.Size);//t.size is 0, but use t to make the compiler happy
-                Console.WriteLine("C++ DLL        build number {0}", CPlusPlusLibraryVersion());
-            }
-            Console.WriteLine();
-            Console.WriteLine();
-        }
-
-
-        private static long CPlusPlusLibraryVersion()
-        {
-            return UnsafeNativeMethods.CppDllVersion();
-        }
 
 
 
@@ -362,8 +321,8 @@ namespace TightDbCSharp
         }
 
         public void RenameColumn(long columnIndex, String newName)
-        {            
-            ValidateIsEmpty();
+        {
+            ValidateIsValid();              
             ValidateColumnIndex(columnIndex);
             ValidateNotSharedSpec();
             UnsafeNativeMethods.TableRenameColumn(this,columnIndex,newName);
@@ -371,8 +330,10 @@ namespace TightDbCSharp
 
         public void RemoveColumn(long columnIndex)
         {
+            ValidateIsValid();
             ValidateColumnIndex(columnIndex);
             UnsafeNativeMethods.TableRemoveColumn(this,columnIndex);
+            ++Version;
         }
 
 
@@ -389,7 +350,7 @@ namespace TightDbCSharp
 
         private void ValidateColumnChangeIsOkay()
         {
-            ValidateIsEmpty();
+            //ValidateIsEmpty();
             ValidateNotSharedSpec();
         }
 
@@ -398,20 +359,11 @@ namespace TightDbCSharp
         {
             if (! IsValid())
             {
-                throw new InvalidOperationException("Table accessor is no longer valid. No operations except calling IsValid is allowed");
+                throw new InvalidOperationException("Table accessor is no longer valid. No operations except calling Is Valid is allowed");
             }
         }
 
-        /*
-        internal void ValidateNoColumns()
-        {
-            if (HasColumns)
-            {
-                throw new InvalidOperationException("Updatefromspec can only be called on a table with no existing columns");
-            }
-        }
-        */
-
+     
 
         internal override DataType ColumnTypeNoCheck(long columnIndex)
         {
@@ -420,6 +372,7 @@ namespace TightDbCSharp
 
         public override string ObjectIdentification()
         {
+            ValidateIsValid();
             return string.Format(CultureInfo.InvariantCulture,"Table:" + Handle);
         }
 
@@ -523,12 +476,14 @@ namespace TightDbCSharp
 
         public  string ToJson()
         {
+            ValidateIsValid();
             return UnsafeNativeMethods.TableToJson(this);
         }
 
         internal override void RemoveNoCheck(long rowIndex)
         {
-            UnsafeNativeMethods.TableRemove(this,rowIndex);
+            UnsafeNativeMethods.TableRemove(this,rowIndex);            
+            ++Version;
         }
 
         internal override long GetColumnCount()
@@ -536,39 +491,43 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableGetColumnCount(this);
         }
 
+        //only call this if You are sure that IsValid will return true
         private void ValidateNotSharedSpec()
         {
-            if (HasSharedSpec())
+            if (HasSharedSpecNoCheck())
             {
-                throw new InvalidOperationException("It is illegal to alter the column structure of subtables that has been read in from a table row");
+                throw new InvalidOperationException("It is illegal to alter the column structure of sub tables that has been read in from a table row");
             }
         }
-        
+
         //this will add a column of the specified type, if it is a table type, You will have to populate it yourself later on,
-        //by getting its subspec and working with that
+        //by calling AddColumn with a path
         //it is not allowed in the c++ binding to call AddColumn on a subtable that has been taken out
         //from a column,row - unless it is a mixed column.
         //we check this, this way :
-        //if we have rows, addcolumn is not allowed - throw
         //if we have a shared spec, we are a subtable inside a row - throw
         //otherwise we must be a root or a table from a mixed row.
         public long AddColumn(DataType type, String name)
-        {            
-            ValidateIsEmpty();
-            ValidateNotSharedSpec();             
-            long colIx =  UnsafeNativeMethods.TableAddColumn(this, type, name);
-            //HasColumns = true;
-            return colIx;
+        {
+            ValidateIsValid();
+            return AddColumnNoValidCheck(type, name);
         }
 
+        private long AddColumnNoValidCheck(DataType type, String name)
+        {            
+            ValidateNotSharedSpec();
+            long colIx = UnsafeNativeMethods.TableAddColumn(this, type, name);
+            ++Version;
+            return colIx;                         
+        }
 
 
         public long AddBinaryColumn(String name)
-        {
+        {            
             return AddColumn(DataType.Binary, name);
         }
 
-        public long AddBinaryColumn(List<long>path,String name)
+        public long AddBinaryColumn(IList<long>path,String name)
         {
             return AddColumn(path,DataType.Binary, name);
         }
@@ -578,7 +537,7 @@ namespace TightDbCSharp
             return AddColumn(DataType.Bool, name);
         }
 
-        public long AddBoolColumn(List<long> path,String name)
+        public long AddBoolColumn(IList<long> path,String name)
         {
             return AddColumn(path, DataType.Bool, name);
         }
@@ -588,7 +547,7 @@ namespace TightDbCSharp
             return AddColumn(DataType.Date, name);
         }
 
-        public long AddDateColumn(List<long> path,String name)
+        public long AddDateColumn(IList<long> path,String name)
         {
             return AddColumn(path,DataType.Date, name);
         }
@@ -598,7 +557,7 @@ namespace TightDbCSharp
             return AddColumn(DataType.Double, name);
         }
 
-        public long AddDoubleColumn(List<long> path, String name)
+        public long AddDoubleColumn(IList<long> path, String name)
         {
             return AddColumn(path,DataType.Double, name);
         }
@@ -608,7 +567,7 @@ namespace TightDbCSharp
             return AddColumn(DataType.Float, name);
         }
 
-        public long AddFloatColumn(List<long> path,String name)
+        public long AddFloatColumn(IList<long> path,String name)
         {
             return AddColumn(path,DataType.Float, name);
         }
@@ -618,7 +577,7 @@ namespace TightDbCSharp
             return AddColumn(DataType.Int, name);
         }
 
-        public long AddIntColumn(List<long> path, String name)
+        public long AddIntColumn(IList<long> path, String name)
         {
             return AddColumn(path, DataType.Int, name);
         }
@@ -628,7 +587,7 @@ namespace TightDbCSharp
             return AddColumn(DataType.Mixed, name);
         }
 
-        public long AddMixedColumn(List<long> path,String name)
+        public long AddMixedColumn(IList<long> path,String name)
         {
             return AddColumn(path,DataType.Mixed, name);
         }
@@ -638,7 +597,7 @@ namespace TightDbCSharp
             return AddColumn(DataType.String, name);
         }
 
-        public long AddStringColumn(List<long> path,String name)
+        public long AddStringColumn(IList<long> path,String name)
         {
             return AddColumn(path,DataType.String, name);
         }
@@ -650,14 +609,15 @@ namespace TightDbCSharp
         }
 
         //returns a path that can be used to call AddColumn to add columns to the subtable
-        public List<long> AddSubTableColumn(List<long> path, String name)
+        public List<long> AddSubTableColumn(IList<long> path, String name)
         {
             var newpath = new List<long>(path) {AddColumn(path, DataType.Table, name)};//this adds the index of the column to a copy of the path we got down, in effect creating a new path that points to the subtable, ready for adding more columns
             return newpath;
         }
 
         private Boolean HasIndexNoCheck(long columnIndex )
-        {        
+        {
+            
             return UnsafeNativeMethods.TableHasIndex(this,columnIndex);
         }
 
@@ -694,15 +654,20 @@ namespace TightDbCSharp
         {            
             if (!HasIndexNoCheck(columnIndex))
             {
-                throw new InvalidOperationException(String.Format("Column Index {0} must specify a string column that is indexed", columnIndex));
+                throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture,"Column Index {0} must specify a string column that is indexed", columnIndex));
             }
         }
 
         //will throw exception if an object in arr is not row-compatible with the table - but rows up to that
         //point will have been added. Put the call in a transaction and rollback if you get an exception
-        public void AddMany(IEnumerable arr)
+        //used internally to fill a mixed subtalbe from data
+        public void AddMany(IEnumerable rows)
         {
-            foreach (var row in arr )
+            if (rows == null)
+            {
+                throw new ArgumentNullException("rows","AddMany cannot be called wih null - it needs an IEnumerable object");
+            }
+            foreach (var row in rows )
             {
                 Add(row);
             }
@@ -713,7 +678,8 @@ namespace TightDbCSharp
         //todo:insert should only be used by the binding, not be exposed to the user (asana)
         //idea:when we add an entire row, insert is faster. (asana)
         public long Add(params object[] rowData)
-        {           
+        {
+            ValidateIsValid();     
             long rowAdded = AddEmptyRow(1);
             SetRowNoCheck(rowAdded, rowData);//because the only thing that could be checked at this level is the row number.
             return rowAdded;//return the index of the just added row
@@ -727,6 +693,7 @@ namespace TightDbCSharp
         */
         public void Set(long rowIndex, params object[] rowData)
         {
+            ValidateIsValid();
             ValidateRowIndex(rowIndex);
             SetRowNoCheck(rowIndex,rowData);
         }
@@ -736,7 +703,7 @@ namespace TightDbCSharp
         {
                         if (rowIndex < 0 || rowIndex > Size)
             {
-                throw new ArgumentOutOfRangeException("rowIndex",String.Format("Table.Insert - row Index out of range. Table size {0}  index specified {1}",Size,rowIndex));
+                throw new ArgumentOutOfRangeException("rowIndex",String.Format(CultureInfo.InvariantCulture,"Table.Insert - row Index out of range. Table size {0}  index specified {1}",Size,rowIndex));
             }                
 
         }
@@ -745,8 +712,10 @@ namespace TightDbCSharp
         //rowindex=size means add after last        
         public void Insert(long rowIndex, params object[] rowData)
         {
+            ValidateIsValid();
             ValidateInsertRowIndex(rowIndex);
-            UnsafeNativeMethods.TableInsertEmptyRow(this,rowIndex,1);                         
+            UnsafeNativeMethods.TableInsertEmptyRow(this,rowIndex,1);
+            ++Version;
             SetRowNoCheck(rowIndex,rowData);
         }
 
@@ -758,7 +727,10 @@ namespace TightDbCSharp
         //add empty row at the end, return the index
         public long AddEmptyRow(long numberOfRows)
         {
+            ValidateIsValid();
+            ++Version;
             return UnsafeNativeMethods.TableAddEmptyRow(this, numberOfRows);
+            
         }
 
         internal override byte[] GetBinaryNoCheck(long columnIndex, long rowIndex)
@@ -858,12 +830,15 @@ namespace TightDbCSharp
         private void InsertInt(long columnIndex, long rowIndex, long value)
         {
             UnsafeNativeMethods.TableInsertInt(this, columnIndex, rowIndex, value);
+            
         }
 
         public void InsertEmptyRow(long rowIndex, long rowsToInsert)
-        {            
+        {
+            ValidateIsValid();     
             ValidateInsertRowIndex(rowIndex);
-            UnsafeNativeMethods.TableInsertEmptyRow(this, rowIndex, rowsToInsert);                            
+            UnsafeNativeMethods.TableInsertEmptyRow(this, rowIndex, rowsToInsert);
+            ++Version;
         }
 
         //number of records in this table
@@ -1003,6 +978,7 @@ namespace TightDbCSharp
 
         public TableView Distinct(long columnIndex)
         {
+            ValidateIsValid();
             ValidateColumnIndexAndTypeString(columnIndex);
             ValidateMustHaveIndexNoColCheck(columnIndex);
             return DistinctNoCheck(columnIndex);
@@ -1011,6 +987,7 @@ namespace TightDbCSharp
         //currently c++ core only supports index on string, and only Distinct on indexed columns so we disallow anything but indexed string fields
         public TableView Distinct(string columnName)
         {
+            ValidateIsValid();
             long columnIndex = GetColumnIndex(columnName);
             ValidateTypeString(columnIndex);
             ValidateMustHaveIndexNoColCheck(columnIndex);
@@ -1024,7 +1001,8 @@ namespace TightDbCSharp
         }
 
         public void SetIndex(long columnIndex)
-        {            
+        {
+            ValidateIsValid(); 
             ValidateNotSharedSpec();//core does not support indexes on colums in non-mixed subtables
             ValidateColumnIndexAndTypeString(columnIndex);
             SetIndexNoCheck(columnIndex);
@@ -1032,6 +1010,7 @@ namespace TightDbCSharp
 
         public void SetIndex(string columnName)
         {
+            ValidateIsValid();
             ValidateNotSharedSpec();//core does not support indexes on colums in non-mixed subtables
             long columnIndex = GetColumnIndex(columnName);
             ValidateTypeString(columnIndex);
@@ -1069,7 +1048,7 @@ namespace TightDbCSharp
                 }                
 
                 if(firstbelowzero!=-1){
-                throw new ArgumentOutOfRangeException("path", string.Format("path supplied contains a negative column number at index {0} with value {1}. Only non-negative indexes are allowed", firstbelowzero, path[firstbelowzero]));
+                throw new ArgumentOutOfRangeException("path", string.Format(CultureInfo.InvariantCulture,"path supplied contains a negative column number at index {0} with value {1}. Only non-negative indexes are allowed", firstbelowzero, path[firstbelowzero]));
                 }
             }
 
@@ -1097,7 +1076,7 @@ namespace TightDbCSharp
 
                 if (levelSpec.ColumnCount <= path[level])
                 {
-                    throw new ArgumentOutOfRangeException(String.Format("at level : {0}, the path supplied contains too large an index : {1}. Number of columns : {2}",level, path[level], levelSpec.ColumnCount));
+                    throw new ArgumentOutOfRangeException(String.Format(CultureInfo.InvariantCulture,"at level : {0}, the path supplied contains too large an index : {1}. Number of columns : {2}",level, path[level], levelSpec.ColumnCount));
                 }
 
 
@@ -1108,16 +1087,18 @@ namespace TightDbCSharp
                 if (levelSpec.GetColumnType(path[level]) != DataType.Table)
                 {
                     throw new ArgumentException(
-                        String.Format(
+                        String.Format(CultureInfo.InvariantCulture,
                             "at level {0}, the path supplied contains index {1} that points not to a SubTable column, but column \"{2}\" of type {3}",
                             level,path[level],levelSpec.GetColumnName(path[level]) ,levelSpec.GetColumnType(path[level])));
                 }
             }
         }
 
+        
         //returns the index of the added column in the subtable where it is placed (or in the top table where it is placed)
-        public long AddColumn(IList<long> path, DataType datatype, string columnName)
+        private long AddColumnNoValidCheck(IList<long> path, DataType dataType, string columnName)
         {
+            
             if (columnName == null)
             {
                 throw new ArgumentNullException("columnName","column name cannot be null");
@@ -1125,18 +1106,29 @@ namespace TightDbCSharp
             ValidateIsEmpty();//cannot change scheme if there is data in the table
             ValidateNotSharedSpec();//You must alter shared spec tables through their top table
             ValidateColumnPath(path,true);
-            return path.Count == 0 ? UnsafeNativeMethods.TableAddColumn(this, datatype, columnName) : UnsafeNativeMethods.TableAddSubColumn(this, path, datatype, columnName);
+            return path.Count == 0 ? UnsafeNativeMethods.TableAddColumn(this, dataType, columnName) : UnsafeNativeMethods.TableAddSubColumn(this, path, dataType, columnName);
         }
 
-        //use this if You want to specify the path directly in code , it is much easier, path must be specified as a number of int parametres in the end of the call
-        public long AddColumn(DataType columnDataType, string columnName, params long[] path)
+
+        public long AddColumn(IList<long> path, DataType dataType, string columnName)
         {
-            return AddColumn(path, columnDataType, columnName);            
+            ValidateIsValid();
+            return AddColumnNoValidCheck(path, dataType, columnName);
+        }        
+
+
+        //pathtosubtable contains the indicies to travese from the top table to the subtable, columnIndex is the index of the column You wish to change, newName is the new name
+        public void RenameColumn(IEnumerable<long> pathToSubTable, long columnIndex, string newName)
+        {
+            ValidateIsValid();
+            var newlist = new List<long>(pathToSubTable) {columnIndex};//newlist now points to the path to the subatble plus the index of the column we want to change
+            RenameColumn(newlist,newName);
         }
 
+        //warning!! the path points directly to the column that you want to change - NOT to the subtalbe
         public void RenameColumn(IList<long> path, string name)
         {
-
+            ValidateIsValid();
             ValidateIsEmpty(); //cannot change scheme if there is data in the table
             ValidateNotSharedSpec(); //You must alter shared spec tables through their top table
             ValidateColumnPath(path, false);
@@ -1148,14 +1140,20 @@ namespace TightDbCSharp
                 UnsafeNativeMethods.TableRenameColumn(this, path[0], name);
         }
 
-        public void RenameColumn(String columnName, params long[] path)
+        //specify column by path to subtable and a column index
+        //path to subtable is usually gotten from AddSubTable(name)
+        //path to column index is usually gotten from GetColumnIndex(name)
+        public void RemoveColumn(IEnumerable<long> pathToSubTable, long columnIndex)
         {
-            RenameColumn(path,columnName);
+            ValidateIsValid();
+            var  pathToColumn=new List<long>(pathToSubTable){columnIndex};
+            RemoveColumn(pathToColumn);
         }
 
-
+        //remove a column by specifying its direct unique path
         public void RemoveColumn(IList<long> path)
         {
+            ValidateIsValid();
             ValidateIsEmpty(); //cannot change scheme if there is data in the table
             ValidateNotSharedSpec(); //You must alter shared spec tables through their top table
             ValidateColumnPath(path, false);
@@ -1168,12 +1166,6 @@ namespace TightDbCSharp
                 UnsafeNativeMethods.TableRemoveColumn(this, path[0]);
             }
         }
-
-        public void RemoveColumn( params long[] path)
-        {
-            RemoveColumn((IList<long>) path);
-        }
-
 
         internal override TableView FindAllIntNoCheck(long columnIndex, long value)
         {
@@ -1217,6 +1209,7 @@ namespace TightDbCSharp
 
         public Query Where()
         {
+            ValidateIsValid();
             return UnsafeNativeMethods.table_where(this);
         }
 
@@ -1467,9 +1460,9 @@ namespace TightDbCSharp
 
     public class DoubleField : Field
     {
-// ReSharper disable once UnusedMember.Global
+        // ReSharper disable UnusedMember.Global
         protected DoubleField() { }//used when descendants of DoubleField are created
-
+        // ReSharper restore UnusedMember.Global
         public DoubleField(String columnName)
         {
             SetInfo(this, columnName, DataType.Double);

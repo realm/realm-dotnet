@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
@@ -109,7 +110,7 @@ namespace TightDbCSharpTest
         }
 
 
-        private static void TableDataDumper(string indent, StringBuilder res, TableOrView table)
+        private static void TableDataDumper(string indent, StringBuilder res, TableOrView table )
         {
             const string startrow = "{{ //Start row {0}";
             const string endrow = "}} //End row {0}";
@@ -121,7 +122,7 @@ namespace TightDbCSharpTest
             const string mixedcomment = "//Mixed type is {0}";
             var firstdatalineprinted = false;
             long tableSize = table.Size;
-            foreach (Row tr in table)
+            foreach (Row tr in (IEnumerable<Row>) table)
             {
                 if (firstdatalineprinted == false)
                 {

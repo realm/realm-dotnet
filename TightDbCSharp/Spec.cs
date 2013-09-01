@@ -70,10 +70,6 @@ namespace TightDbCSharp
             return Equals(spec);
         }
 
-        private bool Equals(Spec spec)
-        {
-            return UnsafeNativeMethods.SpecEquals(this,spec);
-        }
 
         //this is pretty slow due to two interop calls, but still faster than if all field names were used in the hash.
         //a spec will have a hash consisting of the column count XOR'ed with the string name of the last column in the table

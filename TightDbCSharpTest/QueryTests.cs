@@ -93,6 +93,20 @@ namespace TightDbCSharpTest
             }
         }
 
+     
+
+        [Test]
+        public static void QueryCount()
+        {
+            {
+                var combitable = GetTableWithCombinations();
+                Assert.AreEqual(2*3*3*3, combitable.Where().Greater("intcolumn2", 1).Count());
+                Assert.AreEqual(1*1*3*3, combitable.Where().Greater("intcolumn0", 2).Greater("intcolumn1",2).Count());
+                Assert.AreEqual(10, combitable.Where().Count(10,20,999));
+            }
+        }
+
+
         [Test]
         public static void QueryTestEnummerator()
         {
@@ -269,6 +283,7 @@ namespace TightDbCSharpTest
                 TableView tv = t.Where().FindAll(1, 4, 100);
                 actualres = TestHelper.TableDumper(MethodBase.GetCurrentMethod().Name, "calling findall on query on table",
                                                 tv);
+                
             }
 
             const string expectedres = @"------------------------------------------------------
