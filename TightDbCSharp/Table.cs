@@ -55,7 +55,7 @@ namespace TightDbCSharp
 
         public bool IsValid()
         {
-            return UnsafeNativeMethods.TableIsValid(this);
+            return UnsafeNativeMethods.TableIsAttached(this);
         }
 
 

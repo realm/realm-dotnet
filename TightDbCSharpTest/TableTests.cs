@@ -432,6 +432,29 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
             }
         }
 
+
+        [Test]
+        public static void TableAddSubTableStringArray()
+        {
+            using (
+                var table = new Table(
+                    new StringField("name"),
+                    new IntField("age"),
+                    new BoolField("hired"),
+                    new SubTableField("phones", //sub table specification
+                        new StringField("desc"),
+                        new StringField("number")
+                        )
+                    ))
+            {                                
+                table.Add("Mary", 21, false, new[]
+                {
+                    new[] {"mobile", "232-323-3232"},
+                    new[] {"work", "434-434-4343"}
+                });
+            }
+        }
+
         [Test]
         public static void TableRemoveColumnTest()
         {

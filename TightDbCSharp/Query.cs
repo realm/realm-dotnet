@@ -141,9 +141,23 @@ namespace TightDbCSharp
             return this;
         }
 
+        public Query Equal(long columnIndex, Boolean value)
+        {
+            UnderlyingTable.ValidateColumnIndex(columnIndex);
+            UnsafeNativeMethods.QueryBoolEqual(this, columnIndex, value);
+            return this;
+        }
+
         public Query Greater(string columnName, long value)
         {
             UnsafeNativeMethods.query_int_greater(this,GetColumnIndex(columnName),value);
+            return this;
+        }
+
+        public Query Greater(long columnIndex, long value)
+        {
+            UnderlyingTable.ValidateColumnIndex(columnIndex);
+            UnsafeNativeMethods.query_int_greater(this, columnIndex, value);
             return this;
         }
 

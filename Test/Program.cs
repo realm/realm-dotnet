@@ -22,7 +22,7 @@ namespace Test
             //    TightDbCSharpTest.TableTests1.TableSetBinary();
             //TightDbCSharpTest.TableTests1.TableFindFirstBinaryCoreBug();
             //TightDbCSharpTest.TableTests1.TableAddSubtableUsingPath();
-            TightDbCSharpTest.TableTests1.TableIsValidTest();
+            TightDbCSharpTest.GroupTests.GroupWriteTest();
             Application.DoEvents();
             Console.WriteLine("Finished. Any key...");
 

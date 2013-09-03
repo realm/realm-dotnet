@@ -37,8 +37,7 @@ namespace TightDbCSharpTest
             File.Delete(sharedgroupfilename);
 
             using (
-                var sharedGroup = new SharedGroup(sharedgroupfilename, false,
-                    DurabilityLevel.DurabilityFull))
+                var sharedGroup = new SharedGroup(sharedgroupfilename))
             {
                 using (var transaction = sharedGroup.BeginWrite())
                 {
@@ -200,8 +199,20 @@ namespace TightDbCSharpTest
 
 
 
+        //todo:unit tests that show that throwing exception from the action based transactions actually does a rollback
 
+        //todo:ensure we have a unit test that checks that the action based transactions actually do save changes when no exception is thrown
 
+        //todo:unit tests that ensures that committed write transactions actually are written
+
+        //todo:unit tests that shows that rolled back transactions are in fact rolled back
+
+        //todo:unit test that showcases what happens if commit is called more than one time
+
+        //todo:unit test that showcases what happens if commit is called after rollback
+
+        //todo:contemplate what happens if the user somehow calls stuff in the shared group while a transaction is ongoing
+        //can he call something that breaks the system (like starting more transactions on the same table, or whatever)
 
         //It should not be possible to modify a group that is returned by a read transaction
         [Test]

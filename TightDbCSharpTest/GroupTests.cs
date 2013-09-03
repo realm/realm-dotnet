@@ -81,8 +81,8 @@ namespace TightDbCSharpTest
        
         public static void GroupWriteTest()
         {
-            string groupCreateFileName = Path.GetTempPath() + "Testgroupc";
-            string groupSaveFileName = Path.GetTempPath() + "Testgroups";
+            var groupCreateFileName = Path.GetTempPath() + "Testgroupc";
+            var groupSaveFileName = Path.GetTempPath() + "Testgroups";
             const string testTableName = "test1";
             if(File.Exists(groupSaveFileName)) {
                File.Delete(groupSaveFileName);
@@ -95,7 +95,19 @@ namespace TightDbCSharpTest
             using (var g2 = new Group(groupSaveFileName))
             {                
                 Assert.AreEqual(true,g2.HasTable(testTableName));//we read the correct group back in
+                //now write the group to a memory buffer
+                byte[] groupBuffer = g2.WriteToMemory();
+                Assert.Greater(groupBuffer.Length,0);
+
+
+
+                using (var g3 = new Group(groupBuffer))
+                {
+                    Assert.AreEqual(true, g3.HasTable(testTableName));//we read the correct group back in
+                }
             }
+
+
             if (File.Exists(groupSaveFileName))
             {
                 File.Delete(groupSaveFileName);
@@ -105,7 +117,5 @@ namespace TightDbCSharpTest
                 File.Delete(groupCreateFileName);
             }
         }
-
-
     }
 }

@@ -22,11 +22,17 @@ namespace TightDbCSharp
     public class SharedGroup : Handled
     {
 
+        //get a shared group attached to the filename, using core defaults for various settings :
+        //noCreate(currently false) and durabilityLevel(currently full)
+        public SharedGroup(String fileName)
+        {
+            UnsafeNativeMethods.NewSharedGroupFileDefaults(this, fileName);
+        }
+
         public SharedGroup(String fileName, Boolean noCreate, DurabilityLevel durabilityLevel)
         {
             UnsafeNativeMethods.NewSharedGroupFile(this, fileName, noCreate, durabilityLevel);
         }
-
 
         
         //creates an empty shared group. Usually You will use SharedGroup(string filename,boolean NoCreate, Durabilitylevel durabilitylevel)
@@ -115,7 +121,7 @@ namespace TightDbCSharp
         }
 
         //work is the acutal code that will be run inside the transaction
-        private void Transaction(Action<Transaction> work,TransactionKind kind)
+        private void ExecuteInTransaction(Action<Transaction> work,TransactionKind kind)
         {
             using (var transaction = (kind == TransactionKind.Read) ? BeginRead() : BeginWrite())
             try
@@ -132,12 +138,12 @@ namespace TightDbCSharp
 
         public void ExecuteInReadTransaction(Action<Group> work)
         {
-            Transaction(work, TransactionKind.Read);
+            ExecuteInTransaction(work, TransactionKind.Read);
         }
 
         public void ExecuteInWriteTransaction(Action<Group> work)
         {
-            Transaction(work, TransactionKind.Write);
+            ExecuteInTransaction(work, TransactionKind.Write);
         }
     }
 

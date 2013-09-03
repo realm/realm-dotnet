@@ -83,7 +83,7 @@ namespace TightDbCSharpTest
                 var combitable = GetTableWithCombinations();
                 Assert.AreEqual(2, combitable.Where().Greater("intcolumn2", 1).Average(3));
                 Assert.AreEqual(2, combitable.Where().Greater("intcolumn0", 1).Average(2));
-                Assert.AreEqual(3, combitable.Where().Greater("intcolumn0", 2).Average(0));
+                Assert.AreEqual(3, combitable.Where().Greater(0, 2).Average(0));
             }
             {
                 var combitable = GetTableWithCombinations();
@@ -111,7 +111,7 @@ namespace TightDbCSharpTest
         public static void QueryTestEnummerator()
         {
             var combitable = GetTableWithCombinations();
-            int n = 0;
+            var n = 0;
             foreach (TableRow tableRow in combitable)
             {
                 int col0 = 1+  (n/(3*3*3))%3;
@@ -204,7 +204,7 @@ namespace TightDbCSharpTest
 
                 TableView tv = t.Where().Equal("boolfield", true).FindAll();
                 Assert.AreEqual(tv.Size, 3);
-                tv = t.Where().Equal("boolfield", false).FindAll();
+                tv = t.Where().Equal(1, false).FindAll();
                 Assert.AreEqual(tv.Size, 2);
                 tv = t.Where().Equal("boolfield2", false).FindAll();
                 Assert.AreEqual(tv.Size, 0);

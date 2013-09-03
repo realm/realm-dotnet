@@ -232,9 +232,9 @@ TIGHTDB_C_CS_API Table* new_table()//should be disposed by calling unbind_table_
      return LangBindHelper::copy_table(*table_ptr);
  }
 
- TIGHTDB_C_CS_API size_t table_is_valid(Table* table_ptr)
+ TIGHTDB_C_CS_API size_t table_is_attached(Table* table_ptr)
  {
-     return size_t_to_bool(table_ptr->is_valid());
+     return size_t_to_bool(table_ptr->is_attached());
  }
 
 //     bool has_shared_spec() const;
@@ -1241,6 +1241,89 @@ TIGHTDB_C_CS_API tightdb::TableView* tableview_find_all_string(TableView * table
 
 //GROUP IMPLEMENTATION
 
+//C# will call with a pinned array of bytes and its size. no copying occours except inside tightdb where the data is of course
+//changed into a newly created group. The data pointed to by data must not be accessed after this call is finished, as C# will
+//deallocate it again as soon as the call returns
+//NOTE THAT tHE GROUP RETURNED HERE MUST BE FREED BY CALLING GROUP_DELETE WHEN IT IS NOT USED ANYMORE BY C#
+TIGHTDB_C_CS_API Group* group_from_binary_data(const char* data, std::size_t size)
+{
+    BinaryData bd(data,size);
+    return new Group(bd,false);
+}
+
+
+TIGHTDB_C_CS_API Group* new_group() //should be disposed by calling group_delete
+{
+    return  new Group();    
+}
+
+TIGHTDB_C_CS_API void group_delete(Group* group_ptr )
+{  
+    delete(group_ptr);
+}
+
+
+
+
+  TIGHTDB_C_CS_API Group* new_group_file(uint16_t * name, size_t name_len)//should be disposed by calling group_delete
+{  
+    CSStringAccessor name2(name,name_len);
+    return new Group(StringData(name2));    
+}
+
+//write group to specified file
+TIGHTDB_C_CS_API size_t group_write(Group* group_ptr,uint16_t * name, size_t name_len)
+
+{   
+    try {
+    CSStringAccessor str(name,name_len);    
+    group_ptr->write(StringData(str));
+    return 0;//0 means no exception thrown
+    }
+    //if the file is already there, or other file related trouble
+   catch (File::AccessError) {             
+       return 1;//1 means IO problem exception was thrown. C# always use IOException in cases like this anyways so no need to detail it out further
+   }
+}
+
+/// Write this database to a memory buffer.
+///
+/// Ownership of the returned buffer is transferred to the
+/// caller. The memory will have been allocated using
+/// std::malloc().
+//  BinaryData write_to_mem() const;
+// The caller should call group_write_to_mem_free with the pointer returned from group_write_to_mem
+//function returns a pointer to the data.
+TIGHTDB_C_CS_API const char * group_write_to_mem(Group*  group_ptr,  size_t* size)
+{
+    BinaryData bd=group_ptr->write_to_mem();
+    *size = bd.size();
+    return  bd.data();//pointer to all the data;
+}
+
+//must be called with a pointer that was returned by group_write_to_mem
+//DO NOT CALL IF THAT POINTER RETURNED WAS NULL
+TIGHTDB_C_CS_API void group_write_to_mem_free(char * binarydata_ptr){
+    if(binarydata_ptr!=NULL)  {
+     std::free(binarydata_ptr);
+    }
+}
+
+
+//should be disposed by calling unbind_table_ref
+TIGHTDB_C_CS_API Table* group_get_table(Group* group_ptr,uint16_t* table_name,size_t table_name_len)
+{   
+    CSStringAccessor str(table_name,table_name_len);
+    return LangBindHelper::get_table_ptr(group_ptr,str);
+}
+
+
+TIGHTDB_C_CS_API size_t group_has_table(Group* group_ptr, uint16_t * table_name,size_t table_name_len)//should be disposed by calling unbind_table_ref
+{    
+    CSStringAccessor str(table_name,table_name_len);
+    return bool_to_size_t(group_ptr->has_table(str));
+}
+
 
 
 
@@ -1253,10 +1336,21 @@ TIGHTDB_C_CS_API SharedGroup* new_shared_group_file(uint16_t * name,size_t name_
     return new SharedGroup(StringData(str),size_t_to_bool(no_create), size_t_to_durabilitylevel(durabillity_level));   
 }
 
+//return a new shared group connected to a file, no_create and durabillity level are left to the defaults defined in core
+TIGHTDB_C_CS_API SharedGroup* new_shared_group_file_defaults(uint16_t * name,size_t name_len)
+{
+    CSStringAccessor str(name,name_len);
+    return new SharedGroup(StringData(str));   
+}
+
+
 //return an unattached shared group
+/*
+not used in binding
 TIGHTDB_C_CS_API SharedGroup* new_shared_group_unattached() {
     return new SharedGroup(SharedGroup::unattached_tag());    
 }
+*/
 
 
 TIGHTDB_C_CS_API void shared_group_delete(SharedGroup* g) {
@@ -1319,52 +1413,6 @@ TIGHTDB_C_CS_API void shared_group_rollback(SharedGroup* shared_group_ptr)
 //}
 
 //LANGBINDHELPER IMPLEMENTATION THAT DOES NOT FIT LOGICALLY IN TABLE OR TABLEVIEW OR ELSEWHERE
-
-TIGHTDB_C_CS_API Group* new_group() //should be disposed by calling group_delete
-{
-    return  new Group();    
-}
-
-
-
-
-
-  TIGHTDB_C_CS_API Group* new_group_file(uint16_t * name, size_t name_len)//should be disposed by calling group_delete
-{  
-    CSStringAccessor name2(name,name_len);
-    return new Group(StringData(name2));    
-}
-
-//write group to specified file
-TIGHTDB_C_CS_API size_t group_write(Group* group_ptr,uint16_t * name, size_t name_len)
-
-{   
-    try {
-    CSStringAccessor str(name,name_len);    
-    group_ptr->write(StringData(str));
-    return 0;//0 means no exception thrown
-    }
-    //if the file is already there, or other file related trouble
-   catch (File::AccessError) {             
-       return 1;//1 means IO problem exception was thrown. C# always use IOException in cases like this anyways so no need to detail it out further
-   }
-}
-
-
-//should be disposed by calling unbind_table_ref
-TIGHTDB_C_CS_API Table* group_get_table(Group* group_ptr,uint16_t* table_name,size_t table_name_len)
-{   
-    CSStringAccessor str(table_name,table_name_len);
-    return LangBindHelper::get_table_ptr(group_ptr,str);
-}
-
-
-TIGHTDB_C_CS_API size_t group_has_table(Group* group_ptr, uint16_t * table_name,size_t table_name_len)//should be disposed by calling unbind_table_ref
-{    
-    CSStringAccessor str(table_name,table_name_len);
-    return bool_to_size_t(group_ptr->has_table(str));
-}
-
 
 
 
@@ -1603,14 +1651,6 @@ TIGHTDB_C_CS_API void query_delete(Query* query_ptr )
     delete(query_ptr);
 }
 
-TIGHTDB_C_CS_API void group_delete(Group* group_ptr )
-{
-//    std::cerr<<"Message from c++. Group to be deleted. address: ("<<group_ptr <<")\n";
-//    std::cerr<<group_ptr->size()<<"\n";//use g
-    
-    delete(group_ptr);
-//    std::cerr<<"deleted group "<<group_ptr;
-}
 
 
 void test_test_test() {

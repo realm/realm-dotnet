@@ -481,6 +481,11 @@ namespace TightDbCSharp
                 {
                     rowContents = (object[]) rowContents[0];
                 }
+                if (rowContents[0].GetType() == typeof(string[]))
+                {
+                    rowContents = (string[])rowContents[0];
+                }
+
             }
 
             ValidateSetRowNumColumns(rowContents.Length);

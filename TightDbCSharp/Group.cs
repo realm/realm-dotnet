@@ -95,6 +95,13 @@ namespace TightDbCSharp
             UnsafeNativeMethods.GroupWrite(this, path);
         }
 
+        //returns a byte[] with the group binary serialized in it
+        public byte[] WriteToMemory()
+        {
+            return UnsafeNativeMethods.GroupWriteToMemory(this);
+        }
+
+
         //TODO:(also in asana)erorr handling if user specifies an illegal filename or path.
         //We will probably have to do the error handling on the c++ side. It is
         //a problem that c++ seems to crash only when an invalid group(file) is freed or used
@@ -111,6 +118,19 @@ namespace TightDbCSharp
         public Group(string path)
         {            
             UnsafeNativeMethods.GroupNewFile(this,path);
+        }
+
+        public Group(byte[] binaryGroup)
+        {
+            if (binaryGroup == null)
+            {
+               throw new ArgumentNullException("binaryGroup"," Group cannot be created from a null pointer ");
+            }
+            if (binaryGroup.Length == 0)
+            {
+                throw new ArgumentNullException("binaryGroup","Group cannot be created from an array of size 0");
+            }
+            UnsafeNativeMethods.GroupFrombinaryData(this,binaryGroup);
         }
 
         protected override void ReleaseHandle()

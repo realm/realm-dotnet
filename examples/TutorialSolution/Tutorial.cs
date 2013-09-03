@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices;
 using TightDbCSharp;
 using TightDbCSharp.Extensions;
 
@@ -58,21 +60,22 @@ namespace TutorialSolution
                 // @@Example: accessing_rows @@                
                 //getting values.
                 Console.WriteLine(table[4].GetString("name"));//=>Anni
-                var name = table.GetColumnIndex("name"); //it is more efficient to index by the column ID
+                Console.WriteLine(table[4].GetLong("age"));//=>54
+                Console.WriteLine(table[4].GetBoolean("hired"));//true
+                var name = table.GetColumnIndex("name");//You can also look up via column indicies
                 var age = table.GetColumnIndex("age");
+                var hired = table.GetColumnIndex("hired");
                 Console.WriteLine(table[4].GetString(name));//=>Anni
-                Console.WriteLine(table[4][name]);//=>Anni (returns an object when accessed this way)
-                Console.WriteLine(table.GetString(name,4));//=>Anni    
                 Console.WriteLine(table[4].GetLong(age));//=>54
-                Console.WriteLine(table[4].GetBoolean("hired"));//true              
-
+                Console.WriteLine(table[4].GetBoolean(hired));//true
+                
                 //changing values
                 table[3].SetLong(age,43);
                 table[3][1] = (long)table[3][1] + 1;//indexing into a column yields type object. With the typed interface this is easier table[3].age += 1;
                 // @@EndExample@@
 
                 // @@Example: last_row @@
-                var lastperson = table.Last();
+                var lastperson = table.Last();//returns a Row Accessor
                 Console.WriteLine(lastperson.GetString(name)); // =>Anni
                 Console.WriteLine(lastperson.GetLong(age)); // =>54
                 // @@EndExample@@
@@ -115,7 +118,7 @@ namespace TutorialSolution
                 // @@Example: advanced_search @@                
                 //Create query (current employees between 20 and 30 years old)
 
-                var q = table.Where().Equal("hired",true).Between(age,20,30);                
+                var q = table.Where().Equal(hired,true).Between(age,20,30);
                 // Get number of matching entries
                 Console.WriteLine(q.Count());   // => 2
 
@@ -123,7 +126,7 @@ namespace TutorialSolution
                 Console.WriteLine(q.Average(age)); //=> 21
 
 // Iterate over all matching rows (doing lazy searching)
-                foreach (var person in table.Where().Greater("age",40))
+                foreach (var person in table.Where().Greater(age,40))
                 {
                     Console.WriteLine("{0} is {1} years old.",person.GetString(name),person.GetLong(age));
                 }
@@ -132,6 +135,8 @@ namespace TutorialSolution
                 
                 // @@Example: serialisation @@
                 // Create Table in Group
+                var fileNameSerialized  = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) +@"\employees1.tightdb";
+                var fileNameShared = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + @"\employees2.tightdb";
                 using (var group = new Group())
                 {                    
                     var table2 = group.CreateTable("employees",
@@ -146,53 +151,86 @@ namespace TutorialSolution
                     table2.Add("Lars", 21, true);
                     table2.Add("Phil", 43, false);
                     table2.Add("Anni", 54, true);
-
+                    
                     //a group file cannot be written to, if it exists already, so we delete it explicitly here
-                    String fileName = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) +
-                               @"\employees2.tightdb";
 
-                    File.Delete(fileName);
+                    File.Delete(fileNameSerialized);
 
-                    group.Write(fileName);
+                    group.Write(fileNameSerialized);
                 }
 
                 //under construction
-                /*
-                 * # Load a group from disk (and print contents)
-fromDisk = tightdb.Group("file", "employees.tightdb")
-diskTable = fromDisk["employees"]
-for index, row in enumerate(diskTable):
-    print str(index) + ": " + row.name
-# @@EndExample@@
+                
+                 // Load a group from disk (and print contents)
+                var fromdisk = new Group(fileNameSerialized);
+                var diskTable = fromdisk.GetTable("employees");
+                foreach (var row in diskTable)
+                    Console.WriteLine("{0}:{1}", row.RowIndex, row.GetString(name));
+                // @@EndExample@@
 
-# Write same group to memory buffer
-buf = group.write_to_memory()
+//Write same group to memory buffer
+                var buffer = fromdisk.WriteToMemory();
 
-# Load a group from memory (and print contents)
-fromMem = tightdb.Group("memory", buf)
-memTable = fromMem["employees"]
-for index, row in enumerate(memTable):
-    print str(index) + ": " + row.name
+//Load a group from memory (and print contents)
+                var fromMem = new Group(buffer);
+                var memtable = fromMem.GetTable("employees");
+                foreach (var row in memtable )                
+                    Console.WriteLine("{0}:{1}",row.RowIndex,row.GetString(name));
+                
+// @@Example: transaction @@
 
-# @@Example: transaction @@
+// Open a shared group
+                var db = new SharedGroup(fileNameShared);
 
-# Open a shared group
-db = tightdb.SharedGroup("employees.tightdb")
+// Read transaction using an action delegate that takes a Group parameter
+                db.ExecuteInReadTransaction(group =>
+                {
+                    using (var employees = group.GetTable("employees"))
+                    {
+                        foreach (var row in employees)
+                        {
+                            Console.WriteLine("{0} is {1} years old", row.GetString(name), row.GetLong(age));
+                        }
+                    }
+                }
+                    );
+                
+// alternative syntax:Read transaction using explicit commit (transaction inherits from group, adds commit and rollback methods)
+                var transaction = db.BeginRead();
+                {
+                    using (var employees = transaction.GetTable("employees"))
+                    {
+                        foreach (var row in employees)
+                        {
+                            Console.WriteLine("{0} is {1} years old", row.GetString(name), row.GetLong(age));
+                        }
+                    }
+                    transaction.Commit();//tell tightdb that You are finished reading using this transaction
+                }                    
 
-# Read transaction
-with db.read("employees") as table:
-    # print table contents
-    for row in table:
-        print row.name + " is " + str(row.age) + " years old."
+                    
+                //write transaction
 
-# Write transaction
-with db.write("employees") as table:
-    table += ["Bill", 53, True] # add row
+                db.ExecuteInWriteTransaction(group =>
+                {
+                    using (var table2 = group.GetTable("employees"))
+                    {
+                        table2.Add("Bill",53,true);//add a row
+                    }                    
+                });
+                    
+                //alternative write transaction
 
-# @@EndExample@@
+                using (var transaction2 = db.BeginWrite())
+                {
+                    using (var table3 = transaction2.GetTable("employees"))
+                    {
+                        table3.Add("Bill", 53, true);
+                    }
+                }
 
-                 * 
-                 */
+// @@EndExample@@
+
                 Console.WriteLine("Finished. Any key to close console window");
                 Console.ReadKey();//keep console window open to inspect results
             }

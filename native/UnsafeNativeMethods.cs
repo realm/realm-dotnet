@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -99,15 +100,15 @@ enum DataType {
 
 
 
-        [DllImport(L64, EntryPoint = "table_is_valid", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_is_valid64(IntPtr tablePtr);
+        [DllImport(L64, EntryPoint = "table_is_attached", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_is_attached64(IntPtr tablePtr);
 
-        [DllImport(L32, EntryPoint = "table_is_valid", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_is_valid32(IntPtr tablePtr);
+        [DllImport(L32, EntryPoint = "table_is_attached", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_is_attached32(IntPtr tablePtr);
 
-        public static bool TableIsValid(Table table)
+        public static bool TableIsAttached(Table table)
         {
-            return IntPtrToBool(Is64Bit ? table_is_valid64(table.Handle) : table_is_valid32(table.Handle));
+            return IntPtrToBool(Is64Bit ? table_is_attached64(table.Handle) : table_is_attached32(table.Handle));
         }
 
         
@@ -1979,6 +1980,63 @@ enum DataType {
         }
 
 
+
+
+
+        //we get a memalloced' buffer back with the group data.
+        //this buffer is copied to managed memory and a pointer to it is returned
+        //before we return we call the dll to get the memalloce'd data freed
+        //having the dll both allocate and deallocate the memory ensures that we don't do anything wrong
+        //and ensures that if the memory allocation in core changes, only the dll must be changed
+        [DllImport(L64, EntryPoint = "group_write_to_mem", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr group_write_to_mem64(IntPtr groupPtr, out IntPtr size);
+
+        [DllImport(L32, EntryPoint = "group_write_to_mem", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr group_write_to_mem32(IntPtr groupPtr, out IntPtr size);
+
+
+        public static byte[] GroupWriteToMemory(Group group)
+        {
+            IntPtr datalength;
+
+            var data =
+                (Is64Bit)
+                    ? group_write_to_mem64(group.Handle, out datalength)
+                    : group_write_to_mem32(group.Handle, out datalength);
+
+            //now, datalength should contain number of bytes in data,
+            //and data should be a pointer to those bytes
+            //as data is managed on the c++ side, we will now copy data over to managed memory
+            //if datalength is 0 marshal.copy wil copy nothing and we will return a byte[0]
+            //after we have copied the data, we call group_write_to_mem_free to deallocate the data via the dll
+            try
+            {
+                var numBytes = datalength.ToInt64();
+                var ret = new byte[numBytes];
+                Marshal.Copy(data, ret, 0, (int) datalength);
+                return ret;
+            }
+            finally
+            {
+                if (data != IntPtr.Zero)
+                {
+                    if (Is64Bit)
+                        group_write_to_mem_free64(data);
+                    else
+                        group_write_to_mem_free32(data);
+                }
+            }
+        }
+
+        [DllImport(L64, EntryPoint = "group_write_to_mem_free", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void group_write_to_mem_free64(IntPtr dataToFree);
+
+        [DllImport(L32, EntryPoint = "group_write_to_mem_free", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr group_write_to_mem_free32(IntPtr tablePtr);
+
+
+
+
         //not using automatic marshalling (which might lead to copying in some cases),
         //The SizePtr variable must be a pointer to C# allocated and pinned memory where c++ can write the size
         //of the data (length in bytes)
@@ -2701,6 +2759,50 @@ enum DataType {
                 handle.Free();//allow Garbage collector to move and deallocate value as it wishes
             }
         }
+
+
+
+
+
+        //not using automatic marshalling (which might lead to copying in some cases),
+        //but ensuring no copying of the array data is done, by getting a pinned pointer to the array supplied by the user.
+        [DllImport(L64, EntryPoint = "group_from_binary_data", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr group_from_binary_data64(IntPtr value, IntPtr bytes);
+
+        [DllImport(L32, EntryPoint = "group_from_binary_data", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr group_from_binary_data32(IntPtr value, IntPtr bytes);
+
+
+
+        //calling this method with NULL is illegal and will crash the system, so stuff calling this method must validate for null first
+        public static void GroupFrombinaryData(Group group, Byte[] data)
+        {
+            Debug.Assert(data != null);
+            var handle = GCHandle.Alloc(data, GCHandleType.Pinned);
+                //now value cannot be moved or garbage collected by garbage collector
+            var dataPointer = handle.AddrOfPinnedObject();
+            try
+            {
+                group.SetHandle((Is64Bit)
+                    ? group_from_binary_data64(dataPointer, (IntPtr) data.Length)
+                    : group_from_binary_data32(dataPointer, (IntPtr) data.Length), true);
+            }
+            finally
+            {
+                handle.Free(); //allow Garbage collector to move and deallocate value as it wishes
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -4678,22 +4780,23 @@ enum DataType {
 
 
         //shared group implementation
-        /* deprecated - not neccesary in binding, group can never be unattached
-        [DllImport(L64, EntryPoint = "new_shared_group_unattached", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr new_shared_group_unattached64();
 
-        [DllImport(L32, EntryPoint = "new_shared_group_unattached", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr new_shared_group_unattached32();
+        
+        [DllImport(L64, EntryPoint = "new_shared_group_file_defaults", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr new_shared_group_file_defaults64([MarshalAs(UnmanagedType.LPWStr)]  string fileName, IntPtr fileNameLen);
+
+        [DllImport(L32, EntryPoint = "new_shared_group_file_defaults", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr new_shared_group_file_defaults32([MarshalAs(UnmanagedType.LPWStr)]  string fileName, IntPtr fileNameLen);
 
 
-        public static void NewSharedGroupUnattached(SharedGroup sharedGroup)
+        public static void NewSharedGroupFileDefaults(SharedGroup sharedGroup,string filename)
         {        
             sharedGroup.SetHandle(Is64Bit
-                                ? new_shared_group_unattached64()
-                                : new_shared_group_unattached32(), true);        
+                                ? new_shared_group_file_defaults64(filename,(IntPtr)filename.Length)
+                                : new_shared_group_file_defaults32(filename, (IntPtr)filename.Length), true);
         }
 
-        */
+
 
 
         [DllImport(L64, EntryPoint = "new_shared_group_file", CallingConvention = CallingConvention.Cdecl)]
