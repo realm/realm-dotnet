@@ -293,7 +293,18 @@ namespace TightDbCSharpTest
 
         }
 
-
+        [Test]
+        [ExpectedException("System.ArgumentOutOfRangeException")]
+        public static void TestIndexerWrongStringIndex()
+        {
+            using (var t = new Table(new IntField("A")))
+            {
+                t.Add(42);
+                TableRow tr = t[0];
+                var tester = (long) tr["NoRow"];
+                Assert.Fail("Accessing tablerow with a bad string index should have thrown an exception");
+            }            
+        }
 
 
         [Test]
@@ -314,7 +325,7 @@ namespace TightDbCSharpTest
                 var tr = t[0];
                 Assert.AreEqual(8,tr.ColumnCount);
                 Assert.AreEqual(1, tr[0]);
-                Assert.AreEqual(true, tr[1]);
+                Assert.AreEqual(true, tr["Valid"]);//todo add unit test that tests if invalid strings in row indexer are thrown
                 Assert.AreEqual("Hans", tr[2]);
                 Assert.AreEqual(new[] { 0, 1, 2, 3, 4, 5 },tr[3]);
                 Assert.AreEqual("MixedStr", tr[4]);

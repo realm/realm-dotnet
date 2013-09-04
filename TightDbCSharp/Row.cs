@@ -47,6 +47,24 @@ namespace TightDbCSharp
             }
         }
 
+
+        //by indexing you can get and set values as objects (if they match the type that is)
+        public object this[string columnName]
+        {
+            get
+            {
+                var columnIndex = Owner.GetColumnIndex(columnName);                
+                return Owner.GetValueNoCheck(columnIndex, RowIndex);
+            }
+            set
+            {
+                var columnIndex = Owner.GetColumnIndex(columnName);                
+                Owner.SetValueNoCheck(columnIndex, RowIndex, value);
+            }
+        }
+
+
+
         //allow foreach to traverse a TableRow and get some TableRowCell objects
         //if You do a foreach on a TableRow, C# will use the for loop below to do the iteration
         public IEnumerator<RowCell> GetEnumerator()

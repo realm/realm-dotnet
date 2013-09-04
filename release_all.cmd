@@ -32,5 +32,10 @@ call %location%update_examples.cmd
 del %location%examples.zip
 :this one fails on my other pc, creates an empty zip file
 %location%7z.exe a -tzip -r %location%examples.zip %location%examples\*.*
+set location=%~dp0
+echo any key to update documentation directory with new versions of sourcecodes
+pause
+call %location%update_docs.cmd
+
 echo Finished! Any key....
 pause
