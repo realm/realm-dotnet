@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using TightDbCSharp;
 
 namespace PerformanceTest
@@ -24,23 +23,25 @@ namespace PerformanceTest
                 long i = 256*size;
                 var timer1 = Stopwatch.StartNew();
 
-                for (int n = 0; n < 1000*1000; n++)
+                const int numrows = 1000*1000;
+                t.AddEmptyRow(numrows);
+                for (var n = 0; n < numrows; n++)
                 {
                     switch (type)
                     {
                         case DataType.Int:
-                            t.Add(i);
+                            t.SetLong(0,n,i);
                             break;
-                        case DataType.String:
-                            t.Add(s);
+                        case DataType.String:                            
+                            t.SetString(0,n,s);                            
                             break;
                         case DataType.Date:
-                            t.Add(dt);
+                            t.SetDateTime(0,n,dt);                            
                             break;
                     }
                 }
                 timer1.Stop();
-                double seconds = Math.Floor(timer1.Elapsed.TotalSeconds);
+                var seconds = Math.Floor(timer1.Elapsed.TotalSeconds);
                 double milliseconds = timer1.Elapsed.Milliseconds;
                 Console.WriteLine("1M Table.Insert({0} of size{1}): {2} seconds, {3} milliseconds.", type, size, seconds,
                     milliseconds);
@@ -52,7 +53,7 @@ namespace PerformanceTest
                 var stringList = new List<string>();
                 var dateTimeList = new List<DateTime>();
 
-                for (int n = 0; n < 1000*1000; n++)
+                for (var n = 0; n < 1000*1000; n++)
                 {
                     switch (type)
                     {
@@ -86,11 +87,11 @@ namespace PerformanceTest
             using (var t = new Table(new Field("testfield", type)))
             {
                 var dt = new DateTime(1980,1,1);
-                String s = "".PadRight(size, 'x');
+                var s = "".PadRight(size, 'x');
                 long i = 256 * size;
 
                 //fill table with searchable data
-                for (int n = 0; n < 1000 * 1000; n++)
+                for (var n = 0; n < 1000 * 1000; n++)
                 {
                     switch (type)
                     {
@@ -109,7 +110,7 @@ namespace PerformanceTest
 
                 //search for the last 10000 inserted rows
                 var timer1 = Stopwatch.StartNew();                
-                for (int n = 1000*1000; n > 1000*1000 - 1000; n--)
+                for (var n = 1000*1000; n > 1000*1000 - 1000; n--)
                     
                 switch (type)
                 {
@@ -127,7 +128,7 @@ namespace PerformanceTest
                 timer1.Stop();
                 double seconds = Math.Floor(timer1.Elapsed.TotalSeconds);
                 double milliseconds = timer1.Elapsed.Milliseconds;
-                Console.WriteLine("1K Table.FindFirst({0} of size{1}): {2} seconds, {3} milliseconds.", type, size, seconds,
+                Console.WriteLine("1K Table.FindFirst({0}): {1} seconds, {2} milliseconds.", type, seconds,
                     milliseconds);
 
                 //test a similar C# construct
@@ -135,7 +136,7 @@ namespace PerformanceTest
                 var stringList = new List<string>();
                 var dateTimeList = new List<DateTime>();
 
-                for (int n = 0; n < 1000 * 1000; n++)
+                for (var n = 0; n < 1000 * 1000; n++)
                 {
                     switch (type)
                     {
@@ -154,7 +155,7 @@ namespace PerformanceTest
 
                 //search for the last 10000 inserted rows
                  timer1 = Stopwatch.StartNew();                
-                for (int n = 1000 * 1000; n > 1000 * 1000 - 1000; n--)
+                for (var n = 1000 * 1000; n > 1000 * 1000 - 1000; n--)
 
                     switch (type)
                     {
@@ -174,8 +175,7 @@ namespace PerformanceTest
                 timer1.Stop();
                 seconds = Math.Floor(timer1.Elapsed.TotalSeconds);
                 milliseconds = timer1.Elapsed.Milliseconds;
-                Console.WriteLine("1K C#List.Find({0} of size{1}): {2} seconds, {3} milliseconds.", type, size,
-                    seconds, milliseconds);
+                Console.WriteLine("1K C#List.Find({0}): {1} seconds, {2} milliseconds.", type,seconds, milliseconds);
 
 
 
@@ -201,7 +201,7 @@ namespace PerformanceTest
                     acc = acc + t.Size;
                 }
                 timer1.Stop();
-                double seconds = Math.Floor(timer1.Elapsed.TotalSeconds);
+                var seconds = Math.Floor(timer1.Elapsed.TotalSeconds);
                 double milliseconds = timer1.Elapsed.Milliseconds;
                 Console.WriteLine("1M calls to Table.Size: {0} seconds, {1} milliseconds.", seconds, milliseconds);
                 Console.WriteLine(acc);
@@ -209,7 +209,7 @@ namespace PerformanceTest
         }
 
 
-
+        /*
         private static void MeasureInteropSpeed()
         {
                 long acc = 0;
@@ -228,7 +228,7 @@ namespace PerformanceTest
                     acc);
             
         }
-
+        */
 
 
 
@@ -241,18 +241,20 @@ namespace PerformanceTest
 
         private static void Main()
         {
-            bool loop = true;
+            var loop = true;
+            Table.TestInterop();
+            Table.ShowVersionTest();
             while (loop)
             {
                 loop = false;
                 Console.WriteLine();
                 Console.WriteLine(
-                    "Press any key to finish test...\n 1=call measureinteropspeed\n 2=call MeasureInsertSpeed\n 3=call MeasureGetSizeSpeed\n4=call MeasureSearchSpeed\n");
+                    "Press any key to finish test...\n 1=not implemented\n 2=call MeasureInsertSpeed\n 3=call MeasureGetSizeSpeed\n 4=call MeasureSearchSpeed\n");
                 ConsoleKeyInfo ki = Console.ReadKey();
                 Console.WriteLine();
                 if (ki.Key == ConsoleKey.D1)
                 {
-                    MeasureInteropSpeed();
+                   // MeasureInteropSpeed();
                     loop = true;
                 }
 

@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TightDbCSharp;
 using TightDbCSharp.Extensions;
 
@@ -43,7 +39,7 @@ namespace Experimental
                     //a row with subtable contents can be added recursively like this :
 
                     //the null results in an empty subtable with no rows
-                    long rowIndex = peopleTableAlt.Add("John", 20, new DateTime(1979,05,14), null);
+                    long rowIndex = peopleTableAlt.Add("John", 20, new DateTime(1979, 05, 14), null);
                     //call the subtable to insert rows into it
                     using (Table rowSub2 = peopleTableAlt.GetSubTable(3, rowIndex))
                     {
@@ -53,7 +49,7 @@ namespace Experimental
                 }
 
 
-                
+
                 //You can also add data to a table field by field:
                 long rowindex2 = peopleTable.AddEmptyRow(1);
                 peopleTable.SetString(0, rowindex2, "John");
@@ -88,20 +84,38 @@ namespace Experimental
 
                 //You can also specify an already built table. In that case the pre-built table is COPIED into the row where the sub table is.
                 //types and field names must match, currently no match means undefined behavior so use with care todo:validate subtables when being added to table rows if specified as a Table class
-                
+
                 using (var subAsTable = new Table(new StringField("desc"),
-                    new StringField("number")))
+                    new StringField("number"))
                 {
-                    subAsTable.Add("work", "232-323-3232");
-                    subAsTable.Add("home", "434-434-4343");
-                    subAsTable.Add("boat", "555-666-7777");
-
+                    {"work", "232-323-3232"},
+                    {"home", "434-434-4343"},
+                    {"boat", "555-666-7777"}
+                }
+                    )
                     peopleTable.Add("Jane", 25, false, subAsTable);
-                }//subAsTable can go out of scope here and be disposed as a copy is made when the table is "put" into a subtable column 
+                    //subAsTable can go out of scope here and be disposed as a copy is made when the table is "put" into a subtable column 
+
+            
+
+            //or combine these two approaches and simply specify the subtable directly, not as an array, but as a subtable, created
+                //and populated on the fly. This might be especially useful with subtables inside mixed columns
+
+                peopleTable.Add("Jane", 25, false, 
+                    new Table(new StringField("desc"),
+                              new StringField("number"))
+                {
+                    {"work", "232-323-3232"},
+                    {"home", "434-434-4343"},
+                    {"boat", "555-666-7777"}
+                });
+
+            
 
 
-                long rows = peopleTable.Size; //get the number of rows in a table
-                bool isEmpty = peopleTable.IsEmpty; //is the table empty?
+
+                var rows = peopleTable.Size; //get the number of rows in a table
+                var isEmpty = peopleTable.IsEmpty; //is the table empty?
 
                 Console.WriteLine("PeopleTable has {0} rows and isEmpty returns {1}", rows, isEmpty);
 
@@ -277,7 +291,10 @@ namespace Experimental
                 }
 
 
-                //transactions - to be done
+                //also show a few LinQ examples
+
+              
+
             }
         }
 

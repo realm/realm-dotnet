@@ -2304,7 +2304,7 @@ Table Name  : cyclic field definition
 
         //this was not possible using spec (adding columns to tables with existing columns), but should be possible now
         [Test]
-        internal static void TableAddColumn()
+        public static void TableAddColumn()
         {
             using (var t = new Table("field".Int()))
             {                
@@ -2773,8 +2773,8 @@ Table Name  : rename columns in subtables via parameters
 
 
 
-        [Test]
-        [ExpectedException("System.NotImplementedException")]
+      //  [Test]
+      //  [ExpectedException("System.NotImplementedException")]
         //when implemented in core, remove this expectation and the throw in UnsafeNativeMethods.TableFindFirstBinary
         public static void TableFindFirstBinary()
         {

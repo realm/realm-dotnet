@@ -281,9 +281,7 @@ namespace TightDbCSharpTest
                 TableRow tr = table[0];
                 Assert.AreEqual(2, table.Size);
                 Assert.AreEqual(true, tr.IsValid());
-                {
-                    table2.Remove(0);
-                }
+                table2.Remove(0);
                 Assert.AreEqual(1, table.Size);
                 Assert.AreEqual(true, tr.OwnerTable.IsValid());
                 Assert.AreEqual(false, tr.IsValid());//unit test fails here bc we have two table C# wrappers
@@ -301,7 +299,8 @@ namespace TightDbCSharpTest
             {
                 t.Add(42);
                 TableRow tr = t[0];
-                var tester = (long) tr["NoRow"];
+                var tester = (long) tr["NoRow"];//exception should be thrown here
+                Assert.AreEqual(0,tester);//use tester
                 Assert.Fail("Accessing tablerow with a bad string index should have thrown an exception");
             }            
         }

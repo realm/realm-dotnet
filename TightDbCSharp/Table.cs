@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Runtime.CompilerServices;
+
 //using System.Threading.Tasks; not portable as of 2013-04-02
 
 //Tell compiler to give warnings if we publicise interfaces that are not defined in the cls standard
@@ -14,7 +16,7 @@ using System.Globalization;
 //implements idisposable - will clean itself up (and any c++ resources it uses) when garbage collected
 //If You plan to save resources, You can use it with the using syntax.
 
-
+[assembly: InternalsVisibleTo("Test")]
 
 namespace TightDbCSharp
 {

@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-//using System.Appdomain;
 using System.Text;
 using System.Windows.Forms;
 
@@ -66,7 +65,7 @@ enum DataType {
 
         //manual dll version info. Used when debugging to see if the right DLL is loaded, or an old one
         //the number is a date and a time (usually last time i debugged something)
-        private const long GetDllVersionCSharp = 3108132132;
+        private const long GetDllVersionCSharp = 20130906;
 
 
         //tightdb_c_cs_API size_t tightdb_c_csGetVersion(void)
@@ -496,15 +495,17 @@ enum DataType {
 
         public static void GroupNewFile(Group group, string fileName)
         {
-            try {
-            group.SetHandle(Is64Bit
-                                ? new_group_file64(fileName, (IntPtr)fileName.Length)
-                                : new_group_file32(fileName, (IntPtr)fileName.Length), true);
-            }
-            catch (SEHException ex)
+            var handle = Is64Bit
+                ? new_group_file64(fileName, (IntPtr) fileName.Length)
+                : new_group_file32(fileName, (IntPtr) fileName.Length);
+
+            if (handle != IntPtr.Zero)
             {
-                throw new IOException(String.Format(CultureInfo.InvariantCulture,"IO error creating group file {0} (read/write access is needed)  c++ exception thrown :{1}",fileName,ex.Message));
-            }            
+                group.SetHandle(handle, true);
+            }
+            else
+                throw new IOException(String.Format(CultureInfo.InvariantCulture,
+                    "IO error creating group file {0} (read/write access is needed)",fileName));
         }
 
         [DllImport(L64, EntryPoint = "new_group", CallingConvention = CallingConvention.Cdecl)]
@@ -4641,6 +4642,7 @@ enum DataType {
 #endif
 
 
+
         //the .net library wil always use a c dll that is called tightdb_c_cs2012[32/64][r/d]
         //this dll could have been built with vs2012 or 2010 - we don't really care as long as the C interface is the same, which it will be
         //if built from the same source.
@@ -4649,7 +4651,15 @@ enum DataType {
         private const String L32 = "tightdb_c_cs201232" + Buildmode;
 
 
+		private static bool IsRunningOnMono ()
+		{
+			return Type.GetType ("Mono.Runtime") != null;
+		}
+        //todo:in case we can't load our dll, we should throw an exception with the location that we would
+        //prefer to find the dll. (assembly location) and the name of the dll we failed to load
 
+        //todo:an enhanced version of this, will show all the search paths that .net will use to get
+        //at the dll.
 
         //dump various OS diagnostics to console
         public static void ShowVersionTest()
@@ -4663,7 +4673,7 @@ enum DataType {
             PortableExecutableKinds peKind;
             ImageFileMachine machine;
             executingAssembly.ManifestModule.GetPEKind(out peKind, out machine);
-            // String thisapplocation = executingAssembly.Location;
+            String thisapplocation = executingAssembly.Location;
             
             Console.WriteLine("");
             Console.WriteLine("Pointer Size              : {0}", pointerSize);
@@ -4672,9 +4682,15 @@ enum DataType {
             Console.WriteLine("Built as ImageFileMachine : {0}", machine);
             Console.WriteLine("OS Version                : {0}", os.Version);
             Console.WriteLine("OS Platform               : {0}", os.Platform);
+			Console.WriteLine("Running on mono           : {0}", IsRunningOnMono());
+			Console.WriteLine("Common Language Runtime   : {0}",System.Environment.Version);
+			Console.WriteLine("build mode                : {0}",Buildmode);
+            Console.WriteLine("Assembly running right now :");
+            Console.WriteLine(thisapplocation + "...");
+            Console.WriteLine("Current Directory :");
+            Console.WriteLine(Directory.GetCurrentDirectory() + "...");
             Console.WriteLine("");
             Console.WriteLine("Now Loading {0} - expecting it to be a {1} dll", dllstring, vmBitness);
-            //Console.WriteLine("Loading "+thisapplocation+"...");
 
             //if something is wrong with the DLL (like, if it is gone), we will not even finish the creation of the table below.
             using (var t = new Table())
@@ -4690,7 +4706,7 @@ enum DataType {
                    hresult= GetModuleFileName(hModule, builder, builder.Capacity);
                 }
                 if(hresult!=0){
-                Console.WriteLine("\nDLL File Actually Loaded :\n {0}", builder);
+                Console.WriteLine("\nDLL File Actually Loaded :\n{0}", builder);
                 }
                 Console.WriteLine("\nC#  DLL        build number {0}", GetDllVersionCSharp + t.Size);//t.size is 0, but use t to make the compiler happy
                 Console.WriteLine("C++ DLL        build number {0}", CppDllVersion());

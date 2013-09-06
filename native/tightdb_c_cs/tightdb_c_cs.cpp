@@ -216,7 +216,7 @@ extern "C" {
  TIGHTDB_C_CS_API size_t tightdb_c_cs_getver(void){
 
   // Table test;
-	return 1306071446;
+	return 20130906;
 }
 
  //return a newly constructed top level table 
@@ -1263,12 +1263,15 @@ TIGHTDB_C_CS_API void group_delete(Group* group_ptr )
 }
 
 
-
-
   TIGHTDB_C_CS_API Group* new_group_file(uint16_t * name, size_t name_len)//should be disposed by calling group_delete
 {  
-    CSStringAccessor name2(name,name_len);
-    return new Group(StringData(name2));    
+    try{
+      CSStringAccessor name2(name,name_len);
+      return new Group(StringData(name2));    
+    }
+    catch (exception e) {//most likely the filename did not indicate a file that could be created (access rights or invalid path)
+        return NULL;
+    }
 }
 
 //write group to specified file

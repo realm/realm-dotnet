@@ -140,7 +140,7 @@ namespace DynamicTable
             Assert(2== tbl3.GetSubTable(1, 0).Size);
 
             //add some rows to the empty subtable in the second row
-            Table subTbl1 = tbl3.GetSubTable("subtable", 1);//or tbl3.GetSubTable(1,1);
+            var subTbl1 = tbl3.GetSubTable("subtable", 1);//or tbl3.GetSubTable(1,1);
 
             //now you can work with the subtable as any other table
 
