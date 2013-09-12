@@ -8,7 +8,7 @@ the <tt>[]</tt> operator, which returns a cursor to the row:
 
 
 @@Overlay: updating_entire_row @@
-Replacing an existing row can be done with the SetRow method
+Replacing an existing row can be done with the <tt>SetRow()</tt> method
 @@EndOverlay
 
 @@Overlay: output @@

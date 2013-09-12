@@ -661,11 +661,13 @@ intcolumn2:1//column 2
                 t.SetString(0, 0, "firstrow");
                 t.SetString(0, 0, "secondrow");
                 t.SetString(0, 0, "thirdrow");
-                foreach (Row row in t.Where().FindAll()) //loop through a tableview should get os Row classes
-                {
-                    Assert.IsInstanceOf(typeof(Row), row);//assert important as Table's parent also implements an iterator that yields rows. We want TableRows when 
-                    //we expicitly iterate a Table with foreach
+                long n = 0;
+                foreach (var row in t.Where().FindAll()) //loop through a tableview should get os Row classes
+                {                    
+                    Assert.AreEqual(n,row.RowIndex);//
+                    n++;
                 }
+                Assert.AreEqual(n,t.Size);
             }
         }
 
@@ -778,7 +780,7 @@ intcolumn2:1//column 2
             using (var table = new Table("intfield".Int(), "findfield".Int()))
             {
                 const int rows = 300;
-                Assert.Greater(rows,3);//don't change rows to below 3, the rest of the code will not work well
+                //don't change rows to below 3, the rest of the code will not work well
                 table.AddEmptyRow(rows);
                 for (var f = 0; f < rows; f++)
                 {
@@ -864,7 +866,7 @@ intcolumn2:1//column 2
             using (var table = new Table("intfield".Int(), "findfield".Int()))
             {
                 const int rows = 300;
-                Assert.Greater(rows, 3);//don't change rows to below 3, the rest of the code will not work well
+                //don't change rows to below 3, the rest of the code will not work well
                 table.AddEmptyRow(rows);
                 for (var f = 0; f < rows; f++)
                 {
@@ -899,8 +901,8 @@ intcolumn2:1//column 2
         {
             using (var table = new Table("intfield".Int(), "findfield".Int()))
             {
-                const int rows = 300;
-                Assert.Greater(rows, 3);//don't change rows to below 3, the rest of the code will not work well
+                const int rows = 300;                
+                //don't change rows to below 3, the rest of the code will not work well
                 table.AddEmptyRow(rows);
                 for (var f = 0; f < rows; f++)
                 {
@@ -934,7 +936,7 @@ intcolumn2:1//column 2
             using (var table = new Table("intfield".Int(), "findfield".Int()))
             {
                 const int rows = 300;
-                Assert.Greater(rows, 3);//don't change rows to below 3, the rest of the code will not work well
+                //don't change rows to below 3, the rest of the code will not work well
                 table.AddEmptyRow(rows);
                 for (var f = 0; f < rows; f++)
                 {
@@ -968,8 +970,8 @@ intcolumn2:1//column 2
         {
             using (var table = new Table("intfield".Int(), "findfield".Int()))
             {
-                const int rows = 300;
-                Assert.Greater(rows, 3);//don't change rows to below 3, the rest of the code will not work well
+                const int rows = 300;                
+                //don't change rows to below 3, the rest of the code will not work well
                 table.AddEmptyRow(rows);
                 for (var f = 0; f < rows; f++)
                 {
@@ -1003,7 +1005,7 @@ intcolumn2:1//column 2
             using (var table = new Table("intfield".Int(), "findfield".Int()))
             {
                 const int rows = 300;
-                Assert.Greater(rows, 3);//don't change rows to below 3, the rest of the code will not work well
+                //don't change rows to below 3, the rest of the code will not work well
                 table.AddEmptyRow(rows);
                 for (var f = 0; f < rows; f++)
                 {

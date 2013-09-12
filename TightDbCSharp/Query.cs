@@ -50,40 +50,60 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.QueryFindAll_np(this);//Methods that use default parameters are allowed under the Common Language Specification (CLS); however, the CLS allows compilers to ignore the values that are assigned to these parameters. 
         }
 
+        private static void ValidateStartEndLimitErrror(String errparam, string errmsg,long start, long end, long limit)
+        {
+            
+            
+            
+            throw new ArgumentOutOfRangeException(errparam,
+                                                  string.Format(CultureInfo.InvariantCulture,
+                                                      "Query.FindAll({0},{1},{2}) {3}", start,
+                                                      end, limit, errmsg));
+            
+        }
+
         private void ValidateStartEndLimit(long start, long end, long limit) 
         {
-                        Action<string, string> thrower = (errparam, errmsg) =>
-                {
-                    throw new ArgumentOutOfRangeException(errparam,
-                                                          string.Format(CultureInfo.InvariantCulture,
-                                                              "Query.FindAll({0},{1},{2}) {3}", start,
-                                                              end, limit, errmsg));
-                };
+//                        Action<string, string> thrower = (errparam, errmsg) =>
+//                {
+//                    throw new ArgumentOutOfRangeException(errparam,
+//                                                          string.Format(CultureInfo.InvariantCulture,
+//                                                              "Query.FindAll({0},{1},{2}) {3}", start,
+//                                                              end, limit, errmsg));
+            //                };
             
            
             if (start < -1)
             {
-                thrower("start", "Start must be larger than -2");
+                ValidateStartEndLimitErrror("start", "Start must be larger than -2", start, end, limit);
+                //thrower("start", "Start must be larger than -2");
             }
 
             if (end < -1)
             {
-                thrower("end", "end must be larger than -2");
+                ValidateStartEndLimitErrror("end","end must be larger than -2",start,end,limit);
+                //thrower("end", "end must be larger than -2");
             }
 
             if (limit < -1)
             {
-                thrower("end", "end must be larger than -2");
+                ValidateStartEndLimitErrror("end", "end must be larger than -2", start, end, limit);
+
+//                thrower("end", "end must be larger than -2");
             }
 
             if (end < start && end > -1)//-1 means return all in tightdb so if end is -1 it is okay
             {
-                thrower("end", "end must be larger than or equal to start");
+                ValidateStartEndLimitErrror("end", "end must be larger than or equal to start", start, end, limit);
+
+//               thrower("end", "end must be larger than or equal to start");
             }
 
             if (end >= UnderlyingTable.Size)
             {
-                thrower("end", "end must be less than the size of the underlying table");
+                ValidateStartEndLimitErrror("end", "end must be less than the size of the underlying table", start, end, limit);
+
+              //  thrower("end", "end must be less than the size of the underlying table");
             }
 
         }

@@ -15,7 +15,7 @@ namespace TightDbCSharpTest
         public static void CreateGroupEmptyTest()
         {
             var g = new Group();
-            Console.WriteLine(g.Handle); //keep it allocated, the unit test should survive that g is disposed automatically upon GC soon after this line
+            Assert.AreEqual(false, g.Invalid);            
         }
 
 
@@ -26,7 +26,7 @@ namespace TightDbCSharpTest
 
             using (var g = new Group())
             {
-                Console.WriteLine(g.Handle); //keep it allocated                
+                Assert.AreEqual(false, g.Invalid);
             }
         }
 
@@ -44,7 +44,7 @@ namespace TightDbCSharpTest
         {
             using (var g = new Group(@"C:\Testgroup"))
             {
-                Console.WriteLine(g.Handle); //keep it allocated
+                Assert.AreEqual(false, g.Invalid);            
             }
         }
 
@@ -56,7 +56,7 @@ namespace TightDbCSharpTest
             using (var g = new Group(@""))
             {
 
-                Console.WriteLine(g.Handle); //keep it allocated
+                Assert.AreEqual(false, g.Invalid);            
             }
         }
 
@@ -72,7 +72,7 @@ namespace TightDbCSharpTest
         {
             using (var g = new Group(Path.GetTempPath() + "Testgroupf"))
             {
-                Console.WriteLine(g.ObjectIdentification()); //keep it allocated
+                Assert.AreEqual(false, g.Invalid);            
             }
         }
 
@@ -97,7 +97,8 @@ namespace TightDbCSharpTest
                 Assert.AreEqual(true,g2.HasTable(testTableName));//we read the correct group back in
                 //now write the group to a memory buffer
                 byte[] groupBuffer = g2.WriteToMemory();
-                Assert.Greater(groupBuffer.Length,0);
+                bool bufNotEmpty = groupBuffer.Length > 0;
+                Assert.AreEqual(true,bufNotEmpty);
 
 
 

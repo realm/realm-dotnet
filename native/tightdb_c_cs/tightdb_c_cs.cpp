@@ -682,7 +682,7 @@ TIGHTDB_C_CS_API float table_maximum_float(Table * table_ptr , size_t column_ndx
 
 TIGHTDB_C_CS_API double table_maximum_double(Table * table_ptr , size_t column_ndx)
 {   
-    std::cerr<<"table_maximum_double"<<column_ndx <<" \n";
+//    std::cerr<<"table_maximum_double"<<column_ndx <<" \n";
     return table_ptr->maximum_double(column_ndx);
 }
 
@@ -1486,7 +1486,7 @@ TIGHTDB_C_CS_API size_t test_string_to_cpp(uint16_t * str,size_t bufsize)
     if (sd==("Hello, World!")) {
         return 42;
     }
-    std::cerr<<sd;
+//    std::cerr<<sd;
     return -42;    
 }
 
@@ -1666,7 +1666,7 @@ void test_test_test() {
 //    Group* g = reinterpret_cast<Group*>(new int);
     g->get_table("hep");
 
-    std::cerr<<g->size();//use g
+//    std::cerr<<g->size();//use g
 
     group_delete(g);
 }
@@ -1678,11 +1678,11 @@ void test_test_test() {
 //    std::cerr<<"Message from c++  callling test_test_test \n";
 
       test_test_test();
-    std::cerr<<"Message from c++  call received with len "<<len<<"\n";
+//    std::cerr<<"Message from c++  call received with len "<<len<<"\n";
     Group* g = new_group_file(name,len);
-    std::cerr<<"Message from c++  After call to new_group_file. g is("<<g<<") \n";
+//    std::cerr<<"Message from c++  After call to new_group_file. g is("<<g<<") \n";
     group_delete(g);
-    std::cerr<<"Message from c++  After call to group_delete";
+//    std::cerr<<"Message from c++  After call to group_delete";
 //      Group* g  =  new Group("test");     
 //	delete(g);
 }

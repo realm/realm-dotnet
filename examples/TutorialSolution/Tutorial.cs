@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using TightDbCSharp;
-using TightDbCSharp.Extensions;
 
 namespace TutorialSolution
 {
@@ -62,21 +61,21 @@ namespace TutorialSolution
 
                 // @@Example: accessing_rows @@                
                 //getting values.                
-                var nameColumn = people.GetColumnIndex("name");
-                var ageColumn = people.GetColumnIndex("age");
-                var hiredColumn = people.GetColumnIndex("hired");
-                Console.WriteLine(people[4].GetString(nameColumn)); //=>Anni
-                Console.WriteLine(people[4].GetLong(ageColumn)); //=>54
-                Console.WriteLine(people[4].GetBoolean(hiredColumn)); //true
+                var name = people.GetColumnIndex("name");
+                var age = people.GetColumnIndex("age");
+                var hired = people.GetColumnIndex("hired");
+                Console.WriteLine(people[4].GetString(name)); //=>Anni
+                Console.WriteLine(people[4].GetLong(age)); //=>54
+                Console.WriteLine(people[4].GetBoolean(hired)); //true
 
                 //changing values
-                people[3].SetLong(ageColumn, 43);
+                people[3].SetLong(age, 43);
                 // @@EndExample@@
 
                 // @@Example: last_row @@
-                var lastperson = people.Last(); //returns a Row Accessor
-                Console.WriteLine(lastperson.GetString(nameColumn)); // =>Anni
-                Console.WriteLine(lastperson.GetLong(ageColumn)); // =>54
+                var lastPerson = people.Last(); //returns a Row Accessor
+                Console.WriteLine(lastPerson.GetString(name)); // =>Anni
+                Console.WriteLine(lastPerson.GetLong(age)); // =>54
                 // @@EndExample@@
 
                 // @@Example: updating_entire_row @@
@@ -93,15 +92,14 @@ namespace TutorialSolution
 
 
                 // @@Example: iteration @@
-                //as Table is IEnummerable<TableRow>, C# foreach is supported.
-                //TableRow can return object or a specific type, and the column
-                //can be indexed by a numeric value, or by its string name
+                const int desc = 0;
+                const int number = 1;
                 foreach (var person in people)
                 {
-                    Console.WriteLine("{0} is {1} years old", person[nameColumn], person.GetLong(ageColumn));
+                    Console.WriteLine("{0} is {1} years old", person[name], person[age]);
                     foreach (var phone in person.GetSubTable("phones"))
                     {
-                        Console.WriteLine(" {0}: {1}", phone["desc"], phone.GetString("number"));
+                        Console.WriteLine(" {0}: {1}", phone[desc], phone[number]);
                     }
                 }
                 // @@EndExample@@
@@ -111,27 +109,26 @@ namespace TutorialSolution
                 /****************************** SIMPLE QUERY *****************************/
 
                 // @@Example: simple_seach @@
-                Console.WriteLine(people.FindFirstString(nameColumn, "Philip")); //-1 meaning not found
-                Console.WriteLine(people.FindFirstString(nameColumn, "Mary"));   // => 1
-                Console.WriteLine(people.FindFirstInt(ageColumn, 21));           // => 2
+                Console.WriteLine(people.FindFirstString(name, "Philip")); //-1 meaning not found
+                Console.WriteLine(people.FindFirstString(name, "Mary")); // => 1
+                Console.WriteLine(people.FindFirstInt(age, 21)); // => 2
                 // @@EndExample@@
 
 
                 // @@Example: advanced_search @@                
                 // Create query (current employees between 20 and 30 years old)
-                var q = people.Where().Equal(hiredColumn, true).Between(ageColumn, 20, 30);
+                var q = people.Where().Equal(hired, true).Between(age, 20, 30);
 
                 // Get number of matching entries
                 Console.WriteLine(q.Count()); // => 2
 
                 // Get the average age
-                Console.WriteLine(q.Average(ageColumn)); //=> 21
+                Console.WriteLine(q.Average(age)); //=> 21
 
                 // Iterate over all matching rows (doing lazy searching)
-                foreach (var person in people.Where().Greater(ageColumn, 40))
+                foreach (var person in people.Where().Greater(age, 40))
                 {
-                    Console.WriteLine("{0} is {1} years old.",
-                        person[nameColumn], person[ageColumn]);
+                    Console.WriteLine("{0} is {1} years old.", person[name], person[age]);
                 }
 
                 // @@EndExample@@
@@ -142,14 +139,15 @@ namespace TutorialSolution
                 // Create Table in Group
                 var folder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
                 var fileName1 = folder + @"\employees1.tightdb";
-                var fileName2 = folder + @"\employees2.tightdb";
+
                 using (var group = new Group())
+                using (var employees = group.CreateTable("employees",
+                    new StringField("Name"),
+                    new IntField("Age"),
+                    new BoolField("Hired")
+                    )
+                    )
                 {
-                    var employees = group.CreateTable("employees",
-                        "Name".String(), //or new StringField("Name"),
-                        "Age".Int(), //or new IntegerField("Age"),
-                        "Hired".Bool() //or new BooleanField("Hired")
-                        );
 
                     //add some rows
                     employees.Add("John", 20, true);
@@ -163,54 +161,56 @@ namespace TutorialSolution
 
                 // Load a group from disk (and print contents)
                 var fromdisk = new Group(fileName1);
-                var employees2 = fromdisk.GetTable("employees");
-                foreach (var row in employees2)
-                    Console.WriteLine("{0}:{1}", row.RowIndex, row.GetString(nameColumn));
-                // @@EndExample@@
+                using (var employees2 = fromdisk.GetTable("employees"))
+                {
+                    foreach (var row in employees2)
+                        Console.WriteLine("{0}:{1}", row.RowIndex, row.GetString(name));
+                }
 
                 //Write same group to memory buffer
-                var buffer = fromdisk.WriteToMemory();
+                byte[] buffer;
+                buffer = fromdisk.WriteToMemory();
 
                 //Load a group from memory (and print contents)
                 var fromMem = new Group(buffer);
-                var memtable = fromMem.GetTable("employees");
-                foreach (var row in memtable)
-                    Console.WriteLine("{0}:{1}", row.RowIndex, row.GetString(nameColumn));
+                using (var memtable = fromMem.GetTable("employees"))
+                {
+                    foreach (var row in memtable)
+                        Console.WriteLine("{0}:{1}", row.RowIndex, row[name]);
+                }
+                // @@EndExample@@
 
                 // @@Example: transaction @@
                 // Open a shared group
-                var db = new SharedGroup(fileName2);
+                var db = new SharedGroup(fileName1);
 
-                // Read transaction using an action delegate that takes a Group parameter
-                db.ExecuteInReadTransaction(group =>
+                //Transaction inherits from group, adds commit and rollback methods
+                //Commit must be called to actually save changes
+                //Rollback is automatically called if the transaction has not been
+                //comitted and it goes out scope (gets disposed)
+                using (var transaction = db.BeginRead())
+                using (var employees = transaction.GetTable("employees"))
                 {
-                    using (var employees = group.GetTable("employees"))
+                    foreach (var employee in employees)
                     {
-                        foreach (var employee in employees)
-                        {
-                            Console.WriteLine("{0} is {1} years old",
-                                employee[nameColumn], employee[ageColumn]);
-                        }
+                        Console.WriteLine("{0} is {1} years old", employee[name], employee[age]);
                     }
-                }
-                    );
-
-                // alternative syntax:Read transaction using explicit commit 
-                //(transaction inherits from group, adds commit and rollback methods)
-                var transaction = db.BeginRead();
-                {
-                    using (var employees = transaction.GetTable("employees"))
-                    {
-                        foreach (var employee in employees)
-                        {
-                            Console.WriteLine("{0} is {1} years old", employee[nameColumn], employee[ageColumn]);
-                        }
-                    }
-                    //tell tightdb that You are finished reading using this transaction
                     transaction.Commit();
                 }
 
                 //write transaction
+                using (var transaction2 = db.BeginWrite())
+                using (var employees4 = transaction2.GetTable("employees"))
+                {
+                    {
+                        employees4.Add("Bill", 53, true);
+                    }
+                    transaction2.Commit();
+                }
+
+                //TightDb also provides a delegate based transaction syntax
+                //After the delegate has executed, commit is called automatically
+                //to roll back, throw an exception inside the delegate
                 db.ExecuteInWriteTransaction(group =>
                 {
                     using (var employees3 = group.GetTable("employees"))
@@ -218,15 +218,6 @@ namespace TutorialSolution
                         employees3.Add("Bill", 53, true); //add a row
                     }
                 });
-
-                //alternative write transaction
-                using (var transaction2 = db.BeginWrite())
-                {
-                    using (var employees4 = transaction2.GetTable("employees"))
-                    {
-                        employees4.Add("Bill", 53, true);
-                    }
-                }
 
                 // @@EndExample@@
                 Console.WriteLine("Finished. Any key to close console window");

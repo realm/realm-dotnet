@@ -62,7 +62,7 @@ namespace TightDbCSharpTest
             PrintMetadataFooter(res);
             TableDataDumper("", res, t);
 
-            Console.Write(res.ToString());
+            //Console.Write(res.ToString());
             File.WriteAllText(fileName + ".txt", res.ToString());
             return res.ToString();
         }
@@ -104,7 +104,7 @@ namespace TightDbCSharpTest
             Specdumper(res, "", t.Spec, tablename);
 
             TableDataDumper("", res, t);
-            Console.WriteLine(res.ToString());
+//            Console.WriteLine(res.ToString());
             File.WriteAllText(fileName + ".txt", res.ToString());
             return res.ToString();
         }

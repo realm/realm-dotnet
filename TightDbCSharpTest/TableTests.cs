@@ -528,9 +528,10 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
                 t.SetString(0, 0, "firstrow");
                 t.SetString(0, 0, "secondrow");
                 t.SetString(0, 0, "thirdrow");
-                foreach (TableRow tableRow in t)
+                foreach (var tableRow in t)
                 {
-                    Assert.IsInstanceOf(typeof (TableRow), tableRow);
+                    var isTableRow = (typeof (TableRow) == tableRow.GetType());
+                    Assert.AreEqual(true, isTableRow);
                     //assert important as Table's parent also implements an iterator that yields rows. We want TableRows when 
                     //we expicitly iterate a Table with foreach
                 }
@@ -540,14 +541,14 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
 
         private static void IterateTableOrView(TableOrView tov)
         {
-
             if (tov != null && !tov.IsEmpty)
                 //the isempty test is just to trick ReSharper not to suggest tov be declared as Ienummerable<Row>
             {
-                foreach (Row row in (IEnumerable<Row>) tov)//cast neccesary bc TableOrView does not implement a generic iterator
+                foreach (var row in (IEnumerable<Row>) tov)//cast neccesary bc TableOrView does not implement a generic iterator
                     //loop through a TableOrview should get os Row classes EVEN IF THE UNDERLYING IS A TABLE
                 {
-                    Assert.IsInstanceOf(typeof (Row), row);
+                    bool isRow = (row!=null);
+                    Assert.AreEqual(true,isRow);
                     //we explicitly iterate a Table with foreach
                 }
             }
@@ -790,7 +791,8 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
             using (var table = new Table(new IntField("intcolumn")))
             {
                 table.AddEmptyRow(100);
-                Assert.AreEqual(100,table.Size);
+                long size = table.Size;
+                Assert.AreEqual(100,size);
                 table.RemoveLast();
                 Assert.AreEqual(99,table.Size);//did we in fact remove a row?
                 table.AddEmptyRow(1);
@@ -4520,7 +4522,7 @@ intfield2:10//column 2
             {
                 //accessing a row on an empty table should not be allowed
                 long value = t.GetLong(0, 0);
-                Console.WriteLine(value);
+                Assert.AreEqual(value,value+1);//force fail if we get this far - we should not. Using value to avoid compiler warning
             }
         }
 
@@ -4543,7 +4545,7 @@ intfield2:10//column 2
                 //accessing a row on an empty table should not be allowed
                 t.SetLong(0, 0, 42); //this should throw
                 long value = t.GetLong(0, 0);
-                Console.WriteLine(value);
+                Assert.AreEqual(6666,value);//we should never get this far, so if we do, fail fail fail
             }
         }
 
@@ -4557,8 +4559,8 @@ intfield2:10//column 2
             {
                 //accessing a row on an empty table should not be allowed
                 t.AddEmptyRow(1);
-                long value = t.GetLong(0, -1);
-                Console.WriteLine(value);
+                var value = t.GetLong(0, -1);
+                Assert.AreEqual(value+1,value);//we cannot get this far, if we do, fail!
             }
         }
 
@@ -4572,7 +4574,7 @@ intfield2:10//column 2
                 t.AddEmptyRow(1);
                 t.SetLong(0, -1, 42); //should throw
                 long value = t.GetLong(0, -1);
-                Console.WriteLine(value);
+                Assert.AreEqual(value,value+1);//we should never get this far
             }
         }
 
@@ -4665,7 +4667,7 @@ intfield2:10//column 2
                 //accessing a row on an empty table should not be allowed
                 t.AddEmptyRow(1);
                 long value = t.GetLong(0, 1);
-                Console.WriteLine(value);
+                Assert.AreEqual(value,value+1);
             }
         }
 
@@ -4679,7 +4681,7 @@ intfield2:10//column 2
                 t.AddEmptyRow(1);
                 t.SetLong(0, 1, 42); //should throw
                 long value = t.GetLong(0, 1);
-                Console.WriteLine(value);
+                Assert.AreEqual(value,value+1);
             }
         }
 
@@ -4694,7 +4696,7 @@ intfield2:10//column 2
             {
                 t.AddEmptyRow(1);
                 long value2 = t.GetLong(-1, 0);
-                Console.WriteLine(value2);
+                Assert.AreEqual(value2,value2+1);
             }
         }
 
@@ -4708,7 +4710,7 @@ intfield2:10//column 2
                 t.AddEmptyRow(1);
                 t.SetLong(-1, 0, 42);
                 long value2 = t.GetLong(-1, 0);
-                Console.WriteLine(value2);
+                Assert.AreEqual(value2,value2+1);
             }
         }
 
@@ -4722,7 +4724,7 @@ intfield2:10//column 2
             {
                 t.AddEmptyRow(1);
                 long value2 = t.GetLong(3, 0);
-                Console.WriteLine(value2);
+                Assert.AreEqual(value2,value2+1);
             }
         }
 
@@ -4737,7 +4739,7 @@ intfield2:10//column 2
                 t.AddEmptyRow(1);
                 t.SetLong(3, 0, 42);
                 long value2 = t.GetLong(3, 0);
-                Console.WriteLine(value2);
+                Assert.AreEqual(value2,value2+1);
             }
         }
 
@@ -4779,7 +4781,6 @@ intfield2:10//column 2
                 t.AddEmptyRow(1);
                 //likewise accessing the wrong type should not be allowed
                 Table t2 = t.GetSubTable(1, 0);
-                Console.WriteLine(t2.Size); //this line should not hit - the above should throw an exception
             }
         }
 
@@ -4881,7 +4882,7 @@ intfield2:10//column 2
                 t.AddEmptyRow(1);
                 //likewise accessing the wrong type should not be allowed               
                 t.SetLong(0, 0, 42); //should throw                
-                Console.WriteLine(t.Size); //this line should not hit - the above should throw an exception
+                Assert.Fail("setLong on subtalbefiled did not throw");
             }
         }
 

@@ -4,28 +4,22 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{278D5BDB-4645-4DF1-91BF-2BB9AC4A875F}</ProjectGuid>
+    <ProjectGuid>{234D7938-4D21-4461-A0D7-361226733B65}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>TightDbCSharp</RootNamespace>
     <AssemblyName>TightDbCSharp</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
-    <ProductVersion>12.0.0</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>true</Optimize>
+    <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS V45PLUS</DefineConstants>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <RunCodeAnalysis>true</RunCodeAnalysis>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -34,9 +28,6 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <RunCodeAnalysis>true</RunCodeAnalysis>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -52,20 +43,46 @@
     <Compile Include="..\native\UnsafeNativeMethods.cs">
       <Link>UnsafeNativeMethods.cs</Link>
     </Compile>
-    <Compile Include="Group.cs" />
-    <Compile Include="Handled.cs" />
-    <Compile Include="Query.cs" />
-    <Compile Include="Row.cs" />
-    <Compile Include="RowCell.cs" />
-    <Compile Include="SharedGroup.cs" />
-    <Compile Include="TableOrView.cs" />
-    <Compile Include="TableRow.cs" />
-    <Compile Include="TableView.cs" />
-    <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="..\TightDbCSharp\GlobalSuppressions.cs">
+      <Link>GlobalSuppressions.cs</Link>
+    </Compile>
+    <Compile Include="..\TightDbCSharp\Group.cs">
+      <Link>Group.cs</Link>
+    </Compile>
+    <Compile Include="..\TightDbCSharp\Handled.cs">
+      <Link>Handled.cs</Link>
+    </Compile>
+    <Compile Include="..\TightDbCSharp\Query.cs">
+      <Link>Query.cs</Link>
+    </Compile>
+    <Compile Include="..\TightDbCSharp\Row.cs">
+      <Link>Row.cs</Link>
+    </Compile>
+    <Compile Include="..\TightDbCSharp\RowCell.cs">
+      <Link>RowCell.cs</Link>
+    </Compile>
+    <Compile Include="..\TightDbCSharp\SharedGroup.cs">
+      <Link>SharedGroup.cs</Link>
+    </Compile>
+    <Compile Include="..\TightDbCSharp\Spec.cs">
+      <Link>Spec.cs</Link>
+    </Compile>
+    <Compile Include="..\TightDbCSharp\Table.cs">
+      <Link>Table.cs</Link>
+    </Compile>
+    <Compile Include="..\TightDbCSharp\TableOrView.cs">
+      <Link>TableOrView.cs</Link>
+    </Compile>
+    <Compile Include="..\TightDbCSharp\TableRow.cs">
+      <Link>TableRow.cs</Link>
+    </Compile>
+    <Compile Include="..\TightDbCSharp\TableView.cs">
+      <Link>TableView.cs</Link>
+    </Compile>
+    <Compile Include="..\TightDbCSharp\Transaction.cs">
+      <Link>Transaction.cs</Link>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Spec.cs" />
-    <Compile Include="Table.cs" />
-    <Compile Include="Transaction.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

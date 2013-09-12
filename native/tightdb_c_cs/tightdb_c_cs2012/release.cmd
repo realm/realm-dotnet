@@ -20,6 +20,7 @@ echo ----------------------------------------------------------
 :echo parametres (%0)
 :echo where this file is located (%~dp0)
 :echo on
+
 set location=%~dp0
 set date=xdatex
 set time=xtimex
@@ -36,15 +37,18 @@ set zipper=%location%..\..\..\7z.exe
 :echo Press Any key to proceed, or close the window to abort
 :pause
 :remove any files from a prior release
+
 echo cleaning up from earlier releases
 del %filesdestination% /Q
 rem we keep the release directory as is - it might contain
 rem earlier builds, we should not delete those
 :create release directory structure in case it isn't there
+
 echo creating release directory structure
 md %location%release
 md %location%release\files\
 md %location%release\release\
+
 echo copying release files to release directory
 :copy the archiver to the release directory
 :copy %zipper% %releasedestination%

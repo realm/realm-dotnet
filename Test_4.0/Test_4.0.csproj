@@ -4,41 +4,37 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{278D5BDB-4645-4DF1-91BF-2BB9AC4A875F}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <ProjectGuid>{48344AD9-2953-4B39-9097-5CF9383A49A2}</ProjectGuid>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>TightDbCSharp</RootNamespace>
-    <AssemblyName>TightDbCSharp</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <RootNamespace>Test_4._0</RootNamespace>
+    <AssemblyName>Test_4.0</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
-    <ProductVersion>12.0.0</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>true</Optimize>
+    <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;CODE_ANALYSIS V45PLUS</DefineConstants>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <RunCodeAnalysis>true</RunCodeAnalysis>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <RunCodeAnalysis>true</RunCodeAnalysis>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="nunitlite">
+      <HintPath>..\packages\NUnitLite.1.0.0-beta2\lib\net40\nunitlite.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Windows.Forms" />
@@ -49,23 +45,40 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\native\UnsafeNativeMethods.cs">
-      <Link>UnsafeNativeMethods.cs</Link>
+    <Compile Include="..\Test\Program.cs">
+      <Link>Program.cs</Link>
     </Compile>
-    <Compile Include="Group.cs" />
-    <Compile Include="Handled.cs" />
-    <Compile Include="Query.cs" />
-    <Compile Include="Row.cs" />
-    <Compile Include="RowCell.cs" />
-    <Compile Include="SharedGroup.cs" />
-    <Compile Include="TableOrView.cs" />
-    <Compile Include="TableRow.cs" />
-    <Compile Include="TableView.cs" />
-    <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="..\TightDbCSharpTest\GroupTests.cs">
+      <Link>GroupTests.cs</Link>
+    </Compile>
+    <Compile Include="..\TightDbCSharpTest\QueryTests.cs">
+      <Link>QueryTests.cs</Link>
+    </Compile>
+    <Compile Include="..\TightDbCSharpTest\RowTests.cs">
+      <Link>RowTests.cs</Link>
+    </Compile>
+    <Compile Include="..\TightDbCSharpTest\SharedGroupTest.cs">
+      <Link>SharedGroupTest.cs</Link>
+    </Compile>
+    <Compile Include="..\TightDbCSharpTest\SpecTests.cs">
+      <Link>SpecTests.cs</Link>
+    </Compile>
+    <Compile Include="..\TightDbCSharpTest\TableTests.cs">
+      <Link>TableTests.cs</Link>
+    </Compile>
+    <Compile Include="..\TightDbCSharpTest\TableViewTests.cs">
+      <Link>TableViewTests.cs</Link>
+    </Compile>
+    <Compile Include="..\TightDbCSharpTest\TestHelper.cs">
+      <Link>TestHelper.cs</Link>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Spec.cs" />
-    <Compile Include="Table.cs" />
-    <Compile Include="Transaction.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TightDbCSharp_4.0\TightDbCSharp_4.0.csproj">
+      <Project>{234d7938-4d21-4461-a0d7-361226733b65}</Project>
+      <Name>TightDbCSharp_4.0</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

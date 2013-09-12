@@ -68,6 +68,7 @@ enum DataType {
         private const long GetDllVersionCSharp = 20130906;
 
 
+
         //tightdb_c_cs_API size_t tightdb_c_csGetVersion(void)
         [DllImport(L64, EntryPoint = "tightdb_c_cs_getver", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr tightdb_c_cs_DllVer64();
@@ -4203,10 +4204,12 @@ enum DataType {
             return StrBufToStr(buffer, (int) bufferSizeNeededChars);
         }
 
-
+        //todo:performance test this, to figure if we really need these annotations
         //after the call currentBufferSizeChars is the size of the buffer. Before the call, bufferSizeNeededChars holds the requested size
         //while currentbuffersizeChars holds the size from last time the buffer was created
+#if V45PLUS
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif 
         private static IntPtr StrAllocateBuffer(out long currentBufferSizeChars,long bufferSizeNeededChars)
         {
             currentBufferSizeChars = bufferSizeNeededChars;
@@ -4215,7 +4218,9 @@ enum DataType {
 
         //uses the marshaller to copy a unicode utf-16string inside an umnanaged buffer into a C# string
         //after the copy operation, the buffer is released using Marshal.FreeHGlobal(allocated in strallocatebuffer just above with Marshal.AllcHGlobal)
+#if V45PLUS
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
         private static string StrBufToStr(IntPtr buffer, int bufferSizeNeededChars)
         {
             string retStr = bufferSizeNeededChars > 0 ? Marshal.PtrToStringUni(buffer, bufferSizeNeededChars) : "";//return "" if the string is empty, otherwise copy data from the buffer
@@ -4225,8 +4230,10 @@ enum DataType {
 
         //determines if the buffer was large enough by looking at requested size and current size. if not large enough, free the buffer and return
         //true which makes the calling method loop once more
+#if V45PLUS
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Boolean StrBufferOverflow(IntPtr buffer,long currentBufferSizeChars, long bufferSizeNeededChars)
+#endif
+        private static Boolean StrBufferOverflow(IntPtr buffer, long currentBufferSizeChars, long bufferSizeNeededChars)
         {
             if (currentBufferSizeChars < bufferSizeNeededChars)
             {
@@ -4637,11 +4644,18 @@ enum DataType {
 
 #if (DEBUG)
         private const string Buildmode = "d";
+        private const string BuildName = "Debug";
 #else
         private const string Buildmode = "r";
+        private const string BuildName = "Release";
+
 #endif
 
-
+#if (__MonoCS__)
+        private const string CompiledWithMono = "Yes";
+#else
+        private const string CompiledWithMono = "No";
+#endif
 
         //the .net library wil always use a c dll that is called tightdb_c_cs2012[32/64][r/d]
         //this dll could have been built with vs2012 or 2010 - we don't really care as long as the C interface is the same, which it will be
@@ -4668,23 +4682,40 @@ enum DataType {
             var vmBitness = (pointerSize == 8) ? "64bit" : "32bit";
             var dllstring = (pointerSize == 8) ? L64 : L32;
 
+
             OperatingSystem os = Environment.OSVersion;
             Assembly executingAssembly = Assembly.GetExecutingAssembly();
             PortableExecutableKinds peKind;
             ImageFileMachine machine;
             executingAssembly.ManifestModule.GetPEKind(out peKind, out machine);
-            String thisapplocation = executingAssembly.Location;
-            
+            var thisapplocation = executingAssembly.Location;
             Console.WriteLine("");
-            Console.WriteLine("Pointer Size              : {0}", pointerSize);
-            Console.WriteLine("Process Running as        : {0}", vmBitness);
+            Console.WriteLine("TightDb CSharp Binding Unit Tests will be run now.");
+
+            Console.WriteLine("");
+            Console.WriteLine("---OS Info---");
+            Console.WriteLine("OS Version                  : {0}", os.Version);
+            Console.WriteLine("OS Platform                 : {0}", os.Platform);
+            Console.WriteLine("64 Bit OS *                 : {0}", Environment.Is64BitOperatingSystem);
+            Console.WriteLine("64 Bit process              : {0}", Environment.Is64BitProcess);
+            Console.WriteLine("*=not accurate if running on mono");
+
+            Console.WriteLine("");
+            Console.WriteLine("---CLR Info---");
+            Console.WriteLine("Pointer Size                : {0}", pointerSize);
+            Console.WriteLine("Process Running as          : {0}", vmBitness);
+            Console.WriteLine("Running on mono             : {0}", IsRunningOnMono());
+            Console.WriteLine("Common Language Runtime     : {0}", Environment.Version);
+
+            Console.WriteLine("");
+            Console.WriteLine("---C# binding (TightDbCSharp.dll) Info---");
             Console.WriteLine("Built as PeKind           : {0}", peKind);
             Console.WriteLine("Built as ImageFileMachine : {0}", machine);
-            Console.WriteLine("OS Version                : {0}", os.Version);
-            Console.WriteLine("OS Platform               : {0}", os.Platform);
-			Console.WriteLine("Running on mono           : {0}", IsRunningOnMono());
-			Console.WriteLine("Common Language Runtime   : {0}",System.Environment.Version);
-			Console.WriteLine("build mode                : {0}",Buildmode);
+			Console.WriteLine("Debug Or Release          : {0}", BuildName);
+            Console.WriteLine("Compiled With Mono        : {0}", CompiledWithMono);
+
+            Console.WriteLine("");
+            Console.WriteLine("---C++ DLL Info---");
             Console.WriteLine("Assembly running right now :");
             Console.WriteLine(thisapplocation + "...");
             Console.WriteLine("Current Directory :");

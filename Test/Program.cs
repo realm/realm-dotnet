@@ -1,41 +1,82 @@
-﻿using System;
-//this project has access to all the unit tests. You can use it to run selected unit tests in a more 
-//controlled way than with the unit test runner, and to run the binding in a console window app, as this is
-//running in a console window app makes it easier to see cerr and cout and console.writeln() output,
-//as many unit test runners don't have support for showing console output.
-//just calling unit tests that throw exceptions and catch these by [ExpectedException] does not work
-//as no unit test framework is catching the exceptions
-//so only a subsest of all our unit tests can be run from here this way
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Windows.Forms;
-using TightDbCSharp;
-using TightDbCSharpTest;
+// ***********************************************************************
+// Copyright (c) 2009 Charlie Poole
+//
+// Permission is hereby granted, free of charge, to any person obtaining
+// a copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so, subject to
+// the following conditions:
+// 
+// The above copyright notice and this permission notice shall be
+// included in all copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+// ***********************************************************************
 
-namespace Test
+using System;
+//using System.IO;
+using NUnitLite.Runner;
+//using NUnit.Framework.Internal;
+
+namespace NUnitLite.Tests
 {
-    static class Program
+    public class Program
     {
-        static void Main()
+        // The main program executes the tests. Output may be routed to
+        // various locations, depending on the arguments passed.
+        //
+        // Arguments:
+        //
+        //  Arguments may be names of assemblies or options prefixed with '/'
+        //  or '-'. Normally, no assemblies are passed and the calling
+        //  assembly (the one containing this Main) is used. The following
+        //  options are accepted:
+        //
+        //    -test:<testname>  Provides the name of a test to be exected.
+        //                      May be repeated. If this option is not used,
+        //                      all tests are run.
+        //
+        //    -out:PATH         Path to a file to which output is written.
+        //                      If omitted, Console is used, which means the
+        //                      output is lost on a platform with no Console.
+        //
+        //    -full             Print full report of all tests.
+        //
+        //    -result:PATH      Path to a file to which the XML test result is written.
+        //
+        //    -explore[:Path]   If specified, list tests rather than executing them. If a
+        //                      path is given, an XML file representing the tests is written
+        //                      to that location. If not, output is written to tests.xml.
+        //
+        //    -noheader,noh     Suppress display of the initial message.
+        //
+        //    -wait             Wait for a keypress before exiting.
+        //
+        //    -include:categorylist 
+        //             If specified, nunitlite will only run the tests with a category 
+        //             that is in the comma separated list of category names. 
+        //             Example usage: -include:category1,category2 this command can be used
+        //             in combination with the -exclude option also note that exlude takes priority
+        //             over all includes.
+        //
+        //    -exclude:categorylist 
+        //             If specified, nunitlite will not run any of the tests with a category 
+        //             that is in the comma separated list of category names. 
+        //             Example usage: -exclude:category1,category2 this command can be used
+        //             in combination with the -include option also note that exclude takes priority
+        //             over all includes
+        public static void Main(string[] args)
         {
-            Console.WriteLine("current directory : " + Directory.GetCurrentDirectory());
-            Console.WriteLine("starting tests");
-			Table.TestInterop ();
-            TightDbCSharpTest.TableTests1.ShowVersionTest();//show various system details on screen
-			TightDbCSharpTest.GroupTests.CreateGroupFileNameTest();//low level system integrity check
-
-            //    TightDbCSharpTest.TableTests1.TableSetBinary();
-            //TightDbCSharpTest.TableTests1.TableFindFirstBinaryCoreBug();
-            //TightDbCSharpTest.TableTests1.TableAddSubtableUsingPath();
-            TightDbCSharpTest.GroupTests.GroupWriteTest();
-            Application.DoEvents();
-            Console.WriteLine("Finished. Any key...");
-
-
-            var test = new List<object>();
-            IEnumerator b = test.GetEnumerator();
-            b.MoveNext();
+            new TextUI().Execute(args);
+            Console.WriteLine("Tests finished, any key to close the application");
             Console.ReadKey();
         }
     }

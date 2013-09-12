@@ -66,23 +66,23 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LibraryPath>..\..\..\libsVS2012\;$(LibraryPath)</LibraryPath>
+    <LibraryPath>..\..\libsVS2012\;$(LibraryPath)</LibraryPath>
     <TargetName>$(ProjectName)32d</TargetName>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LibraryPath>..\..\..\libsVS2012\;$(LibraryPath)</LibraryPath>
+    <LibraryPath>..\..\libsVS2012\;$(LibraryPath)</LibraryPath>
     <TargetName>$(ProjectName)32r</TargetName>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LibraryPath>..\..\..\libsVS2012\;$(LibraryPath)</LibraryPath>
+    <LibraryPath>..\..\libsVS2012\;$(LibraryPath)</LibraryPath>
     <TargetName>$(ProjectName)64d</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LibraryPath>..\..\..\libsVS2012\;$(LibraryPath)</LibraryPath>
+    <LibraryPath>..\..\libsVS2012\;$(LibraryPath)</LibraryPath>
     <TargetName>$(ProjectName)64r</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -90,7 +90,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>TIGHTDB_DEBUG;_DEBUG;;_CRTDBG_MAP_ALLOC;_CRTDBG_MAP_ALLOC_NEW;TIGHTDB_C_CS_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\..\libsVS2012\src\tightdb;..\..\..\libsVS2012\src\win32;..\..\..\libsVS2012\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\libsVS2012\src\tightdb;..\..\libsVS2012\src\win32;..\..\libsVS2012\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <DisableSpecificWarnings>4355;4996</DisableSpecificWarnings>
     </ClCompile>
@@ -105,7 +105,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>TIGHTDB_DEBUG;TIGHTDB_C_CS_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\..\libsVS2012\src\tightdb;..\..\..\libsVS2012\src\win32;..\..\..\libsVS2012\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\libsVS2012\src\tightdb;..\..\libsVS2012\src\win32;..\..\libsVS2012\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CompileAs>CompileAsCpp</CompileAs>
       <DisableSpecificWarnings>4355;4996</DisableSpecificWarnings>
     </ClCompile>
@@ -121,7 +121,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;TIGHTDB_C_CS_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\..\libsVS2012\src\tightdb;..\..\..\libsVS2012\src\win32;..\..\..\libsVS2012\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\libsVS2012\src\tightdb;..\..\libsVS2012\src\win32;..\..\libsVS2012\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4355;4996</DisableSpecificWarnings>
     </ClCompile>
     <Link>
@@ -138,7 +138,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;TIGHTDB_C_CS_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\..\libsVS2012\src\tightdb;..\..\..\libsVS2012\src\win32;..\..\..\libsVS2012\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\libsVS2012\src\tightdb;..\..\libsVS2012\src\win32;..\..\libsVS2012\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <BufferSecurityCheck>false</BufferSecurityCheck>

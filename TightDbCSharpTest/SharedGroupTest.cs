@@ -22,8 +22,8 @@ namespace TightDbCSharpTest
             using (var sharedGroup = new SharedGroup(sharedgroupfilename, false, DurabilityLevel.DurabilityFull))
             {
                 Assert.AreEqual(false, sharedGroup.Invalid);
-                Console.WriteLine(String.Format(CultureInfo.InvariantCulture, "Hello from sharedgroup {0}",
-                    sharedGroup.ObjectIdentification()));
+//                Console.WriteLine(String.Format(CultureInfo.InvariantCulture, "Hello from sharedgroup {0}",
+//                    sharedGroup.ObjectIdentification()));
 
             }
         }
@@ -69,8 +69,8 @@ namespace TightDbCSharpTest
             {
                 //first we need to create a table and put a little data into it
                 Assert.AreEqual(false, sharedGroup.Invalid);//C# construct, so legal even on an unattached shared group                
-                Console.WriteLine(String.Format(CultureInfo.InvariantCulture, "Hello from sharedgroup {0}",
-                    sharedGroup.ObjectIdentification()));
+//                Console.WriteLine(String.Format(CultureInfo.InvariantCulture, "Hello from sharedgroup {0}",
+//                    sharedGroup.ObjectIdentification()));
 
 
                 using (var transaction = sharedGroup.BeginWrite())
@@ -227,12 +227,12 @@ namespace TightDbCSharpTest
 
                 using (var transaction = sharedGroup.BeginRead())
                 {
-                    Console.WriteLine(String.Format(CultureInfo.InvariantCulture,
-                        "Hello from inside a readtransaction {0}", sharedGroup.ObjectIdentification()));
+               //     Console.WriteLine(String.Format(CultureInfo.InvariantCulture,
+              //          "Hello from inside a readtransaction {0}", sharedGroup.ObjectIdentification()));
                     Assert.AreEqual(true, transaction.ReadOnly);
                 }
-                Console.WriteLine(String.Format(CultureInfo.InvariantCulture, "Hello from sharedgroup {0}",
-                    sharedGroup.ObjectIdentification()));
+             //   Console.WriteLine(String.Format(CultureInfo.InvariantCulture, "Hello from sharedgroup {0}",
+            //        sharedGroup.ObjectIdentification()));
             }
         }
 
@@ -252,8 +252,8 @@ namespace TightDbCSharpTest
                 
                 using (var transaction = sharedGroup.BeginRead())
                 {
-                    Console.WriteLine(String.Format(CultureInfo.InvariantCulture,
-                        "Hello from inside a readtransaction {0}", sharedGroup.ObjectIdentification()));
+//                    Console.WriteLine(String.Format(CultureInfo.InvariantCulture,
+//                        "Hello from inside a readtransaction {0}", sharedGroup.ObjectIdentification()));
                     Assert.AreEqual(true, transaction.ReadOnly);
                     Assert.AreEqual(TransactionKind.Read,transaction.Kind);                    
                     Assert.AreEqual(false,sharedGroup.Invalid);
@@ -271,8 +271,8 @@ namespace TightDbCSharpTest
                         Assert.AreEqual(false, transaction.Invalid);//just bc an illegal inner transaction operation was preempted
                     }
                 }
-                Console.WriteLine(String.Format(CultureInfo.InvariantCulture, "Hello from sharedgroup {0}",
-                    sharedGroup.ObjectIdentification()));
+//                Console.WriteLine(String.Format(CultureInfo.InvariantCulture, "Hello from sharedgroup {0}",
+//                  sharedGroup.ObjectIdentification()));
             }
         }
 
@@ -292,8 +292,8 @@ namespace TightDbCSharpTest
 
                 using (var transaction = sharedGroup.BeginRead())
                 {
-                    Console.WriteLine(String.Format(CultureInfo.InvariantCulture,
-                        "Hello from inside a readtransaction {0}", sharedGroup.ObjectIdentification()));
+//                    Console.WriteLine(String.Format(CultureInfo.InvariantCulture,
+//                        "Hello from inside a readtransaction {0}", sharedGroup.ObjectIdentification()));
                     Assert.AreEqual(true, transaction.ReadOnly);
                     Assert.AreEqual(TransactionKind.Read, transaction.Kind);
                     Assert.AreEqual(false, sharedGroup.Invalid);
@@ -318,8 +318,8 @@ namespace TightDbCSharpTest
                         Assert.AreEqual(false, transaction.Invalid);
                     }
                 }
-                Console.WriteLine(String.Format(CultureInfo.InvariantCulture, "Hello from sharedgroup {0}",
-                    sharedGroup.ObjectIdentification()));
+//                Console.WriteLine(String.Format(CultureInfo.InvariantCulture, "Hello from sharedgroup {0}",
+//                    sharedGroup.ObjectIdentification()));
                 Assert.AreEqual(false, sharedGroup.Invalid);//and the shared group should also work after the outer transaction has finished
             }
         }

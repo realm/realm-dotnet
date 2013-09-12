@@ -2,9 +2,10 @@
 
 This directory contains c++ project and files that are used to build the tightdb_c_cs.dll file for various platform configurations
 
-The tightdb_c_cs.dll file contains extern "C" methods, that call on into c++ tightdb
+The tightdb_c_cs.dll file contains extern "C" functions, that call on into c++ tightdb which it links in as a static library
+lib file
 
-The C# binding use the extern "c" methods in the DLL to access tightdb.
+The C# binding in turn, use the extern "c" functions in the DLL to access tightdb.
 
 This directory contains two solutions that links to the same sourcefiles :
 tightCSDLL2012.sln - used to build with visual studio 2012
@@ -47,18 +48,16 @@ The library files needed are :
 - tightdb64.lib
 - tightdb64d.lib
 
-place VS2012 Library files in ..\..\libs\libsVS2012 (aka c:\develope\github\tightcsharp\libs\libsVS2012)  
-place VS2010 Library files in ..\..\libs\libsVS2010 (aka c:\develope\github\tightcsharp\libs\libsVS2010)  
+place VS2012 Library files in ..\..\libsVS2012 (aka c:\develope\github\tightcsharp\native\libsVS2012)  
+place VS2010 Library files in ..\..\libsVS2010 (aka c:\develope\github\tightcsharp\native\libsVS2010)  
 
 tightdb header files for tightdb<32|64>[d].lib:
 
 Taking the header files from the unix build will do, You probably also need the windows header files-these are not in the unix build,and not on the github java binding branch, You have to obtain them from someone at tightdb.
 
 The tightdb header files are assumed to be found in  
-- ..\..\..\..\tightdb     (aka c:\develope\tightdb )
-- ..\..\..\..\tightdb\win32  (aka c:\develope\tightdb\win32 )
-
-note that the header files are looked for in a directory that is not a part of this project tree.  
+- ..\..\libsvs2012\tightdb     (aka c:\develope\tightdb )
+- ..\..\libsvs2012\tightdb\win32  (aka c:\develope\tightdb\win32 )
 
 ###Setting up VS2010 or 2012 to build the c++ binding###
 
@@ -166,7 +165,7 @@ Set up stuff that is the same for all 4 configurations:
 
 - select configuration properties->VC++ Directories
 - select Library Directories, click the down error and select edit  (vs2012:double click the white area to edit)
-- type in ..\..\..\libsVS201n\   (aka C:\develope\github\tightdbcs\libs\libsVS2012)
+- type in ..\..\libsVS201n\   (aka C:\develope\github\tightdbcs\libs\libsVS2012)
 - click OK
 
 
@@ -178,8 +177,8 @@ Set up stuff that is the same for all 4 configurations:
 in  configuration properties->c/c++->General->additional include directories
 
 - click arrow down,select edit. Add:  
-- ..\..\..\..\..\tightdb\  
-- ..\..\..\..\..\tightdb\win32\  
+- ..\..\..\..\tightdb\  
+- ..\..\..\..\tightdb\win32\  
 - click apply
 
 
