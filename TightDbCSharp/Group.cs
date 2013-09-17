@@ -12,15 +12,24 @@ namespace TightDbCSharp
         //this group will be unattached and without transactions and readwrite
         public Group()
         {
-            AcquireHandle(false);
+            try
+            {
+                AcquireHandle(false);
+            }
+            catch (Exception)
+            {
+                Dispose();
+                throw;
+            }
         }
 
         //this constructor is called by transaction to avoid group() being called, which would 
         //create a new c++ group class which the transaction does not need as it gets its handle
-        //from shared group        
+        //from shared group 
+        
         internal Group(Boolean isReadOnly)
         {
-            ReadOnly = isReadOnly;
+            ReadOnly = isReadOnly;            
         }
 
         //actually acquire the handle to this group
@@ -116,21 +125,37 @@ namespace TightDbCSharp
         //as group files can create problems at any time, any group related calls should probably be wrapped in exception handlers, and
         //should be able to return error codes to C#
         public Group(string path)
-        {            
-            UnsafeNativeMethods.GroupNewFile(this,path);
+        {
+            try
+            {
+                UnsafeNativeMethods.GroupNewFile(this, path);
+            }
+            catch (Exception)
+            {
+                Dispose();
+                throw;
+            }
         }
 
         public Group(byte[] binaryGroup)
         {
-            if (binaryGroup == null)
+            try
             {
-               throw new ArgumentNullException("binaryGroup"," Group cannot be created from a null pointer ");
+                if (binaryGroup == null)
+                {
+                    throw new ArgumentNullException("binaryGroup", " Group cannot be created from a null pointer ");
+                }
+                if (binaryGroup.Length == 0)
+                {
+                    throw new ArgumentNullException("binaryGroup", "Group cannot be created from an array of size 0");
+                }
+                UnsafeNativeMethods.GroupFrombinaryData(this, binaryGroup);
             }
-            if (binaryGroup.Length == 0)
+            catch (Exception)
             {
-                throw new ArgumentNullException("binaryGroup","Group cannot be created from an array of size 0");
+                Dispose();
+                throw;
             }
-            UnsafeNativeMethods.GroupFrombinaryData(this,binaryGroup);
         }
 
         protected override void ReleaseHandle()
@@ -138,7 +163,7 @@ namespace TightDbCSharp
             UnsafeNativeMethods.GroupDelete(this);
         }
 
-        public override string ObjectIdentification()
+        internal override string ObjectIdentification()
         {
             return string.Format(CultureInfo.InvariantCulture, "Group:({0:d}d)  ({1}h)" ,Handle,Handle.ToString("X"));
         }

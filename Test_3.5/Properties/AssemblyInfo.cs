@@ -4,11 +4,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("TightDbCSharp_4.0")]
+[assembly: AssemblyTitle("Test_3.5")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("TightDbCSharp_4.0")]
+[assembly: AssemblyProduct("Test_3.5")]
 [assembly: AssemblyCopyright("Copyright ©  2013")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -19,7 +19,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("4f1b71fc-6e9e-4779-9e7f-421caaf2346c")]
+[assembly: Guid("6986c9d0-dd79-4d84-a8cf-d5162cf77489")]
 
 // Version information for an assembly consists of the following four values:
 //

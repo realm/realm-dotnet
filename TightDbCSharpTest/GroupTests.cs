@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using NUnit.Framework;
 using TightDbCSharp;
 using TightDbCSharp.Extensions;
@@ -21,9 +20,10 @@ namespace TightDbCSharpTest
 
 
         [Test]
+
         public static void CreateGroupEmptyTestUsing()
         {
-
+            
             using (var g = new Group())
             {
                 Assert.AreEqual(false, g.Invalid);
@@ -75,6 +75,38 @@ namespace TightDbCSharpTest
                 Assert.AreEqual(false, g.Invalid);            
             }
         }
+
+        [Test]
+        public static void Ca2000TestNoFalsePositive()
+        {
+
+            var g = new Group();
+            try
+            {
+            }
+            finally
+            {
+                g.Dispose();
+            }
+        }
+
+
+        [Test]  //see above test that is similar to this one, but does not trigger CA2000
+            //DO NOT DISABLE THIS TEST - WHEN IT DOES NOT SHOW UP AS A CA2000 tHEN MSFT HAVE FIXED
+            //THEIR CA2000 BUG, AND WE SHOULD REMOVE THE SUPRESSED CA2000 ERRORS FROM THE SUPRESSION FILES
+        public static void Ca2000TestFalsePositive()
+        {
+            using (var g = new Group())            
+            {
+                Assert.AreEqual(g.Handle,g.Handle);
+            }
+        }
+
+
+
+
+
+
 
 
         [Test]

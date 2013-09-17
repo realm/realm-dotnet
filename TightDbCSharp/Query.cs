@@ -15,8 +15,16 @@ namespace TightDbCSharp
 
         internal Query(IntPtr handle,Table underlyingTable, bool shouldbedisposed)
         {
-            SetHandle(handle, shouldbedisposed);
-            UnderlyingTable = underlyingTable;
+            try
+            {
+                SetHandle(handle, shouldbedisposed);
+                UnderlyingTable = underlyingTable;
+            }
+            catch (Exception)//no matter where we get an exception, we dispose just to be 100% sure
+            {
+                Dispose();//dispose detects if something should be disposed by checking if a handle was acquired
+                throw;
+            }
         }
 
         
@@ -236,8 +244,8 @@ namespace TightDbCSharp
         {
             return GetEnumerator();
         }
-       
-        public override string ObjectIdentification()
+
+        internal override string ObjectIdentification()
         {
             return string.Format(CultureInfo.InvariantCulture, "Query:" + Handle);
         }

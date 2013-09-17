@@ -5,11 +5,11 @@ using TightDbCSharp.Extensions;
 namespace TightDbCSharpTest
 {
     [TestFixture]
-    public class SpecTests
+    public static class SpecTests
     {
 
         [Test]
-        public void SpecInspection()
+        public static void SpecInspection()
         {
             using (var table = new Table("IntColumn".Int(), "sub".SubTable("int".Int())))
             {

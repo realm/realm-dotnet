@@ -5,11 +5,11 @@ using TightDbCSharp;
 namespace TightDbCSharpTest
 {
     [TestFixture]
-    public class RowTests
+    public static class RowTests
     {
 
         [Test]
-        public static void TestSubtableIntIndex()
+        public static void TestSubTableIntIndex()
         {
             using (var table = new Table())
             {
@@ -29,13 +29,12 @@ namespace TightDbCSharpTest
             using (var table = new Table(new MixedField("subinmixed")))
             {
                 table.AddEmptyRow(1);
-                table.SetMixedSubTable(0, 0,
-                    new Table(new StringField("Name"), new IntField("Cases"))
-                    {
-                        {"Firstname", 42},
-                        {"Secondname", 43}
-                    })
-                    ;
+                using (var sub1 = new Table(new StringField("Name"), new IntField("Cases")))
+                {
+                    sub1.Add("Firstname", 42);
+                    sub1.Add("Secondname", 43);                                
+                    table.SetMixedSubTable(0, 0, sub1);
+                }
                 using (var  sub = table.GetMixedSubTable(0,0))
                 {
                     Assert.AreEqual(42,sub.GetLong(1,0));
@@ -68,7 +67,7 @@ namespace TightDbCSharpTest
 
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
-        public static void TestSubtableStringIndex()
+        public static void TestSubTableStringIndex()
         {
             using (var table = new Table())
             {
@@ -99,7 +98,7 @@ namespace TightDbCSharpTest
         //if the getcolumnindex -1 returned is somehow intepreted as unsigned, this test will catch it and fail
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
-        public static void GetColumnIndexNotFoundBug32Bityped()
+        public static void GetColumnIndexNotFoundBug32BitTyped()
         {
             using (var table = new Table())
             {
@@ -211,8 +210,11 @@ namespace TightDbCSharpTest
         [Test]
         public static void TestRowDelete()
         {
-            using (var table = new Table(new StringField("test")) {"Hans", "Grethe"})
+            Table table;
+            using (table = new Table(new StringField("test")) )
             {
+                table.Add("Hans");
+                table.Add("Grethe");
                 TableRow tr = table[0];
                 Assert.AreEqual(2,table.Size);
                 tr.Remove();
@@ -222,14 +224,14 @@ namespace TightDbCSharpTest
         }
 
 
-
         //test if a row object gets disabled when it changes its table in an invalidating way
         [Test]
         [ExpectedException("System.InvalidOperationException")]//because the table row shouldve been invalidated after it was removed
         public static void TestRowDeleteInvalidated()
         {
-            using (var table = new Table(new StringField("test")) { "Hans", "Grethe" })
+            using (var table = new Table(new StringField("test")) )
             {
+                table.AddMany(new[] {"Hans", "Grethe"});
                 TableRow tr = table[0];
                 Assert.AreEqual(2, table.Size);
                 Assert.AreEqual(true,tr.IsValid());
@@ -245,10 +247,11 @@ namespace TightDbCSharpTest
         //test if a row object gets disabled when the user changes its table in an invalidating way, not going through the rowobject
         [Test]
         [ExpectedException("System.InvalidOperationException")]//because the table row shouldve been invalidated after it was removed
-        public static void TestRowDeleteInvalidatedThrougTtable()
+        public static void TestRowDeleteInvalidatedThroughTable()
         {
-            using (var table = new Table(new StringField("test")) { "Hans", "Grethe" })
+            using (var table = new Table(new StringField("test")) )
             {
+                table.AddMany(new[] {"Hans", "Grethe"});
                 TableRow tr = table[0];
                 Assert.AreEqual(2, table.Size);
                 Assert.AreEqual(true, tr.IsValid());
@@ -269,7 +272,7 @@ namespace TightDbCSharpTest
         [Test]
         [ExpectedException("System.InvalidOperationException")]
         //because the table row shouldve been invalidated after it was removed
-        public static void TestRowDeleteInvalidatedThrougGroup()
+        public static void TestRowDeleteInvalidatedThroughGroup()
         {
             using (var group = new Group())
             using (var table = group.CreateTable("T1", new StringField("test")))
@@ -301,7 +304,7 @@ namespace TightDbCSharpTest
                 TableRow tr = t[0];
                 var tester = (long) tr["NoRow"];//exception should be thrown here
                 Assert.AreEqual(0,tester);//use tester
-                Assert.Fail("Accessing tablerow with a bad string index should have thrown an exception");
+                Assert.Fail("Accessing table row with a bad column string index should have thrown an exception");
             }            
         }
 
@@ -332,6 +335,8 @@ namespace TightDbCSharpTest
                 Assert.AreEqual(new DateTime(1980, 1, 2,0,0,0,DateTimeKind.Utc), returnedDateTime);
                 Assert.AreEqual(3.14f, tr[6]);
                 Assert.AreEqual(3.14 * 12, tr[7]);
+                tr["Valid"] = false;
+                Assert.AreEqual(false,tr["Valid"]);
             }
         }
     }

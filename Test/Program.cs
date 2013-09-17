@@ -28,7 +28,7 @@ using NUnitLite.Runner;
 
 namespace NUnitLite.Tests
 {
-    public class Program
+    public static class Program
     {
         // The main program executes the tests. Output may be routed to
         // various locations, depending on the arguments passed.
@@ -73,6 +73,7 @@ namespace NUnitLite.Tests
         //             Example usage: -exclude:category1,category2 this command can be used
         //             in combination with the -include option also note that exclude takes priority
         //             over all includes
+
         public static void Main(string[] args)
         {
             new TextUI().Execute(args);

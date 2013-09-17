@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -24,28 +25,54 @@ namespace TightDbCSharp
 
     //Tightdb Table
     //could have been called RowCollection but is called Table as it in fact is a table and not merely a collection of rows
-    public class Table : TableOrView, IEnumerable<Row>, ICloneable
+    public class Table : TableOrView, ICloneable,
+        IEnumerable<Row>
+        
     {
 
      
         //this is not called if constructed with parametres
         public Table()
         {
-            TableNew();
+            try
+            {
+                TableNew();
+            }
+            catch (Exception)
+            {
+                Dispose();//this is proof that dispose is always called if the constructor throws
+                throw;
+            }
         }
 
         
         //This is used when we want to create a table and we already have the c++ handle that the table should use.  used by GetSubTable
         internal Table(IntPtr tableHandle,bool shouldbedisposed)
         {
-            SetHandle(tableHandle,shouldbedisposed);
+            try
+            {
+                SetHandle(tableHandle, shouldbedisposed);
+            }
+            catch (Exception)
+            {
+                Dispose();
+                throw;
+            }
         }
 
         //implements ICloneable - this method is called Copy in the c++ binding        
         public Table Clone()
         {
-            ValidateIsValid();
-            return UnsafeNativeMethods.CopyTable(this);
+            try
+            {
+                ValidateIsValid();
+                return UnsafeNativeMethods.CopyTable(this);
+            }
+            catch (Exception)
+            {
+                Dispose();
+                throw;
+            }
         }
 
         
@@ -104,11 +131,14 @@ namespace TightDbCSharp
 
         
 
+
         //the following code enables Table to be enumerated, and makes TableRow the type You get back from an enummeration
         public IEnumerator<Row> GetEnumerator() { ValidateIsValid(); return new Enumerator(this); }
         IEnumerator IEnumerable.GetEnumerator() { return new Enumerator(this); }
 
         class Enumerator : IEnumerator<Row>//probably overkill, current needs could be met by using yield
+
+
         {
             long _currentRow = -1;
             Table _myTable;
@@ -128,7 +158,9 @@ namespace TightDbCSharp
             //as per msft guidelines, current does not throw an error even if the iterator is invalidated
             //however, here we DO throw an error as current would otherwise return a TableRow with a potentially illegal rowIndex inside
             //note we return TableRow from tables (they derive from Row). TableView returns Row
+
             public Row Current 
+
             {
                 get
                 {
@@ -156,7 +188,7 @@ namespace TightDbCSharp
 
         public static void ShowVersionTest()
         {
-            UnsafeNativeMethods.ShowVersionTest();
+            UnsafeNativeMethods.ShowInfo();
         }
 
 
@@ -166,20 +198,38 @@ namespace TightDbCSharp
         //to put them into an array first
         public Table(params Field[] schema)
         {
-            if (schema == null)
+            try
             {
-                throw new ArgumentNullException("schema");
+                if (schema == null)
+                {
+                    throw new ArgumentNullException("schema");
+                }
+                TableNew();
+                DefineSchema(schema);
             }
-            TableNew();
-            DefineSchema(schema);
+            catch (Exception)
+                //to play safe reg CA2000 warning. Not that it goes away but now we know for sure that we never ever
+                //can be in a situation where the constructor leaves with an exception and does not call dispose.
+            {
+                Dispose();
+                throw;
+            }
         }
 
         //allows the user to quickly create a table with a single field of a single type
         public Table(Field schema)
         {
-            TableNew();//allocate a table class in c++
-            //Spec spec = GetSpec();//get a handle to the table's new empty spec
-            DefineSchema(schema);
+            try
+            {
+                TableNew(); //allocate a table class in c++
+                //Spec spec = GetSpec();//get a handle to the table's new empty spec
+                DefineSchema(schema);
+            }
+            catch (Exception)
+            {
+                Dispose();
+                throw;
+            }
         }
 
     //    public Table(params object[] fieldDescriptions)
@@ -372,7 +422,7 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableGetColumnType(this, columnIndex);
         }
 
-        public override string ObjectIdentification()
+        internal override string ObjectIdentification()
         {
             ValidateIsValid();
             return string.Format(CultureInfo.InvariantCulture,"Table:" + Handle);
@@ -831,8 +881,7 @@ namespace TightDbCSharp
         //todo:implement the rest of the insert api for inserting - but only for internal use
         private void InsertInt(long columnIndex, long rowIndex, long value)
         {
-            UnsafeNativeMethods.TableInsertInt(this, columnIndex, rowIndex, value);
-            
+            UnsafeNativeMethods.TableInsertInt(this, columnIndex, rowIndex, value);            
         }
 
         public void InsertEmptyRow(long rowIndex, long rowsToInsert)
@@ -1474,7 +1523,6 @@ namespace TightDbCSharp
     namespace Extensions
     {
 
-
         public static class TightDbExtensions
         {
             public static Field TightDbInt(this String fieldName)
@@ -1573,8 +1621,6 @@ namespace TightDbCSharp
             {
                 return new Field(fieldName, DataType.Double);
             }
-
-
         }
     }
 

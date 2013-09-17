@@ -227,7 +227,42 @@ namespace TightDbCSharp
 
         //there is also a lowlevel SetSubTableNoCheck - this one takes almost anything and figures what to do with it
 
-        private void SetSubTableNoCheckHighLevel(long columnIndex, long rowIndex, IEnumerable<object> element)
+#if !V40PLUS
+        private void SetSubTableAsTableNoCheckHighLevel_35(long columnIndex, long rowIndex, Table element)
+        {
+            if (element == null)
+            {
+                SetNullSubtable(columnIndex, rowIndex);
+            }
+            else
+            {
+                using (var t = GetSubTableNoCheck(columnIndex, rowIndex))
+                {
+                    ValidateEqualScheme(t, element, "Set Sub Table");
+                    SetSubTableNoCheck(columnIndex, rowIndex, element);
+                }
+            }
+        }
+
+        private void SetSubTableAsObjectsNoCheckHighLevel_35(long columnIndex, long rowIndex,  IEnumerable<Object> element)
+        {
+            if (element == null)
+            {
+                SetNullSubtable(columnIndex, rowIndex);
+            }
+            using (var t = GetSubTableNoCheck(columnIndex, rowIndex))
+            {
+                t.AddMany(element);
+            }
+        }
+
+        private void SetNullSubtable(long columnIndex, long rowIndex)
+        {
+            ClearSubTableNoCheck(columnIndex, rowIndex);
+        }
+
+#else
+        private void SetSubTableNoCheckHighLevel(long columnIndex, long rowIndex, IEnumerable<Object> element)
         {
             if (element == null)
                 //if You specify null for a subtable we do nothing null means You intend to fill it in later
@@ -257,7 +292,7 @@ namespace TightDbCSharp
             }
         }
 
-
+#endif
 
         //add unknown typed object to a mixed
         private void SetMixedNoCheck(long columnIndex, long rowIndex, object element)
@@ -485,7 +520,6 @@ namespace TightDbCSharp
                 {
                     rowContents = (string[])rowContents[0];
                 }
-
             }
 
             ValidateSetRowNumColumns(rowContents.Length);
@@ -524,7 +558,27 @@ namespace TightDbCSharp
 
                     {
 //element could be a table or an ennumarable structure, both are Ienummerable<object> so just call on and let SetSubTableNoCheck  deal with it
+#if V40PLUS
                         SetSubTableNoCheckHighLevel(ix, rowIndex, (IEnumerable<object>) element);
+#else
+                        var elementAsEnumerable = element as IEnumerable<object>;
+                        var elementAsTable = element as Table;
+
+                        if (element == null)
+                        {
+                            SetSubTableAsTableNoCheckHighLevel_35(ix, rowIndex, null);//this method also handles null table
+                        }
+
+                        if (elementAsTable != null )//call only with null or Table
+                        {
+                            SetSubTableAsTableNoCheckHighLevel_35(ix, rowIndex, elementAsTable);
+                        } else 
+                        if (elementAsEnumerable != null)//call with IEnumerable<Object> that is not a table
+                        {
+                            SetSubTableAsObjectsNoCheckHighLevel_35(ix, rowIndex, elementAsEnumerable);    
+                        }                        
+#endif
+
                     }
                         break;
                     case DataType.Mixed: //Try to infer the mixed type to use from the type of the object from the user
@@ -1248,6 +1302,7 @@ namespace TightDbCSharp
             SetFloatNoCheck(columnIndex, rowIndex, value);
         }
 
+#if V40PLUS
         public void SetSubTable(long columnIndex, long rowIndex, IEnumerable<object> value)
         {
             ValidateIsValid();
@@ -1256,8 +1311,28 @@ namespace TightDbCSharp
             SetSubTableNoCheckHighLevel(columnIndex, rowIndex, value);
                 //even though this is called nocheck, it does check if the passed value fits the subtable scheme at C,R
         }
+#else
+        public void SetSubTable(long columnIndex, long rowIndex, Table value)
+        {
+            ValidateIsValid();
+            ValidateColumnAndRowIndex(columnIndex, rowIndex);
+            ValidateTypeSubTable(columnIndex);
+            SetSubTableAsTableNoCheckHighLevel_35(columnIndex, rowIndex, value);
+        }
 
-        public void SetSubTable(String columnName, long rowIndex, IEnumerable<object> value)
+        public void SetSubTable(long columnIndex, long rowIndex, IEnumerable<Object> value)
+        {
+            ValidateIsValid();
+            ValidateColumnAndRowIndex(columnIndex, rowIndex);
+            ValidateTypeSubTable(columnIndex);
+            SetSubTableAsObjectsNoCheckHighLevel_35(columnIndex, rowIndex, value);
+        }
+
+#endif
+
+
+#if V40PLUS
+        public void SetSubTable(String columnName, long rowIndex, IEnumerable<object> value)//4.0 and later allows a IEnumerable<object> to receive an IEnumerable<Row>
         {
             ValidateIsValid();
             long columnIndex = GetColumnIndex(columnName);
@@ -1265,6 +1340,27 @@ namespace TightDbCSharp
             ValidateRowIndex(rowIndex);
             SetSubTableNoCheckHighLevel(columnIndex, rowIndex, value);
         }
+#else
+        public void SetSubTable(String columnName, long rowIndex, Table value)
+        {
+            ValidateIsValid();
+            var columnIndex = GetColumnIndex(columnName);
+            ValidateTypeSubTable(columnIndex);
+            ValidateRowIndex(rowIndex);
+            SetSubTableAsTableNoCheckHighLevel_35(columnIndex, rowIndex, value);
+        }
+
+        public void SetSubTable(String columnName, long rowIndex, IEnumerable<object> value)
+        {
+            ValidateIsValid();
+            var columnIndex = GetColumnIndex(columnName);
+            ValidateTypeSubTable(columnIndex);
+            ValidateRowIndex(rowIndex);
+            SetSubTableAsObjectsNoCheckHighLevel_35(columnIndex, rowIndex, value);
+        }
+#endif
+
+
 
         public void SetLongNoRowCheck(long columnIndex, long rowIndex, long value)
         {

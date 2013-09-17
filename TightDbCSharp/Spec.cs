@@ -103,7 +103,7 @@ namespace TightDbCSharp
             UnsafeNativeMethods.SpecDeallocate(this);
         }
 
-        public override string ObjectIdentification()
+        internal override string ObjectIdentification()
         {
             return string.Format(CultureInfo.InvariantCulture, "Spec:" + Handle);
         }

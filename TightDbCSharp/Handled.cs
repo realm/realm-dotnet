@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Globalization;
 
 //this class contains code that handles the binding and disposing logic for C# classes that wrap tightdb classes
@@ -11,16 +10,16 @@ namespace TightDbCSharp
     {
         //following the dispose pattern discussed here http://dave-black.blogspot.dk/2011/03/how-do-you-properly-implement.html
         //a good explanation can be found here http://stackoverflow.com/questions/538060/proper-use-of-the-idisposable-interface
-
+        //notes reg. exceptions in constructors here http://msdn.microsoft.com/en-us/vstudio/hh184269.aspx
         protected abstract void ReleaseHandle();//overwrite this. This method will be called when c++ can free the object associated with the handle
-        public abstract string ObjectIdentification();//overwrite this to enable the framework to name the class in a human readable way
+        internal abstract string ObjectIdentification();//overwrite this to enable the framework to name the class in a human readable way
 
         public IntPtr Handle { get;internal set; }  //handle (in fact a pointer) to a c++ hosted Table. We must unbind this handle if we have acquired it
         private bool HandleInUse { get; set; } //defaults to false.  
         private bool HandleHasBeenUsed { get; set; } //defaults to false. If this is true, the table handle has been allocated in the lifetime of this object
         private bool NotifyCppWhenDisposing { get; set; }//if false, the table handle do not need to be disposed of, on the c++ side
         public bool IsDisposed { get; private set; }
-
+        
 
         internal Handled()
         {
@@ -48,8 +47,10 @@ namespace TightDbCSharp
                 //  it is assumed an error situation has occoured (too many unbind calls) and an exception is raised
                 if (HandleHasBeenUsed)
                 {
+#if DEBUGDISPOSE
                     throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture,
                         "unbind called on {0} with no handle active anymore", ObjectIdentification()));
+#endif
                 }
             }
         }
@@ -61,9 +62,11 @@ namespace TightDbCSharp
 //            Console.WriteLine("Handle being set to newhandle:{0}h shouldBeDisposed:{1} ",newHandle.ToString("X"),shouldBeDisposed);
             if (HandleInUse)
             {
-                throw new InvalidEnumArgumentException(String.Format(CultureInfo.InvariantCulture,
+                
+                throw new ArgumentException(String.Format(CultureInfo.InvariantCulture,
                                                        "SetHandle called on {0} that already has acquired a handle",
                                                        ObjectIdentification()));  
+                
             }
             Handle = newHandle;
             HandleInUse = true;

@@ -16,7 +16,7 @@ using TightDbCSharp.Extensions;
 namespace TightDbCSharpTest
 {
     [TestFixture]
-    public class TableTests1
+    public static class TableTests1
     {
 
         [Test]
@@ -110,7 +110,7 @@ Table Name  : table name is 12345 then the permille sign ISO 10646:8240 then 789
         //This behavior ensures that dates are always stored as Utc, and that originaldate.ToUniversalTime() == originaldate back from database.ToUniversalTime()
 
         [Test]
-        public static void DatetimeTest()
+        public static void DateTimeTest()
         {
             var myDateTime = new DateTime(1980, 1, 2);
 
@@ -120,7 +120,7 @@ Table Name  : table name is 12345 then the permille sign ISO 10646:8240 then 789
         }
 
         [Test]
-        public static void DatetimeTestUnspecified()
+        public static void DateTimeTestUnspecified()
         {
             var myDateTime = new DateTime(1980, 1, 2, 0, 0, 0, DateTimeKind.Unspecified);
 
@@ -130,7 +130,7 @@ Table Name  : table name is 12345 then the permille sign ISO 10646:8240 then 789
         }
 
         [Test]
-        public static void DatetimeTestLocal()
+        public static void DateTimeTestLocal()
         {
             var myDateTime = new DateTime(1980, 1, 2, 0, 0, 0, DateTimeKind.Local);
 
@@ -141,7 +141,7 @@ Table Name  : table name is 12345 then the permille sign ISO 10646:8240 then 789
         }
 
         [Test]
-        public static void DatetimeTestUtc()
+        public static void DateTimeTestUtc()
         {
             var myDateTime = new DateTime(1980, 1, 2, 0, 0, 0, DateTimeKind.Utc);
 
@@ -263,8 +263,9 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
         [Test]
         public static void TableAddColumnWithData()
         {
-            using (var table = new Table(new IntField("Integers")) {1, 2, 3, 4, 5})
+            using (var table = new Table(new IntField("Integers")) )
             {
+                table.AddMany(new[] {1, 2, 3, 4, 5});
                 table.AddStringColumn("NewColumn");//this is legal
                 Assert.AreEqual(5,table.GetLong(0,4));
                 Assert.AreEqual("", table.GetString(1, 4));//and we ought to have empty strings in there
@@ -275,22 +276,26 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
         [Test]
         public static void TableAddColumnAndSpecTest()
         {
-            var t = new Table();
-            
-            t.AddIntColumn("IntColumn1");
-            t.AddIntColumn("IntColumn2");
-            t.AddIntColumn("IntColumn3");
-            var subTbl = t.AddSubTableColumn("SubTbl");
-            t.AddIntColumn(subTbl,"SubIntColumn1");
-            t.AddIntColumn(subTbl, "SubIntColumn2");
-            t.AddIntColumn(subTbl, "SubIntColumn3");
+            using (
+                var t = new Table())
+            {
+
+                t.AddIntColumn("IntColumn1");
+                t.AddIntColumn("IntColumn2");
+                t.AddIntColumn("IntColumn3");
+                var subTbl = t.AddSubTableColumn("SubTbl");
+                t.AddIntColumn(subTbl, "SubIntColumn1");
+                t.AddIntColumn(subTbl, "SubIntColumn2");
+                t.AddIntColumn(subTbl, "SubIntColumn3");
 
 
-            t.AddEmptyRow(1);
-            var sub = t.GetSubTable("SubTbl", 0);
-            Assert.AreEqual(0, sub.Size); //remove compiler warning
-            Assert.AreEqual("SubIntColumn3", sub.GetColumnName(2));
+                t.AddEmptyRow(1);
+                var sub = t.GetSubTable("SubTbl", 0);
+                Assert.AreEqual(0, sub.Size); //remove compiler warning
+                Assert.AreEqual("SubIntColumn3", sub.GetColumnName(2));
+            }
         }
+
 
         [Test]
         public static void TableRenameColumnTest()
@@ -314,20 +319,16 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
         //where columns already have been properly set and "comitted" with updatefromspec or addcolumn
         [Test]
         //[ExpectedException("System.InvalidOperationException")] //updatefromspec on a table with existing columns
-        public static void TableAddColumnAndSpecTestsimple()
+        public static void TableAddColumnAndSpecTestSimple()
         {
-            var t = new Table();
-          //  Assert.AreEqual(true, t.SpecModifyable());
-            Assert.AreEqual(0, t.AddIntColumn("IntColumn1")); //after this call, spec modifications are illegal
-            //Assert.AreEqual(false, t.SpecModifyable());
-            //Spec subSpec = t.Spec.AddSubTableColumn("SubTableWithInts"); //this should throw
-            t.AddSubTableColumn("SubTableWithInts");
-            //Assert.AreEqual(subSpec.Handle, subSpec.Handle + 1);
-            //avoid compiler warning and ensure we fail here if we get so far - we want the error to surface on the line above
-            //t.UpdateFromSpec();
-            t.AddEmptyRow(1);
-            Table sub = t.GetSubTable(1, 0);
-            Assert.AreEqual(sub.Size, 0); //avoid compiler warning
+            using (var t = new Table())
+            {                
+                Assert.AreEqual(0, t.AddIntColumn("IntColumn1")); //after this call, spec modifications are illegal
+                t.AddSubTableColumn("SubTableWithInts");
+                t.AddEmptyRow(1);
+                Table sub = t.GetSubTable(1, 0);
+                Assert.AreEqual(sub.Size, 0); //avoid compiler warning
+            }
         }
 
 
@@ -337,63 +338,66 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
         [Test]
         public static void TableAddIntArray()
         {
-            var t = new Table();            
-            t.AddIntColumn("IntColumn1");
-            t.AddIntColumn("IntColumn2");
-            t.AddIntColumn("IntColumn3");
-            var path  = t.AddSubTableColumn("SubTableWithInts");
-            t.AddIntColumn(path,"SubIntColumn1");
-            t.AddIntColumn(path, "SubIntColumn2");
-            t.AddIntColumn(path, "SubIntColumn3");            
-
-            t.AddEmptyRow(1);
-            var tr = t.Add(1, 2, 3, null);
-            Assert.AreEqual(1, tr); //add should return the row being added to
-            t.Add(3, 4, 5,
-                new object[] //compiler will make this an object array
-                {
-                    new[] {4, 5, 6}, //compiler will make this an int array
-                    new object[] {12, 13, 14} //and this is an object array with ints - both should work
-                });
-
-            t.Add(3, 4, 5,
-                new[] //compiler will make this a pointer array!
-                {
-                    new[] {14, 5, 6}, //compiler will make this an int array
-                    new[] {12, 113, 14} //and this too
-                });
-            Assert.AreEqual(0, t.GetSubTable("SubTableWithInts", 0).Size);
-
-            Assert.AreEqual(1, t.GetLong("IntColumn1", 1));
-            Assert.AreEqual(2, t.GetLong("IntColumn2", 1));
-            Assert.AreEqual(3, t.GetLong("IntColumn3", 1));
-            Assert.AreEqual(0, t.GetSubTable("SubTableWithInts", 1).Size);
-
-            Assert.AreEqual(3, t.GetLong("IntColumn1", 2));
-            Assert.AreEqual(4, t.GetLong("IntColumn2", 2));
-            Assert.AreEqual(5, t.GetLong("IntColumn3", 2));
-            using (var sub = t.GetSubTable("SubTableWithInts", 2))
+            using (var t = new Table())
             {
-                Assert.AreEqual(4, sub.GetLong("SubIntColumn1", 0));
-                Assert.AreEqual(5, sub.GetLong("SubIntColumn2", 0));
-                Assert.AreEqual(6, sub.GetLong("SubIntColumn3", 0));
+                t.AddIntColumn("IntColumn1");
+                t.AddIntColumn("IntColumn2");
+                t.AddIntColumn("IntColumn3");
+                var path = t.AddSubTableColumn("SubTableWithInts");
+                t.AddIntColumn(path, "SubIntColumn1");
+                t.AddIntColumn(path, "SubIntColumn2");
+                t.AddIntColumn(path, "SubIntColumn3");
 
-                Assert.AreEqual(12, sub.GetLong("SubIntColumn1", 1));
-                Assert.AreEqual(13, sub.GetLong("SubIntColumn2", 1));
-                Assert.AreEqual(14, sub.GetLong("SubIntColumn3", 1));
-            }
+                t.AddEmptyRow(1);
+                var tr = t.Add(1, 2, 3, null);
+                Assert.AreEqual(1, tr); //add should return the row being added to
+                t.Add(3, 4, 5,
+                    new object[] //compiler will make this an object array
+                    {
+                        new[] {4, 5, 6}, //compiler will make this an int array
+                        new object[] {12, 13, 14} //and this is an object array with ints - both should work
+                    });
 
-            using (var sub = t.GetSubTable("SubTableWithInts", 3))
-            {
-                Assert.AreEqual(14, sub.GetLong("SubIntColumn1", 0));
-                Assert.AreEqual(5, sub.GetLong("SubIntColumn2", 0));
-                Assert.AreEqual(6, sub.GetLong("SubIntColumn3", 0));
+                t.Add(3, 4, 5,
+                    new[] //compiler will make this a pointer array!
+                    {
+                        new[] {14, 5, 6}, //compiler will make this an int array
+                        new[] {12, 113, 14} //and this too
+                    });
+                Assert.AreEqual(0, t.GetSubTable("SubTableWithInts", 0).Size);
 
-                Assert.AreEqual(12, sub.GetLong("SubIntColumn1", 1));
-                Assert.AreEqual(113, sub.GetLong("SubIntColumn2", 1));
-                Assert.AreEqual(14, sub.GetLong("SubIntColumn3", 1));
+                Assert.AreEqual(1, t.GetLong("IntColumn1", 1));
+                Assert.AreEqual(2, t.GetLong("IntColumn2", 1));
+                Assert.AreEqual(3, t.GetLong("IntColumn3", 1));
+                Assert.AreEqual(0, t.GetSubTable("SubTableWithInts", 1).Size);
+
+                Assert.AreEqual(3, t.GetLong("IntColumn1", 2));
+                Assert.AreEqual(4, t.GetLong("IntColumn2", 2));
+                Assert.AreEqual(5, t.GetLong("IntColumn3", 2));
+                using (var sub = t.GetSubTable("SubTableWithInts", 2))
+                {
+                    Assert.AreEqual(4, sub.GetLong("SubIntColumn1", 0));
+                    Assert.AreEqual(5, sub.GetLong("SubIntColumn2", 0));
+                    Assert.AreEqual(6, sub.GetLong("SubIntColumn3", 0));
+
+                    Assert.AreEqual(12, sub.GetLong("SubIntColumn1", 1));
+                    Assert.AreEqual(13, sub.GetLong("SubIntColumn2", 1));
+                    Assert.AreEqual(14, sub.GetLong("SubIntColumn3", 1));
+                }
+
+                using (var sub = t.GetSubTable("SubTableWithInts", 3))
+                {
+                    Assert.AreEqual(14, sub.GetLong("SubIntColumn1", 0));
+                    Assert.AreEqual(5, sub.GetLong("SubIntColumn2", 0));
+                    Assert.AreEqual(6, sub.GetLong("SubIntColumn3", 0));
+
+                    Assert.AreEqual(12, sub.GetLong("SubIntColumn1", 1));
+                    Assert.AreEqual(113, sub.GetLong("SubIntColumn2", 1));
+                    Assert.AreEqual(14, sub.GetLong("SubIntColumn3", 1));
+                }
             }
         }
+
 
         [Test]
         public static void TableSetRowTest()
@@ -409,12 +413,19 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
             }
         }
 
-        //utilize the collection initializer now we implement IEnumerator and Add        
+        //utilize the collection initializer now we implement IEnumerator and Add 
+        //please note that this is not recommended as using does not work with collection initializers
+        //especially, using will not catch exceptions thrown in the calls to collection.Add
+        //see http://connect.microsoft.com/VisualStudio/feedback/details/654186/collection-initializers-called-on-collections-that-implement-idisposable-need-to-call-dispose-in-case-of-failure
+        //You will get a FXCOP CA200 error wtih this test, alerting You that the temporary variable that holds table
+        //after its constructor is called, but before the adds are finished, will not get disposed on errors
         [Test]
         public static void TableCollectionInitializer()
         {
+
+#if v40PLUS
             using (
-                var oneliner = new Table(
+                var oneliner = new Table(//FxCop Error is okay
                     new IntField("I1"),
                     new StringField("s1"),
                     new DoubleField("D1"))
@@ -423,14 +434,29 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
                     {4,"collection initializers are cool",42.1},
                     {17,"You can add as many rows as You want",12D},
                     {1,"as long as types and number of parametres match table structure",123.1}
-                })
+                }){
+#else
+            using (
+                var oneliner = new Table( //FxCop Error is okay
+                    new IntField("I1"),
+                    new StringField("s1"),
+                    new DoubleField("D1"))
+                )
             {
-                foreach (var row in oneliner)
+                oneliner.Add(1, "test", 12.4);
+                oneliner.Add(4, "collection initializers are cool", 42.1);
+                oneliner.Add(17, "You can add as many rows as You want", 12D);
+                oneliner.Add(1, "as long as types and number of parametres match table structure", 123.1);
+#endif
+
+                foreach (Row row in oneliner)
                 {
-                    row.SetString("s1",row.GetDouble("D1").ToString(CultureInfo.InvariantCulture)); //do some processing of each row
+                    row.SetString("s1", row.GetDouble("D1").ToString(CultureInfo.InvariantCulture));
+                    //do some processing of each row
                 }
             }
         }
+
 
 
         [Test]
@@ -977,7 +1003,7 @@ Table Name  : table created with all types using the new field classes
 
 
         [Test]
-        public static void TableAddSubtableAsNull()
+        public static void TableAddSubTableAsNull()
         {
             using (var table = new Table(new SubTableField("sub")))
             {
@@ -1957,7 +1983,7 @@ Table Name  : cyclic field definition
 
 
         [Test]
-        public static void TableSetSubtable()
+        public static void TableSetSubTableAsSubTable()
         {
             using (var t = new Table(
                 "do'h".Int(),
@@ -1986,9 +2012,38 @@ Table Name  : cyclic field definition
             }
         }
 
+        [Test]
+        public static void TableSetSubTableAsEnumerable()
+        {
+            using (var t = new Table(
+                "do'h".Int(),
+                "sub".SubTable(
+                    "substringfield1".String(),
+                    "substringfield2".String()
+                    ),
+                "mazda".Int()
+                )
+                )
+            {
+                var sub = new []//Create something IEnumerable(object)
+                {
+                    new[] {"R0F0", "R0F1"},
+                    new[] {"R1F0", "R1F1"},
+                    new[] {"R2F0", "R2F1"}
+                };
+
+                {
+                    t.AddEmptyRow(1);
+                    t.SetSubTable(1, 0, sub);
+                    Table subreturned = t.GetSubTable(1, 0);
+                    Assert.AreEqual("R2F1", subreturned.GetString(1,2));
+                }
+            }
+        }
+
 
         [Test]
-        public static void TableClearSubtable()
+        public static void TableClearSubTable()
         {
             using (var t = new Table(
                 "do'h".Int(),
@@ -2066,7 +2121,7 @@ Table Name  : cyclic field definition
                 }
                 catch //none of the above should throw anything
                 {
-                    throw new ApplicationException();
+                    throw new InvalidOperationException("Table Insert (Size+1,n) threw an unexpected exception");
                 }
                 table.Insert(4, 42); //Bad - throws
             }
@@ -2216,7 +2271,7 @@ Table Name  : cyclic field definition
                 }
                 catch //none of the above should throw anything
                 {
-                    throw new ApplicationException();
+                    throw new InvalidOperationException();
                 }
                 table.InsertEmptyRow(4, 1); //Bad - throws
             }
@@ -2239,7 +2294,7 @@ Table Name  : cyclic field definition
         }
 
         [Test]
-        public static void TableAddSubtablePlausiblePathExample()
+        public static void TableAddSubTablePlausiblePathExample()
         {
             using (var customers = new Table())
             {
@@ -2273,7 +2328,7 @@ Table Name  : cyclic field definition
         //failed earlier but now it actually creates "John" at the top level
         [Test]
         //[ExpectedException("System.ArgumentOutOfRangeException")]
-        public static void TableAddSubtableEmptyArray()
+        public static void TableAddSubTableEmptyArray()
         {
             using (var toptable1 = new Table(new IntField("ID"), new StringField("name"), new SubTableField("Edges")))
             {
@@ -2284,7 +2339,7 @@ Table Name  : cyclic field definition
         //this should definetly fail as no column is specified - the column is not identified at the top level
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
-        public static void TableRenameSubtableEmptyArray1()
+        public static void TableRenameSubTableEmptyArray1()
         {
             using (var toptable1 = new Table(new IntField("ID"), new StringField("name"), new SubTableField("Edges")))
             {
@@ -2295,7 +2350,7 @@ Table Name  : cyclic field definition
         //this should definetly fail as no column is specified
         [Test]
         [ExpectedException("System.ArgumentNullException")]
-        public static void TableRenameSubtableEmptyArray3()
+        public static void TableRenameSubTableEmptyArray3()
         {
             using (var toptable1 = new Table(new IntField("ID"), new StringField("name"), new SubTableField("Edges")))
             {
@@ -2317,7 +2372,7 @@ Table Name  : cyclic field definition
 
         //test that the various spec column adders actually add the correct column type
         [Test]
-        public static void TableAddColumntypes()
+        public static void TableAddColumnTypes()
         {
             using (var table = new Table())
             {                
@@ -2379,14 +2434,16 @@ Table Name  : cyclic field definition
         [Test]
         public static void TableTwoWrappersChangeSpec()
         {
-            var g = new Group();
-            Table t1 = g.CreateTable("T");
-            Table t2 = g.GetTable("T");
-            Table t3 = g.GetTable("T");
-            Assert.AreEqual(t1.Handle, t2.Handle);
-            t2.AddIntColumn("inttie");
-            t1.AddStringColumn("stringie");
-            Assert.AreEqual(2,t3.ColumnCount);
+            using (var g = new Group())
+            {
+                Table t1 = g.CreateTable("T");
+                Table t2 = g.GetTable("T");
+                Table t3 = g.GetTable("T");
+                Assert.AreEqual(t1.Handle, t2.Handle);
+                t2.AddIntColumn("inttie");
+                t1.AddStringColumn("stringie");
+                Assert.AreEqual(2, t3.ColumnCount);
+            }
         }
 
 
@@ -2395,7 +2452,7 @@ Table Name  : cyclic field definition
         //negative top index
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
-        public static void TableRenameSubtableBadIndex1()
+        public static void TableRenameSubTableBadIndex1()
         {
             using (var toptable1 = new Table(new IntField("ID"), new StringField("name"), new SubTableField("Edges")))
             {
@@ -2405,7 +2462,7 @@ Table Name  : cyclic field definition
 
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
-        public static void TableRenameSubtableBadIndex2()
+        public static void TableRenameSubTableBadIndex2()
         {
             using (var toptable1 = new Table(new IntField("ID"), new StringField("name"), new SubTableField("Edges")))
             {
@@ -2415,7 +2472,7 @@ Table Name  : cyclic field definition
 
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
-        public static void TableRenameSubtableBadIndex3()
+        public static void TableRenameSubTableBadIndex3()
         {
             using (var toptable1 = new Table(new IntField("ID"), new StringField("name")))
             {
@@ -2428,7 +2485,7 @@ Table Name  : cyclic field definition
 
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
-        public static void TableRenameSubtableBadIndex4()
+        public static void TableRenameSubTableBadIndex4()
         {
             using (var toptable1 = new Table(new IntField("ID"), new StringField("name"), new SubTableField("Edges")))
             {
@@ -2442,7 +2499,7 @@ Table Name  : cyclic field definition
 
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
-        public static void TableRenameSubtableBadIndex5()
+        public static void TableRenameSubTableBadIndex5()
         {
             using (var toptable1 = new Table(new IntField("ID"), new StringField("name")))
             {
@@ -2456,7 +2513,7 @@ Table Name  : cyclic field definition
 
         [Test]
         
-        public static void TableRemoveSubcolumn()
+        public static void TableRemoveSubColumn()
         {
             using (var toptable1 = new Table(new IntField("ID"), new StringField("name"), new SubTableField("Edges")))
             {
@@ -2486,7 +2543,7 @@ Table Name  : cyclic field definition
 
         //add generic column with a path top level
         [Test]
-        public static void TableAddColumnTypeParameterpath()
+        public static void TableAddColumnTypeParameterPath()
         {
             using (var table = new Table())
             {
@@ -2514,7 +2571,7 @@ Table Name  : cyclic field definition
 
 
             [Test]
-        public static void TableAddSubtableUsingPath()
+        public static void TableAddSubTableUsingPath()
         {
             String actualres;
             //test array based syntax
@@ -2558,7 +2615,7 @@ Table Name  : subtable structure made with AddSubColumn path arrays
         //see test above -  perhaps this kind of notation is not really very useful, it formats pretty ugly when being autoformatted
         //It might always be easier to read and maintain if the user instantiates a List<int> object as in the parameter example
         [Test]
-        public static void TableAddSubtableUsingparametres()
+        public static void TableAddSubTableUsingParameters()
         {
             String actualres;
             //test array based syntax
@@ -2602,7 +2659,7 @@ Table Name  : subtable structure made with AddSubColumn parameters
 
         //see test above
         [Test]
-        public static void TableRenameSubtableUsingparametres()
+        public static void TableRenameSubTableUsingParameters()
         {
             //test array based syntax
             using (var toptable1 = new Table(new IntField("ID"), new StringField("name")))
@@ -2675,7 +2732,7 @@ Table Name  : rename columns in subtables via parameters
         //todo(er i Asana):måske skulle addcolumn også kunne tage et field objekt og et field array - så kunne man bruge table create syntaxen til at adde kolonner
         //lav prioritet, eneste fordel vil være at man kan oprette tables med subtables i en oneliner
         [Test]
-        public static void TableAddSubtableHugeTable()
+        public static void TableAddSubTableHugeTable()
         {
             using (var table = new Table())
             {
@@ -2775,9 +2832,10 @@ Table Name  : rename columns in subtables via parameters
 
 
 
-      //  [Test]
-      //  [ExpectedException("System.NotImplementedException")]
+        [Test]
+        [ExpectedException("System.NotImplementedException")]
         //when implemented in core, remove this expectation and the throw in UnsafeNativeMethods.TableFindFirstBinary
+        //and the guard that makes mono compilation not call the dll
         public static void TableFindFirstBinary()
         {
             using (var table = new Table("radio".Binary(), "int".Int()))
@@ -2799,7 +2857,7 @@ Table Name  : rename columns in subtables via parameters
 
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
-        public static void TableSetSubtableBadSchema()
+        public static void TableSetSubTableBadSchema()
         {
             using (var t = new Table(
                 "do'h".Int(),
@@ -3280,13 +3338,10 @@ double:-1002//column 3
         [Test]
         public static void GetValue()
         {
-            using (var table =new  Table(new StringField("str"))
+            using (var table =new  Table(new StringField("str")))
             {
-                "Obi","Wan","Kenobi"
-            }
-        )
-            {
-                Assert.AreEqual("Wan", table.GetValue(0, 1));
+                table.AddMany(new[] { "Obi", "Wan", "Kenobi" });
+               Assert.AreEqual("Wan", table.GetValue(0, 1));
                 table.SetValue(0,0,"Spock");
                 Assert.AreEqual("Spock",table.GetString(0,0));
             }
@@ -3304,16 +3359,17 @@ double:-1002//column 3
 
 
         [Test]
-        public static void FindFistSTring()
+        public static void FindFirstString()
         {
-            using (var table = new Table(new StringField("str"))
+            using (var table = new Table(new StringField("str")))
             {
-                "first",
-                "secodnd",
-                "third",
-                "fourth"
-            })
-            {
+                table.AddMany(new[]
+                {
+                    "first",
+                    "secodnd",
+                    "third",
+                    "fourth"
+                });                            
                 Assert.AreEqual(2,table.FindFirstString(0,"third"));//todo perhaps we could introduce methods with no column indicator that only works if the table has one column
                 Assert.AreEqual(2, table.FindFirstString("str", "third"));
             }
@@ -3323,11 +3379,9 @@ double:-1002//column 3
         [Test]
         public static void FindFirstDouble()
         {
-            using (var table = new Table(new DoubleField("dbl"))
+            using (var table = new Table(new DoubleField("dbl")))
             {
-               1d,2d,3d,4d,5d,6d,7d
-            })
-            {
+                table.AddMany(new[] {1d, 2d, 3d, 4d, 5d, 6d, 7d});                            
                 Assert.AreEqual(2, table.FindFirstDouble(0, 3));//todo perhaps we could introduce methods with no column indicator that only works if the table has one column
                 Assert.AreEqual(2, table.FindFirstDouble("dbl", 3));
             }
@@ -3336,11 +3390,9 @@ double:-1002//column 3
         [Test]
         public static void FindFirstBool()
         {
-            using (var table = new Table(new BoolField("boo"))
+            using (var table = new Table(new BoolField("boo")))
             {
-               true,true,false,true
-            })
-            {
+                table.AddMany(new[] {true, true, false, true});            
                 Assert.AreEqual(2, table.FindFirstBool(0,false));
                 Assert.AreEqual(2, table.FindFirstBool("boo", false));
             }
@@ -3352,11 +3404,13 @@ double:-1002//column 3
         [Test]
         public static void FindFirstFloat()
         {
-            using (var table = new Table(new FloatField("float"))
+            using (var table = new Table(new FloatField("float")))
             {
-               1f,2f,3f,4f,5f,6f,7f
-            })
-            {
+                table.AddMany(new[]
+                {
+                    1f, 2f, 3f, 4f, 5f, 6f, 7f
+                });
+           
                 Assert.AreEqual(2, table.FindFirstFloat(0, 3f));//todo perhaps we could introduce methods with no column indicator that only works if the table has one column
                 Assert.AreEqual(2, table.FindFirstFloat("float", 3f));
             }
@@ -3367,12 +3421,10 @@ double:-1002//column 3
         {
             var basedate  = new DateTime(2001,2,3);
 
-            using (var table = new Table(new DateField("time_t"))
+            using (var table = new Table(new DateField("time_t")))
             {
-               basedate,basedate.AddDays(1),basedate.AddDays(2),basedate.AddDays(-1),
-                basedate.AddDays(22)
-            })
-            {
+                table.AddMany(new[]
+                {basedate, basedate.AddDays(1), basedate.AddDays(2), basedate.AddDays(-1), basedate.AddDays(22)});                          
                 Assert.AreEqual(2, table.FindFirstDateTime(0, basedate.AddDays(2)));//todo perhaps we could introduce methods with no column indicator that only works if the table has one column
                 Assert.AreEqual(2, table.FindFirstDateTime("time_t",basedate.AddDays(2)));
             }
@@ -3679,9 +3731,9 @@ double:-1002//column 3
                 String testdecimalstring = testDecimal.ToString(CultureInfo.InvariantCulture);
                 table.SetMixedString(0, 0, testdecimalstring);
                 string decimalstringreturned = table.GetMixedString(0, 0);
-                Assert.AreEqual(testDecimal, Decimal.Parse(decimalstringreturned));
+                Assert.AreEqual(testDecimal, Decimal.Parse(decimalstringreturned,CultureInfo.InvariantCulture));
                 table.Set(0, testdecimalstring);
-                Assert.AreEqual(testDecimal, Decimal.Parse(decimalstringreturned));
+                Assert.AreEqual(testDecimal, Decimal.Parse(decimalstringreturned, CultureInfo.InvariantCulture));
 
 
                 table.SetMixedDouble(0, 0, testDouble);
@@ -3770,7 +3822,7 @@ double:-1002//column 3
                 try
                 {
                     table.SetMixed(0, 0, testDecimal);
-                    Assert.Fail("Calling set mixed(object) with a C# typ decimal should fail with a type check");
+                    Assert.Fail("Calling set mixed(object) with a C# type decimal should fail with a type check");
                 }
                 catch (ArgumentException) //remove the expected exception thrown by setmixed
                 {
@@ -3828,7 +3880,7 @@ double:-1002//column 3
                 try
                 {
                     table.SetMixed(0, 0, testDecimal);
-                    Assert.Fail("Calling set mixed(object) with a C# typ decimal should fail with a type check");
+                    Assert.Fail("Calling set mixed(object) with a C# type decimal should fail with a type check");
                 }
                 catch (ArgumentException) //remove the expected exception thrown by setmixed
                 {
@@ -3903,7 +3955,7 @@ double:-1002//column 3
                 try
                 {
                     tablerow.SetMixed(0, testDecimal);
-                    Assert.Fail("Calling set mixed(object) with a C# typ decimal should fail with a type check");
+                    Assert.Fail("Calling set mixed(object) with a C# type decimal should fail with a type check");
                 }
                 catch (ArgumentException) //remove the expected exception thrown by setmixed
                 {
@@ -3979,7 +4031,7 @@ double:-1002//column 3
                 try
                 {
                     tablerow.SetMixed(0, testDecimal);
-                    Assert.Fail("Calling set mixed(object) with a C# typ decimal should fail with a type check");
+                    Assert.Fail("Calling set mixed(object) with a C# type decimal should fail with a type check");
                 }
                 catch (ArgumentException) //remove the expected exception thrown by setmixed
                 {
@@ -4094,7 +4146,7 @@ mix'd:84//column 0//Mixed type is Int
 
 
         [Test]
-        public static void TableSubTableSubTabletwo()
+        public static void TableSubTableSubTableTwo()
         {
             //string actualres1;
             //string actualres2;
@@ -4529,8 +4581,9 @@ intfield2:10//column 2
         [Test]
         public static void TableGetBoolean()
         {
-            using (var table = new Table(new BoolField("boo")){true,false})
+            using (var table = new Table(new BoolField("boo")))
             {
+                table.AddMany(new[] {true, false});            
                 Assert.AreEqual(true,table.GetBoolean(0,0));
                 Assert.AreEqual(false, table.GetBoolean("boo", 1));
             }
@@ -4781,6 +4834,7 @@ intfield2:10//column 2
                 t.AddEmptyRow(1);
                 //likewise accessing the wrong type should not be allowed
                 Table t2 = t.GetSubTable(1, 0);
+                Assert.AreEqual(42, t2.Size);//this should never run
             }
         }
 
@@ -4871,8 +4925,7 @@ intfield2:10//column 2
 
         */
 
-        [SuppressMessage("Microsoft.Naming",
-            "CA1702:CompoundWordsShouldBeCasedCorrectly", MessageId = "TypeWrite"), Test]
+       [Test]
         [ExpectedException("System.ArgumentException")]
         public static void TableIllegalTypeWrite()
         {
@@ -4882,7 +4935,7 @@ intfield2:10//column 2
                 t.AddEmptyRow(1);
                 //likewise accessing the wrong type should not be allowed               
                 t.SetLong(0, 0, 42); //should throw                
-                Assert.Fail("setLong on subtalbefiled did not throw");
+                Assert.Fail("Set Long on sub table field did not throw");
             }
         }
 

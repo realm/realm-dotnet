@@ -103,7 +103,7 @@ namespace TightDbCSharp
             }
         }
 
-        public override string ObjectIdentification()
+        internal override string ObjectIdentification()
         {
             return string.Format(CultureInfo.InvariantCulture, "SharedGroup:({0:d}d)  ({1}h)", Handle,
                 Handle.ToString("X"));
@@ -136,12 +136,12 @@ namespace TightDbCSharp
             }
         }
 
-        public void ExecuteInReadTransaction(Action<Group> work)
+        public void ExecuteInReadTransaction(Action<Transaction> work)//Not <Group> bc .net 3.5 won't compile
         {
             ExecuteInTransaction(work, TransactionKind.Read);
         }
 
-        public void ExecuteInWriteTransaction(Action<Group> work)
+        public void ExecuteInWriteTransaction(Action<Transaction> work)//Not <Group> bc .net 3.5 won't compile
         {
             ExecuteInTransaction(work, TransactionKind.Write);
         }

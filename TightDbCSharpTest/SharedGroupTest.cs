@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Globalization;
 using System.IO;
 using TightDbCSharp;
 using NUnit.Framework;
@@ -10,16 +9,24 @@ namespace TightDbCSharpTest
     internal class SharedGroupTest
     {
 
+        const string Field01Text = "Data for first field";
+        const string Field02Text = "Data for second field";
+        const string Field03Text = "Data for third field";
+
+        private static string SharedGroupFileName()
+        {
+         return Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) +
+                            @"\UnitTestSharedGroup";
+        } 
 
 
         //create-dispose test
         [Test]
-        public void CreateSharedGroupFileTest()
-        {
-            const string sharedgroupfilename = @"UnitTestSharedGroup";
-            File.Delete(sharedgroupfilename);
+        public static void CreateSharedGroupFileTest()
+        {            
+            File.Delete(SharedGroupFileName());
 
-            using (var sharedGroup = new SharedGroup(sharedgroupfilename, false, DurabilityLevel.DurabilityFull))
+            using (var sharedGroup = new SharedGroup(SharedGroupFileName(), false, DurabilityLevel.DurabilityFull))
             {
                 Assert.AreEqual(false, sharedGroup.Invalid);
 //                Console.WriteLine(String.Format(CultureInfo.InvariantCulture, "Hello from sharedgroup {0}",
@@ -29,15 +36,60 @@ namespace TightDbCSharpTest
         }
 
 
+        [Test]
+        public static void HasChangedTest()
+        {
+            File.Delete(SharedGroupFileName());
+            using (var sg1 = new SharedGroup(SharedGroupFileName()))
+            {
+                using (var transaction = sg1.BeginWrite())
+                using (var table = transaction.CreateTable("test",new IntField("IntegerField")))
+                {
+                    table.Add(42);
+                    transaction.Commit();
+                }                
+            }
+
+            //at this time we should have a shared group with a table with 42 in it
+            //Let's Open the file and see if the 42 is there
+            using (var sg2 = new SharedGroup(SharedGroupFileName()))
+            {
+                using (var transaction = sg2.BeginRead())
+                using (var table = transaction.GetTable("test"))
+                {
+                    Assert.AreEqual(42,table.GetLong(0,0));                    
+                    transaction.Commit();
+                }
+            }
+
+            //okay that went well.
+            //Now -  lets create two shared groups one after the other
+
+            using (var sg3 = new SharedGroup(SharedGroupFileName()))
+            using (var sg4 = new SharedGroup(SharedGroupFileName()))
+            {
+                using (var transaction = sg3.BeginWrite())
+                using (var table = transaction.GetTable("test"))
+                {
+                    Assert.AreEqual(42, table.GetLong(0, 0));
+                    table.SetLong(0,0,13);
+                    transaction.Commit();
+                }
+                //at this point sg3 is alive and sg4 is alive
+                Assert.AreEqual(false, sg3.HasChanged);
+                Assert.AreEqual(true, sg4.HasChanged);
+            }
+        }
+
 
         [Test]
-        public void SimpleCommitTest()
+        public static void SimpleCommitTest()
         {
-            const string sharedgroupfilename = @"UnitTestSharedGroup";
-            File.Delete(sharedgroupfilename);
+
+            File.Delete(SharedGroupFileName());
 
             using (
-                var sharedGroup = new SharedGroup(sharedgroupfilename))
+                var sharedGroup = new SharedGroup(SharedGroupFileName()))
             {
                 using (var transaction = sharedGroup.BeginWrite())
                 {
@@ -53,19 +105,15 @@ namespace TightDbCSharpTest
 
 
 
-        const string Field01Text = "Data for first field";
-        const string Field02Text = "Data for second field";
-        const string Field03Text = "Data for third field";
-        const string Sharedgroupfilename = @"UnitTestSharedGroup";
         //successfull usage case check
         [Test]
-        public void SharedGroupTransactions()
+        public static void SharedGroupTransactions()
         {
-            File.Delete(Sharedgroupfilename);
+            File.Delete(SharedGroupFileName());
 
 
 
-            using (var sharedGroup = new SharedGroup(Sharedgroupfilename, false, DurabilityLevel.DurabilityFull))
+            using (var sharedGroup = new SharedGroup(SharedGroupFileName(), false, DurabilityLevel.DurabilityFull))
             {
                 //first we need to create a table and put a little data into it
                 Assert.AreEqual(false, sharedGroup.Invalid);//C# construct, so legal even on an unattached shared group                
@@ -145,7 +193,7 @@ namespace TightDbCSharpTest
         }
 
 
-        void TestHelperRead2(Group t)
+        static void TestHelperRead2(Group t)
         {
             using (var table = t.GetTable("TestTable2"))
             {
@@ -156,7 +204,7 @@ namespace TightDbCSharpTest
         }
 
 
-        void TestHelperWriter3(Group t)
+        static void TestHelperWriter3(Group t)
         {
             using (var table = t.CreateTable("TestTable3", new StringField("StringColumn1"),
                                                           new StringField("StringColumn2"),
@@ -169,7 +217,7 @@ namespace TightDbCSharpTest
             }
         }
 
-        void TestHelperWriter4(Group t)
+        static void TestHelperWriter4(Group t)
         {
             using (var table = t.CreateTable("TestTable4", new StringField("StringColumn1"),
                                                           new StringField("StringColumn2"),
@@ -182,7 +230,7 @@ namespace TightDbCSharpTest
             }
         }
 
-        void TestHelperWriter5(Group t)
+        static void TestHelperWriter5(Group t)
         {
             using (var table = t.CreateTable("TestTable5", new StringField("StringColumn1"),
                                                           new StringField("StringColumn2"),
@@ -216,7 +264,7 @@ namespace TightDbCSharpTest
 
         //It should not be possible to modify a group that is returned by a read transaction
         [Test]
-        public void SharedGroupReadTransactionReadonlyGroup()
+        public static void SharedGroupReadTransactionReadonlyGroup()
         {
             const string sharedgroupfilename = @"UnitTestSharedGroup";
             File.Delete(sharedgroupfilename);
@@ -240,7 +288,7 @@ namespace TightDbCSharpTest
         //this test could also have been put into tabletest
         //also checks that on violation of the readonly contract, that the sharedgroup and the group are invalidated
         [Test]        
-        public void SharedGroupReadTransactionReadonlyTable()
+        public static void SharedGroupReadTransactionReadonlyTable()
         {
             const string sharedgroupfilename = @"UnitTestSharedGroup";
             File.Delete(sharedgroupfilename);
@@ -280,7 +328,7 @@ namespace TightDbCSharpTest
         
 
         [Test]
-        public void SharedGroupSeveralStartTransactions()
+        public static void SharedGroupSeveralStartTransactions()
         {
             const string sharedgroupfilename = @"UnitTestSharedGroup";
             File.Delete(sharedgroupfilename);

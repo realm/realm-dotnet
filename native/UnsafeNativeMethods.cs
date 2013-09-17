@@ -10,6 +10,7 @@ using System.Text;
 using System.Windows.Forms;
 
 
+
 [assembly: InternalsVisibleTo("Test")]
 namespace TightDbCSharp
 {    
@@ -60,6 +61,10 @@ enum DataType {
     //alternatively even proactively copying the dll at startup if we detect that the wrong one is there
     //could be as simple as comparing file sizes or the like
     //because we expect the end user to have deployed the correct c++ dll this assembly is AnyCpu
+#if V40PLUS
+#else
+//        [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
+#endif
     internal static class UnsafeNativeMethods
     {
 
@@ -68,6 +73,11 @@ enum DataType {
         private const long GetDllVersionCSharp = 20130906;
 
 
+        //http://connect.microsoft.com/VisualStudio/feedback/details/729254/bogus-ca5122-warning-about-p-invoke-declarations-should-not-be-saf
+        //above confirms that CA5122 fires wrongly bc of a bug in code analysis. This one call has been kept to keep us
+        //aware of the fact, all the other warnings have been disabled.
+        //if this method does NOT give a CA5122 when built for .net version 3.5 then msft have fixed their fxcop bug
+        //and the ca5122 suppressions in the suppresion files should be removed
 
         //tightdb_c_cs_API size_t tightdb_c_csGetVersion(void)
         [DllImport(L64, EntryPoint = "tightdb_c_cs_getver", CallingConvention = CallingConvention.Cdecl)]
@@ -267,7 +277,7 @@ enum DataType {
             foreach (var pathIndex in path)
             {
                 pathForCpp[n] = (IntPtr)pathIndex;
-                n++;
+                ++n;
             }
 
             GCHandle handle = GCHandle.Alloc(pathForCpp, GCHandleType.Pinned);
@@ -505,8 +515,10 @@ enum DataType {
                 group.SetHandle(handle, true);
             }
             else
+            {
                 throw new IOException(String.Format(CultureInfo.InvariantCulture,
-                    "IO error creating group file {0} (read/write access is needed)",fileName));
+                    "IO error creating group file {0} (read/write access is needed)", fileName));
+            }
         }
 
         [DllImport(L64, EntryPoint = "new_group", CallingConvention = CallingConvention.Cdecl)]
@@ -518,12 +530,14 @@ enum DataType {
 
         public static void GroupNew(Group group)
         {
-           // Console.WriteLine("In GroupNew, about to call group.sethandle(call to new_group)");
-            group.SetHandle(Is64Bit
-                                ? new_group64()
-                                : new_group32(), true);
-            //Console.WriteLine("Group got handle {0}", group.ObjectIdentification());
+            // Console.WriteLine("In GroupNew, about to call group.sethandle(call to new_group)");
+                group.SetHandle(Is64Bit
+                    ? new_group64()
+                    : new_group32(), true);
         }
+
+        //Console.WriteLine("Group got handle {0}", group.ObjectIdentification());
+        
 
 
 
@@ -589,10 +603,18 @@ enum DataType {
         [DllImport(L32, EntryPoint = "table_find_first_binary", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr table_find_first_binary32(IntPtr tableHandle, IntPtr columnIndex, IntPtr value, IntPtr bytes);
 
-        //not implemented in core c++ dll will return -1 until it is implemented
+
+        //mono does not do well with exceptions thrown from c++ so don't bother calling
+#if (__MonoCS__)
         public static long TableFindFirstBinary(Table table, long columnIndex, byte[] value)
         {
-          
+                        throw new NotImplementedException("Table Find First has not been implemented in this version ");                
+        }
+
+#else
+        //not implemented in core c++ dll will return -1 until it is implemented
+        public static long TableFindFirstBinary(Table table, long columnIndex, byte[] value)
+        {          
             
             GCHandle handle = GCHandle.Alloc(value, GCHandleType.Pinned);
             IntPtr valuePointer = handle.AddrOfPinnedObject();
@@ -609,8 +631,7 @@ enum DataType {
             {
                 Console.WriteLine(e.Message);
                 Application.DoEvents();
-                throw new NotImplementedException("Table Find First has not been implemented in this version ");
-                
+                throw new NotImplementedException("Table Find First has not been implemented in this version ");                
             }
 
             finally//this must stay. Do not remove
@@ -620,7 +641,7 @@ enum DataType {
              
         }
 
-
+#endif
 
 
         
@@ -4407,18 +4428,26 @@ enum DataType {
 
         private static void TestInteropSizes()
         {
-            int sizeOfIntPtr = IntPtr.Size;
-            int sizeOfSizeT = TestSizeOfSizeT();
+            var sizeOfIntPtr = IntPtr.Size;
+            var sizeOfSizeT = TestSizeOfSizeT();
             if (sizeOfIntPtr != sizeOfSizeT)
             {
+#if V40PLUS
                 throw new ContextMarshalException(String.Format(CultureInfo.InvariantCulture, "The size_t size{0} does not match the size of IntPtr{1}", sizeOfSizeT, sizeOfIntPtr));
+#else
+                throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "The size_t size{0} does not match the size of IntPtr{1}", sizeOfSizeT, sizeOfIntPtr));
+#endif
             }
 
             IntPtr sizeOfInt32T = TestSizeOfInt32_T();
             var sizeOfInt32 = (IntPtr)sizeof(Int32);
             if (sizeOfInt32T != sizeOfInt32)
             {
+#if V40PLUS
                 throw new ContextMarshalException(String.Format(CultureInfo.InvariantCulture, "The int32_t size{0} does not match the size of Int32{1}", sizeOfInt32T, sizeOfInt32));
+#else
+                throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "The int32_t size{0} does not match the size of Int32{1}", sizeOfInt32T, sizeOfInt32));
+#endif
             }
             //from here on, we know that size_t maps fine to IntPtr, and Int32_t maps fine to Int32
 
@@ -4426,13 +4455,21 @@ enum DataType {
             var sizeOfIntPtrAsIntPtr = (IntPtr)IntPtr.Size;
             if (sizeOfTablePointer != sizeOfIntPtrAsIntPtr)
             {
+#if V40PLUS
                 throw new ContextMarshalException(String.Format(CultureInfo.InvariantCulture, "The Table* size{0} does not match the size of IntPtr{1}", sizeOfTablePointer, sizeOfIntPtrAsIntPtr));
+#else
+                throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "The Table* size{0} does not match the size of IntPtr{1}", sizeOfTablePointer, sizeOfIntPtrAsIntPtr));
+#endif
             }
 
             IntPtr sizeOfCharPointer = TestSizeOfCharPointer();
             if (sizeOfCharPointer != sizeOfIntPtrAsIntPtr)
             {
+#if V40PLUS
                 throw new ContextMarshalException(String.Format(CultureInfo.InvariantCulture, "The Char* size{0} does not match the size of IntPtr{1}", sizeOfCharPointer, sizeOfIntPtrAsIntPtr));
+#else
+                throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "The Char* size{0} does not match the size of IntPtr{1}", sizeOfCharPointer, sizeOfIntPtrAsIntPtr));
+#endif
             }
 
             IntPtr sizeOfInt64T = Testsizeofint64_t();
@@ -4440,7 +4477,11 @@ enum DataType {
 
             if (sizeOfInt64T != sizeOfLong)
             {
+#if V40PLUS
                 throw new ContextMarshalException(String.Format(CultureInfo.InvariantCulture, "The Int64_t size{0} does not match the size of long{1}", sizeOfInt64T, sizeOfLong));
+#else
+                throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "The Int64_t size{0} does not match the size of long{1}", sizeOfInt64T, sizeOfLong));
+#endif
             }
 
 
@@ -4449,7 +4490,11 @@ enum DataType {
 
             if (sizeOfTimeT != sizeOfTimeTReceiverType)
             {
+#if V40PLUS
                 throw new ContextMarshalException(String.Format(CultureInfo.InvariantCulture, "The c++ time_t size({0}) does not match the size of the C# recieving type int64 ({1})", sizeOfTimeT, sizeOfTimeTReceiverType));
+#else
+                throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "The c++ time_t size({0}) does not match the size of the C# recieving type int64 ({1})", sizeOfTimeT, sizeOfTimeTReceiverType));
+#endif
             }
 
             IntPtr sizeOffloatPlus = TestSizeOfFloat();
@@ -4457,7 +4502,11 @@ enum DataType {
 
             if (sizeOffloatPlus != sizeOfFloatSharp)
             {
+#if V40PLUS
                 throw new ContextMarshalException(String.Format(CultureInfo.InvariantCulture, "The c++ float size{0} does not match the size of C# float{1}", sizeOffloatPlus, sizeOfFloatSharp));
+#else
+                throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "The c++ float size{0} does not match the size of C# float{1}", sizeOffloatPlus, sizeOfFloatSharp));
+#endif
             }
 
             var sizeOfPlusDouble = (long)TestSizeOfDouble();
@@ -4465,7 +4514,11 @@ enum DataType {
 
             if (sizeOfPlusDouble != sizeOfSharpDouble)
             {
+#if V40PLUS
                 throw new ContextMarshalException(String.Format(CultureInfo.InvariantCulture, "The c++ double size({0}) does not match the size of the C# recieving type Double ({1})", sizeOfPlusDouble, sizeOfSharpDouble));
+#else
+                throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "The c++ double size({0}) does not match the size of the C# recieving type Double ({1})", sizeOfPlusDouble, sizeOfSharpDouble));
+#endif
             }
 
 
@@ -4575,9 +4628,14 @@ enum DataType {
 
 
             IntPtr sizeTMaxCpp = TestSizeTMax();
+#if V40PLUS 
             IntPtr sizeTMaxCs = IntPtr.Zero;
             sizeTMaxCs = sizeTMaxCs - 1;
-
+#else
+            // 3.5 and below do not support adding or subtracting to IntPtr
+            //so we simply set this variable so that this test always succeeds
+            var sizeTMaxCs = sizeTMaxCpp;
+#endif
             if (sizeTMaxCpp != sizeTMaxCs)
             {
                 throw new ArgumentException("size_t",
@@ -4585,9 +4643,12 @@ enum DataType {
                         "The c++ max size_t value seems to be {0:r} while the C# is {1:r}", sizeTMaxCpp, sizeTMaxCs));
             }
 
+
+
+
             IntPtr sizeTMinCpp = TestSizeTMin();
             IntPtr sizeTMinCs = IntPtr.Zero;
-            if (sizeTMaxCpp != sizeTMaxCs)
+            if (sizeTMinCpp != sizeTMinCs)
             {
                 throw new ArgumentException("size_t",
                     String.Format(CultureInfo.InvariantCulture,
@@ -4641,6 +4702,17 @@ enum DataType {
             }
         }
 
+        private static bool BuiltWithMono
+        {
+            get
+            {
+#if (__MonoCS__)
+                return true;
+#else
+                return false;
+#endif
+            }
+        }
 
 #if (DEBUG)
         private const string Buildmode = "d";
@@ -4651,11 +4723,8 @@ enum DataType {
 
 #endif
 
-#if (__MonoCS__)
-        private const string CompiledWithMono = "Yes";
-#else
-        private const string CompiledWithMono = "No";
-#endif
+
+        
 
         //the .net library wil always use a c dll that is called tightdb_c_cs2012[32/64][r/d]
         //this dll could have been built with vs2012 or 2010 - we don't really care as long as the C interface is the same, which it will be
@@ -4675,13 +4744,22 @@ enum DataType {
         //todo:an enhanced version of this, will show all the search paths that .net will use to get
         //at the dll.
 
-        //dump various OS diagnostics to console
-        public static void ShowVersionTest()
+        //dump various diagnostics to console
+        public static void ShowInfo()
         {
             var pointerSize = IntPtr.Size;
             var vmBitness = (pointerSize == 8) ? "64bit" : "32bit";
             var dllstring = (pointerSize == 8) ? L64 : L32;
+#if V40PLUS
 
+            var is64BitOs = Environment.Is64BitOperatingSystem ? "Yes": "No";
+            var is64BitProcess = Environment.Is64BitProcess;
+#else
+            const string is64BitOs = "Unknown in .net below 4.0";
+            const string is64BitProcess = "Unknown in .net below 4.0";
+#endif
+
+            var  compiledWithMono = BuiltWithMono ? "Yes" : "No";
 
             OperatingSystem os = Environment.OSVersion;
             Assembly executingAssembly = Assembly.GetExecutingAssembly();
@@ -4689,16 +4767,14 @@ enum DataType {
             ImageFileMachine machine;
             executingAssembly.ManifestModule.GetPEKind(out peKind, out machine);
             var thisapplocation = executingAssembly.Location;
-            Console.WriteLine("");
-            Console.WriteLine("TightDb CSharp Binding Unit Tests will be run now.");
 
             Console.WriteLine("");
             Console.WriteLine("---OS Info---");
             Console.WriteLine("OS Version                  : {0}", os.Version);
             Console.WriteLine("OS Platform                 : {0}", os.Platform);
-            Console.WriteLine("64 Bit OS *                 : {0}", Environment.Is64BitOperatingSystem);
-            Console.WriteLine("64 Bit process              : {0}", Environment.Is64BitProcess);
-            Console.WriteLine("*=not accurate if running on mono");
+            Console.WriteLine("64 Bit OS                   : {0}", is64BitOs);
+            Console.WriteLine("64 Bit process              : {0}", is64BitProcess);            
+            Console.WriteLine("---OS Info---");
 
             Console.WriteLine("");
             Console.WriteLine("---CLR Info---");
@@ -4706,20 +4782,29 @@ enum DataType {
             Console.WriteLine("Process Running as          : {0}", vmBitness);
             Console.WriteLine("Running on mono             : {0}", IsRunningOnMono());
             Console.WriteLine("Common Language Runtime     : {0}", Environment.Version);
+            Console.WriteLine("---CLR Info---");
 
             Console.WriteLine("");
             Console.WriteLine("---C# binding (TightDbCSharp.dll) Info---");
             Console.WriteLine("Built as PeKind           : {0}", peKind);
             Console.WriteLine("Built as ImageFileMachine : {0}", machine);
 			Console.WriteLine("Debug Or Release          : {0}", BuildName);
-            Console.WriteLine("Compiled With Mono        : {0}", CompiledWithMono);
+            Console.WriteLine("Compiled With Mono        : {0}", compiledWithMono);
+#if V45plus
+            Console.WriteLine("Built for .net version    : V4.5");            
+#elif V40plus
+            Console.WriteLine("Built for .net version    : V4.0");
+#else
+            Console.WriteLine("Built for .net version    : V3.5");
+#endif            
+            Console.WriteLine("---C# binding (TightDbCSharp.dll) Info---");
 
             Console.WriteLine("");
             Console.WriteLine("---C++ DLL Info---");
             Console.WriteLine("Assembly running right now :");
-            Console.WriteLine(thisapplocation + "...");
+            Console.WriteLine(thisapplocation);
             Console.WriteLine("Current Directory :");
-            Console.WriteLine(Directory.GetCurrentDirectory() + "...");
+            Console.WriteLine(Directory.GetCurrentDirectory() );
             Console.WriteLine("");
             Console.WriteLine("Now Loading {0} - expecting it to be a {1} dll", dllstring, vmBitness);
 
@@ -4741,6 +4826,7 @@ enum DataType {
                 }
                 Console.WriteLine("\nC#  DLL        build number {0}", GetDllVersionCSharp + t.Size);//t.size is 0, but use t to make the compiler happy
                 Console.WriteLine("C++ DLL        build number {0}", CppDllVersion());
+                Console.WriteLine("---C++ DLL Info---");
             }
             Console.WriteLine();
             Console.WriteLine();

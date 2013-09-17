@@ -20,8 +20,10 @@ namespace TightDbCSharpTest
             {
                 t.AddEmptyRow(1);
                 t.SetLong(0, 0, 42);
-                TableView tv = t.FindAllInt(0, 42);
-                Console.WriteLine(tv.Handle);
+                using (TableView tv = t.FindAllInt(0, 42))
+                {
+                    Console.WriteLine(tv.Handle);
+                }
             }
         }
 
@@ -385,7 +387,7 @@ intcolumn2:1//column 2
                 //get and set of a double in a mixed field (test type and value)
                 t.AddEmptyRow(1);
                 t.SetMixedDouble(0, 0, testDouble);
-                t.SetString("stringfield", 0, "testdata");//used for creation of tableview in next test
+                t.SetString("stringfield", 0, "testdata"); //used for creation of tableview in next test
                 DataType dt = t.GetMixedType(0, 0);
                 Assert.AreEqual(DataType.Double, dt);
                 double fromDb = t.GetMixedDouble(0, 0);
@@ -394,13 +396,15 @@ intcolumn2:1//column 2
                 const double testDouble2 = -12.2;
                 //get and set of a double in a mixed in a tableview (test type and value).
                 t.SetIndex(1);
-                TableView tv = t.Distinct("stringfield");
-                Assert.AreEqual(1, tv.Size);
-                tv.SetMixedDouble(0, 0, testDouble2);
-                dt = tv.GetMixedType(0, 0);
-                Assert.AreEqual(DataType.Double, dt);
-                fromDb = tv.GetMixedDouble(0, 0);
-                Assert.AreEqual(testDouble2, fromDb);
+                using (TableView tv = t.Distinct("stringfield"))
+                {
+                    Assert.AreEqual(1, tv.Size);
+                    tv.SetMixedDouble(0, 0, testDouble2);
+                    dt = tv.GetMixedType(0, 0);
+                    Assert.AreEqual(DataType.Double, dt);
+                    fromDb = tv.GetMixedDouble(0, 0);
+                    Assert.AreEqual(testDouble2, fromDb);
+                }
             }
         }
 
@@ -416,7 +420,7 @@ intcolumn2:1//column 2
                     //get and set of a double in a mixed field (test type and value)
                     t.AddEmptyRow(1);
                     t.SetMixedFloat(0, 0, testFloat);
-                    t.SetString("stringfield", 0, "testdata");//used for creation of tableview in next test
+                    t.SetString("stringfield", 0, "testdata"); //used for creation of tableview in next test
                     DataType dt = t.GetMixedType(0, 0);
                     Assert.AreEqual(DataType.Float, dt);
                     float fromDb = t.GetMixedFloat(0, 0);
@@ -425,13 +429,15 @@ intcolumn2:1//column 2
                     const float testFloat2 = -12.2f;
                     //get and set of a double in a mixed in a tableview (test type and value).
                     t.SetIndex(1);
-                    TableView tv = t.Distinct("stringfield");
-                    Assert.AreEqual(1, tv.Size);
-                    tv.SetMixedFloat(0, 0, testFloat2);
-                    dt = tv.GetMixedType(0, 0);
-                    Assert.AreEqual(DataType.Float, dt);
-                    fromDb = tv.GetMixedFloat(0, 0);
-                    Assert.AreEqual(testFloat2, fromDb);
+                    using (TableView tv = t.Distinct("stringfield"))
+                    {
+                        Assert.AreEqual(1, tv.Size);
+                        tv.SetMixedFloat(0, 0, testFloat2);
+                        dt = tv.GetMixedType(0, 0);
+                        Assert.AreEqual(DataType.Float, dt);
+                        fromDb = tv.GetMixedFloat(0, 0);
+                        Assert.AreEqual(testFloat2, fromDb);
+                    }
                 }
             }
         }
@@ -461,14 +467,17 @@ intcolumn2:1//column 2
 
                 //then try once again, but with a tableview
                 t.SetIndex(0);
-                TableView tv = t.Distinct(0);
-                tv.SetString(fn0, 0, "teststring");
-                tv[0].SetDouble(fn1, testdouble);
-                tv.SetDouble(fn2, 0, testdouble2);
-                Assert.AreEqual(testdouble, tv.GetDouble(fn1, 0));
-                Assert.AreEqual(testdouble, tv.GetDouble(1, 0));
-                Assert.AreEqual(testdouble2, tv[0].GetDouble(fn2));
-                Assert.AreEqual(testdouble2, tv[0].GetDouble(2));
+                using (
+                    TableView tv = t.Distinct(0))
+                {
+                    tv.SetString(fn0, 0, "teststring");
+                    tv[0].SetDouble(fn1, testdouble);
+                    tv.SetDouble(fn2, 0, testdouble2);
+                    Assert.AreEqual(testdouble, tv.GetDouble(fn1, 0));
+                    Assert.AreEqual(testdouble, tv.GetDouble(1, 0));
+                    Assert.AreEqual(testdouble2, tv[0].GetDouble(fn2));
+                    Assert.AreEqual(testdouble2, tv[0].GetDouble(2));
+                }
             }
         }
 
@@ -497,15 +506,17 @@ intcolumn2:1//column 2
 
                 //then try once again, but with a tableview
                 t.SetIndex(0);
-                TableView tv = t.Distinct(fn0);
-                Assert.AreEqual(1, tv.Size);
-                tv.SetString(fn0, 0, "teststring");
-                tv.SetFloat(2, 0, testfloat2);
-                tv[0].SetFloat(fn1, testfloat);
-                Assert.AreEqual(testfloat, tv.GetFloat(fn1, 0));
-                Assert.AreEqual(testfloat, tv.GetFloat(1, 0));
-                Assert.AreEqual(testfloat2, tv[0].GetFloat(fn2));
-                Assert.AreEqual(testfloat2, tv[0].GetFloat(2));
+                using (TableView tv = t.Distinct(fn0))
+                {
+                    Assert.AreEqual(1, tv.Size);
+                    tv.SetString(fn0, 0, "teststring");
+                    tv.SetFloat(2, 0, testfloat2);
+                    tv[0].SetFloat(fn1, testfloat);
+                    Assert.AreEqual(testfloat, tv.GetFloat(fn1, 0));
+                    Assert.AreEqual(testfloat, tv.GetFloat(1, 0));
+                    Assert.AreEqual(testfloat2, tv[0].GetFloat(fn2));
+                    Assert.AreEqual(testfloat2, tv[0].GetFloat(2));
+                }
             }
         }
 
@@ -529,13 +540,16 @@ intcolumn2:1//column 2
 
                 //then try once again, but with a tableview
                 t.SetIndex(0);
-                TableView tv = t.Distinct(fn0);
-                Assert.AreEqual(1, tv.Size);
-                tv.SetString(fn0, 0, "teststring!!");
-                tv.SetFloat(fn1, 0, testfloat);
-                Assert.AreEqual(testfloat, tv.GetFloat(fn1, 0));
-                Assert.AreEqual(testfloat, tv.GetFloat(1, 0));
-                Assert.AreEqual(1, t.Size);
+                using (
+                    TableView tv = t.Distinct(fn0))
+                {
+                    Assert.AreEqual(1, tv.Size);
+                    tv.SetString(fn0, 0, "teststring!!");
+                    tv.SetFloat(fn1, 0, testfloat);
+                    Assert.AreEqual(testfloat, tv.GetFloat(fn1, 0));
+                    Assert.AreEqual(testfloat, tv.GetFloat(1, 0));
+                    Assert.AreEqual(1, t.Size);
+                }
             }
         }
 
@@ -544,36 +558,42 @@ intcolumn2:1//column 2
         public static void TableViewSetSubtable()
         {
             using (var t = new Table(
-                                     "do'h".Int(),
-                                     "sub".SubTable(
-                                                      "substringfield1".String(),
-                                                      "substringfield2".String()
-                                                   ),
-                                     "mazda".Int()
-                                    )
-                   )
+                "do'h".Int(),
+                "sub".SubTable(
+                    "substringfield1".String(),
+                    "substringfield2".String()
+                    ),
+                "mazda".Int()
+                )
+                )
             {
                 using (var sub = new Table(
-                                                      "substringfield1".String(),
-                                                      "substringfield2".String()
-                                           )
-                      )
+                    "substringfield1".String(),
+                    "substringfield2".String()
+                    )
+                    )
                 {
                     const string string00 = "stringvalueC0R0";
                     sub.Add(string00, "stringvalue2R0");
                     sub.Add("stringvalue1R1", "stringvalue2R1");
-                    t.Add(42,sub,43);//a row with the subtable in it
-                    TableView view = t.FindAllInt(0, 42); //tableview now has the one row with the subtable
-                    Table subreturned = view.GetSubTable(1, 0);//testing getsubtable
-                    Assert.AreEqual(string00,subreturned.GetString(0,0));
+                    t.Add(42, sub, 43); //a row with the subtable in it
+                    using (TableView view = t.FindAllInt(0, 42))
+                    using (Table subreturned = view.GetSubTable(1, 0)) //testing getsubtable)
+                    {
+                        //tableview now has the one row with the subtable
 
-                    const string changedString = "Changed";
-                    sub.SetString(1,1,changedString);
-                    view.SetSubTable(1, 0, sub);
-                    Table subreturnedchanged = view.GetSubTable(1, 0);//                    
-                    Assert.AreEqual(changedString,subreturnedchanged.GetString(1,1));
+                        Assert.AreEqual(string00, subreturned.GetString(0, 0));
 
-                    //now, try to set the subtable values via a tableview
+                        const string changedString = "Changed";
+                        sub.SetString(1, 1, changedString);
+                        view.SetSubTable(1, 0, sub);
+
+                        using (Table subreturnedchanged = view.GetSubTable(1, 0))
+                        {                    
+                            Assert.AreEqual(changedString, subreturnedchanged.GetString(1, 1));
+                            //now, try to set the subtable values via a tableview
+                        }
+                    }
                 }
             }
         }
@@ -585,39 +605,47 @@ intcolumn2:1//column 2
         public static void TableViewClearSubtable()
         {
             using (var t = new Table(
-                                     "do'h".Int(),
-                                     "sub".SubTable(
-                                                      "substringfield1".String(),
-                                                      "substringfield2".String()
-                                                   ),
-                                     "mazda".Int()
-                                    )
-                   )
+                "do'h".Int(),
+                "sub".SubTable(
+                    "substringfield1".String(),
+                    "substringfield2".String()
+                    ),
+                "mazda".Int()
+                )
+                )
             {
                 using (var sub = new Table(
-                                                      "substringfield1".String(),
-                                                      "substringfield2".String()
-                                           )
-                      )
+                    "substringfield1".String(),
+                    "substringfield2".String()
+                    )
+                    )
                 {
                     const string string00 = "stringvalueC0R0";
                     sub.Add(string00, "stringvalue2R0");
                     sub.Add("stringvalue1R1", "stringvalue2R1");
-                    t.Add(42, sub, 43);//a row with the subtable in it
-                    TableView view = t.FindAllInt(0, 42); //tableview now has the one row with the subtable
-                    Table subreturned = view.GetSubTable(1, 0);//testing getsubtable
-                    Assert.AreEqual(string00, subreturned.GetString(0, 0));
+                    t.Add(42, sub, 43); //a row with the subtable in it
+                    using (TableView view = t.FindAllInt(0, 42))
+                    {
+                        //tableview now has the one row with the subtable
+                        Table subreturned = view.GetSubTable(1, 0); //testing getsubtable
+                        Assert.AreEqual(string00, subreturned.GetString(0, 0));
 
-                    const string changedString = "Changed";
-                    sub.SetString(1, 1, changedString);
-                    view.SetSubTable("sub", 0, sub);
-                    Table subreturnedchanged = view.GetSubTable(1, 0);//                    
-                    Assert.AreEqual(changedString, subreturnedchanged.GetString(1, 1));
+                        const string changedString = "Changed";
+                        sub.SetString(1, 1, changedString);
+                        view.SetSubTable("sub", 0, sub);
+                        using (Table subreturnedchanged = view.GetSubTable(1, 0))
+                        {
+                            Assert.AreEqual(changedString, subreturnedchanged.GetString(1, 1));
 
-                    view.ClearSubTable(1,0);
-                    Table clearedSubReturned = view.GetSubTable(1, 0);
-                    Assert.AreEqual(0,clearedSubReturned.Size);
-                    //now, try to set the subtable values via a tableview
+                            view.ClearSubTable(1, 0);
+
+                            using (Table clearedSubReturned = view.GetSubTable(1, 0))
+                            {
+                                Assert.AreEqual(0, clearedSubReturned.Size);
+                                //now, try to set the subtable values via a tableview
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -806,12 +834,15 @@ intcolumn2:1//column 2
         [Test]
         public static void TableViewIsValidLegal()
         {
-            using (var table = new Table(new IntField("test")) {1, 2,2, 3, 2,4})
-            using (var tableview = table.FindAllInt(0,2))
+            using (var table = new Table(new IntField("test")))
             {
-                Assert.AreEqual(3,tableview.Size);
-                tableview.Remove(1);
-                Assert.AreEqual(2, tableview.Size);
+                table.AddMany(new[]{1,2,2,3,2,4});
+                using (var tableview = table.FindAllInt(0, 2))
+                {
+                    Assert.AreEqual(3, tableview.Size);
+                    tableview.Remove(1);
+                    Assert.AreEqual(2, tableview.Size);
+                }
             }
         }
 
@@ -820,14 +851,17 @@ intcolumn2:1//column 2
         [ExpectedException("System.InvalidOperationException")]
         public static void TableViewIsValidNotLegalThroughTable()
         {
-            using (var table = new Table(new IntField("test")) { 1, 2, 2, 3, 2, 4 })
-            using (var tableview = table.FindAllInt(0, 2))
+            using (var table = new Table(new IntField("test")))
             {
-                Assert.AreEqual(3, tableview.Size);
-                table.Remove(1);
-                Assert.AreEqual(false,tableview.IsValid());
-                long size = tableview.Size;//this should throw
-                Assert.AreEqual(2, size);//this should not run
+                table.AddMany(new[] { 1, 2, 2, 3, 2, 4 });
+                using (var tableview = table.FindAllInt(0, 2))
+                {
+                    Assert.AreEqual(3, tableview.Size);
+                    table.Remove(1);
+                    Assert.AreEqual(false, tableview.IsValid());
+                    var size = tableview.Size; //this should throw
+                    Assert.AreEqual(2, size); //this should not run
+                }
             }
         }
 

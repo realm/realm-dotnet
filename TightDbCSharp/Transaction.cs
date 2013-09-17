@@ -106,7 +106,7 @@ namespace TightDbCSharp
           //base.ReleaseHandle();//group.releasehandle would release the group handle in c++ but we don't want that
         }
 
-        public override string ObjectIdentification()
+        internal override string ObjectIdentification()
         {
             return String.Format(CultureInfo.InvariantCulture, "Transaction. Type:{0}  State:{1}", _kind,
                 _sharedGroup.TransactionState);

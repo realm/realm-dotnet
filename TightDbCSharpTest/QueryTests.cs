@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using NUnit.Framework;
 using TightDbCSharp;
 using TightDbCSharp.Extensions;
@@ -9,6 +8,9 @@ using System.Reflection;
 
 namespace TightDbCSharpTest
 {
+    //currently not static because of a bug in nunitlite where ExpectedException throws exceptions if the fixture is static
+    //ignore the code analysis error for now, make the class static once nunitlite is released with the bug fixed
+    //(bug has been reported and should be fixed in the next release)
     [TestFixture]
     public static class QueryTests
     {
@@ -57,36 +59,55 @@ namespace TightDbCSharpTest
         
         private static Table GetTableWithCombinations()
         {
-            var t = new Table(new IntField("intcolumn0"), new IntField("intcolumn1"), new IntField("intcolumn2"),new IntField("intcolumn3"));
-
-            for (int n = 0; n < 3*3*3*3; n++)
+            Table t=null;
+            try
             {
-                long col0 =1+ (n/3/3/3)%3;
-                long col1 =1+ (n/3/3)%3;
-                long col2 =1+ (n/3)%3;
-                long col3 =1+ n %3;
-                t.Add(col0, col1, col2, col3);
+                 t = new Table(new IntField("intcolumn0"), new IntField("intcolumn1"), new IntField("intcolumn2"),
+                    new IntField("intcolumn3"));                
             }
-            Assert.AreEqual(1, t.GetLong(0, 0));
-            Assert.AreEqual(3, t.GetLong(3, 71));
-            Assert.AreEqual(3, t.GetLong(0, 71));
-            Assert.AreEqual(2, t.GetLong(2,3 ));
-            Assert.AreEqual(1, t.GetLong(3, 69));            
-            return t;
+            catch//exception while t is being instantiated, dispose t and rethrow exception
+            {   if(t!=null) 
+                  t.Dispose();
+                throw;
+            }
+
+            try
+            {
+                for (int n = 0; n < 3*3*3*3; n++)
+                {
+                    long col0 = 1 + (n/3/3/3)%3;
+                    long col1 = 1 + (n/3/3)%3;
+                    long col2 = 1 + (n/3)%3;
+                    long col3 = 1 + n%3;
+                    t.Add(col0, col1, col2, col3);
+                }
+                Assert.AreEqual(1, t.GetLong(0, 0));
+                Assert.AreEqual(3, t.GetLong(3, 71));
+                Assert.AreEqual(3, t.GetLong(0, 71));
+                Assert.AreEqual(2, t.GetLong(2, 3));
+                Assert.AreEqual(1, t.GetLong(3, 69));
+                return t;
+            }
+            catch//something went wrong. dispose of the table and rethrow the exception
+            {
+                t.Dispose();
+                throw;
+            }
         }
 
 
         [Test]
         public static void QueryAverage()
         {
+            using  (var combitable = GetTableWithCombinations())
             {
-                var combitable = GetTableWithCombinations();
                 Assert.AreEqual(2, combitable.Where().Greater("intcolumn2", 1).Average(3));
                 Assert.AreEqual(2, combitable.Where().Greater("intcolumn0", 1).Average(2));
                 Assert.AreEqual(3, combitable.Where().Greater(0, 2).Average(0));
             }
-            {
-                var combitable = GetTableWithCombinations();
+            
+            using ( var combitable = GetTableWithCombinations())
+            {            
                 Assert.AreEqual(2, combitable.Where().Greater("intcolumn2", 1).Average("intcolumn3"));
                 Assert.AreEqual(2, combitable.Where().Greater("intcolumn0", 1).Average("intcolumn2"));
                 Assert.AreEqual(3, combitable.Where().Greater("intcolumn0", 2).Average("intcolumn0"));
@@ -98,8 +119,8 @@ namespace TightDbCSharpTest
         [Test]
         public static void QueryCount()
         {
-            {
-                var combitable = GetTableWithCombinations();
+            using(var combitable = GetTableWithCombinations())
+            {               
                 Assert.AreEqual(2*3*3*3, combitable.Where().Greater("intcolumn2", 1).Count());
                 Assert.AreEqual(1*1*3*3, combitable.Where().Greater("intcolumn0", 2).Greater("intcolumn1",2).Count());
                 Assert.AreEqual(10, combitable.Where().Count(10,20,999));
@@ -108,38 +129,42 @@ namespace TightDbCSharpTest
 
 
         [Test]
-        public static void QueryTestEnummerator()
+        public static void QueryTestEnumerator()
         {
-            var combitable = GetTableWithCombinations();
-            var n = 0;
-            foreach (TableRow tableRow in combitable)
+            using (var combitable = GetTableWithCombinations())
             {
-                int col0 = 1+  (n/(3*3*3))%3;
-                int col1 = 1 + (n/(3*3))%3;
-                int col2 = 1 + (n/3) %3;
-                int col3 = 1 + n%3;
-                Assert.AreEqual(col0,tableRow.GetLong(0));
-                Assert.AreEqual(col1, tableRow.GetLong(1));
-                Assert.AreEqual(col2, tableRow.GetLong(2));
-                Assert.AreEqual(col3, tableRow.GetLong(3));
-                n++;
+                var n = 0;
+                foreach (TableRow tableRow in combitable)
+                {
+                    int col0 = 1 + (n/(3*3*3))%3;
+                    int col1 = 1 + (n/(3*3))%3;
+                    int col2 = 1 + (n/3)%3;
+                    int col3 = 1 + n%3;
+                    Assert.AreEqual(col0, tableRow.GetLong(0));
+                    Assert.AreEqual(col1, tableRow.GetLong(1));
+                    Assert.AreEqual(col2, tableRow.GetLong(2));
+                    Assert.AreEqual(col3, tableRow.GetLong(3));
+                    n++;
+                }
             }
         }
 
         [Test]
         public static void QueryFindNext()
         {
-            var combitable = GetTableWithCombinations();
-            Query combiquery = combitable.Where().Greater("intcolumn2",1);
-            Assert.AreEqual(3, combiquery.FindNext(-1));
-            Assert.AreEqual(4, combiquery.FindNext(3));
-            Assert.AreEqual(5, combiquery.FindNext(4));
-            Assert.AreEqual(6, combiquery.FindNext(5));
-            Assert.AreEqual(7, combiquery.FindNext(6));
-            Assert.AreEqual(8, combiquery.FindNext(7));
-            Assert.AreEqual(12, combiquery.FindNext(8));
-            Assert.AreEqual(13, combiquery.FindNext(12));
-            Assert.AreEqual(14, combiquery.FindNext(13));
+            using (var combitable = GetTableWithCombinations())
+            {
+                Query combiquery = combitable.Where().Greater("intcolumn2", 1);
+                Assert.AreEqual(3, combiquery.FindNext(-1));
+                Assert.AreEqual(4, combiquery.FindNext(3));
+                Assert.AreEqual(5, combiquery.FindNext(4));
+                Assert.AreEqual(6, combiquery.FindNext(5));
+                Assert.AreEqual(7, combiquery.FindNext(6));
+                Assert.AreEqual(8, combiquery.FindNext(7));
+                Assert.AreEqual(12, combiquery.FindNext(8));
+                Assert.AreEqual(13, combiquery.FindNext(12));
+                Assert.AreEqual(14, combiquery.FindNext(13));
+            }
         }
 
 
@@ -242,15 +267,13 @@ namespace TightDbCSharpTest
         [ExpectedException("System.ArgumentOutOfRangeException")]
         public static void CreateQueryEndNegative()
         {
-            Console.WriteLine("QQEN");
-            throw new ArgumentOutOfRangeException();
-/*
+            //throw new ArgumentOutOfRangeException();
+
             using (var t = GetTableWithMultipleIntegers())
             {
-
-                //TableView tv = t.Where().FindAll(1, -2, 100);
-            //    Assert.AreEqual(42,tv.Size);//should never be called
-            }*/
+                TableView tv = t.Where().FindAll(1, -2, 100);
+                Assert.AreEqual(42,tv.Size);//should never be called
+            }
         }
 
         [Test]

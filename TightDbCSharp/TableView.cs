@@ -453,7 +453,7 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableViewGetColumnType(this, columnIndex);
         }
 
-        public override string ObjectIdentification()
+        internal override string ObjectIdentification()
         {
             ValidateIsValid();
             return String.Format(CultureInfo.InvariantCulture,"TableView:{0}", Handle);
@@ -462,9 +462,18 @@ namespace TightDbCSharp
         
         internal TableView(Table underlyingTableBeing, IntPtr tableViewHandle,bool shouldbedisposed)
         {
-            UnderlyingTable = underlyingTableBeing;
-            Version = underlyingTableBeing.Version;//this tableview should invalidate itself if that version changes
-            SetHandle(tableViewHandle,shouldbedisposed);
+            try
+            {
+                UnderlyingTable = underlyingTableBeing;
+                Version = underlyingTableBeing.Version;
+                    //this tableview should invalidate itself if that version changes
+                SetHandle(tableViewHandle, shouldbedisposed);
+            }
+            catch (Exception)
+            {
+                Dispose();
+                throw;
+            }
         }
 
         internal override long GetSize()
