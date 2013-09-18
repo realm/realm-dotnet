@@ -15,36 +15,18 @@ namespace TutorialSolution
                 new BoolField("hired"),
                 new SubTableField("phones", //sub table specification
                     new StringField("desc"),
-                    new StringField("number")
-                    )
-                ))
+                    new StringField("number"))))
                 //@@EndExample@@
 
             {
                 // @@Example: insert_rows @@
 
-                people.Add("John", 20, true, new[]
-                {
-                    new[] {"home", "555-1234-555"}
-                });
-
-                people.Add("Mary", 21, false, new[]
-                {
-                    new[] {"mobile", "232-323-3232"},
-                    new[] {"work", "434-434-4343"}
-                });
-
-                people.Add("Lars", 21, true, new[]
-                {
-                    new[] {"home", "343-436-5345"},
-                    new[] {"school", "545-545-5454"}
-                });
-
-                people.Add("Phil", 43, false, new[]
-                {
-                    new[] {"mobile", "754-545-5433"}
-                });
-
+                people.Add("John", 20, true,  new[]{new[] {"home",   "555-1234-555"}});
+                people.Add("Mary", 21, false, new[]{new[] {"mobile", "232-323-3232"},
+                                                    new[] {"work",   "434-434-4343"}});
+                people.Add("Lars", 21, true,  new[]{new[] {"home",   "343-436-5345"},
+                                                    new[] {"school", "545-545-5454"}});
+                people.Add("Phil", 43, false, new[]{new[] {"mobile", "754-545-5433"}});
                 people.Add("Anni", 54, true, null);
                 // @@EndExample@@
 
@@ -144,9 +126,7 @@ namespace TutorialSolution
                 using (var employees = group.CreateTable("employees",
                     new StringField("Name"),
                     new IntField("Age"),
-                    new BoolField("Hired")
-                    )
-                    )
+                    new BoolField("Hired")))
                 {
 
                     //add some rows
