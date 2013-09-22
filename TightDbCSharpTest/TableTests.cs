@@ -735,7 +735,10 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
         }
 
 
-        //this iteration should fail.  a row is inserted in the loop, later than where the iterator is
+        
+        /// <summary>
+        /// this iteration should fail.  a row is inserted in the loop, later than where the iterator is
+        /// </summary>
         [Test]
         [ExpectedException("System.InvalidOperationException")]
         public static void TableIteratorInvalidation6AddEmptyRow()
@@ -1961,7 +1964,7 @@ Table Name  : cyclic field definition
              SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters",
                  MessageId = "fieldName")]
             // ReSharper disable UnusedParameter.Local
-            public void setsubtablearray(String fieldName, Field[] fielddefinitions)
+            public void Setsubtablearray(String fieldName, Field[] fielddefinitions)
                 //make the otherwise hidden addsubtablefield public
                 // ReSharper restore UnusedParameter.Local
             {
@@ -2171,6 +2174,9 @@ Table Name  : cyclic field definition
         }
 
 
+        /// <summary>
+        /// Call distinct with a not supported not indexed column ()
+        /// </summary>
         [Test]
         [ExpectedException("System.ArgumentException")] //type validation
         public static void TableDistinctBadType()
@@ -2197,6 +2203,9 @@ Table Name  : cyclic field definition
             }
         }
 
+        /// <summary>
+        /// Call set index on a non-indexable field
+        /// </summary>
         [Test]
         [ExpectedException("System.ArgumentException")] //must throw tyepe validation exception
         public static void TableSetIndexTypeError()
@@ -2898,7 +2907,7 @@ Table Name  : rename columns in subtables via parameters
             //do not care about last parameter we're trying to crash the system
             var subs = new Field[2];
             subs[0] = f1;
-            f1.setsubtablearray("f2", subs);
+            f1.Setsubtablearray("f2", subs);
 
             string actualres;
             using (var t4 = new Table(f1))
@@ -3666,9 +3675,202 @@ double:-1002//column 3
             }
         }
 
+
+
+
+
+
         //test setting all types to a mixed, and getting them back again correctly
         [Test]
         public static void TableMixedSetTypes()
+        {
+            using (var table = new Table("mixedfield".Mixed()))
+            {
+                //listed below are all C# built in value types http://msdn.microsoft.com/en-us/library/ya5y69ds.aspx
+                //we should be able to handle them gracefully when sent to a mixed, both when an applicable type is specified, and when
+                //we get them as a parameter where we must guess the mixed type to use
+
+                bool testbool = (table.Size == 1);
+                const byte testByte = Byte.MaxValue;
+                const sbyte testSByte = SByte.MinValue;
+                const char testChar = Char.MaxValue;
+                const decimal testDecimal = Decimal.MaxValue;
+                const double testDouble = Double.MinValue;
+                const float testFloat = Single.MaxValue;
+                const int testInt = Int32.MinValue;
+                const uint testUInt = UInt32.MaxValue;
+                const long testLong = Int64.MinValue;
+                const ulong testULong = UInt64.MaxValue;
+                const short testShort = Int16.MinValue;
+                const ushort testUShort = UInt16.MaxValue;
+                //these types below are C# reference types that match various tightdb types
+                byte[] testBinary = { 1, 3, 5, 7, 11, 13, 17, 23 };
+                const string testString = "blah"; //in fact not a value type , but a reference type
+                DateTime testDateTime = new DateTime(1990, 1, 1).ToUniversalTime();
+
+
+                table.AddEmptyRow(1);
+                //setting and getting mixed values where tightdb type is specified
+
+
+
+                //test setting the basic types using anonymous set on tablerow
+                TableRow tablerow = table[0];
+
+                tablerow.SetMixed(0, testBinary);
+                Assert.AreEqual(testBinary, tablerow.GetMixedBinary(0));
+                Assert.AreEqual(testBinary, tablerow.GetMixedBinary("mixedfield"));
+
+                tablerow.SetMixed(0, testByte);
+                Assert.AreEqual(testByte, tablerow.GetMixedLong(0));
+                Assert.AreEqual(testByte, tablerow.GetMixedLong("mixedfield"));
+
+
+                tablerow.SetMixed(0, testChar);
+                Assert.AreEqual(testChar, tablerow.GetMixedLong(0));
+                Assert.AreEqual(testChar, tablerow.GetMixedLong("mixedfield"));
+
+
+                tablerow.SetMixedDateTime(0, testDateTime);
+                Assert.AreEqual(testDateTime, tablerow.GetMixedDateTime(0));
+                Assert.AreEqual(testDateTime, tablerow.GetMixedDateTime("mixedfield"));
+
+                tablerow.SetMixedDateTime("mixedfield", testDateTime);
+                Assert.AreEqual(testDateTime, tablerow.GetMixedDateTime(0));
+                Assert.AreEqual(testDateTime, tablerow.GetMixedDateTime("mixedfield"));
+
+                tablerow.SetMixed(0, testDateTime);
+                Assert.AreEqual(testDateTime, tablerow.GetMixedDateTime(0));
+                Assert.AreEqual(testDateTime, tablerow.GetMixedDateTime("mixedfield"));
+
+                try
+                {
+                    tablerow.SetMixed(0, testDecimal);
+                    Assert.Fail("Calling set mixed(object) with a C# type decimal should fail with a type check");
+                }
+                catch (ArgumentException) //remove the expected exception thrown by setmixed
+                {
+                }
+
+                tablerow.SetMixed(0, testDouble);
+                Assert.AreEqual(testDouble, tablerow.GetMixedDouble(0));
+                Assert.AreEqual(testDouble, tablerow.GetMixedDouble("mixedfield"));
+
+                tablerow.SetMixed(0, testFloat);
+                Assert.AreEqual(testFloat, tablerow.GetMixedFloat(0));
+                Assert.AreEqual(testFloat, tablerow.GetMixedFloat("mixedfield"));
+
+                tablerow.SetMixed(0, testInt);
+                Assert.AreEqual(testInt, tablerow.GetMixedLong(0));
+                Assert.AreEqual(testInt, tablerow.GetMixedLong("mixedfield"));
+
+                tablerow.SetMixed(0, testLong);
+                Assert.AreEqual(testLong, tablerow.GetMixedLong(0));
+                Assert.AreEqual(testLong, tablerow.GetMixedLong("mixedfield"));
+
+                tablerow.SetMixed(0, testSByte);
+                Assert.AreEqual(testSByte, tablerow.GetMixedLong(0));
+                Assert.AreEqual(testSByte, tablerow.GetMixedLong("mixedfield"));
+
+                tablerow.SetMixed(0, testShort);
+                Assert.AreEqual(testShort, tablerow.GetMixedLong(0));
+                Assert.AreEqual(testShort, tablerow.GetMixedLong("mixedfield"));
+
+                tablerow.SetMixed(0, testString);
+                Assert.AreEqual(testString, tablerow.GetMixedString(0));
+                Assert.AreEqual(testString, tablerow.GetMixedString("mixedfield"));
+
+                tablerow.SetMixed(0, testUInt);
+                Assert.AreEqual(testUInt, tablerow.GetMixedLong(0));
+                Assert.AreEqual(testUInt, tablerow.GetMixedLong("mixedfield"));
+
+                tablerow.SetMixed(0, testULong);
+                Assert.AreEqual(testULong, tablerow.GetMixedLong(0));
+                Assert.AreEqual(testULong, tablerow.GetMixedLong("mixedfield"));
+
+                tablerow.SetMixed(0, testUShort);
+                Assert.AreEqual(testUShort, tablerow.GetMixedLong(0));
+                Assert.AreEqual(testUShort, tablerow.GetMixedLong("mixedfield"));
+
+                tablerow.SetMixed(0, testbool);
+                Assert.AreEqual(testbool, tablerow.GetMixedBoolean(0));
+                Assert.AreEqual(testbool, tablerow.GetMixedBoolean("mixedfield"));
+
+
+
+
+
+                //test getting the basic types using anonymous get on tablerow (set was verified above)
+
+
+                tablerow.SetMixed(0, testBinary);
+                Assert.AreEqual(testBinary, tablerow.GetMixed(0));
+                Assert.AreEqual(testBinary, tablerow.GetMixed("mixedfield"));
+
+                tablerow.SetMixed(0, testByte);
+                Assert.AreEqual(testByte, tablerow.GetMixed(0));
+                Assert.AreEqual(testByte, tablerow.GetMixed("mixedfield"));
+
+                tablerow.SetMixed(0, testChar);
+                var res = (long)tablerow.GetMixed(0);//a direct assert yields an abort inside the unit test when run in resharper (a problem with resharper )
+                Assert.AreEqual(testChar, res);
+
+                tablerow.SetMixed(0, testDateTime);
+                Assert.AreEqual(testDateTime, tablerow.GetMixed(0));
+                Assert.AreEqual(testDateTime, tablerow.GetMixed("mixedfield"));
+
+                try
+                {
+                    tablerow.SetMixed(0, testDecimal);
+                    Assert.Fail("Calling set mixed(object) with a C# type decimal should fail with a type check");
+                }
+                catch (ArgumentException) //remove the expected exception thrown by setmixed
+                {
+                }
+
+                tablerow.SetMixed(0, testDouble);
+                Assert.AreEqual(testDouble, tablerow.GetMixed(0));
+
+                tablerow.SetMixed(0, testFloat);
+                Assert.AreEqual(testFloat, tablerow.GetMixed(0));
+
+                tablerow.SetMixed(0, testInt);
+                Assert.AreEqual(testInt, tablerow.GetMixed(0));
+
+                tablerow.SetMixed(0, testLong);
+                Assert.AreEqual(testLong, tablerow.GetMixed(0));
+
+                tablerow.SetMixed(0, testSByte);
+                Assert.AreEqual(testSByte, tablerow.GetMixed(0));
+
+                tablerow.SetMixed(0, testShort);
+                Assert.AreEqual(testShort, tablerow.GetMixed(0));
+
+                tablerow.SetMixed(0, testString);
+                Assert.AreEqual(testString, tablerow.GetMixed(0));
+
+                tablerow.SetMixed(0, testUInt);
+                Assert.AreEqual(testUInt, tablerow.GetMixed(0));
+
+                tablerow.SetMixed(0, testULong);
+                Assert.AreEqual(testULong, tablerow.GetMixed(0));
+
+                tablerow.SetMixed(0, testUShort);
+                Assert.AreEqual(testUShort, tablerow.GetMixed(0));
+
+                tablerow.SetMixed(0, testbool);
+                Assert.AreEqual(testbool, tablerow.GetMixed(0));
+            }
+
+        }
+
+
+
+
+
+        //test setting all types to a mixed, and getting them back again correctly
+        [Test]
+        public static void TableMixedSetTypes2()
         {
             using (var table = new Table("mixedfield".Mixed()))
             {
@@ -3731,7 +3933,7 @@ double:-1002//column 3
                 String testdecimalstring = testDecimal.ToString(CultureInfo.InvariantCulture);
                 table.SetMixedString(0, 0, testdecimalstring);
                 string decimalstringreturned = table.GetMixedString(0, 0);
-                Assert.AreEqual(testDecimal, Decimal.Parse(decimalstringreturned,CultureInfo.InvariantCulture));
+                Assert.AreEqual(testDecimal, Decimal.Parse(decimalstringreturned, CultureInfo.InvariantCulture));
                 table.Set(0, testdecimalstring);
                 Assert.AreEqual(testDecimal, Decimal.Parse(decimalstringreturned, CultureInfo.InvariantCulture));
 
@@ -3922,155 +4124,7 @@ double:-1002//column 3
 
 
 
-
-                //test setting the basic types using anonymous set on tablerow
-                TableRow tablerow = table[0];
-
-                tablerow.SetMixed(0, testBinary);
-                Assert.AreEqual(testBinary, tablerow.GetMixedBinary(0));
-                Assert.AreEqual(testBinary, tablerow.GetMixedBinary("mixedfield"));
-
-                tablerow.SetMixed(0, testByte);
-                Assert.AreEqual(testByte, tablerow.GetMixedLong(0));
-                Assert.AreEqual(testByte, tablerow.GetMixedLong("mixedfield"));
-                
-
-                tablerow.SetMixed(0, testChar);
-                Assert.AreEqual(testChar, tablerow.GetMixedLong(0));
-                Assert.AreEqual(testChar, tablerow.GetMixedLong("mixedfield"));
-                
-
-                tablerow.SetMixedDateTime(0, testDateTime);
-                Assert.AreEqual(testDateTime, tablerow.GetMixedDateTime(0));
-                Assert.AreEqual(testDateTime, tablerow.GetMixedDateTime("mixedfield"));
-
-                tablerow.SetMixedDateTime("mixedfield", testDateTime);
-                Assert.AreEqual(testDateTime, tablerow.GetMixedDateTime(0));
-                Assert.AreEqual(testDateTime, tablerow.GetMixedDateTime("mixedfield"));
-
-                tablerow.SetMixed(0, testDateTime);
-                Assert.AreEqual(testDateTime, tablerow.GetMixedDateTime(0));
-                Assert.AreEqual(testDateTime, tablerow.GetMixedDateTime("mixedfield"));
-
-                try
-                {
-                    tablerow.SetMixed(0, testDecimal);
-                    Assert.Fail("Calling set mixed(object) with a C# type decimal should fail with a type check");
-                }
-                catch (ArgumentException) //remove the expected exception thrown by setmixed
-                {
-                }
-
-                tablerow.SetMixed(0, testDouble);
-                Assert.AreEqual(testDouble, tablerow.GetMixedDouble(0));
-                Assert.AreEqual(testDouble, tablerow.GetMixedDouble("mixedfield"));
-
-                tablerow.SetMixed(0, testFloat);
-                Assert.AreEqual(testFloat, tablerow.GetMixedFloat(0));
-                Assert.AreEqual(testFloat, tablerow.GetMixedFloat("mixedfield"));
-
-                tablerow.SetMixed(0, testInt);
-                Assert.AreEqual(testInt, tablerow.GetMixedLong(0));
-                Assert.AreEqual(testInt, tablerow.GetMixedLong("mixedfield"));
-
-                tablerow.SetMixed(0, testLong);
-                Assert.AreEqual(testLong, tablerow.GetMixedLong(0));
-                Assert.AreEqual(testLong, tablerow.GetMixedLong("mixedfield"));
-
-                tablerow.SetMixed(0, testSByte);
-                Assert.AreEqual(testSByte, tablerow.GetMixedLong(0));
-                Assert.AreEqual(testSByte, tablerow.GetMixedLong("mixedfield"));
-
-                tablerow.SetMixed(0, testShort);
-                Assert.AreEqual(testShort, tablerow.GetMixedLong(0));
-                Assert.AreEqual(testShort, tablerow.GetMixedLong("mixedfield"));
-
-                tablerow.SetMixed(0, testString);
-                Assert.AreEqual(testString, tablerow.GetMixedString(0));
-                Assert.AreEqual(testString, tablerow.GetMixedString("mixedfield"));
-
-                tablerow.SetMixed(0, testUInt);
-                Assert.AreEqual(testUInt, tablerow.GetMixedLong(0));
-                Assert.AreEqual(testUInt, tablerow.GetMixedLong("mixedfield"));
-
-                tablerow.SetMixed(0, testULong);
-                Assert.AreEqual(testULong, tablerow.GetMixedLong(0));
-                Assert.AreEqual(testULong, tablerow.GetMixedLong("mixedfield"));
-
-                tablerow.SetMixed(0, testUShort);
-                Assert.AreEqual(testUShort, tablerow.GetMixedLong(0));
-                Assert.AreEqual(testUShort, tablerow.GetMixedLong("mixedfield"));
-
-                tablerow.SetMixed(0, testbool);
-                Assert.AreEqual(testbool, tablerow.GetMixedBoolean(0));
-                Assert.AreEqual(testbool, tablerow.GetMixedBoolean("mixedfield"));
-
-
-
-
-
-                //test getting the basic types using anonymous get on tablerow (set was verified above)
-
-
-                tablerow.SetMixed(0, testBinary);
-                Assert.AreEqual(testBinary, tablerow.GetMixed(0));
-                Assert.AreEqual(testBinary, tablerow.GetMixed("mixedfield"));
-
-                tablerow.SetMixed(0, testByte);
-                Assert.AreEqual(testByte, tablerow.GetMixed(0));
-                Assert.AreEqual(testByte, tablerow.GetMixed("mixedfield"));
-
-                tablerow.SetMixed(0, testChar);
-                var res = (long)tablerow.GetMixed(0);//a direct assert yields an abort inside the unit test when run in resharper (a problem with resharper )
-                Assert.AreEqual(testChar,res );
-
-                tablerow.SetMixed(0, testDateTime);
-                Assert.AreEqual(testDateTime, tablerow.GetMixed(0));
-                Assert.AreEqual(testDateTime, tablerow.GetMixed("mixedfield"));
-
-                try
-                {
-                    tablerow.SetMixed(0, testDecimal);
-                    Assert.Fail("Calling set mixed(object) with a C# type decimal should fail with a type check");
-                }
-                catch (ArgumentException) //remove the expected exception thrown by setmixed
-                {
-                }
-
-                tablerow.SetMixed(0, testDouble);
-                Assert.AreEqual(testDouble, tablerow.GetMixed(0));
-
-                tablerow.SetMixed(0, testFloat);
-                Assert.AreEqual(testFloat, tablerow.GetMixed(0));
-
-                tablerow.SetMixed(0, testInt);
-                Assert.AreEqual(testInt, tablerow.GetMixed(0));
-
-                tablerow.SetMixed(0, testLong);
-                Assert.AreEqual(testLong, tablerow.GetMixed(0));
-
-                tablerow.SetMixed(0, testSByte);
-                Assert.AreEqual(testSByte, tablerow.GetMixed(0));
-
-                tablerow.SetMixed(0, testShort);
-                Assert.AreEqual(testShort, tablerow.GetMixed(0));
-
-                tablerow.SetMixed(0, testString);
-                Assert.AreEqual(testString, tablerow.GetMixed(0));
-
-                tablerow.SetMixed(0, testUInt);
-                Assert.AreEqual(testUInt, tablerow.GetMixed(0));
-
-                tablerow.SetMixed(0, testULong);
-                Assert.AreEqual(testULong, tablerow.GetMixed(0));
-
-                tablerow.SetMixed(0, testUShort);
-                Assert.AreEqual(testUShort, tablerow.GetMixed(0));
-
-                tablerow.SetMixed(0, testbool);
-                Assert.AreEqual(testbool, tablerow.GetMixed(0));
             }
-
         }
 
         /* this test exposes an error with resharper that makes it about unit tests.. in general

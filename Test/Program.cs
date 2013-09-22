@@ -21,7 +21,6 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // ***********************************************************************
 
-using System;
 //using System.IO;
 using NUnitLite.Runner;
 //using NUnit.Framework.Internal;
@@ -76,9 +75,16 @@ namespace NUnitLite.Tests
 
         public static void Main(string[] args)
         {
-            new TextUI().Execute(args);
-            Console.WriteLine("Tests finished, any key to close the application");
-            Console.ReadKey();
+            if (args!=null && args.Length != 0)
+            {
+                new TextUI().Execute(args);
+            }
+            else
+            {
+                new TextUI().Execute(new [] {"-full","-wait"/* "-out:C:\\Files\\UnitTestDumpCS.txt"*/});
+            }
+            //Console.WriteLine("Tests finished, any key to close the application");
+            //Console.ReadKey();
         }
     }
 }

@@ -325,9 +325,9 @@ namespace TightDbCSharpTest
         }
 
 
-        
 
-        [Test]
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters", MessageId = "NUnit.Framework.Assert.Fail(System.String)"), Test]
         public static void SharedGroupSeveralStartTransactions()
         {
             const string sharedgroupfilename = @"UnitTestSharedGroup";

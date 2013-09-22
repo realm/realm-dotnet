@@ -26,8 +26,8 @@ set ddirx86deb=%projdir%\bin\x86\debug\
 set ddirx86rel=%projdir%\bin\x86\release\
 set ddirx64deb=%projdir%\bin\x64\debug\
 set ddirx64rel=%projdir%\bin\x64\release\
-set ddiranydeb=%projdir%\bin\debug\
-set ddiranyrel=%projdir%\bin\release\
+set ddiranydeb=%projdir%\bin\AnyCpu\debug\
+set ddiranyrel=%projdir%\bin\AnyCpu\release\
 
 
 

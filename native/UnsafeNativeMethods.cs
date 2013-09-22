@@ -614,18 +614,20 @@ enum DataType {
 #else
         //not implemented in core c++ dll will return -1 until it is implemented
         public static long TableFindFirstBinary(Table table, long columnIndex, byte[] value)
-        {          
-            
+        {
+
+            if (IsRunningOnMono())
+            {
+                throw new NotImplementedException("Table.FindFirstBinary has not been implemented in core");
+            }
+
             GCHandle handle = GCHandle.Alloc(value, GCHandleType.Pinned);
             IntPtr valuePointer = handle.AddrOfPinnedObject();
             try
             {
                 return
-                    Is64Bit
-                        ? (long)
-                            table_find_first_binary64(table.Handle, (IntPtr) columnIndex, valuePointer, (IntPtr) value.Length)
-                        : (long)
-                            table_find_first_binary32(table.Handle, (IntPtr) columnIndex, valuePointer, (IntPtr) value.Length);
+                    Is64Bit? (long)table_find_first_binary64(table.Handle, (IntPtr) columnIndex, valuePointer, (IntPtr) value.Length)
+                           : (long)table_find_first_binary32(table.Handle, (IntPtr) columnIndex, valuePointer, (IntPtr) value.Length);
             }
             catch (SEHException e)//debugging stuff - remove
             {
@@ -762,7 +764,11 @@ enum DataType {
 
         public static long TableViewFindFirstBinary(TableView tableView, long columnIndex, byte[] value)
         {
-            
+//            if (IsRunningOnMono())
+//            {
+//                throw new System.NotImplementedException("Table.FindFirstBinary has not been implemented in core");
+//            }
+
             return
                     Is64Bit
                         ? (long)tableView_find_first_binary64(tableView.Handle, (IntPtr)columnIndex, value, (IntPtr)value.Length)
@@ -4747,19 +4753,39 @@ enum DataType {
         //dump various diagnostics to console
         public static void ShowInfo()
         {
+            var info = new StringBuilder();
+            GetCsInfo(info);
+            Console.WriteLine(info.ToString());//dump to console before we might abort below
+#if V40PLUS
+            info.Clear();
+#else
+            info=new StringBuilder();
+#endif
+            GetCppInfo(info);
+            Console.WriteLine(info.ToString());
+        }
+
+
+
+        private static string Dllstring()
+        {
+            return (IntPtr.Size == 8) ? L64 : L32;
+        }
+        //returns info that can be gathered without actually loading the c++ dll
+        public static void GetCsInfo(StringBuilder info)
+        {
             var pointerSize = IntPtr.Size;
             var vmBitness = (pointerSize == 8) ? "64bit" : "32bit";
-            var dllstring = (pointerSize == 8) ? L64 : L32;
 #if V40PLUS
 
-            var is64BitOs = Environment.Is64BitOperatingSystem ? "Yes": "No";
+            var is64BitOs = Environment.Is64BitOperatingSystem ? "Yes" : "No";
             var is64BitProcess = Environment.Is64BitProcess;
 #else
             const string is64BitOs = "Unknown in .net below 4.0";
             const string is64BitProcess = "Unknown in .net below 4.0";
 #endif
 
-            var  compiledWithMono = BuiltWithMono ? "Yes" : "No";
+            var compiledWithMono = BuiltWithMono ? "Yes" : "No";
 
             OperatingSystem os = Environment.OSVersion;
             Assembly executingAssembly = Assembly.GetExecutingAssembly();
@@ -4768,69 +4794,95 @@ enum DataType {
             executingAssembly.ManifestModule.GetPEKind(out peKind, out machine);
             var thisapplocation = executingAssembly.Location;
 
-            Console.WriteLine("");
-            Console.WriteLine("---OS Info---");
-            Console.WriteLine("OS Version                  : {0}", os.Version);
-            Console.WriteLine("OS Platform                 : {0}", os.Platform);
-            Console.WriteLine("64 Bit OS                   : {0}", is64BitOs);
-            Console.WriteLine("64 Bit process              : {0}", is64BitProcess);            
-            Console.WriteLine("---OS Info---");
+            info.AppendLine("");
 
-            Console.WriteLine("");
-            Console.WriteLine("---CLR Info---");
-            Console.WriteLine("Pointer Size                : {0}", pointerSize);
-            Console.WriteLine("Process Running as          : {0}", vmBitness);
-            Console.WriteLine("Running on mono             : {0}", IsRunningOnMono());
-            Console.WriteLine("Common Language Runtime     : {0}", Environment.Version);
-            Console.WriteLine("---CLR Info---");
+            info.AppendLine("---OS Info---");
+            info.AppendLine(String.Format(CultureInfo.InvariantCulture, "OS Version                  : {0}", os.Version));
+            info.AppendLine(String.Format(CultureInfo.InvariantCulture, "OS Platform                 : {0}", os.Platform));
+            info.AppendLine(String.Format(CultureInfo.InvariantCulture, "64 Bit OS                   : {0}", is64BitOs));
+            info.AppendLine(String.Format(CultureInfo.InvariantCulture, "64 Bit process              : {0}",
+                is64BitProcess));
+            info.AppendLine("---OS Info---");
 
-            Console.WriteLine("");
-            Console.WriteLine("---C# binding (TightDbCSharp.dll) Info---");
-            Console.WriteLine("Built as PeKind           : {0}", peKind);
-            Console.WriteLine("Built as ImageFileMachine : {0}", machine);
-			Console.WriteLine("Debug Or Release          : {0}", BuildName);
-            Console.WriteLine("Compiled With Mono        : {0}", compiledWithMono);
-#if V45plus
-            Console.WriteLine("Built for .net version    : V4.5");            
-#elif V40plus
-            Console.WriteLine("Built for .net version    : V4.0");
+            info.AppendLine("");
+            info.AppendLine("---CLR Info---");
+            info.AppendLine(String.Format(CultureInfo.InvariantCulture, "Pointer Size                : {0}", pointerSize));
+            info.AppendLine(String.Format(CultureInfo.InvariantCulture, "Process Running as          : {0}", vmBitness));
+            info.AppendLine(String.Format(CultureInfo.InvariantCulture, "Running on mono             : {0}",
+                IsRunningOnMono()));
+            info.AppendLine(String.Format(CultureInfo.InvariantCulture, "Common Language Runtime     : {0}",
+                Environment.Version));
+            info.AppendLine("---CLR Info---");
+
+            info.AppendLine("");
+            info.AppendLine("---C# binding (TightDbCSharp.dll) Info---");
+            info.AppendLine(String.Format(CultureInfo.InvariantCulture, "Built as PeKind           : {0}", peKind));
+            info.AppendLine(String.Format(CultureInfo.InvariantCulture, "Built as ImageFileMachine : {0}", machine));
+            info.AppendLine(String.Format(CultureInfo.InvariantCulture, "Debug Or Release          : {0}", BuildName));
+            info.AppendLine(String.Format(CultureInfo.InvariantCulture, "Compiled With Mono        : {0}",
+                compiledWithMono));
+#if V45PLUS
+            info.AppendLine("Built for .net version    : V4.5");            
+#elif V40PLUS
+            info.AppendLine("Built for .net version    : V4.0");
 #else
-            Console.WriteLine("Built for .net version    : V3.5");
-#endif            
-            Console.WriteLine("---C# binding (TightDbCSharp.dll) Info---");
+            info.AppendLine("Built for .net version    : V3.5");
+#endif
+            info.AppendLine("---C# binding (TightDbCSharp.dll) Info---");
 
-            Console.WriteLine("");
-            Console.WriteLine("---C++ DLL Info---");
-            Console.WriteLine("Assembly running right now :");
-            Console.WriteLine(thisapplocation);
-            Console.WriteLine("Current Directory :");
-            Console.WriteLine(Directory.GetCurrentDirectory() );
-            Console.WriteLine("");
-            Console.WriteLine("Now Loading {0} - expecting it to be a {1} dll", dllstring, vmBitness);
-
-            //if something is wrong with the DLL (like, if it is gone), we will not even finish the creation of the table below.
-            using (var t = new Table())
-            {
-                //the DLL must have loaded correctly
-
-                const int maxPath = 260;
-                var builder = new StringBuilder(maxPath);
-                var hModule = GetModuleHandle(dllstring);
-                uint hresult = 0;
-                if (hModule != IntPtr.Zero)//could be zero if the dll has never been called, but then we would not be here in the first place
-                {
-                   hresult= GetModuleFileName(hModule, builder, builder.Capacity);
-                }
-                if(hresult!=0){
-                Console.WriteLine("\nDLL File Actually Loaded :\n{0}", builder);
-                }
-                Console.WriteLine("\nC#  DLL        build number {0}", GetDllVersionCSharp + t.Size);//t.size is 0, but use t to make the compiler happy
-                Console.WriteLine("C++ DLL        build number {0}", CppDllVersion());
-                Console.WriteLine("---C++ DLL Info---");
-            }
-            Console.WriteLine();
-            Console.WriteLine();
+            info.AppendLine("");
+            info.AppendLine("---C++ DLL Info---");
+            info.AppendLine("Assembly running right now :");
+            info.AppendLine(thisapplocation);
+            info.AppendLine("Current Directory :");
+            info.AppendLine(Directory.GetCurrentDirectory());
+            info.AppendLine("");
+            info.AppendLine(String.Format(CultureInfo.InvariantCulture, "Now Loading {0} - expecting it to be a {1} dll",
+                Dllstring(), vmBitness));
         }
+
+        public static void GetCppInfo(StringBuilder info)
+        {
+            //most exceptions while loading the dll first time will abort the program and cannot be caught
+            //but try to catch anything that might be catchable
+            try
+            {
+                using (var t = new Table())
+                {
+                    //the DLL must have loaded correctly
+
+                    const int maxPath = 260;
+                    var builder = new StringBuilder(maxPath);
+                    var hModule = GetModuleHandle(Dllstring());
+                    uint hresult = 0;
+                    if (hModule != IntPtr.Zero)
+                        //could be zero if the dll has never been called, but then we would not be here in the first place
+                    {
+                        hresult = GetModuleFileName(hModule, builder, builder.Capacity);
+                    }
+                    if (hresult != 0)
+                    {
+                        info.AppendLine("");
+                        info.AppendLine(String.Format(CultureInfo.InvariantCulture, "DLL File Actually Loaded :{0}",
+                            builder));
+
+                    }
+                    info.AppendLine(String.Format(CultureInfo.InvariantCulture, "\nC#  DLL        build number {0}",
+                        GetDllVersionCSharp + t.Size)); //t.size is 0, but use t to make the compiler happy
+                    info.AppendLine(String.Format(CultureInfo.InvariantCulture, "C++ DLL        build number {0}",
+                        CppDllVersion()));
+                    info.AppendLine("---C++ DLL Info---");
+                }
+                info.AppendLine();
+                info.AppendLine();
+            }
+            catch (Exception e)
+            {
+                info.AppendLine(String.Format(CultureInfo.InvariantCulture,
+                    "Exception thrown while attempting to call c++ dll {0}", e.Message));
+            }
+        }
+
 
 
         //if something is wrong with interop or C# marshalling, this method will throw an exception

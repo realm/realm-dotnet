@@ -1,0 +1,54 @@
+How to run tutorial inside Unity, by creating a game that runs tutorial and outputs the results
+
+1) create a new empty unity project named UnityTutorial
+
+2) drag TightDbCSharp.dll from 3.5\bin\release onto the project plane, assets area of unity
+(currently this 3.5 has to have been built with xamarin instead of VS - this dependency is soon to be removed)
+
+3) mark assets in projct windows.  in main menu select Assets->Create ->C# script
+in the now active edit, type UnityTutorial
+
+4) click the unitytutorial source in the inspector, and click the open button (this should launch an editor)
+
+5) paste everything from tightdb_csharp\unitytutorialsource.cs into the UnityTutorial.cs open in the unity editor, totally 
+replacing whatever is already there
+
+6) In the editor select Build->Rebuild all
+
+7) back in unity, click the UnityTutorial.cs script in assets, and drag it to "Main Camera" in Heirarchy and drop it there
+ 
+8) select assets->reimport
+
+9) right clicking assets You should find a "show in explorer" menu option.
+select that option.
+
+10) in the explorer wiew of your assets directory, navigate to its parent directory (probably named TightDbTutorial).
+
+11) in this directory, copy tightdb_c_cs201232r.dll and tightdb_c_cs201264r.dll from 3.5\bin\release 
+
+12) click the play button on top of the screen.
+
+You should now have a game preview with a tightDB Menu where You can select C# system info, CPP System info and Run Tutorial
+c# System Info will report information back from the tightdb c# binding
+CPP System Info will load the c++ part of tightdb and report back from there
+Run Tutorial will run the tutorial and put console output into the game.
+
+
+13) select File->build settings
+
+14) architecture - select x86
+
+15) select build, name the game tutorial32bit - test run the exe file it should work just fine (1280x1024 min. to get the menu)
+
+16) do 13 and 14 again, selecting x86-64,call the game tutorial64bit
+
+17) test run the 64 bit app. note that the info screens reports that we are now running 64 bit and the 64 bit tightdb core is used
+
+todo:(not in asana)
+1) Get rid of whatever is stopping the 3.5 .net version from running 32 bit inside unity - some console.writeline calls it seems -perhaps introduce a Unity variable that can be used to toggle off code that unity cannot handle.
+
+2) Find out how the c++ dll binaries ought to be put into the unity project so that they will become part of it, instead of somethings that we must copy to the right place manually
+
+3) Figure how to run our unit tests inside Unity. Have tried, but the test runner did not report any tests run which is a bit strange, even tried to send it the assembly name. (see unity test project on wincoder pc)
+
+4) See if we can go higher version wise with the dll when we are running 64 bit unity - it seems they are using a much newer version of mono when they are running and building 64 bit.

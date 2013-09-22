@@ -5,11 +5,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.CompilerServices;
-
 //using System.Threading.Tasks; not portable as of 2013-04-02
 
 //Tell compiler to give warnings if we publicise interfaces that are not defined in the cls standard
 //http://msdn.microsoft.com/en-us/library/bhc3fa7f.aspx
+using System.Text;
 
 [assembly: CLSCompliant(true)]
 
@@ -191,7 +191,15 @@ namespace TightDbCSharp
             UnsafeNativeMethods.ShowInfo();
         }
 
+        public static void GetCsInfo(StringBuilder info)
+        {
+            UnsafeNativeMethods.GetCsInfo(info);
+        }
 
+        public static void GetCInfo(StringBuilder info)
+        {
+            UnsafeNativeMethods.GetCppInfo(info);
+        }
 
 
         //this parameter type allows the user to send a comma seperated list of TableField objects without having
