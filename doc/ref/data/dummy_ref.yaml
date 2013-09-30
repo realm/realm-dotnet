@@ -1,0 +1,27 @@
+#
+# C# reference documentation for dummy
+#
+
+ID         : class_dyn_dummy
+TITLE      : Dummy
+SUMMARY    : &csharp_dummy_summary
+             Dummy.
+DESCR      : &csharp_dummy_descr
+             >
+             Nothing here yet.
+
+EXAMPLES:
+- DESCR    :
+  CODE     : ex_csharp_dummy
+
+
+CATEGORIES :
+- Dummy:
+  METHODS:
+  - g_dyn_dummy_dummy:
+      NAME     : dummy
+      SUMMARY  : dummy
+      DESCR    : dummy
+      EXAMPLES:
+      - DESCR  :
+        CODE   : ex_csharp_dummy
