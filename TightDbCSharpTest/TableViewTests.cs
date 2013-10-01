@@ -36,7 +36,7 @@ namespace TightDbCSharpTest
             Table t = null;
             try
             {
-                t = new Table(new IntField("intcolumn0"), new IntField("intcolumn1"), new IntField("intcolumn2"));
+                t = new Table(new IntColumn("intcolumn0"), new IntColumn("intcolumn1"), new IntColumn("intcolumn2"));
                 //t = new Table(new { intcolumn0 = DataType.Binary, intcolumn1 = DataType.Bool, intcolumn2 = DataType.Double });
                 for (int n = 0; n < 1000; n++)
                 {
@@ -123,7 +123,7 @@ namespace TightDbCSharpTest
         public static void TableViewMixedString()
         {
             //this first part just populates a table with two mixed string fields
-            using (var t = new Table(new MixedField("StringField"),new IntField("intfield")))
+            using (var t = new Table(new MixedColumn("StringField"),new IntColumn("intfield")))
             {
                 const string setWithAdd = "SetWithAdd";
                 const string setWithSetMixed = "SetWithSetMixed";
@@ -161,7 +161,7 @@ namespace TightDbCSharpTest
         [Test]
         public static void TableViewSetGetEmptyBinary()
         {
-            using (var table = new Table(new BinaryField("bin"),new IntField("int")))
+            using (var table = new Table(new BinaryColumn("bin"),new IntColumn("int")))
             {
                 table.AddEmptyRow(1);//empty row
                 table.AddEmptyRow(1);
@@ -382,7 +382,7 @@ intcolumn2:1//column 2
         public static void TableViewAndTableTestMixedDouble()
         {
             const double testDouble = 12.2;
-            using (var t = new Table(new MixedField("MixedField"), "stringfield".String()))
+            using (var t = new Table(new MixedColumn("MixedField"), "stringfield".String()))
             {
                 //get and set of a double in a mixed field (test type and value)
                 t.AddEmptyRow(1);
@@ -415,7 +415,7 @@ intcolumn2:1//column 2
             for (int n = 0; n < 10000; n++)
             {
                 const float testFloat = -12.2f;
-                using (var t = new Table(new MixedField("MixedField"), "stringfield".String()))
+                using (var t = new Table(new MixedColumn("MixedField"), "stringfield".String()))
                 {
                     //get and set of a double in a mixed field (test type and value)
                     t.AddEmptyRow(1);
@@ -705,7 +705,7 @@ intcolumn2:1//column 2
         [Test]
         public static void TableViewStackedViewsSimplified()
         {
-            using (var table = new Table(new IntField("i1"), new IntField("i2"), new StringField("S1")))
+            using (var table = new Table(new IntColumn("i1"), new IntColumn("i2"), new StringColumn("S1")))
             {
                 table.Add(1, 2, "C");
                 table.Add(2, 2, "I");
@@ -726,7 +726,7 @@ intcolumn2:1//column 2
         [Test]
         public static void TableViewStackedViews()
         {
-            using (var table = new Table(new IntField("i1"), new IntField("i2"), new StringField("S1")))
+            using (var table = new Table(new IntColumn("i1"), new IntColumn("i2"), new StringColumn("S1")))
             {
                 table.Add(1, 1, "A");
                 table.Add(1, 1, "B");
@@ -834,7 +834,7 @@ intcolumn2:1//column 2
         [Test]
         public static void TableViewIsValidLegal()
         {
-            using (var table = new Table(new IntField("test")))
+            using (var table = new Table(new IntColumn("test")))
             {
                 table.AddMany(new[]{1,2,2,3,2,4});
                 using (var tableview = table.FindAllInt(0, 2))
@@ -851,7 +851,7 @@ intcolumn2:1//column 2
         [ExpectedException("System.InvalidOperationException")]
         public static void TableViewIsValidNotLegalThroughTable()
         {
-            using (var table = new Table(new IntField("test")))
+            using (var table = new Table(new IntColumn("test")))
             {
                 table.AddMany(new[] { 1, 2, 2, 3, 2, 4 });
                 using (var tableview = table.FindAllInt(0, 2))
@@ -872,7 +872,7 @@ intcolumn2:1//column 2
         public static void TableViewIsValidNotLegalThroughGroup()
         {
             using (var group = new  Group())
-            using (var table =  group.CreateTable("T1",new IntField("test")))
+            using (var table =  group.CreateTable("T1",new IntColumn("test")))
             using (var table2 = group.GetTable("T1"))
             {
                 table.AddMany(new List<long> {1, 2, 3, 4, 5, 6, 7, 8, 9, 10,2,2,2,2});//add many takes a collection of row values

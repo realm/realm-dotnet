@@ -14,37 +14,71 @@ namespace PerformanceTest
         //times the insertion of  1 million records 
 
         //destroys the table again
-        private static void MeasureInsertSpeed(DataType type, int size)
+        private static void MeasureInsertSpeed(DataType type, int size,bool use32BitInts)
         {
-            using (var t = new Table(new Field("testfield", type)))
+            using (var t = new Table(new ColumnSpec("testfield", type)))
             {
                 DateTime dt = DateTime.Now;
                 String s = "".PadRight(size, 'x');
-                long i = 256*size;
-                var timer1 = Stopwatch.StartNew();
-
-                const int numrows = 1000*1000;
-                t.AddEmptyRow(numrows);
-                for (var n = 0; n < numrows; n++)
+                long i = (long)Math.Pow(256, size)/2-1;
+                int i32 = 0;
+                bool cantestwithint = false;
+                if (i <= int.MaxValue)
                 {
-                    switch (type)
+                    i32 = (int) i;
+                    cantestwithint = true;
+                }
+
+                //at this time i is a long representation of our test value
+                //and i32 is an int representation if the value fits, or zero
+
+                
+                var timer1 = Stopwatch.StartNew();
+                const int numrows = 1000*1000*3;
+                t.AddEmptyRow(numrows);
+
+
+                if (type == DataType.Int && use32BitInts && cantestwithint)
+                {
+                    for (var n = 0; n < numrows; ++n)
                     {
-                        case DataType.Int:
-                            t.SetLong(0,n,i);
-                            break;
-                        case DataType.String:                            
-                            t.SetString(0,n,s);                            
-                            break;
-                        case DataType.Date:
-                            t.SetDateTime(0,n,dt);                            
-                            break;
+                        t.SetInt(0, n, i32);
                     }
                 }
+
+                if (type == DataType.Int && !use32BitInts)
+                {
+                    for (var n = 0; n < numrows; ++n)
+                    {
+                        t.SetLong(0, n, i);
+                    }
+                }
+
+                if (type == DataType.String )
+                {
+                    for (var n = 0; n < numrows; ++n)
+                    {
+                        t.SetString(0, n, s);
+                    }
+                }
+
+                if (type == DataType.Date)
+                {
+                    for (var n = 0; n < numrows; ++n)
+                    {
+                        t.SetDateTime(0, n, dt);                            
+                    }
+                }                           
+
+
                 timer1.Stop();
                 var seconds = Math.Floor(timer1.Elapsed.TotalSeconds);
                 double milliseconds = timer1.Elapsed.Milliseconds;
-                Console.WriteLine("1M Table.Insert({0} of size{1}): {2} seconds, {3} milliseconds.", type, size, seconds,
-                    milliseconds);
+                var usingtype = use32BitInts ? "Using SetInt " : "Using SetLong";
+                if (type != DataType.Int)
+                    usingtype = "             ";
+                var sizeStr = String.Format("{0} bytes {1}",size,usingtype);
+                Console.WriteLine("{0} Table.Insert({1} of size{2}): {3} seconds, {4} milliseconds.",numrows, type, sizeStr, seconds,milliseconds);
 
                 //test a similar C# construct
                 timer1 = Stopwatch.StartNew();
@@ -66,16 +100,13 @@ namespace PerformanceTest
                         case DataType.Date:
                             dateTimeList.Add(dt);
                             break;
-
                     }
-
                 }
 
                 timer1.Stop();
                 seconds = Math.Floor(timer1.Elapsed.TotalSeconds);
                 milliseconds = timer1.Elapsed.Milliseconds;
-                Console.WriteLine("1M C#List.Insert({0} of size{1}): {2} seconds, {3} milliseconds.", type, size,
-                    seconds, milliseconds);
+               // Console.WriteLine("1M C#List.Insert({0} of size{1}): {2} seconds, {3} milliseconds.", type, size,seconds, milliseconds);
             
             }
         }
@@ -84,7 +115,7 @@ namespace PerformanceTest
         private static long MeasureSearchSpeed(DataType type, int size)
         {
             long temp = 0;
-            using (var t = new Table(new Field("testfield", type)))
+            using (var t = new Table(new ColumnSpec("testfield", type)))
             {
                 var dt = new DateTime(1980,1,1);
                 var s = "".PadRight(size, 'x');
@@ -192,7 +223,7 @@ namespace PerformanceTest
 
         private static void MeasureGetSizeSpeed()
         {
-            using (var t = new Table(new Field("testfield", DataType.String)))
+            using (var t = new Table(new StringColumn("testfield")))
             {
                 var timer1 = Stopwatch.StartNew();
                 long acc = 0;
@@ -242,8 +273,8 @@ namespace PerformanceTest
         private static void Main()
         {
             var loop = true;
-            Table.TestInterop();
             Table.ShowVersionTest();
+            Table.TestInterop();
             while (loop)
             {
                 loop = false;
@@ -260,17 +291,21 @@ namespace PerformanceTest
 
                 if (ki.Key == ConsoleKey.D2)
                 {
-                    MeasureInsertSpeed(DataType.Int, 1);
-                    MeasureInsertSpeed(DataType.Int, 2);
-                    MeasureInsertSpeed(DataType.Int, 3);
-                    MeasureInsertSpeed(DataType.Int, 4);
-                    MeasureInsertSpeed(DataType.Int, 5);
-                    MeasureInsertSpeed(DataType.Int, 6);
-                    MeasureInsertSpeed(DataType.Int, 7);
-                    MeasureInsertSpeed(DataType.String, 8);
-                    MeasureInsertSpeed(DataType.String, 80);
-                    MeasureInsertSpeed(DataType.String, 800);
-                    MeasureInsertSpeed(DataType.Date, 0);
+                    MeasureInsertSpeed(DataType.Int, 1,true);
+                    MeasureInsertSpeed(DataType.Int, 2, true);
+                    MeasureInsertSpeed(DataType.Int, 3, true);
+                    MeasureInsertSpeed(DataType.Int, 4, true);
+                    MeasureInsertSpeed(DataType.Int, 1, false);
+                    MeasureInsertSpeed(DataType.Int, 2, false);
+                    MeasureInsertSpeed(DataType.Int, 3, false);
+                    MeasureInsertSpeed(DataType.Int, 4, false);
+                    MeasureInsertSpeed(DataType.Int, 5,false);
+                    MeasureInsertSpeed(DataType.Int, 6,false);
+                    MeasureInsertSpeed(DataType.Int, 7,false);
+                    MeasureInsertSpeed(DataType.String, 8,false);
+                    MeasureInsertSpeed(DataType.String, 80,false);
+                    MeasureInsertSpeed(DataType.String, 800,false);
+                    MeasureInsertSpeed(DataType.Date, 0,false);
                     loop = true;
                 }
                 if (ki.Key == ConsoleKey.D3)

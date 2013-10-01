@@ -10,12 +10,12 @@ namespace TutorialSolution
         {
             //@@Example: create_table @@
             using (var people = new Table(
-                new StringField("name"),
-                new IntField("age"),
-                new BoolField("hired"),
-                new SubTableField("phones", //sub table specification
-                    new StringField("desc"),
-                    new StringField("number"))))
+                new StringColumn("name"),
+                new IntColumn("age"),
+                new BoolColumn("hired"),
+                new SubTableColumn("phones", //sub table specification
+                    new StringColumn("desc"),
+                    new StringColumn("number"))))
                 //@@EndExample@@
 
             {
@@ -124,9 +124,9 @@ namespace TutorialSolution
 
                 using (var group = new Group())
                 using (var employees = group.CreateTable("employees",
-                    new StringField("Name"),
-                    new IntField("Age"),
-                    new BoolField("Hired")))
+                    new StringColumn("Name"),
+                    new IntColumn("Age"),
+                    new BoolColumn("Hired")))
                 {
 
                     //add some rows
@@ -140,7 +140,7 @@ namespace TutorialSolution
                 }
 
                 // Load a group from disk (and print contents)
-                var fromdisk = new Group(fileName1);
+                var fromdisk = new Group(fileName1,Group.OpenMode.ModeReadWrite);
                 using (var employees2 = fromdisk.GetTable("employees"))
                 {
                     foreach (var row in employees2)

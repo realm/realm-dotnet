@@ -12,7 +12,7 @@ namespace TightDbCSharpTest
     //ignore the code analysis error for now, make the class static once nunitlite is released with the bug fixed
     //(bug has been reported and should be fixed in the next release)
     [TestFixture]
-    public static class QueryTests
+    internal static class QueryTests
     {
 
         //returns a table with row 0 having ints 0 to 999 ascending
@@ -21,7 +21,7 @@ namespace TightDbCSharpTest
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate")]
         private static Table GetTableWithMultipleIntegers()
         {
-            var t = new Table(new IntField("intcolumn0"), new IntField("intcolumn1"), new IntField("intcolumn2"));
+            var t = new Table(new IntColumn("intcolumn0"), new IntColumn("intcolumn1"), new IntColumn("intcolumn2"));
 
             for (int n = 0; n < 1000; n++)
             {
@@ -62,8 +62,8 @@ namespace TightDbCSharpTest
             Table t=null;
             try
             {
-                 t = new Table(new IntField("intcolumn0"), new IntField("intcolumn1"), new IntField("intcolumn2"),
-                    new IntField("intcolumn3"));                
+                 t = new Table(new IntColumn("intcolumn0"), new IntColumn("intcolumn1"), new IntColumn("intcolumn2"),
+                    new IntColumn("intcolumn3"));                
             }
             catch//exception while t is being instantiated, dispose t and rethrow exception
             {   if(t!=null) 

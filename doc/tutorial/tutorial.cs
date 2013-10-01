@@ -10,41 +10,23 @@ namespace TutorialSolution
         {
             //@@Example: create_table @@
             using (var people = new Table(
-                new StringField("name"),
-                new IntField("age"),
-                new BoolField("hired"),
-                new SubTableField("phones", //sub table specification
-                    new StringField("desc"),
-                    new StringField("number")
-                    )
-                ))
+                new StringColumn("name"),
+                new IntColumn("age"),
+                new BoolColumn("hired"),
+                new SubTableColumn("phones", //sub table specification
+                    new StringColumn("desc"),
+                    new StringColumn("number"))))
                 //@@EndExample@@
 
             {
                 // @@Example: insert_rows @@
 
-                people.Add("John", 20, true, new[]
-                {
-                    new[] {"home", "555-1234-555"}
-                });
-
-                people.Add("Mary", 21, false, new[]
-                {
-                    new[] {"mobile", "232-323-3232"},
-                    new[] {"work", "434-434-4343"}
-                });
-
-                people.Add("Lars", 21, true, new[]
-                {
-                    new[] {"home", "343-436-5345"},
-                    new[] {"school", "545-545-5454"}
-                });
-
-                people.Add("Phil", 43, false, new[]
-                {
-                    new[] {"mobile", "754-545-5433"}
-                });
-
+                people.Add("John", 20, true,  new[]{new[] {"home",   "555-1234-555"}});
+                people.Add("Mary", 21, false, new[]{new[] {"mobile", "232-323-3232"},
+                                                    new[] {"work",   "434-434-4343"}});
+                people.Add("Lars", 21, true,  new[]{new[] {"home",   "343-436-5345"},
+                                                    new[] {"school", "545-545-5454"}});
+                people.Add("Phil", 43, false, new[]{new[] {"mobile", "754-545-5433"}});
                 people.Add("Anni", 54, true, null);
                 // @@EndExample@@
 
@@ -142,11 +124,9 @@ namespace TutorialSolution
 
                 using (var group = new Group())
                 using (var employees = group.CreateTable("employees",
-                    new StringField("Name"),
-                    new IntField("Age"),
-                    new BoolField("Hired")
-                    )
-                    )
+                    new StringColumn("Name"),
+                    new IntColumn("Age"),
+                    new BoolColumn("Hired")))
                 {
 
                     //add some rows
@@ -160,7 +140,7 @@ namespace TutorialSolution
                 }
 
                 // Load a group from disk (and print contents)
-                var fromdisk = new Group(fileName1);
+                var fromdisk = new Group(fileName1,Group.OpenMode.ModeReadWrite);
                 using (var employees2 = fromdisk.GetTable("employees"))
                 {
                     foreach (var row in employees2)

@@ -1,12 +1,15 @@
 ﻿using NUnit.Framework;
 using System;
 using TightDbCSharp;
+using TightDbCSharp.Extensions;
 
 namespace TightDbCSharpTest
 {
     [TestFixture]
-    public static class RowTests
+    internal static class RowTests
     {
+
+
 
         [Test]
         public static void TestSubTableIntIndex()
@@ -23,13 +26,16 @@ namespace TightDbCSharpTest
             }
         }
 
+
+
+
         [Test]
         public static void TableRowMixedValues()
         {
-            using (var table = new Table(new MixedField("subinmixed")))
+            using (var table = new Table(new MixedColumn("subinmixed")))
             {
                 table.AddEmptyRow(1);
-                using (var sub1 = new Table(new StringField("Name"), new IntField("Cases")))
+                using (var sub1 = new Table(new StringColumn("Name"), new IntColumn("Cases")))
                 {
                     sub1.Add("Firstname", 42);
                     sub1.Add("Secondname", 43);                                
@@ -63,6 +69,40 @@ namespace TightDbCSharpTest
 
         }
 
+
+        [Test]
+        public static void TestNoInvalidationWhileChangingRow()
+        {
+            using (var table = new Table(new IntColumn("int")))
+            {
+                table.AddEmptyRow(1);
+                Row row = table[0];
+                row.SetInt(0,42);                
+                row.SetInt(0,45);//this should be okay. table version changes only if inserting or adding rows or columns
+                Assert.AreEqual(45,row.GetLong(0));
+                table.SetInt(0,0,33);
+                Assert.AreEqual(33,row.GetLong(0));//also okay. table version should only change if indexes are void, inserting and adding rows or columns
+            }            
+        }
+
+        [Test]
+        [ExpectedException("System.InvalidOperationException")]
+        public static void TestInvalidationWhileChangingRow()
+        {
+            using (var table = new Table(new IntColumn("int")))
+            {
+                table.AddEmptyRow(1);
+                Row row = table[0];
+                row.SetInt(0, 42);
+                row.SetInt(0, 45);//this should be okay. table version changes only if inserting or adding rows or columns
+                Assert.AreEqual(45, row.GetLong(0));
+                table.SetInt(0, 0, 33);
+                Assert.AreEqual(33, row.GetLong(0));//also okay. table version should only change if indexes are void, inserting and adding rows or columns
+                table.AddEmptyRow(1);
+                var valuenow = row.GetLong(0);//the row.getlong should throw
+                Assert.AreEqual(valuenow,valuenow);//in case no throw, dont throw an asssert-need the expectedexception to trigger
+            }
+        }
 
 
         [Test]
@@ -114,19 +154,19 @@ namespace TightDbCSharpTest
         public static void TestSetAndGet()
         {
             using (var t = new Table(
-                new IntField("Count"),
-                new BoolField("Valid"),
-                new StringField("Name"),
-                new BinaryField("BLOB"),
-                new MixedField("HtmlPage"),
-                new DateField("FirstSeen"),
-                new FloatField("float"),
-                new DoubleField("double")
+                new IntColumn("Count"),
+                new BoolColumn("Valid"),
+                new StringColumn("Name"),
+                new BinaryColumn("BLOB"),
+                new MixedColumn("HtmlPage"),
+                new DateColumn("FirstSeen"),
+                new FloatColumn("float"),
+                new DoubleColumn("double")
                 ))
             {               
                 t.Add(1, true, "Hans", new byte[] { 0, 1, 2, 3, 4, 5 }, "MixedStr", new DateTime(1980, 1, 2, 0, 0, 0, DateTimeKind.Utc), 3.14f, 3.14 * 12);
                 TableRow tr = t[0];
-
+                
                 Assert.AreEqual(3,tr.GetColumnIndex("BLOB"));
                 Assert.AreEqual(1,tr.GetLong(0));
                 Assert.AreEqual(true, tr.GetBoolean(1));
@@ -169,7 +209,7 @@ namespace TightDbCSharpTest
                 tr.SetFloat(6,3.14f);
                 tr.SetDouble(7,3.14 * 12);
 
-
+                
                 Assert.AreEqual(1, tr.GetLong(0));
                 Assert.AreEqual(true, tr.GetBoolean(1));
                 Assert.AreEqual("Hans", tr.GetString(2));
@@ -211,7 +251,7 @@ namespace TightDbCSharpTest
         public static void TestRowDelete()
         {
             Table table;
-            using (table = new Table(new StringField("test")) )
+            using (table = new Table(new StringColumn("test")) )
             {
                 table.Add("Hans");
                 table.Add("Grethe");
@@ -229,7 +269,7 @@ namespace TightDbCSharpTest
         [ExpectedException("System.InvalidOperationException")]//because the table row shouldve been invalidated after it was removed
         public static void TestRowDeleteInvalidated()
         {
-            using (var table = new Table(new StringField("test")) )
+            using (var table = new Table(new StringColumn("test")) )
             {
                 table.AddMany(new[] {"Hans", "Grethe"});
                 TableRow tr = table[0];
@@ -249,7 +289,7 @@ namespace TightDbCSharpTest
         [ExpectedException("System.InvalidOperationException")]//because the table row shouldve been invalidated after it was removed
         public static void TestRowDeleteInvalidatedThroughTable()
         {
-            using (var table = new Table(new StringField("test")) )
+            using (var table = new Table(new StringColumn("test")) )
             {
                 table.AddMany(new[] {"Hans", "Grethe"});
                 TableRow tr = table[0];
@@ -275,7 +315,7 @@ namespace TightDbCSharpTest
         public static void TestRowDeleteInvalidatedThroughGroup()
         {
             using (var group = new Group())
-            using (var table = group.CreateTable("T1", new StringField("test")))
+            using (var table = group.CreateTable("T1", new StringColumn("test")))
             using (var table2 = group.GetTable("T1"))
 
             {
@@ -298,7 +338,7 @@ namespace TightDbCSharpTest
         [ExpectedException("System.ArgumentOutOfRangeException")]
         public static void TestIndexerWrongStringIndex()
         {
-            using (var t = new Table(new IntField("A")))
+            using (var t = new Table(new IntColumn("A")))
             {
                 t.Add(42);
                 TableRow tr = t[0];
@@ -313,14 +353,14 @@ namespace TightDbCSharpTest
         public static void TestIndexer()
         {
             using (var t = new Table(
-                new Field("Count", DataType.Int),
-                new Field("Valid", DataType.Bool),
-                new Field("Name", DataType.String),
-                new Field("BLOB", DataType.Binary),
-                new Field("HtmlPage", DataType.Mixed),
-                new Field("FirstSeen", DataType.Date),
-                new Field("float", DataType.Float),
-                new Field("double", DataType.Double)
+                new ColumnSpec("Count", DataType.Int),
+                new ColumnSpec("Valid", DataType.Bool),
+                new ColumnSpec("Name", DataType.String),
+                new ColumnSpec("BLOB", DataType.Binary),
+                new ColumnSpec("HtmlPage", DataType.Mixed),
+                new ColumnSpec("FirstSeen", DataType.Date),
+                new ColumnSpec("float", DataType.Float),
+                new ColumnSpec("double", DataType.Double)
                 ))
             {
                 t.Add(1, true, "Hans", new byte[] { 0, 1, 2, 3, 4, 5 }, "MixedStr", new DateTime(1980, 1, 2,0,0,0,DateTimeKind.Utc), 3.14f, 3.14 * 12);

@@ -6,8 +6,15 @@ using System.Globalization;
 
 namespace TightDbCSharp
 {
+    /// <summary>
+    /// Represents a Query on a table.
+    /// Currently under construction
+    /// </summary>
     public class Query : Handled, IEnumerable<TableRow>
     {
+        /// <summary>
+        /// do not call. This method calls c++ and asks it to delete its object
+        /// </summary>
         protected override void ReleaseHandle()
         {
             UnsafeNativeMethods.QueryDelete(this);
@@ -30,6 +37,10 @@ namespace TightDbCSharp
         
         
         private Table _underlyingTable;
+        /// <summary>
+        /// The actual Table (not tableview) being queried
+        /// </summary>
+        /// <exception cref="ArgumentException"></exception>
         public Table UnderlyingTable
         {
             get { return _underlyingTable; }
@@ -53,6 +64,10 @@ namespace TightDbCSharp
 
         //calling FindAll with no parametres will return a tableview with all matching rows in it
 
+        /// <summary>
+        /// Return a tableview with all the rows identified by the query
+        /// </summary>
+        /// <returns>TableView with query results</returns>
         public TableView FindAll()
         {
             return UnsafeNativeMethods.QueryFindAll_np(this);//Methods that use default parameters are allowed under the Common Language Specification (CLS); however, the CLS allows compilers to ignore the values that are assigned to these parameters. 
@@ -118,6 +133,15 @@ namespace TightDbCSharp
 
         //default values are advised against by microsoft http://msdn.microsoft.com/query/dev11.query?appId=Dev11IDEF1&l=EN-US&k=k(CA1026);k(TargetFrameworkMoniker-.NETFramework,Version%3Dv4.5);k(DevLang-csharp)&rd=true        
 
+        /// <summary>
+        /// Counts the number of matching rows in the table.
+        /// The count starts at rowindex start, and ends at rowindex end.
+        /// Limit is the maximum number the matches allowed before the function returns.
+        /// </summary>
+        /// <param name="start">first row index in underlying table to test for match</param>
+        /// <param name="end">first row index in underlying table not to test for match</param>
+        /// <param name="limit"> maximum number of rows to return</param>
+        /// <returns>number of matching rows</returns>
         public long Count(long start, long end , long limit)
         {
             ValidateStartEndLimit(start,end,limit);
@@ -126,18 +150,26 @@ namespace TightDbCSharp
 
 
 
+        /// <summary>
+        /// return the number of matching rows
+        /// </summary>
+        /// <returns>Number of rows that match the query</returns>
         public long Count()
         {
             ValidateStartEndLimit(0,-1,-1);
             return UnsafeNativeMethods.QueryCount(this, 0, -1, -1);
         }
 
-        //start = first record number in underlying table to return
-        //end = first record number in underlying table not to return
-        //limit = maximum number of records to return.
-        //for paging through a database , set limit to number of results per page, and after each page received, set start to the row number
-        //of the last received row (underlying table row number)
-// ReSharper disable once MemberCanBePrivate.Global
+       
+        /// <summary>
+        /// Returns all rows that match the query
+        /// for paging through a database , set limit to number of results per page, and after each page received, set start to the row number
+        ///  of the last received row (underlying table row number)
+        /// </summary>
+        /// <param name="start">first row index in underlying table to return</param>
+        /// <param name="end">first row index in underlying table not to return</param>
+        /// <param name="limit"> maximum number of rows to return</param>
+        /// <returns></returns>
         public TableView FindAll(long start, long end, long limit)
         {
             ValidateStartEndLimit(start,end,limit);
@@ -150,8 +182,14 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.QueryGetColumnIndex(this,columnName);
         }
 
-        //if no column exists with name=columnName , an exception is thrown
-        //returns the index of the column with the specified name
+        /// <summary>
+        /// Return the index of the column with the given name.
+        /// Case sensitive.
+        /// If no column exists, an exception is thrown.
+        /// </summary>
+        /// <param name="columnName">name of column index to retrun</param>
+        /// <returns>zero based index of the column with the given name</returns>
+        /// <exception cref="ArgumentOutOfRangeException">If the column name does not exist</exception>
         public long GetColumnIndex(string columnName)
         {
             long columnIndex = GetColumnIndexNoCheck(columnName);
@@ -163,12 +201,25 @@ namespace TightDbCSharp
         }
         //idea: implement a generic equal that infers the type to use from the type of the column, looked up by the column name. second parameter is then an object       
         //not sure it is faster or even nicer to use - so just test it out, profile and then decide
+
+        /// <summary>
+        /// return a query that returns all booleans set to value, in the column columnName
+        /// </summary>
+        /// <param name="columnName">Name of column to check for matches</param>
+        /// <param name="value">value (true or false) of rows to return</param>
+        /// <returns>query that matches all rows with specified boolean value in specified field</returns>
         public Query Equal(string columnName, Boolean value)
         {
             UnsafeNativeMethods.QueryBoolEqual(this,GetColumnIndex(columnName), value);
             return this;
         }
 
+        /// <summary>
+        /// return a query that returns all booleans set to value, in the column columnName
+        /// </summary>
+        /// <param name="columnIndex">zero based index of column to check for matches</param>
+        /// <param name="value">value (true or false) of rows to return</param>
+        /// <returns>query that matches all rows with specified boolean value in specified field</returns>
         public Query Equal(long columnIndex, Boolean value)
         {
             UnderlyingTable.ValidateColumnIndex(columnIndex);
@@ -176,12 +227,28 @@ namespace TightDbCSharp
             return this;
         }
 
+        /// <summary>
+        /// returns query object that matches all rows where the value in 
+        /// the column specified with columnName is strictly larger than the value
+        /// specified in the parameter
+        /// </summary>
+        /// <param name="columnName">Name of column of fields to match</param>
+        /// <param name="value">values greater than this value are matched</param>
+        /// <returns>Query that matches </returns>
         public Query Greater(string columnName, long value)
         {
             UnsafeNativeMethods.query_int_greater(this,GetColumnIndex(columnName),value);
             return this;
         }
 
+        /// <summary>
+        /// return query that matches all rows where the specified column
+        /// contains a value that is strictly greater than the specified
+        /// value.
+        /// </summary>
+        /// <param name="columnIndex">zero based column index of the field with value to check</param>
+        /// <param name="value">rows with an integer value strictly greater than parameter value will be return</param>
+        /// <returns>Query that matches rows with stricly greater value in the specified field </returns>
         public Query Greater(long columnIndex, long value)
         {
             UnderlyingTable.ValidateColumnIndex(columnIndex);
@@ -189,6 +256,14 @@ namespace TightDbCSharp
             return this;
         }
 
+        /// <summary>
+        /// return query that matches all rows whose value in the specified DataType.Int filed
+        /// is greater or equal to lowValue and less or equal to highValue
+        /// </summary>
+        /// <param name="columnIndex">Index of DataType.Int column with field to check</param>
+        /// <param name="lowValue">discards rows strictrly lower than lowValue</param>
+        /// <param name="highValue">discards row strictly higher than highValue</param>
+        /// <returns>Query that discards rows that are  lower than lowvalue or higher than high value</returns>
         public Query Between(long columnIndex, long lowValue, long highValue)
         {
             UnderlyingTable.ValidateColumnIndex(columnIndex);
@@ -202,6 +277,14 @@ namespace TightDbCSharp
             UnsafeNativeMethods.QueryIntBetween(this, columnIndex, lowValue, highValue);            
         }
 
+        /// <summary>
+        /// return query that matches all rows whose value in the specified DataType.Int filed
+        /// is greater or equal to lowValue and less or equal to highValue
+        /// </summary>
+        /// <param name="columnName">Index of DataType.Int column with field to check</param>
+        /// <param name="lowValue">discards rows strictrly lower than lowValue</param>
+        /// <param name="highValue">discards row strictly higher than highValue</param>
+        /// <returns>Query that discards rows that are  lower than lowvalue or higher than high value</returns>
         public Query Between(string columnName, long lowValue, long highValue)
         {
             long columnIndex = GetColumnIndex(columnName);
@@ -210,18 +293,33 @@ namespace TightDbCSharp
         }
 
         
+        /// <summary>
+        /// retruns row index of the first query match with higher row index than LastMatch
+        /// </summary>
+        /// <param name="lastMatch">Usually row index of the last match, search will start with lastMatch+1</param>
+        /// <returns>row Index of the next matching row, starting from LastMatch+1</returns>
         public long FindNext(long lastMatch)
         {
             return UnsafeNativeMethods.QueryFindNext(this,lastMatch);            
         }
 
-        //the column index specifies the column in the underlying table that should be averaged (but only records that match the query)
+        
+        /// <summary>
+        /// Return the average of the specified column of matching rows.
+        /// </summary>
+        /// <param name="columnIndex">Zero based index of column to return average of</param>
+        /// <returns>Double with Average of all matching rows</returns>
         public Double Average(long columnIndex)
         {
             return UnsafeNativeMethods.QueryAverage(this, columnIndex);            
         }
 
-       
+
+        /// <summary>
+        /// Return the average of the specified column of matching rows.
+        /// </summary>
+        /// <param name="columnName">Name of column to return average of</param>
+        /// <returns>Double with Average of all matching rows</returns>
         public Double Average(string columnName)
         {
             long columnIndex = GetColumnIndex(columnName);

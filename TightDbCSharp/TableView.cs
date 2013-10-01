@@ -5,13 +5,24 @@ using System.Globalization;
 
 namespace TightDbCSharp
 {
-    //this would probably be called rowcollection or some such if adhering to usual c# conventions. But as tightdb has a tableview term, we 
-    //re-use that term here. TableView can be thought of as a list of pointers to some rows in an underlying table. The view has usually been created using
-    //a query, or some other construct that selects some, but usually not all the underlying rows.
-    //this class wraps a c++ TableView class
+    /// <summary>
+    /// TableView is a list of pointers into a table, represented as an IEnumerable collection, but also accessible by rowIndex.
+    /// TableView is usually the end result of a query being run, or the result of methods on table or tableview that return
+    /// a collection of rows.
+    /// TableView is IDisposable, it is recommended (not mandatory) to use using when working with tableviews
+    /// TableView is IEnumerable, You can Enumerate a tableview and get Row objects, e.g. 
+    /// foreach (Row in MyTableView) {Row.SetLong(0,42)//set value to 42 in all fields in column 0}}
+    /// TableView also supports LinQ queries (as it is IEnumerable)
+    /// The Row objects returned are merely cursors, no data is transferred until you call row.GetString(col) etc.
+    /// </summary>
     public class TableView : TableOrView, IEnumerable<Row>
     {
         private Table _underlyingTable;//the table this view ultimately is viewing (not the view it is viewing, the final table being viewed. Could be a subtable)
+        /// <summary>
+        /// The table that this tableview is ultimately viewing - if the tableview is viewing a tableview that is viewing a.
+        /// table, then it is the final table that this property contains a reference to.
+        /// </summary>
+        /// <exception cref="ArgumentException"></exception>
         public Table UnderlyingTable {
             get { return _underlyingTable; }
             private set
@@ -100,9 +111,10 @@ namespace TightDbCSharp
             return UnderlyingTable.Spec;
         }
 
-        //we need something to invalidate all table views if an underlying table is modified after the view has been created
-        //Invalidating a tableview should also invalidate all row objects connected to it
-        //in fact, if a tableview is modified through itself in a way that could change the meaning of row or column numbers, all connected rows should be invalidated
+        /// <summary>
+        /// Return a Row cursor for the row specified by the zero based rowIndex
+        /// </summary>
+        /// <param name="rowIndex">Zero based row Index of the Row to return</param>
         public Row this[long rowIndex]
         {
             get
@@ -117,10 +129,12 @@ namespace TightDbCSharp
         {
             return new Row(this, rowIndex);            
         }
-        //*not in c++ binding so removed here. Is in java binding
-        //if multiple processes acess the table, this have to be inside a transaction, or else another process could delete some rows after s is assigned,but before
-        //this[s-1] is called, that would make this[s-1] throw an exception bc [s-1] would be equal to or larger than size.
-        //see similar implementation in Table  
+        /// <summary>
+        /// *not in c++ binding. Is in java binding
+        /// see similar implementation in Table          
+        /// </summary>
+        /// <returns>Row cursor referencing the last row in the table</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the table is empty</exception>
         public Row Last()
         {
             ValidateIsValid();
@@ -134,11 +148,19 @@ namespace TightDbCSharp
         //*/
  
 
+        /// <summary>
+        /// Returns true if it is safe to use this table view
+        /// Returns false if the table view should not be used, usually
+        /// this happens if someone changes the table in other ways than through
+        /// this TableView.
+        /// </summary>
+        /// <returns>True if it is okay to use this tableview, false if all calls are illegal except dispose</returns>
         public bool IsValid()
         {
             //call to core to get info if this tableview is attached or not (not implemented in core)
             //until core has such functionality, we do better than nothing and check that the table version is
-            //unchanged since the tableview was created
+            //unchanged since the tableview was created. If someone made modifications to the table we are
+            //viewing, we consider this tableview as invalid            
             return  UnderlyingTable.IsValid() && (UnderlyingTable.Version==Version);
         }
 
@@ -152,10 +174,12 @@ namespace TightDbCSharp
             }            
         }
 
-        //This method will ask c++ to dispose of a table object created by table_new.
-        //this method is for internal use only
-        //it will automatically be called when the table object is disposed (or garbage collected)
-        //In fact, you should not at all it on your own
+        /// <summary>
+        /// This method will ask c++ to dispose of a tableView object.
+        /// this method is for internal use only
+        /// it will automatically be called when the TableView object is disposed (or garbage collected)
+        /// In fact, you should not at all it on your own
+        /// </summary>
         protected override void ReleaseHandle()
         {
             UnsafeNativeMethods.TableViewUnbind(this);
@@ -252,6 +276,11 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableViewCountDouble(this, columnIndex, target);
         }
 
+        /// <summary>
+        /// Returns a string with a Json representation of the TableView.
+        /// It is planned to also have a stream based method
+        /// </summary>
+        /// <returns>String with a Json version of all the rows in the tableview</returns>
         public  string ToJson()
         {
             ValidateIsValid();
@@ -435,6 +464,11 @@ namespace TightDbCSharp
         internal override void SetLongNoCheck(long columnIndex, long rowIndex, long value)
         {
             UnsafeNativeMethods.TableViewSetLong(this, columnIndex, rowIndex, value);
+        }
+
+        internal override void SetIntNoCheck(long columnIndex, long rowIndex, int value)
+        {
+            UnsafeNativeMethods.TableViewSetInt(this, columnIndex, rowIndex, value);
         }
 
         internal override string GetColumnNameNoCheck(long columnIndex)//unfortunately an int, bc tight might have been built using 32 bits

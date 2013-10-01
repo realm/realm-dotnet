@@ -4,12 +4,17 @@ using System.Globalization;
 
 namespace TightDbCSharp
 {
+    /// <summary>
+    /// Handles a collection of tables that are not shared with other
+    /// processes or programs. (see SharedGroup)
+    /// </summary>
     public class Group:Handled
     {
 
         
-        //constructor called by customers. It will create a c++ class to wrap
-        //this group will be unattached and without transactions and readwrite
+        /// <summary>
+        /// Return new Group. is IDisposable as it has a handle to a c++ managed Group
+        /// </summary>
         public Group()
         {
             try
@@ -58,19 +63,96 @@ namespace TightDbCSharp
         }
         */
 
-        //a group that is part of a readonly transaction will have readonly set to true
+
+        /// <summary>
+        ///  //Open in read-only mode. Fail if the file does not already exist.
+        ///  mode_ReadOnly,
+        ///  //Open in read/write mode. Create the file if it doesn't exist.
+        ///  mode_ReadWrite,
+        ///  //Open in read/write mode. Fail if the file does not already exist.
+        ///  mode_ReadWriteNoCreate
+        /// </summary>        
+        public enum OpenMode    //nested type inside Group, as in core. CA10344 warning ignored.
+        {
+            /// Open in read-only mode. Fail if the file does not already exist.
+            ModeReadOnly,
+
+            /// Open in read/write mode. Create the file if it doesn't exist.
+            ModeReadWrite,
+
+            /// Open in read/write mode. Fail if the file does not already exist.
+            ModeReadWriteNoCreate
+        }
+
+
+
+        //TODO:(also in asana)erorr handling if user specifies an illegal filename or path.
+        //We will probably have to do the error handling on the c++ side. It is
+        //a problem that c++ seems to crash only when an invalid group(file) is freed or used
+        //not when created. Perhaps we should do this in c++
+        //1) create the group
+        //2) delete it just after //this will get us an exception if the group file is invalid
+        //3) create the group again //we only get this far if the file is valid
+        //4) if an exception was thrown when it was deleted, return null, indicating the filename is invalid
+        //5) otherwise return the group pointer we got from 3)
+
+
+        //as group files can create problems at any time, any group related calls should probably be wrapped in exception handlers, and
+        //should be able to return error codes to C#
+        /// <summary>
+        /// Create a group object. Either have it represent a group already stored on a file, or have a new
+        /// file created which then contains the data of this group.
+        /// Beware that writing a group back to its own file with group.write is not allowed. 
+        /// </summary>
+        /// <param name="path">Path and filename to open</param>
+        /// <param name="openMode">
+        /// ModeReadOnly : Open in read-only mode. Fail if the file does not already exist.
+        /// ModeReadWrite: Open in read/write mode. Create the file if it doesn't exist.
+        /// ModeReadWriteNoCreate : Open in read/write mode. Fail if the file does not already exist.
+        /// </param>
+        public Group(string path,OpenMode openMode)
+        {
+            try
+            {
+                UnsafeNativeMethods.GroupNewFile(this, path,openMode);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                Dispose();
+                throw;
+            }
+        }
+        
+        /// <summary>
+        /// A group that is part of a readonly transaction will have readonly set to true.
+        /// This property is not 100% implemented and thus not 100% reliable
+        /// </summary>
         public Boolean ReadOnly { get; private set; }
 
-        public Boolean Invalid { get; internal set; }//if true, some unexpected error condition exists and this group should never be used
+        /// <summary>
+        /// if true, some unexpected error condition exists and this group should never be used
+        /// </summary>
+        public Boolean Invalid { get; internal set; }
 
+        /// <summary>
+        /// True if a table exists in the group with the specified name
+        /// </summary>
+        /// <param name="tableName">table name to search for</param>
+        /// <returns>true if a table with specified name exists</returns>
         public bool HasTable(string tableName)
         {
             return UnsafeNativeMethods.GroupHassTable(this, tableName);
         }
 
-        //use this method to get a table that already exists in the group
-        //will return the table associated with tableName in the group, or if no such table exists, 
-        //an exception is thrown
+        /// <summary>
+        /// use this method to get a table that already exists in the group
+        /// will return the table associated with tableName in the group, or if no such table exists,
+        /// an exception is thrown. Name is case sensitive
+        ///  </summary>
+        /// <param name="tableName"></param>
+        /// <returns>The first table in the group with the specified name</returns>
+        /// <exception cref="InvalidEnumArgumentException">Thrown if no table exists with that name</exception>
         public Table GetTable(string tableName)
         {
             if (HasTable(tableName)) {
@@ -86,10 +168,16 @@ namespace TightDbCSharp
             if (ReadOnly) throw new InvalidOperationException("Read/Write operation initiated on a Read Only Group");
         }
 
-        //use this method to create new tables in the group
-        //will return the table associated with tableName in the group, or if no such table exists, 
-        //a new table will be created in the group, associated with tableName, and having the schema provided in the second parameter
-        public Table CreateTable(string tableName, params Field[] schema)
+        /// <summary>
+        ///  use this method to create new tables in the group
+        ///  either a new table with no columns yet is returned,
+        ///  or a table matching the parameter specification is returned.
+        ///   Do no call if the table name is already in use
+        /// </summary>
+        /// <param name="tableName">Name of new table in group</param>
+        /// <param name="schema">Column specification of new table</param>
+        /// <returns>New table that is part of the group, according to specifications given in the parameter</returns>
+        public Table CreateTable(string tableName, params ColumnSpec[] schema)
         {
             ValidateReadOnly();
             if (schema != null && schema.Length>0)
@@ -99,44 +187,32 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.GroupGetTable(this, tableName);
         }
 
-        public void Write(string path)
+        /// <summary>
+        /// Writes this group to a directory specified by path
+        /// </summary>
+        /// <param name="path"></param>
+        public void Write(String path)
         {
             UnsafeNativeMethods.GroupWrite(this, path);
         }
 
-        //returns a byte[] with the group binary serialized in it
+        
+        /// <summary>
+        /// returns a byte[] with the group binary serialized in it
+        /// </summary>
+        /// <returns>byte array with the seraialized group in it</returns>
         public byte[] WriteToMemory()
         {
             return UnsafeNativeMethods.GroupWriteToMemory(this);
         }
 
 
-        //TODO:(also in asana)erorr handling if user specifies an illegal filename or path.
-        //We will probably have to do the error handling on the c++ side. It is
-        //a problem that c++ seems to crash only when an invalid group(file) is freed or used
-        //not when created. Perhaps we should do this in c++
-        //1) create the group
-        //2) delete it just after //this will get us an exception if the group file is invalid
-        //3) create the group again //we only get this far if the file is valid
-        //4) if an exception was thrown when it was deleted, return null, indicating the filename is invalid
-        //5) otherwise return the group pointer we got from 3)
-       
-        
-        //as group files can create problems at any time, any group related calls should probably be wrapped in exception handlers, and
-        //should be able to return error codes to C#
-        public Group(string path)
-        {
-            try
-            {
-                UnsafeNativeMethods.GroupNewFile(this, path);
-            }
-            catch (Exception)
-            {
-                Dispose();
-                throw;
-            }
-        }
 
+        /// <summary>
+        /// Create a Group from a binary representation craeted with WriteToMemory
+        /// </summary>
+        /// <param name="binaryGroup">a byte array containing the binary representation of the group to create</param>
+        /// <exception cref="ArgumentNullException"></exception>
         public Group(byte[] binaryGroup)
         {
             try
@@ -158,6 +234,11 @@ namespace TightDbCSharp
             }
         }
 
+        /// <summary>
+        /// Tells c++ that this Group should be disposed of,
+        /// remove the accessor object in c++ memory
+        /// *do not* subclass Group and call this method - the database could become corrupted
+        /// </summary>
         protected override void ReleaseHandle()
         {            
             UnsafeNativeMethods.GroupDelete(this);

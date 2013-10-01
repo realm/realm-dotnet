@@ -17,6 +17,7 @@ namespace TightDbCSharpTest
         {
          return Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) +
                             @"\UnitTestSharedGroup";
+            //we should probably use LocalApplicationData instead of ApplicationData
         } 
 
 
@@ -43,7 +44,7 @@ namespace TightDbCSharpTest
             using (var sg1 = new SharedGroup(SharedGroupFileName()))
             {
                 using (var transaction = sg1.BeginWrite())
-                using (var table = transaction.CreateTable("test",new IntField("IntegerField")))
+                using (var table = transaction.CreateTable("test",new IntColumn("IntegerField")))
                 {
                     table.Add(42);
                     transaction.Commit();
@@ -94,7 +95,7 @@ namespace TightDbCSharpTest
                 using (var transaction = sharedGroup.BeginWrite())
                 {
                     using (var table = transaction.CreateTable("TestTable",
-                        new StringField("StringColumn")))
+                        new StringColumn("StringColumn")))
                     {
                         table.AddEmptyRow(1);
                         transaction.Commit();
@@ -124,9 +125,9 @@ namespace TightDbCSharpTest
                 using (var transaction = sharedGroup.BeginWrite())
                 {
                     using (var table = transaction.CreateTable("TestTable",
-                        new StringField("StringColumn"),
-                        new StringField("StringColumn2"),
-                        new StringField("StringColumn3")                        
+                        new StringColumn("StringColumn"),
+                        new StringColumn("StringColumn2"),
+                        new StringColumn("StringColumn3")                        
                         ))
                     {
                         table.Add(Field01Text, Field02Text, Field03Text);
@@ -150,9 +151,9 @@ namespace TightDbCSharpTest
 
                 sharedGroup.ExecuteInWriteTransaction(group =>
                 {
-                    using (var table = group.CreateTable("TestTable2", new StringField("StringColumn1"),
-                                                                            new StringField("StringColumn2"),
-                                                                            new StringField("StringColumn3")))
+                    using (var table = group.CreateTable("TestTable2", new StringColumn("StringColumn1"),
+                                                                            new StringColumn("StringColumn2"),
+                                                                            new StringColumn("StringColumn3")))
                     {
                         table.Add(Field01Text, Field02Text, Field03Text);
                     }                    
@@ -206,9 +207,9 @@ namespace TightDbCSharpTest
 
         static void TestHelperWriter3(Group t)
         {
-            using (var table = t.CreateTable("TestTable3", new StringField("StringColumn1"),
-                                                          new StringField("StringColumn2"),
-                                                           new StringField("StringColumn3")))
+            using (var table = t.CreateTable("TestTable3", new StringColumn("StringColumn1"),
+                                                          new StringColumn("StringColumn2"),
+                                                           new StringColumn("StringColumn3")))
             {
                 table.AddEmptyRow(3);
                 table.SetString(0, 0,Field01Text);
@@ -219,9 +220,9 @@ namespace TightDbCSharpTest
 
         static void TestHelperWriter4(Group t)
         {
-            using (var table = t.CreateTable("TestTable4", new StringField("StringColumn1"),
-                                                          new StringField("StringColumn2"),
-                                                           new StringField("StringColumn3")))
+            using (var table = t.CreateTable("TestTable4", new StringColumn("StringColumn1"),
+                                                          new StringColumn("StringColumn2"),
+                                                           new StringColumn("StringColumn3")))
             {
                 table.AddEmptyRow(3);
                 table.SetString(0, 0, Field01Text);
@@ -232,9 +233,9 @@ namespace TightDbCSharpTest
 
         static void TestHelperWriter5(Group t)
         {
-            using (var table = t.CreateTable("TestTable5", new StringField("StringColumn1"),
-                                                          new StringField("StringColumn2"),
-                                                           new StringField("StringColumn3")))
+            using (var table = t.CreateTable("TestTable5", new StringColumn("StringColumn1"),
+                                                          new StringColumn("StringColumn2"),
+                                                           new StringColumn("StringColumn3")))
             {
                 table.AddEmptyRow(3);
                 table.SetString(0, 0, Field01Text);
@@ -271,8 +272,6 @@ namespace TightDbCSharpTest
 
             using (var sharedGroup = new SharedGroup(sharedgroupfilename, false, DurabilityLevel.DurabilityFull))
             {
-                Assert.AreEqual(true, sharedGroup.IsAttached);
-
                 using (var transaction = sharedGroup.BeginRead())
                 {
                //     Console.WriteLine(String.Format(CultureInfo.InvariantCulture,
@@ -295,7 +294,7 @@ namespace TightDbCSharpTest
 
             using (var sharedGroup = new SharedGroup(sharedgroupfilename, false, DurabilityLevel.DurabilityFull))
             {
-                Assert.AreEqual(true, sharedGroup.IsAttached);
+
                 Assert.AreEqual(false, sharedGroup.Invalid);
                 
                 using (var transaction = sharedGroup.BeginRead())
@@ -335,7 +334,7 @@ namespace TightDbCSharpTest
 
             using (var sharedGroup = new SharedGroup(sharedgroupfilename, false, DurabilityLevel.DurabilityFull))
             {
-                Assert.AreEqual(true, sharedGroup.IsAttached);
+
                 Assert.AreEqual(false, sharedGroup.Invalid);
 
                 using (var transaction = sharedGroup.BeginRead())
