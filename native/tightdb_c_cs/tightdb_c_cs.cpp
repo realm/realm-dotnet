@@ -773,8 +773,14 @@ TIGHTDB_C_CS_API size_t table_find_first_string(Table * table_ptr , size_t colum
 //WARNNIG!!! This is implemented to throw an exception in core  - not implemented in core yet
 TIGHTDB_C_CS_API size_t table_find_first_binary(Table * table_ptr , size_t column_ndx, char * value, size_t len)
 {   
+	try {
     BinaryData bd = BinaryData(value,len);
     return  table_ptr->find_first_binary(column_ndx,bd);
+	}
+	catch (exception)//temporary catcher as find_first_binary does not work yet in core - it always throws
+	{
+		return 0;
+	}
 }
 
 
