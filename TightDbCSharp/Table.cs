@@ -175,6 +175,13 @@ namespace TightDbCSharp
 
 
         //the following code enables Table to be enumerated, and makes TableRow the type You get back from an enummeration
+        /// <summary>
+        /// Returns an enumerator that iterates through the table, returning TableRow objects representing each row in the table.
+        /// </summary>
+        /// <returns>
+        /// IEnumerator that yields TableRow objects repesenting the rows in the table
+        /// </returns>
+        
         public IEnumerator<Row> GetEnumerator() { ValidateIsValid(); return new Enumerator(this); }
         IEnumerator IEnumerable.GetEnumerator() { return new Enumerator(this); }
 
@@ -421,7 +428,7 @@ namespace TightDbCSharp
         /// <returns></returns>
         public static Int64 DebugToTightDbTime(DateTime date)
         {
-            return UnsafeNativeMethods.ToTightDbTime(date);
+            return UnsafeNativeMethods.ToTightDbDateTime(date);
         }
 
         /// <summary>
@@ -1008,10 +1015,10 @@ namespace TightDbCSharp
         //todo:insert should only be used by the binding, not be exposed to the user (asana)
         //idea:when we add an entire row, insert is faster. (asana)
         /// <summary>
-        /// Ad the specified data to a new row in the table.
+        /// Add the specified data to a new row in the table.
         /// The parameter list should be one object per field, and the objects should each.
-        /// math the DataType of the fields.
-        /// Subtables can be represented by NULL, TABLE or something IEnumerable that can.
+        /// match the DataType of the fields.
+        /// Subtables can be represented by NULL, Table or something IEnumerable that can.
         /// be evaluated as a sequence of rows of sequence of field values.
         /// </summary>
         /// <param name="rowData">array of objects with field data</param>
@@ -1448,11 +1455,11 @@ namespace TightDbCSharp
                 }else
                 {
                     Debug.Assert(levelSpec != null, "levelSpec != null");
-                    if (levelSpec == null)
-                    {
-                        throw new ArgumentOutOfRangeException("path",
-                            "path specified made getspec return NULL. This should not be possible to happen at all");
-                    }
+                    //if (levelSpec == null)
+                    //{
+                      //  throw new ArgumentOutOfRangeException("path",
+                      //      "path specified made getspec return NULL. This should not be possible to happen at all");
+                    //}
                     Spec newLevelSpec = levelSpec.GetSpec(path[level - 1]);
                     //get the spec of the subtable this part of path is identifying by index
                     levelSpec = newLevelSpec;
@@ -1590,10 +1597,32 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableFindAllInt(this,  columnIndex,  value);
         }
 
+        internal override TableView FindAllBoolNoCheck(long columnIndex, bool value)
+        {
+            return UnsafeNativeMethods.TableFindAllBool(this, columnIndex, value);
+        }
+        internal override TableView FindAllDateNoCheck(long columnIndex, DateTime value)
+        {
+            return UnsafeNativeMethods.TableFindAllDateTime(this,columnIndex, value);
+        }
+
+        internal override TableView FindAllFloatNoCheck(long columnIndex, float value)
+        {
+            return UnsafeNativeMethods.TableFindAllFloat(this, columnIndex, value);
+        }
+
+        internal override TableView FindAllDoubleNoCheck(long columnIndex, double value)
+        {
+            return UnsafeNativeMethods.TableFindAllDouble(this, columnIndex, value);
+        }
 
         internal override TableView FindAllStringNoCheck(long columnIndex, string value)
         {
             return UnsafeNativeMethods.TableFindAllString(this, columnIndex, value);
+        }
+        internal override TableView FindAllBinaryNoCheck(long columnIndex, byte[] value)
+        {
+            return UnsafeNativeMethods.TableFindAllBinary(this, columnIndex, value);
         }
 
 /* experiment

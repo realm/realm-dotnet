@@ -4,7 +4,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text;
 using NUnit.Framework;
 using TightDbCSharp;
@@ -15,10 +14,16 @@ using TightDbCSharp.Extensions;
 
 namespace TightDbCSharpTest
 {
+    /// <summary>
+    /// Test Table Class So many tests they have been split up into two test fixtures, this is one of them
+    /// What goes where is random
+    /// </summary>
     [TestFixture]
-    internal static class TableTests1
+    public static class TableTests1
     {
-
+        /// <summary>
+        /// test get column name
+        /// </summary>
         [Test]
         public static void TableGetColumnName()
         {
@@ -43,6 +48,9 @@ namespace TightDbCSharpTest
         }
 
 
+        /// <summary>
+        /// Test get column index
+        /// </summary>
         [Test]
         public static void TableGetColumnIndex()
         {
@@ -70,7 +78,10 @@ namespace TightDbCSharpTest
 
 
 
-        //Right now this test uses creation of tables as a test - the column name will be set to all sorts of crazy thing, and we want them back that way
+        
+        /// <summary>
+        /// Right now this test uses creation of tables as a test - the column name will be set to all sorts of crazy thing, and we want them back that way
+        /// </summary>
         [Test]
         public static void TableWithPerThousandSign()
         {
@@ -96,19 +107,21 @@ Table Name  : table name is 12345 then the permille sign ISO 10646:8240 then 789
 ";
             TestHelper.Cmp(expectedres, actualres);
         }
+ 
 
-        //http://msdn.microsoft.com/en-us/library/system.datetime.kind.aspx    about datetime.kind
-        //http://msdn.microsoft.com/en-us/library/ms973825.aspx  old doc. with best practices from bf datetime.kind was introduced
-
-        //Note that when You send just a date to tightdb, tightdb assumes it is system local time, and converts it to UTC before storing
-        //If You create your datetime with DateTimeKind.Utc then it will be saved without any modification
-        //The rules are :
-        //Tightdb always returns dates as DateTimeKind.Utc
-        //Tightdb stores dates set with DateTimeKind.Utc with no changes
-        //Tightdb changes dates set with DateTimeKind.Local to Utc before they are stored
-        //Tightdb assumes that dates where DateTimeKind.Unknown is set, are system local, and converts them to Utc
-        //This behavior ensures that dates are always stored as Utc, and that originaldate.ToUniversalTime() == originaldate back from database.ToUniversalTime()
-
+        /// <summary>
+        /// http://msdn.microsoft.com/en-us/library/system.datetime.kind.aspx    about datetime.kind
+        /// http://msdn.microsoft.com/en-us/library/ms973825.aspx  old doc. with best practices from bf datetime.kind was introduced
+        /// 
+        /// Note that when You send just a date to tightdb, tightdb assumes it is system local time, and converts it to UTC before storing
+        /// If You create your datetime with DateTimeKind.Utc then it will be saved without any modification
+        /// The rules are :
+        /// Tightdb always returns dates as DateTimeKind.Utc
+        /// Tightdb stores dates set with DateTimeKind.Utc with no changes
+        /// Tightdb changes dates set with DateTimeKind.Local to Utc before they are stored
+        /// Tightdb assumes that dates where DateTimeKind.Unknown is set, are system local, and converts them to Utc
+        /// This behavior ensures that dates are always stored as Utc, and that originaldate.ToUniversalTime() == originaldate back from database.ToUniversalTime()
+        /// </summary>
         [Test]
         public static void DateTimeTest()
         {
@@ -119,6 +132,9 @@ Table Name  : table name is 12345 then the permille sign ISO 10646:8240 then 789
             Assert.AreEqual(myDateTime.ToUniversalTime(), returnedDateTime.ToUniversalTime());
         }
 
+        /// <summary>
+        /// Test roundtripping a  DataTime of kind Unspecified        
+        /// </summary>
         [Test]
         public static void DateTimeTestUnspecified()
         {
@@ -129,6 +145,9 @@ Table Name  : table name is 12345 then the permille sign ISO 10646:8240 then 789
             Assert.AreEqual(myDateTime.ToUniversalTime(), returnedDateTime.ToUniversalTime());
         }
 
+        /// <summary>
+        /// Test DateTimeKind.Local
+        /// </summary>
         [Test]
         public static void DateTimeTestLocal()
         {
@@ -140,6 +159,9 @@ Table Name  : table name is 12345 then the permille sign ISO 10646:8240 then 789
             Assert.AreEqual(myDateTime.ToUniversalTime(), returnedDateTime.ToUniversalTime());
         }
 
+        /// <summary>
+        /// Test DateTimeKind.Utc
+        /// </summary>
         [Test]
         public static void DateTimeTestUtc()
         {
@@ -155,6 +177,9 @@ Table Name  : table name is 12345 then the permille sign ISO 10646:8240 then 789
 
 
 
+        /// <summary>
+        /// Test that should fail if we use ansi somewhere in the roundtripping
+        /// </summary>
         [Test]
         public static void TableWithNotAnsiCharacters()
         {
@@ -260,6 +285,9 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
         }       
 
 
+        /// <summary>
+        /// Test adding a new colum to a table with data in  it
+        /// </summary>
         [Test]
         public static void TableAddColumnWithData()
         {
@@ -273,6 +301,9 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
         }
 
 
+        /// <summary>
+        /// Test adding a subtable column and fields
+        /// </summary>
         [Test]
         public static void TableAddColumnAndSpecTest()
         {
@@ -297,6 +328,9 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
         }
 
 
+        /// <summary>
+        /// Test rename column
+        /// </summary>
         [Test]
         public static void TableRenameColumnTest()
         {
@@ -307,16 +341,19 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
             Assert.AreEqual("Straight",t.GetColumnName(0));
             }
         }
-
-
-        //this test can safely be removed now.
-        //prior to path based,
-        //this test failed bc there is no way to check if calling updatefromspec is allowed
-        //specifically we cannot call c++ and get a column count that excludes the changes made to the spec
-        //a Workaround in Table has been made, that sets the internal property HasColumns to true when
-        //addcolumn or updatefromspec has been called. Updatefromspec will then fail if HasColumns is true
-        //more tests are being added that test for other spec operations that cannot be done on tables
-        //where columns already have been properly set and "comitted" with updatefromspec or addcolumn
+       
+        
+        
+        /// <summary>
+        /// this test can safely be removed now.
+        /// prior to path based,
+        /// this test failed bc there is no way to check if calling updatefromspec is allowed
+        /// specifically we cannot call c++ and get a column count that excludes the changes made to the spec
+        /// a Workaround in Table has been made, that sets the internal property HasColumns to true when
+        /// addcolumn or updatefromspec has been called. Updatefromspec will then fail if HasColumns is true
+        /// more tests are being added that test for other spec operations that cannot be done on tables
+        /// where columns already have been properly set and "comitted" with updatefromspec or addcolumn
+        /// </summary>
         [Test]
         //[ExpectedException("System.InvalidOperationException")] //updatefromspec on a table with existing columns
         public static void TableAddColumnAndSpecTestSimple()
@@ -334,7 +371,10 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
 
 
 
-        //tests various cases of subtable array types, value and reference contents
+        
+        /// <summary>
+        /// tests various cases of subtable array types, value and reference contents
+        /// </summary>
         [Test]
         public static void TableAddIntArray()
         {
@@ -399,6 +439,9 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
         }
 
 
+        /// <summary>
+        /// Test that SetRow works
+        /// </summary>
         [Test]
         public static void TableSetRowTest()
         {
@@ -413,12 +456,14 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
             }
         }
 
-        //utilize the collection initializer now we implement IEnumerator and Add 
-        //please note that this is not recommended as using does not work with collection initializers
-        //especially, using will not catch exceptions thrown in the calls to collection.Add
-        //see http://connect.microsoft.com/VisualStudio/feedback/details/654186/collection-initializers-called-on-collections-that-implement-idisposable-need-to-call-dispose-in-case-of-failure
-        //You will get a FXCOP CA200 error wtih this test, alerting You that the temporary variable that holds table
-        //after its constructor is called, but before the adds are finished, will not get disposed on errors
+        /// <summary>
+        ///utilize the collection initializer now we implement IEnumerator and Add 
+        ///please note that this is not recommended as using does not work with collection initializers
+        ///especially, using will not catch exceptions thrown in the calls to collection.Add
+        ///see http://connect.microsoft.com/VisualStudio/feedback/details/654186/collection-initializers-called-on-collections-that-implement-idisposable-need-to-call-dispose-in-case-of-failure
+        ///You will get a FXCOP CA200 error wtih this test, alerting You that the temporary variable that holds table
+        ///after its constructor is called, but before the adds are finished, will not get disposed on errors        
+        /// </summary>
         [Test]
         public static void TableCollectionInitializer()
         {
@@ -449,7 +494,7 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
                 oneliner.Add(1, "as long as types and number of parametres match table structure", 123.1);
 #endif
 
-                foreach (Row row in oneliner)
+                foreach (var row in oneliner)
                 {
                     row.SetString("s1", row.GetDouble("D1").ToString(CultureInfo.InvariantCulture));
                     //do some processing of each row
@@ -459,6 +504,9 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
 
 
 
+        /// <summary>
+        /// adding subtable as a constant array
+        /// </summary>
         [Test]
         public static void TableAddSubTableStringArray()
         {
@@ -481,6 +529,9 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
             }
         }
 
+        /// <summary>
+        /// test remove column in various situations
+        /// </summary>
         [Test]
         public static void TableRemoveColumnTest()
         {
@@ -522,6 +573,9 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
         }
 
 
+        /// <summary>
+        /// test table last
+        /// </summary>
         [Test]
         public static void TableLast()
         {
@@ -529,7 +583,7 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
             {
                 t.AddMany(new[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
                 Assert.AreEqual(11, t.Size);
-                int n = 0;
+                var n = 0;
                 foreach (var tr in t)
                 {
                     Assert.AreEqual(tr.RowIndex, n);
@@ -542,6 +596,9 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
 
 
 
+        /// <summary>
+        /// Test that table iterator returns the correct class
+        /// </summary>
         [Test]
         public static void TableIterationTest()
         {
@@ -580,6 +637,556 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
             }
         }
 
+
+
+        /// <summary>
+        /// Test that table and tableview findalldate works as they should
+        /// </summary>
+        [Test]
+        public static void TableFindAllDateSuccessful()
+        {
+            using (var t = new Table("DateField1".Date(),"DateField2".Date(), "IntField".Int()))
+            {
+                var match = new DateTime(2000,01,03,17,42,42);
+                var nomatch  = new DateTime(2001,01,03,17,42,42);
+                t.Add(match, match,1);
+                t.Add(match,nomatch, 2);
+                t.Add(nomatch,match, 3);
+                t.Add(nomatch, nomatch, 4);
+                t.Add(match,nomatch, 5);
+                t.Add(match, match, 6);
+                using (var tv = t.FindAllDateTime(0, match))
+                using (var tvs = t.FindAllDateTime("DateFiled1",match))
+                {
+                    Assert.AreEqual(1,tv[0].GetLong(2));
+                    Assert.AreEqual(2,tv[1].GetLong(2));
+                    Assert.AreEqual(5,tv[2].GetLong(2));
+                    Assert.AreEqual(6, tv[3].GetLong(2));
+                    Assert.AreEqual(4, tv.Size);
+                    Assert.AreEqual(4, tvs.Size);
+
+                    using (var tv2 = tv.FindAllDateTime(1, match))
+                    {
+                        Assert.AreEqual(1,tv2.GetLong(2,0));//first row with two matches
+                        Assert.AreEqual(6, tv2.GetLong(2,1));//second row with two matches
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// test bad field type specification in findalldate
+        /// </summary>
+        [Test]
+        [ExpectedException("System.ArgumentException")]
+        public static void TableFindAllDateBadTypeString()
+        {
+            using (var t = new Table("DateField".Date(), "IntField".Int()))
+            {
+                var match = new DateTime(2000, 01, 03, 17, 42, 42);
+
+                t.Add(match, 1);
+                using (var tv = t.FindAllDateTime("IntField", match))//should throw
+                {
+                    Assert.AreEqual(1, tv[0].GetLong(1));
+                }
+            }
+        }
+
+        /// <summary>
+        /// test bad field type specification in findalldate
+        /// </summary>
+        [Test]
+        [ExpectedException("System.ArgumentException")]
+        public static void TableFindAllDateBadType()
+        {
+            using (var t = new Table("DateField".Date(), "IntField".Int()))
+            {
+                var match = new DateTime(2000, 01, 03, 17, 42, 42);
+               
+                t.Add(match, 1);                
+                using (var tv = t.FindAllDateTime(1, match))//should throw
+                {
+                    Assert.AreEqual(1, tv[0].GetLong(1));
+                }
+            }
+        }
+
+
+
+        /// <summary>
+        /// Test FindallBool tv and table
+        /// </summary>
+        [Test]
+        public static void TableFindAllBoolSuccessful()
+        {
+            using (var t = new Table("BoolField1".Bool(), "BoolField2".Bool(), "IntField".Int()))
+            {
+                const bool match = true;
+                const bool nomatch = false;
+                t.Add(match, match, 1);
+                t.Add(match, nomatch, 2);
+                t.Add(nomatch, match, 3);
+                t.Add(nomatch, nomatch, 4);
+                t.Add(match, nomatch, 5);
+                t.Add(match, match, 6);
+                using (var tv = t.FindAllBool(0, match))
+                using (var tvs = t.FindAllBool("BoolField1", match))
+                {
+                    Assert.AreEqual(1, tv[0].GetLong(2));
+                    Assert.AreEqual(2, tv[1].GetLong(2));
+                    Assert.AreEqual(5, tv[2].GetLong(2));
+                    Assert.AreEqual(6, tv[3].GetLong(2));
+                    Assert.AreEqual(4, tv.Size);
+                    Assert.AreEqual(4, tvs.Size);
+
+                    using (var tv2 = tv.FindAllBool(1, match))
+                    {
+                        Assert.AreEqual(1, tv2.GetLong(2, 0));//first row with two matches
+                        Assert.AreEqual(6, tv2.GetLong(2, 1));//second row with two matches
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Test bad field specification, wrong type
+        /// </summary>
+        [ExpectedException("System.ArgumentException")]
+        [Test]
+        public static void TableFindAllBoolBadType()
+        {
+            using (var t = new Table("Field".Bool(), "IntField".Int()))
+            {
+                const bool  match =true;                
+                t.Add(match, 1);
+                using (var tv = t.FindAllBool(1, match))//should throw
+                {
+                    Assert.AreEqual(1, tv[0].GetLong(1));
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Test bad field specification, wrong type
+        /// </summary>
+
+        [ExpectedException("System.ArgumentException")]
+        [Test]
+        public static void TableFindAllBoolBadType2()
+        {
+            using (var t = new Table("Field".Bool(), "IntField".Int()))
+            {
+                const bool match = true;
+                t.Add(match, 1);
+                using (var tv = t.FindAllBool("IntField", match))//should throw
+                {
+                    Assert.AreEqual(1, tv[0].GetLong(1));
+                }
+            }
+        }
+
+
+
+
+
+
+        /// <summary>
+        /// Test FindallFloat tv and table
+        /// </summary>
+
+        [Test]
+        public static void TableFindAllFloatSuccessful()
+        {
+            using (var t = new Table("Field1".Bool(), "Field2".Bool(), "IntField".Int()))
+            {
+                const float match = 42;
+                const float nomatch = -42;
+                t.Add(match, match, 1);
+                t.Add(match, nomatch, 2);
+                t.Add(nomatch, match, 3);
+                t.Add(nomatch, nomatch, 4);
+                t.Add(match, nomatch, 5);
+                t.Add(match, match, 6);
+                using (var tv = t.FindAllFloat(0, match))
+                using (var tvs = t.FindAllFloat("Field1", match))
+                {
+                    Assert.AreEqual(1, tv[0].GetLong(2));
+                    Assert.AreEqual(2, tv[1].GetLong(2));
+                    Assert.AreEqual(5, tv[2].GetLong(2));
+                    Assert.AreEqual(6, tv[3].GetLong(2));
+                    Assert.AreEqual(4, tv.Size);
+                    Assert.AreEqual(4, tvs.Size);
+
+                    using (var tv2 = tv.FindAllFloat(1, match))
+                    {
+                        Assert.AreEqual(1, tv2.GetLong(2, 0));//first row with two matches
+                        Assert.AreEqual(6, tv2.GetLong(2, 1));//second row with two matches
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Test bad field specification, wrong type
+        /// </summary>
+
+        [ExpectedException("System.ArgumentException")]
+        [Test]
+        public static void TableFindAllFloatBadType()
+        {
+            using (var t = new Table("Field".Bool(), "IntField".Int()))
+            {
+                const float match = 42;
+                t.Add(match, 1);
+                using (var tv = t.FindAllFloat(1, match))//should throw
+                {
+                    Assert.AreEqual(1, tv[0].GetLong(1));
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Test bad field specification, wrong type
+        /// </summary>
+        [ExpectedException("System.ArgumentException")]
+        [Test]
+        public static void TableFindAllFloatBadType2()
+        {
+            using (var t = new Table("Field".Bool(), "IntField".Int()))
+            {
+                const float match = 42;
+                t.Add(match, 1);
+                using (var tv = t.FindAllFloat("IntField", match))//should throw
+                {
+                    Assert.AreEqual(1, tv[0].GetLong(1));
+                }
+            }
+        }
+
+
+
+
+
+
+
+
+
+        /// <summary>
+        /// Test FindallDouble tv and table
+        /// </summary>
+
+        [Test]
+        public static void TableFindAllDoubleSuccessful()
+        {
+            using (var t = new Table("Field1".Bool(), "Field2".Bool(), "IntField".Int()))
+            {
+                const double match = 42;
+                const double nomatch = -42;
+                t.Add(match, match, 1);
+                t.Add(match, nomatch, 2);
+                t.Add(nomatch, match, 3);
+                t.Add(nomatch, nomatch, 4);
+                t.Add(match, nomatch, 5);
+                t.Add(match, match, 6);
+                using (var tv = t.FindAllDouble(0, match))
+                using (var tvs = t.FindAllDouble("Field1", match))
+                {
+                    Assert.AreEqual(1, tv[0].GetLong(2));
+                    Assert.AreEqual(2, tv[1].GetLong(2));
+                    Assert.AreEqual(5, tv[2].GetLong(2));
+                    Assert.AreEqual(6, tv[3].GetLong(2));
+                    Assert.AreEqual(4, tv.Size);
+                    Assert.AreEqual(4, tvs.Size);
+
+                    using (var tv2 = tv.FindAllDouble(1, match))
+                    {
+                        Assert.AreEqual(1, tv2.GetDouble(2, 0));//first row with two matches
+                        Assert.AreEqual(6, tv2.GetDouble(2, 1));//second row with two matches
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Test bad field specification, wrong type
+        /// </summary>
+        [ExpectedException("System.ArgumentException")]
+        [Test]
+        public static void TableFindAllDoubleBadType()
+        {
+            using (var t = new Table("Field".Double(), "IntField".Int()))
+            {
+                const double match = 42;
+                t.Add(match, 1);
+                using (var tv = t.FindAllDouble(1, match))//should throw
+                {
+                    Assert.AreEqual(1, tv[0].GetDouble(1));
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Test bad field specification, wrong type
+        /// </summary>
+        [ExpectedException("System.ArgumentException")]
+        [Test]
+        public static void TableFindAllDoubleBadType2()
+        {
+            using (var t = new Table("Field".Double(), "IntField".Int()))
+            {
+                const double match = 42;
+                t.Add(match, 1);
+                using (var tv = t.FindAllDouble("IntField", match))//should throw
+                {
+                    Assert.AreEqual(1, tv[0].GetDouble(1));
+                }
+            }
+        }
+
+
+
+        /// <summary>
+        /// Test FindallInt tv and table
+        /// </summary>
+
+        [Test]
+        public static void TableFindAllIntSuccessful()
+        {
+            using (var t = new Table("Field1".Bool(), "Field2".Bool(), "IntField".Int()))
+            {
+                const int match = 42;
+                const int nomatch = -42;
+                t.Add(match, match, 1);
+                t.Add(match, nomatch, 2);
+                t.Add(nomatch, match, 3);
+                t.Add(nomatch, nomatch, 4);
+                t.Add(match, nomatch, 5);
+                t.Add(match, match, 6);
+                using (var tv = t.FindAllInt(0, match))
+                using (var tvs = t.FindAllInt("Field1", match))
+                {
+                    Assert.AreEqual(1, tv[0].GetLong(2));
+                    Assert.AreEqual(2, tv[1].GetLong(2));
+                    Assert.AreEqual(5, tv[2].GetLong(2));
+                    Assert.AreEqual(6, tv[3].GetLong(2));
+                    Assert.AreEqual(4, tv.Size);
+                    Assert.AreEqual(4, tvs.Size);
+
+                    using (var tv2 = tv.FindAllInt(1, match))
+                    {
+                        Assert.AreEqual(1, tv2.GetLong(2, 0));//first row with two matches
+                        Assert.AreEqual(6, tv2.GetLong(2, 1));//second row with two matches
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Test bad field specification, wrong type
+        /// </summary>
+        [ExpectedException("System.ArgumentException")]
+        [Test]
+        public static void TableFindAllIntBadType()
+        {
+            using (var t = new Table("Field".Bool(), "IntField".Int()))
+            {
+                const int match = 42;
+                t.Add(match, 1);
+                using (var tv = t.FindAllInt(1, match))//should throw
+                {
+                    Assert.AreEqual(1, tv[0].GetLong(1));
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Test bad field specification, wrong type
+        /// </summary>
+        [ExpectedException("System.ArgumentException")]
+        [Test]
+        public static void TableFindAllIntBadType2()
+        {
+            using (var t = new Table("Field".Bool(), "IntField".Int()))
+            {
+                const int match = 42;
+                t.Add(match, 1);
+                using (var tv = t.FindAllInt("IntField", match))//should throw
+                {
+                    Assert.AreEqual(1, tv[0].GetLong(1));
+                }
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        /// <summary>
+        /// Test FindallString tv and table
+        /// </summary>
+
+        [Test]
+        public static void TableFindAllStringSuccessful()
+        {
+            using (var t = new Table("Field1".String(), "Field2".String(), "IntField".Int()))
+            {
+                const String match = "42";
+                const String nomatch = "-42";
+                t.Add(match, match, 1);
+                t.Add(match, nomatch, 2);
+                t.Add(nomatch, match, 3);
+                t.Add(nomatch, nomatch, 4);
+                t.Add(match, nomatch, 5);
+                t.Add(match, match, 6);
+                using (var tv = t.FindAllString(0, match))
+                using (var tvs = t.FindAllString("Field1", match))
+                {
+                    Assert.AreEqual(1, tv[0].GetLong(2));
+                    Assert.AreEqual(2, tv[1].GetLong(2));
+                    Assert.AreEqual(5, tv[2].GetLong(2));
+                    Assert.AreEqual(6, tv[3].GetLong(2));
+                    Assert.AreEqual(4, tv.Size);
+                    Assert.AreEqual(4, tvs.Size);
+
+                    using (var tv2 = tv.FindAllString(1, match))
+                    {
+                        Assert.AreEqual(1, tv2.GetLong(2, 0));//first row with two matches
+                        Assert.AreEqual(6, tv2.GetLong(2, 1));//second row with two matches
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Test bad field specification, wrong type
+        /// </summary>
+        [ExpectedException("System.ArgumentException")]
+        [Test]
+        public static void TableFindAllStringBadType()
+        {
+            using (var t = new Table("Field".String(), "IntField".Int()))
+            {
+                const String match = "42";
+                t.Add(match, 1);
+                using (var tv = t.FindAllString(1, match))//should throw bc column dataType is DataType.Int
+                {
+                    Assert.AreEqual(1, tv[0].GetLong(1));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Test bad field specification, wrong type
+        /// </summary>
+        [ExpectedException("System.ArgumentException")]
+        [Test]
+        public static void TableFindAllStringBadType2()
+        {
+            using (var t = new Table("Field".String(), "IntField".Int()))
+            {
+                const String match = "42";
+                t.Add(match, 1);
+                using (var tv = t.FindAllString("IntField", match))//should throw bc column dataType is DataType.Int
+                {
+                    Assert.AreEqual(1, tv[0].GetLong(1));
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Test FindAllbinary view and table
+        /// </summary>
+        [Test]
+        public static void TableFindAllBinarySuccessful()
+        {
+            using (var t = new Table("Field1".Binary(), "Field2".Binary(), "IntField".Int()))
+            {
+                var match = new Byte[] {42,42,42,42,66};
+                var nomatch = new Byte[] { 42, 42, 43, 42, 66 };
+                t.Add(match, match, 1);
+                t.Add(match, nomatch, 2);
+                t.Add(nomatch, match, 3);
+                t.Add(nomatch, nomatch, 4);
+                t.Add(match, nomatch, 5);
+                t.Add(match, match, 6);
+                using (var tv = t.FindAllBinary(0, match))
+                using (var tvs = t.FindAllBinary("Field1", match))
+                {
+                    Assert.AreEqual(1, tv[0].GetLong(2));
+                    Assert.AreEqual(2, tv[1].GetLong(2));
+                    Assert.AreEqual(5, tv[2].GetLong(2));
+                    Assert.AreEqual(6, tv[3].GetLong(2));
+                    Assert.AreEqual(4, tv.Size);
+                    Assert.AreEqual(4, tvs.Size);
+
+                    using (var tv2 = tv.FindAllBinary(1, match))
+                    {
+                        Assert.AreEqual(1, tv2.GetLong(2, 0));//first row with two matches
+                        Assert.AreEqual(6, tv2.GetLong(2, 1));//second row with two matches
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Test bad field specification, wrong type
+        /// </summary>
+        [ExpectedException("System.ArgumentException")]
+        [Test]
+        public static void TableFindAllBinaryBadType()
+        {
+            using (var t = new Table("Field".Binary(), "IntField".Int()))
+            {
+                var match = new Byte []{42};
+                t.Add(match, 1);
+                using (var tv = t.FindAllBinary(1, match))//should throw bc column dataType is DataType.Int
+                {
+                    Assert.AreEqual(1, tv[0].GetLong(1));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Test bad field specification, wrong type
+        /// </summary>
+        [ExpectedException("System.ArgumentException")]
+        [Test]
+        public static void TableFindAllBinaryBadType2()
+        {
+            using (var t = new Table("Field".Binary(), "IntField".Int()))
+            {
+                var match = new Byte[] { 42 };
+                t.Add(match, 1);
+                using (var tv = t.FindAllBinary("IntField", match))//should throw bc column dataType is DataType.Int
+                {
+                    Assert.AreEqual(1, tv[0].GetLong(1));
+                }
+            }
+        }
+
+
+
+        /// <summary>
+        /// test table and view iteration
+        /// </summary>
         [Test]
         public static void TableOrViewIterationTest()
         {
@@ -617,7 +1224,10 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
         //on the query or table object, but also modifications that might be done on the underlying table.
         //perhaps the iterator should also take a look at isattached(isvalid)
 
-        //this iteration should work fine - no rows are shuffled around
+        
+        /// <summary>
+        /// this iteration should work fine - no rows are shuffled around
+        /// </summary>
         [Test]
         public static void TableIteratorInvalidation1Legal()
         {
@@ -637,7 +1247,10 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
 
 
 
-        //this iteration should fail.  a row is removed in the loop, earlier than where the iterator is
+        
+        /// <summary>
+        /// this iteration should fail.  a row is removed in the loop, earlier than where the iterator is
+        /// </summary>
         [Test]
         [ExpectedException("System.InvalidOperationException")]
         public static void TableIteratorInvalidation2Delete()
@@ -661,7 +1274,10 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
         }
 
 
-        //this iteration should fail.  a row is removed in the loop, later than where the iterator is
+        
+        /// <summary>
+        /// this iteration should fail.  a row is removed in the loop, later than where the iterator is
+        /// </summary>
         [Test]
         [ExpectedException("System.InvalidOperationException")]
         public static void TableIteratorInvalidation3Delete()
@@ -687,7 +1303,10 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
 
 
 
-        //this iteration should fail.  a row is removed in the loop, earlier than where the iterator is
+        
+        /// <summary>
+        /// this iteration should fail.  a row is removed in the loop, earlier than where the iterator is
+        /// </summary>
         [Test]
         [ExpectedException("System.InvalidOperationException")]
         public static void TableIteratorInvalidation4Insert()
@@ -711,7 +1330,10 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
         }
 
 
-        //this iteration should fail.  a row is inserted in the loop, later than where the iterator is
+        
+        /// <summary>
+        /// this iteration should fail.  a row is inserted in the loop, later than where the iterator is
+        /// </summary>
         [Test]
         [ExpectedException("System.InvalidOperationException")]
         public static void TableIteratorInvalidation5Insert()
@@ -761,7 +1383,10 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
             }
         }
 
-        //this iteration should fail.  a row is inserted in the loop, later than where the iterator is
+        
+        /// <summary>
+        /// this iteration should fail.  a row is inserted in the loop, later than where the iterator is
+        /// </summary>
         [Test]
         [ExpectedException("System.InvalidOperationException")]
         public static void TableIteratorInvalidation7Clear()
@@ -787,6 +1412,9 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
 
 
 
+        /// <summary>
+        /// test tableisvalid
+        /// </summary>
         [Test]
         public static void TableIsValidTest()
         {
@@ -814,6 +1442,9 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
             }
         }
 
+        /// <summary>
+        /// test removelast
+        /// </summary>
         [Test]
         public static void TableRemoveLast()
         {
@@ -835,6 +1466,9 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
             }
         }
 
+        /// <summary>
+        /// Test hassharedspec
+        /// </summary>
         [Test]
         public static void TableSharedSpecTest()
         {
@@ -861,7 +1495,11 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
         }
 
 
-        //test if we allow chaning the spec of a non-mixed subtable (should be illegal)       
+        
+        /// <summary>
+        /// Ensure that altering spec on a subtable is illegal
+        /// test if we allow chaning the spec of a non-mixed subtable (should be illegal)       
+        /// </summary>
         [Test]
         [ExpectedException("System.InvalidOperationException")]
         public static void TableSharedSpecChangeTest()
@@ -886,7 +1524,10 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
         }
 
 
-        //test that we allow changing the spec of a mixed subtable (should be legal)
+        
+        /// <summary>
+        /// test that we allow changing the spec of a mixed subtable (should be legal)
+        /// </summary>
         [Test]
         public static void TableMixedSpecChangeTest()
         {
@@ -909,10 +1550,13 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
 
 
 
-        //old spec test
-        //test that we block changing the spec of a mixed subtable with updatefromspec
-        //if it already have comitted columns and if the columns were added before we read
-        //the table in from the subspec
+        /// <summary>
+        ///old spec test
+        ///test that we block changing the spec of a mixed subtable with updatefromspec
+        ///if it already have comitted columns and if the columns were added before we read
+        ///the table in from the subspec
+        /// 
+        /// </summary>
         [Test]
         public static void TableMixedSpecChangeAfterGet()
         {
@@ -935,9 +1579,9 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
 
 
 
-
-
-        //test with the newest kind of field object constructores - lasse's inherited specialized ones
+        /// <summary>
+        /// test with the newest kind of field object constructores - lasse's inherited specialized ones
+        /// </summary>
         [Test]
         public static void TableSubTableSubTable()
         {
@@ -969,6 +1613,9 @@ Table Name  : table with subtable with subtable
 
 
 
+        /// <summary>
+        /// Test Table creation using typed constructor helper classes
+        /// </summary>
         [Test]
         public static void TypedFieldClasses()
         {
@@ -1005,6 +1652,9 @@ Table Name  : table created with all types using the new field classes
         }
 
 
+        /// <summary>
+        /// test that adding a subtable is working
+        /// </summary>
         [Test]
         public static void TableAddSubTableAsNull()
         {
@@ -1020,6 +1670,10 @@ Table Name  : table created with all types using the new field classes
         }
 
 
+        /// <summary>
+        /// Test table clone.
+        /// We once had a problem with some fieldnames
+        /// </summary>
         [Test]
         public static void TableCloneLostFieldNameTest()
         {
@@ -1087,6 +1741,9 @@ sub:[ //0 rows]//column 0
 
 
 
+        /// <summary>
+        /// Table clone test
+        /// </summary>
         [Test]
         public static void TableCloneTest4()
         {
@@ -1121,6 +1778,9 @@ Table Name  : table created with all types using the new field classes
 
 
 
+        /// <summary>
+        /// Table clone test
+        /// </summary>
         [Test]
         public static void TableCloneTest3()
         {
@@ -1155,6 +1815,9 @@ Table Name  : table created with all types using the new field classes
 
 
 
+        /// <summary>
+        /// Table clone test
+        /// </summary>
         [Test]
         public static void TableCloneTest2()
         {
@@ -1188,6 +1851,9 @@ Table Name  : table created with all types using the new field classes
         }
 
 
+        /// <summary>
+        /// Table clone test
+        /// </summary>
         [Test]
         public static void TableCloneTest()
         {
@@ -1272,7 +1938,10 @@ Table Name  : table created with all types using the new field classes
         }
 
 
-        //creation of table using user overridden or generated fields (ensuring same subtable structure across applications or tables)
+        
+        /// <summary>
+        /// creation of table using user overridden or generated fields (ensuring same subtable structure across applications or tables)
+        /// </summary>
         [Test]
         public static void UserCreatedFields()
         {
@@ -1353,7 +2022,10 @@ Table Name  : table created user defined types and methods
         }
 
 
-        //this kind of creation call should be legal - it creates a totally empty table, then only later sets up a field        
+        
+        /// <summary>
+        /// this kind of creation call should be legal - it creates a totally empty table, then only later sets up a field        
+        /// </summary>
         [Test]
         public static void SubTableNoFields()
         {
@@ -1382,6 +2054,9 @@ Table Name  : one field Created in two steps with table add column
         }
 
 
+        /// <summary>
+        /// very simple table create test
+        /// </summary>
         [Test]
         public static void TestHandleAcquireOneField()
         {
@@ -1403,6 +2078,9 @@ Table Name  : NameField
         }
 
 
+        /// <summary>
+        /// table create with some more columns
+        /// </summary>
         [Test]
         public static void TestHandleAcquireSeveralFields()
         {
@@ -1433,7 +2111,11 @@ Table Name  : four columns, Last Mixed
             TestHelper.Cmp(expectedres, actualres);
         }
 
-        //test the alternative table dumper implementation that does not use table class
+        
+        /// <summary>
+        /// test the alternative table dumper implementation that does not use table class
+        /// also test that all the table creation string extension based helper classes work
+        /// </summary>
         [Test]
         public static void TestAllFieldTypesStringExtensions()
         {
@@ -1483,7 +2165,10 @@ Table Name  : Table with all allowed types (String Extensions)
 
 
 
-        //test the alternative table dumper implementation that does not use table class
+        
+        /// <summary>
+        /// table create using old general field helper class
+        /// </summary>
         [Test]
         public static void TestAllFieldTypesFieldClass()
         {
@@ -1531,7 +2216,12 @@ Table Name  : Table with all allowed types (Field)
             TestHelper.Cmp(expectedres, actualres2);
         }
 
-        //test the alternative table dumper implementation that does not use table class
+        //todo:consider if we should not remove this option. Have a hard time figuring 
+        //when the user only have the type as a string. Keep for now
+        /// <summary>
+        /// Table create using string field helper class.
+        /// (depricated)
+        /// </summary>
         [Test]
         public static void TestAllFieldTypesFieldClassStrings()
         {
@@ -1613,7 +2303,10 @@ Table Name  : Table with all allowed types (Field_string)
 
 
 
-        //test the alternative table dumper implementation that does not use table class
+        
+        /// <summary>
+        /// test new subclassed table creator helper classes
+        /// </summary>
         [Test]
         public static void TestAllFieldTypesTypedFields()
         {
@@ -1752,7 +2445,10 @@ Table Name  : Table with all allowed types (Field_string)
 
 
 
-        //test with a subtable
+
+        /// <summary>
+        /// Test that mixes various types of table create helper 
+        /// </summary>
         [Test]
         public static void TestMixedConstructorWithSubTables()
         {
@@ -1800,9 +2496,10 @@ Table Name  : six colums,sub four columns
 
 
 
-        [Test]
-        //[NUnit.Framework.Ignore("Need to write tests that test for correct deallocation of table when out of scope")]
-        //scope has been thoroughly debugged and does work perfectly in all imagined cases, but the testing was done before unit tests had been created
+        /// <summary>
+        /// scope has been thoroughly debugged and does work perfectly in all imagined cases, but the testing was done before unit tests had been created
+        /// </summary>
+        [Test]        
         public static void TestTableScope()
         {
             Table testTable; //bad way to code this but i need the reference after the using clause
@@ -1813,22 +2510,24 @@ Table Name  : six colums,sub four columns
             }
             Assert.True(testTable.IsDisposed);
             //do a test here to see that testtbl now does not have a valid table handle
-
-
         }
 
 
 
-        //while You cannot cross-link parents and subtables inside a new table() construct, you can try to do so, by deliberatly changing
-        //the subtable references in Field objects that You instantiate yourself -and then call Table.create(Yourfiled) with a 
-        //field definition that is self referencing.
-        //however, currently this is not possible as seen in the example below.
-        //the subtables cannot be changed directly, so all You can do is create new objects that has old already created objects as subtables
-        //therefore a tree structure, no recursion.
-
-        //below is my best shot at someone trying to create a table with custom built cross-linked field definitions (and failing)
-
-        //I did not design the Field type to be used on its own like the many examples below. However , none of these weird uses break anything
+        /// <summary>
+        /// 
+        ///while You cannot cross-link parents and subtables inside a new table() construct, you can try to do so, by deliberatly changing
+        /// the subtable references in Field objects that You instantiate yourself -and then call Table.create(Yourfiled) with a 
+        /// field definition that is self referencing.
+        /// however, currently this is not possible as seen in the example below.
+        /// the subtables cannot be changed directly, so all You can do is create new objects that has old already created objects as subtables
+        /// therefore a tree structure, no recursion.
+        /// 
+        /// below is my best shot at someone trying to create a table with custom built cross-linked field definitions (and failing)
+        /// 
+        /// I did not design the Field type to be used on its own like the many examples below. However , none of these weird uses break anything
+        /// 
+        /// </summary>
         [Test]
         public static void TestIllegalFieldDefinitions1()
         {
@@ -1854,6 +2553,10 @@ Table Name  : self-referencing subtable
             TestHelper.Cmp(expectedres, actualres);
         }
 
+        /// <summary>
+        /// Try to create table with entangled table constructor heloper classes.This should work, it should be impossible
+        /// to make the constructor hang, for instance
+        /// </summary>
         [Test]
         public static void TestIllegalFieldDefinitions2()
         {
@@ -1888,6 +2591,9 @@ Table Name  : subtable that has subtable that references its parent #1
             TestHelper.Cmp(expectedres, actualres);
         }
 
+        /// <summary>
+        /// more attempts to hang the table constructor (doesn't hang)
+        /// </summary>
         [Test]
         public static void TestIllegalFieldDefinitions3()
         {
@@ -1920,9 +2626,12 @@ Table Name  : subtable that has subtable that references its parent #2
 
         }
 
-        //super creative attemt at creating a cyclic graph of Field objects
-        //still it fails because the array being manipulated is from GetSubTableArray and thus NOT the real list inside F1 even though the actual field objects referenced from the array ARE the real objects
-        //point is - You cannot stuff field definitions down into the internal array this way
+        /// <summary>
+        /// 
+        ///super creative attemt at creating a cyclic graph of Field objects
+        ///still it fails because the array being manipulated is from GetSubTableArray and thus NOT the real list inside F1 even though the actual field objects referenced from the array ARE the real objects
+        ///point is - You cannot stuff field definitions down into the internal array this way
+        /// </summary>
         [Test]
         public static void TestCyclicFieldDefinition1()
         {
@@ -1985,6 +2694,9 @@ Table Name  : cyclic field definition
         }
 
 
+        /// <summary>
+        /// setsubtable test
+        /// </summary>
         [Test]
         public static void TableSetSubTableAsSubTable()
         {
@@ -2015,6 +2727,9 @@ Table Name  : cyclic field definition
             }
         }
 
+        /// <summary>
+        /// Stting a subtble using array of array
+        /// </summary>
         [Test]
         public static void TableSetSubTableAsEnumerable()
         {
@@ -2045,6 +2760,9 @@ Table Name  : cyclic field definition
         }
 
 
+        /// <summary>
+        /// clear subtable test
+        /// </summary>
         [Test]
         public static void TableClearSubTable()
         {
@@ -2078,6 +2796,9 @@ Table Name  : cyclic field definition
             }
         }
 
+        /// <summary>
+        /// table insert test
+        /// </summary>
         [Test]
         public static void TableInsert()
         {
@@ -2100,6 +2821,9 @@ Table Name  : cyclic field definition
             }
         }
 
+        /// <summary>
+        /// table insert with bad index
+        /// </summary>
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
         public static void TableInsertTooLowIndex()
@@ -2110,6 +2834,10 @@ Table Name  : cyclic field definition
             }
         }
 
+        /// <summary>
+        /// table insert too low
+        /// </summary>
+        /// <exception cref="InvalidOperationException"></exception>
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
         public static void TableInsertTooHighIndex()
@@ -2132,9 +2860,14 @@ Table Name  : cyclic field definition
 
 
 
-        //todo:This distinct thing only works on indexed string columns, and lacks documentation. Wait for core to catch up.
-        //until then, we have to make sure users only calls distinct on indexed string columns
-        //this unit test tests exactly that scenario
+        
+        
+        
+        /// <summary>
+        /// todo:This distinct thing only works on indexed string columns, and lacks documentation. Wait for core to catch up.
+        /// until then, we have to make sure users only calls distinct on indexed string columns
+        /// this unit test tests exactly that scenario
+        /// </summary>
         [Test]
         public static void TableDistinct()
         {
@@ -2191,6 +2924,9 @@ Table Name  : cyclic field definition
         }
 
 
+        /// <summary>
+        /// test that distinct errors when column has no index 
+        /// </summary>
         [Test]
         [ExpectedException("System.InvalidOperationException")]
         public static void TableDistinctNoIndex()
@@ -2216,9 +2952,12 @@ Table Name  : cyclic field definition
             }
         }
 
+        /// <summary>
+        /// must throw because core does not support indexes in non-mixed subtables yet
+        /// </summary>
         [Test]
         [ExpectedException("System.InvalidOperationException")]
-        //must throw because core does not support indexes in non-mixed subtables yet
+        
         public static void TableSetIndexSubTableError()
         {
             using (var table = new Table("IntField".Int(), "subfield".Table("substringfield".String())))
@@ -2234,6 +2973,9 @@ Table Name  : cyclic field definition
 
 
 
+        /// <summary>
+        /// test insertempty row
+        /// </summary>
         [Test]
         public static void TableInsertEmptyRow()
         {
@@ -2266,6 +3008,10 @@ Table Name  : cyclic field definition
             }
         }
 
+        /// <summary>
+        /// test bad insert row index
+        /// </summary>
+        /// <exception cref="InvalidOperationException"></exception>
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
         public static void TableInsertEmptyTooHighIndex()
@@ -2302,6 +3048,9 @@ Table Name  : cyclic field definition
             t.AddColumn(path, DataType.String, "ConstraintValue");
         }
 
+        /// <summary>
+        /// add columns in subtable using path navigation
+        /// </summary>
         [Test]
         public static void TableAddSubTablePlausiblePathExample()
         {
@@ -2333,8 +3082,10 @@ Table Name  : cyclic field definition
             }
         }
 
-        //this should probably fail, or else create John as a field in the top table
-        //failed earlier but now it actually creates "John" at the top level
+        /// <summary>
+        /// this should probably fail, or else create John as a field in the top table
+        /// failed earlier but now it actually creates "John" at the top level
+        /// </summary>
         [Test]
         //[ExpectedException("System.ArgumentOutOfRangeException")]
         public static void TableAddSubTableEmptyArray()
@@ -2345,7 +3096,12 @@ Table Name  : cyclic field definition
             }
         }
 
-        //this should definetly fail as no column is specified - the column is not identified at the top level
+        
+
+
+        /// <summary>
+        /// this should definetly fail as no column is specified - the column is not identified at the top level
+        /// </summary>
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
         public static void TableRenameSubTableEmptyArray1()
@@ -2356,7 +3112,10 @@ Table Name  : cyclic field definition
             }
         }
 
-        //this should definetly fail as no column is specified
+        
+        /// <summary>
+        /// this should definetly fail as no column is specified
+        /// </summary>
         [Test]
         [ExpectedException("System.ArgumentNullException")]
         public static void TableRenameSubTableEmptyArray3()
@@ -2368,7 +3127,11 @@ Table Name  : cyclic field definition
         }
 
 
-        //this was not possible using spec (adding columns to tables with existing columns), but should be possible now
+
+        
+        /// <summary>
+        /// this was not possible using spec (adding columns to tables with existing columns), but should be possible now
+        /// </summary>
         [Test]
         public static void TableAddColumn()
         {
@@ -2379,7 +3142,10 @@ Table Name  : cyclic field definition
         }
 
 
-        //test that the various spec column adders actually add the correct column type
+        
+        /// <summary>
+        /// test that the various spec column adders actually add the correct column type
+        /// </summary>
         [Test]
         public static void TableAddColumnTypes()
         {
@@ -2430,16 +3196,18 @@ Table Name  : cyclic field definition
             }
         }
 
-        //old spec test, modified a bit
-        //Illustrate a problem if the user creates two wrappers
-        //that both wrap the same table from a group, and then changes
-        //spec i one of them, and then asks the other if spec change is legal
-        //problem is the wrapper state HasRows - it is not updated in all wrappers
-        //that wrap the same table.
-        //HOWEVER - it is pretty weird to get two table wrappers from the same group
-        //at once in the first place. That in itself should probably be illegal, even though
-        //legal spec operations will work fine if they come in from the wrappers interleaved
-
+        /// <summary>
+        /// old spec test, modified a bit
+        /// Illustrate a problem if the user creates two wrappers
+        /// that both wrap the same table from a group, and then changes
+        /// spec i one of them, and then asks the other if spec change is legal
+        /// problem is the wrapper state HasRows - it is not updated in all wrappers
+        /// that wrap the same table.
+        /// HOWEVER - it is pretty weird to get two table wrappers from the same group
+        /// at once in the first place. That in itself should probably be illegal, even though
+        /// legal spec operations will work fine if they come in from the wrappers interleaved
+        /// 
+        /// </summary>
         [Test]
         public static void TableTwoWrappersChangeSpec()
         {
@@ -2458,7 +3226,10 @@ Table Name  : cyclic field definition
 
 
 
-        //negative top index
+        
+        /// <summary>
+        /// negative top index
+        /// </summary>
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
         public static void TableRenameSubTableBadIndex1()
@@ -2469,6 +3240,9 @@ Table Name  : cyclic field definition
             }
         }
 
+        /// <summary>
+        /// bad path value speciified
+        /// </summary>
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
         public static void TableRenameSubTableBadIndex2()
@@ -2479,6 +3253,9 @@ Table Name  : cyclic field definition
             }
         }
 
+        /// <summary>
+        /// bad path value speciified
+        /// </summary>
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
         public static void TableRenameSubTableBadIndex3()
@@ -2492,6 +3269,10 @@ Table Name  : cyclic field definition
             }
         }
 
+
+        /// <summary>
+        /// bad path value speciified
+        /// </summary>
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
         public static void TableRenameSubTableBadIndex4()
@@ -2506,6 +3287,9 @@ Table Name  : cyclic field definition
             }
         }
 
+        /// <summary>
+        /// bad path value speciified
+        /// </summary>
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
         public static void TableRenameSubTableBadIndex5()
@@ -2520,8 +3304,7 @@ Table Name  : cyclic field definition
             }
         }
 
-        [Test]
-        
+        [Test]        
         public static void TableRemoveSubColumn()
         {
             using (var toptable1 = new Table(new IntColumn("ID"), new StringColumn("name"), new SubTableColumn("Edges")))
@@ -4568,7 +5351,7 @@ SubTableWithInts:[ //3 rows   { //Start row 0
 
     //tabletests split in two in order to hunt a vs2012 test runner error where it hung doing table tests
     [TestFixture]
-    internal class TableTests2
+    public static class TableTests2
     {
 
 
@@ -4907,6 +5690,12 @@ intfield2:10//column 2
                 const string expectedres2 = "[{\"Int1\":42,\"Int2\":7,\"Int3\":3,\"Int4\":2}]";
                 TestHelper.Cmp(expectedres2, actualres);
 
+                TableView tvs = t.FindAllInt("Int1", 42);
+                actualres = tvs.ToJson();
+                const string expectedres3 = "[{\"Int1\":42,\"Int2\":7,\"Int3\":3,\"Int4\":2}]";
+                TestHelper.Cmp(expectedres3, actualres);
+
+
             }
         }
 
@@ -5014,7 +5803,7 @@ intfield2:10//column 2
 
        [Test]
         [ExpectedException("System.ArgumentException")]
-        public static void TableIllegalTypeWrite()
+        public static void TableSetIllegalType()
         {
             using (var t = new Table(new SubTableColumn("sub1"), new IntColumn("Int2"), new IntColumn("Int3")))
                 //accessing an illegal column should also not be allowed
@@ -5022,7 +5811,7 @@ intfield2:10//column 2
                 t.AddEmptyRow(1);
                 //likewise accessing the wrong type should not be allowed               
                 t.SetLong(0, 0, 42); //should throw                
-                Assert.Fail("Set Long on sub table field did not throw");
+                Assert.Fail("SetLong on subtable field did not throw");
             }
         }
     }

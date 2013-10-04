@@ -102,6 +102,11 @@ namespace TightDbCSharp
 
 
         internal abstract TableView FindAllIntNoCheck(long columnIndex, long value);
+        internal abstract TableView FindAllBoolNoCheck(long columnIndex, bool value);
+        internal abstract TableView FindAllDateNoCheck(long columnIndex, DateTime value);
+        internal abstract TableView FindAllFloatNoCheck(long columnIndex, float value);
+        internal abstract TableView FindAllDoubleNoCheck(long columnIndex, double value);
+        internal abstract TableView FindAllBinaryNoCheck(long columnIndex, byte[] value);
         internal abstract TableView FindAllStringNoCheck(long columnIndex, string value);
 
 
@@ -1497,6 +1502,7 @@ namespace TightDbCSharp
             }
         }
 
+        //todo:check performance hit if refactored to take DataType to validate as a string
         //only call if columnIndex is already validated 
         internal void ValidateTypeString(long columnIndex)
         {
@@ -3179,7 +3185,7 @@ namespace TightDbCSharp
 
         /// <summary>
         /// Tableview with all rows with specified int value.
-        /// column must be int column and indexed
+        /// column must be int column.
         /// </summary>
         /// <param name="columnName">Name of column to searh</param>
         /// <param name="value">value to search for</param>
@@ -3194,7 +3200,7 @@ namespace TightDbCSharp
 
         /// <summary>
         /// Tableview with all rows with specified int value.
-        /// column must be int column and indexed
+        /// column must be int column
         /// </summary>
         /// <param name="columnIndex">zero based index of column to searh</param>
         /// <param name="value">value to search for</param>
@@ -3205,10 +3211,130 @@ namespace TightDbCSharp
             return FindAllIntNoCheck(columnIndex, value);
         }
 
+        /// <summary>
+        /// Tableview with all rows with specified bool value.
+        /// column must be DataType.Bool column
+        /// </summary>
+        /// <param name="columnName">Name of column to searh</param>
+        /// <param name="value">value to search for</param>
+        /// <returns>TableView with all rows containing the search value </returns>
+
+        public TableView FindAllBool(String columnName, bool value)
+        {
+            long columnIndex = GetColumnIndex(columnName);
+            ValidateTypeBool(columnIndex);
+            return FindAllBoolNoCheck(columnIndex, value);
+        }
+
+
+        /// <summary>
+        /// Tableview with all rows with specified bool value.
+        /// column must be DataType.Bool column
+        /// </summary>
+        /// <param name="columnIndex">zero based index of column to searh</param>
+        /// <param name="value">value to search for</param>
+        /// <returns>TableView with all rows containing the search value </returns>
+        public TableView FindAllBool(long columnIndex, bool value)
+        {
+            ValidateColumnIndexAndTypeBool(columnIndex);
+            return FindAllBoolNoCheck(columnIndex, value);
+        }
+
+        
+
+
+        /// <summary>
+        /// Tableview with all rows with specified DateTime value.
+        /// column must be DataType.DateTime column
+        /// </summary>
+        /// <param name="columnName">Name of column to searh</param>
+        /// <param name="value">value to search for</param>
+        /// <returns>TableView with all rows containing the search value </returns>
+
+        public TableView FindAllDateTime(String columnName, DateTime value)
+        {
+            long columnIndex = GetColumnIndex(columnName);
+            ValidateTypeDate(columnIndex);
+            return FindAllDateNoCheck(columnIndex, value);
+        }
+
+        /// <summary>
+        /// Tableview with all rows with specified DateTime value.
+        /// column must be DataType.DateTime column
+        /// </summary>
+        /// <param name="columnIndex">zero based index of column to searh</param>
+        /// <param name="value">value to search for</param>
+        /// <returns>TableView with all rows containing the search value </returns>
+        public TableView FindAllDateTime(long columnIndex, DateTime value)
+        {
+            ValidateColumnIndexAndTypeDate(columnIndex);
+            return FindAllDateNoCheck(columnIndex, value);
+        }
+
+
+
+        /// <summary>
+        /// Tableview with all rows with specified float value.
+        /// column must be DataType.Float column
+        /// </summary>
+        /// <param name="columnName">Name of column to searh</param>
+        /// <param name="value">value to search for</param>
+        /// <returns>TableView with all rows containing the search value </returns>
+
+        public TableView FindAllFloat(String columnName, float value)
+        {
+            long columnIndex = GetColumnIndex(columnName);
+            ValidateTypeFloat(columnIndex);
+            return FindAllFloatNoCheck(columnIndex, value);
+        }
+
+        /// <summary>
+        /// Tableview with all rows with specified float value.
+        /// column must be DataType.Float column
+        /// </summary>
+        /// <param name="columnIndex">zero based index of column to searh</param>
+        /// <param name="value">value to search for</param>
+        /// <returns>TableView with all rows containing the search value </returns>
+        public TableView FindAllFloat(long columnIndex, float value)
+        {
+            ValidateColumnIndexAndTypeFloat(columnIndex);
+            return FindAllFloatNoCheck(columnIndex, value);
+        }
+
+
+        /// <summary>
+        /// Tableview with all rows with specified double value.
+        /// column must be DataType.Double column
+        /// </summary>
+        /// <param name="columnName">Name of column to searh</param>
+        /// <param name="value">value to search for</param>
+        /// <returns>TableView with all rows containing the search value </returns>
+
+        public TableView FindAllDouble(String columnName, double value)
+        {
+            long columnIndex = GetColumnIndex(columnName);
+            ValidateTypeDouble(columnIndex);
+            return FindAllDoubleNoCheck(columnIndex, value);
+        }
+
+        /// <summary>
+        /// Tableview with all rows with specified float value.
+        /// column must be DataType.Float column
+        /// </summary>
+        /// <param name="columnIndex">zero based index of column to searh</param>
+        /// <param name="value">value to search for</param>
+        /// <returns>TableView with all rows containing the search value </returns>
+        public TableView FindAllDouble(long columnIndex, double value)
+        {
+            ValidateColumnIndexAndTypeDouble(columnIndex);
+            return FindAllDoubleNoCheck(columnIndex, value);
+        }
+
+
 
         /// <summary>
         /// Find all rows where a column contains a given string
-        /// Can only be called on string columns that are indexed
+        /// Can only be called on string columns
         /// </summary>
         /// <param name="columnName">Name of coumn to search</param>
         /// <param name="value">String to search for</param>
@@ -3222,7 +3348,7 @@ namespace TightDbCSharp
 
         /// <summary>
         /// Find all rows where a column contains a given string
-        /// Can only be called on string columns that are indexed
+        /// Can only be called on string columns
         /// </summary>
         /// <param name="columnIndex">Index of coumn to search</param>
         /// <param name="value">String to search for</param>
@@ -3232,6 +3358,40 @@ namespace TightDbCSharp
             ValidateColumnIndexAndTypeString(columnIndex);
             return FindAllStringNoCheck(columnIndex, value);
         }
+
+
+
+        /// <summary>
+        /// Find all rows where a column contains a given byte array
+        /// Can only be called on DataType.Binary columns
+        /// </summary>
+        /// <param name="columnName">Name of coumn to search</param>
+        /// <param name="value">String to search for</param>
+        /// <returns>TableView with all rows that match the string</returns>
+        public TableView FindAllBinary(String columnName, Byte [] value)
+        {
+            long columnIndex = GetColumnIndex(columnName);
+            ValidateTypeBinary(columnIndex);
+            return FindAllBinaryNoCheck(columnIndex, value);
+        }
+
+        /// <summary>
+        /// Find all rows where a column contains a given array of bytes
+        /// Can only be called on DataType.Binary columns
+        /// </summary>
+        /// <param name="columnIndex">Index of coumn to search</param>
+        /// <param name="value">String to search for</param>
+        /// <returns>TableView with all rows that match the string</returns>
+        public TableView FindAllBinary(long columnIndex, Byte[] value)
+        {
+            ValidateColumnIndexAndTypeBinary(columnIndex);
+            return FindAllBinaryNoCheck(columnIndex, value);
+        }
+
+
+
+
+
 
         /// <summary>
         /// return an object containing the boxed value of a specified field

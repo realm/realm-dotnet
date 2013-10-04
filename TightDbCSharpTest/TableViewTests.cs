@@ -9,11 +9,16 @@ using System.Reflection;
 
 namespace TightDbCSharpTest
 {
+    /// <summary>
+    /// Tests public TableView methods
+    /// </summary>
     [TestFixture]
-    class TableViewTests
+    public static class TableViewTests
     {
-        [Test]
-        //simple call just to get a tableview (and have it deallocated when it exits scope)
+        /// <summary>
+        /// simple call just to get a tableview (and have it deallocated when it exits scope)
+        /// </summary>
+        [Test]        
         public static void TableViewCreation()
         {
             using (var t = new Table("intfield".Int()))
@@ -107,8 +112,10 @@ namespace TightDbCSharpTest
             return returnTable;
         }
 
-        [Test]
-        //create table view then search for all ints and return nothing as there is no matches
+        /// <summary>
+        /// create table view then search for all ints and return nothing as there is no matches
+        /// </summary>
+        [Test]        
         public static void TableViewNoResult()
         {
             const long column = 3;
@@ -119,6 +126,9 @@ namespace TightDbCSharpTest
             }
         }
 
+        /// <summary>
+        /// Test TableView.add(mixed) called with a string
+        /// </summary>
         [Test]
         public static void TableViewMixedString()
         {
@@ -158,6 +168,10 @@ namespace TightDbCSharpTest
         }
 
 
+        /// <summary>
+        /// Test that setting a binary with NULL works
+        /// Tests that the binary is read back successfully using most access methods
+        /// </summary>
         [Test]
         public static void TableViewSetGetEmptyBinary()
         {
@@ -216,6 +230,9 @@ namespace TightDbCSharpTest
         }
 
 
+        /// <summary>
+        /// Test TableView.FindFirstBinary
+        /// </summary>
         [Test]        
         public static void TableViewFindFirstBinary()
         {
@@ -252,8 +269,10 @@ namespace TightDbCSharpTest
 
 
 
-        [Test]
-        //create table view then search for all ints and return nothing as there is no matches
+        /// <summary>
+        /// Test table.findallint
+        /// </summary>
+        [Test]        
         public static void TableViewWithOneRow()
         {
             const long column = 3;
@@ -264,8 +283,10 @@ namespace TightDbCSharpTest
             }
         }
 
-        [Test]
-        //create table view then search for all ints and return nothing as there is no matches
+        /// <summary>
+        /// Test findallint with several hits
+        /// </summary>
+        [Test]        
         public static void TableViewWithManyRows()
         {
             using (var t = TableWithMultipleIntegers())
@@ -283,8 +304,11 @@ namespace TightDbCSharpTest
         }
 
 
+        /// <summary>
+        /// setting a long via a tableview
+        /// </summary>
         [Test]
-        //make sure tableview returns field values correctly
+        
         public static void TableViewFindAllReadValues()
         {
             using (var t = TableWithMultipleIntegers())
@@ -300,6 +324,9 @@ namespace TightDbCSharpTest
             }
         }
 
+        /// <summary>
+        /// Test that structure of table created is correct when taken out from a tableview
+        /// </summary>
         [Test]
         public static void TableViewDumpView()
         {
@@ -378,6 +405,9 @@ intcolumn2:1//column 2
         }
 
 
+        /// <summary>
+        /// Check that setting a double in a mixed field in a tableview works
+        /// </summary>
         [Test]
         public static void TableViewAndTableTestMixedDouble()
         {
@@ -408,6 +438,9 @@ intcolumn2:1//column 2
             }
         }
 
+        /// <summary>
+        /// set float in a mixed field in tableview and table
+        /// </summary>
         [Test]
         public static void TableViewAndTableTestMixedFloat()
         {
@@ -444,6 +477,9 @@ intcolumn2:1//column 2
 
 
 
+        /// <summary>
+        /// set double in a mixed field table and tableview
+        /// </summary>
         [Test]
         public static void TableViewAndTableTestDouble()
         {
@@ -483,6 +519,9 @@ intcolumn2:1//column 2
 
 
 
+        /// <summary>
+        /// set get float in tableview and table
+        /// </summary>
         [Test]
         public static void TableViewAndTableTestFloat()
         {
@@ -521,6 +560,9 @@ intcolumn2:1//column 2
         }
 
 
+        /// <summary>
+        /// set and get float in table and tableview
+        /// </summary>
         [Test]
         public static void TableViewAndTableTestFloatSimple()
         {
@@ -553,9 +595,12 @@ intcolumn2:1//column 2
             }
         }
 
-        //try to set a subtable with a table template
+        
+        /// <summary>
+        /// Set a subtable in a tableview as a Table
+        /// </summary>
         [Test]
-        public static void TableViewSetSubtable()
+        public static void TableViewSetSubTable()
         {
             using (var t = new Table(
                 "do'h".Int(),
@@ -600,9 +645,12 @@ intcolumn2:1//column 2
 
 
 
-        //ensure that TableView ClearSubtable clears the subtable
+        
+        /// <summary>
+        /// ensure that TableView ClearSubtable clears the subtable
+        /// </summary>
         [Test]
-        public static void TableViewClearSubtable()
+        public static void TableViewClearSubTable()
         {
             using (var t = new Table(
                 "do'h".Int(),
@@ -653,6 +701,9 @@ intcolumn2:1//column 2
 
 
 
+        /// <summary>
+        /// set binary in a mixed field in tableview and table
+        /// </summary>
         [Test]
         public static void TableViewSetMixedBinary()
         {
@@ -677,6 +728,9 @@ intcolumn2:1//column 2
 
 
 
+        /// <summary>
+        /// ensure iterators iterate first row, last row and the one(s) in between
+        /// </summary>
         [Test]
         public static void TableViewIterationTest()
         {
@@ -700,8 +754,10 @@ intcolumn2:1//column 2
         }
 
 
-        //test that stacked tableviews return the correct rows
-        //also verify that enumerating a tableview returns Row objects where the rowix matches the tableview rownumbers (not the table rownumbers)
+        /// <summary>
+        /// test that stacked tableviews return the correct rows
+        /// also verify that enumerating a tableview returns Row objects where the rowix matches the tableview rownumbers (not the table rownumbers)
+        /// </summary>
         [Test]
         public static void TableViewStackedViewsSimplified()
         {
@@ -721,8 +777,10 @@ intcolumn2:1//column 2
         }
 
 
-        //test that stacked tableviews return the correct rows
-        //also verify that enumerating a tableview returns Row objects where the rowix matches the tableview rownumbers (not the table rownumbers)
+        /// <summary>
+        /// test that stacked tableviews return the correct rows
+        /// also verify that enumerating a tableview returns Row objects where the rowix matches the tableview rownumbers (not the table rownumbers)
+        /// </summary>
         [Test]
         public static void TableViewStackedViews()
         {
@@ -775,7 +833,11 @@ intcolumn2:1//column 2
             }
         }
 
-        //this iteration should work fine - no rows are shuffled around
+        
+        /// <summary>
+        /// Part of test of iterator invalidation when a table used in a tableview gets rows added or deleted
+        /// this iteration should work fine - no rows are shuffled around
+        /// </summary>
         [Test]
         public static void TableViewIteratorInvalidation1Legal()
         {
@@ -799,8 +861,12 @@ intcolumn2:1//column 2
 
 
 
-        //this iteration should fail.  a row is removed in the loop, earlier than where the iterator is
-        //this iteration should work fine - no rows are shuffled around
+        
+        /// <summary>
+        /// this iteration should fail.  a row is removed in the loop, earlier than where the iterator is
+        /// this iteration should work fine - no rows are shuffled around
+        /// 
+        /// </summary>
         [Test]
         [ExpectedException("System.InvalidOperationException")]
         public static void TableViewIteratorInvalidation2TableAdd()
@@ -830,7 +896,10 @@ intcolumn2:1//column 2
             }
         }
 
-        //modification through a tableview is okay
+        
+        /// <summary>
+        /// modification through a tableview is okay
+        /// </summary>
         [Test]
         public static void TableViewIsValidLegal()
         {
@@ -847,6 +916,9 @@ intcolumn2:1//column 2
         }
 
 
+        /// <summary>
+        /// tableview should invalidate itself if the underlying table changes number of rows
+        /// </summary>
         [Test]
         [ExpectedException("System.InvalidOperationException")]
         public static void TableViewIsValidNotLegalThroughTable()
@@ -865,8 +937,10 @@ intcolumn2:1//column 2
             }
         }
 
-        //check that tableview gets invalidtaed if a table is changed in a object taken out form tablegroup 
-        //and  the view is from antoher instance of same table from same group
+        /// <summary>
+        /// check that tableview gets invalidtaed if a table is changed in a object taken out form tablegroup 
+        /// and  the view is from antoher instance of same table from same group
+        /// </summary>
         [Test]
    [ExpectedException("System.InvalidOperationException")]
         public static void TableViewIsValidNotLegalThroughGroup()
@@ -891,8 +965,10 @@ intcolumn2:1//column 2
 
 
 
-        //this iteration should fail.  a row is removed in the loop, earlier than where the iterator is
-        //this iteration should work fine - no rows are shuffled around
+        /// <summary>
+        /// this iteration should fail.  a row is removed in the loop, earlier than where the iterator is
+        /// this iteration should work fine - no rows are shuffled around
+        /// </summary>
         [Test]
         [ExpectedException("System.InvalidOperationException")]
         public static void TableViewIteratorInvalidation3TableRemove()
@@ -926,9 +1002,11 @@ intcolumn2:1//column 2
 
 
 
-        //this iteration should fail.  a row is removed in the loop, earlier than where the iterator is
-        //this iteration should fail.  a row is removed in the loop, earlier than where the iterator is
-        //this iteration should work fine - no rows are shuffled around
+        /// <summary>
+        ///this iteration should fail.  a row is removed in the loop, earlier than where the iterator is
+        ///this iteration should fail.  a row is removed in the loop, earlier than where the iterator is 
+        ///this iteration should work fine - no rows are shuffled around 
+        /// </summary>
         [Test]
         [ExpectedException("System.InvalidOperationException")]
         public static void TableViewIteratorInvalidation4Insert()
@@ -960,9 +1038,11 @@ intcolumn2:1//column 2
         }
 
 
-        //this iteration should fail.  a row is removed in the loop, earlier than where the iterator is
-        //this iteration should fail.  a row is removed in the loop, earlier than where the iterator is
-        //this iteration should work fine - no rows are shuffled around
+        /// <summary>
+        /// this iteration should fail.  a row is removed in the loop, earlier than where the iterator is
+        /// this iteration should fail.  a row is removed in the loop, earlier than where the iterator is
+        /// this iteration should work fine - no rows are shuffled around
+        /// </summary>
         [Test]
         [ExpectedException("System.InvalidOperationException")]
         public static void TableViewIteratorInvalidation5Insert()
@@ -994,10 +1074,11 @@ intcolumn2:1//column 2
         }
 
 
-
-        //this iteration should fail.  a row is removed in the loop, earlier than where the iterator is
-        //this iteration should fail.  a row is removed in the loop, earlier than where the iterator is
-        //this iteration should work fine - no rows are shuffled around
+        /// <summary>
+        /// this iteration should fail.  a row is removed in the loop, earlier than where the iterator is
+        /// this iteration should fail.  a row is removed in the loop, earlier than where the iterator is
+        /// this iteration should work fine - no rows are shuffled around
+        /// </summary>
         [Test]
         [ExpectedException("System.InvalidOperationException")]
         public static void TableViewIteratorInvalidation6AddEmptyRow()
@@ -1028,10 +1109,11 @@ intcolumn2:1//column 2
             }
         }
 
-
-        //this iteration should fail.  a row is removed in the loop, earlier than where the iterator is
-        //this iteration should fail.  a row is removed in the loop, earlier than where the iterator is
-        //this iteration should work fine - no rows are shuffled around
+        /// <summary>
+        /// this iteration should fail.  a row is removed in the loop, earlier than where the iterator is
+        /// this iteration should fail.  a row is removed in the loop, earlier than where the iterator is
+        /// this iteration should work fine - no rows are shuffled around        
+        /// </summary>
         [Test]
         [ExpectedException("System.InvalidOperationException")]
         public static void TableViewIteratorInvalidation7RemoveLast()
@@ -1064,8 +1146,11 @@ intcolumn2:1//column 2
 
 
 
+        /// <summary>
+        ///make sure tableview returns field values correctly
+        /// </summary>
         [Test]
-        //make sure tableview returns field values correctly
+
         public static void TableViewFindAllChangeValues()
         {
             using (var t = TableWithMultipleIntegers())
@@ -1078,8 +1163,10 @@ intcolumn2:1//column 2
         }
 
 
-        [Test]
-        //make sure tableview returns field values correctly
+        /// <summary>
+        /// make sure tableview returns field values correctly
+        /// </summary>
+        [Test]        
         public static void TableViewLast()
         {
             using (var t = TableWithMultipleIntegers())

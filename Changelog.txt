@@ -1,0 +1,24 @@
+TightDB Changelog:
+==================
+
+Format:
+
+2012-mm-dd
+----------
+! Fixed bug [github issuenr]: ....        (user visible bug fixed       - passed on to release notes)
++ Added feature ....                      (user visible new feature     - passed on to release notes)
+- Removed/deprecated feature/method ....  (user visible removed feature - passed on to release notes)
+. Any other notes ....                    (internal changes)
+
+Changelog started 2013-10-03 Not so long before the first larger release of the binding
+
+New changes are added to the top of the file
+
+An addition mentioned here means :
+
+- Method has been added to the C# binding
+- Any supporting code in c++ has been written
+- Unit tests for at least normal use have been written
+- Unit tests passes for .net 3.5 .net 4.0 .net 4.5 in debug,relase, in x86,x64 and anycpu (some 20+ unit test configurations must be run)
+- Unit tests passes in mono 2.x when built for .net 3.5 (debug,release, x86,x64,anycpy - 6 configurations although mono runs all as 32 bit)
+- Unit tests passes inside unity when built for .net 3.5

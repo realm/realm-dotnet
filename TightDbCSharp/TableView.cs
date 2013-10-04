@@ -40,7 +40,13 @@ namespace TightDbCSharp
         }//used only to make sure that a reference to the table exists until the view is disposed of
 
 
-
+        /// <summary>
+        /// Returns an enumerator that iterates through the collection.
+        /// </summary>
+        /// <returns>
+        /// IEnimerator  that can be used to iterate through the TableView, Yielding Row objects each representing a row in the tableview
+        /// </returns>
+        
         public IEnumerator<Row> GetEnumerator()
         {
             ValidateIsValid();
@@ -525,12 +531,38 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableViewFindAllInt(this,  columnIndex,value);
         }
 
+
+        internal override TableView FindAllBoolNoCheck(long columnIndex, bool value)
+        {
+            return UnsafeNativeMethods.TableViewFindAllBool(this,columnIndex, value);
+        }
+
+        internal override TableView FindAllDateNoCheck(long columnIndex, DateTime value)
+        {
+            return UnsafeNativeMethods.TableViewFindAllDateTime(this, columnIndex, value);
+        }
+
+        internal override TableView FindAllFloatNoCheck(long columnIndex, float value)
+        {
+            return UnsafeNativeMethods.TableViewFindAllFloat(this,columnIndex, value);
+        }
+
+        internal override TableView FindAllDoubleNoCheck(long columnIndex, double value)
+        {
+            return UnsafeNativeMethods.TableViewFindAlldouble(this, columnIndex, value);
+        }
+
         internal override TableView FindAllStringNoCheck(long columnIndex, string value)
         {
             return UnsafeNativeMethods.TableViewFindAllString(this, columnIndex, value);
         }
 
-
+        internal override TableView FindAllBinaryNoCheck(long columnIndex, byte[] value)
+        {
+            throw new NotImplementedException("tableView findAllBinary not implemented yet ");
+            //not implemented yet in core
+            //return UnsafeNativeMethods.tableViewFindAllBinary( columnIndex, value);
+        }
 
         internal override void SetBoolNoCheck(long columnIndex, long rowIndex, Boolean value)
         {

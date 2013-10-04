@@ -8,11 +8,11 @@ using System.Reflection;
 
 namespace TightDbCSharpTest
 {
-    //currently not static because of a bug in nunitlite where ExpectedException throws exceptions if the fixture is static
-    //ignore the code analysis error for now, make the class static once nunitlite is released with the bug fixed
-    //(bug has been reported and should be fixed in the next release)
+    /// <summary>
+    /// Tests the Query Class
+    /// </summary>
     [TestFixture]
-    internal static class QueryTests
+    public static class QueryTests
     {
 
         //returns a table with row 0 having ints 0 to 999 ascending
@@ -96,6 +96,9 @@ namespace TightDbCSharpTest
         }
 
 
+        /// <summary>
+        /// Test that average works with integers
+        /// </summary>
         [Test]
         public static void QueryAverage()
         {
@@ -116,6 +119,9 @@ namespace TightDbCSharpTest
 
      
 
+        /// <summary>
+        /// Test that count works with integers
+        /// </summary>
         [Test]
         public static void QueryCount()
         {
@@ -128,6 +134,9 @@ namespace TightDbCSharpTest
         }
 
 
+        /// <summary>
+        /// Test that the GetTableWithCombinations method returns the correct table(integer fields)
+        /// </summary>
         [Test]
         public static void QueryTestEnumerator()
         {
@@ -149,6 +158,9 @@ namespace TightDbCSharpTest
             }
         }
 
+        /// <summary>
+        /// Test that find next returns the correct values(integer fields)
+        /// </summary>
         [Test]
         public static void QueryFindNext()
         {
@@ -168,6 +180,9 @@ namespace TightDbCSharpTest
         }
 
 
+        /// <summary>
+        /// Test that greater returns the correct values(integer fields)
+        /// </summary>
         [Test]
         public static void QueryGreater()
         {
@@ -183,6 +198,9 @@ namespace TightDbCSharpTest
 
 
 
+        /// <summary>
+        /// Test that between returns the correct values (integer fields)
+        /// </summary>
         [Test]
         public static void QueryBetween()
         {
@@ -209,6 +227,9 @@ namespace TightDbCSharpTest
         }
 
 
+        /// <summary>
+        /// Test query boolean equal
+        /// </summary>
         [Test]
         public static void QueryBoolEqual()
         {
@@ -239,6 +260,9 @@ namespace TightDbCSharpTest
             }
         }
 
+        /// <summary>
+        /// Test GetColumnIndex
+        /// </summary>
         [Test]
         public static void QueryGetColumnIndex()
         {
@@ -252,6 +276,9 @@ namespace TightDbCSharpTest
 
 
 
+        /// <summary>
+        /// Test that FindAll falis when called with an illegal start value
+        /// </summary>
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
         public static void CreateQueryStartNegative()
@@ -263,6 +290,9 @@ namespace TightDbCSharpTest
             }
         }
 
+        /// <summary>
+        /// Test that Find All fails when called with an illegal end value
+        /// </summary>
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
         public static void CreateQueryEndNegative()
@@ -276,6 +306,9 @@ namespace TightDbCSharpTest
             }
         }
 
+        /// <summary>
+        /// Test that find all fails when called with an illegal limit value
+        /// </summary>
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
         public static void CreateQueryLimitNegative()
@@ -287,6 +320,9 @@ namespace TightDbCSharpTest
             }
         }
 
+        /// <summary>
+        /// Test that findall fails if end is less than start
+        /// </summary>
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
         public static void CreateQueryEndSmallerThatStart()
@@ -301,6 +337,9 @@ namespace TightDbCSharpTest
 
 
 
+        /// <summary>
+        /// validate table structure and data after findall call
+        /// </summary>
         [Test]
         public static void CreateQuery()
         {

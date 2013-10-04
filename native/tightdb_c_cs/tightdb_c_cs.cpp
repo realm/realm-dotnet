@@ -56,7 +56,7 @@ inline size_t  durabilitylevel_to_sizet(SharedGroup::DurabilityLevel value){
 }
 
 //Date is totally not matched by a C# type, so convert to an int64_t that is interpreted as a 64 bit time_t
-inline DateTime int64_t_to_date(int64_t value){
+inline DateTime int64_t_to_datetime(int64_t value){
     return DateTime(time_t(value));
 }
 
@@ -320,6 +320,11 @@ TIGHTDB_C_CS_API void table_rename_subcolumn(Table* table_ptr, size_t path_lengt
     table_ptr->rename_subcolumn(path, str);
 }
 
+TIGHTDB_C_CS_API void table_clear(Table* table_ptr) {
+    table_ptr->clear();
+}
+
+
 //todo:isempty is implemented in C# with a call to size. Perhaps better if we call c++ is_empty itself
 
 TIGHTDB_C_CS_API size_t table_size(Table* table_ptr) 
@@ -384,7 +389,17 @@ TIGHTDB_C_CS_API void table_remove_row(tightdb::Table* table_ptr, size_t row_ndx
     table_ptr->remove(row_ndx);
 }
 
-//todo:implement remove_last
+//note that this implementation returns the new table size, the core implementation does not
+TIGHTDB_C_CS_API size_t table_remove_last(tightdb::Table* table_ptr) {
+    size_t newsize = table_ptr->size();
+    if (newsize>0){
+        newsize--;
+        table_ptr->remove(newsize);
+    }     
+    return newsize;
+}
+
+
 
 //todo:implement move_last_over
 
@@ -571,7 +586,7 @@ TIGHTDB_C_CS_API void table_set_mixed_bool(Table* table_ptr, size_t column_ndx, 
 
 TIGHTDB_C_CS_API void table_set_mixed_date(Table*  table_ptr, size_t column_ndx, size_t row_ndx, int64_t value)
 {
-    table_ptr->set_mixed(column_ndx,row_ndx,int64_t_to_date(value));
+    table_ptr->set_mixed(column_ndx,row_ndx,int64_t_to_datetime(value));
 }
 
 TIGHTDB_C_CS_API void table_set_mixed_float(Table*  table_ptr, size_t column_ndx, size_t row_ndx, float value)
@@ -762,7 +777,6 @@ TIGHTDB_C_CS_API size_t table_find_first_binary(Table * table_ptr , size_t colum
     return  table_ptr->find_first_binary(column_ndx,bd);
 }
 
-//todo:table_find_sorted_int
 
 TIGHTDB_C_CS_API tightdb::TableView* table_find_all_int(Table * table_ptr , size_t column_ndx, int64_t value)
 {   
@@ -771,12 +785,30 @@ TIGHTDB_C_CS_API tightdb::TableView* table_find_all_int(Table * table_ptr , size
 
 
 //todo:table_find_all_bool
+TIGHTDB_C_CS_API tightdb::TableView* table_find_all_bool(Table * table_ptr , size_t column_ndx, size_t value)
+{   
+    return new TableView(table_ptr->find_all_bool(column_ndx,size_t_to_bool(value)));
+}
 
 //todo:table_find_all_date
+TIGHTDB_C_CS_API tightdb::TableView* table_find_all_datetime(Table * table_ptr , size_t column_ndx, int64_t value)
+{   
+    return new TableView(table_ptr->find_all_datetime(column_ndx,int64_t_to_datetime(value)));            
+}
 
 //todo:table_find_all_float
+TIGHTDB_C_CS_API tightdb::TableView* table_find_all_float(Table * table_ptr , size_t column_ndx, float value)
+{   
+    return new TableView(table_ptr->find_all_float(column_ndx,value));            
+}
 
 //todo:table_find_all_double
+TIGHTDB_C_CS_API tightdb::TableView* table_find_all_double(Table * table_ptr , size_t column_ndx, double value)
+{   
+    return new TableView(table_ptr->find_all_double(column_ndx,value));            
+}
+
+
 
 TIGHTDB_C_CS_API tightdb::TableView* table_find_all_string(Table * table_ptr , size_t column_ndx, uint16_t* value,size_t value_len)
 {   
@@ -785,6 +817,17 @@ TIGHTDB_C_CS_API tightdb::TableView* table_find_all_string(Table * table_ptr , s
 }
 
 //todo:implement table_find_all_binary
+TIGHTDB_C_CS_API tightdb::TableView* table_find_all_binary(Table * table_ptr , size_t column_ndx,  const char* data, std::size_t size)
+{   
+    BinaryData bd(data,size);
+    return new TableView(table_ptr->find_all_binary(column_ndx,bd));            
+}
+
+TIGHTDB_C_CS_API tightdb::TableView* table_find_all_empty_binary(Table * table_ptr , size_t column_ndx)
+{   
+    BinaryData bd;
+    return new TableView(table_ptr->find_all_binary(column_ndx,bd));            
+}
 
 
 TIGHTDB_C_CS_API tightdb::TableView* table_distinct(Table * table_ptr , size_t column_ndx)
@@ -855,8 +898,10 @@ TIGHTDB_C_CS_API size_t tableview_size(TableView* tableview_ptr)
 }
 
 
-//todo:table_get_subtable_size
-
+TIGHTDB_C_CS_API int64_t table_get_subtable_size(Table* table_ptr,size_t column_ndx, size_t row_ndx)
+{
+    return table_ptr->get_subtable_size(column_ndx,row_ndx);
+}
 
 TIGHTDB_C_CS_API size_t tableview_get_column_count(tightdb::TableView* tableView_ptr)
 {
@@ -1179,7 +1224,7 @@ TIGHTDB_C_CS_API void tableview_set_mixed_int(TableView*  tableView_ptr, size_t 
 
 TIGHTDB_C_CS_API void tableview_set_mixed_date(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx, int64_t value)
 {
-    tableView_ptr->set_mixed(column_ndx,row_ndx,int64_t_to_date(value));
+    tableView_ptr->set_mixed(column_ndx,row_ndx,int64_t_to_datetime(value));
 }
 
 TIGHTDB_C_CS_API void tableview_set_mixed_float(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx, float value)
@@ -1233,12 +1278,28 @@ TIGHTDB_C_CS_API tightdb::TableView* tableview_find_all_int(TableView * tablevie
 
 
 //todo:implement tableview_find_all_bool
+TIGHTDB_C_CS_API tightdb::TableView* tableview_find_all_bool(TableView * tableview_ptr , size_t column_ndx, size_t value)
+{   
+    return new TableView(tableview_ptr->find_all_bool(column_ndx,size_t_to_bool(value)));            
+}
 
 //todo:implement tableview_find_all_date
+TIGHTDB_C_CS_API tightdb::TableView* tableview_find_all_datetime(TableView * tableview_ptr , size_t column_ndx, int64_t value)
+{   
+    return new TableView(tableview_ptr->find_all_datetime(column_ndx,int64_t_to_datetime(value)));            
+}
 
 //todo:implement tableview_find_all_float
+TIGHTDB_C_CS_API tightdb::TableView* tableview_find_all_float(TableView * tableview_ptr , size_t column_ndx, float value)
+{   
+    return new TableView(tableview_ptr->find_all_float(column_ndx,value));            
+}
 
 //todo:implement tableview_find_all_double
+TIGHTDB_C_CS_API tightdb::TableView* tableview_find_all_double(TableView * tableview_ptr , size_t column_ndx, double value)
+{   
+    return new TableView(tableview_ptr->find_all_double(column_ndx,value));            
+}
 
 TIGHTDB_C_CS_API tightdb::TableView* tableview_find_all_string(TableView * tableview_ptr , size_t column_ndx, uint16_t* value,size_t value_len)
 {   

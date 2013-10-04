@@ -6,7 +6,7 @@ using NUnit.Framework;
 namespace TightDbCSharpTest
 {
     [TestFixture]
-    internal class SharedGroupTest
+    public static class SharedGroupTest
     {
 
         const string Field01Text = "Data for first field";
@@ -265,7 +265,7 @@ namespace TightDbCSharpTest
 
         //It should not be possible to modify a group that is returned by a read transaction
         [Test]
-        public static void SharedGroupReadTransactionReadonlyGroup()
+        public static void SharedGroupReadTransactionReadOnlyGroup()
         {
             const string sharedgroupfilename = @"UnitTestSharedGroup";
             File.Delete(sharedgroupfilename);
@@ -287,7 +287,7 @@ namespace TightDbCSharpTest
         //this test could also have been put into tabletest
         //also checks that on violation of the readonly contract, that the sharedgroup and the group are invalidated
         [Test]        
-        public static void SharedGroupReadTransactionReadonlyTable()
+        public static void SharedGroupReadTransactionReadOnlyTable()
         {
             const string sharedgroupfilename = @"UnitTestSharedGroup";
             File.Delete(sharedgroupfilename);

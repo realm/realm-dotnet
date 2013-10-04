@@ -228,6 +228,9 @@ enum DataType {
             return (long)table_get_column_index32(table.Handle, name, (IntPtr)name.Length);
         }
 
+
+        //todo:implement table_get_subtable_size  TableGetSubTableSize
+
         [DllImport(L32, EntryPoint = "tableview_get_column_index", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr tableView_get_column_index32(IntPtr tableViehandle, [MarshalAs(UnmanagedType.LPWStr)] string name,IntPtr nameLen);
 
@@ -741,8 +744,8 @@ enum DataType {
         {
             return
                     Is64Bit
-                        ? (long)table_find_first_date64(table.Handle, (IntPtr)columnIndex, ToTightDbTime(value))
-                        : (long)table_find_first_date32(table.Handle, (IntPtr)columnIndex, ToTightDbTime(value));
+                        ? (long)table_find_first_date64(table.Handle, (IntPtr)columnIndex, ToTightDbDateTime(value))
+                        : (long)table_find_first_date32(table.Handle, (IntPtr)columnIndex, ToTightDbDateTime(value));
         }
 
 
@@ -873,8 +876,8 @@ enum DataType {
         {
             return
                     Is64Bit
-                        ? (long)tableView_find_first_date64(tableView.Handle, (IntPtr)columnIndex, ToTightDbTime(value))
-                        : (long)tableView_find_first_date32(tableView.Handle, (IntPtr)columnIndex, ToTightDbTime(value));
+                        ? (long)tableView_find_first_date64(tableView.Handle, (IntPtr)columnIndex, ToTightDbDateTime(value))
+                        : (long)tableView_find_first_date32(tableView.Handle, (IntPtr)columnIndex, ToTightDbDateTime(value));
         }
 
 
@@ -1507,6 +1510,126 @@ enum DataType {
         }
 
 
+        [DllImport(L64, EntryPoint = "table_find_all_bool", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_find_all_bool64(IntPtr tableHandle, IntPtr columnIndex, IntPtr value);
+
+        [DllImport(L32, EntryPoint = "table_find_all_bool", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_find_all_bool32(IntPtr tableHandle, IntPtr columnIndex, IntPtr value);
+
+
+        public static TableView TableFindAllBool(Table table, long columnIndex, bool value)
+        {
+            return
+                new TableView(table,
+                    Is64Bit
+                        ? table_find_all_bool64(table.Handle, (IntPtr)columnIndex, BoolToIntPtr(value))
+                        : table_find_all_bool32(table.Handle, (IntPtr)columnIndex, BoolToIntPtr(value)),true);
+        }
+
+
+        [DllImport(L64, EntryPoint = "table_find_all_datetime", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_find_all_datetime64(IntPtr tableHandle, IntPtr columnIndex, Int64 value);
+
+        [DllImport(L32, EntryPoint = "table_find_all_datetime", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_find_all_datetime32(IntPtr tableHandle, IntPtr columnIndex, Int64 value);
+
+      
+        public static TableView TableFindAllDateTime(Table table, long columnIndex, DateTime value)
+        {
+            return
+                new TableView(table,
+                    Is64Bit
+                        ? table_find_all_datetime64(table.Handle, (IntPtr)columnIndex, ToTightDbDateTime(value))
+                        : table_find_all_datetime32(table.Handle, (IntPtr)columnIndex, ToTightDbDateTime(value)), true);
+        }
+
+
+
+
+        [DllImport(L64, EntryPoint = "table_find_all_float", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_find_all_float64(IntPtr tableHandle, IntPtr columnIndex, float value);
+
+        [DllImport(L32, EntryPoint = "table_find_all_float", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_find_all_float32(IntPtr tableHandle, IntPtr columnIndex, float value);
+
+
+        public static TableView TableFindAllFloat(Table table, long columnIndex, float value)
+        {
+            return
+                new TableView(table,
+                    Is64Bit
+                        ? table_find_all_float64(table.Handle, (IntPtr)columnIndex, value)
+                        : table_find_all_float32(table.Handle, (IntPtr)columnIndex, value), true);
+        }
+
+
+        [DllImport(L64, EntryPoint = "table_find_all_double", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_find_all_double64(IntPtr tableHandle, IntPtr columnIndex, double value);
+
+        [DllImport(L32, EntryPoint = "table_find_all_double", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_find_all_double32(IntPtr tableHandle, IntPtr columnIndex, double value);
+
+
+        public static TableView TableFindAllDouble(Table table, long columnIndex, double value)
+        {
+            return
+                new TableView(table,
+                    Is64Bit
+                        ? table_find_all_double64(table.Handle, (IntPtr)columnIndex, value)
+                        : table_find_all_double32(table.Handle, (IntPtr)columnIndex, value), true);
+        }
+
+            
+
+        //not using automatic marshalling (which might lead to copying in some cases),
+        //but ensuring no copying of the array data is done, by getting a pinned pointer to the array supplied by the user.
+        //todo: unit test that find all binary with a null pointer actually works okay
+        //todo:unit test that find all binary with an empty byte array works okay
+        [DllImport(L64, EntryPoint = "table_find_all_empty_binary", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_find_all_empty_binary64(IntPtr tablePtr, IntPtr columnNdx);
+
+        [DllImport(L32, EntryPoint = "table_find_all_empty_binary", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_find_all_empty_binary32(IntPtr tablePtr, IntPtr columnNdx);
+
+
+        [DllImport(L64, EntryPoint = "table_find_all_binary", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_find_all_binary64(IntPtr tablePtr, IntPtr columnNdx, IntPtr value, IntPtr bytes);
+
+        [DllImport(L32, EntryPoint = "table_find_all_binary", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_find_all_binary32(IntPtr tablePtr, IntPtr columnNdx, IntPtr value, IntPtr bytes);
+
+        
+        public static TableView TableFindAllBinary(Table table, long columnIndex, Byte[] value)
+        {
+            //special case if we get called with null (we call a method that does not take pointers to managed mem)            
+            if (value == null||value.Length==0)
+            {
+                return new TableView(table,
+                    (Is64Bit)
+                        ? table_find_all_empty_binary64(table.Handle, (IntPtr) columnIndex)
+                        : table_find_all_empty_binary32(table.Handle, (IntPtr) columnIndex), true);                
+            }
+            //value is at least a byte long
+            GCHandle handle = GCHandle.Alloc(value, GCHandleType.Pinned);//now value cannot be moved or garbage collected by garbage collector
+            IntPtr valuePointer = handle.AddrOfPinnedObject();
+            try
+            {
+                return new TableView(table,
+                    (Is64Bit)
+                        ? table_find_all_binary64(table.Handle, (IntPtr) columnIndex, valuePointer,(IntPtr) value.Length)
+                        : table_find_all_binary32(table.Handle, (IntPtr) columnIndex, valuePointer,(IntPtr) value.Length), true);
+            }
+            finally
+            {
+                handle.Free(); //allow Garbage collector to move and deallocate value as it wishes
+            }
+        }
+
+
+
+
+
+
         //TIGHTDB_C_CS_API tightdb::TableView* table_find_all_int(Table * table_ptr , size_t column_ndx, int64_t value)
         [DllImport(L64, EntryPoint = "tableview_find_all_int", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr tableView_find_all_int64(IntPtr tableViewHandle, IntPtr columnIndex, long value);
@@ -1525,8 +1648,79 @@ enum DataType {
         }
 
 
+        [DllImport(L64, EntryPoint = "tableview_find_all_bool", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr tableView_find_all_bool64(IntPtr tableViewHandle, IntPtr columnIndex, IntPtr value);
+
+        [DllImport(L32, EntryPoint = "tableview_find_all_bool", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr tableView_find_all_bool32(IntPtr tableViewHandle, IntPtr columnIndex, IntPtr value);
 
 
+        public static TableView TableViewFindAllBool(TableView tableView, long columnIndex, bool value)
+        {
+            return
+                new TableView(tableView.UnderlyingTable,
+                    Is64Bit
+                        ? tableView_find_all_bool64(tableView.Handle, (IntPtr)columnIndex, BoolToIntPtr(value))
+                        : tableView_find_all_bool32(tableView.Handle, (IntPtr)columnIndex, BoolToIntPtr( value)), true);
+        }
+
+        //todo what if find all datetime is called on a mixed datetime field. mixed datetime fileds does not like negative time_t values
+        //todo do some unit tests on this - both table and tableview
+        [DllImport(L64, EntryPoint = "tableview_find_all_datetime", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr tableView_find_all_datetime64(IntPtr tableViewHandle, IntPtr columnIndex, Int64 value);
+
+        [DllImport(L32, EntryPoint = "tableview_find_all_datetime", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr tableView_find_all_datetime32(IntPtr tableViewHandle, IntPtr columnIndex, Int64 value);
+
+
+        public static TableView TableViewFindAllDateTime(TableView tableView, long columnIndex, DateTime value)
+        {
+            return
+                new TableView(tableView.UnderlyingTable,
+                    Is64Bit
+                        ? tableView_find_all_datetime64(tableView.Handle, (IntPtr)columnIndex, ToTightDbDateTime(value))
+                        : tableView_find_all_datetime32(tableView.Handle, (IntPtr)columnIndex, ToTightDbDateTime(value)), true);
+        }
+
+
+
+
+
+
+        
+        [DllImport(L64, EntryPoint = "tableview_find_all_float", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr tableView_find_all_float64(IntPtr tableViewHandle, IntPtr columnIndex, float value);
+
+        [DllImport(L32, EntryPoint = "tableview_find_all_float", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr tableView_find_all_float32(IntPtr tableViewHandle, IntPtr columnIndex, float value);
+
+
+        public static TableView TableViewFindAllFloat(TableView tableView, long columnIndex, float value)
+        {
+            return
+                new TableView(tableView.UnderlyingTable,
+                    Is64Bit
+                        ? tableView_find_all_float64(tableView.Handle, (IntPtr)columnIndex, value)
+                        : tableView_find_all_float32(tableView.Handle, (IntPtr)columnIndex, value), true);
+        }
+
+
+
+        [DllImport(L64, EntryPoint = "tableview_find_all_double", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr tableView_find_all_double64(IntPtr tableViewHandle, IntPtr columnIndex, double value);
+
+        [DllImport(L32, EntryPoint = "tableview_find_all_double", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr tableView_find_all_double32(IntPtr tableViewHandle, IntPtr columnIndex, double value);
+
+
+        public static TableView TableViewFindAlldouble(TableView tableView, long columnIndex, double value)
+        {
+            return
+                new TableView(tableView.UnderlyingTable,
+                    Is64Bit
+                        ? tableView_find_all_double64(tableView.Handle, (IntPtr)columnIndex, value)
+                        : tableView_find_all_double32(tableView.Handle, (IntPtr)columnIndex, value), true);
+        }
 
 
         
@@ -3771,14 +3965,14 @@ enum DataType {
         //Note also that the date supplied is converted to UTC - we assume that the user has set the datetimekind.utc 
         
         //ALSO NOTE THAT TIGHTDB CANNOT STORE time_t values that are negative, effectively tighdb is not able to store dates before 1970,1,1
-        public static Int64 ToTightDbTime(DateTime date)
+        public static Int64 ToTightDbDateTime(DateTime date)
         {            
             return (Int64)(date.ToUniversalTime() - Epoch).TotalSeconds;
         }
 
-        private static Int64 ToTightDbMixedTime(DateTime date)
+        private static Int64 ToTightDbMixedDateTime(DateTime date)
         {
-            Int64 retval = ToTightDbTime(date);
+            var retval = ToTightDbDateTime(date);
             if (retval < 0)
             {
                 throw new ArgumentOutOfRangeException("date", "The date specified is not a valid tightdb mixed date. Tightdb mixed dates must be positive time_t dates, from jan.1.1970 and onwards ");
@@ -3811,9 +4005,9 @@ enum DataType {
         public static void TableSetMixedDate(Table table, long columnIndex, long rowIndex, DateTime value)
         {
             if (Is64Bit)
-                table_set_mixed_date64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, ToTightDbMixedTime(value));
+                table_set_mixed_date64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, ToTightDbMixedDateTime(value));
             else
-                table_set_mixed_date32(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, ToTightDbMixedTime(value));
+                table_set_mixed_date32(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, ToTightDbMixedDateTime(value));
         }
 
         
@@ -3826,10 +4020,10 @@ enum DataType {
         {
             if (Is64Bit)
                 tableView_set_mixed_date64(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex,
-                                           ToTightDbMixedTime(value));
+                                           ToTightDbMixedDateTime(value));
             else
                 tableView_set_mixed_date32(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex,
-                                           ToTightDbMixedTime(value));
+                                           ToTightDbMixedDateTime(value));
         }
 
 
@@ -3842,9 +4036,9 @@ enum DataType {
         public static void TableSetDate(Table table, long columnIndex, long rowIndex, DateTime value)
         {
             if (Is64Bit)
-                table_set_date64(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, ToTightDbTime(value));
+                table_set_date64(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, ToTightDbDateTime(value));
             else
-            table_set_date32(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, ToTightDbTime(value));
+            table_set_date32(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, ToTightDbDateTime(value));
         }
 
         
@@ -3856,9 +4050,9 @@ enum DataType {
         public static void TableViewSetDate(TableView tableView, long columnIndex, long rowIndex, DateTime value)
         {
             if (Is64Bit)
-                tableview_set_date64(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, ToTightDbTime(value));
+                tableview_set_date64(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, ToTightDbDateTime(value));
             else
-            tableview_set_date32(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, ToTightDbTime(value));
+            tableview_set_date32(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, ToTightDbDateTime(value));
         }
 
 

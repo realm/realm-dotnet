@@ -1,15 +1,19 @@
-﻿using System;
-using System.IO;
-using TightDbCSharp;
+﻿using TightDbCSharp;
 using NUnit.Framework;
 using TightDbCSharp.Extensions;
 
 
 namespace TightDbCSharpTest
 {
+    /// <summary>
+    /// test spec class
+    /// </summary>
     [TestFixture]
-    internal static class SpecTests
+    public static class SpecTests
     {
+        /// <summary>
+        /// test inspection of a table using spec
+        /// </summary>
         [Test] public static void SpecInspection()
         {
             using (var table = new Table("IntColumn".Int(), "sub".SubTable("int".Int())))

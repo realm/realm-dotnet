@@ -87,8 +87,12 @@ namespace TightDbCSharp
   //          Console.WriteLine("Handle has been set:{0}  shouldbedisposed:{1}" , ObjectIdentification(),shouldBeDisposed);
         }
 
-        //called by users who don't want to use our class anymore.
-        //should free managed as well as unmanaged stuff
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// Calling dispose will free any c++ structures created to keep track of the handled object.
+        /// Usially dispose is called by the garbage collector or by the user indirectly via the using keyword.
+        /// </summary>
+        
         public void Dispose()
         {
             Dispose(true);
@@ -110,8 +114,11 @@ namespace TightDbCSharp
             }
         }
 
-        //when this is called by the GC, unmanaged stuff might not have been freed, and managed stuff could be in the process of being
-        //freed, so only get rid of unmanaged stuff
+        /// <summary>
+        /// Allows an object to try to free resources and perform other cleanup operations before it is reclaimed by garbage collection.
+        ///when this is called by the GC, unmanaged stuff might not have been freed, and managed stuff could be in the process of being
+        ///freed, so only get rid of unmanaged stuff
+        /// </summary>
         ~Handled()
         {
             try

@@ -1,16 +1,21 @@
 ﻿using NUnit.Framework;
 using System;
 using TightDbCSharp;
-using TightDbCSharp.Extensions;
 
 namespace TightDbCSharpTest
 {
+    /// <summary>
+    /// Tests that test the Row class
+    /// </summary>
     [TestFixture]
-    internal static class RowTests
+    public static class RowTests
     {
 
 
 
+        /// <summary>
+        /// test get subtable and setting and getting int in that subtable (using a row as a starting point)
+        /// </summary>
         [Test]
         public static void TestSubTableIntIndex()
         {
@@ -29,6 +34,9 @@ namespace TightDbCSharpTest
 
 
 
+        /// <summary>
+        /// test setting and getting longs and strings in a subtable mixed via row
+        /// </summary>
         [Test]
         public static void TableRowMixedValues()
         {
@@ -70,6 +78,9 @@ namespace TightDbCSharpTest
         }
 
 
+        /// <summary>
+        /// test that tablerow is not validated when legally changing row field values
+        /// </summary>
         [Test]
         public static void TestNoInvalidationWhileChangingRow()
         {
@@ -85,6 +96,9 @@ namespace TightDbCSharpTest
             }            
         }
 
+        /// <summary>
+        /// test that tablerow is invalidated if table changes row count
+        /// </summary>
         [Test]
         [ExpectedException("System.InvalidOperationException")]
         public static void TestInvalidationWhileChangingRow()
@@ -105,8 +119,11 @@ namespace TightDbCSharpTest
         }
 
 
+        /// <summary>
+        /// test getting a subtablie via its name using a tablerow
+        /// </summary>
         [Test]
-        [ExpectedException("System.ArgumentOutOfRangeException")]
+        
         public static void TestSubTableStringIndex()
         {
             using (var table = new Table())
@@ -114,7 +131,7 @@ namespace TightDbCSharpTest
                 var subpath = table.AddSubTableColumn("sub");
                 table.AddIntColumn(subpath, "subint");
                 table.AddEmptyRow(1);
-                var sub = table[0].GetSubTable("subint");//getting the subtable via a row object
+                var sub = table[0].GetSubTable("sub");//getting the subtable via a row object
                 sub.AddEmptyRow(1);
                 sub.SetLong(0, 0, 42);
                 Assert.AreEqual(42, sub.GetLong(0, 0));
@@ -122,7 +139,12 @@ namespace TightDbCSharpTest
         }
 
 
-        //if the getcolumnindex -1 returned is somehow intepreted as unsigned, this test will catch it and fail
+        //
+        /// <summary>
+        /// Interop test
+        /// if the getcolumnindex -1 returned is somehow intepreted as unsigned, this test will catch it and fail
+        /// The test ought to fail with System.ArgumentOutOfRangeException
+        /// </summary>
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
         public static void GetColumnIndexNotFoundBug32Bit()
@@ -135,7 +157,12 @@ namespace TightDbCSharpTest
             }
         }
 
-        //if the getcolumnindex -1 returned is somehow intepreted as unsigned, this test will catch it and fail
+        
+        /// <summary>
+        /// Interop test
+        /// if the getcolumnindex -1 returned is somehow intepreted as unsigned, this test will catch it and fail
+        /// The test ought to fail with System.ArgumentOutOfRangeException
+        /// </summary>
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
         public static void GetColumnIndexNotFoundBug32BitTyped()
@@ -150,6 +177,9 @@ namespace TightDbCSharpTest
 
 
 
+        /// <summary>
+        /// Tests setting and gettting all DataType types
+        /// </summary>
         [Test]
         public static void TestSetAndGet()
         {
@@ -247,6 +277,9 @@ namespace TightDbCSharpTest
             }
         }
 
+        /// <summary>
+        /// test remove method on tablerow
+        /// </summary>
         [Test]
         public static void TestRowDelete()
         {
@@ -265,6 +298,9 @@ namespace TightDbCSharpTest
 
 
         //test if a row object gets disabled when it changes its table in an invalidating way
+        /// <summary>
+        /// test that tablerow is invalidated by remove from inside tablerow
+        /// </summary>
         [Test]
         [ExpectedException("System.InvalidOperationException")]//because the table row shouldve been invalidated after it was removed
         public static void TestRowDeleteInvalidated()
@@ -284,7 +320,10 @@ namespace TightDbCSharpTest
             }
         }
 
-        //test if a row object gets disabled when the user changes its table in an invalidating way, not going through the rowobject
+        
+        /// <summary>
+        /// test if a row object gets disabled when the user changes its table in an invalidating way, not going through the rowobject
+        /// </summary>
         [Test]
         [ExpectedException("System.InvalidOperationException")]//because the table row shouldve been invalidated after it was removed
         public static void TestRowDeleteInvalidatedThroughTable()
@@ -305,10 +344,12 @@ namespace TightDbCSharpTest
         }
 
 
-        //test if a row object gets disabled when the user changes its table in an invalidating way, trough a copy of the table
-        //taken out from a group
-        //this will liekly only work correctly if we ensure that table wrappers are reused when user requests the sam table
-        //test if a row object gets disabled when the user changes its table in an invalidating way, not going through the rowobject
+        /// <summary>
+        /// test if a row object gets disabled when the user changes its table in an invalidating way, trough a copy of the table
+        /// taken out from a group
+        /// this will liekly only work correctly if we ensure that table wrappers are reused when user requests the sam table
+        /// test if a row object gets disabled when the user changes its table in an invalidating way, not going through the rowobject
+        /// </summary>
         [Test]
         [ExpectedException("System.InvalidOperationException")]
         //because the table row shouldve been invalidated after it was removed
@@ -331,9 +372,11 @@ namespace TightDbCSharpTest
                 var grethe = tr.GetString(0); //this should fail bc accessing row after delete or insert is illegal
                 Assert.AreEqual("Grethe", grethe); //this should never run
             }
-
         }
 
+        /// <summary>
+        /// test that string indexing fields in a tablerow fails when the string is not a column name
+        /// </summary>
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
         public static void TestIndexerWrongStringIndex()
@@ -349,6 +392,9 @@ namespace TightDbCSharpTest
         }
 
 
+        /// <summary>
+        /// Test indexer on various DataType types
+        /// </summary>
         [Test]
         public static void TestIndexer()
         {

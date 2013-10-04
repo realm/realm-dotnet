@@ -326,6 +326,13 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.QueryAverage(this,columnIndex);            
         }
 
+
+        /// <summary>
+        /// Returns an enumerator that iterates through the Query.
+        /// </summary>
+        /// <returns>
+        /// A IEnumerator that can be used to iterate through the collection, yielding TableRow objects for each row the query matches
+        /// </returns>
         
         public IEnumerator<TableRow> GetEnumerator()
         {

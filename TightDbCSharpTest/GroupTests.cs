@@ -7,10 +7,17 @@ using TightDbCSharp.Extensions;
 
 namespace TightDbCSharpTest
 {
+    /// <summary>
+    /// Tests related to Group Class
+    /// </summary>
     [TestFixture]
-    class GroupTests
+    public static class GroupTests
     {
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope"), Test]
+        /// <summary>
+        /// Create an empty Group class and dispose it again in the destructor
+        /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
+        [Test]
         public static void CreateGroupEmptyTest()
         {
             var g = new Group();
@@ -19,8 +26,10 @@ namespace TightDbCSharpTest
 
 
 
+        /// <summary>
+        /// Create an empty group inside using, do nothing with it
+        /// </summary>
         [Test]
-
         public static void CreateGroupEmptyTestUsing()
         {
             
@@ -38,6 +47,11 @@ namespace TightDbCSharpTest
          */
 
 
+        /// <summary>
+        /// Test if group constructor works when a read/write fil is created
+        /// in the root directory. Usually on windws the test runner will not
+        /// have sufficient rights and should fail
+        /// </summary>
         [Test]
         [ExpectedException("System.IO.IOException")]
         public static void CreateGroupFileNameTest()
@@ -48,6 +62,9 @@ namespace TightDbCSharpTest
             }
         }
 
+        /// <summary>
+        /// check that we fail gracefully when supplied an empty string
+        /// </summary>
         [Test]
         [ExpectedException("System.IO.IOException")]
         public static void CreateGroupFileNameTest2()
@@ -68,6 +85,9 @@ namespace TightDbCSharpTest
         //perhaps we have a problem with locked or illegal files, what to do?
         //
         //probably something wrong with the code here too then
+        /// <summary>
+        /// Test creation of a group file in a legal location
+        /// </summary>
         [Test]
         public static void CreateGroupFileNameTestGoodFile()
         {
@@ -82,8 +102,11 @@ namespace TightDbCSharpTest
         }
 
 
+        /// <summary>
+        /// This unit test should not trigger a CodeAnalysis2000 error
+        /// </summary>
         [Test]
-        public static void Ca2000TestNoFalsePositive()
+        public static void CodeAnalysis2000TestNoFalsePositive()
         {
 
             var g = new Group();
@@ -97,10 +120,16 @@ namespace TightDbCSharpTest
         }
 
 
-        [Test]  //see above test that is similar to this one, but does not trigger CA2000
-            //DO NOT DISABLE THIS TEST - WHEN IT DOES NOT SHOW UP AS A CA2000 tHEN MSFT HAVE FIXED
-            //THEIR CA2000 BUG, AND WE SHOULD REMOVE THE SUPRESSED CA2000 ERRORS FROM THE SUPRESSION FILES
-        public static void Ca2000TestFalsePositive()
+        /// <summary>
+        /// This unit test should  trigger a CodeAnalysis2000 error. This trigger is a known bug in vs2012
+        /// and this unit test should be kept until that bug is fixed.
+        /// see above test that is similar to this one, but does not trigger CA2000
+        /// DO NOT DISABLE THIS TEST - WHEN IT DOES NOT SHOW UP AS A CA2000 tHEN MSFT HAVE FIXED
+        /// THEIR CA2000 BUG, AND WE SHOULD REMOVE THE SUPRESSED CA2000 ERRORS FROM THE SUPRESSION FILES
+        /// 
+        /// </summary>
+        [Test]
+        public static void CodeAnalysis2000TestFalsePositive()
         {
             using (var g = new Group())            
             {
@@ -115,6 +144,10 @@ namespace TightDbCSharpTest
 
 
 
+        /// <summary>
+        /// Test that a group can be written and read correctly to
+        /// a well defined path where we have full rights
+        /// </summary>
         [Test]
        
         public static void GroupWriteTest()

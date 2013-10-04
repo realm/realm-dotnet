@@ -67,6 +67,14 @@ namespace TightDbCSharp
         /// </summary>
         public Table OwnerRootTable { get; private set; }
 
+        /* I hope this is not needed - removed in the process of trying to get rid of spec as much as possible
+        /// <summary>
+        /// Determines whether the specified spec is equal to the current spec.
+        /// </summary>
+        /// <returns>
+        /// true if the specified spec is equal to the current spec equality is same field names and types, recursively in case of subtables
+        /// </returns>
+        /// <param name="obj">The spec object to compare with the current object. </param>
         public override bool Equals(object obj)
         {
             var spec = (Spec) obj;
@@ -74,7 +82,7 @@ namespace TightDbCSharp
             {
                 return false;
             }
-            return Equals(spec);
+            return UnsafeNativeMethods.SpecEqualsSpec(spec.OwnerRootTable, OwnerRootTable);
         }
 
 
@@ -90,6 +98,7 @@ namespace TightDbCSharp
             }
             return res;
         }
+        */
 
 
         /// <summary>
