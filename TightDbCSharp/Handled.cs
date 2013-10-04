@@ -6,18 +6,30 @@ using System.Globalization;
 //handled in here
 namespace TightDbCSharp
 {
+    /// <summary>
+    /// This class performs housekeeping reg. wrapping c++ objects.
+    /// </summary>
     public abstract class Handled :IDisposable 
     {
         //following the dispose pattern discussed here http://dave-black.blogspot.dk/2011/03/how-do-you-properly-implement.html
         //a good explanation can be found here http://stackoverflow.com/questions/538060/proper-use-of-the-idisposable-interface
         //notes reg. exceptions in constructors here http://msdn.microsoft.com/en-us/vstudio/hh184269.aspx
+        /// <summary>
+        /// This method can be overwritten and should free or release any c++ resources attached to this object
+        /// </summary>
         protected abstract void ReleaseHandle();//overwrite this. This method will be called when c++ can free the object associated with the handle
         internal abstract string ObjectIdentification();//overwrite this to enable the framework to name the class in a human readable way
 
+        /// <summary>
+        /// Contains the c++ pointer to a c++ object - used as a handle  when calling c++ functions
+        /// </summary>
         public IntPtr Handle { get;internal set; }  //handle (in fact a pointer) to a c++ hosted Table. We must unbind this handle if we have acquired it
         private bool HandleInUse { get; set; } //defaults to false.  
         private bool HandleHasBeenUsed { get; set; } //defaults to false. If this is true, the table handle has been allocated in the lifetime of this object
         private bool NotifyCppWhenDisposing { get; set; }//if false, the table handle do not need to be disposed of, on the c++ side
+        /// <summary>
+        /// True if the c++ resources have been released
+        /// </summary>
         public bool IsDisposed { get; private set; }
         
 

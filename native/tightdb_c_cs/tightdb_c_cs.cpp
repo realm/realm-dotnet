@@ -8,15 +8,16 @@ we should not break easily, and we should know where we have problems.
 
 */
 
+#include <iostream>
+#include <sstream>
 #include "stdafx.hpp"
 #include "tightdb_c_cs.hpp"
 #include "tightdb/utf8.hpp"
 #include <tightdb/unique_ptr.hpp>
-#include <iostream>
-#include <sstream>
+#include <tightdb/file.hpp>
 
-using namespace tightdb;
 using namespace std;
+using namespace tightdb;
 
 
 namespace {
@@ -55,13 +56,13 @@ inline size_t  durabilitylevel_to_sizet(SharedGroup::DurabilityLevel value){
 }
 
 //Date is totally not matched by a C# type, so convert to an int64_t that is interpreted as a 64 bit time_t
-inline Date int64_t_to_date(int64_t value){
-    return Date(time_t(value));
+inline DateTime int64_t_to_date(int64_t value){
+    return DateTime(time_t(value));
 }
 
 //this call assumes that time_t and int64_t are blittable (same byte size) or that the compiler handles any resizing neccessary
-inline int64_t date_to_int64_t(Date value) {
-    return value.get_date();
+inline int64_t date_to_int64_t(DateTime value) {
+    return value.get_datetime();
 }
 
 
@@ -183,7 +184,7 @@ size_t stringdata_to_csharpstringbuffer(StringData str, uint16_t * csharpbuffer,
     size_t size  = Xcode::find_utf16_buf_size(in_begin,in_end);//Figure how much space is actually needed
     
     if(in_begin!=in_end) {
-        std::cerr<<str.data();
+        std::cerr<<"BAD UTF8 DATA IN stringdata_tocsharpbuffer :"<<str.data()<<"\n";
       return -1;//bad uft8 data    
     }
     if(size>bufsize) 
@@ -216,7 +217,7 @@ extern "C" {
  TIGHTDB_C_CS_API size_t tightdb_c_cs_getver(void){
 
   // Table test;
-	return 20130906;
+	return 2013092419;
 }
 
  //return a newly constructed top level table 
@@ -409,7 +410,7 @@ TIGHTDB_C_CS_API size_t table_get_bool(Table* table_ptr, size_t column_ndx, size
 
 TIGHTDB_C_CS_API int64_t table_get_date(Table*  table_ptr, size_t column_ndx, size_t row_ndx)
 {
-    return date_to_int64_t(table_ptr->get_date(column_ndx,row_ndx));
+    return date_to_int64_t(table_ptr->get_datetime(column_ndx,row_ndx));
 }
 
 TIGHTDB_C_CS_API float table_get_float(Table* table_ptr, size_t column_ndx, size_t row_ndx)
@@ -456,7 +457,7 @@ TIGHTDB_C_CS_API size_t  table_get_mixed_bool(Table*  table_ptr, size_t column_n
 
 TIGHTDB_C_CS_API int64_t table_get_mixed_date(Table*  table_ptr, size_t column_ndx, size_t row_ndx)
 {
-   return date_to_int64_t(table_ptr->get_mixed(column_ndx,row_ndx).get_date());    
+    return date_to_int64_t(table_ptr->get_mixed(column_ndx,row_ndx).get_datetime());    
 }
 
 TIGHTDB_C_CS_API float  table_get_mixed_float(Table*  table_ptr, size_t column_ndx, size_t row_ndx)
@@ -505,6 +506,13 @@ TIGHTDB_C_CS_API void table_set_int(Table*  table_ptr, size_t column_ndx, size_t
     table_ptr->set_int(column_ndx,row_ndx,value);
 }
 
+//takes a 32 bit integer as parameter instead of a 64 bit integer, moving much less stack bits
+//in the calls up the chain
+TIGHTDB_C_CS_API void table_set_32int(Table*  table_ptr, size_t column_ndx, size_t row_ndx, int32_t value)
+{
+    table_ptr->set_int(column_ndx,row_ndx,value);
+}
+
 //call with false=0  true=1 we use a size_t as it is likely the fastest type to return
 TIGHTDB_C_CS_API void table_set_bool(Table* table_ptr, size_t column_ndx, size_t row_ndx,size_t value)
 {    
@@ -514,7 +522,7 @@ TIGHTDB_C_CS_API void table_set_bool(Table* table_ptr, size_t column_ndx, size_t
 //assuming that int64_t and time_t are binary compatible and of equal size
 TIGHTDB_C_CS_API void table_set_date(Table*  table_ptr, size_t column_ndx, size_t row_ndx, int64_t value)
 {
-    table_ptr->set_date(column_ndx,row_ndx,int64_t_to_time_t(value));
+    table_ptr->set_datetime(column_ndx,row_ndx,int64_t_to_time_t(value));
 }
 
 
@@ -659,7 +667,7 @@ TIGHTDB_C_CS_API int64_t table_count_double(Table * table_ptr , size_t column_nd
 
 TIGHTDB_C_CS_API int64_t table_sum_int(Table * table_ptr , size_t column_ndx)
 {   
-    return table_ptr->sum(column_ndx);
+    return table_ptr->sum_int(column_ndx);
 }
 TIGHTDB_C_CS_API double table_sum_float(Table * table_ptr , size_t column_ndx)
 {   
@@ -673,7 +681,7 @@ TIGHTDB_C_CS_API double table_sum_double(Table * table_ptr , size_t column_ndx)
 
 TIGHTDB_C_CS_API int64_t table_maximum_int(Table * table_ptr , size_t column_ndx)
 {   
-    return table_ptr->maximum(column_ndx);
+    return table_ptr->maximum_int(column_ndx);
 }
 TIGHTDB_C_CS_API float table_maximum_float(Table * table_ptr , size_t column_ndx)
 {   
@@ -688,7 +696,7 @@ TIGHTDB_C_CS_API double table_maximum_double(Table * table_ptr , size_t column_n
 
 TIGHTDB_C_CS_API int64_t table_minimum_int(Table * table_ptr , size_t column_ndx)
 {   
-    return table_ptr->minimum(column_ndx);
+    return table_ptr->minimum_int(column_ndx);
 }
 TIGHTDB_C_CS_API float table_minimum_float(Table * table_ptr , size_t column_ndx)
 {   
@@ -701,7 +709,7 @@ TIGHTDB_C_CS_API double table_minimum_double(Table * table_ptr , size_t column_n
 
 TIGHTDB_C_CS_API double table_average_int(Table * table_ptr , size_t column_ndx)
 {   
-    return table_ptr->average(column_ndx);
+    return table_ptr->average_int(column_ndx);
 }
 TIGHTDB_C_CS_API double table_average_float(Table * table_ptr , size_t column_ndx)
 {   
@@ -728,7 +736,7 @@ TIGHTDB_C_CS_API size_t table_find_first_bool(Table * table_ptr , size_t column_
 //assuming int64_t and time_t are binary compatible.
 TIGHTDB_C_CS_API size_t table_find_first_date(Table * table_ptr , size_t column_ndx, int64_t value)
 {   
-    return  table_ptr->find_first_date(column_ndx,int64_t_to_time_t(value));
+    return  table_ptr->find_first_datetime(column_ndx,int64_t_to_time_t(value));
 }
 
 TIGHTDB_C_CS_API size_t table_find_first_float(Table * table_ptr , size_t column_ndx, float value)
@@ -781,7 +789,7 @@ TIGHTDB_C_CS_API tightdb::TableView* table_find_all_string(Table * table_ptr , s
 
 TIGHTDB_C_CS_API tightdb::TableView* table_distinct(Table * table_ptr , size_t column_ndx)
 {   
-    return new TableView(table_ptr->distinct(column_ndx));
+    return new TableView(table_ptr->get_distinct_view(column_ndx));
 }
 
 
@@ -878,7 +886,7 @@ TIGHTDB_C_CS_API size_t tableview_get_bool(TableView* tableView_ptr, size_t colu
 
 TIGHTDB_C_CS_API int64_t tableview_get_date(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx)
 {
-    return date_to_int64_t(tableView_ptr->get_date(column_ndx,row_ndx));
+    return date_to_int64_t(tableView_ptr->get_datetime(column_ndx,row_ndx));
 }
 
 
@@ -915,7 +923,7 @@ TIGHTDB_C_CS_API int64_t  tableview_get_mixed_int(TableView*  tableView_ptr, siz
 
 TIGHTDB_C_CS_API int64_t tableview_get_mixed_date(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx)
 {
-    return date_to_int64_t(tableView_ptr->get_mixed(column_ndx,row_ndx).get_date());
+    return date_to_int64_t(tableView_ptr->get_mixed(column_ndx,row_ndx).get_datetime());
 }
 
 
@@ -975,7 +983,7 @@ TIGHTDB_C_CS_API size_t tableview_find_first_bool(TableView * table_ptr , size_t
 //assuming int64_t and time_t are binary compatible.
 TIGHTDB_C_CS_API size_t tableview_find_first_date(TableView * table_ptr , size_t column_ndx, int64_t value)
 {   
-    return  table_ptr->find_first_date(column_ndx,value);
+    return  table_ptr->find_first_datetime(column_ndx,value);
 }
 
 
@@ -1006,22 +1014,22 @@ TIGHTDB_C_CS_API size_t tableview_find_first_binary(TableView * table_ptr , size
 
 TIGHTDB_C_CS_API int64_t tableview_sum_int(TableView * tableview_ptr , size_t column_ndx)
 {   
-    return tableview_ptr->sum(column_ndx);
+    return tableview_ptr->sum_int(column_ndx);
 }
 
 TIGHTDB_C_CS_API int64_t tableview_maximum_int(TableView * tableview_ptr , size_t column_ndx)
 {   
-    return tableview_ptr->maximum(column_ndx);
+    return tableview_ptr->maximum_int(column_ndx);
 }
 
 TIGHTDB_C_CS_API int64_t tableview_minimum_int(TableView * tableview_ptr , size_t column_ndx)
 {   
-    return tableview_ptr->minimum(column_ndx);
+    return tableview_ptr->minimum_int(column_ndx);
 }
 
 TIGHTDB_C_CS_API double tableview_average_int(TableView * tableview_ptr , size_t column_ndx)
 {   
-    return tableview_ptr->average(column_ndx);
+    return tableview_ptr->average_int(column_ndx);
 
 }
 
@@ -1124,13 +1132,17 @@ TIGHTDB_C_CS_API void tableview_set_int(TableView*  tableView_ptr, size_t column
     tableView_ptr->set_int(column_ndx,row_ndx,value);
 }
 
+TIGHTDB_C_CS_API void tableview_set_32int(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx, int32_t value)
+{
+    tableView_ptr->set_int(column_ndx,row_ndx,value);
+}
 
 //todo:implement tableview_set_bool
 
 
 TIGHTDB_C_CS_API void tableview_set_date(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx, int64_t value)
 {
-    tableView_ptr->set_date(column_ndx,row_ndx,int64_t_to_time_t(value));
+    tableView_ptr->set_datetime(column_ndx,row_ndx,int64_t_to_time_t(value));
 }
 
 TIGHTDB_C_CS_API void tableview_set_float(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx, float value)
@@ -1263,13 +1275,45 @@ TIGHTDB_C_CS_API void group_delete(Group* group_ptr )
 }
 
 
-  TIGHTDB_C_CS_API Group* new_group_file(uint16_t * name, size_t name_len)//should be disposed by calling group_delete
-{  
+/*
+    enum OpenMode {
+        /// Open in read-only mode. Fail if the file does not already exist.
+        mode_ReadOnly,
+        /// Open in read/write mode. Create the file if it doesn't exist.
+        mode_ReadWrite,
+        /// Open in read/write mode. Fail if the file does not already exist.
+        mode_ReadWriteNoCreate
+    };
+*/
+
+  TIGHTDB_C_CS_API Group* new_group_file(uint16_t * name, size_t name_len, size_t openMode)//should be disposed by calling group_delete
+{      
+
+    //no like taking an enum from C# now it is unknownn what underlying type Group::OpenMode might have
+    //but we know that on any concievable platform, interop and C# marshalling works with size_t
+    //so we convert the size_t to a valid Group::OpenMode here.
+
+    Group::OpenMode om=Group::mode_ReadOnly;//this is the default value,if openMode==0
+
+    if (openMode==1){
+        om=Group::mode_ReadWrite;
+    } else if(openMode==2) {
+        om=Group::mode_ReadWriteNoCreate;
+    }
+
+    //in effect. 1 gives ReadWrite, 2 gives ReadWriteNoCreate, anything else give ReadOnly
+
     try{
       CSStringAccessor name2(name,name_len);
-      return new Group(StringData(name2));    
+
+      return new Group(StringData(name2),om); 
     }
-    catch (exception e) {//most likely the filename did not indicate a file that could be created (access rights or invalid path)
+
+    catch (std::exception& ) {
+        return NULL;
+    }
+    catch (...) {
+        cerr<<"CPPDLL: something non exception caught - returning NULL\n";
         return NULL;
     }
 }
@@ -1578,7 +1622,7 @@ TIGHTDB_C_CS_API int64_t tableview_count_string(TableView * tableview_ptr , size
 //todo:implement call that uses all the parametres
 TIGHTDB_C_CS_API double query_average(tightdb::Query* query_ptr,size_t column_index)
 {
-    return query_ptr->average(column_index);//use default values for the defaultable parametres
+    return query_ptr->average_int(column_index);//use default values for the defaultable parametres
 }
 
 TIGHTDB_C_CS_API size_t query_count(tightdb::Query* query_ptr,size_t start,size_t end,size_t limit)
@@ -1679,7 +1723,7 @@ void test_test_test() {
 
       test_test_test();
 //    std::cerr<<"Message from c++  call received with len "<<len<<"\n";
-    Group* g = new_group_file(name,len);
+      Group* g = new_group_file(name,len,Group::OpenMode::mode_ReadWrite);
 //    std::cerr<<"Message from c++  After call to new_group_file. g is("<<g<<") \n";
     group_delete(g);
 //    std::cerr<<"Message from c++  After call to group_delete";

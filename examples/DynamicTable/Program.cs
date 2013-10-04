@@ -108,10 +108,10 @@ namespace DynamicTable
 
             //alternative syntax, not using extension methods on String
             var tbl3B = new Table
-                (new StringField("name"),
-                 new SubTableField("subtable",
-                   new StringField("key"),
-                   new MixedField("value"))
+                (new StringColumn("name"),
+                 new SubTableColumn("subtable",
+                   new StringColumn("key"),
+                   new MixedColumn("value"))
                 );
 
             //you can also create subtables programmatically:

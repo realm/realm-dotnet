@@ -13,12 +13,12 @@ namespace Experimental
 
             using (
                 var peopleTable = new Table(
-                    new StringField("name"),
-                    new IntField("age"),
-                    new BoolField("hired"),
-                    new SubTableField("phones", //nested subtable
-                        new StringField("desc"),
-                        new StringField("number")
+                    new StringColumn("name"),
+                    new IntColumn("age"),
+                    new BoolColumn("hired"),
+                    new SubTableColumn("phones", //nested subtable
+                        new StringColumn("desc"),
+                        new StringColumn("number")
                         )
                     ))
             {
@@ -85,8 +85,8 @@ namespace Experimental
                 //You can also specify an already built table. In that case the pre-built table is COPIED into the row where the sub table is.
                 //types and field names must match, currently no match means undefined behavior so use with care todo:validate subtables when being added to table rows if specified as a Table class
 
-                using (var subAsTable = new Table(new StringField("desc"),
-                    new StringField("number"))
+                using (var subAsTable = new Table(new StringColumn("desc"),
+                    new StringColumn("number"))
                 {
                     {"work", "232-323-3232"},
                     {"home", "434-434-4343"},
@@ -101,9 +101,9 @@ namespace Experimental
             //or combine these two approaches and simply specify the subtable directly, not as an array, but as a subtable, created
                 //and populated on the fly. This might be especially useful with subtables inside mixed columns
 
-                peopleTable.Add("Jane", 25, false, 
-                    new Table(new StringField("desc"),
-                              new StringField("number"))
+                peopleTable.Add("Jane", 25, false,
+                    new Table(new StringColumn("desc"),
+                              new StringColumn("number"))
                 {
                     {"work", "232-323-3232"},
                     {"home", "434-434-4343"},

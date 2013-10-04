@@ -42,9 +42,9 @@ namespace TightDbCSharpTest
         [ExpectedException("System.IO.IOException")]
         public static void CreateGroupFileNameTest()
         {
-            using (var g = new Group(@"C:\Testgroup"))
+            using (var g = new Group(@"C:\Testgroup",Group.OpenMode.ModeReadWrite))
             {
-                Assert.AreEqual(false, g.Invalid);            
+                Assert.AreEqual(false, g.Invalid);
             }
         }
 
@@ -53,7 +53,7 @@ namespace TightDbCSharpTest
         public static void CreateGroupFileNameTest2()
         {
 
-            using (var g = new Group(@""))
+            using (var g = new Group(@"",Group.OpenMode.ModeReadOnly))
             {
 
                 Assert.AreEqual(false, g.Invalid);            
@@ -61,7 +61,8 @@ namespace TightDbCSharpTest
         }
 
 
-
+        //todo:make reasonable tests of all 3 kinds of openmode and their edge cases 
+        //(no rights, file exists/doesn't exists, illegal filename,null string)
 
         //this one works. (if you have a directory called Develope in H:\) Do we have a filename/directory problem with the windows build?
         //perhaps we have a problem with locked or illegal files, what to do?
@@ -70,11 +71,16 @@ namespace TightDbCSharpTest
         [Test]
         public static void CreateGroupFileNameTestGoodFile()
         {
-            using (var g = new Group(Path.GetTempPath() + "Testgroupf"))
+    
+            var filename = Path.GetTempPath() + "Testgroupf";
+
+            File.Delete(filename);//ok if it is not there?
+            using (var g = new Group(filename,Group.OpenMode.ModeReadWrite))
             {
                 Assert.AreEqual(false, g.Invalid);            
             }
         }
+
 
         [Test]
         public static void Ca2000TestNoFalsePositive()
@@ -124,7 +130,7 @@ namespace TightDbCSharpTest
                 g.CreateTable(testTableName, "double".Double());
                 g.Write(groupSaveFileName);
             }
-            using (var g2 = new Group(groupSaveFileName))
+            using (var g2 = new Group(groupSaveFileName,Group.OpenMode.ModeReadOnly))
             {                
                 Assert.AreEqual(true,g2.HasTable(testTableName));//we read the correct group back in
                 //now write the group to a memory buffer

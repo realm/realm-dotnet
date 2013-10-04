@@ -42,6 +42,11 @@ namespace TightDbCSharp
     */
 
 
+    /// <summary>
+    /// Spec is depricated and should only be used in binding and by users if absolutely neccessary.
+    /// Spec returns the table specification for a table and have methods to investigate and mainpulate this
+    /// specification.
+    /// </summary>
     public class Spec : Handled 
     {
         //not accessible by source not in te TightDBCSharp namespace
@@ -51,13 +56,15 @@ namespace TightDbCSharp
             SetHandle(handle, shouldbedisposed);
         }
 
-        //if spec is the spec for a root table, OwnerTable is that root table
-        //if spec is the spec for a table in a cell in a mixed column then OwnerTable is that table in that cell
-        //if spec is the spec for a non-mixed subtable in a table, then OwnerTable is ***NOT*** that subtable
-        //as all the subtables in that column share the same spec. Instead OwnerTable is the ultimate table that has this spec
-        //as a subcolumn spec.
-        //this reference will keep a table alive as long as we have spec's pointing to it, and it is used
-        //for validation of spec operations
+        /// <summary>
+        ///if spec is the spec for a root table, OwnerTable is that root table
+        ///if spec is the spec for a table in a cell in a mixed column then OwnerTable is that table in that cell
+        ///if spec is the spec for a non-mixed subtable in a table, then OwnerTable is ***NOT*** that subtable
+        ///as all the subtables in that column share the same spec. Instead OwnerTable is the ultimate table that has this spec
+        ///as a subcolumn spec.
+        ///this reference will keep a table alive as long as we have spec's pointing to it, and it is used
+        ///for validation of spec operations
+        /// </summary>
         public Table OwnerRootTable { get; private set; }
 
         public override bool Equals(object obj)
@@ -85,6 +92,10 @@ namespace TightDbCSharp
         }
 
 
+        /// <summary>
+        /// Column count for this table specification.
+        /// columns including eventual columns only in spec, not applied to table yet
+        /// </summary>
         public long ColumnCount
         {
             get { return UnsafeNativeMethods.SpecGetColumnCount(this); }
@@ -98,6 +109,9 @@ namespace TightDbCSharp
         //it will automatically be called when the spec object is disposed
         //In fact, you should not at all it on your own
 
+        /// <summary>
+        /// Do not use when subclassing spec. Internal stuff
+        /// </summary>
         protected override void ReleaseHandle()
         {
             UnsafeNativeMethods.SpecDeallocate(this);
@@ -111,8 +125,15 @@ namespace TightDbCSharp
 
         
 
-        //I assume column_idx is a column with a table in it
-        //if it is a mixed with a subtable in it, this method will throw
+        /// <summary>
+        /// Get the spec for the subtable at columnIndex.
+        /// columnIndex must point to a DataType.Table column.
+        /// if the column at  columnIndex is mixed or mixed table,
+        /// and exception is thrown
+        /// </summary>
+        /// <param name="columnIndex">Zero based column index of a DataType.Table column</param>
+        /// <returns>Spec for the specified subtable</returns>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
         public Spec GetSpec(long columnIndex)
         {
             if (GetColumnType(columnIndex) == DataType.Table)
@@ -122,12 +143,22 @@ namespace TightDbCSharp
            throw new  ArgumentOutOfRangeException("columnIndex",columnIndex,"get spec(columnIndex) can only be called on a SubTable field");
         }
 
+        /// <summary>
+        /// return the DataType of the column identified by index
+        /// </summary>
+        /// <param name="columnIndex">Zero based columnIndex of the column whose DataType to return</param>
+        /// <returns>DatType of the specicfied column</returns>
         public DataType GetColumnType(long columnIndex)
         {
             return UnsafeNativeMethods.SpecGetColumnType(this, columnIndex);
         }
         
 
+        /// <summary>
+        /// Return the name of the column specified by index
+        /// </summary>
+        /// <param name="columnIndex">Zero based column index of column whose name to return</param>
+        /// <returns></returns>
         public string GetColumnName(long columnIndex)
         {
             return UnsafeNativeMethods.SpecGetColumnName(this, columnIndex);

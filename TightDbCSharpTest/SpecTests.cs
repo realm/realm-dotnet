@@ -1,15 +1,16 @@
-﻿using NUnit.Framework;
+﻿using System;
+using System.IO;
 using TightDbCSharp;
+using NUnit.Framework;
 using TightDbCSharp.Extensions;
+
 
 namespace TightDbCSharpTest
 {
     [TestFixture]
-    public static class SpecTests
+    internal static class SpecTests
     {
-
-        [Test]
-        public static void SpecInspection()
+        [Test] public static void SpecInspection()
         {
             using (var table = new Table("IntColumn".Int(), "sub".SubTable("int".Int())))
             {
@@ -18,7 +19,5 @@ namespace TightDbCSharpTest
                 Assert.AreEqual("int", table.Spec.GetSpec(1).GetColumnName(0));
             }
         }
-
-
     }
 }

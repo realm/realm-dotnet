@@ -22,57 +22,77 @@
 // ***********************************************************************
 
 //using System.IO;
+
 using NUnitLite.Runner;
 //using NUnit.Framework.Internal;
+using TightDbCSharp;
 
 namespace NUnitLite.Tests
 {
+    /// <summary>
+    /// Run NunitLite Unit test 
+    /// Empty parametres will result in all tests being run,
+    /// output to console,
+    /// and the program waiting for a keypress when finished.
+    /// Arguments : run program with /? to get help, or look up
+    /// NUnitLite documentation
+    /// </summary>
     public static class Program
     {
-        // The main program executes the tests. Output may be routed to
-        // various locations, depending on the arguments passed.
-        //
-        // Arguments:
-        //
-        //  Arguments may be names of assemblies or options prefixed with '/'
-        //  or '-'. Normally, no assemblies are passed and the calling
-        //  assembly (the one containing this Main) is used. The following
-        //  options are accepted:
-        //
-        //    -test:<testname>  Provides the name of a test to be exected.
-        //                      May be repeated. If this option is not used,
-        //                      all tests are run.
-        //
-        //    -out:PATH         Path to a file to which output is written.
-        //                      If omitted, Console is used, which means the
-        //                      output is lost on a platform with no Console.
-        //
-        //    -full             Print full report of all tests.
-        //
-        //    -result:PATH      Path to a file to which the XML test result is written.
-        //
-        //    -explore[:Path]   If specified, list tests rather than executing them. If a
-        //                      path is given, an XML file representing the tests is written
-        //                      to that location. If not, output is written to tests.xml.
-        //
-        //    -noheader,noh     Suppress display of the initial message.
-        //
-        //    -wait             Wait for a keypress before exiting.
-        //
-        //    -include:categorylist 
-        //             If specified, nunitlite will only run the tests with a category 
-        //             that is in the comma separated list of category names. 
-        //             Example usage: -include:category1,category2 this command can be used
-        //             in combination with the -exclude option also note that exlude takes priority
-        //             over all includes.
-        //
-        //    -exclude:categorylist 
-        //             If specified, nunitlite will not run any of the tests with a category 
-        //             that is in the comma separated list of category names. 
-        //             Example usage: -exclude:category1,category2 this command can be used
-        //             in combination with the -include option also note that exclude takes priority
-        //             over all includes
-
+        /// <summary>
+        /// Run NunitLite Unit test 
+        /// Empty parametres will result in all tests being run,
+        /// output to console,
+        /// and the program waiting for a keypress when finished.
+        /// Arguments : run program with /? to get help, or look up
+        /// NUnitLite documentation
+        /// </summary>
+        /// <param name="args">
+        ///         // The main program executes the tests. Output may be routed to
+        /// various locations, depending on the arguments passed.
+        ///
+        /// Arguments:
+        ///
+        ///  Arguments may be names of assemblies or options prefixed with '/'
+        ///  or '-'. Normally, no assemblies are passed and the calling
+        ///  assembly (the one containing this Main) is used. The following
+        ///  options are accepted:
+        ///
+        ///    -test:testname    Provides the name of a test to be exected.
+        ///                      May be repeated. If this option is not used,
+        ///                      all tests are run.
+        ///
+        ///    -out:PATH         Path to a file to which output is written.
+        ///                      If omitted, Console is used, which means the
+        ///                      output is lost on a platform with no Console.
+        ///
+        ///    -full             Print full report of all tests.
+        ///
+        ///    -result:PATH      Path to a file to which the XML test result is written.
+        ///
+        ///    -explore[:Path]   If specified, list tests rather than executing them. If a
+        ///                      path is given, an XML file representing the tests is written
+        ///                      to that location. If not, output is written to tests.xml.
+        ///
+        ///    -noheader,noh     Suppress display of the initial message.
+        ///
+        ///    -wait             Wait for a keypress before exiting.
+        ///
+        ///    -include:categorylist 
+        ///             If specified, nunitlite will only run the tests with a category 
+        ///             that is in the comma separated list of category names. 
+        ///             Example usage: -include:category1,category2 this command can be used
+        ///             in combination with the -exclude option also note that exlude takes priority
+        ///             over all includes.
+        ///
+        ///    -exclude:categorylist 
+        ///             If specified, nunitlite will not run any of the tests with a category 
+        ///             that is in the comma separated list of category names. 
+        ///             Example usage: -exclude:category1,category2 this command can be used
+        ///             in combination with the -include option also note that exclude takes priority
+        ///             over all includes
+        /// 
+        /// </param>
         public static void Main(string[] args)
         {
             if (args!=null && args.Length != 0)
@@ -80,8 +100,9 @@ namespace NUnitLite.Tests
                 new TextUI().Execute(args);
             }
             else
-            {
-                new TextUI().Execute(new [] {"-full","-wait"/* "-out:C:\\Files\\UnitTestDumpCS.txt"*/});
+            {       
+                Table.ShowVersionTest();
+                new TextUI().Execute(new [] {"-labels","-full","-wait"/* "-out:C:\\Files\\UnitTestDumpCS.txt"*/});
             }
             //Console.WriteLine("Tests finished, any key to close the application");
             //Console.ReadKey();

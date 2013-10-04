@@ -9,7 +9,6 @@ using System.Runtime.CompilerServices;
 
 //Tell compiler to give warnings if we publicise interfaces that are not defined in the cls standard
 //http://msdn.microsoft.com/en-us/library/bhc3fa7f.aspx
-using System.Text;
 
 [assembly: CLSCompliant(true)]
 
@@ -23,15 +22,23 @@ namespace TightDbCSharp
 {
 
 
-    //Tightdb Table
-    //could have been called RowCollection but is called Table as it in fact is a table and not merely a collection of rows
+  
+  
+    /// <summary>
+    /// Represents a TightDb Table, or a TightDb Sub-Table.
+    /// Use Add(fieldvalue,fieldvalue,fieldvalue) to add an entire row, 
+    /// AddEmptyRow() then SetString(row,col), SetLong(row,col) etc. to add a row field by field.
+    /// </summary>
     public class Table : TableOrView, ICloneable,
         IEnumerable<Row>
         
     {
 
      
-        //this is not called if constructed with parametres
+        
+        /// <summary>
+        /// Construct an empty Table with no columns
+        /// </summary>
         public Table()
         {
             try
@@ -60,7 +67,11 @@ namespace TightDbCSharp
             }
         }
 
-        //implements ICloneable - this method is called Copy in the c++ binding        
+        
+        /// <summary>
+        /// implements ICloneable - this method is called Copy in the c++ binding        
+        /// </summary>
+        /// <returns>A new Table that is a deep copy of this one, structure as well as data</returns>
         public Table Clone()
         {
             try
@@ -82,14 +93,32 @@ namespace TightDbCSharp
         }
 
 
+        /// <summary>
+        /// If this method returns true, it is safe to call other methods on this table
+        /// A table becomes non-valid if it is changed via other tables than itself, or
+        /// if it is contained in a row in a table, and that table changes, or if the
+        /// table is deleted from a group etc. All user-facing operations call
+        /// IsValid to check if the table is still valid.
+        /// </summary>
+        /// <returns>True if The Table is usable</returns>
         public bool IsValid()
         {
             return UnsafeNativeMethods.TableIsAttached(this);
         }
 
 
+        /// <summary>
+        /// A Table with a shared spec is a table that is inside a row of another table
+        /// Shared spec means that the table schema is defined in its "root" table, and
+        /// not in the table itself. It also means that every row of the root table have
+        /// one of this table, and all these tables share the same column specification
+        /// The column layout of Shared Spec tables cannot be changed directly, they
+        /// must be changed by calling modifying operations on the root table.
+        /// A Root table can be a freestanding table, or a table inside a mixed column
+        /// </summary>
+        /// <returns>True if this is not a root table</returns>
         public bool HasSharedSpec()
-        {
+        {            
             ValidateIsValid();
             return HasSharedSpecNoCheck();
         }
@@ -99,7 +128,14 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableHasSharedSpec(this);            
         }
 
-        //see tableview for further interesting comments
+        
+        /// <summary>
+        /// Return a TableRow cursor for the row at the specified index
+        /// The tablerow cursor will have methods for accessing individual fields
+        /// This is the same class that is returned in foreach statements and LinQ
+        /// statements
+        /// </summary>
+        /// <param name="rowIndex">Zero based index of the row to return</param>
         public TableRow this[long rowIndex]
         {
             get
@@ -112,6 +148,12 @@ namespace TightDbCSharp
 
         //resembling the typed back() method or the untyped last method in python (that returns a cursor object)
         //see similar implementation in TableView 
+        /// <summary>
+        /// Returns the last row in the table, 
+        /// the row with the highest rowindex
+        /// </summary>
+        /// <returns>TableRow cursor representing the last row in the table</returns>
+        /// <exception cref="InvalidOperationException">If the table is no longer valid</exception>
         public TableRow Last()
         {
             ValidateIsValid();
@@ -122,7 +164,7 @@ namespace TightDbCSharp
             }
             throw new InvalidOperationException("Last called on a TableView with no rows in it");
         }
-       // */
+       
 
         private TableRow RowForIndexNoCheck(long rowIndex)
         {
@@ -186,25 +228,49 @@ namespace TightDbCSharp
 
 
 
+        /// <summary>
+        /// Will display C# assembly, 
+        /// c++ dll, runtime environment, bit size and operating system
+        /// information on the console.
+        /// </summary>
         public static void ShowVersionTest()
         {
-            UnsafeNativeMethods.ShowInfo();
+            Console.WriteLine(GetCSharpInfo());
+            Console.WriteLine(GetCInfo());
         }
 
-        public static void GetCsInfo(StringBuilder info)
+        /// <summary>
+        /// Return string with list of lines with
+        /// system information, suitable for
+        /// console output
+        /// </summary>
+        /// <returns>Info reg. the OS, runtime environment, assembly etc.</returns>
+        public static string GetCSharpInfo()
         {
-            UnsafeNativeMethods.GetCsInfo(info);
+            return UnsafeNativeMethods.GetCsInfo();
         }
 
-        public static void GetCInfo(StringBuilder info)
+
+        /// <summary>
+        /// Return string with list of lines with
+        /// system information, suitable for
+        /// console output
+        /// </summary>
+        /// <returns>Info reg. the C DLL - location, name etc</returns>
+        public static string GetCInfo()
         {
-            UnsafeNativeMethods.GetCppInfo(info);
+            return UnsafeNativeMethods.GetCppInfo();
         }
 
 
         //this parameter type allows the user to send a comma seperated list of TableField objects without having
         //to put them into an array first
-        public Table(params Field[] schema)
+        /// <summary>
+        /// Crate a Table with the specified columns
+        /// </summary>
+        /// <param name="schema">List of specifications of individual columns</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        public Table(params ColumnSpec[] schema)
         {
             try
             {
@@ -224,8 +290,12 @@ namespace TightDbCSharp
             }
         }
 
-        //allows the user to quickly create a table with a single field of a single type
-        public Table(Field schema)
+        
+        /// <summary>
+        /// Quick way to create a Table with only one column.
+        /// </summary>
+        /// <param name="schema">One column definition. e.g. var t=New Table(New IntColumn("I1"));</param>
+        public Table(ColumnSpec schema)
         {
             try
             {
@@ -240,13 +310,7 @@ namespace TightDbCSharp
             }
         }
 
-    //    public Table(params object[] fieldDescriptions)
-    //    {
-    //    }
-
-//        public Table(String fieldname1, DataType type1,String fieldname2)
-
-        internal Table DefineSchema(params Field[] schema)
+        internal Table DefineSchema(params ColumnSpec[] schema)
         {
         
             if (schema == null)
@@ -254,7 +318,7 @@ namespace TightDbCSharp
                 throw new ArgumentNullException("schema");
             }
             ValidateColumnChangeIsOkay();
-            foreach (Field tf in schema)
+            foreach (ColumnSpec tf in schema)
             {
                 if (tf == null)
                 {
@@ -270,7 +334,7 @@ namespace TightDbCSharp
         //attempt to do a non-spec based AddField
         //this addfield must be called on the top table, but bc of the path parameter, it can add columns to any subtable recursively
         //should not really be called NoCheck as it ought to check a lot, and in fact it does (AddSubColumn does)
-        private void AddFieldNoCheck(List<long> path, Field schema)
+        private void AddFieldNoCheck(List<long> path, ColumnSpec schema)
         {
             if (schema != null)
             {
@@ -280,7 +344,7 @@ namespace TightDbCSharp
                 }
                 else
                 {
-                    Field[] tfa = schema.GetSubTableArray();
+                    ColumnSpec[] tfa = schema.GetSubTableArray();
                     var columnNumber = AddColumnNoValidCheck(path, DataType.Table, schema.ColumnName);
                     path.Add((int)columnNumber);//limits number of columns to IntPtr - 2^32 ALSO on 64 bit machines, where core supports 2^64
                     AddFieldsNoCheck(path,tfa);
@@ -294,11 +358,11 @@ namespace TightDbCSharp
 
 
         // will add the field list to the current spec
-        private void AddFieldsNoCheck(List<long> path, IEnumerable<Field> fields)
+        private void AddFieldsNoCheck(List<long> path, IEnumerable<ColumnSpec> fields)
         {
             if (fields != null)
             {
-                foreach (Field field in fields)
+                foreach (ColumnSpec field in fields)
                 {
                     AddFieldNoCheck(path,field);
                 }
@@ -316,7 +380,7 @@ namespace TightDbCSharp
         //note that if there are existing columns in the table - the path must reflect this. Adding to subtable in column 4 will need a path starting with 3
         //fields with no path will be added after the current fields. If You then add stuff into these newly added fields, remember that the path
         //must count all fields, old as well as new.
-        private void DefineSchema(Field schema)
+        private void DefineSchema(ColumnSpec schema)
         {
             //ValidateSpecChangeIsOkay();
             ValidateColumnChangeIsOkay();//ensure this is the top table (not shared spec) and that it is with no rows
@@ -349,19 +413,30 @@ namespace TightDbCSharp
         */
 
         
-        //only used by unit tests
+        
+        /// <summary>
+        /// Only used by unit tests
+        /// </summary>
+        /// <param name="date"></param>
+        /// <returns></returns>
         public static Int64 DebugToTightDbTime(DateTime date)
         {
             return UnsafeNativeMethods.ToTightDbTime(date);
         }
 
+        /// <summary>
+        /// Only used by unit tests
+        /// </summary>
+        /// <param name="linuxTime"></param>
+        /// <returns></returns>
         public static DateTime DebugToCSharpTimeUtc(Int64 linuxTime)
         {
             return UnsafeNativeMethods.ToCSharpTimeUtc(linuxTime);
         }
         
-        //This method will test basic interop, especially test that the c++ compiler used to build the c++ dll binding uses
-        //the same size and sequence for various types used in interop, as C# and C# marshalling expects
+        /// <summary>
+        /// Tests basic interop, used when building experimentally on new platforms
+        /// </summary>
         public static void TestInterop()
         {
             UnsafeNativeMethods.TestInterop();
@@ -380,6 +455,11 @@ namespace TightDbCSharp
            UnsafeNativeMethods.TableNew(this);//calls sethandle itself
         }
 
+        /// <summary>
+        /// Change the name of a column
+        /// </summary>
+        /// <param name="columnIndex">Index of column to rename</param>
+        /// <param name="newName">New name of column to rename</param>
         public void RenameColumn(long columnIndex, String newName)
         {
             ValidateIsValid();              
@@ -388,6 +468,12 @@ namespace TightDbCSharp
             UnsafeNativeMethods.TableRenameColumn(this,columnIndex,newName);
         }
 
+        /// <summary>
+        /// Remove a column from a table.
+        /// The columns with higher indexes than the one being removed will have
+        /// their index reduced by one
+        /// </summary>
+        /// <param name="columnIndex">Index of column to remove</param>
         public void RemoveColumn(long columnIndex)
         {
             ValidateIsValid();
@@ -397,7 +483,10 @@ namespace TightDbCSharp
         }
 
 
-        //this one is called from Handled.cs when we have to release the table handle.
+        
+        /// <summary>
+        /// this one is called from Handled.cs when we have to release the table handle.
+        /// </summary>
         protected override void ReleaseHandle()
         {
             UnsafeNativeMethods.TableUnbind(this);            
@@ -534,6 +623,11 @@ namespace TightDbCSharp
         }
 
 
+        /// <summary>
+        /// Return a string with a Json representation of this table.
+        /// In the future, a stream based version will be available too.
+        /// </summary>
+        /// <returns>String with Json representation</returns>
         public  string ToJson()
         {
             ValidateIsValid();
@@ -560,13 +654,13 @@ namespace TightDbCSharp
             }
         }
 
-        //this will add a column of the specified type, if it is a table type, You will have to populate it yourself later on,
-        //by calling AddColumn with a path
-        //it is not allowed in the c++ binding to call AddColumn on a subtable that has been taken out
-        //from a column,row - unless it is a mixed column.
-        //we check this, this way :
-        //if we have a shared spec, we are a subtable inside a row - throw
-        //otherwise we must be a root or a table from a mixed row.
+        /// <summary>
+        /// add a column to this table.
+        /// The table must not be a subtable, but can be a table in a mixed field.
+        /// </summary>
+        /// <param name="type">Type of column to add</param>
+        /// <param name="name">Name of column to add</param>
+        /// <returns>Index of newly added column</returns>
         public long AddColumn(DataType type, String name)
         {
             ValidateIsValid();
@@ -581,94 +675,257 @@ namespace TightDbCSharp
             return colIx;                         
         }
 
+        /// <summary>
+        /// Add an DataType.Binary column to this table.
+        /// </summary>        
+        /// <param name="name">Name of the new column</param>
+        /// <returns>Index of the column in the target table</returns>
 
         public long AddBinaryColumn(String name)
         {            
             return AddColumn(DataType.Binary, name);
         }
 
+        /// <summary>
+        /// Add an DataType.Binary column to this table.
+        /// Path indicates the exact location of the column that
+        /// represents the table that we should add a column to.
+        /// If path is empty a column is added to this table.
+        /// first long is a column index into the root table
+        /// (the callee) second long is a column index inside 
+        /// the subtable the first index pointed to, etc.
+        /// </summary>
+        /// <param name="path">path to the subtable where we should add a column</param>
+        /// <param name="name">Name of the newly added column</param>
+        /// <returns>column index of newly added column</returns>
         public long AddBinaryColumn(IList<long>path,String name)
         {
             return AddColumn(path,DataType.Binary, name);
         }
+
+        /// <summary>
+        /// Add an DataType.Bool column to this table.
+        /// </summary>        
+        /// <param name="name">Name of the new column</param>
+        /// <returns>Index of the column in the target table</returns>
 
         public long AddBoolColumn(String name)
         {
             return AddColumn(DataType.Bool, name);
         }
 
+        
+        /// <summary>
+        /// Add an DataType.Bool column to this table.
+        /// Path indicates the exact location of the column that
+        /// represents the table that we should add a column to.
+        /// If path is empty a column is added to this table.
+        /// first long is a column index into the root table
+        /// (the callee) second long is a column index inside 
+        /// the subtable the first index pointed to, etc.
+        /// </summary>
+        /// <param name="path">path to the subtable where we should add a column</param>
+        /// <param name="name">Name of the newly added column</param>
+        /// <returns>column index of newly added column</returns>
+
         public long AddBoolColumn(IList<long> path,String name)
         {
             return AddColumn(path, DataType.Bool, name);
         }
+
+        /// <summary>
+        /// Add an DataType.Date column to this table.
+        /// </summary>        
+        /// <param name="name">Name of the new column</param>
+        /// <returns>Index of the column in the target table</returns>
 
         public long AddDateColumn(String name)
         {
             return AddColumn(DataType.Date, name);
         }
 
+        /// <summary>
+        /// Add an DataType.Date column to this table.
+        /// Path indicates the exact location of the column that
+        /// represents the table that we should add a column to.
+        /// If path is empty a column is added to this table.
+        /// first long is a column index into the root table
+        /// (the callee) second long is a column index inside 
+        /// the subtable the first index pointed to, etc.
+        /// </summary>
+        /// <param name="path">path to the subtable where we should add a column</param>
+        /// <param name="name">Name of the newly added column</param>
+        /// <returns>column index of newly added column</returns>
+
         public long AddDateColumn(IList<long> path,String name)
         {
             return AddColumn(path,DataType.Date, name);
         }
 
+        /// <summary>
+        /// Add an DataType.Double column to this table.
+        /// </summary>        
+        /// <param name="name">Name of the new column</param>
+        /// <returns>Index of the column in the target table</returns>
+
         public long AddDoubleColumn(String name)
         {
             return AddColumn(DataType.Double, name);
         }
+        /// <summary>
+        /// Add an DataType.Double column to this table.
+        /// Path indicates the exact location of the column that
+        /// represents the table that we should add a column to.
+        /// If path is empty a column is added to this table.
+        /// first long is a column index into the root table
+        /// (the callee) second long is a column index inside 
+        /// the subtable the first index pointed to, etc.
+        /// </summary>
+        /// <param name="path">path to the subtable where we should add a column</param>
+        /// <param name="name">Name of the newly added column</param>
+        /// <returns>column index of newly added column</returns>
 
         public long AddDoubleColumn(IList<long> path, String name)
         {
             return AddColumn(path,DataType.Double, name);
         }
 
+        /// <summary>
+        /// Add an DataType.Float column to this table.
+        /// </summary>        
+        /// <param name="name">Name of the new column</param>
+        /// <returns>Index of the column in the target table</returns>
+
         public long AddFloatColumn(String name)
         {
             return AddColumn(DataType.Float, name);
         }
+
+
+        /// <summary>
+        /// Add an DataType.Float column to this table.
+        /// Path indicates the exact location of the column that
+        /// represents the table that we should add a column to.
+        /// If path is empty a column is added to this table.
+        /// first long is a column index into the root table
+        /// (the callee) second long is a column index inside 
+        /// the subtable the first index pointed to, etc.
+        /// </summary>
+        /// <param name="path">path to the subtable where we should add a column</param>
+        /// <param name="name">Name of the newly added column</param>
+        /// <returns>column index of newly added column</returns>
 
         public long AddFloatColumn(IList<long> path,String name)
         {
             return AddColumn(path,DataType.Float, name);
         }
 
+        /// <summary>
+        /// Add an DataType.Int column to this table.
+        /// </summary>        
+        /// <param name="name">Name of the new column</param>
+        /// <returns>Index of the column in the target table</returns>
+
         public long AddIntColumn(String name)
         {
             return AddColumn(DataType.Int, name);
         }
 
+        /// <summary>
+        /// Add an DataType.Int column to this table.
+        /// Path indicates the exact location of the column that
+        /// represents the table that we should add a column to.
+        /// If path is empty a column is added to this table.
+        /// first long is a column index into the root table
+        /// (the callee) second long is a column index inside 
+        /// the subtable the first index pointed to, etc.
+        /// </summary>
+        /// <param name="path">path to the subtable where we should add a column</param>
+        /// <param name="name">Name of the newly added column</param>
+        /// <returns>column index of newly added column</returns>
         public long AddIntColumn(IList<long> path, String name)
         {
             return AddColumn(path, DataType.Int, name);
         }
+
+        /// <summary>
+        /// Add an DataType.Mixed column to this table.
+        /// </summary>        
+        /// <param name="name">Name of the new column</param>
+        /// <returns>Index of the column in the target table</returns>
 
         public long AddMixedColumn(String name)
         {
             return AddColumn(DataType.Mixed, name);
         }
 
+        /// <summary>
+        /// Add an DataType.Mixed column to this table.
+        /// Path indicates the exact location of the column that
+        /// represents the table that we should add a column to.
+        /// If path is empty a column is added to this table.
+        /// first long is a column index into the root table
+        /// (the callee) second long is a column index inside 
+        /// the subtable the first index pointed to, etc.
+        /// </summary>
+        /// <param name="path">path to the subtable where we should add a column</param>
+        /// <param name="name">Name of the newly added column</param>
+        /// <returns>column index of newly added column</returns>
+
         public long AddMixedColumn(IList<long> path,String name)
         {
             return AddColumn(path,DataType.Mixed, name);
         }
+
+        /// <summary>
+        /// Add an DataType.String column to this table.
+        /// </summary>        
+        /// <param name="name">Name of the new column</param>
+        /// <returns>Index of the column in the target table</returns>
 
         public long AddStringColumn(String name)
         {
             return AddColumn(DataType.String, name);
         }
 
+        /// <summary>
+        /// Add an DataType.String column to this table.
+        /// Path indicates the exact location of the column that
+        /// represents the table that we should add a column to.
+        /// If path is empty a column is added to this table.
+        /// first long is a column index into the root table
+        /// (the callee) second long is a column index inside 
+        /// the subtable the first index pointed to, etc.
+        /// </summary>
+        /// <param name="path">path to the subtable where we should add a column</param>
+        /// <param name="name">Name of the newly added column</param>
+        /// <returns>column index of newly added column</returns>
+
         public long AddStringColumn(IList<long> path,String name)
         {
             return AddColumn(path,DataType.String, name);
         }
 
-        //returns a path that can be used to call AddColumn to add columns to the subtable
+        
+        /// <summary>
+        /// Adds a subtable column to this table
+        /// returns a path that can be used to call AddColumn to add columns to the subtable
+        /// </summary>
+        /// <param name="name">Name of subtable column</param>
+        /// <returns>Path to the newly created subtable column (to be used with e.g. AddStringColumn(path,name))</returns>
         public List<long> AddSubTableColumn(String name)
         {
             return new List<long> {AddColumn(DataType.Table, name)};
         }
 
-        //returns a path that can be used to call AddColumn to add columns to the subtable
+        
+        /// <summary>
+        /// Adds a subtable column to a subtable in this table
+        /// returns a path that can be used to call AddColumn to add columns to the subtable
+        /// </summary>
+        /// <param name="path">path to the subtable where a subtable should be added</param>
+        /// <param name="name">Name of the new subtable column</param>
+        /// <returns>Path to the newly created subtable column</returns>
         public List<long> AddSubTableColumn(IList<long> path, String name)
         {
             var newpath = new List<long>(path) {AddColumn(path, DataType.Table, name)};//this adds the index of the column to a copy of the path we got down, in effect creating a new path that points to the subtable, ready for adding more columns
@@ -681,11 +938,15 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableHasIndex(this,columnIndex);
         }
 
-        //only legal to call this with a string column index
-        //however, later on the other columns will also have indicies and then it will
-        //be legal to call with more types, eventually all types
-        //right now, just return false for non-string columns, and otherwise
-        //ask core if there is an index
+        /// <summary>
+        /// only legal to call this with a string column index
+        /// however, later on the other columns will also have indicies and then it will
+        /// be legal to call with more types, eventually all types
+        /// right now, just return false for non-string columns, and otherwise
+        /// ask core if there is an index
+        /// </summary>
+        /// <param name="columnIndex">Index of the column to check for index</param>
+        /// <returns>True if column at columnIndex is indexed. False if no index exists or if column is not of type String</returns>
         public Boolean HasIndex(long columnIndex)
         {
             ValidateIsValid();
@@ -697,16 +958,20 @@ namespace TightDbCSharp
             return false;
         }
 
-        //only legal to call this with a string column index
-        //right now return false if it is not a string column, otherwise
-        //ask core. See HasIndex(long columnIndex)
+        /// <summary>
+        /// only legal to call this with a string column index
+        /// however, later on the other columns will also have indicies and then it will
+        /// be legal to call with more types, eventually all types
+        /// right now, just return false for non-string columns, and otherwise
+        /// ask core if there is an index
+        /// </summary>
+        /// <param name="columnName">Name of the column to check for index</param>
+        /// <returns>True if column specified is indexed. False if no index exists or if column is not of type String</returns>
         public Boolean HasIndex(String columnName)
         {
             ValidateIsValid();
-            long columnIndex = GetColumnIndex(columnName);
-            if (ColumnType(columnIndex)==DataType.String)            
-              return HasIndexNoCheck (columnIndex);
-            return false;
+            var columnIndex = GetColumnIndex(columnName);
+            return ColumnType(columnIndex)==DataType.String && HasIndexNoCheck (columnIndex);
         }
 
         //expects the columnIndex to already have been validated as legal and type string
@@ -721,6 +986,11 @@ namespace TightDbCSharp
         //will throw exception if an object in arr is not row-compatible with the table - but rows up to that
         //point will have been added. Put the call in a transaction and rollback if you get an exception
         //used internally to fill a mixed subtalbe from data
+        /// <summary>
+        /// Add many rows to a table in one go.
+        /// </summary>
+        /// <param name="rows">IEnumerable containing objects that can again be interpreted as row data</param>
+        /// <exception cref="ArgumentNullException"></exception>
         public void AddMany(IEnumerable rows)
         {
             if (rows == null)
@@ -737,6 +1007,15 @@ namespace TightDbCSharp
         //idea:consider if we should use insert row instead? - ask what's the difference, if any (asana)
         //todo:insert should only be used by the binding, not be exposed to the user (asana)
         //idea:when we add an entire row, insert is faster. (asana)
+        /// <summary>
+        /// Ad the specified data to a new row in the table.
+        /// The parameter list should be one object per field, and the objects should each.
+        /// math the DataType of the fields.
+        /// Subtables can be represented by NULL, TABLE or something IEnumerable that can.
+        /// be evaluated as a sequence of rows of sequence of field values.
+        /// </summary>
+        /// <param name="rowData">array of objects with field data</param>
+        /// <returns>zero based row index of the newly added row</returns>
         public long Add(params object[] rowData)
         {
             ValidateIsValid();     
@@ -745,12 +1024,11 @@ namespace TightDbCSharp
             return rowAdded;//return the index of the just added row
         }
 
-        /* won't work in a using scenario as using does not like the object being used to be assigned inside the using scope
-        public static Table operator +(Table left,  object[]  right) {
-            left.Add(right);
-            return left;
-        }
-        */
+        /// <summary>
+        /// put rowData into row specified by rowindex
+        /// </summary>
+        /// <param name="rowIndex">zero based index of row to change</param>
+        /// <param name="rowData">array of objects, one for each field in row in table</param>
         public void Set(long rowIndex, params object[] rowData)
         {
             ValidateIsValid();
@@ -767,9 +1045,15 @@ namespace TightDbCSharp
             }                
 
         }
-        //insert rowdata into a new row that is inserted at rowIndex
-        //rowindex=0 means insert into very first record
-        //rowindex=size means add after last        
+        /// <summary>
+        /// insert rowdata into a new row that is inserted at rowIndex
+        /// rowindex=0 means insert into very first record
+        /// rowindex=size means add after last
+        /// All data at rowIndex and higher will be moved 1 up.
+        /// Table size will be 1 higher.     
+        /// </summary>
+        /// <param name="rowIndex">Zero based index of row where new data should be placed</param>
+        /// <param name="rowData">One object per column, with data matching the table structure</param>
         public void Insert(long rowIndex, params object[] rowData)
         {
             ValidateIsValid();
@@ -784,13 +1068,17 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableGetColumnName(this, columnIndex);
         }
 
-        //add empty row at the end, return the index
+        
+        /// <summary>
+        /// add empty row(s) at the end, return the index
+        /// </summary>
+        /// <param name="numberOfRows">How many empty rows to add</param>
+        /// <returns>Zero based row Index of last row added</returns>
         public long AddEmptyRow(long numberOfRows)
         {
             ValidateIsValid();
             ++Version;
-            return UnsafeNativeMethods.TableAddEmptyRow(this, numberOfRows);
-            
+            return UnsafeNativeMethods.TableAddEmptyRow(this, numberOfRows);            
         }
 
         internal override byte[] GetBinaryNoCheck(long columnIndex, long rowIndex)
@@ -887,11 +1175,18 @@ namespace TightDbCSharp
 
         //warning! Use only this one when inserting new rows that are not inserted yet
         //todo:implement the rest of the insert api for inserting - but only for internal use
+        //fixme:Resharper rightly marks this one down as never used
         private void InsertInt(long columnIndex, long rowIndex, long value)
         {
             UnsafeNativeMethods.TableInsertInt(this, columnIndex, rowIndex, value);            
         }
 
+        /// <summary>
+        /// Insert row(s) at index rowIndex.
+        /// data at rowIndex will be moved row(s) up
+        /// </summary>
+        /// <param name="rowIndex">Zero based row of first row that is moved and cleared</param>
+        /// <param name="rowsToInsert">Number of rows to make space for</param>
         public void InsertEmptyRow(long rowIndex, long rowsToInsert)
         {
             ValidateIsValid();     
@@ -932,10 +1227,15 @@ namespace TightDbCSharp
            UnsafeNativeMethods.TableSetBool(this,columnIndex,rowIndex,value);
         }
 
-
         internal override void SetLongNoCheck(long columnIndex, long rowIndex, long value)
         {
             UnsafeNativeMethods.TableSetLong(this, columnIndex, rowIndex, value);
+        }
+
+        
+        internal override void SetIntNoCheck(long columnIndex, long rowIndex, int value)
+        {
+            UnsafeNativeMethods.TableSetInt(this, columnIndex, rowIndex, value);
         }
 
         internal override void SetMixedLongNoCheck(long columnIndex, long rowIndex, long value)
@@ -1035,6 +1335,12 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableDistinct(this, columnIndex);
         }
 
+        /// <summary>
+        /// In a indexed string column, returns tableview with all rows with unique strings in that column
+        /// The rows of the first unique strings are returned if several strings are the same
+        /// </summary>
+        /// <param name="columnIndex">zero based index of string column that has an index, Distinct will operate on this column</param>
+        /// <returns>TableView of distinct records from columnIndex</returns>
         public TableView Distinct(long columnIndex)
         {
             ValidateIsValid();
@@ -1043,7 +1349,12 @@ namespace TightDbCSharp
             return DistinctNoCheck(columnIndex);
         }
 
-        //currently c++ core only supports index on string, and only Distinct on indexed columns so we disallow anything but indexed string fields
+        /// <summary>
+        /// In a indexed string column, returns tableview with all rows with unique strings in that column
+        /// The rows of the first unique strings are returned if several strings are the same
+        /// </summary>
+        /// <param name="columnName">Name of string column that has an index, Distinct will operate on this column</param>
+        /// <returns>TableView of distinct records from identified column</returns>
         public TableView Distinct(string columnName)
         {
             ValidateIsValid();
@@ -1059,6 +1370,11 @@ namespace TightDbCSharp
             UnsafeNativeMethods.TableSetIndex(this, columnIndex);
         }
 
+        /// <summary>
+        /// Establish an index on the specified column.
+        /// Column must be a string column
+        /// </summary>
+        /// <param name="columnIndex">Zero based index of string column that should be indexed</param>
         public void SetIndex(long columnIndex)
         {
             ValidateIsValid(); 
@@ -1067,6 +1383,11 @@ namespace TightDbCSharp
             SetIndexNoCheck(columnIndex);
         }
 
+        /// <summary>
+        /// Establish an index on the specified column.
+        /// Column must be a string column
+        /// </summary>
+        /// <param name="columnName">Zero based index of string column that should be indexed</param>
         public void SetIndex(string columnName)
         {
             ValidateIsValid();
@@ -1096,7 +1417,7 @@ namespace TightDbCSharp
             }
             
             {
-                int firstbelowzero=-1;
+                var firstbelowzero=-1;
                 for (var n = 0; n < path.Count; n++)
                 {
                     if (path[n] < 0)
@@ -1127,7 +1448,13 @@ namespace TightDbCSharp
                 }else
                 {
                     Debug.Assert(levelSpec != null, "levelSpec != null");
-                    Spec newLevelSpec = levelSpec.GetSpec(path[level-1]);//get the spec of the subtable this part of path is identifying by index
+                    if (levelSpec == null)
+                    {
+                        throw new ArgumentOutOfRangeException("path",
+                            "path specified made getspec return NULL. This should not be possible to happen at all");
+                    }
+                    Spec newLevelSpec = levelSpec.GetSpec(path[level - 1]);
+                    //get the spec of the subtable this part of path is identifying by index
                     levelSpec = newLevelSpec;
                 }
 
@@ -1169,6 +1496,15 @@ namespace TightDbCSharp
         }
 
 
+        /// <summary>
+        /// Add a column of specified type to the specified subtable with the specified name
+        /// Usually the user will use type specific methods instead, like AddStringColumn
+        /// This method is useful when creating tables dynamically where the type is not known at compile time
+        /// </summary>
+        /// <param name="path">path to a subtable</param>
+        /// <param name="dataType">type of column to add</param>
+        /// <param name="columnName">name of column to add</param>
+        /// <returns>columnIndex of row added</returns>
         public long AddColumn(IList<long> path, DataType dataType, string columnName)
         {
             ValidateIsValid();
@@ -1177,6 +1513,12 @@ namespace TightDbCSharp
 
 
         //pathtosubtable contains the indicies to travese from the top table to the subtable, columnIndex is the index of the column You wish to change, newName is the new name
+        /// <summary>
+        /// Rename a column specified by path to its subtable and the column index
+        /// </summary>
+        /// <param name="pathToSubTable">Path to subtable where the column resides</param>
+        /// <param name="columnIndex">Index of the column to rename</param>
+        /// <param name="newName">New name</param>
         public void RenameColumn(IEnumerable<long> pathToSubTable, long columnIndex, string newName)
         {
             ValidateIsValid();
@@ -1184,7 +1526,13 @@ namespace TightDbCSharp
             RenameColumn(newlist,newName);
         }
 
-        //warning!! the path points directly to the column that you want to change - NOT to the subtalbe
+       
+        /// <summary>
+        /// Rename the column pointed to by path, to the name specified.
+        /// warning!! the path points directly to the column that you want to change - NOT to the subtable
+        /// </summary>
+        /// <param name="path">Path to the column, including the columns own index</param>
+        /// <param name="name">New Name</param>
         public void RenameColumn(IList<long> path, string name)
         {
             ValidateIsValid();
@@ -1199,9 +1547,16 @@ namespace TightDbCSharp
                 UnsafeNativeMethods.TableRenameColumn(this, path[0], name);
         }
 
-        //specify column by path to subtable and a column index
-        //path to subtable is usually gotten from AddSubTable(name)
-        //path to column index is usually gotten from GetColumnIndex(name)
+        
+        
+        
+        /// <summary>
+        /// specify column by path to subtable and a column index
+        /// path to subtable is usually gotten from AddSubTable(name)
+        /// path to column index is usually gotten from GetColumnIndex(name)
+        /// </summary>
+        /// <param name="pathToSubTable">Path to subtable with column to remove</param>
+        /// <param name="columnIndex">Zero based index of column to remove</param>
         public void RemoveColumn(IEnumerable<long> pathToSubTable, long columnIndex)
         {
             ValidateIsValid();
@@ -1209,7 +1564,11 @@ namespace TightDbCSharp
             RemoveColumn(pathToColumn);
         }
 
-        //remove a column by specifying its direct unique path
+        
+        /// <summary>
+        /// Remove column in subtable, or if path is only 1 long, in this table
+        /// </summary>
+        /// <param name="path">path to (subtable) column to remove</param>
         public void RemoveColumn(IList<long> path)
         {
             ValidateIsValid();
@@ -1266,6 +1625,10 @@ namespace TightDbCSharp
     }
 */
 
+        /// <summary>
+        /// Return a query that references this table and all its records
+        /// </summary>
+        /// <returns>Query object referencing this table and all its records</returns>
         public Query Where()
         {
             ValidateIsValid();
@@ -1305,48 +1668,77 @@ namespace TightDbCSharp
     */
 
 
-    //Was named TDBField before
-    //now is named Field
-    //I still don't like the name, it is more a colunm type definition or column type specification but what would be a good short word for that?
-    //TDBField is used only in the table constructor to make it easier for the user to specify any table structure without too much clutter
-    //TDBField constructors of various sort, return field definitions that the table constructor then uses to figure what the table structure is
-
-    public class Field
+    /// <summary>
+    /// This class specifies a column (type and name) and in case of a subtable column,
+    /// it specifys the column layout of that subtable.
+    /// The class is normally not used directly by the user, rather, the user instantiates
+    /// subclasses like StringColumn() when creating a table structure. example table create code :
+    /// var Person = new Table(
+    /// new StringColumn("Address"),
+    /// new StringColumn("Phone number"),
+    /// new StringColumn("Country"),
+    /// new IntColumn("Age"))
+    /// </summary>
+    public class ColumnSpec
     {
-
         
 
-        protected static void SetInfo(Field someField, String someColumnName, DataType someFieldType)
+        /// <summary>
+        /// Sets up a columnspec with a name and a type
+        /// </summary>
+        /// <param name="someColumnSpec">Column spec to set</param>
+        /// <param name="someColumnName">Name of column</param>
+        /// <param name="someFieldType">DataType of the column </param>
+        /// <exception cref="ArgumentNullException"></exception>
+        protected static void SetInfo(ColumnSpec someColumnSpec, String someColumnName, DataType someFieldType)
         {
-            if (someField != null)
+            if (someColumnSpec != null)
             {
-                someField.ColumnName = someColumnName;
-                someField.FieldType = someFieldType;
+                someColumnSpec.ColumnName = someColumnName;
+                someColumnSpec.FieldType = someFieldType;
             }
             else
-                throw new ArgumentNullException("someField");
+                throw new ArgumentNullException("someColumnSpec");
         }
 
         //this is internal for a VERY specific reason
         //when internal, the end user cannot call this function, and thus cannot put in a list of subtable fields containing a field that is parent
         //to the somefield parameter. If this was merely protected - he could!
-        internal static void AddSubTableFields(Field someField, String someColumnName, IEnumerable<Field> subTableFieldsArray)
+        internal static void AddSubTableFields(ColumnSpec someColumnSpec, String someColumnName, IEnumerable<ColumnSpec> subTableFieldsArray)
         {
-            SetInfo(someField, someColumnName, DataType.Table);
-            someField._subTable.AddRange(subTableFieldsArray);
+            SetInfo(someColumnSpec, someColumnName, DataType.Table);
+            someColumnSpec._subTable.AddRange(subTableFieldsArray);
         }
 
-        public Field(string someColumnName, params Field[] subTableFieldsArray)
+        /// <summary>
+        /// Return a columnSpec representing a subtable and its columns
+        /// </summary>
+        /// <param name="someColumnName">Name of subtable column</param>
+        /// <param name="subTableColumnsSpecArray">Columns of subtable</param>
+        public ColumnSpec(string someColumnName, params ColumnSpec[] subTableColumnsSpecArray)
         {
-            AddSubTableFields(this, someColumnName, subTableFieldsArray);
+            AddSubTableFields(this, someColumnName, subTableColumnsSpecArray);
         }
 
-        public Field(string columnName, DataType columnType)
+        /// <summary>
+        /// Retrun columnspec with a column name and a given column type type
+        /// </summary>
+        /// <param name="columnName">Name of column to represent</param>
+        /// <param name="columnType">type of column to represent</param>
+        public ColumnSpec(string columnName, DataType columnType)
         {
             SetInfo(this, columnName, columnType);
         }
 
-        public Field(string columnName, String columnType)
+        /// <summary>
+        /// Create a column given a string name and a string
+        /// representation of the type to use
+        /// </summary>
+        /// <param name="columnName">Name of the column to craete</param>
+        /// <param name="columnType">String representation of type of the column to create</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentException"></exception>
+        public ColumnSpec(string columnName, String columnType)
         {
             if (columnName == null)
             {
@@ -1407,122 +1799,210 @@ namespace TightDbCSharp
                         "Trying to initialize a table field with an unknown type specification Fieldname:{0}  type:{1}",
                         columnName, columnType));
             }
-
-
-
         }
 
-        protected Field() { }//used when IntegerField,StringField etc are constructed
+        /// <summary>
+        /// Do not subclass and call unless You know what you are doing
+        /// </summary>
+        protected ColumnSpec() { }//used when IntegerField,StringField etc are constructed
 
 
+        /// <summary>
+        /// Name of the column to create
+        /// </summary>
         public String ColumnName { get; private set; }
 
+        /// <summary>
+        /// Type of the field to create
+        /// </summary>
         public DataType FieldType { get; set; }
 
-        private readonly List<Field> _subTable = new List<Field>();//only used if type is a subtable
+        private readonly List<ColumnSpec> _subTable = new List<ColumnSpec>();//only used if type is a subtable
 
-        //potential trouble. A creative user could subclass Field to get access to getsubtablearray, then call this to get access to a subtable field, then set the subtable field reference to this same class or one of its parents in the field tree
-        //then  call create table and provoke a stack overflow
-        //could be avoided if the toarray did a deep copy
-        //or if the individial items in the subTable could only be set once
-        public Field[] GetSubTableArray()
+        /// <summary>
+        /// Return the subtable specification as an array of ColumnSpec
+        /// </summary>
+        /// <returns>An array of ColumnSpec containing the subtable specification</returns>
+        public ColumnSpec[] GetSubTableArray()
         {
             return _subTable.ToArray();
         }
     }
 
-    public class SubTableField : Field
+    /// <summary>
+    /// Used in Table constructor
+    /// represents a column of type DataType.Table
+    /// </summary>
+
+    public class SubTableColumn : ColumnSpec
     {
-        public SubTableField(string columnName, params Field[] subTableFieldsArray)
+        /// <summary>
+        /// Used in Table constructor
+        /// Returns a schema object representing a subtable column with the specified column name
+        /// and the specified columns. Use like this :
+        /// new Table(new SubtableColumn("Sub",new StringField("substring")))
+        /// </summary>
+        /// <param name="columnName">Name of the DataType.String column to create</param>
+        /// <param name="subTableColumnsSpecArray">array of column specifications</param>
+        public SubTableColumn(string columnName, params ColumnSpec[] subTableColumnsSpecArray)
         {
-            AddSubTableFields(this, columnName, subTableFieldsArray);
+            AddSubTableFields(this, columnName, subTableColumnsSpecArray);
         }
     }
 
-    public class StringField : Field
+
+    /// <summary>
+    /// Used in Table constructor
+    /// represents a column of type DataType.String
+    /// </summary>
+
+    public class StringColumn : ColumnSpec
     {
-        public StringField(String columnName)
+        /// <summary>
+        /// Used in Table constructor
+        /// Returns a schema object representing a string column with the specified column name
+        /// </summary>
+        /// <param name="columnName">Name of the DataType.String column to create</param>
+
+        public StringColumn(String columnName)
         {
             SetInfo(this, columnName, DataType.String);
         }
     }
 
-    public class IntField : Field
-    {
-        protected IntField() { }//used when descendants of IntField are created
+    /// <summary>
+    /// Used in Table constructor
+    /// represents a column of type DataType.Int
+    /// </summary>
 
-        public IntField(String columnName)
+    public class IntColumn : ColumnSpec
+    {
+        /// <summary>
+        /// Used in Table constructor
+        /// Returns a schema object representing a int column with the specified column name
+        /// </summary>
+        /// <param name="columnName">Name of the DataType.int column to create</param>
+
+        public IntColumn(String columnName)
         {
             SetInfo(this, columnName, DataType.Int);
         }
     }
 
-    public class BoolField : Field
-    {
-// ReSharper disable UnusedMember.Global
-        protected BoolField() { }//used when descendants of BoolField are created
-// ReSharper restore UnusedMember.Global
 
-        public BoolField(String columnName)
+
+    /// <summary>
+    /// Used in Table constructor
+    /// represents a column of type DataType.Int
+    /// </summary>
+    
+    public class BoolColumn : ColumnSpec
+    {
+        /// <summary>
+        /// Used in Table constructor
+        /// Returns a schema object representing a boolean column with the specified column name
+        /// </summary>
+        /// <param name="columnName">Name of the DataType.Bool column to create</param>
+        public BoolColumn(String columnName)
         {
             SetInfo(this, columnName, DataType.Bool);
         }
     }
 
-    public class BinaryField : Field
-    {
-// ReSharper disable UnusedMember.Global
-        protected BinaryField() { }//used when descendants of BinaryField are created
-// ReSharper restore UnusedMember.Global
 
-        public BinaryField(String columnName)
+    /// <summary>
+    /// Used in Table constructor
+    /// represents a column of type DataType.Binary
+    /// </summary>
+
+    public class BinaryColumn : ColumnSpec
+    {
+
+        /// <summary>
+        /// Used in Table constructor
+        /// Returns a schema object representing a binary column with the specified column name
+        /// </summary>
+        /// <param name="columnName">Name of the DataType.Binary column to create</param>
+        public BinaryColumn(String columnName)
         {
             SetInfo(this, columnName, DataType.Binary);
         }
     }
 
-    public class MixedField : Field
-    {
-// ReSharper disable UnusedMember.Global
-        protected MixedField() { }//used when descendants of MixedField are created
-// ReSharper restore UnusedMember.Global
 
-        public MixedField(String columnName)
+
+    /// <summary>
+    /// Used in Table constructor
+    /// represents a column of type DataType.Mixed
+    /// </summary>
+
+    public class MixedColumn : ColumnSpec
+    {
+ 
+        /// <summary>
+        /// Used in Table constructor
+        /// Returns a schema object representing a Mixed column with the specified column name
+        /// </summary>
+        /// <param name="columnName">Name of the DataType.Mixed column to create</param>
+        public MixedColumn(String columnName)
         {
             SetInfo(this, columnName, DataType.Mixed);
         }
     }
 
-    public class DateField : Field
-    {
-// ReSharper disable UnusedMember.Global
-        protected DateField() { }//used when descendants of DateField are created
-// ReSharper restore UnusedMember.Global
+    /// <summary>
+    /// Used in Table constructor
+    /// represents a column of type DataType.Date
+    /// </summary>
 
-        public DateField(String columnName)
+    public class DateColumn : ColumnSpec
+    {
+
+        /// <summary>
+        /// Used in Table constructor
+        /// Returns a schema object representing a Date (date_t) column with the specified column name
+        /// </summary>
+        /// <param name="columnName">Name of the DataType.Date column to create</param>
+        public DateColumn(String columnName)
         {
             SetInfo(this, columnName, DataType.Date);
         }
     }
 
-    public class FloatField : Field
-    {
-// ReSharper disable UnusedMember.Global
-        protected FloatField() { }//used when descendants of FloatField are created
-// ReSharper restore UnusedMember.Global
+    /// <summary>
+    /// Used in Table constructor
+    /// Returns a schema object representing a float column with the specified column name
+    /// </summary>
 
-        public FloatField(String columnName)
+    public class FloatColumn : ColumnSpec
+    {
+        /// <summary>
+        /// Used in Table constructor
+        /// Returns a schema object representing a float column with the specified column name
+        /// </summary>
+        /// <param name="columnName">Name of the DataType.Float column to create</param>
+        public FloatColumn(String columnName)
         {
             SetInfo(this, columnName, DataType.Float);
         }
     }
 
-    public class DoubleField : Field
+
+    /// <summary>
+    /// Used in Table constructor
+    /// Returns a schema object representing a double column with the specified column name
+    /// </summary>
+    public class DoubleColumn : ColumnSpec
     {
-        // ReSharper disable UnusedMember.Global
-        protected DoubleField() { }//used when descendants of DoubleField are created
-        // ReSharper restore UnusedMember.Global
-        public DoubleField(String columnName)
+
+
+        /// <summary>
+        /// Used in Table constructor
+        /// Returns a schema object representing a Double column with the specified column name
+        /// </summary>
+        /// <param name="columnName">Name of the DataType.Double column to create</param>
+
+        public DoubleColumn(String columnName)
         {
             SetInfo(this, columnName, DataType.Double);
         }
@@ -1531,103 +2011,220 @@ namespace TightDbCSharp
     namespace Extensions
     {
 
+        /// <summary>
+        /// Extensions to string that allows an alternative syntax for creating tables :
+        /// var table = new Table("FieldName".Int(),"SubTable".Table("SubField".String(),"Sub2Field".String()));
+        /// The normal syntax is new Table(New IntField("FieldName")) etc..
+        /// </summary>
         public static class TightDbExtensions
         {
-            public static Field TightDbInt(this String fieldName)
+            /// <summary>
+            /// Returns a column spec for a DataType.Int field
+            /// </summary>
+            /// <param name="fieldName">Name of the column</param>
+            /// <returns>object used in New Table call like this New Table("MyDateField".TightDbDate());</returns>
+
+            public static ColumnSpec TightDbInt(this String fieldName)
             {
-                return new Field(fieldName, DataType.Int);
+                return new ColumnSpec(fieldName, DataType.Int);
             }
 
+            /// <summary>
+            /// Returns a column spec for a DataType.Int field
+            /// </summary>
+            /// <param name="fieldName">Name of the column</param>
+            /// <returns>object used in New Table call like this New Table("MyDateField".TightDbDate());</returns>
 
-            public static Field Int(this String fieldName)
+            public static ColumnSpec Int(this String fieldName)
             {
-                return new Field(fieldName, DataType.Int);
+                return new ColumnSpec(fieldName, DataType.Int);
             }
 
-            public static Field Bool(this string fieldName)
+            /// <summary>
+            /// Returns a column spec for a DataType.Bool field
+            /// </summary>
+            /// <param name="fieldName">Name of the column</param>
+            /// <returns>object used in New Table call like this New Table("MyDateField".TightDbDate());</returns>
+
+            public static ColumnSpec Bool(this string fieldName)
             {
-                return new Field(fieldName, DataType.Bool);
+                return new ColumnSpec(fieldName, DataType.Bool);
             }
 
-            public static Field TightDbBool(this string fieldName)
+            /// <summary>
+            /// Returns a column spec for a DataType.Bool field
+            /// </summary>
+            /// <param name="fieldName">Name of the column</param>
+            /// <returns>object used in New Table call like this New Table("MyDateField".TightDbDate());</returns>
+
+            public static ColumnSpec TightDbBool(this string fieldName)
             {
-                return new Field(fieldName, DataType.Bool);
+                return new ColumnSpec(fieldName, DataType.Bool);
             }
 
-            public static Field TightDbString(this String fieldName)
+            /// <summary>
+            /// Returns a column spec for a DataType.String field
+            /// </summary>
+            /// <param name="fieldName">Name of the column</param>
+            /// <returns>object used in New Table call like this New Table("MyDateField".TightDbDate());</returns>
+
+            public static ColumnSpec TightDbString(this String fieldName)
             {
-                return new Field(fieldName, DataType.String);
+                return new ColumnSpec(fieldName, DataType.String);
             }
 
-            public static Field String(this String fieldName)
+            /// <summary>
+            /// Returns a column spec for a DataType.String field
+            /// </summary>
+            /// <param name="fieldName">Name of the column</param>
+            /// <returns>object used in New Table call like this New Table("MyDateField".TightDbDate());</returns>
+
+            public static ColumnSpec String(this String fieldName)
             {
-                return new Field(fieldName, DataType.String);
+                return new ColumnSpec(fieldName, DataType.String);
             }
 
-            public static Field TightDbBinary(this String fieldName)
+            /// <summary>
+            /// Returns a column spec for a DataType.Binary field
+            /// </summary>
+            /// <param name="fieldName">Name of the column</param>
+            /// <returns>object used in New Table call like this New Table("MyDateField".TightDbDate());</returns>
+
+            public static ColumnSpec TightDbBinary(this String fieldName)
             {
-                return new Field(fieldName, DataType.Binary);
+                return new ColumnSpec(fieldName, DataType.Binary);
             }
 
-            public static Field Binary(this String fieldName)
+            /// <summary>
+            /// Returns a column spec for a DataType.Binary field
+            /// </summary>
+            /// <param name="fieldName">Name of the column</param>
+            /// <returns>object used in New Table call like this New Table("MyDateField".TightDbDate());</returns>
+
+            public static ColumnSpec Binary(this String fieldName)
             {
-                return new Field(fieldName, DataType.Binary);
+                return new ColumnSpec(fieldName, DataType.Binary);
             }
 
-            public static Field TightDbSubTable(this String fieldName, params Field[] fields)
+            /// <summary>
+            /// Returns a column spec for a DataType.Table field. Use like this :
+            /// new Table ("sub".Table("subField".String(),"subField2".Int()));
+            /// </summary>
+            /// <param name="fieldName">Name of the column</param>
+            /// <param name="columnsSpec">collection of field objects specifying the subtable</param>
+            /// <returns>object used in New Table call like this New Table("MyDateField".TightDbDate());</returns>
+            public static ColumnSpec TightDbSubTable(this String fieldName, params ColumnSpec[] columnsSpec)
             {
-                return new Field(fieldName, fields);
+                return new ColumnSpec(fieldName, columnsSpec);
             }
 
-            public static Field SubTable(this String fieldName, params Field[] fields)
+            /// <summary>
+            /// Returns a column spec for a DataType.Table field. Use like this :
+            /// new Table ("sub".Table("subField".String(),"subField2".Int()));
+            /// </summary>
+            /// <param name="fieldName">Name of the column</param>
+            /// <param name="columnsSpec">collection of field objects specifying the subtable</param>
+            /// <returns>object used in New Table call like this New Table("MyDateField".TightDbDate());</returns>
+            public static ColumnSpec SubTable(this String fieldName, params ColumnSpec[] columnsSpec)
             {
-                return new Field(fieldName, fields);
+                return new ColumnSpec(fieldName, columnsSpec);
             }
 
             //as the TightDb has a type called table, we also provide a such named constructor even though it will always be a subtable
-            public static Field Table(this String fieldName, params Field[] fields)
+            /// <summary>
+            /// Returns a column spec for a DataType.Table field. Use like this :
+            /// new Table ("sub".Table("subField".String(),"subField2".Int()));
+            /// </summary>
+            /// <param name="fieldName">Name of the column</param>
+            /// <param name="columnsSpec">collection of field objects specifying the subtable</param>
+            /// <returns>object used in New Table call like this New Table("MyDateField".TightDbDate());</returns>
+            public static ColumnSpec Table(this String fieldName, params ColumnSpec[] columnsSpec)
             {
-                return new Field(fieldName, fields);
+                return new ColumnSpec(fieldName, columnsSpec);
             }
 
-            public static Field TightDbMixed(this String fieldName)
+            /// <summary>
+            /// Returns a column spec for a DataType.Mixed field
+            /// </summary>
+            /// <param name="fieldName">Name of the column</param>
+            /// <returns>object used in New Table call like this New Table("MyDateField".TightDbDate());</returns>
+            public static ColumnSpec TightDbMixed(this String fieldName)
             {
-                return new Field(fieldName, DataType.Mixed);
+                return new ColumnSpec(fieldName, DataType.Mixed);
             }
 
-            public static Field Mixed(this String fieldName)
+            /// <summary>
+            /// Returns a column spec for a mixed field
+            /// </summary>
+            /// <param name="fieldName">Name of the column</param>
+            /// <returns>object used in New Table call like this New Table("MyDateField".TightDbDate());</returns>
+
+            public static ColumnSpec Mixed(this String fieldName)
             {
-                return new Field(fieldName, DataType.Mixed);
+                return new ColumnSpec(fieldName, DataType.Mixed);
             }
 
-            public static Field Date(this String fieldName)
+            /// <summary>
+            /// Returns a column spec for a date field
+            /// </summary>
+            /// <param name="fieldName">Name of the column</param>
+            /// <returns>object used in New Table call like this New Table("MyDateField".TightDbDate());</returns>
+            public static ColumnSpec Date(this String fieldName)
             {
-                return new Field(fieldName, DataType.Date);
+                return new ColumnSpec(fieldName, DataType.Date);
             }
 
-            public static Field TightDbDate(this String fieldName)
+            /// <summary>
+            /// Returns a column spec for a date field
+            /// </summary>
+            /// <param name="fieldName">Name of the column</param>
+            /// <returns>object used in New Table call like this New Table("MyDateField".TightDbDate());</returns>
+            public static ColumnSpec TightDbDate(this String fieldName)
             {
-                return new Field(fieldName, DataType.Date);
+                return new ColumnSpec(fieldName, DataType.Date);
+            }
+            /// <summary>
+            /// Returns a column spec for a DataType.Float field
+            /// </summary>
+            /// <param name="fieldName">Name of the column</param>
+            /// <returns>object used in New Table call like this New Table("MyDateField".TightDbDate());</returns>
+
+            public static ColumnSpec Float(this string fieldName)
+            {
+                return new ColumnSpec(fieldName, DataType.Float);
             }
 
-            public static Field Float(this string fieldName)
+            /// <summary>
+            /// Returns a column spec for a DataType.Float field
+            /// </summary>
+            /// <param name="fieldName">Name of the column</param>
+            /// <returns>object used in New Table call like this New Table("MyDateField".TightDbDate());</returns>
+
+            public static ColumnSpec TightDbFloat(this string fieldName)
             {
-                return new Field(fieldName, DataType.Float);
+                return new ColumnSpec(fieldName, DataType.Float);
             }
 
-            public static Field TightDbFloat(this string fieldName)
+            /// <summary>
+            /// Returns a column spec for a DataType.Double field
+            /// </summary>
+            /// <param name="fieldName">Name of the column</param>
+            /// <returns>object used in New Table call like this New Table("MyDateField".TightDbDate());</returns>
+
+            public static ColumnSpec Double(this string fieldName)
             {
-                return new Field(fieldName, DataType.Float);
+                return new ColumnSpec(fieldName, DataType.Double);
             }
 
-            public static Field Double(this string fieldName)
-            {
-                return new Field(fieldName, DataType.Double);
-            }
+            /// <summary>
+            /// Returns a column spec for a DataType.Double field
+            /// </summary>
+            /// <param name="fieldName">Name of the column</param>
+            /// <returns>object used in New Table call like this New Table("MyDateField".TightDbDate());</returns>
 
-            public static Field TightDbDouble(this string fieldName)
+            public static ColumnSpec TightDbDouble(this string fieldName)
             {
-                return new Field(fieldName, DataType.Double);
+                return new ColumnSpec(fieldName, DataType.Double);
             }
         }
     }

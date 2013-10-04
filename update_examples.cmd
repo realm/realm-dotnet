@@ -5,7 +5,7 @@ echo but of course they will still be able to be debugged - User just can't debu
 echo and core will always run non-debug, full speed
 echo ...Updating C# libraries
 set location=%~dp0
-copy %location%TightDbCSharp\release\files\bin\Release\tightDbCSharp.* %location%examples\lib
+copy %location%TightDbCSharp\release\files\bin\AnyCpu\Release\tightDbCSharp.* %location%examples\lib
 echo ...Updating c++ dll files
 copy %location%\TightDBCSharp\release\files\dll\tightdb_c_cs2012??r.dll %location%examples\DynamicTable\bin\Debug
 copy %location%\TightDBCSharp\release\files\dll\tightdb_c_cs2012??r.dll %location%examples\DynamicTable\bin\Release
@@ -15,5 +15,8 @@ copy %location%\TightDBCSharp\release\files\dll\tightdb_c_cs2012??r.dll %locatio
 copy %location%\TightDBCSharp\release\files\dll\tightdb_c_cs2012??r.dll %location%examples\PerformanceTest\bin\Release
 copy %location%\TightDBCSharp\release\files\dll\tightdb_c_cs2012??r.dll %location%examples\Experimental\bin\Debug
 copy %location%\TightDBCSharp\release\files\dll\tightdb_c_cs2012??r.dll %location%examples\Experimental\bin\Release
-
+copy %location%\TightDBCSharp\release\files\dll\tightdb_c_cs2012??r.dll %location%examples\UnityExample\
+copy %location%TightDbCSharp_3.5\bin\AnyCpu\Release\tightDbCSharp.* %location%examples\UnityExample\
+copy %location%\UnityGettingStarted.txt %location%examples\UnityExample\
+copy %location%\Unitytutorialsource.cs %location%examples\UnityExample\
 pause

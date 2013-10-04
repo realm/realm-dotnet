@@ -9,10 +9,29 @@ This directory and its subdirectories contain the *developer* version of tightdb
 
 
 These instructions use file paths as examples, these paths are of course relative, but an example for
-the case where You have chekced out tightdb_csharp from github into H:\Wincoder\Develope\tightdb_csharp
+the case where You have chekced out tightdb_csharp from github into e:\Wincoder\Develope\tightdb_csharp
 
 1) You need a copy of the release dir from a VS2012 built C++ binding distribution.
-Currently this can be obtained by asking Lasse or Dennis or Brian for a VS2012 release. Building the c++ binding in windows with VS2012 (not express) is not documented for now.
+Currently this can be obtained by asking Lasse or Dennis or Brian for a VS2012 release. Building the c++ binding in windows with VS2012 (not express) can be done as follows :
+
+a) check out tightdb master to e:\Wincoder\Develope\tighdb
+b) open tightDB.sln in VS2012
+c) right click "Solution 'TightDB' (8 projects) in Solution Explorer
+d) select UpdateVC++ Projects
+e) in the popup "UpdateVC++ Compiler and Libraries" click Update
+f) wait while VS2012 updates the projects.
+g) select Build->Batch Build
+h) unmark all checkboxes under build, mark the 4 named TightDB Debug Win32, tightDB Debug x64, TightDB Release Win32, TightDB Release x64 - click Clean.  Output should report Clean : 8 succeeded, 0 failed, 0 skipped
+i) select Build->Batch build, same as h) but end up Clicking REBUILD instead of CLEAN
+j) look for compiler warnings, verify that any warnings are marked with fixme in the code, report any new warnings to core developers.
+j) if the build succeeded, run the 4 projects one by one and make sure the unit tests pass, report non passing tests to core developers
+k) build->batch build - unmark all , mark the 4 called tightdb static libraray
+l) click clean
+m) build->batch build - unmark all , mark the 4 called tightdb static libraray click build all
+o) look for compiler warnings as in j
+p) now, call winrelease.cmd this should create a release and update the VS2012 release dir contents
+
+
 
 2) This release dir should contain a zipped file, for instance :
 H:\Wincoder\Develope\tightdb\release\vs2012\release\tightdb_cpp_VS2012___.zip

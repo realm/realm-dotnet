@@ -3,15 +3,32 @@ using System.Globalization;
 
 namespace TightDbCSharp
 {
-    //Using our handled pattern but do not as such have a handle to a C# class that must be freed.
-    //instead represents a started transaction and the dispose phase is used to ensure that
-    //a rollback is done, if the transaction has not been explicitly comitted earlier on
+    /// <summary>
+    /// Read:read transacton.
+    /// Write:write transaction.
+    /// 
+    /// Read transactions cannot modify table values or schema.
+    /// Write transactions can. A transaction will read the table as it were when it started.
+    /// There can only be one write transaction (but many readers)
+    /// </summary>
     public enum TransactionKind
     {
+       /// <summary>
+       /// Indicates a Read Transaction
+       /// </summary>
        Read,
+       /// <summary>
+       /// Indicates a Write Transaction
+       /// </summary>
        Write
     }
     
+    /// <summary>
+    /// Transaction class.
+    /// Is returned by SharedGroup when starting a read or write transaction.
+    /// The transaction is inherited from Group, so You can manipulate all tables
+    /// in the group when You have acquired a transaction / started a transaction.
+    /// </summary>
     public class  Transaction:Group
     {        
         private readonly SharedGroup _sharedGroup;//pointer to the shared group this transaction is handling
@@ -40,6 +57,9 @@ namespace TightDbCSharp
             //ReadOnly = transactionType == TransactionType.Read;//readonly in group
         }
 
+        /// <summary>
+        /// Returns if this transaction is read only, or if it can modify the group and its tables
+        /// </summary>
         public TransactionKind Kind
         {
             get { return _kind; }
@@ -75,35 +95,36 @@ namespace TightDbCSharp
             }
         }
 
+        /// <summary>
+        /// Finish the transaction and discard any changes made while in the transaction.
+        /// </summary>
         public void Rollback()
         {
             EndTransaction(false);
         }
 
+        /// <summary>
+        /// Finish the transaction and keep any changes made while in the transaction.
+        /// </summary>
         public void Commit()
         {
             EndTransaction(true);
         }
 
-        //depricated
-        //added bc java has one named this way. Commit simply ends the current transaction in a non-
-        //catastrophic way, no matter what kind of transaction it is.
-        /*
-        public void EndRead()
-        {
-            Commit();
-        }
-        */
-        //this is a bit of a hack. A transaction is a group. The group pointer should NOT be
-        //freed as it is in fact a group inside a shared group, and this group is managed by
-        //the shared group
+
+        /// <summary>
+        /// this is a bit of a hack. A transaction is a group. The group pointer should NOT be
+        /// freed as it is in fact a group inside a shared group, and this group is managed by
+        /// the shared group.
+        /// When we get here, the transaction is being disposed.
+        /// When we are being disposed, we have been thrown an exception if we are InTransaction, so roll back
+        /// </summary>
         protected override void ReleaseHandle()
         {
-            if (_sharedGroup != null) {//we simply cannot rollback if shared group is null
+            if (_sharedGroup == null) return; //we simply cannot rollback if shared group is null
             if (_sharedGroup.TransactionState==TransactionState.InTransaction)
                 Rollback();
-            }
-          //base.ReleaseHandle();//group.releasehandle would release the group handle in c++ but we don't want that
+            //base.ReleaseHandle();//group.releasehandle would release the group handle in c++ but we don't want that
         }
 
         internal override string ObjectIdentification()

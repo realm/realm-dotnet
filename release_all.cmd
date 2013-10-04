@@ -18,7 +18,7 @@ call %location%native\tightdb_c_cs\tightdb_c_cs2012\release.cmd
 set location=%~dp0
 echo any key to start creating the c# release
 pause
-call %location%TightDbCSharp\release.cmd
+call %location%\Release.cmd
 
 set location=%~dp0
 echo any key to start creating the pre-setup examples release zip file

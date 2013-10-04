@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Windows.Forms;
+
 
 
 
@@ -34,16 +34,48 @@ enum DataType {
 };
      */
 
+    /// <summary>
+    /// Enumerates the types of columns a TightDb table can have
+    /// </summary>
     public enum DataType
     {
+        /// <summary>
+        /// Indicates a TighDb type_Int column
+        /// </summary>
+
         Int        =  0,
-        Bool       =  1,
+        /// <summary>
+        /// Indicates a TighDb type_Bool column
+        /// </summary>
+        Bool = 1,
+        /// <summary>
+        /// Indicates a TighDb type_string column
+        /// </summary>
         String     =  2,
-        Binary     =  4,
+        /// <summary>
+        /// Indicates a TighDb type_Binary column
+        /// </summary>
+        Binary = 4,
+        /// <summary>
+        /// Indicates a TighDb type_Table column
+        /// </summary>
         Table      =  5,
+        /// <summary>
+        /// Indicates a TighDb type_Mixed column
+        /// </summary>
         Mixed      =  6,
+        /// <summary>
+        /// Indicates a TighDb type_Date column
+        /// </summary>
         Date       =  7,
+        /// <summary>
+        /// Indicates a TighDb type_Float column
+        /// </summary>
         Float      =  9,
+        /// <summary>
+        /// Indicates a TighDb type_Double column
+        /// </summary>
+
        Double      = 10
     }
 
@@ -498,17 +530,34 @@ enum DataType {
 
 
         [DllImport(L64, EntryPoint = "new_group_file", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr new_group_file64([MarshalAs(UnmanagedType.LPWStr)]  string fileName, IntPtr fileNameLen);
+        private static extern IntPtr new_group_file64([MarshalAs(UnmanagedType.LPWStr)]  string fileName, IntPtr fileNameLen,IntPtr openMode);
 
         [DllImport(L32, EntryPoint = "new_group_file", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr new_group_file32([MarshalAs(UnmanagedType.LPWStr)] string fileName, IntPtr fileNameLen);
+        private static extern IntPtr new_group_file32([MarshalAs(UnmanagedType.LPWStr)] string fileName, IntPtr fileNameLen, IntPtr openMode);
 
 
-        public static void GroupNewFile(Group group, string fileName)
+        public static void GroupNewFile(Group group, string fileName,Group.OpenMode openMode)
         {
+            IntPtr nativeOpenMode;
+            switch (openMode)
+            {
+                case Group.OpenMode.ModeReadOnly:
+                    nativeOpenMode = (IntPtr) 0;
+                    break;
+                case Group.OpenMode.ModeReadWrite:
+                    nativeOpenMode = (IntPtr) 1;
+                    break;
+                case Group.OpenMode.ModeReadWriteNoCreate:
+                    nativeOpenMode = (IntPtr) 2;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException("openMode");
+            }
+
             var handle = Is64Bit
-                ? new_group_file64(fileName, (IntPtr) fileName.Length)
-                : new_group_file32(fileName, (IntPtr) fileName.Length);
+                ? new_group_file64(fileName, (IntPtr) fileName.Length,nativeOpenMode)
+                : new_group_file32(fileName, (IntPtr) fileName.Length,nativeOpenMode);
+
 
             if (handle != IntPtr.Zero)
             {
@@ -530,13 +579,13 @@ enum DataType {
 
         public static void GroupNew(Group group)
         {
-            // Console.WriteLine("In GroupNew, about to call group.sethandle(call to new_group)");
+
                 group.SetHandle(Is64Bit
                     ? new_group64()
                     : new_group32(), true);
         }
 
-        //Console.WriteLine("Group got handle {0}", group.ObjectIdentification());
+
         
 
 
@@ -632,7 +681,6 @@ enum DataType {
             catch (SEHException e)//debugging stuff - remove
             {
                 Console.WriteLine(e.Message);
-                Application.DoEvents();
                 throw new NotImplementedException("Table Find First has not been implemented in this version ");                
             }
 
@@ -1716,13 +1764,13 @@ enum DataType {
         //      void    table_unbind(const Table *t); /* Ref-count delete of table* from table_get_table() */
         public static void TableUnbind(Table t)
         {
-            //Console.WriteLine("Tableunbind calling unbind_table_ref " + t.ObjectIdentification());
+
             if (Is64Bit)
                 unbind_table_ref64(t.Handle);
             else
                 unbind_table_ref32(t.Handle);
             t.Handle = IntPtr.Zero;
-            //Console.WriteLine("Tableunbind called unbind_table_ref " + t.ObjectIdentification());
+
         }
 
 
@@ -1738,13 +1786,13 @@ enum DataType {
         //      void    table_unbind(const Table *t); /* Ref-count delete of table* from table_get_table() */
         public static void TableViewUnbind(TableView tv)
         {
-            //Console.WriteLine("TableViewUnbind calling tableview_delete " + tv.ObjectIdentification());
+
             if (Is64Bit)
                 tableview_delete64(tv.Handle);
             else
                 tableview_delete32(tv.Handle);
             tv.Handle = IntPtr.Zero;
-            //Console.WriteLine("TableViewUnbind called tableview_delete " + tv.ObjectIdentification());
+            
         }
 
 
@@ -1797,14 +1845,14 @@ enum DataType {
 
         public static void QueryDelete(Query q)
         {
-            //Console.WriteLine("QueryDelete calling query_delete " + q.ObjectIdentification());
+
 
             if (Is64Bit)
                 query_delete64(q.Handle);
             else
                 query_delete32(q.Handle);
             q.Handle = IntPtr.Zero;
-            //Console.WriteLine("QueryDelete called query_delete " + q.ObjectIdentification());
+
         }
 
 
@@ -2499,6 +2547,25 @@ enum DataType {
 
 
         //        TIGHTDB_C_CS_API void table_set_int(Table* TablePtr, size_t column_ndx, size_t row_ndx, int64_t value)
+        [DllImport(L64, EntryPoint = "table_set_32int", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void table_set_32int64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx, int value);
+
+        [DllImport(L32, EntryPoint = "table_set_32int", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void table_set_32int32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx, int value);
+
+        public static void TableSetInt(Table table, long columnIndex, long rowIndex, int value)
+        {
+            if (Is64Bit)
+                table_set_32int64(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
+            else
+                table_set_32int32(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
+        }
+
+
+
+
+
+        //        TIGHTDB_C_CS_API void table_set_int(Table* TablePtr, size_t column_ndx, size_t row_ndx, int64_t value)
         [DllImport(L64, EntryPoint = "table_set_string", CallingConvention = CallingConvention.Cdecl)]
         private static extern void table_set_string64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx,[MarshalAs(UnmanagedType.LPWStr)] string value,IntPtr valueLen );
 
@@ -2622,6 +2689,20 @@ enum DataType {
 
 
 
+        [DllImport(L64, EntryPoint = "tableview_set_32int", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void tableView_set_32int64(IntPtr tableViewPtr, IntPtr columnNdx, IntPtr rowNdx, int value);
+
+        [DllImport(L32, EntryPoint = "tableview_set_32int", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void tableView_set_32int32(IntPtr tableViewPtr, IntPtr columnNdx, IntPtr rowNdx, int value);
+
+        public static void TableViewSetInt(TableView tableView, long columnIndex, long rowIndex, int value)
+        {
+
+            if (Is64Bit)
+                tableView_set_32int64(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
+            else
+                tableView_set_32int32(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
+        }
 
 
 
@@ -3625,7 +3706,7 @@ enum DataType {
 
         public static void TableViewSetMixedFloat(TableView tableView, long columnIndex, long rowIndex, float value)
         {
-            //Console.WriteLine("Tableviewsetmixedfloat calling with {0}",value);
+
             if (Is64Bit)
                 tableview_set_mixed_float64(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
             else
@@ -3641,7 +3722,7 @@ enum DataType {
 
         public static void TableSetMixedFloat(Table table ,long columnIndex, long rowIndex, float value)
         {
-            //Console.WriteLine("TableSetMixedFloat calling with {0}", value);
+
 
             if (Is64Bit)
                 table_set_mixed_float64(table.Handle, (IntPtr)columnIndex,(IntPtr) rowIndex, value);
@@ -4750,21 +4831,6 @@ enum DataType {
         //todo:an enhanced version of this, will show all the search paths that .net will use to get
         //at the dll.
 
-        //dump various diagnostics to console
-        public static void ShowInfo()
-        {
-            var info = new StringBuilder();
-            GetCsInfo(info);
-            Console.WriteLine(info.ToString());//dump to console before we might abort below
-#if V40PLUS
-            info.Clear();
-#else
-            info=new StringBuilder();
-#endif
-            GetCppInfo(info);
-            Console.WriteLine(info.ToString());
-        }
-
 
 
         private static string Dllstring()
@@ -4772,8 +4838,9 @@ enum DataType {
             return (IntPtr.Size == 8) ? L64 : L32;
         }
         //returns info that can be gathered without actually loading the c++ dll
-        public static void GetCsInfo(StringBuilder info)
+        public static String GetCsInfo()
         {
+            var info = new StringBuilder();
             var pointerSize = IntPtr.Size;
             var vmBitness = (pointerSize == 8) ? "64bit" : "32bit";
 #if V40PLUS
@@ -4839,10 +4906,12 @@ enum DataType {
             info.AppendLine("");
             info.AppendLine(String.Format(CultureInfo.InvariantCulture, "Now Loading {0} - expecting it to be a {1} dll",
                 Dllstring(), vmBitness));
+            return info.ToString();
         }
 
-        public static void GetCppInfo(StringBuilder info)
+        public static string GetCppInfo()
         {
+            var info = new StringBuilder();
             //most exceptions while loading the dll first time will abort the program and cannot be caught
             //but try to catch anything that might be catchable
             try
@@ -4877,10 +4946,11 @@ enum DataType {
                 info.AppendLine();
             }
             catch (Exception e)
-            {
+            {//mono might crash if we get here, as it does not support c++ thrown exceptions
                 info.AppendLine(String.Format(CultureInfo.InvariantCulture,
                     "Exception thrown while attempting to call c++ dll {0}", e.Message));
             }
+            return info.ToString();
         }
 
 
@@ -5060,6 +5130,7 @@ enum DataType {
         }
         */
 
+        /*
         [DllImport(L64, EntryPoint = "shared_group_is_attached", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr shared_group_is_attached64(IntPtr handle);
 
@@ -5073,7 +5144,7 @@ enum DataType {
             return IntPtrToBool(shared_group_is_attached32(sharedGroup.Handle));            
         }
 
-
+        */
 
         [DllImport(L64, EntryPoint = "shared_group_has_changed", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr shared_group_has_changed64(IntPtr handle);
