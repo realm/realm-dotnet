@@ -167,15 +167,15 @@ namespace TightDbCSharpTest
             using (var combitable = GetTableWithCombinations())
             {
                 Query combiquery = combitable.Where().Greater("intcolumn2", 1);
-                Assert.AreEqual(3, combiquery.FindNext(-1));
-                Assert.AreEqual(4, combiquery.FindNext(3));
-                Assert.AreEqual(5, combiquery.FindNext(4));
-                Assert.AreEqual(6, combiquery.FindNext(5));
-                Assert.AreEqual(7, combiquery.FindNext(6));
-                Assert.AreEqual(8, combiquery.FindNext(7));
-                Assert.AreEqual(12, combiquery.FindNext(8));
-                Assert.AreEqual(13, combiquery.FindNext(12));
-                Assert.AreEqual(14, combiquery.FindNext(13));
+                Assert.AreEqual(3, combiquery.Find(0));
+                Assert.AreEqual(4, combiquery.Find(4));
+                Assert.AreEqual(5, combiquery.Find(5));
+                Assert.AreEqual(6, combiquery.Find(6));
+                Assert.AreEqual(7, combiquery.Find(7));
+                Assert.AreEqual(8, combiquery.Find(8));
+                Assert.AreEqual(12, combiquery.Find(9));
+                Assert.AreEqual(13, combiquery.Find(13));
+                Assert.AreEqual(14, combiquery.Find(14));
             }
         }
 
@@ -188,12 +188,15 @@ namespace TightDbCSharpTest
         {
             var inttable = GetTableWithMultipleIntegers();
             var query = inttable.Where().Greater("intcolumn0", 500);
-            Assert.AreEqual(query.Count( r =>r.GetLong("intcolumn0")>500),499);           
-            foreach (TableRow tr in query)
+            Assert.AreEqual(499,query.Count(r =>r.GetLong("intcolumn0")>500));
+            long rowsReturned = 0;
+            foreach (var tr in query)
             {
+                ++rowsReturned;
                 bool isLt = (tr.GetLong("intcolumn0") > 500);
                 Assert.AreEqual(true,isLt);//bc NUnitLite does not support greater
             }
+            Assert.AreEqual(499,rowsReturned);
         }
 
 

@@ -777,7 +777,7 @@ TIGHTDB_C_CS_API size_t table_find_first_binary(Table * table_ptr , size_t colum
     BinaryData bd = BinaryData(value,len);
     return  table_ptr->find_first_binary(column_ndx,bd);
 	}
-	catch (exception)//temporary catcher as find_first_binary does not work yet in core - it always throws
+	catch (...)//temporary catcher as find_first_binary does not work yet in core - it always throws
 	{
 		return 0;
 	}
@@ -822,17 +822,32 @@ TIGHTDB_C_CS_API tightdb::TableView* table_find_all_string(Table * table_ptr , s
     return new TableView(table_ptr->find_all_string(column_ndx,str));            
 }
 
-//todo:implement table_find_all_binary
+
 TIGHTDB_C_CS_API tightdb::TableView* table_find_all_binary(Table * table_ptr , size_t column_ndx,  const char* data, std::size_t size)
-{   
-    BinaryData bd(data,size);
-    return new TableView(table_ptr->find_all_binary(column_ndx,bd));            
+{
+	try 
+	{
+      BinaryData bd(data,size);
+      return new TableView(table_ptr->find_all_binary(column_ndx,bd));            
+    }
+    catch (...) //find_all_binary is not implemented yet in core -it throws. catch the trow here and just return null. When core works, then this will work too
+	{
+		return new TableView(table_ptr->where().find_all());
+    }
 }
+
 
 TIGHTDB_C_CS_API tightdb::TableView* table_find_all_empty_binary(Table * table_ptr , size_t column_ndx)
 {   
-    BinaryData bd;
-    return new TableView(table_ptr->find_all_binary(column_ndx,bd));            
+	try 
+	{
+       BinaryData bd;
+       return new TableView(table_ptr->find_all_binary(column_ndx,bd));            
+	}
+	catch (...)
+	{
+		return new TableView(table_ptr->where().find_all());//until find_all_binary has been implemented, just return all rows (instead of throwing which C# doesn't like)
+	}
 }
 
 
@@ -1731,9 +1746,9 @@ TIGHTDB_C_CS_API tightdb::TableView* query_find_all_np(Query * query_ptr )
 }
 
 
-TIGHTDB_C_CS_API size_t query_find_next(Query * query_ptr, size_t last_match) 
+TIGHTDB_C_CS_API size_t query_find(Query * query_ptr, size_t begin_at_table_row) 
 {
-    return query_ptr->find_next(last_match);
+	return query_ptr->find(begin_at_table_row);
 }
 
 

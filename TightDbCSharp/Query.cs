@@ -294,13 +294,14 @@ namespace TightDbCSharp
 
         
         /// <summary>
-        /// retruns row index of the first query match with higher row index than LastMatch
+        /// retruns row index of the first query match, parameter indicates the first record to check for a match
+        /// returns -1 if there was no match
         /// </summary>
-        /// <param name="lastMatch">Usually row index of the last match, search will start with lastMatch+1</param>
-        /// <returns>row Index of the next matching row, starting from LastMatch+1</returns>
-        public long FindNext(long lastMatch)
+        /// <param name="beginAtTableRow">the first row that should be chekced</param>
+        /// <returns>row Index of the next matching row, or -1 if there was no match</returns>
+        public long Find(long beginAtTableRow )
         {
-            return UnsafeNativeMethods.QueryFindNext(this,lastMatch);            
+            return UnsafeNativeMethods.QueryFind(this,beginAtTableRow);            
         }
 
         
@@ -333,13 +334,24 @@ namespace TightDbCSharp
         /// <returns>
         /// A IEnumerator that can be used to iterate through the collection, yielding TableRow objects for each row the query matches
         /// </returns>
-        
+
         public IEnumerator<TableRow> GetEnumerator()
         {
-            long nextix = -1;//-1 means start all over, means that prior call returned no value. I hope the long -1 gets translated to a intptr -1 correctly when the intptr is only 32bits
-            while ((nextix = FindNext(nextix)) != -1)
-            {
-                yield return new TableRow(UnderlyingTable, nextix);
+            var findmore = true;
+            long nextToTest = 0;
+
+            while (findmore)
+            {                
+                var rowToReturn = Find(nextToTest);
+                if (rowToReturn != -1)
+                {
+                    nextToTest=rowToReturn+1;
+                    yield return new TableRow(UnderlyingTable, rowToReturn);
+                }
+                else
+                {
+                    findmore = false;
+                }
             }
         }
 

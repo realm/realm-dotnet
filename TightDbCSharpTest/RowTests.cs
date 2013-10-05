@@ -146,7 +146,7 @@ namespace TightDbCSharpTest
         /// The test ought to fail with System.ArgumentOutOfRangeException
         /// </summary>
         [Test]
-        [ExpectedException("System.ArgumentOutOfRangeException")]
+        [ExpectedException("System.ArgumentException")]
         public static void GetColumnIndexNotFoundBug32Bit()
         {
             using (var table = new Table())
@@ -164,7 +164,7 @@ namespace TightDbCSharpTest
         /// The test ought to fail with System.ArgumentOutOfRangeException
         /// </summary>
         [Test]
-        [ExpectedException("System.ArgumentOutOfRangeException")]
+        [ExpectedException("System.ArgumentException")]
         public static void GetColumnIndexNotFoundBug32BitTyped()
         {
             using (var table = new Table())
@@ -378,7 +378,7 @@ namespace TightDbCSharpTest
         /// test that string indexing fields in a tablerow fails when the string is not a column name
         /// </summary>
         [Test]
-        [ExpectedException("System.ArgumentOutOfRangeException")]
+        [ExpectedException("System.ArgumentException")]
         public static void TestIndexerWrongStringIndex()
         {
             using (var t = new Table(new IntColumn("A")))
