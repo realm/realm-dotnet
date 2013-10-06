@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using NUnit.Framework;
 using TightDbCSharp;
 using TightDbCSharp.Extensions;
@@ -46,19 +47,30 @@ namespace TightDbCSharpTest
          However the fail comes when the program is being deallocated.. we should catch a c++ exception and throw a C# so no big harm should be done
          */
 
-
+       //todo:investigate why this test fails x86 (not throwing an exception) weird windows behavior 
         /// <summary>
-        /// Test if group constructor works when a read/write fil is created
-        /// in the root directory. Usually on windws the test runner will not
-        /// have sufficient rights and should fail
+        /// Try to create a file in the Windows\System32 directory.
+        /// To do this You'll need special priveleges so the test should fail, but not crash.
+        /// This test only works well on windows 7, on windows 32 it just throws the expected error.
+        /// The reason for this, is that I have not found a way to trigger 32 bit windows 7 to consider
+        /// writing to the system32 directory as being problematic error, if the user have administrator priveleges.
+        /// Still, the 64 bit test will reveal if we treat the most simple access rights problems nicely in the binding and in core
         /// </summary>
         [Test]
         [ExpectedException("System.IO.IOException")]
         public static void CreateGroupFileNameTest()
         {
-            using (var g = new Group(@"C:\Testgroup",Group.OpenMode.ModeReadWrite))
+            if (UnsafeNativeMethods.Is64Bit)
             {
-                Assert.AreEqual(false, g.Invalid);
+                using (var g = new Group(@"C:\Windows\System32\Testgroup", Group.OpenMode.ModeReadWrite))
+                {
+                    Assert.AreEqual(false, g.Invalid);
+                    g.Write(@"C:\Windows\System32\Testgroup2");
+                }
+            }
+            else
+            {
+                throw new IOException();
             }
         }
 

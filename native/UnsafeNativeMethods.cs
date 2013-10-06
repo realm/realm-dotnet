@@ -1629,9 +1629,8 @@ enum DataType {
             if (tableHandle != IntPtr.Zero)
                 {
                     return new TableView(table, tableHandle, true);
-                }
-                else
-                    throw new NotImplementedException("Table.FindAllBinary is not implemented in core yet");
+                }                           
+            throw new NotImplementedException("Table.FindAllBinary is not implemented in core yet");
             
         }
 
@@ -4983,7 +4982,7 @@ enum DataType {
         //the call would be called many times but could just return at once, if we were already initialized
         //and if we were not, we could set the is64bit boolean correctly - and then all other calls (does not call init) could just check that boolean
         //would speed up interop call overhead about 3-4 percent, currently at about 100 million a second on a 2.6GHZ cpu
-        private static bool Is64Bit
+        internal static bool Is64Bit
         {
             get
             {

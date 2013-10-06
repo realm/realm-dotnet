@@ -2672,3 +2672,4 @@ UnityTestDll/UnityTestDll/obj/Debug/UnityTestDll.dll
 UnityTestDll/UnityTestDll/obj/Debug/UnityTestDll.pdb
 UnityTestDll/UnityTestDll/Properties/AssemblyInfo.cs
 UnityTestDll/UnityTestDll/UnityTestDll.csproj
+native/libsVS2012/src/tightdb/query_expression.hpp

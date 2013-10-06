@@ -2998,6 +2998,9 @@ Table Name  : cyclic field definition
             }
         }
 
+        /// <summary>
+        /// insert at position lower than first row
+        /// </summary>
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
         public static void TableInsertEmptyTooLowIndex()
@@ -3304,6 +3307,9 @@ Table Name  : cyclic field definition
             }
         }
 
+        /// <summary>
+        /// test that removecolumn(path)  works with columns in subtables too
+        /// </summary>
         [Test]        
         public static void TableRemoveSubColumn()
         {
@@ -3322,6 +3328,9 @@ Table Name  : cyclic field definition
         }
 
         //add generic column at the top level
+        /// <summary>
+        /// Test add generic column 
+        /// </summary>
         [Test]
         public static void TableAddColumnTypeParameter()
         {
@@ -3333,7 +3342,10 @@ Table Name  : cyclic field definition
             }
         }
 
-        //add generic column with a path top level
+        
+        /// <summary>
+        /// add generic column with a path top level
+        /// </summary>
         [Test]
         public static void TableAddColumnTypeParameterPath()
         {
@@ -3348,20 +3360,19 @@ Table Name  : cyclic field definition
 
 
 
-        // create a nested subtable, used to store a graph where most of the work is looking at a vertex and its edges (not so much the vertices its edges point to) :
-                // ID int
-                // Name string
-                // Edges subtable
-                //       ID int //(target vertex ID)
-                //       Weight double //weight for edge
-                //       Cost Double  //cost for this edge, will be calculated
-                //       Visited boolean //did we calculate the weight for this edge yet?
-                //       Edge data       
-                //          Name String  //extra data tagged on the edge
-                //          Value int    //used to calculate cost of traversing edge
-
-
-
+        /// <summary>
+        ///  create a nested subtable, used to store a graph where most of the work is looking at a vertex and its edges (not so much the vertices its edges point to) :
+        ///  ID int
+        ///  Name string
+        ///  Edges subtable
+        ///  ID int //(target vertex ID)
+        ///  Weight double //weight for edge
+        ///  Cost Double  //cost for this edge, will be calculated
+        ///  Visited boolean //did we calculate the weight for this edge yet?
+        ///  Edge data       
+        ///  Name String  //extra data tagged on the edge
+        ///  Value int    //used to calculate cost of traversing edge
+        ///  </summary>
             [Test]
         public static void TableAddSubTableUsingPath()
         {
@@ -3404,8 +3415,9 @@ Table Name  : subtable structure made with AddSubColumn path arrays
             Assert.AreEqual(expectedres, actualres);
         }
 
-        //see test above -  perhaps this kind of notation is not really very useful, it formats pretty ugly when being autoformatted
-        //It might always be easier to read and maintain if the user instantiates a List<int> object as in the parameter example
+        /// <summary>
+        /// see test above -  perhaps this kind of notation is not really very useful, it formats pretty ugly when being autoformatted        
+        /// </summary>
         [Test]
         public static void TableAddSubTableUsingParameters()
         {
@@ -3449,7 +3461,10 @@ Table Name  : subtable structure made with AddSubColumn parameters
 
 
 
-        //see test above
+
+        /// <summary>
+        /// rename a subtable using path
+        /// </summary>
         [Test]
         public static void TableRenameSubTableUsingParameters()
         {
@@ -3523,6 +3538,10 @@ Table Name  : rename columns in subtables via parameters
 
         //todo(er i Asana):måske skulle addcolumn også kunne tage et field objekt og et field array - så kunne man bruge table create syntaxen til at adde kolonner
         //lav prioritet, eneste fordel vil være at man kan oprette tables med subtables i en oneliner
+
+        /// <summary>
+        /// Test addsubtable path return values
+        /// </summary>
         [Test]
         public static void TableAddSubTableHugeTable()
         {
@@ -3556,6 +3575,9 @@ Table Name  : rename columns in subtables via parameters
         }
 
 
+        /// <summary>
+        /// Test setbinary
+        /// </summary>
         [Test]
         public static void TableSetBinary()
         {
@@ -3572,6 +3594,9 @@ Table Name  : rename columns in subtables via parameters
         }
 
 
+        /// <summary>
+        /// Setmixedbinary
+        /// </summary>
         [Test]
         public static void TableSetMixedBinary()
         {
@@ -3592,6 +3617,9 @@ Table Name  : rename columns in subtables via parameters
 
 
 
+        /// <summary>
+        /// Special code is handling empty binaries, so tested here
+        /// </summary>
         [Test]
         public static void TableSetGetEmptyBinary()
         {
@@ -3624,10 +3652,12 @@ Table Name  : rename columns in subtables via parameters
 
 
 
+        /// <summary>
+        /// when implemented in core, remove this expectation and the throw in UnsafeNativeMethods.TableFindFirstBinary
+        /// and the guard that makes mono compilation not call the dll
+        /// </summary>
         [Test]
         [ExpectedException("System.NotImplementedException")]
-        //when implemented in core, remove this expectation and the throw in UnsafeNativeMethods.TableFindFirstBinary
-        //and the guard that makes mono compilation not call the dll
         public static void TableFindFirstBinary()
         {
             using (var table = new Table("radio".Binary(), "int".Int()))
@@ -3647,6 +3677,9 @@ Table Name  : rename columns in subtables via parameters
 
 
 
+        /// <summary>
+        /// Test setting a subtable with a non-compatible schema
+        /// </summary>
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
         public static void TableSetSubTableBadSchema()
@@ -3681,6 +3714,9 @@ Table Name  : rename columns in subtables via parameters
 
 
 
+        /// <summary>
+        /// Do we catch custm-built weird field definitions?
+        /// </summary>
         [Test]
         [ExpectedException("System.ArgumentNullException")]
         public static void TestCyclicFieldDefinition2()
@@ -3719,6 +3755,9 @@ Table Name  : cyclic field definition
 
 
 
+        /// <summary>
+        /// test that subtable specifications are only considered if type is subtable
+        /// </summary>
         [Test]
         public static void TestIllegalFieldDefinitions4()
         {
@@ -3744,6 +3783,9 @@ Table Name  : just an int field, no subs
             TestHelper.Cmp(expectedres, actualres);
         }
 
+        /// <summary>
+        /// more illegal field definitions tests
+        /// </summary>
         [Test]
         public static void TestIllegalFieldDefinitions5()
         {
@@ -3774,6 +3816,9 @@ Table Name  : subtable with two int fields
             //and thus resurfacing the two subfields. no harm done.
         }
 
+        /// <summary>
+        /// test we can create two columns only different in case
+        /// </summary>
         [Test]
         public static void TestCreateStrangeTable1()
         {
@@ -3797,6 +3842,9 @@ Table Name  : two fields, case is differnt
             TestHelper.Cmp(expectedres, actualres);
         }
 
+        /// <summary>
+        /// Create table with two equally typed and named columns. What happens?
+        /// </summary>
         [Test]
         public static void TestCreateStrangeTable2()
         {
@@ -3823,7 +3871,9 @@ Table Name  : two fields name and type the same
         }
 
 
-        //Test if two table creations where the second happens before the first is out of scope, works okay
+        /// <summary>
+        /// Test if two table creations where the second happens before the first is out of scope, works okay
+        /// </summary>
         [Test]
         public static void TestCreateTwoTables()
         {
@@ -3892,6 +3942,9 @@ Table Name  : four columns, sub three subsub three
             TestHelper.Cmp(expectedres, actualres.ToString());
         }
 
+        /// <summary>
+        /// Create table with duplicate columns with no name
+        /// </summary>
         [Test]
         public static void TestCreateStrangeTable3()
         {
@@ -3919,6 +3972,9 @@ Table Name  : same names int two empty string names
             TestHelper.Cmp(expectedres, actualres);
         }
 
+        /// <summary>
+        /// Two columns same name different type
+        /// </summary>
         [Test]
         public static void TestCreateStrangeTable4()
         {
@@ -3948,17 +4004,25 @@ Table Name  : same names, empty names, mixed types
         }
 
 
+        /// <summary>
+        /// maximum double fast test, should be expanded
+        /// </summary>
         [Test]
         public static void TableMaximumDouble()
         {
             using (var myTable = new Table("double".TightDbDouble()))
             {
                 myTable.Add(1d);
-                Assert.AreEqual(1d, myTable.MaximumDouble(0));
+                myTable.Add(3d);
+                myTable.Add(2d);
+                Assert.AreEqual(3d, myTable.MaximumDouble(0));
             }
         }
 
-        //should probably be split up into more tests, but this one touches all c++ functions which is okay for now
+        
+        /// <summary>
+        /// Test a lot of aggregate functions in one go
+        /// </summary>
         [Test]
         public static void TableAggregate()
         {
@@ -4127,6 +4191,9 @@ double:-1002//column 3
         }
 
         //Todo:expand this unit test to see if GetValue and SetValue works with all native types and with all tightdb types
+        /// <summary>
+        /// I think old test, should be expanded or deleted
+        /// </summary>
         [Test]
         public static void GetValue()
         {
@@ -4139,6 +4206,9 @@ double:-1002//column 3
             }
         }
 
+        /// <summary>
+        /// test find first int
+        /// </summary>
         [Test]
         public static void FindFirstInt()
         {
@@ -4150,6 +4220,9 @@ double:-1002//column 3
         }
 
 
+        /// <summary>
+        /// Table.FindFirstString
+        /// </summary>
         [Test]
         public static void FindFirstString()
         {
@@ -4168,6 +4241,9 @@ double:-1002//column 3
         }
 
 
+        /// <summary>
+        /// Table.FindFirstDouble
+        /// </summary>
         [Test]
         public static void FindFirstDouble()
         {
@@ -4179,6 +4255,9 @@ double:-1002//column 3
             }
         }
 
+        /// <summary>
+        /// Table.FindFirstBool
+        /// </summary>
         [Test]
         public static void FindFirstBool()
         {
@@ -4193,6 +4272,9 @@ double:-1002//column 3
 
 
 
+        /// <summary>
+        /// Table.FindFirstFloat
+        /// </summary>
         [Test]
         public static void FindFirstFloat()
         {
@@ -4208,6 +4290,9 @@ double:-1002//column 3
             }
         }
 
+        /// <summary>
+        /// call Table.FindFirstDateTime
+        /// </summary>
         [Test]
         public static void FindFirstDateTime()
         {
@@ -4223,6 +4308,9 @@ double:-1002//column 3
         }
 
 
+        /// <summary>
+        /// Test that addmnay thows when called with null
+        /// </summary>
         [Test]
         [ExpectedException("System.ArgumentNullException")]
         public static void AddManyNull()
@@ -4234,7 +4322,10 @@ double:-1002//column 3
         }
 
 
-        //report data on screen reg. environment
+        
+        /// <summary>
+        /// This test will investigate the operating environment and report on the console
+        /// </summary>
         [Test]
         public static void ShowVersionTest()
         {
@@ -4243,6 +4334,10 @@ double:-1002//column 3
 
 
         //check that values  in the interface are marshalled correctly on this build and platform combination
+        /// <summary>
+        /// Test interop - especially test that the values we use for communicating with 
+        /// the c++ DLL are sent and recieved correctly
+        /// </summary>
         [Test]
         public static void TestInterop()
         {
@@ -4275,32 +4370,29 @@ double:-1002//column 3
         }
 
 
-        //tightdb Date is date_t which is seconds since 1970,1,1
-        //it is an integer with the number of seconds since 1970,1,1 00:00
-        //negative means before 1970,1,1
-        //the date is always UTC - not local time
 
 
-        //C# DateTime is a lot different. Basically an integer tick count since 0001,1,1 00:00 where a tick is 100 microseconds
-        //As long as the tightdb Date is 64 bits, tightdb Date has enough range to always keep a C# datetime
-        //however the C# datetime has much higher precision, and this precision is lost when stored to tightdb
-        //also, a C# DateTime can be of 3 kinds :
-        // DateTimeKindUnspecified : Probably local time when it was created, but you really don't know - developer haven't been specific about it
-        // DateTimeKindLocal :The time represents a point in time, measured with the currently running machine's culture information and timezone. Daylight rules etc.
-        // DateTimeKindUTC : The time represents a point in time, measured in UTC
-
-        //When storing a DateTime, the binding do this :
-        //* The DateTime is converted to UTC if it is not already UTC
-        //* The time part of the DateTime is truncated to seconds
-        //* A tightdb time variable is created from the now compatible DateTime
-
-        //when fetching back a DateTime from tightdb, the binding do this :
-        //* The tightdb time variable is converted to a DateTime of kind UTC
-
-        //The convention is that tightdb alwas and only store utc datetime values
-        //If You want to store a DateTime unaltered, use DateTime.ToBinary and DateTime.FromBinary and store these values in a int field.(which is always 64 bit)
-
-
+        /// <summary>  
+        ///tightdb Date is date_t which is seconds since 1970,1,1
+        ///it is an integer with the number of seconds since 1970,1,1 00:00
+        ///negative means before 1970,1,1
+        ///the date is always UTC - not local time
+        ///C# DateTime is a lot different. Basically an integer tick count since 0001,1,1 00:00 where a tick is 100 microseconds
+        ///As long as the tightdb Date is 64 bits, tightdb Date has enough range to always keep a C# datetime
+        ///however the C# datetime has much higher precision, and this precision is lost when stored to tightdb
+        ///also, a C# DateTime can be of 3 kinds :
+        /// DateTimeKindUnspecified : Probably local time when it was created, but you really don't know - developer haven't been specific about it
+        /// DateTimeKindLocal :The time represents a point in time, measured with the currently running machine's culture information and timezone. Daylight rules etc.
+        /// DateTimeKindUTC : The time represents a point in time, measured in UTC
+        ///When storing a DateTime, the binding do this :
+        ///* The DateTime is converted to UTC if it is not already UTC
+        ///* The time part of the DateTime is truncated to seconds
+        ///* A tightdb time variable is created from the now compatible DateTime
+        ///when fetching back a DateTime from tightdb, the binding do this :
+        ///* The tightdb time variable is converted to a DateTime of kind UTC
+        ///The convention is that tightdb alwas and only store utc datetime values
+        ///If You want to store a DateTime unaltered, use DateTime.ToBinary and DateTime.FromBinary and store these values in a int field.(which is always 64 bit)
+        /// </summary>
         [Test]
         public static void TestSaveAndRetrieveDate()
         {
@@ -4420,6 +4512,9 @@ double:-1002//column 3
         }
 
 
+        /// <summary>
+        /// test setmixedsubtable
+        /// </summary>
         [Test]
         public static void TableMixedCreateEmptySubTable2()
         {
@@ -4438,6 +4533,9 @@ double:-1002//column 3
         }
 
 
+        /// <summary>
+        /// Test setmixedemptysubtable
+        /// </summary>
         [Test]
         public static void TableMixedCreateEmptySubTable()
         {
@@ -4450,6 +4548,9 @@ double:-1002//column 3
             }
         }
 
+        /// <summary>
+        /// test setmixedsubtable
+        /// </summary>
         [Test]
         public static void TableMixedCreateSubTable()
         {
@@ -4465,6 +4566,9 @@ double:-1002//column 3
             }
         }
 
+        /// <summary>
+        /// Test GetMixedSubtable
+        /// </summary>
         [Test]
         public static void TableMixedSetGetSubTable()
         {
@@ -4488,7 +4592,11 @@ double:-1002//column 3
 
 
 
-        //test setting all types to a mixed, and getting them back again correctly
+        
+        /// <summary>
+        /// Test setting and getting all basic types in mixed
+        ///  test setting all types to a mixed, and getting them back again correctly, part 1
+        /// </summary>
         [Test]
         public static void TableMixedSetTypes()
         {
@@ -4684,7 +4792,10 @@ double:-1002//column 3
 
 
 
-        //test setting all types to a mixed, and getting them back again correctly
+        
+        /// <summary>
+        /// test setting all types to a mixed, and getting them back again correctly, part 2
+        /// </summary>
         [Test]
         public static void TableMixedSetTypes2()
         {
@@ -4956,6 +5067,9 @@ double:-1002//column 3
         }
         */
 
+        /// <summary>
+        /// set and get subtable with data into a mixed field
+        /// </summary>
         [Test]
         public static void TableMixedSetGetSubTableWithData()
         {
@@ -5015,6 +5129,9 @@ mix'd:84//column 0//Mixed type is Int
 
 
 
+        /// <summary>
+        /// test that nested subtable work
+        /// </summary>
         [Test]
         public static void TableSubTableSubTableTwo()
         {
@@ -5111,6 +5228,9 @@ root:[ //1 rows   { //Start row 0
 
 
 
+        /// <summary>
+        /// try to clone a sub sub table
+        /// </summary>
         [Test]
         public static void TableSubTableSubTableClone()
         {
@@ -5209,6 +5329,9 @@ root:[ //1 rows   { //Start row 0
 
 
 
+        /// <summary>
+        /// create table with data test
+        /// </summary>
         [Test]
         public static void TableIntValueTest2()
         {
@@ -5254,6 +5377,9 @@ IntColumn3:-9223372036854775766//column 2
 
 
 
+        /// <summary>
+        /// verify that thest helper methid gettablewithintegers work
+        /// </summary>
         [Test]
         public static void TableIntValueSubTableTest1()
         {
@@ -5349,12 +5475,19 @@ SubTableWithInts:[ //3 rows   { //Start row 0
     }
 
 
-    //tabletests split in two in order to hunt a vs2012 test runner error where it hung doing table tests
+    
+    /// <summary>
+    /// Test related to table class.
+    /// tabletests split in two in order to hunt a vs2012 test runner error where it hung doing table tests
+    /// </summary>
     [TestFixture]
     public static class TableTests2
     {
 
 
+        /// <summary>
+        /// Test setting table via tablerowcolumn integer
+        /// </summary>
         [Test]
         public static void TableRowColumnInsert()
         {
@@ -5420,6 +5553,9 @@ intfield2:10//column 2
             TestHelper.Cmp(expectedres, actualres);
         }
 
+        /// <summary>
+        /// Error handling get mixed in a non-mixed field
+        /// </summary>
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
         public static void TableGetMixedWithNonMixedField()
@@ -5436,6 +5572,9 @@ intfield2:10//column 2
             }
         }
 
+        /// <summary>
+        /// error handling getting values from non existing row in an empty table
+        /// </summary>
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
         public static void TableEmptyTableFieldAccess()
@@ -5448,6 +5587,9 @@ intfield2:10//column 2
             }
         }
 
+        /// <summary>
+        /// simple test call get boolean
+        /// </summary>
         [Test]
         public static void TableGetBoolean()
         {
@@ -5459,6 +5601,9 @@ intfield2:10//column 2
             }
         }
 
+        /// <summary>
+        /// error handling setint on an empty table
+        /// </summary>
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
         public static void TableEmptyTableFieldAccessWrite()
@@ -5474,19 +5619,24 @@ intfield2:10//column 2
 
 
 
+        /// <summary>
+        /// errorhandling when row index is too low
+        /// </summary>
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
         public static void TableRowIndexTooLow()
         {
             using (var t = new Table(new IntColumn("Int1"), new IntColumn("Int2"), new IntColumn("Int3")))
-            {
-                //accessing a row on an empty table should not be allowed
+            {                
                 t.AddEmptyRow(1);
                 var value = t.GetLong(0, -1);
                 Assert.AreEqual(value+1,value);//we cannot get this far, if we do, fail!
             }
         }
 
+        /// <summary>
+        /// error handling row index below zero
+        /// </summary>
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
         public static void TableRowIndexTooLowWrite()
@@ -5503,6 +5653,9 @@ intfield2:10//column 2
 
 
         //
+        /// <summary>
+        /// ensure that an undefined mixed field returns default type DataType.Int
+        /// </summary>
         [Test]
         public static void TableGetUndefinedMixedType()
         {
@@ -5515,6 +5668,9 @@ intfield2:10//column 2
         }
 
 
+        /// <summary>
+        /// test that getting and setting int to mixed field works (redundant test,  i think we have a big one doing all types)
+        /// </summary>
         [Test]
         public static void TableMixedInt()
         {
@@ -5530,6 +5686,9 @@ intfield2:10//column 2
         }
 
 
+        /// <summary>
+        /// get/set string in mixed
+        /// </summary>
         [Test]
         public static void TableMixedString()
         {
@@ -5555,6 +5714,9 @@ intfield2:10//column 2
         }
 
 
+        /// <summary>
+        /// get/set DateTime in mixed fiedld
+        /// </summary>
         [Test]
         public static void TableMixedDateTime()
         {
@@ -5570,6 +5732,9 @@ intfield2:10//column 2
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         [Test]
         public static void TableLast()
         {
@@ -5581,26 +5746,30 @@ intfield2:10//column 2
             }
         }
 
+        /// <summary>
+        /// getlong row index too high errorhandling
+        /// </summary>
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
         public static void TableRowIndexTooHigh()
         {
             using (var t = new Table(new IntColumn("Int1"), new IntColumn("Int2"), new IntColumn("Int3")))
-            {
-                //accessing a row on an empty table should not be allowed
+            {                
                 t.AddEmptyRow(1);
                 long value = t.GetLong(0, 1);
                 Assert.AreEqual(value,value+1);
             }
         }
 
+        /// <summary>
+        /// setlong errorhandling row too high
+        /// </summary>
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
         public static void TableRowIndexTooHighWrite()
         {
             using (var t = new Table(new IntColumn("Int1"), new IntColumn("Int2"), new IntColumn("Int3")))
-            {
-                //accessing a row on an empty table should not be allowed
+            {                
                 t.AddEmptyRow(1);
                 t.SetLong(0, 1, 42); //should throw
                 long value = t.GetLong(0, 1);
@@ -5610,6 +5779,9 @@ intfield2:10//column 2
 
 
 
+        /// <summary>
+        /// getlong errorhandling column index too low
+        /// </summary>
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
         public static void TableColumnIndexTooLow()
@@ -5623,6 +5795,9 @@ intfield2:10//column 2
             }
         }
 
+        /// <summary>
+        /// errorhandlnig setlong column index too low
+        /// </summary>
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
         public static void TableColumnIndexTooLowWrite()
@@ -5638,6 +5813,9 @@ intfield2:10//column 2
         }
 
 
+        /// <summary>
+        /// errorhandling column index too high
+        /// </summary>
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
         public static void TableColumnIndexTooHigh()
@@ -5652,6 +5830,9 @@ intfield2:10//column 2
         }
 
 
+        /// <summary>
+        /// errorhandling column index too write setlong
+        /// </summary>
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
         public static void TableColumnIndexTooHighWrite()
@@ -5667,7 +5848,11 @@ intfield2:10//column 2
         }
 
 
-        //both tableview and table tojson is tested here
+        
+        /// <summary>
+        /// test json is output correctly
+        /// both tableview and table tojson is tested here
+        /// </summary>
         [Test]
         public static void TableToJsonTest()
         {
@@ -5700,15 +5885,16 @@ intfield2:10//column 2
         }
 
 
+        /// <summary>
+        /// errorhandling getsubtable on non-subtable column
+        /// </summary>
         [Test]
         [ExpectedException("System.ArgumentException")]
         public static void TableIllegalType()
         {
-            using (var t = new Table(new IntColumn("Int1"), new IntColumn("Int2"), new IntColumn("Int3")))
-                //accessing an illegal column should also not be allowed
+            using (var t = new Table(new IntColumn("Int1"), new IntColumn("Int2"), new IntColumn("Int3")))                
             {
-                t.AddEmptyRow(1);
-                //likewise accessing the wrong type should not be allowed
+                t.AddEmptyRow(1);                
                 Table t2 = t.GetSubTable(1, 0);
                 Assert.AreEqual(42, t2.Size);//this should never run
             }
@@ -5801,6 +5987,9 @@ intfield2:10//column 2
 
         */
 
+       /// <summary>
+       /// errorhandling set with wrong type
+       /// </summary>
        [Test]
         [ExpectedException("System.ArgumentException")]
         public static void TableSetIllegalType()

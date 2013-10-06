@@ -5,6 +5,9 @@ using NUnit.Framework;
 
 namespace TightDbCSharpTest
 {
+    /// <summary>
+    /// Tests related to the SharedGroup class
+    /// </summary>
     [TestFixture]
     public static class SharedGroupTest
     {
@@ -15,13 +18,16 @@ namespace TightDbCSharpTest
 
         private static string SharedGroupFileName()
         {
-         return Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) +
+         return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) +
                             @"\UnitTestSharedGroup";
             //we should probably use LocalApplicationData instead of ApplicationData
         } 
 
 
         //create-dispose test
+        /// <summary>
+        /// Test creation of a shared group with a legal path and file name
+        /// </summary>
         [Test]
         public static void CreateSharedGroupFileTest()
         {            
@@ -37,6 +43,9 @@ namespace TightDbCSharpTest
         }
 
 
+        /// <summary>
+        /// 
+        /// </summary>
         [Test]
         public static void HasChangedTest()
         {
@@ -83,6 +92,10 @@ namespace TightDbCSharpTest
         }
 
 
+        /// <summary>
+        /// Test a simple create table, add row and commit transaction commit on a sharedGroup created using defaults
+        /// Note! does not validate that data was actually saved
+        /// </summary>
         [Test]
         public static void SimpleCommitTest()
         {
@@ -107,6 +120,9 @@ namespace TightDbCSharpTest
 
 
         //successfull usage case check
+        /// <summary>
+        /// 
+        /// </summary>
         [Test]
         public static void SharedGroupTransactions()
         {
@@ -264,6 +280,9 @@ namespace TightDbCSharpTest
         //can he call something that breaks the system (like starting more transactions on the same table, or whatever)
 
         //It should not be possible to modify a group that is returned by a read transaction
+        /// <summary>
+        /// Check that a readonly transaction is actually marked as readonly
+        /// </summary>
         [Test]
         public static void SharedGroupReadTransactionReadOnlyGroup()
         {
@@ -283,9 +302,11 @@ namespace TightDbCSharpTest
             }
         }
 
-        //It should not be possible to modify a table in a group that is returned by a read transaction
-        //this test could also have been put into tabletest
-        //also checks that on violation of the readonly contract, that the sharedgroup and the group are invalidated
+        /// <summary>
+        ///It should not be possible to modify a table in a group that is returned by a read transaction
+        ///this test could also have been put into tabletest 
+        ///also checks that on violation of the readonly contract, that the sharedgroup and the group are invalidated  
+        /// </summary>
         [Test]        
         public static void SharedGroupReadTransactionReadOnlyTable()
         {
@@ -299,8 +320,6 @@ namespace TightDbCSharpTest
                 
                 using (var transaction = sharedGroup.BeginRead())
                 {
-//                    Console.WriteLine(String.Format(CultureInfo.InvariantCulture,
-//                        "Hello from inside a readtransaction {0}", sharedGroup.ObjectIdentification()));
                     Assert.AreEqual(true, transaction.ReadOnly);
                     Assert.AreEqual(TransactionKind.Read,transaction.Kind);                    
                     Assert.AreEqual(false,sharedGroup.Invalid);
@@ -318,14 +337,15 @@ namespace TightDbCSharpTest
                         Assert.AreEqual(false, transaction.Invalid);//just bc an illegal inner transaction operation was preempted
                     }
                 }
-//                Console.WriteLine(String.Format(CultureInfo.InvariantCulture, "Hello from sharedgroup {0}",
-//                  sharedGroup.ObjectIdentification()));
             }
         }
 
 
 
 
+        /// <summary>
+        /// error handling when a transaction is started inside another transaction (which is illegal if done with the same sharedgroup object
+        /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters", MessageId = "NUnit.Framework.Assert.Fail(System.String)"), Test]
         public static void SharedGroupSeveralStartTransactions()
         {
@@ -339,8 +359,6 @@ namespace TightDbCSharpTest
 
                 using (var transaction = sharedGroup.BeginRead())
                 {
-//                    Console.WriteLine(String.Format(CultureInfo.InvariantCulture,
-//                        "Hello from inside a readtransaction {0}", sharedGroup.ObjectIdentification()));
                     Assert.AreEqual(true, transaction.ReadOnly);
                     Assert.AreEqual(TransactionKind.Read, transaction.Kind);
                     Assert.AreEqual(false, sharedGroup.Invalid);
@@ -365,8 +383,6 @@ namespace TightDbCSharpTest
                         Assert.AreEqual(false, transaction.Invalid);
                     }
                 }
-//                Console.WriteLine(String.Format(CultureInfo.InvariantCulture, "Hello from sharedgroup {0}",
-//                    sharedGroup.ObjectIdentification()));
                 Assert.AreEqual(false, sharedGroup.Invalid);//and the shared group should also work after the outer transaction has finished
             }
         }
