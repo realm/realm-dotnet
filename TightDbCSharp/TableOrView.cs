@@ -217,7 +217,7 @@ namespace TightDbCSharp
             long columnIndex = GetColumnIndexNoCheck(name);
             if (columnIndex == -1)
             {
-                throw new ArgumentOutOfRangeException("name",
+                throw new ArgumentException("name",
                     String.Format(CultureInfo.InvariantCulture,
                         "column name specified ({0}) does not exist in this table.", name));
             }

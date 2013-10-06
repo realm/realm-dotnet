@@ -656,7 +656,7 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
                 t.Add(match,nomatch, 5);
                 t.Add(match, match, 6);
                 using (var tv = t.FindAllDateTime(0, match))
-                using (var tvs = t.FindAllDateTime("DateFiled1",match))
+                using (var tvs = t.FindAllDateTime("DateField1", match))
                 {
                     Assert.AreEqual(1,tv[0].GetLong(2));
                     Assert.AreEqual(2,tv[1].GetLong(2));
@@ -799,7 +799,7 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
         [Test]
         public static void TableFindAllFloatSuccessful()
         {
-            using (var t = new Table("Field1".Bool(), "Field2".Bool(), "IntField".Int()))
+            using (var t = new Table("Field1".Float(), "Field2".Float(), "IntField".Int()))
             {
                 const float match = 42;
                 const float nomatch = -42;
@@ -836,7 +836,7 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
         [Test]
         public static void TableFindAllFloatBadType()
         {
-            using (var t = new Table("Field".Bool(), "IntField".Int()))
+            using (var t = new Table("Field".Float(), "IntField".Int()))
             {
                 const float match = 42;
                 t.Add(match, 1);
@@ -855,7 +855,7 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
         [Test]
         public static void TableFindAllFloatBadType2()
         {
-            using (var t = new Table("Field".Bool(), "IntField".Int()))
+            using (var t = new Table("Field".Float(), "IntField".Int()))
             {
                 const float match = 42;
                 t.Add(match, 1);
@@ -881,7 +881,7 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
         [Test]
         public static void TableFindAllDoubleSuccessful()
         {
-            using (var t = new Table("Field1".Bool(), "Field2".Bool(), "IntField".Int()))
+            using (var t = new Table("Field1".Double(), "Field2".Double(), "IntField".Int()))
             {
                 const double match = 42;
                 const double nomatch = -42;
@@ -903,8 +903,8 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
 
                     using (var tv2 = tv.FindAllDouble(1, match))
                     {
-                        Assert.AreEqual(1, tv2.GetDouble(2, 0));//first row with two matches
-                        Assert.AreEqual(6, tv2.GetDouble(2, 1));//second row with two matches
+                        Assert.AreEqual(1, tv2.GetLong(2, 0));//first row with two matches
+                        Assert.AreEqual(6, tv2.GetLong(2, 1));//second row with two matches
                     }
                 }
             }
@@ -956,7 +956,7 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
         [Test]
         public static void TableFindAllIntSuccessful()
         {
-            using (var t = new Table("Field1".Bool(), "Field2".Bool(), "IntField".Int()))
+            using (var t = new Table("Field1".Int(), "Field2".Int(), "IntField".Int()))
             {
                 const int match = 42;
                 const int nomatch = -42;
@@ -992,10 +992,10 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
         [Test]
         public static void TableFindAllIntBadType()
         {
-            using (var t = new Table("Field".Bool(), "IntField".Int()))
+            using (var t = new Table("Field".Int(), "SunField".Table()))
             {
                 const int match = 42;
-                t.Add(match, 1);
+                t.Add(match,null);
                 using (var tv = t.FindAllInt(1, match))//should throw
                 {
                     Assert.AreEqual(1, tv[0].GetLong(1));
@@ -1011,10 +1011,10 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
         [Test]
         public static void TableFindAllIntBadType2()
         {
-            using (var t = new Table("Field".Bool(), "IntField".Int()))
+            using (var t = new Table("Field".Int(), "SubField".Table()))
             {
                 const int match = 42;
-                t.Add(match, 1);
+                t.Add(match, null);
                 using (var tv = t.FindAllInt("IntField", match))//should throw
                 {
                     Assert.AreEqual(1, tv[0].GetLong(1));

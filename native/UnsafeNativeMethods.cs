@@ -1601,30 +1601,39 @@ enum DataType {
         
         public static TableView TableFindAllBinary(Table table, long columnIndex, Byte[] value)
         {
-            //special case if we get called with null (we call a method that does not take pointers to managed mem)            
+          
+            IntPtr tableHandle;
             if (value == null||value.Length==0)
-            {
-                return new TableView(table,
-                    (Is64Bit)
+            {  //special case if we get called with null (we call a method that does not take pointers to managed mem)            
+                 tableHandle = (Is64Bit)
                         ? table_find_all_empty_binary64(table.Handle, (IntPtr) columnIndex)
-                        : table_find_all_empty_binary32(table.Handle, (IntPtr) columnIndex), true);                
-            }
-            //value is at least a byte long
-            GCHandle handle = GCHandle.Alloc(value, GCHandleType.Pinned);//now value cannot be moved or garbage collected by garbage collector
-            IntPtr valuePointer = handle.AddrOfPinnedObject();
-            try
+                        : table_find_all_empty_binary32(table.Handle, (IntPtr) columnIndex);
+            } 
+            else
             {
-                return new TableView(table,
-                    (Is64Bit)
-                        ? table_find_all_binary64(table.Handle, (IntPtr) columnIndex, valuePointer,(IntPtr) value.Length)
-                        : table_find_all_binary32(table.Handle, (IntPtr) columnIndex, valuePointer,(IntPtr) value.Length), true);
-            }
-            finally
-            {
-                handle.Free(); //allow Garbage collector to move and deallocate value as it wishes
-            }
-        }
+               //value is at least a byte long
+              GCHandle handle = GCHandle.Alloc(value, GCHandleType.Pinned);//now value cannot be moved or garbage collected by garbage collector
+              IntPtr valuePointer = handle.AddrOfPinnedObject();
+              try
+              {
+                  tableHandle = (Is64Bit)
+                         ? table_find_all_binary64(table.Handle, (IntPtr)columnIndex, valuePointer, (IntPtr)value.Length)
+                         : table_find_all_binary32(table.Handle, (IntPtr)columnIndex, valuePointer, (IntPtr)value.Length);             
+              }
+              finally
+              {
+                  handle.Free(); //allow Garbage collector to move and deallocate value as it wishes
+              }
+            }           
 
+            if (tableHandle != IntPtr.Zero)
+                {
+                    return new TableView(table, tableHandle, true);
+                }
+                else
+                    throw new NotImplementedException("Table.FindAllBinary is not implemented in core yet");
+            
+        }
 
 
 
@@ -1802,19 +1811,19 @@ enum DataType {
 
 
 
-        [DllImport(L64, EntryPoint = "query_find_next", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr query_find_next64(IntPtr handle,IntPtr lastMatch);
+        [DllImport(L64, EntryPoint = "query_find", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr query_find64(IntPtr handle,IntPtr lastMatch);
 
-        [DllImport(L32, EntryPoint = "query_find_next", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr query_find_next32(IntPtr handle, IntPtr lastMatch);
+        [DllImport(L32, EntryPoint = "query_find", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr query_find32(IntPtr handle, IntPtr lastMatch);
 
 
-        public static long QueryFindNext(Query query,long lastMatch)
+        public static long QueryFind(Query query,long lastMatch)
         {
             return                
                     Is64Bit
-                        ? (long)query_find_next64(query.Handle,(IntPtr) lastMatch)
-                        : (long)query_find_next32(query.Handle,(IntPtr) lastMatch);
+                        ? (long)query_find64(query.Handle,(IntPtr) lastMatch)
+                        : (long)query_find32(query.Handle,(IntPtr) lastMatch);
         }
 
 
