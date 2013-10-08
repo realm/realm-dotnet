@@ -1100,6 +1100,11 @@ namespace TightDbCSharp
             return fromSubtableCell;
         }
 
+        internal override long GetSubTableSizeNoCheck(long columnIndex, long rowIndex)
+        {
+            return UnsafeNativeMethods.TableGetSubTableSize(this, columnIndex, rowIndex);
+        }
+
         internal override void ClearSubTableNoCheck(long columnIndex, long rowIndex)
         {
             UnsafeNativeMethods.TableClearSubTable(this, columnIndex, rowIndex);

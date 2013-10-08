@@ -31,6 +31,7 @@ namespace TightDbCSharp
         internal abstract String GetStringNoCheck(long columnIndex, long rowIndex);
         internal abstract byte[] GetBinaryNoCheck(long columnIndex, long rowIndex);
         internal abstract Table GetSubTableNoCheck(long columnIndex, long rowIndex);
+        internal abstract long GetSubTableSizeNoCheck(long columnIndex, long rowIndex);
         //mixed is handled by type named GetMixedxxxx methods below
         internal abstract DateTime GetDateTimeNoCheck(long columnIndex, long rowIndex);
         internal abstract float GetFloatNoCheck(long columnIndex, long rowIndex);
@@ -699,7 +700,7 @@ namespace TightDbCSharp
         //used by tablerow where we know row and column index are valid,but not if the user calls getsubtable on a column that does not have subtables
         internal Table GetSubTableCheckType(long columnIndex, long rowIndex)
         {
-            ValidateColumnTypeSubTable(columnIndex);
+            ValidateTypeSubTable(columnIndex);
             return GetSubTableNoCheck(columnIndex, rowIndex);
         }
 
@@ -713,7 +714,7 @@ namespace TightDbCSharp
         {
             ValidateIsValid();
             ValidateColumnAndRowIndex(columnIndex, rowIndex);
-            ValidateColumnTypeSubTable(columnIndex);
+            ValidateTypeSubTable(columnIndex);
             return GetSubTableNoCheck(columnIndex, rowIndex);
         }
 
@@ -731,6 +732,88 @@ namespace TightDbCSharp
             return GetSubTableNoRowCheck(columnIndex, rowIndex);
         }
 
+
+        /// <summary>
+        /// Unlike the c++ binding, subtables and mixed subtables are handled
+        /// in a typed manner in the C# binding.
+        /// This method will return the size of a subtable in a specified field.
+        /// The method will throw if the field specified is a mixed subtable field,
+        /// or any other field type that is not DataType.Table.
+        /// See GetMixedSubtableSize()
+        /// 
+        /// </summary>
+        /// <param name="columnName">Name of column index of field with a subtable in it</param>
+        /// <param name="rowIndex">row index of column of field with a subtable in it</param>
+        /// <returns>number of rows in specified subtable</returns>
+        public long GetSubTableSize(String columnName, long rowIndex)
+        {
+            ValidateIsValid();
+            ValidateRowIndex(rowIndex);
+            long columnIndex = GetColumnIndex(columnName);
+            ValidateTypeSubTable(columnIndex);
+            return GetSubTableSizeNoCheck(columnIndex, rowIndex);            
+        }
+
+        /// <summary>
+        /// Unlike the c++ binding, subtables and mixed subtables are handled
+        /// in a typed manner in the C# binding.
+        /// This method will return the size of a subtable in a specified field.
+        /// The method will throw if the field specified is a mixed subtable field,
+        /// or any other field type that is not DataType.Table.
+        /// See GetMixedSubtableSize()
+        /// </summary>
+        /// <param name="columnIndex">Name of column index of field with a subtable in it</param>
+        /// <param name="rowIndex">row index of column of field with a subtable in it</param>
+        /// <returns>number of rows in specified subtable</returns>
+        public long GetSubTableSize(long columnIndex, long rowIndex)
+        {
+            ValidateIsValid();
+            ValidateColumnAndRowIndex(columnIndex, rowIndex);
+            ValidateTypeSubTable(columnIndex);
+            return GetSubTableSizeNoCheck(columnIndex, rowIndex);
+        }
+
+        /// <summary>
+        /// Unlike the c++ binding, subtables and mixed subtables are handled
+        /// in a typed manner in the C# binding.
+        /// This method will return the size of a subtable in a specified field.
+        /// The method will throw if the field specified is a mixed subtable field,
+        /// or any other field type that is not DataType.Table.
+        /// See GetMixedSubtableSize()
+        /// 
+        /// </summary>
+        /// <param name="columnName">Name of column index of field with a subtable in it</param>
+        /// <param name="rowIndex">row index of column of field with a subtable in it</param>
+        /// <returns>number of rows in specified subtable</returns>
+        public long GetMixedSubTableSize(String columnName, long rowIndex)
+        {
+            ValidateIsValid();
+            ValidateRowIndex(rowIndex);
+            long columnIndex = GetColumnIndex(columnName);
+            ValidateMixedType(columnIndex,rowIndex,DataType.Table);
+            return GetSubTableSizeNoCheck(columnIndex, rowIndex);//core doesn't care if it is a mixed or subtable field based subtable
+        }
+
+        /// <summary>
+        /// Unlike the c++ binding, subtable fields and mixed fields with subtables are handled
+        /// in a typed manner in the C# binding.
+        /// This method will return the size of a subtable in a specified mixed field.
+        /// The method will throw if the field specified is a subtable field
+        /// or any other field type that is not DataType.Mixed with a MixedType table
+        /// See also GetSubtableSize()
+        /// </summary>
+        /// <param name="columnIndex">Name of column index of a DataType.Mixed field with a subtable in it</param>
+        /// <param name="rowIndex">row index of column of a DataType.Mixed field with a subtable in it</param>
+        /// <returns>number of rows in specified subtable</returns>
+        public long GetMixedSubTableSize(long columnIndex, long rowIndex)
+        {
+            ValidateIsValid();            
+            ValidateColumnMixedType(columnIndex,rowIndex,DataType.Table);
+            return GetSubTableSizeNoCheck(columnIndex, rowIndex);//core doesn't care if it is a mixed or subtable field based subtable
+        }
+
+
+
         //GetxxxDataTypexxx is called when the row is known, when the user calls Row.GetxxxDataTypexxx(columnIx) The row is already validated for a row object, so only columnIndex and the type of the field is validated
         internal Table GetSubTableNoRowCheck(long columnIndex, long rowIndex)
         {
@@ -742,7 +825,7 @@ namespace TightDbCSharp
         internal Table GetSubTableNoRowCheck(string columnName, long rowIndex)
         {
             long columnIndex = GetColumnIndex(columnName);
-            ValidateColumnTypeSubTable(columnIndex);
+            ValidateTypeSubTable(columnIndex);
             return GetSubTableNoCheck(columnIndex, rowIndex);
         }
 
@@ -1549,6 +1632,7 @@ namespace TightDbCSharp
             }
         }
 
+        //NOTE! only call this with a validated columnIndex or we might call c++ with an unchecled column index
         private void ValidateTypeSubTable(long columnIndex)
         {
             if (ColumnTypeNoCheck(columnIndex) != DataType.Table)
@@ -1631,14 +1715,6 @@ namespace TightDbCSharp
             ValidateIsValid();
             ValidateRowIndex(rowIndex);
             RemoveNoCheck(rowIndex);            
-        }
-
-        private void ValidateColumnTypeSubTable(long columnIndex)
-        {
-            if (ColumnTypeNoCheck(columnIndex) != DataType.Table)
-            {
-                throw new ArgumentException(GetColumnTypeErrorString(columnIndex, DataType.Table));
-            }
         }
 
         /// <summary>

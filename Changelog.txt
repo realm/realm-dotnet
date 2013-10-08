@@ -14,11 +14,22 @@ Changelog started 2013-10-03 Not so long before the first larger release of the 
 
 New changes are added to the top of the file
 
-An addition mentioned here means :
+Things that are mentioned in this file :
 
-- Method has been added to the C# binding
-- Any supporting code in c++ has been written
-- Unit tests for at least normal use have been written
-- Unit tests passes for .net 3.5 .net 4.0 .net 4.5 in debug,relase, in x86,x64 and anycpu (some 20+ unit test configurations must be run)
-- Unit tests passes in mono 2.x when built for .net 3.5 (debug,release, x86,x64,anycpy - 6 configurations although mono runs all as 32 bit)
-- Unit tests passes inside unity when built for .net 3.5
+- Public methods added or deleted
+- Public methods renamed
+- Public method signature (parametres) changed
+- Public method behavior changed
+- Public field or property in class added or deleted, or changed
+- Changes to class names, or interfaces implemented
+
+2013-10-07
+
+Table.GetSubTableSize(long,long) added
+Table.GetSubTableSize(String,long) added
+Table.GetMixedSubTableSize(long,long) added
+Table.GetMixedSubTableSize(String,long) added
+TableView-GetSubTableSize(long,long) added
+TableView-GetSubTableSize(string,long) added
+TableView.GetMixedSubTableSize(long,long) added
+TableView.GetMixedSubTableSize(string,long) added

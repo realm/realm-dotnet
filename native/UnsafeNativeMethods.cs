@@ -229,7 +229,22 @@ enum DataType {
         }
 
 
-        //todo:implement table_get_subtable_size  TableGetSubTableSize
+        [DllImport(L64, EntryPoint = "table_get_subtable_size", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_get_subtable_size64(IntPtr tableHandle, IntPtr columnIndex, IntPtr rowIndex);
+
+        [DllImport(L32, EntryPoint = "table_get_subtable_size", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_get_subtable_size32(IntPtr tableHandle, IntPtr columnIndex, IntPtr rowIndex);
+
+
+        public static long TableGetSubTableSize(Table table, long columnIndex, long rowIndex)
+        {
+            return
+                    Is64Bit
+                        ? (long)table_get_subtable_size64(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex)
+                        : (long)table_get_subtable_size32(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex);
+        }
+
+
 
         [DllImport(L32, EntryPoint = "tableview_get_column_index", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr tableView_get_column_index32(IntPtr tableViehandle, [MarshalAs(UnmanagedType.LPWStr)] string name,IntPtr nameLen);
@@ -764,6 +779,27 @@ enum DataType {
                         ? (long)table_find_first_bool64(table.Handle, (IntPtr)columnIndex, BoolToIntPtr(value))
                         : (long)table_find_first_bool32(table.Handle, (IntPtr)columnIndex, BoolToIntPtr(value));
         }
+
+
+
+
+
+        [DllImport(L64, EntryPoint = "tableview_get_subtable_size", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr tableView_get_subtable_size64(IntPtr tableViewHandle, IntPtr columnIndex, IntPtr rowIndex);
+
+        [DllImport(L32, EntryPoint = "tableview_get_subtable_size", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr tableView_get_subtable_size32(IntPtr tableViewHandle, IntPtr columnIndex, IntPtr rowIndex);
+
+
+        public static long TableViewGetSubTableSize(TableView tableView, long columnIndex, long rowIndex)
+        {
+            return
+                    Is64Bit
+                        ? (long)tableView_get_subtable_size64(tableView.Handle, (IntPtr)columnIndex, (IntPtr) rowIndex)
+                        : (long)tableView_get_subtable_size32(tableView.Handle, (IntPtr)columnIndex, (IntPtr) rowIndex);
+        }
+
+
 
 
 
@@ -4982,7 +5018,7 @@ enum DataType {
         //the call would be called many times but could just return at once, if we were already initialized
         //and if we were not, we could set the is64bit boolean correctly - and then all other calls (does not call init) could just check that boolean
         //would speed up interop call overhead about 3-4 percent, currently at about 100 million a second on a 2.6GHZ cpu
-        internal static bool Is64Bit
+        private static bool Is64Bit
         {
             get
             {

@@ -76,9 +76,76 @@ namespace TightDbCSharpTest
         }
 
 
+        //todo : make some tests with setsubtable, getsubtable and recursive tables and subtables, feeding the same table to itself
+        /*
+        /// <summary>
+        /// Some kind of recursive 
+        /// </summary>
+        [Test]
+        public static void TableGetSubtableSize()
+        {
+            using (var table = new Table(new SubTableColumn("subtablecolumn",new SubTableColumn("subtablecolumn"))))
+            {
+                table.AddEmptyRow(42);
+                table.SetSubTable(0,10,table);//set a table in column 0, row 10 , containing 42 rows (empty, as we copy the table before setting in core)
+                Assert.AreEqual(42, table.GetSubTableSize(0,10));
+                Assert.AreEqual(0,table.GetSubTable(0,10).GetSubTableSize(0,10));//because this row was empty when the sub sub was created
+            }
+        }
+        */
 
 
-        
+        /// <summary>
+        /// Test that getsubtablesize returns the correct value, tests both table and tableview
+        /// </summary>
+        [Test]
+        public static void TableGetSubTableSize()
+        {
+            const string subColName = "subtablecolumn";
+            const int subColIndex = 1;
+            using (var table = new Table(new IntColumn("index"), new SubTableColumn(subColName, new IntColumn("intcolumn"))))
+            using (var subtable = new Table(new IntColumn("intcolumn")))
+            {
+                table.AddEmptyRow(42);
+                subtable.AddEmptyRow(5);
+                table.SetSubTable(subColIndex,10,subtable);
+                Assert.AreEqual(5,table.GetSubTableSize(subColIndex,10));
+                Assert.AreEqual(5, table.GetSubTableSize(subColName, 10));
+                using (var tableview = table.FindAllInt(0, 0))
+                {
+                    Assert.AreEqual(5, tableview.GetSubTableSize(subColIndex, 10));
+                    Assert.AreEqual(5, tableview.GetSubTableSize(subColName, 10));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Test that getmixedsubtablesize returns the correct value, tests both table and tableview
+        /// </summary>
+        [Test]
+        public static void TableGetMixedSubTableSize()
+        {
+            const string subColName = "subtablecolumn";
+            const int subColIndex = 1;
+            using (var table = new Table(new IntColumn("index"), new MixedColumn(subColName)))
+            using (var subtable = new Table(new IntColumn("intcolumn")))
+            {
+                table.AddEmptyRow(42);
+                subtable.AddEmptyRow(5);
+                table.SetMixedSubTable(subColIndex, 10, subtable);
+                Assert.AreEqual(5, table.GetMixedSubTableSize(subColIndex, 10));
+                Assert.AreEqual(5, table.GetMixedSubTableSize(subColName, 10));
+                //todo:activate this code when core works in debug mode reg. getting the size of a mixed subtable
+                /*
+                using (var tableview = table.FindAllInt(0, 0))
+                {
+                    Assert.AreEqual(5, tableview.GetMixedSubTableSize(subColIndex, 10));
+                    Assert.AreEqual(5, tableview.GetMixedSubTableSize(subColName, 10));
+                }
+                */
+            }
+        }
+
         /// <summary>
         /// Right now this test uses creation of tables as a test - the column name will be set to all sorts of crazy thing, and we want them back that way
         /// </summary>
@@ -5881,6 +5948,7 @@ intfield2:10//column 2
                 TestHelper.Cmp(expectedres3, actualres);
 
 
+
             }
         }
 
@@ -5889,7 +5957,7 @@ intfield2:10//column 2
         /// errorhandling getsubtable on non-subtable column
         /// </summary>
         [Test]
-        [ExpectedException("System.ArgumentException")]
+        [ExpectedException("System.ArgumentOutOfRangeException")]
         public static void TableIllegalType()
         {
             using (var t = new Table(new IntColumn("Int1"), new IntColumn("Int2"), new IntColumn("Int3")))                

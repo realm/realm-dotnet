@@ -1031,7 +1031,16 @@ TIGHTDB_C_CS_API  size_t tableview_get_mixed_type(TableView* tableView_ptr, cons
     return datatype_to_size_t(tableView_ptr->get_mixed_type(column_ndx,row_ndx));
 }
 
-//todo:implement tableview_get_subtable_size
+//(from table.hpp)
+    // Sub-tables (works on columns whose type is either 'subtable' or
+    // 'mixed', for a value in a mixed column that is not a subtable,
+    // get_subtable() returns null, get_subtable_size() returns zero,
+    // and clear_subtable() replaces the value with an empty table.)
+
+TIGHTDB_C_CS_API size_t tableview_get_subtable_size(TableView * tableview_ptr,const size_t column_ndx,const size_t row_ndx)
+{
+    return tableview_ptr->get_subtable_size(column_ndx,row_ndx);
+}
 
 //size_t         find_first_bool(size_t column_ndx, bool value) const;
 TIGHTDB_C_CS_API size_t tableview_find_first_int(TableView * table_ptr , size_t column_ndx, int64_t value)

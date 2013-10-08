@@ -42,6 +42,16 @@ namespace TightDbCSharpTest
 
 
 
+        private static bool Is64Bit
+        {
+            get
+            {
+                return (IntPtr.Size == 8);
+                //if this is evaluated every time, a faster way could be implemented. Size is cost when we are running though so perhaps it gets inlined by the JITter
+            }
+        }
+
+
         /*
          this one fails too - not enough rights to work in the root directory
          However the fail comes when the program is being deallocated.. we should catch a c++ exception and throw a C# so no big harm should be done
@@ -60,7 +70,7 @@ namespace TightDbCSharpTest
         [ExpectedException("System.IO.IOException")]
         public static void CreateGroupFileNameTest()
         {
-            if (UnsafeNativeMethods.Is64Bit)
+            if (Is64Bit)
             {
                 using (var g = new Group(@"C:\Windows\System32\Testgroup", Group.OpenMode.ModeReadWrite))
                 {
