@@ -24,9 +24,19 @@ echo ----------------------------------------------------------
 :echo where this file is located (%~dp0)
 :echo on
 set location=%~dp0
-set date=xdatex
-set time=xtimex
-set developer=xdeveloperx
+set location=%~dp0
+set reldate=%date:~6,4%-%date:~3,2%-%date:~0,2%
+set reltime=%time::=%
+set reltime=%reltime: =%
+set reltime=%reltime:,=%
+set reldeveloper=%USERNAME: =%
+set reldeveloper=%reldeveloper:,=%
+echo this batchfile is located at %location%
+echo -
+echo - release date will be set to %reldate%
+echo - release time will be set to %reltime%
+echo - release user will be set to %reldeveloper%
+echo -
 set filesdestination=%location%release\files
 set releasedestination=%location%release\release
 set zipper=%location%7z.exe
@@ -75,7 +85,7 @@ copy %location%Build_note_Daily.txt %filesdestination%\readme_DailyBuild.txt
 copy %location%Install_note.txt %filesdestination%\readme.txt
 :create archive
 cd %filesdestination%
-%zipper% a -tzip -r %releasedestination%\tightdb_csharp_%xdatex%_%xtimex%_%xdeveloperx% *.*
+%zipper% a -tzip -r %releasedestination%\tightdb_csharp_%reldate%_%reltime%_%reldeveloper% *.*
 :copy the readme once again, this time outside the archive
 copy %location%Install_note.txt %releasedestination%\readme.txt
 

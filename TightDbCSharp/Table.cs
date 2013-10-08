@@ -4,7 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.Runtime.CompilerServices;
+
 //using System.Threading.Tasks; not portable as of 2013-04-02
 
 //Tell compiler to give warnings if we publicise interfaces that are not defined in the cls standard
@@ -16,7 +16,7 @@ using System.Runtime.CompilerServices;
 //implements idisposable - will clean itself up (and any c++ resources it uses) when garbage collected
 //If You plan to save resources, You can use it with the using syntax.
 
-[assembly: InternalsVisibleTo("Test")]
+//[assembly: InternalsVisibleTo("Test")]
 
 namespace TightDbCSharp
 {
@@ -67,7 +67,7 @@ namespace TightDbCSharp
             }
         }
 
-        
+
         /// <summary>
         /// implements ICloneable - this method is called Copy in the c++ binding        
         /// </summary>
@@ -86,7 +86,7 @@ namespace TightDbCSharp
             }
         }
 
-        
+
         object ICloneable.Clone()
         {
             return Clone();
@@ -1448,23 +1448,13 @@ namespace TightDbCSharp
             //validate that the index into this level is valid (not too large, is a subtable (not a mixed subtable))
             //todo:this method awaits core support for getting information on subtable stuff. Until we get that, we use a temporary spec implementation.
             //todo:this could be implemented recursively and probably look a bit tidier
-            Spec levelSpec = null;
-
-
+            Spec levelSpec = Spec;
             for (var level = 0; level < path.Count; level++)
             {
 
-                if (level == 0)
-                {
-                    levelSpec = Spec;//the spec of the root table
-                }else
+                if (level != 0)                
                 {
                     Debug.Assert(levelSpec != null, "levelSpec != null");
-                    //if (levelSpec == null)
-                    //{
-                      //  throw new ArgumentOutOfRangeException("path",
-                      //      "path specified made getspec return NULL. This should not be possible to happen at all");
-                    //}
                     Spec newLevelSpec = levelSpec.GetSpec(path[level - 1]);
                     //get the spec of the subtable this part of path is identifying by index
                     levelSpec = newLevelSpec;

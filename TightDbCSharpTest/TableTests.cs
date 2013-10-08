@@ -3479,7 +3479,7 @@ Table Name  : subtable structure made with AddSubColumn path arrays
 ------------------------------------------------------
 
 ";
-            Assert.AreEqual(expectedres, actualres);
+            TestHelper.Cmp(expectedres,actualres);            
         }
 
         /// <summary>
@@ -3522,8 +3522,7 @@ Table Name  : subtable structure made with AddSubColumn parameters
 ------------------------------------------------------
 
 ";
-
-            Assert.AreEqual(expectedres, actualres);
+            TestHelper.Cmp(expectedres,actualres);
         }
 
 
@@ -3568,7 +3567,8 @@ Table Name  : subtable structure made with AddSubColumn parameters
 
 ";
 
-            Assert.AreEqual(expectedres, actualres);
+            TestHelper.Cmp(expectedres, actualres);
+
 
 
             //now, do some renaming the last number in the path is the column id for the column that should be renamed. all other path nubers must specify subtable columns
@@ -3597,8 +3597,9 @@ Table Name  : rename columns in subtables via parameters
 ------------------------------------------------------
 
 ";
+                
+                TestHelper.Cmp(expectedres2, actualres2);
 
-                Assert.AreEqual(expectedres2,actualres2);
             }            
         }
 
