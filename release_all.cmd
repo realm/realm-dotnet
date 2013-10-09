@@ -28,6 +28,10 @@ pause
 :user can still debug his own stuff, but our stuff is not meant to be debugged by the user.
 md %location%examples
 md %location%examples\lib
+md %location%examples\lib\NET35
+md %location%examples\lib\NET40
+md %location%examples\lib\NET45
+
 call %location%update_examples.cmd
 set location=%~dp0
 

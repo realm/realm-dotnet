@@ -25,11 +25,13 @@ Things that are mentioned in this file :
 
 2013-10-07
 
-Table.GetSubTableSize(long,long) added
-Table.GetSubTableSize(String,long) added
-Table.GetMixedSubTableSize(long,long) added
-Table.GetMixedSubTableSize(String,long) added
-TableView-GetSubTableSize(long,long) added
-TableView-GetSubTableSize(string,long) added
-TableView.GetMixedSubTableSize(long,long) added
-TableView.GetMixedSubTableSize(string,long) added
++Table.GetSubTableSize(long,long) added
++Table.GetSubTableSize(String,long) added
++Table.GetMixedSubTableSize(long,long) added
++Table.GetMixedSubTableSize(String,long) added
++TableView-GetSubTableSize(long,long) added
++TableView-GetSubTableSize(string,long) added
++TableView.GetMixedSubTableSize(long,long) added
++TableView.GetMixedSubTableSize(string,long) added
+. Added support for NET35 and NET40 in examples
+
