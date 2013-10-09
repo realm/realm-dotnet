@@ -1,6 +1,6 @@
 @echo off
 echo Tightdb C# binding c# part Windows Build.
-Echo alpha 0.07
+Echo alpha 0.08
 echo ----------------------------------------------------------
 Echo Currently this batch file will create a release version of
 echo the already built source from the solution residing where 
@@ -73,10 +73,10 @@ echo copying release files to release directory
 :copy C# dll assembly files to the files directory
 xcopy %location%TightDBCSharp\bin\AnyCpu\Release\*.dll %filesdestination%\lib\NET45 /s /y
 xcopy %location%TightDBCSharp\bin\AnyCpu\Release\*.pdb %filesdestination%\lib\NET45 /s /y
-xcopy %location%TightDBCSharp_4.0\bin\AnyCpu\Release\*.dll %filesdestination%\lib\NET40 /s /y
-xcopy %location%TightDBCSharp_4.0\bin\AnyCpu\Release\*.pdb %filesdestination%\lib\NET40 /s /y
-xcopy %location%TightDBCSharp_3.5\bin\AnyCpu\Release\*.dll %filesdestination%\lib\NET35 /s /y
-xcopy %location%TightDBCSharp_3.5\bin\AnyCpu\Release\*.pdb %filesdestination%\lib\NET35 /s /y
+xcopy %location%TightDBCSharp_NET40\bin\AnyCpu\Release\*.dll %filesdestination%\lib\NET40 /s /y
+xcopy %location%TightDBCSharp_NET40\bin\AnyCpu\Release\*.pdb %filesdestination%\lib\NET40 /s /y
+xcopy %location%TightDBCSharp_NET35\bin\AnyCpu\Release\*.dll %filesdestination%\lib\NET35 /s /y
+xcopy %location%TightDBCSharp_NET35\bin\AnyCpu\Release\*.pdb %filesdestination%\lib\NET35 /s /y
 
 :copy C dlls with tightdb core
 xcopy %location%native\tightdb_c_cs\tightdb_c_cs2012\release\files\*.* %filesdestination%\dll /y
