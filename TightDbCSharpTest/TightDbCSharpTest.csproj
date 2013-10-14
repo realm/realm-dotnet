@@ -129,9 +129,28 @@
       <Name>TightDbCSharp</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\native\tightdb_c_cs\tightdb_c_cs2012\release\files\tightdb_c_cs201232d.dll">
+      <Link>tightdb_c_cs201232d.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\native\tightdb_c_cs\tightdb_c_cs2012\release\files\tightdb_c_cs201232r.dll">
+      <Link>tightdb_c_cs201232r.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\native\tightdb_c_cs\tightdb_c_cs2012\release\files\tightdb_c_cs201264d.dll">
+      <Link>tightdb_c_cs201264d.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\native\tightdb_c_cs\tightdb_c_cs2012\release\files\tightdb_c_cs201264r.dll">
+      <Link>tightdb_c_cs201264r.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>$(ProjectDir)\getdll.cmd $(ProjectDir)</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

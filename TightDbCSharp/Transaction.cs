@@ -48,11 +48,13 @@ namespace TightDbCSharp
         //and then set the handle for the group that was created by sharedgroup
         //this is done by calling a specific constructor in base that does not
         //allocate a new c++ object for the group
+        //the group returned is memory handled in c++ and we should NOT call c++
+        //and ask for deallocation
         internal Transaction(IntPtr groupHandle,SharedGroup sharedGroup, TransactionKind transactionKind)
             : base(transactionKind==TransactionKind.Read)
         {
             _kind = transactionKind;
-            SetHandle(groupHandle,true);//method in handled
+            SetHandle(groupHandle,true);//true because the releasehandle method is used to commit or rollback transactions
             _sharedGroup = sharedGroup;
             //ReadOnly = transactionType == TransactionType.Read;//readonly in group
         }

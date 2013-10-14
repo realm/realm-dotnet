@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using TightDbCSharp;
 using NUnit.Framework;
 
@@ -340,6 +342,113 @@ namespace TightDbCSharpTest
             }
         }
 
+
+
+
+
+        [Test]
+        public static void TransactionsPartOfTutorial()
+        {
+            var fakeConsole = new StringBuilder();
+
+
+            File.Delete(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) +
+                        @"\employees1.tightdb");
+            File.Delete(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) +
+                        @"\employees1.tightdb.lock");
+
+
+            // @@Example: serialisation @@
+            // Create Table in Group
+            var folder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            var fileName1 = folder + @"\employees1.tightdb";
+
+            using (var group = new Group())
+            using (var employees = group.CreateTable("employees",
+                new StringColumn("Name"),
+                new IntColumn("Age"),
+                new BoolColumn("Hired")))
+            {
+
+                //add some rows
+                employees.Add("John", 20, true);
+                employees.Add("Mary", 21, false);
+                employees.Add("Lars", 21, true);
+                employees.Add("Phil", 43, false);
+                employees.Add("Anni", 54, true);
+
+                group.Write(fileName1);
+            }
+
+            // Load a group from disk (and print contents)
+            var fromdisk = new Group(fileName1, Group.OpenMode.ModeReadWrite);
+            using (var employees2 = fromdisk.GetTable("employees"))
+            {
+                var name = employees2.GetColumnIndex("Name");
+                foreach (var row in employees2)
+                    fakeConsole.AppendFormat("{0}:{1}", row.RowIndex, row.GetString(name));
+            }
+
+            //Write same group to memory buffer
+            byte[] buffer;
+            buffer = fromdisk.WriteToMemory();
+
+            //Load a group from memory (and print contents)
+            var fromMem = new Group(buffer);
+            using (var memtable = fromMem.GetTable("employees"))
+            {
+                var name = memtable.GetColumnIndex("Name");                
+                foreach (var row in memtable)
+                    fakeConsole.AppendFormat("{0}:{1}", row.RowIndex, row[name]);
+            }
+
+            fromdisk.Dispose();
+            // @@EndExample@@
+
+            // @@Example: transaction @@
+            // Open a shared group
+            var db = new SharedGroup(fileName1);
+
+            //Transaction inherits from group, adds commit and rollback methods
+            //Commit must be called to actually save changes
+            //Rollback is automatically called if the transaction has not been
+            //comitted and it goes out scope (gets disposed)
+            using (var transaction = db.BeginRead())
+            using (var employees = transaction.GetTable("employees"))
+            {
+                var age = employees.GetColumnIndex("Age");
+                var name = employees.GetColumnIndex("Name");
+
+                foreach (var employee in employees)
+                {
+                    fakeConsole.AppendFormat("{0} is {1} years old", employee[name], employee[age]);
+                }
+                transaction.Commit();
+            }
+
+            //write transaction
+            using (var transaction2 = db.BeginWrite())
+            using (var employees4 = transaction2.GetTable("employees"))
+            {
+                {
+                    employees4.Add("Bill", 53, true);
+                }
+                transaction2.Commit();
+            }
+
+            //TightDb also provides a delegate based transaction syntax
+            //After the delegate has executed, commit is called automatically
+            //to roll back, throw an exception inside the delegate
+            db.ExecuteInWriteTransaction(group =>
+            {
+                using (var employees3 = group.GetTable("employees"))
+                {
+                    employees3.Add("Bill", 53, true); //add a row
+                }
+            });
+
+            //todo:validate contents of fakeConsole
+        }
 
 
 

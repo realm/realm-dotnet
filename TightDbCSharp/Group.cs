@@ -250,7 +250,8 @@ namespace TightDbCSharp
         /// </summary>
         protected override void ReleaseHandle()
         {            
-            UnsafeNativeMethods.GroupDelete(this);
+            UnsafeNativeMethods.GroupDelete(Handle);//was this before but when called via the destructor, this got freed bf callee could set handle to zero
+            Handle = IntPtr.Zero;
         }
 
         internal override string ObjectIdentification()

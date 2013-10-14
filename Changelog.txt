@@ -35,3 +35,8 @@ Things that are mentioned in this file :
 +TableView.GetMixedSubTableSize(string,long) added
 . Added support for NET35 and NET40 in examples
 
+2013-10-10
+. Changed how the library is distributed
+. Changed how projects use the library dll's
+. Changed readme files to reflect new more simple way of deployment
+. Updated all projects to reference dll's as content links

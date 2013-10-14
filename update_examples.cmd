@@ -5,20 +5,25 @@ echo but of course they will still be able to be debugged - User just can't debu
 echo and core will always run non-debug, full speed
 echo ...Updating C# libraries
 set location=%~dp0
-copy %location%release\files\lib\NET45\tightDbCSharp.* %location%examples\lib\NET45
-copy %location%release\files\lib\NET45\tightDbCSharp.* %location%examples\lib\NET40
-copy %location%release\files\lib\NET45\tightDbCSharp.* %location%examples\lib\NET35
-echo ...Updating c++ dll files
-copy %location%release\files\dll\tightdb_c_cs2012??r.dll %location%examples\DynamicTable\bin\Debug
-copy %location%release\files\dll\tightdb_c_cs2012??r.dll %location%examples\DynamicTable\bin\Release
-copy %location%release\files\dll\tightdb_c_cs2012??r.dll %location%examples\TutorialSolution\bin\Debug
-copy %location%release\files\dll\tightdb_c_cs2012??r.dll %location%examples\TutorialSolution\bin\Release
-copy %location%release\files\dll\tightdb_c_cs2012??r.dll %location%examples\PerformanceTest\bin\AnyCpu
-copy %location%release\files\dll\tightdb_c_cs2012??r.dll %location%examples\PerformanceTest\bin\X64
-copy %location%release\files\dll\tightdb_c_cs2012??r.dll %location%examples\PerformanceTest\bin\X86
-copy %location%release\files\dll\tightdb_c_cs2012??r.dll %location%examples\Experimental\bin\Debug
-copy %location%release\files\dll\tightdb_c_cs2012??r.dll %location%examples\Experimental\bin\Release
-copy %location%release\files\dll\tightdb_c_cs2012??r.dll %location%examples\UnityExample\
+:First, delte all unneccessary files from examples
+del DynamicTable\bin\*.* /s /q
+del DynamicTable\obj\*.* /s /q
+del TutorialSolution\bin\*.* /s /q
+del TutorialSolution\obj\*.* /s /q
+del PerformanceTest\bin\*.* /s /q
+del PerformanceTest\obj\*.* /s /q
+del Experimental\bin\*.* /s /q
+del Experimental\obj\*.* /s /q
+del UnityExample\bin\*.* /s /q
+del UnityExample\obj\*.* /s /q
+
+:then, update examples with newest tightdb binding
+xcopy %location%release\files\tightDB\NET45\*.* %location%examples\DynamicTable\* /s /y
+xcopy %location%release\files\tightDB\NET45\*.* %location%examples\TutorialSolution\* /s /y
+xcopy %location%release\files\tightDB\NET45\*.* %location%examples\PerformanceTest\* /s /y
+xcopy %location%release\files\tightDB\NET45\*.* %location%examples\Experimental\* /s /y
+:unity in 32 bit currently only works with .net35 and lower so use that binding
+xcopy %location%release\files\tightDB\NET35\*.* %location%examples\UnityExample\* /s /y
 copy %location%UnityGettingStarted.txt %location%examples\UnityExample\
 copy %location%Unitytutorialsource.cs %location%examples\UnityExample\
 pause

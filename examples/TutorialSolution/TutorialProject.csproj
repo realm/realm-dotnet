@@ -41,7 +41,7 @@
     <Reference Include="System.Xml" />
     <Reference Include="TightDbCSharp, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\lib\NET45\TightDbCSharp.dll</HintPath>
+      <HintPath>.\TightDbCSharp.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -50,6 +50,14 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="tightdb_c_cs201232r.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="tightdb_c_cs201264r.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

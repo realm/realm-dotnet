@@ -1,0 +1,76 @@
+This archive contains the TightDB C# Binding.
+
+To use TightDB in Your own C# project, You will need to do two things
+
+1) The project that use TightDb must have a reference added to tightDBCSharp.dll, located in the tightdb\NET45 directory in the archive.
+
+2) The compiled program must have access to 2 native dll files when running. The files are named
+tightdb_c_cs32r.dll
+tightdb_c_cs64r.dll
+The dll files are located in the tightdb\NET45 directory in the archive.
+You can handle this requirenments by copying the two dll files in tightdb\NET45 into the project directory, and then add the two dll's to the project 
+(as existing file, not as reference) and set them to copy if new.
+
+Detailed instructions and walkthrough :
+
+Suppose you have an existing project in a VS2012 solution and would like to use TightDb with it - this is what you could do:
+
+1) in solution explorer, mark the PROJECT, right click and select open in file Explorer.
+
+2) in the window opened, copy the content of the archive tightDB\NET45 directory into the project directory which is the current directory
+
+3) in VS2012, in solution explorer, expand the project, select REFERENCES, right click. select add references, select browse,
+navigate to the project directory from step 2) then locate TightDbCShap.dll and click add, click OK
+
+4) In VS2012 ,mark the PROJECT, right click and select ADD->Existing Item, navigate to the project directory , select "executable files" in the lower right hand corner, select the two files called tightdb_c_cs2012NNr.dll , then  hit the dropdown to the right of the add button and select "add as link" 
+
+5) in The now visible project configuration, select the two 2 tightdb_c_cs dll files listed. In properties, select Copy to Output Directory - Copy if newer
+
+6) In the .cs sourcefiles in the project that needs to use Tightdb, add this using statement :
+
+using TightDb;
+
+To verify that things work, You can try to run this code snippet in Your program :
+
+Table.ShowVersionTest();
+
+When above line is executed, console should show some diagnostics from tightdb, something along the lines of this  :
+
+---OS Info---
+OS Version                  : 6.1.7601.65536
+OS Platform                 : Win32NT
+64 Bit OS                   : Yes
+64 Bit process              : True
+---OS Info---
+
+---CLR Info---
+Pointer Size                : 8
+Process Running as          : 64bit
+Running on mono             : False
+Common Language Runtime     : 4.0.30319.18052
+---CLR Info---
+
+---C# binding (TightDbCSharp.dll) Info---
+Built as PeKind           : ILOnly
+Built as ImageFileMachine : I386
+Debug Or Release          : Release
+Compiled With Mono        : No
+Built for .net version    : V4.5
+---C# binding (TightDbCSharp.dll) Info---
+
+---C++ DLL Info---
+Assembly running right now :
+E:\Wincoder\Develope\tightdb_csharp\Test\bin\AnyCpu\Release\TightDbCSharp.dll
+Current Directory :
+E:\Wincoder\Develope\tightdb_csharp\Test\bin\AnyCpu\Release
+
+Now Loading tightdb_c_cs201264r - expecting it to be a 64bit dll
+
+
+DLL File Actually Loaded :E:\Wincoder\Develope\tightdb_csharp\Test\bin\AnyCpu\Release\tightdb_c_cs201264r.DLL
+
+C#  DLL        build number 20130906
+C++ DLL        build number 2013092419
+---C++ DLL Info---
+
+

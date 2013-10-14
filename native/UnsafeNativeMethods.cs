@@ -1,17 +1,17 @@
-﻿
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+#if V45PLUS
+  //unity will not use an assembly that uses compilerservices
+  //and currently unity runs net35
+  //We only use compilerservices to add agressiveinlining which is only supported in 45 so only use compilerservices
+  //if we are building a NERT45 library
+  using System.Runtime.CompilerServices;
+#endif
 using System.Text;
 
-
-
-
-[assembly: InternalsVisibleTo("Test")]
 
 namespace TightDbCSharp
 {
@@ -2194,14 +2194,12 @@ enum DataType {
         [DllImport(L32, EntryPoint = "group_delete", CallingConvention = CallingConvention.Cdecl)]
         private static extern void group_delete32(IntPtr handle);
 
-        public static void GroupDelete(Group g)
+        public static void GroupDelete(IntPtr handle)
         {
             if (Is64Bit)
-                group_delete64(g.Handle);
+                group_delete64(handle);
             else
-                group_delete32(g.Handle);
-
-            g.Handle = IntPtr.Zero;
+                group_delete32(handle);           
         }
 
 

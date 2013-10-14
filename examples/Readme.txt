@@ -6,7 +6,9 @@ This archive contains an already set up and running solution that uses tightdb.
 
 3) click start to run the program, or hit F11 to step into the code and follow along
 
-Other solutions might optionally be included in the archive. They work the same way.
+Other solutions might optionally be included in the archive, they are each located in 
+their own directory and are fulle self-contained. Navigate to the directory, open 
+the solution, and hack away.
 
-The tightdb .net binding has been preinstalled in the lib directory and the projects are set up to work with it out of the box.
-The tightdb dll files have been preinstalled into the directories where the project executables are located.
+The tightdb .net binding has been preinstalled in all of the solutions, and the
+projects have been set up to 

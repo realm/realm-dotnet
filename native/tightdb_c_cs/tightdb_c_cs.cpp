@@ -1380,7 +1380,7 @@ TIGHTDB_C_CS_API void group_delete(Group* group_ptr )
   TIGHTDB_C_CS_API Group* new_group_file(uint16_t * name, size_t name_len, size_t openMode)//should be disposed by calling group_delete
 {      
 
-    //no like taking an enum from C# now it is unknownn what underlying type Group::OpenMode might have
+    //no like taking an enum from C# now it is unknown what underlying type Group::OpenMode might have
     //but we know that on any concievable platform, interop and C# marshalling works with size_t
     //so we convert the size_t to a valid Group::OpenMode here.
 

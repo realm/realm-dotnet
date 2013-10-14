@@ -26,19 +26,14 @@ echo any key to start creating the pre-setup examples release zip file
 pause
 :copy needed C# binding files to example projects - note that c++ and C# libararies are distributed in release versions
 :user can still debug his own stuff, but our stuff is not meant to be debugged by the user.
-md %location%examples
-md %location%examples\lib
-md %location%examples\lib\NET35
-md %location%examples\lib\NET40
-md %location%examples\lib\NET45
 
-call %location%update_examples.cmd
-set location=%~dp0
+:call %location%update_examples.cmd
+:set location=%~dp0
 
 :zip entire examples directory to a zip file
-del %location%examples.zip
+:del %location%examples.zip
 :this one fails on my other pc, creates an empty zip file
-%location%7z.exe a -tzip -r %location%examples.zip %location%examples\*.*
+:%location%7z.exe a -tzip -r %location%examples.zip %location%examples\*.*
 
 echo any key to update documentation directory with new versions of sourcecodes
 pause
