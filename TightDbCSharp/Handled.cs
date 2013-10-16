@@ -43,8 +43,12 @@ namespace TightDbCSharp
             {
                 if (NotifyCppWhenDisposing)
                 {
-                    //   Console.WriteLine("Handle being released by calling cpp :{0}", ObjectIdentification());
+                    //string myId = ObjectIdentification();
+                  //  Console.WriteLine("Handle being released by calling cpp :{0}", myId);
                     ReleaseHandle();
+                  //  Console.WriteLine("Handle released successfully :{0}", myId);
+                    //Console.ReadKey();
+                  //  Console.WriteLine("Continuing...");
                 }
                 //                else
                 // {
@@ -71,7 +75,7 @@ namespace TightDbCSharp
         //store the pointer to the c++ class, and do neccessary housekeeping
         internal void SetHandle(IntPtr newHandle, bool shouldBeDisposed)
         {            
-//            Console.WriteLine("Handle being set to newhandle:{0}h shouldBeDisposed:{1} ",newHandle.ToString("X"),shouldBeDisposed);
+            //Console.WriteLine("Handle being set to newhandle:{0}h shouldBeDisposed:{1} ",newHandle.ToString("X"),shouldBeDisposed);
             if (HandleInUse)
             {
                 
