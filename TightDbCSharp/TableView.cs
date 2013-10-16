@@ -500,7 +500,7 @@ namespace TightDbCSharp
 
         internal override string ObjectIdentification()
         {
-            ValidateIsValid();
+           // ValidateIsValid();
             return String.Format(CultureInfo.InvariantCulture,"TableView:{0}", Handle);
         }
 
