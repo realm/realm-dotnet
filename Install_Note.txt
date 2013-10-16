@@ -8,7 +8,7 @@ To use TightDB in Your own C# project, You will need to do two things
 tightdb_c_cs32r.dll
 tightdb_c_cs64r.dll
 The dll files are located in the tightdb\NET45 directory in the archive.
-You can handle this requirenments by copying the two dll files in tightdb\NET45 into the project directory, and then add the two dll's to the project 
+You can handle this requirenment by copying the two dll files in tightdb\NET45 into the project directory, and then add the two dll's to the project 
 (as existing file, not as reference) and set them to copy if new.
 
 Detailed instructions and walkthrough :

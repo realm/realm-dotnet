@@ -233,24 +233,26 @@ public class UnityTutorial : MonoBehaviour {
                 }
 
                 // Load a group from disk (and print contents)
-                var fromdisk = new Group(fileName1);
+                using( var fromdisk = new Group(fileName1,Group.OpenMode.ModeReadWrite))
                 using (var employees2 = fromdisk.GetTable("employees"))
-                {
-                    foreach (var row in employees2)
-                        Console.WriteLine("{0}:{1}", row.RowIndex, row.GetString(name));
-                }
+				{
+                  {
+                      foreach (var row in employees2)
+                          Console.WriteLine("{0}:{1}", row.RowIndex, row.GetString(name));
+                  }
 
-                //Write same group to memory buffer
-                byte[] buffer;
-                buffer = fromdisk.WriteToMemory();
+                  //Write same group to memory buffer
+                  byte[] buffer;
+                  buffer = fromdisk.WriteToMemory();
 
-                //Load a group from memory (and print contents)
-                var fromMem = new Group(buffer);
-                using (var memtable = fromMem.GetTable("employees"))
-                {
-                    foreach (var row in memtable)
-                        Console.WriteLine("{0}:{1}", row.RowIndex, row[name]);
-                }
+                  //Load a group from memory (and print contents)
+                  var fromMem = new Group(buffer);
+                  using (var memtable = fromMem.GetTable("employees"))
+                  {
+                      foreach (var row in memtable)
+                          Console.WriteLine("{0}:{1}", row.RowIndex, row[name]);
+                  }
+				}
                 // @@EndExample@@
 
                 // @@Example: transaction @@
