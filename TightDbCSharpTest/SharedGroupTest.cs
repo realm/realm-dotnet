@@ -346,6 +346,9 @@ namespace TightDbCSharpTest
 
 
 
+        /// <summary>
+        /// This is a copy of the transactions part of the tutorial. Added here bc there was some problems with it
+        /// </summary>
         [Test]
         public static void TransactionsPartOfTutorial()
         {
@@ -381,72 +384,72 @@ namespace TightDbCSharpTest
             }
 
             // Load a group from disk (and print contents)
-            var fromdisk = new Group(fileName1, Group.OpenMode.ModeReadWrite);
+            using (var fromdisk = new Group(fileName1, Group.OpenMode.ModeReadWrite))
             using (var employees2 = fromdisk.GetTable("employees"))
             {
                 var name = employees2.GetColumnIndex("Name");
                 foreach (var row in employees2)
                     fakeConsole.AppendFormat("{0}:{1}", row.RowIndex, row.GetString(name));
+
+
+                //Write same group to memory buffer
+                byte[] buffer;
+                buffer = fromdisk.WriteToMemory();
+
+                //Load a group from memory (and print contents)
+                using (var fromMem = new Group(buffer))
+                using (var memtable = fromMem.GetTable("employees"))
+                {
+                    name = memtable.GetColumnIndex("Name");
+                    foreach (var row in memtable)
+                        fakeConsole.AppendFormat("{0}:{1}", row.RowIndex, row[name]);                    
+                }
             }
-
-            //Write same group to memory buffer
-            byte[] buffer;
-            buffer = fromdisk.WriteToMemory();
-
-            //Load a group from memory (and print contents)
-            var fromMem = new Group(buffer);
-            using (var memtable = fromMem.GetTable("employees"))
-            {
-                var name = memtable.GetColumnIndex("Name");                
-                foreach (var row in memtable)
-                    fakeConsole.AppendFormat("{0}:{1}", row.RowIndex, row[name]);
-            }
-
-            fromdisk.Dispose();
             // @@EndExample@@
 
             // @@Example: transaction @@
             // Open a shared group
-            var db = new SharedGroup(fileName1);
 
             //Transaction inherits from group, adds commit and rollback methods
             //Commit must be called to actually save changes
             //Rollback is automatically called if the transaction has not been
             //comitted and it goes out scope (gets disposed)
-            using (var transaction = db.BeginRead())
-            using (var employees = transaction.GetTable("employees"))
+            using (var db = new SharedGroup(fileName1))
             {
-                var age = employees.GetColumnIndex("Age");
-                var name = employees.GetColumnIndex("Name");
-
-                foreach (var employee in employees)
+                using (var transaction = db.BeginRead())
+                using (var employees = transaction.GetTable("employees"))
                 {
-                    fakeConsole.AppendFormat("{0} is {1} years old", employee[name], employee[age]);
+                    var age = employees.GetColumnIndex("Age");
+                    var name = employees.GetColumnIndex("Name");
+
+                    foreach (var employee in employees)
+                    {
+                        fakeConsole.AppendFormat("{0} is {1} years old", employee[name], employee[age]);
+                    }
+                    transaction.Commit();
                 }
-                transaction.Commit();
+
+                //write transaction
+                using (var transaction2 = db.BeginWrite())
+                using (var employees4 = transaction2.GetTable("employees"))
+                {
+                    {
+                        employees4.Add("Bill", 53, true);
+                    }
+                    transaction2.Commit();
+                }
+
+                //TightDb also provides a delegate based transaction syntax
+                //After the delegate has executed, commit is called automatically
+                //to roll back, throw an exception inside the delegate
+                db.ExecuteInWriteTransaction(group =>
+                {
+                    using (var employees3 = group.GetTable("employees"))
+                    {
+                        employees3.Add("Bill", 53, true); //add a row
+                    }
+                });
             }
-
-            //write transaction
-            using (var transaction2 = db.BeginWrite())
-            using (var employees4 = transaction2.GetTable("employees"))
-            {
-                {
-                    employees4.Add("Bill", 53, true);
-                }
-                transaction2.Commit();
-            }
-
-            //TightDb also provides a delegate based transaction syntax
-            //After the delegate has executed, commit is called automatically
-            //to roll back, throw an exception inside the delegate
-            db.ExecuteInWriteTransaction(group =>
-            {
-                using (var employees3 = group.GetTable("employees"))
-                {
-                    employees3.Add("Bill", 53, true); //add a row
-                }
-            });
-
             //todo:validate contents of fakeConsole
         }
 

@@ -903,16 +903,39 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
         [Test]
         public static void TableFindAllFloatBadType()
         {
+                using (var t = new Table("Field".Float(), "IntField".Int()))
+                {
+                    const float match = 42;
+                    t.Add(match, 1);
+                    using (var tv = t.FindAllFloat(1, match)) //should throw
+                    {
+                        Assert.AreEqual(1, tv[0].GetLong(1));
+                    }
+                }
+            
+        }
+
+
+        /// <summary>
+        /// Test bad field specification, wrong type
+        /// </summary>
+        [ExpectedException("System.ArgumentException")]
+        [Test]
+        public static void TableFindAllFloatBadType2Error()
+        {
             using (var t = new Table("Field".Float(), "IntField".Int()))
             {
                 const float match = 42;
                 t.Add(match, 1);
-                using (var tv = t.FindAllFloat(1, match))//should throw
+                using (var tv = t.FindAllFloat("IntField", match))//should throw
                 {
-                    Assert.AreEqual(1, tv[0].GetLong(1));
+                    long myLong = tv[0].GetLong(1);
+                    
+                    Assert.AreEqual(1, myLong);
                 }
             }
         }
+
 
 
         /// <summary>
@@ -922,6 +945,8 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
         [Test]
         public static void TableFindAllFloatBadType2()
         {
+          
+          
             using (var t = new Table("Field".Float(), "IntField".Int()))
             {
                 const float match = 42;
@@ -984,6 +1009,7 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
         [Test]
         public static void TableFindAllDoubleBadType()
         {
+//            Console.ReadKey();
             using (var t = new Table("Field".Double(), "IntField".Int()))
             {
                 const double match = 42;
@@ -993,6 +1019,7 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
                     Assert.AreEqual(1, tv[0].GetDouble(1));
                 }
             }
+//            Console.ReadKey();
         }
 
 
@@ -5307,6 +5334,7 @@ root:[ //1 rows   { //Start row 0
             //string actualres3;
             //string actualres4;
             //string actualres5;
+//            Console.ReadKey();
             string actualres;
 
             using (var t = new Table(
@@ -5391,6 +5419,7 @@ root:[ //1 rows   { //Start row 0
 ------------------------------------------------------
 ";
             TestHelper.Cmp(expectedres, actualres);
+//            Console.ReadKey();
         }
 
 

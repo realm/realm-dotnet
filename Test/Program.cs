@@ -23,9 +23,11 @@
 
 //using System.IO;
 
+using System;
 using NUnitLite.Runner;
 //using NUnit.Framework.Internal;
 using TightDbCSharp;
+using TightDbCSharpTest;
 
 namespace NUnitLite.Tests
 {
@@ -93,16 +95,72 @@ namespace NUnitLite.Tests
         ///             over all includes
         /// 
         /// </param>
+        /// 
+
+        public static void TdbTester(Action test)
+        {
+            try
+            {
+                Console.WriteLine("TDB Tester running "+test.Method.ToString());
+                test();
+            }
+            finally
+            {                
+            }
+        }
+
         public static void Main(string[] args)
         {
-            if (args!=null && args.Length != 0)
+            if (args != null && args.Length != 0)
             {
                 new TextUI().Execute(args);
             }
             else
-            {       
+            {
+                /*
                 Table.ShowVersionTest();
-                new TextUI().Execute(new [] {"-labels","-full","-wait"/* "-out:C:\\Files\\UnitTestDumpCS.txt"*/});
+                TdbTester(TableTests1.SubTableNoFields);
+                TdbTester(TableTests1.TableAddColumn);
+                TdbTester(TableTests1.TableAddColumnAndSpecTest);
+                TdbTester(TableTests1.TableAddColumnAndSpecTestSimple);
+                TdbTester(TableTests1.TableAddColumnTypeParameter);
+                TdbTester(TableTests1.TableAddColumnTypeParameterPath);
+                TdbTester(TableTests1.TableAddColumnTypes);
+                TdbTester(TableTests1.TableAddColumnWithData);
+                TdbTester(TableTests1.TableAddIntArray);
+                TdbTester(TableTests1.TableAddSubTableAsNull);
+                TdbTester(TableTests1.TableAddSubTableEmptyArray);
+                TdbTester(TableTests1.TableAddSubTableHugeTable);
+                TdbTester(TableTests1.TableAddSubTablePlausiblePathExample);
+                TdbTester(TableTests1.TableAddSubTableStringArray);
+                TdbTester(TableTests1.TableAddSubTableUsingParameters);
+                TdbTester(TableTests1.TableAddSubTableUsingPath);
+                TdbTester(TableTests1.TableAggregate);
+                TdbTester(TableTests1.TableClearSubTable);
+                TdbTester(TableTests1.TableCloneLostFieldNameTest);
+                TdbTester(TableTests1.TableCloneTest);
+                TdbTester(TableTests1.TableCloneTest2);
+                TdbTester(TableTests1.TableCloneTest3);
+                TdbTester(TableTests1.TableCloneTest4);
+                TdbTester(TableTests1.TableCollectionInitializer);
+                TdbTester(TableTests1.TableDistinct);
+                TdbTester(TableTests1.TableDistinctBadType);
+                TdbTester(TableTests1.TableDistinctNoIndex);
+                TdbTester(TableTests1.TableFindAllBinaryBadType);
+                TdbTester(TableTests1.TableFindAllBinaryBadType2);
+                TdbTester(TableTests1.TableFindAllBinarySuccessful);
+                TdbTester(TableTests1.TableFindAllBoolBadType);
+                TdbTester(TableTests1.TableFindAllBoolBadType2);
+                TdbTester(TableTests1.TableFindAllBoolSuccessful);
+                TdbTester(TableTests1.TableFindAllDateBadType);
+                TdbTester(TableTests1.TableFindAllDateBadTypeString);
+                TdbTester(TableTests1.TableFindAllDateSuccessful);
+                TdbTester(TableTests1.TableFindAllDoubleBadType);
+                TdbTester(TableTests1.TableFindAllDoubleBadType2);
+                TdbTester(TableTests1.TableFindAllDoubleSuccessful);
+                TdbTester(TableTests1.TableFindAllFloatBadType);
+*/
+                new TextUI().Execute(new[] {/* "-test:TableFindAllFloatBadType", "-test:TableTests1.TableFindAllFloatBadType",*/ "-labels", "-full", "-wait"/* "-out:C:\\Files\\UnitTestDumpCS.txt"*/});
             }
             //Console.WriteLine("Tests finished, any key to close the application");
             //Console.ReadKey();

@@ -496,7 +496,10 @@ namespace TightDbCSharp
         /// </summary>
         protected override void ReleaseHandle()
         {
-            UnsafeNativeMethods.TableUnbind(this);            
+            //string tableid = ObjectIdentification();
+//            Console.WriteLine("unbinding: {0}",tableid);
+            UnsafeNativeMethods.TableUnbind(this);
+//            Console.WriteLine("Done unbinding: {0}", tableid);
         }
 
         internal override Spec GetSpec()
@@ -528,8 +531,8 @@ namespace TightDbCSharp
 
         internal override string ObjectIdentification()
         {
-            ValidateIsValid();
-            return string.Format(CultureInfo.InvariantCulture,"Table:" + Handle);
+            //ValidateIsValid(); OI could be called on an invalid (detached) table but that is okay as we don't call c++ in OI
+            return string.Format(CultureInfo.InvariantCulture,"Table:" + Handle.ToString("X"));
         }
 
         internal override DataType GetMixedTypeNoCheck(long columnIndex, long rowIndex)
