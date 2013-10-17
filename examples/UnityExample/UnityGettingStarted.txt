@@ -1,57 +1,60 @@
 (Internal TightDb)
 
-How to run tutorial inside Unity, by creating a game that runs tutorial and outputs the results
+This tutorial is a walkthrough on How to make a Unity game, that uses tightdb, illustrated by having a Unity game running the tightdb tuturoal.
 
-0) install unity 4 (tested with 4.2.1f4)
+1) install unity 4 (tested with 4.2.1f4)
 
-1) create a new empty unity project named UnityTutorial. Select 2 by 3 layout in the top right corner.
+2) create a new empty unity project named UnityTutorial. Select 2 by 3 layout in the top right corner.
 
-2) drag TightDbCSharp.dll from 3.5\bin\release onto the project plane, assets area of unity
-(currently this 3.5 has to have been built with xamarin instead of VS - this dependency is soon to be removed)
+3) drag TightDbCSharp.dll (located in the same directory as this text file) onto the project plane, assets area of unity
 
-3) highlight assets in projct window.  in main menu select Assets->Create ->C# script
-in the now active edit, type UnityTutorial
+4) Right click project->Assets in the popup menu, select show in explorer. Copy tightdb_c_cs201232r.dll and tightdb_c_cs201264r.dll from the directory where tihs text file resides, into the now open explorer window. (this windows should show directories Assets,Library,ProjectSetting and Temp)
 
-4) click the unitytutorial source in the inspector, and click the open button (this should launch an editor)
+5) In project tab, click Create then in the popup menu, sleect C# script in the now active edit, type UnityTutorial and press ENTER
 
-5) paste everything from tightdb_csharp\unitytutorialsource.cs into the UnityTutorial.cs open in the unity editor, totally 
-replacing whatever is already there (open unitytutorialsource.cs in notepad, ctrl-A , ctrl-C go to the unity editor called monodevelop ctrl-A del, ctrl-V)
+6) Double click the unitytutorial icon in Assets (this should open the MonoDevelop editor that is shipped with unity) 
 
-6) In the editor select Build->Rebuild all
+7) paste everything from unitytutorialsource.cs into the UnityTutorial.cs open in the unity editor, totally 
+replacing whatever is already there.
+(open unitytutorialsource.cs in notepad, ctrl-A , ctrl-C go to the unity editor called monodevelop, clik somewhere inside the UnityTutorial.cs source ctrl-A , ctrl-V)
 
-7) back in unity, click the UnityTutorial.cs script in assets, and drag it to "Main Camera" in Heirarchy and drop it there
+8) In the editor select Build->Rebuild all
+
+9) back in unity, project->Assets, click the UnityTutorial.cs script icon , and drag it to Hierarchy->"Main Camera" and drop it there
  
-8) select assets->reimport
+10) In the main menu, select assets->reimport
 
-9) right clicking assets You should find a "show in explorer" menu option.
-select that option.
-
-10) in the explorer wiew of your assets directory, navigate to its parent directory (probably named UnityTutorial).
-
-11) in this directory, copy tightdb_c_cs201232r.dll and tightdb_c_cs201264r.dll from 3.5\bin\release 
-
-12) click the play button on top of the screen. Make sure the blue game area is at least 1000 pixels wide (the menu is at the far right)
-
+11) click the play button on top of the screen. Make sure the blue game area is at least 1000 pixels wide (the menu is at the far right)
 You should now have a game preview with a tightDB Menu where You can Click C# system info, CPP System info and Run Tutorial
+
+12) click C# System info in the game
 c# System Info will report information back from the tightdb c# binding
+
+13) click CPP System info
 CPP System Info will load the c++ part of tightdb and report back from there
+
+14) click run tutorial
 Run Tutorial will run the tutorial and put console output into the game.
 
+12) select File->build settings
 
-13) select File->build settings
+16) Enusure these settings are active :
+Platform : PC,Mac & Linux Standalone should be marked
+Target Platform  : Windows should be selected
+Architecture X86 :should be selected
+Development Build : should be deselected
 
-14) architecture - select x86
+17) select build, name the game tutorial32bit - click save. An explorer window should pop up with the project files, including the now created game named tutorial32bit.exe Test run the exe file it should work just fine. Close the application with ALT-F4
 
-15) select build, name the game tutorial32bit - test run the exe file it should work just fine (1280x1024 min. to get the menu)
-
-16) do 13 and 14 again, selecting x86-64,call the game tutorial64bit
+18) do 16 and 17 again, selecting x86-64,call the game tutorial64bit
 
 17) test run the 64 bit app. note that the info screens reports that we are now running 64 bit and the 64 bit tightdb core is used
 
-todo:(not in asana)
-1) Get rid of whatever is stopping the 3.5 .net version from running 32 bit inside unity - some console.writeline calls it seems -perhaps introduce a Unity variable that can be used to toggle off code that unity cannot handle.
 
-2) Find out how the c++ dll binaries ought to be put into the unity project so that they will become part of it, instead of somethings that we must copy to the right place manually
+
+todo:(not in asana)
+
+2) Find out how the c++ dll binaries ought to be put into the unity project so that they will become part of it, instead of somethings that we must copy to the right place manually. Seems like binaries are put in Assets\ but when the game is runnig, current directory is Assets\.. and dll's are loaded from there.
 
 3) Figure how to run our unit tests inside Unity. Have tried, but the test runner did not report any tests run which is a bit strange, even tried to send it the assembly name. (see unity test project on wincoder pc)
 
