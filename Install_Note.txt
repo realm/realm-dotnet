@@ -1,6 +1,21 @@
-This archive contains the TightDB C# Binding.
+This archive contains the TightDB C# Binding and examples.
 
-To use TightDB in Your own C# project, You will need to do two things
+To run examples : 
+
+1) extract this archive anywhere
+
+The directory Examples contain a number of self-containt pre-setup examples, for instance
+
+2) open (in Visual Studio 2012) the solution in N:\test\examples\TutorialSolution\TutorialSolution.sln
+
+3) press F11 and the source will show up, ready for single stepping.
+
+
+
+
+
+
+To use TightDB in Your own C# project, You will need to do three things
 
 1) The project that use TightDb must have a reference added to tightDBCSharp.dll, located in the tightdb\NET45 directory in the archive.
 
@@ -10,6 +25,9 @@ tightdb_c_cs64r.dll
 The dll files are located in the tightdb\NET45 directory in the archive.
 You can handle this requirenments by copying the two dll files in tightdb\NET45 into the project directory, and then add the two dll's to the project 
 (as existing file, not as reference) and set them to copy if new.
+
+3) You will also need to add Using TightDbCSharp; to the files that should have access to TightDb functionality.
+
 
 Detailed instructions and walkthrough :
 
@@ -28,7 +46,7 @@ navigate to the project directory from step 2) then locate TightDbCShap.dll and 
 
 6) In the .cs sourcefiles in the project that needs to use Tightdb, add this using statement :
 
-using TightDb;
+using TightDbCSharp;
 
 To verify that things work, You can try to run this code snippet in Your program :
 
