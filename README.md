@@ -20,7 +20,7 @@ manual work)
 You need a copy of the release dir from a VS2012 built C++ binding distribution.  
 Currently this can be obtained by asking Lasse or Dennis or Brian for a VS2012 release.
 
-If You have a copy of the release dir, skip all the way down to 19
+If You have a copy of the core c++ binding release, skip down to C++ DLL BUILD
 
 ##Core Build##
 
