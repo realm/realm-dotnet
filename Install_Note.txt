@@ -6,7 +6,7 @@ To run examples :
 
 The directory Examples contain a number of self-containt pre-setup examples, for instance
 
-2) open (in Visual Studio 2012) the solution in N:\test\examples\TutorialSolution\TutorialSolution.sln
+2) open (in Visual Studio 2012) the solution in examples\TutorialSolution\TutorialSolution.sln
 
 3) press F11 and the source will show up, ready for single stepping.
 
