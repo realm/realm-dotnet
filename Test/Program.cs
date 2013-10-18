@@ -97,7 +97,7 @@ namespace NUnitLite.Tests
         /// </param>
         /// 
 
-        public static void TdbTester(Action test)
+        public static void TightDbTester(Action test)
         {
             try
             {

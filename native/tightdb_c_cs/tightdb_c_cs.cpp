@@ -217,7 +217,7 @@ extern "C" {
  TIGHTDB_C_CS_API size_t tightdb_c_cs_getver(void){
 
   // Table test;
-	return 2013092419;
+	return 20131018;
 }
 
  //return a newly constructed top level table 

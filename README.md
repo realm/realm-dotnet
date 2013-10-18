@@ -1,6 +1,7 @@
 #tightdb_csharp#
 
-C# language bindings for TightDB  
+C# language binding for TightDB
+
 Ver 0.5
 
 This directory and its subdirectories contain the VS2012 solution that is needed to produce the C# binding for tightdb
@@ -41,7 +42,7 @@ Building the c++ binding in windows with VS2012 (not express) can be done as fol
 13. click clean
 14. build->batch build - click build all
 15. look for compiler warnings as in j
-16. now, call winrelease.cmd (located in the same directory as the solution file) this should create a release and update the VS2012 release dir contents
+16. now, in explorer, locate and call Windows\winrelease2012.cmd (relative to the solution file) this should create a release and update the winows\VS2012 release dir contents
 17. navigate to the CSHARP binding and run the batch file that updates the native part of the CHSARP binding from the core release :
 18. in explorer navigate to, and run E:\Wincoder\Develope\tightdb_csharp\native\libsVS2012\copyfromcore.cmd Answer All if asked
   
@@ -58,7 +59,7 @@ The files in the release directory will be used when running unit tests and exam
 
 To build the binding :
 
-24. navigate to H:\Wincoder\Develope\tightdb_csharp\TightDbCSharp  and click the TightDbCsharp.sln solution.  
+24. navigate to H:\Wincoder\Develope\tightdb_csharp\TightDbCSharp  and open the TightDbCsharp.sln solution in VS2012
 
 25. select build->batch build and select all 30 configurations. then click clean.
 26. select build->batch build and click rebuild

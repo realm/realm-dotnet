@@ -128,7 +128,7 @@ namespace TightDbCSharp
             catch (Exception e)
             {
                 //Console.WriteLine(e.Message);
-                Dispose();
+                Dispose();//this is okay. GroupNewFile has not set handle if we get an exception so dispose will figure not to call core with a null handle
                 throw;
             }
         }
