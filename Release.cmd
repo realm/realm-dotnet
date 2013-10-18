@@ -1,10 +1,9 @@
 @echo off
 echo Tightdb C# binding c# part Windows Build.
-Echo alpha 0.08
+Echo alpha 0.1.1
 echo ----------------------------------------------------------
 Echo Currently this batch file will create a release version of
-echo the already built source from the solution residing where 
-echo the batch file resides. 
+echo the already built source of tightDbCSharp
 echo The release version will be placed in 
 echo (git checkout directory)\release\files\
 echo and (git checkout directory)\release\release\
@@ -13,12 +12,6 @@ echo prior contents of release tree will be deleted,
 echo except .zip files.
 echo the contents of the directory will be c# assembly files
 echo in various builds.
-echo this build will also copy files from the c interface
-echo so that a complete C# binding release can be made
-echo the files are copied from the c release\files directory
-echo so the files used are from the latest release of the c
-echo interface (not neccessarily the currently checked out 
-echo source)
 echo ----------------------------------------------------------
 :echo parametres (%0)
 :echo where this file is located (%~dp0)

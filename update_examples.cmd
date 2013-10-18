@@ -24,6 +24,6 @@ xcopy %location%release\files\tightDB\NET45\*.* %location%examples\PerformanceTe
 xcopy %location%release\files\tightDB\NET45\*.* %location%examples\Experimental\* /s /y
 :unity in 32 bit currently only works with .net35 and lower so use that binding
 xcopy %location%release\files\tightDB\NET35\*.* %location%examples\UnityExample\* /s /y
-copy %location%UnityGettingStarted.txt %location%examples\UnityExample\
-copy %location%Unitytutorialsource.cs %location%examples\UnityExample\
+:copy %location%UnityGettingStarted.txt %location%examples\UnityExample\
+:copy %location%Unitytutorialsource.cs %location%examples\UnityExample\
 pause
