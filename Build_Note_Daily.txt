@@ -4,7 +4,7 @@ This daily build is not guarenteed to work, and is not tested thoroughly.
 
 This is work in progress.
 
-This is useful for evaluation, for integration tests, for checking if bugs have been fixed, 
+This is useful for evaluation, for checking if bugs have been fixed, 
 useful to get an early-view of new stuff coming in later releases - if the new stuff gets released at
 all.
 
