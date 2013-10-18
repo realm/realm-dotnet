@@ -112,7 +112,7 @@ enum DataType {
 
         //manual dll version info. Used when debugging to see if the right DLL is loaded, or an old one
         //the number is a date and a time (usually last time i debugged something)
-        private const long GetDllVersionCSharp = 20130906;
+        private const long GetDllVersionCSharp = 201310181348;
 
 
         //http://connect.microsoft.com/VisualStudio/feedback/details/729254/bogus-ca5122-warning-about-p-invoke-declarations-should-not-be-saf
