@@ -125,7 +125,7 @@ namespace TightDbCSharp
             {
                 UnsafeNativeMethods.GroupNewFile(this, path,openMode);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 //Console.WriteLine(e.Message);
                 Dispose();//this is okay. GroupNewFile has not set handle if we get an exception so dispose will figure not to call core with a null handle

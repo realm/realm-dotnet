@@ -642,6 +642,7 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
 
         /// <summary>
         /// test table last
+        /// also test table clear
         /// </summary>
         [Test]
         public static void TableLast()
@@ -658,6 +659,8 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
                 }
                 Assert.AreEqual(10, t.Last().RowIndex);
                 Assert.AreEqual(10, t.Last().GetLong(0));
+                t.Clear();
+                Assert.AreEqual(0,t.Size);
             }
         }
 

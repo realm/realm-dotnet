@@ -1164,6 +1164,30 @@ intcolumn2:1//column 2
 
 
         /// <summary>
+        /// Test that clear removes all rows in table that are present in the tableview
+        /// This test not so thorough, it just checks the number of rows that disappeared
+        /// not that it was the correct ones.
+        /// </summary>
+        [Test]
+        public static void TableViewClear()
+        {
+            using (var t = TableWithMultipleIntegers())
+            {
+                using (var tv = t.FindAllInt(0, 1))
+                {
+                    Assert.IsTrue(1<=tv.Size);//if we find 0 the test wont work
+                    var tvSize = tv.Size;
+                    var tblSize = t.Size;
+                    tv.Clear();
+                    var newTvSize = tv.Size;
+                    var newTblSize = t.Size;
+                    Assert.AreEqual(tblSize-newTblSize, tvSize);
+                    Assert.AreEqual(0,newTvSize);
+                }
+            }
+        }
+
+        /// <summary>
         /// make sure tableview returns field values correctly
         /// </summary>
         [Test]        

@@ -180,6 +180,11 @@ namespace TightDbCSharp
             }            
         }
 
+        internal override void ClearNoCheck()
+        {
+            UnsafeNativeMethods.TableViewClear(this);
+        }
+
         /// <summary>
         /// This method will ask c++ to dispose of a tableView object.
         /// this method is for internal use only

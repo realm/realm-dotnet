@@ -2130,6 +2130,23 @@ enum DataType {
 
 
 
+        [DllImport(L64, EntryPoint = "tableview_clear", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void tableview_clear64(IntPtr tableViewHandle);
+
+        [DllImport(L32, EntryPoint = "tableview_clear", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void tableview_clear32(IntPtr tableViewHandle);
+
+
+        public static void TableViewClear(TableView tv)
+        {
+            if (Is64Bit)
+                tableview_clear64(tv.Handle);
+            else
+                tableview_clear32(tv.Handle);
+        }
+
+
+
         [DllImport(L64, EntryPoint = "tableview_remove_row", CallingConvention = CallingConvention.Cdecl)]
         private static extern void tableview_remove_row64(IntPtr tableViewHandle, long rowIndex);
 
@@ -2144,6 +2161,25 @@ enum DataType {
             else
                 tableview_remove_row32(tv.Handle, rowIndex);
         }
+
+
+
+        [DllImport(L64, EntryPoint = "table_clear", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void table_clear64(IntPtr tableHandle);
+
+        [DllImport(L32, EntryPoint = "table_clear", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void table_clear32(IntPtr tableHandle);
+
+
+        public static void TableClear(Table tv)
+        {
+            if (Is64Bit)
+                table_clear64(tv.Handle);
+            else
+                table_clear32(tv.Handle);
+        }
+
+
 
 
         [DllImport(L64, EntryPoint = "table_remove_row", CallingConvention = CallingConvention.Cdecl)]
@@ -5798,5 +5834,6 @@ enum DataType {
             else
                 shared_group_end_read32(sharedGroup.Handle);
         }
+
     }
 }

@@ -522,7 +522,11 @@ namespace TightDbCSharp
             }
         }
 
-     
+        internal override void ClearNoCheck()
+        {
+            UnsafeNativeMethods.TableClear(this);
+        }
+
 
         internal override DataType ColumnTypeNoCheck(long columnIndex)
         {
