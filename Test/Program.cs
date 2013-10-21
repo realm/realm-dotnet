@@ -26,8 +26,6 @@
 using System;
 using NUnitLite.Runner;
 //using NUnit.Framework.Internal;
-using TightDbCSharp;
-using TightDbCSharpTest;
 
 namespace NUnitLite.Tests
 {
@@ -41,6 +39,28 @@ namespace NUnitLite.Tests
     /// </summary>
     public static class Program
     {
+
+        /// <summary>
+        /// Attempt at running tests without nuinit for debugging purposes
+        /// This is not yet workable (expectedexceptions), but is also not yet used
+        /// </summary>
+        /// <param name="test">the test method to execute</param>
+        public static void TightDbTester(Action test)
+        {
+            try
+            {
+                if (test != null)
+                {
+                    Console.WriteLine("TDB Tester running " + test.Method);
+                    test();
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Got exception "+e);
+            }
+        }
+
         /// <summary>
         /// Run NunitLite Unit test 
         /// Empty parametres will result in all tests being run,
@@ -96,19 +116,6 @@ namespace NUnitLite.Tests
         /// 
         /// </param>
         /// 
-
-        public static void TightDbTester(Action test)
-        {
-            try
-            {
-                Console.WriteLine("TDB Tester running "+test.Method.ToString());
-                test();
-            }
-            finally
-            {                
-            }
-        }
-
         public static void Main(string[] args)
         {
             if (args != null && args.Length != 0)

@@ -147,10 +147,17 @@ namespace TightDbCSharp
         //with internal we can allow subclassing and still hide the dangerous methods.
 
         // ReSharper restore MemberCanBeProtected.Global
-        
 
+        /// <summary>
+        /// Remve all rows in the table
+        /// </summary>
+        public void Clear()
+        {
+            ValidateIsValid();
+            ClearNoCheck();
+        }
 
-
+        internal abstract void ClearNoCheck();
 
         internal abstract void RemoveNoCheck(long rowIndex);
         //removes the row at rowIndex, all rows after that have their index reduced by 1

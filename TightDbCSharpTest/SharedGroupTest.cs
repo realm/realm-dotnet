@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using TightDbCSharp;
@@ -393,8 +392,7 @@ namespace TightDbCSharpTest
 
 
                 //Write same group to memory buffer
-                byte[] buffer;
-                buffer = fromdisk.WriteToMemory();
+                byte[] buffer = fromdisk.WriteToMemory();
 
                 //Load a group from memory (and print contents)
                 using (var fromMem = new Group(buffer))

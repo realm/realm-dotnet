@@ -1290,12 +1290,12 @@ TIGHTDB_C_CS_API void tableview_set_subtable(TableView* tableview_ptr, size_t co
 
 //todo:implement tableview_add_int
 
-
-//todo:implement tableview_clear
+TIGHTDB_C_CS_API void tableview_clear(TableView* tableView_ptr){
+	tableView_ptr->clear();
+}
 
 //todo:implement tableview_remove_last
-
-TIGHTDB_C_CS_API void tableview_remove_row(tightdb::TableView* tableView_ptr, size_t row_ndx)
+TIGHTDB_C_CS_API void tableview_remove_row(TableView* tableView_ptr, size_t row_ndx)
 {
     tableView_ptr->remove(row_ndx);
 }
