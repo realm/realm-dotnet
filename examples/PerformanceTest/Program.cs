@@ -106,7 +106,7 @@ namespace PerformanceTest
                 timer1.Stop();
                 seconds = Math.Floor(timer1.Elapsed.TotalSeconds);
                 milliseconds = timer1.Elapsed.Milliseconds;
-               // Console.WriteLine("1M C#List.Insert({0} of size{1}): {2} seconds, {3} milliseconds.", type, size,seconds, milliseconds);
+                Console.WriteLine("1M C#List.Insert({0} of size{1}): {2} seconds, {3} milliseconds.", type, size,seconds, milliseconds);
             
             }
         }
@@ -229,6 +229,10 @@ namespace PerformanceTest
                 long acc = 0;
                 for (int n = 0; n < 1000*1000; n++)
                 {
+                    if (n%10000 == 0)
+                    {
+                        t.AddEmptyRow(1);
+                    }
                     acc = acc + t.Size;
                 }
                 timer1.Stop();
@@ -237,7 +241,17 @@ namespace PerformanceTest
                 Console.WriteLine("1M calls to Table.Size: {0} seconds, {1} milliseconds.", seconds, milliseconds);
                 Console.WriteLine(acc);
             }
+
+            var diag = new Diagnostics();
+            var timer2 = Stopwatch.StartNew();
+            long acc2=diag.TestNativeSizeCalls();
+            timer2.Stop();
+            var seconds2 = Math.Floor(timer2.Elapsed.TotalSeconds);
+            double milliseconds2 = timer2.Elapsed.Milliseconds;
+            Console.WriteLine("1M calls to Table.Size, coded in C++: {0} seconds, {1} milliseconds.", seconds2, milliseconds2);
         }
+
+
 
 
         /*

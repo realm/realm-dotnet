@@ -438,7 +438,7 @@ namespace TightDbCSharpTest
                 }
 
                 //TightDb also provides a delegate based transaction syntax
-                //After the delegate has executed, commit is called automatically
+                //After the delegate has e xecuted, commit is called automatically
                 //to roll back, throw an exception inside the delegate
                 db.ExecuteInWriteTransaction(group =>
                 {

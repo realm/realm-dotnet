@@ -222,6 +222,7 @@ namespace TightDbCSharp
         /// <exception cref="ArgumentOutOfRangeException">ArgumentOutOfRangeException is thrown if the column does not exist</exception>
         public long GetColumnIndex(String name)
         {
+            ValidateIsValid();//here because this is highly probably the first core call in a single operation using GetColumnIndex
             long columnIndex = GetColumnIndexNoCheck(name);
             if (columnIndex == -1)
             {
@@ -272,15 +273,18 @@ namespace TightDbCSharp
         //It is possible to back out of this operation using transactions (aborting the ongoing one)
         //if You pass a Table, schema is validated before any data is changed
         //if You pass some kind of ienummerable data structure, the data is not first validated against the subtable structure.
-
         //there is also a lowlevel SetSubTableNoCheck - this one takes almost anything and figures what to do with it
+        //.net 35 will not allow You to call IEnumerable<object> with a table as it is IEnumerable<Row>
+        //furthermore .net35 will not even allow you to have two methods where one takes Table, and one takes IEnumerable<Object>
+        //this is a bit strange, and also fixed in .net40 and .net45. To get .net35 working we have a special set of functions
+        //with different names to allow calling with table or with some enumerable collection
 
 #if !V40PLUS
-        private void SetSubTableAsTableNoCheckHighLevel_35(long columnIndex, long rowIndex, Table element)
+        private void SetSubTableNoCheckHighLevel(long columnIndex, long rowIndex, Table element)
         {
             if (element == null)
             {
-                SetNullSubtable(columnIndex, rowIndex);
+                SetSubtableAsNull(columnIndex, rowIndex);
             }
             else
             {
@@ -292,19 +296,22 @@ namespace TightDbCSharp
             }
         }
 
-        private void SetSubTableAsObjectsNoCheckHighLevel_35(long columnIndex, long rowIndex,  IEnumerable<Object> element)
+        private void SetSubTableNoCheckHighLevel(long columnIndex, long rowIndex,  IEnumerable<Object> element)
         {
             if (element == null)
             {
-                SetNullSubtable(columnIndex, rowIndex);
+                SetSubtableAsNull(columnIndex, rowIndex);
             }
-            using (var t = GetSubTableNoCheck(columnIndex, rowIndex))
+            else
             {
-                t.AddMany(element);
+                using (var t = GetSubTableNoCheck(columnIndex, rowIndex))
+                {
+                    t.AddMany(element);
+                }
             }
         }
 
-        private void SetNullSubtable(long columnIndex, long rowIndex)
+        private void SetSubtableAsNull(long columnIndex, long rowIndex)
         {
             ClearSubTableNoCheck(columnIndex, rowIndex);
         }
@@ -615,80 +622,83 @@ namespace TightDbCSharp
                 object element = rowContents[ix]; //element is parameter number ix
                 //first do a switch on directly compatible types
 
-                switch (ColumnTypeNoCheck(ix))
-                {
-                    case DataType.Int:
-                        SetLongNoCheck(ix, rowIndex, Convert.ToInt64(element,CultureInfo.InvariantCulture));
-                        //this throws exceptions if called with something too weird
-                        break;
-                    case DataType.Bool:
-                        SetBoolNoCheck(ix, rowIndex, (Boolean) element);
-                        break;
-                    case DataType.String:
-                        SetStringNoCheck(ix, rowIndex, (string) element);
-                        break;
-                    case DataType.Binary: //currently you HAVE to send a byte[] in the array with binary data
-                        //later we might support that You put in other types, that can be changed to binary data
-                        var data = element as byte[];
-                        if (data == null)
-                        {
-                            if (element is float)
-                                //for instance we might want to support people stuffing a float directly to a binary field for some obscure reason
-                            {
+                SetValueNoCheck(ix, rowIndex, element);//also used by row[colix] operator
+            }
+        }
 
-                            }
-                        }
-                        SetBinaryNoCheck(ix, rowIndex, data);
-                        break;
-                    case DataType.Table: //todo:test thoroughly with unit test, also with invalid data
 
+        internal void SetValueNoCheck(long columnIndex, long rowIndex, object element)
+        {
+            switch (ColumnTypeNoCheck(columnIndex))
+            {
+                case DataType.Int:
+                    SetLongNoCheck(columnIndex, rowIndex, Convert.ToInt64(element, CultureInfo.InvariantCulture));
+                    //this throws exceptions if called with something too weird
+                    break;
+                case DataType.Bool:
+                    SetBoolNoCheck(columnIndex, rowIndex, (Boolean)element);
+                    break;
+                case DataType.String:
+                    SetStringNoCheck(columnIndex, rowIndex, (string)element);
+                    break;
+                case DataType.Binary: //currently you HAVE to send a byte[] in the array with binary data
+                    //later we might support that You put in other types, that can be changed to binary data
+                    var data = element as byte[];
+                    if (data == null)
                     {
-//element could be a table or an ennumarable structure, both are Ienummerable<object> so just call on and let SetSubTableNoCheck  deal with it
+                        if (element is float)
+                        //for instance we might want to support people stuffing a float directly to a binary field for some obscure reason
+                        {
+
+                        }
+                    }
+                    SetBinaryNoCheck(columnIndex, rowIndex, data);
+                    break;
+                case DataType.Table: //todo:test thoroughly with unit test, also with invalid data
+                    {
+                        //element could be a table or an ennumarable structure, both are Ienummerable<object> so just call on and let SetSubTableNoCheck  deal with it
 #if V40PLUS
-                        SetSubTableNoCheckHighLevel(ix, rowIndex, (IEnumerable<object>) element);
+                        SetSubTableNoCheckHighLevel(columnIndex, rowIndex, (IEnumerable<object>) element);
 #else
                         var elementAsEnumerable = element as IEnumerable<object>;
                         var elementAsTable = element as Table;
 
                         if (element == null)
                         {
-                            SetSubTableAsTableNoCheckHighLevel_35(ix, rowIndex, null);//this method also handles null table
+                            SetSubtableAsNull(columnIndex, rowIndex);//this method also handles null table
                         }
 
-                        if (elementAsTable != null )//call only with null or Table
+                        if (elementAsTable != null)//call only with null or Table
                         {
-                            SetSubTableAsTableNoCheckHighLevel_35(ix, rowIndex, elementAsTable);
-                        } else 
-                        if (elementAsEnumerable != null)//call with IEnumerable<Object> that is not a table
-                        {
-                            SetSubTableAsObjectsNoCheckHighLevel_35(ix, rowIndex, elementAsEnumerable);    
-                        }                        
+                            SetSubTableNoCheckHighLevel(columnIndex, rowIndex, elementAsTable);
+                        }
+                        else
+                            if (elementAsEnumerable != null)//call with IEnumerable<Object> that is not a table
+                            {
+                                SetSubTableNoCheckHighLevel(columnIndex, rowIndex, elementAsEnumerable);
+                            }
 #endif
-
                     }
-                        break;
-                    case DataType.Mixed: //Try to infer the mixed type to use from the type of the object from the user
-                        SetMixedNoCheck(ix, rowIndex, element);
-                        break;
-                    case DataType.Date:
-                        SetDateTimeNoCheck(ix, rowIndex, (DateTime) element);
-                        break;
-                    case DataType.Float:
-                        SetFloatNoCheck(ix, rowIndex, (float) element);
-                        break;
-                    case DataType.Double:
-                        SetDoubleNoCheck(ix, rowIndex, (Double) element);
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException("rowContents",
-                            String.Format(CultureInfo.InvariantCulture,
-                                "An element ix:{0} of type {1} in a row sent to AddRow, is not of a supported tightdb type ",
-                                ix, element.GetType()));
-                }
+                    break;
+                case DataType.Mixed: //Try to infer the mixed type to use from the type of the object from the user
+                    SetMixedNoCheck(columnIndex, rowIndex, element);
+                    break;
+                case DataType.Date:
+                    SetDateTimeNoCheck(columnIndex, rowIndex, (DateTime)element);
+                    break;
+                case DataType.Float:
+                    SetFloatNoCheck(columnIndex, rowIndex, (float)element);
+                    break;
+                case DataType.Double:
+                    SetDoubleNoCheck(columnIndex, rowIndex, (Double)element);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException("element",
+                        String.Format(CultureInfo.InvariantCulture,
+                            "An element ix:{0} of type {1} in a row sent to AddRow, is not of a supported tightdb type ",
+                            columnIndex, element.GetType()));
             }
         }
-
-
 
         /// <summary>
         /// Return the type of the specified column.
@@ -697,8 +707,7 @@ namespace TightDbCSharp
         /// <param name="columnIndex">zero based index of column</param>
         /// <returns>DataType that the column is defined as</returns>
         public DataType ColumnType(long columnIndex)
-        {
-            ValidateIsValid();
+        {            
             ValidateColumnIndex(columnIndex);
             return ColumnTypeNoCheck(columnIndex);
         }
@@ -732,10 +741,9 @@ namespace TightDbCSharp
         /// <param name="rowIndex">Zero based index of the row of the field with a SubTable</param>
         /// <returns>Table that is stored in the field (Lazily created, data is transferred only if field get or set is called on the returned table)</returns>
         public Table GetSubTable(string columnName, long rowIndex)
-        {
-            ValidateIsValid();
-            ValidateRowIndex(rowIndex);
+        {            
             long columnIndex = GetColumnIndex(columnName);
+            ValidateRowIndex(rowIndex);
             return GetSubTableNoRowCheck(columnIndex, rowIndex);
         }
 
@@ -754,9 +762,8 @@ namespace TightDbCSharp
         /// <returns>number of rows in specified subtable</returns>
         public long GetSubTableSize(String columnName, long rowIndex)
         {
-            ValidateIsValid();
-            ValidateRowIndex(rowIndex);
             long columnIndex = GetColumnIndex(columnName);
+            ValidateRowIndex(rowIndex);
             ValidateTypeSubTable(columnIndex);
             return GetSubTableSizeNoCheck(columnIndex, rowIndex);            
         }
@@ -794,9 +801,8 @@ namespace TightDbCSharp
         /// <returns>number of rows in specified subtable</returns>
         public long GetMixedSubTableSize(String columnName, long rowIndex)
         {
-            ValidateIsValid();
-            ValidateRowIndex(rowIndex);
             long columnIndex = GetColumnIndex(columnName);
+            ValidateRowIndex(rowIndex);
             ValidateMixedType(columnIndex,rowIndex,DataType.Table);
             return GetSubTableSizeNoCheck(columnIndex, rowIndex);//core doesn't care if it is a mixed or subtable field based subtable
         }
@@ -842,13 +848,23 @@ namespace TightDbCSharp
         /// <param name="columnIndex">Zero based index of the column of the field to set</param>
         /// <param name="rowIndex">Zero based index of the row of the field to set</param>
         public void ClearSubTable(long columnIndex, long rowIndex)
-        {
-            ValidateIsValid();
+        {            
             ValidateColumnIndexAndTypeSubTable(columnIndex);
             ValidateRowIndex(rowIndex);
             ClearSubTableNoCheck(columnIndex, rowIndex);
         }
 
+        internal void ClearSubTableNoRowCheck(long columnIndex, long rowIndex)
+        {
+            ValidateColumnIndexAndTypeSubTable(columnIndex);
+            ClearSubTableNoCheck(columnIndex,rowIndex);
+        }
+
+        internal void ClearSubTableNoRowCheck(String columnName, long rowIndex)
+        {
+            var columnIndex=GetColumnIndex(columnName);
+            ClearSubTableNoCheck( columnIndex, rowIndex);
+        }
 
         internal DateTime GetDateTimeNoRowCheck(long columnIndex, long rowIndex)
         {
@@ -904,7 +920,6 @@ namespace TightDbCSharp
         /// <returns>value of the field specified</returns>
         public long GetMixedLong(string columnName, long rowIndex)
         {
-            ValidateIsValid();
             var columnIndex = GetColumnIndex(columnName);
             ValidateRowIndex(rowIndex);
             ValidateMixedType(columnIndex, rowIndex, DataType.Int);
@@ -954,7 +969,6 @@ namespace TightDbCSharp
 
         public float GetMixedFloat(string columnName, long rowIndex)
         {
-            ValidateIsValid();
             var columnIndex = GetColumnIndex(columnName);
             ValidateMixedType(columnIndex, rowIndex, DataType.Float);
             return GetMixedFloatNoCheck(columnIndex, rowIndex);
@@ -988,7 +1002,6 @@ namespace TightDbCSharp
 
         public double GetMixedDouble(String columnName, long rowIndex)
         {
-            ValidateIsValid();
             var columnIndex = GetColumnIndex(columnName);
             ValidateRowIndex(rowIndex);
             ValidateMixedType(columnIndex,rowIndex,DataType.Double);            
@@ -1027,7 +1040,6 @@ namespace TightDbCSharp
 
         public DateTime GetMixedDateTime(string columnName, long rowIndex)
         {
-            ValidateIsValid();
             long columnIndex = GetColumnIndex(columnName);
             ValidateRowIndex(rowIndex);
             ValidateMixedType(columnIndex, rowIndex, DataType.Date);
@@ -1064,7 +1076,6 @@ namespace TightDbCSharp
 
         public String GetMixedString(string columnName, long rowIndex)
         {
-            ValidateIsValid();
             long columnIndex = GetColumnIndex(columnName);
             ValidateRowIndex(rowIndex);
             ValidateMixedType(columnIndex, rowIndex, DataType.String);
@@ -1101,7 +1112,6 @@ namespace TightDbCSharp
 
         public byte[] GetMixedBinary(string columnName, long rowIndex)
         {
-            ValidateIsValid();
             long columnIndex = GetColumnIndex(columnName);
             ValidateRowIndex(rowIndex);
             ValidateMixedType(columnIndex, rowIndex, DataType.Binary);
@@ -1254,7 +1264,6 @@ namespace TightDbCSharp
         /// <returns>value stored in field</returns>
         public DateTime GetDateTime(string columnName, long rowIndex)
         {
-            ValidateIsValid();
             long columnIndex = GetColumnIndex(columnName);
             ValidateRowIndex(rowIndex);
             ValidateTypeDate(columnIndex);
@@ -1355,8 +1364,7 @@ namespace TightDbCSharp
         /// <param name="rowIndex">zero based index of the row of the field to set</param>
         /// <param name="value">String value to set (Tightdb string fields contain UTF-8 so the string will be stored as UTF-8 even though it is specified as UTF-16 )</param>
         public void SetMixedString(string columnName, long rowIndex, string value)
-        {
-            ValidateIsValid();
+        {            
             long columnIndex = GetColumnIndex(columnName);
             ValidateColumnRowTypeMixed(columnIndex, rowIndex);
             SetMixedStringNoCheck(columnIndex, rowIndex, value);
@@ -1451,8 +1459,8 @@ namespace TightDbCSharp
 
         public void SetMixedDateTime(string columnName, long rowIndex, DateTime value)
         {
-            ValidateIsValid();
-            SetMixedDateTimeNoColumnCheck(GetColumnIndex(columnName), rowIndex, value);
+            var columnIndex = GetColumnIndex(columnName);
+            SetMixedDateTimeNoColumnCheck(columnIndex, rowIndex, value);
         }
 
 
@@ -1751,7 +1759,6 @@ namespace TightDbCSharp
 
         public void SetLong(String columnName, long rowIndex, long value)
         {
-            ValidateIsValid();
             long columnIndex = GetColumnIndex(columnName);
             ValidateTypeInt(columnIndex);
             ValidateRowIndex(rowIndex);
@@ -1786,7 +1793,6 @@ namespace TightDbCSharp
         /// <param name="value">int value to set in field</param>
         public void SetInt(String columnName, long rowIndex, int value)
         {
-            ValidateIsValid();
             long columnIndex = GetColumnIndex(columnName);
             ValidateTypeInt(columnIndex);
             ValidateRowIndex(rowIndex);
@@ -1814,8 +1820,7 @@ namespace TightDbCSharp
         /// <param name="rowIndex">Zero based index of the row of the field to set</param>
         /// <param name="value">double value to set in field</param>
         public void SetDouble(String columnName, long rowIndex, double value)
-        {
-            ValidateIsValid();
+        {            
             long columnIndex = GetColumnIndex(columnName);
             ValidateTypeDouble(columnIndex);
             ValidateRowIndex(rowIndex);
@@ -1844,7 +1849,6 @@ namespace TightDbCSharp
         /// <param name="value">float value to set in field</param>
         public void SetFloat(String columnName, long rowIndex, float value)
         {
-            ValidateIsValid();
             long columnIndex = GetColumnIndex(columnName);
             ValidateTypeFloat(columnIndex);
             ValidateRowIndex(rowIndex);
@@ -1890,7 +1894,7 @@ namespace TightDbCSharp
             ValidateIsValid();
             ValidateColumnAndRowIndex(columnIndex, rowIndex);
             ValidateTypeSubTable(columnIndex);
-            SetSubTableAsTableNoCheckHighLevel_35(columnIndex, rowIndex, value);
+            SetSubTableNoCheckHighLevel(columnIndex, rowIndex, value);
         }
 
         /// <summary>
@@ -1909,7 +1913,7 @@ namespace TightDbCSharp
             ValidateIsValid();
             ValidateColumnAndRowIndex(columnIndex, rowIndex);
             ValidateTypeSubTable(columnIndex);
-            SetSubTableAsObjectsNoCheckHighLevel_35(columnIndex, rowIndex, value);
+            SetSubTableNoCheckHighLevel(columnIndex, rowIndex, value);
         }
 
 #endif
@@ -1932,7 +1936,6 @@ namespace TightDbCSharp
         /// <param name="value">Table, or Ienumerable that can be evaluated to shema-matching suitable subtable data by the binding</param>
         public void SetSubTable(String columnName, long rowIndex, IEnumerable<object> value)//4.0 and later allows a IEnumerable<object> to receive an IEnumerable<Row>
         {
-            ValidateIsValid();
             long columnIndex = GetColumnIndex(columnName);
             ValidateTypeSubTable(columnIndex);
             ValidateRowIndex(rowIndex);
@@ -1955,7 +1958,7 @@ namespace TightDbCSharp
             var columnIndex = GetColumnIndex(columnName);
             ValidateTypeSubTable(columnIndex);
             ValidateRowIndex(rowIndex);
-            SetSubTableAsTableNoCheckHighLevel_35(columnIndex, rowIndex, value);
+            SetSubTableNoCheckHighLevel(columnIndex, rowIndex, value);
         }
 
         /// <summary>
@@ -1975,7 +1978,7 @@ namespace TightDbCSharp
             var columnIndex = GetColumnIndex(columnName);
             ValidateTypeSubTable(columnIndex);
             ValidateRowIndex(rowIndex);
-            SetSubTableAsObjectsNoCheckHighLevel_35(columnIndex, rowIndex, value);
+            SetSubTableNoCheckHighLevel(columnIndex, rowIndex, value);
         }
 #endif
 
@@ -1996,7 +1999,6 @@ namespace TightDbCSharp
 
         internal void SetLongNoRowCheck(string columnName, long rowIndex, long value)
         {
-            ValidateIsValid();
             long columnIndex = GetColumnIndex(columnName);
             ValidateTypeInt(columnIndex);
             SetLongNoCheck(columnIndex, rowIndex, value);
@@ -2004,7 +2006,6 @@ namespace TightDbCSharp
 
         internal void SetIntNoRowCheck(string columnName, long rowIndex, int value)
         {
-            ValidateIsValid();
             long columnIndex = GetColumnIndex(columnName);
             ValidateTypeInt(columnIndex);
             SetIntNoCheck(columnIndex, rowIndex, value);
@@ -2020,7 +2021,6 @@ namespace TightDbCSharp
 
         internal void SetFloatNoRowCheck(string columnName, long rowIndex, float value)
         {
-            ValidateIsValid();
             long columnIndex = GetColumnIndex(columnName);
             ValidateTypeFloat(columnIndex);
             SetFloatNoCheck(columnIndex, rowIndex, value);
@@ -2037,7 +2037,6 @@ namespace TightDbCSharp
 
         internal void SetDoubleNoRowCheck(string columnName, long rowIndex, double value)
         {
-            ValidateIsValid();
             long columnIndex = GetColumnIndex(columnName);
             ValidateTypeDouble(columnIndex);
             SetDoubleNoCheck(columnIndex, rowIndex, value);
@@ -2082,7 +2081,6 @@ namespace TightDbCSharp
 
         public long GetLong(String columnName, long rowIndex)
         {
-            ValidateIsValid();
             long columnIndex = GetColumnIndex(columnName);
             ValidateRowIndex(rowIndex);
             ValidateTypeInt(columnIndex);
@@ -2121,7 +2119,6 @@ namespace TightDbCSharp
         /// <returns>String value stored in field</returns>
         public string GetString(String columnName, long rowIndex)
         {
-            ValidateIsValid();
             long columnIndex = GetColumnIndex(columnName);
             ValidateRowIndex(rowIndex);
             ValidateTypeString(columnIndex);
@@ -2155,7 +2152,6 @@ namespace TightDbCSharp
         
         public byte[] GetBinary(String columnName, long rowIndex)
         {
-            ValidateIsValid();
             long columnIndex = GetColumnIndex(columnName);
             ValidateRowIndex(rowIndex);
             ValidateTypeBinary(columnIndex);
@@ -2202,7 +2198,6 @@ namespace TightDbCSharp
 
         internal Double GetDoubleNoRowCheck(String columnName, long rowIndex)
         {
-            ValidateIsValid();
             long columnIndex = GetColumnIndex(columnName);
             ValidateTypeDouble(columnIndex);
             return GetDoubleNoCheck(columnIndex, rowIndex);
@@ -2245,7 +2240,6 @@ namespace TightDbCSharp
 
         internal float GetFloatNoRowCheck(String columnName, long rowIndex)
         {
-            ValidateIsValid();
             long columnIndex = GetColumnIndex(columnName);
             ValidateTypeFloat(columnIndex);
             return GetFloatNoCheck(columnIndex, rowIndex);
@@ -2277,9 +2271,8 @@ namespace TightDbCSharp
         /// <param name="value">the string to store</param>
         public void SetString(string columnName, long rowIndex, string value)
         {
-            ValidateIsValid();
-            ValidateRowIndex(rowIndex);
             long columnIndex = GetColumnIndex(columnName);
+            ValidateRowIndex(rowIndex);
             ValidateTypeString(columnIndex);
             SetStringNoCheck(columnIndex, rowIndex, value);
         }
@@ -2306,9 +2299,8 @@ namespace TightDbCSharp
         /// <param name="value">byte array or buffer with data</param>
         public void SetBinary(string columnName, long rowIndex, byte[] value)
         {
-            ValidateIsValid();
-            ValidateRowIndex(rowIndex);
             long columnIndex = GetColumnIndex(columnName);
+            ValidateRowIndex(rowIndex);
             ValidateTypeBinary(columnIndex);
             SetBinaryNoCheck(columnIndex, rowIndex, value);
         }
@@ -2399,6 +2391,50 @@ namespace TightDbCSharp
             SetDateTimeNoCheck(columnIndex, rowIndex, value);
         }
 
+//in .net 35 Table is not IEnumerable<object>
+#if !V40PLUS
+
+        internal void SetSubTableNoRowCheck(long columnIndex, long rowIndex, IEnumerable<Object> value)
+        {
+            ValidateColumnIndexAndTypeSubTable(columnIndex);
+            SetSubTableNoCheckHighLevel(columnIndex, rowIndex, value);
+        }
+
+        internal void SetSubTableNoRowCheck(string columnName, long rowIndex, IEnumerable<Object> value)
+        {
+            var columnIndex = GetColumnIndex(columnName);
+            ValidateTypeSubTable(columnIndex);
+            SetSubTableNoCheckHighLevel(columnIndex, rowIndex, value);
+        }
+
+        internal void SetSubTableNoRowCheck(long columnIndex, long rowIndex,Table value)
+        {
+            ValidateColumnIndexAndTypeSubTable(columnIndex);
+            SetSubTableNoCheckHighLevel(columnIndex, rowIndex, value);
+        }
+
+        internal void SetSubTableNoRowCheck(string columnName, long rowIndex,Table value)
+        {
+            var columnIndex = GetColumnIndex(columnName);
+            ValidateTypeSubTable(columnIndex);
+            SetSubTableNoCheckHighLevel(columnIndex, rowIndex, value);
+        }
+
+
+#else
+        internal void SetSubTableNoRowCheck(long columnIndex, long rowIndex, IEnumerable<Object> value)
+        {
+            ValidateColumnIndexAndTypeSubTable(columnIndex);
+            SetSubTableNoCheckHighLevel(columnIndex, rowIndex, value);
+        }
+
+        internal void SetSubTableNoRowCheck(string columnName, long rowIndex, IEnumerable<Object> value)
+        {
+            var columnIndex = GetColumnIndex(columnName);
+            ValidateTypeSubTable(columnIndex);
+            SetSubTableNoCheckHighLevel(columnIndex, rowIndex, value);
+        }
+#endif
 
         internal String GetStringNoRowCheck(long columnIndex, long rowIndex)
         {
@@ -2563,8 +2599,7 @@ namespace TightDbCSharp
         /// <param name="value">Datetime value to convert to time_t and set</param>
         public void SetDateTime(string columnName, long rowIndex, DateTime value)
         {
-            ValidateIsValid();
-            long columnIndex = GetColumnIndex(columnName);
+            var columnIndex = GetColumnIndex(columnName);
             ValidateTypeDate(columnIndex);
             ValidateRowIndex(rowIndex);
             SetDateTimeNoCheck(columnIndex, rowIndex, value);
@@ -2572,7 +2607,7 @@ namespace TightDbCSharp
 
         internal void SetBooleanNoRowCheck(string columnName, long rowIndex, Boolean value)
         {
-            long columnIndex = GetColumnIndex(columnName);
+            var columnIndex = GetColumnIndex(columnName);
             ValidateTypeBool(columnIndex);
             SetBoolNoCheck(columnIndex, rowIndex, value);
         }
@@ -2593,9 +2628,8 @@ namespace TightDbCSharp
         /// <returns>True or False, value of the boolean field</returns>
         public Boolean GetBoolean(String columnName, long rowIndex)
         {
-            ValidateIsValid();
+            var columnIndex = GetColumnIndex(columnName);
             ValidateRowIndex(rowIndex);
-            long columnIndex = GetColumnIndex(columnName);
             ValidateTypeBool(columnIndex);
             return GetBoolNoCheck(columnIndex, rowIndex);
         }
@@ -2626,8 +2660,7 @@ namespace TightDbCSharp
         /// <param name="target">columns with this value will be counted</param>
         /// <returns>number of rows with target value in the specified column</returns>
         public long CountLong(long columnIndex, long target)
-        {
-            ValidateIsValid();
+        {            
             ValidateColumnIndex(columnIndex);
             return CountLongNoCheck(columnIndex, target);
         }
@@ -2640,8 +2673,7 @@ namespace TightDbCSharp
         /// <param name="target">columns with this value will be counted</param>
         /// <returns>number of rows with target value in the specified column</returns>
         public long CountFloat(long columnIndex, float target)
-        {
-            ValidateIsValid();
+        {            
             ValidateColumnIndex(columnIndex);
             return CountFloatNoCheck(columnIndex, target);
         }
@@ -2654,8 +2686,7 @@ namespace TightDbCSharp
         /// <param name="target">columns with this value will be counted</param>
         /// <returns>number of rows with target value in the specified column</returns>
         public long CountString(long columnIndex, string target)
-        {
-            ValidateIsValid();            
+        {            
             ValidateColumnIndex(columnIndex);
             return CountStringNoCheck(columnIndex, target);
         }
@@ -2668,8 +2699,7 @@ namespace TightDbCSharp
         /// <param name="target">columns with this value will be counted</param>
         /// <returns>number of rows with target value in the specified column</returns>
         public long CountDouble(long columnIndex, Double target)
-        {
-            ValidateIsValid();
+        {            
             ValidateColumnIndex(columnIndex);
             return CountDoubleNoCheck(columnIndex, target);
         }
@@ -2681,7 +2711,6 @@ namespace TightDbCSharp
         /// <returns>Sum of values of specified column. If the sum exceeds the maximum value in double, result is unspecified</returns>
         public long SumLong(long columnIndex)
         {
-            ValidateIsValid();
             ValidateColumnIndex(columnIndex);
             return SumLongNoCheck(columnIndex);
         }
@@ -2692,8 +2721,7 @@ namespace TightDbCSharp
         /// <param name="columnIndex">Name of column to sum up</param>
         /// <returns>Sum of values of specified column. </returns>
         public double SumFloat(long columnIndex)
-        {
-            ValidateIsValid();
+        {            
             ValidateColumnIndex(columnIndex);
             return SumFloatNoCheck(columnIndex);
         }
@@ -2705,8 +2733,7 @@ namespace TightDbCSharp
         /// <param name="columnIndex">Name of column to sum up</param>
         /// <returns>Sum of values of specified column. if the sum goes higher than what a double can represent, result is unspecified</returns>
         public double SumDouble(long columnIndex)
-        {
-            ValidateIsValid();
+        {            
             ValidateColumnIndex(columnIndex);
             return SumDoubleNoCheck(columnIndex);
         }
@@ -2717,8 +2744,7 @@ namespace TightDbCSharp
         /// <param name="columnIndex">Zero based Index of column to process</param>
         /// <returns>Lowest value of all values in the specified column</returns>
         public long MinimumLong(long columnIndex)
-        {
-            ValidateIsValid();
+        {            
             ValidateColumnIndex(columnIndex);
             return MinimumLongNoCheck(columnIndex);
         }
@@ -2740,8 +2766,7 @@ namespace TightDbCSharp
         /// <param name="columnIndex">Zero based Index of column to process</param>
         /// <returns>Lowest value of all values in the specified column</returns>
         public double MinimumDouble(long columnIndex)
-        {
-            ValidateIsValid();
+        {            
             ValidateColumnIndex(columnIndex);
             return MinimumDoubleNoCheck(columnIndex);
         }
@@ -2764,8 +2789,7 @@ namespace TightDbCSharp
         /// <param name="columnIndex">Zero based Index of column to process</param>
         /// <returns>Highest value of all values in the specified column</returns>
         public float MaximumFloat(long columnIndex)
-        {
-            ValidateIsValid();
+        {            
             ValidateColumnIndex(columnIndex);
             return MaximumFloatNoCheck(columnIndex);
         }
@@ -2790,9 +2814,8 @@ namespace TightDbCSharp
         /// <returns>Average of values of specified column. </returns>
         public double AverageLong(long columnIndex)
         {
-            ValidateIsValid();
-            ValidateIsNotEmpty();
             ValidateColumnIndex(columnIndex);
+            ValidateIsNotEmpty(); 
             return AverageLongNoCheck(columnIndex);
         }
 
@@ -2805,9 +2828,8 @@ namespace TightDbCSharp
         /// <returns>Average of values of specified column. </returns>
         public double AverageFloat(long columnIndex)
         {
-            ValidateIsValid();
-            ValidateIsNotEmpty();
             ValidateColumnIndex(columnIndex);
+            ValidateIsNotEmpty();
             return AverageFloatNoCheck(columnIndex);
         }
 
@@ -2821,9 +2843,8 @@ namespace TightDbCSharp
 
         public double AverageDouble(long columnIndex)
         {
-            ValidateIsValid();
-            ValidateIsNotEmpty();
             ValidateColumnIndex(columnIndex);
+            ValidateIsNotEmpty();
             return AverageDoubleNoCheck(columnIndex);
         }
 
@@ -2841,8 +2862,8 @@ namespace TightDbCSharp
     
         public long CountLong(string columnName, long target)
         {
-            ValidateIsValid();
-            long columnIndex = GetColumnIndex(columnName);
+            
+            var columnIndex = GetColumnIndex(columnName);
             return CountLongNoCheck(columnIndex, target);
         }
 
@@ -2856,8 +2877,7 @@ namespace TightDbCSharp
    
         public long CountFloat(string columnName, float target)
         {
-            ValidateIsValid();
-            long columnIndex = GetColumnIndex(columnName);
+            var columnIndex = GetColumnIndex(columnName);
             return CountFloatNoCheck(columnIndex, target);
         }
 
@@ -2870,8 +2890,7 @@ namespace TightDbCSharp
   
         public long CountString(string columnName, string target)
         {
-            ValidateIsValid();
-            long columnIndex = GetColumnIndex(columnName);
+            var columnIndex = GetColumnIndex(columnName);
             return CountStringNoCheck(columnIndex, target);
         }
 
@@ -2883,9 +2902,8 @@ namespace TightDbCSharp
         /// <returns>number of rows with target value in the specified column</returns>
   
         public long CountDouble(string columnName, Double target)
-        {
-            ValidateIsValid();
-            long columnIndex = GetColumnIndex(columnName);
+        {            
+            var columnIndex = GetColumnIndex(columnName);
             return CountDoubleNoCheck(columnIndex, target);
         }
 
@@ -2897,8 +2915,7 @@ namespace TightDbCSharp
   
         public long SumLong(string columnName)
         {
-            ValidateIsValid();
-            long columnIndex = GetColumnIndex(columnName);
+            var columnIndex = GetColumnIndex(columnName);
             return SumLongNoCheck(columnIndex);
         }
 
@@ -2910,8 +2927,7 @@ namespace TightDbCSharp
   
         public double SumFloat(string columnName)
         {
-            ValidateIsValid();
-            long columnIndex = GetColumnIndex(columnName);
+            var columnIndex = GetColumnIndex(columnName);
             return SumFloatNoCheck(columnIndex);
         }
 
@@ -2922,9 +2938,8 @@ namespace TightDbCSharp
         /// <returns>Sum of values of specified column. If the sum exceeds the maximum value in double, result is unspecified</returns>
 
         public double SumDouble(string columnName)
-        {
-            ValidateIsValid();
-            long columnIndex = GetColumnIndex(columnName);
+        {            
+            var columnIndex = GetColumnIndex(columnName);
             return SumDoubleNoCheck(columnIndex);
         }
 
@@ -2935,9 +2950,8 @@ namespace TightDbCSharp
         /// <returns>Lowest value of all values in the specified column</returns>
 
         public long MinimumLong(string columnName)
-        {
-            ValidateIsValid();
-            long columnIndex = GetColumnIndex(columnName);
+        {            
+            var columnIndex = GetColumnIndex(columnName);
             return MinimumLongNoCheck(columnIndex);
         }
 
@@ -2949,8 +2963,7 @@ namespace TightDbCSharp
 
         public float MinimumFloat(string columnName)
         {
-            ValidateIsValid();
-            long columnIndex = GetColumnIndex(columnName);
+            var columnIndex = GetColumnIndex(columnName);
             return MinimumFloatNoCheck(columnIndex);
         }
 
@@ -2961,9 +2974,8 @@ namespace TightDbCSharp
         /// <returns>Lowest value of all values in the specified column</returns>
 
         public double MinimumDouble(string columnName)
-        {
-            ValidateIsValid();
-            long columnIndex = GetColumnIndex(columnName);
+        {            
+            var columnIndex = GetColumnIndex(columnName);
             return MinimumDoubleNoCheck(columnIndex);
         }
 
@@ -2973,9 +2985,8 @@ namespace TightDbCSharp
         /// <param name="columnName">Name of column to process</param>
         /// <returns>Highest value of all values in the specified column</returns>
         public long MaximumLong(string columnName)
-        {
-            ValidateIsValid();
-            long columnIndex = GetColumnIndex(columnName);
+        {            
+            var columnIndex = GetColumnIndex(columnName);
             return MaximumLongNoCheck(columnIndex);
         }
 
@@ -2986,9 +2997,8 @@ namespace TightDbCSharp
         /// <returns>Highest value of all values in the specified column</returns>
 
         public float MaximumFloat(string columnName)
-        {
-            ValidateIsValid();
-            long columnIndex = GetColumnIndex(columnName);
+        {            
+            var columnIndex = GetColumnIndex(columnName);
             return MaximumFloatNoCheck(columnIndex);
         }
 
@@ -2999,9 +3009,8 @@ namespace TightDbCSharp
         /// <returns>Highest value of all values in the specified column</returns>
 
         public double MaximumDouble(string columnName)
-        {
-            ValidateIsValid();
-            long columnIndex = GetColumnIndex(columnName);
+        {            
+            var columnIndex = GetColumnIndex(columnName);
             return MaximumDoubleNoCheck(columnIndex);
         }
 
@@ -3013,9 +3022,8 @@ namespace TightDbCSharp
 
         public double AverageLong(string columnName)
         {
-            ValidateIsValid();
+            var columnIndex = GetColumnIndex(columnName);
             ValidateIsNotEmpty();
-            long columnIndex = GetColumnIndex(columnName);
             return AverageLongNoCheck(columnIndex);
         }
 
@@ -3025,10 +3033,9 @@ namespace TightDbCSharp
         /// <param name="columnName">Name of column to process</param>
         /// <returns>Average of all values in the specified column</returns>
         public double AverageFloat(string columnName)
-        {
-            ValidateIsValid();
+        {            
+            var columnIndex = GetColumnIndex(columnName);
             ValidateIsNotEmpty();
-            long columnIndex = GetColumnIndex(columnName);
             return AverageFloatNoCheck(columnIndex);
         }
 
@@ -3442,8 +3449,6 @@ namespace TightDbCSharp
             return FindAllStringNoCheck(columnIndex, value);
         }
 
-
-
         /// <summary>
         /// Find all rows where a column contains a given byte array
         /// Can only be called on DataType.Binary columns
@@ -3452,8 +3457,8 @@ namespace TightDbCSharp
         /// <param name="value">String to search for</param>
         /// <returns>TableView with all rows that match the string</returns>
         public TableView FindAllBinary(String columnName, Byte [] value)
-        {
-            long columnIndex = GetColumnIndex(columnName);
+        {            
+            var columnIndex = GetColumnIndex(columnName);
             ValidateTypeBinary(columnIndex);
             return FindAllBinaryNoCheck(columnIndex, value);
         }
@@ -3504,50 +3509,10 @@ namespace TightDbCSharp
         public void SetValue(long columnIndex, long rowIndex,object value)
         {
             ValidateColumnAndRowIndex(columnIndex, rowIndex);
-            SetValueNoCheck(columnIndex, rowIndex,value);
+            SetValueNoCheck(columnIndex, rowIndex, value);
         }
 
-        internal void SetValueNoCheck(long columnIndex, long rowIndex, object value)
-        {
-            switch (ColumnType(columnIndex))
-            {
-                case DataType.Int://todo: check out library souirce and see the implementation of toint calling directly should be faster  
-                    SetLongNoCheck(columnIndex, rowIndex, Convert.ToInt64(value,CultureInfo.InvariantCulture));
-                        //the cast will raise an exception if value is not a long, or at least convertible to long
-                    break;
-                case DataType.Bool:
-                    SetBoolNoCheck(columnIndex, rowIndex, (bool) value);
-                    break;
-                case DataType.String:
-                    SetStringNoCheck(columnIndex, rowIndex, (String) value);
-                    break;
-                case DataType.Binary:
-                    SetBinaryNoCheck(columnIndex, rowIndex, (byte[]) value);
-                    break;
-                case DataType.Table:
-                    //bug //fixme //todo  if value is not a table we get null and we will set an empty subtable
-                    SetSubTableNoCheck(columnIndex, rowIndex, value as Table); //bug //fixme //todo take an object[] too
-                    break;
-                case DataType.Mixed:
-                    SetMixedNoCheck(columnIndex, rowIndex, value);
-                    break;
-                case DataType.Date:
-                    SetDateTimeNoCheck(columnIndex, rowIndex, (DateTime) value);
-                    break;
-                case DataType.Float:
-                    SetFloatNoCheck(columnIndex, rowIndex, (float) value);
-                    break;
-                case DataType.Double:
-                    SetDoubleNoCheck(columnIndex, rowIndex, (Double) value);
-                    break;
-                default:
-                {
-                    throw new NotImplementedException(String.Format(CultureInfo.InvariantCulture,
-                        "setting type {0} in Table.Set Cell not implemented yet",
-                        ColumnType(columnIndex)));
-                }
-            }
-        }
+
 
         private object GetMixedNoCheck(long columnIndex, long rowIndex)
         {

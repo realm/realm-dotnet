@@ -8,13 +8,11 @@
     /// if possible use Row instead.
     /// </summary>
     public class TableRow:Row
-    {
-        
+    {        
         internal TableRow(Table owner, long row): base(owner, row)
         {
             OwnerTable = owner;
         }
-
         
         /// <summary>
         /// The Table containing the row that this row represents
