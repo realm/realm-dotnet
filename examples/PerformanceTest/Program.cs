@@ -72,7 +72,7 @@ namespace PerformanceTest
             public String FirstName;
             public String LastName;
             public String Address;
-            public List<String> PhoneNames;
+            public List<Byte> PhoneType;
             public List<String> PhoneNumbers;
             public float discount;
             public bool Credit;
@@ -81,30 +81,37 @@ namespace PerformanceTest
             //return a string from inside somerandomchars. 
             //Tightdb doesn't compress acc. to string contents so no need to waste
             //test time doing real random strings
-            private string  stringOfSize(int start, int length)
+            private string  stringOfSize(int length,int seed)
             {
+                var rand = new Random(seed);
                 if (length == 0)
                     return "";
                 length--;
-                return someRandomChars.Substring(start % (someRandomChars.Length - length), length).PadRight(1,someRandomChars[start%42]);//the pad should force a copy as the last char is not following the other chars
+                var buffer = new char[length];
+                for (var n = 0; n < length; ++n)
+                {
+                    buffer[n] = someRandomChars[rand.Next(someRandomChars.Length - 1)];
+                }
+                return new string(buffer);
+                //return someRandomChars.Substring(start % (someRandomChars.Length - length), length).PadRight(1,someRandomChars[start%42]);//the pad should force a copy as the last char is not following the other chars
             }
 
             //create a pseudo random customer whose contents and size is dependent on the seed specified
             public Customer(int seed)
             {
-                FirstName = stringOfSize(seed, (seed % 16)+4);//first name is a random string betw 4 and 20 long
-                LastName = stringOfSize(seed+13, (seed % 16) + 4);//last name is a random string betw 4 and 20 long
-                Address = stringOfSize(seed + 71, (seed%30) + 8);//addreess is at least 8 and up to 30 long
+                FirstName = stringOfSize( (seed % 16)+4,seed);//first name is a random string betw 4 and 20 long
+                LastName = stringOfSize( (seed % 16) + 4, seed);//last name is a random string betw 4 and 20 long
+                Address = stringOfSize( (seed % 30) + 8, seed);//addreess is at least 8 and up to 30 long
                 int numphones = seed%4;//0 to 3 phone numbers stored
                 if (numphones > 0)
                 {
-                    PhoneNames= new List<string>();
+                    PhoneType= new List<Byte>();
                     PhoneNumbers=new List<string>();
                 }
                 for (var n = 0; n < numphones; ++n)
-                {                    
-                    PhoneNames.Add(stringOfSize(seed+21,(seed %3+4)));//Home, Mobile or the like
-                    PhoneNumbers.Add(stringOfSize(seed,seed%4+12));//12 is a reasonable length for a phone number, give or take 3
+                {
+                    PhoneType.Add((Byte) (seed % 255)); ;//
+                    PhoneNumbers.Add(stringOfSize(seed % 4 + 12, seed));//12 is a reasonable length for a phone number, give or take 3
                 }
                 discount =1.0f-1.0f/(seed%20+1);
                 Credit = seed%3 == 2;
@@ -138,7 +145,7 @@ namespace PerformanceTest
                     return new Table("First Name".String(),
                                      "Last Name".String(),
                                      "Address".String(),
-                                     "Phones".SubTable("Phone".String(),"number".String()),
+                                     "Phones".SubTable("Type".Int(),"number".String()),
                                      "discount".Float(),
                                      "Credit".Bool(),
                                      "CreatedDate".Date());
@@ -164,7 +171,7 @@ namespace PerformanceTest
 
 
         //destroys the table again
-        private static void MeasureInsertSpeed(TestType type, int size)
+        private static void MeasureInsertSpeed(TestType type, int size,int numRows)
         {
             using (var t = GetTableForType(type))
             {
@@ -189,10 +196,10 @@ namespace PerformanceTest
                 //and i32 is an int representation if the value fits, or zero
 
 
-                var before = getMemUsedBefore();
+                var tightdbBefore = getMemUsedBefore();
                 var timer1 = Stopwatch.StartNew();
-                const int numrows = 1000*1000*3;
-                t.AddEmptyRow(numrows);
+                
+                t.AddEmptyRow(numRows);
 
                 //add some data. The for loop is inside the if's to make sure we don't do 
                 //checks on what kind of record to insert every time we insert a record
@@ -201,14 +208,14 @@ namespace PerformanceTest
                 {
                     if (cantestwithint)
                     {
-                        for (var n = 0; n < numrows; ++n)
+                        for (var n = 0; n < numRows; ++n)
                         {
                             t.SetInt(0, n, i32);
                         }
                     }
                     else
                     {
-                        for (var n = 0; n < numrows; ++n)
+                        for (var n = 0; n < numRows; ++n)
                         {
                             t.SetLong(0, n, i);
                         }                        
@@ -217,7 +224,7 @@ namespace PerformanceTest
 
                 if (type == TestType.Long)
                 {
-                    for (var n = 0; n < numrows; ++n)
+                    for (var n = 0; n < numRows; ++n)
                     {
                         t.SetLong(0, n, i);
                     }
@@ -225,7 +232,7 @@ namespace PerformanceTest
 
                 if (type == TestType.Float)
                 {
-                    for (var n = 0; n < numrows; ++n)
+                    for (var n = 0; n < numRows; ++n)
                     {
                         t.SetFloat(0, n, i/32.0f);
                     }
@@ -233,7 +240,7 @@ namespace PerformanceTest
 
                 if (type == TestType.Double)
                 {
-                    for (var n = 0; n < numrows; ++n)
+                    for (var n = 0; n < numRows; ++n)
                     {
                         t.SetDouble(0, n, i / 32.0f);
                     }
@@ -241,7 +248,7 @@ namespace PerformanceTest
 
                 if (type == TestType.String)
                 {
-                    for (var n = 0; n < numrows; ++n)
+                    for (var n = 0; n < numRows; ++n)
                     {
                         t.SetString(0, n, GetNewString(size));
                     }
@@ -249,7 +256,7 @@ namespace PerformanceTest
 
                 if (type == TestType.Date)
                 {
-                    for (var n = 0; n < numrows; ++n)
+                    for (var n = 0; n < numRows; ++n)
                     {
                         t.SetDateTime(0, n, dt);
                     }
@@ -257,19 +264,19 @@ namespace PerformanceTest
 
                 if (type == TestType.Customer)
                 {
-                    for (var n = 0; n < numrows; ++n)
+                    for (var n = 0; n < numRows; ++n)
                     {
                         var customer = new Customer(n);
                         t.Add(customer.FirstName, customer.LastName, customer.Address, 
                             null, customer.discount,customer.Credit, customer.CreatedDate);
 
-                        if (customer.PhoneNames != null)
+                        if (customer.PhoneType != null)
                         {
                             using (var sub = t.GetSubTable(3, n))//get the subtable for the phone numbers
                             {
-                                for (var phn = 0; phn < customer.PhoneNames.Count; ++phn)
+                                for (var phn = 0; phn < customer.PhoneType.Count; ++phn)
                                 {
-                                    sub.Add(customer.PhoneNames[phn], customer.PhoneNumbers[phn]);
+                                    sub.Add(customer.PhoneType[phn], customer.PhoneNumbers[phn]);
                                 }
                             }
                         }
@@ -278,7 +285,7 @@ namespace PerformanceTest
 
                 if (type == TestType.PriceBar)
                 {
-                    for (var n = 0; n < numrows; ++n)
+                    for (var n = 0; n < numRows; ++n)
                     {
                         var priceBar = new PriceBar(n);
                         t.Add(priceBar.timestamp, priceBar.lowestbid, priceBar.lowestask, priceBar.highestbid,
@@ -289,13 +296,13 @@ namespace PerformanceTest
                 }
 
                 timer1.Stop();
-                var after = getMemUsedAfter();
-                var seconds = Math.Floor(timer1.Elapsed.TotalSeconds);
-                double milliseconds = timer1.Elapsed.Milliseconds;
-                Console.WriteLine("{0,8}{1,8}{2,8}{3,5}{4,5}{5,5}{6,12}", "TightDb", numrows, type, size, seconds, milliseconds, after - before);
+                var tightdbAfter = getMemUsedAfter();
+                var tightdbSeconds = Math.Floor(timer1.Elapsed.TotalSeconds);
+                double tighdbMilliseconds = timer1.Elapsed.Milliseconds;
+                //Console.WriteLine("{0,8};{1,8};{2,8};{3,5};{4,5};{5,5};{6,5};{7,5};{8,7};{9,12}", "TightDb", numRows, type, size, seconds, milliseconds, after - before);
 
                 //test a similar C# construct
-                before = getMemUsedBefore();
+                var csharpBefore = getMemUsedBefore();
                 timer1 = Stopwatch.StartNew();
                 
                 var ShortList = new List<short>();
@@ -313,21 +320,21 @@ namespace PerformanceTest
                     case TestType.Int:
                         if (size > 4)
                         {
-                            for (var n = 0; n < numrows; n++)
+                            for (var n = 0; n < numRows; n++)
                             {
                                 longList.Add(i);
                             }
                         }
                         else if (size > 2)
                         {
-                            for (var n = 0; n < numrows; n++)
+                            for (var n = 0; n < numRows; n++)
                             {
                                 IntList.Add(i32);
                             }
                         }
                         else
                         {
-                            for (var n = 0; n < numrows; n++)
+                            for (var n = 0; n < numRows; n++)
                             {
                                 ShortList.Add(i16);
                             }
@@ -336,38 +343,38 @@ namespace PerformanceTest
 
                 break;
                     case TestType.String:
-                        for (var n = 0; n < numrows; n++)
+                        for (var n = 0; n < numRows; n++)
                         {
                             stringList.Add(GetNewString(size));
                         }
                         break;
                     case TestType.Float:
-                        for (var n = 0; n < numrows; n++)
+                        for (var n = 0; n < numRows; n++)
                         {
                             floatList.Add(n/32.0f);
                         }
                         break;
                     case TestType.Double:
-                        for (var n = 0; n < numrows; n++)
+                        for (var n = 0; n < numRows; n++)
                         {
                             doubleList.Add(n / 32.0d);
                         }
                         break;
 
                     case TestType.Date:
-                        for (var n = 0; n < numrows; n++)
+                        for (var n = 0; n < numRows; n++)
                         {
                             dateTimeList.Add(dt);
                         }
                         break;
                     case TestType.Customer:
-                        for (var n = 0; n < numrows; ++n)
+                        for (var n = 0; n < numRows; ++n)
                         {
                             customerList.Add(new Customer(n));
                         }
                         break;
                     case TestType.PriceBar:
-                        for (var n = 0; n < numrows; ++n)
+                        for (var n = 0; n < numRows; ++n)
                         {
                             priceBarList.Add(new PriceBar(n));
                         }
@@ -375,10 +382,11 @@ namespace PerformanceTest
                 }
 
                 timer1.Stop();
-                after = getMemUsedAfter();
-                seconds = Math.Floor(timer1.Elapsed.TotalSeconds);
-                milliseconds = timer1.Elapsed.Milliseconds;
-                Console.WriteLine("{0,8}{1,8}{2,8}{3,5}{4,5}{5,5}{6,12}", "C#", numrows, type, size, seconds, milliseconds, after - before);
+                var csharpAfter = getMemUsedAfter();
+                var csharpSeconds = Math.Floor(timer1.Elapsed.TotalSeconds);
+                var csharpMilliseconds = timer1.Elapsed.Milliseconds;
+             // Console.WriteLine("{0,8};{1,8};{2,8};{3,5};{4,5};{5,5};{6,5};{7,5};{8,7};{9,12}", "Rows", "Type", "Size", "Sec.",        "C#Sec",       "Msec.",            "C#Msec.",             "Memory",                     "C#Memory");
+                Console.WriteLine("{0,8}{1,9}{2,5}{3,5}{4,6}{5,6}{6,8}{7,12}{8,12}", numRows, type, size, tightdbSeconds, csharpSeconds, tighdbMilliseconds, csharpMilliseconds, (tightdbAfter - tightdbBefore), csharpAfter - csharpBefore);
             }
         }
 
@@ -452,7 +460,7 @@ namespace PerformanceTest
                 timer1.Stop();
                 double seconds = Math.Floor(timer1.Elapsed.TotalSeconds);
                 double milliseconds = timer1.Elapsed.Milliseconds;
-                Console.WriteLine("{0,20}{1,10}{2,5}{3,5}","Table.FindFirst",type, seconds,milliseconds);
+                Console.WriteLine("{0,20};{1,10};{2,5};{3,5}","Table.FindFirst",type, seconds,milliseconds);
 
                 //test a similar C# construct
                 var longList = new List<long>();
@@ -495,7 +503,7 @@ namespace PerformanceTest
                 timer1.Stop();
                 seconds = Math.Floor(timer1.Elapsed.TotalSeconds);
                 milliseconds = timer1.Elapsed.Milliseconds;
-                Console.WriteLine("{0,20}{1,10}{2,5}{3,5}","C#List.Find", type, seconds, milliseconds);
+                Console.WriteLine("{0,20};{1,10};{2,5};{3,5}","C#List.Find", type, seconds, milliseconds);
 
             }
             return temp;
@@ -588,25 +596,28 @@ namespace PerformanceTest
 
                 if (ki.Key == ConsoleKey.D2)
                 {
-                    Console.WriteLine("{0,8}{1,8}{2,8}{3,5}{4,5}{5,5}{6,12}", "System", "Rows", "Type", "Size", "Sec.", "Msec.", "Memory");
-                    MeasureInsertSpeed(TestType.Float, 0); 
-                    MeasureInsertSpeed(TestType.Double, 0);
-                    MeasureInsertSpeed(TestType.PriceBar, 0);//size param is not used with customer
-                    MeasureInsertSpeed(TestType.Customer, 0);//size param is not used with pricebar
-                    MeasureInsertSpeed(TestType.Int, 1);
-                    MeasureInsertSpeed(TestType.Int, 2);
-                    MeasureInsertSpeed(TestType.Int, 3);
-                    MeasureInsertSpeed(TestType.Int, 4);
-                    MeasureInsertSpeed(TestType.Int, 5);
-                    MeasureInsertSpeed(TestType.Int, 6);
-                    MeasureInsertSpeed(TestType.Int, 7);
-                    MeasureInsertSpeed(TestType.String, 4);
-                    MeasureInsertSpeed(TestType.String, 8);
-                    MeasureInsertSpeed(TestType.String, 16);
-                    MeasureInsertSpeed(TestType.String, 32);
-                    MeasureInsertSpeed(TestType.String, 64);
-                    MeasureInsertSpeed(TestType.String, 128);
-                    MeasureInsertSpeed(TestType.Date, 0);
+                    Console.WriteLine("{0,8}{1,9}{2,5}{3,5}{4,6}{5,6}{6,8}{7,12}{8,12}",  "Rows", "Type", "Size", "Sec.", "C#Sec", "Msec.", "C#Msec.", "Memory", "C#Memory");
+                    for (var numRows = 100000; numRows < 2*1000*1000; numRows = Convert.ToInt32(numRows * 1.3))
+                    {
+                        MeasureInsertSpeed(TestType.Float, 0, numRows);
+                        MeasureInsertSpeed(TestType.Double, 0, numRows);
+                        MeasureInsertSpeed(TestType.PriceBar, 0, numRows); //size param is not used with customer
+                        MeasureInsertSpeed(TestType.Customer, 0, numRows); //size param is not used with pricebar
+                        MeasureInsertSpeed(TestType.Int, 1, numRows);
+                        MeasureInsertSpeed(TestType.Int, 2, numRows);
+                        MeasureInsertSpeed(TestType.Int, 3, numRows);
+                        MeasureInsertSpeed(TestType.Int, 4, numRows);
+                        MeasureInsertSpeed(TestType.Int, 5, numRows);
+                        MeasureInsertSpeed(TestType.Int, 6, numRows);
+                        MeasureInsertSpeed(TestType.Int, 7, numRows);
+                        MeasureInsertSpeed(TestType.String, 4, numRows);
+                        MeasureInsertSpeed(TestType.String, 8, numRows);
+                        MeasureInsertSpeed(TestType.String, 16, numRows);
+                        MeasureInsertSpeed(TestType.String, 32, numRows);
+                        MeasureInsertSpeed(TestType.String, 64, numRows);
+                        MeasureInsertSpeed(TestType.String, 128, numRows);
+                        MeasureInsertSpeed(TestType.Date, 0, numRows);
+                    }
                     loop = true;
                 }
                 if (ki.Key == ConsoleKey.D3)
@@ -617,7 +628,7 @@ namespace PerformanceTest
                 if (ki.Key == ConsoleKey.D4)
                 {
                    // long temp = 0;
-                    Console.WriteLine("{0,20}{1,10}{2,5}{3,5}","Operation", "type","Sec.","msec");
+                    Console.WriteLine("{0,20};{1,10};{2,5};{3,5}","Operation", "type","Sec.","msec");
                     /*temp=temp+*/MeasureSearchSpeed(TestType.Int,4);
                     /*temp = temp -*/
                      MeasureSearchSpeed(TestType.String, 0);
