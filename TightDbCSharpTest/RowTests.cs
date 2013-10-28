@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System.Collections.Generic;
+using NUnit.Framework;
 using System;
 using TightDbCSharp;
 
@@ -175,7 +176,13 @@ namespace TightDbCSharpTest
             }
         }
 
-
+        //helper method to get us a null reference where the compiler don't figure it out
+        //0 as parameter will return a null
+        //anything else as parameter will return an empty IEnumerable<object> that has no items to enumerate
+        private static IEnumerable<object> GetNullEnum(int dummy)
+        {
+            return (dummy*-1) != (dummy*1) ? new List<object>() : null;//0*-1==0*+1 all other values are !=
+        }
 
         /// <summary>
         /// Tests setting and gettting all DataType types
@@ -191,22 +198,55 @@ namespace TightDbCSharpTest
                 new MixedColumn("HtmlPage"),
                 new DateColumn("FirstSeen"),
                 new FloatColumn("float"),
-                new DoubleColumn("double")
+                new DoubleColumn("double"),
+                new SubTableColumn("SubObject", new IntColumn("Subint")), //used to test calls with Ienumerable<object>
+                new SubTableColumn("SubTable", new IntColumn("Subint")),//used to test calls with Table    
+                new SubTableColumn("SubNullValue", new IntColumn("Subint")), //used to test calls with an object that is null
+                new SubTableColumn("SubNullConstant", new IntColumn("Subint")) //used to test calls with null as parameter
                 ))
-            {               
-                t.Add(1, true, "Hans", new byte[] { 0, 1, 2, 3, 4, 5 }, "MixedStr", new DateTime(1980, 1, 2, 0, 0, 0, DateTimeKind.Utc), 3.14f, 3.14 * 12);
-                TableRow tr = t[0];
-                
-                Assert.AreEqual(3,tr.GetColumnIndex("BLOB"));
-                Assert.AreEqual(1,tr.GetLong(0));
+            using(var subTableTemplate = new Table(new IntColumn("Subint")))
+            {                                
+                subTableTemplate.AddMany(new[] { 8, 9, 10, 11 });                    
+                t.Add(1, true, "Hans", new byte[] {0, 1, 2, 3, 4, 5}, "MixedStr",
+                    new DateTime(1980, 1, 2, 0, 0, 0, DateTimeKind.Utc),
+                    3.14f, 3.14*12,
+                    new object[] { 0, 1, 2, 3 },//could be interpreted as four rows of long now that we know the table schema is one long per row                    
+                    subTableTemplate,
+                    GetNullEnum(0),
+                    null
+                    );
+                var tr = t[0];
+
+                Assert.AreEqual(3, tr.GetColumnIndex("BLOB"));
+                Assert.AreEqual(1, tr.GetLong(0));
                 Assert.AreEqual(true, tr.GetBoolean(1));
                 Assert.AreEqual("Hans", tr.GetString(2));
-                Assert.AreEqual(new byte[]{0,1,2,3,4,5}, tr.GetBinary(3));
-                Assert.AreEqual("MixedStr",tr.GetMixedString(4));
-                Assert.AreEqual("MixedStr", tr.GetMixed(4));//hit this method too
+                Assert.AreEqual(new byte[] {0, 1, 2, 3, 4, 5}, tr.GetBinary(3));
+                Assert.AreEqual("MixedStr", tr.GetMixedString(4));
+                Assert.AreEqual("MixedStr", tr.GetMixed(4)); //hit this method too
                 Assert.AreEqual(new DateTime(1980, 1, 2, 0, 0, 0, DateTimeKind.Utc), tr.GetDateTime(5));
                 Assert.AreEqual(3.14f, tr.GetFloat(6));
                 Assert.AreEqual(3.14*12, tr.GetDouble(7));
+                using (var sub = tr.GetSubTable("SubObject"))
+                {
+                    Assert.AreEqual(4, sub.Size);
+                    Assert.AreEqual(3, sub.GetLong(0, 3));
+                }
+                using (var sub = tr.GetSubTable("SubTable"))
+                {
+                    Assert.AreEqual(4, sub.Size);
+                    Assert.AreEqual(11, sub.GetLong(0, 3));
+                }
+                using (var sub = tr.GetSubTable("SubNullValue"))
+                {
+                    Assert.AreEqual(0, sub.Size);
+                }
+                using (var sub = tr.GetSubTable("SubNullConstant"))
+                {
+                    Assert.AreEqual(0, sub.Size);
+                }
+
+
 
                 t.Remove(0);
                 t.AddEmptyRow(2);
@@ -217,9 +257,14 @@ namespace TightDbCSharpTest
                 tr[3] = new byte[] {0, 1, 2, 3, 4, 5};
                 tr[4] = "MixedStr";
                 tr[5] = new DateTime(1980, 1, 2, 0, 0, 0, DateTimeKind.Utc);
-                tr[6] =  3.14f;
-                tr[7] = 3.14 * 12;
-                Assert.AreEqual(1, tr.GetLong(0));
+                tr[6] = 3.14f;
+                tr[7] = 3.14*12;
+                tr[8] = new object[] {4, 3, 2, 1};
+                tr[9] = subTableTemplate;
+                tr[10] = GetNullEnum(0);
+                tr[10] = null;//set as null as a constant
+           
+            Assert.AreEqual(1, tr.GetLong(0));
                 Assert.AreEqual(true, tr.GetBoolean(1));
                 Assert.AreEqual("Hans", tr.GetString(2));
                 Assert.AreEqual(new byte[] { 0, 1, 2, 3, 4, 5 }, tr.GetBinary(3));
@@ -227,6 +272,24 @@ namespace TightDbCSharpTest
                 Assert.AreEqual(new DateTime(1980, 1, 2, 0, 0, 0, DateTimeKind.Utc), tr.GetDateTime(5));
                 Assert.AreEqual(3.14f, tr.GetFloat(6));
                 Assert.AreEqual(3.14 * 12, tr.GetDouble(7));
+                using (var sub = tr.GetSubTable("SubObject"))
+                {
+                    Assert.AreEqual(4, sub.Size);
+                    Assert.AreEqual(1, sub.GetLong(0, 3));
+                }
+                using (var sub = tr.GetSubTable("SubTable"))
+                {
+                    Assert.AreEqual(4, sub.Size);
+                    Assert.AreEqual(11, sub.GetLong(0, 3));
+                }
+                using (var sub = tr.GetSubTable("SubNullValue"))
+                {
+                    Assert.AreEqual(0, sub.Size);
+                }
+                using (var sub = tr.GetSubTable("SubNullConstant"))
+                {
+                    Assert.AreEqual(0, sub.Size);
+                }
 
                 var rowNo = t.AddEmptyRow(1);
                 tr = t[rowNo];
@@ -238,7 +301,12 @@ namespace TightDbCSharpTest
                 tr.SetDateTime(5, new DateTime(1980, 1, 2, 0, 0, 0, DateTimeKind.Utc));
                 tr.SetFloat(6,3.14f);
                 tr.SetDouble(7,3.14 * 12);
-
+                tr.SetSubTable(8,new object[] { 1, 2, 3, 4 });
+                tr.SetSubTable(9,subTableTemplate);
+                tr.SetSubTable("SubNullValue",GetNullEnum(0));
+#if VER40PLUS                
+                tr.SetSubTable("SubNullConstant", null);//this is only possible in .net 40 and 45 -in .35 user must use tr.ClearSubTable(column)
+#endif
                 
                 Assert.AreEqual(1, tr.GetLong(0));
                 Assert.AreEqual(true, tr.GetBoolean(1));
@@ -248,6 +316,24 @@ namespace TightDbCSharpTest
                 Assert.AreEqual(new DateTime(1980, 1, 2, 0, 0, 0, DateTimeKind.Utc), tr.GetDateTime(5));
                 Assert.AreEqual(3.14f, tr.GetFloat(6));
                 Assert.AreEqual(3.14 * 12, tr.GetDouble(7));
+                using (var sub = tr.GetSubTable(8))
+                {
+                    Assert.AreEqual(4, sub.Size);
+                    Assert.AreEqual(4, sub.GetLong(0, 3));
+                }
+                using (var sub = tr.GetSubTable("SubTable"))
+                {
+                    Assert.AreEqual(4, sub.Size);
+                    Assert.AreEqual(11, sub.GetLong(0, 3));
+                }
+                using (var sub = tr.GetSubTable("SubNullValue"))
+                {
+                    Assert.AreEqual(0, sub.Size);
+                }
+                using (var sub = tr.GetSubTable("SubNullConstant"))
+                {
+                    Assert.AreEqual(0, sub.Size);
+                }
 
 
                 rowNo = t.AddEmptyRow(1);
@@ -261,7 +347,12 @@ namespace TightDbCSharpTest
                 tr.SetDateTime("FirstSeen", new DateTime(1980, 1, 2, 0, 0, 0, DateTimeKind.Utc));
                 tr.SetFloat("float", 3.14f);
                 tr.SetDouble("double", 3.14 * 12);
-
+                tr.SetSubTable("SubObject", new object[] { 4, 3, 2, 1 });
+                tr.SetSubTable("SubTable", subTableTemplate);
+                tr.SetSubTable("SubNullValue", GetNullEnum(0));//in this case the compiler do not know p2 is null
+#if V40PLUS
+                tr.SetSubTable("SubNullConstant",null);//specifying null directly is only legal i .net40 plus. 
+#endif
 
                 Assert.AreEqual(1, tr.GetLong(0));
                 Assert.AreEqual(true, tr.GetBoolean(1));
@@ -273,7 +364,25 @@ namespace TightDbCSharpTest
                 Assert.AreEqual("MixedStr", tr.GetMixedString(4));
                 Assert.AreEqual(new DateTime(1980, 1, 2, 0, 0, 0, DateTimeKind.Utc), tr.GetDateTime(5));
                 Assert.AreEqual(3.14f, tr.GetFloat(6));
-                Assert.AreEqual(3.14 * 12, tr.GetDouble(7));        
+                Assert.AreEqual(3.14 * 12, tr.GetDouble(7));
+                using (var sub = tr.GetSubTable(8))
+                {
+                    Assert.AreEqual(4, sub.Size);
+                    Assert.AreEqual(1, sub.GetLong(0, 3));
+                }
+                using (var sub = tr.GetSubTable("SubTable"))
+                {
+                    Assert.AreEqual(4, sub.Size);
+                    Assert.AreEqual(11, sub.GetLong(0, 3));
+                }
+                using (var sub = tr.GetSubTable("SubNullValue"))
+                {
+                    Assert.AreEqual(0, sub.Size);
+                }
+                using (var sub = tr.GetSubTable("SubNullConstant"))
+                {
+                    Assert.AreEqual(0, sub.Size);
+                }
             }
         }
 

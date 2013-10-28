@@ -51,6 +51,7 @@
     <Compile Include="..\native\UnsafeNativeMethods.cs">
       <Link>UnsafeNativeMethods.cs</Link>
     </Compile>
+    <Compile Include="Toolbox.cs" />
     <Compile Include="Group.cs" />
     <Compile Include="Handled.cs" />
     <Compile Include="Query.cs" />

@@ -217,7 +217,7 @@ extern "C" {
  TIGHTDB_C_CS_API size_t tightdb_c_cs_getver(void){
 
   // Table test;
-	return 20131018;
+	return 201310252;
 }
 
  //return a newly constructed top level table 
@@ -1643,7 +1643,21 @@ TIGHTDB_C_CS_API size_t test_string_from_cpp(uint16_t * buffer, size_t bufsize)
 }
 
 
-
+//this is used by the performance test program to compare a C# loop with a c++ loop.
+TIGHTDB_C_CS_API size_t test_size_calls(){
+	Table t;
+	t.add_column(type_String,"StringColumn");	
+	size_t acc = 0;
+    for (int n = 0; n < 1000*100; ++n)
+    {
+		if (n%10 == 0)
+        {
+			t.add_empty_row(1);//force the compiler to actually do some loops
+        }
+		acc = acc + t.size();
+    }
+	return acc;
+}
 
 
 

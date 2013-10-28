@@ -26,6 +26,7 @@ If You have a copy of the core c++ binding release, skip down to C++ DLL BUILD
 
 Building the c++ binding in windows with VS2012 (not express) can be done as follows :  
 
+0. (prerequisite) Install Visual Leak Detector from https://vld.codeplex.com/
 1. check out tightdb master to a directory alongside the csharp binding, e.g. if this file is located at  
   E:\Wincoder\Develope\tightdb_csharp\README.md  
   then make sure the tightDB.sln file is in  
@@ -39,7 +40,7 @@ Building the c++ binding in windows with VS2012 (not express) can be done as fol
 8. unmark all checkboxes under build, mark the 4 named TightDB Debug Win32, tightDB Debug x64, TightDB Release Win32, TightDB Release x64 - click Clean.  Output should report Clean : 8 succeeded, 0 failed, 0 skipped
 9. select Build->Batch build, click REBUILD 
 10. look for compiler warnings, verify that any warnings are marked with fixme in the code, report any new warnings to core developers.
-11. if the build succeeded, run the 4 projects one by one and make sure the unit tests pass, report non passing tests to core developers
+11. if the build succeeded, run the 4 projects one by one and make sure the unit tests pass, report non passing tests to core developers. If a project does not compile, check debug drop down , configuration manager, only the two last ones should be ticked
 12. build->batch build - unmark all , mark the 4 called tightDB static libraray
 13. click clean
 14. build->batch build - click build all

@@ -715,9 +715,9 @@ intcolumn2:1//column 2
                 table.SetMixedBinary(0, 1, testArray);
                 table.SetLong(1,1,42);
 
-                TableView tableView = table.FindAllInt(1, 42);
+                var tableView = table.FindAllInt(1, 42);
 
-                byte[] testReturned = tableView.GetMixedBinary(0, 0);
+                var testReturned = tableView.GetMixedBinary(0, 0);
                 Assert.AreEqual(4, testReturned.Length);
                 Assert.AreEqual(1, testReturned[0]);
                 Assert.AreEqual(12, testReturned[1]);

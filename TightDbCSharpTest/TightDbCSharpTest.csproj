@@ -121,6 +121,7 @@
     <Compile Include="SpecTests.cs" />
     <Compile Include="TableTests.cs" />
     <Compile Include="TableViewTests.cs" />
+    <Compile Include="ToolboxTest.cs" />
     <Compile Include="TestHelper.cs" />
   </ItemGroup>
   <ItemGroup>

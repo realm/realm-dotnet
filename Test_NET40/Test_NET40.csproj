@@ -132,6 +132,9 @@
     <Compile Include="..\TightDbCSharpTest\TestHelper.cs">
       <Link>TestHelper.cs</Link>
     </Compile>
+    <Compile Include="..\TightDbCSharpTest\ToolboxTest.cs">
+      <Link>ToolboxTest.cs</Link>
+    </Compile>
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -165,7 +168,7 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>
-</PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

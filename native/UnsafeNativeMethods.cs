@@ -1712,11 +1712,11 @@ enum DataType {
         public static TableView TableFindAllBinary(Table table, long columnIndex, Byte[] value)
         {
 
-            IntPtr tableHandle;
+            IntPtr tableViewHandle;
             if (value == null || value.Length == 0)
             {
                 //special case if we get called with null (we call a method that does not take pointers to managed mem)            
-                tableHandle = (Is64Bit)
+                tableViewHandle = (Is64Bit)
                     ? table_find_all_empty_binary64(table.Handle, (IntPtr) columnIndex)
                     : table_find_all_empty_binary32(table.Handle, (IntPtr) columnIndex);
             }
@@ -1728,7 +1728,7 @@ enum DataType {
                 IntPtr valuePointer = handle.AddrOfPinnedObject();
                 try
                 {
-                    tableHandle = (Is64Bit)
+                    tableViewHandle = (Is64Bit)
                         ? table_find_all_binary64(table.Handle, (IntPtr) columnIndex, valuePointer,
                             (IntPtr) value.Length)
                         : table_find_all_binary32(table.Handle, (IntPtr) columnIndex, valuePointer,
@@ -1740,9 +1740,9 @@ enum DataType {
                 }
             }
 
-            if (tableHandle != IntPtr.Zero)
+            if (tableViewHandle != IntPtr.Zero)
             {
-                return new TableView(table, tableHandle, true);
+                return new TableView(table, tableViewHandle, true);
             }
             throw new NotImplementedException("Table.FindAllBinary is not implemented in core yet");
 
@@ -3887,6 +3887,19 @@ enum DataType {
             return (long) table_get_size32(t.Handle);
         }
 
+
+        [DllImport(L64, EntryPoint = "test_size_calls", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr test_size_calls64();
+
+        [DllImport(L32, EntryPoint = "test_size_calls", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr test_size_calls32();
+
+        public static long TestSizeCalls()
+        {
+            if (Is64Bit)
+                return (long)test_size_calls64();
+            return (long)test_size_calls32();
+        }
 
 
         [DllImport(L64, EntryPoint = "table_get_bool", CallingConvention = CallingConvention.Cdecl)]

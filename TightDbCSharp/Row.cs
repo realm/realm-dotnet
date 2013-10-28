@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Net.Sockets;
 
 namespace TightDbCSharp
 {
@@ -530,6 +531,7 @@ namespace TightDbCSharp
             return Owner.GetLongNoRowCheck(columnIndex, RowIndex);
         }
 
+        
         /// <summary>
         /// return value of DataType.Int field specified by column Name
         /// </summary>
@@ -599,6 +601,112 @@ namespace TightDbCSharp
             ValidateIsValid();
              Owner.SetDateTimeNoRowCheck(columnIndex, RowIndex,value);
         }
+
+        /// <summary>
+        /// Set an empty subtable in the specified field
+        /// </summary>
+        /// <param name="columnIndex">index of column of field to set</param>
+        public void ClearSubTable(long columnIndex)
+        {
+            ValidateIsValid();
+            Owner.ClearSubTableNoRowCheck(columnIndex,RowIndex);
+
+        }
+        /// <summary>
+        /// Set an empty subtable in the specified field
+        /// </summary>
+        /// <param name="columnName">Name of column of field to set</param>
+        public void ClearSubTable(String columnName)
+        {
+            ValidateIsValid();
+            Owner.ClearSubTableNoRowCheck(columnName, RowIndex);
+        }
+
+//in .net 35 Table cannot be taken as an IEnumerable<object> parameter
+//in .net 40,45 Table is an IEnumerable<object> and You cannot overload a parameter as both Table and IEnumerable
+//therefore we have two signatures in .35 and one in .40 and .45
+//An alternative approach would be to have setsubtablefromtableblabla(Table)
+//And SetSubTableFromEnumerable(IEnumerable<object>)
+//This current approach is a bit bloated in .35 but lean in .40 and .45 and going forward
+//the alternative would be to continue having more methods in the newer .net versions
+//we continue to support .net35 bc unity uses an old mono in 32bit, and that old mono seems to 
+//only be able to run .net35 and older
+//It should be considered if we should stop supporting .net35 at some point,enabling some cleanup
+#if !V40PLUS
+        /// <summary>
+        /// Sets the subtable to the specified table specification.
+        /// See TableOrView SetSubtable for a more detailed explanation
+        /// </summary>
+        /// <param name="columnIndex">Column Index of field to set a subtable into</param>
+        /// <param name="element">Null,IEnumerable or Table with table data to be copied</param>
+        public void SetSubTable(long columnIndex, IEnumerable<Object> element)
+        {
+            ValidateIsValid();//row validation. Table validation happens in the call below
+            Owner.SetSubTableNoRowCheck(columnIndex, RowIndex, element);
+        }
+
+        /// <summary>
+        /// Sets the subtable to the specified table specification.
+        /// See TableOrView SetSubtable for a more detailed explanation
+        /// </summary>
+        /// <param name="columnName">Column Name of field to set a subtable into</param>
+        /// <param name="element">Null,IEnumerable or Table with table data to be copied</param>
+        public void SetSubTable(String columnName, IEnumerable<Object> element)
+        {
+            ValidateIsValid();//row validation. Table validation happens in the call below
+            Owner.SetSubTableNoRowCheck(columnName, RowIndex, element);
+        }
+
+        /// <summary>
+        /// Sets the subtable to the specified table specification.
+        /// See TableOrView SetSubtable for a more detailed explanation
+        /// </summary>
+        /// <param name="columnIndex">Column Index of field to set a subtable into</param>
+        /// <param name="element">Null,IEnumerable or Table with table data to be copied</param>
+        public void SetSubTable(long columnIndex, Table element)
+        {
+            ValidateIsValid();//row validation. Table validation happens in the call below
+            Owner.SetSubTableNoRowCheck(columnIndex, RowIndex, element);
+        }
+
+        /// <summary>
+        /// Sets the subtable to the specified table specification.
+        /// See TableOrView SetSubtable for a more detailed explanation
+        /// </summary>
+        /// <param name="columnName">Column Name of field to set a subtable into</param>
+        /// <param name="element">Null,IEnumerable or Table with table data to be copied</param>
+        public void SetSubTable(String columnName, Table element)
+        {
+            ValidateIsValid();//row validation. Table validation happens in the call below
+            Owner.SetSubTableNoRowCheck(columnName, RowIndex, element);
+        }
+
+#else
+
+        /// <summary>
+        /// Sets the subtable to the specified table specification.
+        /// See TableOrView SetSubtable for a more detailed explanation
+        /// </summary>
+        /// <param name="columnIndex">Column Index of field to set a subtable into</param>
+        /// <param name="element">Null,IEnumerable or Table with table data to be copied</param>
+        public void SetSubTable(long columnIndex, IEnumerable<Object> element)
+        {
+            ValidateIsValid();//row validation. Table validation happens in the call below
+            Owner.SetSubTableNoRowCheck(columnIndex,RowIndex,element);
+        }
+
+        /// <summary>
+        /// Sets the subtable to the specified table specification.
+        /// See TableOrView SetSubtable for a more detailed explanation
+        /// </summary>
+        /// <param name="columnName">Column Name of field to set a subtable into</param>
+        /// <param name="element">Null,IEnumerable or Table with table data to be copied</param>
+        public void SetSubTable(String  columnName, IEnumerable<Object> element)
+        {
+            ValidateIsValid();//row validation. Table validation happens in the call below
+            Owner.SetSubTableNoRowCheck(columnName, RowIndex, element);
+        }
+#endif
 
 
         /// <summary>
@@ -944,8 +1052,8 @@ namespace TightDbCSharp
         /// <returns>Boolean contained in the specified field</returns>
         public long GetColumnIndex(string columnName)
         {
-            ValidateIsValid();
-            return Owner.GetColumnIndex(columnName);
+            ValidateIsValid();//checks that the ROW is still valid
+            return Owner.GetColumnIndex(columnName);//will check that the core table is still valid
         }
 
        

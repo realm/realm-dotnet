@@ -468,8 +468,7 @@ namespace TightDbCSharp
         /// <param name="columnIndex">Index of column to rename</param>
         /// <param name="newName">New name of column to rename</param>
         public void RenameColumn(long columnIndex, String newName)
-        {
-            ValidateIsValid();              
+        {            
             ValidateColumnIndex(columnIndex);
             ValidateNotSharedSpec();
             UnsafeNativeMethods.TableRenameColumn(this,columnIndex,newName);
@@ -482,8 +481,7 @@ namespace TightDbCSharp
         /// </summary>
         /// <param name="columnIndex">Index of column to remove</param>
         public void RemoveColumn(long columnIndex)
-        {
-            ValidateIsValid();
+        {            
             ValidateColumnIndex(columnIndex);
             UnsafeNativeMethods.TableRemoveColumn(this,columnIndex);
             ++Version;
@@ -963,7 +961,6 @@ namespace TightDbCSharp
         /// <returns>True if column at columnIndex is indexed. False if no index exists or if column is not of type String</returns>
         public Boolean HasIndex(long columnIndex)
         {
-            ValidateIsValid();
             ValidateColumnIndex(columnIndex);
             if (ColumnType(columnIndex) == DataType.String)
             {
@@ -982,9 +979,8 @@ namespace TightDbCSharp
         /// <param name="columnName">Name of the column to check for index</param>
         /// <returns>True if column specified is indexed. False if no index exists or if column is not of type String</returns>
         public Boolean HasIndex(String columnName)
-        {
-            ValidateIsValid();
-            var columnIndex = GetColumnIndex(columnName);
+        {            
+            var columnIndex = GetColumnIndex(columnName);//will call isvalid
             return ColumnType(columnIndex)==DataType.String && HasIndexNoCheck (columnIndex);
         }
 
@@ -1375,9 +1371,8 @@ namespace TightDbCSharp
         /// <param name="columnName">Name of string column that has an index, Distinct will operate on this column</param>
         /// <returns>TableView of distinct records from identified column</returns>
         public TableView Distinct(string columnName)
-        {
-            ValidateIsValid();
-            long columnIndex = GetColumnIndex(columnName);
+        {            
+            long columnIndex = GetColumnIndex(columnName);//will call isvalid
             ValidateTypeString(columnIndex);
             ValidateMustHaveIndexNoColCheck(columnIndex);
             return DistinctNoCheck(columnIndex);
@@ -1409,9 +1404,8 @@ namespace TightDbCSharp
         /// <param name="columnName">Zero based index of string column that should be indexed</param>
         public void SetIndex(string columnName)
         {
-            ValidateIsValid();
+            long columnIndex = GetColumnIndex(columnName);//will call isvalid
             ValidateNotSharedSpec();//core does not support indexes on colums in non-mixed subtables
-            long columnIndex = GetColumnIndex(columnName);
             ValidateTypeString(columnIndex);
             SetIndexNoCheck(columnIndex);
         }
