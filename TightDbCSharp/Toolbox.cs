@@ -1,17 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-
-namespace TightDbCSharp
+﻿namespace TightDbCSharp
 {
     /// <summary>
     /// This class contains diagnostics, test and benchmark functionality.
     /// 
     /// </summary>
-    public class Diagnostics
+    public class Toolbox //warning static holder types is okay - we will probably later get non static methods in this one
     {
 
         /// <summary>
@@ -23,7 +16,7 @@ namespace TightDbCSharp
         /// calling from C# to cpp
         /// The method is used in performancetest.cs in examples
         /// </summary>
-        public long TestNativeSizeCalls()
+        public static long TestNativeSizeCalls()
         {
             return UnsafeNativeMethods.TestSizeCalls();
         }

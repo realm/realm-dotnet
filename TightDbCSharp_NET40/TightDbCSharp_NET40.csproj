@@ -84,6 +84,9 @@
     <Compile Include="..\TightDbCSharp\TableView.cs">
       <Link>TableView.cs</Link>
     </Compile>
+    <Compile Include="..\TightDbCSharp\Toolbox.cs">
+      <Link>Toolbox.cs</Link>
+    </Compile>
     <Compile Include="..\TightDbCSharp\Transaction.cs">
       <Link>Transaction.cs</Link>
     </Compile>

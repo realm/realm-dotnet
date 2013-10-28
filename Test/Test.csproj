@@ -167,6 +167,9 @@
     <Compile Include="..\TightDbCSharpTest\TestHelper.cs">
       <Link>TestHelper.cs</Link>
     </Compile>
+    <Compile Include="..\TightDbCSharpTest\ToolboxTest.cs">
+      <Link>ToolboxTest.cs</Link>
+    </Compile>
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
