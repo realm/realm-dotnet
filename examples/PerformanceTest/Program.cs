@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
@@ -208,7 +209,7 @@ namespace PerformanceTest
                 //and i32 is an int representation if the value fits, or zero
 
 
-                var tightdbBefore = getMemUsedBefore();
+                var tightdbBefore = GetMemUsedBefore();
                 var timer1 = Stopwatch.StartNew();
                 
                 t.AddEmptyRow(numRows);
@@ -308,17 +309,17 @@ namespace PerformanceTest
                 }
 
                 timer1.Stop();
-                var tightdbAfter = getMemUsedAfter();
+                var tightdbAfter = GetMemUsedAfter();
                 var tightdbSeconds = Math.Floor(timer1.Elapsed.TotalSeconds);
                 double tighdbMilliseconds = timer1.Elapsed.Milliseconds;
                 //Console.WriteLine("{0,8};{1,8};{2,8};{3,5};{4,5};{5,5};{6,5};{7,5};{8,7};{9,12}", "TightDb", numRows, type, size, seconds, milliseconds, after - before);
 
                 //test a similar C# construct
-                var csharpBefore = getMemUsedBefore();
+                var csharpBefore = GetMemUsedBefore();
                 timer1 = Stopwatch.StartNew();
                 
-                var ShortList = new List<short>();
-                var IntList = new List<int>();
+                var shortList = new List<short>();
+                var intList = new List<int>();
                 var longList = new List<long>();
                 var floatList = new List<float>();
                 var doubleList = new List<double>();
@@ -341,14 +342,14 @@ namespace PerformanceTest
                         {
                             for (var n = 0; n < numRows; n++)
                             {
-                                IntList.Add(i32);
+                                intList.Add(i32);
                             }
                         }
                         else
                         {
                             for (var n = 0; n < numRows; n++)
                             {
-                                ShortList.Add(i16);
+                                shortList.Add(i16);
                             }
                         }                
 
@@ -394,7 +395,7 @@ namespace PerformanceTest
                 }
 
                 timer1.Stop();
-                var csharpAfter = getMemUsedAfter();
+                var csharpAfter = GetMemUsedAfter();
                 var csharpSeconds = Math.Floor(timer1.Elapsed.TotalSeconds);
                 var csharpMilliseconds = timer1.Elapsed.Milliseconds;
              // Console.WriteLine("{0,8};{1,8};{2,8};{3,5};{4,5};{5,5};{6,5};{7,5};{8,7};{9,12}", "Rows", "Type", "Size", "Sec.",        "C#Sec",       "Msec.",            "C#Msec.",             "Memory",                     "C#Memory");
@@ -406,14 +407,14 @@ namespace PerformanceTest
         private static long Processmem()
         {
             
-            return System.Diagnostics.Process.GetCurrentProcess().NonpagedSystemMemorySize64 +
-                   System.Diagnostics.Process.GetCurrentProcess().PagedMemorySize64 +
-                   System.Diagnostics.Process.GetCurrentProcess().PagedSystemMemorySize64 +
-                   System.Diagnostics.Process.GetCurrentProcess().PrivateMemorySize64 +
-                   System.Diagnostics.Process.GetCurrentProcess().VirtualMemorySize64;                                
+            return Process.GetCurrentProcess().NonpagedSystemMemorySize64 +
+                   Process.GetCurrentProcess().PagedMemorySize64 +
+                   Process.GetCurrentProcess().PagedSystemMemorySize64 +
+                   Process.GetCurrentProcess().PrivateMemorySize64 +
+                   Process.GetCurrentProcess().VirtualMemorySize64;                                
             
         }
-        private static long getMemUsedBefore()
+        private static long GetMemUsedBefore()
         {
             GC.Collect();
             GC.WaitForPendingFinalizers();
@@ -421,14 +422,13 @@ namespace PerformanceTest
             return Processmem();            
         }
 
-        private static long getMemUsedAfter()
+        private static long GetMemUsedAfter()
         {
             return Processmem();
         }
         
-        private static long MeasureSearchSpeed(TestType type, int size)
+        private static void MeasureSearchSpeed(TestType type, int size)
         {
-            long temp = 0;
             using (var t = GetTableForType(type))
             {
                 var dt = new DateTime(1980,1,1);
@@ -460,13 +460,13 @@ namespace PerformanceTest
                 switch (type)
                 {
                     case TestType.Int:
-                         temp = t.FindFirstInt(0,n+i);
+                         t.FindFirstInt(0,n+i);
                         break;
                     case TestType.String:
-                         temp = t.FindFirstString(0,n.ToString(CultureInfo.InvariantCulture)+s);
+                         t.FindFirstString(0,n.ToString(CultureInfo.InvariantCulture)+s);
                         break;
                     case TestType.Date:
-                         temp = t.FindFirstDateTime(0,dt.AddMilliseconds(n));
+                         t.FindFirstDateTime(0,dt.AddMilliseconds(n));
                         break;
                 }
 
@@ -503,13 +503,10 @@ namespace PerformanceTest
                     switch (type)
                     {
                         case TestType.Int:
-                            temp = longList.IndexOf(n);
                             break;
                         case TestType.String:
-                            temp =  stringList.IndexOf(n.ToString(CultureInfo.InvariantCulture))  ;
                             break;
                         case TestType.Date:
-                            temp = dateTimeList.IndexOf(dt.AddMilliseconds(n));
                             break;
                     }
 
@@ -519,12 +516,11 @@ namespace PerformanceTest
                 Console.WriteLine("{0,20};{1,10};{2,5};{3,5}","C#List.Find", type, seconds, milliseconds);
 
             }
-            return temp;
         }
 
         private static void MeasureGetSizeSpeed()
         {
-            var before = getMemUsedBefore();
+            var before = GetMemUsedBefore();
 
             using (var t = new Table(new StringColumn("testfield")))
             {
@@ -541,7 +537,7 @@ namespace PerformanceTest
                 timer1.Stop();
                 var seconds = Math.Floor(timer1.Elapsed.TotalSeconds);
                 double milliseconds = timer1.Elapsed.Milliseconds;
-                var after = getMemUsedAfter();
+                var after = GetMemUsedAfter();
                 Console.WriteLine("Table.Size sec:{0} millisec:{1} Res:{2}  mem:{3}", seconds, milliseconds, acc,after-before);
                 Console.WriteLine(t.Size);//keep t alive until after we measured its memory footprint
             }
@@ -582,10 +578,10 @@ namespace PerformanceTest
 
 
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization",
+        [SuppressMessage("Microsoft.Globalization",
             "CA1303:Do not pass literals as localized parameters", MessageId = "System.Console.WriteLine(System.String)"
             ),
-         System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization",
+         SuppressMessage("Microsoft.Globalization",
              "CA1303:Do not pass literals as localized parameters", MessageId = "Console.WriteLine(System.String)")]
 
         private static void Main()
@@ -612,10 +608,6 @@ namespace PerformanceTest
                     Console.WriteLine("{0,8}{1,9}{2,5}{3,5}{4,6}{5,6}{6,8}{7,12}{8,12}",  "Rows", "Type", "Size", "Sec.", "C#Sec", "Msec.", "C#Msec.", "Memory", "C#Memory");
                     for (var numRows = 100000; numRows < 2*1000*1000; numRows = Convert.ToInt32(numRows * 1.3))
                     {
-                        MeasureInsertSpeed(TestType.Float, 0, numRows);
-                        MeasureInsertSpeed(TestType.Double, 0, numRows);
-                        MeasureInsertSpeed(TestType.PriceBar, 0, numRows/10); //size param is not used with customer, reduce # of rows as each item is pretty large
-                        MeasureInsertSpeed(TestType.Customer, 0, numRows / 20); //size param is not used with pricebar, reduce # of rows as each item is pretty large
                         MeasureInsertSpeed(TestType.Int, 1, numRows);
                         MeasureInsertSpeed(TestType.Int, 2, numRows);
                         MeasureInsertSpeed(TestType.Int, 3, numRows);
@@ -623,6 +615,10 @@ namespace PerformanceTest
                         MeasureInsertSpeed(TestType.Int, 5, numRows);
                         MeasureInsertSpeed(TestType.Int, 6, numRows);
                         MeasureInsertSpeed(TestType.Int, 7, numRows);
+                        MeasureInsertSpeed(TestType.Float, 0, numRows);
+                        MeasureInsertSpeed(TestType.Double, 0, numRows);
+                        MeasureInsertSpeed(TestType.Customer, 0, numRows / 20); //size param is not used with pricebar, reduce # of rows as each item is pretty large
+                        MeasureInsertSpeed(TestType.PriceBar, 0, numRows / 5); //size param is not used with customer, reduce # of rows as each item is pretty large
                         MeasureInsertSpeed(TestType.String, 4, numRows);
                         MeasureInsertSpeed(TestType.String, 8, numRows);
                         MeasureInsertSpeed(TestType.String, 16, numRows);
