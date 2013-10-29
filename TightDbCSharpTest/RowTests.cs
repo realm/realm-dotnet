@@ -2,6 +2,7 @@
 using NUnit.Framework;
 using System;
 using TightDbCSharp;
+using TightDbCSharp.Extensions;
 
 namespace TightDbCSharpTest
 {
@@ -429,7 +430,58 @@ namespace TightDbCSharpTest
             }
         }
 
-        
+
+
+        /// <summary>
+        /// Call clearsubtable and inspect that the subtable is in fact cleared (zero rows)
+        /// </summary>
+        [Test]
+        public static void TestClearSubtable()
+        {
+            const int  testvalue =  422;
+            using (var table = new Table("sub".Table("intfield".Int())))
+            {
+                using (var sub = new Table("intfield".Int())){
+                    sub.Add(testvalue);
+                    table.Add(sub);
+                    foreach (var row in table)
+                    {
+                        using (var sub2 = row.GetSubTable(0))
+                        {
+                            Assert.AreEqual(testvalue, sub2.GetLong(0,0));
+                            Assert.AreEqual(1,sub2.Size);
+                            row.ClearSubTable(0);//this will render sub2 invalid as it has been changed from the outside
+
+                            using (var sub3 = row.GetSubTable(0))
+                            {
+                                Assert.AreEqual(0, sub3.Size);
+                                Assert.AreEqual(1, sub3.ColumnCount);
+                            }
+                        }
+                    }
+
+                    table.Remove(0);//remove the row with the emptied sub
+                    table.Add(sub);//add a sub with a subfield integer with 12
+                    foreach (var row in table)
+                    {
+                        using (var sub2 = row.GetSubTable(0))
+                        {
+                            Assert.AreEqual(testvalue, sub2.GetLong(0,0));
+                            Assert.AreEqual(1, sub2.Size);
+                            row.ClearSubTable("sub");//this will render sub2 invalid as it has been changed from the outside
+
+                            using (var sub3 = row.GetSubTable(0))
+                            {
+                                Assert.AreEqual(0, sub3.Size);
+                                Assert.AreEqual(1, sub3.ColumnCount);
+                            }
+                        }
+                    }
+
+                }
+            }
+        }
+
         /// <summary>
         /// test if a row object gets disabled when the user changes its table in an invalidating way, not going through the rowobject
         /// </summary>

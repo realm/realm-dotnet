@@ -4,7 +4,7 @@
     /// This class contains diagnostics, test and benchmark functionality.
     /// 
     /// </summary>
-    public class Toolbox //warning static holder types is okay - we will probably later get non static methods in this one
+    public static class Toolbox //only static methods for now, but may become non static later on
     {
 
         /// <summary>

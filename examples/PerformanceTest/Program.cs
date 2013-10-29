@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Reflection;
-using System.Runtime.ExceptionServices;
 using TightDbCSharp;
 using TightDbCSharp.Extensions;
 

@@ -27,7 +27,7 @@ namespace TightDbCSharpTest
                 t.SetLong(0, 0, 42);
                 using (TableView tv = t.FindAllInt(0, 42))
                 {
-                    Console.WriteLine(tv.Handle);
+                    Assert.AreEqual(1,tv.Size);
                 }
             }
         }
