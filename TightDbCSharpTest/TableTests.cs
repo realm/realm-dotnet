@@ -2824,6 +2824,56 @@ Table Name  : cyclic field definition
             }
         }
 
+
+        /// <summary>
+        /// setsubtable test - setting it with a tableview parameter. 
+        /// The result should be a subtable with only the rows that are in the tableview.
+        /// </summary>
+        [Test]
+        public static void TableSetSubTableWithTableview()
+        {
+            using (var t = new Table(
+                "do'h".Int(),
+                "sub".SubTable(
+                    "category".Int(),
+                    "substringfield1".String(),
+                    "substringfield2".String()
+                    ),
+                "mazda".Int()
+                )
+                )
+            {
+                using (var sub = new Table(
+                    "category".Int(),
+                    "substringfield1".String(),
+                    "substringfield2".String()
+                    )
+                    )
+                {
+                    const string string00 = "stringvalueC0R0";
+                    sub.Add(1,string00, "stringvalue2R0");
+                    sub.Add(1,"stringvalue1R1", "stringvalue2R1");
+                    sub.Add(3, "not me neither", "NO");
+                    sub.Add(2, "notme", "meneither");
+                    sub.Add(2, "nooooo", "whomenoway");
+                    t.AddEmptyRow(1);
+                    using (var tv = sub.FindAllInt(0, 1))
+                    {
+                        Assert.AreEqual(2,tv.Size);
+                        Assert.AreEqual(string00,tv.GetString(1,0));
+                        t.SetSubTable(1, 0, tv);
+                        using (var subreturned = t.GetSubTable(1, 0))
+                        {
+                            Assert.AreEqual(2, subreturned.Size);
+                            Assert.AreEqual(string00, subreturned.GetString(1, 0));
+                        }
+                    }
+                }
+            }
+        }
+
+
+
         /// <summary>
         /// Stting a subtble using array of array
         /// </summary>

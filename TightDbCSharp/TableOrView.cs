@@ -280,6 +280,7 @@ namespace TightDbCSharp
         //with different names to allow calling with table or with some enumerable collection
 
 #if !V40PLUS
+
         private void SetSubTableNoCheckHighLevel(long columnIndex, long rowIndex, Table element)
         {
             if (element == null)
@@ -311,6 +312,26 @@ namespace TightDbCSharp
             }
         }
 
+        private void SetSubTableNoCheckHighLevel(long columnIndex, long rowIndex, TableView element)
+        {
+            if (element == null)
+            {
+                SetSubtableAsNull(columnIndex, rowIndex);
+            }
+            else
+            {
+                using (var t = GetSubTableNoCheck(columnIndex, rowIndex))
+                {
+                    //  do this when SetSubTable(....tableview has been implemented in core)SetSubTableNoCheck(columnIndex, rowIndex, element);
+                    ValidateEqualScheme(t, element.UnderlyingTable, "Set SubTable with TableView");
+                    //when implemented in core, simply call SetSubTableNoCheck(...elemTableView);
+                    //for now, just call AddMany and let that one iterate through the tableview and get the job done
+                    t.AddMany(element);                    
+                }
+            }
+        }
+
+
         private void SetSubtableAsNull(long columnIndex, long rowIndex)
         {
             ClearSubTableNoCheck(columnIndex, rowIndex);
@@ -337,8 +358,17 @@ namespace TightDbCSharp
                 {
                     ValidateEqualScheme(t, elemTable, "Set Sub Table");
                     SetSubTableNoCheck(columnIndex, rowIndex, elemTable);
-                    //call table or tableview lowlevel implementation                 
+                    //call table or tableview lowlevel implementation
                     return; //done! if elem is null element was not a Table but something else
+                }
+                var elemTableView = (element as TableView);
+                if (elemTableView != null)
+                {
+                    ValidateEqualScheme(t,elemTableView.UnderlyingTable,"Set SubTable with TableView");
+                    //when implemented in core, simply call SetSubTableNoCheck(...elemTableView);
+                    //for now, just call AddMany and let that one iterate through the tableview and get the job done
+                    t.AddMany(elemTableView);
+                    return;
                 }
 
                 //each element in the enumerable list must be a row, 
@@ -579,9 +609,9 @@ namespace TightDbCSharp
                     String.Format(CultureInfo.InvariantCulture,
                         "SetRow called with {0} objects, but there are only {1} columns in the table",
                         arrayLength, ColumnCount));
-
         }
 
+        //at this stage, it has already been checked that rowcontents matches the schema if rowcontents is Table or row or TableView
         //do not check row index       
         //todo:let the type be ieumerable, allowing user to set with objects in any kind of collection he has
         //object is also Ienummerable i guess?
@@ -612,6 +642,24 @@ namespace TightDbCSharp
                 if (rowContents[0].GetType() == typeof(string[]))
                 {
                     rowContents = (string[])rowContents[0];
+                }
+                if (rowContents[0].GetType()==typeof(Row))//special case that can be (should be) removed when Table.SetSubTable(..TableView has been created)
+                {                                         //or if this method is rewritten to take IEnumerable
+                    var row = rowContents[0] as Row;      //or if Row starts implementing an interface allowing it to be indexed as object[]
+                    if (row != null)
+                    {
+                        var ix = 0;
+                        foreach (var field in row)
+                        {
+                            SetValueNoCheck(ix,rowIndex,field.Value);
+                            ++ix;
+                        }
+                    }
+                    else
+                    {
+                        throw new ArgumentException("ERR001");//this cannot happen so don't waste space on a long description string
+                    }
+                    return;
                 }
             }
 
@@ -1915,6 +1963,26 @@ namespace TightDbCSharp
             ValidateTypeSubTable(columnIndex);
             SetSubTableNoCheckHighLevel(columnIndex, rowIndex, value);
         }
+
+        /// <summary>
+        /// Sets a subtable into the specified field.
+        /// The subtable being set must be a TableView or Null
+        /// NULL - will set a new empty subtable
+        /// The TableView variable must have the same schema as the subtable field. A subtable is
+        /// created and all rows in the TableView are copied into the subtable
+        /// </summary>
+        /// <param name="columnIndex">zero based index of the column of the field where the subable should be set</param>
+        /// <param name="rowIndex">Zero based row index of the field where the subtable should be set</param>
+        /// <param name="value">TableView, must have the same structure as the subtable being set</param>
+        public void SetSubTable(long columnIndex, long rowIndex, TableView value)
+        {
+            ValidateIsValid();
+            ValidateColumnAndRowIndex(columnIndex, rowIndex);
+            ValidateTypeSubTable(columnIndex);
+            SetSubTableNoCheckHighLevel(columnIndex, rowIndex, value);
+        }
+
+
 
 #endif
 
