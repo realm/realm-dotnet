@@ -58,6 +58,14 @@ namespace PerformanceTest
             }
         }
 
+        //What products have the customer subscribed to / licensed / bought, and for how long do the subscription / license / warranty run
+        class LicensedProducts
+        {
+            public int ProductId;//product type
+            public string SerialNumber;//specific product identification
+            public DateTime LicenseTime;//start time of license
+            public int DaysLicensed;//number of days licensed
+        }
 
         //a class containing information about a customer
         //the two lists are always of the same length
@@ -72,8 +80,7 @@ namespace PerformanceTest
             public String FirstName;
             public String LastName;
             public String Address;
-            public List<Byte> PhoneType;
-            public List<String> PhoneNumbers;
+            public List<LicensedProducts> Products;
             public float discount;
             public bool Credit;
             public DateTime CreatedDate;
@@ -102,16 +109,21 @@ namespace PerformanceTest
                 FirstName = stringOfSize( (seed % 16)+4,seed);//first name is a random string betw 4 and 20 long
                 LastName = stringOfSize( (seed % 16) + 4, seed);//last name is a random string betw 4 and 20 long
                 Address = stringOfSize( (seed % 30) + 8, seed);//addreess is at least 8 and up to 30 long
-                int numphones = seed%4;//0 to 3 phone numbers stored
-                if (numphones > 0)
+                int numProducts = seed%20;//0 to 3 phone numbers stored
+                if (numProducts > 0)
                 {
-                    PhoneType= new List<Byte>();
-                    PhoneNumbers=new List<string>();
+                    Products= new List<LicensedProducts>();
                 }
-                for (var n = 0; n < numphones; ++n)
+                for (var n = 0; n < numProducts; ++n)
                 {
-                    PhoneType.Add((Byte) (seed % 255)); ;//
-                    PhoneNumbers.Add(stringOfSize(seed % 4 + 12, seed));//12 is a reasonable length for a phone number, give or take 3
+                    var products = new LicensedProducts
+                    {
+                        ProductId = (Byte) (seed%50000),
+                        SerialNumber = stringOfSize(12, seed),
+                        DaysLicensed = (seed%365 + 365*2),
+                        LicenseTime = DateTime.Now
+                    };
+                    Products.Add(products);
                 }
                 discount =1.0f-1.0f/(seed%20+1);
                 Credit = seed%3 == 2;
@@ -145,7 +157,7 @@ namespace PerformanceTest
                     return new Table("First Name".String(),
                                      "Last Name".String(),
                                      "Address".String(),
-                                     "Phones".SubTable("Type".Int(),"number".String()),
+                                     "Phones".SubTable("ProductId".Int(),"SerialNumber".String(),"LicenseTime".Date(),"LicensedDays".Int()),
                                      "discount".Float(),
                                      "Credit".Bool(),
                                      "CreatedDate".Date());
@@ -270,13 +282,13 @@ namespace PerformanceTest
                         t.Add(customer.FirstName, customer.LastName, customer.Address, 
                             null, customer.discount,customer.Credit, customer.CreatedDate);
 
-                        if (customer.PhoneType != null)
+                        if (customer.Products != null)
                         {
                             using (var sub = t.GetSubTable(3, n))//get the subtable for the phone numbers
                             {
-                                for (var phn = 0; phn < customer.PhoneType.Count; ++phn)
+                                foreach (var phoneRecord in customer.Products)
                                 {
-                                    sub.Add(customer.PhoneType[phn], customer.PhoneNumbers[phn]);
+                                    sub.Add(phoneRecord.ProductId,phoneRecord.SerialNumber,phoneRecord.LicenseTime,phoneRecord.DaysLicensed);
                                 }
                             }
                         }
@@ -393,6 +405,7 @@ namespace PerformanceTest
 
         private static long Processmem()
         {
+            
             return System.Diagnostics.Process.GetCurrentProcess().NonpagedSystemMemorySize64 +
                    System.Diagnostics.Process.GetCurrentProcess().PagedMemorySize64 +
                    System.Diagnostics.Process.GetCurrentProcess().PagedSystemMemorySize64 +
@@ -601,8 +614,8 @@ namespace PerformanceTest
                     {
                         MeasureInsertSpeed(TestType.Float, 0, numRows);
                         MeasureInsertSpeed(TestType.Double, 0, numRows);
-                        MeasureInsertSpeed(TestType.PriceBar, 0, numRows); //size param is not used with customer
-                        MeasureInsertSpeed(TestType.Customer, 0, numRows); //size param is not used with pricebar
+                        MeasureInsertSpeed(TestType.PriceBar, 0, numRows/10); //size param is not used with customer, reduce # of rows as each item is pretty large
+                        MeasureInsertSpeed(TestType.Customer, 0, numRows / 20); //size param is not used with pricebar, reduce # of rows as each item is pretty large
                         MeasureInsertSpeed(TestType.Int, 1, numRows);
                         MeasureInsertSpeed(TestType.Int, 2, numRows);
                         MeasureInsertSpeed(TestType.Int, 3, numRows);
@@ -614,8 +627,8 @@ namespace PerformanceTest
                         MeasureInsertSpeed(TestType.String, 8, numRows);
                         MeasureInsertSpeed(TestType.String, 16, numRows);
                         MeasureInsertSpeed(TestType.String, 32, numRows);
-                        MeasureInsertSpeed(TestType.String, 64, numRows);
-                        MeasureInsertSpeed(TestType.String, 128, numRows);
+                        MeasureInsertSpeed(TestType.String, 64, numRows/2);
+                        MeasureInsertSpeed(TestType.String, 128, numRows/5);
                         MeasureInsertSpeed(TestType.Date, 0, numRows);
                     }
                     loop = true;
