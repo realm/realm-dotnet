@@ -241,7 +241,71 @@ Table Name  : table name is 12345 then the permille sign ISO 10646:8240 then 789
         }
 
 
+        /// <summary>
+        /// Test that Table.AddInt works. Tests only valid calls, 
+        /// tests that call with a bad column specification should be added
+        /// tests that call on an empty table should be added
+        /// </summary>
+        [Test]
+        public static void TableAddInt()
+        {
+            var values =new [] {-100, 0, 100, -1, 1, long.MaxValue, long.MinValue};
+            using (var table = new Table("StringColumn".String(), "intcolumn".Int()))
+            {
+                table.AddInt(1,42);//this should not do anything
+                Assert.AreEqual(0, table.Size);
 
+                var ix = 0;
+                foreach (var val in values )
+                {
+                    table.Add("field_" + ix, val);
+                    ++ix;
+                }
+
+                ix = 0;
+                foreach (var val in values)
+                {
+                    Assert.AreEqual(val,table.GetLong(1,ix));
+                    ++ix;
+                }
+
+                //now, add zero to all fields, they should be unchanged
+                table.AddInt("intcolumn",0);
+                ix = 0;
+                foreach (var val in values)
+                {
+                    Assert.AreEqual(val, table.GetLong(1, ix));
+                    ++ix;
+                }
+
+                //try to add 100
+                table.AddInt(1,100);
+                ix = 0;
+                foreach (var val in values)
+                {
+                    Assert.AreEqual(val+100, table.GetLong(1, ix));//notice that maxval+100 will overflow in C#. will the C# result match the table result?
+                    ++ix;
+                }
+
+                //try to subtract 100
+                table.AddInt(1, -100);
+                ix = 0;
+                foreach (var val in values)
+                {
+                    Assert.AreEqual(val , table.GetLong(1, ix));//will subtracting 100 get us back to the original value (also the overflown field)
+                    ++ix;
+                }
+
+                //try to add int.Maxvalue+42 (make sure 64 bit values always work)
+                table.AddInt(1, Int32.MaxValue);
+                ix = 0;
+                foreach (var val in values)
+                {
+                    Assert.AreEqual(val +Int32.MaxValue, table.GetLong(1, ix));//notice that maxval+100 will overflow in C#. will the C# result match the table result?
+                    ++ix;
+                }
+            }            
+        }
 
 
         /// <summary>

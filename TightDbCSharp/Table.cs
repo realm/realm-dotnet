@@ -1123,6 +1123,35 @@ namespace TightDbCSharp
             UnsafeNativeMethods.TableSetBinary(this, columnIndex, rowIndex, value);
         }
 
+        /// <summary>
+        /// Will add the specicifed integer value to all fields in the specified column
+        /// If the sum exceeds Int64.MaxSize the result is unspecified, no errror is returned
+        /// Currently, this method does not exist in TableView        
+        /// </summary>
+        /// <param name="columnIndex">Index of column whose DataType.Int values should be increased</param>
+        /// <param name="value">increment, value to be added to each field</param>
+        public void AddInt(long columnIndex, long value)
+        {
+            ValidateColumnIndex(columnIndex);
+            ValidateTypeInt(columnIndex);
+            UnsafeNativeMethods.TableAddInt(this,columnIndex,value);
+        }
+
+
+        /// <summary>
+        /// Will add the specicifed integer value to all fields in the specified column
+        /// If the sum exceeds Int64.MaxSize the result is unspecified, no errror is returned
+        /// Currently, this method does not exist in TableView        
+        /// </summary>
+        /// <param name="columnName">Name of column whose DataType.Int values should be increased</param>
+        /// <param name="value">increment, value to be added to each field</param>
+        public void AddInt(string columnName, long value)
+        {
+            var columnIndex = GetColumnIndex(columnName);            
+            ValidateTypeInt(columnIndex);
+            UnsafeNativeMethods.TableAddInt(this, columnIndex, value);
+        }
+
         internal override void SetSubTableNoCheck(long columnIndex, long rowIndex, Table value)
         {
             UnsafeNativeMethods.TableSetSubTable(this,columnIndex,rowIndex,value);            

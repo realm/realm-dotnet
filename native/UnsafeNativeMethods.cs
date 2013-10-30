@@ -3154,6 +3154,22 @@ enum DataType {
         }
 
 
+        [DllImport(L64, EntryPoint = "table_add_int",CallingConvention = CallingConvention.Cdecl)]
+        private static extern void table_add_int64(IntPtr tablePtr, IntPtr columnNdx, long value);
+
+        [DllImport(L32, EntryPoint = "table_add_int",CallingConvention = CallingConvention.Cdecl)]
+        private static extern void table_add_int32(IntPtr tablePtr, IntPtr columnNdx, long value );
+
+        public static void TableAddInt(Table table, long columnIndex, long value)
+        {
+            if (Is64Bit)
+                table_add_int64(table.Handle, (IntPtr) columnIndex, value);
+            else
+                table_add_int32(table.Handle, (IntPtr) columnIndex, value);
+        }
+
+        //todo implement tableView.AddInt when it has been supported in core
+
 
         [DllImport(L64, EntryPoint = "table_set_subtable",
             CallingConvention = CallingConvention.Cdecl)]

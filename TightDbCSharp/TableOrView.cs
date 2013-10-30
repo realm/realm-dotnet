@@ -1640,7 +1640,7 @@ namespace TightDbCSharp
 
 
         //only call if columnIndex is already validated or known to be int
-        private void ValidateTypeInt(long columnIndex)
+        internal void ValidateTypeInt(long columnIndex)
         {
             if (ColumnTypeNoCheck(columnIndex) != DataType.Int)
             {

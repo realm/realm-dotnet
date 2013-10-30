@@ -16,10 +16,10 @@ namespace TightDbCSharpTest
         /// method takes. Used in examples\PerformanceTest
         /// </summary>
         [Test]
-        public void TestSizeCalls()
+        public static void TestSizeCalls()
         {
             var count = Toolbox.TestNativeSizeCalls();
-            Console.WriteLine("count frim cpp:{0}",count);
+            Console.WriteLine("count from cpp:{0}",count);
         }
     }
 }

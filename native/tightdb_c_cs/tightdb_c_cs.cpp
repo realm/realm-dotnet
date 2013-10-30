@@ -618,8 +618,11 @@ TIGHTDB_C_CS_API void table_set_mixed_binary(Table*  table_ptr, size_t column_nd
 
 //table_set_mixed is implemented by the various typed functions above.
 
-//todo:implement table_add_int
-
+//Not sure what core do if value + whatever is there before is gt int64_t.maxvalue
+TIGHTDB_C_CS_API void table_add_int(Table* table_ptr,size_t column_ndx, int64_t value)
+{
+	table_ptr->add_int(column_ndx,value);
+}
 
 TIGHTDB_C_CS_API void table_set_subtable(Table* table_ptr, size_t column_ndx, size_t row_ndx,Table* table_with_data)
 {    
