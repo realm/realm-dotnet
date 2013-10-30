@@ -634,6 +634,14 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableCountDouble(this, columnIndex, target);
         }
 
+        /// <summary>
+        /// Optimizes string columns in the table
+        /// </summary>
+        public void Optimize()
+        {
+            ValidateIsValid();
+            UnsafeNativeMethods.TableOptimize(this);
+        }
 
         /// <summary>
         /// Return a string with a Json representation of this table.

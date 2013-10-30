@@ -3788,6 +3788,56 @@ Table Name  : rename columns in subtables via parameters
 
 
         /// <summary>
+        /// Calls table optimize and verifies that
+        /// a sample string column has not been changed
+        /// </summary>
+        [Test]
+        public static void TableOptimize()
+        {
+            var values = new[]
+            {
+                "",
+                "hest",
+                "fest",
+                "pest",
+                "pist",
+                "hist",
+                "hast",
+                "test",
+                "hest",
+                "fest",
+                "pest",
+                "pist",
+                "hist",
+                "hast"
+
+            };
+            using (var table = new Table("str".String(), "int".Int()))
+            {
+                foreach (var str in values)
+                {
+                    table.Add(str, 42);
+                }
+                var ix = 0;
+                foreach (var str in values)
+                {
+                    Assert.AreEqual(str, table.GetString(0,ix));
+                    ++ix;
+                }
+                Assert.AreEqual(values.Length, table.Size);//at least make sure we can access the table and get a sane size value back
+                table.Optimize();//will change the string column to enumerated but can we detect that change from the outside?
+                Assert.AreEqual(values.Length,table.Size);//at least make sure we can access the table and get a sane size value back
+                ix = 0;
+                foreach (var str in values )
+                {
+                    Assert.AreEqual(str, table.GetString(0, ix));
+                    ++ix;
+                }
+            }            
+        }
+
+
+        /// <summary>
         /// Test setbinary
         /// </summary>
         [Test]

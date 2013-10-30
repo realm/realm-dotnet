@@ -4973,6 +4973,22 @@ enum DataType {
 
 
 
+        [DllImport(L64, EntryPoint = "table_optimize", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void table_optimize64(IntPtr handle);
+
+        [DllImport(L32, EntryPoint = "table_optimize", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void table_optimize32(IntPtr handle);
+
+        public static void TableOptimize(Table table)
+        {
+            if (Is64Bit)
+                table_optimize64(table.Handle);
+            else
+                table_optimize32(table.Handle);            
+        }
+
+
+
         [DllImport(L64, EntryPoint = "table_to_json", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode)]
         private static extern IntPtr table_to_json64(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize);

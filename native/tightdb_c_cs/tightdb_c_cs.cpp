@@ -863,13 +863,15 @@ TIGHTDB_C_CS_API tightdb::TableView* table_distinct(Table * table_ptr , size_t c
 //todo:implement table_get_sorted_view
 
 
-TIGHTDB_C_CS_API Query* table_where(Table * table_ptr)
+TIGHTDB_C_CS_API Query* table_where(Table* table_ptr)
 {   
     return new Query(table_ptr->where());            
 }
 
 
-//todo:implement table_optimize
+TIGHTDB_C_CS_API void table_optimize(Table*  table_ptr){
+	table_ptr->optimize();
+}
 
 //multiple issues with this one
 //decide wether to implement an endpoint C# stream that then reads from the c++ stream output from to_json
