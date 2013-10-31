@@ -1186,8 +1186,19 @@ enum DataType {
         }
 
 
+        [DllImport(L64, EntryPoint = "table_maximum_datetime", CallingConvention = CallingConvention.Cdecl)]
+        private static extern long table_maximum_datetime64(IntPtr tableHandle, IntPtr columnIndex);
+
+        [DllImport(L32, EntryPoint = "table_maximum_datetime", CallingConvention = CallingConvention.Cdecl)]
+        private static extern long table_maximum_datetime32(IntPtr tableHandle, IntPtr columnIndex);
 
 
+        public static DateTime TableMaximumDateTime(Table table, long columnIndex)
+        {
+            if (Is64Bit)
+                return ToCSharpTimeUtc(table_maximum_datetime64(table.Handle, (IntPtr)columnIndex));
+            return ToCSharpTimeUtc(table_maximum_datetime32(table.Handle, (IntPtr)columnIndex));
+        }
 
 
 
@@ -1235,6 +1246,22 @@ enum DataType {
             if (Is64Bit)
                 return table_minimum_double64(table.Handle, (IntPtr) columnIndex);
             return table_minimum_double32(table.Handle, (IntPtr) columnIndex);
+        }
+
+
+
+        [DllImport(L64, EntryPoint = "table_minimum_datetime", CallingConvention = CallingConvention.Cdecl)]
+        private static extern long table_minimum_datetime64(IntPtr tableHandle, IntPtr columnIndex);
+
+        [DllImport(L32, EntryPoint = "table_minimum_datetime", CallingConvention = CallingConvention.Cdecl)]
+        private static extern long table_minimum_datetime32(IntPtr tableHandle, IntPtr columnIndex);
+
+
+        public static DateTime TableMinimumDateTime(Table table, long columnIndex)
+        {
+            if (Is64Bit)
+                return ToCSharpTimeUtc(table_minimum_datetime64(table.Handle, (IntPtr)columnIndex));
+            return ToCSharpTimeUtc(table_minimum_datetime32(table.Handle, (IntPtr)columnIndex));
         }
 
 
@@ -1335,6 +1362,22 @@ enum DataType {
         }
 
 
+        [DllImport(L64, EntryPoint = "tableview_maximum_datetime", CallingConvention = CallingConvention.Cdecl)]
+        private static extern long tableview_maximum_datetime64(IntPtr tableViewHandle, IntPtr columnIndex);
+
+        [DllImport(L32, EntryPoint = "tableview_maximum_datetime", CallingConvention = CallingConvention.Cdecl)]
+        private static extern long tableview_maximum_datetime32(IntPtr tableViewHandle, IntPtr columnIndex);
+
+
+        public static DateTime TableViewMaximumDateTime(TableView tableView, long columnIndex)
+        {
+            if (Is64Bit)
+                return ToCSharpTimeUtc(tableview_maximum_datetime64(tableView.Handle, (IntPtr)columnIndex));
+            return ToCSharpTimeUtc(tableview_maximum_datetime32(tableView.Handle, (IntPtr)columnIndex));
+        }
+
+
+
 
 
 
@@ -1387,9 +1430,17 @@ enum DataType {
         }
 
 
+        [DllImport(L64, EntryPoint = "tableview_minimum_datetime", CallingConvention = CallingConvention.Cdecl)]
+        private static extern long tableview_minimum_datetime64(IntPtr tableViewHandle, IntPtr columnIndex);
+
+        [DllImport(L32, EntryPoint = "tableview_minimum_datetime", CallingConvention = CallingConvention.Cdecl)]
+        private static extern long tableview_minimum_datetime32(IntPtr tableViewHandle, IntPtr columnIndex);
 
 
-
+        public static DateTime TableViewMinimumDateTime(TableView tableView, long columnIndex)
+        {
+            return ToCSharpTimeUtc(Is64Bit ? tableview_minimum_datetime64(tableView.Handle, (IntPtr)columnIndex) : tableview_minimum_datetime32(tableView.Handle, (IntPtr)columnIndex));
+        }
 
 
         [DllImport(L64, EntryPoint = "tableview_average_int", CallingConvention = CallingConvention.Cdecl)]

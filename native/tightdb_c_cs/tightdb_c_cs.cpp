@@ -61,7 +61,7 @@ inline DateTime int64_t_to_datetime(int64_t value){
 }
 
 //this call assumes that time_t and int64_t are blittable (same byte size) or that the compiler handles any resizing neccessary
-inline int64_t date_to_int64_t(DateTime value) {
+inline int64_t datetime_to_int64_t(DateTime value) {
     return value.get_datetime();
 }
 
@@ -435,7 +435,7 @@ TIGHTDB_C_CS_API size_t table_get_bool(Table* table_ptr, size_t column_ndx, size
 
 TIGHTDB_C_CS_API int64_t table_get_date(Table*  table_ptr, size_t column_ndx, size_t row_ndx)
 {
-    return date_to_int64_t(table_ptr->get_datetime(column_ndx,row_ndx));
+    return datetime_to_int64_t(table_ptr->get_datetime(column_ndx,row_ndx));
 }
 
 TIGHTDB_C_CS_API float table_get_float(Table* table_ptr, size_t column_ndx, size_t row_ndx)
@@ -482,7 +482,7 @@ TIGHTDB_C_CS_API size_t  table_get_mixed_bool(Table*  table_ptr, size_t column_n
 
 TIGHTDB_C_CS_API int64_t table_get_mixed_date(Table*  table_ptr, size_t column_ndx, size_t row_ndx)
 {
-    return date_to_int64_t(table_ptr->get_mixed(column_ndx,row_ndx).get_datetime());    
+    return datetime_to_int64_t(table_ptr->get_mixed(column_ndx,row_ndx).get_datetime());    
 }
 
 TIGHTDB_C_CS_API float  table_get_mixed_float(Table*  table_ptr, size_t column_ndx, size_t row_ndx)
@@ -708,7 +708,7 @@ TIGHTDB_C_CS_API double table_sum_double(Table * table_ptr , size_t column_ndx)
 }
 
 TIGHTDB_C_CS_API int64_t table_maximum_int(Table * table_ptr , size_t column_ndx)
-{   
+{   	
     return table_ptr->maximum_int(column_ndx);
 }
 TIGHTDB_C_CS_API float table_maximum_float(Table * table_ptr , size_t column_ndx)
@@ -880,12 +880,12 @@ TIGHTDB_C_CS_API Query* table_where(Table* table_ptr)
 
 
 TIGHTDB_C_CS_API void table_optimize(Table*  table_ptr){
-	table_ptr->optimize();
+	table_ptr->optimize();		
 }
 
 
 TIGHTDB_C_CS_API  size_t tableview_get_source_ndx(TableView* tableview_ptr, size_t row_ndx){
-	return tableview_ptr->get_source_ndx(row_ndx);
+	return tableview_ptr->get_source_ndx(row_ndx);		
 }
 
 //multiple issues with this one
@@ -995,7 +995,7 @@ TIGHTDB_C_CS_API size_t tableview_get_bool(TableView* tableView_ptr, size_t colu
 
 TIGHTDB_C_CS_API int64_t tableview_get_date(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx)
 {
-    return date_to_int64_t(tableView_ptr->get_datetime(column_ndx,row_ndx));
+    return datetime_to_int64_t(tableView_ptr->get_datetime(column_ndx,row_ndx));
 }
 
 
@@ -1032,7 +1032,7 @@ TIGHTDB_C_CS_API int64_t  tableview_get_mixed_int(TableView*  tableView_ptr, siz
 
 TIGHTDB_C_CS_API int64_t tableview_get_mixed_date(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx)
 {
-    return date_to_int64_t(tableView_ptr->get_mixed(column_ndx,row_ndx).get_datetime());
+    return datetime_to_int64_t(tableView_ptr->get_mixed(column_ndx,row_ndx).get_datetime());
 }
 
 
@@ -1208,7 +1208,23 @@ TIGHTDB_C_CS_API int64_t tableview_count_double(TableView * tableview_ptr , size
     return tableview_ptr->count_double(column_ndx,target);
 }
 
-//todo:implement tableview_maximum_date
+TIGHTDB_C_CS_API int64_t tableview_maximum_datetime(TableView* tableview_ptr, size_t column_ndx) {
+	return datetime_to_int64_t(tableview_ptr->maximum_datetime(column_ndx));
+}
+
+TIGHTDB_C_CS_API int64_t tableview_minimum_datetime(TableView* tableview_ptr, size_t column_ndx) {
+	return datetime_to_int64_t(tableview_ptr->minimum_datetime(column_ndx));
+}
+
+TIGHTDB_C_CS_API int64_t table_maximum_datetime(Table* table_ptr, size_t column_ndx) {
+	// return datetime_to_int64_t(table_ptr->maximum_datetime(column_ndx));
+	return 0;//comment above line in, when core has implemented table_ptr->maximum_datetime
+}
+
+TIGHTDB_C_CS_API int64_t table_minimum_datetime(Table* table_ptr, size_t column_ndx) {
+//	return datetime_to_int64_t(table_ptr->minimum_datetime(column_ndx));
+	return 0; //comment above line in, when core has implemented table_ptr->minimum_datetime
+}
 
 //todo:implement tableview_minimum_date
 

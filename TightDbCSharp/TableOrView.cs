@@ -73,10 +73,12 @@ namespace TightDbCSharp
         internal abstract long MinimumLongNoCheck(long columnIndex);
         internal abstract float MinimumFloatNoCheck(long columnIndex);
         internal abstract double MinimumDoubleNoCheck(long columnIndex);
+        internal abstract DateTime MinimumDateTimeNoCheck(long columnIndex);
 
         internal abstract long MaximumLongNoCheck(long columnIndex);
         internal abstract float MaximumFloatNoCheck(long columnIndex);
         internal abstract double MaximumDoubleNoCheck(long columnIndex);
+        internal abstract DateTime MaximumDateTimeNoCheck(long columnIndex);
 
         //average only supported in table for the time being. In tablewiev average will always return 0
         internal abstract double AverageLongNoCheck(long columnIndex);
@@ -2776,7 +2778,7 @@ namespace TightDbCSharp
         /// <returns>number of rows with target value in the specified column</returns>
         public long CountLong(long columnIndex, long target)
         {            
-            ValidateColumnIndex(columnIndex);
+            ValidateColumnIndexAndTypeInt(columnIndex);
             return CountLongNoCheck(columnIndex, target);
         }
 
@@ -2802,7 +2804,7 @@ namespace TightDbCSharp
         /// <returns>number of rows with target value in the specified column</returns>
         public long CountString(long columnIndex, string target)
         {            
-            ValidateColumnIndex(columnIndex);
+            ValidateColumnIndexAndTypeString(columnIndex);
             return CountStringNoCheck(columnIndex, target);
         }
 
@@ -2815,7 +2817,7 @@ namespace TightDbCSharp
         /// <returns>number of rows with target value in the specified column</returns>
         public long CountDouble(long columnIndex, Double target)
         {            
-            ValidateColumnIndex(columnIndex);
+            ValidateColumnIndexAndTypeDouble(columnIndex);
             return CountDoubleNoCheck(columnIndex, target);
         }
 
@@ -2826,7 +2828,7 @@ namespace TightDbCSharp
         /// <returns>Sum of values of specified column. If the sum exceeds the maximum value in double, result is unspecified</returns>
         public long SumLong(long columnIndex)
         {
-            ValidateColumnIndex(columnIndex);
+            ValidateColumnIndexAndTypeInt(columnIndex);
             return SumLongNoCheck(columnIndex);
         }
 
@@ -2837,7 +2839,7 @@ namespace TightDbCSharp
         /// <returns>Sum of values of specified column. </returns>
         public double SumFloat(long columnIndex)
         {            
-            ValidateColumnIndex(columnIndex);
+            ValidateColumnIndexAndTypeFloat(columnIndex);
             return SumFloatNoCheck(columnIndex);
         }
 
@@ -2849,7 +2851,7 @@ namespace TightDbCSharp
         /// <returns>Sum of values of specified column. if the sum goes higher than what a double can represent, result is unspecified</returns>
         public double SumDouble(long columnIndex)
         {            
-            ValidateColumnIndex(columnIndex);
+            ValidateColumnIndexAndTypeDouble(columnIndex);
             return SumDoubleNoCheck(columnIndex);
         }
 
@@ -2860,7 +2862,7 @@ namespace TightDbCSharp
         /// <returns>Lowest value of all values in the specified column</returns>
         public long MinimumLong(long columnIndex)
         {            
-            ValidateColumnIndex(columnIndex);
+            ValidateColumnIndexAndTypeInt(columnIndex);
             return MinimumLongNoCheck(columnIndex);
         }
 
@@ -2871,7 +2873,7 @@ namespace TightDbCSharp
         /// <returns>Lowest value of all values in the specified column</returns>
         public float MinimumFloat(long columnIndex)
         {
-            ValidateColumnIndex(columnIndex);
+            ValidateColumnIndexAndTypeFloat(columnIndex);
             return MinimumFloatNoCheck(columnIndex);
         }
 
@@ -2887,6 +2889,18 @@ namespace TightDbCSharp
         }
 
         /// <summary>
+        /// Returns the lowest value (earliest date) of the rows in the specified DateTime column
+        /// </summary>
+        /// <param name="columnIndex">Zero based Index of column to process</param>
+        /// <returns>Lowest value of all values in the specified column</returns>
+        public DateTime MinimumDateTime(long columnIndex)
+        {
+            ValidateColumnIndex(columnIndex);
+            return MinimumDateTimeNoCheck(columnIndex);
+        }
+
+
+        /// <summary>
         /// Returns the highest value of the rows in the specified long column
         /// </summary>
         /// <param name="columnIndex">Zero based Index of column to process</param>
@@ -2894,7 +2908,7 @@ namespace TightDbCSharp
 
         public long MaximumLong(long columnIndex)
         {
-            ValidateColumnIndex(columnIndex);
+            ValidateColumnIndexAndTypeInt(columnIndex);
             return MaximumLongNoCheck(columnIndex);
         }
 
@@ -2905,7 +2919,7 @@ namespace TightDbCSharp
         /// <returns>Highest value of all values in the specified column</returns>
         public float MaximumFloat(long columnIndex)
         {            
-            ValidateColumnIndex(columnIndex);
+            ValidateColumnIndexAndTypeFloat(columnIndex);
             return MaximumFloatNoCheck(columnIndex);
         }
 
@@ -2916,9 +2930,22 @@ namespace TightDbCSharp
         /// <returns>Highest value of all values in the specified column</returns>
         public double MaximumDouble(long columnIndex)
         {
-            ValidateColumnIndex(columnIndex);
+            ValidateColumnIndexAndTypeDouble(columnIndex);
             return MaximumDoubleNoCheck(columnIndex);
         }
+
+
+        /// <summary>
+        /// Returns the highest value (latest date) of the rows in the specified DateTime column
+        /// </summary>
+        /// <param name="columnIndex">Zero based Index of column to process</param>
+        /// <returns>Highest value of all values in the specified column</returns>
+        public DateTime MaximumDateTime(long columnIndex)
+        {
+            ValidateColumnIndexAndTypeDate(columnIndex);            
+            return MaximumDateTimeNoCheck(columnIndex);
+        }
+
 
         /// <summary>
         /// returns the average of all the values in the specified column.
@@ -2929,8 +2956,8 @@ namespace TightDbCSharp
         /// <returns>Average of values of specified column. </returns>
         public double AverageLong(long columnIndex)
         {
-            ValidateColumnIndex(columnIndex);
-            ValidateIsNotEmpty(); 
+            ValidateColumnIndexAndTypeInt(columnIndex);
+            ValidateIsNotEmpty();            
             return AverageLongNoCheck(columnIndex);
         }
 
@@ -2943,8 +2970,8 @@ namespace TightDbCSharp
         /// <returns>Average of values of specified column. </returns>
         public double AverageFloat(long columnIndex)
         {
-            ValidateColumnIndex(columnIndex);
-            ValidateIsNotEmpty();
+            ValidateColumnIndexAndTypeFloat(columnIndex);
+            ValidateIsNotEmpty();            
             return AverageFloatNoCheck(columnIndex);
         }
 
@@ -2958,8 +2985,8 @@ namespace TightDbCSharp
 
         public double AverageDouble(long columnIndex)
         {
-            ValidateColumnIndex(columnIndex);
-            ValidateIsNotEmpty();
+            ValidateColumnIndexAndTypeDouble(columnIndex);
+            ValidateIsNotEmpty();            
             return AverageDoubleNoCheck(columnIndex);
         }
 
@@ -2979,6 +3006,7 @@ namespace TightDbCSharp
         {
             
             var columnIndex = GetColumnIndex(columnName);
+            ValidateTypeInt(columnIndex);
             return CountLongNoCheck(columnIndex, target);
         }
 
@@ -2993,6 +3021,7 @@ namespace TightDbCSharp
         public long CountFloat(string columnName, float target)
         {
             var columnIndex = GetColumnIndex(columnName);
+            ValidateTypeFloat(columnIndex);
             return CountFloatNoCheck(columnIndex, target);
         }
 
@@ -3006,6 +3035,7 @@ namespace TightDbCSharp
         public long CountString(string columnName, string target)
         {
             var columnIndex = GetColumnIndex(columnName);
+            ValidateTypeString(columnIndex);
             return CountStringNoCheck(columnIndex, target);
         }
 
@@ -3019,6 +3049,7 @@ namespace TightDbCSharp
         public long CountDouble(string columnName, Double target)
         {            
             var columnIndex = GetColumnIndex(columnName);
+            ValidateTypeDouble(columnIndex);
             return CountDoubleNoCheck(columnIndex, target);
         }
 
@@ -3031,6 +3062,7 @@ namespace TightDbCSharp
         public long SumLong(string columnName)
         {
             var columnIndex = GetColumnIndex(columnName);
+            ValidateTypeInt(columnIndex);
             return SumLongNoCheck(columnIndex);
         }
 
@@ -3043,6 +3075,7 @@ namespace TightDbCSharp
         public double SumFloat(string columnName)
         {
             var columnIndex = GetColumnIndex(columnName);
+            ValidateTypeFloat(columnIndex);
             return SumFloatNoCheck(columnIndex);
         }
 
@@ -3055,6 +3088,7 @@ namespace TightDbCSharp
         public double SumDouble(string columnName)
         {            
             var columnIndex = GetColumnIndex(columnName);
+            ValidateTypeDouble(columnIndex);
             return SumDoubleNoCheck(columnIndex);
         }
 
@@ -3067,6 +3101,7 @@ namespace TightDbCSharp
         public long MinimumLong(string columnName)
         {            
             var columnIndex = GetColumnIndex(columnName);
+            ValidateTypeInt(columnIndex);
             return MinimumLongNoCheck(columnIndex);
         }
 
@@ -3079,6 +3114,7 @@ namespace TightDbCSharp
         public float MinimumFloat(string columnName)
         {
             var columnIndex = GetColumnIndex(columnName);
+            ValidateTypeFloat(columnIndex);
             return MinimumFloatNoCheck(columnIndex);
         }
 
@@ -3091,8 +3127,25 @@ namespace TightDbCSharp
         public double MinimumDouble(string columnName)
         {            
             var columnIndex = GetColumnIndex(columnName);
+            ValidateTypeDouble(columnIndex);
             return MinimumDoubleNoCheck(columnIndex);
         }
+
+
+        /// <summary>
+        /// Returns the lowest value (earliest date) of the rows in the specified DateTime column
+        /// </summary>
+        /// <param name="columnName">Name of column to process</param>
+        /// <returns>Lowest value of all values in the specified column</returns>
+
+        public DateTime MinimumDateTime(string columnName)
+        {
+            var columnIndex = GetColumnIndex(columnName);
+            ValidateTypeDate(columnIndex);
+            return MinimumDateTimeNoCheck(columnIndex);
+        }
+
+
 
         /// <summary>
         /// Returns the highest value of the rows in the specified long column
@@ -3102,6 +3155,7 @@ namespace TightDbCSharp
         public long MaximumLong(string columnName)
         {            
             var columnIndex = GetColumnIndex(columnName);
+            ValidateTypeInt(columnIndex);
             return MaximumLongNoCheck(columnIndex);
         }
 
@@ -3114,6 +3168,7 @@ namespace TightDbCSharp
         public float MaximumFloat(string columnName)
         {            
             var columnIndex = GetColumnIndex(columnName);
+            ValidateTypeFloat(columnIndex);
             return MaximumFloatNoCheck(columnIndex);
         }
 
@@ -3126,8 +3181,23 @@ namespace TightDbCSharp
         public double MaximumDouble(string columnName)
         {            
             var columnIndex = GetColumnIndex(columnName);
+            ValidateTypeDouble(columnIndex);
             return MaximumDoubleNoCheck(columnIndex);
         }
+
+        /// <summary>
+        /// Returns the highest value of the rows in the specified double column
+        /// </summary>
+        /// <param name="columnName">Name of column to process</param>
+        /// <returns>Highest value of all values in the specified column</returns>
+
+        public DateTime MaximumDateTime(string columnName)
+        {
+            var columnIndex = GetColumnIndex(columnName);
+            ValidateTypeDate(columnIndex);
+            return MaximumDateTimeNoCheck(columnIndex);
+        }
+
 
         /// <summary>
         /// Returns the average value of the rows in the specified long column
@@ -3139,6 +3209,7 @@ namespace TightDbCSharp
         {
             var columnIndex = GetColumnIndex(columnName);
             ValidateIsNotEmpty();
+            ValidateTypeInt(columnIndex);
             return AverageLongNoCheck(columnIndex);
         }
 
@@ -3151,6 +3222,7 @@ namespace TightDbCSharp
         {            
             var columnIndex = GetColumnIndex(columnName);
             ValidateIsNotEmpty();
+            ValidateTypeFloat(columnIndex);//this could be put in AverageFloatCheckType and be called from string and long indexed methods, then checktype could call on into no check, saving the validate calls at this level
             return AverageFloatNoCheck(columnIndex);
         }
 
@@ -3165,6 +3237,7 @@ namespace TightDbCSharp
             ValidateIsValid();
             ValidateIsNotEmpty();
             long columnIndex = GetColumnIndex(columnName);
+            ValidateTypeDouble(columnIndex);
             return AverageDoubleNoCheck(columnIndex);
         }
 

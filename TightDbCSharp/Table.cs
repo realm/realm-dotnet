@@ -584,6 +584,11 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableMinimumDouble(this, columnIndex);
         }
 
+        internal override DateTime MinimumDateTimeNoCheck(long columnIndex)
+        {
+            return UnsafeNativeMethods.TableMinimumDateTime(this, columnIndex);
+        }
+
         internal override long MaximumLongNoCheck(long columnIndex)
         {
             return UnsafeNativeMethods.TableMaximumLong(this, columnIndex);
@@ -597,6 +602,11 @@ namespace TightDbCSharp
         internal override double MaximumDoubleNoCheck(long columnIndex)
         {
             return UnsafeNativeMethods.TableMaximumDouble(this, columnIndex);
+        }
+
+        internal override DateTime MaximumDateTimeNoCheck(long columnIndex)
+        {
+            return UnsafeNativeMethods.TableMaximumDateTime(this, columnIndex);
         }
 
         internal override double AverageLongNoCheck(long columnIndex)

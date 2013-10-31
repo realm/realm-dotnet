@@ -4291,13 +4291,14 @@ Table Name  : same names, empty names, mixed types
             using (var myTable = new Table("strfield".String(),
                 "int".Int(),
                 "float".TightDbFloat(),
-                "double".Double())
+                "double".Double(),
+                "datetime".Date())
                 )
             {
-                myTable.Add("tv", 1, 3f, 5d);
-                myTable.Add("tv", 3, 9f, 15d);
-                myTable.Add("tv", 5, 15f, 25d);
-                myTable.Add("notv", -1000, -1001f, -1002d);
+                myTable.Add("tv", 1, 3f, 5d,new DateTime(1987,05,13,0,0,0,DateTimeKind.Utc));
+                myTable.Add("tv", 3, 9f, 15d, new DateTime(1997, 05, 13, 0, 0, 0, DateTimeKind.Utc));
+                myTable.Add("tv", 5, 15f, 25d,new DateTime(2007,05,13,0,0,0,DateTimeKind.Utc));
+                myTable.Add("notv", -1000, -1001f, -1002d, new DateTime(2007, 05, 13, 10, 50, 59, DateTimeKind.Utc));
 
                 string actualres = TestHelper.TableDumper(MethodBase.GetCurrentMethod().Name,
                     "table with testdata for TableAggregate",
@@ -4305,13 +4306,14 @@ Table Name  : same names, empty names, mixed types
 
                 const string expectedres =
                     @"------------------------------------------------------
-Column count: 4
+Column count: 5
 Table Name  : table with testdata for TableAggregate
 ------------------------------------------------------
  0     String  strfield            
  1        Int  int                 
  2      Float  float               
  3     Double  double              
+ 4       Date  datetime            
 ------------------------------------------------------
 
 Table Data Dump. Rows:4
@@ -4320,25 +4322,29 @@ Table Data Dump. Rows:4
 strfield:tv,//column 0
 int:1,//column 1
 float:3,//column 2
-double:5//column 3
+double:5,//column 3
+datetime:13-05-1987 00:00:00//column 4
 } //End row 0
 { //Start row 1
 strfield:tv,//column 0
 int:3,//column 1
 float:9,//column 2
-double:15//column 3
+double:15,//column 3
+datetime:13-05-1997 00:00:00//column 4
 } //End row 1
 { //Start row 2
 strfield:tv,//column 0
 int:5,//column 1
 float:15,//column 2
-double:25//column 3
+double:25,//column 3
+datetime:13-05-2007 00:00:00//column 4
 } //End row 2
 { //Start row 3
 strfield:notv,//column 0
 int:-1000,//column 1
 float:-1001,//column 2
-double:-1002//column 3
+double:-1002,//column 3
+datetime:13-05-2007 10:50:59//column 4
 } //End row 3
 ------------------------------------------------------
 ";
@@ -4367,10 +4373,27 @@ double:-1002//column 3
                     Assert.AreEqual(15f, myTable.MaximumFloat("float"));
                     Assert.AreEqual(25d, myTable.MaximumDouble(3));
                     Assert.AreEqual(25d, myTable.MaximumDouble("double"));
-
+                    DateTime result1 = myTable.MaximumDateTime("datetime");
+                    DateTime result2 = myTable.MaximumDateTime(4);
+                    if (result1 != new DateTime(1970, 01, 01, 0, 0, 0, DateTimeKind.Utc))//todo:fix when core has been fixed
+                    {
+                        Assert.AreEqual(new DateTime(2007, 05, 13, 10, 50, 59, DateTimeKind.Utc), result1);
+                            //fails right now bc table.maximumdate have not been implemented yet in core
+                        Assert.AreEqual(new DateTime(2007, 05, 13, 10, 50, 59, DateTimeKind.Utc), result2);
+                            //fails right now bc table.maximumdate have not been implemented yet in core
+                    }
                     Assert.AreEqual(-1000, myTable.MinimumLong(1));
                     Assert.AreEqual(-1001f, myTable.MinimumFloat(2));
                     Assert.AreEqual(-1002d, myTable.MinimumDouble(3));
+                    result1 = myTable.MinimumDateTime(4);
+                    result2 = myTable.MinimumDateTime("datetime");
+                    if (result1 != new DateTime(1970, 01, 01, 0, 0, 0, DateTimeKind.Utc))//todo:fix when core has been fixed
+                    {
+                        Assert.AreEqual(new DateTime(1987, 05, 13, 0, 0, 0, DateTimeKind.Utc),
+                            myTable.MinimumDateTime(4)); //fails right now bc table.minimumdate have not been implemented yet in core
+                        Assert.AreEqual(new DateTime(1987, 05, 13, 0, 0, 0, DateTimeKind.Utc),
+                            myTable.MinimumDateTime("datetime"));
+                    }
                     Assert.AreEqual(-1000, myTable.MinimumLong("int"));
                     Assert.AreEqual(-1001f, myTable.MinimumFloat("float"));
                     Assert.AreEqual(-1002d, myTable.MinimumDouble("double"));
@@ -4424,17 +4447,24 @@ double:-1002//column 3
                     Assert.AreEqual(1, myTableView2.CountFloat("float", 15f));
                     Assert.AreEqual(1, myTableView2.CountDouble(3, 15d));
                     Assert.AreEqual(1, myTableView.CountDouble("double", 15d));
-                    Assert.AreEqual(0 /*3*/, myTableView.CountString(0, "tv"));
-
+                    Assert.AreEqual(0 /*3*/, myTableView.CountString(0, "tv"));//todo:fix when core has been fixed
+                    
                     Assert.AreEqual(5, myTableView.MaximumLong("int"));
                     Assert.AreEqual(5, myTableView.MaximumLong(1));
                     Assert.AreEqual(15f, myTableView.MaximumFloat(2));
                     Assert.AreEqual(15f, myTableView.MaximumFloat("float"));
                     Assert.AreEqual(25d, myTableView.MaximumDouble(3));
+                    Assert.AreEqual(25d, myTableView.MaximumDouble("double"));
+                    Assert.AreEqual(new DateTime(2007, 05, 13, 0, 0, 0, DateTimeKind.Utc), myTableView.MaximumDateTime(4));
+                    Assert.AreEqual(new DateTime(2007, 05, 13, 0, 0, 0, DateTimeKind.Utc), myTableView.MaximumDateTime("datetime"));
+
 
                     Assert.AreEqual(1, myTableView.MinimumLong(1));
                     Assert.AreEqual(3f, myTableView.MinimumFloat(2));
                     Assert.AreEqual(5d, myTableView.MinimumDouble(3));
+                    Assert.AreEqual(new DateTime(1987, 05, 13, 0, 0, 0, DateTimeKind.Utc), myTableView.MinimumDateTime(4));
+                    Assert.AreEqual(new DateTime(1987, 05, 13, 0, 0, 0, DateTimeKind.Utc), myTableView.MinimumDateTime("datetime"));
+
 
                     Assert.AreEqual(1 + 3 + 5, myTableView.SumLong(1));
                     Assert.AreEqual(3f + 9f + 15f, myTableView.SumFloat("float"));
