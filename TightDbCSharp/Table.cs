@@ -643,12 +643,19 @@ namespace TightDbCSharp
             UnsafeNativeMethods.TableOptimize(this);
         }
 
-        /// <summary>
-        /// Return a string with a Json representation of this table.
-        /// In the future, a stream based version will be available too.
-        /// </summary>
-        /// <returns>String with Json representation</returns>
-        public  string ToJson()
+        internal override string ToStringNoCheck()
+        {
+            return UnsafeNativeMethods.TableToString(this);
+        }
+
+        internal override string ToStringNoCheck(long limit)
+        {
+            return UnsafeNativeMethods.TableToString(this,limit);
+        }
+
+
+
+        internal override string ToJsonNoCheck()
         {
             ValidateIsValid();
             return UnsafeNativeMethods.TableToJson(this);

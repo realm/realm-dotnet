@@ -5052,6 +5052,122 @@ enum DataType {
 
 
 
+
+        [DllImport(L64, EntryPoint = "table_to_string_defaultlimit", CallingConvention = CallingConvention.Cdecl,
+    CharSet = CharSet.Unicode)]
+        private static extern IntPtr table_to_string_defaultlimit64(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize);
+
+        [DllImport(L32, EntryPoint = "table_to_string_defaultlimit", CallingConvention = CallingConvention.Cdecl,
+            CharSet = CharSet.Unicode)]
+        private static extern IntPtr table_to_string_defaultlimit32(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize);
+
+
+        public static string TableToString(Table t)
+        {
+            long bufferSizeNeededChars = 16;
+            IntPtr buffer;
+            long currentBufferSizeChars;
+            do
+            {
+                buffer = StrAllocateBuffer(out currentBufferSizeChars, bufferSizeNeededChars);
+                if (Is64Bit)
+                    bufferSizeNeededChars =
+                        (int)table_to_string_defaultlimit64(t.Handle, buffer, (IntPtr)currentBufferSizeChars);
+                else
+                    bufferSizeNeededChars =
+                        (int)table_to_string_defaultlimit32(t.Handle, buffer, (IntPtr)currentBufferSizeChars);
+
+            } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
+            return StrBufToStr(buffer, (int)bufferSizeNeededChars);
+        }
+
+
+        [DllImport(L64, EntryPoint = "tableview_to_string_defaultlimit", CallingConvention = CallingConvention.Cdecl,
+            CharSet = CharSet.Unicode)]
+        private static extern IntPtr tableview_to_string_defaultlimit64(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize);
+
+        [DllImport(L32, EntryPoint = "tableview_to_string_defaultlimit", CallingConvention = CallingConvention.Cdecl,
+            CharSet = CharSet.Unicode)]
+        private static extern IntPtr tableview_to_string_defaultlimit32(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize);
+
+        public static string TableViewToString(TableView t)
+        {
+            long bufferSizeNeededChars = 16;
+            IntPtr buffer;
+            long currentBufferSizeChars;
+            do
+            {
+                buffer = StrAllocateBuffer(out currentBufferSizeChars, bufferSizeNeededChars);
+                if (Is64Bit)
+                    bufferSizeNeededChars =
+                        (long)tableview_to_string_defaultlimit64(t.Handle, buffer, (IntPtr)currentBufferSizeChars);
+                else
+                    bufferSizeNeededChars =
+                        (long)tableview_to_string_defaultlimit32(t.Handle, buffer, (IntPtr)currentBufferSizeChars);
+
+            } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
+            return StrBufToStr(buffer, (int)bufferSizeNeededChars);
+        }
+
+
+
+        [DllImport(L64, EntryPoint = "table_to_string", CallingConvention = CallingConvention.Cdecl,
+CharSet = CharSet.Unicode)]
+        private static extern IntPtr table_to_string64(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize,IntPtr limit);
+
+        [DllImport(L32, EntryPoint = "table_to_string", CallingConvention = CallingConvention.Cdecl,
+            CharSet = CharSet.Unicode)]
+        private static extern IntPtr table_to_string32(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize,IntPtr limit);
+
+
+        public static string TableToString(Table t,long limit)
+        {
+            long bufferSizeNeededChars = 16;
+            IntPtr buffer;
+            long currentBufferSizeChars;
+            do
+            {
+                buffer = StrAllocateBuffer(out currentBufferSizeChars, bufferSizeNeededChars);
+                if (Is64Bit)
+                    bufferSizeNeededChars =
+                        (int)table_to_string64(t.Handle, buffer, (IntPtr)currentBufferSizeChars,(IntPtr)limit);
+                else
+                    bufferSizeNeededChars =
+                        (int)table_to_string32(t.Handle, buffer, (IntPtr)currentBufferSizeChars, (IntPtr)limit);
+
+            } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
+            return StrBufToStr(buffer, (int)bufferSizeNeededChars);
+        }
+
+
+        [DllImport(L64, EntryPoint = "tableview_to_string", CallingConvention = CallingConvention.Cdecl,
+            CharSet = CharSet.Unicode)]
+        private static extern IntPtr tableview_to_string64(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize,IntPtr limit);
+
+        [DllImport(L32, EntryPoint = "tableview_to_string", CallingConvention = CallingConvention.Cdecl,
+            CharSet = CharSet.Unicode)]
+        private static extern IntPtr tableview_to_string32(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize, IntPtr limit);
+
+        public static string TableViewToString(TableView t,long limit)
+        {
+            long bufferSizeNeededChars = 16;
+            IntPtr buffer;
+            long currentBufferSizeChars;
+            do
+            {
+                buffer = StrAllocateBuffer(out currentBufferSizeChars, bufferSizeNeededChars);
+                if (Is64Bit)
+                    bufferSizeNeededChars =
+                        (long)tableview_to_string64(t.Handle, buffer, (IntPtr)currentBufferSizeChars,(IntPtr)limit);
+                else
+                    bufferSizeNeededChars =
+                        (long)tableview_to_string32(t.Handle, buffer, (IntPtr)currentBufferSizeChars,(IntPtr)limit);
+
+            } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
+            return StrBufToStr(buffer, (int)bufferSizeNeededChars);
+        }
+
+
         //this can be called when initializing, and it will throw an exception if anything is wrong with the type binding between the  C#
         //program running right now, and the c++ library that has been loaded.
         //The test should reveal if any of the types we use are marshalled wrongly, especially
@@ -5064,7 +5180,7 @@ enum DataType {
         //The test will be valuable if any of these things change :
         //C# compiler, CLR implementation, c++ compiler that built the c++ part, operating system
 
-        //the current code is expected to work on these CLR (Common Language Runtime)implementations :
+        //the current code, when built with .net visual studio is expected to work on these CLR (Common Language Runtime)implementations :
         //windows 32 bit
         //windows 64 bit
         //support for these are partial (some unit tests still fail)
@@ -5078,7 +5194,7 @@ enum DataType {
         //windows C# target x64
         //windows C# target x32
         //windows C# target anycpu
-        //support for these are coming up
+        //support for these are coming up, but they do build.
         //mono C# compiler target x64
         //mono C# compiler target x32
         //mono C# compiler target AnyCpu

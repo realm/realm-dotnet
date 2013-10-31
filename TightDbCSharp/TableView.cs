@@ -292,10 +292,31 @@ namespace TightDbCSharp
         /// It is planned to also have a stream based method
         /// </summary>
         /// <returns>String with a Json version of all the rows in the tableview</returns>
-        public  string ToJson()
-        {
-            ValidateIsValid();
+        internal override string ToJsonNoCheck()
+        {            
             return UnsafeNativeMethods.TableViewToJson(this);
+        }
+
+
+        /// <summary>
+        /// Returns a string with a Json representation of the TableView.
+        /// It is planned to also have a stream based method
+        /// </summary>
+        /// <returns>String with a Json version of all the rows in the tableview</returns>
+        internal override string ToStringNoCheck()
+        {
+            return UnsafeNativeMethods.TableViewToString(this);
+        }
+
+
+        /// <summary>
+        /// Returns a string with a Json representation of the TableView.
+        /// It is planned to also have a stream based method
+        /// </summary>
+        /// <returns>String with a Json version of all the rows in the tableview</returns>
+        internal override string ToStringNoCheck(long limit)
+        {
+            return UnsafeNativeMethods.TableViewToString(this,limit);
         }                              
 
         //Todo:Unit tests if tableview invalidation works when the underlying table was modified through the tableview

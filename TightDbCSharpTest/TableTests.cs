@@ -6116,6 +6116,7 @@ intfield2:10//column 2
         /// <summary>
         /// test json is output correctly
         /// both tableview and table tojson is tested here
+        /// Also tostring and tostring(limit) is tested here
         /// </summary>
         [Test]
         public static void TableToJsonTest()
@@ -6124,28 +6125,75 @@ intfield2:10//column 2
                 new IntColumn("Int1"),
                 new IntColumn("Int2"),
                 new IntColumn("Int3"),
-                new IntColumn("Int4")))
+                new IntColumn("Int4"), 
+                new SubTableColumn("sub",new StringColumn("substr"))))
             {
-                t.Add(42, 7, 3, 2);
-                t.Add(12, 1, 2, 1);
-                string actualres = t.ToJson();
+                t.Add(42, 7, 3, 2, new [] {"Fiat","Ford","Audi","Mercedez","Maseratti","Ferrrari","Rolls Royce","Trabant"});
+                t.AddEmptyRow(1);
+                t.Add(12, 1, 2, 1,new [] {"Commodore64","Amstrad","Cray1","Kugleramme"});
+                var actualres = t.ToJson();
 
-                const string expectedres =
-                    "[{\"Int1\":42,\"Int2\":7,\"Int3\":3,\"Int4\":2},{\"Int1\":12,\"Int2\":1,\"Int3\":2,\"Int4\":1}]";
+                string expectedres = "[{\"Int1\":42,\"Int2\":7,\"Int3\":3,\"Int4\":2,\"sub\":[{\"substr\":\"Fiat\"}" +
+                                     ",{\"substr\":\"Ford\"},{\"substr\":\"Audi\"},{\"substr\":\"Mercedez\"}" +
+                                     ",{\"substr\":\"Maseratti\"},{\"substr\":\"Ferrrari\"},{\"substr\":\"Rolls Royce\"}" +
+                                     ",{\"substr\":\"Trabant\"}]},{\"Int1\":0,\"Int2\":0,\"Int3\":0,\"Int4\":0,\"sub\":[]}" +
+                                     ",{\"Int1\":12,\"Int2\":1,\"Int3\":2,\"Int4\":1,\"sub\":[{\"substr\":\"Commodore64\"}" +
+                                     ",{\"substr\":\"Amstrad\"},{\"substr\":\"Cray1\"},{\"substr\":\"Kugleramme\"}]}]";
+                                                                                                               
                 TestHelper.Cmp(expectedres, actualres);
 
-                TableView tv = t.FindAllInt(0, 42);
+                actualres = t.ToString();//will use default setting for limit, currently 500 in core
+                expectedres = "    Int1  Int2  Int3  Int4    sub\n0:    42     7     3     2    [8]\n1:     0     0     0     0    [0]\n2:    12     1     2     1    [4]\n";
+                TestHelper.Cmp(expectedres, actualres);
+
+                actualres = t.ToString(0);
+                expectedres = "    Int1  Int2  Int3  Int4    sub\n... and 3 more rows (total 3)";//this is in fact the result. Not sure if that is intended for limit=0
+                Assert.AreEqual(expectedres,actualres);
+
+                actualres = t.ToString(1);
+                expectedres =
+                    "    Int1  Int2  Int3  Int4    sub\n0:    42     7     3     2    [8]\n... and 2 more rows (total 3)";
+                Assert.AreEqual(expectedres, actualres);
+
+                using ( var  tv = t.FindAllInt(0, 42)) {
                 actualres = tv.ToJson();
-                const string expectedres2 = "[{\"Int1\":42,\"Int2\":7,\"Int3\":3,\"Int4\":2}]";
-                TestHelper.Cmp(expectedres2, actualres);
+                expectedres = "[{\"Int1\":42,\"Int2\":7,\"Int3\":3,\"Int4\":2,\"sub\":[{\"substr\":\"Fiat\"},{\"substr\":\"Ford\"},{\"substr\":\"Audi\"},{\"substr\":\"Mercedez\"},{\"substr\":\"Maseratti\"},{\"substr\":\"Ferrrari\"},{\"substr\":\"Rolls Royce\"},{\"substr\":\"Trabant\"}]}]";
+                TestHelper.Cmp(expectedres, actualres);
 
-                TableView tvs = t.FindAllInt("Int1", 42);
+                actualres = tv.ToString();
+                expectedres = "    Int1  Int2  Int3  Int4    sub\n0:    42     7     3     2    [8]\n";
+                TestHelper.Cmp(expectedres, actualres);
+
+                actualres = tv.ToString(2);//limit set higher than number of actual records - will this work
+                expectedres = "    Int1  Int2  Int3  Int4    sub\n0:    42     7     3     2    [8]\n";
+                TestHelper.Cmp(expectedres, actualres);
+                }
+
+                using ( var tvs = t.FindAllInt("Int1", 42)) {
                 actualres = tvs.ToJson();
-                const string expectedres3 = "[{\"Int1\":42,\"Int2\":7,\"Int3\":3,\"Int4\":2}]";
-                TestHelper.Cmp(expectedres3, actualres);
+                expectedres = "[{\"Int1\":42,\"Int2\":7,\"Int3\":3,\"Int4\":2,\"sub\":[{\"substr\":\"Fiat\"},{\"substr\":\"Ford\"},{\"substr\":\"Audi\"},{\"substr\":\"Mercedez\"},{\"substr\":\"Maseratti\"},{\"substr\":\"Ferrrari\"},{\"substr\":\"Rolls Royce\"},{\"substr\":\"Trabant\"}]}]";
+                TestHelper.Cmp(expectedres, actualres);
+                }
 
+                using (var  tvempty = t.FindAllInt("Int1", 666)) {
+                actualres = tvempty.ToJson();
+                expectedres = "[]";
+                TestHelper.Cmp(expectedres, actualres);
+                }
 
+                using (var tvempty = t.FindAllInt("Int1", 666))
+                {
+                    actualres = tvempty.ToString();
+                    expectedres = "    Int1  Int2  Int3  Int4    sub\n";//only the header
+                    TestHelper.Cmp(expectedres, actualres);
+                }
 
+                using (var tvempty = t.FindAllInt("Int1", 666))
+                {
+                    actualres = tvempty.ToString(2);
+                    expectedres = "    Int1  Int2  Int3  Int4    sub\n";
+                    TestHelper.Cmp(expectedres, actualres);
+                }
             }
         }
 

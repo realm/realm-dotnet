@@ -110,8 +110,55 @@ namespace TightDbCSharp
         internal abstract TableView FindAllBinaryNoCheck(long columnIndex, byte[] value);
         internal abstract TableView FindAllStringNoCheck(long columnIndex, string value);
 
+        internal abstract string ToJsonNoCheck();
 
+        /// <summary>
+        /// Return a string with a Json representation of this table.
+        /// In the future, a stream based version will be available too.
+        /// </summary>
+        /// <returns>String with Json representation</returns>
+        public string ToJson()
+        {
+            ValidateIsValid();
+            return ToJsonNoCheck();
+        }
 
+        internal abstract string ToStringNoCheck();
+
+        /// <summary>
+        /// Return a string with a Human readable representation of this table.
+        /// Beware that ToString only returns up to 500 records
+        /// If You need more records (or fewer) call TostringLimit
+        /// </summary>
+        /// <returns>String with Json representation</returns>
+        public override string ToString()
+        {
+            ValidateIsValid();
+            return ToStringNoCheck();
+        }
+
+        internal abstract string ToStringNoCheck(long limit);
+
+        /// <summary>
+        /// Return a string with a Human readable representation of this table.
+        /// Beware that ToString only returns up to 500 records
+        /// If You need more records (or fewer) call TostringLimit
+        /// </summary>
+        /// <returns>String with Json representation</returns>
+        public string ToString(long limit)
+        {
+            ValidateIsValid();
+            ValidateIsPositive(limit);
+            return ToStringNoCheck(limit);
+        }
+
+        private void ValidateIsPositive(long value)
+        {
+            if (value < 0)
+            {
+                throw new ArgumentOutOfRangeException("value", "rows cannot be negative");
+            }
+        }
 
         internal abstract void SetLongNoCheck(long columnIndex, long rowIndex, long value);
         internal abstract void SetIntNoCheck(long columnIndex, long rowIndex, int value);
