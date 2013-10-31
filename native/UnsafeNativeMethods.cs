@@ -5021,6 +5021,22 @@ enum DataType {
         }
 
 
+        [DllImport(L64, EntryPoint = "tableview_get_source_ndx", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr tableview_get_source_ndx64(IntPtr handle, IntPtr rowNdx);
+
+        [DllImport(L32, EntryPoint = "tableview_get_source_ndx", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr tableview_get_source_ndx32(IntPtr handle, IntPtr rowNdx);
+
+        public static long TableViewGetSourceNdx(TableView tableview,long rowIndex)
+        {
+            if (Is64Bit)
+                return (long)tableview_get_source_ndx64(tableview.Handle,(IntPtr)rowIndex);
+            
+            return (long)tableview_get_source_ndx32(tableview.Handle,(IntPtr)rowIndex);
+        }
+
+
+
         [DllImport(L64, EntryPoint = "tableview_to_json", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode)]
         private static extern IntPtr tableview_to_json64(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize);

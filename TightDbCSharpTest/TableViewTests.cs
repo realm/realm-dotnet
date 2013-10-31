@@ -258,6 +258,7 @@ namespace TightDbCSharpTest
                     {
                         var rowIndex = view.FindFirstBinary(0, arrayToFind);
                         Assert.AreEqual(1, rowIndex);
+                        Assert.AreEqual(2,view.GetSourceNdx(1));
                     }
                     {
                         var rowIndex = view.FindFirstBinary("radio", arrayToFind);

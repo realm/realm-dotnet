@@ -389,6 +389,7 @@ TIGHTDB_C_CS_API void table_remove_row(tightdb::Table* table_ptr, size_t row_ndx
     table_ptr->remove(row_ndx);
 }
 
+/* not used, implemented in binding
 //note that this implementation returns the new table size, the core implementation does not
 TIGHTDB_C_CS_API size_t table_remove_last(tightdb::Table* table_ptr) {
     size_t newsize = table_ptr->size();
@@ -399,7 +400,16 @@ TIGHTDB_C_CS_API size_t table_remove_last(tightdb::Table* table_ptr) {
     return newsize;
 }
 
-
+//note that this implementation returns the new table size, the core implementation does not
+TIGHTDB_C_CS_API size_t tableview_remove_last(tightdb::TableView* tableview_ptr) {
+    size_t newsize = tableview_ptr->size();
+    if (newsize>0){
+        newsize--;
+        tableview_ptr->remove(newsize);
+    }     
+    return newsize;
+}
+*/
 
 //todo:implement move_last_over
 
@@ -873,6 +883,11 @@ TIGHTDB_C_CS_API void table_optimize(Table*  table_ptr){
 	table_ptr->optimize();
 }
 
+
+TIGHTDB_C_CS_API  size_t tableview_get_source_ndx(TableView* tableview_ptr, size_t row_ndx){
+	return tableview_ptr->get_source_ndx(row_ndx);
+}
+
 //multiple issues with this one
 //decide wether to implement an endpoint C# stream that then reads from the c++ stream output from to_json
 //note that calling from C# it is probably best to guess the buffer size large enough, as the alternative is that the tightdb to_json method is called twice
@@ -1199,14 +1214,14 @@ TIGHTDB_C_CS_API int64_t tableview_count_double(TableView * tableview_ptr , size
 
 //todo:implement tableview_sort
 
-//todo:implement tableview_get_source_ndx
+
 
 //multiple issues with this one
 //decide wether to implement an endpoint C# stream that then reads from the c++ stream output from to_json
 //note that calling from C# it is probably best to guess the buffer size large enough, as the alternative is that the tightdb to_json method is called twice
 //we could also create a class holding the string, and return a handle to it to C# and have another method that copies data once the buffer is large enough
 TIGHTDB_C_CS_API size_t tableview_to_json(TableView* tableview_ptr,uint16_t * data, size_t bufsize)
-{
+{	
    // Write table to string in JSON format
    std::ostringstream ss;
    tableview_ptr->to_json(ss);   

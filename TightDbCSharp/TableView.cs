@@ -287,6 +287,13 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableViewCountDouble(this, columnIndex, target);
         }
 
+
+        public long GetSourceNdx(long rowIndex)
+        {
+            return UnsafeNativeMethods.TableViewGetSourceNdx(this,rowIndex);
+        }
+
+
         /// <summary>
         /// Returns a string with a Json representation of the TableView.
         /// It is planned to also have a stream based method
