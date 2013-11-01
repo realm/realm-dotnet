@@ -1236,11 +1236,16 @@ TIGHTDB_C_CS_API int64_t table_minimum_datetime(Table* table_ptr, size_t column_
 	return 0; //comment above line in, when core has implemented table_ptr->minimum_datetime
 }
 
-//todo:implement tableview_minimum_date
 
-//todo:implement tableview_sort
+TIGHTDB_C_CS_API void tableview_sort(TableView* tableview_ptr, size_t column_ndx, size_t direction)
+{
+	tableview_ptr->sort(column_ndx, size_t_to_bool(direction));
+}
 
-
+TIGHTDB_C_CS_API void tableview_sort_default(TableView* tableview_ptr, size_t column_ndx)
+{
+	tableview_ptr->sort(column_ndx);
+}
 
 //multiple issues with this one
 //decide wether to implement an endpoint C# stream that then reads from the c++ stream output from to_json

@@ -271,6 +271,7 @@ namespace TightDbCSharpTest
 
 
 
+
         /// <summary>
         /// Test table.findallint
         /// </summary>
@@ -477,6 +478,136 @@ intcolumn2:1//column 2
             }
         }
 
+
+        /// <summary>
+        /// ensure unsortable column types are catched
+        /// </summary>
+        [Test]
+        [ExpectedException("System.ArgumentOutOfRangeException")]
+        public static void TableViewSortBadColumn1()
+        {
+            using (
+                var table = new Table("Intfield".Int(), "boolfield".Bool(), "datetimefield".Date(),
+                    "stringfield".String()))
+            {
+                using (var view = table.FindAllString(3, ""))
+                {
+                    view.Sort("stringfield",true);//should throw
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// ensure unsortable column types are catched
+        /// </summary>
+        [Test]
+        [ExpectedException("System.ArgumentOutOfRangeException")]
+        public static void TableViewSortBadColumn2()
+        {
+            using (
+                var table = new Table("Intfield".Int(), "boolfield".Bool(), "datetimefield".Date(),
+                    "stringfield".String()))
+            {
+                using (var view = table.FindAllString(3, ""))
+                {
+                    view.Sort(3, true);//should throw
+                }
+            }
+        }
+
+        /// <summary>
+        /// ensure unsortable column types are catched
+        /// </summary>
+        [Test]
+        [ExpectedException("System.ArgumentOutOfRangeException")]
+        public static void TableViewSortBadColumn3()
+        {
+            using (
+                var table = new Table("Intfield".Int(), "boolfield".Bool(), "datetimefield".Date(),
+                    "stringfield".String()))
+            {
+                using (var view = table.FindAllString(3, ""))
+                {
+                    view.Sort(3);//should throw
+                }
+            }
+        }
+
+        /// <summary>
+        /// ensure unsortable column types are catched
+        /// </summary>
+        [Test]
+        [ExpectedException("System.ArgumentOutOfRangeException")]
+        public static void TableViewSortBadColumn4()
+        {
+            using (
+                var table = new Table("Intfield".Int(), "boolfield".Bool(), "datetimefield".Date(),
+                    "stringfield".String()))
+            {
+                using (var view = table.FindAllString(3, ""))
+                {
+                    view.Sort("stringfield");//should throw
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// Test that sort calls on correctly and sorts as it should
+        /// </summary>
+        [Test]
+        public static void TableViewSort()
+        {
+            using (
+                var table = new Table("Intfield".Int(), "boolfield".Bool(), "datetimefield".Date(),
+                    "stringfield".String()))
+            {
+                table.Add(1, true, new DateTime(1983, 1, 1, 1, 1, 1, DateTimeKind.Utc),"");
+                table.Add(2, false, new DateTime(1982, 1, 1, 1, 1, 1, DateTimeKind.Utc), "");
+                table.Add(3, true, new DateTime(1980, 1, 1, 1, 1, 1, DateTimeKind.Utc), "");
+                table.Add(4, false, new DateTime(1981, 1, 1, 1, 1, 1, DateTimeKind.Utc), "");
+
+
+                using (var view = table.FindAllString(3, ""))
+                {
+                    Assert.AreEqual(1,view[0][0]);
+                    Assert.AreEqual(2, view[1][0]);
+                    Assert.AreEqual(3, view[2][0]);
+                    Assert.AreEqual(4, view[3][0]);
+                    view.Sort(0);
+                    Assert.AreEqual(1, view[0][0]);
+                    Assert.AreEqual(2, view[1][0]);
+                    Assert.AreEqual(3, view[2][0]);
+                    Assert.AreEqual(4, view[3][0]);
+                    view.Sort(0,false);
+                    Assert.AreEqual(4, view[0][0]);
+                    Assert.AreEqual(3, view[1][0]);
+                    Assert.AreEqual(2, view[2][0]);
+                    Assert.AreEqual(1, view[3][0]);
+                    view.Sort(1);
+                    Assert.AreEqual(2, view[0][0]);
+                    Assert.AreEqual(4, view[1][0]);
+                    Assert.AreEqual(1, view[2][0]);
+                    Assert.AreEqual(3, view[3][0]);
+                    view.Sort(1,false);
+                    Assert.AreEqual(1, view[0][0]);
+                    Assert.AreEqual(3, view[1][0]);
+                    Assert.AreEqual(2, view[2][0]);
+                    Assert.AreEqual(4, view[3][0]);
+                    view.Sort(2);
+                    Assert.AreEqual(3, view[0][0]);
+                    Assert.AreEqual(4, view[1][0]);
+                    Assert.AreEqual(2, view[2][0]);
+                    Assert.AreEqual(1, view[3][0]);
+                    view.Sort(2,false);
+                    Assert.AreEqual(1, view[0][0]);
+                    Assert.AreEqual(2, view[1][0]);
+                    Assert.AreEqual(4, view[2][0]);
+                    Assert.AreEqual(3, view[3][0]);
+                }                
+            }
+        }
 
 
         /// <summary>

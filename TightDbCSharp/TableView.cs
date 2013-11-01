@@ -242,6 +242,68 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableViewMinimumDateTime(this, columnIndex);
         }
 
+        /// <summary>
+        /// Will sort the tableview according to the values in the specified column
+        /// Only bool, int and DateTime columns can be used to sort a tableview
+        /// </summary>
+        /// <param name="columnIndex">Index of column with values to use for sorting the tableview rows</param>
+        public void Sort(long columnIndex)
+        {
+            ValidateColumnIndex(columnIndex);
+            ValidateSearchableColumnIndex(columnIndex);
+            UnsafeNativeMethods.TableViewSort(this,columnIndex);
+        }
+
+        /// <summary>
+        /// Will sort the tableview according to the values in the specified column
+        /// Only bool, int and DateTime columns can be used to sort a tableview
+        /// </summary>
+        /// <param name="columnName">Name of column with values to use for sorting the tableview rows</param>
+        public void Sort(string columnName)
+        {
+            var columnIndex = GetColumnIndex(columnName);
+            ValidateSearchableColumnIndex(columnIndex);
+            UnsafeNativeMethods.TableViewSort(this, columnIndex);
+        }
+
+        /// <summary>
+        /// Will sort the tableview according to the values in the specified column
+        /// Only bool, int and DateTime columns can be used to sort a tableview
+        /// </summary>
+        /// <param name="columnIndex">Index of column with values to use for sorting the tableview rows</param>
+        /// <param name="ascending">True if the sort should be ascending false if descending</param>
+        public void Sort(long columnIndex, Boolean ascending)
+        {
+            ValidateColumnIndex(columnIndex);
+            ValidateSearchableColumnIndex(columnIndex); 
+            UnsafeNativeMethods.TableViewSort(this, columnIndex, ascending);
+        }
+
+        /// <summary>
+        /// Will sort the tableview according to the values in the specified column
+        /// Only bool, int and DateTime columns can be used to sort a tableview
+        /// </summary>
+        /// <param name="columnName">Name of column with values to use for sorting the tableview rows</param>
+        /// <param name="ascending">True if the sort should be ascending false if descending</param>
+        public void Sort(string columnName, Boolean ascending)
+        {
+            var columnIndex = GetColumnIndex(columnName);
+            ValidateSearchableColumnIndex(columnIndex);
+            UnsafeNativeMethods.TableViewSort(this, columnIndex,ascending);
+        }
+       
+        //assumes the column index is in range. DO NOT call with an nonvalidated CI
+        private void ValidateSearchableColumnIndex(long columnIndex)
+        {
+            var columnType = ColumnTypeNoCheck(columnIndex);
+            if (!(columnType==DataType.Int || columnType==DataType.Bool||columnType==DataType.Date ))
+            {
+                throw new ArgumentOutOfRangeException("columnIndex","Column must be of a sortable type - Boolean, Int or DateTime");
+            }
+        }
+
+
+
         internal override long MaximumLongNoCheck(long columnIndex)
         {
             return UnsafeNativeMethods.TableViewMaximum(this, columnIndex);

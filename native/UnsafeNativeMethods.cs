@@ -1266,6 +1266,10 @@ enum DataType {
 
 
 
+
+
+
+
         [DllImport(L64, EntryPoint = "table_average_int", CallingConvention = CallingConvention.Cdecl)]
         private static extern double table_average64(IntPtr tableHandle, IntPtr columnIndex);
 
@@ -1441,6 +1445,46 @@ enum DataType {
         {
             return ToCSharpTimeUtc(Is64Bit ? tableview_minimum_datetime64(tableView.Handle, (IntPtr)columnIndex) : tableview_minimum_datetime32(tableView.Handle, (IntPtr)columnIndex));
         }
+
+
+        [DllImport(L64, EntryPoint = "tableview_sort_default", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void tableview_sort_default64(IntPtr tableViewHandle, IntPtr columnIndex);
+
+        [DllImport(L32, EntryPoint = "tableview_sort_default", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void tableview_sort_default32(IntPtr tableViewHandle, IntPtr columnIndex);
+
+
+        public static void TableViewSort(TableView tableView, long columnIndex)
+        {
+            if (Is64Bit)
+            {
+                tableview_sort_default64(tableView.Handle, (IntPtr) columnIndex);
+            }
+            else
+            {
+                tableview_sort_default32(tableView.Handle, (IntPtr) columnIndex);
+            }
+        }
+
+        [DllImport(L64, EntryPoint = "tableview_sort", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void tableview_sort64(IntPtr tableViewHandle, IntPtr columnIndex,IntPtr ascending);
+
+        [DllImport(L32, EntryPoint = "tableview_sort", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void tableview_sort32(IntPtr tableViewHandle, IntPtr columnIndex, IntPtr ascending);
+
+
+        public static void TableViewSort(TableView tableView, long columnIndex,Boolean ascending)
+        {
+            if (Is64Bit)
+            {
+                tableview_sort64(tableView.Handle, (IntPtr)columnIndex, BoolToIntPtr(ascending));
+            }
+            else
+            {
+                tableview_sort32(tableView.Handle, (IntPtr)columnIndex,BoolToIntPtr(ascending));
+            }
+        }
+
 
 
         [DllImport(L64, EntryPoint = "tableview_average_int", CallingConvention = CallingConvention.Cdecl)]

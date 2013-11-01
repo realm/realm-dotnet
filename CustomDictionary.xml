@@ -1,0 +1,26 @@
+<Dictionary>
+      <Words>
+         <Unrecognized>
+            <Word></Word>
+         </Unrecognized>
+         <Recognized>
+            <Word>SubTable</Word>
+         </Recognized>
+         <Deprecated>
+            <Term PreferredAlternate=""></Term>
+         </Deprecated>
+         <Compound>
+            <Term CompoundAlternate=""></Term>
+         </Compound>
+         <DiscreteExceptions>
+            <Term>TableView</Term>
+           <Term>SubTable</Term>
+         </DiscreteExceptions>
+      </Words>
+      <Acronyms>
+         <CasingExceptions>
+            <Acronym></Acronym>
+           <Acronym></Acronym>
+         </CasingExceptions>
+      </Acronyms>
+   </Dictionary>
