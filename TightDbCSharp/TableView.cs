@@ -342,7 +342,19 @@ namespace TightDbCSharp
         internal override string ToStringNoCheck(long limit)
         {
             return UnsafeNativeMethods.TableViewToString(this,limit);
+        }
+
+        /// <summary>
+        /// Returns a string with a Human readable representation of the specified row
+        /// in the tableview.        
+        /// </summary>
+        /// <returns>String with a Json version of all the rows in the tableview</returns>
+        internal override string RowToStringNoCheck(long rowIndex)
+        {
+            return UnsafeNativeMethods.TableViewRowToString(this, rowIndex);
         }                              
+
+
 
         //Todo:Unit tests if tableview invalidation works when the underlying table was modified through the tableview
         //what i mean:  test it is legal to delete a row through the tableview

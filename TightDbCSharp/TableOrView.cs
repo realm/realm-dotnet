@@ -126,6 +126,7 @@ namespace TightDbCSharp
         }
 
         internal abstract string ToStringNoCheck();
+        internal abstract string RowToStringNoCheck(long rowIndex);
 
         /// <summary>
         /// Return a string with a Human readable representation of this table.
@@ -152,6 +153,17 @@ namespace TightDbCSharp
             ValidateIsValid();
             ValidateIsPositive(limit);
             return ToStringNoCheck(limit);
+        }
+
+        /// <summary>
+        /// Return a string with a Human readable representation of the specified row
+        /// </summary>
+        /// <returns>String with row data in human readable form</returns>
+        public string RowToString(long rowIndex)
+        {
+            ValidateIsValid();
+            ValidateRowIndex(rowIndex);
+            return RowToStringNoCheck(rowIndex);
         }
 
         private static void ValidateIsPositive(long value)

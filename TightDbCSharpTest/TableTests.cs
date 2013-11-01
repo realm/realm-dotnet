@@ -6176,25 +6176,39 @@ intfield2:10//column 2
 
                 actualres = t.ToString(0);
                 expectedres = "    Int1  Int2  Int3  Int4    sub\n... and 3 more rows (total 3)";//this is in fact the result. Not sure if that is intended for limit=0
-                Assert.AreEqual(expectedres,actualres);
+                TestHelper.Cmp(expectedres,actualres);
 
                 actualres = t.ToString(1);
                 expectedres =
                     "    Int1  Int2  Int3  Int4    sub\n0:    42     7     3     2    [8]\n... and 2 more rows (total 3)";
-                Assert.AreEqual(expectedres, actualres);
-
-                using ( var  tv = t.FindAllInt(0, 42)) {
-                actualres = tv.ToJson();
-                expectedres = "[{\"Int1\":42,\"Int2\":7,\"Int3\":3,\"Int4\":2,\"sub\":[{\"substr\":\"Fiat\"},{\"substr\":\"Ford\"},{\"substr\":\"Audi\"},{\"substr\":\"Mercedez\"},{\"substr\":\"Maseratti\"},{\"substr\":\"Ferrrari\"},{\"substr\":\"Rolls Royce\"},{\"substr\":\"Trabant\"}]}]";
                 TestHelper.Cmp(expectedres, actualres);
 
-                actualres = tv.ToString();
-                expectedres = "    Int1  Int2  Int3  Int4    sub\n0:    42     7     3     2    [8]\n";
-                TestHelper.Cmp(expectedres, actualres);
+                actualres = t.RowToString(2);
+                expectedres = "    Int1  Int2  Int3  Int4    sub\n2:    12     1     2     1    [4]\n";
+                TestHelper.Cmp(actualres,expectedres);
 
-                actualres = tv.ToString(2);//limit set higher than number of actual records - will this work
-                expectedres = "    Int1  Int2  Int3  Int4    sub\n0:    42     7     3     2    [8]\n";
-                TestHelper.Cmp(expectedres, actualres);
+                actualres = t.RowToString(1);
+                expectedres = "    Int1  Int2  Int3  Int4    sub\n1:     0     0     0     0    [0]\n";
+                TestHelper.Cmp(actualres, expectedres);
+
+                using (var tv = t.FindAllInt(0, 42))
+                {
+                    actualres = tv.ToJson();
+                    expectedres =
+                        "[{\"Int1\":42,\"Int2\":7,\"Int3\":3,\"Int4\":2,\"sub\":[{\"substr\":\"Fiat\"},{\"substr\":\"Ford\"},{\"substr\":\"Audi\"},{\"substr\":\"Mercedez\"},{\"substr\":\"Maseratti\"},{\"substr\":\"Ferrrari\"},{\"substr\":\"Rolls Royce\"},{\"substr\":\"Trabant\"}]}]";
+                    TestHelper.Cmp(expectedres, actualres);
+
+                    actualres = tv.ToString();
+                    expectedres = "    Int1  Int2  Int3  Int4    sub\n0:    42     7     3     2    [8]\n";
+                    TestHelper.Cmp(expectedres, actualres);
+
+                    actualres = tv.ToString(2); //limit set higher than number of actual records - will this work
+                    expectedres = "    Int1  Int2  Int3  Int4    sub\n0:    42     7     3     2    [8]\n";
+                    TestHelper.Cmp(expectedres, actualres);
+
+                    actualres = tv.RowToString(0);
+                    expectedres = "    Int1  Int2  Int3  Int4    sub\n0:    42     7     3     2    [8]\n";
+                    TestHelper.Cmp(expectedres,actualres);
                 }
 
                 using ( var tvs = t.FindAllInt("Int1", 42)) {
@@ -6222,6 +6236,48 @@ intfield2:10//column 2
                     expectedres = "    Int1  Int2  Int3  Int4    sub\n";
                     TestHelper.Cmp(expectedres, actualres);
                 }
+            }
+        }
+
+
+        /// <summary>
+        /// RowtoString is illegal on empty tables as the row index is invalid always
+        /// </summary>
+        [Test]
+        [ExpectedException("System.ArgumentOutOfRangeException")]
+        public static void TableRowToStringEmptyTable()
+        {
+            using (var table = new Table("int".Int()))
+            {
+                Assert.AreEqual("",table.RowToString(0));//throws
+            }
+        }
+
+        /// <summary>
+        /// negative row index
+        /// </summary>
+        [Test]
+        [ExpectedException("System.ArgumentOutOfRangeException")]
+        public static void TableRowToStringTooLowIndex()
+        {
+            using (var table = new Table("int".Int()))
+            {
+                table.AddEmptyRow(1);
+                Assert.AreEqual("",table.RowToString(-1));//throws
+            }
+        }
+
+        /// <summary>
+        /// row index specified is too large
+        /// </summary>
+        [Test]
+        [ExpectedException("System.ArgumentOutOfRangeException")]
+        public static void TableRowToStringTooHighIndex()
+        {
+            using (var table = new Table("int".Int()))
+            {
+                table.AddEmptyRow(1);
+                Assert.AreEqual("",table.RowToString(1));//throws
             }
         }
 

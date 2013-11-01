@@ -5235,6 +5235,77 @@ CharSet = CharSet.Unicode)]
         }
 
 
+
+
+
+
+
+
+
+
+        [DllImport(L64, EntryPoint = "table_row_to_string", CallingConvention = CallingConvention.Cdecl,
+CharSet = CharSet.Unicode)]
+        private static extern IntPtr table_row_to_string64(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize, IntPtr rowIndex);
+
+        [DllImport(L32, EntryPoint = "table_row_to_string", CallingConvention = CallingConvention.Cdecl,
+            CharSet = CharSet.Unicode)]
+        private static extern IntPtr table_row_to_string32(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize, IntPtr rowIndex);
+
+
+        public static string TableRowToString(Table t, long rowIndex)
+        {
+            long bufferSizeNeededChars = 16;
+            IntPtr buffer;
+            long currentBufferSizeChars;
+            do
+            {
+                buffer = StrAllocateBuffer(out currentBufferSizeChars, bufferSizeNeededChars);
+                if (Is64Bit)
+                    bufferSizeNeededChars =
+                        (int)table_row_to_string64(t.Handle, buffer, (IntPtr)currentBufferSizeChars, (IntPtr)rowIndex);
+                else
+                    bufferSizeNeededChars =
+                        (int)table_row_to_string32(t.Handle, buffer, (IntPtr)currentBufferSizeChars, (IntPtr)rowIndex);
+
+            } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
+            return StrBufToStr(buffer, (int)bufferSizeNeededChars);
+        }
+
+
+        [DllImport(L64, EntryPoint = "tableview_row_to_string", CallingConvention = CallingConvention.Cdecl,
+            CharSet = CharSet.Unicode)]
+        private static extern IntPtr tableview_row_to_string64(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize, IntPtr rowIndex);
+
+        [DllImport(L32, EntryPoint = "tableview_row_to_string", CallingConvention = CallingConvention.Cdecl,
+            CharSet = CharSet.Unicode)]
+        private static extern IntPtr tableview_row_to_string32(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize, IntPtr rowIndex);
+
+        public static string TableViewRowToString(TableView t, long rowIndex)
+        {
+            long bufferSizeNeededChars = 16;
+            IntPtr buffer;
+            long currentBufferSizeChars;
+            do
+            {
+                buffer = StrAllocateBuffer(out currentBufferSizeChars, bufferSizeNeededChars);
+                if (Is64Bit)
+                    bufferSizeNeededChars =
+                        (long)tableview_row_to_string64(t.Handle, buffer, (IntPtr)currentBufferSizeChars, (IntPtr)rowIndex);
+                else
+                    bufferSizeNeededChars =
+                        (long)tableview_row_to_string32(t.Handle, buffer, (IntPtr)currentBufferSizeChars, (IntPtr)rowIndex);
+
+            } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
+            return StrBufToStr(buffer, (int)bufferSizeNeededChars);
+        }
+
+
+
+
+
+
+
+
         //this can be called when initializing, and it will throw an exception if anything is wrong with the type binding between the  C#
         //program running right now, and the c++ library that has been loaded.
         //The test should reveal if any of the types we use are marshalled wrongly, especially

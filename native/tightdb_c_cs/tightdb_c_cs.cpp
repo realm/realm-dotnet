@@ -928,7 +928,17 @@ TIGHTDB_C_CS_API size_t table_to_string(Table* table_ptr,uint16_t * data, size_t
    return stringdata_to_csharpstringbuffer(str,data,bufsize);
 }
 
-//todo:implement row_to_string
+
+//As only a row is returned, size is not as big an issue as with to_json or to_string with a very large limit
+TIGHTDB_C_CS_API size_t table_row_to_string(Table* table_ptr,uint16_t * data, size_t bufsize,size_t row_ndx)
+{
+   std::ostringstream ss;
+   table_ptr->row_to_string(row_ndx,ss);
+   string str = ss.str();   
+   return stringdata_to_csharpstringbuffer(str,data,bufsize);
+}
+
+
 
 
 //todo: operator == should be overridden and call c++ operator==
@@ -1273,6 +1283,20 @@ TIGHTDB_C_CS_API size_t tableview_to_string(TableView* tableview_ptr,uint16_t * 
    return stringdata_to_csharpstringbuffer(str,data,bufsize);
 }
 
+
+//calling this one will use the default setting for limit which is 500 right now in core
+//multiple issues with this one
+//decide wether to implement an endpoint C# stream that then reads from the c++ stream output from to_json
+//note that calling from C# it is probably best to guess the buffer size large enough, as the alternative is that the tightdb to_json method is called twice
+//we could also create a class holding the string, and return a handle to it to C# and have another method that copies data once the buffer is large enough
+TIGHTDB_C_CS_API size_t tableview_row_to_string(TableView* tableview_ptr,uint16_t * data, size_t bufsize,size_t row_ndx)
+{
+   // Write table to string in JSON format
+   std::ostringstream ss;
+   tableview_ptr->row_to_string(row_ndx,ss);
+   string str = ss.str();
+   return stringdata_to_csharpstringbuffer(str,data,bufsize);
+}
 
 
 TIGHTDB_C_CS_API Table* tableview_get_subtable(TableView* tableview_ptr, size_t column_ndx, size_t row_ndx)

@@ -663,6 +663,10 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableToString(this,limit);
         }
 
+        internal override string RowToStringNoCheck(long rowIndex)
+        {
+            return UnsafeNativeMethods.TableRowToString(this, rowIndex);
+        }
 
 
         internal override string ToJsonNoCheck()
