@@ -148,6 +148,9 @@
     <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
+    <CodeAnalysisDictionary Include="..\CustomDictionary.xml">
+      <Link>CustomDictionary.xml</Link>
+    </CodeAnalysisDictionary>
     <Content Include="..\native\tightdb_c_cs\tightdb_c_cs2012\release\files\tightdb_c_cs201232d.dll">
       <Link>tightdb_c_cs201232d.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

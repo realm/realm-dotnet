@@ -9,7 +9,7 @@ namespace TightDbCSharpTest
     /// methods used for diagnostics, test, system information and other taks related to
     /// system maintainance , diagnostics and tuning rather than data retrieval and storage
     /// </summary>
-    public class ToolboxTest
+    public static class ToolboxTest
     {
         /// <summary>
         /// This method calls a c++ method. Used to time how long the c++
@@ -19,7 +19,7 @@ namespace TightDbCSharpTest
         public static void TestSizeCalls()
         {
             var count = Toolbox.TestNativeSizeCalls();
-            Console.WriteLine("count from cpp:{0}",count);
+            Console.WriteLine("count from c++:{0}",count);
         }
     }
 }

@@ -2894,7 +2894,7 @@ Table Name  : cyclic field definition
         /// The result should be a subtable with only the rows that are in the tableview.
         /// </summary>
         [Test]
-        public static void TableSetSubTableWithTableview()
+        public static void TableSetSubTableWithTableView()
         {
             using (var t = new Table(
                 "do'h".Int(),
@@ -4389,10 +4389,8 @@ datetime:13-05-2007 10:50:59//column 4
                     result2 = myTable.MinimumDateTime("datetime");
                     if (result1 != new DateTime(1970, 01, 01, 0, 0, 0, DateTimeKind.Utc))//todo:fix when core has been fixed
                     {
-                        Assert.AreEqual(new DateTime(1987, 05, 13, 0, 0, 0, DateTimeKind.Utc),
-                            myTable.MinimumDateTime(4)); //fails right now bc table.minimumdate have not been implemented yet in core
-                        Assert.AreEqual(new DateTime(1987, 05, 13, 0, 0, 0, DateTimeKind.Utc),
-                            myTable.MinimumDateTime("datetime"));
+                        Assert.AreEqual(new DateTime(1987, 05, 13, 0, 0, 0, DateTimeKind.Utc),result1); //fails right now bc table.minimumdate have not been implemented yet in core
+                        Assert.AreEqual(new DateTime(1987, 05, 13, 0, 0, 0, DateTimeKind.Utc),result2);
                     }
                     Assert.AreEqual(-1000, myTable.MinimumLong("int"));
                     Assert.AreEqual(-1001f, myTable.MinimumFloat("float"));

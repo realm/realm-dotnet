@@ -436,7 +436,7 @@ namespace TightDbCSharpTest
         /// Call clearsubtable and inspect that the subtable is in fact cleared (zero rows)
         /// </summary>
         [Test]
-        public static void TestClearSubtable()
+        public static void TestClearSubTable()
         {
             const int  testvalue =  422;
             using (var table = new Table("sub".Table("intfield".Int())))

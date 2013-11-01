@@ -298,9 +298,17 @@ namespace TightDbCSharp
         }
 
 
-        public long GetSourceNdx(long rowIndex)
+        /// <summary>
+        /// returns the index of the specified tableview rowindex in the
+        /// underlying table.
+        /// (not sure if a view of a view will return the index in the underlying view
+        /// or in the final underlying table - i think it is the final underlying table
+        /// </summary>
+        /// <param name="rowIndex">index of row in this tableview</param>
+        /// <returns>index of same row in the table that is being viewed</returns>
+        public long GetSourceIndex(long rowIndex)
         {
-            return UnsafeNativeMethods.TableViewGetSourceNdx(this,rowIndex);
+            return UnsafeNativeMethods.TableViewGetSourceIndex(this,rowIndex);
         }
 
 

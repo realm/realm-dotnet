@@ -154,7 +154,7 @@ namespace TightDbCSharp
             return ToStringNoCheck(limit);
         }
 
-        private void ValidateIsPositive(long value)
+        private static void ValidateIsPositive(long value)
         {
             if (value < 0)
             {
