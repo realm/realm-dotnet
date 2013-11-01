@@ -1423,7 +1423,9 @@ TIGHTDB_C_CS_API tightdb::TableView* tableview_find_all_string(TableView * table
 
 
 //todo:implement tableview_get_parent
-
+//**NOTE** get_parent has been implemented directly in C#, this means that
+//tableview.GetParent will return the parent wrapper that in fact owns the tableview wrapper
+//if we called down to c++ , a new wrapper would be created which is not neccessary
 
 
 //GROUP IMPLEMENTATION

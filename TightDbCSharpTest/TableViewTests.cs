@@ -255,6 +255,7 @@ namespace TightDbCSharpTest
                 using (var view = table.FindAllInt(1, 1))
                 {
                     Assert.AreEqual(4, view.Size);
+                    Assert.AreEqual(table.Size,view.Parent.Size);//hijack this test to also test TableView.Parent
                     {
                         var rowIndex = view.FindFirstBinary(0, arrayToFind);
                         Assert.AreEqual(1, rowIndex);

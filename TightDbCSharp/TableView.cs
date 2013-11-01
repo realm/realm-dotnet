@@ -620,6 +620,22 @@ namespace TightDbCSharp
             //return UnsafeNativeMethods.tableViewFindAllBinary( columnIndex, value);
         }
 
+        /// <summary>
+        /// This property holds the table that the view is ultimately viewing.
+        /// if this is a view of a view of a view of a table,
+        /// the table is returned.
+        /// This property is readonly, it cannot be set
+        /// In other bindings this is a function called GetParent    
+        /// </summary>
+        /// <returns>Table that this view is ultimately viewing</returns>
+        public Table Parent
+        {
+            get
+            {
+                return UnderlyingTable;
+            }
+        }
+
         internal override void SetBoolNoCheck(long columnIndex, long rowIndex, Boolean value)
         {
             UnsafeNativeMethods.TableViewSetBool(this, columnIndex, rowIndex, value);
