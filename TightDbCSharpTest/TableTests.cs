@@ -6281,7 +6281,7 @@ intfield2:10//column 2
             }
         }
 
-        //the goal of this method is to end up with 100 subtables that are still allocated at exiet,
+        //the goal of this method is to end up with 100 subtables that are still allocated at exit,
         //but are not referenced anywhere anymore
         //the table should have 100 rows with a subtable field in each row
         private static void get100subtablesFromTableNoUsing(Table table)
@@ -6293,9 +6293,9 @@ intfield2:10//column 2
             }
         }
 
-        //the goal of this method is to end up with 100 subtables that are still allocated at exiet,
-        //but are not referenced anywhere anymore
-        //the table should have 100 rows with a subtable field in each row
+        //the goal of this method is to spend some time allocating,using and deallocating
+        //subtables in the hope that the finalizer thread calls the same table and disposes
+        //wrappers to the same subtable while this thread is working
         private static void get100subtablesFromTableWithUsing(Table table)
         {            
             for (var i = 0; i < 100; ++i)
@@ -6308,6 +6308,14 @@ intfield2:10//column 2
             }
         }
 
+
+        //sometimes this method will execute fully, but a popup will show with a c++ exception
+        //if that happens, then the finalizer thread probably crashed in core, but the main
+        //program didn't crash
+        //at other times, the main program will crash/stop and the debug window will show
+        //a c++ error. This is when the main program thread crashes due to changes made
+        //by the finalizer thread that GC starts after collection to call finalizers for
+        //all unreferenced objects with a finalizer
         [Test]
         public static void GarbeageCollectCollisionsinglethread()
         {
