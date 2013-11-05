@@ -96,12 +96,10 @@ enum DataType {
     //this class contains methods for calling the c++ TightDB system, which has been flattened out as C type calls   
     //The individual public methods call the C inteface using types and values suitable for the C interface, but the methods take and give
     //values that are suitable for C# (for instance taking a C# Table object parameter and calling on with the C++ Table pointer inside the C# Table Class)
-    //it is assumed that the deployment has copied the correct c++ dll into the same dir as where the calling assembly resides.
-    //If this is not the case, a "badimage" exception runtime error will happen
-    //we might want to catch that exception, then copy the correct dll into place, and then see if we can resume operation
-    //alternatively even proactively copying the dll at startup if we detect that the wrong one is there
-    //could be as simple as comparing file sizes or the like
-    //because we expect the end user to have deployed the correct c++ dll this assembly is AnyCpu
+
+    //const groups and their childs are handled here , readonly is only set in methods in this file.
+    //in c++ readonly is usually passed as a parameter if the c++ call must differ depending on the c++ class is readonly or not
+
 #if V40PLUS
 #else
 //        [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
@@ -145,9 +143,9 @@ enum DataType {
         [DllImport(L32, EntryPoint = "table_copy_table", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr table_copy_table32(IntPtr tablePtr);
 
-        public static Table CopyTable(Table table)
+        public static Table CopyTable(Table table)//a copy of a ReadOnly table is not readonly. It also does not belong to any group the source might belong to
         {
-            return new Table(Is64Bit ? table_copy_table64(table.Handle) : table_copy_table32(table.Handle), true);
+            return new Table(Is64Bit ? table_copy_table64(table.Handle) : table_copy_table32(table.Handle), true,false);
         }
 
 
@@ -551,9 +549,9 @@ enum DataType {
         [DllImport(L32, EntryPoint = "new_table", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr new_table32();
 
-        public static void TableNew(Table table)
+        public static void TableNew(Table table,bool IsReadOnly)
         {
-            table.SetHandle(Is64Bit ? new_table64() : new_table32(), true);
+            table.SetHandle(Is64Bit ? new_table64() : new_table32(), true,IsReadOnly);
         }
 
 
@@ -616,7 +614,7 @@ enum DataType {
 
             if (handle != IntPtr.Zero)
             {
-                group.SetHandle(handle, true);
+                group.SetHandle(handle, true,openMode==Group.OpenMode.ModeReadOnly);
             }
             else
             {
@@ -632,12 +630,12 @@ enum DataType {
         private static extern IntPtr new_group32();
 
 
-        public static void GroupNew(Group group)
+        public static void GroupNew(Group group,Boolean IsReadOnly)
         {
 
             group.SetHandle(Is64Bit
                 ? new_group64()
-                : new_group32(), true);
+                : new_group32(), true,IsReadOnly);
         }
 
 
@@ -2112,10 +2110,8 @@ enum DataType {
         {
             if (Is64Bit)
                 return new Table(
-                    table_get_subtable64(parentTable.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex), true);
-
-            return new Table(table_get_subtable32(parentTable.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex),
-                true);
+                    table_get_subtable64(parentTable.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex), true,parentTable.ReadOnly);
+            return new Table(table_get_subtable32(parentTable.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex),true,parentTable.ReadOnly);
         }
 
 
@@ -2134,8 +2130,8 @@ enum DataType {
         public static Table GroupGetTable(Group group, string tableName)
         {
             if (Is64Bit)
-                return new Table(group_get_table64(group.Handle, tableName, (IntPtr) tableName.Length), true);
-            return new Table(group_get_table32(group.Handle, tableName, (IntPtr) tableName.Length), true);
+                return new Table(group_get_table64(group.Handle, tableName, (IntPtr) tableName.Length), true,group.ReadOnly);
+            return new Table(group_get_table32(group.Handle, tableName, (IntPtr)tableName.Length), true, group.ReadOnly);
         }
 
 
@@ -2171,10 +2167,9 @@ enum DataType {
         {
             if (Is64Bit)
                 return new Table(
-                    tableView_get_subtable64(parentTableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex), true);
+                    tableView_get_subtable64(parentTableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex), true,parentTableView.ReadOnly);
             //the constructor that takes an IntPtr will use that as a table handle
-            return new Table(tableView_get_subtable32(parentTableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex),
-                true);
+            return new Table(tableView_get_subtable32(parentTableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex),true,parentTableView.ReadOnly);
         }
 
 
@@ -3437,7 +3432,7 @@ enum DataType {
             {
                 group.SetHandle((Is64Bit)
                     ? group_from_binary_data64(dataPointer, (IntPtr) data.Length)
-                    : group_from_binary_data32(dataPointer, (IntPtr) data.Length), true);
+                    : group_from_binary_data32(dataPointer, (IntPtr) data.Length), true,false);//from binary returns a RW group
             }
             finally
             {
@@ -5961,7 +5956,7 @@ CharSet = CharSet.Unicode)]
         {
             sharedGroup.SetHandle(Is64Bit
                 ? new_shared_group_file_defaults64(filename, (IntPtr) filename.Length)
-                : new_shared_group_file_defaults32(filename, (IntPtr) filename.Length), true);
+                : new_shared_group_file_defaults32(filename, (IntPtr) filename.Length), true,false);//shared groups are not readonly as a default
         }
 
 
@@ -5985,7 +5980,7 @@ CharSet = CharSet.Unicode)]
                     ? new_shared_group_file64(fileName, (IntPtr) fileName.Length, BoolToIntPtr(noCreate),
                         SharedGroup.DurabilityLevelToIntPtr(durabilityLevel))
                     : new_shared_group_file32(fileName, (IntPtr) fileName.Length, BoolToIntPtr(noCreate),
-                        SharedGroup.DurabilityLevelToIntPtr(durabilityLevel)), true);
+                        SharedGroup.DurabilityLevelToIntPtr(durabilityLevel)), true,false);
             }
             catch (SEHException ex)
             {

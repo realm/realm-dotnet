@@ -54,7 +54,7 @@ namespace TightDbCSharp
             : base(transactionKind==TransactionKind.Read)
         {
             _kind = transactionKind;
-            SetHandle(groupHandle,true);//true because the releasehandle method is used to commit or rollback transactions
+            SetHandle(groupHandle,true,transactionKind==TransactionKind.Read);//Shouldbedisposed true because the releasehandle method is used to commit or rollback transactions
             _sharedGroup = sharedGroup;
             //ReadOnly = transactionType == TransactionType.Read;//readonly in group
         }

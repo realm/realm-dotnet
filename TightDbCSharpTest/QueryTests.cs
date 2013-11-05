@@ -143,8 +143,9 @@ namespace TightDbCSharpTest
             using (var combitable = GetTableWithCombinations())
             {
                 var n = 0;
-                foreach (TableRow tableRow in combitable)
+                foreach (var row in combitable)
                 {
+                    var tableRow = (TableRow) row;
                     int col0 = 1 + (n/(3*3*3))%3;
                     int col1 = 1 + (n/(3*3))%3;
                     int col2 = 1 + (n/3)%3;

@@ -24,7 +24,7 @@ namespace TightDbCSharp
         {
             try
             {
-                SetHandle(handle, shouldbedisposed);
+                SetHandle(handle, shouldbedisposed,underlyingTable.ReadOnly);
                 UnderlyingTable = underlyingTable;
             }
             catch (Exception)//no matter where we get an exception, we dispose just to be 100% sure

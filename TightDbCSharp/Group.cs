@@ -41,8 +41,7 @@ namespace TightDbCSharp
         //the caller must know if this group is readonly or not
         private void AcquireHandle(bool readOnly)
         {
-            UnsafeNativeMethods.GroupNew(this); //calls sethandle itself
-            ReadOnly = readOnly;
+            UnsafeNativeMethods.GroupNew(this,readOnly); //calls sethandle itself            
         }
 
         /*

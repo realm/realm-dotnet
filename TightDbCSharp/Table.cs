@@ -43,7 +43,7 @@ namespace TightDbCSharp
         {
             try
             {
-                TableNew();
+                TableNew(false);//default is not readonly
             }
             catch (Exception)
             {
@@ -54,11 +54,11 @@ namespace TightDbCSharp
 
         
         //This is used when we want to create a table and we already have the c++ handle that the table should use.  used by GetSubTable
-        internal Table(IntPtr tableHandle,bool shouldbedisposed)
+        internal Table(IntPtr tableHandle,bool shouldbedisposed,bool IsReadOnly)//not 100% sure IsReadOnly should be a parameter here
         {
             try
             {
-                SetHandle(tableHandle, shouldbedisposed);
+                SetHandle(tableHandle, shouldbedisposed,IsReadOnly);
             }
             catch (Exception)
             {
@@ -285,7 +285,7 @@ namespace TightDbCSharp
                 {
                     throw new ArgumentNullException("schema");
                 }
-                TableNew();
+                TableNew(false);//not readonly
                 DefineSchema(schema);
             }
             catch (Exception)
@@ -306,7 +306,7 @@ namespace TightDbCSharp
         {
             try
             {
-                TableNew(); //allocate a table class in c++
+                TableNew(false); //allocate a readwrite table class in c++
                 //Spec spec = GetSpec();//get a handle to the table's new empty spec
                 DefineSchema(schema);
             }
@@ -457,9 +457,10 @@ namespace TightDbCSharp
         //TableHandle contains the value of a C++ pointer to a C++ table
         //it is sent as a parameter to calls to the C++ DLL.
 
-        private void TableNew()
+        private void TableNew(bool isReadOnly)
         {
-           UnsafeNativeMethods.TableNew(this);//calls sethandle itself
+           UnsafeNativeMethods.TableNew(this,isReadOnly);
+        
         }
 
         /// <summary>

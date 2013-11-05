@@ -31,7 +31,14 @@ namespace TightDbCSharp
         /// True if the c++ resources have been released
         /// </summary>
         public bool IsDisposed { get; private set; }
-        
+
+
+        /// <summary>
+        /// Defaults to false. If true, this query / table / tableview / subtable / group / sharedGroup is read only and it is illegal
+        /// to call any modifying function on it.
+        /// Readonly objects are usually gotten either from a readonly transaction, or from a group opened from a file in readonly mode
+        /// </summary>
+        public bool ReadOnly { get; internal set; }
 
         internal Handled()
         {
@@ -73,7 +80,7 @@ namespace TightDbCSharp
 
        
         //store the pointer to the c++ class, and do neccessary housekeeping
-        internal void SetHandle(IntPtr newHandle, bool shouldBeDisposed)
+        internal void SetHandle(IntPtr newHandle, bool shouldBeDisposed,bool IsReadOnly)
         {            
             //Console.WriteLine("Handle being set to newhandle:{0}h shouldBeDisposed:{1} ",newHandle.ToString("X"),shouldBeDisposed);
             if (HandleInUse)
@@ -84,11 +91,22 @@ namespace TightDbCSharp
                                                        ObjectIdentification()));  
                 
             }
+            ReadOnly = IsReadOnly;
             Handle = newHandle;
             HandleInUse = true;
             HandleHasBeenUsed = true;
             NotifyCppWhenDisposing = shouldBeDisposed;
   //          Console.WriteLine("Handle has been set:{0}  shouldbedisposed:{1}" , ObjectIdentification(),shouldBeDisposed);
+        }
+
+
+
+        internal void ValidateReadWrite()
+        {
+            if (ReadOnly)
+            {
+                throw new InvalidOperationException(String.Format("{0} {1}",ObjectIdentification(), " Is Read Only and cannot be modified "));
+            }
         }
 
         /// <summary>

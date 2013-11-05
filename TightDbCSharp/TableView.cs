@@ -637,7 +637,7 @@ namespace TightDbCSharp
                 UnderlyingTable = underlyingTableBeing;
                 Version = underlyingTableBeing.Version;
                     //this tableview should invalidate itself if that version changes
-                SetHandle(tableViewHandle, shouldbedisposed);
+                SetHandle(tableViewHandle, shouldbedisposed,UnderlyingTable.ReadOnly);
             }
             catch (Exception)
             {

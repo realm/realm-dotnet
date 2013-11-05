@@ -53,7 +53,11 @@ namespace TightDbCSharp
         internal Spec(Table ownerRootTable,IntPtr handle, bool shouldbedisposed)
         {
             OwnerRootTable = ownerRootTable;
-            SetHandle(handle, shouldbedisposed);
+            SetHandle(handle, shouldbedisposed,ownerRootTable.ReadOnly);
+            //BUG: If this spec is a spec for a subtable on a read write table then 
+            //this spec will be set as not readonly even though it actually is
+            //todo:unit test that showcases this
+            //reason the bug is here, is that we're getting rid of spec anyways
         }
 
         /// <summary>
