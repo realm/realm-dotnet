@@ -106,8 +106,6 @@ namespace TightDbCSharp
         //5) otherwise return the group pointer we got from 3)
 
 
-        //as group files can create problems at any time, any group related calls should probably be wrapped in exception handlers, and
-        //should be able to return error codes to C#
         /// <summary>
         /// Create a group object. Either have it represent a group already stored on a file, or have a new
         /// file created which then contains the data of this group.

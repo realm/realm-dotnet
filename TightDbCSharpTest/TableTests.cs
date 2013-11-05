@@ -6281,6 +6281,60 @@ intfield2:10//column 2
             }
         }
 
+        //the goal of this method is to end up with 100 subtables that are still allocated at exiet,
+        //but are not referenced anywhere anymore
+        //the table should have 100 rows with a subtable field in each row
+        private static void get100subtablesFromTableNoUsing(Table table)
+        {
+            var subtables  =new List<Table>();
+            for (var i = 0; i < 100; ++i)
+            {
+                subtables.Add((table.GetSubTable(0, i)));//keep them referred until we exit the function
+            }
+        }
+
+        //the goal of this method is to end up with 100 subtables that are still allocated at exiet,
+        //but are not referenced anywhere anymore
+        //the table should have 100 rows with a subtable field in each row
+        private static void get100subtablesFromTableWithUsing(Table table)
+        {            
+            for (var i = 0; i < 100; ++i)
+            {
+                using (var sub = table.GetSubTable(0, i))
+                {
+                    sub.AddInt(0,1);//do some operations
+                    sub.AddInt(0,-1);
+                }                
+            }
+        }
+
+        [Test]
+        public static void GarbeageCollectCollisionsinglethread()
+        {
+            //table created with using
+            using (var table = new Table(new SubTableColumn("sub", new IntColumn("int"))))
+            {
+                for (var i = 0; i < 100; ++i)
+                {
+                    table.Add(new object[] { new object[] { 1, 2, 3, 4, 5 } });
+                }
+                Console.WriteLine("Added rows to table");
+
+                for(var n=0;n<111;++n)
+                {
+                    
+                Console.WriteLine("{0,10}{1,5}{2,30}",GC.GetTotalMemory(false),n,"Started Taking out subtables without using");
+                get100subtablesFromTableNoUsing(table);
+                    GC.Collect();
+                Console.WriteLine("{0,10}{1,5}{2,30}", GC.GetTotalMemory(false), "", "Taken out subtables without using");
+
+                Console.WriteLine("{0,10}{1,5}{2,30}", GC.GetTotalMemory(false), "", "started taking out subtables with using");
+                get100subtablesFromTableWithUsing(table);
+                Console.WriteLine("{0,10}{1,5}{2,30}", GC.GetTotalMemory(false), "", "taken out subtables with using");
+                }
+            }
+            Console.WriteLine("disposed main table");
+        }
 
         /// <summary>
         /// errorhandling getsubtable on non-subtable column
