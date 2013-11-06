@@ -28,7 +28,6 @@ namespace {
 //* Types, that does not change on the c++ side between compileres and platforms
 //* Types that have a mirror C# type that behaves the same way on different platforms (like IntPtr and size_t)
 
-//maybe this should be a macro or an inline function. Maybe the compiler inlines it automatically
 //bool is stored differently on different c++ compilers so use a size_t instead when p/invoking
 inline bool size_t_to_bool(size_t value) 
 {
@@ -68,14 +67,16 @@ inline int64_t datetime_to_int64_t(DateTime value) {
 
 //time_t might just in some case have a different size than 64 bits on the c++ side, so let's transfer using int64_t instead
 //these two methods are here bc the tightdb i compile against right now does not have had all its time_t parametres changed to Date yet.
+/* core has been fixed, no need for time_t anymore
 inline time_t int64_t_to_time_t(int64_t value) {
     return value;
 }
 
+
 inline int64_t time_t_to_int64_t(time_t value) {
     return value;
 }
-
+*/
 
 //as We've got no idea how the compiler represents an instance of DataType on the stack, perhaps it's better to send back a size_t with the value.
 //we always know the size of a size_t
@@ -463,6 +464,7 @@ TIGHTDB_C_CS_API size_t table_get_string(Table* table_ptr, size_t column_ndx, si
 //end result is that the caller gets both the pointer to the data, and the lenght
 //the C# caller will immediatly copy the data from the returned pointer to managed memory, the C# caller will not
 //free any memory. The C# marshaller will not try to free the returned char*, as we call this as an intptr returning function
+//It is assumed that C# will *NOT* call the table destructor until after C# has taken its copy of the data
 TIGHTDB_C_CS_API const char * table_get_binary(Table*  table_ptr, size_t column_ndx, size_t row_ndx,  size_t* size)
 {
     BinaryData bd=table_ptr->get_binary(column_ndx,row_ndx);
@@ -547,7 +549,7 @@ TIGHTDB_C_CS_API void table_set_bool(Table* table_ptr, size_t column_ndx, size_t
 //assuming that int64_t and time_t are binary compatible and of equal size
 TIGHTDB_C_CS_API void table_set_date(Table*  table_ptr, size_t column_ndx, size_t row_ndx, int64_t value)
 {
-    table_ptr->set_datetime(column_ndx,row_ndx,int64_t_to_time_t(value));
+	table_ptr->set_datetime(column_ndx,row_ndx,int64_t_to_datetime(value));
 }
 
 
@@ -764,7 +766,7 @@ TIGHTDB_C_CS_API size_t table_find_first_bool(Table * table_ptr , size_t column_
 //assuming int64_t and time_t are binary compatible.
 TIGHTDB_C_CS_API size_t table_find_first_date(Table * table_ptr , size_t column_ndx, int64_t value)
 {   
-    return  table_ptr->find_first_datetime(column_ndx,int64_t_to_time_t(value));
+    return  table_ptr->find_first_datetime(column_ndx,int64_t_to_datetime(value));
 }
 
 TIGHTDB_C_CS_API size_t table_find_first_float(Table * table_ptr , size_t column_ndx, float value)
@@ -1330,7 +1332,7 @@ TIGHTDB_C_CS_API void tableview_set_32int(TableView*  tableView_ptr, size_t colu
 
 TIGHTDB_C_CS_API void tableview_set_date(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx, int64_t value)
 {
-    tableView_ptr->set_datetime(column_ndx,row_ndx,int64_t_to_time_t(value));
+    tableView_ptr->set_datetime(column_ndx,row_ndx,int64_t_to_datetime(value));
 }
 
 TIGHTDB_C_CS_API void tableview_set_float(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx, float value)
@@ -1645,7 +1647,6 @@ TIGHTDB_C_CS_API const Group* shared_group_begin_write(SharedGroup* shared_group
 }
 
 
-//binding must ensure that the returned group is never modified
 TIGHTDB_C_CS_API void shared_group_commit(SharedGroup* shared_group_ptr)
 {
     shared_group_ptr->commit();
@@ -2207,6 +2208,38 @@ TIGHTDB_C_CS_API size_t test_return_false_bool() {
 #ifdef __cplusplus
 }
 #endif
+
+
+/*
+
+note regarding handling of readonly groups 
+Const versions of tables, groups, tableviews and queries can be returned from core if they are part of a read transaction
+A C++ operation can exist in three kinds :
+
+modifying : only a modifying version exists (void Table.blabla    )
+nonmodifying :only a non modifying version exists (Table.blabla  const      )
+two versions : two versions exist , one of each
+
+The c# binding will never call modifying operations with other than non const objects
+
+The c# binding will call non-modifying operations with eiter const objects or with non const objects
+
+If two versions exist, the c# binding will always call the non-const version, even if calling with a object that was earlier returned as const
+
+This strategy seems to pass unit tests, but theoretically we could have problems : 
+
+in the two version situation we could call the modifying version of the two versions with a object originally returned from a const function
+This would be a problem if the modifying version actually do modify the object - say if it updates some intenal state or whatever
+We will of course not call a two version with a const if the two version is intended to be modifying.
+This means that for find* methods, we will nevercall the ConstTableView returning versions, and thus if we have an originally cost table typed
+table end up with TableViews that are in fact used such that we only call non modifying stuff on them.
+
+
+
+
+*/
+
+
 
 /*
 // This is the constructor of a class that has been exported.

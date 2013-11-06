@@ -5,11 +5,14 @@ using System.Globalization;
 
 namespace TightDbCSharp
 {
+    //read operations will always propegate down to a table or view so readonly checks are not done in row, they are expected to be done in the table or tableview classes
+
+    
     /// <summary>
     /// Common class for rows in TableView and Table.  The TableRow class that adds table only specific methods inherits from Row and adds these special methods
     /// iterating a TableView gets You objects of type Row, while iterating a Table gets You classes of type TableRow (as these inherit from Row, they appear almost identical
     /// Both Row and TableRow returns RowColumn when iterated (column specific methods are the same for TableView and Table)
-    /// </summary>
+    /// </summary>    
     public class Row
     {
         internal Row(TableOrView owner,long row) {

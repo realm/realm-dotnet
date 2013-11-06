@@ -73,7 +73,7 @@ namespace TightDbCSharp
             {
                 if (_kind == TransactionKind.Read)
                 {
-                    UnsafeNativeMethods.SharedGroupEndRead(_sharedGroup);
+                    UnsafeNativeMethods.SharedGroupEndRead(_sharedGroup);//read transactions are always comitted
                 }
                 else
                 {

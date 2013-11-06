@@ -255,7 +255,8 @@ namespace TightDbCSharp
         }
 
         /// <summary>
-        /// Will sort the tableview according to the values in the specified column
+        /// Will sort  the tableview according to the values in the specified column
+        /// Sort is done using core default for ascending, currently ascending=true
         /// Only bool, int and DateTime columns can be used to sort a tableview
         /// </summary>
         /// <param name="columnName">Name of column with values to use for sorting the tableview rows</param>

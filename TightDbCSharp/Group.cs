@@ -129,89 +129,6 @@ namespace TightDbCSharp
                 throw;
             }
         }
-        
-        /// <summary>
-        /// A group that is part of a readonly transaction will have readonly set to true.
-        /// This property is not 100% implemented and thus not 100% reliable
-        /// </summary>
-        public Boolean ReadOnly { get; private set; }
-
-        /// <summary>
-        /// if true, some unexpected error condition exists and this group should never be used
-        /// </summary>
-        public Boolean Invalid { get; internal set; }
-
-        /// <summary>
-        /// True if a table exists in the group with the specified name
-        /// </summary>
-        /// <param name="tableName">table name to search for</param>
-        /// <returns>true if a table with specified name exists</returns>
-        public bool HasTable(string tableName)
-        {
-            return UnsafeNativeMethods.GroupHassTable(this, tableName);
-        }
-
-        /// <summary>
-        /// use this method to get a table that already exists in the group
-        /// will return the table associated with tableName in the group, or if no such table exists,
-        /// an exception is thrown. Name is case sensitive
-        ///  </summary>
-        /// <param name="tableName"></param>
-        /// <returns>The first table in the group with the specified name</returns>
-        /// <exception cref="InvalidEnumArgumentException">Thrown if no table exists with that name</exception>
-        public Table GetTable(string tableName)
-        {
-            if (HasTable(tableName)) {
-            Table fromGroup = UnsafeNativeMethods.GroupGetTable(this, tableName);
-//            fromGroup.HasColumns = fromGroup.ColumnCount > 0;//will set HasColumns true if there are columns, even if they are uncomitted as c++ reports uncomitted as well as comitted
-                return fromGroup;                            //therefore, the user is expected to call updatefromspec on the same table wrapper that he used to do spec.addcolumn
-            }
-            throw new InvalidEnumArgumentException(String.Format(CultureInfo.InvariantCulture,"Group.GetTable called with a table name that does not exist {0}",tableName));
-        }
-
-        private void ValidateReadOnly()
-        {
-            if (ReadOnly) throw new InvalidOperationException("Read/Write operation initiated on a Read Only Group");
-        }
-
-        /// <summary>
-        ///  use this method to create new tables in the group
-        ///  either a new table with no columns yet is returned,
-        ///  or a table matching the parameter specification is returned.
-        ///   Do no call if the table name is already in use
-        /// </summary>
-        /// <param name="tableName">Name of new table in group</param>
-        /// <param name="schema">Column specification of new table</param>
-        /// <returns>New table that is part of the group, according to specifications given in the parameter</returns>
-        public Table CreateTable(string tableName, params ColumnSpec[] schema)
-        {
-            ValidateReadOnly();
-            if (schema != null && schema.Length>0)
-            {
-                return UnsafeNativeMethods.GroupGetTable(this, tableName).DefineSchema(schema);
-            }
-            return UnsafeNativeMethods.GroupGetTable(this, tableName);
-        }
-
-        /// <summary>
-        /// Writes this group to a directory specified by path
-        /// </summary>
-        /// <param name="path"></param>
-        public void Write(String path)
-        {
-            UnsafeNativeMethods.GroupWrite(this, path);
-        }
-
-        
-        /// <summary>
-        /// returns a byte[] with the group binary serialized in it
-        /// </summary>
-        /// <returns>byte array with the seraialized group in it</returns>
-        public byte[] WriteToMemory()
-        {
-            return UnsafeNativeMethods.GroupWriteToMemory(this);
-        }
-
 
 
         /// <summary>
@@ -239,6 +156,103 @@ namespace TightDbCSharp
                 throw;
             }
         }
+
+     //group.open not implemented as C# groups are always created as a file group or as a binary group
+     //or as an "owns its on memory" group
+
+        //group.is_attached is not implemented due to reasons stated above
+
+
+        //todo:implement IsEmpty (map to group->is_empty())
+
+        //todo:implement Size (map to group->size())
+
+        //todo:implement get_table_name(std::size_t table_ndx)
+
+        /// <summary>
+        /// True if a table exists in the group with the specified name
+        /// </summary>
+        /// <param name="tableName">table name to search for</param>
+        /// <returns>true if a table with specified name exists</returns>
+        public bool HasTable(string tableName)
+        {
+            return UnsafeNativeMethods.GroupHassTable(this, tableName);
+        }
+
+
+
+        /// <summary>
+        /// use this method to get a table that already exists in the group
+        /// will return the table associated with tableName in the group, or if no such table exists,
+        /// an exception is thrown. Name is case sensitive
+        ///  </summary>
+        /// <param name="tableName"></param>
+        /// <returns>The first table in the group with the specified name</returns>
+        /// <exception cref="InvalidEnumArgumentException">Thrown if no table exists with that name</exception>
+        public Table GetTable(string tableName)
+        {
+            if (HasTable(tableName)) {
+            Table fromGroup = UnsafeNativeMethods.GroupGetTable(this, tableName);
+//            fromGroup.HasColumns = fromGroup.ColumnCount > 0;//will set HasColumns true if there are columns, even if they are uncomitted as c++ reports uncomitted as well as comitted
+                return fromGroup;                            //therefore, the user is expected to call updatefromspec on the same table wrapper that he used to do spec.addcolumn
+            }
+            throw new InvalidEnumArgumentException(String.Format(CultureInfo.InvariantCulture,"Group.GetTable called with a table name that does not exist {0}",tableName));
+        }
+
+
+        /// <summary>
+        ///  use this method to create new tables in the group
+        ///  either a new table with no columns yet is returned,
+        ///  or a table matching the parameter specification is returned.
+        ///   Do no call if the table name is already in use
+        /// </summary>
+        /// <param name="tableName">Name of new table in group</param>
+        /// <param name="schema">Column specification of new table</param>
+        /// <returns>New table that is part of the group, according to specifications given in the parameter</returns>
+        public Table CreateTable(string tableName, params ColumnSpec[] schema)
+        {
+            ValidateReadWrite();
+            if (schema != null && schema.Length>0)
+            {
+                return UnsafeNativeMethods.GroupGetTable(this, tableName).DefineSchema(schema);
+            }
+            return UnsafeNativeMethods.GroupGetTable(this, tableName);
+        }
+
+        /// <summary>
+        /// Writes this group to a directory specified by path
+        /// </summary>
+        /// <param name="path"></param>
+        public void Write(String path)
+        {
+            UnsafeNativeMethods.GroupWrite(this, path);
+        }
+
+        
+        /// <summary>
+        /// returns a byte[] with the group binary serialized in it
+        /// </summary>
+        /// <returns>byte array with the seraialized group in it</returns>
+        public byte[] WriteToMemory()
+        {
+            return UnsafeNativeMethods.GroupWriteToMemory(this);
+        }
+
+        /// <summary>
+        /// if true, some unexpected error condition exists and this group should never be used
+        /// </summary>
+        public Boolean Invalid { get; internal set; }
+
+        //todo: implement group.commit
+
+        //todo:implement group.to_string
+
+        //todo:implement group operator == (or a method, equals)
+
+        //todo:implement group operator != (or a method, notequals)
+
+        //The debug only methods Verify, print, print_free etc. are not implemented
+        //in the binding a the time being
 
         /// <summary>
         /// Tells c++ that this Group should be disposed of,

@@ -194,8 +194,8 @@ Table Name  : table name is 12345 then the permille sign ISO 10646:8240 then 789
         {
             var myDateTime = new DateTime(1980, 1, 2);
 
-            Int64 tightdbdate = Table.DebugToTightDbTime(myDateTime);
-            DateTime returnedDateTime = Table.DebugToCSharpTimeUtc(tightdbdate); //1980,1,1,23:00, kind = UTC
+            Int64 tightdbdate = Toolbox.DebugToTightDbTime(myDateTime);
+            DateTime returnedDateTime = Toolbox.DebugToCSharpTimeUtc(tightdbdate); //1980,1,1,23:00, kind = UTC
             Assert.AreEqual(myDateTime.ToUniversalTime(), returnedDateTime.ToUniversalTime());
         }
 
@@ -207,8 +207,8 @@ Table Name  : table name is 12345 then the permille sign ISO 10646:8240 then 789
         {
             var myDateTime = new DateTime(1980, 1, 2, 0, 0, 0, DateTimeKind.Unspecified);
 
-            Int64 tightdbdate = Table.DebugToTightDbTime(myDateTime);
-            DateTime returnedDateTime = Table.DebugToCSharpTimeUtc(tightdbdate); //1980,1,1,23:00, kind = UTC
+            Int64 tightdbdate = Toolbox.DebugToTightDbTime(myDateTime);
+            DateTime returnedDateTime = Toolbox.DebugToCSharpTimeUtc(tightdbdate); //1980,1,1,23:00, kind = UTC
             Assert.AreEqual(myDateTime.ToUniversalTime(), returnedDateTime.ToUniversalTime());
         }
 
@@ -221,8 +221,8 @@ Table Name  : table name is 12345 then the permille sign ISO 10646:8240 then 789
             var myDateTime = new DateTime(1980, 1, 2, 0, 0, 0, DateTimeKind.Local);
 
 
-            Int64 tightdbdate = Table.DebugToTightDbTime(myDateTime);
-            DateTime returnedDateTime = Table.DebugToCSharpTimeUtc(tightdbdate); //1980,1,1,23:00, kind = UTC
+            Int64 tightdbdate = Toolbox.DebugToTightDbTime(myDateTime);
+            DateTime returnedDateTime = Toolbox.DebugToCSharpTimeUtc(tightdbdate); //1980,1,1,23:00, kind = UTC
             Assert.AreEqual(myDateTime.ToUniversalTime(), returnedDateTime.ToUniversalTime());
         }
 
@@ -235,8 +235,8 @@ Table Name  : table name is 12345 then the permille sign ISO 10646:8240 then 789
             var myDateTime = new DateTime(1980, 1, 2, 0, 0, 0, DateTimeKind.Utc);
 
 
-            Int64 tightdbdate = Table.DebugToTightDbTime(myDateTime);
-            DateTime returnedDateTime = Table.DebugToCSharpTimeUtc(tightdbdate);
+            Int64 tightdbdate = Toolbox.DebugToTightDbTime(myDateTime);
+            DateTime returnedDateTime = Toolbox.DebugToCSharpTimeUtc(tightdbdate);
             Assert.AreEqual(myDateTime, returnedDateTime); //1980,1,2,00:00, kind = UTC
         }
 
@@ -4619,7 +4619,7 @@ datetime:13-05-2007 10:50:59//column 4
         [Test]
         public static void ShowVersionTest()
         {
-            Table.ShowVersionTest();
+            Toolbox.ShowVersionTest();
         }
 
 
@@ -4631,7 +4631,7 @@ datetime:13-05-2007 10:50:59//column 4
         [Test]
         public static void TestInterop()
         {
-            Table.TestInterop();
+            Toolbox.TestInterop();
         }
 
 
@@ -4644,7 +4644,7 @@ datetime:13-05-2007 10:50:59//column 4
         [Test]
         public static void TestGetCSharpInfo()
         {
-            Assert.AreNotEqual("",Table.GetCSharpInfo());
+            Assert.AreNotEqual("",Toolbox.GetCSharpInfo());
         }
 
         /// <summary>
@@ -4656,7 +4656,7 @@ datetime:13-05-2007 10:50:59//column 4
         [Test]
         public static void TestGetCInfo()
         {
-            Assert.AreNotEqual("", Table.GetCInfo());
+            Assert.AreNotEqual("", Toolbox.GetCInfo());
         }
 
 
@@ -6322,6 +6322,7 @@ intfield2:10//column 2
         public static void GarbageCollectCollisionSingleThread()
         {
             System.Console.WriteLine("Garbagecollect collision unit test disabled");
+            Assert.AreEqual(0,1);//this unit test would fail if it was commented in
             return;
             //table created with using
             using (var table = new Table(new SubTableColumn("sub", new IntColumn("int"))))

@@ -80,18 +80,17 @@ namespace TightDbCSharp
 
        
         //store the pointer to the c++ class, and do neccessary housekeeping
-        internal void SetHandle(IntPtr newHandle, bool shouldBeDisposed,bool IsReadOnly)
+        internal void SetHandle(IntPtr newHandle, bool shouldBeDisposed,bool isReadOnly)
         {            
             //Console.WriteLine("Handle being set to newhandle:{0}h shouldBeDisposed:{1} ",newHandle.ToString("X"),shouldBeDisposed);
             if (HandleInUse)
             {
-                
                 throw new ArgumentException(String.Format(CultureInfo.InvariantCulture,
                                                        "SetHandle called on {0} that already has acquired a handle",
                                                        ObjectIdentification()));  
                 
             }
-            ReadOnly = IsReadOnly;
+            ReadOnly = isReadOnly;
             Handle = newHandle;
             HandleInUse = true;
             HandleHasBeenUsed = true;
@@ -105,7 +104,7 @@ namespace TightDbCSharp
         {
             if (ReadOnly)
             {
-                throw new InvalidOperationException(String.Format("{0} {1}",ObjectIdentification(), " Is Read Only and cannot be modified "));
+                throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture,"{0} {1}",ObjectIdentification(), " Is Read Only and cannot be modified "));
             }
         }
 

@@ -209,12 +209,15 @@ namespace TightDbCSharp
 
         // ReSharper restore MemberCanBeProtected.Global
 
+        
+
         /// <summary>
         /// Remve all rows in the table
         /// </summary>
         public void Clear()
         {
             ValidateIsValid();
+            ValidateReadWrite();
             ClearNoCheck();
         }
 
@@ -601,6 +604,7 @@ namespace TightDbCSharp
             ValidateIsValid();
             ValidateColumnIndexAndTypeMixed(columnIndex);
             ValidateRowIndex(rowIndex);
+            ValidateReadWrite();
             SetMixedNoCheck(columnIndex, rowIndex, value);
         }
 
@@ -960,6 +964,7 @@ namespace TightDbCSharp
         {            
             ValidateColumnIndexAndTypeSubTable(columnIndex);
             ValidateRowIndex(rowIndex);
+            ValidateReadWrite();
             ClearSubTableNoCheck(columnIndex, rowIndex);
         }
 
@@ -1002,6 +1007,7 @@ namespace TightDbCSharp
         {
             ValidateIsValid();
             ValidateColumnRowTypeMixed(columnIndex, rowIndex);
+            ValidateReadWrite();
             SetMixedEmptySubtableNoCheck(columnIndex, rowIndex);
         }
 
@@ -1424,6 +1430,7 @@ namespace TightDbCSharp
         {
             ValidateIsValid();
             ValidateColumnRowTypeMixed(columnIndex, rowIndex);
+            ValidateReadWrite();
             SetMixedLongNoCheck(columnIndex, rowIndex, value);
         }
 
@@ -1442,6 +1449,7 @@ namespace TightDbCSharp
         {
             ValidateIsValid();
             ValidateColumnRowTypeMixed(columnIndex, rowIndex);
+            ValidateReadWrite();
             SetMixedBoolNoCheck(columnIndex, rowIndex, value);
         }
 
@@ -1459,6 +1467,7 @@ namespace TightDbCSharp
         {
             ValidateIsValid();
             ValidateColumnRowTypeMixed(columnIndex, rowIndex);
+            ValidateReadWrite();
             SetMixedStringNoCheck(columnIndex, rowIndex, value);
         }
 
@@ -1476,6 +1485,7 @@ namespace TightDbCSharp
         {            
             long columnIndex = GetColumnIndex(columnName);
             ValidateColumnRowTypeMixed(columnIndex, rowIndex);
+            ValidateReadWrite();
             SetMixedStringNoCheck(columnIndex, rowIndex, value);
         }
 
@@ -1510,6 +1520,7 @@ namespace TightDbCSharp
         {
             ValidateIsValid();
             ValidateColumnRowTypeMixed(columnIndex, rowIndex);
+            ValidateReadWrite();
             SetMixedBinaryNoCheck(columnIndex, rowIndex, value);
         }
 
@@ -1529,6 +1540,7 @@ namespace TightDbCSharp
         {
             ValidateIsValid();
             ValidateColumnRowTypeMixed(columnIndex, rowIndex);
+            ValidateReadWrite();
             SetMixedSubTableNoCheck(columnIndex, rowIndex, source);
         }
 
@@ -1549,6 +1561,7 @@ namespace TightDbCSharp
         {
             ValidateIsValid();
             ValidateColumnRowTypeMixed(columnIndex, rowIndex);
+            ValidateReadWrite();
             SetMixedDateTimeNoCheck(columnIndex, rowIndex, value);
         }
 
@@ -1569,6 +1582,7 @@ namespace TightDbCSharp
         public void SetMixedDateTime(string columnName, long rowIndex, DateTime value)
         {
             var columnIndex = GetColumnIndex(columnName);
+            ValidateReadWrite();
             SetMixedDateTimeNoColumnCheck(columnIndex, rowIndex, value);
         }
 
@@ -1586,6 +1600,7 @@ namespace TightDbCSharp
         {
             ValidateIsValid();
             ValidateColumnRowTypeMixed(columnIndex, rowIndex);
+            ValidateReadWrite();
             SetMixedFloatNoCheck(columnIndex, rowIndex, value);
         }
 
@@ -1602,6 +1617,7 @@ namespace TightDbCSharp
         {
             ValidateIsValid();
             ValidateColumnRowTypeMixed(columnIndex, rowIndex);
+            ValidateReadWrite();
             SetMixedDoubleNoCheck(columnIndex, rowIndex, value);
         }
 
@@ -1820,7 +1836,8 @@ namespace TightDbCSharp
         public void RemoveLast() //this could be a c++ call and save the extra call to get size
         {
             ValidateIsValid();
-            long s = Size;
+            ValidateReadWrite();
+            var s = Size;
             if (s > 0)
             {
                 RemoveNoCheck(s - 1);
@@ -1838,6 +1855,7 @@ namespace TightDbCSharp
         {
             ValidateIsValid();
             ValidateRowIndex(rowIndex);
+            ValidateReadWrite();
             RemoveNoCheck(rowIndex);            
         }
 
@@ -1854,6 +1872,7 @@ namespace TightDbCSharp
             ValidateIsValid();
             ValidateColumnAndRowIndex(columnIndex, rowIndex);
             ValidateTypeInt(columnIndex);
+            ValidateReadWrite();
             SetLongNoCheck(columnIndex, rowIndex, value);
         }
 
@@ -1871,6 +1890,7 @@ namespace TightDbCSharp
             long columnIndex = GetColumnIndex(columnName);
             ValidateTypeInt(columnIndex);
             ValidateRowIndex(rowIndex);
+            ValidateReadWrite();
             SetLongNoCheck(columnIndex, rowIndex, value);
         }
 
@@ -1888,6 +1908,7 @@ namespace TightDbCSharp
             ValidateIsValid();
             ValidateColumnAndRowIndex(columnIndex, rowIndex);
             ValidateTypeInt(columnIndex);
+            ValidateReadWrite();
             SetLongNoCheck(columnIndex, rowIndex, value);
         }
 
@@ -1905,6 +1926,7 @@ namespace TightDbCSharp
             long columnIndex = GetColumnIndex(columnName);
             ValidateTypeInt(columnIndex);
             ValidateRowIndex(rowIndex);
+            ValidateReadWrite();
             SetLongNoCheck(columnIndex, rowIndex, value);
         }
 
@@ -1919,6 +1941,7 @@ namespace TightDbCSharp
             ValidateIsValid();
             ValidateColumnAndRowIndex(columnIndex, rowIndex);
             ValidateTypeDouble(columnIndex);
+            ValidateReadWrite();
             SetDoubleNoCheck(columnIndex, rowIndex, value);
         }
 
@@ -1933,6 +1956,7 @@ namespace TightDbCSharp
             long columnIndex = GetColumnIndex(columnName);
             ValidateTypeDouble(columnIndex);
             ValidateRowIndex(rowIndex);
+            ValidateReadWrite();
             SetDoubleNoCheck(columnIndex, rowIndex, value);
         }
 
@@ -1947,6 +1971,7 @@ namespace TightDbCSharp
             ValidateIsValid();
             ValidateColumnAndRowIndex(columnIndex, rowIndex);
             ValidateTypeFloat(columnIndex);
+            ValidateReadWrite();
             SetFloatNoCheck(columnIndex, rowIndex, value);
         }
 
@@ -1961,6 +1986,7 @@ namespace TightDbCSharp
             long columnIndex = GetColumnIndex(columnName);
             ValidateTypeFloat(columnIndex);
             ValidateRowIndex(rowIndex);
+            ValidateReadWrite();
             SetFloatNoCheck(columnIndex, rowIndex, value);
         }
 
@@ -1984,6 +2010,7 @@ namespace TightDbCSharp
             ValidateIsValid();
             ValidateColumnAndRowIndex(columnIndex, rowIndex);
             ValidateTypeSubTable(columnIndex);
+            ValidateReadWrite();
             SetSubTableNoCheckHighLevel(columnIndex, rowIndex, value);
                 //even though this is called nocheck, it does check if the passed value fits the subtable scheme at C,R
         }
@@ -2003,6 +2030,7 @@ namespace TightDbCSharp
             ValidateIsValid();
             ValidateColumnAndRowIndex(columnIndex, rowIndex);
             ValidateTypeSubTable(columnIndex);
+            ValidateReadWrite();
             SetSubTableNoCheckHighLevel(columnIndex, rowIndex, value);
         }
 
@@ -2022,6 +2050,7 @@ namespace TightDbCSharp
             ValidateIsValid();
             ValidateColumnAndRowIndex(columnIndex, rowIndex);
             ValidateTypeSubTable(columnIndex);
+            ValidateReadWrite();
             SetSubTableNoCheckHighLevel(columnIndex, rowIndex, value);
         }
 
@@ -2040,6 +2069,7 @@ namespace TightDbCSharp
             ValidateIsValid();
             ValidateColumnAndRowIndex(columnIndex, rowIndex);
             ValidateTypeSubTable(columnIndex);
+            ValidateReadWrite();
             SetSubTableNoCheckHighLevel(columnIndex, rowIndex, value);
         }
 
@@ -2068,6 +2098,7 @@ namespace TightDbCSharp
             long columnIndex = GetColumnIndex(columnName);
             ValidateTypeSubTable(columnIndex);
             ValidateRowIndex(rowIndex);
+            ValidateReadWrite();
             SetSubTableNoCheckHighLevel(columnIndex, rowIndex, value);
         }
 #else
@@ -2087,6 +2118,7 @@ namespace TightDbCSharp
             var columnIndex = GetColumnIndex(columnName);
             ValidateTypeSubTable(columnIndex);
             ValidateRowIndex(rowIndex);
+            ValidateReadWrite();
             SetSubTableNoCheckHighLevel(columnIndex, rowIndex, value);
         }
 
@@ -2107,6 +2139,7 @@ namespace TightDbCSharp
             var columnIndex = GetColumnIndex(columnName);
             ValidateTypeSubTable(columnIndex);
             ValidateRowIndex(rowIndex);
+            ValidateReadWrite();
             SetSubTableNoCheckHighLevel(columnIndex, rowIndex, value);
         }
 #endif
@@ -2194,7 +2227,7 @@ namespace TightDbCSharp
         {
             ValidateIsValid();
             ValidateRowIndex(rowIndex);
-            ValidateColumnIndexAndTypeInt(columnIndex);
+            ValidateColumnIndexAndTypeInt(columnIndex);            
             return GetLongNoCheck(columnIndex, rowIndex); //could be sped up if we directly call UnsafeNativeMethods
         }
 
@@ -2212,7 +2245,7 @@ namespace TightDbCSharp
         {
             long columnIndex = GetColumnIndex(columnName);
             ValidateRowIndex(rowIndex);
-            ValidateTypeInt(columnIndex);
+            ValidateTypeInt(columnIndex);            
             return GetLongNoCheck(columnIndex, rowIndex);
         }
 
@@ -2232,7 +2265,7 @@ namespace TightDbCSharp
         {
             ValidateIsValid();
             ValidateRowIndex(rowIndex);
-            ValidateColumnIndexAndTypeString(columnIndex);
+            ValidateColumnIndexAndTypeString(columnIndex);           
             return GetStringNoCheck(columnIndex, rowIndex);
         }
 
@@ -2250,7 +2283,7 @@ namespace TightDbCSharp
         {
             long columnIndex = GetColumnIndex(columnName);
             ValidateRowIndex(rowIndex);
-            ValidateTypeString(columnIndex);
+            ValidateTypeString(columnIndex);            
             return GetStringNoCheck(columnIndex, rowIndex);
         }
 
@@ -2267,7 +2300,7 @@ namespace TightDbCSharp
         {
             ValidateIsValid();
             ValidateRowIndex(rowIndex);
-            ValidateColumnIndexAndTypeBinary(columnIndex);
+            ValidateColumnIndexAndTypeBinary(columnIndex);            
             return GetBinaryNoCheck(columnIndex, rowIndex);
         }
 
@@ -2283,7 +2316,7 @@ namespace TightDbCSharp
         {
             long columnIndex = GetColumnIndex(columnName);
             ValidateRowIndex(rowIndex);
-            ValidateTypeBinary(columnIndex);
+            ValidateTypeBinary(columnIndex);            
             return GetBinaryNoCheck(columnIndex, rowIndex);
         }
 
@@ -2299,7 +2332,7 @@ namespace TightDbCSharp
         public Double GetDouble(long columnIndex, long rowIndex)
         {
             ValidateIsValid();
-            ValidateRowIndex(rowIndex);
+            ValidateRowIndex(rowIndex);            
             return GetDoubleNoRowCheck(columnIndex, rowIndex);
         }
 
@@ -2388,6 +2421,7 @@ namespace TightDbCSharp
             ValidateIsValid();
             ValidateRowIndex(rowIndex);
             ValidateColumnIndexAndTypeString(columnIndex);
+            ValidateReadWrite();
             SetStringNoCheck(columnIndex, rowIndex, value);
         }
 
@@ -2403,6 +2437,7 @@ namespace TightDbCSharp
             long columnIndex = GetColumnIndex(columnName);
             ValidateRowIndex(rowIndex);
             ValidateTypeString(columnIndex);
+            ValidateReadWrite();
             SetStringNoCheck(columnIndex, rowIndex, value);
         }
 
@@ -2417,6 +2452,7 @@ namespace TightDbCSharp
             ValidateIsValid();
             ValidateRowIndex(rowIndex);
             ValidateColumnIndexAndTypeBinary(columnIndex);
+            ValidateReadWrite();
             SetBinaryNoCheck(columnIndex, rowIndex, value);
         }
 
@@ -2431,6 +2467,7 @@ namespace TightDbCSharp
             long columnIndex = GetColumnIndex(columnName);
             ValidateRowIndex(rowIndex);
             ValidateTypeBinary(columnIndex);
+            ValidateReadWrite();
             SetBinaryNoCheck(columnIndex, rowIndex, value);
         }
 
@@ -2697,6 +2734,7 @@ namespace TightDbCSharp
             ValidateIsValid();
             ValidateColumnAndRowIndex(columnIndex, rowIndex);
             ValidateTypeBool(columnIndex);
+            ValidateReadWrite();
             SetBoolNoCheck(columnIndex, rowIndex, value);
         }
 
@@ -2714,6 +2752,7 @@ namespace TightDbCSharp
             ValidateIsValid();
             ValidateColumnAndRowIndex(columnIndex, rowIndex);
             ValidateTypeDate(columnIndex);
+            ValidateReadWrite();
             SetDateTimeNoCheck(columnIndex, rowIndex, value);
         }
 
@@ -2731,6 +2770,7 @@ namespace TightDbCSharp
             var columnIndex = GetColumnIndex(columnName);
             ValidateTypeDate(columnIndex);
             ValidateRowIndex(rowIndex);
+            ValidateReadWrite();
             SetDateTimeNoCheck(columnIndex, rowIndex, value);
         }
 
@@ -3709,6 +3749,7 @@ namespace TightDbCSharp
         public void SetValue(long columnIndex, long rowIndex,object value)
         {
             ValidateColumnAndRowIndex(columnIndex, rowIndex);
+            ValidateReadWrite();
             SetValueNoCheck(columnIndex, rowIndex, value);
         }
 

@@ -54,11 +54,11 @@ namespace TightDbCSharp
 
         
         //This is used when we want to create a table and we already have the c++ handle that the table should use.  used by GetSubTable
-        internal Table(IntPtr tableHandle,bool shouldbedisposed,bool IsReadOnly)//not 100% sure IsReadOnly should be a parameter here
+        internal Table(IntPtr tableHandle,bool shouldbedisposed,bool isReadOnly)//not 100% sure IsReadOnly should be a parameter here
         {
             try
             {
-                SetHandle(tableHandle, shouldbedisposed,IsReadOnly);
+                SetHandle(tableHandle, shouldbedisposed,isReadOnly);
             }
             catch (Exception)
             {
@@ -235,39 +235,6 @@ namespace TightDbCSharp
 
 
 
-        /// <summary>
-        /// Will display C# assembly, 
-        /// c++ dll, runtime environment, bit size and operating system
-        /// information on the console.
-        /// </summary>
-        public static void ShowVersionTest()
-        {
-            Console.WriteLine(GetCSharpInfo());
-            Console.WriteLine(GetCInfo());
-        }
-
-        /// <summary>
-        /// Return string with list of lines with
-        /// system information, suitable for
-        /// console output
-        /// </summary>
-        /// <returns>Info reg. the OS, runtime environment, assembly etc.</returns>
-        public static string GetCSharpInfo()
-        {
-            return UnsafeNativeMethods.GetCsInfo();
-        }
-
-
-        /// <summary>
-        /// Return string with list of lines with
-        /// system information, suitable for
-        /// console output
-        /// </summary>
-        /// <returns>Info reg. the C DLL - location, name etc</returns>
-        public static string GetCInfo()
-        {
-            return UnsafeNativeMethods.GetCppInfo();
-        }
 
 
         //this parameter type allows the user to send a comma seperated list of TableField objects without having
@@ -319,21 +286,20 @@ namespace TightDbCSharp
 
         internal Table DefineSchema(params ColumnSpec[] schema)
         {
-        
+            ValidateReadWrite();        
             if (schema == null)
             {
                 throw new ArgumentNullException("schema");
             }
             ValidateColumnChangeIsOkay();
-            foreach (ColumnSpec tf in schema)
+            foreach (var columnSpec in schema)
             {
-                if (tf == null)
+                if (columnSpec == null)
                 {
-                    throw new ArgumentNullException("schema", "one or more of the field objects is null");
+                    throw new ArgumentNullException("schema", "one or more of the column specification objects are null");
                 }
-                AddFieldNoCheck(new List<long>(),tf );
-            }
-            //UpdateFromSpecNoCheck();
+                AddColumnNoCheck(new List<long>(),columnSpec );
+            }            
             return this;//allow fluent creation of table in a group
         }
 
@@ -341,7 +307,7 @@ namespace TightDbCSharp
         //attempt to do a non-spec based AddField
         //this addfield must be called on the top table, but bc of the path parameter, it can add columns to any subtable recursively
         //should not really be called NoCheck as it ought to check a lot, and in fact it does (AddSubColumn does)
-        private void AddFieldNoCheck(List<long> path, ColumnSpec schema)
+        private void AddColumnNoCheck(List<long> path, ColumnSpec schema)
         {
             if (schema != null)
             {
@@ -354,7 +320,7 @@ namespace TightDbCSharp
                     ColumnSpec[] tfa = schema.GetSubTableArray();
                     var columnNumber = AddColumnNoValidCheck(path, DataType.Table, schema.ColumnName);
                     path.Add((int)columnNumber);//limits number of columns to IntPtr - 2^32 ALSO on 64 bit machines, where core supports 2^64
-                    AddFieldsNoCheck(path,tfa);
+                    AddColumnsNoCheck(path,tfa);
                 }
             }
             else
@@ -365,18 +331,18 @@ namespace TightDbCSharp
 
 
         // will add the field list to the current spec
-        private void AddFieldsNoCheck(List<long> path, IEnumerable<ColumnSpec> fields)
+        private void AddColumnsNoCheck(List<long> path, IEnumerable<ColumnSpec> columnSpecs)
         {
-            if (fields != null)
+            if (columnSpecs != null)
             {
-                foreach (ColumnSpec field in fields)
+                foreach (var columnSpec in columnSpecs)
                 {
-                    AddFieldNoCheck(path,field);
+                    AddColumnNoCheck(path,columnSpec);
                 }
             }
             else
             {
-                throw new ArgumentNullException("fields");
+                throw new ArgumentNullException("columnSpecs");
             }
         }
 
@@ -389,10 +355,10 @@ namespace TightDbCSharp
         //must count all fields, old as well as new.
         private void DefineSchema(ColumnSpec schema)
         {
-            //ValidateSpecChangeIsOkay();
+            ValidateReadWrite();
             ValidateColumnChangeIsOkay();//ensure this is the top table (not shared spec) and that it is with no rows
             //Spec.AddFieldNoCheck(schema);
-            AddFieldNoCheck(new List<long>(),schema );//pass empty list -  this table is validated to be the top table
+            AddColumnNoCheck(new List<long>(),schema );//pass empty list -  this table is validated to be the top table
             //UpdateFromSpecNoCheck();//build table from the spec tree structure            
         }
         /*
@@ -421,34 +387,6 @@ namespace TightDbCSharp
 
         
         
-        /// <summary>
-        /// Only used by unit tests
-        /// </summary>
-        /// <param name="date"></param>
-        /// <returns></returns>
-        public static Int64 DebugToTightDbTime(DateTime date)
-        {
-            return UnsafeNativeMethods.ToTightDbDateTime(date);
-        }
-
-        /// <summary>
-        /// Only used by unit tests
-        /// </summary>
-        /// <param name="linuxTime"></param>
-        /// <returns></returns>
-        public static DateTime DebugToCSharpTimeUtc(Int64 linuxTime)
-        {
-            return UnsafeNativeMethods.ToCSharpTimeUtc(linuxTime);
-        }
-        
-        /// <summary>
-        /// Tests basic interop, used when building experimentally on new platforms
-        /// </summary>
-        public static void TestInterop()
-        {
-            UnsafeNativeMethods.TestInterop();
-            
-        }
 
 
 
@@ -470,6 +408,7 @@ namespace TightDbCSharp
         /// <param name="newName">New name of column to rename</param>
         public void RenameColumn(long columnIndex, String newName)
         {            
+            ValidateReadWrite();
             ValidateColumnIndex(columnIndex);
             ValidateNotSharedSpec();
             UnsafeNativeMethods.TableRenameColumn(this,columnIndex,newName);
@@ -482,7 +421,8 @@ namespace TightDbCSharp
         /// </summary>
         /// <param name="columnIndex">Index of column to remove</param>
         public void RemoveColumn(long columnIndex)
-        {            
+        {
+            ValidateReadWrite();
             ValidateColumnIndex(columnIndex);
             UnsafeNativeMethods.TableRemoveColumn(this,columnIndex);
             ++Version;
@@ -507,8 +447,7 @@ namespace TightDbCSharp
         }
 
         private void ValidateColumnChangeIsOkay()
-        {
-            //ValidateIsEmpty();
+        {                       
             ValidateNotSharedSpec();
         }
 
@@ -651,6 +590,7 @@ namespace TightDbCSharp
         public void Optimize()
         {
             ValidateIsValid();
+            ValidateReadWrite();//optimize changes internal table structures so cannot be done unless readwrite access
             UnsafeNativeMethods.TableOptimize(this);
         }
 
@@ -712,6 +652,7 @@ namespace TightDbCSharp
         private long AddColumnNoValidCheck(DataType type, String name)
         {            
             ValidateNotSharedSpec();
+            ValidateReadWrite();
             long colIx = UnsafeNativeMethods.TableAddColumn(this, type, name);
             ++Version;
             return colIx;                         
@@ -1039,7 +980,7 @@ namespace TightDbCSharp
             }
             foreach (var row in rows )
             {
-                Add(row);
+                Add(row);//add will validate readonly for us
             }
         }
 
@@ -1058,7 +999,8 @@ namespace TightDbCSharp
         /// <returns>zero based row index of the newly added row</returns>
         public long Add(params object[] rowData)
         {
-            ValidateIsValid();     
+            ValidateIsValid();
+            ValidateReadWrite();
             long rowAdded = AddEmptyRow(1);
             SetRowNoCheck(rowAdded, rowData);//because the only thing that could be checked at this level is the row number.
             return rowAdded;//return the index of the just added row
@@ -1072,6 +1014,7 @@ namespace TightDbCSharp
         public void Set(long rowIndex, params object[] rowData)
         {
             ValidateIsValid();
+            ValidateReadWrite();
             ValidateRowIndex(rowIndex);
             SetRowNoCheck(rowIndex,rowData);
         }
@@ -1097,6 +1040,7 @@ namespace TightDbCSharp
         public void Insert(long rowIndex, params object[] rowData)
         {
             ValidateIsValid();
+            ValidateReadWrite();
             ValidateInsertRowIndex(rowIndex);
             UnsafeNativeMethods.TableInsertEmptyRow(this,rowIndex,1);
             ++Version;
@@ -1117,6 +1061,7 @@ namespace TightDbCSharp
         public long AddEmptyRow(long numberOfRows)
         {
             ValidateIsValid();
+            ValidateReadWrite();
             ++Version;
             return UnsafeNativeMethods.TableAddEmptyRow(this, numberOfRows);            
         }
@@ -1162,6 +1107,7 @@ namespace TightDbCSharp
         /// <param name="value">increment, value to be added to each field</param>
         public void AddInt(long columnIndex, long value)
         {
+            ValidateReadWrite();
             ValidateColumnIndex(columnIndex);
             ValidateTypeInt(columnIndex);
             UnsafeNativeMethods.TableAddInt(this,columnIndex,value);
@@ -1263,7 +1209,8 @@ namespace TightDbCSharp
         /// <param name="rowsToInsert">Number of rows to make space for</param>
         public void InsertEmptyRow(long rowIndex, long rowsToInsert)
         {
-            ValidateIsValid();     
+            ValidateIsValid();
+            ValidateReadWrite();
             ValidateInsertRowIndex(rowIndex);
             UnsafeNativeMethods.TableInsertEmptyRow(this, rowIndex, rowsToInsert);
             ++Version;
@@ -1440,6 +1387,7 @@ namespace TightDbCSharp
         //note - SetIndex is only callable if the column is a string column
         private void SetIndexNoCheck(long columnIndex)
         {
+            ValidateReadWrite();
             UnsafeNativeMethods.TableSetIndex(this, columnIndex);
         }
 
@@ -1452,7 +1400,7 @@ namespace TightDbCSharp
         {
             ValidateIsValid(); 
             ValidateNotSharedSpec();//core does not support indexes on colums in non-mixed subtables
-            ValidateColumnIndexAndTypeString(columnIndex);
+            ValidateColumnIndexAndTypeString(columnIndex);            
             SetIndexNoCheck(columnIndex);
         }
 
@@ -1465,7 +1413,7 @@ namespace TightDbCSharp
         {
             long columnIndex = GetColumnIndex(columnName);//will call isvalid
             ValidateNotSharedSpec();//core does not support indexes on colums in non-mixed subtables
-            ValidateTypeString(columnIndex);
+            ValidateTypeString(columnIndex);            
             SetIndexNoCheck(columnIndex);
         }
 
@@ -1545,8 +1493,7 @@ namespace TightDbCSharp
         
         //returns the index of the added column in the subtable where it is placed (or in the top table where it is placed)
         private long AddColumnNoValidCheck(IList<long> path, DataType dataType, string columnName)
-        {
-            
+        {            
             if (columnName == null)
             {
                 throw new ArgumentNullException("columnName","column name cannot be null");
@@ -1554,6 +1501,7 @@ namespace TightDbCSharp
             ValidateIsEmpty();//cannot change scheme if there is data in the table
             ValidateNotSharedSpec();//You must alter shared spec tables through their top table
             ValidateColumnPath(path,true);
+            ValidateReadWrite();
             return path.Count == 0 ? UnsafeNativeMethods.TableAddColumn(this, dataType, columnName) : UnsafeNativeMethods.TableAddSubColumn(this, path, dataType, columnName);
         }
 
@@ -1570,6 +1518,7 @@ namespace TightDbCSharp
         public long AddColumn(IList<long> path, DataType dataType, string columnName)
         {
             ValidateIsValid();
+            ValidateReadWrite();
             return AddColumnNoValidCheck(path, dataType, columnName);
         }        
 
@@ -1583,7 +1532,7 @@ namespace TightDbCSharp
         /// <param name="newName">New name</param>
         public void RenameColumn(IEnumerable<long> pathToSubTable, long columnIndex, string newName)
         {
-            ValidateIsValid();
+            ValidateIsValid();            
             var newlist = new List<long>(pathToSubTable) {columnIndex};//newlist now points to the path to the subatble plus the index of the column we want to change
             RenameColumn(newlist,newName);
         }
@@ -1601,6 +1550,7 @@ namespace TightDbCSharp
             ValidateIsEmpty(); //cannot change scheme if there is data in the table
             ValidateNotSharedSpec(); //You must alter shared spec tables through their top table
             ValidateColumnPath(path, false);
+            ValidateReadWrite();
             if (path.Count > 1) //this test bc tablerenamesubcolumn does not work with a path of length 1
             {
                 UnsafeNativeMethods.TableRenameSubColumn(this, path, name);
@@ -1637,6 +1587,7 @@ namespace TightDbCSharp
             ValidateIsEmpty(); //cannot change scheme if there is data in the table
             ValidateNotSharedSpec(); //You must alter shared spec tables through their top table
             ValidateColumnPath(path, false);
+            ValidateReadWrite();
             if (path.Count > 1) //this test because TableRemoveSubcolumn does not accept a path with only one number
             {
                 UnsafeNativeMethods.TableRemoveSubColumn(this, path);
@@ -1718,7 +1669,6 @@ namespace TightDbCSharp
             ValidateIsValid();
             return UnsafeNativeMethods.table_where(this);
         }
-
     }
 
     /*
