@@ -23,7 +23,14 @@ namespace TightDbCSharp
         /// the file will just be used for identification and backing and will be removed again
         ///  when there are no more processes using it.  
         /// </summary>
-        DurabilityMemoryOnly
+        DurabilityMemoryOnly,
+        /// <summary>
+        /// Currently not supported on windows.
+        /// Will save data using a background thread. 
+        /// Write transactions will return much faster, data throughput is much larger, but 
+        /// no guarentee than a commit is actaully written to a file when the calls return        
+        /// </summary>
+        DurabilityAsync 
     }
 
     //Never : this sharedgroup has never finished a transaction, neither started one
@@ -113,6 +120,23 @@ namespace TightDbCSharp
         }
         */
 
+        //todo:implement reserve
+
+
+        //todo:unit test with two threads - create SG, check it has not changed. create thread and run that thread (it then updates the sg) and then await it, and when it is finishe,
+        //todo:finally check to see if the SG has changed.        
+        /// <summary>
+        /// This method tests if the shared group has been modified (by another process), since the last transaction.
+        /// It has very little overhead and does not affect other processes, so it is ok to call it at regular intervals 
+        /// (like in the idle handler of an application).
+        /// </summary>
+        public Boolean HasChanged
+        {
+            get
+            {
+                return UnsafeNativeMethods.SharedGroupHasChanged(this);
+            }
+        }
 
         //
         //
@@ -150,6 +174,10 @@ namespace TightDbCSharp
            return UnsafeNativeMethods.SharedGroupBeginRead(this);//will initialize a new transaction:group, set t.handle to the group returned by the sharedgroup
         }
 
+
+        //commit is implemented in transaction
+
+
         //this is the only place where a write transaction can be initiated
         /// <summary>
         /// Initiate a write transaction by returning a Transaction that is also a Group.
@@ -166,20 +194,9 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.SharedGroupBeginWrite(this);
         }
 
-        //todo:unit test with two threads - create SG, check it has not changed. create thread and run that thread (it then updates the sg) and then await it, and when it is finishe,
-        //todo:finally check to see if the SG has changed.        
-        /// <summary>
-        /// This method tests if the shared group has been modified (by another process), since the last transaction.
-        /// It has very little overhead and does not affect other processes, so it is ok to call it at regular intervals 
-        /// (like in the idle handler of an application).
-        /// </summary>
-        public Boolean HasChanged
-        {
-            get
-            {
-                return UnsafeNativeMethods.SharedGroupHasChanged(this);             
-            }
-        }
+        //rollback is implemented in Transaction
+
+
 
         internal override string ObjectIdentification()
         {

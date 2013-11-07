@@ -218,7 +218,7 @@ extern "C" {
  TIGHTDB_C_CS_API size_t tightdb_c_cs_getver(void){
 
   // Table test;
-	return 201310252;
+	return 20131107;
 }
 
  //return a newly constructed top level table 
@@ -587,6 +587,12 @@ TIGHTDB_C_CS_API void table_set_binary(Table*  table_ptr, size_t column_ndx, siz
 TIGHTDB_C_CS_API void table_set_mixed_int(Table*  table_ptr, size_t column_ndx, size_t row_ndx, int64_t value)
 {
     table_ptr->set_mixed(column_ndx,row_ndx,value);
+}
+
+//this is here only to present a call into the dll where the last parameter is 4 bytes instead of 8
+TIGHTDB_C_CS_API void table_set_mixed_int32(Table*  table_ptr, size_t column_ndx, size_t row_ndx, int32_t value)
+{
+	table_ptr->set_mixed(column_ndx,row_ndx, (int64_t) value);
 }
 
 //call with false=0  true=1 we use a size_t as it is likely the fastest type to return
@@ -1098,47 +1104,47 @@ TIGHTDB_C_CS_API size_t tableview_get_subtable_size(TableView * tableview_ptr,co
 }
 
 //size_t         find_first_bool(size_t column_ndx, bool value) const;
-TIGHTDB_C_CS_API size_t tableview_find_first_int(TableView * table_ptr , size_t column_ndx, int64_t value)
+TIGHTDB_C_CS_API size_t tableview_find_first_int(TableView * tableview_ptr , size_t column_ndx, int64_t value)
 {   
-    return table_ptr->find_first_int(column_ndx,value);
+    return tableview_ptr->find_first_int(column_ndx,value);
 }
 
 
-TIGHTDB_C_CS_API size_t tableview_find_first_bool(TableView * table_ptr , size_t column_ndx, size_t value)
+TIGHTDB_C_CS_API size_t tableview_find_first_bool(TableView * tableview_ptr , size_t column_ndx, size_t value)
 {   
-    return  table_ptr->find_first_bool(column_ndx,size_t_to_bool(value));
+    return  tableview_ptr->find_first_bool(column_ndx,size_t_to_bool(value));
 }
 
 
 //assuming int64_t and time_t are binary compatible.
-TIGHTDB_C_CS_API size_t tableview_find_first_date(TableView * table_ptr , size_t column_ndx, int64_t value)
+TIGHTDB_C_CS_API size_t tableview_find_first_date(TableView * tableview_ptr , size_t column_ndx, int64_t value)
 {   
-    return  table_ptr->find_first_datetime(column_ndx,value);
+    return  tableview_ptr->find_first_datetime(column_ndx,value);
 }
 
 
-TIGHTDB_C_CS_API size_t tableview_find_first_float(TableView * table_ptr , size_t column_ndx, float value)
+TIGHTDB_C_CS_API size_t tableview_find_first_float(TableView * tableview_ptr , size_t column_ndx, float value)
 {   
-    return  table_ptr->find_first_float(column_ndx,value);
+    return  tableview_ptr->find_first_float(column_ndx,value);
 }
 
 
-TIGHTDB_C_CS_API size_t tableview_find_first_double(TableView * table_ptr , size_t column_ndx, double value)
+TIGHTDB_C_CS_API size_t tableview_find_first_double(TableView * tableview_ptr , size_t column_ndx, double value)
 {   
-    return  table_ptr->find_first_double(column_ndx,value);
+    return  tableview_ptr->find_first_double(column_ndx,value);
 }
 
-TIGHTDB_C_CS_API size_t tableview_find_first_string(TableView * table_ptr , size_t column_ndx, uint16_t* value,size_t value_len)
+TIGHTDB_C_CS_API size_t tableview_find_first_string(TableView * tableview_ptr , size_t column_ndx, uint16_t* value,size_t value_len)
 {   
     CSStringAccessor str(value,value_len);
-    return  table_ptr->find_first_string(column_ndx,str);
+    return  tableview_ptr->find_first_string(column_ndx,str);
 }
 
 
-TIGHTDB_C_CS_API size_t tableview_find_first_binary(TableView * table_ptr , size_t column_ndx, char* value, size_t len)
+TIGHTDB_C_CS_API size_t tableview_find_first_binary(TableView * tableview_ptr , size_t column_ndx, char* value, size_t len)
 {   
     BinaryData bd(value,len);
-    return  table_ptr->find_first_binary(column_ndx,bd);
+    return  tableview_ptr->find_first_binary(column_ndx,bd);
 }
 
 
@@ -1991,6 +1997,12 @@ TIGHTDB_C_CS_API size_t table_get_row_count(Table* table_ptr)
 TIGHTDB_C_CS_API void table_set_mixed_subtable(Table* table_ptr,size_t col_ndx, size_t row_ndx,Table* source)
     {
         LangBindHelper::set_mixed_subtable(*table_ptr,col_ndx,row_ndx,*source);
+}
+
+//this should work, but we ought to have a tableview_set_mixed_subtable in langbindhelper instead.
+TIGHTDB_C_CS_API void tableview_set_mixed_subtable(TableView* tableview_ptr,size_t col_ndx, size_t row_ndx,Table* source)
+{
+	LangBindHelper::set_mixed_subtable(tableview_ptr->get_parent(),col_ndx,row_ndx,*source);
 }
 
 TIGHTDB_C_CS_API void table_set_mixed_empty_subtable(Table* table_ptr,size_t col_ndx, size_t row_ndx)

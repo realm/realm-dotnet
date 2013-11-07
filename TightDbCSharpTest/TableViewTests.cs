@@ -408,6 +408,41 @@ intcolumn2:1//column 2
         }
 
 
+
+        /// <summary>
+        /// Check that setting a double in a mixed field in a tableview works
+        /// </summary>
+        [Test]
+        public static void TableViewAndTableTestMixedInt()
+        {
+            const int testInt = 412;
+            using (var t = new Table(new MixedColumn("MixedField"), "stringfield".String()))
+            {
+                //get and set of a int in a mixed field (test type and value)
+                t.AddEmptyRow(1);
+                t.SetMixedInt(0, 0, testInt);
+                t.SetString("stringfield", 0, "testdata"); //used for creation of tableview in next test
+                DataType dt = t.GetMixedType(0, 0);
+                Assert.AreEqual(DataType.Int, dt);
+                long fromDb = t.GetMixedLong(0, 0);
+                Assert.AreEqual(testInt, fromDb);//types are not the same, but value should be. cast?
+
+                const int testInt2 = -122;
+                //get and set of a int in a mixed in a tableview (test type and value).
+                t.SetIndex(1);
+                using (TableView tv = t.Distinct("stringfield"))
+                {
+                    Assert.AreEqual(1, tv.Size);
+                    tv.SetMixedInt(0, 0, testInt2);
+                    dt = tv.GetMixedType(0, 0);
+                    Assert.AreEqual(DataType.Int, dt);
+                    fromDb = tv.GetMixedLong(0, 0);
+                    Assert.AreEqual(testInt2, fromDb);
+                }
+            }
+        }
+
+
         /// <summary>
         /// Check that setting a double in a mixed field in a tableview works
         /// </summary>

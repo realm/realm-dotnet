@@ -624,6 +624,11 @@ namespace TightDbCSharp
             Owner.ClearSubTableNoRowCheck(columnName, RowIndex);
         }
 
+
+        public override string ToString()
+        {
+            return Owner.RowToString(RowIndex);
+        }
 //in .net 35 Table cannot be taken as an IEnumerable<object> parameter
 //in .net 40,45 Table is an IEnumerable<object> and You cannot overload a parameter as both Table and IEnumerable
 //therefore we have two signatures in .35 and one in .40 and .45

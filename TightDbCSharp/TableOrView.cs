@@ -41,6 +41,9 @@ namespace TightDbCSharp
 
         //getters for table and tableview mixed columns
         internal abstract long GetMixedLongNoCheck(long columnIndex, long rowIndex);
+        //getmixedint not implemented as it wouldve been slower than calling getmixedlong
+        //as it would have to check the size of the value returned form core
+        
         internal abstract bool GetMixedBoolNoCheck(long columnIndex, long rowIndex);
         internal abstract String GetMixedStringNoCheck(long columnIndex, long rowIndex);
         internal abstract byte[] GetMixedBinaryNoCheck(long columnIndex, long rowIndex);
@@ -187,6 +190,7 @@ namespace TightDbCSharp
         internal abstract void SetFloatNoCheck(long columnIndex, long rowIndex, float value);
 
         internal abstract void SetMixedLongNoCheck(long columnIndex, long rowIndex, long value);
+        internal abstract void SetMixedIntNoCheck(long columnIndex, long rowIndex, int value);
         internal abstract void SetMixedBoolNoCheck(long columnIndex, long rowIndex, bool value);
         internal abstract void SetMixedStringNoCheck(long columnIndex, long rowIndex, String value);
         internal abstract void SetMixedBinaryNoCheck(long columnIndex, long rowIndex, Byte[] value);
@@ -453,7 +457,7 @@ namespace TightDbCSharp
 
             if (elementType == typeof (Int32))
             {
-                SetMixedLongNoCheck(columnIndex, rowIndex, (Int32) element);
+                SetMixedIntNoCheck(columnIndex,rowIndex,(int)element);
                 return;
             }
 
@@ -493,18 +497,18 @@ namespace TightDbCSharp
 
             if (elementType == typeof (byte))
             {
-                SetMixedLongNoCheck(columnIndex, rowIndex, (byte) element);
+                SetMixedIntNoCheck(columnIndex, rowIndex, (byte) element);
                 return;
             }
 
             if (elementType == typeof (SByte))
             {
-                SetMixedLongNoCheck(columnIndex, rowIndex, (SByte) element);
+                SetMixedIntNoCheck(columnIndex, rowIndex, (SByte) element);
                 return;
             }
 
 
-            if (elementType == typeof (UInt32)) //uint
+            if (elementType == typeof (UInt32)) //uint has to be stored as a long as uint max is gt what an int can take
             {
                 SetMixedLongNoCheck(columnIndex, rowIndex, Convert.ToInt64(element,CultureInfo.InvariantCulture));
                 return;
@@ -532,8 +536,8 @@ namespace TightDbCSharp
                 elementType == typeof (Int32) || //int,int32
                 elementType == typeof (UInt16) //ushort,uint16
                 )
-            {//todo:measure what the poeerformance hit is when we specify cultureinfo unneccesarily like here
-                SetMixedLongNoCheck(columnIndex, rowIndex, Convert.ToInt64(element,CultureInfo.InvariantCulture));
+            {
+                SetMixedIntNoCheck(columnIndex, rowIndex, Convert.ToInt32(element,CultureInfo.InvariantCulture));
                 return;
             }
 
@@ -549,7 +553,7 @@ namespace TightDbCSharp
 
             if (elementType == typeof (char))
             {
-                SetMixedLongNoCheck(columnIndex, rowIndex, Convert.ToInt64(element,CultureInfo.InvariantCulture));
+                SetMixedIntNoCheck(columnIndex, rowIndex, Convert.ToInt32(element,CultureInfo.InvariantCulture));
                 return;
             }
 
@@ -1013,7 +1017,7 @@ namespace TightDbCSharp
 
 
         /// <summary>
-        /// retrun the long value stored in a mixed field.
+        /// return the long value stored in a mixed field.
         /// The field must be of type Mixed.
         /// The value stored in the field must be of type DataType.Int.        
         /// </summary>
@@ -1040,6 +1044,9 @@ namespace TightDbCSharp
             ValidateMixedType(columnIndex, rowIndex, DataType.Int);
             return GetMixedLongNoCheck(columnIndex, rowIndex);
         }
+
+
+
 
         /// <summary>
         /// retrun the boolean value stored in a mixed field
@@ -1249,6 +1256,7 @@ namespace TightDbCSharp
             return GetMixedLongNoCheck(columnIndex, rowIndex);
         }
 
+
         internal bool GetMixedBooleanNoRowCheck(long columnIndex, long rowIndex)
         {
             ValidateColumnIndex(columnIndex);
@@ -1433,6 +1441,25 @@ namespace TightDbCSharp
             ValidateReadWrite();
             SetMixedLongNoCheck(columnIndex, rowIndex, value);
         }
+
+
+        /// <summary>
+        /// Set a long value into a mixed field.
+        /// The field specified must be of datatype mixed.
+        /// The current type of the mixed field will be changed from whatever it is, to DataType.int
+        /// And the value specified will be stored in the field
+        /// </summary>
+        /// <param name="columnIndex">Zero based index of column of field</param>
+        /// <param name="rowIndex">Zero based row of column of field</param>
+        /// <param name="value">long value to store in the mixed field</param>
+        public void SetMixedInt(long columnIndex, long rowIndex, int value)
+        {
+            ValidateIsValid();
+            ValidateColumnRowTypeMixed(columnIndex, rowIndex);
+            ValidateReadWrite();
+            SetMixedIntNoCheck(columnIndex, rowIndex, value);
+        }
+
 
 
         /// <summary>

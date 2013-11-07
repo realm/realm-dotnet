@@ -537,6 +537,12 @@ namespace TightDbCSharp
         {
             UnsafeNativeMethods.TableViewSetMixedLong(this, columnIndex, rowIndex, value);
         }
+
+        internal override void SetMixedIntNoCheck(long columnIndex, long rowIndex, int value)
+        {
+            UnsafeNativeMethods.TableViewSetMixedInt(this, columnIndex, rowIndex, value);
+        }
+        
         internal override void SetMixedBoolNoCheck(long columnIndex, long rowIndex, bool value)
         {
             UnsafeNativeMethods.TableViewSetMixedBool(this, columnIndex, rowIndex, value);

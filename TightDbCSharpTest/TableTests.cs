@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using NUnit.Framework;
@@ -3932,7 +3933,13 @@ Table Name  : rename columns in subtables via parameters
 
                 byte[] arrayToFind = {01, 12, 36, 22};
                 var rowNo = table.FindFirstBinary(0, arrayToFind);
-
+                using (var view = table.FindAllInt(1, 42))
+                {
+                    var viewRowNo = view.FindFirstBinary(0, arrayToFind);
+                    Assert.AreEqual(0, viewRowNo);
+                    viewRowNo = view.FindFirstBinary("radio", arrayToFind);
+                    Assert.AreEqual(0, viewRowNo);
+                }
                 Assert.AreEqual(1, rowNo);
             }
         }
@@ -4506,6 +4513,15 @@ datetime:13-05-2007 10:50:59//column 4
             {
                 Assert.AreEqual(5, table.FindFirstInt(0, 5));
                 Assert.AreEqual(50, table.FindFirstInt("intcolumn1", 5));
+                Array tableArray = table.ToArray();
+                using (var view = table.FindAllInt(2, 1))
+                {
+                    Array viewArray = view.ToArray();
+                    var rowNo = view.FindFirstInt(0, 110);
+                    Assert.AreEqual(10,rowNo);
+                    rowNo = view.FindFirstInt("intcolumn0", 110);
+                    Assert.AreEqual(10, rowNo);
+                }
             }
         }
 
@@ -4516,17 +4532,19 @@ datetime:13-05-2007 10:50:59//column 4
         [Test]
         public static void FindFirstString()
         {
-            using (var table = new Table(new StringColumn("str")))
+            using (var table = new Table(new StringColumn("str"),"int".Int()))
             {
-                table.AddMany(new[]
-                {
-                    "first",
-                    "secodnd",
-                    "third",
-                    "fourth"
-                });                            
+                table.Add("first", 1);
+                table.Add("second", 1);
+                table.Add("third", 2);
+                table.Add("fourth", 2);                
                 Assert.AreEqual(2,table.FindFirstString(0,"third"));//todo perhaps we could introduce methods with no column indicator that only works if the table has one column
                 Assert.AreEqual(2, table.FindFirstString("str", "third"));
+                using (var view = table.FindAllInt(1, 2))
+                {
+                    Assert.AreEqual(1, view.FindFirstString(0, "fourth"));
+                    Assert.AreEqual(1, view.FindFirstString("str", "fourth"));                    
+                }
             }
         }
 
@@ -4537,11 +4555,23 @@ datetime:13-05-2007 10:50:59//column 4
         [Test]
         public static void FindFirstDouble()
         {
-            using (var table = new Table(new DoubleColumn("dbl")))
+            using (var table = new Table(new DoubleColumn("dbl"),"int".Int()))
             {
-                table.AddMany(new[] {1d, 2d, 3d, 4d, 5d, 6d, 7d});                            
+                table.Add(1d, 1);
+                table.Add(2d, 1);
+                table.Add(3d, 1);
+                table.Add(4d, 1);
+                table.Add(5d, 1);
+                table.Add(6d, 1);
+                table.Add(7d, 1);                           
                 Assert.AreEqual(2, table.FindFirstDouble(0, 3));//todo perhaps we could introduce methods with no column indicator that only works if the table has one column
                 Assert.AreEqual(2, table.FindFirstDouble("dbl", 3));
+
+                using (var view = table.FindAllInt(1, 1))
+                {
+                    Assert.AreEqual(2, view.FindFirstDouble(0, 3));
+                    Assert.AreEqual(2, view.FindFirstDouble("dbl", 3));                    
+                }
             }
         }
 
@@ -4551,11 +4581,20 @@ datetime:13-05-2007 10:50:59//column 4
         [Test]
         public static void FindFirstBool()
         {
-            using (var table = new Table(new BoolColumn("boo")))
+            using (var table = new Table(new BoolColumn("boo"),"int".Int()))
             {
-                table.AddMany(new[] {true, true, false, true});            
+                table.Add(true, 1);
+                table.Add(true, 1);
+                table.Add(false, 2);
+                table.Add(false, 1);
+                table.Add(true, 1);
                 Assert.AreEqual(2, table.FindFirstBool(0,false));
                 Assert.AreEqual(2, table.FindFirstBool("boo", false));
+                using (var view = table.FindAllInt(1, 1))
+                {
+                    Assert.AreEqual(2, view.FindFirstBool(0, false));
+                    Assert.AreEqual(2, view.FindFirstBool("boo", false));
+                }                
             }
         }
 
@@ -4568,16 +4607,26 @@ datetime:13-05-2007 10:50:59//column 4
         [Test]
         public static void FindFirstFloat()
         {
-            using (var table = new Table(new FloatColumn("float")))
+            using (var table = new Table(new FloatColumn("float"),"int".Int()))
             {
-                table.AddMany(new[]
-                {
-                    1f, 2f, 3f, 4f, 5f, 6f, 7f
-                });
+                table.Add(1f, 1);
+                table.Add(2f, 1);
+                table.Add(3f, 1);
+                table.Add(4f, 1);
+                table.Add(5f, 1);
+                table.Add(6f, 1);
+                table.Add(7f, 1);                           
            
                 Assert.AreEqual(2, table.FindFirstFloat(0, 3f));//todo perhaps we could introduce methods with no column indicator that only works if the table has one column
                 Assert.AreEqual(2, table.FindFirstFloat("float", 3f));
-            }
+
+                using (var view = table.FindAllInt(1, 1))
+                {
+                    Assert.AreEqual(2, view.FindFirstFloat(0, 3f));
+                        //todo perhaps we could introduce methods with no column indicator that only works if the table has one column
+                    Assert.AreEqual(2, view.FindFirstFloat("float", 3f));
+                }
+            }            
         }
 
         /// <summary>
@@ -4588,12 +4637,21 @@ datetime:13-05-2007 10:50:59//column 4
         {
             var basedate  = new DateTime(2001,2,3);
 
-            using (var table = new Table(new DateColumn("time_t")))
+            using (var table = new Table(new DateColumn("time_t"),"int".Int()))
             {
-                table.AddMany(new[]
-                {basedate, basedate.AddDays(1), basedate.AddDays(2), basedate.AddDays(-1), basedate.AddDays(22)});                          
+                table.Add(basedate,1);
+                table.Add(basedate.AddDays(1), 1);
+                table.Add(basedate.AddDays(2), 1);
+                table.Add(basedate.AddDays(-1),1);
+                table.Add(basedate.AddDays(22), 1);
+                table.Add(basedate.AddDays(2), 1);                                       
                 Assert.AreEqual(2, table.FindFirstDateTime(0, basedate.AddDays(2)));//todo perhaps we could introduce methods with no column indicator that only works if the table has one column
                 Assert.AreEqual(2, table.FindFirstDateTime("time_t",basedate.AddDays(2)));
+                using (var view = table.FindAllInt(1, 1))
+                {
+                    Assert.AreEqual(2, view.FindFirstDateTime(0, basedate.AddDays(2)));//todo perhaps we could introduce methods with no column indicator that only works if the table has one column
+                    Assert.AreEqual(2, view.FindFirstDateTime("time_t", basedate.AddDays(2)));
+                }
             }
         }
 
@@ -4819,6 +4877,16 @@ datetime:13-05-2007 10:50:59//column 4
                 t.SetMixedEmptySubTable(0, 0); //i want a new empty subtable in my newly created row
                 DataType sttype = t.GetMixedType(0, 0);
                 Assert.AreEqual(DataType.Table, sttype);
+                using (var qry = t.Where())
+                using (var view = qry.FindAll())
+                using (var sub2 = new Table(new IntColumn("int")))
+                {
+                    sub2.Add(42);
+                    view.SetMixedSubTable(0,1,sub2);
+                    Assert.AreEqual(DataType.Table,t.GetMixedType(0,1));
+                    var subback = t.GetMixedSubTable(0, 1);
+                    Assert.AreEqual(42,subback.GetLong(0,0));
+                }
             }
         }
 

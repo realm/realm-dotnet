@@ -549,9 +549,9 @@ enum DataType {
         [DllImport(L32, EntryPoint = "new_table", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr new_table32();
 
-        public static void TableNew(Table table,bool IsReadOnly)
+        public static void TableNew(Table table,bool isReadOnly)
         {
-            table.SetHandle(Is64Bit ? new_table64() : new_table32(), true,IsReadOnly);
+            table.SetHandle(Is64Bit ? new_table64() : new_table32(), true,isReadOnly);
         }
 
 
@@ -3606,6 +3606,16 @@ enum DataType {
                 tableView_set_mixed_int32(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
         }
 
+        //just calls the version with the long parameter. We  might want to add a function that takes
+        //an int instead of a long, but current speed tests show neglible difference
+        public static void TableViewSetMixedInt(TableView tableView, long columnIndex, long rowIndex, int value)
+        {
+
+            if (Is64Bit)
+                tableView_set_mixed_int64(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
+            else
+                tableView_set_mixed_int32(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
+        }
 
 
         [DllImport(L64, EntryPoint = "table_set_mixed_int", CallingConvention = CallingConvention.Cdecl)]
@@ -3616,7 +3626,6 @@ enum DataType {
 
         public static void TableSetMixedLong(Table table, long columnIndex, long rowIndex, long value)
         {
-
             if (Is64Bit)
                 table_set_mixed_int64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
             else
@@ -3624,6 +3633,19 @@ enum DataType {
         }
 
 
+
+        [DllImport(L64, EntryPoint = "table_set_mixed_int32", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void table_set_mixed_int3264(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx, int value);
+
+        [DllImport(L32, EntryPoint = "table_set_mixed_int32", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void table_set_mixed_int3232(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx, int value);
+        public static void TableSetMixedInt(Table table, long columnIndex, long rowIndex, int value)
+        {
+            if (Is64Bit)
+                table_set_mixed_int3264(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
+            else
+                table_set_mixed_int3232(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
+        }
 
         //        TIGHTDB_C_CS_API void insert_int(Table* TablePtr, size_t column_ndx, size_t row_ndx, int64_t value)
         [DllImport(L64, EntryPoint = "table_insert_int", CallingConvention = CallingConvention.Cdecl)]
