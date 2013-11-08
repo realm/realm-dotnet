@@ -169,6 +169,49 @@ namespace TightDbCSharpTest
 
 
         /// <summary>
+        /// Test TableView.add(mixed) called with a long
+        /// </summary>
+        [Test]
+        public static void TableViewMixedLong()
+        {
+            //this first part just populates a table with two mixed string fields
+            using (var t = new Table(new MixedColumn("StringField"), new IntColumn("intfield")))
+            {
+                const long setWithAdd = 33;
+                const long setWithSetMixed = 123;
+                const long setWithViewSetMixed = 55;
+                const long notInView = 1233;
+                t.Add(setWithAdd, 42);
+                DataType dtRow0 = t.GetMixedType(0, 0);
+                Assert.AreEqual(DataType.Int, dtRow0);//mixed from empty rows added are int as a default
+                var row0 = t.GetMixedLong(0, 0);
+                Assert.AreEqual(setWithAdd, row0);
+
+                t.AddEmptyRow(1);
+                t.SetMixedLong(0, 1, setWithSetMixed);
+                t.SetLong(1, 1, 42);
+                DataType dtRow1 = t.GetMixedType(0, 1);
+                Assert.AreEqual(DataType.Int, dtRow1);
+                long row1 = t.GetMixedLong(0, 1);
+                Assert.AreEqual(setWithSetMixed, row1);
+
+                t.Add(notInView, 43);
+                t.Add(notInView, 44);
+                //create tableview with all the '42' rows, and do mixed string operations on the tableview
+                using (var view = t.FindAllInt(1, 42))
+                {
+                    view.SetMixedLong(0, 1, setWithViewSetMixed);
+                    DataType dtvRow1 = view.GetMixedType(0, 1);
+                    Assert.AreEqual(DataType.Int, dtvRow1);
+                    long viewRow1 = view.GetMixedLong(0, 1);
+                    Assert.AreEqual(setWithViewSetMixed, viewRow1);
+                }
+            }
+        }
+
+
+
+        /// <summary>
         /// Test that setting a binary with NULL works
         /// Tests that the binary is read back successfully using most access methods
         /// </summary>
