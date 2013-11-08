@@ -140,6 +140,8 @@ namespace TightDbCSharpTest
                 Assert.AreEqual(2,tv.GetLong(column,1));
                 tv.SetInt(column,1,42);
                 Assert.AreEqual(42, tv.GetLong(column, 1));
+                tv.SetInt(tv.GetColumnName(3), 1, 43);
+                Assert.AreEqual(43, tv.GetLong(column, 1));
             }
         }
 

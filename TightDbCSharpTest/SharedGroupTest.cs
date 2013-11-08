@@ -13,16 +13,16 @@ namespace TightDbCSharpTest
     public static class SharedGroupTest
     {
 
-        const string Field01Text = "Data for first field";
-        const string Field02Text = "Data for second field";
-        const string Field03Text = "Data for third field";
+        private const string Field01Text = "Data for first field";
+        private const string Field02Text = "Data for second field";
+        private const string Field03Text = "Data for third field";
 
         private static string SharedGroupFileName()
         {
-         return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) +
-                            @"\UnitTestSharedGroup";
+            return Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) +
+                   @"\UnitTestSharedGroup";
             //we should probably use LocalApplicationData instead of ApplicationData
-        } 
+        }
 
 
         //create-dispose test
@@ -31,7 +31,7 @@ namespace TightDbCSharpTest
         /// </summary>
         [Test]
         public static void CreateSharedGroupFileTest()
-        {            
+        {
             File.Delete(SharedGroupFileName());
 
             using (var sharedGroup = new SharedGroup(SharedGroupFileName(), false, DurabilityLevel.DurabilityFull))
@@ -54,11 +54,11 @@ namespace TightDbCSharpTest
             using (var sg1 = new SharedGroup(SharedGroupFileName()))
             {
                 using (var transaction = sg1.BeginWrite())
-                using (var table = transaction.CreateTable("test",new IntColumn("IntegerField")))
+                using (var table = transaction.CreateTable("test", new IntColumn("IntegerField")))
                 {
                     table.Add(42);
                     transaction.Commit();
-                }                
+                }
             }
 
             //at this time we should have a shared group with a table with 42 in it
@@ -68,7 +68,7 @@ namespace TightDbCSharpTest
                 using (var transaction = sg2.BeginRead())
                 using (var table = transaction.GetTable("test"))
                 {
-                    Assert.AreEqual(42,table.GetLong(0,0));                    
+                    Assert.AreEqual(42, table.GetLong(0, 0));
                     transaction.Commit();
                 }
             }
@@ -83,7 +83,7 @@ namespace TightDbCSharpTest
                 using (var table = transaction.GetTable("test"))
                 {
                     Assert.AreEqual(42, table.GetLong(0, 0));
-                    table.SetLong(0,0,13);
+                    table.SetLong(0, 0, 13);
                     transaction.Commit();
                 }
                 //at this point sg3 is alive and sg4 is alive
@@ -118,6 +118,134 @@ namespace TightDbCSharpTest
             }
         }
 
+
+
+
+        /// <summary>
+        /// Test a simple create table, add row and rollback transaction commit on a sharedGroup created using defaults        
+        /// </summary>
+        [Test]
+        public static void SimpleRollbackTest()
+        {
+
+            File.Delete(SharedGroupFileName());
+
+            using (
+                var sharedGroup = new SharedGroup(SharedGroupFileName()))
+            {
+                using (var transaction = sharedGroup.BeginWrite())
+                using (var table = transaction.CreateTable("TestTable",new StringColumn("StringColumn")))
+                {
+                    table.AddEmptyRow(1);
+                    table.SetString(0, 0, "Hello, Table!");
+                    Assert.AreEqual("Hello, Table!", table.GetString(0, 0));
+                    transaction.Commit();
+                }
+
+                using (var transaction = sharedGroup.BeginWrite())
+                using (var table = transaction.GetTable("TestTable"))
+                {
+                    Assert.AreEqual("Hello, Table!", table.GetString(0, 0));
+                    table.SetString(0, 0, "Hi Again!");
+                    transaction.Rollback();
+                }
+
+                using (var transaction = sharedGroup.BeginRead())
+                using (var table = transaction.GetTable("TestTable"))
+                {
+                    Assert.AreEqual("Hello, Table!", table.GetString(0, 0));
+                }
+            }
+        }
+
+
+
+
+        /// <summary>
+        /// It should be illegal to read from a table if the write transaction has been ended
+        /// </summary>
+        [Test]
+        [ExpectedException("System.InvalidOperationException")]
+        public static void ReadAfterRollback()
+        {
+            File.Delete(SharedGroupFileName());
+            using (
+                var sharedGroup = new SharedGroup(SharedGroupFileName()))
+            {
+                using (var transaction = sharedGroup.BeginWrite())
+                {
+                    using (var table = transaction.CreateTable("TestTable",
+                        new StringColumn("StringColumn")))
+                    {
+                        table.AddEmptyRow(1);
+                        table.SetString(0, 0, "Hello, Table!");
+                        Assert.AreEqual("Hello, Table!", table.GetString(0, 0));
+                        transaction.Rollback();
+                        Assert.AreEqual("Hello, Table!", table.GetString(0, 0));//should throw
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// It should be illegal to read from a table if the write transaction has been ended
+        /// </summary>
+        [Test]
+        [ExpectedException("System.InvalidOperationException")]
+        public static void ReadAfterReadWriteCommit()
+        {
+            File.Delete(SharedGroupFileName());
+            using (
+                var sharedGroup = new SharedGroup(SharedGroupFileName()))
+            {
+                using (var transaction = sharedGroup.BeginWrite())
+                {
+                    using (var table = transaction.CreateTable("TestTable",
+                        new StringColumn("StringColumn")))
+                    {
+                        table.AddEmptyRow(1);
+                        table.SetString(0, 0, "Hello, Table!");
+                        Assert.AreEqual("Hello, Table!", table.GetString(0, 0));
+                        transaction.Commit();
+                        Assert.AreEqual("Hello, Table!", table.GetString(0, 0));//should throw
+                    }
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// It should be illegal to read from a table if the write transaction has been ended
+        /// </summary>
+        [Test]
+        [ExpectedException("System.InvalidOperationException")]
+        public static void ReadAfterReadOnlyCommit()
+        {
+            File.Delete(SharedGroupFileName());
+            using (
+                var sharedGroup = new SharedGroup(SharedGroupFileName()))
+            {
+                using (var transaction = sharedGroup.BeginRead())
+                {
+                    using (var table = transaction.CreateTable("TestTable",
+                        new StringColumn("StringColumn")))
+                    {
+                        table.AddEmptyRow(1);
+                        table.SetString(0, 0, "Hello, Table!");
+                        Assert.AreEqual("Hello, Table!", table.GetString(0, 0));
+                        transaction.Commit();
+                        Assert.AreEqual("Hello, Table!", table.GetString(0, 0));//should throw
+                    }
+                }
+            }
+        }
+
+
+        
+        
+        
+//todo:same as above but with a commit  - should fail We are not in read trans. so should fail i guess
+//todo: same as above but in a read transaction, shoudl also fail, we are not in a read trans
 
 
         //successfull usage case check
