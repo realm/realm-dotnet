@@ -3647,6 +3647,7 @@ enum DataType {
                 table_set_mixed_int3232(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
         }
 
+        /*  no used for now
         //        TIGHTDB_C_CS_API void insert_int(Table* TablePtr, size_t column_ndx, size_t row_ndx, int64_t value)
         [DllImport(L64, EntryPoint = "table_insert_int", CallingConvention = CallingConvention.Cdecl)]
         private static extern void table_insert_int64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx, long value);
@@ -3663,7 +3664,7 @@ enum DataType {
                 table_insert_int32(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
         }
 
-
+        */
 
         //TIGHTDB_C_CS_API int64_t table_get_int(Table* TablePtr, size_t column_ndx, size_t row_ndx)
         [DllImport(L64, EntryPoint = "table_get_int", CallingConvention = CallingConvention.Cdecl)]

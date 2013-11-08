@@ -1193,6 +1193,7 @@ namespace TightDbCSharp
             return mixedSubTable;
         }
 
+        /*
         //warning! Use only this one when inserting new rows that are not inserted yet
         //todo:implement the rest of the insert api for inserting - but only for internal use
         //fixme:Resharper rightly marks this one down as never used
@@ -1200,6 +1201,7 @@ namespace TightDbCSharp
         {
             UnsafeNativeMethods.TableInsertInt(this, columnIndex, rowIndex, value);            
         }
+        */
 
         /// <summary>
         /// Insert row(s) at index rowIndex.

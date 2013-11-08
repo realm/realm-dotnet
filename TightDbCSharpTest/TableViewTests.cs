@@ -45,11 +45,11 @@ namespace TightDbCSharpTest
                 //t = new Table(new { intcolumn0 = DataType.Binary, intcolumn1 = DataType.Bool, intcolumn2 = DataType.Double });
                 for (int n = 0; n < 1000; n++)
                 {
-                    long col0 = n;
+                    var col0 = n;
                     long col1 = n / 10;
                     long col2 = n / 100;
                     t.AddEmptyRow(1);
-                    t.SetLong(0, n, col0);
+                    t.SetInt(0, n, col0);
                     t.SetLong(1, n, col1);
                     t.SetLong(2, n, col2);
                 }
@@ -127,6 +127,25 @@ namespace TightDbCSharpTest
         }
 
         /// <summary>
+        /// test tableviewsetint
+        /// </summary>
+        [Test]
+        public static void TableViewSetInt()
+        {
+            const long column = 3;
+            using (var t = GetTableWithNIntegersInColumn(column, 100))
+            {
+                TableView tv = t.FindAllString(0,"");
+                Assert.AreEqual(100, tv.Size);
+                Assert.AreEqual(2,tv.GetLong(column,1));
+                tv.SetInt(column,1,42);
+                Assert.AreEqual(42, tv.GetLong(column, 1));
+            }
+        }
+
+
+        
+        /// <summary>
         /// Test TableView.add(mixed) called with a string
         /// </summary>
         [Test]
@@ -158,7 +177,7 @@ namespace TightDbCSharpTest
                 //create tableview with all the '42' rows, and do mixed string operations on the tableview
                 using (var view = t.FindAllInt(1, 42))
                 {                   
-                    view.SetMixedString(0, 1, setWithViewSetMixed);                    
+                    view.SetMixedString(0, 1, setWithViewSetMixed);
                     DataType dtvRow1 = view.GetMixedType(0, 1);
                     Assert.AreEqual(DataType.String, dtvRow1);
                     String viewRow1 = view.GetMixedString(0, 1);

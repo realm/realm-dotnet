@@ -1936,7 +1936,7 @@ namespace TightDbCSharp
             ValidateColumnAndRowIndex(columnIndex, rowIndex);
             ValidateTypeInt(columnIndex);
             ValidateReadWrite();
-            SetLongNoCheck(columnIndex, rowIndex, value);
+            SetIntNoCheck(columnIndex, rowIndex, value);
         }
 
 
