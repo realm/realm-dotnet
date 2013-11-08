@@ -4882,10 +4882,18 @@ datetime:13-05-2007 10:50:59//column 4
                 using (var sub2 = new Table(new IntColumn("int")))
                 {
                     sub2.Add(42);
-                    view.SetMixedSubTable(0,1,sub2);
-                    Assert.AreEqual(DataType.Table,t.GetMixedType(0,1));
+                    view.SetMixedSubTable(0, 1, sub2);
+                    Assert.AreEqual(DataType.Table, t.GetMixedType(0, 1));
                     var subback = t.GetMixedSubTable(0, 1);
-                    Assert.AreEqual(42,subback.GetLong(0,0));
+                    Assert.AreEqual(42, subback.GetLong(0, 0));
+
+                    view.SetMixedEmptySubTable(0, 1); 
+                    sttype = t.GetMixedType(0, 1);
+                    Assert.AreEqual(DataType.Table, sttype);
+                    using (var sub3 = view.GetMixedSubTable(0, 1))
+                    {
+                        Assert.AreEqual(0, sub3.ColumnCount);
+                    }
                 }
             }
         }
