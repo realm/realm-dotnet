@@ -197,7 +197,7 @@ namespace TutorialSolution
 
                 //TightDb also provides a delegate based transaction syntax
                 //After the delegate has executed, commit is called automatically
-                //to roll back, throw an exception inside the delegate
+                //To roll back, throw an exception inside the delegate
                 db.ExecuteInWriteTransaction(group =>
                 {
                     using (var employees3 = group.GetTable("employees"))

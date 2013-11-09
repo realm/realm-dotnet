@@ -585,8 +585,8 @@ namespace PerformanceTest
         private static void Main()
         {
             var loop = true;
-            Table.ShowVersionTest();
-            Table.TestInterop();
+            Toolbox.ShowVersionTest();
+            Toolbox.TestInterop();
             while (loop)
             {
                 loop = false;
