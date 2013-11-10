@@ -7,78 +7,14 @@ using System.Reflection;
 using TightDbCSharp;
 //using NUnitLite.Runner;
 
-public static class Console {
-	private static StringBuilder sb=new StringBuilder();
-	public static void WriteLine(object o) {
-		string str = o.ToString();
-		sb.AppendLine(str);
-
-	}
-	
-	public static void WriteLine(string format,params object[] variables) {
-		string str = String.Format(format+Environment.NewLine,variables);
-		sb.AppendLine(str);
-
-	}
-	
-	public static string Dump() {
-		return sb.ToString();
-	}
-	public static void ReadKey() {}
-}
 
 public class UnityTutorial : MonoBehaviour {
 
-	int iteration =0;
-
-	void Start () {
-        print ("Hello from the script - init");
-	}
-	
-	StringBuilder sb = new StringBuilder();
-	  public Vector2 scrollPosition;
-      public string longString = "Data Goes Here";
 	
 	
-	void OnGUI () {
-		// Make a background box
-		GUI.Box(new Rect(910,10,200,150), "TightDb Menu V1.0");
-		
-		scrollPosition = GUILayout.BeginScrollView(scrollPosition, GUILayout.Width(800), 
-			GUILayout.Height(800));
-        GUILayout.Label(longString);		
-		GUILayout.EndScrollView();
-		// Make the first button. If it is pressed, C# System Info is gathered and shown
-		if(GUI.Button(new Rect(920,40,180,20), "C# System Info")) {
-		print("C# Info Clicked");		
-		print ("Data from CsInfo");
-		longString  = Table.GetCSharpInfo();
-		print (longString);  		
-		}
-
-		// Make the second button.
-		if(GUI.Button(new Rect(920,70,180,20), "CPP System Info")) {
-		
-		print("CPP Info Clicked");
-		print ("Calling CppInfo");
-			String cpp = Table.GetCInfo();
-		print (cpp);
-        longString=longString+cpp;	
-		}
-		
-		if(GUI.Button(new Rect(920,100,180,20), "Run Tutorial")) {
-		var info = new StringBuilder();
-		info.AppendLine(Assembly.GetCallingAssembly().FullName);		
-		Tutorial();
-		longString= (Console.Dump());
-		}
-	}
-	
-	
-	
-	//code below is a copy of the usual tightdb tutorial
-	
-	
+	//code below is a copy of the usual tightdb tutorial		
+	//Please go to http://www.tightdb.com/documentation/Csharp_misc/1/tutorial/ to read the
+	//text describing what is going on.
 	        private static void Tutorial()
         {
             //@@Example: create_table @@
@@ -299,6 +235,53 @@ public class UnityTutorial : MonoBehaviour {
                 Console.ReadKey(); //keep console window open to inspect results
             }
 	}
+	
+	
+		int iteration =0;
+
+	void Start () {
+        print ("Hello from the script - init");
+	}
+	
+	StringBuilder sb = new StringBuilder();
+        public Vector2 scrollPosition;
+      public string longString = "Data Goes Here";
+	
+	
+	void OnGUI () {
+		// Make a background box
+		GUI.Box(new Rect(400,10,200,150), "TightDb Menu V0.1.3");
+		
+		scrollPosition = GUILayout.BeginScrollView(scrollPosition, GUILayout.Width(630), 
+			GUILayout.Height(800));
+        GUILayout.Label(longString);		
+		GUILayout.EndScrollView();
+		// Make the first button. If it is pressed, C# System Info is gathered and shown
+		if(GUI.Button(new Rect(420,40,180,20), "C# System Info")) {
+		print("C# Info Clicked");		
+		print ("Data from CsInfo");
+		longString  = Toolbox.GetCSharpInfo();
+		print (longString);  		
+		}
+
+		// Make the second button.
+		if(GUI.Button(new Rect(420,70,180,20), "CPP System Info")) {
+		
+		print("CPP Info Clicked");
+		print ("Calling CppInfo");
+			String cpp = Toolbox.GetCInfo();
+		print (cpp);
+        longString=longString+cpp;	
+		}
+		
+		if(GUI.Button(new Rect(420,100,180,20), "Run Tutorial")) {
+		var info = new StringBuilder();
+		info.AppendLine(Assembly.GetCallingAssembly().FullName);		
+		Tutorial();
+		longString= (Console.Dump());
+		}
+	}
+	
 
 	
 	// Update is called once per frame
@@ -308,4 +291,24 @@ public class UnityTutorial : MonoBehaviour {
 		   print ("Hello from the script - update :"+iteration);		   
 		}
 	}
+}
+
+public static class Console {
+	private static StringBuilder sb=new StringBuilder();
+	public static void WriteLine(object o) {
+		string str = o.ToString();
+		sb.AppendLine(str);
+
+	}
+	
+	public static void WriteLine(string format,params object[] variables) {
+		string str = String.Format(format+Environment.NewLine,variables);
+		sb.AppendLine(str);
+
+	}
+	
+	public static string Dump() {
+		return sb.ToString();
+	}
+	public static void ReadKey() {}
 }

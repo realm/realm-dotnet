@@ -108,9 +108,6 @@ enum DataType {
     internal static class UnsafeNativeMethods
     {
 
-        //manual dll version info. Used when debugging to see if the right DLL is loaded, or an old one
-        //the number is a date and a time (usually last time i debugged something)
-        private const long GetDllVersionCSharp = 201310181348;
 
 
         //http://connect.microsoft.com/VisualStudio/feedback/details/729254/bogus-ca5122-warning-about-p-invoke-declarations-should-not-be-saf
@@ -5854,9 +5851,13 @@ CharSet = CharSet.Unicode)]
 
                     }
                     info.AppendLine(String.Format(CultureInfo.InvariantCulture, "\nC#  DLL        build number {0}",
-                        GetDllVersionCSharp + t.Size)); //t.size is 0, but use t to make the compiler happy
+                        Toolbox.GetDllVersionCSharp )); 
                     info.AppendLine(String.Format(CultureInfo.InvariantCulture, "C++ DLL        build number {0}",
                         CppDllVersion()));
+                    if (t.Size != 0)
+                    {
+                        info.Append("");
+                    }
                     info.AppendLine("---C++ DLL Info---");
                 }
                 info.AppendLine();
