@@ -50,7 +50,7 @@ using TightDbCSharp;
 
 To verify that things work, You can try to run this code snippet in Your program :
 
-Table.ShowVersionTest();
+ToolBox.ShowVersionTest();
 
 When above line is executed, console should show some diagnostics from tightdb, something along the lines of this  :
 

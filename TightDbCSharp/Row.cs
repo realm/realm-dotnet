@@ -624,7 +624,15 @@ namespace TightDbCSharp
             Owner.ClearSubTableNoRowCheck(columnName, RowIndex);
         }
 
-
+        /// <summary>
+        /// returns a string showing column names and the data for the row
+        /// subtables are shown as [number of records]
+        /// This methis is handy in the debugger.
+        /// For instance : Array debugarray= myTable.ToArray;
+        /// if You hover the cursor above debugarray in Visual Studio, You can inspect the data at debug time
+        /// </summary>
+        /// <param name="columnIndex">Name of the column of the field to return</param>
+        /// <returns>string value of row, in a debugger friendly format</returns>
         public override string ToString()
         {
             return Owner.RowToString(RowIndex);

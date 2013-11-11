@@ -2,7 +2,7 @@
 
 C# language binding for TightDB
 
-Ver 0.5
+Ver 0.1.2
 
 This directory and its subdirectories contain the VS2012 solution that is needed to produce the C# binding for tightdb
 
@@ -51,7 +51,10 @@ Building the c++ binding in windows with VS2012 (not express) can be done as fol
 
 ##C++ DLL BUILD##  
 
-1. If You did not build core Yourself, extract a VS2012 release into H:\Wincoder\Develope\tightdb_csharp\native\libsVS2012 so that libsvs2012 now contain tightDB32d.lib and 3 other similar named lib files, as well as a src directory structure with header files in it.
+0. Please change the number in the file tightdb_c_cs.cpp to reflect the version being built.
+Currently the number is simply YYMMDDHHMM
+1. If You did not build core Yourself, extract a VS2012 release into H:\Wincoder\Develope\tightdb_csharp\native\libsVS2012
+ so that libsvs2012 now contain tightDB32d.lib and 3 other similar named lib files, as well as a src directory structure with header files in it.
 2. Open up the tightdb_c_cs2012 solution found in H:\Wincoder\Develope\tightdb_csharp\native\tightdb_c_cs\tightdb_c_cs2012 
 3. select build->batch build. select the 4 projects called tightdb_c-cs2012
 4. click clean.  select build->batch build. click rebuild.
@@ -65,6 +68,8 @@ The files in the release directory will be used when running unit tests and exam
 
 ##C SHARP BINDING BUILD##
 
+0. Please change the number in Table.Cs so that it reflects the build.
+Currently the number is simply YYMMDDHHMM
 1. navigate to H:\Wincoder\Develope\tightdb_csharp\TightDbCSharp  and open the TightDbCsharp.sln solution VS2012
 
 2. select build->batch build and select all 30 configurations. then click clean.
@@ -74,6 +79,80 @@ The files in the release directory will be used when running unit tests and exam
 4 mark the solution in solution explorer, right click, select Open folder in file explorer.
 
 5 If you want to make a release - do the following :
+
+##C SHARP UNIT TEST RUNNING
+
+The project TighDbCSharpTest contains all the unit tests. However, I have found no unit test runner that reliably
+will run these tests on varying platforms and bitness settings. Instead, We have 3 console projects, written with
+NUnitLite - these projects will be used for running unit tests, until some day NUnit or other framework will work
+reliably. Note that the code in the TighDBCSharpTest project is linked to from the commandline programs - don't delete
+the source code.
+
+6)
+Select Release in solution configuration
+Select x86 in solution platform
+click the green run arrow
+A console window will show, and run the unit tests. If VS stops at a breakpoit that accidentially has been left over,
+just press Continue ot go on.
+Test names are printed as they are executed.
+Eventually the message Tests run: nnn. passed : nnn is shown.
+Make sure that all test listed in Errors and Failures are tests known to fail (due to core bugs or know binding bugs)
+Verify also at the very top of the console output, that 
+Process Running as: 32bit
+Debug or Release is Release
+Enter to close the commandline window
+
+7)
+Select Release in solution configuration
+Select x64 in solution platform
+Same as 6) but this time at the top it should say
+Process Running as: 64bit
+Debug Or Release : Release
+
+8)
+Select Release in solution configuration
+Select AnyCpu in solution platform
+Same as 6) but this time at the top it should say
+Process Running as: 64bit
+Debug Or Release : Release
+
+
+9)
+Select Debug in solution configuration
+Select AnyCpu in solution platform
+Same as 6) but this time at the top it should say
+Process Running as: 64bit
+Debug Or Release : Debug
+
+10)
+Select Debug in solution configuration
+Select X64 in solution platform
+Same as 6) but this time at the top it should say
+Process Running as: 64bit
+Debug Or Release : Debug
+
+11)
+Select Debug in solution configuration
+Select x86 in solution platform
+Same as 6) but this time at the top it should say
+Process Running as: 32bit
+Debug Or Release : Debug
+
+
+
+12)
+now, right click test_net35 in solution explorer and select Set as startup project.
+Then repeat the steps 6 to 11 with this project as startup project.
+At the first run, verify that this line is in the info dump at the top :
+Built for .net version : V3.5
+
+13) now, right click test_net40 in solution explorer and select Set as startup project.
+Then repeat the steps 6 to 11 with this project as startup project.
+At the first run, verify that this line is in the info dump at the top 
+Built for .net version : V4.0
+
+If everything checked out alright, go on to the release phase:
+
 
 ##C SHARP BINDING RELEASE##
 
