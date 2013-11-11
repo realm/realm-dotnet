@@ -627,12 +627,12 @@ enum DataType {
         private static extern IntPtr new_group32();
 
 
-        public static void GroupNew(Group group,Boolean IsReadOnly)
+        public static void GroupNew(Group group,Boolean isReadOnly)
         {
 
             group.SetHandle(Is64Bit
                 ? new_group64()
-                : new_group32(), true,IsReadOnly);
+                : new_group32(), true,isReadOnly);
         }
 
 
@@ -5525,7 +5525,8 @@ CharSet = CharSet.Unicode)]
 
         }
 
-
+        //It is okay that code coverage is low for this method - the exceptions will only trigger if 
+        //we have been linked to a c++ compiler that does not meet our expectations reg. the C ABI        
         private static void TestMaxMin()
         {
             float floatmaxcpp = TestFloatMax();
@@ -6104,19 +6105,26 @@ CharSet = CharSet.Unicode)]
 
         public static Transaction SharedGroupBeginRead(SharedGroup sharedGroup)
         {
-            try
-            {
+        //    try
+            
                 IntPtr handle = Is64Bit
                     ? shared_group_begin_read64(sharedGroup.Handle)
                     : shared_group_begin_read32(sharedGroup.Handle);
+                if (handle == IntPtr.Zero)
+                {
+                    throw new InvalidOperationException("Cannot start Read Transaction, probably an IO error with the SharedGroup file");
+                }
                 return new Transaction(handle, sharedGroup, TransactionKind.Read);
-            }
+            
+            /*  in mono - catching exceptions from c++ doesn't work anyway so don't rely on them
+             *  shared_group_begin_read should never throw anything if we want it to work with mono
+             *  in mono, we cannot catch the exception thrown by c++ , instead the c++ dll will crash the mono runtime.
             catch (SEHException ex)
             {
                 sharedGroup.Invalid = true;
                 throw new IOException(
                     String.Format(CultureInfo.InvariantCulture, "IO error starting read transaction {0}", ex.Message));
-            }
+            }*/
         }
 
 
@@ -6129,43 +6137,57 @@ CharSet = CharSet.Unicode)]
 
         public static Transaction SharedGroupBeginWrite(SharedGroup sharedGroup)
         {
-            try
-            {
+        //    try
+            
                 IntPtr handle = Is64Bit
                     ? shared_group_begin_write64(sharedGroup.Handle)
                     : shared_group_begin_write32(sharedGroup.Handle);
+                if (handle == IntPtr.Zero)
+                {
+                    throw new InvalidOperationException("Cannot start Write Transaction, probably an IO error with the SharedGroup file");
+                }
                 return new Transaction(handle, sharedGroup, TransactionKind.Write);
-            }
+            
+            /* removed bc c++ must not throw anymore - mono crashes
             catch (SEHException ex)
             {
                 sharedGroup.Invalid = true;
                 throw new IOException(
                     String.Format(CultureInfo.InvariantCulture, "IO error starting write transaction {0}", ex.Message));
             }
+             */
         }
 
 
         [DllImport(L64, EntryPoint = "shared_group_commit", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void shared_group_commit64(IntPtr handle);
+        private static extern IntPtr shared_group_commit64(IntPtr handle);
 
         [DllImport(L32, EntryPoint = "shared_group_commit", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void shared_group_commit32(IntPtr handle);
+        private static extern IntPtr shared_group_commit32(IntPtr handle);
 
         public static void SharedGroupCommit(SharedGroup sharedGroup)
         {
-            try
+            //try
+
+            IntPtr res = (Is64Bit)
+                ? shared_group_commit64(sharedGroup.Handle)
+                : shared_group_commit32(sharedGroup.Handle);
+
+            if (res != IntPtr.Zero)
             {
-                if (Is64Bit)
-                    shared_group_commit64(sharedGroup.Handle);
-                else
-                    shared_group_commit32(sharedGroup.Handle);
+                //shared_group_commit threw an exception in core
+                //currently we just assume it was an IO error, but could be anything
+                throw new InvalidOperationException("sharedGroup commit exception in core. probably an IO error with the group file");
             }
+
+            /* disabled as this only work with .net and windows, exception handling from c++ is broken in mono/windows and likely also in mono other platforms
             catch (SEHException ex)
                 //other things than IO could go wrong too, we might want to inspect and throw a more precise error msg
             {
                 throw new IOException(String.Format(CultureInfo.InvariantCulture,
                     "IO error when committing data (read/write access is needed)  c++ exception thrown :{0}", ex.Message));
             }
+             */
         }
 
 

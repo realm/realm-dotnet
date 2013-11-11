@@ -30,7 +30,7 @@ namespace TightDbCSharpTest
         /// Test creation of a shared group with a legal path and file name
         /// </summary>
         [Test]
-        public static void CreateSharedGroupFileTest()
+        public static void CreateSharedgroupFileTest()
         {
             File.Delete(SharedGroupFileName());
 
@@ -253,7 +253,7 @@ namespace TightDbCSharpTest
         /// 
         /// </summary>
         [Test]
-        public static void SharedGroupTransactions()
+        public static void SharedgroupTransactions()
         {
             File.Delete(SharedGroupFileName());
 
@@ -413,7 +413,7 @@ namespace TightDbCSharpTest
         /// Check that a readonly transaction is actually marked as readonly
         /// </summary>
         [Test]
-        public static void SharedGroupReadTransactionReadOnlyGroup()
+        public static void SharedgroupReadTransactionReadOnlyGroup()
         {
             const string sharedgroupfilename = @"UnitTestSharedGroup";
             File.Delete(sharedgroupfilename);
@@ -437,7 +437,7 @@ namespace TightDbCSharpTest
         ///also checks that on violation of the readonly contract, that the sharedgroup and the group are invalidated  
         /// </summary>
         [Test]        
-        public static void SharedGroupReadTransactionReadOnlyTable()
+        public static void SharedgroupReadTransactionReadOnlyTable()
         {
             const string sharedgroupfilename = @"UnitTestSharedGroup";
             File.Delete(sharedgroupfilename);
@@ -585,7 +585,7 @@ namespace TightDbCSharpTest
         /// error handling when a transaction is started inside another transaction (which is illegal if done with the same sharedgroup object
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters", MessageId = "NUnit.Framework.Assert.Fail(System.String)"), Test]
-        public static void SharedGroupSeveralStartTransactions()
+        public static void SharedgroupSeveralStartTransactions()
         {
             const string sharedgroupfilename = @"UnitTestSharedGroup";
             File.Delete(sharedgroupfilename);

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Text;
 using NUnit.Framework;
@@ -4513,10 +4512,10 @@ datetime:13-05-2007 10:50:59//column 4
             {
                 Assert.AreEqual(5, table.FindFirstInt(0, 5));
                 Assert.AreEqual(50, table.FindFirstInt("intcolumn1", 5));
-                Array tableArray = table.ToArray();
+               // Array tableArray = table.ToArray();
                 using (var view = table.FindAllInt(2, 1))
                 {
-                    Array viewArray = view.ToArray();
+                  //  Array viewArray = view.ToArray();
                     var rowNo = view.FindFirstInt(0, 110);
                     Assert.AreEqual(10,rowNo);
                     rowNo = view.FindFirstInt("intcolumn0", 110);
@@ -6397,9 +6396,9 @@ intfield2:10//column 2
         [Test]
         public static void GarbageCollectCollisionSingleThread()
         {
-            System.Console.WriteLine("Garbagecollect collision unit test disabled");
+            Console.WriteLine("Garbage collector finalizer thread collision unit test disabled");
             Assert.AreEqual(0,1);//this unit test would fail if it was commented in
-            return;
+            if (!String.IsNullOrEmpty(Toolbox.GetCSharpInfo())) return;//we want to stop here, but not to have the compiler figure it out
             //table created with using
             using (var table = new Table(new SubTableColumn("sub", new IntColumn("int"))))
             {

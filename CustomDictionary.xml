@@ -5,6 +5,8 @@
          </Unrecognized>
          <Recognized>
             <Word>SubTable</Word>
+           <Word>TableView</Word>
+           <Word>SharedGroup</Word>
          </Recognized>
          <Deprecated>
             <Term PreferredAlternate=""></Term>
@@ -15,6 +17,7 @@
          <DiscreteExceptions>
             <Term>TableView</Term>
            <Term>SubTable</Term>
+           <Term>SharedGroup</Term>
          </DiscreteExceptions>
       </Words>
       <Acronyms>

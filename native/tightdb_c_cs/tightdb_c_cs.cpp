@@ -218,7 +218,7 @@ extern "C" {
  TIGHTDB_C_CS_API size_t tightdb_c_cs_getver(void){
 
   // Table test;
-	return 20131107;
+	return 20131111;
 }
 
  //return a newly constructed top level table 
@@ -1046,7 +1046,11 @@ TIGHTDB_C_CS_API int64_t  tableview_get_mixed_int(TableView*  tableView_ptr, siz
     return tableView_ptr->get_mixed(column_ndx,row_ndx).get_int();    
 }
 
-//todo:implement tableview_get_mixed_bool
+TIGHTDB_C_CS_API size_t tableview_get_mixed_bool(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx)
+{
+	return bool_to_size_t(tableView_ptr->get_mixed(column_ndx,row_ndx).get_bool());
+}
+
 
 TIGHTDB_C_CS_API int64_t tableview_get_mixed_date(TableView*  tableView_ptr, size_t column_ndx, size_t row_ndx)
 {
@@ -1637,7 +1641,12 @@ TIGHTDB_C_CS_API size_t shared_group_has_changed(SharedGroup* shared_group_ptr)
 //binding must ensure that the returned group is never modified
 TIGHTDB_C_CS_API const Group* shared_group_begin_read(SharedGroup* shared_group_ptr)
 {
-    return &shared_group_ptr->begin_read();    
+	try {
+       return &shared_group_ptr->begin_read();    
+	}
+	catch (...) {
+		return NULL;
+	}
 }
 
 //binding must ensure that the returned group is never modified
@@ -1649,13 +1658,26 @@ TIGHTDB_C_CS_API void shared_group_end_read(SharedGroup* shared_group_ptr)
 //binding must ensure that the returned group is never modified
 TIGHTDB_C_CS_API const Group* shared_group_begin_write(SharedGroup* shared_group_ptr)
 {
-    return &shared_group_ptr->begin_write();    
+	try {
+       return &shared_group_ptr->begin_write();    
+	}
+	catch (...) {
+		return NULL;
+	}
 }
 
-
-TIGHTDB_C_CS_API void shared_group_commit(SharedGroup* shared_group_ptr)
+//we cannot let exceptions flow back to C# because that only works with windows and .net
+//- mono runtime crashes itself if we let an exception throw back to the c# caller
+TIGHTDB_C_CS_API size_t shared_group_commit(SharedGroup* shared_group_ptr)
 {
-    shared_group_ptr->commit();
+	try {
+      shared_group_ptr->commit();
+	  return 0;
+	} 
+	catch (...)
+	{
+		return 1;//indicates that something went wrong. Expand with more error codes later...
+	}
 }
 
 

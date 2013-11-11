@@ -631,7 +631,6 @@ namespace TightDbCSharp
         /// For instance : Array debugarray= myTable.ToArray;
         /// if You hover the cursor above debugarray in Visual Studio, You can inspect the data at debug time
         /// </summary>
-        /// <param name="columnIndex">Name of the column of the field to return</param>
         /// <returns>string value of row, in a debugger friendly format</returns>
         public override string ToString()
         {

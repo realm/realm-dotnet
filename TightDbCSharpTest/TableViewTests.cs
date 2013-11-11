@@ -146,6 +146,31 @@ namespace TightDbCSharpTest
         }
 
 
+        /// <summary>
+        /// test set get bool
+        /// </summary>
+        [Test]
+        public static void TableViewSetBool()
+        {
+            const long column = 3;
+            using (var table = new Table("bool".Bool(),"tag".Int()))
+            {
+                table.Add(true, 42);
+                table.Add(true, 42);
+                table.Add(false, 42);
+                table.Add(false, 42);
+                table.Add(false, 45);
+                using (var view = table.FindAllInt(1, 42))
+                {                    
+                    Assert.AreEqual(4, view.Size);
+                    Assert.AreEqual(true, view.GetBoolean(0, 0));
+                    view.SetBoolean(0, 0, false);
+                    Assert.AreEqual(false, view.GetBoolean(0, 0));
+                }
+            }
+        }
+
+
         
         /// <summary>
         /// Test TableView.add(mixed) called with a string
@@ -231,6 +256,46 @@ namespace TightDbCSharpTest
         }
 
 
+        /// <summary>
+        /// Test TableView.add(mixed) called with a boolean
+        /// </summary>
+        [Test]
+        public static void TableViewMixedBool()
+        {
+            using (var t = new Table(new MixedColumn("MixedColumn"), new IntColumn("IntColumn")))
+            {
+                const Boolean setWithAdd = true;
+                const Boolean setWithSetMixed = true;
+                const Boolean setWithViewSetMixed = true;
+                const Boolean notInView = false;
+                t.Add(setWithAdd, 42);
+                var dtRow0 = t.GetMixedType(0, 0);
+                Assert.AreEqual(DataType.Bool, dtRow0);//mixed from empty rows added are int as a default
+                var row0 = t.GetMixedBool(0, 0);
+                Assert.AreEqual(setWithAdd, row0);
+
+                t.AddEmptyRow(1);
+                t.SetMixedBool(0, 1, setWithSetMixed);
+                t.SetLong(1, 1, 42);//used to get the tableview
+                var dtRow1 = t.GetMixedType(0, 1);
+                Assert.AreEqual(DataType.Bool, dtRow1);
+                var row1 = t.GetMixedBool(0, 1);
+                Assert.AreEqual(setWithSetMixed, row1);
+
+                t.Add(notInView, 43);
+                t.Add(notInView, 44);
+                //create tableview with all the '42' rows, and do mixed string operations on the tableview
+                using (var view = t.FindAllInt(1, 42))
+                {
+                    view.SetMixedBool(0, 1, setWithViewSetMixed);
+                    var dtvRow1 = view.GetMixedType(0, 1);
+                    Assert.AreEqual(DataType.Bool, dtvRow1);
+                    var viewRow1 = view.GetMixedBool(0, 1);
+                    Assert.AreEqual(setWithViewSetMixed, viewRow1);
+                }
+            }
+        }
+
 
         /// <summary>
         /// Test that setting a binary with NULL works
@@ -296,6 +361,7 @@ namespace TightDbCSharpTest
 
         /// <summary>
         /// Test TableView.FindFirstBinary
+        /// Also tests calls to core TableView.SetBinary and TableView.GetBinary
         /// </summary>
         [Test]        
         public static void TableViewFindFirstBinary()
@@ -329,6 +395,9 @@ namespace TightDbCSharpTest
                         var rowIndex = view.FindFirstBinary("radio", arrayToFind);
                         Assert.AreEqual(1, rowIndex);
                     }
+                    //also hit SetBinary now we have a good setup
+                    view.SetBinary(0,1,testArray4);
+                    Assert.AreEqual(testArray4,view.GetBinary(0,1));
                 }
             }
         }
@@ -942,19 +1011,29 @@ intcolumn2:1//column 2
             using (var table = new Table("matadormix".Mixed(),"int".Int()))
             {
                 byte[] testArray = { 01, 12, 36, 22 };
+                byte[] testArray2 = { 101, 112, 136, 122 };
                 table.AddEmptyRow(1);
                 table.AddEmptyRow(1);
                 table.SetMixedBinary(0, 1, testArray);
                 table.SetLong(1,1,42);
 
-                var tableView = table.FindAllInt(1, 42);
+                using (var tableView = table.FindAllInt(1, 42))
+                {
+                    var testReturned = tableView.GetMixedBinary(0, 0);
+                    Assert.AreEqual(4, testReturned.Length);
+                    Assert.AreEqual(1, testReturned[0]);
+                    Assert.AreEqual(12, testReturned[1]);
+                    Assert.AreEqual(36, testReturned[2]);
+                    Assert.AreEqual(22, testReturned[3]);
 
-                var testReturned = tableView.GetMixedBinary(0, 0);
-                Assert.AreEqual(4, testReturned.Length);
-                Assert.AreEqual(1, testReturned[0]);
-                Assert.AreEqual(12, testReturned[1]);
-                Assert.AreEqual(36, testReturned[2]);
-                Assert.AreEqual(22, testReturned[3]);
+                    tableView.SetMixedBinary(0,0,testArray2);
+                    testReturned = tableView[0].GetMixedBinary(0);
+                    Assert.AreEqual(4, testReturned.Length);
+                    Assert.AreEqual(101, testReturned[0]);
+                    Assert.AreEqual(112, testReturned[1]);
+                    Assert.AreEqual(136, testReturned[2]);
+                    Assert.AreEqual(122, testReturned[3]);
+                }
             }
         }
 
