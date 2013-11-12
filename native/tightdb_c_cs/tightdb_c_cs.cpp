@@ -213,12 +213,10 @@ extern "C" {
 
 
 // return a (manually changed) constant - used when debugging to manually ensure a newly compiled dll is being linked to
+// this is sort of the build version of the c++ part of the binding
 
-
- TIGHTDB_C_CS_API size_t tightdb_c_cs_getver(void){
-
-  // Table test;
-	return 20131111;
+ TIGHTDB_C_CS_API size_t tightdb_c_cs_getver(void){ 
+	return 20131112;
 }
 
  //return a newly constructed top level table 
@@ -800,7 +798,7 @@ TIGHTDB_C_CS_API size_t table_find_first_binary(Table * table_ptr , size_t colum
 	}
 	catch (...)//temporary catcher as find_first_binary does not work yet in core - it always throws
 	{
-		return 0;
+		return -1;
 	}
 }
 
@@ -1546,7 +1544,7 @@ TIGHTDB_C_CS_API size_t group_write(Group* group_ptr,uint16_t * name, size_t nam
     return 0;//0 means no exception thrown
     }
     //if the file is already there, or other file related trouble
-   catch (File::AccessError) {             
+   catch (...) {             
        return 1;//1 means IO problem exception was thrown. C# always use IOException in cases like this anyways so no need to detail it out further
    }
 }
@@ -1561,6 +1559,7 @@ TIGHTDB_C_CS_API size_t group_write(Group* group_ptr,uint16_t * name, size_t nam
 //function returns a pointer to the data.
 TIGHTDB_C_CS_API const char * group_write_to_mem(Group*  group_ptr,  size_t* size)
 {
+
     BinaryData bd=group_ptr->write_to_mem();
     *size = bd.size();
     return  bd.data();//pointer to all the data;
@@ -1595,10 +1594,18 @@ TIGHTDB_C_CS_API size_t group_has_table(Group* group_ptr, uint16_t * table_name,
 
 //SHARED GROUP IMPLEMENTATION
 
+//returns NULL if an exception was thrown, otherwise a shared group handle
+//exceptions are thrown usually if there is some kind of IO eror, e.g. the filename is invalid or with not enought rights
+//or locked or something
 TIGHTDB_C_CS_API SharedGroup* new_shared_group_file(uint16_t * name,size_t name_len,size_t no_create,size_t durabillity_level)
 {
+	try {
     CSStringAccessor str(name,name_len);
     return new SharedGroup(StringData(str),size_t_to_bool(no_create), size_t_to_durabilitylevel(durabillity_level));   
+	}
+	catch (...) {
+		return NULL;
+	}
 }
 
 //return a new shared group connected to a file, no_create and durabillity level are left to the defaults defined in core

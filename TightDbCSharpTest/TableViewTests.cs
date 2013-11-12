@@ -1033,6 +1033,9 @@ intcolumn2:1//column 2
                     Assert.AreEqual(112, testReturned[1]);
                     Assert.AreEqual(136, testReturned[2]);
                     Assert.AreEqual(122, testReturned[3]);
+
+                    tableView.SetMixedBinary(0,0,null);
+                    Assert.AreEqual(0,tableView.GetMixedBinary(0,0).Length);
                 }
             }
         }

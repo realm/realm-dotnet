@@ -162,8 +162,25 @@ namespace TightDbCSharpTest
 
 
 
+        /// <summary>
+        /// Test that we handle an illegal filename okay        
+        /// </summary>
+        [Test]
+        [ExpectedException("System.IO.IOException")]
+        public static void GroupWriteBadFilename()
+        {
+            const string groupSaveFileName = @"/\\/";            
+            const string testTableName = "test1";
+            using (var g = new Group())
+            {
+                g.CreateTable(testTableName, "double".Double());
+                g.Write(groupSaveFileName);
+            }
+        }
 
 
+
+        
 
 
         /// <summary>

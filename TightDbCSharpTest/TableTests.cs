@@ -241,6 +241,24 @@ Table Name  : table name is 12345 then the permille sign ISO 10646:8240 then 789
         }
 
 
+
+        /// <summary>
+        /// Test too early DateTime
+        /// </summary>
+        [Test]
+        [ExpectedException("System.ArgumentOutOfRangeException")]
+        public static void DateTimeTes1970()
+        {
+            var myDateTime = new DateTime(1969, 5, 14, 0, 0, 0, DateTimeKind.Utc);
+            using (var table = new Table("mixed".Mixed()))
+            {
+                table.AddEmptyRow(1);
+                table.SetMixedDateTime(0,0,myDateTime);
+            }
+        }
+
+
+
         /// <summary>
         /// Test that Table.AddInt works. Tests only valid calls, 
         /// tests that call with a bad column specification should be added
@@ -1306,6 +1324,45 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
                 }
             }
         }
+
+
+
+        /// <summary>
+        /// Test FindAllbinary view and table, with an empty binary
+        /// </summary>
+        [Test]
+        public static void TableFindAllBinaryEmptySuccessful()
+        {
+            using (var t = new Table("Field1".Binary(), "Field2".Binary(), "IntField".Int()))
+            {
+                var match = new Byte[0];
+                var nomatch = new Byte[] { 42, 42, 43, 42, 66 };
+                t.Add(match, match, 1);
+                t.Add(match, nomatch, 2);
+                t.Add(nomatch, match, 3);
+                t.Add(nomatch, nomatch, 4);
+                t.Add(match, nomatch, 5);
+                t.Add(match, match, 6);
+                using (var tv = t.FindAllBinary(0, match))
+                using (var tvs = t.FindAllBinary("Field1", match))
+                {
+                    Assert.AreEqual(1, tv[0].GetLong(2));
+                    Assert.AreEqual(2, tv[1].GetLong(2));
+                    Assert.AreEqual(5, tv[2].GetLong(2));
+                    Assert.AreEqual(6, tv[3].GetLong(2));
+                    Assert.AreEqual(4, tv.Size);
+                    Assert.AreEqual(4, tvs.Size);
+
+                    using (var tv2 = tv.FindAllBinary(1, match))
+                    {
+                        Assert.AreEqual(1, tv2.GetLong(2, 0));//first row with two matches
+                        Assert.AreEqual(6, tv2.GetLong(2, 1));//second row with two matches
+                    }
+                }
+            }
+        }
+
+
 
         /// <summary>
         /// Test bad field specification, wrong type
@@ -3874,6 +3931,10 @@ Table Name  : rename columns in subtables via parameters
                 Assert.AreEqual(12, testReturned[1]);
                 Assert.AreEqual(36, testReturned[2]);
                 Assert.AreEqual(22, testReturned[3]);
+
+                table.SetMixedBinary(0,0,null);
+                testReturned = table.GetMixedBinary(0, 0);
+                Assert.AreEqual(0,testReturned.Length);
             }
         }
 

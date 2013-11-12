@@ -44,6 +44,25 @@ namespace TightDbCSharpTest
         }
 
 
+        //create-dispose test
+        /// <summary>
+        /// Test creation of a shared group with a illegal filename and path specification
+        /// The path/filename combo supplied should be illegal on most OS'es
+        /// </summary>
+        [Test]
+        [ExpectedException("System.InvalidOperationException")]
+        public static void CreateSharedgroupInvalidFileNameTest()
+        {
+            File.Delete(SharedGroupFileName());
+            using (var sharedGroup = new SharedGroup(@"/\/", false, DurabilityLevel.DurabilityFull))//this will throw in the sharedgroup constructor
+            {
+                //this line will never execute
+                Assert.AreEqual(false, sharedGroup.Invalid);
+            }
+        }
+
+
+
         /// <summary>
         /// 
         /// </summary>
@@ -105,6 +124,33 @@ namespace TightDbCSharpTest
 
             using (
                 var sharedGroup = new SharedGroup(SharedGroupFileName()))
+            {
+                using (var transaction = sharedGroup.BeginWrite())
+                {
+                    using (var table = transaction.CreateTable("TestTable",
+                        new StringColumn("StringColumn")))
+                    {
+                        table.AddEmptyRow(1);
+                        transaction.Commit();
+                    }
+                }
+            }
+        }
+
+
+
+        /// <summary>
+        /// Test that we handle an exception from c++ correctly on commit
+        /// Exception is trigged by calling commit on a SG that is not
+        /// attached to a file
+        /// Except this works fine. I have not found a way to get transaction.commit to throw
+        /// </summary>
+        [Test]
+        public static void CommitExceptionTest()
+        {
+            File.Delete(SharedGroupFileName());
+            using (
+                var sharedGroup = new SharedGroup(SharedGroupFileName(),false,DurabilityLevel.DurabilityMemoryOnly))
             {
                 using (var transaction = sharedGroup.BeginWrite())
                 {

@@ -23,5 +23,22 @@ namespace TightDbCSharpTest
                 Assert.AreEqual("int", table.Spec.GetSpec(1).GetColumnName(0));
             }
         }
+
+        /// <summary>
+        /// test spec get spec handling of invalid column parameter
+        /// </summary>
+        [Test]
+        [ExpectedException("System.ArgumentOutOfRangeException")]
+        public static void SpecGetSpecError()
+        {
+            using (var table = new Table("IntColumn".Int(), "sub".SubTable("int".Int())))
+            {
+                using (var tableSpec = table.Spec)
+                using (var illegal = tableSpec.GetSpec(0))
+                {
+                    Assert.AreEqual(0, illegal.ColumnCount);//we should not get this far
+                }
+            }
+        }
     }
 }

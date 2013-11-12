@@ -453,6 +453,8 @@ enum DataType {
             if (Is64Bit)
                 return IntPtrToDataType(spec_get_column_type64(s.Handle, (IntPtr) columnIndex));
             //down here we must be in 32 bit mode (or 16 bit or  more than 64 bit which is NOT supported yet
+            //below is not covered by unit tests as we would need a table with quite a lot columns in order to test it
+            //or perhaps call in directly somehow
             if (columnIndex > Int32.MaxValue)
             {
                 throw new ArgumentOutOfRangeException("columnIndex",
@@ -497,11 +499,6 @@ enum DataType {
 
         public static Spec SpecGetSpec(Spec spec, long columnIndex)
         {
-            if (spec.GetColumnType(columnIndex) != DataType.Table)
-            {
-                throw new ArgumentOutOfRangeException("columnIndex", columnIndex, ErrColumnNotTable);
-            }
-
 
             if (Is64Bit)
                 return new Spec(spec.OwnerRootTable, spec_get_spec64(spec.Handle, (IntPtr) columnIndex), true);
@@ -718,16 +715,10 @@ enum DataType {
         //not implemented in core c++ dll will return -1 until it is implemented
         public static long TableFindFirstBinary(Table table, long columnIndex, byte[] value)
         {
-
-            if (IsRunningOnMono())
-            {
-                throw new NotImplementedException("Table.FindFirstBinary has not been implemented in core");
-            }
-
             GCHandle handle = GCHandle.Alloc(value, GCHandleType.Pinned);
-            IntPtr valuePointer = handle.AddrOfPinnedObject();
             try
             {
+                IntPtr valuePointer = handle.AddrOfPinnedObject();
                 return
                     Is64Bit
                         ? (long)
@@ -737,17 +728,10 @@ enum DataType {
                             table_find_first_binary32(table.Handle, (IntPtr) columnIndex, valuePointer,
                                 (IntPtr) value.Length);
             }
-            catch (SEHException e) //debugging stuff - remove
-            {
-                Console.WriteLine(e.Message);
-                throw new NotImplementedException("Table Find First has not been implemented in this version ");
-            }
-
-            finally //this must stay. Do not remove
+            finally
             {
                 handle.Free();
             }
-
         }
 
 #endif
@@ -1452,13 +1436,9 @@ enum DataType {
         public static void TableViewSort(TableView tableView, long columnIndex)
         {
             if (Is64Bit)
-            {
                 tableview_sort_default64(tableView.Handle, (IntPtr) columnIndex);
-            }
             else
-            {
                 tableview_sort_default32(tableView.Handle, (IntPtr) columnIndex);
-            }
         }
 
         [DllImport(L64, EntryPoint = "tableview_sort", CallingConvention = CallingConvention.Cdecl)]
@@ -1470,16 +1450,11 @@ enum DataType {
 
         public static void TableViewSort(TableView tableView, long columnIndex,Boolean ascending)
         {
-            if (Is64Bit)
-            {
-                tableview_sort64(tableView.Handle, (IntPtr)columnIndex, BoolToIntPtr(ascending));
-            }
-            else
-            {
-                tableview_sort32(tableView.Handle, (IntPtr)columnIndex,BoolToIntPtr(ascending));
-            }
+            if (Is64Bit)            
+                tableview_sort64(tableView.Handle, (IntPtr) columnIndex, BoolToIntPtr(@ascending));            
+            else            
+                tableview_sort32(tableView.Handle, (IntPtr) columnIndex, BoolToIntPtr(@ascending));            
         }
-
 
 
         [DllImport(L64, EntryPoint = "tableview_average_int", CallingConvention = CallingConvention.Cdecl)]
@@ -4942,7 +4917,7 @@ enum DataType {
 
         }
 
-
+        //okay no coverage of the error case, should only fail if broken on the platform
         private static void ReturnStringTest(string stringtotest)
         {
             string returnedstring = TestStringReturner(stringtotest);
@@ -5877,6 +5852,7 @@ CharSet = CharSet.Unicode)]
 
 
         //if something is wrong with interop or C# marshalling, this method will throw an exception
+        //low unit test coverage is okay, the error cases will only be hit if the platform behaves very unexpected
         public static void TestInterop()
         {
 
@@ -5999,25 +5975,17 @@ CharSet = CharSet.Unicode)]
         public static void NewSharedGroupFile(SharedGroup group, string fileName, bool noCreate,
             DurabilityLevel durabilityLevel)
         {
-            try
+            IntPtr handle = Is64Bit
+                ? new_shared_group_file64(fileName, (IntPtr) fileName.Length, BoolToIntPtr(noCreate),
+                    SharedGroup.DurabilityLevelToIntPtr(durabilityLevel))
+                : new_shared_group_file32(fileName, (IntPtr) fileName.Length, BoolToIntPtr(noCreate),
+                    SharedGroup.DurabilityLevelToIntPtr(durabilityLevel));
+            if (handle == IntPtr.Zero)//todo:more elaborate error codes,especially for most common kinds of IO errors
             {
-                group.SetHandle(Is64Bit
-                    ? new_shared_group_file64(fileName, (IntPtr) fileName.Length, BoolToIntPtr(noCreate),
-                        SharedGroup.DurabilityLevelToIntPtr(durabilityLevel))
-                    : new_shared_group_file32(fileName, (IntPtr) fileName.Length, BoolToIntPtr(noCreate),
-                        SharedGroup.DurabilityLevelToIntPtr(durabilityLevel)), true,false);
+                throw new  InvalidOperationException(String.Format("New SharedGroup failed filename {0} probably due to an IO error in core",fileName));
             }
-            catch (SEHException ex)
-            {
-                throw new IOException(
-                    String.Format(CultureInfo.InvariantCulture,
-                        "IO error creating group file {0} (read/write access is needed)  c++ exception thrown :{1}",
-                        fileName, ex.Message));
-            }
-        }
-
-
-
+            group.SetHandle(handle, true,false);
+       }
 
 
 
@@ -6158,7 +6126,7 @@ CharSet = CharSet.Unicode)]
              */
         }
 
-
+        //a few uncovered lines okay, it is hard to get commit to throw
         [DllImport(L64, EntryPoint = "shared_group_commit", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr shared_group_commit64(IntPtr handle);
 
@@ -6176,18 +6144,9 @@ CharSet = CharSet.Unicode)]
             if (res != IntPtr.Zero)
             {
                 //shared_group_commit threw an exception in core
-                //currently we just assume it was an IO error, but could be anything
+                //currently we just assume it was an IO error, but could be anything                
                 throw new InvalidOperationException("sharedGroup commit exception in core. probably an IO error with the group file");
             }
-
-            /* disabled as this only work with .net and windows, exception handling from c++ is broken in mono/windows and likely also in mono other platforms
-            catch (SEHException ex)
-                //other things than IO could go wrong too, we might want to inspect and throw a more precise error msg
-            {
-                throw new IOException(String.Format(CultureInfo.InvariantCulture,
-                    "IO error when committing data (read/write access is needed)  c++ exception thrown :{0}", ex.Message));
-            }
-             */
         }
 
 
