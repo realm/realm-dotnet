@@ -51,14 +51,14 @@ Building the c++ binding in windows with VS2012 (not express) can be done as fol
 
 ##C++ DLL BUILD##  
 
-0. Please change the number in the file tightdb_c_cs.cpp to reflect the version being built.
+1. Please change the number in the file tightdb_c_cs.cpp to reflect the version being built.
 Currently the number is simply YYMMDDHHMM
-1. If You did not build core Yourself, extract a VS2012 release into H:\Wincoder\Develope\tightdb_csharp\native\libsVS2012
+2. If You did not build core Yourself, extract a VS2012 release into H:\Wincoder\Develope\tightdb_csharp\native\libsVS2012
  so that libsvs2012 now contain tightDB32d.lib and 3 other similar named lib files, as well as a src directory structure with header files in it.
-2. Open up the tightdb_c_cs2012 solution found in H:\Wincoder\Develope\tightdb_csharp\native\tightdb_c_cs\tightdb_c_cs2012 
-3. select build->batch build. select the 4 projects called tightdb_c-cs2012
-4. click clean.  select build->batch build. click rebuild.
-5. when VS2012 shows Rebuild All: 4 succeeded, mark the solution in solution explorer, right click, select Open folder in file explorer. doubleclick the file release.cmd  
+3. Open up the tightdb_c_cs2012 solution found in H:\Wincoder\Develope\tightdb_csharp\native\tightdb_c_cs\tightdb_c_cs2012 
+4. select build->batch build. select the 4 projects called tightdb_c-cs2012
+5. click clean.  select build->batch build. click rebuild.
+6. when VS2012 shows Rebuild All: 4 succeeded, mark the solution in solution explorer, right click, select Open folder in file explorer. doubleclick the file release.cmd  
 if prompted, type Yes or All where applicable  
 
 You have now built the C++ part of the C# binding, and created a release of that, in the  
@@ -68,15 +68,14 @@ The files in the release directory will be used when running unit tests and exam
 
 ##C SHARP BINDING BUILD##
 
-0. Please change the number in Table.Cs so that it reflects the build.
-Currently the number is simply YYMMDDHHMM
-1. navigate to H:\Wincoder\Develope\tightdb_csharp\TightDbCSharp  and open the TightDbCsharp.sln solution VS2012
+1. Please change the string in Toolbox.Cs so that it reflects the build.
+Currently the string is simply YYMMDDHHMM
 
-2. select build->batch build and select all 30 configurations. then click clean.
+2. navigate to H:\Wincoder\Develope\tightdb_csharp\TightDbCSharp  and open the TightDbCsharp.sln solution VS2012
 
-3. select build->batch build and click rebuild (wait until you get Rebuild all: 30 succeeded)
+3. select build->batch build and select all 30 configurations. then click clean.3
 
-4 mark the solution in solution explorer, right click, select Open folder in file explorer.
+4. select build->batch build and click rebuild (wait until you get Rebuild all: 30 succeeded)
 
 5 If you want to make a release - do the following :
 
@@ -88,7 +87,10 @@ NUnitLite - these projects will be used for running unit tests, until some day N
 reliably. Note that the code in the TighDBCSharpTest project is linked to from the commandline programs - don't delete
 the source code.
 
-6)
+0.
+In Solution Explorer, locate the Test project, right click, select Set As Startup Project
+
+1.
 Select Release in solution configuration
 Select x86 in solution platform
 click the green run arrow
@@ -102,63 +104,63 @@ Process Running as: 32bit
 Debug or Release is Release
 Enter to close the commandline window
 
-7)
+2.
 Select Release in solution configuration
 Select x64 in solution platform
-Same as 6) but this time at the top it should say
+Same as 1) but this time at the top it should say
 Process Running as: 64bit
 Debug Or Release : Release
 
-8)
+3.
 Select Release in solution configuration
 Select AnyCpu in solution platform
-Same as 6) but this time at the top it should say
+Same as 1) but this time at the top it should say
 Process Running as: 64bit
 Debug Or Release : Release
 
 
-9)
+4.
 Select Debug in solution configuration
 Select AnyCpu in solution platform
-Same as 6) but this time at the top it should say
+Same as 1) but this time at the top it should say
 Process Running as: 64bit
 Debug Or Release : Debug
 
-10)
+5.
 Select Debug in solution configuration
 Select X64 in solution platform
-Same as 6) but this time at the top it should say
+Same as 1) but this time at the top it should say
 Process Running as: 64bit
 Debug Or Release : Debug
 
-11)
+6.
 Select Debug in solution configuration
 Select x86 in solution platform
-Same as 6) but this time at the top it should say
+Same as 1) but this time at the top it should say
 Process Running as: 32bit
 Debug Or Release : Debug
 
-
-
-12)
+7.
 now, right click test_net35 in solution explorer and select Set as startup project.
-Then repeat the steps 6 to 11 with this project as startup project.
+Then repeat the steps 1 to 6 with this project as startup project.
 At the first run, verify that this line is in the info dump at the top :
 Built for .net version : V3.5
 
-13) now, right click test_net40 in solution explorer and select Set as startup project.
+8.
+now, right click test_net40 in solution explorer and select Set as startup project.
 Then repeat the steps 6 to 11 with this project as startup project.
 At the first run, verify that this line is in the info dump at the top 
 Built for .net version : V4.0
 
 If everything checked out alright, go on to the release phase:
 
-
 ##C SHARP BINDING RELEASE##
 
-1. Convert Install_Note.txt and Build_Note_Daily.txt to windows line endings (Use Notepad++ to edit->Eol conversion->Windows Endings)
+1. mark the solution in solution explorer, right click, select Open folder in file explorer.
 
-2. Doubleclick the file release_all.cmd.  
+2. Convert Install_Note.txt and Build_Note_Daily.txt to windows line endings (Use Notepad++ to edit->Eol conversion->Windows Endings)
+
+3. Doubleclick the file release_all.cmd.  
 
 Answer All if asked, or Yes if asked and All cannot be answered. press enter a few times.
 
