@@ -217,6 +217,44 @@ enum DataType {
             return (IntPtr) 1 == value;
         }
 
+        //gets an IntPtr that is the return value
+        //of bool_to_size_t_with_erorrtag or bool_to_size_t
+        //from the C++ part of the# binding
+        //converts the IntPtr to true or false, as well as returns an errorcode
+        //if the return value (errorcode) is 0, boolValue reflects the boolean from c++
+        //if the return value is negative, then it is an error code from c++
+        //and the value of boolvalaue should be discarded
+
+        //note that if there is an error, the boolValue parameter is forced false (thus unreliable)
+        //errorcode is an indication of what kind of error has happened. 
+        //Basically, errorcode<0 means an exception was caught in c++
+        //Errorcode cannot be greater than 0, it is always negative or 0
+        //the reason we stuff two variables into one size_t is that interop overhead is quite large
+        //so we reduce the number of parametres to its minimum
+        private static long IntPtrToBoolWithErorrCode(IntPtr value,out bool boolValue)
+        {
+            if ((long)value == 1)
+            {
+                boolValue = true;
+                return 0;
+            }
+            boolValue = false;//in the case value is 0 we must return false. if value is negative it doesn't matter what boolvalue is set to
+                              //doing it this way removes a branch. Branches are time expensive
+            return (long) value;//at this point value is either 0 or a negative error code from c++
+        }
+            
+        //   value   boolvalue    errorcode
+        //     1     true          0
+        //     0     false         0
+        //    -1     unch.         -1
+        //    -2     unch.         -2
+        //    -3     unch.         -3
+        //    -4     unch.         -4 
+        //    -5     unch.         -5
+        
+        //usage :  errorcode = IntPtrToBollWithErrorCode(IntPtr retfromcpppcall, ref bool result);
+        // if (errorcode<0){throw(some exception depending on errorcode)}
+        // return result;
 
 
         [DllImport(L32, EntryPoint = "table_get_column_index", CallingConvention = CallingConvention.Cdecl)]
@@ -584,6 +622,72 @@ enum DataType {
         }
 
 
+
+
+       
+        [DllImport(L64, EntryPoint = "group_is_empty", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr group_is_empty64(IntPtr handle);
+
+        [DllImport(L32, EntryPoint = "group_is_empty", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr group_is_empty32(IntPtr handle);
+
+        public static Boolean GroupIsEmpty(Group group)
+        {
+            Boolean result;
+            if (IntPtrToBoolWithErorrCode((Is64Bit)
+                ? group_is_empty64(group.Handle)
+                : group_is_empty32(group.Handle), out result) < 0)            
+                //shared_group_IsEmpty threw an exception in core
+                //currently we just assume it was an IO error, but could be anything
+                //more elaborate reporting would need the result from IntPtrToBollWithErrorCode to be saved
+                //and used to throw a more precise exception
+                throw new InvalidOperationException("Group commit exception in core. probably an IO error with the group file");            
+            return result; //no errors so just return the result
+        }
+
+
+
+
+
+
+        [DllImport(L64, EntryPoint = "group_size", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr group_size64(IntPtr handle);
+
+        [DllImport(L32, EntryPoint = "group_size", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr group_size32(IntPtr handle);
+
+        public static long GroupSize(Group group)
+        {
+            var result = (long)((Is64Bit)
+                ? group_size64(group.Handle)
+                : group_size32(group.Handle));
+
+            if (result< 0)
+                //shared_group_IsEmpty threw an exception in core
+                //currently we just assume it was an IO error, but could be anything
+                //more elaborate reporting would need the result from IntPtrToBollWithErrorCode to be saved
+                //and used to throw a more precise exception
+                throw new InvalidOperationException(String.Format("Group size call lead to an exception in core. Gro file IO error or group is invalid : {0}",group.ToString()));
+            return result; //no errors so just return the result
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         [DllImport(L64, EntryPoint = "new_group_file", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr new_group_file64([MarshalAs(UnmanagedType.LPWStr)] string fileName,
             IntPtr fileNameLen, IntPtr openMode);
@@ -591,6 +695,20 @@ enum DataType {
         [DllImport(L32, EntryPoint = "new_group_file", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr new_group_file32([MarshalAs(UnmanagedType.LPWStr)] string fileName,
             IntPtr fileNameLen, IntPtr openMode);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
         public static void GroupNewFile(Group group, string fileName, Group.OpenMode openMode)
@@ -2121,6 +2239,25 @@ enum DataType {
                     group.ReadOnly);
             return new Table(group_get_table32(group.Handle, tableName, (IntPtr) tableName.Length), true, group.ReadOnly);
         }
+
+
+        //Return the table at the specified index in the group.
+        //the index relates to the sequence of tables returned with foreach
+        //we rely on the table constructor to throw if we get a  null from c+
+        [DllImport(L64, EntryPoint = "group_get_table_by_index", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr group_get_table_by_index64(IntPtr groupHandle, IntPtr tableIndex);
+
+        [DllImport(L32, EntryPoint = "group_get_table_by_index", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr group_get_table_by_index32(IntPtr groupHandle, IntPtr tableIndex);
+
+        public static Table GroupGetTable(Group group, long tableIndex)
+        {
+            return Is64Bit
+                ? new Table(group_get_table_by_index64(group.Handle, (IntPtr) tableIndex), true, group.ReadOnly)
+                : new Table(group_get_table_by_index32(group.Handle, (IntPtr) tableIndex), true, group.ReadOnly);
+        }
+
+
 
 
 
@@ -3725,10 +3862,8 @@ enum DataType {
         //convert.tobool does not take an IntPtr so we have to convert ourselves we get 1 for true, 0 for false
         public static bool TableGetMixedBool(Table table, long columnIndex, long rowIndex)
         {
-            if (Is64Bit)
-            {
-                return IntPtrToBool(table_get_mixed_bool64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex));
-            }
+            if (Is64Bit)           
+                return IntPtrToBool(table_get_mixed_bool64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex));            
             return IntPtrToBool(table_get_mixed_bool32(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex));
         }
 
@@ -3766,11 +3901,9 @@ enum DataType {
         //convert.tobool does not take an IntPtr so we have to convert ourselves we get 1 for true, 0 for false
         public static bool TableViewGetMixedBool(TableView tableView, long columnIndex, long rowIndex)
         {
-            if (Is64Bit)
-            {
+            if (Is64Bit)            
                 return
-                    IntPtrToBool(tableview_get_mixed_bool64(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex));
-            }
+                    IntPtrToBool(tableview_get_mixed_bool64(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex));            
             return IntPtrToBool(tableview_get_mixed_bool32(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex));
         }
 
@@ -4038,10 +4171,8 @@ enum DataType {
         //convert.tobool does not take an IntPtr so we have to convert ourselves we get 1 for true, 0 for false
         public static bool TableGetBool(Table table, long columnIndex, long rowIndex)
         {
-            if (Is64Bit)
-            {
-                return IntPtrToBool(table_get_bool64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex));
-            }
+            if (Is64Bit)            
+                return IntPtrToBool(table_get_bool64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex));            
             return IntPtrToBool(table_get_bool32(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex));
         }
 
@@ -4056,10 +4187,8 @@ enum DataType {
         //convert.tobool does not take an IntPtr so we have to convert ourselves we get 1 for true, 0 for false
         public static bool TableViewGetBool(TableView tableView, long columnIndex, long rowIndex)
         {
-            if (Is64Bit)
-            {
-                return IntPtrToBool(tableView_get_bool64(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex));
-            }
+            if (Is64Bit)            
+                return IntPtrToBool(tableView_get_bool64(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex));            
             return IntPtrToBool(tableView_get_bool32(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex));
         }
 

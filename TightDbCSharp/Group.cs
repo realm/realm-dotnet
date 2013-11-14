@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using System.Runtime.Remoting;
 
 namespace TightDbCSharp
 {
@@ -8,7 +11,7 @@ namespace TightDbCSharp
     /// Handles a collection of tables that are not shared with other
     /// processes or programs. (see SharedGroup)
     /// </summary>
-    public class Group:Handled
+    public class Group:Handled,IEnumerable<Table>
     {
        
         /// <summary>
@@ -197,6 +200,21 @@ namespace TightDbCSharp
             throw new InvalidEnumArgumentException(String.Format(CultureInfo.InvariantCulture,"Group.GetTable called with a table name that does not exist {0}",tableName));
         }
 
+        //return the table at the specified index in the group's list of tables
+        /// <summary>
+        /// Return the table that has the specified index in the group
+        /// </summary>
+        /// <param name="tableIndex">zero based index of an existing table in the Group</param>
+        /// <returns>The table at the index in the groups list of tables</returns>
+        /// <exception cref="ArgumentOutOfRangeException">If the index is negative or larger than or equal to size</exception>
+        public Table GetTable(long tableIndex)
+        {
+            if (tableIndex < 0 || tableIndex >= Size)
+            {
+                throw new ArgumentOutOfRangeException("tableIndex",String.Format("Group.GetTable called with an index ({0}) that is out of range :{1}",tableIndex,this.ToString()));
+            }
+            return UnsafeNativeMethods.GroupGetTable(this, tableIndex);
+        }
 
         /// <summary>
         ///  use this method to create new tables in the group
@@ -245,6 +263,27 @@ namespace TightDbCSharp
             UnsafeNativeMethods.GroupCommit(this);
         }
 
+
+        /// <summary>
+        /// True if the group has no tables
+        /// False if the group has tables
+        /// </summary>
+        /// <returns>True if the group has no Tables, False if the group has any tables</returns>
+        public Boolean IsEmpty()
+        {
+            return UnsafeNativeMethods.GroupIsEmpty(this);
+        }
+
+
+        /// <summary>
+        /// This property will return the number of tables in the Group
+        /// Could take a little while to execute as it has to round trip to core
+        /// </summary>
+        public long Size
+        {
+            get { return UnsafeNativeMethods.GroupSize(this); }
+        }
+
         /// <summary>
         /// if true, some unexpected error condition exists and this group should never be used
         /// </summary>
@@ -271,6 +310,35 @@ namespace TightDbCSharp
             UnsafeNativeMethods.GroupDelete(Handle);//was this before but when called via the destructor, this got freed bf callee could set handle to zero
             Handle = IntPtr.Zero;
         }
+
+    
+
+        /// <summary>
+        /// Returns an enumerator that iterates through the Tables in the group.
+        /// </summary>
+        /// <returns>
+        /// A IEnumerator that can be used to iterate through the tables in the group
+        /// Yielding Table obejcts
+        /// </returns>
+
+        public IEnumerator<Table> GetEnumerator()
+        {
+            var current = 0;
+
+            while (current < Size)
+            {                
+                yield return GetTable(current++);
+            }
+        }
+
+
+        //this will return the generic enumerator above when doing foreach TableRow tr in Query, as it is the closest match
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+
 
     }
 }

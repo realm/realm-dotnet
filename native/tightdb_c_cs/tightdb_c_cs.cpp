@@ -34,10 +34,58 @@ inline bool size_t_to_bool(size_t value)
     return value==1;//here i assume 1 and size_t can be compared in a meaningfull way. C# sends a size_t = 1 when true,and =0 when false
 }
 
+//send 1 for true, 0 for false.
+//this function is compatible with the error checking functions in C#
+//so You can send with this one, and check with an error checking one in C#
+//useful if Your method has several exit paths, some of which are erorr conditions
 inline size_t bool_to_size_t(bool value) {
     if(value) return 1;
     return 0;
 }
+
+
+//call this if something went wrong and You want to return an error code where C#
+//expects a boolean or error code.
+//the inline should end up with no more code than just returning the constant
+//but will allow us to adopt another scheme later on
+inline size_t bool_to_size_t_with_errorcode(size_t errorcode){
+	return errorcode;
+}
+
+
+//errorcode can be zero (no error) or negative (send errorcode to C#)
+//errorcode is meant to be used to convey an error condition to the caller
+//If an error condition exists, the boolean value returned to C# is undefined 
+//(like if we had an exception thrown)
+//the size_t is 0 for false, 1 for true, negative for errorcode
+inline size_t bool_to_size_t_with_errorcode(bool value,size_t errorcode) {		
+
+	#ifdef TIGHTDB_DEBUG
+	TIGHTDB_ASSERT(errorcode<=0);//errocode must NOT be positive
+    #endif
+
+	if (value && (errorcode==0)){	
+		  return 1;
+	}
+	return errorcode;//assuming conversion from int to size_t is lossless,that int is not larger than size_t
+	//this last return will return 0 if value is false and errorcode is 0
+	//otherwise it will return errorcode
+}
+//
+//  value   errorcode  size_t
+//    T        0         1
+//    F        0         0
+//    T        -1         -1
+//    F        -1         -1
+//    T        -2         -2
+//    F        -2         -2
+//    T       -10         -10
+//    F       -10         -10
+
+
+
+
+
 
 //a size_t sent from C# with value 0 means durability_full, other values means durabillity_memonly, but please
 //use 1 for durabillity_memonly to make room for later extensions
@@ -1589,6 +1637,31 @@ try {
  }
 }
 
+//return packed size_t with errorcode or a encoded boolean
+TIGHTDB_C_CS_API size_t  group_is_empty(Group* group_ptr) {
+	try {
+		return bool_to_size_t(group_ptr->is_empty());//if we don't get an exception things went well
+	}
+	catch(...)//things did not go well
+	{
+		return bool_to_size_t_with_errorcode(-1);//return an error code to indicate this
+		//1 as error means that is_empty is not to be trusted and that there was an
+		//exception when asking the group. Binding should throw a general exception
+		//InvalidOperation or the like, and in text describe that a call to is empty
+		//failed in an unspecified way.
+	}
+}
+
+
+TIGHTDB_C_CS_API size_t group_size( Group* group_ptr){
+	try{
+		return group_ptr->size();
+	}
+	catch (...){
+		return -1;//-1 indicates an exception was thrown in core
+	}
+}
+
 //should be disposed by calling unbind_table_ref
 TIGHTDB_C_CS_API Table* group_get_table(Group* group_ptr,uint16_t* table_name,size_t table_name_len)
 {   
@@ -1596,6 +1669,14 @@ TIGHTDB_C_CS_API Table* group_get_table(Group* group_ptr,uint16_t* table_name,si
     return LangBindHelper::get_table_ptr(group_ptr,str);
 }
 
+//langbindhelper should be extended to have get_table_by_index itself if it wsa friend with Group it could
+//call the private group method that takes an index and returns a table. Round tripping via name seems a bit
+//inefficient
+TIGHTDB_C_CS_API Table* group_get_table_by_index(Group* group_ptr,size_t table_ndx)
+{
+	StringData sd = group_ptr->get_table_name(table_ndx);
+    return LangBindHelper::get_table_ptr(group_ptr,sd);
+}
 
 TIGHTDB_C_CS_API size_t group_has_table(Group* group_ptr, uint16_t * table_name,size_t table_name_len)//should be disposed by calling unbind_table_ref
 {    

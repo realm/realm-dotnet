@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using NUnit.Framework;
 using TightDbCSharp;
@@ -14,6 +15,17 @@ namespace TightDbCSharpTest
     [TestFixture]
     public static class GroupTests
     {
+
+        //return a legal group file, and delete the file first
+        //if it exists.
+        //don't call if You already have an open group to this filename
+        private static string GroupFilename()
+        {
+            var filename = Path.GetTempPath() + "Testgroupf";
+            File.Delete(filename); //ok if it is not there?
+            return filename;
+        }
+
         /// <summary>
         /// Create an empty Group class and dispose it again in the destructor
         /// </summary>
@@ -100,6 +112,54 @@ namespace TightDbCSharpTest
         }
 
 
+        /// <summary>
+        /// Create a number of tables in a group, then iterate the group and make sure the tables returned are the
+        /// Correct ones. This test hits several different methods in one go
+        /// </summary>
+        [Test]
+        public static void GroupIteration()
+        {
+            var tableNames = new List<String>
+            {
+                "Table1",
+                "Table2",
+                "Table3",
+                "Table4",
+                "Table5",
+                "Table6",
+                "Table7",
+            };
+
+            using (var group = new Group(GroupFilename(), Group.OpenMode.ModeReadWrite))
+            {
+                foreach (var tablename in tableNames)
+                {
+                    group.CreateTable(tablename, tablename.Int()); //create Table1 with an int field caled Table1 etc
+                }
+                var counter = 0;
+                foreach (var table in group)
+                {
+                    Assert.AreEqual(tableNames[counter++],table.GetColumnName(0));
+                    table.Dispose();//neccessary to avoid async finalizer thread bug
+                }
+            }
+        }
+
+        /// <summary>
+        /// Test IsEmpty
+        /// </summary>
+        [Test]
+        public static void GroupIsEmpty()
+        {
+            using (var group = new Group(GroupFilename(),Group.OpenMode.ModeReadWrite))
+            {                
+                Assert.AreEqual(true,group.IsEmpty());
+                group.CreateTable("test", "int".Int());
+                Assert.AreEqual(false,group.IsEmpty());
+                //todo:delete the table and see if the group goes back to being empty
+            }
+        }
+
         //todo:make reasonable tests of all 3 kinds of openmode and their edge cases 
         //(no rights, file exists/doesn't exists, illegal filename,null string)
 
@@ -112,12 +172,8 @@ namespace TightDbCSharpTest
         /// </summary>
         [Test]
         public static void CreateGroupFileNameTestGoodFile()
-        {
-    
-            var filename = Path.GetTempPath() + "Testgroupf";
-
-            File.Delete(filename);//ok if it is not there?
-            using (var g = new Group(filename,Group.OpenMode.ModeReadWrite))
+        {   
+            using (var g = new Group(GroupFilename(),Group.OpenMode.ModeReadWrite))
             {
                 Assert.AreEqual(false, g.Invalid);            
             }
@@ -130,20 +186,23 @@ namespace TightDbCSharpTest
         [Test]
         public static void CreateGroupFromExistingFileNoCreate()
         {
-            var filename = Path.GetTempPath() + "noCreateTest";
-
-            File.Delete(filename);//ok if it is not there?
+            var filename = GroupFilename();//the call deletes the file so don't call 2nd time around
             using (var g = new Group(filename, Group.OpenMode.ModeReadWrite))
             {
                 Assert.AreEqual(false, g.Invalid);
                 g.CreateTable("originaltable", new BoolColumn("TrueFalse"));
                 g.Commit();
-                using (var fromDisk = new Group(filename, Group.OpenMode.ModeReadWriteNoCreate))
+            }//now g should be correctly flushed and all
+            using (var fromDisk = new Group(filename, Group.OpenMode.ModeReadWriteNoCreate))
                 {
-                    Assert.AreEqual(true, g.HasTable("originaltable"));
-                    g.CreateTable("Second", new IntColumn("testInt"));
-                    g.Commit();
+                    Assert.AreEqual(true, fromDisk.HasTable("originaltable"));
+                    fromDisk.CreateTable("Second", new IntColumn("testInt"));
+                    fromDisk.Commit();
                 }
+            using (var g = new Group(filename, Group.OpenMode.ModeReadWrite))
+            {
+                Assert.AreEqual(false, g.Invalid);
+                Assert.AreEqual(true, g.HasTable("Second"));            
             }
         }
 
@@ -185,6 +244,9 @@ namespace TightDbCSharpTest
         }
 
 
+        /// <summary>
+        /// Test error handling when group is created from a null variable
+        /// </summary>
         [Test]
         [ExpectedException("System.ArgumentNullException")]
         public static void GroupFromBinaryNull()
@@ -196,6 +258,9 @@ namespace TightDbCSharpTest
         }
 
 
+        /// <summary>
+        /// Test error handling when group is created from an empty array
+        /// </summary>
         [Test]
         [ExpectedException("System.ArgumentException")]
         public static void GroupFromEmptyArray()
@@ -207,6 +272,9 @@ namespace TightDbCSharpTest
             }
         }
 
+        /// <summary>
+        /// Test that group creation errors are caught when group is created with an invalid data array
+        /// </summary>
         [Test]
         [ExpectedException("System.ArgumentException")]
         public static void GroupFromInvalidArray()
