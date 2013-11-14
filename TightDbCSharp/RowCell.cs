@@ -75,10 +75,8 @@ namespace TightDbCSharp
         {
             get
             {
-                if (_columntypeloaded)
-                {
-                    return _columnType;
-                }
+                if (_columntypeloaded)                
+                   return _columnType;                
                 return _columnType = Owner.Owner.ColumnTypeNoCheck(ColumnIndex);
             }
         }

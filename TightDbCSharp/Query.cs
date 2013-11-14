@@ -85,50 +85,23 @@ namespace TightDbCSharp
             
         }
 
-        private void ValidateStartEndLimit(long start, long end, long limit) 
+        private void ValidateStartEndLimit(long start, long end, long limit)
         {
-//                        Action<string, string> thrower = (errparam, errmsg) =>
-//                {
-//                    throw new ArgumentOutOfRangeException(errparam,
-//                                                          string.Format(CultureInfo.InvariantCulture,
-//                                                              "Query.FindAll({0},{1},{2}) {3}", start,
-//                                                              end, limit, errmsg));
-            //                };
-            
-           
             if (start < -1)
-            {
                 ValidateStartEndLimitErrror("start", "Start must be larger than -2", start, end, limit);
-                //thrower("start", "Start must be larger than -2");
-            }
 
             if (end < -1)
-            {
-                ValidateStartEndLimitErrror("end","end must be larger than -2",start,end,limit);
-                //thrower("end", "end must be larger than -2");
-            }
-
-            if (limit < -1)
-            {
                 ValidateStartEndLimitErrror("end", "end must be larger than -2", start, end, limit);
 
-//                thrower("end", "end must be larger than -2");
-            }
+            if (limit < -1)
+                ValidateStartEndLimitErrror("end", "end must be larger than -2", start, end, limit);
 
-            if (end < start && end > -1)//-1 means return all in tightdb so if end is -1 it is okay
-            {
+            if (end < start && end > -1) //-1 means return all in tightdb so if end is -1 it is okay            
                 ValidateStartEndLimitErrror("end", "end must be larger than or equal to start", start, end, limit);
 
-//               thrower("end", "end must be larger than or equal to start");
-            }
-
             if (end >= UnderlyingTable.Size)
-            {
-                ValidateStartEndLimitErrror("end", "end must be less than the size of the underlying table", start, end, limit);
-
-              //  thrower("end", "end must be less than the size of the underlying table");
-            }
-
+                ValidateStartEndLimitErrror("end", "end must be less than the size of the underlying table", start, end,
+                    limit);
         }
 
         //default values are advised against by microsoft http://msdn.microsoft.com/query/dev11.query?appId=Dev11IDEF1&l=EN-US&k=k(CA1026);k(TargetFrameworkMoniker-.NETFramework,Version%3Dv4.5);k(DevLang-csharp)&rd=true        
@@ -362,10 +335,6 @@ namespace TightDbCSharp
             return GetEnumerator();
         }
 
-        internal override string ObjectIdentification()
-        {
-            return string.Format(CultureInfo.InvariantCulture, "Query:" + Handle);
-        }
 
     }
 }

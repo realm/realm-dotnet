@@ -1475,8 +1475,14 @@ TIGHTDB_C_CS_API tightdb::TableView* tableview_find_all_string(TableView * table
 //NOTE THAT tHE GROUP RETURNED HERE MUST BE FREED BY CALLING GROUP_DELETE WHEN IT IS NOT USED ANYMORE BY C#
 TIGHTDB_C_CS_API Group* group_from_binary_data(const char* data, std::size_t size)
 {
-    BinaryData bd(data,size);
-    return new Group(bd,false);
+	try {
+      BinaryData bd(data,size);
+      return new Group(bd,false);
+	} 
+	catch (...)
+	{
+		return NULL;
+	}
 }
 
 
@@ -1573,6 +1579,15 @@ TIGHTDB_C_CS_API void group_write_to_mem_free(char * binarydata_ptr){
     }
 }
 
+TIGHTDB_C_CS_API size_t group_commit(Group* group_ptr){
+try {
+	group_ptr->commit();
+	return 0;
+}
+ catch(...){
+	 return 1;
+ }
+}
 
 //should be disposed by calling unbind_table_ref
 TIGHTDB_C_CS_API Table* group_get_table(Group* group_ptr,uint16_t* table_name,size_t table_name_len)

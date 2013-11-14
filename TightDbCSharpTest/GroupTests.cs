@@ -125,6 +125,31 @@ namespace TightDbCSharpTest
 
 
         /// <summary>
+        /// Primarily test OpenMode nocreate and group commit
+        /// </summary>
+        [Test]
+        public static void CreateGroupFromExistingFileNoCreate()
+        {
+            var filename = Path.GetTempPath() + "noCreateTest";
+
+            File.Delete(filename);//ok if it is not there?
+            using (var g = new Group(filename, Group.OpenMode.ModeReadWrite))
+            {
+                Assert.AreEqual(false, g.Invalid);
+                g.CreateTable("originaltable", new BoolColumn("TrueFalse"));
+                g.Commit();
+                using (var fromDisk = new Group(filename, Group.OpenMode.ModeReadWriteNoCreate))
+                {
+                    Assert.AreEqual(true, g.HasTable("originaltable"));
+                    g.CreateTable("Second", new IntColumn("testInt"));
+                    g.Commit();
+                }
+            }
+        }
+
+
+
+        /// <summary>
         /// This unit test should not trigger a CodeAnalysis2000 error
         /// </summary>
         [Test]
@@ -160,6 +185,40 @@ namespace TightDbCSharpTest
         }
 
 
+        [Test]
+        [ExpectedException("System.ArgumentNullException")]
+        public static void GroupFromBinaryNull()
+        {
+            using (var g = new Group(null))
+            {
+                Assert.AreEqual("",g.ToString());//we should never get this far
+            }
+        }
+
+
+        [Test]
+        [ExpectedException("System.ArgumentException")]
+        public static void GroupFromEmptyArray()
+        {
+            var arr = new byte[] { };
+            using (var g = new Group(arr))
+            {
+                Assert.AreEqual("", g.ToString());//we should never get this far
+            }
+        }
+
+        [Test]
+        [ExpectedException("System.ArgumentException")]
+        public static void GroupFromInvalidArray()
+        {
+            var arr = new byte[] {7,9,13 };
+            using (var g = new Group(arr))
+            {
+                Assert.AreEqual("", g.ToString());//we should never get this far
+            }
+        }
+
+
 
 
         /// <summary>
@@ -167,7 +226,7 @@ namespace TightDbCSharpTest
         /// </summary>
         [Test]
         [ExpectedException("System.IO.IOException")]
-        public static void GroupWriteBadFilename()
+        public static void GroupWriteBadFileName()
         {
             const string groupSaveFileName = @"/\\/";            
             const string testTableName = "test1";

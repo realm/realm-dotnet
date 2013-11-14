@@ -162,7 +162,7 @@ namespace TightDbCSharp
             {
                 return RowForIndexNoCheck(s - 1);
             }
-            throw new InvalidOperationException("Last called on a TableView with no rows in it");
+            throw new InvalidOperationException("Last called on a Table with no rows in it");
         }
        
 
@@ -471,12 +471,7 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableGetColumnType(this, columnIndex);
         }
 
-        internal override string ObjectIdentification()
-        {
-            //ValidateIsValid(); OI could be called on an invalid (detached) table but that is okay as we don't call c++ in OI
-            return string.Format(CultureInfo.InvariantCulture,"Table:" + Handle.ToString("X"));
-        }
-
+        
         internal override DataType GetMixedTypeNoCheck(long columnIndex, long rowIndex)
         {
             return UnsafeNativeMethods.TableGetMixedType(this,columnIndex, rowIndex);
@@ -1491,8 +1486,8 @@ namespace TightDbCSharp
                 {
                     throw new ArgumentException(
                         String.Format(CultureInfo.InvariantCulture,
-                            "at level {0}, the path supplied contains index {1} that points not to a SubTable column, but column \"{2}\" of type {3}",
-                            level,path[level],levelSpec.GetColumnName(path[level]) ,levelSpec.GetColumnType(path[level])));
+                            "at level {0}, the path supplied contains index {1} that points not to a SubTable column, but column \"{2}\" of type {3}({4})",
+                            level, path[level], levelSpec.GetColumnName(path[level]), levelSpec.GetColumnType(path[level]), ToString()));
                 }
             }
         }

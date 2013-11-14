@@ -49,6 +49,35 @@ namespace TightDbCSharpTest
 
 
         /// <summary>
+        /// ensure that table ctor handles null column spec variables
+        /// </summary>
+        [Test]
+        [ExpectedException("System.ArgumentNullException")]
+        public static void ConstructNullColumn()
+        {
+            using (var table = new Table(null,null))
+            {
+                Assert.AreEqual(0,table.Size);
+            }
+        }
+
+
+        /// <summary>
+        /// user should be stopped if caling last on an empty table
+        /// </summary>
+        [Test]
+        [ExpectedException("System.InvalidOperationException")]
+        public static void LastOnEmptyTable()
+        {
+            using (var table = new Table("int".Int()))
+            {
+                var x = table.Last();//we should not get further than here
+                Assert.AreEqual(0,x.ColumnCount);
+            }
+        }
+
+
+        /// <summary>
         /// Test get column index
         /// </summary>
         [Test]
@@ -247,7 +276,7 @@ Table Name  : table name is 12345 then the permille sign ISO 10646:8240 then 789
         /// </summary>
         [Test]
         [ExpectedException("System.ArgumentOutOfRangeException")]
-        public static void DateTimeTes1970()
+        public static void DateTimeTest1970()
         {
             var myDateTime = new DateTime(1969, 5, 14, 0, 0, 0, DateTimeKind.Utc);
             using (var table = new Table("mixed".Mixed()))
@@ -490,7 +519,20 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
             Assert.AreEqual("Straight",t.GetColumnName(0));
             }
         }
-       
+
+        /// <summary>
+        /// Test rename column with a short path pointing to a root column
+        /// </summary>
+        [Test]
+        public static void TableRenameColumnShortPathTest()
+        {
+            using (var t = new Table())
+            {
+                t.AddStringColumn("Bent");
+                t.RenameColumn(new List<long>(){0}, "Straight");
+                Assert.AreEqual("Straight", t.GetColumnName(0));
+            }
+        }
         
         
         /// <summary>
@@ -2433,6 +2475,22 @@ Table Name  : Table with all allowed types (Field)
             TestHelper.Cmp(expectedres, actualres1);
             TestHelper.Cmp(expectedres, actualres2);
         }
+
+
+
+        /// <summary>
+        /// null as field name is not okay
+        /// </summary>
+        [Test]
+        [ExpectedException("System.ArgumentNullException")]
+        public static void ColumnSpecNullString1()
+        {
+            using (var x = new Table(new ColumnSpec(null,"Int")))
+            {
+                Assert.AreEqual(0,x.Size);//we should never get this far
+            }
+        }
+
 
         //todo:consider if we should not remove this option. Have a hard time figuring 
         //when the user only have the type as a string. Keep for now

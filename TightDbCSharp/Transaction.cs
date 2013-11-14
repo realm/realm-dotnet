@@ -108,7 +108,7 @@ namespace TightDbCSharp
         /// <summary>
         /// Finish the transaction and keep any changes made while in the transaction.
         /// </summary>
-        public void Commit()
+        new public void Commit() //we use new because we do not want to call the group.commit method on group. Transaction.commit has another meaning
         {
             EndTransaction(true);
         }
@@ -129,10 +129,13 @@ namespace TightDbCSharp
             //base.ReleaseHandle();//group.releasehandle would release the group handle in c++ but we don't want that
         }
 
-        internal override string ObjectIdentification()
+
+        /// <summary>
+        /// Enhance toString to also include the type of transaction, and its current state
+        /// </summary>
+        public override string ToString()
         {
-            return String.Format(CultureInfo.InvariantCulture, "Transaction. Type:{0}  State:{1}", _kind,
-                _sharedGroup.TransactionState);
+            return base.ToString() +String.Format(CultureInfo.InvariantCulture, "Type:{0}  State:{1}", _kind,_sharedGroup.TransactionState);
         }
     }
 }

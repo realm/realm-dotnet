@@ -26,6 +26,7 @@
 using System;
 using NUnitLite.Runner;
 //using NUnit.Framework.Internal;
+using TightDbCSharp;
 
 namespace NUnitLite.Tests
 {
@@ -118,14 +119,15 @@ namespace NUnitLite.Tests
         /// 
         public static void Main(string[] args)
         {
+            Toolbox.ShowVersionTest();
             if (args != null && args.Length != 0)
             {
                 new TextUI().Execute(args);
             }
             else
             {
+                
                 /*
-                Table.ShowVersionTest();
                 TdbTester(TableTests1.SubTableNoFields);
                 TdbTester(TableTests1.TableAddColumn);
                 TdbTester(TableTests1.TableAddColumnAndSpecTest);

@@ -629,14 +629,7 @@ namespace TightDbCSharp
         {
             return UnsafeNativeMethods.TableViewGetColumnType(this, columnIndex);
         }
-
-        internal override string ObjectIdentification()
-        {
-           // ValidateIsValid();
-            return String.Format(CultureInfo.InvariantCulture,"TableView:{0}", Handle);
-        }
-
-        
+       
         internal TableView(Table underlyingTableBeing, IntPtr tableViewHandle,bool shouldbedisposed)
         {
             try

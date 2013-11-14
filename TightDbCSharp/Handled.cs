@@ -18,8 +18,6 @@ namespace TightDbCSharp
         /// This method can be overwritten and should free or release any c++ resources attached to this object
         /// </summary>
         protected abstract void ReleaseHandle();//overwrite this. This method will be called when c++ can free the object associated with the handle
-        internal abstract string ObjectIdentification();//overwrite this to enable the framework to name the class in a human readable way
-
         /// <summary>
         /// Contains the c++ pointer to a c++ object - used as a handle  when calling c++ functions
         /// </summary>
@@ -84,12 +82,8 @@ namespace TightDbCSharp
         {            
             //Console.WriteLine("Handle being set to newhandle:{0}h shouldBeDisposed:{1} ",newHandle.ToString("X"),shouldBeDisposed);
             if (HandleInUse)
-            {
-                throw new ArgumentException(String.Format(CultureInfo.InvariantCulture,
-                                                       "SetHandle called on {0} that already has acquired a handle",
-                                                       ObjectIdentification()));  
-                
-            }
+                throw new ArgumentException(String.Format(CultureInfo.InvariantCulture,"SetHandle called on wrapper that already has acquired a handle :{0}",ToString()));  
+
             ReadOnly = isReadOnly;
             Handle = newHandle;
             HandleInUse = true;
@@ -98,13 +92,20 @@ namespace TightDbCSharp
   //          Console.WriteLine("Handle has been set:{0}  shouldbedisposed:{1}" , ObjectIdentification(),shouldBeDisposed);
         }
 
+        /// <summary>
+        /// Enhance toString to also show our wrapper objects in the debugger with their address in hex
+        /// </summary>
 
+        public override string ToString()
+        {
+            return base.ToString() + String.Format(CultureInfo.InvariantCulture,": {0:X8}", (long)Handle);//long typecast bc long can be formatted, IntPtr cannot
+        }
 
         internal void ValidateReadWrite()
         {
             if (ReadOnly)
             {
-                throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture,"{0} {1}",ObjectIdentification(), " Is Read Only and cannot be modified "));
+                throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture,"{0} {1}",ToString(), " Is Read Only and cannot be modified "));
             }
         }
 

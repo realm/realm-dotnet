@@ -140,9 +140,10 @@ enum DataType {
         [DllImport(L32, EntryPoint = "table_copy_table", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr table_copy_table32(IntPtr tablePtr);
 
-        public static Table CopyTable(Table table)//a copy of a ReadOnly table is not readonly. It also does not belong to any group the source might belong to
+        public static Table CopyTable(Table table)
+            //a copy of a ReadOnly table is not readonly. It also does not belong to any group the source might belong to
         {
-            return new Table(Is64Bit ? table_copy_table64(table.Handle) : table_copy_table32(table.Handle), true,false);
+            return new Table(Is64Bit ? table_copy_table64(table.Handle) : table_copy_table32(table.Handle), true, false);
         }
 
 
@@ -494,8 +495,6 @@ enum DataType {
         private static extern IntPtr spec_get_spec32(IntPtr spec, IntPtr columnIndex);
 
 
-        private const string ErrColumnNotTable =
-            "SpecGetSpec called with a column index for a column that is not a table";
 
         public static Spec SpecGetSpec(Spec spec, long columnIndex)
         {
@@ -505,17 +504,6 @@ enum DataType {
             return new Spec(spec.OwnerRootTable, spec_get_spec32(spec.Handle, (IntPtr) columnIndex), true);
         }
 
-        /*not really needed
-        public static Spec spec_get_spec(Spec spec, int ColumnIndex)
-        {
-            if (spec.get_column_type(ColumnIndex) == DataType.Table)
-            {
-                IntPtr SpecHandle = spec_get_spec((IntPtr)spec.SpecHandle, (IntPtr)ColumnIndex);
-                return new Spec(SpecHandle, true);
-            }
-            else
-                throw new SpecException(err_column_not_table);
-        }*/
 
 
         //size_t spec_get_column_count(Spec* spec);
@@ -543,9 +531,9 @@ enum DataType {
         [DllImport(L32, EntryPoint = "new_table", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr new_table32();
 
-        public static void TableNew(Table table,bool isReadOnly)
+        public static void TableNew(Table table, bool isReadOnly)
         {
-            table.SetHandle(Is64Bit ? new_table64() : new_table32(), true,isReadOnly);
+            table.SetHandle(Is64Bit ? new_table64() : new_table32(), true, isReadOnly);
         }
 
 
@@ -572,6 +560,28 @@ enum DataType {
             }
         }
 
+
+        //a few uncovered lines okay, it is hard to get commit to throw
+        [DllImport(L64, EntryPoint = "group_commit", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr group_commit64(IntPtr handle);
+
+        [DllImport(L32, EntryPoint = "group_commit", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr group_commit32(IntPtr handle);
+
+        public static void GroupCommit(Group group)
+        {
+
+            IntPtr res = (Is64Bit)
+                ? group_commit64(group.Handle)
+                : group_commit32(group.Handle);
+
+            if (res != IntPtr.Zero)
+                //shared_group_commit threw an exception in core
+                //currently we just assume it was an IO error, but could be anything                
+                throw new InvalidOperationException(
+                    "Group commit exception in core. probably an IO error with the group file");
+
+        }
 
 
         [DllImport(L64, EntryPoint = "new_group_file", CallingConvention = CallingConvention.Cdecl)]
@@ -608,7 +618,7 @@ enum DataType {
 
             if (handle != IntPtr.Zero)
             {
-                group.SetHandle(handle, true,openMode==Group.OpenMode.ModeReadOnly);
+                group.SetHandle(handle, true, openMode == Group.OpenMode.ModeReadOnly);
             }
             else
             {
@@ -624,12 +634,12 @@ enum DataType {
         private static extern IntPtr new_group32();
 
 
-        public static void GroupNew(Group group,Boolean isReadOnly)
+        public static void GroupNew(Group group, Boolean isReadOnly)
         {
 
             group.SetHandle(Is64Bit
                 ? new_group64()
-                : new_group32(), true,isReadOnly);
+                : new_group32(), true, isReadOnly);
         }
 
 
@@ -1175,8 +1185,8 @@ enum DataType {
         public static DateTime TableMaximumDateTime(Table table, long columnIndex)
         {
             if (Is64Bit)
-                return ToCSharpTimeUtc(table_maximum_datetime64(table.Handle, (IntPtr)columnIndex));
-            return ToCSharpTimeUtc(table_maximum_datetime32(table.Handle, (IntPtr)columnIndex));
+                return ToCSharpTimeUtc(table_maximum_datetime64(table.Handle, (IntPtr) columnIndex));
+            return ToCSharpTimeUtc(table_maximum_datetime32(table.Handle, (IntPtr) columnIndex));
         }
 
 
@@ -1239,8 +1249,8 @@ enum DataType {
         public static DateTime TableMinimumDateTime(Table table, long columnIndex)
         {
             if (Is64Bit)
-                return ToCSharpTimeUtc(table_minimum_datetime64(table.Handle, (IntPtr)columnIndex));
-            return ToCSharpTimeUtc(table_minimum_datetime32(table.Handle, (IntPtr)columnIndex));
+                return ToCSharpTimeUtc(table_minimum_datetime64(table.Handle, (IntPtr) columnIndex));
+            return ToCSharpTimeUtc(table_minimum_datetime32(table.Handle, (IntPtr) columnIndex));
         }
 
 
@@ -1355,8 +1365,8 @@ enum DataType {
         public static DateTime TableViewMaximumDateTime(TableView tableView, long columnIndex)
         {
             if (Is64Bit)
-                return ToCSharpTimeUtc(tableview_maximum_datetime64(tableView.Handle, (IntPtr)columnIndex));
-            return ToCSharpTimeUtc(tableview_maximum_datetime32(tableView.Handle, (IntPtr)columnIndex));
+                return ToCSharpTimeUtc(tableview_maximum_datetime64(tableView.Handle, (IntPtr) columnIndex));
+            return ToCSharpTimeUtc(tableview_maximum_datetime32(tableView.Handle, (IntPtr) columnIndex));
         }
 
 
@@ -1422,7 +1432,10 @@ enum DataType {
 
         public static DateTime TableViewMinimumDateTime(TableView tableView, long columnIndex)
         {
-            return ToCSharpTimeUtc(Is64Bit ? tableview_minimum_datetime64(tableView.Handle, (IntPtr)columnIndex) : tableview_minimum_datetime32(tableView.Handle, (IntPtr)columnIndex));
+            return
+                ToCSharpTimeUtc(Is64Bit
+                    ? tableview_minimum_datetime64(tableView.Handle, (IntPtr) columnIndex)
+                    : tableview_minimum_datetime32(tableView.Handle, (IntPtr) columnIndex));
         }
 
 
@@ -1442,18 +1455,18 @@ enum DataType {
         }
 
         [DllImport(L64, EntryPoint = "tableview_sort", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void tableview_sort64(IntPtr tableViewHandle, IntPtr columnIndex,IntPtr ascending);
+        private static extern void tableview_sort64(IntPtr tableViewHandle, IntPtr columnIndex, IntPtr ascending);
 
         [DllImport(L32, EntryPoint = "tableview_sort", CallingConvention = CallingConvention.Cdecl)]
         private static extern void tableview_sort32(IntPtr tableViewHandle, IntPtr columnIndex, IntPtr ascending);
 
 
-        public static void TableViewSort(TableView tableView, long columnIndex,Boolean ascending)
+        public static void TableViewSort(TableView tableView, long columnIndex, Boolean ascending)
         {
-            if (Is64Bit)            
-                tableview_sort64(tableView.Handle, (IntPtr) columnIndex, BoolToIntPtr(@ascending));            
-            else            
-                tableview_sort32(tableView.Handle, (IntPtr) columnIndex, BoolToIntPtr(@ascending));            
+            if (Is64Bit)
+                tableview_sort64(tableView.Handle, (IntPtr) columnIndex, BoolToIntPtr(@ascending));
+            else
+                tableview_sort32(tableView.Handle, (IntPtr) columnIndex, BoolToIntPtr(@ascending));
         }
 
 
@@ -2082,8 +2095,10 @@ enum DataType {
         {
             if (Is64Bit)
                 return new Table(
-                    table_get_subtable64(parentTable.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex), true,parentTable.ReadOnly);
-            return new Table(table_get_subtable32(parentTable.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex),true,parentTable.ReadOnly);
+                    table_get_subtable64(parentTable.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex), true,
+                    parentTable.ReadOnly);
+            return new Table(table_get_subtable32(parentTable.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex), true,
+                parentTable.ReadOnly);
         }
 
 
@@ -2102,8 +2117,9 @@ enum DataType {
         public static Table GroupGetTable(Group group, string tableName)
         {
             if (Is64Bit)
-                return new Table(group_get_table64(group.Handle, tableName, (IntPtr) tableName.Length), true,group.ReadOnly);
-            return new Table(group_get_table32(group.Handle, tableName, (IntPtr)tableName.Length), true, group.ReadOnly);
+                return new Table(group_get_table64(group.Handle, tableName, (IntPtr) tableName.Length), true,
+                    group.ReadOnly);
+            return new Table(group_get_table32(group.Handle, tableName, (IntPtr) tableName.Length), true, group.ReadOnly);
         }
 
 
@@ -2139,9 +2155,11 @@ enum DataType {
         {
             if (Is64Bit)
                 return new Table(
-                    tableView_get_subtable64(parentTableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex), true,parentTableView.ReadOnly);
+                    tableView_get_subtable64(parentTableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex), true,
+                    parentTableView.ReadOnly);
             //the constructor that takes an IntPtr will use that as a table handle
-            return new Table(tableView_get_subtable32(parentTableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex),true,parentTableView.ReadOnly);
+            return new Table(tableView_get_subtable32(parentTableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex),
+                true, parentTableView.ReadOnly);
         }
 
 
@@ -2297,7 +2315,7 @@ enum DataType {
             if (Is64Bit)
                 group_delete64(handle);
             else
-                group_delete32(handle);           
+                group_delete32(handle);
         }
 
 
@@ -2558,6 +2576,8 @@ enum DataType {
 
         [DllImport(L32, EntryPoint = "group_write_to_mem_free", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr group_write_to_mem_free32(IntPtr tablePtr);
+
+
 
 
 
@@ -3216,11 +3236,11 @@ enum DataType {
         }
 
 
-        [DllImport(L64, EntryPoint = "table_add_int",CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(L64, EntryPoint = "table_add_int", CallingConvention = CallingConvention.Cdecl)]
         private static extern void table_add_int64(IntPtr tablePtr, IntPtr columnNdx, long value);
 
-        [DllImport(L32, EntryPoint = "table_add_int",CallingConvention = CallingConvention.Cdecl)]
-        private static extern void table_add_int32(IntPtr tablePtr, IntPtr columnNdx, long value );
+        [DllImport(L32, EntryPoint = "table_add_int", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void table_add_int32(IntPtr tablePtr, IntPtr columnNdx, long value);
 
         public static void TableAddInt(Table table, long columnIndex, long value)
         {
@@ -3402,9 +3422,14 @@ enum DataType {
             var dataPointer = handle.AddrOfPinnedObject();
             try
             {
-                group.SetHandle((Is64Bit)
+                IntPtr groupPtr = (Is64Bit)
                     ? group_from_binary_data64(dataPointer, (IntPtr) data.Length)
-                    : group_from_binary_data32(dataPointer, (IntPtr) data.Length), true,false);//from binary returns a RW group
+                    : group_from_binary_data32(dataPointer, (IntPtr) data.Length);
+
+                if (groupPtr == IntPtr.Zero)
+                    throw new ArgumentException("GroupFromBinaryData called with invalid binary data");
+
+                group.SetHandle(groupPtr, true, false); //from binary returns a RW group
             }
             finally
             {
@@ -3584,9 +3609,9 @@ enum DataType {
         {
 
             if (Is64Bit)
-                tableView_set_mixed_int64(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
+                tableView_set_mixed_int64(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
             else
-                tableView_set_mixed_int32(tableView.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
+                tableView_set_mixed_int32(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
         }
 
 
@@ -3611,12 +3636,13 @@ enum DataType {
 
         [DllImport(L32, EntryPoint = "table_set_mixed_int32", CallingConvention = CallingConvention.Cdecl)]
         private static extern void table_set_mixed_int3232(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx, int value);
+
         public static void TableSetMixedInt(Table table, long columnIndex, long rowIndex, int value)
         {
             if (Is64Bit)
-                table_set_mixed_int3264(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
+                table_set_mixed_int3264(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
             else
-                table_set_mixed_int3232(table.Handle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
+                table_set_mixed_int3232(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
         }
 
         /*  no used for now
@@ -3998,8 +4024,8 @@ enum DataType {
         public static long TestSizeCalls()
         {
             if (Is64Bit)
-                return (long)test_size_calls64();
-            return (long)test_size_calls32();
+                return (long) test_size_calls64();
+            return (long) test_size_calls32();
         }
 
 
@@ -5069,7 +5095,7 @@ enum DataType {
             if (Is64Bit)
                 table_optimize64(table.Handle);
             else
-                table_optimize32(table.Handle);            
+                table_optimize32(table.Handle);
         }
 
 
@@ -5112,12 +5138,12 @@ enum DataType {
         [DllImport(L32, EntryPoint = "tableview_get_source_ndx", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr tableview_get_source_ndx32(IntPtr handle, IntPtr rowNdx);
 
-        public static long TableViewGetSourceIndex(TableView tableview,long rowIndex)
+        public static long TableViewGetSourceIndex(TableView tableview, long rowIndex)
         {
             if (Is64Bit)
-                return (long)tableview_get_source_ndx64(tableview.Handle,(IntPtr)rowIndex);
-            
-            return (long)tableview_get_source_ndx32(tableview.Handle,(IntPtr)rowIndex);
+                return (long) tableview_get_source_ndx64(tableview.Handle, (IntPtr) rowIndex);
+
+            return (long) tableview_get_source_ndx32(tableview.Handle, (IntPtr) rowIndex);
         }
 
 
@@ -5155,7 +5181,7 @@ enum DataType {
 
 
         [DllImport(L64, EntryPoint = "table_to_string_defaultlimit", CallingConvention = CallingConvention.Cdecl,
-    CharSet = CharSet.Unicode)]
+            CharSet = CharSet.Unicode)]
         private static extern IntPtr table_to_string_defaultlimit64(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize);
 
         [DllImport(L32, EntryPoint = "table_to_string_defaultlimit", CallingConvention = CallingConvention.Cdecl,
@@ -5173,23 +5199,25 @@ enum DataType {
                 buffer = StrAllocateBuffer(out currentBufferSizeChars, bufferSizeNeededChars);
                 if (Is64Bit)
                     bufferSizeNeededChars =
-                        (int)table_to_string_defaultlimit64(t.Handle, buffer, (IntPtr)currentBufferSizeChars);
+                        (int) table_to_string_defaultlimit64(t.Handle, buffer, (IntPtr) currentBufferSizeChars);
                 else
                     bufferSizeNeededChars =
-                        (int)table_to_string_defaultlimit32(t.Handle, buffer, (IntPtr)currentBufferSizeChars);
+                        (int) table_to_string_defaultlimit32(t.Handle, buffer, (IntPtr) currentBufferSizeChars);
 
             } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
-            return StrBufToStr(buffer, (int)bufferSizeNeededChars);
+            return StrBufToStr(buffer, (int) bufferSizeNeededChars);
         }
 
 
         [DllImport(L64, EntryPoint = "tableview_to_string_defaultlimit", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode)]
-        private static extern IntPtr tableview_to_string_defaultlimit64(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize);
+        private static extern IntPtr tableview_to_string_defaultlimit64(IntPtr tableHandle, IntPtr buffer,
+            IntPtr bufsize);
 
         [DllImport(L32, EntryPoint = "tableview_to_string_defaultlimit", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode)]
-        private static extern IntPtr tableview_to_string_defaultlimit32(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize);
+        private static extern IntPtr tableview_to_string_defaultlimit32(IntPtr tableHandle, IntPtr buffer,
+            IntPtr bufsize);
 
         public static string TableViewToString(TableView t)
         {
@@ -5201,27 +5229,27 @@ enum DataType {
                 buffer = StrAllocateBuffer(out currentBufferSizeChars, bufferSizeNeededChars);
                 if (Is64Bit)
                     bufferSizeNeededChars =
-                        (long)tableview_to_string_defaultlimit64(t.Handle, buffer, (IntPtr)currentBufferSizeChars);
+                        (long) tableview_to_string_defaultlimit64(t.Handle, buffer, (IntPtr) currentBufferSizeChars);
                 else
                     bufferSizeNeededChars =
-                        (long)tableview_to_string_defaultlimit32(t.Handle, buffer, (IntPtr)currentBufferSizeChars);
+                        (long) tableview_to_string_defaultlimit32(t.Handle, buffer, (IntPtr) currentBufferSizeChars);
 
             } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
-            return StrBufToStr(buffer, (int)bufferSizeNeededChars);
+            return StrBufToStr(buffer, (int) bufferSizeNeededChars);
         }
 
 
 
         [DllImport(L64, EntryPoint = "table_to_string", CallingConvention = CallingConvention.Cdecl,
-CharSet = CharSet.Unicode)]
-        private static extern IntPtr table_to_string64(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize,IntPtr limit);
+            CharSet = CharSet.Unicode)]
+        private static extern IntPtr table_to_string64(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize, IntPtr limit);
 
         [DllImport(L32, EntryPoint = "table_to_string", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode)]
-        private static extern IntPtr table_to_string32(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize,IntPtr limit);
+        private static extern IntPtr table_to_string32(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize, IntPtr limit);
 
 
-        public static string TableToString(Table t,long limit)
+        public static string TableToString(Table t, long limit)
         {
             long bufferSizeNeededChars = 16;
             IntPtr buffer;
@@ -5231,25 +5259,27 @@ CharSet = CharSet.Unicode)]
                 buffer = StrAllocateBuffer(out currentBufferSizeChars, bufferSizeNeededChars);
                 if (Is64Bit)
                     bufferSizeNeededChars =
-                        (int)table_to_string64(t.Handle, buffer, (IntPtr)currentBufferSizeChars,(IntPtr)limit);
+                        (int) table_to_string64(t.Handle, buffer, (IntPtr) currentBufferSizeChars, (IntPtr) limit);
                 else
                     bufferSizeNeededChars =
-                        (int)table_to_string32(t.Handle, buffer, (IntPtr)currentBufferSizeChars, (IntPtr)limit);
+                        (int) table_to_string32(t.Handle, buffer, (IntPtr) currentBufferSizeChars, (IntPtr) limit);
 
             } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
-            return StrBufToStr(buffer, (int)bufferSizeNeededChars);
+            return StrBufToStr(buffer, (int) bufferSizeNeededChars);
         }
 
 
         [DllImport(L64, EntryPoint = "tableview_to_string", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode)]
-        private static extern IntPtr tableview_to_string64(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize,IntPtr limit);
+        private static extern IntPtr tableview_to_string64(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize,
+            IntPtr limit);
 
         [DllImport(L32, EntryPoint = "tableview_to_string", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode)]
-        private static extern IntPtr tableview_to_string32(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize, IntPtr limit);
+        private static extern IntPtr tableview_to_string32(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize,
+            IntPtr limit);
 
-        public static string TableViewToString(TableView t,long limit)
+        public static string TableViewToString(TableView t, long limit)
         {
             long bufferSizeNeededChars = 16;
             IntPtr buffer;
@@ -5259,13 +5289,13 @@ CharSet = CharSet.Unicode)]
                 buffer = StrAllocateBuffer(out currentBufferSizeChars, bufferSizeNeededChars);
                 if (Is64Bit)
                     bufferSizeNeededChars =
-                        (long)tableview_to_string64(t.Handle, buffer, (IntPtr)currentBufferSizeChars,(IntPtr)limit);
+                        (long) tableview_to_string64(t.Handle, buffer, (IntPtr) currentBufferSizeChars, (IntPtr) limit);
                 else
                     bufferSizeNeededChars =
-                        (long)tableview_to_string32(t.Handle, buffer, (IntPtr)currentBufferSizeChars,(IntPtr)limit);
+                        (long) tableview_to_string32(t.Handle, buffer, (IntPtr) currentBufferSizeChars, (IntPtr) limit);
 
             } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
-            return StrBufToStr(buffer, (int)bufferSizeNeededChars);
+            return StrBufToStr(buffer, (int) bufferSizeNeededChars);
         }
 
 
@@ -5278,12 +5308,14 @@ CharSet = CharSet.Unicode)]
 
 
         [DllImport(L64, EntryPoint = "table_row_to_string", CallingConvention = CallingConvention.Cdecl,
-CharSet = CharSet.Unicode)]
-        private static extern IntPtr table_row_to_string64(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize, IntPtr rowIndex);
+            CharSet = CharSet.Unicode)]
+        private static extern IntPtr table_row_to_string64(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize,
+            IntPtr rowIndex);
 
         [DllImport(L32, EntryPoint = "table_row_to_string", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode)]
-        private static extern IntPtr table_row_to_string32(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize, IntPtr rowIndex);
+        private static extern IntPtr table_row_to_string32(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize,
+            IntPtr rowIndex);
 
 
         public static string TableRowToString(Table t, long rowIndex)
@@ -5296,23 +5328,27 @@ CharSet = CharSet.Unicode)]
                 buffer = StrAllocateBuffer(out currentBufferSizeChars, bufferSizeNeededChars);
                 if (Is64Bit)
                     bufferSizeNeededChars =
-                        (int)table_row_to_string64(t.Handle, buffer, (IntPtr)currentBufferSizeChars, (IntPtr)rowIndex);
+                        (int)
+                            table_row_to_string64(t.Handle, buffer, (IntPtr) currentBufferSizeChars, (IntPtr) rowIndex);
                 else
                     bufferSizeNeededChars =
-                        (int)table_row_to_string32(t.Handle, buffer, (IntPtr)currentBufferSizeChars, (IntPtr)rowIndex);
+                        (int)
+                            table_row_to_string32(t.Handle, buffer, (IntPtr) currentBufferSizeChars, (IntPtr) rowIndex);
 
             } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
-            return StrBufToStr(buffer, (int)bufferSizeNeededChars);
+            return StrBufToStr(buffer, (int) bufferSizeNeededChars);
         }
 
 
         [DllImport(L64, EntryPoint = "tableview_row_to_string", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode)]
-        private static extern IntPtr tableview_row_to_string64(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize, IntPtr rowIndex);
+        private static extern IntPtr tableview_row_to_string64(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize,
+            IntPtr rowIndex);
 
         [DllImport(L32, EntryPoint = "tableview_row_to_string", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode)]
-        private static extern IntPtr tableview_row_to_string32(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize, IntPtr rowIndex);
+        private static extern IntPtr tableview_row_to_string32(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize,
+            IntPtr rowIndex);
 
         public static string TableViewRowToString(TableView t, long rowIndex)
         {
@@ -5324,13 +5360,17 @@ CharSet = CharSet.Unicode)]
                 buffer = StrAllocateBuffer(out currentBufferSizeChars, bufferSizeNeededChars);
                 if (Is64Bit)
                     bufferSizeNeededChars =
-                        (long)tableview_row_to_string64(t.Handle, buffer, (IntPtr)currentBufferSizeChars, (IntPtr)rowIndex);
+                        (long)
+                            tableview_row_to_string64(t.Handle, buffer, (IntPtr) currentBufferSizeChars,
+                                (IntPtr) rowIndex);
                 else
                     bufferSizeNeededChars =
-                        (long)tableview_row_to_string32(t.Handle, buffer, (IntPtr)currentBufferSizeChars, (IntPtr)rowIndex);
+                        (long)
+                            tableview_row_to_string32(t.Handle, buffer, (IntPtr) currentBufferSizeChars,
+                                (IntPtr) rowIndex);
 
             } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
-            return StrBufToStr(buffer, (int)bufferSizeNeededChars);
+            return StrBufToStr(buffer, (int) bufferSizeNeededChars);
         }
 
 
@@ -5397,7 +5437,8 @@ CharSet = CharSet.Unicode)]
             if (sizeOfIntPtr != sizeOfSizeT)
             {
 #if V40PLUS
-                throw new ContextMarshalException(String.Format(CultureInfo.InvariantCulture, "The size_t size{0} does not match the size of IntPtr{1}", sizeOfSizeT, sizeOfIntPtr));
+                throw new ContextMarshalException(String.Format(CultureInfo.InvariantCulture,
+                    "The size_t size{0} does not match the size of IntPtr{1}", sizeOfSizeT, sizeOfIntPtr));
 #else
                 throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture,
                     "The size_t size{0} does not match the size of IntPtr{1}", sizeOfSizeT, sizeOfIntPtr));
@@ -5409,7 +5450,8 @@ CharSet = CharSet.Unicode)]
             if (sizeOfInt32T != sizeOfInt32)
             {
 #if V40PLUS
-                throw new ContextMarshalException(String.Format(CultureInfo.InvariantCulture, "The int32_t size{0} does not match the size of Int32{1}", sizeOfInt32T, sizeOfInt32));
+                throw new ContextMarshalException(String.Format(CultureInfo.InvariantCulture,
+                    "The int32_t size{0} does not match the size of Int32{1}", sizeOfInt32T, sizeOfInt32));
 #else
                 throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture,
                     "The int32_t size{0} does not match the size of Int32{1}", sizeOfInt32T, sizeOfInt32));
@@ -5422,7 +5464,8 @@ CharSet = CharSet.Unicode)]
             if (sizeOfTablePointer != sizeOfIntPtrAsIntPtr)
             {
 #if V40PLUS
-                throw new ContextMarshalException(String.Format(CultureInfo.InvariantCulture, "The Table* size{0} does not match the size of IntPtr{1}", sizeOfTablePointer, sizeOfIntPtrAsIntPtr));
+                throw new ContextMarshalException(String.Format(CultureInfo.InvariantCulture,
+                    "The Table* size{0} does not match the size of IntPtr{1}", sizeOfTablePointer, sizeOfIntPtrAsIntPtr));
 #else
                 throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture,
                     "The Table* size{0} does not match the size of IntPtr{1}", sizeOfTablePointer, sizeOfIntPtrAsIntPtr));
@@ -5433,7 +5476,8 @@ CharSet = CharSet.Unicode)]
             if (sizeOfCharPointer != sizeOfIntPtrAsIntPtr)
             {
 #if V40PLUS
-                throw new ContextMarshalException(String.Format(CultureInfo.InvariantCulture, "The Char* size{0} does not match the size of IntPtr{1}", sizeOfCharPointer, sizeOfIntPtrAsIntPtr));
+                throw new ContextMarshalException(String.Format(CultureInfo.InvariantCulture,
+                    "The Char* size{0} does not match the size of IntPtr{1}", sizeOfCharPointer, sizeOfIntPtrAsIntPtr));
 #else
                 throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture,
                     "The Char* size{0} does not match the size of IntPtr{1}", sizeOfCharPointer, sizeOfIntPtrAsIntPtr));
@@ -5446,7 +5490,8 @@ CharSet = CharSet.Unicode)]
             if (sizeOfInt64T != sizeOfLong)
             {
 #if V40PLUS
-                throw new ContextMarshalException(String.Format(CultureInfo.InvariantCulture, "The Int64_t size{0} does not match the size of long{1}", sizeOfInt64T, sizeOfLong));
+                throw new ContextMarshalException(String.Format(CultureInfo.InvariantCulture,
+                    "The Int64_t size{0} does not match the size of long{1}", sizeOfInt64T, sizeOfLong));
 #else
                 throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture,
                     "The Int64_t size{0} does not match the size of long{1}", sizeOfInt64T, sizeOfLong));
@@ -5461,7 +5506,9 @@ CharSet = CharSet.Unicode)]
             if (sizeOfTimeT != sizeOfTimeTReceiverType)
             {
 #if V40PLUS
-                throw new ContextMarshalException(String.Format(CultureInfo.InvariantCulture, "The c++ time_t size({0}) does not match the size of the C# recieving type int64 ({1})", sizeOfTimeT, sizeOfTimeTReceiverType));
+                throw new ContextMarshalException(String.Format(CultureInfo.InvariantCulture,
+                    "The c++ time_t size({0}) does not match the size of the C# recieving type int64 ({1})", sizeOfTimeT,
+                    sizeOfTimeTReceiverType));
 #else
                 throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture,
                     "The c++ time_t size({0}) does not match the size of the C# recieving type int64 ({1})", sizeOfTimeT,
@@ -5475,7 +5522,8 @@ CharSet = CharSet.Unicode)]
             if (sizeOffloatPlus != sizeOfFloatSharp)
             {
 #if V40PLUS
-                throw new ContextMarshalException(String.Format(CultureInfo.InvariantCulture, "The c++ float size{0} does not match the size of C# float{1}", sizeOffloatPlus, sizeOfFloatSharp));
+                throw new ContextMarshalException(String.Format(CultureInfo.InvariantCulture,
+                    "The c++ float size{0} does not match the size of C# float{1}", sizeOffloatPlus, sizeOfFloatSharp));
 #else
                 throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture,
                     "The c++ float size{0} does not match the size of C# float{1}", sizeOffloatPlus, sizeOfFloatSharp));
@@ -5488,7 +5536,9 @@ CharSet = CharSet.Unicode)]
             if (sizeOfPlusDouble != sizeOfSharpDouble)
             {
 #if V40PLUS
-                throw new ContextMarshalException(String.Format(CultureInfo.InvariantCulture, "The c++ double size({0}) does not match the size of the C# recieving type Double ({1})", sizeOfPlusDouble, sizeOfSharpDouble));
+                throw new ContextMarshalException(String.Format(CultureInfo.InvariantCulture,
+                    "The c++ double size({0}) does not match the size of the C# recieving type Double ({1})",
+                    sizeOfPlusDouble, sizeOfSharpDouble));
 #else
                 throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture,
                     "The c++ double size({0}) does not match the size of the C# recieving type Double ({1})",
@@ -5604,12 +5654,12 @@ CharSet = CharSet.Unicode)]
 
 
             IntPtr sizeTMaxCpp = TestSizeTMax();
-#if V40PLUS 
+#if V40PLUS
             IntPtr sizeTMaxCs = IntPtr.Zero;
             sizeTMaxCs = sizeTMaxCs - 1;
 #else
-            // 3.5 and below do not support adding or subtracting to IntPtr
-            //so we simply set this variable so that this test always succeeds
+    // 3.5 and below do not support adding or subtracting to IntPtr
+    //so we simply set this variable so that this test always succeeds
             var sizeTMaxCs = sizeTMaxCpp;
 #endif
             if (sizeTMaxCpp != sizeTMaxCs)
@@ -5750,53 +5800,48 @@ CharSet = CharSet.Unicode)]
             PortableExecutableKinds peKind;
             ImageFileMachine machine;
             executingAssembly.ManifestModule.GetPEKind(out peKind, out machine);
-            var thisapplocation = executingAssembly.Location;
+            var thisAppLocation = executingAssembly.Location;
 
             info.AppendLine("");
-
+            const string fmt = "{0,-30}:{1,-15}";
             info.AppendLine("---OS Info---");
-            info.AppendLine(String.Format(CultureInfo.InvariantCulture, "OS Version                  : {0}", os.Version));
-            info.AppendLine(String.Format(CultureInfo.InvariantCulture, "OS Platform                 : {0}", os.Platform));
-            info.AppendLine(String.Format(CultureInfo.InvariantCulture, "64 Bit OS                   : {0}", is64BitOs));
-            info.AppendLine(String.Format(CultureInfo.InvariantCulture, "64 Bit process              : {0}",
-                is64BitProcess));
+            info.AppendLine(String.Format(CultureInfo.InvariantCulture, fmt,"OS Version", os.Version));
+            info.AppendLine(String.Format(CultureInfo.InvariantCulture, fmt, "OS Platform", os.Platform));
+            info.AppendLine(String.Format(CultureInfo.InvariantCulture, fmt, "64 Bit OS", is64BitOs));
+            info.AppendLine(String.Format(CultureInfo.InvariantCulture, fmt, "64 Bit process", is64BitProcess));
             info.AppendLine("---OS Info---");
 
             info.AppendLine("");
             info.AppendLine("---CLR Info---");
-            info.AppendLine(String.Format(CultureInfo.InvariantCulture, "Pointer Size                : {0}", pointerSize));
-            info.AppendLine(String.Format(CultureInfo.InvariantCulture, "Process Running as          : {0}", vmBitness));
-            info.AppendLine(String.Format(CultureInfo.InvariantCulture, "Running on mono             : {0}",
-                IsRunningOnMono()));
-            info.AppendLine(String.Format(CultureInfo.InvariantCulture, "Common Language Runtime     : {0}",
-                Environment.Version));
+            info.AppendLine(String.Format(CultureInfo.InvariantCulture, fmt, "Pointer Size", pointerSize));
+            info.AppendLine(String.Format(CultureInfo.InvariantCulture, fmt, "Process Running as", vmBitness));
+            info.AppendLine(String.Format(CultureInfo.InvariantCulture, fmt, "Running on mono", IsRunningOnMono()));
+            info.AppendLine(String.Format(CultureInfo.InvariantCulture, fmt, "Common Language Runtime", Environment.Version));
             info.AppendLine("---CLR Info---");
 
             info.AppendLine("");
             info.AppendLine("---C# binding (TightDbCSharp.dll) Info---");
-            info.AppendLine(String.Format(CultureInfo.InvariantCulture, "Built as PeKind           : {0}", peKind));
-            info.AppendLine(String.Format(CultureInfo.InvariantCulture, "Built as ImageFileMachine : {0}", machine));
-            info.AppendLine(String.Format(CultureInfo.InvariantCulture, "Debug Or Release          : {0}", BuildName));
-            info.AppendLine(String.Format(CultureInfo.InvariantCulture, "Compiled With Mono        : {0}",
-                compiledWithMono));
+            info.AppendLine(String.Format(CultureInfo.InvariantCulture, fmt, "Built as PeKind", peKind));
+            info.AppendLine(String.Format(CultureInfo.InvariantCulture, fmt, "Built as ImageFileMachine", machine));
+            info.AppendLine(String.Format(CultureInfo.InvariantCulture, fmt, "Debug Or Release", BuildName));
+            info.AppendLine(String.Format(CultureInfo.InvariantCulture, fmt, "Compiled With Mono", compiledWithMono));
 #if V45PLUS
-            info.AppendLine("Built for .net version    : V4.5");            
+            info.AppendLine(String.Format(CultureInfo.InvariantCulture, fmt, "Built for .net version", "V4.5"));
 #elif V40PLUS
-            info.AppendLine("Built for .net version    : V4.0");
+            info.AppendLine(String.Format(CultureInfo.InvariantCulture,fmt,"Built for .net version","V4.0"));
 #else
-            info.AppendLine("Built for .net version    : V3.5");
+            info.AppendLine(String.Format(CultureInfo.InvariantCulture,fmt,"Built for .net version","V3.5"));
 #endif
             info.AppendLine("---C# binding (TightDbCSharp.dll) Info---");
 
             info.AppendLine("");
             info.AppendLine("---C++ DLL Info---");
             info.AppendLine("Assembly running right now :");
-            info.AppendLine(thisapplocation);
+            info.AppendLine(thisAppLocation);
             info.AppendLine("Current Directory :");
             info.AppendLine(Directory.GetCurrentDirectory());
-            info.AppendLine("");
-            info.AppendLine(String.Format(CultureInfo.InvariantCulture, "Now Loading {0} - expecting it to be a {1} dll",
-                Dllstring(), vmBitness));
+            //info.AppendLine("");
+            info.AppendLine(String.Format(CultureInfo.InvariantCulture, "Now Loading {0} - expecting it to be a {1} dll",Dllstring(), vmBitness));
             return info.ToString();
         }
 
@@ -5807,51 +5852,41 @@ CharSet = CharSet.Unicode)]
             //but try to catch anything that might be catchable
             try
             {
-                using (var t = new Table())
+                var cppDllVersion = CppDllVersion();
+                const int maxPath = 260;
+                var builder = new StringBuilder(maxPath);
+                var hModule = GetModuleHandle(Dllstring());
+                uint hresult = 0;
+                if (hModule != IntPtr.Zero)
+                    //could be zero if the dll has never been called, but then we would not be here in the first place
                 {
-                    //the DLL must have loaded correctly
-
-                    const int maxPath = 260;
-                    var builder = new StringBuilder(maxPath);
-                    var hModule = GetModuleHandle(Dllstring());
-                    uint hresult = 0;
-                    if (hModule != IntPtr.Zero)
-                        //could be zero if the dll has never been called, but then we would not be here in the first place
-                    {
-                        hresult = GetModuleFileName(hModule, builder, builder.Capacity);
-                    }
-                    if (hresult != 0)
-                    {
-                        info.AppendLine("");
-                        info.AppendLine(String.Format(CultureInfo.InvariantCulture, "DLL File Actually Loaded :{0}",
-                            builder));
-
-                    }
-                    info.AppendLine(String.Format(CultureInfo.InvariantCulture, "\nC#  DLL        build number {0}",
-                        Toolbox.GetDllVersionCSharp )); 
-                    info.AppendLine(String.Format(CultureInfo.InvariantCulture, "C++ DLL        build number {0}",
-                        CppDllVersion()));
-                    if (t.Size != 0)
-                    {
-                        info.Append("");
-                    }
-                    info.AppendLine("---C++ DLL Info---");
+                    hresult = GetModuleFileName(hModule, builder, builder.Capacity);
                 }
+                if (hresult != 0)
+                {
+                    info.AppendLine("");
+                    info.AppendLine(String.Format(CultureInfo.InvariantCulture, "DLL File Actually Loaded \n:{0}",builder));
+                }
+                info.AppendLine(String.Format(CultureInfo.InvariantCulture, "C#  DLL        build number {0}",Toolbox.GetDllVersionCSharp));
+                info.AppendLine(String.Format(CultureInfo.InvariantCulture, "C++ DLL        build number {0}",cppDllVersion));
+                info.AppendLine("---C++ DLL Info---");
+
                 info.AppendLine();
                 info.AppendLine();
             }
+
             catch (Exception e)
-            {
-//mono might crash if we get here, as it does not support c++ thrown exceptions
+            {//mono might crash if we get here, as it does not support c++ thrown exceptions
                 info.AppendLine(String.Format(CultureInfo.InvariantCulture,
                     "Exception thrown while attempting to call c++ dll {0}", e.Message));
             }
             return info.ToString();
         }
+    
 
 
 
-        //if something is wrong with interop or C# marshalling, this method will throw an exception
+    //if something is wrong with interop or C# marshalling, this method will throw an exception
         //low unit test coverage is okay, the error cases will only be hit if the platform behaves very unexpected
         public static void TestInterop()
         {
@@ -5982,7 +6017,7 @@ CharSet = CharSet.Unicode)]
                     SharedGroup.DurabilityLevelToIntPtr(durabilityLevel));
             if (handle == IntPtr.Zero)//todo:more elaborate error codes,especially for most common kinds of IO errors
             {
-                throw new  InvalidOperationException(String.Format("New SharedGroup failed filename {0} probably due to an IO error in core",fileName));
+                throw new  InvalidOperationException(String.Format(CultureInfo.InvariantCulture,"New SharedGroup failed filename {0} probably due to an IO error in core",fileName));
             }
             group.SetHandle(handle, true,false);
        }
@@ -6072,27 +6107,14 @@ CharSet = CharSet.Unicode)]
 
 
         public static Transaction SharedGroupBeginRead(SharedGroup sharedGroup)
-        {
-        //    try
-            
+        {           
                 IntPtr handle = Is64Bit
                     ? shared_group_begin_read64(sharedGroup.Handle)
                     : shared_group_begin_read32(sharedGroup.Handle);
                 if (handle == IntPtr.Zero)
-                {
-                    throw new InvalidOperationException("Cannot start Read Transaction, probably an IO error with the SharedGroup file");
-                }
-                return new Transaction(handle, sharedGroup, TransactionKind.Read);
-            
-            /*  in mono - catching exceptions from c++ doesn't work anyway so don't rely on them
-             *  shared_group_begin_read should never throw anything if we want it to work with mono
-             *  in mono, we cannot catch the exception thrown by c++ , instead the c++ dll will crash the mono runtime.
-            catch (SEHException ex)
-            {
-                sharedGroup.Invalid = true;
-                throw new IOException(
-                    String.Format(CultureInfo.InvariantCulture, "IO error starting read transaction {0}", ex.Message));
-            }*/
+                   throw new InvalidOperationException("Cannot start Read Transaction, probably an IO error with the SharedGroup file");
+                
+                return new Transaction(handle, sharedGroup, TransactionKind.Read);            
         }
 
 
@@ -6105,25 +6127,14 @@ CharSet = CharSet.Unicode)]
 
         public static Transaction SharedGroupBeginWrite(SharedGroup sharedGroup)
         {
-        //    try
-            
-                IntPtr handle = Is64Bit
-                    ? shared_group_begin_write64(sharedGroup.Handle)
-                    : shared_group_begin_write32(sharedGroup.Handle);
-                if (handle == IntPtr.Zero)
-                {
-                    throw new InvalidOperationException("Cannot start Write Transaction, probably an IO error with the SharedGroup file");
-                }
-                return new Transaction(handle, sharedGroup, TransactionKind.Write);
-            
-            /* removed bc c++ must not throw anymore - mono crashes
-            catch (SEHException ex)
-            {
-                sharedGroup.Invalid = true;
-                throw new IOException(
-                    String.Format(CultureInfo.InvariantCulture, "IO error starting write transaction {0}", ex.Message));
-            }
-             */
+            IntPtr handle = Is64Bit
+                ? shared_group_begin_write64(sharedGroup.Handle)
+                : shared_group_begin_write32(sharedGroup.Handle);
+            if (handle == IntPtr.Zero)
+                throw new InvalidOperationException(
+                    "Cannot start Write Transaction, probably an IO error with the SharedGroup file");
+
+            return new Transaction(handle, sharedGroup, TransactionKind.Write);
         }
 
         //a few uncovered lines okay, it is hard to get commit to throw
@@ -6135,18 +6146,14 @@ CharSet = CharSet.Unicode)]
 
         public static void SharedGroupCommit(SharedGroup sharedGroup)
         {
-            //try
-
             IntPtr res = (Is64Bit)
                 ? shared_group_commit64(sharedGroup.Handle)
                 : shared_group_commit32(sharedGroup.Handle);
 
-            if (res != IntPtr.Zero)
-            {
+            if (res != IntPtr.Zero)            
                 //shared_group_commit threw an exception in core
                 //currently we just assume it was an IO error, but could be anything                
-                throw new InvalidOperationException("sharedGroup commit exception in core. probably an IO error with the group file");
-            }
+                throw new InvalidOperationException("sharedGroup commit exception in core. probably an IO error with the group file");            
         }
 
 

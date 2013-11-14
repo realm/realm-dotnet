@@ -10,8 +10,7 @@ namespace TightDbCSharp
     /// </summary>
     public class Group:Handled
     {
-
-        
+       
         /// <summary>
         /// Return new Group. is IDisposable as it has a handle to a c++ managed Group
         /// </summary>
@@ -140,19 +139,18 @@ namespace TightDbCSharp
         {
             try
             {
-                if (binaryGroup == null)
-                {
+                if (binaryGroup == null)               
                     throw new ArgumentNullException("binaryGroup", " Group cannot be created from a null pointer ");
-                }
-                if (binaryGroup.Length == 0)
-                {
-                    throw new ArgumentNullException("binaryGroup", "Group cannot be created from an array of size 0");
-                }
+                
+                if (binaryGroup.Length == 0)                
+                    throw new ArgumentException("binaryGroup", "Group cannot be created from an array of size 0");
+                
                 UnsafeNativeMethods.GroupFrombinaryData(this, binaryGroup);
             }
             catch (Exception)
             {
-                Dispose();
+                Dispose();//not entirely sure if this is neccessary in all cases, but better safe than sorry.
+                //also not sure if calling dispose is safe if something went wrong in c++ consttructing the group
                 throw;
             }
         }
@@ -238,6 +236,15 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.GroupWriteToMemory(this);
         }
 
+
+        /// <summary>
+        /// Flushes changes to the group back to its file
+        /// </summary>
+        public void Commit()
+        {
+            UnsafeNativeMethods.GroupCommit(this);
+        }
+
         /// <summary>
         /// if true, some unexpected error condition exists and this group should never be used
         /// </summary>
@@ -265,9 +272,5 @@ namespace TightDbCSharp
             Handle = IntPtr.Zero;
         }
 
-        internal override string ObjectIdentification()
-        {
-            return string.Format(CultureInfo.InvariantCulture, "Group:({0:d}d)  ({1}h)" ,Handle,Handle.ToString("X"));
-        }
     }
 }

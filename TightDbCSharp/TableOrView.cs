@@ -1716,9 +1716,7 @@ namespace TightDbCSharp
             if (rowIndex >= Size || rowIndex < 0)
             {
                 throw new ArgumentOutOfRangeException("rowIndex",
-                    string.Format(CultureInfo.InvariantCulture,
-                        "{0} accessed with an invalid Row Index{1}. Table Size is:{2}", ObjectIdentification(), rowIndex,
-                        Size));
+                    string.Format(CultureInfo.InvariantCulture,"{0} accessed with an invalid Row Index{1}. Table Size is:{2}", ToString(), rowIndex,Size));
                 //re-calculating when composing error message to avoid creating a variable in a performance sensitive place
             }
         }

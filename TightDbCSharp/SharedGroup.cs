@@ -198,12 +198,6 @@ namespace TightDbCSharp
 
 
 
-        internal override string ObjectIdentification()
-        {
-            return string.Format(CultureInfo.InvariantCulture, "SharedGroup:({0:d}d)  ({1}h)", Handle,
-                Handle.ToString("X"));
-        }
-
         internal static IntPtr DurabilityLevelToIntPtr(DurabilityLevel durabilityLevel)
         {
             switch (durabilityLevel)
