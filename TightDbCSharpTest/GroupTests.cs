@@ -150,6 +150,24 @@ namespace TightDbCSharpTest
         }
 
         /// <summary>
+        /// test == and != operator overloads
+        /// </summary>
+        [Test]
+        public static void GroupEqual()
+        {
+            using (var g1 = new Group())
+            using (var g2 = new Group())
+            {
+                Assert.AreEqual(true,g1.EqualsGroup(g2));
+                g1.CreateTable("test1", "test1field".String());
+                Assert.AreEqual(false, g1.EqualsGroup(g2));                
+                g2.CreateTable("test1", "test1field".String());
+                Assert.AreEqual(true, g1.EqualsGroup(g2));
+                Assert.AreEqual(false,g1.EqualsGroup(null));
+            }
+        }
+
+        /// <summary>
         /// Test IsEmpty
         /// </summary>
         [Test]

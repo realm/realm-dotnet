@@ -1637,6 +1637,18 @@ try {
  }
 }
 
+TIGHTDB_C_CS_API size_t group_equals(Group* group_ptr1, Group* group_ptr2)
+{
+	try {
+		return bool_to_size_t(*group_ptr1==*group_ptr2);//utilizing operator overload
+	}
+	catch(...){
+		return bool_to_size_t_with_errorcode(-1);//will return error -1 to a C# function expecting a bool
+	}	
+}
+
+//inequality is handled in the binding by negating equality and thus we save one interop entry, and linking in the code for !=
+
 
 TIGHTDB_C_CS_API size_t group_to_string(Group* group_ptr,uint16_t * data, size_t bufsize,size_t limit)
 {   

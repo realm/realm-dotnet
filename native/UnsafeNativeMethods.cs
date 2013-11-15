@@ -652,6 +652,25 @@ enum DataType {
 
 
 
+        [DllImport(L64, EntryPoint = "group_equals", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr group_equals64(IntPtr handle1, IntPtr handle2);
+
+        [DllImport(L32, EntryPoint = "group_equals", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr group_equals32(IntPtr handle1, IntPtr handle2);
+
+        public static Boolean GroupEquals(Group group1,Group group2)
+        {
+            Boolean result;
+            if (IntPtrToBoolWithErorrCode((Is64Bit)
+                ? group_equals64(group1.Handle,group2.Handle)
+                : group_equals32(group1.Handle,group2.Handle), out result) < 0)
+                throw new InvalidOperationException("Group equals exception in core. probably an IO error with the group file");
+            return result; //no errors so just return the result
+        }
+
+        //GroupNotEquals can be implemented in group by simply negating the result from GroupEquals
+
+
 
        
         [DllImport(L64, EntryPoint = "group_is_empty", CallingConvention = CallingConvention.Cdecl)]

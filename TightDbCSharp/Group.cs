@@ -95,6 +95,48 @@ namespace TightDbCSharp
 
 
 
+        /*MSDN 
+         * By default, the operator == tests for reference equality by determining if two references indicate the same object,
+         * so reference types do not need to implement operator == in order to gain this functionality. When a type is immutable,
+         * meaning the data contained in the instance cannot be changed, overloading operator == to compare value equality
+         * instead of reference equality can be useful because, as immutable objects, they can be considered the same as
+         * long as they have the same value. Overriding operator == in non-immutable types is not recommended.
+         * 
+         * Above is the rationale behind Group not having an overwritten == operator
+         * http://msdn.microsoft.com/en-us/library/ms173147(v=vs.80).aspx
+         */
+
+        /*MSDN
+         * Guidelines for Reference Types The following guidelines apply to overriding Equals(Object) for a reference type:
+         * 
+         * Consider overriding Equals if the semantics of the type are based on the fact that the type represents some value(s). 
+         * Most reference types must not overload the equality operator, even if they override Equals. However,
+         * if you are implementing a reference type that is intended to have value semantics, such as a complex number type,
+         * you must override the equality operator.
+         * You should not override Equals on a mutable reference type. 
+         * This is because overriding Equals requires that you also override the GetHashCode method,
+         * as discussed in the previous section. This means that the hash code of an instance of a mutable reference type 
+         * can change during its lifetime, which can cause the object to be lost in a hash table.
+         * http://msdn.microsoft.com/en-us/library/bsc2ak47(v=vs.110).aspx
+         */
+
+        //As stated above, it is not a good idea to overide the == operator or implement the IComparable interface on 
+        //mutable reference types. We will provide a hook into group== by supplying a third alternative
+
+        /// <summary>
+        /// Compare this group with another group for equality. Two groups are equal if, and
+        /// only if, they contain the same tables in the same order, that
+        /// is, for each table T at index I in one of the groups, there is
+        /// a table at index I in the other group that is equal to T.
+        /// </summary>
+        /// <param name="g2">a Group</param>
+        /// <returns>true if the groups parameter is with the same data as this</returns>
+        public Boolean EqualsGroup(Group g2)
+        {
+            return g2 != null && UnsafeNativeMethods.GroupEquals(this, g2);
+        }
+
+
         //TODO:(also in asana)erorr handling if user specifies an illegal filename or path.
         //We will probably have to do the error handling on the c++ side. It is
         //a problem that c++ seems to crash only when an invalid group(file) is freed or used
