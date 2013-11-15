@@ -1758,6 +1758,19 @@ TIGHTDB_C_CS_API size_t shared_group_is_attached(SharedGroup* shared_group_ptr)
     return bool_to_size_t(shared_group_ptr->is_attached());
 }
 
+//returns -1 if something went wrong
+TIGHTDB_C_CS_API size_t shared_group_reserve(SharedGroup* shared_group_ptr, size_t size_in_bytes) 
+{
+	try {
+	  shared_group_ptr->reserve(size_in_bytes);
+	} 
+	catch (...){
+		return -1;
+	}
+}
+
+
+
 TIGHTDB_C_CS_API size_t shared_group_has_changed(SharedGroup* shared_group_ptr) 
 {
     return bool_to_size_t(shared_group_ptr->has_changed());

@@ -6262,6 +6262,30 @@ enum DataType {
 
         */
 
+
+
+        [DllImport(L64, EntryPoint = "shared_group_reserve", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr shared_group_reserve64(IntPtr handle,IntPtr bytesToReserve);
+
+        [DllImport(L32, EntryPoint = "shared_group_reserve", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr shared_group_reserve32(IntPtr handle, IntPtr bytesToReserve);
+
+        public static void SharedGroupReserve(SharedGroup sharedGroup,long bytesToReserve)
+        {
+            var errorcode =
+                (Is64Bit)
+                    ? (long) shared_group_reserve64(sharedGroup.Handle, (IntPtr) bytesToReserve)
+                    : //possible overflow on 32 bit reg .bytesToReserve
+                    (long) shared_group_reserve32(sharedGroup.Handle, (IntPtr) bytesToReserve);
+
+            if (errorcode < 0)
+            {
+                throw new InvalidOperationException(String.Format("Call to Shared Group reserve failed. errorcode {0}",errorcode));
+            }            
+        }
+
+
+
         [DllImport(L64, EntryPoint = "shared_group_has_changed", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr shared_group_has_changed64(IntPtr handle);
 

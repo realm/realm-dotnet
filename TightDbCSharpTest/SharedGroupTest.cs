@@ -44,6 +44,43 @@ namespace TightDbCSharpTest
         }
 
 
+
+        
+        /// <summary>
+        /// Test that a call to reserve goes well
+        /// </summary>
+        [Test]
+        public static void SharedGroupReserveTest()
+        {
+            File.Delete(SharedGroupFileName());
+
+            using (var sharedGroup = new SharedGroup(SharedGroupFileName(), false, DurabilityLevel.DurabilityFull))
+            {
+                Assert.AreEqual(false, sharedGroup.Invalid);
+                sharedGroup.Reserve(1024*1024);
+                //as reserve is not supported on all platforms (sometimes its a NOP) we cannot really easily check
+                //if things worked out or not. But at least this test calls the method
+            }
+        }
+
+        /// <summary>
+        /// Test that a call to reserve throws as it should
+        /// </summary>
+        [Test]
+        [ExpectedException("System.ArgumentOutOfRangeException")]
+        public static void SharedGroupReserveBadTest()
+        {
+            File.Delete(SharedGroupFileName());
+
+            using (var sharedGroup = new SharedGroup(SharedGroupFileName(), false, DurabilityLevel.DurabilityFull))
+            {
+                Assert.AreEqual(false, sharedGroup.Invalid);
+                sharedGroup.Reserve(0);
+                //as reserve is not supported on all platforms (sometimes its a NOP) we cannot really easily check
+                //if things worked out or not. But at least this test calls the method
+            }
+        }
+
         //create-dispose test
         /// <summary>
         /// Test creation of a shared group with a illegal filename and path specification

@@ -122,6 +122,31 @@ namespace TightDbCSharp
 
         //todo:implement reserve
 
+        /// <summary>
+        /// Reserve disk space now to avoid allocation errors at a later
+        /// point in time, and to minimize on-disk fragmentation. In some
+        /// cases, less fragmentation translates into improved
+        /// performance.
+        ///
+        /// When supported by the system, a call to this function will
+        /// make the database file at least as big as the specified size,
+        /// and cause space on the target device to be allocated (note
+        /// that on many systems on-disk allocation is done lazily by
+        /// default). If the file is already bigger than the specified
+        /// size, the size will be unchanged, and on-disk allocation will
+        /// occur only for the initial section that corresponds to the
+        /// specified size. On systems that do not support preallocation,
+        /// this function has no effect. 
+        /// </summary>
+        /// <param name="bytesToReserve">Number of bytes to reserve database file size to</param>
+        public void Reserve(long bytesToReserve)
+        {
+            if (bytesToReserve < 1)
+            {
+                throw new ArgumentOutOfRangeException("bytesToReserve",String.Format(CultureInfo.InvariantCulture,"Shared Group Reserve called with too low a value {0}",bytesToReserve));
+            }
+            UnsafeNativeMethods.SharedGroupReserve(this,bytesToReserve);
+        }
 
         //todo:unit test with two threads - create SG, check it has not changed. create thread and run that thread (it then updates the sg) and then await it, and when it is finishe,
         //todo:finally check to see if the SG has changed.        
