@@ -1637,6 +1637,16 @@ try {
  }
 }
 
+
+TIGHTDB_C_CS_API size_t group_to_string(Group* group_ptr,uint16_t * data, size_t bufsize,size_t limit)
+{   
+   std::ostringstream ss;
+   group_ptr->to_string(ss);
+   string str = ss.str();   
+   return stringdata_to_csharpstringbuffer(str,data,bufsize);
+}
+
+
 //return packed size_t with errorcode or a encoded boolean
 TIGHTDB_C_CS_API size_t  group_is_empty(Group* group_ptr) {
 	try {

@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
-using System.Runtime.Remoting;
 
 namespace TightDbCSharp
 {
@@ -145,8 +144,8 @@ namespace TightDbCSharp
                 if (binaryGroup == null)               
                     throw new ArgumentNullException("binaryGroup", " Group cannot be created from a null pointer ");
                 
-                if (binaryGroup.Length == 0)                
-                    throw new ArgumentException("binaryGroup", "Group cannot be created from an array of size 0");
+                if (binaryGroup.Length == 0)
+                    throw new ArgumentException("Group cannot be created from an array of size 0", "binaryGroup");
                 
                 UnsafeNativeMethods.GroupFrombinaryData(this, binaryGroup);
             }
@@ -200,18 +199,18 @@ namespace TightDbCSharp
             throw new InvalidEnumArgumentException(String.Format(CultureInfo.InvariantCulture,"Group.GetTable called with a table name that does not exist {0}",tableName));
         }
 
-        //return the table at the specified index in the group's list of tables
+        
         /// <summary>
         /// Return the table that has the specified index in the group
         /// </summary>
         /// <param name="tableIndex">zero based index of an existing table in the Group</param>
         /// <returns>The table at the index in the groups list of tables</returns>
         /// <exception cref="ArgumentOutOfRangeException">If the index is negative or larger than or equal to size</exception>
-        public Table GetTable(long tableIndex)
+        private Table GetTable(long tableIndex)
         {
             if (tableIndex < 0 || tableIndex >= Size)
             {
-                throw new ArgumentOutOfRangeException("tableIndex",String.Format("Group.GetTable called with an index ({0}) that is out of range :{1}",tableIndex,this.ToString()));
+                throw new ArgumentOutOfRangeException("tableIndex",String.Format("Group.GetTable called with an index ({0}) that is out of range :{1}",tableIndex,ToString()));
             }
             return UnsafeNativeMethods.GroupGetTable(this, tableIndex);
         }
@@ -263,6 +262,11 @@ namespace TightDbCSharp
             UnsafeNativeMethods.GroupCommit(this);
         }
 
+
+        public override string ToString()
+        {
+            return base.ToString()+" "+UnsafeNativeMethods.GroupToString(this);
+        }
 
         /// <summary>
         /// True if the group has no tables

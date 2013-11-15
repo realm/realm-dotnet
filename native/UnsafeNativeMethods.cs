@@ -618,7 +618,36 @@ enum DataType {
                 //currently we just assume it was an IO error, but could be anything                
                 throw new InvalidOperationException(
                     "Group commit exception in core. probably an IO error with the group file");
+        }
 
+
+
+        [DllImport(L64, EntryPoint = "group_to_string", CallingConvention = CallingConvention.Cdecl,
+    CharSet = CharSet.Unicode)]
+        private static extern IntPtr group_to_string64(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize);
+
+        [DllImport(L32, EntryPoint = "group_to_string", CallingConvention = CallingConvention.Cdecl,
+            CharSet = CharSet.Unicode)]
+        private static extern IntPtr group_to_string32(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize);
+
+
+        public static string GroupToString(Group g)
+        {
+            long bufferSizeNeededChars = 16;
+            IntPtr buffer;
+            long currentBufferSizeChars;
+            do
+            {
+                buffer = StrAllocateBuffer(out currentBufferSizeChars, bufferSizeNeededChars);
+                if (Is64Bit)
+                    bufferSizeNeededChars = 
+                        (int)group_to_string64(g.Handle, buffer, (IntPtr)currentBufferSizeChars);
+                else
+                    bufferSizeNeededChars =
+                        (int)group_to_string32(g.Handle, buffer, (IntPtr)currentBufferSizeChars);
+
+            } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
+            return StrBufToStr(buffer, (int)bufferSizeNeededChars);
         }
 
 
