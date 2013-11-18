@@ -121,7 +121,7 @@ namespace TightDbCSharp
         }
         */
 
-        //todo:implement reserve
+        
 
         /// <summary>
         /// Reserve disk space now to avoid allocation errors at a later

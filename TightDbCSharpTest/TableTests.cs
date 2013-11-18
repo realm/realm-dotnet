@@ -529,7 +529,7 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
             using (var t = new Table())
             {
                 t.AddStringColumn("Bent");
-                t.RenameColumn(new List<long>(){0}, "Straight");
+                t.RenameColumn(new List<long> {0}, "Straight");
                 Assert.AreEqual("Straight", t.GetColumnName(0));
             }
         }
@@ -771,6 +771,10 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
         [Test]
         public static void TableLast()
         {
+            long last = Handled.LastUnbindListSize;
+            long high = Handled.HighestUnbindListSize;
+            Console.WriteLine("{0,6}{1,6}{2,10}{3,10}{4,30}", last, high,"","", "In TableLast ");
+
             using (var t = new Table("intfeld".Int()))
             {
                 t.AddMany(new[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
@@ -6533,8 +6537,8 @@ intfield2:10//column 2
           //  if (!String.IsNullOrEmpty(Toolbox.GetCSharpInfo())) return;//we want to stop here, but not to have the compiler figure it out
             //table created with using
           //  using (var table = new Table(new SubTableColumn("sub", new IntColumn("int"))))
-            long last = Handled.LastUnbindListSize;
-            long high = Handled.HighestUnbindListSize;
+            long last;
+            int high;
             {
 
 
@@ -6551,7 +6555,7 @@ intfield2:10//column 2
                     high = Handled.HighestUnbindListSize;
                     Console.WriteLine("{0,6}{1,6}{2,10}{3,10}{4,30}",last,high, GC.GetTotalMemory(false), n,"Before bulk gc");
                     Get10000SubtableOrphansNoUsing(table);
-                    if (n%5 == 5)
+                    if (n%5 == 0)
                     {
                         GC.Collect();
                     }
@@ -6572,7 +6576,7 @@ intfield2:10//column 2
             Console.WriteLine("disposed main table");
             last = Handled.LastUnbindListSize;
             high = Handled.HighestUnbindListSize;
-            Console.WriteLine(String.Format("last:{0,6}  high:{1,6}",last,high));
+            Console.WriteLine("last:{0,6}  high:{1,6}", last, high);
         }
 
 
