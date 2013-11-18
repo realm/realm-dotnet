@@ -102,7 +102,8 @@ namespace TightDbCSharp
         /// </summary>
         protected override void ReleaseHandle()
         {
-            UnsafeNativeMethods.SharedGroupDelete(this);
+            UnsafeNativeMethods.SharedGroupDelete(Handle);
+            Handle = IntPtr.Zero;
         }
 
 

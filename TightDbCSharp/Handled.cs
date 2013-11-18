@@ -1,4 +1,8 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Deployment.Internal;
+using System.Diagnostics;
 using System.Globalization;
 
 //this class contains code that handles the binding and disposing logic for C# classes that wrap tightdb classes
@@ -31,6 +35,85 @@ namespace TightDbCSharp
         public bool IsDisposed { get; private set; }
 
 
+        //contains a list of handles that should be unbound
+        
+        private static readonly List<IntPtr> UnbindList = new List<IntPtr>();
+        private static readonly List<Type> UnbindTypeList = new List<Type>();
+
+        private void AddToUnbindList()
+        {
+            lock (UnbindList)//everything after this is serialized with any other calls that
+                //do a lock (_unbind_list)
+            {
+                UnbindList.Add(Handle);
+                UnbindTypeList.Add(GetType());
+            }
+        }
+
+        public static int LastUnbindListSize;
+        public static int HighestUnbindListSize;
+
+        
+        private void UnbindUnbindList()
+        {
+            if (UnbindList.Count == 0)
+                //this read of Count is intentionally not locked. due to performance considerations
+                //we only lock if count is not zero
+                //If we get a bad/wrong value out from count
+                //we might exit but that is not a problem, we'll get here again some other time
+                //or we migt go on, and then inside the lock, the last=unbindList.Count will
+                //read the last value correctly and potentially not loop if last was really 0
+                //and we read it as something else - so also no harm done
+            {
+                return;
+            }
+
+            
+            lock (UnbindList)
+            {
+                Debug.Assert(UnbindList.Count == UnbindTypeList.Count); //these lists should always be in sync
+                var last = UnbindList.Count - 1;
+                LastUnbindListSize = last;
+                if (last > HighestUnbindListSize)
+                {
+                    HighestUnbindListSize = last;
+                }
+                while (last > -1)
+                {
+                    var t = UnbindTypeList[last];
+                    var h = UnbindList[last];
+                    
+                    --last;
+                    if (t == typeof (Table))
+                    {
+                        UnsafeNativeMethods.TableUnbind(h);
+                        
+                    }else 
+                    if (t == typeof (Query))
+                    {
+                        UnsafeNativeMethods.QueryDelete(h);
+                        
+                    } else
+                    if (t == typeof (SharedGroup))
+                    {
+                        UnsafeNativeMethods.QueryDelete(h);
+                        
+                    }else
+                    if (t == typeof(TableView))
+                    {
+                        UnsafeNativeMethods.TableViewUnbind(h);
+                        
+                    }else
+                    if (t == typeof(Group))
+                    {
+                        UnsafeNativeMethods.GroupDelete(h);                        
+                    }
+                }
+                UnbindList.Clear();
+                UnbindTypeList.Clear();
+            }
+        }
+
         /// <summary>
         /// Defaults to false. If true, this query / table / tableview / subtable / group / sharedGroup is read only and it is illegal
         /// to call any modifying function on it.
@@ -42,7 +125,11 @@ namespace TightDbCSharp
         {
         }
 
-        private void Unbind()
+        //if ToUnbindList is true we should put our handle into the unbind list if we shoulve been unbound
+        //if ToUnbindList is false, go on and unbind ourselves
+        //ToUnbindList is true if we are getting called from the finalizer thread (if we have been GC'ed bc the
+        //user was sloppy and forgot a using clause
+        private void Unbind(bool toUnbindList)
         {
             if (HandleInUse)
             {
@@ -50,10 +137,13 @@ namespace TightDbCSharp
                 {
                     //string myId = ObjectIdentification();
                   //  Console.WriteLine("Handle being released by calling cpp :{0}", myId);
-                    ReleaseHandle();
-                  //  Console.WriteLine("Handle released successfully :{0}", myId);
+                    if (toUnbindList)
+                        AddToUnbindList();
+                    else
+                        ReleaseHandle();
+                    //  Console.WriteLine("Handle released successfully :{0}", myId);
                     //Console.ReadKey();
-                  //  Console.WriteLine("Continuing...");
+                    //  Console.WriteLine("Continuing...");
                 }
                 //                else
                 // {
@@ -112,7 +202,8 @@ namespace TightDbCSharp
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// Calling dispose will free any c++ structures created to keep track of the handled object.
-        /// Usially dispose is called by the garbage collector or by the user indirectly via the using keyword.
+        /// Dispose with no parametres is called by by the user indirectly via the using keyword, or directly by the user
+        /// by him calling Displose()
         /// </summary>
         
         public void Dispose()
@@ -120,18 +211,30 @@ namespace TightDbCSharp
             Dispose(true);
             GC.SuppressFinalize(this);//tell finalizer it does not have to call dispose or dispose of things -we have done that already
         }
+
         //if called from GC  we should not dispose managed as that is unsafe, the bool tells us how we were called
+        //true means we were called by the user directly or indirectly via Dispose()
+        //false means we were called by the finalizer thread
         private void Dispose(bool disposeManagedToo)  //was protected virtual earlier on, can be set back to protected virtual if the need arises
         {
             if (!IsDisposed)
             {
                 if (disposeManagedToo)
                 {
-                    //dispose any managed members table might have
+                    //dispose of c++ stuff. We are called in the user thread so safe to dispose stuff
+                    UnbindUnbindList();//First unbind any c++ handles that have been enqueued by finalizer thread
+                    Unbind(false);//unbind this specific object too
+                }
+                else
+                {
+                    Unbind(true);//we are being called by the finalizer thread. It is NOT safe to call
+                    //c++ as we could be running concurrently with user threads without the user having
+                    //any control over this
+                    //so add our handle to the UnbindList, and then lets some call from the user thread finish
+                    //the c++ job later (any handled dispose call and any handled new call will try to clear the list)
                 }
 
                 //dispose any unmanaged stuff we have
-                Unbind();
                 IsDisposed = true;
             }
         }

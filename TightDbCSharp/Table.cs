@@ -437,7 +437,8 @@ namespace TightDbCSharp
         {
             //string tableid = ObjectIdentification();
 //            Console.WriteLine("unbinding: {0}",tableid);
-            UnsafeNativeMethods.TableUnbind(this);
+            UnsafeNativeMethods.TableUnbind(Handle);           
+            Handle = IntPtr.Zero;
 //            Console.WriteLine("Done unbinding: {0}", tableid);
         }
 
