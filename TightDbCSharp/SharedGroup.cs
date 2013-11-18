@@ -102,7 +102,8 @@ namespace TightDbCSharp
         /// </summary>
         protected override void ReleaseHandle()
         {
-            UnsafeNativeMethods.SharedGroupDelete(this);
+            UnsafeNativeMethods.SharedGroupDelete(Handle);
+            Handle = IntPtr.Zero;
         }
 
 
@@ -120,7 +121,7 @@ namespace TightDbCSharp
         }
         */
 
-        //todo:implement reserve
+        
 
         /// <summary>
         /// Reserve disk space now to avoid allocation errors at a later

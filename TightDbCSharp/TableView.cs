@@ -193,7 +193,8 @@ namespace TightDbCSharp
         /// </summary>
         protected override void ReleaseHandle()
         {
-            UnsafeNativeMethods.TableViewUnbind(this);
+            UnsafeNativeMethods.TableViewUnbind(this.Handle);
+            Handle = IntPtr.Zero;
         }
 
         internal override DateTime GetMixedDateTimeNoCheck(long columnIndex, long rowIndex)

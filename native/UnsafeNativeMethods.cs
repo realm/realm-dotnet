@@ -2359,15 +2359,13 @@ enum DataType {
         private static extern void unbind_table_ref32(IntPtr tableHandle);
 
         //      void    table_unbind(const Table *t); /* Ref-count delete of table* from table_get_table() */
-        public static void TableUnbind(Table t)
+        public static void TableUnbind(IntPtr tableHandle)
         {
-
             if (Is64Bit)
-                unbind_table_ref64(t.Handle);
+                unbind_table_ref64(tableHandle);
             else
-                unbind_table_ref32(t.Handle);
-            t.Handle = IntPtr.Zero;
-
+                unbind_table_ref32(tableHandle);
+        //    t.Handle = IntPtr.Zero;
         }
 
 
@@ -2381,14 +2379,14 @@ enum DataType {
         private static extern void tableview_delete32(IntPtr tableViewHandle);
 
         //      void    table_unbind(const Table *t); /* Ref-count delete of table* from table_get_table() */
-        public static void TableViewUnbind(TableView tv)
+        public static void TableViewUnbind(IntPtr tvHandle)
         {
 
             if (Is64Bit)
-                tableview_delete64(tv.Handle);
+                tableview_delete64(tvHandle);
             else
-                tableview_delete32(tv.Handle);
-            tv.Handle = IntPtr.Zero;
+                tableview_delete32(tvHandle);
+            //tv.Handle = IntPtr.Zero;
 
         }
 
@@ -2476,16 +2474,13 @@ enum DataType {
         [DllImport(L32, EntryPoint = "query_delete", CallingConvention = CallingConvention.Cdecl)]
         private static extern void query_delete32(IntPtr handle);
 
-        public static void QueryDelete(Query q)
+        public static void QueryDelete(IntPtr queryHandle)
         {
-
-
             if (Is64Bit)
-                query_delete64(q.Handle);
+                query_delete64(queryHandle);
             else
-                query_delete32(q.Handle);
-            q.Handle = IntPtr.Zero;
-
+                query_delete32(queryHandle);
+            //q.Handle = IntPtr.Zero;
         }
 
 
@@ -6207,14 +6202,14 @@ enum DataType {
         [DllImport(L32, EntryPoint = "shared_group_delete", CallingConvention = CallingConvention.Cdecl)]
         private static extern void shared_group_delete32(IntPtr handle);
 
-        public static void SharedGroupDelete(SharedGroup sharedGroup)
+        public static void SharedGroupDelete(IntPtr sharedGroupHandle)
         {
             if (Is64Bit)
-                shared_group_delete64(sharedGroup.Handle);
+                shared_group_delete64(sharedGroupHandle);
             else
-                shared_group_delete32(sharedGroup.Handle);
+                shared_group_delete32(sharedGroupHandle);
 
-            sharedGroup.Handle = IntPtr.Zero;
+           // sharedGroup.Handle = IntPtr.Zero;
         }
 
         /* depricated

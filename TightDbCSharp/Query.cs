@@ -14,10 +14,13 @@ namespace TightDbCSharp
     {
         /// <summary>
         /// do not call. This method calls c++ and asks it to delete its object
+        /// Only call if You are absolutely positively sure that the handle is
+        /// releaseable and that You are not running async to other threads calling tightdb        
         /// </summary>
         protected override void ReleaseHandle()
         {
-            UnsafeNativeMethods.QueryDelete(this);
+            UnsafeNativeMethods.QueryDelete(this.Handle);
+            Handle = IntPtr.Zero;
         }
 
         internal Query(IntPtr handle,Table underlyingTable, bool shouldbedisposed)
