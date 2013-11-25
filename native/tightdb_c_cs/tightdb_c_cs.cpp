@@ -1763,8 +1763,9 @@ TIGHTDB_C_CS_API size_t shared_group_reserve(SharedGroup* shared_group_ptr, size
 {
 	try {
 	  shared_group_ptr->reserve(size_in_bytes);
+	  return 0;
 	} 
-	catch (...){
+	catch (...){//todo:enumerate likely exceptions and give better error results on the other side
 		return -1;
 	}
 }

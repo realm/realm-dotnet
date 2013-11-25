@@ -715,7 +715,7 @@ enum DataType {
                 //currently we just assume it was an IO error, but could be anything
                 //more elaborate reporting would need the result from IntPtrToBollWithErrorCode to be saved
                 //and used to throw a more precise exception
-                throw new InvalidOperationException(String.Format("Group size call lead to an exception in core. Gro file IO error or group is invalid : {0}",group.ToString()));
+                throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture,"Group size call lead to an exception in core. Group file IO error or group is invalid : {0}",group));
             return result; //no errors so just return the result
         }
 
@@ -6275,7 +6275,7 @@ enum DataType {
 
             if (errorcode < 0)
             {
-                throw new InvalidOperationException(String.Format("Call to Shared Group reserve failed. errorcode {0}",errorcode));
+                throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture,"Call to Shared Group reserve failed. Error code {0}",errorcode));
             }            
         }
 

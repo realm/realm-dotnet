@@ -29,6 +29,7 @@ namespace TightDbCSharp
     /// The transaction is inherited from Group, so You can manipulate all tables
     /// in the group when You have acquired a transaction / started a transaction.
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix")]
     public class  Transaction:Group
     {        
         private readonly SharedGroup _sharedGroup;//pointer to the shared group this transaction is handling

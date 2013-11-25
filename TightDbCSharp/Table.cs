@@ -284,7 +284,7 @@ namespace TightDbCSharp
             }
         }
 
-        internal Table DefineSchema(params ColumnSpec[] schema)
+        internal Table DefineSchema(params ColumnSpec[] schema)//could be called by a constructor
         {
             ValidateReadWrite();        
             if (schema == null)
@@ -1487,8 +1487,8 @@ namespace TightDbCSharp
                 {
                     throw new ArgumentException(
                         String.Format(CultureInfo.InvariantCulture,
-                            "at level {0}, the path supplied contains index {1} that points not to a SubTable column, but column \"{2}\" of type {3}({4})",
-                            level, path[level], levelSpec.GetColumnName(path[level]), levelSpec.GetColumnType(path[level]), ToString()));
+                            "at level {0}, the path supplied contains index {1} that points not to a SubTable column, but column \"{2}\" of type {3}",
+                            level, path[level], levelSpec.GetColumnName(path[level]), levelSpec.GetColumnType(path[level])));
                 }
             }
         }

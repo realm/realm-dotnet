@@ -19,7 +19,7 @@ namespace TightDbCSharp
         /// </summary>
         protected override void ReleaseHandle()
         {
-            UnsafeNativeMethods.QueryDelete(this.Handle);
+            UnsafeNativeMethods.QueryDelete(Handle);
             Handle = IntPtr.Zero;
         }
 

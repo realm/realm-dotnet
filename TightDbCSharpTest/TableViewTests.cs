@@ -151,8 +151,7 @@ namespace TightDbCSharpTest
         /// </summary>
         [Test]
         public static void TableViewSetBool()
-        {
-            const long column = 3;
+        {            
             using (var table = new Table("bool".Bool(),"tag".Int()))
             {
                 table.Add(true, 42);

@@ -193,7 +193,7 @@ namespace TightDbCSharp
         /// </summary>
         protected override void ReleaseHandle()
         {
-            UnsafeNativeMethods.TableViewUnbind(this.Handle);
+            UnsafeNativeMethods.TableViewUnbind(Handle);
             Handle = IntPtr.Zero;
         }
 

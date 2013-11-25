@@ -10,6 +10,7 @@ namespace TightDbCSharp
     /// Handles a collection of tables that are not shared with other
     /// processes or programs. (see SharedGroup)
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix")]
     public class Group:Handled,IEnumerable<Table>
     {
        
@@ -129,11 +130,11 @@ namespace TightDbCSharp
         /// is, for each table T at index I in one of the groups, there is
         /// a table at index I in the other group that is equal to T.
         /// </summary>
-        /// <param name="g2">a Group</param>
+        /// <param name="otherGroup">a Group</param>
         /// <returns>true if the groups parameter is with the same data as this</returns>
-        public Boolean EqualsGroup(Group g2)
+        public Boolean EqualsGroup(Group otherGroup)
         {
-            return g2 != null && UnsafeNativeMethods.GroupEquals(this, g2);
+            return otherGroup != null && UnsafeNativeMethods.GroupEquals(this, otherGroup);
         }
 
 
@@ -252,7 +253,7 @@ namespace TightDbCSharp
         {
             if (tableIndex < 0 || tableIndex >= Size)
             {
-                throw new ArgumentOutOfRangeException("tableIndex",String.Format("Group.GetTable called with an index ({0}) that is out of range :{1}",tableIndex,ToString()));
+                throw new ArgumentOutOfRangeException("tableIndex",String.Format(CultureInfo.InvariantCulture,"Group.GetTable called with an index ({0}) that is out of range :{1}",tableIndex,ToString()));
             }
             return UnsafeNativeMethods.GroupGetTable(this, tableIndex);
         }

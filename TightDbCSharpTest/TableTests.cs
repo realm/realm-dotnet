@@ -771,9 +771,9 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
         [Test]
         public static void TableLast()
         {
-            long last = Handled.LastUnbindListSize;
-            long high = Handled.HighestUnbindListSize;
-            Console.WriteLine("{0,6}{1,6}{2,10}{3,10}{4,30}", last, high,"","", "In TableLast ");
+            //long last = Handled.LastUnbindListSize;
+            //long high = Handled.HighestUnbindListSize;
+           // Console.WriteLine("{0,6}{1,6}{2,10}{3,10}{4,30}", last, high,"","", "In TableLast ");
 
             using (var t = new Table("intfeld".Int()))
             {
@@ -6482,24 +6482,28 @@ intfield2:10//column 2
         //the goal of this method is to end up with 100 subtables that are still allocated at exit,
         //but are not referenced anywhere anymore
         //the table should have 100 rows with a subtable field in each row
-        private static void Get100SubtablesFromTableNoUsing(Table table)
+        private static long GetSubtablesFromTableNoUsing(Table table,int numTables)
         {
             var subtables  =new List<Table>();
-            for (var i = 0; i < 10000; ++i)
+            for (var i = 0; i < numTables; ++i)
             {
                 subtables.Add((table.GetSubTable(0, i%1000)));//keep them referred until we exit the function
             }
+            return subtables.Count;
         }
 
         //the goal of this method is to take out a lot of subtables and immediatly unreference them
         //to add some unpredictabillity reg. what and when things are finalized
-        private static void Get10000SubtableOrphansNoUsing(Table table)
+        private static long GetSubtableOrphansNoUsing(Table table,int numTables)
         {
             long x = 0;
-            for (var i = 0; i < 10000; ++i)
+            for (var i = 0; i < numTables; ++i)
             {
                 x=x+table.GetSubTable(0, i % 1000).Size;//as soon as x is assigned, no reference to the subtable
+                x=x+ table.GetSubTable(0, i/1000).FindAllInt(0, 0).Size;
+                //todo:lets throw in a query too
             }
+            return x;
         }
 
 
@@ -6507,16 +6511,22 @@ intfield2:10//column 2
         //the goal of this method is to spend some time allocating,using and deallocating
         //subtables in the hope that the finalizer thread calls the same table and disposes
         //wrappers to the same subtable while this thread is working
-        private static void Get100SubtablesFromTableWithUsing(Table table)
+        private static long GetSubtablesFromTableWithUsing(Table table,int numTables)
         {
-            for (var i = 0; i < 10000; ++i)
+            long x = 0;
+            for (var i = 0; i < numTables; ++i)
             {
                 using (var sub = table.GetSubTable(0, i%1000))
                 {
                     sub.AddInt(0, 1); //do some operations
                     sub.AddInt(0, -1);
+                    using (var tableView = sub.FindAllInt(0, 0))
+                    {
+                        x = x + tableView.Size;
+                    }                  
                 }//and here dispose is called so we keep allocating and deallocating
             }
+            return x;
         }
 
 
@@ -6529,54 +6539,77 @@ intfield2:10//column 2
         ///by the finalizer thread that GC starts after collection to call finalizers for
         ///all unreferenced objects with a finalizer
         /// </summary>
-        [Test]
+        [SuppressMessage("Microsoft.Reliability", "CA2001:AvoidCallingProblematicMethods", MessageId = "System.GC.Collect"), SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope"), Test]
         public static void GarbageCollectCollisionSingleThread()
         {
-            Console.WriteLine("Garbage collector finalizer thread collision unit test disabled");
-          //  Assert.AreEqual(0,1);//this unit test would fail if it was commented in
-          //  if (!String.IsNullOrEmpty(Toolbox.GetCSharpInfo())) return;//we want to stop here, but not to have the compiler figure it out
+            Console.Write("Garbage collector finalizer thread collision unit test");
+            //  Assert.AreEqual(0,1);//this unit test would fail if it was commented in
+            //  if (!String.IsNullOrEmpty(Toolbox.GetCSharpInfo())) return;//we want to stop here, but not to have the compiler figure it out
             //table created with using
-          //  using (var table = new Table(new SubTableColumn("sub", new IntColumn("int"))))
-            long last;
-            int high;
-            {
-
-
-                var table = new Table(new SubTableColumn("sub", new IntColumn("int")));
-                for (var i = 0; i < 1000; ++i)
+            //  using (var table = new Table(new SubTableColumn("sub", new IntColumn("int"))))
+            //long last;
+            //int high;
+            
+                for (var pass = 1; pass <= 2; pass++)
+                    //first pass is with a table that is not inside using, second pass is with a table inside using
                 {
-                    table.Add(new object[] {new object[] {1, 2, 3, 4, 5}});
-                }
-                Console.WriteLine("Added rows to table");
+                    Table table;//resharper issue warning is okay - 
 
-                for (var n = 0; n < 111; ++n)
-                {
-                    last = Handled.LastUnbindListSize;
-                    high = Handled.HighestUnbindListSize;
-                    Console.WriteLine("{0,6}{1,6}{2,10}{3,10}{4,30}",last,high, GC.GetTotalMemory(false), n,"Before bulk gc");
-                    Get10000SubtableOrphansNoUsing(table);
-                    if (n%5 == 0)
+                    using (var tableUsing = new Table(new SubTableColumn("sub", new IntColumn("int"))))
                     {
-                        GC.Collect();
-                    }
-                    Console.WriteLine("{0,6}{1,6}{2,10}{3,10}{4,30}", last, high, GC.GetTotalMemory(false), n, "Before single gc");
-                    Get100SubtablesFromTableNoUsing(table);
-                    if (n%3 == 0)
-                    {
-                        GC.Collect(); //warning suspended - we need to call gc 
-                    }
-                    Console.WriteLine("{0,6}{1,6}{2,10}{3,10}{4,30}", last, high, GC.GetTotalMemory(false), n, "after single gc");
 
-                    Console.WriteLine("{0,6}{1,6}{2,10}{3,10}{4,30}", last, high, GC.GetTotalMemory(false), n, "Before using guarded loop");
+                        table = (pass == 1) ? new Table(new SubTableColumn("sub", new IntColumn("int"))) : tableUsing;
+                            //set table to the table inside using or one that is not guarded by dispose
 
-                    Get100SubtablesFromTableWithUsing(table);
-                    Console.WriteLine("{0,6}{1,6}{2,10}{3,10}{4,30}", last, high, GC.GetTotalMemory(false), n, "after using guarded loop");
+                        for (var i = 0; i < 1000; ++i)
+                        {
+                            table.Add(new object[] {new object[] {1, 2, 3, 4, 5}});
+                        }
+                        Console.WriteLine("Added rows to table");
+
+                        const int rounds=13;
+                        //to make this test catch all bugs set the limit to 111 instead of 13
+                        //const int rounds=111;
+                        for (var n = 0; n < rounds; ++n)
+                        {
+                            Boolean writedot = false;
+                         //   last = Handled.LastUnbindListSize;
+                         //   high = Handled.HighestUnbindListSize;
+/*                            Console.WriteLine("{0,6}{1,6}{2,10}{3,10}{4,30}", last, high, GC.GetTotalMemory(false), n,
+                                "Before bulk gc");*/
+                            writedot=(0!=GetSubtableOrphansNoUsing(table,n*100));
+                            if (n%5 == 0)
+                            {
+                                GC.Collect();
+                            }
+/*                            Console.WriteLine("{0,6}{1,6}{2,10}{3,10}{4,30}", last, high, GC.GetTotalMemory(false), n,
+                                "Before single gc");*/
+                            writedot=(writedot || (GetSubtablesFromTableNoUsing(table,n * 100)!=0));
+                            if (n%3 == 0)
+                            {
+                                GC.Collect(); //warning suspended - we need to call gc 
+                            }
+                            /*Console.WriteLine("{0,6}{1,6}{2,10}{3,10}{4,30}", last, high, GC.GetTotalMemory(false), n,
+                                "after single gc");*/
+
+/*                            Console.WriteLine("{0,6}{1,6}{2,10}{3,10}{4,30}", last, high, GC.GetTotalMemory(false), n,
+                                "Before using guarded loop");*/
+
+                            writedot=(writedot || (0!=GetSubtablesFromTableWithUsing(table, n * 100)));
+/*                            Console.WriteLine("{0,6}{1,6}{2,10}{3,10}{4,30}", last, high, GC.GetTotalMemory(false), n,
+                                "after using guarded loop");*/
+                            if (writedot)
+                            {
+                                Console.Write(".");
+                            }
+                        }
+                    }
                 }
-            }
-            Console.WriteLine("disposed main table");
-            last = Handled.LastUnbindListSize;
-            high = Handled.HighestUnbindListSize;
-            Console.WriteLine("last:{0,6}  high:{1,6}", last, high);
+            
+            Console.WriteLine("Finished! disposed main table");
+            //last = Handled.LastUnbindListSize;
+            //high = Handled.HighestUnbindListSize;
+            //Console.WriteLine("last:{0,6}  high:{1,6}", last, high);
         }
 
 

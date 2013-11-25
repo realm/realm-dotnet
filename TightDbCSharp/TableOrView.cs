@@ -225,7 +225,7 @@ namespace TightDbCSharp
             ClearNoCheck();
         }
 
-        internal abstract void ClearNoCheck();
+        internal  abstract  void ClearNoCheck();
 
         internal abstract void RemoveNoCheck(long rowIndex);
         //removes the row at rowIndex, all rows after that have their index reduced by 1

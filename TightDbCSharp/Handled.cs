@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Deployment.Internal;
 using System.Diagnostics;
 using System.Globalization;
 
@@ -25,7 +23,7 @@ namespace TightDbCSharp
         /// <summary>
         /// Contains the c++ pointer to a c++ object - used as a handle  when calling c++ functions
         /// </summary>
-        public IntPtr Handle { get;internal set; }  //handle (in fact a pointer) to a c++ hosted Table. We must unbind this handle if we have acquired it
+        public IntPtr Handle { get;internal set; }  //handle (in fact a pointer) to a c++ hosted object. We must unbind/delete this handle if we have acquired it
         private bool HandleInUse { get; set; } //defaults to false.  
         private bool HandleHasBeenUsed { get; set; } //defaults to false. If this is true, the table handle has been allocated in the lifetime of this object
         private bool NotifyCppWhenDisposing { get; set; }//if false, the table handle do not need to be disposed of, on the c++ side
@@ -50,8 +48,8 @@ namespace TightDbCSharp
             }
         }
 
-        public static int LastUnbindListSize;
-        public static int HighestUnbindListSize;
+       // public static int LastUnbindListSize;
+       // public static int HighestUnbindListSize;
 
         
         private void UnbindUnbindList()
@@ -73,11 +71,11 @@ namespace TightDbCSharp
             {
                 Debug.Assert(UnbindList.Count == UnbindTypeList.Count); //these lists should always be in sync
                 var last = UnbindList.Count - 1;
-                LastUnbindListSize = last;
-                if (last > HighestUnbindListSize)
-                {
-                    HighestUnbindListSize = last;
-                }
+                //LastUnbindListSize = last;
+                //if (last > HighestUnbindListSize)
+               // {
+               //     HighestUnbindListSize = last;
+               // }
                 while (last > -1)
                 {
                     var t = UnbindTypeList[last];
