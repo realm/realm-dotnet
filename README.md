@@ -6,6 +6,10 @@ Ver 0.1.2
 
 This directory and its subdirectories contain the VS2012 solution that is needed to produce the C# binding for tightdb
 
+This documents describe how to build the binding from the sources.
+
+For a general overview of the .net binding and pointeres to tasks related to maintainance and development, open documentation.txt
+
 ##Build instructions##
 
 These instructions use some concrete file paths as examples,
@@ -31,11 +35,7 @@ Building the c++ binding in windows with VS2012 (not express) can be done as fol
   E:\Wincoder\Develope\tightdb_csharp\README.md  
   then make sure the tightDB.sln file is in  
   E:\Wincoder\Develope\tightdb\tightDB.sln    
-2. open tightDB.sln in VS2012
-3. right click "Solution 'TightDB' (8 projects) in Solution Explorer
-4. select UpdateVC++ Projects
-5. in the popup "UpdateVC++ Compiler and Libraries" click Update
-6. wait while VS2012 updates the projects.
+2. open tightDBVS2012.sln in VS2012
 7. select Build->Batch Build
 8. unmark all checkboxes under build, mark the 4 named TightDB Debug Win32, tightDB Debug x64, TightDB Release Win32, TightDB Release x64 - click Clean.  Output should report Clean : 8 succeeded, 0 failed, 0 skipped
 9. select Build->Batch build, click REBUILD 
@@ -95,7 +95,7 @@ Select Release in solution configuration
 Select x86 in solution platform
 click the green run arrow
 A console window will show, and run the unit tests. If VS stops at a breakpoit that accidentially has been left over,
-just press Continue ot go on.
+just press Continue to go on.
 Test names are printed as they are executed.
 Eventually the message Tests run: nnn. passed : nnn is shown.
 Make sure that all test listed in Errors and Failures are tests known to fail (due to core bugs or know binding bugs)

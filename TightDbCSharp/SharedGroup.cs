@@ -33,14 +33,48 @@ namespace TightDbCSharp
         DurabilityAsync 
     }
 
-    //Never : this sharedgroup has never finished a transaction, neither started one
-    //InTransaction : A read or write transaction is active
-    //Finished : A read or write transaction has finished, and the shared group is ready
-    //to start a new transaction and go into InTransaction mode
-    internal enum TransactionState : byte
+    /*
+    /// <summary>
+    /// Read:read transacton.
+    /// Write:write transaction.
+    /// 
+    /// Read transactions cannot modify table values or schema.
+    /// Write transactions can. A transaction will read the table as it were when it started.
+    /// There can only be one write transaction (but many readers)
+    /// </summary>
+    public enum TransactionKind
+    {
+        /// <summary>
+        /// Indicates a Read Transaction
+        /// </summary>
+        Read,
+        /// <summary>
+        /// Indicates a Write Transaction
+        /// </summary>
+        Write
+    }
+    */
+    /// <summary>
+    ///Transaction state..
+    ///Ready : The Shared Group is not in a transaction
+    ///Read  : A read transaction is active
+    ///Write : A write transaction is active
+    /// Also used as a paramenter to ExecuteInTransaction to designate what kind of trasnaction to execute
+    /// </summary>
+    public enum TransactionState : byte
     {              
+        /// <summary>
+        /// Ready:A shared group not in a transaction is Ready
+        /// </summary>
         Ready,
-        InTransaction
+        /// <summary>
+        /// Read:A shared group in a read transaction
+        /// </summary>
+        Read,
+        /// <summary>
+        /// Write:A shared group in a write transaction
+        /// </summary>
+        Write,
     }
 
     /// <summary>
@@ -56,12 +90,16 @@ namespace TightDbCSharp
         /// <param name="fileName">(path and)File name of sharedgroup to connect to, or sharedgroup to create </param>
         public SharedGroup(String fileName)
         {
-            UnsafeNativeMethods.NewSharedGroupFileDefaults(this, fileName);
+            UnsafeNativeMethods.NewSharedGroupFileDefaults(this, fileName);//this call will set the sharedgrouphandle
         }
 
+        internal SharedGroupHandle SharedGroupHandle
+        {
+            get { return Handle as SharedGroupHandle; }
+        }
 
-
-
+        
+        //the current ongoing transaction if any, otherwise null or the last finished transaction      
 
         /// <summary>
         /// 
@@ -95,16 +133,6 @@ namespace TightDbCSharp
             UnsafeNativeMethods.SharedGroupOpen(this,fileName,noCreate,durabilityLevel);
         }
         */
-
-        /// <summary>
-        /// deattach this shared group on the c++ side. Do not call explicitly unless You REALLY know what You are doing.
-        /// Is called autmatically by dispose and destructor
-        /// </summary>
-        protected override void ReleaseHandle()
-        {
-            UnsafeNativeMethods.SharedGroupDelete(Handle);
-            Handle = IntPtr.Zero;
-        }
 
 
         /*
@@ -175,11 +203,28 @@ namespace TightDbCSharp
         /// </summary>
         public Boolean Invalid { get; set; }
 
-        internal TransactionState TransactionState {get; set;}
 
+
+        internal TransactionState State
+        {
+            get { return SharedGroupHandle.State; }
+            set { SharedGroupHandle.State = value; }
+        }
+                    
+
+        /// <summary>
+        /// True if this SharedGroup is currently in a read or a write transaction
+        /// </summary>
+        /// <returns></returns>
+        public Boolean InTransaction()
+        {
+            return (State == TransactionState.Read||
+                    State == TransactionState.Write);
+        }
+                 
         private void ValidateNotInTransaction()
         {
-            if (TransactionState==TransactionState.InTransaction) throw new InvalidOperationException("SharedGroup Cannot start a transaction when already inside one");
+            if (InTransaction()) throw new InvalidOperationException("SharedGroup Cannot start a transaction when already inside one");
         }
 
         //this is the only place where a read transaction can be initiated
@@ -195,8 +240,7 @@ namespace TightDbCSharp
         /// <returns></returns>
         public Transaction BeginRead()
         {
-            ValidateNotInTransaction();
-           TransactionState = TransactionState.InTransaction;
+           ValidateNotInTransaction();            
            return UnsafeNativeMethods.SharedGroupBeginRead(this);//will initialize a new transaction:group, set t.handle to the group returned by the sharedgroup
         }
 
@@ -215,8 +259,7 @@ namespace TightDbCSharp
         /// <returns>Transaction object that inherits from Group and gives read/write acces to all tables in the group</returns>
         public Transaction BeginWrite()
         {
-            ValidateNotInTransaction();
-            TransactionState = TransactionState.InTransaction;
+            ValidateNotInTransaction();            
             return UnsafeNativeMethods.SharedGroupBeginWrite(this);
         }
 
@@ -236,9 +279,9 @@ namespace TightDbCSharp
         }
 
         //work is the acutal code that will be run inside the transaction
-        private void ExecuteInTransaction(Action<Transaction> work,TransactionKind kind)
+        private void ExecuteInTransaction(Action<Transaction> work,TransactionState kind)
         {
-            using (var transaction = (kind == TransactionKind.Read) ? BeginRead() : BeginWrite())
+            using (var transaction = (kind == TransactionState.Read) ? BeginRead() : BeginWrite())
             try
             {
                 work(transaction);
@@ -260,7 +303,7 @@ namespace TightDbCSharp
         /// <param name="work"></param>
         public void ExecuteInReadTransaction(Action<Transaction> work)//Not <Group> bc .net 3.5 won't compile
         {
-            ExecuteInTransaction(work, TransactionKind.Read);
+            ExecuteInTransaction(work, TransactionState.Read);
         }
 
         //todo:ensure all the below scenarios are being unit tested - that exceptions are thrown as expected
@@ -271,7 +314,7 @@ namespace TightDbCSharp
         /// can throw an exception, or call transaction.commit().
         /// After commit has been called, it is illegal to access the transaction in any way, so it is best just to exit the
         /// void when finished with the modifications.
-        /// if you roll back and then throw an exception the rollback is not rolled back
+        /// if you roll back and then throw an exception the first rollback is final
         /// if you roll back and call commit, an exception will throw
         /// if you roll back and roll back again an exception will be thrown
         /// if you commit and then throw an exception, the commit is not rolled back
@@ -281,7 +324,7 @@ namespace TightDbCSharp
         /// <param name="work"></param>
         public void ExecuteInWriteTransaction(Action<Transaction> work)//Not <Group> bc .net 3.5 won't compile
         {
-            ExecuteInTransaction(work, TransactionKind.Write);
+            ExecuteInTransaction(work, TransactionState.Write);
         }
     }
 

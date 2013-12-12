@@ -51,6 +51,13 @@
     <Compile Include="..\native\UnsafeNativeMethods.cs">
       <Link>UnsafeNativeMethods.cs</Link>
     </Compile>
+    <Compile Include="GroupHandle.cs" />
+    <Compile Include="QueryHandle.cs" />
+    <Compile Include="SharedGroupHandle.cs" />
+    <Compile Include="SpecHandle.cs" />
+    <Compile Include="TableHandle.cs" />
+    <Compile Include="TableViewHandle.cs" />
+    <Compile Include="TightDbHandle.cs" />
     <Compile Include="Toolbox.cs" />
     <Compile Include="Group.cs" />
     <Compile Include="Handled.cs" />

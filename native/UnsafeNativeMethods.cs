@@ -173,20 +173,21 @@ enum DataType {
 
 
 
-
+        //todo:verify again that marshalling a criticalhandle actiually fishes out the intptr and sends that one to c++
+        //todo:quite sure i read somewhere that CriticalHandle has implemented type conversion to IntPtr        
         [DllImport(L64, EntryPoint = "spec_deallocate", CallingConvention = CallingConvention.Cdecl)]
         private static extern void spec_deallocate64(IntPtr spec);
 
         [DllImport(L32, EntryPoint = "spec_deallocate", CallingConvention = CallingConvention.Cdecl)]
         private static extern void spec_deallocate32(IntPtr spec);
 
-        public static void SpecDeallocate(Spec s)
+        public static void SpecDeallocate(IntPtr handle)
         {
             if (Is64Bit)
-                spec_deallocate64(s.Handle);
+                spec_deallocate64(handle);
             else
-                spec_deallocate32(s.Handle);
-            s.Handle = IntPtr.Zero;
+                spec_deallocate32(handle);
+            //s.Handle = IntPtr.Zero;
         }
 
 
@@ -527,19 +528,24 @@ enum DataType {
         //get a spec given a column index. Returns specs for subtables, but not for mixed (as they would need a row index too)
         //Spec       *spec_get_spec(Spec *spec, size_t column_ndx);
         [DllImport(L64, EntryPoint = "spec_get_spec", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr spec_get_spec64(IntPtr spec, IntPtr columnIndex);
+        private static extern IntPtr spec_get_spec64(SpecHandle spec, IntPtr columnIndex);
 
         [DllImport(L32, EntryPoint = "spec_get_spec", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr spec_get_spec32(IntPtr spec, IntPtr columnIndex);
+        private static extern IntPtr spec_get_spec32(SpecHandle spec, IntPtr columnIndex);
 
-
-
-        public static Spec SpecGetSpec(Spec spec, long columnIndex)
+        //used by SpecHandle.GetSubSpecHandle to get an atomic subspec handle created
+        public static IntPtr SpecGetSpec(SpecHandle sh, long columnIndex)
         {
+            return (Is64Bit)
+                ? spec_get_spec64(sh, (IntPtr) columnIndex)
+                : spec_get_spec32(sh, (IntPtr) columnIndex);
 
-            if (Is64Bit)
-                return new Spec(spec.OwnerRootTable, spec_get_spec64(spec.Handle, (IntPtr) columnIndex), true);
-            return new Spec(spec.OwnerRootTable, spec_get_spec32(spec.Handle, (IntPtr) columnIndex), true);
+        }
+
+        //spec should be disposed when not used anymore - its handle needs to be unbounded
+        public static Spec SpecGetSpec(Spec spec, long columnIndex)
+        {            
+            return new Spec(spec.OwnerRootTable, spec.SpecHandle.GetSubSpecHandle(columnIndex));
         }
 
 
@@ -563,15 +569,18 @@ enum DataType {
 
 
         //tightdb_c_cs_API size_t new_table()
+        //The TableHandle will be initialized with root=null and that is exactly what we want
+        //when we ask for a freestanding table
+        //in the call to new_table we atomically acquire a TableHandle that can finalize itself if need be
         [DllImport(L64, EntryPoint = "new_table", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr new_table64();
+        private static extern TableHandle new_table64();
 
         [DllImport(L32, EntryPoint = "new_table", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr new_table32();
+        private static extern TableHandle new_table32();
 
         public static void TableNew(Table table, bool isReadOnly)
         {
-            table.SetHandle(Is64Bit ? new_table64() : new_table32(), true, isReadOnly);
+            table.SetHandle(Is64Bit ? new_table64() : new_table32(),  isReadOnly);
         }
 
 
@@ -737,25 +746,12 @@ enum DataType {
 
 
         [DllImport(L64, EntryPoint = "new_group_file", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr new_group_file64([MarshalAs(UnmanagedType.LPWStr)] string fileName,
+        private static extern GroupHandle new_group_file64([MarshalAs(UnmanagedType.LPWStr)] string fileName,
             IntPtr fileNameLen, IntPtr openMode);
 
         [DllImport(L32, EntryPoint = "new_group_file", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr new_group_file32([MarshalAs(UnmanagedType.LPWStr)] string fileName,
+        private static extern GroupHandle new_group_file32([MarshalAs(UnmanagedType.LPWStr)] string fileName,
             IntPtr fileNameLen, IntPtr openMode);
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -782,9 +778,9 @@ enum DataType {
                 : new_group_file32(fileName, (IntPtr) fileName.Length, nativeOpenMode);
 
 
-            if (handle != IntPtr.Zero)
+            if (!handle.IsInvalid)
             {
-                group.SetHandle(handle, true, openMode == Group.OpenMode.ModeReadOnly);
+                group.SetHandle(handle, openMode == Group.OpenMode.ModeReadOnly);
             }
             else
             {
@@ -793,19 +789,21 @@ enum DataType {
             }
         }
 
+
+
         [DllImport(L64, EntryPoint = "new_group", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr new_group64();
+        private static extern GroupHandle new_group64();
 
         [DllImport(L32, EntryPoint = "new_group", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr new_group32();
+        private static extern GroupHandle new_group32();
 
-
+        //crates a new freestainding group so root is left at null, and ignoreunbind is false
+        //this means GroupHandle.unbind is workable as soon as new_group returns, even if sethandle failed
         public static void GroupNew(Group group, Boolean isReadOnly)
         {
-
             group.SetHandle(Is64Bit
                 ? new_group64()
-                : new_group32(), true, isReadOnly);
+                : new_group32(), isReadOnly);
         }
 
 
@@ -2273,19 +2271,26 @@ enum DataType {
         //If the name exists in the group, the table associated with the name is returned
         //if the name does not exist in the group, a new table is created and returned
         [DllImport(L64, EntryPoint = "group_get_table", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr group_get_table64(IntPtr groupHandle,
+        private static extern IntPtr group_get_table64(GroupHandle groupHandle,
             [MarshalAs(UnmanagedType.LPWStr)] String tableName, IntPtr tableNameLen);
 
         [DllImport(L32, EntryPoint = "group_get_table", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr group_get_table32(IntPtr groupHandle,
+        private static extern IntPtr group_get_table32(GroupHandle groupHandle,
             [MarshalAs(UnmanagedType.LPWStr)] String tableName, IntPtr tableNameLen);
 
-        public static Table GroupGetTable(Group group, string tableName)
+
+        //used by GroupHandle to get a table handle atomically with the group handle as root
+        //therefore returns intptr
+        public static IntPtr GroupGetTable(GroupHandle groupHandle, string tableName)
         {
-            if (Is64Bit)
-                return new Table(group_get_table64(group.Handle, tableName, (IntPtr) tableName.Length), true,
-                    group.ReadOnly);
-            return new Table(group_get_table32(group.Handle, tableName, (IntPtr) tableName.Length), true, group.ReadOnly);
+            return (Is64Bit)
+                ? group_get_table64(groupHandle, tableName, (IntPtr)tableName.Length )
+                : group_get_table32(groupHandle, tableName, (IntPtr)tableName.Length);
+        }
+
+        public static Table GroupGetTable(Group group, string tableName)
+        {            
+            return new Table(group.GroupHandle.GetTable(tableName),group.ReadOnly);//the first parameter will evaluate to a finalizeable TableHandle
         }
 
 
@@ -2293,18 +2298,23 @@ enum DataType {
         //the index relates to the sequence of tables returned with foreach
         //we rely on the table constructor to throw if we get a  null from c+
         [DllImport(L64, EntryPoint = "group_get_table_by_index", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr group_get_table_by_index64(IntPtr groupHandle, IntPtr tableIndex);
+        private static extern IntPtr group_get_table_by_index64(GroupHandle groupHandle, IntPtr tableIndex);
 
         [DllImport(L32, EntryPoint = "group_get_table_by_index", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr group_get_table_by_index32(IntPtr groupHandle, IntPtr tableIndex);
+        private static extern IntPtr group_get_table_by_index32(GroupHandle groupHandle, IntPtr tableIndex);
+
+        //called by GroupHandle
+        public static IntPtr GroupGetTable(GroupHandle groupHandle, long tableIndex)
+        {
+            return Is64Bit
+                ? group_get_table_by_index64(groupHandle, (IntPtr) tableIndex)
+                : group_get_table_by_index32(groupHandle, (IntPtr) tableIndex);
+        }
 
         public static Table GroupGetTable(Group group, long tableIndex)
         {
-            return Is64Bit
-                ? new Table(group_get_table_by_index64(group.Handle, (IntPtr) tableIndex), true, group.ReadOnly)
-                : new Table(group_get_table_by_index32(group.Handle, (IntPtr) tableIndex), true, group.ReadOnly);
+            return new Table(group.GroupHandle.GetTable(tableIndex), group.ReadOnly);
         }
-
 
 
 
@@ -2485,12 +2495,12 @@ enum DataType {
 
 
         [DllImport(L64, EntryPoint = "group_delete", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void group_delete64(IntPtr handle);
+        private static extern void group_delete64(GroupHandle handle);
 
         [DllImport(L32, EntryPoint = "group_delete", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void group_delete32(IntPtr handle);
+        private static extern void group_delete32(GroupHandle handle);
 
-        public static void GroupDelete(IntPtr handle)
+        public static void GroupDelete(GroupHandle handle)
         {
             if (Is64Bit)
                 group_delete64(handle);
@@ -2517,15 +2527,26 @@ enum DataType {
 
         // tightdb_c_cs_API size_t table_get_spec(size_t TablePtr)
         [DllImport(L64, EntryPoint = "table_get_spec", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_get_spec64(IntPtr tableHandle);
+        private static extern IntPtr table_get_spec64(TableHandle tableHandle);
 
         [DllImport(L32, EntryPoint = "table_get_spec", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_get_spec32(IntPtr tableHandle);
+        private static extern IntPtr table_get_spec32(TableHandle tableHandle);
 
+        //called by TableHandle in order to get an antomically set SpecHandle with IgnoreUnbind=true
+        //todo:consider if we should create a base kind of spec handle, and two derived kinds of spec handle, one that unbinds and one that does not
+        //then we could simply use them as spechandle and instantiate them as ignoreunbind or not
+        public static IntPtr TableGetSpec(TableHandle tableHandle)
+        {
+            return (Is64Bit)
+                ? table_get_spec64(tableHandle):               
+                table_get_spec32(tableHandle);
+        }
 
         //the spec returned here is live as long as the table itself is live, so don't dispose of the table and keep on using the spec
+        //and..DONT unbind the spechandle
         public static Spec TableGetSpec(Table t)
         {
+            return new Spec();
             if (Is64Bit)
                 return new Spec(t, table_get_spec64(t.Handle), false);
             //this spec should NOT be deallocated after use 
@@ -3586,10 +3607,10 @@ enum DataType {
         //not using automatic marshalling (which might lead to copying in some cases),
         //but ensuring no copying of the array data is done, by getting a pinned pointer to the array supplied by the user.
         [DllImport(L64, EntryPoint = "group_from_binary_data", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr group_from_binary_data64(IntPtr value, IntPtr bytes);
+        private static extern GroupHandle group_from_binary_data64(IntPtr value, IntPtr bytes);
 
         [DllImport(L32, EntryPoint = "group_from_binary_data", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr group_from_binary_data32(IntPtr value, IntPtr bytes);
+        private static extern GroupHandle group_from_binary_data32(IntPtr value, IntPtr bytes);
 
 
 
@@ -3602,14 +3623,14 @@ enum DataType {
             var dataPointer = handle.AddrOfPinnedObject();
             try
             {
-                IntPtr groupPtr = (Is64Bit)
+                var groupPtr = (Is64Bit)
                     ? group_from_binary_data64(dataPointer, (IntPtr) data.Length)
                     : group_from_binary_data32(dataPointer, (IntPtr) data.Length);
 
-                if (groupPtr == IntPtr.Zero)
+                if (groupPtr.IsInvalid)
                     throw new ArgumentException("GroupFromBinaryData called with invalid binary data");
 
-                group.SetHandle(groupPtr, true, false); //from binary returns a RW group
+                group.SetHandle(groupPtr, false); //from binary returns a RW group
             }
             finally
             {
@@ -6152,46 +6173,46 @@ enum DataType {
 
 
         [DllImport(L64, EntryPoint = "new_shared_group_file_defaults", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr new_shared_group_file_defaults64([MarshalAs(UnmanagedType.LPWStr)] string fileName,
+        private static extern SharedGroupHandle new_shared_group_file_defaults64([MarshalAs(UnmanagedType.LPWStr)] string fileName,
             IntPtr fileNameLen);
 
         [DllImport(L32, EntryPoint = "new_shared_group_file_defaults", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr new_shared_group_file_defaults32([MarshalAs(UnmanagedType.LPWStr)] string fileName,
+        private static extern SharedGroupHandle new_shared_group_file_defaults32([MarshalAs(UnmanagedType.LPWStr)] string fileName,
             IntPtr fileNameLen);
 
-
+        //the interop will return a SharedGroupHandle where root is null.
+        //in this case, that is quite okay as a shared group is in fact a root
+        //otherwise we would have to set root this method returned
         public static void NewSharedGroupFileDefaults(SharedGroup sharedGroup, string filename)
         {
             sharedGroup.SetHandle(Is64Bit
                 ? new_shared_group_file_defaults64(filename, (IntPtr) filename.Length)
-                : new_shared_group_file_defaults32(filename, (IntPtr) filename.Length), true,false);//shared groups are not readonly as a default
+                : new_shared_group_file_defaults32(filename, (IntPtr) filename.Length), false);//shared groups are not readonly as a default
         }
 
 
-
-
         [DllImport(L64, EntryPoint = "new_shared_group_file", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr new_shared_group_file64([MarshalAs(UnmanagedType.LPWStr)] string fileName,
+        private static extern SharedGroupHandle new_shared_group_file64([MarshalAs(UnmanagedType.LPWStr)] string fileName,
             IntPtr fileNameLen, IntPtr noCreate, IntPtr durabilityLevel);
 
         [DllImport(L32, EntryPoint = "new_shared_group_file", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr new_shared_group_file32([MarshalAs(UnmanagedType.LPWStr)] string fileName,
+        private static extern SharedGroupHandle new_shared_group_file32([MarshalAs(UnmanagedType.LPWStr)] string fileName,
             IntPtr fileNameLen, IntPtr noCreate, IntPtr durabilityLevel);
 
 
         public static void NewSharedGroupFile(SharedGroup group, string fileName, bool noCreate,
             DurabilityLevel durabilityLevel)
         {
-            IntPtr handle = Is64Bit
+            SharedGroupHandle handle = Is64Bit
                 ? new_shared_group_file64(fileName, (IntPtr) fileName.Length, BoolToIntPtr(noCreate),
                     SharedGroup.DurabilityLevelToIntPtr(durabilityLevel))
                 : new_shared_group_file32(fileName, (IntPtr) fileName.Length, BoolToIntPtr(noCreate),
                     SharedGroup.DurabilityLevelToIntPtr(durabilityLevel));
-            if (handle == IntPtr.Zero)//todo:more elaborate error codes,especially for most common kinds of IO errors
+            if (handle.IsInvalid )//todo:This test checks for zero or minus one as invalid. Do more elaborate error codes,especially for most common kinds of IO errors
             {
                 throw new  InvalidOperationException(String.Format(CultureInfo.InvariantCulture,"New SharedGroup failed filename {0} probably due to an IO error in core",fileName));
             }
-            group.SetHandle(handle, true,false);
+            group.SetHandle(handle, false);
        }
 
 
@@ -6260,18 +6281,18 @@ enum DataType {
 
 
         [DllImport(L64, EntryPoint = "shared_group_reserve", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr shared_group_reserve64(IntPtr handle,IntPtr bytesToReserve);
+        private static extern IntPtr shared_group_reserve64(SharedGroupHandle handle,IntPtr bytesToReserve);
 
         [DllImport(L32, EntryPoint = "shared_group_reserve", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr shared_group_reserve32(IntPtr handle, IntPtr bytesToReserve);
+        private static extern IntPtr shared_group_reserve32(SharedGroupHandle handle, IntPtr bytesToReserve);
 
         public static void SharedGroupReserve(SharedGroup sharedGroup,long bytesToReserve)
         {
             var errorcode =
                 (Is64Bit)
-                    ? (long) shared_group_reserve64(sharedGroup.Handle, (IntPtr) bytesToReserve)
+                    ? (long) shared_group_reserve64(sharedGroup.SharedGroupHandle, (IntPtr) bytesToReserve)
                     : //possible overflow on 32 bit reg .bytesToReserve
-                    (long) shared_group_reserve32(sharedGroup.Handle, (IntPtr) bytesToReserve);
+                    (long)shared_group_reserve32(sharedGroup.SharedGroupHandle, (IntPtr)bytesToReserve);
 
             if (errorcode < 0)
             {
@@ -6282,104 +6303,133 @@ enum DataType {
 
 
         [DllImport(L64, EntryPoint = "shared_group_has_changed", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr shared_group_has_changed64(IntPtr handle);
+        private static extern IntPtr shared_group_has_changed64(SharedGroupHandle handle);
 
         [DllImport(L32, EntryPoint = "shared_group_has_changed", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr shared_group_has_changed32(IntPtr handle);
+        private static extern IntPtr shared_group_has_changed32(SharedGroupHandle handle);
 
         public static Boolean SharedGroupHasChanged(SharedGroup sharedGroup)
         {
-            if (Is64Bit)
-                return IntPtrToBool(shared_group_has_changed64(sharedGroup.Handle));
-            return IntPtrToBool(shared_group_has_changed32(sharedGroup.Handle));
+            return IntPtrToBool(Is64Bit ? 
+                shared_group_has_changed64(sharedGroup.SharedGroupHandle) :
+                shared_group_has_changed32(sharedGroup.SharedGroupHandle)
+                );
         }
 
 
+        //this is complicated.
+        //The call to shared_group_begin_read must result in us always having two things inside a sharedgroup
+        //handle : the shared group pointer, AND the shared group transaction state set to InReadTransaction
+        //
+
         [DllImport(L64, EntryPoint = "shared_group_begin_read", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr shared_group_begin_read64(IntPtr sharedGroupPtr);
+        private static extern IntPtr shared_group_begin_read64(SharedGroupHandle sharedGroupPtr);
 
         [DllImport(L32, EntryPoint = "shared_group_begin_read", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr shared_group_begin_read32(IntPtr sharedGroupPtr);
+        private static extern IntPtr shared_group_begin_read32(SharedGroupHandle sharedGroupPtr);
 
 
+        //used by sharedgrouphandle to start transactions
+        public static IntPtr SharedGroupBeginRead(SharedGroupHandle sharedGroupHandle)
+        {            
+            if (Is64Bit)
+                return shared_group_begin_read64(sharedGroupHandle);
+            //sharedGrup.Handle used bc we call shardgroup to doa beginread
+            return  shared_group_begin_read32(sharedGroupHandle);
+        }
+
+
+        //used by shared group to start transactions - the call goes via the SharedGroupHandle to ensure we never leak the transaction        
         public static Transaction SharedGroupBeginRead(SharedGroup sharedGroup)
-        {           
-                IntPtr handle = Is64Bit
-                    ? shared_group_begin_read64(sharedGroup.Handle)
-                    : shared_group_begin_read32(sharedGroup.Handle);
-                if (handle == IntPtr.Zero)
+        {
+            var groupHandle = sharedGroup.SharedGroupHandle.StartTransaction(TransactionState.Read);//SGH.StartTransaction is atomic reg. transaction state and calling core
+            if (groupHandle.IsInvalid)
                    throw new InvalidOperationException("Cannot start Read Transaction, probably an IO error with the SharedGroup file");
-                
-                return new Transaction(handle, sharedGroup, TransactionKind.Read);            
+            return new Transaction(groupHandle, sharedGroup);            
         }
 
 
 
         [DllImport(L64, EntryPoint = "shared_group_begin_write", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr shared_group_begin_write64(IntPtr sharedGroupPtr);
+        private static extern IntPtr shared_group_begin_write64(SharedGroupHandle sharedGroupPtr);
 
         [DllImport(L32, EntryPoint = "shared_group_begin_write", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr shared_group_begin_write32(IntPtr sharedGroupPtr);
+        private static extern IntPtr shared_group_begin_write32(SharedGroupHandle sharedGroupPtr);
 
+
+
+        //used by sharedgrouphandle to start writetransactions. Group handle is returned
+        public static IntPtr SharedGroupBeginWrite(SharedGroupHandle sharedGroupHandle)
+        {
+            if (Is64Bit)
+                return shared_group_begin_write64(sharedGroupHandle);
+            //sharedGrup.Handle used bc we call shardgroup to doa beginread
+            return shared_group_begin_write32(sharedGroupHandle);
+        }
+
+
+        //used by shared group to start transactions - the call goes via the SharedGroupHandle to ensure we never leak the transaction        
         public static Transaction SharedGroupBeginWrite(SharedGroup sharedGroup)
         {
-            IntPtr handle = Is64Bit
-                ? shared_group_begin_write64(sharedGroup.Handle)
-                : shared_group_begin_write32(sharedGroup.Handle);
-            if (handle == IntPtr.Zero)
-                throw new InvalidOperationException(
-                    "Cannot start Write Transaction, probably an IO error with the SharedGroup file");
-
-            return new Transaction(handle, sharedGroup, TransactionKind.Write);
+            var groupHandle = sharedGroup.SharedGroupHandle.StartTransaction(TransactionState.Write);
+            if (groupHandle.IsInvalid)
+                throw new InvalidOperationException("Cannot start Write Transaction, probably an IO error with the SharedGroup file");
+            return new Transaction(groupHandle, sharedGroup);
         }
 
         //a few uncovered lines okay, it is hard to get commit to throw
         [DllImport(L64, EntryPoint = "shared_group_commit", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr shared_group_commit64(IntPtr handle);
+        private static extern IntPtr shared_group_commit64(SharedGroupHandle handle);
 
         [DllImport(L32, EntryPoint = "shared_group_commit", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr shared_group_commit32(IntPtr handle);
+        private static extern IntPtr shared_group_commit32(SharedGroupHandle handle);
 
-        public static void SharedGroupCommit(SharedGroup sharedGroup)
+        public static void SharedGroupCommit(SharedGroupHandle sharedGroupHandle)
         {
             IntPtr res = (Is64Bit)
-                ? shared_group_commit64(sharedGroup.Handle)
-                : shared_group_commit32(sharedGroup.Handle);
+                ? shared_group_commit64(sharedGroupHandle)
+                : shared_group_commit32(sharedGroupHandle);
 
-            if (res != IntPtr.Zero)            
-                //shared_group_commit threw an exception in core
-                //currently we just assume it was an IO error, but could be anything                
-                throw new InvalidOperationException("sharedGroup commit exception in core. probably an IO error with the group file");            
+            sharedGroupHandle.State = TransactionState.Ready;//always set state to Ready. Don't try to commit several times
+            if (res == IntPtr.Zero) return;//success
+
+            //shared_group_commit threw an exception in core that was caught in the c++ dll who then returned non-zero
+            //currently we just assume it was an IO error, but could be anything
+            //As we set the SG to invalid we lose forever the connection to c++
+            sharedGroupHandle.SetHandleAsInvalid();
+            throw new InvalidOperationException("sharedGroup commit exception in core. probably an IO error with the group file");
         }
 
 
+        //todo:add return value to rollback if c++ threw an exception
         [DllImport(L64, EntryPoint = "shared_group_rollback", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void shared_group_rollback64(IntPtr handle);
+        private static extern void shared_group_rollback64(SharedGroupHandle handle);
 
         [DllImport(L32, EntryPoint = "shared_group_rollback", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void shared_group_rollback32(IntPtr handle);
+        private static extern void shared_group_rollback32(SharedGroupHandle handle);
 
-        public static void SharedGroupRollback(SharedGroup sharedGroup)
+        public static void SharedGroupRollback(SharedGroupHandle sharedGroupHandle)
         {
             if (Is64Bit)
-                shared_group_rollback64(sharedGroup.Handle);
+                shared_group_rollback64(sharedGroupHandle);
             else
-                shared_group_rollback32(sharedGroup.Handle);
+                shared_group_rollback32(sharedGroupHandle);
+            sharedGroupHandle.State = TransactionState.Ready;
         }
 
         [DllImport(L64, EntryPoint = "shared_group_end_read", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void shared_group_end_read64(IntPtr handle);
+        private static extern void shared_group_end_read64(SharedGroupHandle handle);
 
         [DllImport(L32, EntryPoint = "shared_group_end_read", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void shared_group_end_read32(IntPtr handle);
+        private static extern void shared_group_end_read32(SharedGroupHandle handle);
 
-        public static void SharedGroupEndRead(SharedGroup sharedGroup)
+        public static void SharedGroupEndRead(SharedGroupHandle sharedGroupHandle)
         {
             if (Is64Bit)
-                shared_group_end_read64(sharedGroup.Handle);
+                shared_group_end_read64(sharedGroupHandle);
             else
-                shared_group_end_read32(sharedGroup.Handle);
+                shared_group_end_read32(sharedGroupHandle);
+            sharedGroupHandle.State=TransactionState.Ready;            
         }
-
     }
 }

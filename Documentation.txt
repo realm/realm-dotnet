@@ -1,0 +1,22 @@
+High level Binding documentation.
+
+Installing all prerequesites for development is described in the section prereqesites.
+we expect you to have installed all prerequesites in the rest of the documentation, so go get those things installed now..
+
+How to Build is described in Readme.MD
+
+How to test is described in Readme.MD
+
+How to add a unit test case is described in the section Add A Unit Test Case.
+
+How to add a new public method is described in the section Add New Public Method.
+
+How to add a new public method that calls into c++ core is described in the section Add New Functionality
+
+How to add a new wrapper for a new core class is described in the secton Adding a New Wrapper
+
+How to add a new .net version is described in the section Adding a new .net version
+
+How to do a coverage test is described in the section Coverage Testing
+
+How to do static checking is described in the Static Checking section.

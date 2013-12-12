@@ -4,8 +4,9 @@ using System.Diagnostics;
 using System.Globalization;
 
 //this class contains code that handles the binding and disposing logic for C# classes that wrap tightdb classes
-//a C# class will only have to implement the actual acquiring and disposing of the c++ handle, the rest of the functionality is 
-//handled in here
+//We use descendants of CriticalHandle to store the c++ pointer or reference.
+//The Handled class contains generic wrapper stuff that is common for all C# tightdb classes
+
 namespace TightDbCSharp
 {
     /// <summary>
@@ -16,101 +17,43 @@ namespace TightDbCSharp
         //following the dispose pattern discussed here http://dave-black.blogspot.dk/2011/03/how-do-you-properly-implement.html
         //a good explanation can be found here http://stackoverflow.com/questions/538060/proper-use-of-the-idisposable-interface
         //notes reg. exceptions in constructors here http://msdn.microsoft.com/en-us/vstudio/hh184269.aspx
-        /// <summary>
-        /// This method can be overwritten and should free or release any c++ resources attached to this object
-        /// </summary>
-        protected abstract void ReleaseHandle();//overwrite this. This method will be called when c++ can free the object associated with the handle
-        /// <summary>
-        /// Contains the c++ pointer to a c++ object - used as a handle  when calling c++ functions
-        /// </summary>
-        public IntPtr Handle { get;internal set; }  //handle (in fact a pointer) to a c++ hosted object. We must unbind/delete this handle if we have acquired it
-        private bool HandleInUse { get; set; } //defaults to false.  
-        private bool HandleHasBeenUsed { get; set; } //defaults to false. If this is true, the table handle has been allocated in the lifetime of this object
-        private bool NotifyCppWhenDisposing { get; set; }//if false, the table handle do not need to be disposed of, on the c++ side
+        //please also read the lengthy discusson on dispose, wrappers, handles etc. in ConcurrencyNotes.txt
+        //A lot of the lowlevel work is now done in the TightDbHandle class and its descendants - these classes are used as handles, and 
+        //guarentees for instance that the finalizer will not finalize a TableHandle before all ordinary objects have been finalized.
+        //The Handled class is simply a collection of general stuff that glues the C# classes we expose users to, with the C# classes that
+        //are responsible for handle management
+        //the handled class itself does not have a finalizer, and its main objective is to call unbind when it is being disposed in the user thread
+        //as handled has no finalizer, the TightDbHandle classes have gotten enough info for them to finalize c++ stuff themselves.
+        //this ensures faster garbage collection of classes derived from Handled - they do not have to go to the finalizer queue
+
+
+        //private bool HandleInUse { get; set; } //defaults to false.
+        //private bool HandleHasBeenUsed { get; set; } //defaults to false. If this is true, the table handle has been allocated in the lifetime of this object
+
+
         /// <summary>
         /// True if the c++ resources have been released
+        /// True if dispose have been called one way or the other
         /// </summary>
-        public bool IsDisposed { get; private set; }
-
-
-        //contains a list of handles that should be unbound
-        
-        private static readonly List<IntPtr> UnbindList = new List<IntPtr>();
-        private static readonly List<Type> UnbindTypeList = new List<Type>();
-
-        private void AddToUnbindList()
+        public bool IsDisposed
         {
-            lock (UnbindList)//everything after this is serialized with any other calls that
-                //do a lock (_unbind_list)
-            {
-                UnbindList.Add(Handle);
-                UnbindTypeList.Add(GetType());
-            }
+            get { return Handle.IsClosed; }
         }
 
-       // public static int LastUnbindListSize;
-       // public static int HighestUnbindListSize;
-
-        
-        private void UnbindUnbindList()
-        {
-            if (UnbindList.Count == 0)
-                //this read of Count is intentionally not locked. due to performance considerations
-                //we only lock if count is not zero
-                //If we get a bad/wrong value out from count
-                //we might exit but that is not a problem, we'll get here again some other time
-                //or we migt go on, and then inside the lock, the last=unbindList.Count will
-                //read the last value correctly and potentially not loop if last was really 0
-                //and we read it as something else - so also no harm done
-            {
-                return;
-            }
-
-            
-            lock (UnbindList)
-            {
-                Debug.Assert(UnbindList.Count == UnbindTypeList.Count); //these lists should always be in sync
-                var last = UnbindList.Count - 1;
-                //LastUnbindListSize = last;
-                //if (last > HighestUnbindListSize)
-               // {
-               //     HighestUnbindListSize = last;
-               // }
-                while (last > -1)
-                {
-                    var t = UnbindTypeList[last];
-                    var h = UnbindList[last];
-                    
-                    --last;
-                    if (t == typeof (Table))
-                    {
-                        UnsafeNativeMethods.TableUnbind(h);
-                        
-                    }else 
-                    if (t == typeof (Query))
-                    {
-                        UnsafeNativeMethods.QueryDelete(h);
-                        
-                    } else
-                    if (t == typeof (SharedGroup))
-                    {
-                        UnsafeNativeMethods.QueryDelete(h);
-                        
-                    }else
-                    if (t == typeof(TableView))
-                    {
-                        UnsafeNativeMethods.TableViewUnbind(h);
-                        
-                    }else
-                    if (t == typeof(Group))
-                    {
-                        UnsafeNativeMethods.GroupDelete(h);                        
-                    }
-                }
-                UnbindList.Clear();
-                UnbindTypeList.Clear();
-            }
+        /// <summary>
+        /// This method returns true if the handle is not invalid, that is - if the handle is supposed to point to
+        /// Something in core That something might itself be of invalid in core - this method returns the state of our CriticalHandle
+        /// If this method returns false, the criticalhandle has probably never been set correctly, or has been forcefully set to invalid
+        /// for some reason
+        /// </summary>
+        protected bool HandleIsValid {
+            get { return !Handle.IsInvalid; }
         }
+
+        internal TightDbHandle Handle;//will store the c++ handle for this class. The actual type is specific for what is wrapped,
+        //e.g. a SharedGroup will have a SharedGroupHandle stored here, and will have a SharedGroupHandle property that returns this hande
+        //as SharedGroupHandle (because as is faster than a typecast)
+
 
         /// <summary>
         /// Defaults to false. If true, this query / table / tableview / subtable / group / sharedGroup is read only and it is illegal
@@ -123,61 +66,14 @@ namespace TightDbCSharp
         {
         }
 
-        //if ToUnbindList is true we should put our handle into the unbind list if we shoulve been unbound
-        //if ToUnbindList is false, go on and unbind ourselves
-        //ToUnbindList is true if we are getting called from the finalizer thread (if we have been GC'ed bc the
-        //user was sloppy and forgot a using clause
-        private void Unbind(bool toUnbindList)
-        {
-            if (HandleInUse)
-            {
-                if (NotifyCppWhenDisposing)
-                {
-                    //string myId = ObjectIdentification();
-                  //  Console.WriteLine("Handle being released by calling cpp :{0}", myId);
-                    if (toUnbindList)
-                        AddToUnbindList();
-                    else
-                        ReleaseHandle();
-                    //  Console.WriteLine("Handle released successfully :{0}", myId);
-                    //Console.ReadKey();
-                    //  Console.WriteLine("Continuing...");
-                }
-                //                else
-                // {
-                //      Console.WriteLine("Handle being released silently :{0}", ObjectIdentification());
-                //  }
-                HandleInUse = false;
-            }
-            else
-            {
-                //  If you simply create a table object and then deallocate it again without ever acquiring a table handle
-                //  then no exception is raised. However, if unbind is called, and there once was a table handle,
-                //  it is assumed an error situation has occoured (too many unbind calls) and an exception is raised
-                if (HandleHasBeenUsed)
-                {
-#if DEBUGDISPOSE
-                    throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture,
-                        "unbind called on {0} with no handle active anymore", ObjectIdentification()));
-#endif
-                }
-            }
-        }
 
        
         //store the pointer to the c++ class, and do neccessary housekeeping
-        internal void SetHandle(IntPtr newHandle, bool shouldBeDisposed,bool isReadOnly)
+        //now, shouldbedisposed should already have been set atomically inside the newHandle class
+        internal void SetHandle(TightDbHandle newHandle,bool isReadOnly)
         {            
-            //Console.WriteLine("Handle being set to newhandle:{0}h shouldBeDisposed:{1} ",newHandle.ToString("X"),shouldBeDisposed);
-            if (HandleInUse)
-                throw new ArgumentException(String.Format(CultureInfo.InvariantCulture,"SetHandle called on wrapper that already has acquired a handle :{0}",ToString()));  
-
             ReadOnly = isReadOnly;
             Handle = newHandle;
-            HandleInUse = true;
-            HandleHasBeenUsed = true;
-            NotifyCppWhenDisposing = shouldBeDisposed;
-  //          Console.WriteLine("Handle has been set:{0}  shouldbedisposed:{1}" , ObjectIdentification(),shouldBeDisposed);
         }
 
         /// <summary>
@@ -207,55 +103,23 @@ namespace TightDbCSharp
         public void Dispose()
         {
             Dispose(true);
-            GC.SuppressFinalize(this);//tell finalizer it does not have to call dispose or dispose of things -we have done that already
+            GC.SuppressFinalize(this);//tell finalizer thread/GC it does not have to call finalize - we have already disposed of unmanaged resources
+            //above is added in case someone inherits from a handled resource and implements a finalizer - the binding does not need the call, as the
+            //binding does not introduce finalizers in any C# wrapper classes (only in the Handle classes via the finalizer in CriticalHandle
+            //if we decide to make the user facing tightdb classes (table,tableview,group, sharedgroup etc. final, then we can save above call)
+            //todo:Measure by test and by code inspection any performance gains from not calling SuppressFinalize(this) and making the classes final
         }
 
-        //if called from GC  we should not dispose managed as that is unsafe, the bool tells us how we were called
-        //true means we were called by the user directly or indirectly via Dispose()
-        //false means we were called by the finalizer thread
+        //using a very simple dispose pattern as we will just call on to Handle.Dispose in both a finalizing and in a disposing situation
+        //leaving this method in here so that classes derived from this one can implement a finalizer and have that finalizer call dispose(false)
         private void Dispose(bool disposeManagedToo)  //was protected virtual earlier on, can be set back to protected virtual if the need arises
         {
             if (!IsDisposed)
             {
-                if (disposeManagedToo)
-                {
-                    //dispose of c++ stuff. We are called in the user thread so safe to dispose stuff
-                    UnbindUnbindList();//First unbind any c++ handles that have been enqueued by finalizer thread
-                    Unbind(false);//unbind this specific object too
-                }
-                else
-                {
-                    Unbind(true);//we are being called by the finalizer thread. It is NOT safe to call
-                    //c++ as we could be running concurrently with user threads without the user having
-                    //any control over this
-                    //so add our handle to the UnbindList, and then lets some call from the user thread finish
-                    //the c++ job later (any handled dispose call and any handled new call will try to clear the list)
-                }
-
-                //dispose any unmanaged stuff we have
-                IsDisposed = true;
+                //no matter if we are being called from a dispose in a user thread, or from a finalizer, we should
+                //ask Handle to dispose of itself (unbind)
+                Handle.Dispose();
             }
         }
-
-        /// <summary>
-        /// Allows an object to try to free resources and perform other cleanup operations before it is reclaimed by garbage collection.
-        ///when this is called by the GC, unmanaged stuff might not have been freed, and managed stuff could be in the process of being
-        ///freed, so only get rid of unmanaged stuff
-        /// </summary>
-        ~Handled()
-        {
-            try
-            {
-                Dispose(false);
-            }
-// ReSharper disable RedundantEmptyFinallyBlock
-            finally
-            {
-                // Only use this line if  starts to inherit from some other class that itself implements dispose
-                //                base.Dispose();
-            }
-// ReSharper restore RedundantEmptyFinallyBlock
-        }
-
     }
 }

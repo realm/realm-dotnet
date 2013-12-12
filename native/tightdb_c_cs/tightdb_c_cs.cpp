@@ -1771,7 +1771,6 @@ TIGHTDB_C_CS_API size_t shared_group_reserve(SharedGroup* shared_group_ptr, size
 }
 
 
-
 TIGHTDB_C_CS_API size_t shared_group_has_changed(SharedGroup* shared_group_ptr) 
 {
     return bool_to_size_t(shared_group_ptr->has_changed());

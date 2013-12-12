@@ -46,23 +46,6 @@ namespace TightDbCSharp
             UnsafeNativeMethods.GroupNew(this,readOnly); //calls sethandle itself            
         }
 
-        /*
-        //calld by sharedgroup to get a transaction:group class without the handle set
-        //because the handle is then set to the group that the c++ sharedgroup returns
-        //in the transaction constructor.
-        //if acquirehandle is false, handle will be set to GroupHandle
-        internal Group(Boolean acquirehandle,Boolean readOnly)
-        {
-            if (acquirehandle)
-            {
-                AcquireHandle(readOnly);
-            }
-            else
-            {
-                
-            }
-        }
-        */
 
 
         /// <summary>
@@ -206,9 +189,7 @@ namespace TightDbCSharp
         //group.is_attached is not implemented due to reasons stated above
 
 
-        //todo:implement IsEmpty (map to group->is_empty())
 
-        //todo:implement Size (map to group->size())
 
         //todo:implement get_table_name(std::size_t table_ndx)
 
@@ -223,6 +204,10 @@ namespace TightDbCSharp
         }
 
 
+        internal GroupHandle GroupHandle
+        {
+            get { return Handle as GroupHandle; }
+        }
 
         /// <summary>
         /// use this method to get a table that already exists in the group
@@ -234,7 +219,7 @@ namespace TightDbCSharp
         /// <exception cref="InvalidEnumArgumentException">Thrown if no table exists with that name</exception>
         public Table GetTable(string tableName)
         {
-            if (HasTable(tableName)) {
+            if (HasTable(tableName)) {//todo:the HasTable check might be moved to c++ to save an interop roundtrip 
             Table fromGroup = UnsafeNativeMethods.GroupGetTable(this, tableName);
 //            fromGroup.HasColumns = fromGroup.ColumnCount > 0;//will set HasColumns true if there are columns, even if they are uncomitted as c++ reports uncomitted as well as comitted
                 return fromGroup;                            //therefore, the user is expected to call updatefromspec on the same table wrapper that he used to do spec.addcolumn
@@ -262,7 +247,9 @@ namespace TightDbCSharp
         ///  use this method to create new tables in the group
         ///  either a new table with no columns yet is returned,
         ///  or a table matching the parameter specification is returned.
-        ///   Do no call if the table name is already in use
+        ///  (Known Bug:)
+        ///  Do not take the same table out multiple times A, and B from the same group, and then use the tables interleaved,
+        ///  Modifying table A will not invalidate TableViews connected to Table B
         /// </summary>
         /// <param name="tableName">Name of new table in group</param>
         /// <param name="schema">Column specification of new table</param>
@@ -336,27 +323,9 @@ namespace TightDbCSharp
         /// </summary>
         public Boolean Invalid { get; internal set; }
 
-        //todo: implement group.commit
-
-        //todo:implement group.to_string
-
-        //todo:implement group operator == (or a method, equals)
-
-        //todo:implement group operator != (or a method, notequals)
-
         //The debug only methods Verify, print, print_free etc. are not implemented
         //in the binding a the time being
 
-        /// <summary>
-        /// Tells c++ that this Group should be disposed of,
-        /// remove the accessor object in c++ memory
-        /// *do not* subclass Group and call this method - the database could become corrupted
-        /// </summary>
-        protected override void ReleaseHandle()
-        {            
-            UnsafeNativeMethods.GroupDelete(Handle);//was this before but when called via the destructor, this got freed bf callee could set handle to zero
-            Handle = IntPtr.Zero;
-        }
 
     
 

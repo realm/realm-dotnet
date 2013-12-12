@@ -51,14 +51,13 @@ namespace TightDbCSharp
                 throw;
             }
         }
-
         
         //This is used when we want to create a table and we already have the c++ handle that the table should use.  used by GetSubTable
-        internal Table(IntPtr tableHandle,bool shouldbedisposed,bool isReadOnly)//not 100% sure IsReadOnly should be a parameter here
+        internal Table(TableHandle tableHandle,bool isReadOnly)//not 100% sure IsReadOnly should be a parameter here
         {
             try
             {
-                SetHandle(tableHandle, shouldbedisposed,isReadOnly);
+                SetHandle(tableHandle, isReadOnly);
             }
             catch (Exception)
             {
@@ -103,9 +102,12 @@ namespace TightDbCSharp
         /// <returns>True if The Table is usable</returns>
         public bool IsValid()
         {
-            return UnsafeNativeMethods.TableIsAttached(this);
+            //todo:we might want to test HandleIsValid here. I have found no way that we could ever have a Table with an invalid handle,
+            //so until i find a way that could happen i skip the test due to performance considerations
+            //TightdbHandle can only go invalid if the handle creation succeeds, but the call to core returns a 0 or a -1 instead of a handle
+            //and if *that* happens, we throw an exception, so the Table object is not even instantiated
+            return UnsafeNativeMethods.TableIsAttached(this);//the first part ensures that the second part is only called on a valid handle
         }
-
 
         /// <summary>
         /// A Table with a shared spec is a table that is inside a row of another table
@@ -157,7 +159,7 @@ namespace TightDbCSharp
         public TableRow Last()
         {
             ValidateIsValid();
-            long s = Size;
+            var s = Size;
             if (s > 0)
             {
                 return RowForIndexNoCheck(s - 1);
@@ -397,8 +399,7 @@ namespace TightDbCSharp
 
         private void TableNew(bool isReadOnly)
         {
-           UnsafeNativeMethods.TableNew(this,isReadOnly);
-        
+           UnsafeNativeMethods.TableNew(this,isReadOnly);        
         }
 
         /// <summary>
@@ -430,18 +431,6 @@ namespace TightDbCSharp
 
 
         
-        /// <summary>
-        /// this one is called from Handled.cs when we have to release the table handle.
-        /// </summary>
-        protected override void ReleaseHandle()
-        {
-            //string tableid = ObjectIdentification();
-//            Console.WriteLine("unbinding: {0}",tableid);
-            UnsafeNativeMethods.TableUnbind(Handle);           
-            Handle = IntPtr.Zero;
-//            Console.WriteLine("Done unbinding: {0}", tableid);
-        }
-
         internal override Spec GetSpec()
         {
             return UnsafeNativeMethods.TableGetSpec(this); 

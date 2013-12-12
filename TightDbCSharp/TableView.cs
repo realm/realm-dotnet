@@ -185,17 +185,6 @@ namespace TightDbCSharp
             UnsafeNativeMethods.TableViewClear(this);
         }
 
-        /// <summary>
-        /// This method will ask c++ to dispose of a tableView object.
-        /// this method is for internal use only
-        /// it will automatically be called when the TableView object is disposed (or garbage collected)
-        /// In fact, you should not at all it on your own
-        /// </summary>
-        protected override void ReleaseHandle()
-        {
-            UnsafeNativeMethods.TableViewUnbind(Handle);
-            Handle = IntPtr.Zero;
-        }
 
         internal override DateTime GetMixedDateTimeNoCheck(long columnIndex, long rowIndex)
         {

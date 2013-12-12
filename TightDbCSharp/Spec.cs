@@ -49,10 +49,10 @@ namespace TightDbCSharp
     public class Spec : Handled 
     {
         //not accessible by source not in te TightDBCSharp namespace
-        internal Spec(Table ownerRootTable,IntPtr handle, bool shouldbedisposed)
+        internal Spec(Table ownerRootTable,SpecHandle handle)
         {
             OwnerRootTable = ownerRootTable;
-            SetHandle(handle, shouldbedisposed,ownerRootTable.ReadOnly);
+            SetHandle(handle, ownerRootTable.ReadOnly);
             //BUG: If this spec is a spec for a subtable on a read write table then 
             //this spec will be set as not readonly even though it actually is
             //todo:unit test that showcases this
@@ -88,7 +88,7 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.SpecEqualsSpec(spec.OwnerRootTable, OwnerRootTable);
         }
 
-
+        
         //this is pretty slow due to two interop calls, but still faster than if all field names were used in the hash.
         //a spec will have a hash consisting of the column count XOR'ed with the string name of the last column in the table
         public override int GetHashCode()
@@ -103,6 +103,11 @@ namespace TightDbCSharp
         }
         */
 
+        internal SpecHandle SpecHandle
+        {
+            get { return Handle as SpecHandle; }
+        }
+
 
         /// <summary>
         /// Column count for this table specification.
@@ -113,21 +118,6 @@ namespace TightDbCSharp
             get { return UnsafeNativeMethods.SpecGetColumnCount(this); }
         }
 
-        //if false, the spechandle do not need to be disposed of, on the c++ side
-        //wether to actually dispose or not is handled in tightdbcalls.cs so the spec object should act as if it should always dispose of itself
-
- 
-        //this method is for internal use only
-        //it will automatically be called when the spec object is disposed
-        //In fact, you should not at all it on your own
-
-        /// <summary>
-        /// Do not use when subclassing spec. Internal stuff
-        /// </summary>
-        protected override void ReleaseHandle()
-        {
-            UnsafeNativeMethods.SpecDeallocate(this);
-        }
 
 
 
@@ -137,7 +127,8 @@ namespace TightDbCSharp
         /// Get the spec for the subtable at columnIndex.
         /// columnIndex must point to a DataType.Table column.
         /// if the column at  columnIndex is mixed or mixed table,
-        /// and exception is thrown
+        /// and exception is thrown.
+        /// This spec should be disposed
         /// </summary>
         /// <param name="columnIndex">Zero based column index of a DataType.Table column</param>
         /// <returns>Spec for the specified subtable</returns>
