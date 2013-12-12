@@ -82,7 +82,7 @@ namespace TightDbCSharp
 
         public override string ToString()
         {
-            return base.ToString() + String.Format(CultureInfo.InvariantCulture,": {0:X8}", (long)Handle);//long typecast bc long can be formatted, IntPtr cannot
+            return base.ToString() + Handle;//calls Handle.ToString()
         }
 
         internal void ValidateReadWrite()
@@ -112,7 +112,11 @@ namespace TightDbCSharp
 
         //using a very simple dispose pattern as we will just call on to Handle.Dispose in both a finalizing and in a disposing situation
         //leaving this method in here so that classes derived from this one can implement a finalizer and have that finalizer call dispose(false)
-        private void Dispose(bool disposeManagedToo)  //was protected virtual earlier on, can be set back to protected virtual if the need arises
+        /// <summary>
+        /// Override this if you have managed stuff that needs to be closed down when dispose is called
+        /// </summary>
+        /// <param name="disposing"></param>
+        protected virtual void Dispose(bool disposing)  //was protected virtual earlier on, can be set back to protected virtual if the need arises
         {
             if (!IsDisposed)
             {

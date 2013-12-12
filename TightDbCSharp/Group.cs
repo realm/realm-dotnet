@@ -219,9 +219,9 @@ namespace TightDbCSharp
         /// <exception cref="InvalidEnumArgumentException">Thrown if no table exists with that name</exception>
         public Table GetTable(string tableName)
         {
-            if (HasTable(tableName)) {//todo:the HasTable check might be moved to c++ to save an interop roundtrip 
-            Table fromGroup = UnsafeNativeMethods.GroupGetTable(this, tableName);
-//            fromGroup.HasColumns = fromGroup.ColumnCount > 0;//will set HasColumns true if there are columns, even if they are uncomitted as c++ reports uncomitted as well as comitted
+            if (HasTable(tableName)) 
+            {//todo:the HasTable check might be moved to c++ to save an interop roundtrip 
+                var fromGroup = new Table(GroupHandle.GetTable(tableName), ReadOnly);//the first parameter will evaluate to a finalizeable TableHandle
                 return fromGroup;                            //therefore, the user is expected to call updatefromspec on the same table wrapper that he used to do spec.addcolumn
             }
             throw new InvalidEnumArgumentException(String.Format(CultureInfo.InvariantCulture,"Group.GetTable called with a table name that does not exist {0}",tableName));
@@ -240,8 +240,9 @@ namespace TightDbCSharp
             {
                 throw new ArgumentOutOfRangeException("tableIndex",String.Format(CultureInfo.InvariantCulture,"Group.GetTable called with an index ({0}) that is out of range :{1}",tableIndex,ToString()));
             }
-            return UnsafeNativeMethods.GroupGetTable(this, tableIndex);
+            return new Table(GroupHandle.GetTable(tableIndex), ReadOnly);
         }
+
 
         /// <summary>
         ///  use this method to create new tables in the group

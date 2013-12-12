@@ -620,20 +620,26 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableViewGetColumnType(this, columnIndex);
         }
        
-        internal TableView(Table underlyingTableBeing, IntPtr tableViewHandle,bool shouldbedisposed)
+        //do not call with a null tableViewHandle
+        internal TableView(Table underlyingTableBeingViewed, TableViewHandle tableViewHandle)
         {
             try
             {
-                UnderlyingTable = underlyingTableBeing;
-                Version = underlyingTableBeing.Version;
+                UnderlyingTable = underlyingTableBeingViewed;
+                Version = underlyingTableBeingViewed.Version;
                     //this tableview should invalidate itself if that version changes
-                SetHandle(tableViewHandle, shouldbedisposed,UnderlyingTable.ReadOnly);
+                SetHandle(tableViewHandle,UnderlyingTable.ReadOnly);
             }
             catch (Exception)
             {
                 Dispose();
                 throw;
             }
+        }
+
+
+        internal TableViewHandle TableViewHandle {
+            get { return Handle as TableViewHandle; }
         }
 
         internal override long GetSize()

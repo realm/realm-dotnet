@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Microsoft.Win32.SafeHandles;
 
 //Replaces IntPtr as a handle to a c++ tightdb class
@@ -16,6 +17,16 @@ using Microsoft.Win32.SafeHandles;
 //user perspective, the live ones are acessed in a serialized way)
 //however, in that case (say same table taken out of a shared group 10 times) the last 9 tables are refcounted in core, so them being refcounted down
 //should not affect the tenth table being accessed concurrenlty at the same time
+
+
+//according to .net sourcecode we have a guarentee that a CriticalHandle will not get finalized while it is used in an interop call
+
+/*
+ * 3) GC.KeepAlive behavior - P/Invoke vs. finalizer thread ---- (HandleRef)
+ * 4) Enforcement of the above via the type system - Don't use IntPtr anymore.
+ *  
+ * see http://reflector.webtropy.com/default.aspx/Dotnetfx_Win7_3@5@1/Dotnetfx_Win7_3@5@1/3@5@1/DEVDIV/depot/DevDiv/releases/whidbey/NetFXspW7/ndp/clr/src/BCL/System/Runtime/InteropServices/CriticalHandle@cs/1/CriticalHandle@cs
+ */
 namespace TightDbCSharp
 {
     internal abstract class TightDbHandle : CriticalHandleZeroOrMinusOneIsInvalid
@@ -64,7 +75,7 @@ namespace TightDbCSharp
 
         private readonly Object _unbindListLock = new object(); //used to serialize calls to unbind between finalizer threads
 
-        private readonly List<TightDbHandle> _unbindList = new List<TightDbHandle>();//todo:we could save time by not instantiating the list 
+        private readonly List<TightDbHandle> _unbindList ;//set only once, to a list if we are a root. do we have all the neccessary checks?
             //list of child handles that should be unbound as soon as possible by a user thread
 
         //this object is set to the root if it is a child, or null
@@ -77,19 +88,24 @@ namespace TightDbCSharp
         //for instance a Group from a transaction have the shared group as root, a table from such a group have
         //the shared group as root, and a subtable from the table also have the shared group as root
         //in general, you can pass on root when You are not root Yourself, otherwise pass on null
-        protected TightDbHandle(TightDbHandle root)
+        internal TightDbHandle(TightDbHandle root)
         {
             if (root == null)//if we are a root object, we need a list for our children and Root is already null
             {
-                _unbindList=new List<TightDbHandle>();
+                _unbindList = GetUnbindList();
             }
             else
               Root = root;
         }
 
-        protected TightDbHandle()
+        private static List<TightDbHandle> GetUnbindList()
         {
-            _unbindList = new List<TightDbHandle>();//if we are a root object, we need a list for our children
+            return new List<TightDbHandle>();//todo:experiment with what might be a decent initial list size
+        }
+
+        protected  TightDbHandle()
+        {
+            _unbindList = GetUnbindList();//we are a root object, we need a list for our children
         }
 
         //called automatically but only once from criticalhandle when this handle is disposing or finalizing
@@ -155,6 +171,10 @@ namespace TightDbCSharp
             base.SetHandle(somehandle);
         }
 
+        public override string ToString()
+        {
+            return base.ToString() + String.Format(CultureInfo.InvariantCulture, ": {0:X8}", (long) handle);
+        }       
 
         /// <summary>
         /// Called by children to this root, when they would like to 

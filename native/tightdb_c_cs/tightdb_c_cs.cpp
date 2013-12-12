@@ -1780,49 +1780,64 @@ TIGHTDB_C_CS_API size_t shared_group_has_changed(SharedGroup* shared_group_ptr)
 TIGHTDB_C_CS_API const Group* shared_group_begin_read(SharedGroup* shared_group_ptr)
 {
 	try {
-       return &shared_group_ptr->begin_read();    
-	}
-	catch (...) {
-		return NULL;
-	}
+    return &shared_group_ptr->begin_read();    
+   }
+    catch (...) {
+    return NULL;
+   }
 }
 
 //binding must ensure that the returned group is never modified
-TIGHTDB_C_CS_API void shared_group_end_read(SharedGroup* shared_group_ptr)
+//although we return -1 on exceptions, core promises to never throw any
+TIGHTDB_C_CS_API size_t shared_group_end_read(SharedGroup* shared_group_ptr)
 {
-    shared_group_ptr->end_read();
+   try {
+      shared_group_ptr->end_read();
+      return 0;
+   } 
+    catch (...){
+    return -1;
+    }
 }
 
 //binding must ensure that the returned group is never modified
 TIGHTDB_C_CS_API const Group* shared_group_begin_write(SharedGroup* shared_group_ptr)
 {
-	try {
-       return &shared_group_ptr->begin_write();    
-	}
-	catch (...) {
-		return NULL;
-	}
+   try {
+      return &shared_group_ptr->begin_write();    
+    }
+   catch (...) {
+   return NULL;
+   }
 }
 
 //we cannot let exceptions flow back to C# because that only works with windows and .net
 //- mono runtime crashes itself if we let an exception throw back to the c# caller
 TIGHTDB_C_CS_API size_t shared_group_commit(SharedGroup* shared_group_ptr)
 {
-	try {
+   try {
       shared_group_ptr->commit();
-	  return 0;
-	} 
-	catch (...)
-	{
-		return 1;//indicates that something went wrong. Expand with more error codes later...
-	}
+      return 0;
+    } 
+    catch (...)
+    {
+      return -1;//indicates that something went wrong. Expand with more error codes later...
+   }
 }
 
 
-//binding must ensure that the returned group is never modified
-TIGHTDB_C_CS_API void shared_group_rollback(SharedGroup* shared_group_ptr)
+//currently, we don't transmit exception error codes back to the binding
+//todo:return more specific error codes than just -1
+//however, rollback() is NOEXCEPT so theretically it should never throw any errors at us
+TIGHTDB_C_CS_API size_t shared_group_rollback(SharedGroup* shared_group_ptr)
 {
-    shared_group_ptr->rollback();
+	try {
+      shared_group_ptr->rollback();
+	  return 0;//indicate success
+	}
+	catch(...){
+		return -1;//something impossible happened
+	}
 }
 
 

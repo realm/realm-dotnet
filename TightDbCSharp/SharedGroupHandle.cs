@@ -1,4 +1,7 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Globalization;
+using System.Resources;
+using System.Runtime.CompilerServices;
 
 namespace TightDbCSharp
 {
@@ -13,23 +16,90 @@ namespace TightDbCSharp
 
         protected override void Unbind()
         {
-            EndTransaction();    //stop any leaked ongoing transaction
+            AbortTransaction();    //stop any leaked ongoing transaction. remove this when core do this automatically
             UnsafeNativeMethods.SharedGroupDelete(handle);            
         }
 
-        //will end a transaction if one is ongoingc# 
-        private void EndTransaction()
+        //atomic change of transaction state from read to ready
+        public  void SharedGroupCommit()
+        {
+            IntPtr res;
+            RuntimeHelpers.PrepareConstrainedRegions();
+            try { }
+            finally//we have a guarentee that belwo block will run atomically as far as out of band exceptions are concerned
+            {
+                try
+                {
+                    res = UnsafeNativeMethods.SharedGroupCommit(this);
+                }
+                finally
+                {
+                  State = TransactionState.Ready;//always set state to Ready. Don't try to commit several times
+                }
+            }
+
+            if (res == IntPtr.Zero)//Zero indicates success
+                return;
+
+            //shared_group_commit threw an exception in core that was caught in the c++ dll who then returned non-zero
+            //currently we just assume it was an IO error, but could be anything
+            //As we set the SG to invalid we lose forever the connection to c++           
+            SetHandleAsInvalid();            
+            throw new InvalidOperationException("sharedGroup commit exception in core. probably an IO error with the SharedGroup file");
+        }
+
+        //will end a transaction if one is ongoing will soon change to calling inside when commits get atomical
+        private void AbortTransaction()
         {
             if (State == TransactionState.Read)
             {
-                UnsafeNativeMethods.SharedGroupEndRead(this);
+                SharedGroupEndRead();
             }
-
             if (State == TransactionState.Write)
             {
-                UnsafeNativeMethods.SharedGroupRollback(this);
+                SharedGroupRollBack();
             }
         }
+
+        //atomically call rollback and set state back to ready
+        //todo:in c++ rollback is tagged as cannot throw exceptions. so i guess it's okay to just return -1 if we got an exception in c++ anyways
+        public void SharedGroupRollBack()
+        {
+            IntPtr res;
+            RuntimeHelpers.PrepareConstrainedRegions();//the following finally will run with no out-of-band exceptions
+            try
+            {}
+            finally
+            {
+                res = UnsafeNativeMethods.SharedGroupRollback(this);
+                State = TransactionState.Ready;
+            }
+            if (res == IntPtr.Zero)
+                return;
+            throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture,"SharedGroup Rollback threw an exception in core. Probably file I/O error code:{0}",res));
+        }
+
+
+        //atomically call end read and set state back to ready
+        //todo:in c++ end read is tagged as cannot throw exceptions. so i guess it's okay to just return -1 if we got an exception in c++ anyways
+        public void SharedGroupEndRead()
+        {
+            IntPtr res;
+            RuntimeHelpers.PrepareConstrainedRegions();//the following finally will run with no out-of-band exceptions
+            try
+            { }
+            finally
+            {
+                res = UnsafeNativeMethods.SharedGroupEndRead(this);
+                State = TransactionState.Ready;
+            }
+            if (res == IntPtr.Zero)
+                return;
+            throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "SharedGroupEndRead threw an exception in core. Probably file I/O error code:{0}", res));
+        }
+
+
+
 
         //the method is here bc we need this handle to later close the transaction if the shared group is deleted or disposed.
         //The group handle can leak, that's no problem - we must not unbind groups gotten from transactions, they are owned core

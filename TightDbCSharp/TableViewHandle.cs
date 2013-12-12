@@ -8,10 +8,16 @@ namespace TightDbCSharp
 {
     class TableViewHandle:TightDbHandle
     {
-        protected override bool ReleaseHandle()
+        protected override void Unbind()
         {
             UnsafeNativeMethods.TableViewUnbind(handle);
-            return true;
         }
+
+        //used in Table to create TableviewHandles atomically, specifying both root and handle at the same time
+        internal TableViewHandle(TightDbHandle root)
+            : base(root)
+        {
+        }
+
     }
 }

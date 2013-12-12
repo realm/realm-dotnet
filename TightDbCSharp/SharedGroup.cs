@@ -208,7 +208,7 @@ namespace TightDbCSharp
         internal TransactionState State
         {
             get { return SharedGroupHandle.State; }
-            set { SharedGroupHandle.State = value; }
+//            set { SharedGroupHandle.State = value; }
         }
                     
 
@@ -240,9 +240,14 @@ namespace TightDbCSharp
         /// <returns></returns>
         public Transaction BeginRead()
         {
-           ValidateNotInTransaction();            
-           return UnsafeNativeMethods.SharedGroupBeginRead(this);//will initialize a new transaction:group, set t.handle to the group returned by the sharedgroup
+           ValidateNotInTransaction();
+           var groupHandle = SharedGroupHandle.StartTransaction(TransactionState.Read);//SGH.StartTransaction is atomic reg. transaction state and calling core
+           if (groupHandle.IsInvalid)
+               throw new InvalidOperationException("Cannot start Read Transaction, probably an IO error with the SharedGroup file");
+           return new Transaction(groupHandle, this);
         }
+
+
 
 
         //commit is implemented in transaction
@@ -259,12 +264,12 @@ namespace TightDbCSharp
         /// <returns>Transaction object that inherits from Group and gives read/write acces to all tables in the group</returns>
         public Transaction BeginWrite()
         {
-            ValidateNotInTransaction();            
-            return UnsafeNativeMethods.SharedGroupBeginWrite(this);
+            ValidateNotInTransaction();
+            var groupHandle = SharedGroupHandle.StartTransaction(TransactionState.Write);
+            if (groupHandle.IsInvalid)
+                throw new InvalidOperationException("Cannot start Write Transaction, probably an IO error with the SharedGroup file");
+            return new Transaction(groupHandle, this);
         }
-
-        //rollback is implemented in Transaction
-
 
 
         internal static IntPtr DurabilityLevelToIntPtr(DurabilityLevel durabilityLevel)
@@ -277,6 +282,40 @@ namespace TightDbCSharp
                     return (IntPtr) 1;
             }
         }
+
+        //called by the user directly or indirectly via dispose. Finalizer in SharedGroupHandle might also end
+        //a transaction, but using its own code
+        //A transaction class does not have a finalizer. Leaked transaction objects will result in open transactions
+        //until the user explicitly call close transaction on the shared group, or disposes the shared group
+        //note that calling EndTransaction when there is no ongoing transaction will not create any problems. It will be a NoOp
+        internal void EndTransaction(Boolean commit)
+        {
+            try
+            {
+                switch (State)
+                {
+                    case TransactionState.Read:
+                        SharedGroupHandle.SharedGroupEndRead();
+                        break;
+                    case TransactionState.Write:
+                        if (commit)
+                        {
+                            SharedGroupHandle.SharedGroupCommit();
+                        }
+                        else
+                        {
+                            SharedGroupHandle.SharedGroupRollBack();                        
+                        }
+                        break;
+                }                
+            }
+            catch (Exception) //something unexpected and bad happened, the shared group and the group should not be used anymore
+            {
+                Invalid = true;//mark the shared group as invalid
+                throw;
+            }
+        }
+
 
         //work is the acutal code that will be run inside the transaction
         private void ExecuteInTransaction(Action<Transaction> work,TransactionState kind)

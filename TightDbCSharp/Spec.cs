@@ -137,10 +137,13 @@ namespace TightDbCSharp
         {
             if (GetColumnType(columnIndex) == DataType.Table)
             {
-                return UnsafeNativeMethods.SpecGetSpec(this, columnIndex);
+                return new Spec(OwnerRootTable, SpecHandle.GetSubSpecHandle(columnIndex));
             }            
            throw new  ArgumentOutOfRangeException("columnIndex",columnIndex,"get spec(columnIndex) can only be called on a SubTable field");
         }
+
+
+
 
         /// <summary>
         /// return the DataType of the column identified by index

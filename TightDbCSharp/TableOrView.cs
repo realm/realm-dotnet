@@ -11,7 +11,8 @@ namespace TightDbCSharp
     /// <summary>
     /// TableOrView contains methods that exist both in tables and in tableviews
     /// Table and Tableview inherit from TableOrView and implements their own versions
-    /// of these methods
+    /// of these methods.
+    /// TableOrView contains the common validation code
     /// </summary>
     public abstract class TableOrView : Handled//, IEnumerable<Row>
     {

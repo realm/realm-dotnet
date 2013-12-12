@@ -66,6 +66,7 @@ namespace TightDbCSharp
             }
         }
 
+        internal TableHandle TableHandle {get { return Handle as TableHandle; }}//returns inherited TightdbHandle Handle as the correct subtype TableHandle
 
         /// <summary>
         /// implements ICloneable - this method is called Copy in the c++ binding        
@@ -1344,8 +1345,8 @@ namespace TightDbCSharp
         }
 
         private TableView DistinctNoCheck(long columnIndex)
-        {           
-            return UnsafeNativeMethods.TableDistinct(this, columnIndex);
+        {
+            return new TableView(this, TableHandle.TableDistinct(columnIndex));
         }
 
         /// <summary>
@@ -1592,26 +1593,27 @@ namespace TightDbCSharp
 
         internal override TableView FindAllIntNoCheck(long columnIndex, long value)
         {
-            return UnsafeNativeMethods.TableFindAllInt(this,  columnIndex,  value);
+            return new TableView(this,TableHandle.TableFindAllInt(columnIndex,value));
         }
 
         internal override TableView FindAllBoolNoCheck(long columnIndex, bool value)
         {
-            return UnsafeNativeMethods.TableFindAllBool(this, columnIndex, value);
+            return  new TableView(this,TableHandle.TableFindAllBool(columnIndex,value));            
         }
+              
         internal override TableView FindAllDateNoCheck(long columnIndex, DateTime value)
         {
-            return UnsafeNativeMethods.TableFindAllDateTime(this,columnIndex, value);
+            return new TableView(this, TableHandle.TableFindAllDateTime(columnIndex,value));
         }
 
         internal override TableView FindAllFloatNoCheck(long columnIndex, float value)
         {
-            return UnsafeNativeMethods.TableFindAllFloat(this, columnIndex, value);
+            return new TableView(this, TableHandle.TableFindAllFloat(columnIndex, value));            
         }
 
         internal override TableView FindAllDoubleNoCheck(long columnIndex, double value)
         {
-            return UnsafeNativeMethods.TableFindAllDouble(this, columnIndex, value);
+            return new TableView(this, TableHandle.TableFindAllDouble(columnIndex, value));
         }
 
         internal override TableView FindAllStringNoCheck(long columnIndex, string value)
