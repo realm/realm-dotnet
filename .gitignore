@@ -4320,3 +4320,4 @@ TightDbCSharpTest/bin/x64/Release/TableAddSubTableUsingPath.txt
 TightDbCSharpTest/bin/x64/Release/TableRenameSubTableUsingParameters_after_rename.txt
 TightDbCSharpTest/bin/x64/Release/TableRenameSubTableUsingParameters_before_rename.txt
 TightDbCSharpTest/bin/x64/Release/UnitTestSharedGroup
+native/libsVS2012/TightDBVS201232.lib
