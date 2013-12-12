@@ -1622,7 +1622,10 @@ namespace TightDbCSharp
         }
         internal override TableView FindAllBinaryNoCheck(long columnIndex, byte[] value)
         {
-            return UnsafeNativeMethods.TableFindAllBinary(this, columnIndex, value);
+            TableViewHandle tableViewHandle = TableHandle.TableFindAllBinary(columnIndex, value);
+            if (!tableViewHandle.IsInvalid)            
+                return new TableView(this, tableViewHandle);            
+            throw new NotImplementedException("Table.FindAllBinary is not implemented in core yet - or did not return a valid TableView");            
         }
 
 /* experiment

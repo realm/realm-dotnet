@@ -148,6 +148,54 @@ namespace TightDbCSharp
         }
 
 
+        //acquire a TableView handle with the result And set Root in an atomic fashion 
+        //this method covers two c++ calls, one for empty binary array search, and one for searching
+        //some actual value. The empty has its own code as it would be somewhat faster that way,
+        //saving pinning and marshalling an empty array.
+        internal TableViewHandle TableFindAllBinary(long columnIndex, byte[] value)
+        {
+            var tvHandle = RootedTableViewHandle();
+            //At this point tvHandle is invalid due to its handle being uninitialized, but the root is set correctly
+            //a finalize at this point will not leak anything and the handle will not do anything
+            if (value == null || value.Length == 0) //special case empty array search
+            {
+                //now, set the TableView handle...
+                RuntimeHelpers.PrepareConstrainedRegions();
+                //the following finally will run with no out-of-band exceptions
+                try
+                {
+                }
+                finally
+                {
+                    tvHandle.SetHandle(UnsafeNativeMethods.TableFindAllEmptyBinary(this, columnIndex));
+                }
+                //at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly                
+            }
+            else //the byte array actually contains something
+            {
+                var byteshandle = GCHandle.Alloc(value, GCHandleType.Pinned);//GCHandle that points to the array,which is now fixed
+                try
+                {
+                    //now value cannot be moved or garbage collected by garbage collector
+                    var valuePointer = byteshandle.AddrOfPinnedObject();//raw pointer that points to value[0]
+                    RuntimeHelpers.PrepareConstrainedRegions();
+                    try
+                    {
+                    }
+                    finally
+                    {
+                        tvHandle.SetHandle(UnsafeNativeMethods.TableFindAllBinary(this, columnIndex, valuePointer,(IntPtr)value.Length));
+                    }
+                }
+                finally
+                {
+                    byteshandle.Free();
+                }
+            }
+            return tvHandle;
+        }
+
+
 
         //acquire a spec handle And set IgnoreUnbind in an atomic fashion (table_get_spec)
         internal SpecHandle GetSpec()

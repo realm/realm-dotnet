@@ -1871,65 +1871,41 @@ enum DataType {
         //todo: unit test that find all binary with a null pointer actually works okay
         //todo:unit test that find all binary with an empty byte array works okay
         [DllImport(L64, EntryPoint = "table_find_all_empty_binary", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_find_all_empty_binary64(IntPtr tablePtr, IntPtr columnNdx);
+        private static extern IntPtr table_find_all_empty_binary64(TableHandle tableHandle, IntPtr columnNdx);
 
         [DllImport(L32, EntryPoint = "table_find_all_empty_binary", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_find_all_empty_binary32(IntPtr tablePtr, IntPtr columnNdx);
+        private static extern IntPtr table_find_all_empty_binary32(TableHandle tableHandle, IntPtr columnNdx);
 
 
         [DllImport(L64, EntryPoint = "table_find_all_binary", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_find_all_binary64(IntPtr tablePtr, IntPtr columnNdx, IntPtr value,
+        private static extern IntPtr table_find_all_binary64(TableHandle tableHandle, IntPtr columnNdx, IntPtr value,
             IntPtr bytes);
 
         [DllImport(L32, EntryPoint = "table_find_all_binary", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_find_all_binary32(IntPtr tablePtr, IntPtr columnNdx, IntPtr value,
+        private static extern IntPtr table_find_all_binary32(TableHandle tableHandle, IntPtr columnNdx, IntPtr value,
             IntPtr bytes);
 
 
-        public static TableView TableFindAllBinary(Table table, long columnIndex, Byte[] value)
+
+        //called by tablehandle atomically
+        public static IntPtr TableFindAllEmptyBinary(TableHandle tableHandle, long columnIndex)
         {
-
-            IntPtr tableViewHandle;
-            if (value == null || value.Length == 0)
-            {
-                //special case if we get called with null (we call a method that does not take pointers to managed mem)            
-                tableViewHandle = (Is64Bit)
-                    ? table_find_all_empty_binary64(table.Handle, (IntPtr) columnIndex)
-                    : table_find_all_empty_binary32(table.Handle, (IntPtr) columnIndex);
-            }
-            else
-            {
-                //value is at least a byte long
-                GCHandle handle = GCHandle.Alloc(value, GCHandleType.Pinned);
-                //now value cannot be moved or garbage collected by garbage collector
-                IntPtr valuePointer = handle.AddrOfPinnedObject();
-                try
-                {
-                    tableViewHandle = (Is64Bit)
-                        ? table_find_all_binary64(table.Handle, (IntPtr) columnIndex, valuePointer,
-                            (IntPtr) value.Length)
-                        : table_find_all_binary32(table.Handle, (IntPtr) columnIndex, valuePointer,
-                            (IntPtr) value.Length);
-                }
-                finally
-                {
-                    handle.Free(); //allow Garbage collector to move and deallocate value as it wishes
-                }
-            }
-
-            if (tableViewHandle != IntPtr.Zero)
-            {
-                return new TableView(table, tableViewHandle, true);
-            }
-            throw new NotImplementedException("Table.FindAllBinary is not implemented in core yet");
-
+            return Is64Bit
+                ? table_find_all_empty_binary64(tableHandle, (IntPtr)columnIndex)
+                : table_find_all_empty_binary32(tableHandle, (IntPtr)columnIndex);
         }
 
+        //called by tablehandle atomically
+        public static IntPtr TableFindAllBinary(TableHandle tableHandle, long columnIndex, IntPtr binaryToFind,
+            IntPtr size)
+        {
+            return Is64Bit
+                ? table_find_all_binary64(tableHandle, (IntPtr) columnIndex, binaryToFind, size):                  
+                  table_find_all_binary32(tableHandle, (IntPtr) columnIndex, binaryToFind, size);
+        }
+     
 
-
-
-
-        //TIGHTDB_C_CS_API tightdb::TableView* table_find_all_int(Table * table_ptr , size_t column_ndx, int64_t value)
+        //TIGHTDB_C_CS_API tightdb::TableView* tableView_find_all_int(Table * table_ptr , size_t column_ndx, int64_t value)
         [DllImport(L64, EntryPoint = "tableview_find_all_int", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr tableView_find_all_int64(IntPtr tableViewHandle, IntPtr columnIndex, long value);
 
