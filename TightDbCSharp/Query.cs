@@ -25,7 +25,8 @@ namespace TightDbCSharp
                 throw;
             }
         }
-        
+
+        internal QueryHandle QueryHandle { get { return Handle as QueryHandle; } }//as is faster than (QueryHandle)Handle
         
         private Table _underlyingTable;
         /// <summary>

@@ -141,7 +141,7 @@ enum DataType {
         private static extern IntPtr table_copy_table32(TableHandle sourceTablePtr);
 
         //Called by TableHandle. The returned table is a new root
-        public static IntPtr TableCopyTable(TableHandle tableHandle )
+        public static IntPtr TableCopyTable(TableHandle tableHandle)
         {
             return Is64Bit
                 ? table_copy_table64(tableHandle)
@@ -156,7 +156,8 @@ enum DataType {
 
         public static bool TableIsAttached(Table table)
         {
-            return IntPtrToBool(Is64Bit ? table_is_attached64(table.TableHandle) : table_is_attached32(table.TableHandle));
+            return
+                IntPtrToBool(Is64Bit ? table_is_attached64(table.TableHandle) : table_is_attached32(table.TableHandle));
         }
 
 
@@ -168,7 +169,10 @@ enum DataType {
 
         public static bool TableHasSharedSpec(Table table)
         {
-            return IntPtrToBool(Is64Bit ? table_has_shared_spec64(table.TableHandle) : table_has_shared_spec32(table.TableHandle));
+            return
+                IntPtrToBool(Is64Bit
+                    ? table_has_shared_spec64(table.TableHandle)
+                    : table_has_shared_spec32(table.TableHandle));
         }
 
 
@@ -187,7 +191,7 @@ enum DataType {
             if (Is64Bit)
                 spec_deallocate64(handle);
             else
-                spec_deallocate32(handle);            
+                spec_deallocate32(handle);
         }
 
 
@@ -240,7 +244,7 @@ enum DataType {
                 return 0;
             }
             boolValue = false;
-                //in the case value is 0 we must return false. if value is negative it doesn't matter what boolvalue is set to
+            //in the case value is 0 we must return false. if value is negative it doesn't matter what boolvalue is set to
             //doing it this way removes a branch. Branches are time expensive
             return (long) value; //at this point value is either 0 or a negative error code from c++
         }
@@ -994,8 +998,10 @@ enum DataType {
         {
             return
                 Is64Bit
-                    ? (long) tableView_get_subtable_size64(tableView.TableViewHandle, (IntPtr) columnIndex, (IntPtr) rowIndex)
-                    : (long) tableView_get_subtable_size32(tableView.TableViewHandle, (IntPtr) columnIndex, (IntPtr) rowIndex);
+                    ? (long)
+                        tableView_get_subtable_size64(tableView.TableViewHandle, (IntPtr) columnIndex, (IntPtr) rowIndex)
+                    : (long)
+                        tableView_get_subtable_size32(tableView.TableViewHandle, (IntPtr) columnIndex, (IntPtr) rowIndex);
         }
 
 
@@ -1008,10 +1014,12 @@ enum DataType {
         //TIGHTDB_C_CS_API size_t table_find_first_int(Table * table_ptr , size_t column_ndx, int64_t value)
 
         [DllImport(L64, EntryPoint = "tableview_find_first_int", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr tableView_find_first_int64(TableViewHandle tableViewHandle, IntPtr columnIndex, long value);
+        private static extern IntPtr tableView_find_first_int64(TableViewHandle tableViewHandle, IntPtr columnIndex,
+            long value);
 
         [DllImport(L32, EntryPoint = "tableview_find_first_int", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr tableView_find_first_int32(TableViewHandle tableViewHandle, IntPtr columnIndex, long value);
+        private static extern IntPtr tableView_find_first_int32(TableViewHandle tableViewHandle, IntPtr columnIndex,
+            long value);
 
 
         public static long TableViewFindFirstInt(TableView tableView, long columnIndex, long value)
@@ -1038,11 +1046,11 @@ enum DataType {
             return
                 Is64Bit
                     ? (long)
-                        tableView_find_first_string64(tableView.TableViewHandle, (IntPtr)columnIndex, value,
-                            (IntPtr)value.Length)
+                        tableView_find_first_string64(tableView.TableViewHandle, (IntPtr) columnIndex, value,
+                            (IntPtr) value.Length)
                     : (long)
-                        tableView_find_first_string32(tableView.TableViewHandle, (IntPtr)columnIndex, value,
-                            (IntPtr)value.Length);
+                        tableView_find_first_string32(tableView.TableViewHandle, (IntPtr) columnIndex, value,
+                            (IntPtr) value.Length);
         }
 
 
@@ -1774,8 +1782,10 @@ enum DataType {
         public static long TableViewCountString(TableView tableView, long columnIndex, string target)
         {
             return Is64Bit
-                ? tableview_count_string64(tableView.TableViewHandle, (IntPtr) columnIndex, target, (IntPtr) target.Length)
-                : tableview_count_string32(tableView.TableViewHandle, (IntPtr) columnIndex, target, (IntPtr) target.Length);
+                ? tableview_count_string64(tableView.TableViewHandle, (IntPtr) columnIndex, target,
+                    (IntPtr) target.Length)
+                : tableview_count_string32(tableView.TableViewHandle, (IntPtr) columnIndex, target,
+                    (IntPtr) target.Length);
         }
 
 
@@ -2742,8 +2752,10 @@ enum DataType {
 
             var data =
                 (Is64Bit)
-                    ? table_get_mixed_binary64(table.TableHandle, (IntPtr) columnIndex, (IntPtr) rowIndex, out datalength)
-                    : table_get_mixed_binary32(table.TableHandle, (IntPtr) columnIndex, (IntPtr) rowIndex, out datalength);
+                    ? table_get_mixed_binary64(table.TableHandle, (IntPtr) columnIndex, (IntPtr) rowIndex,
+                        out datalength)
+                    : table_get_mixed_binary32(table.TableHandle, (IntPtr) columnIndex, (IntPtr) rowIndex,
+                        out datalength);
 
             //now, datalength should contain number of bytes in data,
             //and data should be a pointer to those bytes
@@ -2802,11 +2814,13 @@ enum DataType {
 
 
         [DllImport(L64, EntryPoint = "tableview_get_mixed_string", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr tableview_get_mixed_string64(TableViewHandle handle, IntPtr columnIndex, IntPtr rowIndex,
+        private static extern IntPtr tableview_get_mixed_string64(TableViewHandle handle, IntPtr columnIndex,
+            IntPtr rowIndex,
             IntPtr buffer, IntPtr bufsize);
 
         [DllImport(L32, EntryPoint = "tableview_get_mixed_string", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr tableview_get_mixed_string32(TableViewHandle handle, IntPtr columnIndex, IntPtr rowIndex,
+        private static extern IntPtr tableview_get_mixed_string32(TableViewHandle handle, IntPtr columnIndex,
+            IntPtr rowIndex,
             IntPtr buffer, IntPtr bufsize);
 
 
@@ -2825,13 +2839,15 @@ enum DataType {
                 if (Is64Bit)
                     bufferSizeNeededChars =
                         (long)
-                            tableview_get_mixed_string64(t.TableViewHandle, (IntPtr) columnIndex, (IntPtr) rowIndex, buffer,
+                            tableview_get_mixed_string64(t.TableViewHandle, (IntPtr) columnIndex, (IntPtr) rowIndex,
+                                buffer,
                                 (IntPtr) currentBufferSizeChars);
 
                 else
                     bufferSizeNeededChars =
                         (long)
-                            tableview_get_mixed_string32(t.TableViewHandle, (IntPtr) columnIndex, (IntPtr) rowIndex, buffer,
+                            tableview_get_mixed_string32(t.TableViewHandle, (IntPtr) columnIndex, (IntPtr) rowIndex,
+                                buffer,
                                 (IntPtr) currentBufferSizeChars);
 
 
@@ -2848,11 +2864,13 @@ enum DataType {
         //the call will return a pointer to the array data, and the IntPtr that SizePtr pointed to will have changed
         //to contain the length of the data
         [DllImport(L64, EntryPoint = "tableview_get_mixed_binary", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr tableview_get_mixed_binary64(TableViewHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx,
+        private static extern IntPtr tableview_get_mixed_binary64(TableViewHandle tablePtr, IntPtr columnNdx,
+            IntPtr rowNdx,
             out IntPtr size);
 
         [DllImport(L32, EntryPoint = "tableview_get_mixed_binary", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr tableview_get_mixed_binary32(TableViewHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx,
+        private static extern IntPtr tableview_get_mixed_binary32(TableViewHandle tablePtr, IntPtr columnNdx,
+            IntPtr rowNdx,
             out IntPtr size);
 
 
@@ -2862,9 +2880,9 @@ enum DataType {
 
             var data =
                 (Is64Bit)
-                    ? tableview_get_mixed_binary64(tableView.TableViewHandle, (IntPtr)columnIndex, (IntPtr)rowIndex,
+                    ? tableview_get_mixed_binary64(tableView.TableViewHandle, (IntPtr) columnIndex, (IntPtr) rowIndex,
                         out datalength)
-                    : tableview_get_mixed_binary32(tableView.TableViewHandle, (IntPtr)columnIndex, (IntPtr)rowIndex,
+                    : tableview_get_mixed_binary32(tableView.TableViewHandle, (IntPtr) columnIndex, (IntPtr) rowIndex,
                         out datalength);
 
             //now, datalength should contain number of bytes in data,
@@ -2948,8 +2966,10 @@ enum DataType {
 
             var data =
                 (Is64Bit)
-                    ? tableview_get_binary64(tableView.TableViewHandle, (IntPtr) columnIndex, (IntPtr) rowIndex, out datalength)
-                    : tableview_get_binary32(tableView.TableViewHandle, (IntPtr) columnIndex, (IntPtr) rowIndex, out datalength);
+                    ? tableview_get_binary64(tableView.TableViewHandle, (IntPtr) columnIndex, (IntPtr) rowIndex,
+                        out datalength)
+                    : tableview_get_binary32(tableView.TableViewHandle, (IntPtr) columnIndex, (IntPtr) rowIndex,
+                        out datalength);
 
             //now, datalength should contain number of bytes in data,
             //and data should be a pointer to those bytes
@@ -3049,11 +3069,13 @@ enum DataType {
         //
         [DllImport(L64, EntryPoint = "tableview_get_mixed_type",
             CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr tableView_get_mixed_type64(TableViewHandle tablePtr, IntPtr columnIndex, IntPtr rowIndex);
+        private static extern IntPtr tableView_get_mixed_type64(TableViewHandle tablePtr, IntPtr columnIndex,
+            IntPtr rowIndex);
 
         [DllImport(L32, EntryPoint = "tableview_get_mixed_type",
             CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr tableView_get_mixed_type32(TableViewHandle tablePtr, IntPtr columnIndex, IntPtr rowIndex);
+        private static extern IntPtr tableView_get_mixed_type32(TableViewHandle tablePtr, IntPtr columnIndex,
+            IntPtr rowIndex);
 
         public static DataType TableViewGetMixedType(TableView t, long columnIndex, long rowIndex)
         {
@@ -3091,8 +3113,8 @@ enum DataType {
         {
             return
                 IntPtrToBool(Is64Bit
-                    ? table_has_index64(table.TableHandle, (IntPtr)columnIndex)
-                    : table_has_index32(table.TableHandle, (IntPtr)columnIndex));
+                    ? table_has_index64(table.TableHandle, (IntPtr) columnIndex)
+                    : table_has_index32(table.TableHandle, (IntPtr) columnIndex));
         }
 
 
@@ -3107,9 +3129,9 @@ enum DataType {
         public static void TableInsertEmptyRow(Table table, long rowIndex, long numberOfRows)
         {
             if (Is64Bit)
-                table_insert_empty_row64(table.TableHandle, (IntPtr)rowIndex, (IntPtr)numberOfRows);
+                table_insert_empty_row64(table.TableHandle, (IntPtr) rowIndex, (IntPtr) numberOfRows);
             else
-                table_insert_empty_row32(table.TableHandle, (IntPtr)rowIndex, (IntPtr)numberOfRows);
+                table_insert_empty_row32(table.TableHandle, (IntPtr) rowIndex, (IntPtr) numberOfRows);
         }
 
 
@@ -3157,9 +3179,9 @@ enum DataType {
         public static void TableSetInt(Table table, long columnIndex, long rowIndex, int value)
         {
             if (Is64Bit)
-                table_set_32int64(table.TableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
+                table_set_32int64(table.TableHandle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
             else
-                table_set_32int32(table.TableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
+                table_set_32int32(table.TableHandle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
         }
 
 
@@ -3179,9 +3201,11 @@ enum DataType {
         {
 
             if (Is64Bit)
-                table_set_string64(table.TableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, value, (IntPtr)value.Length);
+                table_set_string64(table.TableHandle, (IntPtr) columnIndex, (IntPtr) rowIndex, value,
+                    (IntPtr) value.Length);
             else
-                table_set_string32(table.TableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, value, (IntPtr)value.Length);
+                table_set_string32(table.TableHandle, (IntPtr) columnIndex, (IntPtr) rowIndex, value,
+                    (IntPtr) value.Length);
         }
 
 
@@ -3197,21 +3221,23 @@ enum DataType {
         {
 
             if (Is64Bit)
-                table_set_mixed_string64(table.TableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, value,
+                table_set_mixed_string64(table.TableHandle, (IntPtr) columnIndex, (IntPtr) rowIndex, value,
                     (IntPtr) value.Length);
             else
-                table_set_mixed_string32(table.TableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, value,
+                table_set_mixed_string32(table.TableHandle, (IntPtr) columnIndex, (IntPtr) rowIndex, value,
                     (IntPtr) value.Length);
         }
 
 
 
         [DllImport(L64, EntryPoint = "tableview_set_mixed_string", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void tableview_set_mixed_string64(TableViewHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx,
+        private static extern void tableview_set_mixed_string64(TableViewHandle tablePtr, IntPtr columnNdx,
+            IntPtr rowNdx,
             [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
 
         [DllImport(L32, EntryPoint = "tableview_set_mixed_string", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void tableview_set_mixed_string32(TableViewHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx,
+        private static extern void tableview_set_mixed_string32(TableViewHandle tablePtr, IntPtr columnNdx,
+            IntPtr rowNdx,
             [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
 
         public static void TableViewSetMixedString(TableView tableView, long columnIndex, long rowIndex, string value)
@@ -3244,10 +3270,10 @@ enum DataType {
         {
 
             if (Is64Bit)
-                tableView_set_string64(tableView.TableViewHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, value,
+                tableView_set_string64(tableView.TableViewHandle, (IntPtr) columnIndex, (IntPtr) rowIndex, value,
                     (IntPtr) value.Length);
             else
-                tableView_set_string32(tableView.TableViewHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, value,
+                tableView_set_string32(tableView.TableViewHandle, (IntPtr) columnIndex, (IntPtr) rowIndex, value,
                     (IntPtr) value.Length);
         }
 
@@ -3275,10 +3301,12 @@ enum DataType {
             if (value == null)
             {
                 if (Is64Bit)
-                    tableview_set_binary64(tableView.TableViewHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, IntPtr.Zero,
+                    tableview_set_binary64(tableView.TableViewHandle, (IntPtr) columnIndex, (IntPtr) rowIndex,
+                        IntPtr.Zero,
                         IntPtr.Zero);
                 else
-                    tableview_set_binary32(tableView.TableViewHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, IntPtr.Zero,
+                    tableview_set_binary32(tableView.TableViewHandle, (IntPtr) columnIndex, (IntPtr) rowIndex,
+                        IntPtr.Zero,
                         IntPtr.Zero);
                 return;
             }
@@ -3289,10 +3317,12 @@ enum DataType {
             try
             {
                 if (Is64Bit)
-                    tableview_set_binary64(tableView.TableViewHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, valuePointer,
+                    tableview_set_binary64(tableView.TableViewHandle, (IntPtr) columnIndex, (IntPtr) rowIndex,
+                        valuePointer,
                         (IntPtr) value.Length);
                 else
-                    tableview_set_binary32(tableView.TableViewHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, valuePointer,
+                    tableview_set_binary32(tableView.TableViewHandle, (IntPtr) columnIndex, (IntPtr) rowIndex,
+                        valuePointer,
                         (IntPtr) value.Length);
             }
             finally
@@ -3304,18 +3334,20 @@ enum DataType {
 
 
         [DllImport(L64, EntryPoint = "tableview_set_32int", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void tableView_set_32int64(TableViewHandle tableViewPtr, IntPtr columnNdx, IntPtr rowNdx, int value);
+        private static extern void tableView_set_32int64(TableViewHandle tableViewPtr, IntPtr columnNdx, IntPtr rowNdx,
+            int value);
 
         [DllImport(L32, EntryPoint = "tableview_set_32int", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void tableView_set_32int32(TableViewHandle tableViewPtr, IntPtr columnNdx, IntPtr rowNdx, int value);
+        private static extern void tableView_set_32int32(TableViewHandle tableViewPtr, IntPtr columnNdx, IntPtr rowNdx,
+            int value);
 
         public static void TableViewSetInt(TableView tableView, long columnIndex, long rowIndex, int value)
         {
 
             if (Is64Bit)
-                tableView_set_32int64(tableView.TableViewHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
+                tableView_set_32int64(tableView.TableViewHandle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
             else
-                tableView_set_32int32(tableView.TableViewHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
+                tableView_set_32int32(tableView.TableViewHandle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
         }
 
 
@@ -3325,18 +3357,20 @@ enum DataType {
 
 
         [DllImport(L64, EntryPoint = "tableview_set_int", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void tableView_set_int64(TableViewHandle tableViewPtr, IntPtr columnNdx, IntPtr rowNdx, long value);
+        private static extern void tableView_set_int64(TableViewHandle tableViewPtr, IntPtr columnNdx, IntPtr rowNdx,
+            long value);
 
         [DllImport(L32, EntryPoint = "tableview_set_int", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void tableView_set_int32(TableViewHandle tableViewPtr, IntPtr columnNdx, IntPtr rowNdx, long value);
+        private static extern void tableView_set_int32(TableViewHandle tableViewPtr, IntPtr columnNdx, IntPtr rowNdx,
+            long value);
 
         public static void TableViewSetLong(TableView tableView, long columnIndex, long rowIndex, long value)
         {
 
             if (Is64Bit)
-                tableView_set_int64(tableView.TableViewHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
+                tableView_set_int64(tableView.TableViewHandle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
             else
-                tableView_set_int32(tableView.TableViewHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
+                tableView_set_int32(tableView.TableViewHandle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
         }
 
 
@@ -3349,9 +3383,9 @@ enum DataType {
         public static void TableAddInt(Table table, long columnIndex, long value)
         {
             if (Is64Bit)
-                table_add_int64(table.TableHandle, (IntPtr)columnIndex, value);
+                table_add_int64(table.TableHandle, (IntPtr) columnIndex, value);
             else
-                table_add_int32(table.TableHandle, (IntPtr)columnIndex, value);
+                table_add_int32(table.TableHandle, (IntPtr) columnIndex, value);
         }
 
         //todo implement tableView.AddInt when it has been supported in core
@@ -3369,23 +3403,25 @@ enum DataType {
 
         //todo:could core throw an error?  introduce a way of getting such an error over here, and handle it
         public static void TableSetSubTable(Table table, long columnIndex, long rowIndex, Table sourceTable)
-        {            
-                if (Is64Bit)
-                    table_set_subtable64(table.TableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, sourceTable.TableHandle);
-                else
-                    table_set_subtable32(table.TableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, sourceTable.TableHandle);            
+        {
+            if (Is64Bit)
+                table_set_subtable64(table.TableHandle, (IntPtr) columnIndex, (IntPtr) rowIndex, sourceTable.TableHandle);
+            else
+                table_set_subtable32(table.TableHandle, (IntPtr) columnIndex, (IntPtr) rowIndex, sourceTable.TableHandle);
         }
 
 
 
         [DllImport(L64, EntryPoint = "tableview_set_subtable",
             CallingConvention = CallingConvention.Cdecl)]
-        private static extern void tableview_set_subtable64(TableViewHandle tableviewPtr, IntPtr columnNdx, IntPtr rowNdx,
+        private static extern void tableview_set_subtable64(TableViewHandle tableviewPtr, IntPtr columnNdx,
+            IntPtr rowNdx,
             TableHandle sourceTablePtr);
 
         [DllImport(L32, EntryPoint = "tableview_set_subtable",
             CallingConvention = CallingConvention.Cdecl)]
-        private static extern void tableview_set_subtable32(TableViewHandle tableviewPtr, IntPtr columnNdx, IntPtr rowNdx,
+        private static extern void tableview_set_subtable32(TableViewHandle tableviewPtr, IntPtr columnNdx,
+            IntPtr rowNdx,
             TableHandle sourceTablePtr);
 
         public static void TableViewSetSubTable(TableView tableView, long columnIndex, long rowIndex, Table sourceTable)
@@ -3413,30 +3449,34 @@ enum DataType {
         public static void TableSetMixedSubTable(Table table, long columnIndex, long rowIndex, Table sourceTable)
         {
             if (Is64Bit)
-                table_set_mixed_subtable64(table.TableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, sourceTable.TableHandle);
+                table_set_mixed_subtable64(table.TableHandle, (IntPtr) columnIndex, (IntPtr) rowIndex,
+                    sourceTable.TableHandle);
             else
-                table_set_mixed_subtable32(table.TableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, sourceTable.TableHandle);
+                table_set_mixed_subtable32(table.TableHandle, (IntPtr) columnIndex, (IntPtr) rowIndex,
+                    sourceTable.TableHandle);
         }
 
 
         [DllImport(L64, EntryPoint = "tableview_set_mixed_subtable",
             CallingConvention = CallingConvention.Cdecl)]
-        private static extern void tableView_set_mixed_subtable64(TableViewHandle tableViewPtr, IntPtr columnNdx, IntPtr rowNdx,
+        private static extern void tableView_set_mixed_subtable64(TableViewHandle tableViewPtr, IntPtr columnNdx,
+            IntPtr rowNdx,
             TableHandle sourceTablePtr);
 
         [DllImport(L32, EntryPoint = "tableview_set_mixed_subtable",
             CallingConvention = CallingConvention.Cdecl)]
-        private static extern void tableView_set_mixed_subtable32(TableViewHandle tableViewPtr, IntPtr columnNdx, IntPtr rowNdx,
+        private static extern void tableView_set_mixed_subtable32(TableViewHandle tableViewPtr, IntPtr columnNdx,
+            IntPtr rowNdx,
             TableHandle sourceTablePtr);
 
         public static void TableViewSetMixedSubTable(TableView tableView, long columnIndex, long rowIndex,
             Table sourceTable)
         {
             if (Is64Bit)
-                tableView_set_mixed_subtable64(tableView.TableViewHandle, (IntPtr)columnIndex, (IntPtr)rowIndex,
+                tableView_set_mixed_subtable64(tableView.TableViewHandle, (IntPtr) columnIndex, (IntPtr) rowIndex,
                     sourceTable.TableHandle);
             else
-                tableView_set_mixed_subtable32(tableView.TableViewHandle, (IntPtr)columnIndex, (IntPtr)rowIndex,
+                tableView_set_mixed_subtable32(tableView.TableViewHandle, (IntPtr) columnIndex, (IntPtr) rowIndex,
                     sourceTable.TableHandle);
         }
 
@@ -3445,11 +3485,13 @@ enum DataType {
         //not using automatic marshalling (which might lead to copying in some cases),
         //but ensuring no copying of the array data is done, by getting a pinned pointer to the array supplied by the user.
         [DllImport(L64, EntryPoint = "table_set_binary", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void table_set_binary64(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, IntPtr value,
+        private static extern void table_set_binary64(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx,
+            IntPtr value,
             IntPtr bytes);
 
         [DllImport(L32, EntryPoint = "table_set_binary", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void table_set_binary32(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, IntPtr value,
+        private static extern void table_set_binary32(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx,
+            IntPtr value,
             IntPtr bytes);
 
 
@@ -3460,9 +3502,11 @@ enum DataType {
             if (value == null)
             {
                 if (Is64Bit)
-                    table_set_binary64(table.TableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, IntPtr.Zero, IntPtr.Zero);
+                    table_set_binary64(table.TableHandle, (IntPtr) columnIndex, (IntPtr) rowIndex, IntPtr.Zero,
+                        IntPtr.Zero);
                 else
-                    table_set_binary32(table.TableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, IntPtr.Zero, IntPtr.Zero);
+                    table_set_binary32(table.TableHandle, (IntPtr) columnIndex, (IntPtr) rowIndex, IntPtr.Zero,
+                        IntPtr.Zero);
                 return;
             }
 
@@ -3472,10 +3516,10 @@ enum DataType {
             try
             {
                 if (Is64Bit)
-                    table_set_binary64(table.TableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, valuePointer,
+                    table_set_binary64(table.TableHandle, (IntPtr) columnIndex, (IntPtr) rowIndex, valuePointer,
                         (IntPtr) value.Length);
                 else
-                    table_set_binary32(table.TableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, valuePointer,
+                    table_set_binary32(table.TableHandle, (IntPtr) columnIndex, (IntPtr) rowIndex, valuePointer,
                         (IntPtr) value.Length);
             }
             finally
@@ -3490,12 +3534,14 @@ enum DataType {
 
         //not using automatic marshalling (which might lead to copying in some cases),
         //but ensuring no copying of the array data is done, by getting a pinned pointer to the array supplied by the user.
+        //Note that the construction is happening in the interop call and not inside a tightdbhandle as usual.
+        //This is because root should be set to null always anyway, and that is the default value, so just having the
+        //handle set atomically with guarentee by CriticalHandle is good enough
         [DllImport(L64, EntryPoint = "group_from_binary_data", CallingConvention = CallingConvention.Cdecl)]
         private static extern GroupHandle group_from_binary_data64(IntPtr value, IntPtr bytes);
 
         [DllImport(L32, EntryPoint = "group_from_binary_data", CallingConvention = CallingConvention.Cdecl)]
         private static extern GroupHandle group_from_binary_data32(IntPtr value, IntPtr bytes);
-
 
 
         //calling this method with NULL is illegal and will crash the system, so stuff calling this method must validate for null first
@@ -3507,14 +3553,15 @@ enum DataType {
             var dataPointer = handle.AddrOfPinnedObject();
             try
             {
-                var groupPtr = (Is64Bit)
+                var groupHandle = (Is64Bit)
                     ? group_from_binary_data64(dataPointer, (IntPtr) data.Length)
                     : group_from_binary_data32(dataPointer, (IntPtr) data.Length);
+                    //in this call, groupHandle is guarenteed to be set and is able to finalize itself
 
-                if (groupPtr.IsInvalid)
+                if (groupHandle.IsInvalid)
                     throw new ArgumentException("GroupFromBinaryData called with invalid binary data");
 
-                group.SetHandle(groupPtr, false); //from binary returns a RW group
+                group.SetHandle(groupHandle, false); //from binary returns a RW group
             }
             finally
             {
@@ -3538,11 +3585,11 @@ enum DataType {
         //not using automatic marshalling (which might lead to copying in some cases),
         //but ensuring no copying of the array data is done, by getting a pinned pointer to the array supplied by the user.
         [DllImport(L64, EntryPoint = "table_set_mixed_binary", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void table_set_mixed_binary64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx,
+        private static extern void table_set_mixed_binary64(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx,
             IntPtr value, IntPtr bytes);
 
         [DllImport(L32, EntryPoint = "table_set_mixed_binary", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void table_set_mixed_binary32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx,
+        private static extern void table_set_mixed_binary32(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx,
             IntPtr value, IntPtr bytes);
 
 
@@ -3552,25 +3599,25 @@ enum DataType {
             if (value == null)
             {
                 if (Is64Bit)
-                    table_set_mixed_binary64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, IntPtr.Zero,
+                    table_set_mixed_binary64(table.TableHandle, (IntPtr) columnIndex, (IntPtr) rowIndex, IntPtr.Zero,
                         IntPtr.Zero);
                 else
-                    table_set_mixed_binary32(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, IntPtr.Zero,
+                    table_set_mixed_binary32(table.TableHandle, (IntPtr) columnIndex, (IntPtr) rowIndex, IntPtr.Zero,
                         IntPtr.Zero);
                 return;
             }
 
 
-            GCHandle handle = GCHandle.Alloc(value, GCHandleType.Pinned);
+            var handle = GCHandle.Alloc(value, GCHandleType.Pinned);
             //now value cannot be moved or garbage collected by garbage collector
-            IntPtr valuePointer = handle.AddrOfPinnedObject();
+            var valuePointer = handle.AddrOfPinnedObject();
             try
             {
                 if (Is64Bit)
-                    table_set_mixed_binary64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, valuePointer,
+                    table_set_mixed_binary64(table.TableHandle, (IntPtr) columnIndex, (IntPtr) rowIndex, valuePointer,
                         (IntPtr) value.Length);
                 else
-                    table_set_mixed_binary32(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, valuePointer,
+                    table_set_mixed_binary32(table.TableHandle, (IntPtr) columnIndex, (IntPtr) rowIndex, valuePointer,
                         (IntPtr) value.Length);
             }
             finally
@@ -3584,11 +3631,13 @@ enum DataType {
         //not using automatic marshalling (which might lead to copying in some cases),
         //but ensuring no copying of the array data is done, by getting a pinned pointer to the array supplied by the user.
         [DllImport(L64, EntryPoint = "tableview_set_mixed_binary", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void tableview_set_mixed_binary64(IntPtr tableViewPtr, IntPtr columnNdx, IntPtr rowNdx,
+        private static extern void tableview_set_mixed_binary64(TableViewHandle tableViewPtr, IntPtr columnNdx,
+            IntPtr rowNdx,
             IntPtr value, IntPtr bytes);
 
         [DllImport(L32, EntryPoint = "tableview_set_mixed_binary", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void tableview_set_mixed_binary32(IntPtr tableViewPtr, IntPtr columnNdx, IntPtr rowNdx,
+        private static extern void tableview_set_mixed_binary32(TableViewHandle tableViewPtr, IntPtr columnNdx,
+            IntPtr rowNdx,
             IntPtr value, IntPtr bytes);
 
         public static void TableViewSetMixedBinary(TableView tableView, long columnIndex, long rowIndex, Byte[] value)
@@ -3598,24 +3647,28 @@ enum DataType {
             if (value == null)
             {
                 if (Is64Bit)
-                    tableview_set_mixed_binary64(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, IntPtr.Zero,
+                    tableview_set_mixed_binary64(tableView.TableViewHandle, (IntPtr) columnIndex, (IntPtr) rowIndex,
+                        IntPtr.Zero,
                         IntPtr.Zero);
                 else
-                    tableview_set_mixed_binary32(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, IntPtr.Zero,
+                    tableview_set_mixed_binary32(tableView.TableViewHandle, (IntPtr) columnIndex, (IntPtr) rowIndex,
+                        IntPtr.Zero,
                         IntPtr.Zero);
                 return;
             }
 
-            GCHandle handle = GCHandle.Alloc(value, GCHandleType.Pinned);
+            var handle = GCHandle.Alloc(value, GCHandleType.Pinned);
             //now value cannot be moved or garbage collected by garbage collector
-            IntPtr valuePointer = handle.AddrOfPinnedObject();
+            var valuePointer = handle.AddrOfPinnedObject();
             try
             {
                 if (Is64Bit)
-                    tableview_set_mixed_binary64(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, valuePointer,
+                    tableview_set_mixed_binary64(tableView.TableViewHandle, (IntPtr) columnIndex, (IntPtr) rowIndex,
+                        valuePointer,
                         (IntPtr) value.Length);
                 else
-                    tableview_set_mixed_binary32(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, valuePointer,
+                    tableview_set_mixed_binary32(tableView.TableViewHandle, (IntPtr) columnIndex, (IntPtr) rowIndex,
+                        valuePointer,
                         (IntPtr) value.Length);
             }
             finally
@@ -3627,40 +3680,41 @@ enum DataType {
 
         [DllImport(L64, EntryPoint = "table_set_mixed_empty_subtable",
             CallingConvention = CallingConvention.Cdecl)]
-        private static extern void table_set_mixed_empty_subtable64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+        private static extern void table_set_mixed_empty_subtable64(TableHandle tablePtr, IntPtr columnNdx,
+            IntPtr rowNdx);
 
         [DllImport(L32, EntryPoint = "table_set_mixed_empty_subtable",
             CallingConvention = CallingConvention.Cdecl)]
-        private static extern void table_set_mixed_empty_subtable32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+        private static extern void table_set_mixed_empty_subtable32(TableHandle tablePtr, IntPtr columnNdx,
+            IntPtr rowNdx);
 
         public static void TableSetMixedEmptySubTable(Table table, long columnIndex, long rowIndex)
         {
 
             if (Is64Bit)
-                table_set_mixed_empty_subtable64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
+                table_set_mixed_empty_subtable64(table.TableHandle, (IntPtr) columnIndex, (IntPtr) rowIndex);
             else
-                table_set_mixed_empty_subtable32(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
+                table_set_mixed_empty_subtable32(table.TableHandle, (IntPtr) columnIndex, (IntPtr) rowIndex);
         }
 
 
 
         [DllImport(L64, EntryPoint = "tableview_set_mixed_empty_subtable",
             CallingConvention = CallingConvention.Cdecl)]
-        private static extern void tableView_set_mixed_empty_subtable64(IntPtr tableViewPtr, IntPtr columnNdx,
+        private static extern void tableView_set_mixed_empty_subtable64(TableViewHandle tableViewPtr, IntPtr columnNdx,
             IntPtr rowNdx);
 
         [DllImport(L32, EntryPoint = "tableview_set_mixed_empty_subtable",
             CallingConvention = CallingConvention.Cdecl)]
-        private static extern void tableView_set_mixed_empty_subtable32(IntPtr tableViewPtr, IntPtr columnNdx,
+        private static extern void tableView_set_mixed_empty_subtable32(TableViewHandle tableViewPtr, IntPtr columnNdx,
             IntPtr rowNdx);
 
         public static void TableViewSetMixedEmptySubTable(TableView tableView, long columnIndex, long rowIndex)
         {
-
             if (Is64Bit)
-                tableView_set_mixed_empty_subtable64(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
+                tableView_set_mixed_empty_subtable64(tableView.TableViewHandle, (IntPtr) columnIndex, (IntPtr) rowIndex);
             else
-                tableView_set_mixed_empty_subtable32(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
+                tableView_set_mixed_empty_subtable32(tableView.TableViewHandle, (IntPtr) columnIndex, (IntPtr) rowIndex);
         }
 
 
@@ -3671,63 +3725,68 @@ enum DataType {
 
         [DllImport(L64, EntryPoint = "tableview_set_mixed_int", CallingConvention = CallingConvention.Cdecl
             )]
-        private static extern void tableView_set_mixed_int64(IntPtr tableViewPtr, IntPtr columnNdx, IntPtr rowNdx,
+        private static extern void tableView_set_mixed_int64(TableViewHandle tableViewPtr, IntPtr columnNdx,
+            IntPtr rowNdx,
             long value);
 
         [DllImport(L32, EntryPoint = "tableview_set_mixed_int", CallingConvention = CallingConvention.Cdecl
             )]
-        private static extern void tableView_set_mixed_int32(IntPtr tableViewPtr, IntPtr columnNdx, IntPtr rowNdx,
+        private static extern void tableView_set_mixed_int32(TableViewHandle tableViewPtr, IntPtr columnNdx,
+            IntPtr rowNdx,
             long value);
 
         public static void TableViewSetMixedLong(TableView tableView, long columnIndex, long rowIndex, long value)
         {
 
             if (Is64Bit)
-                tableView_set_mixed_int64(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
+                tableView_set_mixed_int64(tableView.TableViewHandle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
             else
-                tableView_set_mixed_int32(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
+                tableView_set_mixed_int32(tableView.TableViewHandle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
         }
 
         //just calls the version with the long parameter. We  might want to add a function that takes
         //an int instead of a long, but current speed tests show neglible difference
         public static void TableViewSetMixedInt(TableView tableView, long columnIndex, long rowIndex, int value)
         {
-
             if (Is64Bit)
-                tableView_set_mixed_int64(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
+                tableView_set_mixed_int64(tableView.TableViewHandle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
             else
-                tableView_set_mixed_int32(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
+                tableView_set_mixed_int32(tableView.TableViewHandle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
         }
 
 
         [DllImport(L64, EntryPoint = "table_set_mixed_int", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void table_set_mixed_int64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx, long value);
+        private static extern void table_set_mixed_int64(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx,
+            long value);
 
         [DllImport(L32, EntryPoint = "table_set_mixed_int", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void table_set_mixed_int32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx, long value);
+        private static extern void table_set_mixed_int32(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx,
+            long value);
 
         public static void TableSetMixedLong(Table table, long columnIndex, long rowIndex, long value)
         {
             if (Is64Bit)
-                table_set_mixed_int64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
+                table_set_mixed_int64(table.TableHandle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
             else
-                table_set_mixed_int32(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
+                table_set_mixed_int32(table.TableHandle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
         }
 
 
 
         [DllImport(L64, EntryPoint = "table_set_mixed_int32", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void table_set_mixed_int3264(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx, int value);
+        private static extern void table_set_mixed_int3264(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx,
+            int value);
 
         [DllImport(L32, EntryPoint = "table_set_mixed_int32", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void table_set_mixed_int3232(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx, int value);
+        private static extern void table_set_mixed_int3232(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx,
+            int value);
 
         public static void TableSetMixedInt(Table table, long columnIndex, long rowIndex, int value)
         {
             if (Is64Bit)
-                table_set_mixed_int3264(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
+                table_set_mixed_int3264(table.TableHandle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
             else
-                table_set_mixed_int3232(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
+                table_set_mixed_int3232(table.TableHandle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
         }
 
         /*  no used for now
@@ -3751,178 +3810,171 @@ enum DataType {
 
         //TIGHTDB_C_CS_API int64_t table_get_int(Table* TablePtr, size_t column_ndx, size_t row_ndx)
         [DllImport(L64, EntryPoint = "table_get_int", CallingConvention = CallingConvention.Cdecl)]
-        private static extern long table_get_int64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+        private static extern long table_get_int64(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx);
 
         [DllImport(L32, EntryPoint = "table_get_int", CallingConvention = CallingConvention.Cdecl)]
-        private static extern long table_get_int32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+        private static extern long table_get_int32(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx);
 
 
         //note even though it's called getint - it does return an int64_t which is a 64 bit signed, that is, similar to C# long
         public static long TableGetInt(Table table, long columnIndex, long rowIndex)
         {
-            if (Is64Bit) return table_get_int64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
-            return table_get_int32(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
+            return Is64Bit
+                ? table_get_int64(table.TableHandle, (IntPtr) columnIndex, (IntPtr) rowIndex)
+                : table_get_int32(table.TableHandle, (IntPtr) columnIndex, (IntPtr) rowIndex);
         }
-
 
 
         //TIGHTDB_C_CS_API int64_t table_get_int(Table* TablePtr, size_t column_ndx, size_t row_ndx)
         [DllImport(L64, EntryPoint = "tableview_get_int", CallingConvention = CallingConvention.Cdecl)]
-        private static extern long tableView_get_int64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+        private static extern long tableView_get_int64(TableViewHandle tableViewPtr, IntPtr columnNdx, IntPtr rowNdx);
 
         [DllImport(L32, EntryPoint = "tableview_get_int", CallingConvention = CallingConvention.Cdecl)]
-        private static extern long tableView_get_int32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+        private static extern long tableView_get_int32(TableViewHandle tableViewPtr, IntPtr columnNdx, IntPtr rowNdx);
 
 
         public static long TableViewGetInt(TableView tableView, long columnIndex, long rowIndex)
         {
             return Is64Bit
-                ? tableView_get_int64(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex)
-                : tableView_get_int32(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
+                ? tableView_get_int64(tableView.TableViewHandle, (IntPtr) columnIndex, (IntPtr) rowIndex)
+                : tableView_get_int32(tableView.TableViewHandle, (IntPtr) columnIndex, (IntPtr) rowIndex);
         }
 
 
 
         //get an int from a mixed
         [DllImport(L64, EntryPoint = "table_get_mixed_int", CallingConvention = CallingConvention.Cdecl)]
-        private static extern long table_get_mixed_int64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+        private static extern long table_get_mixed_int64(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx);
 
         [DllImport(L32, EntryPoint = "table_get_mixed_int", CallingConvention = CallingConvention.Cdecl)]
-        private static extern long table_get_mixed_int32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+        private static extern long table_get_mixed_int32(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx);
 
 
         //note even though it's called getint - it does return an int64_t which is a 64 bit signed, that is, similar to C# long
         public static long TableGetMixedInt(Table table, long columnIndex, long rowIndex)
         {
-            if (Is64Bit)
-                return table_get_mixed_int64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
-            return table_get_mixed_int32(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
+            return Is64Bit
+                ? table_get_mixed_int64(table.TableHandle, (IntPtr) columnIndex, (IntPtr) rowIndex)
+                : table_get_mixed_int32(table.TableHandle, (IntPtr) columnIndex, (IntPtr) rowIndex);
         }
 
 
-
         [DllImport(L64, EntryPoint = "table_get_mixed_bool", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_get_mixed_bool64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+        private static extern IntPtr table_get_mixed_bool64(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx);
 
         [DllImport(L32, EntryPoint = "table_get_mixed_bool", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_get_mixed_bool32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+        private static extern IntPtr table_get_mixed_bool32(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx);
 
         //convert.tobool does not take an IntPtr so we have to convert ourselves we get 1 for true, 0 for false
         public static bool TableGetMixedBool(Table table, long columnIndex, long rowIndex)
         {
-            if (Is64Bit)
-                return IntPtrToBool(table_get_mixed_bool64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex));
-            return IntPtrToBool(table_get_mixed_bool32(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex));
+            return IntPtrToBool(Is64Bit
+                ? table_get_mixed_bool64(table.TableHandle, (IntPtr) columnIndex, (IntPtr) rowIndex)
+                : table_get_mixed_bool32(table.TableHandle, (IntPtr) columnIndex, (IntPtr) rowIndex));
         }
-
-
-
-
-
 
 
         //get an int from a mixed
         [DllImport(L64, EntryPoint = "tableview_get_mixed_int", CallingConvention = CallingConvention.Cdecl
             )]
-        private static extern long tableView_get_mixed_int64(IntPtr tableViewPtr, IntPtr columnNdx, IntPtr rowNdx);
+        private static extern long tableView_get_mixed_int64(TableViewHandle tableViewPtr, IntPtr columnNdx,
+            IntPtr rowNdx);
 
         [DllImport(L32, EntryPoint = "tableview_get_mixed_int", CallingConvention = CallingConvention.Cdecl
             )]
-        private static extern long tableView_get_mixed_int32(IntPtr tableViewPtr, IntPtr columnNdx, IntPtr rowNdx);
+        private static extern long tableView_get_mixed_int32(TableViewHandle tableViewPtr, IntPtr columnNdx,
+            IntPtr rowNdx);
 
 
         //note even though it's called getint - it does return an int64_t which is a 64 bit signed, that is, similar to C# long
         public static long TableViewGetMixedInt(TableView tableView, long columnIndex, long rowIndex)
         {
             return Is64Bit
-                ? tableView_get_mixed_int64(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex)
-                : tableView_get_mixed_int32(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
+                ? tableView_get_mixed_int64(tableView.TableViewHandle, (IntPtr) columnIndex, (IntPtr) rowIndex)
+                : tableView_get_mixed_int32(tableView.TableViewHandle, (IntPtr) columnIndex, (IntPtr) rowIndex);
         }
 
 
         [DllImport(L64, EntryPoint = "tableview_get_mixed_bool", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr tableview_get_mixed_bool64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+        private static extern IntPtr tableview_get_mixed_bool64(TableViewHandle tableViewPtr, IntPtr columnNdx,
+            IntPtr rowNdx);
 
         [DllImport(L32, EntryPoint = "tableview_get_mixed_bool", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr tableview_get_mixed_bool32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+        private static extern IntPtr tableview_get_mixed_bool32(TableViewHandle tableViewPtr, IntPtr columnNdx,
+            IntPtr rowNdx);
 
         //convert.tobool does not take an IntPtr so we have to convert ourselves we get 1 for true, 0 for false
         public static bool TableViewGetMixedBool(TableView tableView, long columnIndex, long rowIndex)
         {
-            if (Is64Bit)
-                return
-                    IntPtrToBool(tableview_get_mixed_bool64(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex));
-            return IntPtrToBool(tableview_get_mixed_bool32(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex));
+            return IntPtrToBool(Is64Bit
+                ? tableview_get_mixed_bool64(tableView.TableViewHandle, (IntPtr) columnIndex, (IntPtr) rowIndex)
+                : tableview_get_mixed_bool32(tableView.TableViewHandle, (IntPtr) columnIndex, (IntPtr) rowIndex));
         }
 
 
 
-
-
-
         [DllImport(L64, EntryPoint = "table_get_double", CallingConvention = CallingConvention.Cdecl)]
-        private static extern Double table_get_double64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+        private static extern Double table_get_double64(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx);
 
         [DllImport(L32, EntryPoint = "table_get_double", CallingConvention = CallingConvention.Cdecl)]
-        private static extern Double table_get_double32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+        private static extern Double table_get_double32(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx);
 
 
         //note even though it's called getint - it does return an int64_t which is a 64 bit signed, that is, similar to C# long
         public static Double TableGetDouble(Table table, long columnIndex, long rowIndex)
         {
-            if (Is64Bit) return table_get_double64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
-            return table_get_double32(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
+            return Is64Bit
+                ? table_get_double64(table.TableHandle, (IntPtr) columnIndex, (IntPtr) rowIndex)
+                : table_get_double32(table.TableHandle, (IntPtr) columnIndex, (IntPtr) rowIndex);
         }
-
 
 
         //TIGHTDB_C_CS_API int64_t table_get_int(Table* TablePtr, size_t column_ndx, size_t row_ndx)
         [DllImport(L64, EntryPoint = "tableview_get_double", CallingConvention = CallingConvention.Cdecl)]
-        private static extern Double tableView_get_double64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+        private static extern Double tableView_get_double64(TableViewHandle tableViewPtr, IntPtr columnNdx, IntPtr rowNdx);
 
         [DllImport(L32, EntryPoint = "tableview_get_double", CallingConvention = CallingConvention.Cdecl)]
-        private static extern Double tableView_get_double32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+        private static extern Double tableView_get_double32(TableViewHandle tableViewPtr, IntPtr columnNdx, IntPtr rowNdx);
 
 
         public static Double TableViewGetDouble(TableView tableView, long columnIndex, long rowIndex)
         {
             return Is64Bit
-                ? tableView_get_double64(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex)
-                : tableView_get_double32(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
+                ? tableView_get_double64(tableView.TableViewHandle, (IntPtr)columnIndex, (IntPtr)rowIndex)
+                : tableView_get_double32(tableView.TableViewHandle, (IntPtr)columnIndex, (IntPtr)rowIndex);
         }
 
 
 
 
         [DllImport(L64, EntryPoint = "table_get_float", CallingConvention = CallingConvention.Cdecl)]
-        private static extern float table_get_float64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+        private static extern float table_get_float64(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx);
 
         [DllImport(L32, EntryPoint = "table_get_float", CallingConvention = CallingConvention.Cdecl)]
-        private static extern float table_get_float32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+        private static extern float table_get_float32(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+        
 
-
-        //note even though it's called getint - it does return an int64_t which is a 64 bit signed, that is, similar to C# long
         public static float TableGetFloat(Table table, long columnIndex, long rowIndex)
         {
-            if (Is64Bit) return table_get_float64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
-            return table_get_float32(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
+            return Is64Bit
+                ? table_get_float64(table.TableHandle, (IntPtr) columnIndex, (IntPtr) rowIndex)
+                : table_get_float32(table.TableHandle, (IntPtr) columnIndex, (IntPtr) rowIndex);
         }
 
 
-
-        //TIGHTDB_C_CS_API int64_t table_get_int(Table* TablePtr, size_t column_ndx, size_t row_ndx)
+        
         [DllImport(L64, EntryPoint = "tableview_get_float", CallingConvention = CallingConvention.Cdecl)]
-        private static extern float tableView_get_float64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+        private static extern float tableView_get_float64(TableViewHandle tableViewPtr, IntPtr columnNdx, IntPtr rowNdx);
 
         [DllImport(L32, EntryPoint = "tableview_get_float", CallingConvention = CallingConvention.Cdecl)]
-        private static extern float tableView_get_float32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+        private static extern float tableView_get_float32(TableViewHandle tableViewPtr, IntPtr columnNdx, IntPtr rowNdx);
 
 
         public static float TableViewGetFloat(TableView tableView, long columnIndex, long rowIndex)
         {
             return Is64Bit
-                ? tableView_get_float64(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex)
-                : tableView_get_float32(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
+                ? tableView_get_float64(tableView.TableViewHandle, (IntPtr)columnIndex, (IntPtr)rowIndex)
+                : tableView_get_float32(tableView.TableViewHandle, (IntPtr)columnIndex, (IntPtr)rowIndex);
         }
 
 
@@ -3931,78 +3983,66 @@ enum DataType {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
+        //dates are always 64 bit in core
         [DllImport(L64, EntryPoint = "tableview_get_date", CallingConvention = CallingConvention.Cdecl)]
-        private static extern Int64 tableView_get_date64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+        private static extern Int64 tableView_get_date64(TableViewHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx);
 
         [DllImport(L32, EntryPoint = "tableview_get_date", CallingConvention = CallingConvention.Cdecl)]
-        private static extern Int64 tableView_get_date32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+        private static extern Int64 tableView_get_date32(TableViewHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx);
 
         public static DateTime TableViewGetDateTime(TableView tableView, long columnIndex, long rowIndex)
         {
-            Int64 cppdate = Is64Bit
-                ? tableView_get_date64(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex)
-                : tableView_get_date32(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
+            var cppdate = Is64Bit
+                ? tableView_get_date64(tableView.TableViewHandle, (IntPtr)columnIndex, (IntPtr)rowIndex)
+                : tableView_get_date32(tableView.TableViewHandle, (IntPtr)columnIndex, (IntPtr)rowIndex);
             return ToCSharpTimeUtc(cppdate);
         }
 
         [DllImport(L64, EntryPoint = "table_get_date", CallingConvention = CallingConvention.Cdecl)]
-        private static extern Int64 table_get_date64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+        private static extern Int64 table_get_date64(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx);
 
         [DllImport(L32, EntryPoint = "table_get_date", CallingConvention = CallingConvention.Cdecl)]
-        private static extern Int64 table_get_date32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+        private static extern Int64 table_get_date32(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx);
 
         public static DateTime TableGetDateTime(Table table, long columnIndex, long rowIndex)
         {
 
-            Int64 cppdate =
+            var cppdate =
                 Is64Bit
-                    ? table_get_date64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex)
-                    : table_get_date32(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
+                    ? table_get_date64(table.TableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex)
+                    : table_get_date32(table.TableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex);
             return ToCSharpTimeUtc(cppdate);
         }
 
 
 
         [DllImport(L64, EntryPoint = "tableview_get_mixed_date", CallingConvention = CallingConvention.Cdecl)]
-        private static extern Int64 tableView_get_mixed_date64(IntPtr tableViewPtr, IntPtr columnNdx, IntPtr rowNdx);
+        private static extern Int64 tableView_get_mixed_date64(TableViewHandle tableViewPtr, IntPtr columnNdx, IntPtr rowNdx);
 
         [DllImport(L32, EntryPoint = "tableview_get_mixed_date", CallingConvention = CallingConvention.Cdecl)]
-        private static extern Int64 tableView_get_mixed_date32(IntPtr tableViewPtr, IntPtr columnNdx, IntPtr rowNdx);
+        private static extern Int64 tableView_get_mixed_date32(TableViewHandle tableViewPtr, IntPtr columnNdx, IntPtr rowNdx);
 
         public static DateTime TableViewGetMixedDateTime(TableView tableView, long columnIndex, long rowIndex)
         {
-            Int64 cppdate = Is64Bit
-                ? tableView_get_mixed_date64(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex)
-                : tableView_get_mixed_date32(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
+            var cppdate = Is64Bit
+                ? tableView_get_mixed_date64(tableView.TableViewHandle, (IntPtr)columnIndex, (IntPtr)rowIndex)
+                : tableView_get_mixed_date32(tableView.TableViewHandle, (IntPtr)columnIndex, (IntPtr)rowIndex);
             return ToCSharpTimeUtc(cppdate);
         }
 
         //the call should return a time_t in 64 bit format (always) so we marshal it as long
         [DllImport(L64, EntryPoint = "table_get_mixed_date", CallingConvention = CallingConvention.Cdecl)]
-        private static extern Int64 table_get_mixed_date64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+        private static extern Int64 table_get_mixed_date64(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx);
 
         [DllImport(L32, EntryPoint = "table_get_mixed_date", CallingConvention = CallingConvention.Cdecl)]
-        private static extern Int64 table_get_mixed_date32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+        private static extern Int64 table_get_mixed_date32(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx);
 
         public static DateTime TableGetMixedDateTime(Table table, long columnIndex, long rowIndex)
         {
-
-            Int64 cppdate =
+            var cppdate =
                 Is64Bit
-                    ? table_get_mixed_date64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex)
-                    : table_get_mixed_date32(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
+                    ? table_get_mixed_date64(table.TableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex)
+                    : table_get_mixed_date32(table.TableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex);
             return ToCSharpTimeUtc(cppdate);
         }
 
@@ -4010,53 +4050,50 @@ enum DataType {
 
 
         [DllImport(L64, EntryPoint = "table_get_mixed_double", CallingConvention = CallingConvention.Cdecl)]
-        private static extern Double table_get_mixed_double64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+        private static extern Double table_get_mixed_double64(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx);
 
         [DllImport(L32, EntryPoint = "table_get_mixed_double", CallingConvention = CallingConvention.Cdecl)]
-        private static extern Double table_get_mixed_double32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+        private static extern Double table_get_mixed_double32(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx);
 
         public static Double TableGetMixedDouble(Table table, long columnIndex, long rowIndex)
         {
             return
                 Is64Bit
-                    ? table_get_mixed_double64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex)
-                    : table_get_mixed_double32(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
+                    ? table_get_mixed_double64(table.TableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex)
+                    : table_get_mixed_double32(table.TableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex);
         }
 
 
         //the call should return a time_t in 64 bit format (always) so we marshal it as long
         [DllImport(L64, EntryPoint = "tableview_get_mixed_double", CallingConvention = CallingConvention.Cdecl)]
-        private static extern Double tableView_get_mixed_double64(IntPtr tableViewPtr, IntPtr columnNdx, IntPtr rowNdx);
+        private static extern Double tableView_get_mixed_double64(TableViewHandle tableViewPtr, IntPtr columnNdx, IntPtr rowNdx);
 
         [DllImport(L32, EntryPoint = "tableview_get_mixed_double", CallingConvention = CallingConvention.Cdecl)]
-        private static extern Double tableView_get_mixed_double32(IntPtr tableViewPtr, IntPtr columnNdx, IntPtr rowNdx);
+        private static extern Double tableView_get_mixed_double32(TableViewHandle tableViewPtr, IntPtr columnNdx, IntPtr rowNdx);
 
         public static Double TableViewGetMixedDouble(TableView tableView, long columnIndex, long rowIndex)
         {
             return
                 Is64Bit
-                    ? tableView_get_mixed_double64(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex)
-                    : tableView_get_mixed_double32(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
+                    ? tableView_get_mixed_double64(tableView.TableViewHandle, (IntPtr)columnIndex, (IntPtr)rowIndex)
+                    : tableView_get_mixed_double32(tableView.TableViewHandle, (IntPtr)columnIndex, (IntPtr)rowIndex);
         }
 
 
 
 
         [DllImport(L64, EntryPoint = "table_get_mixed_float", CallingConvention = CallingConvention.Cdecl)]
-        private static extern float table_get_mixed_float64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+        private static extern float table_get_mixed_float64(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx);
 
         [DllImport(L32, EntryPoint = "table_get_mixed_float", CallingConvention = CallingConvention.Cdecl)]
-        private static extern float table_get_mixed_float32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+        private static extern float table_get_mixed_float32(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx);
 
         public static float TableGetMixedFloat(Table table, long columnIndex, long rowIndex)
         {
-
             return
                 Is64Bit
-                    ? table_get_mixed_float64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex)
-                    : table_get_mixed_float32(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
-
-
+                    ? table_get_mixed_float64(table.TableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex)
+                    : table_get_mixed_float32(table.TableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex);
         }
 
 
@@ -4064,35 +4101,33 @@ enum DataType {
 
         //the call should return a time_t in 64 bit format (always) so we marshal it as long
         [DllImport(L64, EntryPoint = "tableview_get_mixed_float", CallingConvention = CallingConvention.Cdecl)]
-        private static extern float tableView_get_mixed_float64(IntPtr tableViewPtr, IntPtr columnNdx, IntPtr rowNdx);
+        private static extern float tableView_get_mixed_float64(TableViewHandle tableViewPtr, IntPtr columnNdx, IntPtr rowNdx);
 
         [DllImport(L32, EntryPoint = "tableview_get_mixed_float", CallingConvention = CallingConvention.Cdecl)]
-        private static extern float tableView_get_mixed_float32(IntPtr tableViewPtr, IntPtr columnNdx, IntPtr rowNdx);
+        private static extern float tableView_get_mixed_float32(TableViewHandle tableViewPtr, IntPtr columnNdx, IntPtr rowNdx);
 
         public static float TableViewGetMixedFloat(TableView tableView, long columnIndex, long rowIndex)
         {
-
             return
                 Is64Bit
-                    ? tableView_get_mixed_float64(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex)
-                    : tableView_get_mixed_float32(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
-
+                    ? tableView_get_mixed_float64(tableView.TableViewHandle, (IntPtr)columnIndex, (IntPtr)rowIndex)
+                    : tableView_get_mixed_float32(tableView.TableViewHandle, (IntPtr)columnIndex, (IntPtr)rowIndex);
         }
 
 
 
 
         [DllImport(L64, EntryPoint = "table_size", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_get_size64(IntPtr tablePtr);
+        private static extern IntPtr table_get_size64(TableHandle tablePtr);
 
         [DllImport(L32, EntryPoint = "table_size", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_get_size32(IntPtr tablePtr);
+        private static extern IntPtr table_get_size32(TableHandle tablePtr);
 
         public static long TableSize(Table t)
         {
-            if (Is64Bit)
-                return (long) table_get_size64(t.Handle);
-            return (long) table_get_size32(t.Handle);
+            return Is64Bit
+                ? (long) table_get_size64(t.TableHandle)
+                : (long) table_get_size32(t.TableHandle);
         }
 
 
@@ -4104,51 +4139,49 @@ enum DataType {
 
         public static long TestSizeCalls()
         {
-            if (Is64Bit)
-                return (long) test_size_calls64();
-            return (long) test_size_calls32();
+            return Is64Bit
+                ? (long) test_size_calls64()
+                : (long) test_size_calls32();
         }
 
 
         [DllImport(L64, EntryPoint = "table_get_bool", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_get_bool64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+        private static extern IntPtr table_get_bool64(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx);
 
         [DllImport(L32, EntryPoint = "table_get_bool", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_get_bool32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+        private static extern IntPtr table_get_bool32(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx);
 
         //convert.tobool does not take an IntPtr so we have to convert ourselves we get 1 for true, 0 for false
         public static bool TableGetBool(Table table, long columnIndex, long rowIndex)
         {
             if (Is64Bit)
-                return IntPtrToBool(table_get_bool64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex));
-            return IntPtrToBool(table_get_bool32(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex));
+                return IntPtrToBool(table_get_bool64(table.TableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex));
+            return IntPtrToBool(table_get_bool32(table.TableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex));
         }
 
 
 
         [DllImport(L64, EntryPoint = "tableview_get_bool", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr tableView_get_bool64(IntPtr tableViewPtr, IntPtr columnNdx, IntPtr rowNdx);
+        private static extern IntPtr tableView_get_bool64(TableViewHandle tableViewPtr, IntPtr columnNdx, IntPtr rowNdx);
 
         [DllImport(L32, EntryPoint = "tableview_get_bool", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr tableView_get_bool32(IntPtr tableViewPtr, IntPtr columnNdx, IntPtr rowNdx);
+        private static extern IntPtr tableView_get_bool32(TableViewHandle tableViewPtr, IntPtr columnNdx, IntPtr rowNdx);
 
         //convert.tobool does not take an IntPtr so we have to convert ourselves we get 1 for true, 0 for false
         public static bool TableViewGetBool(TableView tableView, long columnIndex, long rowIndex)
         {
-            if (Is64Bit)
-                return IntPtrToBool(tableView_get_bool64(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex));
-            return IntPtrToBool(tableView_get_bool32(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex));
+            return IntPtrToBool(Is64Bit
+                ? tableView_get_bool64(tableView.TableViewHandle, (IntPtr) columnIndex, (IntPtr) rowIndex)
+                : tableView_get_bool32(tableView.TableViewHandle, (IntPtr) columnIndex, (IntPtr) rowIndex));
         }
 
 
-
-
         [DllImport(L64, EntryPoint = "tableview_set_bool", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void tableView_set_bool64(IntPtr tableViewPtr, IntPtr columnNdx, IntPtr rowNdx,
+        private static extern void tableView_set_bool64(TableViewHandle tableViewPtr, IntPtr columnNdx, IntPtr rowNdx,
             IntPtr value);
 
         [DllImport(L32, EntryPoint = "tableview_set_bool", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void tableView_set_bool32(IntPtr tableViewPtr, IntPtr columnNdx, IntPtr rowNdx,
+        private static extern void tableView_set_bool32(TableViewHandle tableViewPtr, IntPtr columnNdx, IntPtr rowNdx,
             IntPtr value);
 
         //convert.tobool does not take an IntPtr so we have to convert ourselves we get 1 for true, 0 for false
@@ -4156,40 +4189,37 @@ enum DataType {
         {
             var ipValue = BoolToIntPtr(value);
             if (Is64Bit)
-                tableView_set_bool64(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, ipValue);
+                tableView_set_bool64(tableView.TableViewHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, ipValue);
             else
-                tableView_set_bool32(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, ipValue);
+                tableView_set_bool32(tableView.TableViewHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, ipValue);
         }
 
         [DllImport(L64, EntryPoint = "table_set_bool", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void table_set_bool64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx,
+        private static extern void table_set_bool64(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx,
             IntPtr value);
 
         [DllImport(L32, EntryPoint = "table_set_bool", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void table_set_bool32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx,
+        private static extern void table_set_bool32(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx,
             IntPtr value);
 
         //convert.tobool does not take an IntPtr so we have to convert ourselves we get 1 for true, 0 for false
         public static void TableSetBool(Table table, long columnIndex, long rowIndex, Boolean value)
         {
-            IntPtr ipValue = BoolToIntPtr(value);
-
+            var ipValue = BoolToIntPtr(value);
             if (Is64Bit)
-                table_set_bool64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, ipValue);
+                table_set_bool64(table.TableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, ipValue);
             else
-                table_set_bool32(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, ipValue);
+                table_set_bool32(table.TableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, ipValue);
         }
 
 
 
-
-
         [DllImport(L64, EntryPoint = "tableview_set_mixed_bool", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void tableview_set_mixed_bool64(IntPtr tableViewPtr, IntPtr columnNdx, IntPtr rowNdx,
+        private static extern void tableview_set_mixed_bool64(TableViewHandle tableViewPtr, IntPtr columnNdx, IntPtr rowNdx,
             IntPtr value);
 
         [DllImport(L32, EntryPoint = "tableview_set_mixed_bool", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void tableview_set_mixed_bool32(IntPtr tableViewPtr, IntPtr columnNdx, IntPtr rowNdx,
+        private static extern void tableview_set_mixed_bool32(TableViewHandle tableViewPtr, IntPtr columnNdx, IntPtr rowNdx,
             IntPtr value);
 
         //convert.tobool does not take an IntPtr so we have to convert ourselves we get 1 for true, 0 for false
@@ -4197,56 +4227,46 @@ enum DataType {
         {
             var ipValue = BoolToIntPtr(value);
             if (Is64Bit)
-                tableview_set_mixed_bool64(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, ipValue);
+                tableview_set_mixed_bool64(tableView.TableViewHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, ipValue);
             else
-                tableview_set_mixed_bool32(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, ipValue);
+                tableview_set_mixed_bool32(tableView.TableViewHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, ipValue);
         }
 
         [DllImport(L64, EntryPoint = "table_set_mixed_bool", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void table_set_mixed_bool64(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx,
+        private static extern void table_set_mixed_bool64(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx,
             IntPtr value);
 
         [DllImport(L32, EntryPoint = "table_set_mixed_bool", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void table_set_mixed_bool32(IntPtr tablePtr, IntPtr columnNdx, IntPtr rowNdx,
+        private static extern void table_set_mixed_bool32(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx,
             IntPtr value);
 
         //convert.tobool does not take an IntPtr so we have to convert ourselves we get 1 for true, 0 for false
         public static void TableSetMixedBool(Table table, long columnIndex, long rowIndex, Boolean value)
         {
-            IntPtr ipValue = BoolToIntPtr(value);
-
+            var ipValue = BoolToIntPtr(value);
             if (Is64Bit)
-                table_set_mixed_bool64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, ipValue);
+                table_set_mixed_bool64(table.TableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, ipValue);
             else
-                table_set_mixed_bool32(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, ipValue);
+                table_set_mixed_bool32(table.TableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, ipValue);
         }
-
-
-
-
-
-
-
-
-
 
 
 
 
 
         [DllImport(L64, EntryPoint = "query_get_column_index", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr query_get_column_index64(IntPtr queryPtr,
+        private static extern IntPtr query_get_column_index64(QueryHandle queryPtr,
             [MarshalAs(UnmanagedType.LPWStr)] String columnName, IntPtr columnNameLen);
 
         [DllImport(L32, EntryPoint = "query_get_column_index", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr query_get_column_index32(IntPtr queryPtr,
+        private static extern IntPtr query_get_column_index32(QueryHandle queryPtr,
             [MarshalAs(UnmanagedType.LPWStr)] String columnName, IntPtr columnNameLen);
 
         public static long QueryGetColumnIndex(Query q, String columnName)
         {
             if (Is64Bit)
-                return (long) query_get_column_index64(q.Handle, columnName, (IntPtr) columnName.Length);
-            return (long) query_get_column_index32(q.Handle, columnName, (IntPtr) columnName.Length);
+                return (long)query_get_column_index64(q.QueryHandle, columnName, (IntPtr)columnName.Length);
+            return (long)query_get_column_index32(q.QueryHandle, columnName, (IntPtr)columnName.Length);
         }
 
 
