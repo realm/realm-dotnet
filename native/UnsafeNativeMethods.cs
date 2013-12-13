@@ -2445,17 +2445,6 @@ enum DataType {
                 table_get_spec32(tableHandle);
         }
 
-        //the spec returned here is live as long as the table itself is live, so don't dispose of the table and keep on using the spec
-        //and..DONT unbind the spechandle
-        public static Spec TableGetSpec(Table t)
-        {
-            return new Spec();
-            if (Is64Bit)
-                return new Spec(t, table_get_spec64(t.Handle), false);
-            //this spec should NOT be deallocated after use 
-            return new Spec(t, table_get_spec32(t.Handle), false);
-            //this spec should NOT be deallocated after use         
-        }
 
 
         //tightdb_c_cs_API size_t get_column_count(tightdb::Table* TablePtr)

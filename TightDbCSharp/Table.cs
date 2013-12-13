@@ -429,12 +429,10 @@ namespace TightDbCSharp
             UnsafeNativeMethods.TableRemoveColumn(this,columnIndex);
             ++Version;
         }
-
-
         
         internal override Spec GetSpec()
         {
-            return UnsafeNativeMethods.TableGetSpec(this); 
+            return new Spec(this,TableHandle.GetSpec());//this spec should NOT be deallocated after use 
         }
 
         private void ValidateColumnChangeIsOkay()
