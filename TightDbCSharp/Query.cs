@@ -12,12 +12,11 @@ namespace TightDbCSharp
     /// </summary>
     public class Query : Handled, IEnumerable<TableRow>
     {
-
-        internal Query(IntPtr handle,Table underlyingTable, bool shouldbedisposed)
+        internal Query(QueryHandle handle,Table underlyingTable)
         {
             try
             {
-                SetHandle(handle, shouldbedisposed,underlyingTable.ReadOnly);
+                SetHandle(handle, underlyingTable.ReadOnly);
                 UnderlyingTable = underlyingTable;
             }
             catch (Exception)//no matter where we get an exception, we dispose just to be 100% sure
@@ -26,7 +25,6 @@ namespace TightDbCSharp
                 throw;
             }
         }
-
         
         
         private Table _underlyingTable;

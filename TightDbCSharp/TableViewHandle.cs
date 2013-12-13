@@ -10,7 +10,7 @@ namespace TightDbCSharp
     {
         protected override void Unbind()
         {
-            UnsafeNativeMethods.TableViewUnbind(handle);
+            UnsafeNativeMethods.TableViewUnbind(this);
         }
 
         //used in Table to create TableviewHandles atomically, specifying both root and handle at the same time

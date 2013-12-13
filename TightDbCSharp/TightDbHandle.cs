@@ -29,7 +29,7 @@ using Microsoft.Win32.SafeHandles;
  */
 namespace TightDbCSharp
 {
-    internal abstract class TightDbHandle : CriticalHandleZeroOrMinusOneIsInvalid
+    public abstract class TightDbHandle : CriticalHandleZeroOrMinusOneIsInvalid
     {
         //Every handle can potentially have an unbind list
         //If the unbind list is instantiated, this handle is a handle for a root object

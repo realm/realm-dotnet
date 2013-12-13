@@ -25,10 +25,44 @@ namespace TightDbCSharp
         //note that IgnoreUnbind is set to false, the tableview should be unbound
         private TableViewHandle RootedTableViewHandle()
         {
-            return Root == null ?
+            return (Root == null) ?
                 new TableViewHandle(this):
                 new TableViewHandle(Root);
         }
+
+        private QueryHandle RootedQueryHandle()
+        {
+            return (Root == null) ?
+                new QueryHandle(this):
+                new QueryHandle(Root);
+        }
+
+        private TableHandle RootTableHandle()
+        {
+            return new TableHandle(null);
+        }
+
+
+        //acquire a TableHandle And set root in an atomic fashion 
+        internal TableHandle TableCopyTable(TableHandle sourceTable)
+        {
+            var th = RootTableHandle();//the resulting table is freestanding and its own root
+
+            //At this point th is invalid due to its handle being uninitialized, but the root is set correctly
+            //a finalize at this point will not leak anything and the handle will not do anything
+
+            //now, set the TableView handle...
+            RuntimeHelpers.PrepareConstrainedRegions();//the following finally will run with no out-of-band exceptions
+            try
+            { }
+            finally
+            {
+                th.SetHandle(UnsafeNativeMethods.TableCopyTable(sourceTable));
+            }//at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
+            return th;
+        }
+
+
         //acquire a TableViewHandle And set root in an atomic fashion 
         internal TableViewHandle TableDistinct(long columnIndex)
         {
@@ -48,6 +82,25 @@ namespace TightDbCSharp
             return sh;
         }
 
+
+        //acquire a QueryHandle from table_where And set root in an atomic fashion 
+        internal QueryHandle TableWhere()
+        {
+            var queryHandle = RootedQueryHandle();
+
+            //At this point sh is invalid due to its handle being uninitialized, but the root is set correctly
+            //a finalize at this point will not leak anything and the handle will not do anything
+
+            //now, set the TableView handle...
+            RuntimeHelpers.PrepareConstrainedRegions();//the following finally will run with no out-of-band exceptions
+            try
+            { }
+            finally
+            {
+                queryHandle.SetHandle(UnsafeNativeMethods.TableWhere(this));
+            }//at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
+            return queryHandle;
+        }
 
 
         //acquire a TableView handle with the result And set Root in an atomic fashion 

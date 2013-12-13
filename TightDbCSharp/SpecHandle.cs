@@ -48,7 +48,7 @@ namespace TightDbCSharp
         {
             if (!IgnoreUnbind)
             {
-                UnsafeNativeMethods.SpecDeallocate(handle);
+                UnsafeNativeMethods.SpecDeallocate(this);
             }
         }
     }

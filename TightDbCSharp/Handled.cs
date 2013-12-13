@@ -50,8 +50,9 @@ namespace TightDbCSharp
             get { return !Handle.IsInvalid; }
         }
 
-        internal TightDbHandle Handle;//will store the c++ handle for this class. The actual type is specific for what is wrapped,
-        //e.g. a SharedGroup will have a SharedGroupHandle stored here, and will have a SharedGroupHandle property that returns this hande
+        //protected because we want other classes to use the specific handle, for instance TableView.TableViewHandle instead of TableView.Handle
+        protected TightDbHandle Handle;//will store the c++ handle for this class. The actual type is specific for what is wrapped,
+        //e.g. a SharedGroup will have a SharedGroupHandle stored here, and SharedGroup will have a SharedGroupHandle property that returns this hande
         //as SharedGroupHandle (because as is faster than a typecast)
 
 
