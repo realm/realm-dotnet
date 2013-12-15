@@ -20,6 +20,7 @@ namespace TightDbCSharp
             UnsafeNativeMethods.TableUnbind(handle);
         }
 
+        /*
         //if root is null the this tablehandle is responsible for cleaning up the tableView and its children
         //if root is something else, it is the this tablehandles root, and that root should also manage the tableview and its children
         //note that IgnoreUnbind is set to false, the tableview should be unbound
@@ -29,6 +30,7 @@ namespace TightDbCSharp
                 new TableViewHandle(this):
                 new TableViewHandle(Root);
         }
+        */
 
         private QueryHandle RootedQueryHandle()
         {
@@ -66,7 +68,7 @@ namespace TightDbCSharp
         //acquire a TableViewHandle And set root in an atomic fashion 
         internal TableViewHandle TableDistinct(long columnIndex)
         {
-            var sh = RootedTableViewHandle();
+            var sh = TableViewHandle.RootedTableViewHandle(this);
 
             //At this point sh is invalid due to its handle being uninitialized, but the root is set correctly
             //a finalize at this point will not leak anything and the handle will not do anything
@@ -106,7 +108,7 @@ namespace TightDbCSharp
         //acquire a TableView handle with the result And set Root in an atomic fashion 
         internal TableViewHandle TableFindAllInt(long columnIndex,long value)
         {
-            var tvHandle = RootedTableViewHandle();
+            var tvHandle = TableViewHandle.RootedTableViewHandle(this);
 
             //At this point sh is invalid due to its handle being uninitialized, but the root is set correctly
             //a finalize at this point will not leak anything and the handle will not do anything
@@ -125,7 +127,7 @@ namespace TightDbCSharp
         //acquire a TableView handle with the result And set Root in an atomic fashion 
         internal TableViewHandle TableFindAllBool(long columnIndex, bool value)
         {
-            var tvHandle = RootedTableViewHandle();
+            var tvHandle = TableViewHandle.RootedTableViewHandle(this);
 
             //At this point sh is invalid due to its handle being uninitialized, but the root is set correctly
             //a finalize at this point will not leak anything and the handle will not do anything
@@ -145,7 +147,7 @@ namespace TightDbCSharp
         //acquire a TableView handle with the result And set Root in an atomic fashion 
         internal TableViewHandle TableFindAllDateTime(long columnIndex, DateTime value)
         {
-            var tvHandle = RootedTableViewHandle();
+            var tvHandle = TableViewHandle.RootedTableViewHandle(this);
 
             //At this point sh is invalid due to its handle being uninitialized, but the root is set correctly
             //a finalize at this point will not leak anything and the handle will not do anything
@@ -164,7 +166,7 @@ namespace TightDbCSharp
         //acquire a TableView handle with the result And set Root in an atomic fashion 
         internal TableViewHandle TableFindAllFloat(long columnIndex, float value)
         {
-            var tvHandle = RootedTableViewHandle();
+            var tvHandle = TableViewHandle.RootedTableViewHandle(this);
 
             //At this point sh is invalid due to its handle being uninitialized, but the root is set correctly
             //a finalize at this point will not leak anything and the handle will not do anything
@@ -184,7 +186,7 @@ namespace TightDbCSharp
         //acquire a TableView handle with the result And set Root in an atomic fashion 
         internal TableViewHandle TableFindAllDouble(long columnIndex, double value)
         {
-            var tvHandle = RootedTableViewHandle();
+            var tvHandle = TableViewHandle.RootedTableViewHandle(this);
 
             //At this point sh is invalid due to its handle being uninitialized, but the root is set correctly
             //a finalize at this point will not leak anything and the handle will not do anything
@@ -207,7 +209,7 @@ namespace TightDbCSharp
         //saving pinning and marshalling an empty array.
         internal TableViewHandle TableFindAllBinary(long columnIndex, byte[] value)
         {
-            var tvHandle = RootedTableViewHandle();
+            var tvHandle = TableViewHandle.RootedTableViewHandle(this);
             //At this point tvHandle is invalid due to its handle being uninitialized, but the root is set correctly
             //a finalize at this point will not leak anything and the handle will not do anything
             if (value == null || value.Length == 0) //special case empty array search

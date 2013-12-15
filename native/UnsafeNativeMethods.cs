@@ -281,54 +281,54 @@ enum DataType {
 
 
         [DllImport(L64, EntryPoint = "table_get_subtable_size", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_get_subtable_size64(IntPtr tableHandle, IntPtr columnIndex, IntPtr rowIndex);
+        private static extern IntPtr table_get_subtable_size64(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex);
 
         [DllImport(L32, EntryPoint = "table_get_subtable_size", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_get_subtable_size32(IntPtr tableHandle, IntPtr columnIndex, IntPtr rowIndex);
+        private static extern IntPtr table_get_subtable_size32(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex);
 
 
         public static long TableGetSubTableSize(Table table, long columnIndex, long rowIndex)
         {
             return
                 Is64Bit
-                    ? (long) table_get_subtable_size64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex)
-                    : (long) table_get_subtable_size32(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
+                    ? (long)table_get_subtable_size64(table.TableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex)
+                    : (long)table_get_subtable_size32(table.TableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex);
         }
 
 
 
         [DllImport(L32, EntryPoint = "tableview_get_column_index", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr tableView_get_column_index32(IntPtr tableViehandle,
+        private static extern IntPtr tableView_get_column_index32(TableViewHandle tableViehandle,
             [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
 
         [DllImport(L64, EntryPoint = "tableview_get_column_index", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr tableView_get_column_index64(IntPtr tableViewhandle,
+        private static extern IntPtr tableView_get_column_index64(TableViewHandle tableViewhandle,
             [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
 
         public static long TableViewGetColumnIndex(TableView tableView, string name)
         {
             if (Is64Bit)
-                return (long) tableView_get_column_index64(tableView.Handle, name, (IntPtr) name.Length);
-            return (long) tableView_get_column_index32(tableView.Handle, name, (IntPtr) name.Length);
+                return (long) tableView_get_column_index64(tableView.TableViewHandle, name, (IntPtr) name.Length);
+            return (long) tableView_get_column_index32(tableView.TableViewHandle, name, (IntPtr) name.Length);
         }
 
 
         [DllImport(L64, EntryPoint = "table_rename_column", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode)]
-        private static extern void table_rename_column64(IntPtr tableHandle, IntPtr columnIndex,
+        private static extern void table_rename_column64(TableHandle tableHandle, IntPtr columnIndex,
             [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
 
         [DllImport(L32, EntryPoint = "table_rename_column", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode)]
-        private static extern void table_rename_column32(IntPtr tableHandle, IntPtr columnIndex,
+        private static extern void table_rename_column32(TableHandle tableHandle, IntPtr columnIndex,
             [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
 
         public static void TableRenameColumn(Table table, long columnIndex, string name)
         {
             if (Is64Bit)
-                table_rename_column64(table.Handle, (IntPtr) columnIndex, name, (IntPtr) name.Length);
+                table_rename_column64(table.TableHandle, (IntPtr)columnIndex, name, (IntPtr)name.Length);
             else
-                table_rename_column32(table.Handle, (IntPtr) columnIndex, name, (IntPtr) name.Length);
+                table_rename_column32(table.TableHandle, (IntPtr)columnIndex, name, (IntPtr)name.Length);
         }
 
 
@@ -336,18 +336,18 @@ enum DataType {
 
         [DllImport(L64, EntryPoint = "table_remove_column", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode)]
-        private static extern void table_remove_column64(IntPtr tableHandle, long columnIndex);
+        private static extern void table_remove_column64(TableHandle tableHandle, long columnIndex);
 
         [DllImport(L32, EntryPoint = "table_remove_column", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode)]
-        private static extern void table_remove_column32(IntPtr tableHandle, long columnIndex);
+        private static extern void table_remove_column32(TableHandle tableHandle, long columnIndex);
 
         public static void TableRemoveColumn(Table table, long columnIndex)
         {
             if (Is64Bit)
-                table_remove_column64(table.Handle, columnIndex);
+                table_remove_column64(table.TableHandle, columnIndex);
             else
-                table_remove_column32(table.Handle, columnIndex);
+                table_remove_column32(table.TableHandle, columnIndex);
         }
 
 
@@ -355,30 +355,30 @@ enum DataType {
 
 
         [DllImport(L64, EntryPoint = "table_add_column", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_add_column64(IntPtr tableHandle, IntPtr type,
+        private static extern IntPtr table_add_column64(TableHandle tableHandle, IntPtr type,
             [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
 
         [DllImport(L32, EntryPoint = "table_add_column", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_add_column32(IntPtr tableHandle, IntPtr type,
+        private static extern IntPtr table_add_column32(TableHandle tableHandle, IntPtr type,
             [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
 
         public static long TableAddColumn(Table table, DataType type, string name)
         {
 
             if (Is64Bit)
-                return (long) table_add_column64(table.Handle, DataTypeToIntPtr(type), name, (IntPtr) name.Length);
-            return (long) table_add_column32(table.Handle, DataTypeToIntPtr(type), name, (IntPtr) name.Length);
+                return (long)table_add_column64(table.TableHandle, DataTypeToIntPtr(type), name, (IntPtr)name.Length);
+            return (long)table_add_column32(table.TableHandle, DataTypeToIntPtr(type), name, (IntPtr)name.Length);
         }
 
 
 
 
         [DllImport(L64, EntryPoint = "table_add_subcolumn", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_add_subcolumn64(IntPtr tableHandle, IntPtr pathLength, IntPtr pathArrayPtr,
+        private static extern IntPtr table_add_subcolumn64(TableHandle tableHandle, IntPtr pathLength, IntPtr pathArrayPtr,
             IntPtr type, [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
 
         [DllImport(L32, EntryPoint = "table_add_subcolumn", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_add_subcolumn32(IntPtr tableHandle, IntPtr pathLength, IntPtr pathArrayPtr,
+        private static extern IntPtr table_add_subcolumn32(TableHandle tableHandle, IntPtr pathLength, IntPtr pathArrayPtr,
             IntPtr type, [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
 
         public static long TableAddSubColumn(Table table, IList<long> path, DataType type, string name)
@@ -399,11 +399,11 @@ enum DataType {
                 if (Is64Bit)
                     return
                         (long)
-                            table_add_subcolumn64(table.Handle, (IntPtr) pathForCpp.Length, valuePointer,
+                            table_add_subcolumn64(table.TableHandle, (IntPtr)pathForCpp.Length, valuePointer,
                                 DataTypeToIntPtr(type), name, (IntPtr) name.Length);
                 return
                     (long)
-                        table_add_subcolumn32(table.Handle, (IntPtr) pathForCpp.Length, valuePointer,
+                        table_add_subcolumn32(table.TableHandle, (IntPtr)pathForCpp.Length, valuePointer,
                             DataTypeToIntPtr(type), name, (IntPtr) name.Length);
             }
             finally
@@ -413,11 +413,11 @@ enum DataType {
         }
 
         [DllImport(L64, EntryPoint = "table_rename_subcolumn", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void table_rename_subcolumn64(IntPtr tableHandle, IntPtr pathLength, IntPtr pathArrayPtr,
+        private static extern void table_rename_subcolumn64(TableHandle tableHandle, IntPtr pathLength, IntPtr pathArrayPtr,
             [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
 
         [DllImport(L32, EntryPoint = "table_rename_subcolumn", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void table_rename_subcolumn32(IntPtr tableHandle, IntPtr pathLength, IntPtr pathArrayPtr,
+        private static extern void table_rename_subcolumn32(TableHandle tableHandle, IntPtr pathLength, IntPtr pathArrayPtr,
             [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
 
         public static void TableRenameSubColumn(Table table, IList<long> path, string name)
@@ -430,16 +430,16 @@ enum DataType {
                 n++;
             }
 
-            GCHandle handle = GCHandle.Alloc(pathForCpp, GCHandleType.Pinned);
-            IntPtr valuePointer = handle.AddrOfPinnedObject();
+            var handle = GCHandle.Alloc(pathForCpp, GCHandleType.Pinned);
+            var valuePointer = handle.AddrOfPinnedObject();
 
             try
             {
                 if (Is64Bit)
-                    table_rename_subcolumn64(table.Handle, (IntPtr) pathForCpp.Length, valuePointer, name,
+                    table_rename_subcolumn64(table.TableHandle, (IntPtr)pathForCpp.Length, valuePointer, name,
                         (IntPtr) name.Length);
                 else
-                    table_rename_subcolumn32(table.Handle, (IntPtr) pathForCpp.Length, valuePointer, name,
+                    table_rename_subcolumn32(table.TableHandle, (IntPtr)pathForCpp.Length, valuePointer, name,
                         (IntPtr) name.Length);
             }
             finally
@@ -489,15 +489,15 @@ enum DataType {
 
 
         [DllImport(L64, EntryPoint = "spec_get_column_type", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr spec_get_column_type64(IntPtr spechandle, IntPtr columnIndex);
+        private static extern IntPtr spec_get_column_type64(SpecHandle spechandle, IntPtr columnIndex);
 
         [DllImport(L32, EntryPoint = "spec_get_column_type", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr spec_get_column_type32(IntPtr spechandle, IntPtr columnIndex);
+        private static extern IntPtr spec_get_column_type32(SpecHandle spechandle, IntPtr columnIndex);
 
         public static DataType SpecGetColumnType(Spec s, long columnIndex)
         {
             if (Is64Bit)
-                return IntPtrToDataType(spec_get_column_type64(s.Handle, (IntPtr) columnIndex));
+                return IntPtrToDataType(spec_get_column_type64(s.SpecHandle, (IntPtr)columnIndex));
             //down here we must be in 32 bit mode (or 16 bit or  more than 64 bit which is NOT supported yet
             //below is not covered by unit tests as we would need a table with quite a lot columns in order to test it
             //or perhaps call in directly somehow
@@ -508,27 +508,24 @@ enum DataType {
                         "in 32 bit mode, column index must at most be {0} but SpecGetColumnType was called with{1}",
                         Int32.MaxValue, columnIndex));
             }
-            return IntPtrToDataType(spec_get_column_type32(s.Handle, (IntPtr) columnIndex));
+            return IntPtrToDataType(spec_get_column_type32(s.SpecHandle, (IntPtr)columnIndex));
         }
 
 
 
         //spec colmparison
         [DllImport(L64, EntryPoint = "table_spec_equals_spec", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_spec_equals_spec64(IntPtr tablehandle1, IntPtr tablehandle2);
+        private static extern IntPtr table_spec_equals_spec64(TableHandle tablehandle1, TableHandle tablehandle2);
 
         [DllImport(L32, EntryPoint = "table_spec_equals_spec", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_spec_equals_spec32(IntPtr tablehandle1, IntPtr tablehandle2);
+        private static extern IntPtr table_spec_equals_spec32(TableHandle tablehandle1, TableHandle tablehandle2);
 
         public static bool SpecEqualsSpec(Table table1, Table table2)
         {
-            if (Is64Bit)
-                return IntPtrToBool(table_spec_equals_spec64(table1.Handle, table2.Handle));
-            return IntPtrToBool(table_spec_equals_spec32(table1.Handle, table2.Handle));
+            return IntPtrToBool(Is64Bit
+                ? table_spec_equals_spec64(table1.TableHandle, table2.TableHandle)
+                : table_spec_equals_spec32(table1.TableHandle, table2.TableHandle));
         }
-
-
-
 
 
         //get a spec given a column index. Returns specs for subtables, but not for mixed (as they would need a row index too)
@@ -552,18 +549,18 @@ enum DataType {
 
         //size_t spec_get_column_count(Spec* spec);
         [DllImport(L64, EntryPoint = "spec_get_column_count", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr spec_get_column_count64(IntPtr spec);
+        private static extern IntPtr spec_get_column_count64(SpecHandle spec);
 
         [DllImport(L32, EntryPoint = "spec_get_column_count", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr spec_get_column_count32(IntPtr spec);
+        private static extern IntPtr spec_get_column_count32(SpecHandle spec);
 
 
         public static long SpecGetColumnCount(Spec spec)
         {
             if (Is64Bit)
-                return (long) spec_get_column_count64(spec.Handle);
+                return (long)spec_get_column_count64(spec.SpecHandle);
             //OPTIMIZE  - could be optimized with a 32 or 64 bit specific implementation - see end of file
-            return (long) spec_get_column_count32(spec.Handle);
+            return (long)spec_get_column_count32(spec.SpecHandle);
             //OPTIMIZE  - could be optimized with a 32 or 64 bit specific implementation - see end of file
         }
 
@@ -585,11 +582,11 @@ enum DataType {
 
 
         [DllImport(L64, EntryPoint = "group_write", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr group_write64(IntPtr groupPtr, [MarshalAs(UnmanagedType.LPWStr)] string fileName,
+        private static extern IntPtr group_write64(GroupHandle groupPtr, [MarshalAs(UnmanagedType.LPWStr)] string fileName,
             IntPtr fileNameLen);
 
         [DllImport(L32, EntryPoint = "group_write", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr group_write32(IntPtr groupPTr, [MarshalAs(UnmanagedType.LPWStr)] string fileName,
+        private static extern IntPtr group_write32(GroupHandle groupPTr, [MarshalAs(UnmanagedType.LPWStr)] string fileName,
             IntPtr fileNameLen);
 
 
@@ -598,8 +595,8 @@ enum DataType {
         public static void GroupWrite(Group group, string fileName)
         {
             var res = (Is64Bit)
-                ? group_write64(group.Handle, fileName, (IntPtr) fileName.Length)
-                : group_write32(group.Handle, fileName, (IntPtr) fileName.Length);
+                ? group_write64(group.GroupHandle, fileName, (IntPtr)fileName.Length)
+                : group_write32(group.GroupHandle, fileName, (IntPtr)fileName.Length);
 
             if (res.ToInt64() == 1)
             {
@@ -610,17 +607,17 @@ enum DataType {
 
         //a few uncovered lines okay, it is hard to get commit to throw
         [DllImport(L64, EntryPoint = "group_commit", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr group_commit64(IntPtr handle);
+        private static extern IntPtr group_commit64(GroupHandle handle);
 
         [DllImport(L32, EntryPoint = "group_commit", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr group_commit32(IntPtr handle);
+        private static extern IntPtr group_commit32(GroupHandle handle);
 
         public static void GroupCommit(Group group)
         {
 
             IntPtr res = (Is64Bit)
-                ? group_commit64(group.Handle)
-                : group_commit32(group.Handle);
+                ? group_commit64(group.GroupHandle)
+                : group_commit32(group.GroupHandle);
 
             if (res != IntPtr.Zero)
                 //shared_group_commit threw an exception in core
@@ -633,11 +630,11 @@ enum DataType {
 
         [DllImport(L64, EntryPoint = "group_to_string", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode)]
-        private static extern IntPtr group_to_string64(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize);
+        private static extern IntPtr group_to_string64(GroupHandle groupHandle, IntPtr buffer, IntPtr bufsize);
 
         [DllImport(L32, EntryPoint = "group_to_string", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode)]
-        private static extern IntPtr group_to_string32(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize);
+        private static extern IntPtr group_to_string32(GroupHandle groupHandle, IntPtr buffer, IntPtr bufsize);
 
 
         public static string GroupToString(Group g)
@@ -650,10 +647,10 @@ enum DataType {
                 buffer = StrAllocateBuffer(out currentBufferSizeChars, bufferSizeNeededChars);
                 if (Is64Bit)
                     bufferSizeNeededChars =
-                        (int) group_to_string64(g.Handle, buffer, (IntPtr) currentBufferSizeChars);
+                        (int)group_to_string64(g.GroupHandle, buffer, (IntPtr)currentBufferSizeChars);
                 else
                     bufferSizeNeededChars =
-                        (int) group_to_string32(g.Handle, buffer, (IntPtr) currentBufferSizeChars);
+                        (int)group_to_string32(g.GroupHandle, buffer, (IntPtr)currentBufferSizeChars);
 
             } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
             return StrBufToStr(buffer, (int) bufferSizeNeededChars);
@@ -662,17 +659,17 @@ enum DataType {
 
 
         [DllImport(L64, EntryPoint = "group_equals", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr group_equals64(IntPtr handle1, IntPtr handle2);
+        private static extern IntPtr group_equals64(GroupHandle handle1, GroupHandle handle2);
 
         [DllImport(L32, EntryPoint = "group_equals", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr group_equals32(IntPtr handle1, IntPtr handle2);
+        private static extern IntPtr group_equals32(GroupHandle handle1, GroupHandle handle2);
 
         public static Boolean GroupEquals(Group group1, Group group2)
         {
             Boolean result;
             if (IntPtrToBoolWithErorrCode((Is64Bit)
-                ? group_equals64(group1.Handle, group2.Handle)
-                : group_equals32(group1.Handle, group2.Handle), out result) < 0)
+                ? group_equals64(group1.GroupHandle, group2.GroupHandle)
+                : group_equals32(group1.GroupHandle, group2.GroupHandle), out result) < 0)
                 throw new InvalidOperationException(
                     "Group equals exception in core. probably an IO error with the group file");
             return result; //no errors so just return the result
@@ -684,17 +681,17 @@ enum DataType {
 
 
         [DllImport(L64, EntryPoint = "group_is_empty", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr group_is_empty64(IntPtr handle);
+        private static extern IntPtr group_is_empty64(GroupHandle handle);
 
         [DllImport(L32, EntryPoint = "group_is_empty", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr group_is_empty32(IntPtr handle);
+        private static extern IntPtr group_is_empty32(GroupHandle handle);
 
         public static Boolean GroupIsEmpty(Group group)
         {
             Boolean result;
             if (IntPtrToBoolWithErorrCode((Is64Bit)
-                ? group_is_empty64(group.Handle)
-                : group_is_empty32(group.Handle), out result) < 0)
+                ? group_is_empty64(group.GroupHandle)
+                : group_is_empty32(group.GroupHandle), out result) < 0)
                 //shared_group_IsEmpty threw an exception in core
                 //currently we just assume it was an IO error, but could be anything
                 //more elaborate reporting would need the result from IntPtrToBollWithErrorCode to be saved
@@ -710,16 +707,16 @@ enum DataType {
 
 
         [DllImport(L64, EntryPoint = "group_size", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr group_size64(IntPtr handle);
+        private static extern IntPtr group_size64(GroupHandle handle);
 
         [DllImport(L32, EntryPoint = "group_size", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr group_size32(IntPtr handle);
+        private static extern IntPtr group_size32(GroupHandle handle);
 
         public static long GroupSize(Group group)
         {
             var result = (long) ((Is64Bit)
-                ? group_size64(group.Handle)
-                : group_size32(group.Handle));
+                ? group_size64(group.GroupHandle)
+                : group_size32(group.GroupHandle));
 
             if (result < 0)
                 //shared_group_IsEmpty threw an exception in core
@@ -747,7 +744,10 @@ enum DataType {
 
 
 
-
+        //as we return a  GroupHandle we get an atomic creation of a group handle where
+        //we have a guarentee that if new_group_file64 returned a value, then we will also have a
+        //fully constructed GroupHandle with that value. That grouphandle will have root==null, and that
+        //is also exactly what we want.
         [DllImport(L64, EntryPoint = "new_group_file", CallingConvention = CallingConvention.Cdecl)]
         private static extern GroupHandle new_group_file64([MarshalAs(UnmanagedType.LPWStr)] string fileName,
             IntPtr fileNameLen, IntPtr openMode);
@@ -755,8 +755,6 @@ enum DataType {
         [DllImport(L32, EntryPoint = "new_group_file", CallingConvention = CallingConvention.Cdecl)]
         private static extern GroupHandle new_group_file32([MarshalAs(UnmanagedType.LPWStr)] string fileName,
             IntPtr fileNameLen, IntPtr openMode);
-
-
 
         public static void GroupNewFile(Group group, string fileName, Group.OpenMode openMode)
         {
@@ -787,6 +785,7 @@ enum DataType {
             }
             else
             {
+                handle.Dispose();//will clean it up, remove it from finalizer queue
                 throw new IOException(String.Format(CultureInfo.InvariantCulture,
                     "IO error creating group file {0} (read/write access is needed)", fileName));
             }
@@ -816,16 +815,16 @@ enum DataType {
 
 
         [DllImport(L64, EntryPoint = "tableview_size", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr tableview_get_size64(IntPtr tablePtr);
+        private static extern IntPtr tableview_get_size64(TableViewHandle tablePtr);
 
         [DllImport(L32, EntryPoint = "tableview_size", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr tableview_get_size32(IntPtr tablePtr);
+        private static extern IntPtr tableview_get_size32(TableViewHandle tablePtr);
 
         public static long TableViewSize(TableView tv)
         {
             if (Is64Bit)
-                return (long) tableview_get_size64(tv.Handle);
-            return (long) tableview_get_size32(tv.Handle);
+                return (long)tableview_get_size64(tv.TableViewHandle);
+            return (long)tableview_get_size32(tv.TableViewHandle);
         }
 
 
@@ -837,28 +836,28 @@ enum DataType {
         //TIGHTDB_C_CS_API size_t table_find_first_int(Table * table_ptr , size_t column_ndx, int64_t value)
 
         [DllImport(L64, EntryPoint = "table_find_first_int", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_find_first_int64(IntPtr tableHandle, IntPtr columnIndex, long value);
+        private static extern IntPtr table_find_first_int64(TableHandle tableHandle, IntPtr columnIndex, long value);
 
         [DllImport(L32, EntryPoint = "table_find_first_int", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_find_first_int32(IntPtr tableHandle, IntPtr columnIndex, long value);
+        private static extern IntPtr table_find_first_int32(TableHandle tableHandle, IntPtr columnIndex, long value);
 
 
         public static long TableFindFirstInt(Table table, long columnIndex, long value)
         {
             return
                 Is64Bit
-                    ? (long) table_find_first_int64(table.Handle, (IntPtr) columnIndex, value)
-                    : (long) table_find_first_int32(table.Handle, (IntPtr) columnIndex, value);
+                    ? (long)table_find_first_int64(table.TableHandle, (IntPtr)columnIndex, value)
+                    : (long)table_find_first_int32(table.TableHandle, (IntPtr)columnIndex, value);
         }
 
 
 
         [DllImport(L64, EntryPoint = "table_find_first_string", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_find_first_string64(IntPtr tableHandle, IntPtr columnIndex,
+        private static extern IntPtr table_find_first_string64(TableHandle tableHandle, IntPtr columnIndex,
             [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
 
         [DllImport(L32, EntryPoint = "table_find_first_string", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_find_first_string32(IntPtr tableHandle, IntPtr columnIndex,
+        private static extern IntPtr table_find_first_string32(TableHandle tableHandle, IntPtr columnIndex,
             [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
 
 
@@ -866,8 +865,8 @@ enum DataType {
         {
             return
                 Is64Bit
-                    ? (long) table_find_first_string64(table.Handle, (IntPtr) columnIndex, value, (IntPtr) value.Length)
-                    : (long) table_find_first_string32(table.Handle, (IntPtr) columnIndex, value, (IntPtr) value.Length);
+                    ? (long)table_find_first_string64(table.TableHandle, (IntPtr)columnIndex, value, (IntPtr)value.Length)
+                    : (long)table_find_first_string32(table.TableHandle, (IntPtr)columnIndex, value, (IntPtr)value.Length);
         }
 
 
@@ -1089,11 +1088,11 @@ enum DataType {
 
 
         [DllImport(L64, EntryPoint = "tableview_find_first_double", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr tableView_find_first_double64(IntPtr tableViewHandle, IntPtr columnIndex,
+        private static extern IntPtr tableView_find_first_double64(TableViewHandle tableViewHandle, IntPtr columnIndex,
             double value);
 
         [DllImport(L32, EntryPoint = "tableview_find_first_double", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr tableView_find_first_double32(IntPtr tableViewHandle, IntPtr columnIndex,
+        private static extern IntPtr tableView_find_first_double32(TableViewHandle tableViewHandle, IntPtr columnIndex,
             double value);
 
 
@@ -1101,18 +1100,18 @@ enum DataType {
         {
             return
                 Is64Bit
-                    ? (long) tableView_find_first_double64(tableView.Handle, (IntPtr) columnIndex, value)
-                    : (long) tableView_find_first_double32(tableView.Handle, (IntPtr) columnIndex, value);
+                    ? (long) tableView_find_first_double64(tableView.TableViewHandle, (IntPtr) columnIndex, value)
+                    : (long)tableView_find_first_double32(tableView.TableViewHandle, (IntPtr)columnIndex, value);
         }
 
 
 
         [DllImport(L64, EntryPoint = "tableview_find_first_float", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr tableView_find_first_float64(IntPtr tableViewHandle, IntPtr columnIndex,
+        private static extern IntPtr tableView_find_first_float64(TableViewHandle tableViewHandle, IntPtr columnIndex,
             float value);
 
         [DllImport(L32, EntryPoint = "tableview_find_first_float", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr tableView_find_first_float32(IntPtr tableViewHandle, IntPtr columnIndex,
+        private static extern IntPtr tableView_find_first_float32(TableViewHandle tableViewHandle, IntPtr columnIndex,
             float value);
 
 
@@ -1120,17 +1119,17 @@ enum DataType {
         {
             return
                 Is64Bit
-                    ? (long) tableView_find_first_float64(tableView.Handle, (IntPtr) columnIndex, value)
-                    : (long) tableView_find_first_float32(tableView.Handle, (IntPtr) columnIndex, value);
+                    ? (long)tableView_find_first_float64(tableView.TableViewHandle, (IntPtr)columnIndex, value)
+                    : (long)tableView_find_first_float32(tableView.TableViewHandle, (IntPtr)columnIndex, value);
         }
 
 
 
         [DllImport(L64, EntryPoint = "tableview_find_first_date", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr tableView_find_first_date64(IntPtr tableViewHandle, IntPtr columnIndex, Int64 value);
+        private static extern IntPtr tableView_find_first_date64(TableViewHandle tableViewHandle, IntPtr columnIndex, Int64 value);
 
         [DllImport(L32, EntryPoint = "tableview_find_first_date", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr tableView_find_first_date32(IntPtr tableViewHandle, IntPtr columnIndex, Int64 value);
+        private static extern IntPtr tableView_find_first_date32(TableViewHandle tableViewHandle, IntPtr columnIndex, Int64 value);
 
 
         public static long TableViewFindFirstDate(TableView tableView, long columnIndex, DateTime value)
@@ -1138,19 +1137,19 @@ enum DataType {
             return
                 Is64Bit
                     ? (long)
-                        tableView_find_first_date64(tableView.Handle, (IntPtr) columnIndex, ToTightDbDateTime(value))
+                        tableView_find_first_date64(tableView.TableViewHandle, (IntPtr)columnIndex, ToTightDbDateTime(value))
                     : (long)
-                        tableView_find_first_date32(tableView.Handle, (IntPtr) columnIndex, ToTightDbDateTime(value));
+                        tableView_find_first_date32(tableView.TableViewHandle, (IntPtr)columnIndex, ToTightDbDateTime(value));
         }
 
 
 
         [DllImport(L64, EntryPoint = "tableview_find_first_bool", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr tableView_find_first_bool64(IntPtr tableViewHandle, IntPtr columnIndex,
+        private static extern IntPtr tableView_find_first_bool64(TableViewHandle tableViewHandle, IntPtr columnIndex,
             IntPtr value);
 
         [DllImport(L32, EntryPoint = "tableview_find_first_bool", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr tableView_find_first_bool32(IntPtr tableViewHandle, IntPtr columnIndex,
+        private static extern IntPtr tableView_find_first_bool32(TableViewHandle tableViewHandle, IntPtr columnIndex,
             IntPtr value);
 
 
@@ -1158,8 +1157,8 @@ enum DataType {
         {
             return
                 Is64Bit
-                    ? (long) tableView_find_first_bool64(tableView.Handle, (IntPtr) columnIndex, BoolToIntPtr(value))
-                    : (long) tableView_find_first_bool32(tableView.Handle, (IntPtr) columnIndex, BoolToIntPtr(value));
+                    ? (long)tableView_find_first_bool64(tableView.TableViewHandle, (IntPtr)columnIndex, BoolToIntPtr(value))
+                    : (long)tableView_find_first_bool32(tableView.TableViewHandle, (IntPtr)columnIndex, BoolToIntPtr(value));
         }
 
 
@@ -1184,301 +1183,269 @@ enum DataType {
 
 
         [DllImport(L64, EntryPoint = "table_count_int", CallingConvention = CallingConvention.Cdecl)]
-        private static extern long table_count_int64(IntPtr tableHandle, IntPtr columnIndex, long target);
+        private static extern long table_count_int64(TableHandle tableHandle, IntPtr columnIndex, long target);
 
         [DllImport(L32, EntryPoint = "table_count_int", CallingConvention = CallingConvention.Cdecl)]
-        private static extern long table_count_int32(IntPtr tableHandle, IntPtr columnIndex, long target);
+        private static extern long table_count_int32(TableHandle tableHandle, IntPtr columnIndex, long target);
 
 
         public static long TableCountLong(Table table, long columnIndex, long target)
         {
-            if (Is64Bit)
-                return table_count_int64(table.Handle, (IntPtr) columnIndex, target);
-            return table_count_int32(table.Handle, (IntPtr) columnIndex, target);
+            return Is64Bit
+                ? table_count_int64(table.TableHandle, (IntPtr) columnIndex, target)
+                : table_count_int32(table.TableHandle, (IntPtr) columnIndex, target);
         }
 
         [DllImport(L64, EntryPoint = "table_count_float", CallingConvention = CallingConvention.Cdecl)]
-        private static extern long table_count_float64(IntPtr tableHandle, IntPtr columnIndex, float target);
+        private static extern long table_count_float64(TableHandle tableHandle, IntPtr columnIndex, float target);
 
         [DllImport(L32, EntryPoint = "table_count_float", CallingConvention = CallingConvention.Cdecl)]
-        private static extern long table_count_float32(IntPtr tableHandle, IntPtr columnIndex, float target);
+        private static extern long table_count_float32(TableHandle tableHandle, IntPtr columnIndex, float target);
 
 
         public static long TableCountFloat(Table table, long columnIndex, float target)
         {
-            if (Is64Bit)
-                return table_count_float64(table.Handle, (IntPtr) columnIndex, target);
-            return table_count_float32(table.Handle, (IntPtr) columnIndex, target);
+            return Is64Bit
+                ? table_count_float64(table.TableHandle, (IntPtr) columnIndex, target)
+                : table_count_float32(table.TableHandle, (IntPtr) columnIndex, target);
         }
 
         [DllImport(L64, EntryPoint = "table_count_double", CallingConvention = CallingConvention.Cdecl)]
-        private static extern long table_count_double64(IntPtr tableHandle, IntPtr columnIndex, double target);
+        private static extern long table_count_double64(TableHandle tableHandle, IntPtr columnIndex, double target);
 
         [DllImport(L32, EntryPoint = "table_count_double", CallingConvention = CallingConvention.Cdecl)]
-        private static extern long table_count_double32(IntPtr tableHandle, IntPtr columnIndex, double target);
+        private static extern long table_count_double32(TableHandle tableHandle, IntPtr columnIndex, double target);
 
 
         public static long TableCountDouble(Table table, long columnIndex, double target)
         {
-            if (Is64Bit)
-                return table_count_double64(table.Handle, (IntPtr) columnIndex, target);
-            return table_count_double32(table.Handle, (IntPtr) columnIndex, target);
+            return Is64Bit
+                ? table_count_double64(table.TableHandle, (IntPtr) columnIndex, target)
+                : table_count_double32(table.TableHandle, (IntPtr) columnIndex, target);
         }
 
 
         [DllImport(L64, EntryPoint = "table_count_string", CallingConvention = CallingConvention.Cdecl)]
-        private static extern long table_count_string64(IntPtr tableHandle, IntPtr columnIndex,
+        private static extern long table_count_string64(TableHandle tableHandle, IntPtr columnIndex,
             [MarshalAs(UnmanagedType.LPWStr)] string target, IntPtr targetLen);
 
         [DllImport(L32, EntryPoint = "table_count_string", CallingConvention = CallingConvention.Cdecl)]
-        private static extern long table_count_string32(IntPtr tableHandle, IntPtr columnIndex,
+        private static extern long table_count_string32(TableHandle tableHandle, IntPtr columnIndex,
             [MarshalAs(UnmanagedType.LPWStr)] string target, IntPtr targetLen);
 
 
         public static long TableCountString(Table table, long columnIndex, string target)
         {
-            if (Is64Bit)
-                return table_count_string64(table.Handle, (IntPtr) columnIndex, target, (IntPtr) target.Length);
-            return table_count_string32(table.Handle, (IntPtr) columnIndex, target, (IntPtr) target.Length);
+            return Is64Bit
+                ? table_count_string64(table.TableHandle, (IntPtr) columnIndex, target, (IntPtr) target.Length)
+                : table_count_string32(table.TableHandle, (IntPtr) columnIndex, target, (IntPtr) target.Length);
         }
 
 
-
-
-
-
-
         [DllImport(L64, EntryPoint = "table_sum_int", CallingConvention = CallingConvention.Cdecl)]
-        private static extern long table_sum_int64(IntPtr tableHandle, IntPtr columnIndex);
+        private static extern long table_sum_int64(TableHandle tableHandle, IntPtr columnIndex);
 
         [DllImport(L32, EntryPoint = "table_sum_int", CallingConvention = CallingConvention.Cdecl)]
-        private static extern long table_sum_int32(IntPtr tableHandle, IntPtr columnIndex);
+        private static extern long table_sum_int32(TableHandle tableHandle, IntPtr columnIndex);
 
 
         public static long TableSumLong(Table table, long columnIndex)
         {
-            if (Is64Bit)
-                return table_sum_int64(table.Handle, (IntPtr) columnIndex);
-            return table_sum_int32(table.Handle, (IntPtr) columnIndex);
+            return Is64Bit
+                ? table_sum_int64(table.TableHandle, (IntPtr) columnIndex)
+                : table_sum_int32(table.TableHandle, (IntPtr) columnIndex);
         }
 
         [DllImport(L64, EntryPoint = "table_sum_float", CallingConvention = CallingConvention.Cdecl)]
-        private static extern double table_sum_float64(IntPtr tableHandle, IntPtr columnIndex);
+        private static extern double table_sum_float64(TableHandle tableHandle, IntPtr columnIndex);
 
         [DllImport(L32, EntryPoint = "table_sum_float", CallingConvention = CallingConvention.Cdecl)]
-        private static extern double table_sum_float32(IntPtr tableHandle, IntPtr columnIndex);
+        private static extern double table_sum_float32(TableHandle tableHandle, IntPtr columnIndex);
 
 
 
         public static double TableSumFloat(Table table, long columnIndex)
         {
-
-            if (Is64Bit)
-                return table_sum_float64(table.Handle, (IntPtr) columnIndex);
-            return table_sum_float32(table.Handle, (IntPtr) columnIndex);
-
+            return Is64Bit
+                ? table_sum_float64(table.TableHandle, (IntPtr) columnIndex)
+                : table_sum_float32(table.TableHandle, (IntPtr) columnIndex);
         }
 
         [DllImport(L64, EntryPoint = "table_sum_double", CallingConvention = CallingConvention.Cdecl)]
-        private static extern double table_sum_double64(IntPtr tableHandle, IntPtr columnIndex);
+        private static extern double table_sum_double64(TableHandle tableHandle, IntPtr columnIndex);
 
         [DllImport(L32, EntryPoint = "table_sum_double", CallingConvention = CallingConvention.Cdecl)]
-        private static extern double table_sum_double32(IntPtr tableHandle, IntPtr columnIndex);
+        private static extern double table_sum_double32(TableHandle tableHandle, IntPtr columnIndex);
 
 
         public static double TableSumDouble(Table table, long columnIndex)
         {
-            if (Is64Bit)
-                return table_sum_double64(table.Handle, (IntPtr) columnIndex);
-            return table_sum_double32(table.Handle, (IntPtr) columnIndex);
+            return Is64Bit
+                ? table_sum_double64(table.TableHandle, (IntPtr) columnIndex)
+                : table_sum_double32(table.TableHandle, (IntPtr) columnIndex);
         }
 
 
-
-
-
-
-
-
         [DllImport(L64, EntryPoint = "table_maximum_int", CallingConvention = CallingConvention.Cdecl)]
-        private static extern long table_maximum64(IntPtr tableHandle, IntPtr columnIndex);
+        private static extern long table_maximum64(TableHandle tableHandle, IntPtr columnIndex);
 
         [DllImport(L32, EntryPoint = "table_maximum_int", CallingConvention = CallingConvention.Cdecl)]
-        private static extern long table_maximum32(IntPtr tableHandle, IntPtr columnIndex);
+        private static extern long table_maximum32(TableHandle tableHandle, IntPtr columnIndex);
 
 
         public static long TableMaximumLong(Table table, long columnIndex)
         {
-            if (Is64Bit)
-                return table_maximum64(table.Handle, (IntPtr) columnIndex);
-            return table_maximum32(table.Handle, (IntPtr) columnIndex);
+            return Is64Bit
+                ? table_maximum64(table.TableHandle, (IntPtr) columnIndex)
+                : table_maximum32(table.TableHandle, (IntPtr) columnIndex);
         }
 
         [DllImport(L64, EntryPoint = "table_maximum_float", CallingConvention = CallingConvention.Cdecl)]
-        private static extern float table_maximum_float64(IntPtr tableHandle, IntPtr columnIndex);
+        private static extern float table_maximum_float64(TableHandle tableHandle, IntPtr columnIndex);
 
         [DllImport(L32, EntryPoint = "table_maximum_float", CallingConvention = CallingConvention.Cdecl)]
-        private static extern float table_maximum_float32(IntPtr tableHandle, IntPtr columnIndex);
+        private static extern float table_maximum_float32(TableHandle tableHandle, IntPtr columnIndex);
 
 
         public static float TableMaximumFloat(Table table, long columnIndex)
         {
-            if (Is64Bit)
-                return table_maximum_float64(table.Handle, (IntPtr) columnIndex);
-            return table_maximum_float32(table.Handle, (IntPtr) columnIndex);
+            return Is64Bit
+                ? table_maximum_float64(table.TableHandle, (IntPtr) columnIndex)
+                : table_maximum_float32(table.TableHandle, (IntPtr) columnIndex);
         }
 
         [DllImport(L64, EntryPoint = "table_maximum_double", CallingConvention = CallingConvention.Cdecl)]
-        private static extern double table_maximum_double64(IntPtr tableHandle, IntPtr columnIndex);
+        private static extern double table_maximum_double64(TableHandle tableHandle, IntPtr columnIndex);
 
         [DllImport(L32, EntryPoint = "table_maximum_double", CallingConvention = CallingConvention.Cdecl)]
-        private static extern double table_maximum_double32(IntPtr tableHandle, IntPtr columnIndex);
+        private static extern double table_maximum_double32(TableHandle tableHandle, IntPtr columnIndex);
 
 
         public static double TableMaximumDouble(Table table, long columnIndex)
         {
-
-            if (Is64Bit)
-                return table_maximum_double64(table.Handle, (IntPtr) columnIndex);
-            return table_maximum_double32(table.Handle, (IntPtr) columnIndex);
+            return Is64Bit
+                ? table_maximum_double64(table.TableHandle, (IntPtr) columnIndex)
+                : table_maximum_double32(table.TableHandle, (IntPtr) columnIndex);
         }
 
 
         [DllImport(L64, EntryPoint = "table_maximum_datetime", CallingConvention = CallingConvention.Cdecl)]
-        private static extern long table_maximum_datetime64(IntPtr tableHandle, IntPtr columnIndex);
+        private static extern long table_maximum_datetime64(TableHandle tableHandle, IntPtr columnIndex);
 
         [DllImport(L32, EntryPoint = "table_maximum_datetime", CallingConvention = CallingConvention.Cdecl)]
-        private static extern long table_maximum_datetime32(IntPtr tableHandle, IntPtr columnIndex);
+        private static extern long table_maximum_datetime32(TableHandle tableHandle, IntPtr columnIndex);
 
 
         public static DateTime TableMaximumDateTime(Table table, long columnIndex)
         {
-            if (Is64Bit)
-                return ToCSharpTimeUtc(table_maximum_datetime64(table.Handle, (IntPtr) columnIndex));
-            return ToCSharpTimeUtc(table_maximum_datetime32(table.Handle, (IntPtr) columnIndex));
+            return ToCSharpTimeUtc(Is64Bit
+                ? table_maximum_datetime64(table.TableHandle, (IntPtr) columnIndex)
+                : table_maximum_datetime32(table.TableHandle, (IntPtr) columnIndex));
         }
 
 
-
         [DllImport(L64, EntryPoint = "table_minimum_int", CallingConvention = CallingConvention.Cdecl)]
-        private static extern long table_minimum64(IntPtr tableHandle, IntPtr columnIndex);
+        private static extern long table_minimum64(TableHandle tableHandle, IntPtr columnIndex);
 
         [DllImport(L32, EntryPoint = "table_minimum_int", CallingConvention = CallingConvention.Cdecl)]
-        private static extern long table_minimum32(IntPtr tableHandle, IntPtr columnIndex);
+        private static extern long table_minimum32(TableHandle tableHandle, IntPtr columnIndex);
 
 
         public static long TableMinimum(Table table, long columnIndex)
         {
-            if (Is64Bit)
-                return table_minimum64(table.Handle, (IntPtr) columnIndex);
-            return table_minimum32(table.Handle, (IntPtr) columnIndex);
+            return Is64Bit
+                ? table_minimum64(table.TableHandle, (IntPtr) columnIndex)
+                : table_minimum32(table.TableHandle, (IntPtr) columnIndex);
         }
 
 
-
         [DllImport(L64, EntryPoint = "table_minimum_float", CallingConvention = CallingConvention.Cdecl)]
-        private static extern float table_minimum_float64(IntPtr tableHandle, IntPtr columnIndex);
+        private static extern float table_minimum_float64(TableHandle tableHandle, IntPtr columnIndex);
 
         [DllImport(L32, EntryPoint = "table_minimum_float", CallingConvention = CallingConvention.Cdecl)]
-        private static extern float table_minimum_float32(IntPtr tableHandle, IntPtr columnIndex);
+        private static extern float table_minimum_float32(TableHandle tableHandle, IntPtr columnIndex);
 
 
         public static float TableMinimumFloat(Table table, long columnIndex)
         {
-            if (Is64Bit)
-                return table_minimum_float64(table.Handle, (IntPtr) columnIndex);
-            return table_minimum_float32(table.Handle, (IntPtr) columnIndex);
+            return Is64Bit
+                ? table_minimum_float64(table.TableHandle, (IntPtr) columnIndex)
+                : table_minimum_float32(table.TableHandle, (IntPtr) columnIndex);
         }
 
 
-
         [DllImport(L64, EntryPoint = "table_minimum_double", CallingConvention = CallingConvention.Cdecl)]
-        private static extern double table_minimum_double64(IntPtr tableHandle, IntPtr columnIndex);
+        private static extern double table_minimum_double64(TableHandle tableHandle, IntPtr columnIndex);
 
         [DllImport(L32, EntryPoint = "table_minimum_double", CallingConvention = CallingConvention.Cdecl)]
-        private static extern double table_minimum_double32(IntPtr tableHandle, IntPtr columnIndex);
+        private static extern double table_minimum_double32(TableHandle tableHandle, IntPtr columnIndex);
 
 
         public static double TableMinimumDouble(Table table, long columnIndex)
         {
-            if (Is64Bit)
-                return table_minimum_double64(table.Handle, (IntPtr) columnIndex);
-            return table_minimum_double32(table.Handle, (IntPtr) columnIndex);
+            return Is64Bit
+                ? table_minimum_double64(table.TableHandle, (IntPtr) columnIndex)
+                : table_minimum_double32(table.TableHandle, (IntPtr) columnIndex);
         }
 
 
-
         [DllImport(L64, EntryPoint = "table_minimum_datetime", CallingConvention = CallingConvention.Cdecl)]
-        private static extern long table_minimum_datetime64(IntPtr tableHandle, IntPtr columnIndex);
+        private static extern long table_minimum_datetime64(TableHandle tableHandle, IntPtr columnIndex);
 
         [DllImport(L32, EntryPoint = "table_minimum_datetime", CallingConvention = CallingConvention.Cdecl)]
-        private static extern long table_minimum_datetime32(IntPtr tableHandle, IntPtr columnIndex);
+        private static extern long table_minimum_datetime32(TableHandle tableHandle, IntPtr columnIndex);
 
 
         public static DateTime TableMinimumDateTime(Table table, long columnIndex)
         {
-            if (Is64Bit)
-                return ToCSharpTimeUtc(table_minimum_datetime64(table.Handle, (IntPtr) columnIndex));
-            return ToCSharpTimeUtc(table_minimum_datetime32(table.Handle, (IntPtr) columnIndex));
+            return ToCSharpTimeUtc(Is64Bit
+                ? table_minimum_datetime64(table.TableHandle, (IntPtr) columnIndex)
+                : table_minimum_datetime32(table.TableHandle, (IntPtr) columnIndex));
         }
 
 
-
-
-
-
-
         [DllImport(L64, EntryPoint = "table_average_int", CallingConvention = CallingConvention.Cdecl)]
-        private static extern double table_average64(IntPtr tableHandle, IntPtr columnIndex);
+        private static extern double table_average64(TableHandle tableHandle, IntPtr columnIndex);
 
         [DllImport(L32, EntryPoint = "table_average_int", CallingConvention = CallingConvention.Cdecl)]
-        private static extern double table_average32(IntPtr tableHandle, IntPtr columnIndex);
+        private static extern double table_average32(TableHandle tableHandle, IntPtr columnIndex);
 
 
         public static double TableAverage(Table table, long columnIndex)
         {
-            if (Is64Bit)
-                return table_average64(table.Handle, (IntPtr) columnIndex);
-            return table_average32(table.Handle, (IntPtr) columnIndex);
+            return Is64Bit
+                ? table_average64(table.TableHandle, (IntPtr) columnIndex)
+                : table_average32(table.TableHandle, (IntPtr) columnIndex);
         }
 
 
-
         [DllImport(L64, EntryPoint = "table_average_float", CallingConvention = CallingConvention.Cdecl)]
-        private static extern double table_average_float64(IntPtr tableHandle, IntPtr columnIndex);
+        private static extern double table_average_float64(TableHandle tableHandle, IntPtr columnIndex);
 
         [DllImport(L32, EntryPoint = "table_average_float", CallingConvention = CallingConvention.Cdecl)]
-        private static extern double table_average_float32(IntPtr tableHandle, IntPtr columnIndex);
+        private static extern double table_average_float32(TableHandle tableHandle, IntPtr columnIndex);
 
 
         public static double TableAverageFloat(Table table, long columnIndex)
         {
-            if (Is64Bit)
-                return table_average_float64(table.Handle, (IntPtr) columnIndex);
-            return table_average_float32(table.Handle, (IntPtr) columnIndex);
+            return Is64Bit
+                ? table_average_float64(table.TableHandle, (IntPtr) columnIndex)
+                : table_average_float32(table.TableHandle, (IntPtr) columnIndex);
         }
 
 
-
         [DllImport(L64, EntryPoint = "table_average_double", CallingConvention = CallingConvention.Cdecl)]
-        private static extern double table_average_double64(IntPtr tableHandle, IntPtr columnIndex);
+        private static extern double table_average_double64(TableHandle tableHandle, IntPtr columnIndex);
 
         [DllImport(L32, EntryPoint = "table_average_double", CallingConvention = CallingConvention.Cdecl)]
-        private static extern double table_average_double32(IntPtr tableHandle, IntPtr columnIndex);
+        private static extern double table_average_double32(TableHandle tableHandle, IntPtr columnIndex);
 
 
         public static double TableAverageDouble(Table table, long columnIndex)
         {
-            if (Is64Bit)
-                return table_average_double64(table.Handle, (IntPtr) columnIndex);
-            return table_average_double32(table.Handle, (IntPtr) columnIndex);
+            return Is64Bit ? 
+                table_average_double64(table.TableHandle, (IntPtr)columnIndex) : table_average_double32(table.TableHandle, (IntPtr)columnIndex);
         }
-
-
-
-
-
-
 
 
         [DllImport(L64, EntryPoint = "tableview_maximum_int", CallingConvention = CallingConvention.Cdecl)]
@@ -1932,19 +1899,18 @@ enum DataType {
 
         //TIGHTDB_C_CS_API tightdb::TableView* tableView_find_all_int(Table * table_ptr , size_t column_ndx, int64_t value)
         [DllImport(L64, EntryPoint = "tableview_find_all_int", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr tableView_find_all_int64(IntPtr tableViewHandle, IntPtr columnIndex, long value);
+        private static extern IntPtr tableView_find_all_int64(TableViewHandle tableViewHandle, IntPtr columnIndex, long value);
 
         [DllImport(L32, EntryPoint = "tableview_find_all_int", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr tableView_find_all_int32(IntPtr tableViewHandle, IntPtr columnIndex, long value);
+        private static extern IntPtr tableView_find_all_int32(TableViewHandle tableViewHandle, IntPtr columnIndex, long value);
 
 
-        public static TableView TableViewFindAllInt(TableView tableView, long columnIndex, long value)
+        //called by tableViewHandle to set up root correctly
+        public static IntPtr TableViewFindAllInt(TableViewHandle tableViewHandle, long columnIndex, long value)
         {
-            return
-                new TableView(tableView.UnderlyingTable,
-                    Is64Bit
-                        ? tableView_find_all_int64(tableView.Handle, (IntPtr) columnIndex, value)
-                        : tableView_find_all_int32(tableView.Handle, (IntPtr) columnIndex, value), true);
+            return Is64Bit
+                ? tableView_find_all_int64(tableViewHandle,(IntPtr) columnIndex, value)
+                : tableView_find_all_int32(tableViewHandle, (IntPtr)columnIndex, value);
         }
 
 
@@ -1953,6 +1919,7 @@ enum DataType {
 
         [DllImport(L32, EntryPoint = "tableview_find_all_bool", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr tableView_find_all_bool32(IntPtr tableViewHandle, IntPtr columnIndex, IntPtr value);
+
 
 
         public static TableView TableViewFindAllBool(TableView tableView, long columnIndex, bool value)
@@ -4274,35 +4241,35 @@ enum DataType {
         //in tightdb c++ this function returns q again, the query object is re-used and keeps its pointer.
         //so high-level stuff should also return self, to enable stacking of operations query.dothis().dothat()
         [DllImport(L64, EntryPoint = "query_int_greater", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void query_int_greater64(IntPtr queryPtr, IntPtr columnIndex, long value);
+        private static extern void query_int_greater64(QueryHandle queryPtr, IntPtr columnIndex, long value);
 
         [DllImport(L32, EntryPoint = "query_int_greater", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void query_int_greater32(IntPtr queryPtr, IntPtr columnIndex, long value);
+        private static extern void query_int_greater32(QueryHandle queryPtr, IntPtr columnIndex, long value);
 
         public static void query_int_greater(Query q, long columnIndex, long value)
         {
             if (Is64Bit)
-                query_int_greater64(q.Handle, (IntPtr) columnIndex, value);
+                query_int_greater64(q.QueryHandle, (IntPtr)columnIndex, value);
             else
-                query_int_greater32(q.Handle, (IntPtr) columnIndex, value);
+                query_int_greater32(q.QueryHandle, (IntPtr)columnIndex, value);
         }
 
 
         //in tightdb c++ this function returns q again, the query object is re-used and keeps its pointer.
         //so high-level stuff should also return self, to enable stacking of operations query.dothis().dothat()
         [DllImport(L64, EntryPoint = "query_bool_equal", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void query_bool_equal64(IntPtr queryPtr, IntPtr columnIndex, IntPtr value);
+        private static extern void query_bool_equal64(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
 
         [DllImport(L32, EntryPoint = "query_bool_equal", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void query_bool_equal32(IntPtr queryPtr, IntPtr columnIndex, IntPtr value);
+        private static extern void query_bool_equal32(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
 
         public static void QueryBoolEqual(Query q, long columnIndex, bool value)
         {
             var ipValue = BoolToIntPtr(value);
             if (Is64Bit)
-                query_bool_equal64(q.Handle, (IntPtr) columnIndex, ipValue);
+                query_bool_equal64(q.QueryHandle, (IntPtr)columnIndex, ipValue);
             else
-                query_bool_equal32(q.Handle, (IntPtr) columnIndex, ipValue);
+                query_bool_equal32(q.QueryHandle, (IntPtr)columnIndex, ipValue);
         }
 
 
@@ -4310,35 +4277,34 @@ enum DataType {
         //in tightdb c++ this function returns q again, the query object is re-used and keeps its pointer.
         //so high-level stuff should also return self, to enable stacking of operations query.dothis().dothat()
         [DllImport(L64, EntryPoint = "query_int_between", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void query_int_between64(IntPtr queryPtr, IntPtr columnIndex, long lowValue,
+        private static extern void query_int_between64(QueryHandle queryPtr, IntPtr columnIndex, long lowValue,
             long highValue);
 
         [DllImport(L32, EntryPoint = "query_int_between", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void query_int_between32(IntPtr queryPtr, IntPtr columnIndex, long lowValue,
+        private static extern void query_int_between32(QueryHandle queryPtr, IntPtr columnIndex, long lowValue,
             long highValue);
 
         public static void QueryIntBetween(Query q, long columnIndex, long lowValue, long highValue)
         {
             if (Is64Bit)
-                query_int_between64(q.Handle, (IntPtr) columnIndex, lowValue, highValue);
+                query_int_between64(q.QueryHandle, (IntPtr)columnIndex, lowValue, highValue);
             else
-                query_int_between32(q.Handle, (IntPtr) columnIndex, lowValue, highValue);
+                query_int_between32(q.QueryHandle, (IntPtr)columnIndex, lowValue, highValue);
         }
 
 
         [DllImport(L64, EntryPoint = "query_count", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr query_count64(IntPtr queryPtr, IntPtr start, IntPtr end, IntPtr limit);
+        private static extern IntPtr query_count64(QueryHandle queryPtr, IntPtr start, IntPtr end, IntPtr limit);
 
         [DllImport(L32, EntryPoint = "query_count", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr query_count32(IntPtr queryPtr, IntPtr start, IntPtr end, IntPtr limit);
+        private static extern IntPtr query_count32(QueryHandle queryPtr, IntPtr start, IntPtr end, IntPtr limit);
 
         public static long QueryCount(Query q, long start, long end, long limit)
         {
-            if (Is64Bit)
-                return (long) query_count64(q.Handle, (IntPtr) start, (IntPtr) end, (IntPtr) limit);
-            return (long) query_count32(q.Handle, (IntPtr) start, (IntPtr) end, (IntPtr) limit);
+            return Is64Bit
+                ? (long) query_count64(q.QueryHandle, (IntPtr) start, (IntPtr) end, (IntPtr) limit)
+                : (long) query_count32(q.QueryHandle, (IntPtr) start, (IntPtr) end, (IntPtr) limit);
         }
-
 
 
         [DllImport(L64, EntryPoint = "tableview_set_mixed_double", CallingConvention = CallingConvention.Cdecl)]

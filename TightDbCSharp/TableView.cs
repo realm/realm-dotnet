@@ -638,6 +638,7 @@ namespace TightDbCSharp
         }
 
 
+
         internal TableViewHandle TableViewHandle {
             get { return Handle as TableViewHandle; }
         }
@@ -654,9 +655,8 @@ namespace TightDbCSharp
 
         internal override TableView FindAllIntNoCheck(long columnIndex, long value)
         {
-            return UnsafeNativeMethods.TableViewFindAllInt(this,  columnIndex,value);
+            return new TableView(UnderlyingTable, TableViewHandle.TableViewFindAllInt(columnIndex, value));
         }
-
 
         internal override TableView FindAllBoolNoCheck(long columnIndex, bool value)
         {

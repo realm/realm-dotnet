@@ -58,6 +58,7 @@
     <Compile Include="TableHandle.cs" />
     <Compile Include="TableViewHandle.cs" />
     <Compile Include="TightDbHandle.cs" />
+    <Compile Include="tightDbHandleOptionalUnbind.cs" />
     <Compile Include="Toolbox.cs" />
     <Compile Include="Group.cs" />
     <Compile Include="Handled.cs" />

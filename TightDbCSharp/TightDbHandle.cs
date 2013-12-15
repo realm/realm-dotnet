@@ -81,8 +81,12 @@ namespace TightDbCSharp
         //this object is set to the root if it is a child, or null
         //if this object is itself a root
         //root and handle should be set atomically using RuntimeHelpers.PrepareConstrainedRegions();
-        protected readonly TightDbHandle Root;
+        //or at the very least, handle should only be set *after* root has been successfully set
+        //otherwise the finalizer might free the handle concurrently or not at all
 
+        internal readonly  TightDbHandle Root; //internal to allow constructors in e.g. tableview to reference Root of e.g. Table
+
+        
         //at creation, we must always specify the root if any, or null if the object is itself a root
         //root in this respect means the object where it and all its children must be accessed serially
         //for instance a Group from a transaction have the shared group as root, a table from such a group have
@@ -97,6 +101,46 @@ namespace TightDbCSharp
             else
               Root = root;
         }
+       
+
+        /*This might work in a future version of C# - when we get Generic constructors with parametres
+        //Generate a TableView object with its root set to eiter parent or to parents root
+        //that is, the link will be directly to the root of the collection of classes
+        //a root object R will have root==null
+        //all other root objects that have this root object as root, wil have root==R
+
+        //Call like this (say we are in a TableView and want a TableView handle attached to ourself):
+        // TableViewHandle th  = RootedHandle<TableViewHAndle>(this)
+        // say we are in a Table and want a TableViewHandle as a child
+        // var th = RootedHandle<TableViewHandle>(this)
+        // or in a table and want a Query :
+        // var qr = RootedHandle<QueryHandle>(this)
+        //so in general 
+        // var xx = RootedHandle<Type>(this)  //written in any TightdbHandle class
+        // will create a new TightdbHandle descendant of type Type where its root is set to the same
+        // root that this have (if this.root==null then it is set to this, otherwise it is set to this.root)
+
+        //note that this handle will be constructed with no handle value. It will be invalid by default and thus, it
+        //does not really matter if root is set in an atomic fashion or not - because we are in a stage before the
+        //native handle value is actually set.
+        //if out-of-band exceptions leaves this class constructed before it has gotten a handle to manage, it will
+        //simply finalize itself silently as the finalizer in CriticalHandle will realize the 0 value of the 
+        //handle and do nothing
+        //legal:
+        T RootedHandle<T>(TightDbHandle parent) where T:TightDbHandle,new()
+        {
+            return (parent.Root == null) ?
+                new T {Root=parent} :
+                new T {Root=parent.Root};
+        }
+        //What i'd like:
+        T RootedHandle<T>(TightDbHandle parent) where T:TightDbHandle,new(TightDbHandle)
+        {
+            return (parent.Root == null) ?
+                new T(parent):
+                new T(parent.Root);
+        }
+        */
 
         private static List<TightDbHandle> GetUnbindList()
         {
