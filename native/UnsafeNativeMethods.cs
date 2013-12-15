@@ -1906,7 +1906,7 @@ enum DataType {
 
 
         //called by tableViewHandle to set up root correctly
-        public static IntPtr TableViewFindAllInt(TableViewHandle tableViewHandle, long columnIndex, long value)
+        internal static IntPtr TableViewFindAllInt(TableViewHandle tableViewHandle, long columnIndex, long value)
         {
             return Is64Bit
                 ? tableView_find_all_int64(tableViewHandle,(IntPtr) columnIndex, value)
@@ -1915,133 +1915,107 @@ enum DataType {
 
 
         [DllImport(L64, EntryPoint = "tableview_find_all_bool", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr tableView_find_all_bool64(IntPtr tableViewHandle, IntPtr columnIndex, IntPtr value);
+        private static extern IntPtr tableView_find_all_bool64(TableViewHandle tableViewHandle, IntPtr columnIndex, IntPtr value);
 
         [DllImport(L32, EntryPoint = "tableview_find_all_bool", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr tableView_find_all_bool32(IntPtr tableViewHandle, IntPtr columnIndex, IntPtr value);
+        private static extern IntPtr tableView_find_all_bool32(TableViewHandle tableViewHandle, IntPtr columnIndex, IntPtr value);
 
 
-
-        public static TableView TableViewFindAllBool(TableView tableView, long columnIndex, bool value)
+        //called from TableViewHandle atomically, we don't want to use TableViewHandle return type as that object would
+        //then finalize wrongly, not having the corret root set up. CER makes sure we are not stopped by out-of-band exceptions
+        internal static IntPtr TableViewFindAllBool(TableViewHandle tableViewHandle, long columnIndex, bool value)
         {
-            return
-                new TableView(tableView.UnderlyingTable,
-                    Is64Bit
-                        ? tableView_find_all_bool64(tableView.Handle, (IntPtr) columnIndex, BoolToIntPtr(value))
-                        : tableView_find_all_bool32(tableView.Handle, (IntPtr) columnIndex, BoolToIntPtr(value)), true);
+            return Is64Bit
+                ? tableView_find_all_bool64(tableViewHandle, (IntPtr)columnIndex, BoolToIntPtr(value))
+                : tableView_find_all_bool32(tableViewHandle, (IntPtr)columnIndex, BoolToIntPtr(value));
         }
+
 
         //todo what if find all datetime is called on a mixed datetime field. mixed datetime fileds does not like negative time_t values
         //todo do some unit tests on this - both table and tableview
         [DllImport(L64, EntryPoint = "tableview_find_all_datetime", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr tableView_find_all_datetime64(IntPtr tableViewHandle, IntPtr columnIndex,
+        private static extern IntPtr tableView_find_all_datetime64(TableViewHandle tableViewHandle, IntPtr columnIndex,
             Int64 value);
 
         [DllImport(L32, EntryPoint = "tableview_find_all_datetime", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr tableView_find_all_datetime32(IntPtr tableViewHandle, IntPtr columnIndex,
+        private static extern IntPtr tableView_find_all_datetime32(TableViewHandle tableViewHandle, IntPtr columnIndex,
             Int64 value);
 
 
-        public static TableView TableViewFindAllDateTime(TableView tableView, long columnIndex, DateTime value)
+        internal static IntPtr TableViewFindAllDateTime(TableViewHandle tableViewHandle, long columnIndex,
+            DateTime value)
         {
-            return
-                new TableView(tableView.UnderlyingTable,
-                    Is64Bit
-                        ? tableView_find_all_datetime64(tableView.Handle, (IntPtr) columnIndex, ToTightDbDateTime(value))
-                        : tableView_find_all_datetime32(tableView.Handle, (IntPtr) columnIndex, ToTightDbDateTime(value)),
-                    true);
+            return Is64Bit
+                ? tableView_find_all_datetime64(tableViewHandle, (IntPtr)columnIndex, ToTightDbDateTime(value))
+                : tableView_find_all_datetime32(tableViewHandle, (IntPtr)columnIndex, ToTightDbDateTime(value));
         }
-
-
-
-
-
 
 
         [DllImport(L64, EntryPoint = "tableview_find_all_float", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr tableView_find_all_float64(IntPtr tableViewHandle, IntPtr columnIndex, float value);
+        private static extern IntPtr tableView_find_all_float64(TableViewHandle tableViewHandle, IntPtr columnIndex, float value);
 
         [DllImport(L32, EntryPoint = "tableview_find_all_float", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr tableView_find_all_float32(IntPtr tableViewHandle, IntPtr columnIndex, float value);
+        private static extern IntPtr tableView_find_all_float32(TableViewHandle tableViewHandle, IntPtr columnIndex, float value);
 
-
-        public static TableView TableViewFindAllFloat(TableView tableView, long columnIndex, float value)
+        //called by TableViewHandle to create a new TableViewHandle
+        internal static IntPtr TableViewFindAllFloat(TableViewHandle tableViewHandle, long columnIndex, float value)
         {
-            return
-                new TableView(tableView.UnderlyingTable,
-                    Is64Bit
-                        ? tableView_find_all_float64(tableView.Handle, (IntPtr) columnIndex, value)
-                        : tableView_find_all_float32(tableView.Handle, (IntPtr) columnIndex, value), true);
+            return Is64Bit
+                ? tableView_find_all_float64(tableViewHandle, (IntPtr) columnIndex, value)
+                : tableView_find_all_float32(tableViewHandle, (IntPtr) columnIndex, value);
         }
-
 
 
         [DllImport(L64, EntryPoint = "tableview_find_all_double", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr tableView_find_all_double64(IntPtr tableViewHandle, IntPtr columnIndex,
+        private static extern IntPtr tableView_find_all_double64(TableViewHandle tableViewHandle, IntPtr columnIndex,
             double value);
 
         [DllImport(L32, EntryPoint = "tableview_find_all_double", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr tableView_find_all_double32(IntPtr tableViewHandle, IntPtr columnIndex,
+        private static extern IntPtr tableView_find_all_double32(TableViewHandle tableViewHandle, IntPtr columnIndex,
             double value);
 
-
-        public static TableView TableViewFindAlldouble(TableView tableView, long columnIndex, double value)
+        //called by TableViewHandle to create a new TableViewHandle
+        internal static IntPtr TableViewFindAllDouble(TableViewHandle tableViewHandle, long columnIndex, double value)
         {
-            return
-                new TableView(tableView.UnderlyingTable,
-                    Is64Bit
-                        ? tableView_find_all_double64(tableView.Handle, (IntPtr) columnIndex, value)
-                        : tableView_find_all_double32(tableView.Handle, (IntPtr) columnIndex, value), true);
+            return Is64Bit
+                ? tableView_find_all_double64(tableViewHandle, (IntPtr)columnIndex, value)
+                : tableView_find_all_double32(tableViewHandle, (IntPtr)columnIndex, value);
         }
-
 
 
         [DllImport(L64, EntryPoint = "table_find_all_string", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_find_all_string64(IntPtr tableHandle, IntPtr columnIndex,
+        private static extern IntPtr table_find_all_string64(TableHandle tableHandle, IntPtr columnIndex,
             [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
 
         [DllImport(L32, EntryPoint = "table_find_all_string", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_find_all_string32(IntPtr tableHandle, IntPtr columnIndex,
+        private static extern IntPtr table_find_all_string32(TableHandle tableHandle, IntPtr columnIndex,
             [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
 
-
-        public static TableView TableFindAllString(Table table, long columnIndex, string value)
+        //called by TableHandle
+        public static IntPtr TableFindAllString(TableHandle tableHandle, long columnIndex, string value)
         {
-            return
-                new TableView(table,
-                    Is64Bit
-                        ? table_find_all_string64(table.Handle, (IntPtr) columnIndex, value, (IntPtr) value.Length)
-                        : table_find_all_string32(table.Handle, (IntPtr) columnIndex, value, (IntPtr) value.Length),
-                    true);
+            return Is64Bit
+                ? table_find_all_string64(tableHandle, (IntPtr)columnIndex, value, (IntPtr) value.Length)
+                : table_find_all_string32(tableHandle, (IntPtr)columnIndex, value, (IntPtr)value.Length);
         }
-
 
 
         //TIGHTDB_C_CS_API tightdb::TableView* table_find_all_int(Table * table_ptr , size_t column_ndx, int64_t value)
         [DllImport(L64, EntryPoint = "tableview_find_all_string", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr tableView_find_all_string64(IntPtr tableViewHandle, IntPtr columnIndex,
+        private static extern IntPtr tableView_find_all_string64(TableViewHandle tableViewHandle, IntPtr columnIndex,
             [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
 
         [DllImport(L32, EntryPoint = "tableview_find_all_string", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr tableView_find_all_string32(IntPtr tableViewHandle, IntPtr columnIndex,
+        private static extern IntPtr tableView_find_all_string32(TableViewHandle tableViewHandle, IntPtr columnIndex,
             [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
 
 
-        public static TableView TableViewFindAllString(TableView tableView, long columnIndex, string value)
+        public static IntPtr TableViewFindAllString(TableViewHandle tableViewHandle, long columnIndex, string value)
         {
-            return
-                new TableView(tableView.UnderlyingTable,
-                    Is64Bit
-                        ? tableView_find_all_string64(tableView.Handle, (IntPtr) columnIndex, value,
-                            (IntPtr) value.Length)
-                        : tableView_find_all_string32(tableView.Handle, (IntPtr) columnIndex, value,
-                            (IntPtr) value.Length), true);
+            return Is64Bit
+                ? tableView_find_all_string64(tableViewHandle, (IntPtr)columnIndex,value, (IntPtr)value.Length)
+                : tableView_find_all_string32(tableViewHandle, (IntPtr)columnIndex,value, (IntPtr)value.Length);
         }
-
-
-
-
-
 
 
         //        TIGHTDB_C_CS_API tightdb::TableView* query_find_all_int(Query * query_ptr , size_t start, size_t end, size_t limit)

@@ -660,27 +660,27 @@ namespace TightDbCSharp
 
         internal override TableView FindAllBoolNoCheck(long columnIndex, bool value)
         {
-            return UnsafeNativeMethods.TableViewFindAllBool(this,columnIndex, value);
+            return new TableView(UnderlyingTable,TableViewHandle.TableViewFindAllBool(columnIndex,value));            
         }
 
         internal override TableView FindAllDateNoCheck(long columnIndex, DateTime value)
         {
-            return UnsafeNativeMethods.TableViewFindAllDateTime(this, columnIndex, value);
+            return new TableView(UnderlyingTable, TableViewHandle.TableViewFindAllDateTime(columnIndex, value));
         }
 
         internal override TableView FindAllFloatNoCheck(long columnIndex, float value)
         {
-            return UnsafeNativeMethods.TableViewFindAllFloat(this,columnIndex, value);
+            return new TableView(UnderlyingTable, TableViewHandle.TableViewFindAllFloat(columnIndex, value);
         }
 
         internal override TableView FindAllDoubleNoCheck(long columnIndex, double value)
         {
-            return UnsafeNativeMethods.TableViewFindAlldouble(this, columnIndex, value);
+            return new TableView(UnderlyingTable, TableViewHandle.TableViewFindAllDouble(columnIndex, value);
         }
 
         internal override TableView FindAllStringNoCheck(long columnIndex, string value)
         {
-            return UnsafeNativeMethods.TableViewFindAllString(this, columnIndex, value);
+            return new TableView(UnderlyingTable,TableViewHandle.TableViewFindAllString(columnIndex,value));
         }
 
         internal override TableView FindAllBinaryNoCheck(long columnIndex, byte[] value)

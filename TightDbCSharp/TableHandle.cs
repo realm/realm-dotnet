@@ -204,6 +204,26 @@ namespace TightDbCSharp
 
 
         //acquire a TableView handle with the result And set Root in an atomic fashion 
+        internal TableViewHandle TableFindAllString(long columnIndex, string value)
+        {
+            var tvHandle = TableViewHandle.RootedTableViewHandle(this);
+
+            //At this point sh is invalid due to its handle being uninitialized, but the root is set correctly
+            //a finalize at this point will not leak anything and the handle will not do anything
+
+            //now, set the TableView handle...
+            RuntimeHelpers.PrepareConstrainedRegions();//the following finally will run with no out-of-band exceptions
+            try
+            { }
+            finally
+            {
+                tvHandle.SetHandle(UnsafeNativeMethods.TableFindAllString(this, columnIndex, value));
+            }//at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
+            return tvHandle;
+        }
+
+
+        //acquire a TableView handle with the result And set Root in an atomic fashion 
         //this method covers two c++ calls, one for empty binary array search, and one for searching
         //some actual value. The empty has its own code as it would be somewhat faster that way,
         //saving pinning and marshalling an empty array.

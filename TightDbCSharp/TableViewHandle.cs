@@ -62,5 +62,105 @@ namespace TightDbCSharp
             }//at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
             return tvHandle;
         }
+
+
+        //acquire a TableView handle with the result And set Root in an atomic fashion 
+        internal TableViewHandle TableViewFindAllBool(long columnIndex, bool value)
+        {
+            var tvHandle = RootedTableViewHandle();//attach to our own root
+
+            //At this point tvHandle is invalid due to its handle being uninitialized, but the root is set correctly
+            //a finalize at this point will not leak anything and the handle will not do anything
+
+            //now, set the TableView handle...
+            RuntimeHelpers.PrepareConstrainedRegions();//the following finally will run with no out-of-band exceptions
+            try
+            { }
+            finally
+            {
+                tvHandle.SetHandle(UnsafeNativeMethods.TableViewFindAllBool(this, columnIndex, value));
+            }//at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
+            return tvHandle;
+        }
+
+
+        //acquire a TableView handle with the result And set Root in an atomic fashion 
+        internal TableViewHandle TableViewFindAllDateTime(long columnIndex, DateTime value)
+        {
+            var tvHandle = RootedTableViewHandle();//attach to our own root
+
+            //At this point tvHandle is invalid due to its handle being uninitialized, but the root is set correctly
+            //a finalize at this point will not leak anything and the handle will not do anything
+
+            //now, set the TableView handle...
+            RuntimeHelpers.PrepareConstrainedRegions();//the following finally will run with no out-of-band exceptions
+            try
+            { }
+            finally
+            {
+                tvHandle.SetHandle(UnsafeNativeMethods.TableViewFindAllDateTime(this,columnIndex, value));
+            }//at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
+            return tvHandle;
+        }
+
+        //acquire a TableView handle with the result And set Root in an atomic fashion 
+        internal TableViewHandle TableViewFindAllFloat(long columnIndex, float value)
+        {
+            var tvHandle = RootedTableViewHandle();//attach to our own root
+
+            //At this point tvHandle is invalid due to its handle being uninitialized, but the root is set correctly
+            //a finalize at this point will not leak anything and the handle will not do anything
+
+            //now, set the TableView handle...
+            RuntimeHelpers.PrepareConstrainedRegions();//the following finally will run with no out-of-band exceptions
+            try
+            { }
+            finally
+            {
+                tvHandle.SetHandle(UnsafeNativeMethods.TableViewFindAllFloat(this, columnIndex, value));
+            }//at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
+            return tvHandle;
+        }
+
+        //acquire a TableView handle with the result And set Root in an atomic fashion 
+        internal TableViewHandle TableViewFindAllDouble(long columnIndex, float value)
+        {
+            var tvHandle = RootedTableViewHandle();//attach to our own root
+
+            //At this point tvHandle is invalid due to its handle being uninitialized, but the root is set correctly
+            //a finalize at this point will not leak anything and the handle will not do anything
+
+            //now, set the TableView handle...
+            RuntimeHelpers.PrepareConstrainedRegions();//the following finally will run with no out-of-band exceptions
+            try
+            { }
+            finally
+            {
+                tvHandle.SetHandle(UnsafeNativeMethods.TableViewFindAllDouble(this, columnIndex, value));
+            }//at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
+            return tvHandle;
+        }
+
+
+        //acquire a TableView handle with the result And set Root in an atomic fashion 
+        internal TableViewHandle TableViewFindAllString(long columnIndex, string value)
+        {
+            var tvHandle = RootedTableViewHandle();//attach to our own root
+
+            //At this point tvHandle is invalid due to its handle being uninitialized, but the root is set correctly
+            //a finalize at this point will not leak anything and the handle will not do anything
+
+            //now, set the TableView handle...
+            RuntimeHelpers.PrepareConstrainedRegions();//the following finally will run with no out-of-band exceptions
+            try
+            { }
+            finally
+            {
+                tvHandle.SetHandle(UnsafeNativeMethods.TableViewFindAllString(this, columnIndex, value));
+            }//at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
+            return tvHandle;
+        }
+
+
     }
 }
