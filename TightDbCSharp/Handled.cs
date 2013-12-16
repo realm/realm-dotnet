@@ -37,7 +37,7 @@ namespace TightDbCSharp
         /// </summary>
         public bool IsDisposed
         {
-            get { return Handle.IsClosed; }
+            get { return Handle!=null && Handle.IsClosed; }
         }
 
         /// <summary>
@@ -119,7 +119,7 @@ namespace TightDbCSharp
         /// <param name="disposing"></param>
         protected virtual void Dispose(bool disposing)  //was protected virtual earlier on, can be set back to protected virtual if the need arises
         {
-            if (!IsDisposed)
+            if (Handle!=null && !IsDisposed)//handle could be null if we crashed in the constructor (group with filename to a OS protected area for instance)
             {
                 //no matter if we are being called from a dispose in a user thread, or from a finalizer, we should
                 //ask Handle to dispose of itself (unbind)

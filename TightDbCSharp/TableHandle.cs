@@ -15,6 +15,11 @@ namespace TightDbCSharp
         {
         }
 
+        //used by P/Invoke to automatically construct a TableHandle when returning a size_t as a TableHandle
+        private TableHandle()
+        {
+        }
+
         protected override void Unbind()
         {
             UnsafeNativeMethods.TableUnbind(this);

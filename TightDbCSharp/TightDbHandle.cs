@@ -53,8 +53,6 @@ namespace TightDbCSharp
         //even though we are called from a finalizer thread
         //we also use the boolean as the lock object for serializing access to the list
 
-
-
         //Unbind is called by criticalhandle to unbind unmanaged/native resuorces
         //As we don't want to call core concurrently from a finalizer thread
         //releasehandle will in fact just move ownership to the root
@@ -65,6 +63,8 @@ namespace TightDbCSharp
         //(If criticalhandle and jitter manages to pre-jit the entire call graph correctly,
         //we are calling an overridden virtual method after all (but so is private Criticalhandle cleanup ))
         //criticalhandle source here :  http://reflector.webtropy.com/default.aspx/Dotnetfx_Win7_3@5@1/Dotnetfx_Win7_3@5@1/3@5@1/DEVDIV/depot/DevDiv/releases/whidbey/NetFXspW7/ndp/clr/src/BCL/System/Runtime/InteropServices/CriticalHandle@cs/1/CriticalHandle@cs
+
+        
 
         //override Unbind and put in code that actually calls core and unbinds whatever this handle is about
         //when this is called, it has been verified that it is safe to call core

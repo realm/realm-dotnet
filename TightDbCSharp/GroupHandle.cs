@@ -5,6 +5,12 @@ namespace TightDbCSharp
 {
     public class GroupHandle:TightDbHandleOptionalUnbind
     {
+
+        //needed for P/Invoke to be able to create an empty object
+        public GroupHandle() 
+        {
+        }
+
         protected override void Unbind()
         {
             if (!IgnoreUnbind)

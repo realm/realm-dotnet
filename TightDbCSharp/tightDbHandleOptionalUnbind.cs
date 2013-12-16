@@ -24,6 +24,10 @@ namespace TightDbCSharp
         protected readonly Boolean IgnoreUnbind; //if false, then the spec handle points to an internal structure in core,
                                    //that is not refcounted and should not be unbound
 
+        public TightDbHandleOptionalUnbind()
+        {
+        }
+
         //IgnoreUnbind:
         //call with true and finalization will never be run on this handle
         //call with false will make this handle work as TightDbHandle
@@ -39,6 +43,7 @@ namespace TightDbCSharp
             }
             IgnoreUnbind = ignoreUnbind;//readonly fields can be set once only.
         }
+
 
     }
 }
