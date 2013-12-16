@@ -14,6 +14,11 @@ namespace TightDbCSharp
         {
         }
 
+        //empty constructor to keep P/Invoke CriticalHandle support happy
+        public SharedGroupHandle()
+        {            
+        }
+
         protected override void Unbind()
         {
             AbortTransaction();    //stop any leaked ongoing transaction. remove this when core do this automatically
@@ -110,7 +115,8 @@ namespace TightDbCSharp
         //http://msdn.microsoft.com/en-us/library/system.runtime.compilerservices.runtimehelpers.prepareconstrainedregions(v=vs.110).aspx
         internal GroupHandle StartTransaction (TransactionState tstate)
         {
-            var gh  =new GroupHandle(true,this); //allocate in advance to avoid allocating in constrained exection region true means do not finalize or call unbind
+            var gh  =new GroupHandle(true,this); //set sharedgroup as root. Perhaps setting the group would also work, depends on if core can take it.
+            //allocate in advance to avoid allocating in constrained exection region true means do not finalize or call unbind
             RuntimeHelpers.PrepareConstrainedRegions();//the following finally will run with no out-of-band exceptions
             try
             {}

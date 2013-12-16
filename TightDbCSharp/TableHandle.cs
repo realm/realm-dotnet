@@ -49,9 +49,13 @@ namespace TightDbCSharp
             return new TableHandle(null);
         }
 
-        internal static TableHandle RootedTableHandle(TightDbHandle root)
+        //call with a parent, will set the correct root (parent if parent.root=null, or parent.root otherwise)
+        //if You want a RootedTableHandle with is self-rooted, call with no parameter
+        internal static TableHandle RootedTableHandle(TightDbHandle parent)
         {
-            return new TableHandle(root.Root);
+            return (parent.Root == null)
+                ? new TableHandle(parent)
+                : new TableHandle(parent.Root);
         }
 
         //acquire a TableHandle And set root in an atomic fashion 
@@ -96,7 +100,7 @@ namespace TightDbCSharp
         //acquire a TableViewHandle And set root in an atomic fashion 
         internal TableViewHandle TableDistinct(long columnIndex)
         {
-            var sh = TableViewHandle.RootedTableViewHandle(this);
+            var sh = TableViewHandle.RootedTableViewHandle(this);//will have same root as this
 
             //At this point sh is invalid due to its handle being uninitialized, but the root is set correctly
             //a finalize at this point will not leak anything and the handle will not do anything
