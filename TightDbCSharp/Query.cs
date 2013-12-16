@@ -62,19 +62,15 @@ namespace TightDbCSharp
         /// <returns>TableView with query results</returns>
         public TableView FindAll()
         {
-            return UnsafeNativeMethods.QueryFindAll_np(this);//Methods that use default parameters are allowed under the Common Language Specification (CLS); however, the CLS allows compilers to ignore the values that are assigned to these parameters. 
+            return new TableView(UnderlyingTable,QueryHandle.QueryFindAll());
         }
 
         private static void ValidateStartEndLimitErrror(String errparam, string errmsg,long start, long end, long limit)
-        {
-            
-            
-            
+        {                                   
             throw new ArgumentOutOfRangeException(errparam,
                                                   string.Format(CultureInfo.InvariantCulture,
                                                       "Query.FindAll({0},{1},{2}) {3}", start,
-                                                      end, limit, errmsg));
-            
+                                                      end, limit, errmsg));            
         }
 
         private void ValidateStartEndLimit(long start, long end, long limit)
@@ -138,7 +134,7 @@ namespace TightDbCSharp
         public TableView FindAll(long start, long end, long limit)
         {
             ValidateStartEndLimit(start,end,limit);
-            return UnsafeNativeMethods.QueryFindAll(this,start, end, limit);
+            return new TableView(UnderlyingTable,QueryHandle.QueryFindAll(start,end,limit));
         }
 
         //if the column does not exist, -1 is returned

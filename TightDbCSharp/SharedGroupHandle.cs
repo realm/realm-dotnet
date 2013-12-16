@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 
 namespace TightDbCSharp
 {
-    class SharedGroupHandle:TightDbHandle
+    public class SharedGroupHandle:TightDbHandle
     {
         public TransactionState State;//should default to 0=ready
 

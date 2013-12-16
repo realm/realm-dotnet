@@ -18,7 +18,7 @@ namespace TightDbCSharp
     //or finalized, rasising the probability that the user discovers the leak when he tries to do another transaction.
 
     //we could derive another class tighDbHandleNoFinalize, but currently we do not have a handle type that always should not be unbound
-    abstract class TightDbHandleOptionalUnbind : TightDbHandle
+    public abstract class TightDbHandleOptionalUnbind : TightDbHandle
     {
 
         protected readonly Boolean IgnoreUnbind; //if false, then the spec handle points to an internal structure in core,

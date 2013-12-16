@@ -255,14 +255,14 @@ namespace TightDbCSharpTest
         /// see above test that is similar to this one, but does not trigger CA2000
         /// DO NOT DISABLE THIS TEST - WHEN IT DOES NOT SHOW UP AS A CA2000 tHEN MSFT HAVE FIXED
         /// THEIR CA2000 BUG, AND WE SHOULD REMOVE THE SUPRESSED CA2000 ERRORS FROM THE SUPRESSION FILES
-        /// 
+        /// (originally called g.Handle two times, but now G.Handle is not reachable from here - I am not sure Size triggers)
         /// </summary>
         [Test]
         public static void CodeAnalysis2000TestFalsePositive()
         {
             using (var g = new Group())            
             {
-                Assert.AreEqual(g.Handle,g.Handle);
+                Assert.AreEqual(g.Size,g.Size);
             }
         }
 

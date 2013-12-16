@@ -105,7 +105,7 @@ enum DataType {
 //        [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
 #endif
 
-    internal static class UnsafeNativeMethods
+    public static class UnsafeNativeMethods
     {
 
 
@@ -1923,7 +1923,7 @@ enum DataType {
 
         //called from TableViewHandle atomically, we don't want to use TableViewHandle return type as that object would
         //then finalize wrongly, not having the corret root set up. CER makes sure we are not stopped by out-of-band exceptions
-        internal static IntPtr TableViewFindAllBool(TableViewHandle tableViewHandle, long columnIndex, bool value)
+        public static IntPtr TableViewFindAllBool(TableViewHandle tableViewHandle, long columnIndex, bool value)
         {
             return Is64Bit
                 ? tableView_find_all_bool64(tableViewHandle, (IntPtr)columnIndex, BoolToIntPtr(value))
@@ -1975,7 +1975,7 @@ enum DataType {
             double value);
 
         //called by TableViewHandle to create a new TableViewHandle
-        internal static IntPtr TableViewFindAllDouble(TableViewHandle tableViewHandle, long columnIndex, double value)
+        public static IntPtr TableViewFindAllDouble(TableViewHandle tableViewHandle, long columnIndex, double value)
         {
             return Is64Bit
                 ? tableView_find_all_double64(tableViewHandle, (IntPtr)columnIndex, value)
@@ -2020,106 +2020,91 @@ enum DataType {
 
         //        TIGHTDB_C_CS_API tightdb::TableView* query_find_all_int(Query * query_ptr , size_t start, size_t end, size_t limit)
         [DllImport(L64, EntryPoint = "query_find_all", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr query_find_all64(IntPtr handle, IntPtr start, IntPtr end, IntPtr limit);
+        private static extern IntPtr query_find_all64(QueryHandle handle, IntPtr start, IntPtr end, IntPtr limit);
 
         [DllImport(L32, EntryPoint = "query_find_all", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr query_find_all32(IntPtr handle, IntPtr start, IntPtr end, IntPtr limit);
+        private static extern IntPtr query_find_all32(QueryHandle handle, IntPtr start, IntPtr end, IntPtr limit);
 
-
-        public static TableView QueryFindAll(Query query, long start, long end, long limit)
+        //called by QueryHandle
+        internal static IntPtr QueryFindAll(QueryHandle queryHandle, long start, long end, long limit)
         {
-            return
-                new TableView(query.UnderlyingTable,
-                    Is64Bit
-                        ? query_find_all64(query.Handle, (IntPtr) start, (IntPtr) end, (IntPtr) limit)
-                        : query_find_all32(query.Handle, (IntPtr) start, (IntPtr) end, (IntPtr) limit), true);
+            return Is64Bit
+                ? query_find_all64(queryHandle, (IntPtr) start, (IntPtr) end, (IntPtr) limit)
+                : query_find_all32(queryHandle, (IntPtr) start, (IntPtr) end, (IntPtr) limit);
         }
-
 
         //        TIGHTDB_C_CS_API tightdb::TableView* query_find_all_int(Query * query_ptr , size_t start, size_t end, size_t limit)
         [DllImport(L64, EntryPoint = "query_find_all_np", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr query_find_all_np64(IntPtr handle);
+        private static extern IntPtr query_find_all_np64(QueryHandle handle);
 
         [DllImport(L32, EntryPoint = "query_find_all_np", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr query_find_all_np32(IntPtr handle);
+        private static extern IntPtr query_find_all_np32(QueryHandle handle);
 
-
-        public static TableView QueryFindAll_np(Query query)
+        internal static IntPtr QueryFindAll(QueryHandle queryHandle)
         {
-            return
-                new TableView(query.UnderlyingTable,
-                    Is64Bit
-                        ? query_find_all_np64(query.Handle)
-                        : query_find_all_np32(query.Handle), true);
+            return Is64Bit
+                ? query_find_all_np64(queryHandle)
+                : query_find_all_np32(queryHandle);
         }
 
 
-
         [DllImport(L64, EntryPoint = "query_find", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr query_find64(IntPtr handle, IntPtr lastMatch);
+        private static extern IntPtr query_find64(QueryHandle queryHandle, IntPtr lastMatch);
 
         [DllImport(L32, EntryPoint = "query_find", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr query_find32(IntPtr handle, IntPtr lastMatch);
-
+        private static extern IntPtr query_find32(QueryHandle queryHandle, IntPtr lastMatch);
 
         public static long QueryFind(Query query, long lastMatch)
         {
             return
                 Is64Bit
-                    ? (long) query_find64(query.Handle, (IntPtr) lastMatch)
-                    : (long) query_find32(query.Handle, (IntPtr) lastMatch);
+                    ? (long) query_find64(query.QueryHandle, (IntPtr) lastMatch)
+                    : (long) query_find32(query.QueryHandle, (IntPtr) lastMatch);
         }
 
-
-
-
         [DllImport(L64, EntryPoint = "query_average", CallingConvention = CallingConvention.Cdecl)]
-        private static extern double query_average64(IntPtr handle, IntPtr columnIndex);
+        private static extern double query_average64(QueryHandle handle, IntPtr columnIndex);
 
         [DllImport(L32, EntryPoint = "query_average", CallingConvention = CallingConvention.Cdecl)]
-        private static extern double query_average32(IntPtr handle, IntPtr columnIndex);
+        private static extern double query_average32(QueryHandle handle, IntPtr columnIndex);
 
 
         public static double QueryAverage(Query query, long columnIndex)
         {
             return
                 Is64Bit
-                    ? query_average64(query.Handle, (IntPtr) columnIndex)
-                    : query_average32(query.Handle, (IntPtr) columnIndex);
+                    ? query_average64(query.QueryHandle, (IntPtr)columnIndex)
+                    : query_average32(query.QueryHandle, (IntPtr)columnIndex);
         }
 
 
-
-
-
-
         [DllImport(L64, EntryPoint = "table_clear_subtable", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void table_clear_subtable64(IntPtr tableHandle, IntPtr columnIndex, IntPtr rowIndex);
+        private static extern void table_clear_subtable64(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex);
 
         [DllImport(L32, EntryPoint = "table_clear_subtable", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void table_clear_subtable32(IntPtr tableHandle, IntPtr columnIndex, IntPtr rowIndex);
+        private static extern void table_clear_subtable32(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex);
 
         public static void TableClearSubTable(Table parentTable, long columnIndex, long rowIndex)
         {
             if (Is64Bit)
-                table_clear_subtable64(parentTable.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
+                table_clear_subtable64(parentTable.TableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex);
             else
-                table_clear_subtable32(parentTable.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
+                table_clear_subtable32(parentTable.TableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex);
         }
 
 
         [DllImport(L64, EntryPoint = "tableview_clear_subtable", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void tableview_clear_subtable64(IntPtr tableHandle, IntPtr columnIndex, IntPtr rowIndex);
+        private static extern void tableview_clear_subtable64(TableViewHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex);
 
         [DllImport(L32, EntryPoint = "tableview_clear_subtable", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void tableview_clear_subtable32(IntPtr tableHandle, IntPtr columnIndex, IntPtr rowIndex);
+        private static extern void tableview_clear_subtable32(TableViewHandle  tableHandle, IntPtr columnIndex, IntPtr rowIndex);
 
         public static void TableViewClearSubTable(TableView parentTableView, long columnIndex, long rowIndex)
         {
             if (Is64Bit)
-                tableview_clear_subtable64(parentTableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
+                tableview_clear_subtable64(parentTableView.TableViewHandle, (IntPtr)columnIndex, (IntPtr)rowIndex);
             else
-                tableview_clear_subtable32(parentTableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex);
+                tableview_clear_subtable32(parentTableView.TableViewHandle, (IntPtr)columnIndex, (IntPtr)rowIndex);
         }
 
 
@@ -2127,22 +2112,18 @@ enum DataType {
 
         //this one work on standard subtable columns as well as on mixed subtable columns.
         [DllImport(L64, EntryPoint = "table_get_subtable", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_get_subtable64(IntPtr tableHandle, IntPtr columnIndex, IntPtr rowIndex);
+        private static extern IntPtr table_get_subtable64(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex);
 
         [DllImport(L32, EntryPoint = "table_get_subtable", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_get_subtable32(IntPtr tableHandle, IntPtr columnIndex, IntPtr rowIndex);
+        private static extern IntPtr table_get_subtable32(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex);
 
-        public static Table TableGetSubTable(Table parentTable, long columnIndex, long rowIndex)
+        //called by tableHandle
+        internal static IntPtr TableGetSubTable(TableHandle tableHandle, long columnIndex, long rowIndex)
         {
-            if (Is64Bit)
-                return new Table(
-                    table_get_subtable64(parentTable.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex), true,
-                    parentTable.ReadOnly);
-            return new Table(table_get_subtable32(parentTable.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex), true,
-                parentTable.ReadOnly);
+            return Is64Bit
+                ? table_get_subtable64(tableHandle, (IntPtr) columnIndex, (IntPtr) rowIndex)
+                : table_get_subtable32(tableHandle, (IntPtr) columnIndex, (IntPtr) rowIndex);
         }
-
-
 
 
         //If the name exists in the group, the table associated with the name is returned
@@ -2190,63 +2171,55 @@ enum DataType {
 
         //
         [DllImport(L64, EntryPoint = "group_has_table", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr group_has_table64(IntPtr groupHandle,
+        private static extern IntPtr group_has_table64(GroupHandle groupHandle,
             [MarshalAs(UnmanagedType.LPWStr)] String tableName, IntPtr tableNameLen);
 
         [DllImport(L32, EntryPoint = "group_has_table", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr group_has_table32(IntPtr groupHandle,
+        private static extern IntPtr group_has_table32(GroupHandle groupHandle,
             [MarshalAs(UnmanagedType.LPWStr)] String tableName, IntPtr tableNameLen);
 
-        public static bool GroupHassTable(Group group, string tableName)
+        public static bool GroupHasTable(Group group, string tableName)
         {
-            if (Is64Bit)
-                return IntPtrToBool(group_has_table64(group.Handle, tableName, (IntPtr) tableName.Length));
-            return IntPtrToBool(group_has_table32(group.Handle, tableName, (IntPtr) tableName.Length));
+            return IntPtrToBool(Is64Bit
+                ? group_has_table64(@group.GroupHandle, tableName, (IntPtr) tableName.Length)
+                : group_has_table32(@group.GroupHandle, tableName, (IntPtr) tableName.Length));
         }
-
 
 
         [DllImport(L64, EntryPoint = "tableview_get_subtable", CallingConvention = CallingConvention.Cdecl)
         ]
-        private static extern IntPtr tableView_get_subtable64(IntPtr tableHandle, IntPtr columnIndex, IntPtr rowIndex);
+        private static extern IntPtr tableView_get_subtable64(TableViewHandle tableViewHandle, IntPtr columnIndex, IntPtr rowIndex);
 
         [DllImport(L32, EntryPoint = "tableview_get_subtable", CallingConvention = CallingConvention.Cdecl)
         ]
-        private static extern IntPtr tableView_get_subtable32(IntPtr tableHandle, IntPtr columnIndex, IntPtr rowIndex);
+        private static extern IntPtr tableView_get_subtable32(TableViewHandle tableViewHandle, IntPtr columnIndex, IntPtr rowIndex);
 
-        //note this also should work on mixed columns with subtables in them
-        public static Table TableViewGetSubTable(TableView parentTableView, long columnIndex, long rowIndex)
+        //called by TableViewHandle
+        public static IntPtr TableViewGetSubTable(TableViewHandle tableViewHandle, long columnIndex, long rowIndex)
         {
-            if (Is64Bit)
-                return new Table(
-                    tableView_get_subtable64(parentTableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex), true,
-                    parentTableView.ReadOnly);
-            //the constructor that takes an IntPtr will use that as a table handle
-            return new Table(tableView_get_subtable32(parentTableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex),
-                true, parentTableView.ReadOnly);
+            return Is64Bit
+                ? tableView_get_subtable64(tableViewHandle, (IntPtr) columnIndex, (IntPtr) rowIndex)
+                : tableView_get_subtable32(tableViewHandle, (IntPtr) columnIndex, (IntPtr) rowIndex);
         }
 
-
-
-
+       
         //tightdb_c_cs_API void unbind_table_ref(const size_t TablePtr)
 
         [DllImport(L64, EntryPoint = "unbind_table_ref", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void unbind_table_ref64(IntPtr tableHandle);
+        private static extern void unbind_table_ref64(TableHandle tableHandle);
 
         [DllImport(L32, EntryPoint = "unbind_table_ref", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void unbind_table_ref32(IntPtr tableHandle);
+        private static extern void unbind_table_ref32(TableHandle tableHandle);
 
         //      void    table_unbind(const Table *t); /* Ref-count delete of table* from table_get_table() */
-        public static void TableUnbind(IntPtr tableHandle)
+        //called from TableHandle
+        internal static void TableUnbind(TableHandle tableHandle)
         {
             if (Is64Bit)
                 unbind_table_ref64(tableHandle);
             else
                 unbind_table_ref32(tableHandle);
-            //    t.Handle = IntPtr.Zero;
         }
-
 
 
         //TIGHTDB_C_CS_API void tableview_delete(TableView * tableview_ptr )
@@ -2339,11 +2312,6 @@ enum DataType {
 
 
 
-
-
-
-
-
         [DllImport(L64, EntryPoint = "query_delete", CallingConvention = CallingConvention.Cdecl)]
         private static extern void query_delete64(QueryHandle handle);
 
@@ -2431,33 +2399,27 @@ enum DataType {
         }
 
 
-        [DllImport(L64, EntryPoint = "tableview_get_column_count",
-            CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr tableView_get_column_count64(IntPtr tableHandle);
+        [DllImport(L64, EntryPoint = "tableview_get_column_count",CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr tableView_get_column_count64(TableViewHandle tableViewHandle);
 
-        [DllImport(L32, EntryPoint = "tableview_get_column_count",
-            CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr tableView_get_column_count32(IntPtr tableHandle);
+        [DllImport(L32, EntryPoint = "tableview_get_column_count",CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr tableView_get_column_count32(TableViewHandle tableViewHandle);
 
         public static long TableViewGetColumnCount(TableView t)
         {
-            if (Is64Bit)
-                return (long) tableView_get_column_count64(t.Handle);
-            return (long) tableView_get_column_count32(t.Handle);
+            return Is64Bit
+                ? (long) tableView_get_column_count64(t.TableViewHandle)
+                : (long) tableView_get_column_count32(t.TableViewHandle);
         }
-
-
-
-
 
 
         //            const char *table_get_column_name(const Table *t, size_t ndx);
         [DllImport(L64, EntryPoint = "table_get_column_name", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_get_column_name64(IntPtr tableHandle, IntPtr columnIndex, IntPtr buffer,
+        private static extern IntPtr table_get_column_name64(TableHandle tableHandle, IntPtr columnIndex, IntPtr buffer,
             IntPtr bufsize);
 
         [DllImport(L32, EntryPoint = "table_get_column_name", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_get_column_name32(IntPtr tableHandle, IntPtr columnIndex, IntPtr buffer,
+        private static extern IntPtr table_get_column_name32(TableHandle tableHandle, IntPtr columnIndex, IntPtr buffer,
             IntPtr bufsize);
 
 
@@ -2475,12 +2437,12 @@ enum DataType {
                 if (Is64Bit)
                     bufferSizeNeededChars =
                         (long)
-                            table_get_column_name64(t.Handle, (IntPtr) columnIndex, buffer,
+                            table_get_column_name64(t.TableHandle, (IntPtr)columnIndex, buffer,
                                 (IntPtr) currentBufferSizeChars);
                 else
                     bufferSizeNeededChars =
                         (long)
-                            table_get_column_name32(t.Handle, (IntPtr) columnIndex, buffer,
+                            table_get_column_name32(t.TableHandle, (IntPtr)columnIndex, buffer,
                                 (IntPtr) currentBufferSizeChars);
 
             } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
@@ -2499,13 +2461,13 @@ enum DataType {
 
         [DllImport(L64, EntryPoint = "tableview_get_column_name",
             CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr tableView_get_column_name64(IntPtr handle, IntPtr columnIndex,
+        private static extern IntPtr tableView_get_column_name64(TableViewHandle handle, IntPtr columnIndex,
             IntPtr buffer,
             IntPtr bufsize);
 
         [DllImport(L32, EntryPoint = "tableview_get_column_name",
             CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr tableView_get_column_name32(IntPtr handle, IntPtr columnIndex,
+        private static extern IntPtr tableView_get_column_name32(TableViewHandle handle, IntPtr columnIndex,
             IntPtr buffer,
             IntPtr bufsize);
 
@@ -2523,13 +2485,13 @@ enum DataType {
                 if (Is64Bit)
                     bufferSizeNeededChars =
                         (long)
-                            tableView_get_column_name64(tv.Handle, (IntPtr) columnIndex, buffer,
+                            tableView_get_column_name64(tv.TableViewHandle, (IntPtr)columnIndex, buffer,
                                 (IntPtr) currentBufferSizeChars);
 
                 else
                     bufferSizeNeededChars =
                         (long)
-                            tableView_get_column_name32(tv.Handle, (IntPtr) columnIndex, buffer,
+                            tableView_get_column_name32(tv.TableViewHandle, (IntPtr)columnIndex, buffer,
                                 (IntPtr) currentBufferSizeChars);
 
             } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
@@ -2539,11 +2501,11 @@ enum DataType {
 
 
         [DllImport(L64, EntryPoint = "table_get_string", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_get_string64(IntPtr handle, IntPtr columnIndex, IntPtr rowIndex,
+        private static extern IntPtr table_get_string64(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex,
             IntPtr buffer, IntPtr bufsize);
 
         [DllImport(L32, EntryPoint = "table_get_string", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_get_string32(IntPtr handle, IntPtr columnIndex, IntPtr rowIndex,
+        private static extern IntPtr table_get_string32(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex,
             IntPtr buffer, IntPtr bufsize);
 
 
@@ -2554,7 +2516,6 @@ enum DataType {
             IntPtr buffer;
             long currentBufferSizeChars;
 
-
             do
             {
                 buffer = StrAllocateBuffer(out currentBufferSizeChars, bufferSizeNeededChars);
@@ -2562,15 +2523,14 @@ enum DataType {
                 if (Is64Bit)
                     bufferSizeNeededChars =
                         (long)
-                            table_get_string64(t.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, buffer,
+                            table_get_string64(t.TableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, buffer,
                                 (IntPtr) currentBufferSizeChars);
 
                 else
                     bufferSizeNeededChars =
                         (long)
-                            table_get_string32(t.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, buffer,
+                            table_get_string32(t.TableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, buffer,
                                 (IntPtr) currentBufferSizeChars);
-
 
             } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
             return StrBufToStr(buffer, (int) bufferSizeNeededChars);
@@ -2586,10 +2546,10 @@ enum DataType {
         //having the dll both allocate and deallocate the memory ensures that we don't do anything wrong
         //and ensures that if the memory allocation in core changes, only the dll must be changed
         [DllImport(L64, EntryPoint = "group_write_to_mem", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr group_write_to_mem64(IntPtr groupPtr, out IntPtr size);
+        private static extern IntPtr group_write_to_mem64(GroupHandle groupPtr, out IntPtr size);
 
         [DllImport(L32, EntryPoint = "group_write_to_mem", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr group_write_to_mem32(IntPtr groupPtr, out IntPtr size);
+        private static extern IntPtr group_write_to_mem32(GroupHandle groupPtr, out IntPtr size);
 
 
         public static byte[] GroupWriteToMemory(Group group)
@@ -2598,8 +2558,8 @@ enum DataType {
 
             var data =
                 (Is64Bit)
-                    ? group_write_to_mem64(group.Handle, out datalength)
-                    : group_write_to_mem32(group.Handle, out datalength);
+                    ? group_write_to_mem64(group.GroupHandle, out datalength)
+                    : group_write_to_mem32(group.GroupHandle, out datalength);
 
             //now, datalength should contain number of bytes in data,
             //and data should be a pointer to those bytes
@@ -2629,7 +2589,7 @@ enum DataType {
         private static extern void group_write_to_mem_free64(IntPtr dataToFree);
 
         [DllImport(L32, EntryPoint = "group_write_to_mem_free", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr group_write_to_mem_free32(IntPtr tablePtr);
+        private static extern void group_write_to_mem_free32(IntPtr dataToFree);
 
 
 
@@ -4282,70 +4242,67 @@ enum DataType {
 
 
         [DllImport(L64, EntryPoint = "tableview_set_mixed_double", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void tableview_set_mixed_double64(IntPtr tableViewPtr, IntPtr columnIndex, IntPtr rowIndex,
+        private static extern void tableview_set_mixed_double64(TableViewHandle tableViewPtr, IntPtr columnIndex, IntPtr rowIndex,
             double value);
 
         [DllImport(L32, EntryPoint = "tableview_set_mixed_double", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void tableview_set_mixed_double32(IntPtr tableViewPtr, IntPtr columnIndex, IntPtr rowIndex,
+        private static extern void tableview_set_mixed_double32(TableViewHandle tableViewPtr, IntPtr columnIndex, IntPtr rowIndex,
             double value);
 
         public static void TableViewSetMixedDouble(TableView tableView, long columnIndex, long rowIndex, double value)
         {
             if (Is64Bit)
-                tableview_set_mixed_double64(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
+                tableview_set_mixed_double64(tableView.TableViewHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
             else
-                tableview_set_mixed_double32(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
+                tableview_set_mixed_double32(tableView.TableViewHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
         }
 
 
         [DllImport(L64, EntryPoint = "tableview_set_double", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void tableview_set_double64(IntPtr tableViewPtr, IntPtr columnIndex, IntPtr rowIndex,
+        private static extern void tableview_set_double64(TableViewHandle tableViewPtr, IntPtr columnIndex, IntPtr rowIndex,
             double value);
 
         [DllImport(L32, EntryPoint = "tableview_set_double", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void tableview_set_double32(IntPtr tableViewPtr, IntPtr columnIndex, IntPtr rowIndex,
+        private static extern void tableview_set_double32(TableViewHandle tableViewPtr, IntPtr columnIndex, IntPtr rowIndex,
             double value);
 
         public static void TableViewSetDouble(TableView tableView, long columnIndex, long rowIndex, double value)
         {
             if (Is64Bit)
-                tableview_set_double64(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
+                tableview_set_double64(tableView.TableViewHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
             else
-                tableview_set_double32(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
+                tableview_set_double32(tableView.TableViewHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
         }
 
-
-
         [DllImport(L64, EntryPoint = "table_set_mixed_double", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void table_set_mixed_double64(IntPtr tablePtr, IntPtr columnIndex, IntPtr rowIndex,
+        private static extern void table_set_mixed_double64(TableHandle tablePtr, IntPtr columnIndex, IntPtr rowIndex,
             double value);
 
         [DllImport(L32, EntryPoint = "table_set_mixed_double", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void table_set_mixed_double32(IntPtr tablePtr, IntPtr columnIndex, IntPtr rowIndex,
+        private static extern void table_set_mixed_double32(TableHandle tablePtr, IntPtr columnIndex, IntPtr rowIndex,
             double value);
 
         public static void TableSetMixedDouble(Table table, long columnIndex, long rowIndex, double value)
         {
             if (Is64Bit)
-                table_set_mixed_double64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
+                table_set_mixed_double64(table.TableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
             else
-
-                table_set_mixed_double32(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
+                table_set_mixed_double32(table.TableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
         }
 
 
         [DllImport(L64, EntryPoint = "table_set_double", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void table_set_double64(IntPtr tablePtr, IntPtr columnIndex, IntPtr rowIndex, double value);
+        private static extern void table_set_double64(TableHandle tablePtr, IntPtr columnIndex, IntPtr rowIndex, double value);
 
         [DllImport(L32, EntryPoint = "table_set_double", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void table_set_double32(IntPtr tablePtr, IntPtr columnIndex, IntPtr rowIndex, double value);
+        private static extern void table_set_double32(TableHandle tablePtr, IntPtr columnIndex, IntPtr rowIndex, double value);
 
         public static void TableSetDouble(Table table, long columnIndex, long rowIndex, double value)
         {
             if (Is64Bit)
-                table_set_double64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
+                table_set_double64(table.TableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
             else
-                table_set_double32(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
+                table_set_double32(table.TableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
         }
 
 
@@ -4356,74 +4313,71 @@ enum DataType {
 
 
         [DllImport(L64, EntryPoint = "tableview_set_mixed_float", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void tableview_set_mixed_float64(IntPtr tablePtr, IntPtr columnIndex, IntPtr rowIndex,
+        private static extern void tableview_set_mixed_float64(TableViewHandle tablePtr, IntPtr columnIndex, IntPtr rowIndex,
             float value);
 
         [DllImport(L32, EntryPoint = "tableview_set_mixed_float", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void tableview_set_mixed_float32(IntPtr tablePtr, IntPtr columnIndex, IntPtr rowIndex,
+        private static extern void tableview_set_mixed_float32(TableViewHandle  tablePtr, IntPtr columnIndex, IntPtr rowIndex,
             float value);
 
         public static void TableViewSetMixedFloat(TableView tableView, long columnIndex, long rowIndex, float value)
         {
-
             if (Is64Bit)
-                tableview_set_mixed_float64(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
+                tableview_set_mixed_float64(tableView.TableViewHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
             else
-                tableview_set_mixed_float32(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
+                tableview_set_mixed_float32(tableView.TableViewHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
         }
 
 
 
         [DllImport(L64, EntryPoint = "table_set_mixed_float", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void table_set_mixed_float64(IntPtr tablePtr, IntPtr columnIndex, IntPtr rowIndex,
+        private static extern void table_set_mixed_float64(TableHandle tablePtr, IntPtr columnIndex, IntPtr rowIndex,
             float value);
 
         [DllImport(L32, EntryPoint = "table_set_mixed_float", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void table_set_mixed_float32(IntPtr tablePtr, IntPtr columnIndex, IntPtr rowIndex,
+        private static extern void table_set_mixed_float32(TableHandle tablePtr, IntPtr columnIndex, IntPtr rowIndex,
             float value);
 
         public static void TableSetMixedFloat(Table table, long columnIndex, long rowIndex, float value)
         {
-
-
             if (Is64Bit)
-                table_set_mixed_float64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
+                table_set_mixed_float64(table.TableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
             else
-                table_set_mixed_float32(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
+                table_set_mixed_float32(table.TableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
         }
 
 
 
         [DllImport(L64, EntryPoint = "tableview_set_float", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void tableview_set_float64(IntPtr tableViewPtr, IntPtr columnIndex, IntPtr rowIndex,
+        private static extern void tableview_set_float64(TableViewHandle tableViewPtr, IntPtr columnIndex, IntPtr rowIndex,
             float value);
 
         [DllImport(L32, EntryPoint = "tableview_set_float", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void tableview_set_float32(IntPtr tableViewPtr, IntPtr columnIndex, IntPtr rowIndex,
+        private static extern void tableview_set_float32(TableViewHandle tableViewPtr, IntPtr columnIndex, IntPtr rowIndex,
             float value);
 
         public static void TableViewSetFloat(TableView tableView, long columnIndex, long rowIndex, float value)
         {
             if (Is64Bit)
-                tableview_set_float64(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
+                tableview_set_float64(tableView.TableViewHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
             else
-                tableview_set_float32(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
+                tableview_set_float32(tableView.TableViewHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
         }
 
 
 
         [DllImport(L64, EntryPoint = "table_set_float", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void table_set_float64(IntPtr tablePtr, IntPtr columnIndex, IntPtr rowIndex, float value);
+        private static extern void table_set_float64(TableHandle tablePtr, IntPtr columnIndex, IntPtr rowIndex, float value);
 
         [DllImport(L32, EntryPoint = "table_set_float", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void table_set_float32(IntPtr tablePtr, IntPtr columnIndex, IntPtr rowIndex, float value);
+        private static extern void table_set_float32(TableHandle tablePtr, IntPtr columnIndex, IntPtr rowIndex, float value);
 
         public static void TableSetFloat(Table table, long columnIndex, long rowIndex, float value)
         {
             if (Is64Bit)
-                table_set_float64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
+                table_set_float64(table.TableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
             else
-                table_set_float32(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, value);
+                table_set_float32(table.TableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, value);
         }
 
 
@@ -4472,80 +4426,74 @@ enum DataType {
 
 
         [DllImport(L64, EntryPoint = "table_set_mixed_date", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void table_set_mixed_date64(IntPtr tablePtr, IntPtr columnIndex, IntPtr rowIndex,
+        private static extern void table_set_mixed_date64(TableHandle tablePtr, IntPtr columnIndex, IntPtr rowIndex,
             Int64 value);
 
         [DllImport(L32, EntryPoint = "table_set_mixed_date", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void table_set_mixed_date32(IntPtr tablePtr, IntPtr columnIndex, IntPtr rowIndex,
+        private static extern void table_set_mixed_date32(TableHandle tablePtr, IntPtr columnIndex, IntPtr rowIndex,
             Int64 value);
 
         public static void TableSetMixedDate(Table table, long columnIndex, long rowIndex, DateTime value)
         {
             if (Is64Bit)
-                table_set_mixed_date64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex,
+                table_set_mixed_date64(table.TableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex,
                     ToTightDbMixedDateTime(value));
             else
-                table_set_mixed_date32(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex,
+                table_set_mixed_date32(table.TableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex,
                     ToTightDbMixedDateTime(value));
         }
 
 
         [DllImport(L64, EntryPoint = "tableview_set_mixed_date", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void tableView_set_mixed_date64(IntPtr tableViewPtr, IntPtr columnIndex, IntPtr rowIndex,
+        private static extern void tableView_set_mixed_date64(TableViewHandle tableViewPtr, IntPtr columnIndex, IntPtr rowIndex,
             Int64 value);
 
         [DllImport(L32, EntryPoint = "tableview_set_mixed_date", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void tableView_set_mixed_date32(IntPtr tableViewPtr, IntPtr columnIndex, IntPtr rowIndex,
+        private static extern void tableView_set_mixed_date32(TableViewHandle tableViewPtr, IntPtr columnIndex, IntPtr rowIndex,
             Int64 value);
 
         public static void TableViewSetMixedDate(TableView tableView, long columnIndex, long rowIndex, DateTime value)
         {
             if (Is64Bit)
-                tableView_set_mixed_date64(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex,
+                tableView_set_mixed_date64(tableView.TableViewHandle, (IntPtr)columnIndex, (IntPtr)rowIndex,
                     ToTightDbMixedDateTime(value));
             else
-                tableView_set_mixed_date32(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex,
+                tableView_set_mixed_date32(tableView.TableViewHandle, (IntPtr)columnIndex, (IntPtr)rowIndex,
                     ToTightDbMixedDateTime(value));
         }
 
 
 
         [DllImport(L64, EntryPoint = "table_set_date", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void table_set_date64(IntPtr tablePtr, IntPtr columnIndex, IntPtr rowIndex, Int64 value);
+        private static extern void table_set_date64(TableHandle tablePtr, IntPtr columnIndex, IntPtr rowIndex, Int64 value);
 
         [DllImport(L32, EntryPoint = "table_set_date", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void table_set_date32(IntPtr tablePtr, IntPtr columnIndex, IntPtr rowIndex, Int64 value);
+        private static extern void table_set_date32(TableHandle tablePtr, IntPtr columnIndex, IntPtr rowIndex, Int64 value);
 
         public static void TableSetDate(Table table, long columnIndex, long rowIndex, DateTime value)
         {
             if (Is64Bit)
-                table_set_date64(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, ToTightDbDateTime(value));
+                table_set_date64(table.TableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, ToTightDbDateTime(value));
             else
-                table_set_date32(table.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, ToTightDbDateTime(value));
+                table_set_date32(table.TableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, ToTightDbDateTime(value));
         }
 
 
         [DllImport(L64, EntryPoint = "tableview_set_date", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void tableview_set_date64(IntPtr tableViewPtr, IntPtr columnIndex, IntPtr rowIndex,
+        private static extern void tableview_set_date64(TableViewHandle tableViewPtr, IntPtr columnIndex, IntPtr rowIndex,
             Int64 value);
 
         [DllImport(L32, EntryPoint = "tableview_set_date", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void tableview_set_date32(IntPtr tableViewPtr, IntPtr columnIndex, IntPtr rowIndex,
+        private static extern void tableview_set_date32(TableViewHandle tableViewPtr, IntPtr columnIndex, IntPtr rowIndex,
             Int64 value);
 
         public static void TableViewSetDate(TableView tableView, long columnIndex, long rowIndex, DateTime value)
         {
             if (Is64Bit)
-                tableview_set_date64(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, ToTightDbDateTime(value));
+                tableview_set_date64(tableView.TableViewHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, ToTightDbDateTime(value));
             else
-                tableview_set_date32(tableView.Handle, (IntPtr) columnIndex, (IntPtr) rowIndex, ToTightDbDateTime(value));
+                tableview_set_date32(tableView.TableViewHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, ToTightDbDateTime(value));
         }
-
-
-
-
-
-
 
         //these methods are meant to be used for testing that the c++ library passes types on the stack of size, sequence and logical representation 
         //expected by the C# end.
@@ -5122,32 +5070,31 @@ enum DataType {
 
 
         [DllImport(L64, EntryPoint = "table_optimize", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void table_optimize64(IntPtr handle);
+        private static extern void table_optimize64(TableHandle handle);
 
         [DllImport(L32, EntryPoint = "table_optimize", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void table_optimize32(IntPtr handle);
+        private static extern void table_optimize32(TableHandle handle);
 
         public static void TableOptimize(Table table)
         {
             if (Is64Bit)
-                table_optimize64(table.Handle);
+                table_optimize64(table.TableHandle);
             else
-                table_optimize32(table.Handle);
+                table_optimize32(table.TableHandle);
         }
 
 
 
         [DllImport(L64, EntryPoint = "table_to_json", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode)]
-        private static extern IntPtr table_to_json64(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize);
+        private static extern IntPtr table_to_json64(TableHandle tableHandle, IntPtr buffer, IntPtr bufsize);
 
         [DllImport(L32, EntryPoint = "table_to_json", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode)]
-        private static extern IntPtr table_to_json32(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize);
+        private static extern IntPtr table_to_json32(TableHandle tableHandle, IntPtr buffer, IntPtr bufsize);
 
 
         public static string TableToJson(Table t)
-
         {
             long bufferSizeNeededChars = 16;
             IntPtr buffer;
@@ -5155,43 +5102,39 @@ enum DataType {
             do
             {
                 buffer = StrAllocateBuffer(out currentBufferSizeChars, bufferSizeNeededChars);
-
                 if (Is64Bit)
                     bufferSizeNeededChars =
-                        (int) table_to_json64(t.Handle, buffer, (IntPtr) currentBufferSizeChars);
+                        (int)table_to_json64(t.TableHandle, buffer, (IntPtr)currentBufferSizeChars);
                 else
                     bufferSizeNeededChars =
-                        (int) table_to_json32(t.Handle, buffer, (IntPtr) currentBufferSizeChars);
+                        (int)table_to_json32(t.TableHandle, buffer, (IntPtr)currentBufferSizeChars);
 
             } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
             return StrBufToStr(buffer, (int) bufferSizeNeededChars);
-
         }
 
 
         [DllImport(L64, EntryPoint = "tableview_get_source_ndx", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr tableview_get_source_ndx64(IntPtr handle, IntPtr rowNdx);
+        private static extern IntPtr tableview_get_source_ndx64(TableViewHandle handle, IntPtr rowNdx);
 
         [DllImport(L32, EntryPoint = "tableview_get_source_ndx", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr tableview_get_source_ndx32(IntPtr handle, IntPtr rowNdx);
+        private static extern IntPtr tableview_get_source_ndx32(TableViewHandle handle, IntPtr rowNdx);
 
         public static long TableViewGetSourceIndex(TableView tableview, long rowIndex)
         {
-            if (Is64Bit)
-                return (long) tableview_get_source_ndx64(tableview.Handle, (IntPtr) rowIndex);
-
-            return (long) tableview_get_source_ndx32(tableview.Handle, (IntPtr) rowIndex);
+            return Is64Bit
+                ? (long) tableview_get_source_ndx64(tableview.TableViewHandle, (IntPtr) rowIndex)
+                : (long) tableview_get_source_ndx32(tableview.TableViewHandle, (IntPtr) rowIndex);
         }
-
 
 
         [DllImport(L64, EntryPoint = "tableview_to_json", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode)]
-        private static extern IntPtr tableview_to_json64(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize);
+        private static extern IntPtr tableview_to_json64(TableViewHandle tableHandle, IntPtr buffer, IntPtr bufsize);
 
         [DllImport(L32, EntryPoint = "tableview_to_json", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode)]
-        private static extern IntPtr tableview_to_json32(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize);
+        private static extern IntPtr tableview_to_json32(TableViewHandle tableHandle, IntPtr buffer, IntPtr bufsize);
 
         public static string TableViewToJson(TableView t)
         {
@@ -5203,10 +5146,10 @@ enum DataType {
                 buffer = StrAllocateBuffer(out currentBufferSizeChars, bufferSizeNeededChars);
                 if (Is64Bit)
                     bufferSizeNeededChars =
-                        (long) tableview_to_json64(t.Handle, buffer, (IntPtr) currentBufferSizeChars);
+                        (long) tableview_to_json64(t.TableViewHandle, buffer, (IntPtr) currentBufferSizeChars);
                 else
                     bufferSizeNeededChars =
-                        (long) tableview_to_json32(t.Handle, buffer, (IntPtr) currentBufferSizeChars);
+                        (long)tableview_to_json32(t.TableViewHandle, buffer, (IntPtr)currentBufferSizeChars);
 
             } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
             return StrBufToStr(buffer, (int) bufferSizeNeededChars);
@@ -5219,11 +5162,11 @@ enum DataType {
 
         [DllImport(L64, EntryPoint = "table_to_string_defaultlimit", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode)]
-        private static extern IntPtr table_to_string_defaultlimit64(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize);
+        private static extern IntPtr table_to_string_defaultlimit64(TableHandle tableHandle, IntPtr buffer, IntPtr bufsize);
 
         [DllImport(L32, EntryPoint = "table_to_string_defaultlimit", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode)]
-        private static extern IntPtr table_to_string_defaultlimit32(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize);
+        private static extern IntPtr table_to_string_defaultlimit32(TableHandle tableHandle, IntPtr buffer, IntPtr bufsize);
 
 
         public static string TableToString(Table t)
@@ -5236,11 +5179,10 @@ enum DataType {
                 buffer = StrAllocateBuffer(out currentBufferSizeChars, bufferSizeNeededChars);
                 if (Is64Bit)
                     bufferSizeNeededChars =
-                        (int) table_to_string_defaultlimit64(t.Handle, buffer, (IntPtr) currentBufferSizeChars);
+                        (int)table_to_string_defaultlimit64(t.TableHandle, buffer, (IntPtr)currentBufferSizeChars);
                 else
                     bufferSizeNeededChars =
-                        (int) table_to_string_defaultlimit32(t.Handle, buffer, (IntPtr) currentBufferSizeChars);
-
+                        (int)table_to_string_defaultlimit32(t.TableHandle, buffer, (IntPtr)currentBufferSizeChars);
             } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
             return StrBufToStr(buffer, (int) bufferSizeNeededChars);
         }
@@ -5248,12 +5190,12 @@ enum DataType {
 
         [DllImport(L64, EntryPoint = "tableview_to_string_defaultlimit", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode)]
-        private static extern IntPtr tableview_to_string_defaultlimit64(IntPtr tableHandle, IntPtr buffer,
+        private static extern IntPtr tableview_to_string_defaultlimit64(TableViewHandle tableHandle, IntPtr buffer,
             IntPtr bufsize);
 
         [DllImport(L32, EntryPoint = "tableview_to_string_defaultlimit", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode)]
-        private static extern IntPtr tableview_to_string_defaultlimit32(IntPtr tableHandle, IntPtr buffer,
+        private static extern IntPtr tableview_to_string_defaultlimit32(TableViewHandle tableHandle, IntPtr buffer,
             IntPtr bufsize);
 
         public static string TableViewToString(TableView t)
@@ -5266,11 +5208,10 @@ enum DataType {
                 buffer = StrAllocateBuffer(out currentBufferSizeChars, bufferSizeNeededChars);
                 if (Is64Bit)
                     bufferSizeNeededChars =
-                        (long) tableview_to_string_defaultlimit64(t.Handle, buffer, (IntPtr) currentBufferSizeChars);
+                        (long)tableview_to_string_defaultlimit64(t.TableViewHandle, buffer, (IntPtr)currentBufferSizeChars);
                 else
                     bufferSizeNeededChars =
-                        (long) tableview_to_string_defaultlimit32(t.Handle, buffer, (IntPtr) currentBufferSizeChars);
-
+                        (long)tableview_to_string_defaultlimit32(t.TableViewHandle, buffer, (IntPtr)currentBufferSizeChars);
             } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
             return StrBufToStr(buffer, (int) bufferSizeNeededChars);
         }
@@ -5279,11 +5220,11 @@ enum DataType {
 
         [DllImport(L64, EntryPoint = "table_to_string", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode)]
-        private static extern IntPtr table_to_string64(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize, IntPtr limit);
+        private static extern IntPtr table_to_string64(TableHandle tableHandle, IntPtr buffer, IntPtr bufsize, IntPtr limit);
 
         [DllImport(L32, EntryPoint = "table_to_string", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode)]
-        private static extern IntPtr table_to_string32(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize, IntPtr limit);
+        private static extern IntPtr table_to_string32(TableHandle tableHandle, IntPtr buffer, IntPtr bufsize, IntPtr limit);
 
 
         public static string TableToString(Table t, long limit)
@@ -5296,11 +5237,10 @@ enum DataType {
                 buffer = StrAllocateBuffer(out currentBufferSizeChars, bufferSizeNeededChars);
                 if (Is64Bit)
                     bufferSizeNeededChars =
-                        (int) table_to_string64(t.Handle, buffer, (IntPtr) currentBufferSizeChars, (IntPtr) limit);
+                        (int)table_to_string64(t.TableHandle, buffer, (IntPtr)currentBufferSizeChars, (IntPtr)limit);
                 else
                     bufferSizeNeededChars =
-                        (int) table_to_string32(t.Handle, buffer, (IntPtr) currentBufferSizeChars, (IntPtr) limit);
-
+                        (int)table_to_string32(t.TableHandle, buffer, (IntPtr)currentBufferSizeChars, (IntPtr)limit);
             } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
             return StrBufToStr(buffer, (int) bufferSizeNeededChars);
         }
@@ -5308,12 +5248,12 @@ enum DataType {
 
         [DllImport(L64, EntryPoint = "tableview_to_string", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode)]
-        private static extern IntPtr tableview_to_string64(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize,
+        private static extern IntPtr tableview_to_string64(TableViewHandle tableViewHandle, IntPtr buffer, IntPtr bufsize,
             IntPtr limit);
 
         [DllImport(L32, EntryPoint = "tableview_to_string", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode)]
-        private static extern IntPtr tableview_to_string32(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize,
+        private static extern IntPtr tableview_to_string32(TableViewHandle tableViewHandle, IntPtr buffer, IntPtr bufsize,
             IntPtr limit);
 
         public static string TableViewToString(TableView t, long limit)
@@ -5326,10 +5266,10 @@ enum DataType {
                 buffer = StrAllocateBuffer(out currentBufferSizeChars, bufferSizeNeededChars);
                 if (Is64Bit)
                     bufferSizeNeededChars =
-                        (long) tableview_to_string64(t.Handle, buffer, (IntPtr) currentBufferSizeChars, (IntPtr) limit);
+                        (long)tableview_to_string64(t.TableViewHandle, buffer, (IntPtr)currentBufferSizeChars, (IntPtr)limit);
                 else
                     bufferSizeNeededChars =
-                        (long) tableview_to_string32(t.Handle, buffer, (IntPtr) currentBufferSizeChars, (IntPtr) limit);
+                        (long)tableview_to_string32(t.TableViewHandle, buffer, (IntPtr)currentBufferSizeChars, (IntPtr)limit);
 
             } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
             return StrBufToStr(buffer, (int) bufferSizeNeededChars);
@@ -5346,12 +5286,12 @@ enum DataType {
 
         [DllImport(L64, EntryPoint = "table_row_to_string", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode)]
-        private static extern IntPtr table_row_to_string64(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize,
+        private static extern IntPtr table_row_to_string64(TableHandle tableHandle, IntPtr buffer, IntPtr bufsize,
             IntPtr rowIndex);
 
         [DllImport(L32, EntryPoint = "table_row_to_string", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode)]
-        private static extern IntPtr table_row_to_string32(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize,
+        private static extern IntPtr table_row_to_string32(TableHandle tableHandle, IntPtr buffer, IntPtr bufsize,
             IntPtr rowIndex);
 
 
@@ -5366,11 +5306,11 @@ enum DataType {
                 if (Is64Bit)
                     bufferSizeNeededChars =
                         (int)
-                            table_row_to_string64(t.Handle, buffer, (IntPtr) currentBufferSizeChars, (IntPtr) rowIndex);
+                            table_row_to_string64(t.TableHandle, buffer, (IntPtr)currentBufferSizeChars, (IntPtr)rowIndex);
                 else
                     bufferSizeNeededChars =
                         (int)
-                            table_row_to_string32(t.Handle, buffer, (IntPtr) currentBufferSizeChars, (IntPtr) rowIndex);
+                            table_row_to_string32(t.TableHandle, buffer, (IntPtr)currentBufferSizeChars, (IntPtr)rowIndex);
 
             } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
             return StrBufToStr(buffer, (int) bufferSizeNeededChars);
@@ -5379,12 +5319,12 @@ enum DataType {
 
         [DllImport(L64, EntryPoint = "tableview_row_to_string", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode)]
-        private static extern IntPtr tableview_row_to_string64(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize,
+        private static extern IntPtr tableview_row_to_string64(TableViewHandle  tableHandle, IntPtr buffer, IntPtr bufsize,
             IntPtr rowIndex);
 
         [DllImport(L32, EntryPoint = "tableview_row_to_string", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode)]
-        private static extern IntPtr tableview_row_to_string32(IntPtr tableHandle, IntPtr buffer, IntPtr bufsize,
+        private static extern IntPtr tableview_row_to_string32(TableViewHandle tableHandle, IntPtr buffer, IntPtr bufsize,
             IntPtr rowIndex);
 
         public static string TableViewRowToString(TableView t, long rowIndex)
@@ -5398,14 +5338,13 @@ enum DataType {
                 if (Is64Bit)
                     bufferSizeNeededChars =
                         (long)
-                            tableview_row_to_string64(t.Handle, buffer, (IntPtr) currentBufferSizeChars,
+                            tableview_row_to_string64(t.TableViewHandle, buffer, (IntPtr)currentBufferSizeChars,
                                 (IntPtr) rowIndex);
                 else
                     bufferSizeNeededChars =
                         (long)
-                            tableview_row_to_string32(t.Handle, buffer, (IntPtr) currentBufferSizeChars,
+                            tableview_row_to_string32(t.TableViewHandle, buffer, (IntPtr)currentBufferSizeChars,
                                 (IntPtr) rowIndex);
-
             } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
             return StrBufToStr(buffer, (int) bufferSizeNeededChars);
         }

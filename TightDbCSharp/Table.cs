@@ -1059,9 +1059,7 @@ namespace TightDbCSharp
 
         internal override Table GetSubTableNoCheck(long columnIndex, long rowIndex)
         {
-            Table fromSubtableCell =  UnsafeNativeMethods.TableGetSubTable(this, columnIndex, rowIndex);
-            //fromSubtableCell.HasColumns = fromSubtableCell.ColumnCount > 0;
-            return fromSubtableCell;
+            return new Table(TableHandle.TableGetSubTable(columnIndex,rowIndex),ReadOnly);
         }
 
         internal override long GetSubTableSizeNoCheck(long columnIndex, long rowIndex)
@@ -1174,9 +1172,7 @@ namespace TightDbCSharp
 
         internal override Table GetMixedSubTableNoCheck(long columnIndex, long rowIndex)
         {
-            var mixedSubTable= UnsafeNativeMethods.TableGetSubTable(this, columnIndex, rowIndex);
-            //mixedSubTable.HasColumns = mixedSubTable.ColumnCount > 0;//if it has columns, mark it down for usuitable to work with spec modifications
-            return mixedSubTable;
+            return new Table(TableHandle.TableGetSubTable(columnIndex,rowIndex),ReadOnly);//assuming that GetSubtable is valid to call on a mixed cell with a subtable in it
         }
 
         /*

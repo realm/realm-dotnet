@@ -3546,10 +3546,10 @@ Table Name  : cyclic field definition
         {
             using (var g = new Group())
             {
-                Table t1 = g.CreateTable("T");
-                Table t2 = g.GetTable("T");
-                Table t3 = g.GetTable("T");
-                Assert.AreEqual(t1.Handle, t2.Handle);
+                var t1 = g.CreateTable("T");
+                var t2 = g.GetTable("T");
+                var t3 = g.GetTable("T");
+                Assert.AreEqual(true, t1.Equals(t2));
                 t2.AddIntColumn("inttie");
                 t1.AddStringColumn("stringie");
                 Assert.AreEqual(2, t3.ColumnCount);

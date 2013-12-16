@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace TightDbCSharp
 {
-    class TableViewHandle:TightDbHandle
+    public class TableViewHandle:TightDbHandle
     {
         protected override void Unbind()
         {
@@ -123,7 +123,7 @@ namespace TightDbCSharp
         }
 
         //acquire a TableView handle with the result And set Root in an atomic fashion 
-        internal TableViewHandle TableViewFindAllDouble(long columnIndex, float value)
+        internal TableViewHandle TableViewFindAllDouble(long columnIndex, double value)
         {
             var tvHandle = RootedTableViewHandle();//attach to our own root
 
@@ -161,6 +161,25 @@ namespace TightDbCSharp
             return tvHandle;
         }
 
+
+        //acquire a TableView handle with the result And set Root in an atomic fashion 
+        internal TableHandle TableViewGetSubTable(long columnIndex,long rowIndex)
+        {
+            var tHandle = TableHandle.RootedTableHandle(this); //subtable will get same root as this tableview
+
+            //At this point tvHandle is invalid due to its handle being uninitialized, but the root is set correctly
+            //a finalize at this point will not leak anything and the handle will not do anything
+
+            //now, set the TableView handle...
+            RuntimeHelpers.PrepareConstrainedRegions();//the following finally will run with no out-of-band exceptions
+            try
+            { }
+            finally
+            {
+                tHandle.SetHandle(UnsafeNativeMethods.TableViewGetSubTable(this, columnIndex, rowIndex));
+            }//at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
+            return tHandle;
+        }
 
     }
 }

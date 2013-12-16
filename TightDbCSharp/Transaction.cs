@@ -82,6 +82,13 @@ namespace TightDbCSharp
 
 
         /// <summary>
+        /// The state of the transaction.(Actually the state of the shared group)
+        ///  Read or Write. If it is Ready, the transaction has already been comitted.
+        /// See TransactionState 
+        /// </summary>
+        public TransactionState State {get { return _sharedGroup.State; }}
+
+        /// <summary>
         /// Finish the transaction and discard any changes made while in the transaction.
         /// </summary>
         public void Rollback()

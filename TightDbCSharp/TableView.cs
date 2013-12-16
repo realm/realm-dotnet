@@ -489,7 +489,7 @@ namespace TightDbCSharp
 
         internal override Table GetMixedSubTableNoCheck(long columnIndex, long rowIndex)
         {
-            return UnsafeNativeMethods.TableViewGetSubTable(this, columnIndex, rowIndex);//ordinary getsubtable also works with mixed columns
+            return new Table(TableViewHandle.TableViewGetSubTable(columnIndex,rowIndex),ReadOnly);
         }
 
         internal override byte[] GetBinaryNoCheck(long columnIndex, long rowIndex)
@@ -499,7 +499,7 @@ namespace TightDbCSharp
 
         internal override Table GetSubTableNoCheck(long columnIndex, long rowIndex)
         {
-            return UnsafeNativeMethods.TableViewGetSubTable(this, columnIndex, rowIndex);
+            return new Table(TableViewHandle.TableViewGetSubTable(columnIndex,rowIndex),ReadOnly);
         }
 
         internal override long GetSubTableSizeNoCheck(long columnIndex, long rowIndex)
@@ -670,12 +670,12 @@ namespace TightDbCSharp
 
         internal override TableView FindAllFloatNoCheck(long columnIndex, float value)
         {
-            return new TableView(UnderlyingTable, TableViewHandle.TableViewFindAllFloat(columnIndex, value);
+            return new TableView(UnderlyingTable, TableViewHandle.TableViewFindAllFloat(columnIndex, value));
         }
 
         internal override TableView FindAllDoubleNoCheck(long columnIndex, double value)
         {
-            return new TableView(UnderlyingTable, TableViewHandle.TableViewFindAllDouble(columnIndex, value);
+            return new TableView(UnderlyingTable, TableViewHandle.TableViewFindAllDouble(columnIndex, value));
         }
 
         internal override TableView FindAllStringNoCheck(long columnIndex, string value)

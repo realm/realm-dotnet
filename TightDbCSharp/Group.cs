@@ -23,7 +23,7 @@ namespace TightDbCSharp
             {
                 AcquireHandle(false);
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 Dispose();
                 throw;
@@ -200,7 +200,7 @@ namespace TightDbCSharp
         /// <returns>true if a table with specified name exists</returns>
         public bool HasTable(string tableName)
         {
-            return UnsafeNativeMethods.GroupHassTable(this, tableName);
+            return UnsafeNativeMethods.GroupHasTable(this, tableName);
         }
 
 
@@ -221,13 +221,17 @@ namespace TightDbCSharp
         {
             if (HasTable(tableName)) 
             {//todo:the HasTable check might be moved to c++ to save an interop roundtrip 
-                var fromGroup = new Table(GroupHandle.GetTable(tableName), ReadOnly);//the first parameter will evaluate to a finalizeable TableHandle
-                return fromGroup;                            //therefore, the user is expected to call updatefromspec on the same table wrapper that he used to do spec.addcolumn
+                return GetTableInternal(tableName);
             }
             throw new InvalidEnumArgumentException(String.Format(CultureInfo.InvariantCulture,"Group.GetTable called with a table name that does not exist {0}",tableName));
         }
 
-        
+        //unconditionally return the named table, or a new table from this group
+        private Table GetTableInternal(String tableName)
+        {
+            return new Table(GroupHandle.GetTable(tableName), ReadOnly);
+        }
+
         /// <summary>
         /// Return the table that has the specified index in the group
         /// </summary>
@@ -260,9 +264,9 @@ namespace TightDbCSharp
             ValidateReadWrite();
             if (schema != null && schema.Length>0)
             {
-                return UnsafeNativeMethods.GroupGetTable(this, tableName).DefineSchema(schema);
+                return GetTableInternal(tableName).DefineSchema(schema);
             }
-            return UnsafeNativeMethods.GroupGetTable(this, tableName);
+            return GetTableInternal(tableName);
         }
 
         /// <summary>

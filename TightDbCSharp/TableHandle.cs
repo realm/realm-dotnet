@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace TightDbCSharp
 {
-    class TableHandle:TightDbHandle
+    public class TableHandle:TightDbHandle
     {
         public TableHandle(TightDbHandle root) : base(root)
         {
@@ -17,7 +17,7 @@ namespace TightDbCSharp
 
         protected override void Unbind()
         {
-            UnsafeNativeMethods.TableUnbind(handle);
+            UnsafeNativeMethods.TableUnbind(this);
         }
 
         /*
@@ -39,16 +39,20 @@ namespace TightDbCSharp
                 new QueryHandle(Root);
         }
 
-        private TableHandle RootTableHandle()
+        private TableHandle RootedTableHandle()
         {
             return new TableHandle(null);
         }
 
+        internal static TableHandle RootedTableHandle(TightDbHandle root)
+        {
+            return new TableHandle(root.Root);
+        }
 
         //acquire a TableHandle And set root in an atomic fashion 
         internal TableHandle TableCopyTable(TableHandle sourceTable)
         {
-            var th = RootTableHandle();//the resulting table is freestanding and its own root
+            var th = RootedTableHandle();//the resulting table is freestanding and its own root
 
             //At this point th is invalid due to its handle being uninitialized, but the root is set correctly
             //a finalize at this point will not leak anything and the handle will not do anything
@@ -64,6 +68,25 @@ namespace TightDbCSharp
             return th;
         }
 
+
+        //acquire a TableHandle And set root in an atomic fashion 
+        internal TableHandle TableGetSubTable(long columnIndex, long rowIndex)
+        {
+            var th = RootedTableHandle(this);//the resulting table will have the same root as this
+
+            //At this point th is invalid due to its handle being uninitialized, but the root is set correctly
+            //a finalize at this point will not leak anything and the handle will not do anything
+
+            //now, set the TableView handle...
+            RuntimeHelpers.PrepareConstrainedRegions();//the following finally will run with no out-of-band exceptions
+            try
+            { }
+            finally
+            {
+                th.SetHandle(UnsafeNativeMethods.TableGetSubTable(this,columnIndex,rowIndex));//call core with this and the subtable location. put the returned subtable handle into th
+            }//at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
+            return th;
+        }
 
         //acquire a TableViewHandle And set root in an atomic fashion 
         internal TableViewHandle TableDistinct(long columnIndex)

@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace TightDbCSharp
 {
-    class GroupHandle:TightDbHandleOptionalUnbind
+    public class GroupHandle:TightDbHandleOptionalUnbind
     {
         protected override void Unbind()
         {

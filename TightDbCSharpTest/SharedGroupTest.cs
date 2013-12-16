@@ -533,7 +533,7 @@ namespace TightDbCSharpTest
                 using (var transaction = sharedGroup.BeginRead())
                 {
                     Assert.AreEqual(true, transaction.ReadOnly);
-                    Assert.AreEqual(TransactionKind.Read,transaction.Kind);                    
+                    Assert.AreEqual(TransactionState.Read,transaction.State);
                     Assert.AreEqual(false,sharedGroup.Invalid);
                     Assert.AreEqual(false, transaction.Invalid);
                     try
@@ -544,7 +544,7 @@ namespace TightDbCSharpTest
                     catch (InvalidOperationException)
                     {
                         Assert.AreEqual(true, transaction.ReadOnly);
-                        Assert.AreEqual(TransactionKind.Read, transaction.Kind);
+                        Assert.AreEqual(TransactionState.Read, transaction.State);
                         Assert.AreEqual(false, sharedGroup.Invalid);//the outer transaction has not been compromized
                         Assert.AreEqual(false, transaction.Invalid);//just bc an illegal inner transaction operation was preempted
                     }
@@ -681,7 +681,7 @@ namespace TightDbCSharpTest
                 using (var transaction = sharedGroup.BeginRead())
                 {
                     Assert.AreEqual(true, transaction.ReadOnly);
-                    Assert.AreEqual(TransactionKind.Read, transaction.Kind);
+                    Assert.AreEqual(TransactionState.Read, transaction.State);
                     Assert.AreEqual(false, sharedGroup.Invalid);
                     Assert.AreEqual(false, transaction.Invalid);
                     try
@@ -699,7 +699,7 @@ namespace TightDbCSharpTest
                     catch (InvalidOperationException)
                     {
                         Assert.AreEqual(true, transaction.ReadOnly);
-                        Assert.AreEqual(TransactionKind.Read, transaction.Kind);
+                        Assert.AreEqual(TransactionState.Read, transaction.State);
                         Assert.AreEqual(false, sharedGroup.Invalid);
                         Assert.AreEqual(false, transaction.Invalid);
                     }
