@@ -83,7 +83,7 @@ namespace TightDbCSharp
 
         public override string ToString()
         {
-            return base.ToString() + Handle;//calls Handle.ToString()
+            return base.ToString()+" Handle:" + Handle;//calls Handle.ToString()
         }
 
         internal void ValidateReadWrite()

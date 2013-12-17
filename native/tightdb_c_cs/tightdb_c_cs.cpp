@@ -12,9 +12,8 @@ we should not break easily, and we should know where we have problems.
 #include <sstream>
 #include "stdafx.hpp"
 #include "tightdb_c_cs.hpp"
-#include "tightdb/utf8.hpp"
-#include <tightdb/unique_ptr.hpp>
-#include <tightdb/file.hpp>
+#include "tightdb/util/utf8.hpp"
+#include <tightdb/util/unique_ptr.hpp>
 
 using namespace std;
 using namespace tightdb;
@@ -152,7 +151,7 @@ public:
     }
     bool error;
 private:
-    tightdb::UniquePtr<char[]> m_data;
+    tightdb::util::UniquePtr<char[]> m_data;
     std::size_t m_size;
 };
 
@@ -168,7 +167,7 @@ CSStringAccessor::CSStringAccessor(uint16_t* csbuffer, size_t csbufsize)
     // strings.
     
     error=false;
-    typedef Utf8x16<uint16_t,std::char_traits<char16_t>>Xcode;    //This might not work in old compilers (the std::char_traits<char16_t> ).     
+    typedef tightdb::util::Utf8x16<uint16_t,std::char_traits<char16_t>>Xcode;    //This might not work in old compilers (the std::char_traits<char16_t> ).     
     size_t max_project_size = 48;
 
     TIGHTDB_ASSERT(max_project_size <= std::numeric_limits<size_t>::max()/4);
@@ -228,7 +227,7 @@ size_t stringdata_to_csharpstringbuffer(StringData str, uint16_t * csharpbuffer,
     uint16_t* out_begin = csharpbuffer;    
     uint16_t* out_end = csharpbuffer+bufsize;
     
-    typedef Utf8x16<uint16_t,std::char_traits<char16_t>>Xcode;    //This might not work in old compilers (the std::char_traits<char16_t> ). 
+    typedef tightdb::util::Utf8x16<uint16_t,std::char_traits<char16_t>>Xcode;    //This might not work in old compilers (the std::char_traits<char16_t> ). 
     
     size_t size  = Xcode::find_utf16_buf_size(in_begin,in_end);//Figure how much space is actually needed
     
@@ -264,7 +263,7 @@ extern "C" {
 // this is sort of the build version of the c++ part of the binding
 
  TIGHTDB_C_CS_API size_t tightdb_c_cs_getver(void){ 
-	return 20131112;
+	return 20131217;
 }
 
  //return a newly constructed top level table 
@@ -1791,13 +1790,17 @@ TIGHTDB_C_CS_API const Group* shared_group_begin_read(SharedGroup* shared_group_
 //although we return -1 on exceptions, core promises to never throw any
 TIGHTDB_C_CS_API size_t shared_group_end_read(SharedGroup* shared_group_ptr)
 {
+    cerr<<"Entering shared_group_end_read\n";
    try {
       shared_group_ptr->end_read();
+      cerr<<"after call to end_read - returning 0\n";
       return 0;
    } 
     catch (...){
-    return -1;
+        cerr<<"Inside catch - returning -1\n";
+        return -1;
     }
+   cerr<<"At the very end of the method how did we end up here???\n";
 }
 
 //binding must ensure that the returned group is never modified
