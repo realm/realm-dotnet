@@ -139,8 +139,8 @@ namespace TightDbCSharpTest
                 Assert.AreEqual(tableNames.Count,group.Size);
                 var toString = group.ToString();
                 const string expectedres =
-                    "TightDbCSharp.Group: 066C5938      tables     rows  \n   0 Table1     0     \n   1 Table2     0     \n   2 Table3     0     \n   3 Table4     0     \n   4 Table5     0     \n   5 Table6     0     \n   6 Table7     0     \n";
-                Assert.AreEqual(expectedres.Substring(30), toString.Substring(30));//get past the hex address of the object as this is of course not the same alwayas
+                    "TightDbCSharp.Group Handle:TightDbCSharp.GroupHandle: 1B351EF0      tables     rows  \n   0 Table1     0     \n   1 Table2     0     \n   2 Table3     0     \n   3 Table4     0     \n   4 Table5     0     \n   5 Table6     0     \n   6 Table7     0     \n";
+                Assert.AreEqual(expectedres.Substring(63), toString.Substring(63));//get past the hex address of the object as this is of course not the same alwayas
                 var counter = 0;
                 foreach (var table in group)
                 {

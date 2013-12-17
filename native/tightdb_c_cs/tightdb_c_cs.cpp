@@ -263,7 +263,7 @@ extern "C" {
 // this is sort of the build version of the c++ part of the binding
 
  TIGHTDB_C_CS_API size_t tightdb_c_cs_getver(void){ 
-	return 20131217;
+	return 201312172;
 }
 
  //return a newly constructed top level table 
@@ -1789,18 +1789,15 @@ TIGHTDB_C_CS_API const Group* shared_group_begin_read(SharedGroup* shared_group_
 //binding must ensure that the returned group is never modified
 //although we return -1 on exceptions, core promises to never throw any
 TIGHTDB_C_CS_API size_t shared_group_end_read(SharedGroup* shared_group_ptr)
-{
-    cerr<<"Entering shared_group_end_read\n";
+{    
    try {
-      shared_group_ptr->end_read();
-      cerr<<"after call to end_read - returning 0\n";
+      shared_group_ptr->end_read();    
       return 0;
    } 
     catch (...){
-        cerr<<"Inside catch - returning -1\n";
+    
         return -1;
-    }
-   cerr<<"At the very end of the method how did we end up here???\n";
+    }   
 }
 
 //binding must ensure that the returned group is never modified

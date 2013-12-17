@@ -66,25 +66,34 @@ namespace TightDbCSharp
 
         
 
-        //override Unbind and put in code that actually calls core and unbinds whatever this handle is about
-        //when this is called, it has been verified that it is safe to call core
+        
+        
+        /// <summary>
+        /// override Unbind and put in code that actually calls core and unbinds whatever this handle is about
+        /// when this is called, it has alreadyt been verified that it is safe to call core - so just put in code that does the job
+        /// </summary>
         protected abstract void Unbind();
 
-        //I am assuming that it is okay to add fields to something derived from CriticalHandle, it is mentioned in the source that it might not be, but I think that is an internal comment to msft developers
-        private Boolean _noMoreUserThread; //goes to true when we don't expect more calls from user threads
+        //I am assuming that it is okay to add fields to something derived from CriticalHandle, it is mentioned in the source that it might not be, 
+        //but I think that is an internal comment to msft developers
+
+        //goes to true when we don't expect more calls from user threads on this handle
+        //is set when we dispose a handle
+        //used when unbinding owned classes, by not using the unbind list but just unbinding them at once (as we cannot interleave with user threads
+        //as there are none left than can access the root class (and its owned classes)
+        //it is important that children always have a reference path to their root for this to work
+        private Boolean _noMoreUserThread;
 
         private readonly Object _unbindListLock = new object(); //used to serialize calls to unbind between finalizer threads
 
-        private readonly List<TightDbHandle> _unbindList ;//set only once, to a list if we are a root. do we have all the neccessary checks?
-            //list of child handles that should be unbound as soon as possible by a user thread
+        private readonly List<TightDbHandle> _unbindList ;//set only once, to a list if we are a root. 
+        //list of owned handles that should be unbound as soon as possible by a user thread
 
-        //this object is set to the root if it is a child, or null
-        //if this object is itself a root
+        //this object is set to the root/owner if it is a child, or null if this object is itself a root/owner
         //root and handle should be set atomically using RuntimeHelpers.PrepareConstrainedRegions();
         //or at the very least, handle should only be set *after* root has been successfully set
         //otherwise the finalizer might free the handle concurrently or not at all
-
-        internal readonly  TightDbHandle Root; //internal to allow constructors in e.g. tableview to reference Root of e.g. Table
+        internal readonly  TightDbHandle Root; //internal to allow constructors in e.g. TableViewHandle to reference Root of e.g. TableHandle
 
         
         //at creation, we must always specify the root if any, or null if the object is itself a root
@@ -92,16 +101,35 @@ namespace TightDbCSharp
         //for instance a Group from a transaction have the shared group as root, a table from such a group have
         //the shared group as root, and a subtable from the table also have the shared group as root
         //in general, you can pass on root when You are not root Yourself, otherwise pass on null
+        //we expect to be in the user thread always in a constructor.
+        //therefore we take the opportunity to clear root's unbindlist when we set our root to point to it
         internal TightDbHandle(TightDbHandle root)
         {
             if (root == null)//if we are a root object, we need a list for our children and Root is already null
             {
                 _unbindList = GetUnbindList();
             }
-            else
+            else{
               Root = root;
+                root.LockAndUndbindList();
+            }
         }
-       
+
+        //please only call if unbindlist is not null
+        private void LockAndUndbindList()
+        {
+            if (_unbindList.Count == 0) return;
+            //outside the lock so we may get a really strange value here.
+            //however. If we get 0 and the real value was something else, we will find out inside the lock in unbindlockedlist
+            //if we get !=0 and the real value was in fact 0, then we will just skip and then catch up next time around.
+            //however, doing things this way will save lots and lots of locks when the list is empty, which it should be if people have
+            //been using the dispose pattern correctly, or at least have been eager at disposing as soon as they can
+            //except of course dot notation users that cannot dispose cause they never get a reference in the first place
+            lock (_unbindListLock)
+            {
+                UnbindLockedList();
+            }
+        }
 
         /*This might work in a future version of C# - when we get Generic constructors with parametres
         //Generate a TableView object with its root set to eiter parent or to parents root
