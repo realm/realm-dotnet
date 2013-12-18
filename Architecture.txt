@@ -1,0 +1,30 @@
+This file contains High-level overview of the binding architecture.
+
+
+TOC:
+
+.Net versions
+
+Unity
+
+Mono
+
+File locations, development
+
+File locations, distribution
+
+The release batch files
+
+runtime code files (c++ dll,C# assembly, 32bit 64 bit etc)
+
+Class structure
+
+How we handle 32,64,debug,release issues
+
+How we wrap c++ classes
+
+What the release procedure actually do
+
+How the examples archive is set up
+
+How things are organized on github
