@@ -62,13 +62,19 @@ namespace TightDbCSharp
             }
             if (State == TransactionState.Write)
             {
-                SharedGroupRollBack();
+                SharedGroupRollback();
             }
         }
 
         //atomically call rollback and set state back to ready
         //todo:in c++ rollback is tagged as cannot throw exceptions. so i guess it's okay to just return -1 if we got an exception in c++ anyways
-        public void SharedGroupRollBack()
+        /// <summary>
+        /// This will roll back any write transaction this shared group handle have active.
+        /// There is no validation, if You call this method and there is no active write transaction, exceptions or crash could happen
+        /// The binding will never call this method unless there is an ongoing write transaction
+        /// </summary>
+        /// <exception cref="InvalidOperationException"></exception>
+        internal void SharedGroupRollback()
         {
             IntPtr res;
             RuntimeHelpers.PrepareConstrainedRegions();//the following finally will run with no out-of-band exceptions
@@ -87,7 +93,7 @@ namespace TightDbCSharp
 
         //atomically call end read and set state back to ready
         //todo:in c++ end read is tagged as cannot throw exceptions. so i guess it's okay to just return -1 if we got an exception in c++ anyways
-        public void SharedGroupEndRead()
+        internal void SharedGroupEndRead()
         {
             IntPtr res;
             RuntimeHelpers.PrepareConstrainedRegions();//the following finally will run with no out-of-band exceptions

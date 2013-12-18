@@ -304,7 +304,7 @@ namespace TightDbCSharp
                         }
                         else
                         {
-                            SharedGroupHandle.SharedGroupRollBack();                        
+                            SharedGroupHandle.SharedGroupRollback();                        
                         }
                         break;
                 }                

@@ -18,6 +18,12 @@ namespace TightDbCSharpTest
         [Test]
         public static void TestSizeCalls()
         {
+#if DEBUG//this is currently the last test being run. Report size of unbindlists as we stop. 
+            TightDbHandle.ReportUnbindListStatus();
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            TightDbHandle.ReportUnbindListStatus();
+#endif
             var count = Toolbox.TestNativeSizeCalls();
             Console.WriteLine("count from c++:{0}",count);
         }

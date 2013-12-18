@@ -108,6 +108,10 @@ namespace TightDbCSharp
             if (root == null)//if we are a root object, we need a list for our children and Root is already null
             {
                 _unbindList = GetUnbindList();
+#if DEBUG
+                AddToDebugLists();
+//                ThisRootID = RootsInExistance++;//unbindlist is called exactly once per root so use this as a way to set an unique id
+#endif
             }
             else{
               Root = root;
@@ -171,14 +175,28 @@ namespace TightDbCSharp
         */
 
         private static List<TightDbHandle> GetUnbindList()
-        {
+        {            
             return new List<TightDbHandle>();//todo:experiment with what might be a decent initial list size
         }
 
         protected  TightDbHandle()
         {
             _unbindList = GetUnbindList();//we are a root object, we need a list for our children
+#if DEBUG
+            AddToDebugLists();
+#endif
         }
+
+
+#if DEBUG 
+        private void AddToDebugLists()
+        {
+            ThisRootID = RootsInExistance++;//unbindlist is called exactly once per root so use this as a way to set an unique id
+            LastForListType.Add(0);
+            MaxForListType.Add(0);
+            TypeForListType.Add(GetType());            
+        }
+#endif
 
         //called automatically but only once from criticalhandle when this handle is disposing or finalizing
         //see http://reflector.webtropy.com/default.aspx/4@0/4@0/DEVDIV_TFS/Dev10/Releases/RTMRel/ndp/clr/src/BCL/System/Runtime/InteropServices/CriticalHandle@cs/1305376/CriticalHandle@cs
@@ -246,7 +264,33 @@ namespace TightDbCSharp
         public override string ToString()
         {
             return base.ToString() + String.Format(CultureInfo.InvariantCulture, ": {0:X8}", (long) handle);
-        }       
+        }
+
+//these are for debugging purposes, not lock protected while they certanly should be
+#if DEBUG
+        //using dictionary as I'm not quite sure if they get added in order
+        public static int RootsInExistance=0;//increased every time we create a new root
+        public int ThisRootID = 0;//the ID of this root, used in the dictionaries
+        public static List<long> MaxForListType = new List<long>();//max for this root, indexed by rootid
+        public static List<long> LastForListType = new List<long>();//last for this root
+        public static List<Type> TypeForListType = new List<Type>();//type for this root
+
+        public static void ReportUnbindListStatus()
+        {
+            for (var n=0; n<MaxForListType.Count;++n)
+            {
+                if(MaxForListType[n]>0 && LastForListType[n]>0)//just list the interesting ones
+                  Console.WriteLine("ID:{0,5}type:{1,30} Max:{2,8} Last:{3,8}", n,TypeForListType[n], MaxForListType[n],LastForListType[n]);
+            }
+            /*
+            foreach (KeyValuePair<Type, long> entry in LastForListType)
+            {
+                Console.WriteLine("type:{0,30} last:{1,8}", entry.Key, entry.Value);
+            }*/
+        }
+#endif
+
+
 
         /// <summary>
         /// Called by children to this root, when they would like to 
@@ -263,10 +307,20 @@ namespace TightDbCSharp
                 {
                     UnbindLockedList();
                     handleToUnbind.Unbind();
+#if DEBUG
+                    LastForListType[ThisRootID] = _unbindList.Count;
+                    MaxForListType[ThisRootID] = Math.Max(MaxForListType[ThisRootID], _unbindList.Count);
+                    TypeForListType[ThisRootID] = GetType();
+#endif
                 }
                 else
                 {
                     _unbindList.Add(handleToUnbind);//resurrects handleToUnbind - but it is never a root object bc RequestUnbind is always called above with root.
+#if DEBUG
+                        LastForListType[ThisRootID] = _unbindList.Count;
+                        MaxForListType[ThisRootID] = Math.Max(MaxForListType[ThisRootID], _unbindList.Count);
+                        TypeForListType[ThisRootID] = GetType();
+#endif
                 }
             }
         }

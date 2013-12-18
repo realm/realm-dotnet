@@ -14,6 +14,8 @@ using TightDbCSharp.Extensions;
 
 namespace TightDbCSharpTest
 {
+
+
     /// <summary>
     /// Test Table Class So many tests they have been split up into two test fixtures, this is one of them
     /// What goes where is random
@@ -6539,77 +6541,74 @@ intfield2:10//column 2
         ///by the finalizer thread that GC starts after collection to call finalizers for
         ///all unreferenced objects with a finalizer
         /// </summary>
-        [SuppressMessage("Microsoft.Reliability", "CA2001:AvoidCallingProblematicMethods", MessageId = "System.GC.Collect"), SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope"), Test]
-        public static void GarbageCollectCollisionSingleThread()
+        [SuppressMessage("Microsoft.Reliability", "CA2001:AvoidCallingProblematicMethods",
+            MessageId = "System.GC.Collect"),
+         SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope"), Test]
+        public static void GarbageCollectCollisionSingleThread()//enforce concurrent finalizer calls
         {
             Console.Write("Garbage collector finalizer thread collision unit test");
             //  Assert.AreEqual(0,1);//this unit test would fail if it was commented in
             //  if (!String.IsNullOrEmpty(Toolbox.GetCSharpInfo())) return;//we want to stop here, but not to have the compiler figure it out
             //table created with using
             //  using (var table = new Table(new SubTableColumn("sub", new IntColumn("int"))))
-            //long last;
-            //int high;
-            
-                for (var pass = 1; pass <= 2; pass++)
-                    //first pass is with a table that is not inside using, second pass is with a table inside using
+            for (var pass = 1; pass <= 2; pass++)
+                //first pass is with a table that is not inside using, second pass is with a table inside using
+            {
+                Table table; //resharper issue warning is okay - 
+
+                using (var tableUsing = new Table(new SubTableColumn("sub", new IntColumn("int"))))
                 {
-                    Table table;//resharper issue warning is okay - 
 
-                    using (var tableUsing = new Table(new SubTableColumn("sub", new IntColumn("int"))))
+                    table = (pass == 1) ? new Table(new SubTableColumn("sub", new IntColumn("int"))) : tableUsing;
+                    //set table to the table inside using or one that is not guarded by dispose
+
+                    for (var i = 0; i < 1000; ++i)
                     {
+                        table.Add(new object[] {new object[] {1, 2, 3, 4, 5}});
+                    }
+                    Console.WriteLine("Added rows to table");
 
-                        table = (pass == 1) ? new Table(new SubTableColumn("sub", new IntColumn("int"))) : tableUsing;
-                            //set table to the table inside using or one that is not guarded by dispose
+                    const int rounds = 111;
+                    //to make this test catch all bugs set the limit to 111 instead of 13
+                    //const int rounds=111;
+                    for (var n = 0; n < rounds; ++n)
+                    {
+                        Boolean writedot = false;
 
-                        for (var i = 0; i < 1000; ++i)
-                        {
-                            table.Add(new object[] {new object[] {1, 2, 3, 4, 5}});
-                        }
-                        Console.WriteLine("Added rows to table");
-
-                        const int rounds=111;
-                        //to make this test catch all bugs set the limit to 111 instead of 13
-                        //const int rounds=111;
-                        for (var n = 0; n < rounds; ++n)
-                        {
-                            Boolean writedot = false;
-                         //   last = Handled.LastUnbindListSize;
-                         //   high = Handled.HighestUnbindListSize;
 /*                            Console.WriteLine("{0,6}{1,6}{2,10}{3,10}{4,30}", last, high, GC.GetTotalMemory(false), n,
                                 "Before bulk gc");*/
-                            writedot=(0!=GetSubtableOrphansNoUsing(table,n*100));
-                            if (n%5 == 0)
-                            {
-                                GC.Collect();
-                            }
+                        writedot = (0 != GetSubtableOrphansNoUsing(table, n*100));
+                        if (n%5 == 0)
+                        {
+                            GC.Collect();
+                        }
 /*                            Console.WriteLine("{0,6}{1,6}{2,10}{3,10}{4,30}", last, high, GC.GetTotalMemory(false), n,
                                 "Before single gc");*/
-                            writedot=(writedot || (GetSubtablesFromTableNoUsing(table,n * 100)!=0));
-                            if (n%3 == 0)
-                            {
-                                GC.Collect(); //warning suspended - we need to call gc 
-                            }
-                            /*Console.WriteLine("{0,6}{1,6}{2,10}{3,10}{4,30}", last, high, GC.GetTotalMemory(false), n,
+                        writedot = (writedot || (GetSubtablesFromTableNoUsing(table, n*100) != 0));
+                        if (n%3 == 0)
+                        {
+                            GC.Collect(); //warning suspended - we need to call gc 
+                        }
+                        /*Console.WriteLine("{0,6}{1,6}{2,10}{3,10}{4,30}", last, high, GC.GetTotalMemory(false), n,
                                 "after single gc");*/
 
 /*                            Console.WriteLine("{0,6}{1,6}{2,10}{3,10}{4,30}", last, high, GC.GetTotalMemory(false), n,
                                 "Before using guarded loop");*/
 
-                            writedot=(writedot || (0!=GetSubtablesFromTableWithUsing(table, n * 100)));
+                        writedot = (writedot || (0 != GetSubtablesFromTableWithUsing(table, n*100)));
 /*                            Console.WriteLine("{0,6}{1,6}{2,10}{3,10}{4,30}", last, high, GC.GetTotalMemory(false), n,
                                 "after using guarded loop");*/
-                            if (writedot)
-                            {
-                                Console.Write(".");
-                            }
+                        if (writedot)
+                        {
+                            Console.Write(".");
                         }
                     }
                 }
-            
-            Console.WriteLine("Finished! disposed main table");
-            //last = Handled.LastUnbindListSize;
-            //high = Handled.HighestUnbindListSize;
-            //Console.WriteLine("last:{0,6}  high:{1,6}", last, high);
+            }
+            Console.WriteLine();
+#if DEBUG           
+            TightDbHandle.ReportUnbindListStatus();
+#endif
         }
 
 
@@ -6723,7 +6722,7 @@ intfield2:10//column 2
        [Test]
         [ExpectedException("System.ArgumentException")]
         public static void TableSetIllegalType()
-        {
+        {         
             using (var t = new Table(new SubTableColumn("sub1"), new IntColumn("Int2"), new IntColumn("Int3")))
                 //accessing an illegal column should also not be allowed
             {
