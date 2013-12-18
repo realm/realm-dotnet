@@ -44,7 +44,7 @@ namespace TightDbCSharp
                 new QueryHandle(Root);
         }
 
-        private TableHandle RootedTableHandle()
+        private static TableHandle RootedTableHandle()
         {
             return new TableHandle(null);
         }
@@ -58,8 +58,8 @@ namespace TightDbCSharp
                 : new TableHandle(parent.Root);
         }
 
-        //acquire a TableHandle And set root in an atomic fashion 
-        internal TableHandle TableCopyTable(TableHandle sourceTable)
+        //Returns a copy of this table as a new handle
+        internal TableHandle TableCopyTable()
         {
             var th = RootedTableHandle();//the resulting table is freestanding and its own root
 
@@ -72,7 +72,7 @@ namespace TightDbCSharp
             { }
             finally
             {
-                th.SetHandle(UnsafeNativeMethods.TableCopyTable(sourceTable));
+                th.SetHandle(UnsafeNativeMethods.TableCopyTable(this));
             }//at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
             return th;
         }
@@ -307,24 +307,37 @@ namespace TightDbCSharp
         //acquire a spec handle And set IgnoreUnbind in an atomic fashion (table_get_spec)
         internal SpecHandle GetSpec()
         {
-            //if root is null the this tablehandle is responsible for cleaning up the spec and any specs taken out from it
-            //if root is something else, it is the this tablehandles root, and that root should also manage the specs
-            //note that IgnoreUnbind is set to true, so in fact the spec created here will not call back.
-            //but at least theoreticall (if the binding is extended) spec children might want to be unbindable and they must be linked to root
-            var sh = Root == null ? new SpecHandle(true, this) : new SpecHandle(true,Root);
-            
-            //At this point sh is invalid due to its handle being uninitialized, but the root is set correctly, as is the IgnoreUnbind setting
-            //a finalize at this point will not leak anything and the handle will not do anything
-
-            //now, set the spec handle...
-            RuntimeHelpers.PrepareConstrainedRegions();//the following finally will run with no out-of-band exceptions
+            SpecHandle sh = null;
             try
-            { }
-            finally
             {
-                sh.SetHandle(UnsafeNativeMethods.TableGetSpec(this));
-            }//at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
-            return sh;
+                //if root is null the this tablehandle is responsible for cleaning up the spec and any specs taken out from it
+                //if root is something else, it is the this tablehandles root, and that root should also manage the specs
+                //note that IgnoreUnbind is set to true, so in fact the spec created here will not call back.
+                //but at least theoreticall (if the binding is extended) spec children might want to be unbindable and they must be linked to root
+                sh = Root == null ? new SpecHandle(true, this) : new SpecHandle(true, Root);
+
+                //At this point sh is invalid due to its handle being uninitialized, but the root is set correctly, as is the IgnoreUnbind setting
+                //a finalize at this point will not leak anything and the handle will not do anything
+
+                //now, set the spec handle...
+                RuntimeHelpers.PrepareConstrainedRegions();
+                    //the following finally will run with no out-of-band exceptions
+                try
+                {
+                }
+                finally
+                {
+                    sh.SetHandle(UnsafeNativeMethods.TableGetSpec(this));
+                }
+                    //at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
+                return sh;
+            }
+            catch
+            {
+                if (sh != null)
+                    sh.Dispose();
+                throw;
+            }
         }
     }
 }

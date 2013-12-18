@@ -79,7 +79,7 @@ namespace TightDbCSharp
                 ValidateIsValid();
                 //a copy of a ReadOnly table is not readonly. It also does not belong to any group the source might belong to
                 //so to do the clone we call tablecopytable with ourself and use the resulting new tablehandle to create a wrapper
-                return new Table(TableHandle.TableCopyTable(TableHandle), false);
+                return new Table(TableHandle.TableCopyTable(), false);
             }
             catch (Exception)
             {

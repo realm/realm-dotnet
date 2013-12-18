@@ -23,7 +23,7 @@ namespace TightDbCSharp
             {
                 AcquireHandle(false);
             }
-            catch (Exception e)
+            catch (Exception )
             {
                 Dispose();
                 throw;
@@ -326,7 +326,7 @@ namespace TightDbCSharp
         /// <summary>
         /// if true, some unexpected error condition exists and this group should never be used
         /// </summary>
-        public Boolean Invalid { get; internal set; }
+        public Boolean Invalid { get; internal set; }//todo:figure a situation where a group becomes invalid, create a unit test for that situation
 
         //The debug only methods Verify, print, print_free etc. are not implemented
         //in the binding a the time being

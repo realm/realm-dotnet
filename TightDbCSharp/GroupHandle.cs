@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 
 namespace TightDbCSharp
@@ -35,7 +36,7 @@ namespace TightDbCSharp
             }//at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
             if (th.IsInvalid)
             {
-                throw new ArgumentOutOfRangeException(String.Format("Group.GetTable did not get a Table back from core. The name specified is probably invalid :({0})",name));
+                throw new ArgumentOutOfRangeException(String.Format(CultureInfo.InvariantCulture,"Group.GetTable did not get a Table back from core. The name specified is probably invalid :({0})",name));
             }
             return th;
         }

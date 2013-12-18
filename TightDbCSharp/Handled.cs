@@ -37,7 +37,7 @@ namespace TightDbCSharp
         /// </summary>
         public bool IsDisposed
         {
-            get { return Handle!=null && Handle.IsClosed; }
+            get { return _handle!=null && _handle.IsClosed; }
         }
 
         /// <summary>
@@ -47,13 +47,9 @@ namespace TightDbCSharp
         /// for some reason
         /// </summary>
         protected bool HandleIsValid {
-            get { return !Handle.IsInvalid; }
+            get { return !_handle.IsInvalid; }
         }
 
-        //protected because we want other classes to use the specific handle, for instance TableView.TableViewHandle instead of TableView.Handle
-        protected TightDbHandle Handle;//will store the c++ handle for this class. The actual type is specific for what is wrapped,
-        //e.g. a SharedGroup will have a SharedGroupHandle stored here, and SharedGroup will have a SharedGroupHandle property that returns this hande
-        //as SharedGroupHandle (because as is faster than a typecast)
 
 
         /// <summary>
@@ -62,6 +58,17 @@ namespace TightDbCSharp
         /// Readonly objects are usually gotten either from a readonly transaction, or from a group opened from a file in readonly mode
         /// </summary>
         public bool ReadOnly { get; internal set; }
+
+        protected TightDbHandle Handle
+        {
+            get { return _handle; }
+            set { _handle = value; }
+        }
+
+        private TightDbHandle _handle;//will store the c++ handle for this class. The actual type is specific for what is wrapped,
+        //protected because we want other classes to use the specific handle, for instance TableView.TableViewHandle instead of TableView.Handle
+        //e.g. a SharedGroup will have a SharedGroupHandle stored here, and SharedGroup will have a SharedGroupHandle property that returns this hande
+        //as SharedGroupHandle (because as is faster than a typecast)
 
         internal Handled()
         {
@@ -74,7 +81,7 @@ namespace TightDbCSharp
         internal void SetHandle(TightDbHandle newHandle,bool isReadOnly)
         {            
             ReadOnly = isReadOnly;
-            Handle = newHandle;
+            _handle = newHandle;
         }
 
         /// <summary>
@@ -83,7 +90,7 @@ namespace TightDbCSharp
 
         public override string ToString()
         {
-            return base.ToString()+" Handle:" + Handle;//calls Handle.ToString()
+            return base.ToString()+" Handle:" + _handle;//calls Handle.ToString()
         }
 
         internal void ValidateReadWrite()
@@ -119,11 +126,11 @@ namespace TightDbCSharp
         /// <param name="disposing"></param>
         protected virtual void Dispose(bool disposing)  //was protected virtual earlier on, can be set back to protected virtual if the need arises
         {
-            if (Handle!=null && !IsDisposed)//handle could be null if we crashed in the constructor (group with filename to a OS protected area for instance)
+            if (_handle!=null && !IsDisposed)//handle could be null if we crashed in the constructor (group with filename to a OS protected area for instance)
             {
                 //no matter if we are being called from a dispose in a user thread, or from a finalizer, we should
                 //ask Handle to dispose of itself (unbind)
-                Handle.Dispose();
+                _handle.Dispose();
             }
         }
     }

@@ -229,8 +229,6 @@ namespace TightDbCSharp
                 }
                 return true;
             }
-
-
             catch (Exception)
             {
                 return false;
@@ -256,9 +254,9 @@ namespace TightDbCSharp
         //used in the case we need to set the handle as part of a larger setup operation
         //the original SetHandle method is not callable from other classes, and we need that feature
         //so we overwrite the original one to be able to call it
-        internal new void SetHandle(IntPtr somehandle)
+        public new void SetHandle(IntPtr someHandle)
         {
-            base.SetHandle(somehandle);
+            base.SetHandle(someHandle);
         }
 
         public override string ToString()
@@ -268,12 +266,12 @@ namespace TightDbCSharp
 
 //these are for debugging purposes, not lock protected while they certanly should be
 #if DEBUG
-        
-        public static int RootsInExistance=0;//increased every time we create a new root
-        public int ThisRootID = 0;//the ID of this root, used in the dictionaries
-        public static List<long> MaxForListType = new List<long>();//max for this root, indexed by rootid
-        public static List<long> LastForListType = new List<long>();//last for this root
-        public static List<Type> TypeForListType = new List<Type>();//type for this root
+
+        private static int RootsInExistance=0;//increased every time we create a new root
+        private int ThisRootID = 0;//the ID of this root, used in the dictionaries
+        private static List<long> MaxForListType = new List<long>();//max for this root, indexed by rootid
+        private static List<long> LastForListType = new List<long>();//last for this root
+        private static List<Type> TypeForListType = new List<Type>();//type for this root
 
         public static void ReportUnbindListStatus()
         {

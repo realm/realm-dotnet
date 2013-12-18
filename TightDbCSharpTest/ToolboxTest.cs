@@ -15,7 +15,7 @@ namespace TightDbCSharpTest
         /// This method calls a c++ method. Used to time how long the c++
         /// method takes. Used in examples\PerformanceTest
         /// </summary>
-        [Test]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2001:AvoidCallingProblematicMethods", MessageId = "System.GC.Collect"), Test]
         public static void TestSizeCalls()
         {
 #if DEBUG//this is currently the last test being run. Report size of unbindlists as we stop. 

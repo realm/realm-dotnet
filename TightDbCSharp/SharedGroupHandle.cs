@@ -5,9 +5,20 @@ using System.Runtime.CompilerServices;
 
 namespace TightDbCSharp
 {
-    public class SharedGroupHandle:TightDbHandle
+    public class SharedGroupHandle : TightDbHandle
     {
-        public TransactionState State;//should default to 0=ready
+
+        /// <summary>
+        /// Store the transaction state of this c++shared group
+        /// The state will change atomically with the state in c++,
+        /// using CER and CriticalHandle guarentees of non-interference from out-of-band exceptions
+        /// This is important because if we have a write transaction in c++ but does not know about it in C#
+        /// then we could block the database until the program is restarted, 
+        /// the state of an ongoing transaction is a kind of handle that could be kind of leaked
+        /// </summary>
+        public TransactionState State { get; private set; }
+
+     //should default to 0=ready
 
 
         public SharedGroupHandle(TightDbHandle root) : base(root)
@@ -16,22 +27,25 @@ namespace TightDbCSharp
 
         //empty constructor to keep P/Invoke CriticalHandle support happy
         public SharedGroupHandle()
-        {            
+        {
         }
 
         protected override void Unbind()
         {
-            AbortTransaction();    //stop any leaked ongoing transaction. remove this when core do this automatically
-            UnsafeNativeMethods.SharedGroupDelete(handle);            
+            AbortTransaction(); //stop any leaked ongoing transaction. remove this when core do this automatically
+            UnsafeNativeMethods.SharedGroupDelete(handle);
         }
 
         //atomic change of transaction state from read to ready
-        public  void SharedGroupCommit()
+        public void SharedGroupCommit()
         {
             IntPtr res;
             RuntimeHelpers.PrepareConstrainedRegions();
-            try { }
-            finally//we have a guarentee that belwo block will run atomically as far as out of band exceptions are concerned
+            try
+            {
+            }
+            finally
+                //we have a guarentee that belwo block will run atomically as far as out of band exceptions are concerned
             {
                 try
                 {
@@ -39,18 +53,19 @@ namespace TightDbCSharp
                 }
                 finally
                 {
-                  State = TransactionState.Ready;//always set state to Ready. Don't try to commit several times
+                    State = TransactionState.Ready; //always set state to Ready. Don't try to commit several times
                 }
             }
 
-            if (res == IntPtr.Zero)//Zero indicates success
+            if (res == IntPtr.Zero) //Zero indicates success
                 return;
 
             //shared_group_commit threw an exception in core that was caught in the c++ dll who then returned non-zero
             //currently we just assume it was an IO error, but could be anything
             //As we set the SG to invalid we lose forever the connection to c++           
-            SetHandleAsInvalid();            
-            throw new InvalidOperationException("sharedGroup commit exception in core. probably an IO error with the SharedGroup file");
+            SetHandleAsInvalid();
+            throw new InvalidOperationException(
+                "sharedGroup commit exception in core. probably an IO error with the SharedGroup file");
         }
 
         //will end a transaction if one is ongoing will soon change to calling inside when commits get atomical
@@ -77,9 +92,10 @@ namespace TightDbCSharp
         internal void SharedGroupRollback()
         {
             IntPtr res;
-            RuntimeHelpers.PrepareConstrainedRegions();//the following finally will run with no out-of-band exceptions
+            RuntimeHelpers.PrepareConstrainedRegions(); //the following finally will run with no out-of-band exceptions
             try
-            {}
+            {
+            }
             finally
             {
                 res = UnsafeNativeMethods.SharedGroupRollback(this);
@@ -87,7 +103,8 @@ namespace TightDbCSharp
             }
             if (res == IntPtr.Zero)
                 return;
-            throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture,"SharedGroup Rollback threw an exception in core. Probably file I/O error code:{0}",res));
+            throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture,
+                "SharedGroup Rollback threw an exception in core. Probably file I/O error code:{0}", res));
         }
 
 
@@ -96,9 +113,10 @@ namespace TightDbCSharp
         internal void SharedGroupEndRead()
         {
             IntPtr res;
-            RuntimeHelpers.PrepareConstrainedRegions();//the following finally will run with no out-of-band exceptions
+            RuntimeHelpers.PrepareConstrainedRegions(); //the following finally will run with no out-of-band exceptions
             try
-            { }
+            {
+            }
             finally
             {
                 res = UnsafeNativeMethods.SharedGroupEndRead(this);
@@ -106,7 +124,8 @@ namespace TightDbCSharp
             }
             if (res == IntPtr.Zero)
                 return;
-            throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "SharedGroupEndRead threw an exception in core. Probably file I/O error code:{0}", res));
+            throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture,
+                "SharedGroupEndRead threw an exception in core. Probably file I/O error code:{0}", res));
         }
 
 
@@ -119,26 +138,47 @@ namespace TightDbCSharp
         //must be called with InReadTransaction or InWriteTransaction  otherwise an empty grouphandle is returned
         //other methods that create sharedgrouphandles are in UnsafeNativeMethods
         //http://msdn.microsoft.com/en-us/library/system.runtime.compilerservices.runtimehelpers.prepareconstrainedregions(v=vs.110).aspx
-        internal GroupHandle StartTransaction (TransactionState tstate)
+        internal GroupHandle StartTransaction(TransactionState tstate)
         {
-            var gh  =new GroupHandle(true,this); //set sharedgroup as root. Perhaps setting the group would also work, depends on if core can take it.
-            //allocate in advance to avoid allocating in constrained exection region true means do not finalize or call unbind
-            RuntimeHelpers.PrepareConstrainedRegions();//the following finally will run with no out-of-band exceptions
+            GroupHandle gh = null;
             try
-            {}
-            finally
             {
-                State = tstate;//already at this point this sharedgroup will be able to finish the transaction when finalized
-                if (State == TransactionState.Read)
+                gh = new GroupHandle(true, this);
+                //set sharedgroup as root. Perhaps setting the group would also work, depends on if core can take it.
+                //allocate in advance to avoid allocating in constrained exection region true means do not finalize or call unbind
+                RuntimeHelpers.PrepareConstrainedRegions();
+                //the following finally will run with no out-of-band exceptions
+                try
                 {
-                    gh.SetHandle(UnsafeNativeMethods.SharedGroupBeginRead(this));
                 }
-                if (State == TransactionState.Write)
+                finally
                 {
-                    gh.SetHandle(UnsafeNativeMethods.SharedGroupBeginWrite(this));
-                }                
+                    State = tstate;
+                    //already at this point this sharedgroup will be able to finish the transaction when finalized
+                    //at this very point, doing nothing as the handle is not set yet
+                    if (State == TransactionState.Read)
+                    {
+                        gh.SetHandle(UnsafeNativeMethods.SharedGroupBeginRead(this));
+                    }
+                    if (State == TransactionState.Write)
+                    {
+                        gh.SetHandle(UnsafeNativeMethods.SharedGroupBeginWrite(this));
+                    }
+                    //at this point temp's finalizer will guarenteee no leaking transactions
+                    //gh = temp;
+                    //temp = null;
+                }
+                return gh;//it things work well, we exit the function here with a functioning handle as return value
             }
-            return gh;
+            catch
+            {
+                //this part to avoid CA2000 warning. Although we always return a working gh in the code above,
+                //this finally block will dispose gh in the unexpected case we had an exception after gh was created, but 
+                //before it was returned.            
+                if (gh != null )
+                    gh.Dispose();
+                throw ;//if we throw an exception for some reason, we get out without returning any handle, but with the handle correctly cleaned up
+            }
         }
     }
 }

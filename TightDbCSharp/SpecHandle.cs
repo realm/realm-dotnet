@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -16,31 +17,44 @@ namespace TightDbCSharp
     {
         //call with the root for this Spec. That is not neccesary the table, could be the shared group or group - it is the root of the tablehandle
         //or the tablehandle itself if its root is null
-        public SpecHandle(bool ignoreUnbind, TightDbHandle myroot) : base(ignoreUnbind, myroot)
+        public SpecHandle(bool ignoreUnbind, TightDbHandle root) : base(ignoreUnbind, root)
         {
         }
 
 
         //acquire a spec handle And set IgnoreUnbind in an atomic fashion (spec_get_spec)
         internal SpecHandle GetSubSpecHandle(long columnIndex)
-        {
-            //if root is null the this spechandle is responsible for cleaning up the spec and any specs taken out from it
-            //if root is something else, it is the this spechandles root, and that root should also manage the specs
-            //note that IgnoreUnbind is set to false, as specs gotten out from specs must be unbound            
-            var sh = Root == null ? new SpecHandle(false, this) : new SpecHandle(false, Root);
-
-            //At this point sh is invalid due to its handle being uninitialized, but the root is set correctly, as is the IgnoreUnbind setting
-            //a finalize at this point will not leak anything and the handle will not unbind as it is invalid
-
-            //now, set the spec handle...
-            RuntimeHelpers.PrepareConstrainedRegions();//the following finally will run with no out-of-band exceptions
+        {            
+            SpecHandle sh = null;//acc to CA2000 guidelines we guarentee disposal of temp in finally lower down
             try
-            { }
-            finally
             {
-                sh.SetHandle(UnsafeNativeMethods.SpecGetSpec(this,columnIndex));
-            }//at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly even if we crash right now
-            return sh;
+                
+                //if root is null the this spechandle is responsible for cleaning up the spec and any specs taken out from it
+                //if root is something else, it is the this spechandles root, and that root should also manage the specs
+                //note that IgnoreUnbind is set to false, as specs gotten out from specs must be unbound            
+                 sh = Root == null ? new SpecHandle(false, this) : new SpecHandle(false, Root);
+
+                //At this point temp is invalid due to its handle being uninitialized, but the root is set correctly, as is the IgnoreUnbind setting
+                //a finalize at this point will not leak anything and the handle will not unbind as it is invalid
+
+                //now, set the spec handle...
+                RuntimeHelpers.PrepareConstrainedRegions();
+                try//the following finally will run with no out-of-band exceptions
+                {
+                }
+                finally
+                {
+                    sh.SetHandle(UnsafeNativeMethods.SpecGetSpec(this, columnIndex));
+                }
+                    //at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly even if we crash right now
+                return sh;
+            }
+           catch//this part cleans up temp if we got exceptions thrown in the preceding code
+            {
+                if (sh != null)                
+                    sh.Dispose();
+                throw;
+            }
         }
 
 

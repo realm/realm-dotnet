@@ -114,12 +114,22 @@ namespace TightDbCSharp
         /// </summary>
         protected override void Dispose(Boolean disposing)
         {
-            if (!disposing) return;
-            if (_sharedGroup == null) return; //we simply cannot rollback if shared group is null
-            if (_sharedGroup.InTransaction())
-                Rollback();//if this fails somehow, the SharedGroupHandle will take care in its finalizer. Let the user handle exceptions
+            try
+            {
+                if (!disposing) return;
+                if (_sharedGroup == null) return; //we simply cannot rollback if shared group is null
+                if (_sharedGroup.InTransaction())
+                    Rollback();
+                        //if this fails somehow, the SharedGroupHandle will take care in its finalizer. Let the user handle exceptions
+            }
+            finally
+            {
+                base.Dispose(disposing);
+                //does not really do much as the Handle will not do any unbinding on dispose, but will make sure
+                //that we cannot call the group anymore by invalidating the handle
+            }
         }
-        
+
 
         /// <summary>
         /// Enhance toString to also include the type of transaction, and its current state

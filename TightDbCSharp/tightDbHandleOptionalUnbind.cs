@@ -20,11 +20,12 @@ namespace TightDbCSharp
     //we could derive another class tighDbHandleNoFinalize, but currently we do not have a handle type that always should not be unbound
     public abstract class TightDbHandleOptionalUnbind : TightDbHandle
     {
-
-        protected readonly Boolean IgnoreUnbind; //if false, then the spec handle points to an internal structure in core,
+        internal readonly Boolean IgnoreUnbind;
+                                   //if false, then the spec handle points to an internal structure in core,
                                    //that is not refcounted and should not be unbound
+                                   //This is set to internal to avoid a CA warning. Probably should be protected but then the eror fires.
 
-        public TightDbHandleOptionalUnbind()
+        protected TightDbHandleOptionalUnbind()
         {
         }
 
@@ -38,8 +39,8 @@ namespace TightDbCSharp
         internal TightDbHandleOptionalUnbind(bool ignoreUnbind, TightDbHandle myroot) : base(myroot)
         {
             if (ignoreUnbind)
-            {
-                GC.SuppressFinalize(this);
+            {//the CA 1816 on the line below can safely be ignored.
+                GC.SuppressFinalize(this);//As this handle does not need to be unbound, we do not need this object to be finalized
             }
             IgnoreUnbind = ignoreUnbind;//readonly fields can be set once only.
         }
