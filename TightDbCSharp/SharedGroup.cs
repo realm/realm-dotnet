@@ -205,7 +205,7 @@ namespace TightDbCSharp
         /// defaults to false
         /// if Invalid is true something fatal has happened
         /// </summary>
-        public Boolean Invalid { get; set; }
+        public Boolean Invalid { get; private set; }
 
 
 

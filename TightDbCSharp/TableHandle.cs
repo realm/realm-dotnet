@@ -1,20 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.Eventing.Reader;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TightDbCSharp
 {
     public class TableHandle:TightDbHandle
     {
-        public TableHandle(TightDbHandle root) : base(root)
+        private TableHandle(TightDbHandle root) : base(root)
         {
         }
 
+        //keep this one even though warned that it is not used. It is in fact used by marshalling
         //used by P/Invoke to automatically construct a TableHandle when returning a size_t as a TableHandle
         private TableHandle()
         {

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 
 //this class contains code that handles the binding and disposing logic for C# classes that wrap tightdb classes
@@ -40,15 +38,6 @@ namespace TightDbCSharp
             get { return _handle!=null && _handle.IsClosed; }
         }
 
-        /// <summary>
-        /// This method returns true if the handle is not invalid, that is - if the handle is supposed to point to
-        /// Something in core That something might itself be of invalid in core - this method returns the state of our CriticalHandle
-        /// If this method returns false, the criticalhandle has probably never been set correctly, or has been forcefully set to invalid
-        /// for some reason
-        /// </summary>
-        protected bool HandleIsValid {
-            get { return !_handle.IsInvalid; }
-        }
 
 
 
@@ -61,8 +50,7 @@ namespace TightDbCSharp
 
         protected TightDbHandle Handle
         {
-            get { return _handle; }
-            set { _handle = value; }
+            get { return _handle; }            
         }
 
         private TightDbHandle _handle;//will store the c++ handle for this class. The actual type is specific for what is wrapped,

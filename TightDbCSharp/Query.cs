@@ -33,10 +33,10 @@ namespace TightDbCSharp
         /// The actual Table (not tableview) being queried
         /// </summary>
         /// <exception cref="ArgumentException"></exception>
-        public Table UnderlyingTable
+        private Table UnderlyingTable
         {
             get { return _underlyingTable; }
-            private set
+            set
             {
                 if (value != null && _underlyingTable == null)
                 {

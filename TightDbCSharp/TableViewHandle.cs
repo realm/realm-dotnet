@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TightDbCSharp
 {
@@ -15,7 +11,7 @@ namespace TightDbCSharp
         }
 
         //used in Table to create TableviewHandles atomically, specifying both root and handle at the same time
-        internal TableViewHandle(TightDbHandle root)
+        private TableViewHandle(TightDbHandle root)
             : base(root)
         {
         }

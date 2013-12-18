@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Globalization;
-using System.Resources;
 using System.Runtime.CompilerServices;
 
 namespace TightDbCSharp
@@ -20,12 +19,13 @@ namespace TightDbCSharp
 
      //should default to 0=ready
 
-
+        //keep this one even though warned that it is not used. It is in fact used by marshalling
         public SharedGroupHandle(TightDbHandle root) : base(root)
         {
         }
 
         //empty constructor to keep P/Invoke CriticalHandle support happy
+        //Please leave this one in, even though resharper reports it as nont used
         public SharedGroupHandle()
         {
         }

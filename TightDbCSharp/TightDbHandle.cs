@@ -191,10 +191,10 @@ namespace TightDbCSharp
 #if DEBUG 
         private void AddToDebugLists()
         {
-            ThisRootID = RootsInExistance++;//unbindlist is called exactly once per root so use this as a way to set an unique id
-            LastForListType.Add(0);
-            MaxForListType.Add(0);
-            TypeForListType.Add(GetType());            
+            _thisRootID = _rootsInExistance++;//unbindlist is called exactly once per root so use this as a way to set an unique id
+            _lastForListType.Add(0);
+            _maxForListType.Add(0);
+            _typeForListType.Add(GetType());            
         }
 #endif
 
@@ -267,18 +267,18 @@ namespace TightDbCSharp
 //these are for debugging purposes, not lock protected while they certanly should be
 #if DEBUG
 
-        private static int RootsInExistance=0;//increased every time we create a new root
-        private int ThisRootID = 0;//the ID of this root, used in the dictionaries
-        private static List<long> MaxForListType = new List<long>();//max for this root, indexed by rootid
-        private static List<long> LastForListType = new List<long>();//last for this root
-        private static List<Type> TypeForListType = new List<Type>();//type for this root
+        private static int _rootsInExistance=0;//increased every time we create a new root
+        private int _thisRootID ;//the ID of this root, used in the dictionaries
+        private static List<long> _maxForListType = new List<long>();//max for this root, indexed by rootid
+        private static List<long> _lastForListType = new List<long>();//last for this root
+        private static List<Type> _typeForListType = new List<Type>();//type for this root
 
         public static void ReportUnbindListStatus()
         {
-            for (var n=0; n<MaxForListType.Count;++n)
+            for (var n=0; n<_maxForListType.Count;++n)
             {
-                if(MaxForListType[n]>0 && LastForListType[n]>0)//just list the interesting ones
-                  Console.WriteLine("ID:{0,5}type:{1,30} Max:{2,8} Last:{3,8}", n,TypeForListType[n], MaxForListType[n],LastForListType[n]);
+                if(_maxForListType[n]>0 && _lastForListType[n]>0)//just list the interesting ones
+                  Console.WriteLine("ID:{0,5}type:{1,30} Max:{2,8} Last:{3,8}", n,_typeForListType[n], _maxForListType[n],_lastForListType[n]);
             }
         }
 #endif
@@ -301,18 +301,18 @@ namespace TightDbCSharp
                     UnbindLockedList();
                     handleToUnbind.Unbind();
 #if DEBUG
-                    LastForListType[ThisRootID] = _unbindList.Count;
-                    MaxForListType[ThisRootID] = Math.Max(MaxForListType[ThisRootID], _unbindList.Count);
-                    TypeForListType[ThisRootID] = GetType();
+                    _lastForListType[_thisRootID] = _unbindList.Count;
+                    _maxForListType[_thisRootID] = Math.Max(_maxForListType[_thisRootID], _unbindList.Count);
+                    _typeForListType[_thisRootID] = GetType();
 #endif
                 }
                 else
                 {
                     _unbindList.Add(handleToUnbind);//resurrects handleToUnbind - but it is never a root object bc RequestUnbind is always called above with root.
 #if DEBUG
-                        LastForListType[ThisRootID] = _unbindList.Count;
-                        MaxForListType[ThisRootID] = Math.Max(MaxForListType[ThisRootID], _unbindList.Count);
-                        TypeForListType[ThisRootID] = GetType();
+                        _lastForListType[_thisRootID] = _unbindList.Count;
+                        _maxForListType[_thisRootID] = Math.Max(_maxForListType[_thisRootID], _unbindList.Count);
+                        _typeForListType[_thisRootID] = GetType();
 #endif
                 }
             }

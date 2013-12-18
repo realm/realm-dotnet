@@ -792,8 +792,6 @@ enum DataType {
         }
 
 
-        [DllImport(L64, EntryPoint = "new_group", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr new_groupx64();
 
         [DllImport(L64, EntryPoint = "new_group", CallingConvention = CallingConvention.Cdecl)]
         private static extern GroupHandle new_group64();
@@ -805,10 +803,6 @@ enum DataType {
         //this means GroupHandle.unbind is workable as soon as new_group returns, even if sethandle failed
         public static void GroupNew(Group group, Boolean isReadOnly)
         {
-            IntPtr gh = new_groupx64();
-            GroupHandle gh2 = new_group64();
-
-
             group.SetHandle(Is64Bit
                 ? new_group64()
                 : new_group32(), isReadOnly);

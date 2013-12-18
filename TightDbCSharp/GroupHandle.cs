@@ -6,7 +6,7 @@ namespace TightDbCSharp
 {
     public class GroupHandle:TightDbHandleOptionalUnbind
     {
-
+        //keep this one even though warned that it is not used. It is in fact used by marshalling
         //needed for P/Invoke to be able to create an empty object
         public GroupHandle() 
         {

@@ -1,10 +1,4 @@
-﻿using System;
-using System.CodeDom.Compiler;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Runtime.CompilerServices;
 
 //isOwned is introduced as a flag that determines if this handle should be unbound or not. In some cases we should NOT call back to c++
 //when we are done with a spec, but in other cases we should.
