@@ -263,7 +263,7 @@ extern "C" {
 // this is sort of the build version of the c++ part of the binding
 
  TIGHTDB_C_CS_API size_t tightdb_c_cs_getver(void){ 
-	return 20131217;
+	return 20131219;
 }
 
  //return a newly constructed top level table 

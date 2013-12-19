@@ -82,7 +82,7 @@ namespace TightDbCSharp
         /// updated each time we do a public release of the binding        
         /// </summary>
         /// <returns>String representation of current version of the C# Assembly</returns>
-        public const String GetDllVersionCSharp = "2013-12-17-18:28";
+        public const String GetDllVersionCSharp = "2013-12-19-14:03";
 
         /// <summary>
         /// Return string with list of lines with
