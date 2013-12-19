@@ -68,7 +68,7 @@ namespace TightDbCSharp
         ///this reference will keep a table alive as long as we have spec's pointing to it, and it is used
         ///for validation of spec operations
         /// </summary>
-        public Table OwnerRootTable { get; private set; }
+        private Table OwnerRootTable { get; set; }
 
         /* I hope this is not needed - removed in the process of trying to get rid of spec as much as possible
         /// <summary>

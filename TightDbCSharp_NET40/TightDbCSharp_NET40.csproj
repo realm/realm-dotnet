@@ -54,11 +54,17 @@
     <Compile Include="..\TightDbCSharp\Group.cs">
       <Link>Group.cs</Link>
     </Compile>
+    <Compile Include="..\TightDbCSharp\GroupHandle.cs">
+      <Link>GroupHandle.cs</Link>
+    </Compile>
     <Compile Include="..\TightDbCSharp\Handled.cs">
       <Link>Handled.cs</Link>
     </Compile>
     <Compile Include="..\TightDbCSharp\Query.cs">
       <Link>Query.cs</Link>
+    </Compile>
+    <Compile Include="..\TightDbCSharp\QueryHandle.cs">
+      <Link>QueryHandle.cs</Link>
     </Compile>
     <Compile Include="..\TightDbCSharp\Row.cs">
       <Link>Row.cs</Link>
@@ -69,11 +75,20 @@
     <Compile Include="..\TightDbCSharp\SharedGroup.cs">
       <Link>SharedGroup.cs</Link>
     </Compile>
+    <Compile Include="..\TightDbCSharp\SharedGroupHandle.cs">
+      <Link>SharedGroupHandle.cs</Link>
+    </Compile>
     <Compile Include="..\TightDbCSharp\Spec.cs">
       <Link>Spec.cs</Link>
     </Compile>
+    <Compile Include="..\TightDbCSharp\SpecHandle.cs">
+      <Link>SpecHandle.cs</Link>
+    </Compile>
     <Compile Include="..\TightDbCSharp\Table.cs">
       <Link>Table.cs</Link>
+    </Compile>
+    <Compile Include="..\TightDbCSharp\TableHandle.cs">
+      <Link>TableHandle.cs</Link>
     </Compile>
     <Compile Include="..\TightDbCSharp\TableOrView.cs">
       <Link>TableOrView.cs</Link>
@@ -83,6 +98,15 @@
     </Compile>
     <Compile Include="..\TightDbCSharp\TableView.cs">
       <Link>TableView.cs</Link>
+    </Compile>
+    <Compile Include="..\TightDbCSharp\TableViewHandle.cs">
+      <Link>TableViewHandle.cs</Link>
+    </Compile>
+    <Compile Include="..\TightDbCSharp\TightDbHandle.cs">
+      <Link>TightDbHandle.cs</Link>
+    </Compile>
+    <Compile Include="..\TightDbCSharp\tightDbHandleOptionalUnbind.cs">
+      <Link>tightDbHandleOptionalUnbind.cs</Link>
     </Compile>
     <Compile Include="..\TightDbCSharp\Toolbox.cs">
       <Link>Toolbox.cs</Link>
