@@ -1,0 +1,532 @@
+Notes on the Tightdb C# binding and concurrency. 
+Also discusses the infrastructure built in to handle .net specific concurrency issues
+These notes were orignially written for my own use and have not yet been edited for a wider audience, sorry about that.
+
+
+contents :
+
+Disposing of objects not used anymore.
+
+.net garbage collection.
+
+Out-of-band-exceptions.
+
+Premature handle garbage collection and handle recycling.
+
+Application termination.
+
+
+
+list of actual stability concerns and how they have been solved.
+
+
+
+
+
+these are just written down as I have researched stuff, they are not yet organized in a user friendly way.
+
+
+
+Disposing of objects not used anymore :
+
+C# users are supposed to call object.Dispose() when they are finished with one of Table, TableView, Group, SharedGroup, Transaction or Query
+Microsoft recommended practices for a user : http://msdn.microsoft.com/en-us/library/3bwa4xa9(v=vs.110).aspx
+
+
+However, tightdbCS has been coded so that in most cases, the C# library implementation will make sure that nothing goes wrong if the user has forgotten to make code that always calls dispose. This is achieved via a tighdb coded finalizer in the C# handle base class, TightDbHandle
+
+The dispose pattern guidelines (for API developers) are used in a straightforward manner :
+http://msdn.microsoft.com/en-us/library/fs2xkftw.aspx   (Implementing a Dispose method)
+http://msdn.microsoft.com/en-us/library/b1yfkh5e.aspx (framework design guide, dispose pattern)
+
+The dispose pattern has been implemented in the Handled class, and Table,Tableview,Query,Group,SharedGroup all inherit from Handled, and thus also follow the dispose pattern. The only thing that happens in dispose in the C# wrapper classes, is that the internal TightDbHandle will have its dispose called. Due to how CriticalHandle has been implemented from msft, we simply call dispose even though we could've called dispose(disposing). Thus, the TightDbHandle will not
+know if its dispose is being called from a wrapper finalizer, from its own finalizer, or from a direct user-thread call from a wrapper. This is okay, as
+the tightdbhandle determines what to do depending on its status as a root or as a child. When dispose is called on a root we know we cannot be called any more from user threads - when called on a child, we don't know, and must go via unbind lists (unless the root knows it is finalizing, then we finalize at once)
+
+
+The easisest way for a tightdb user to ensure dispose is called is in C# to use the using keyword.
+
+Using (var myTable = New Table(New IntegerColumn("test"))){
+     myTable.AddEmptyRow();
+}
+
+Above construction will automatically call myTable.dispose as soon as myTable goes out of scope - it is equivalent of the user writing
+
+
+Table myTable = new Table(new IntegerColumn("Test"));
+try
+{
+    myTable.AddEmptyRow();
+}
+finally
+{
+    IDisposable disposable = myTable as IDisposable;
+    if (disposable != null) disposable.Dispose();
+}
+
+
+Thus - by utilizing the using keyword, the C# programmer ensures that Dispose is always called when a Disposable variable is not used anymore, as the finally part will execute even if exceptions are raised inside the try block.  In case no exceptions are thrown, the finally block is also executed.
+
+The C# wrappers (table, query, tableview, group etc.) all have a TightDbHandle inside, and their dispose will call the handle's dispose and thus, unbind
+the c++ resource if needed. The C# wrappers do NOT have any finalizers, but the handles does. This makes the binding faster as finalizers slow down garbage
+collection.
+
+
+
+
+
+
+
+To recap .net garbage collection in a few sentences, the sequence is this :
+1) GC decides an object can be garbage collected
+2) if the object has a finalizer, a reference to the object, is put onto a finalizer list
+3) GC will then start a timer that will start a finalizer thread, that will call finalize on all objects referenced in the finalizerlist
+
+This means that finalize (~classname()) will be called concurrently with the user thread,from a finalizer thread and thus, 
+this means that (if we did not handle this situation)the user thread could be working inside core code for a shared group, 
+while the finalizer thread is working inside core , unbinding an object that is part of this shared group. 
+Such concurrency is not allowed in tightdb.
+
+A great article about this and related issues(albeit very old, so the Gc has been rewritten a few times since)
+http://blogs.msdn.com/b/cbrumme/archive/2004/02/20/77460.aspx
+
+notes on finalize http://msdn.microsoft.com/en-us/library/system.object.finalize.aspx
+note especially that at application shutdown, finalize is also called on still accessible objects. This means that on shutdown all live classes have their finalize called if they provide one. They are called in random order. It is possible to test for if we are shutting down.
+
+
+
+
+
+
+
+To recap out-of-band exceptions in a few sentences :
+
+C# can throw exceptions at any time, where these exceptions have nothing to do with user code, they can be thrown when JIT compiling code, or when allocating
+memory, or when failing to garbage collect etc. Such exceptions are called out-of-band exceptions.
+Managed memory is handled just fine in these cases, but user code can loose handles due to out-of-band exceptions, for example 
+MyHandle=NativeCallThatReturnsAHandle();
+Above line could be executed like this :
+some_cpu_register = NativeCallThatReturnsAHandle();
+---OUT OF BAND EXCEPTION
+MyHandle=some_cpu_register;
+
+This means that in the general case even an assignment might be interrupted after the expression has been evaluated,but before the assignment takes place.
+This is a problem regarding handles, as the expression evaluation acquires ownership of the handle, but that ownership is never registered anywhere, so there
+is a handle leak.
+
+note on PrepareConstrainedRegions with code example
+http://msdn.microsoft.com/en-us/library/system.runtime.compilerservices.runtimehelpers.prepareconstrainedregions.aspx
+
+to avoid out-of-band exceptions when acqiring unmanaged resources , MSFT have provided runtimehelpers.prepareconstrainedgerions, which, together with a try finally block guarentees that .net will postpone out-of-band exceptions until after the constrained region. (CER).
+
+In the C# binding we avoid out-of-band exceptions when handles are required by always having a CER region around the acquring code. See 
+
+
+
+
+To recap agressive garbage collection / premature handle disposal and handle recycling :
+
+C# and .net and JIT in combination can, and will, finalize classes very agressively - for instance C# will finalize an object
+as soon as the last reference to the object has taken place, as seen from the compiled C# code
+- compiled C# code knows nothing about scope, so we can have this situation in the general case:
+
+C#
+class someclass
+{
+...
+IntPtr SomeHandle;//stores a c++ object pointer, or a c++ handle of some kind
+...
+}
+
+
+void main()
+{
+...
+DoSomething(someclass.somehandle)
+}
+
+
+
+this (the main method) could compile to something like this :
+
+...
+push (value of)someclass.somehandle  //prepare the value of the parameter on the stack
+                                     //this is where GC might call someclass.finalize, bc someclass is never more referenced
+DoSomething()                        //this will pop its parameter from the stack
+
+
+
+This means that, serialized, we could have this scenario, given one user thread
+push(value of someclass.somehandle)                   //last time someclass is ever referenced
+someclass.finalize()                                  //gc finalizer thread
+    NATIVE.UNBIND(somehandle)                         //gc finalizer thread
+DoSomething()                                         //user thread
+    NATIVE.DOSOMETHING(popped value of somehandle)    //user thread calls core with a handle value that was unbound earlier
+
+So even in a single threaded scenario, we could risk the handle being used after unbind has been called.
+
+The situation will get worse if several user threads are working with each their own shared group - 
+GC could dispose a handle used in UT1
+UT2 could acquire a new handle , and theoretically get the same handle value as was used before for UT1's resource
+UT1 could then call an operation on the "old" handlevalue, which now points to something that UT2 has acquired - so we could have
+a concurrent core access ,UT1 calling a method on one class, supplying the pointer to some object of a totally unrelated class, acquired by UT2
+which might even be concurrently accessed by UT2 at the time of calling
+
+
+
+
+To recap application termination :
+
+When .net realizes it is in shutdown mode (and this can happen without the application having started it ) - .net will attempt to run all finalizers - even on objects that are not disposed yet, but would normally according to code, always be disposed before being finalized.
+This means that finalizers can be run concurrently coming in from all rooted objects, as well as non-rooted objects ready for finalization.
+The only guarantee we have is that when we are at this stage, user threads have been stopped, so only finalizers are running.
+there is a guarantee that references can be followed, but no guarentee that the referenced object have not already had its finalize called.
+
+
+
+
+
+
+All of the above, applied to the C# Binding :
+
+
+
+
+Consider this leaking code
+
+foreach(var row in Table)
+{
+   Console.WriteLine(row.GetSubTable(0).GetString("Name"));
+}
+
+This is legal, but leaks a subtable on each iteration in the foreach, due to the GetSubTable(0.0) call which makes a subtable object not have any references each iteration of the foreach loop.
+
+The legal code above works fine with no actual resource leaks, as the leaked subtable handles are put in a list in the Table, or in the Group, or in the SharedGroup (whatever root object the subtables are ultimately connected to) -and they are then freed the first time a new child is added to the same root.
+
+Root objects (that unbind their children if they have been finalized concurrently)can be :
+Table (if freestanding) - children can then be Table (a subtable), TableView, Query or Spec
+Group (if freestanding) - children can be Table and all its children
+SharedGroup - children can be Group(is not finalized as it is owned-but its root still point to the SharedGroup) and all its children
+
+According to core rules, it is legal to concurrently access several root objects, but only one thread inside each of them at a time.
+This means that if children of a root gets finalized by the GC and need to call unbind, the root will have to do it next time the root is called by some user thread (or when the root object is finalized)
+
+
+
+
+Search keywords for further information
+
+msdn dispose
+msdn finalize
+msdn CER 
+unmanaged dispose
+managed dispose
+constrainedexecution
+criticalfinalizerobject
+criticalhandle
+safehandle  http://msdn.microsoft.com/en-us/library/system.runtime.interopservices.safehandle.aspx
+http://blogs.msdn.com/b/bclteam/archive/2006/06/23/644343.aspx (example implementation)
+handleRef
+constrained execution region (CER)
+
+
+
+
+
+
+
+
+
+
+
+
+
+Concern(fixed) : In a single-threaded app, finalizer thread calls core concurrently with user thread, which is illegal
+mitigation : finalize adds refs to a list, user thread unbinds next time new or dispose is called
+risk : if GC is slow at collecting unreferenced objects or/and finalizers are slow at calling finalize, unbind/delete could be called a long time after
+the object is not used anymore. (but only if the user forgets to use the dispose pattern)
+Action  :This mitigation is implemented and tested and covered with unit tests. In tests, not many objects are leaked until the program closes, even when we try
+very hard to provoke leaks.
+
+
+concern (fixed): root wrapper classes can become unreferenced (as seen from user code) and eligble for GC even while child wrapper classes exist
+mitigation:all child classes have a pointer to their owner class, thus creating a reference to the owner, that keeps it alive
+
+
+
+concern (fixed): In a multi-threaded app where each thread owns a shared group, finalizers should run in the thread that owns the shared group that they are finalizing
+an object from
+Mitigiation : each handle have a root reference, and that root object is responsible for unbinding the child. The root object will either add the child to a list, or unbind it at once, depending on wether the root itself is live, or after dispose.
+Risk : Slow GC and slow finalization can have core classes live longer than they are in fact in use (but only if the user forgets to use the dispose pattern)
+
+
+
+concern :(fixed) finally parts of code might not be called in certain scenarios, this could lead to a write transaction being aborted without commit or rollback being called.
+
+mitigation : The use of a CriticalHandle derived TightDbHandle gives us better guarantees reg. finalization. if at all possible, finalizers in handle will always be run. The shared group handle will close any open transaction it might have, when finalizing. The transaction handle object will too rollback or endread the shared group, when the transaction object's dispose is called. The transaction object has no finalizer - so the user will have to call sharedgroup.endread or close the shared group, in a case where the user has not disposed a transaction. Starting a second transaction will fail until the first is closed.
+
+
+
+concern (could probably be investigated further): according to several sources, it is a no-go to allocate in ReleaseHandle.  for instance http://www.codeproject.com/Articles/15360/Implementing-IDisposable-and-the-Dispose-Pattern-P 
+however, microsoft themselves in http://msdn.microsoft.com/en-us/library/system.runtime.interopservices.criticalhandle.releasehandle(v=vs.110).aspx  does not mention this as a hard demand. 
+Therefore we do add to the unbind list, and just hope msft did not forget to warn us. 
+Besides the fact that we have to, we observe that it works just fine, all our handles are released even under heavy load, where we leak tens of thousands of handles. In the rare case that we get out of memory while releasing a handle (and that is due to us expanding the unbind list) - we will get an execption that will
+stop the thead, and the handle will be leaked. I am not sure if finalizers are run in case of an out of memory exception thrown from inside criticalhandle's release. 
+
+concern (fixed): 
+-creating an object with a finalizer is slower
+-creating an object with a finalizer takes up more space (increases the size of the RegisteredForFinalization queue)
+-creating an object with a finalizer creates extra work for the GC as the object stays on for another generation
+The way the GC works, it is best for performance if as few classes as possible have finalizers, and if classes with finalizers are as small as possible, especially, they should not refer to a lot of other objects, because in case a object of a class implementing finalize goes out of reference, the object is put on the finalizer list, and thus held live until the finalizer thread has gone by. Potentially the object could reference other objects, they too will be kept alive. Potentially the keeping alive could have objects move from gen0 to gen1 or even gen2 which is a performance drain.
+see http://blogs.msdn.com/b/cbrumme/archive/2004/02/20/77460.aspx  search for costs
+
+mitigation : We only have finalizers in handle classes, the wrappers no longer implement finalize. Also, handle classes that are not owned, even though they implement finalize, are being pulled out of the finalization queue when constructed so they will not slow down garbage collection
+
+
+
+concern : after starting a write transaction, the program could loop forever.
+
+mitigation : core timeouts? C# binding timeouts? - for instance when starting a transaction, user could specify a timeout in seconds (or none and it will run foreve. at timeout, the thread should stop what its doing perhaps even be killed -or perhaps we should just throw an exception from inside the binding).
+perhaps we should make binding support for people starting a thread inside a transaction, with timing support etc.
+
+risk : timeouts could trigger too soon, forcefully aborting a transaction that was working just fine.
+
+
+
+
+
+concern (fixed): if we delay unbind calls from wrapped objects from the finalizer thread to avoid concurrent core calls, and if we do so by keeping a reference from children to their root core wrapper contaner, leaked children will keep the root alive in memory for longer, even if it is disposed correctly, if a leaf puts itself in the dispose queue after root dispose was called, but before the gc came round and collected it.
+
+mitigation:after root dispose has been called,it is tagged as NoMoreUserCalls=true. it will then not add any more references to the unbind list. Instead the children asking to be unbound are unbound immediatly, even if they are calling in from a finalizer thread. (because the user thread cannot be working inside the root class anymore as it is now disposed with no handle). unbind from the list is serialized with a lock so only one finalizer can get at the unbind list.
+
+risk:We must make 100% sure that the concurrency between finalizer threads and any concieveable user threads will never be and cannot be a problem.
+
+
+
+concern (investigate): It is adviced that dispose is robust for being called many times, and it should not fail - it should simply not dispose stuff that has already been disposed.
+Check that we live up to this. Create some unit tests that disposes our disposable classes many times and ensure we get the expected behavior. if we subclass, test the entire hierachy of classes. We should unit test all types of handles, and all types of wrappers. All of these should handle multiple dispose calls gracefully. 
+
+mitigation : write tests, document that this worksrisk:none
+
+
+
+
+concern (investigate): It is adviced that the dispose code paths (both dispose and finalize) do not throw any exceptions.
+mitigation : Inspect code and make sure we do not throw exceptions in release mode, and only debug stuff in debug mode.
+risk:none
+
+http://msdn.microsoft.com/en-us/magazine/cc163392.aspx
+
+
+
+concern (fixed): In most .net implementations, only one finalizer thread exists. With potentially many user threads and cores, the finalizer thread could be exhausted, and everyone could be waiting for it, or the list of objects to be finalized could grow faster than they could be finalized.
+
+mitigation :we have reduce as much as possible the number of classes (espeicially the number of live objects) where a finalizer is neccessary, notably, not-owned spec and group handles are taken out of the finalizer queue when constructed, and no wrapper classes have any finalzers anymore
+
+risk:Will complicate code, as in the example above "objects with finalizer slow things down in several ways"
+see http://blogs.msdn.com/b/cbrumme/archive/2004/02/20/77460.aspx  search for the single finalizer thread is a scarce resource.
+
+
+
+concern (investigate and test): mono runtime support of CriticalHandle etc.
+http://docs.go-mono.com/?link=T%3aSystem.Runtime.InteropServices.CriticalHandle
+http://www.mono-project.com/SafeHandles
+It is not entirely obvious how far mono has implemented support for CriticalHandle and SafeHandle, i have read somewhere relatively recently that they fixed some
+serious missing features, we will probably not work entirely as expected on older mono versions.
+mitigation:either not work on older mono versions, or document the mono specific problems, or create runtime fallbacks (probably performance hit even on .net due to checks), or compiler directive controlled alternative implementations (complicates build, currently our .net asssembly works with mono)
+
+
+concern (fixed): Very agressive concurrent GC will collect, put on finalizer thread and finalize even before c++ call returns.[1]
+
+Mitigation :There are several ways around this, we have chosen to use CriticalHandle as this is faster than SafeHandle, but still gives us some
+guarantees that fixes some of our concerns.
+
+Mitigation option : Use of Handleref(recommended by mono folks)http://www.mono-project.com/Interop_with_Native_Libraries also see
+http://msdn.microsoft.com/en-us/library/system.runtime.interopservices.handleref.aspx
+and also see http://blogs.msdn.com/b/bclteam/archive/2005/03/16/396900.aspx 
+Note that using handleref could be reduced to places where the handle containing class is not used later in the same call
+Risk:a slight performance hit on every interop operation those places where we use HandleRef (even though the C# compiler do try to avoid unneccessary code),
+
+Mitigation option: use gc.keepalive(this) (as all our interop calls are limited to one source file it could be easier to do this actually). gc.keepalive(this) is extremely fast,it is an empty method call that just ensures that this is referenced and cannot be gc'd
+Risk:an even smaller performance hit on every interop operation those places where we use gc.KeepAlive.
+We should try to measure the difference between these two in generated code and in performance timing
+
+risk : SafeHandle have refcounting, CriticalHandle do not have refcounting. We must ensure in code that we don't call dispose on a handle that is in fact somehow
+in use in unmanaged code. (as far as I have been able to inspect and speculate, we have no way of ending up disposing a handle that is in use)
+
+
+
+concern (fixed): out-of-band-exceptions
+
+CLR can throw exceptions (out of memory for instance) at random times, while our program is executing. These exceptions can be thrown for instance if the JIT'er runs out of memory and cannot compile a method that is to be called. If such an exception is thrown inside the unbinding logic before the interop call, unbind might not be called as expected.
+
+mitigation:Use Constrained Execution Region, or something that uses CER, candidates : 
+SafeHandle,
+CriticalHandle,  http://msdn.microsoft.com/en-us/library/system.runtime.interopservices.criticalhandle.aspx
+CriticalFinalizerObject,
+ExecutecodewithGuaranteedCleanup
+PrepareConstrainedRegions
+It might be possible to highthen chances that our calls to unbind (or adds to the unbind list) actually succeed.
+http://msdn.microsoft.com/en-us/library/ms228973(v=vs.110).aspx
+We have decided to use constrained execution region when we create new tightdbhandle objects. This ensures that out-of-band exceptions from JIT and .net housekeeping will not be thrown while we construct the handle.
+
+Risk(mainly safehandle,but most risks apply to the others as well):
+1) Problems with security constraints or code constraints (we'll have to discover those down the line - say - if users cannot use the library due to conflicting constrains or something)
+2) Safehandle will implement finalize itself. We must be able to hook into the RelaseHandle method and avoid ReleaseHandle calling into core from a finalizer thread, that is - from within a safehandle we need to know where the free-list is. this gets severely complicated as the safeHandle is no longer something e.g. a table subclass - so we have no way of knowing where the dispose list is. We might have to stray far away from the suggested pattern of keeping safehandle descendants small and lightweight. Or somehow reference the list from within our SafeHandle derived class (probably the latter. This will have to be locked, if 
+safehandle also locks by itself we'll have double locks)
+3) there are likely performance penalties reg. use of safehandle, but also handleref is liekly with a small performance penalty
+4) We will be straying far from suggested usage patterns and intended purposes due to not actually calling native but just adding to a list.. - but with care, we should be able to do something at least as safe as the currently used ordinary dispose pattern.
+5) for instance with releasehandle, we cannot allocate memory and have that fail, unless we still guarentee that the handle is released. This guarentee will be
+violated when we add the handle to our list as that potentially leads to memory acquisition. "We should be careful not to write any code that's subject to faults inside the ReleaseHandle method. The runtime will eagerly prepare this method and guarantee that there will not be any CLR induced failures inside this method but we shouldn’t allocate memory (and other such failure points) unless we can deal with the failure and still free the handle." see 
+http://blogs.msdn.com/b/bclteam/archive/2005/03/15/396335.aspx  annotated example implementation of safehandle (to show how it works)
+
+
+
+
+concern (unresolved,investigate): CLR might want to know that we have taken out locks it does not know about, so that it can do an appdomain unload in case of an asynchronous error
+We might want to let CLR know when we do an operation we know will lead to a lock in tightdb (more precisely, advice CLR that what we do now is in fact modifying
+shared state in a non-atomic way, and should not be interrupted or shared state will be invalid)
+todo:See if there are any cases like this at all. Will something like start write transaction then a hard thread abort (no c++ destructors called) lead to inconsistency?
+"The first effect for critical regions is a way of informing the CLR that a lock is being held by a block of managed code.  This is required for all managed locks that the CLR doesn't explicitly know about (ie, any time you write your own spinlock or other synchronization primitive instead of using one built into the Base Class Library).  The CLR needs to know when a thread is holding a lock to determine whether the thread is holding shared state, so a host can decide whether to escalate async exceptions to appdomain unloads.  So if you write your own lock, please use Thread.BeginCriticalRegion when you acquire the lock, and EndCriticalRegion when you release the lock." see http://blogs.msdn.com/b/bclteam/archive/2005/06/14/429181.aspx
+
+
+concern (fixed): At program shutdown, finalizers might not be called or allowed to finish
+mitigation:
+use CriticalFinalizerObject , which have a better guarentee to have finalizers called
+or use SafeHandle or CriticalHandle, both derive from CriticalFinalizerObject
+
+risks:
+-finalizers will be called even later
+-performance penalty on SafeHandle and CriticalHandle related to locks and interop.
+-further restrictions (on top of those already on finalizers) on what is allowed in these finalizers
+-security constrains (see out-of-band)
+-straying away from guidelines (see out-of-band)
+-keeping pointer to freelist inside the criticalFinalizerObject (not really following guidelines)
+-In the second part of finalization, where reachable objects are finalized, user threads could at this time be suspended at arbritrary places, 
+This means that our finalizers could potentially
+be waiting for locks indefinetly and/or could access objects that are in undefined state, in the midst of getting something changed.
+(research if it is possible to detect if any user threads are suspended.)
+-in finalize, perhaps check HasShutdownStarted and work in a different (unlocked) way instead of using the dispose lists (but then - we can't cause another
+thread could be calling core so we should wait for it.. but then we'll wait forever.. difficult..)
+
+
+see http://msdn.microsoft.com/en-us/library/fh21e17c%28v=VS.100%29.aspx for a writeup on safe handles and finalization.
+search this document for "Of course, our passage through" to get a pretty detailed insider description of the shutdown process as it were in net 1.1
+http://blogs.msdn.com/b/cbrumme/archive/2003/08/20/51504.aspx  It might just be the same way still today.
+
+
+
+concern(fixed):When a table wrapper is created, the handle is first stored safely, but then the root is stored in some code that could throw and not save the root
+This would lead to handles thatcould be called in finalizers where they  could not move their destruction onto the root node, and in principle thaty cannot either just call unbind as they risk being concurrent with the root.
+mitigation:
+Wrappers now have a TightDbHandle, and wrappers do not have any notion of root any more.
+The TightDbHandle is instantiated with its root set first (but no handle) at this time they can finalize safely.
+then we acquire a c++ handle and put it into the tightDbHandle's handle property - this is done in a CER, atomically. When this is done the
+handle can be finalized safely and the handle will be unbound.
+After all this the wrapper gets its reference to the TightDbHandle.
+
+
+
+concern (fixed): ThreadAbortException at a very inconvenient time during creation, using IntPtr could lead to handles being leaked as the assignment
+to IntPtr might not happen.
+mitigation:Use CriticaHandle or SafeHandle - they guarantee assignment if native returns a size_t value
+risk : usual CriticalHandle, SafeHandle stuff applies.
+reference : CLR via C#, 4th ed. pg 530  (wincoder\Files as pdf)
+
+
+
+concern (fixed): SafeHandle implements reference counting to avoid finalization while other code is running using the handle (ref is counted up during interop calls)
+This reference counting adds a performance penalty (a lock is taken, on top of more code executed). If we are serializing code (per handle) anyways, and if we are guarenteed that the safehandle object is not freed while our interop is executing, there is no need to reference count the handles.
+mitigation : Use a criticalHandle derived type instead of a safeHandle derived type
+Risks : Although currenlty the difference is mainly reference counting, we might get rid of functionality we would like to use now or later.
+Also, the problem with a handle being gc'd and finalized while an interop method is executing can resurface - i think the reference counting is what guards against this problem in the first place - but we need to investigate further.
+reference : CLR via C#, 4th ed. pg. 531 (wincoder\Files as pdf)
+
+
+
+concern (investigate further, and try it out. While I have a hard time imagining someone using tightdb in a stored procedure inside microsoft SQL server, it will probably be a great stress test system, trying to run tightdb in that environment) : if a C# program is hosted in SQL server, then several unusual things can happen, reducing stability and potentially creating problems.
+http://msdn.microsoft.com/en-us/library/fh21e17c(v=vs.110).aspx
+
+We should investigate further, perhaps even fire up an msft sql server and load it badly, and then have some tightdb code run inside it, to trigger problems.
+However, I'm not really sure exactly when a tighdb using program would want to run inside microsoft sql server. Other hosting servers might also put extra demands on C# code, or have it execute in problematic environments, we should probably for instance try to get our unit tests to run for instance, inside a microsoft web server, inside a microsift SQL server,inside a terminal server on heavy load, inside virtual box, inside unity etc. etc. Such runs could trigger subtle bugs or highlight performance or stability issues we are not aware of.
+
+
+
+
+concern (investigate): c++ memory allocation and deallocation occouring concurrently (this note from a java post, but might also be relevant for C#.. investigate further) "It has two methods that call JNI methods, namely, exampleJNI.new_Test() for the C++ constructor and exampleJNI.delete_Test() for the C++ destructor. If the garbage collector collects an instance of this class, ie delete() is not explicitly called, then the C++ destructor will be run in a different thread to the main thread. This is because when an object is marked for garbage collection, any objects with finalizers are added to a finalization queue and the objects in the finalization queue have their finalize() methods run in a separate finalization thread. Therefore, if the C memory allocator is not thread safe, then the heap will get corrupted sooner or later, when a concurrent C++ delete and new are executed. It is thus essential, even in single threaded usage, to link to the C multi-thread runtime libraries, for example, use the /MD option for Visual C++ on Windows. Alternatively, lock all access to C++ functions that have heap allocation/deallocation."
+
+
+SWIG project has some good notes on GC etc. for java and c#
+http://www.swig.org/Doc1.3/Java.html#java_multithread_libraries
+
+
+concern(fixed): closing transaction should be done atomically (otherwise we risk either loosing a transaction, or closing it several times).
+
+mitigation:put transaction closing logic into SharedGroupHandle in a CER that sets state and calls endread/rollback/commit atomically
+
+
+concern (not fixed, too exotic a problem, and too expensive a solution): Handle recycling attacks
+
+Our customers are told not to call concurrently into a Shared Group or its components.
+However, if the customer does anyways, he can do a handle recycling attack, potentially asking for a handle to one c++ class but actually getting a handle
+to another c++ class. Of course this is as advertised, unspecificed behavior, but it do open up for code that opens shared group('whocares') and closes group('whocares') multithreaded (which is definetly illegal) he might suddenly get a handle to the group('very secret') Which has been opened by some other code in the same application. way-old blog describing the problem clearly : http://blogs.msdn.com/b/cbrumme/archive/2003/04/19/51365.aspx
+
+Mitigation:reference counting on all handles going into core. Can be done by using SafeHandle instead of CriticalHandle and/or IntPtr
+Risk:Performance-the reference count is not free from performance hits, and involves a lock operation.
+
+
+
+concern (will be fixed in core): when a sharedgroup is finalized, it will try to end open transactions.
+Right now, if such an attemt fails such that an exception is thrown in the binding, then the shared group delete will not be called,
+and thus, we leak a sharedgroup (because we are in the finalizer, we will never get a second chance)
+
+mitigation : remove call to AbortTransaction
+Risk: We can only remove the call to AbortTransaction once core auto-closes transactions on SharedGroup->delete
+
+
+
+concern : a user might have a finalizable object that points to one of our wrappers. He removes all references to his object and it is finalizable.
+Our wrapper does not have a finalizer but is kept alive by his object.
+Simultaneously with our handle finalization he concurrently is finalized, and in his finalization he resurrects the wrapper by establishing a root pointer from 
+somewhere to himself (and he points to the wrapper, which poits to us). Then he starts calling us like crazy, while we are in our finalizer.
+In our finalizer, if we are a root, we assume we are running on our own and cannot be hit by user threads. But he does that anyway.
+This could become a race condition between the calls and us setting the handle invalid in the finalizer. (and we don't have refcounts on the handle).
+
+mitigation :We should not have problems in this scenario as our handle will become invalid if it was finalized, or it will still be non-disposed, if it
+did not get finalized quickly enough. I would not consider it an error if a handle gets disposed/finalized due to not being rooted, and then behaving
+like it has been disposed, after it has been resurrected. The main point is that we do not leak handles, and we are in a defined behavior situation.
+
+
+
+
+http://www.dotnetframework.org/default.aspx/4@0/4@0/untmp/DEVDIV_TFS/Dev10/Releases/RTMRel/ndp/clr/src/BCL/System/Runtime/Reliability/CriticalFinalizerObject@cs/1305376/CriticalFinalizerObject@cs
+sourcecode for CriticalFinalizerObject.cs - with some documentation in the comments, not found anywhere else.
+
+
+
+
+
+http://social.msdn.microsoft.com/Forums/en-US/5a8b672e-c128-4a20-a68a-8e3ea39a1bba/c-services-mrds-4
+The link above shows an example of an implementation of SafeHandle
+
+
+
+
+This article is lengthy, have some points, a suggestion for a pattern reg. interop and native and some good further pointers. However, it is quite dated.
+http://www.codeproject.com/Articles/29534/IDisposable-What-Your-Mother-Never-Told-You-About
+
+
+
+
+
+other notes...
+
+review this "Suppress finalization in Dispose. There has been some debate about whether GC.SuppressFinalization(this) should go before or after the cleanup code. Some argue after, in case something goes wrong before you've finished cleaning up. Others argue before, otherwise you may open up a race condition between your finalizer and your Dispose method. You should consider both strategies depending on your object's implementation."
+
+We must argue why we call when we do, and write comments in the code explaining potential risks due to our choice.
+
+
+competing databases :
+
+Extensible Storage Engine (part of windows OS, windows specific, C interface, ISAM files, full ACID)  http://msdn.microsoft.com/EN-US/library/gg269349(v=exchg.10).aspx
+
