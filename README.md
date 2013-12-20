@@ -163,7 +163,7 @@ If everything checked out alright, go on to the release phase:
 
 1. mark the solution in solution explorer, right click, select Open folder in file explorer.
 
-2. Convert Install_Note.txt and Build_Note_Daily.txt to windows line endings (Use Notepad++ to edit->Eol conversion->Windows Endings)
+2. Convert Install_Note.txt and Build_Note_Daily.txt to windows line endings (Use Notepad++) edit->Eol conversion->Windows Format)
 
 3. Doubleclick the file release_all.cmd.  
 
