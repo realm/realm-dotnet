@@ -1,5 +1,6 @@
 Notes on the Tightdb C# binding and concurrency. 
 Also discusses the infrastructure built in to handle .net specific concurrency issues
+Aslo discusses how we try to code the binding to minimize the risk of leaking handles (handles being core classes that should be deleted or ubound)
 These notes were orignially written for my own use and have not yet been edited for a wider audience, sorry about that.
 
 
@@ -119,6 +120,8 @@ is a handle leak.
 
 note on PrepareConstrainedRegions with code example
 http://msdn.microsoft.com/en-us/library/system.runtime.compilerservices.runtimehelpers.prepareconstrainedregions.aspx
+
+another note on CER http://msdn.microsoft.com/en-us/library/ms228973(v=vs.110).aspx
 
 to avoid out-of-band exceptions when acqiring unmanaged resources , MSFT have provided runtimehelpers.prepareconstrainedgerions, which, together with a try finally block guarentees that .net will postpone out-of-band exceptions until after the constrained region. (CER).
 
@@ -528,8 +531,8 @@ The link above shows an example of an implementation of SafeHandle
 This article is lengthy, have some points, a suggestion for a pattern reg. interop and native and some good further pointers. However, it is quite dated.
 http://www.codeproject.com/Articles/29534/IDisposable-What-Your-Mother-Never-Told-You-About
 
-
-
+how to implement dispose correctly (we have departed from this in our latest versions when we changed to use CriticalHandle)
+http://dave-black.blogspot.dk/2011/03/how-do-you-properly-implement.html
 
 
 other notes...
