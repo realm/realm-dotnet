@@ -39,7 +39,10 @@ The dispose pattern guidelines (for API developers) are used in a straightforwar
 http://msdn.microsoft.com/en-us/library/fs2xkftw.aspx   (Implementing a Dispose method)
 http://msdn.microsoft.com/en-us/library/b1yfkh5e.aspx (framework design guide, dispose pattern)
 
-The dispose pattern has been implemented in the Handled class, and Table,Tableview,Query,Group,SharedGroup all inherit from Handled, and thus also follow the dispose pattern. The only thing that happens in dispose in the C# wrapper classes, is that the internal TightDbHandle will have its dispose called. Due to how CriticalHandle has been implemented from msft, we simply call dispose even though we could've called dispose(disposing). Thus, the TightDbHandle will not
+The dispose pattern has been implemented in the Handled class, and Table,Tableview,Query,Group,SharedGroup all inherit from Handled, and thus also follow the dispose pattern. The only thing that happens in dispose in the C# wrapper classes, is that the internal TightDbHandle will have its dispose called. 
+Due to how CriticalHandle 
+http://msdn.microsoft.com/en-us/library/ms228973%28v=vs.110%29.aspx
+has been implemented from msft, we simply call dispose even though we could've called dispose(disposing). Thus, the TightDbHandle will not
 know if its dispose is being called from a wrapper finalizer, from its own finalizer, or from a direct user-thread call from a wrapper. This is okay, as
 the tightdbhandle determines what to do depending on its status as a root or as a child. When dispose is called on a root we know we cannot be called any more from user threads - when called on a child, we don't know, and must go via unbind lists (unless the root knows it is finalizing, then we finalize at once)
 
@@ -442,6 +445,16 @@ Risks : Although currenlty the difference is mainly reference counting, we might
 Also, the problem with a handle being gc'd and finalized while an interop method is executing can resurface - i think the reference counting is what guards against this problem in the first place - but we need to investigate further.
 reference : CLR via C#, 4th ed. pg. 531 (wincoder\Files as pdf)
 
+concern(to be fixed)
+we have a guarentee that ReleaseHandle is only called once (http://msdn.microsoft.com/en-us/library/system.runtime.interopservices.criticalhandle.releasehandle(v=vs.110).aspx)
+But that guanrantee is only valid if we only call handle.dispose once. 
+
+mitigation:Set up some unit tests that illustrate what happens if a handle dispose is called twice, or if a wrapper dispose is called twice. The first is probably not possible for a user to do, but the latter, the user can do so we must handle it gracefully.
+
+
+concern(investigate)
+acc. to. http://msdn.microsoft.com/en-us/library/ms228973%28v=vs.110%29.aspx "Once marked as a constrained region, code must only call other code with strong reliability contracts, ".  
+mitigation : investigate code and make sure we do this correctly. 
 
 
 concern (investigate further, and try it out. While I have a hard time imagining someone using tightdb in a stored procedure inside microsoft SQL server, it will probably be a great stress test system, trying to run tightdb in that environment) : if a C# program is hosted in SQL server, then several unusual things can happen, reducing stability and potentially creating problems.

@@ -28,3 +28,322 @@ What the release procedure actually do
 How the examples archive is set up
 
 How things are organized on github
+
+
+
+
+
+
+
+.Net versions
+-----------------------------------
+
+Binding projects :
+.net35 (used in unity example)
+.net40
+.net45 (default)
+Unit-test version :
+.net45 (default) (can be used with NUnit)
+Unit-test commandline projects
+.net35
+.net40
+.net45
+
+The binding exists in several versions, .net35 .net40 and .net45
+
+All the different versions are located in the same solution, tightDbCSharp.sln
+
+We maintain a project that uses the latest version, this project is called TightDbCSharp 
+This project is currently set to build to .net45 but will in the future (when we switch to VS2013)
+be set to build to .net451 - so TightDbCSharp is always the newest .net version, and it is the
+project that "owns" the source files - source files are added directly to this project, not "as link".
+Delvelopment is done primarily using this project.
+Accompanying this project is a project called TightDbCSharpTest - this project follows the version of TightDbCSharp,
+and is a Nunit unit-test project, useful for testing with Nunit test-runners.
+As NUnit integration with VS2012 is a bit spotty, and as it is practical to be able to execute tests as
+commandline programs, we have create a very small commandline program that uses NUnitLite to enable us to
+run the unit tests directly from within a program. The unit test commandline project is simply called TEST, and it
+includes the files from TightDbCSharpTest as links.
+
+So to recap the default version of the binding :
+
+TightDbCSharp - project that bulds the assembly that is tightdb, that is used by our customers
+Test - commandline project that uses the binding, and implements a program that runs all our unit tests.
+TightDbCSharpTest - assembly that uses the binding, containing a unit test module, to be used in NUnit or any other Nunit compatible unit test runner
+
+Note that only the dll resulting from TightDbCSharp is being distributed, the two other projects are for internal use
+
+TightDbCSHarpTest contains all our unit tests
+Test simply links to the files in TightDbCSharp, and using NUnitLite, it compiles an executable that is a self-contained test runner.
+
+Now, to support building different versions of .net and also building executables that run unit tests without any additional installs, we have:
+
+Used to Build Binding versions :
+TightDbCSharp_NET35  -   a project set to build to .net35. The project links its source files to the files in TightDbCSharp
+TightDbCSharp_NET40  -   a project set to build to .net40. The project links its source files to the files in TightDbCSharp
+TightDbCSharp - a project set to build to .net45. The project owns the source files, they are all located in this project. It is always using the newest .net
+so when we get VS2013 we will update this project to .net451 and create a new TightDbCSharp_NET45 and have that project link to files in TightDbCSharp
+
+Used to Build test-programs that test the binding versions above
+Test_NET35 - a .net35 program that uses the TightDbCSharp_NET35 assembly and NUnitLite and runs all the unit tests from the TightDbCSharpTest source files, which are added as link
+Test_NET40 - a .net40 program that uses the TightDbCSharp_NET40 assembly and NUnitLite and runs all the unit tests from the TightDbCSharpTest source files, which are added as link
+
+Test - a .net45 program that uses the TightDbCSharp_NET45 assembly and NUnitLite and runs all the unit tests from the TightDbCSharpTest source files, which are added as link. Test follows
+the newest .net version, when we go to vs2013 and .net451 Test will follow along (changing the target framework) and we will then create a project called TEST_NET45 , set it to .net45 and have it
+link to the source files in TightDbCSharpTest as we do with Test_NET40 and Test_Net35
+
+
+
+Unity
+--------------
+
+Unity runs in a crippled version of mono, where they have removed a lot of the standard libraries to try to make unity games not use so much disk space for the distribution files,
+and so much memory too, I guess.
+The mono version they used when I created the UnityExample was not able to run .net40 or .net45 so I used the .net35 binding in unity to get a connection.
+The .net35 binding is executed fine within unity, in the examples dir, You will find a textfile that explains how to set up a new unity project that uses tightdb 
+(it is a walkthrough of how to implement the tutorial example inside unity).
+I have not had luck with getting the .net35 commandline unit test to run inside unity - the NUnitLite code does not discover the tests, so no tests are run. This is probably due to unity having
+removed some API's that NunitLite depends on - I have not researched this a lot, a working tutorial was good enough for what we needed at that time.
+Some unity supported platforms on windows do not support P/Invoke (do not support calling c++ program dll's AT ALL), these platforms would have to be supported by us, using a core developed
+specially for that purpose - or perhaps using an intermediary that can be called from these non-p/invoke .net versions, and when the intermediary then is able to call c++ programs.
+c++/cli is an option (strictly windows only, but an option) if we want to attack that market. Would take some time to get it right, though.
+Other unity platforms run on hardware and OS'es that core has not been ported to yet. We would have to do that first, of course.
+
+
+
+Mono
+--------------
+I have tested that mono can execute our .net assemblies, and that works fine. The unit test commandline programs will detect mono and report they are running under mono.
+
+I have also tried to build our assemblies with xamarin (the mono C# compiler) just to see what happened, and that also worked fine, but building with xamarin is not part
+of the development procedures, as mono is supposed to be able to run .net assemblies. - we don't need to (for the moment) maintain two seperate lines of code.
+
+Although mono (at the time of writing) do not have a 64 bit version for windows, there is shipped one with unity, if you build a 64 bit unity game, our binding reports running
+in 64 bit with large IntPtr size. So indirectly we can verify that mono runs our 64 bit assembly fine, by doing the testing inside unity. Alternatively we can just wait for mono
+to release a 64 bit version of mono for windows.
+
+We have had a problem with the latest release of mono, where they have crippled exception handling such that core cannot use execptions itself - core cannot throw an exception,
+and we cannot catch it in the c++ program that is the binding dll. I have filed at bug with mono describing this problem, https://bugzilla.xamarin.com/show_bug.cgi?id=14989#c1  but
+nothing have really happened. I would expect them to fix this issue by themselves, when they discover that mono on windows is severely broken. Alternatively we could file a bug
+report where a well known system fails on mono, that might attract some attention. All we have to do is find something that is coded with c++, built with visual studio, and that
+relies on exceptions being thrown and caught in the c++ code.
+
+I have not yet had our c++ dll built on linux, so have not tried to run our assembly on linux (as we have no core dll to call) - We might need some adjustments before things work there.
+
+
+
+
+File Locations, development
+---------------------------
+
+\
+contains some documentation, the solution file, release_all.cmd, the 7z compressor (used to make a zip file)
+native\  
+contains files used to build core as a dll, with flattened interface "C" methods for our assembly to call
+Test\ 
+contains the Test project (current development version commandline interface unit tests runner)
+Test_NET35\ 
+Test project set up to create a .net35 executable (same tests as TEST use, but different settings)
+Test_NET40\ 
+Test project set up to create a .net35 executable (same tests as TEST use, but different settings)
+TightDbCSharp\ 
+Project that produces the binding assembly. Contains all the source needed for producing the binding
+TightDbCSharp_NET35\
+project that produces the .net35 version of the binding. .net35 project setup, but source is links to TightDbCSharp
+TightDbCSharp_NET40\
+project that produces the .net40 version of the binding. .net40 project setup, but source is links to TightDbCSharp
+TightDbCSharpTest\
+NUnit assembly that can be used with a NUnit test-runner. Holds all our unit-test sourcecode files, these files are 
+linked to, by our Test projects
+Examples\
+Contains click-and-run examples for users to investigate. These examples are all fully self contained, 
+and will run with no installation at all (given the user already have installed windows .net and c++ runtime support)
+They do not even inter-depend on anything, so each subdirectory below examples is fully self contained.
+Examples\DynamicTable
+Showcasing a lot of different methods in the Table class
+Examples\Experimental
+Showcasing some alternative code syntaxes, and some experimental designs
+Examples\PerformanceTest
+A commandline program that tests performance. The output from the insert test is used as input in the 
+google drive shared spreadsheet we have, that tries to measure how much memory we use, compared to C# arrays
+Examples\TutorialSolution
+The tutorial in a project of its own.
+Examples\UnityExample
+A readme file and the files otherwise needed to create a tutorial example inside unity.
+The user must follow the readme file instructions to build a new unity game, that can display 
+debug information from the tightdb binding, and run (a slighlty modified version of) the tutorial
+
+
+
+File Locations, distribution
+---------------------------
+
+release\
+When You have run the release_all script, this directory will contain all the release files
+release\release\
+This directory contain an archive with the release as a zipfile.
+release\files\
+This directory contain an uncompressed version of the release
+release\files\examples\
+self contained examples for the user to run and experiment with
+release\files\tighDB\
+Binding assemblies and dll's for varios .net versions
+release\files\tightDB\NET35\
+.net 35 version of binding and dll's - these are the files that are needed when You use tightdb with .net35
+release\files\tightDB\NET40\
+.net 40 version of binding and dll's - these are the files that are needed when You use tightdb with .net40
+release\files\tightDB\NET45\
+.net 45 version of binding and dll's - these are the files that are needed when You use tightdb with .net45
+doc\
+Directory with stuff that is used by the TightDb web documentation system
+
+
+
+
+
+The release batch files
+-----------------------
+At the same place You have tightdbCSharp.sln, You also have release_all.cmd
+When You have built TightDbCSharp following the build instructions, this cmd file
+will do the copying of files needed to assemble a distribution in the release
+directory. The end result is the zip file we put on the website for download.
+Release_all.cmd relies on Release.cmd, and 
+native\tightdb_c_cs\tightdb_c_cs2012\release.cmd 
+The last one will copy the c++ files from their build destinations to a release
+directory, so that we have the c++ dll's organized there as a release.
+the first one will copy the c++ files and the C# files and the example files,
+into release\files and create a release zip archive in release\release
+Remember that to make a release You have to have already built everything,
+all the way from core LIB files, to core dll's, to C# assemblies. See readme.MD for
+how to do that correctly.
+
+
+
+
+
+runtime code files
+-------------------
+
+.net is a little bit special when it comes to 32 and 64 bit
+
+A user can specify a project to build for 64 bit. That will mean that the project will
+only run on a 64 bit .net VM, on a 64 bit Operating System
+
+A user can specify a project to build for 32 bit. That will mean that the project will
+only run on a 32 bit .net VM, on a 64 bit or 32 bit Operating System (on windws, 64 bit OS 
+and 32bit .net VM is done by using WOW).
+
+The two above, could use compile time directives to enable and disable code that is dependent
+on the size of a pointer, or other stuff that differs from 32 to 64 bit (like what DLL file should we call
+when interop p/invoke calls are done from C# to c++)
+
+However, there is this third kind of C# project - AnyCpu - and such a project will not know
+at compile time what bitness it will be running with. The bitness is decided by the VM that the 
+program is eventually started up within, so we cannot use compiler directives.
+
+For all the three above, we must remember to call debug dll's when in debug mode, and release dll's when
+in release mode. HOWEVER the binding itself is only shipped in release mode (users can still build their own
+programs in debug mode - but they should not have to run our binding code in debug mode). Therefore the user
+only needs to ship the c++ dll in release mode. Binding debug and c++ dll debug are used by us.
+
+tightDbC# will decide at runtime wether to call 64 bit or 32 bit DLL c++ functions, this is done
+by having a boolean Is64Bit that is used to determine if we should call a function that links to the 64 bit
+c++ DLL, or one that links to the 32 bit c++ DLL.  In C# interop the DLL filename has to be known at compile time,
+so we have to decide what filename to use at runtime by calling one of two possible methods.
+
+A typical call to c++ will look like this (I added in the stuff it depends on)
+
+
+//const definition that differs between debug and release builds
+#if (DEBUG)
+        private const string Buildmode = "d";
+        private const string BuildName = "Debug";
+#else
+        private const string Buildmode = "r";
+        private const string BuildName = "Release";
+#endif
+
+
+//const strings for 64bit file and 32bit file
+        private const String L64 = "tightdb_c_cs201264" + Buildmode;
+        private const String L32 = "tightdb_c_cs201232" + Buildmode;
+
+
+
+        //a call to the c++ dll with flattened core calls
+        //tightdb_c_cs_API size_t tightdb_c_csGetVersion(void)
+        [DllImport(L64, EntryPoint = "tightdb_c_cs_getver", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr tightdb_c_cs_DllVer64();
+
+        [DllImport(L32, EntryPoint = "tightdb_c_cs_getver", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr tightdb_c_cs_DllVer32();
+
+        private static long CppDllVersion()
+        {
+            if (Is64Bit)
+                return (long) tightdb_c_cs_DllVer64();
+            return (long) tightdb_c_cs_DllVer32();
+        }
+
+
+
+This means that the user should distribute the following files always when distributing a c# program using tightdb :
+
+TightDbCSharp.dll  - the binding assembly
+Tightdb_c_cs201232r.dll - the 32 bit c++ dll
+Tightdb_c_cs201264r.dll - the 64 bit c++ dll
+-
+TightDbCSharp.pdb  - optional to include (debugging info etc.)
+
+These 3 files should be located in the same directory, TightDbCSharp.dll will first try to load the dll files where it itself is located, then
+use .net standard strategy fro locating unmanaged dll files (using path etc.)
+
+For debugging purposes, the ToolBox.cs class have a few methods that will return a stringlist with debug information :
+
+Toolbox.ShowVersionTest();
+results in this on the console :
+
+---OS Info---
+OS Version                  : 6.1.7601.65536
+OS Platform                 : Win32NT
+64 Bit OS                   : Yes
+64 Bit process              : True
+---OS Info---
+
+---CLR Info---
+Pointer Size                : 8
+Process Running as          : 64bit
+Running on mono             : False
+Common Language Runtime     : 4.0.30319.18408
+---CLR Info---
+
+---C# binding (TightDbCSharp.dll) Info---
+Built as PeKind           : ILOnly
+Built as ImageFileMachine : I386
+Debug Or Release          : Release
+Compiled With Mono        : No
+Built for .net version    : V4.5
+---C# binding (TightDbCSharp.dll) Info---
+
+---C++ DLL Info---
+Assembly running right now :
+E:\Wincoder\Develope\tightdb_csharp\examples\PerformanceTest\bin\AnyCpu\TightDbC
+Sharp.dll
+Current Directory :
+E:\Wincoder\Develope\tightdb_csharp\examples\PerformanceTest\bin\AnyCpu
+
+Now Loading tightdb_c_cs201264r - expecting it to be a 64bit dll
+
+
+DLL File Actually Loaded :E:\Wincoder\Develope\tightdb_csharp\examples\Performan
+ceTest\bin\AnyCpu\tightdb_c_cs201264r.DLL
+
+C#  DLL        build number 201310181348
+C++ DLL        build number 201310252
+---C++ DLL Info---
+
+
+
+class structure
+---------------
+
