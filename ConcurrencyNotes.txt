@@ -340,7 +340,7 @@ http://www.mono-project.com/SafeHandles
 It is not entirely obvious how far mono has implemented support for CriticalHandle and SafeHandle, i have read somewhere relatively recently that they fixed some
 serious missing features, we will probably not work entirely as expected on older mono versions.
 mitigation:either not work on older mono versions, or document the mono specific problems, or create runtime fallbacks (probably performance hit even on .net due to checks), or compiler directive controlled alternative implementations (complicates build, currently our .net asssembly works with mono)
-
+mono has not gotten around to document criticalhandle yet http://buttle.shangorilla.com/1.1/handlers/monodoc.ashx?link=T%3ASystem.Runtime.InteropServices.CriticalHandle
 
 concern (fixed): Very agressive concurrent GC will collect, put on finalizer thread and finalize even before c++ call returns.[1]
 
@@ -533,6 +533,11 @@ http://www.codeproject.com/Articles/29534/IDisposable-What-Your-Mother-Never-Tol
 
 how to implement dispose correctly (we have departed from this in our latest versions when we changed to use CriticalHandle)
 http://dave-black.blogspot.dk/2011/03/how-do-you-properly-implement.html
+
+
+
+Note on best practices reg. reliabillity (inside SQL server, but much of this can be applied to libraries like our C# binding)
+http://msdn.microsoft.com/en-us/library/ms228970(v=vs.110).aspx
 
 
 other notes...

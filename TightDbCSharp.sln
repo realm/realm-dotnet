@@ -18,6 +18,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TightDbCSharp_NET35", "Tigh
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test_NET35", "Test_NET35\Test_NET35.csproj", "{BBE11184-5646-4223-ADB6-3F413D6DF173}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentation", "{E52AD5BB-5B3E-401B-B70F-650DDB0B6CDF}"
+	ProjectSection(SolutionItems) = preProject
+		Architecture.txt = Architecture.txt
+		ConcurrencyNotes.txt = ConcurrencyNotes.txt
+		Documentation.txt = Documentation.txt
+		README.md = README.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
