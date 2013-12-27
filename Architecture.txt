@@ -347,3 +347,106 @@ C++ DLL        build number 201310252
 class structure
 ---------------
 
+
+Handle Classes
+--------------
+
+Please consult the HandleClasses.classdiagram found in ModelingProject1 in the solution
+
+Handles used to call the c++ part of the bindings are stored not as IntPtr, but as objects derived from CriticalHandle, 
+see concurrencynotes.txt for details about why we have done that.
+
+TightDbHandle inherits from CriticalHandle, and introduces a property (Root) that points to the TightDbHandle that is the
+root as seen from a concurrency perspective, related to this object. For instance, a SharedGroup is root for all the
+tables, tableviews, queries and subtables that are taken out from this tableview. A freestanding Table is root for all the subtables,
+tableviews and queries taken out from that table, and its tableviews. A freestanding Group is root for all the tables taken
+out from that group, all the objects taken out from those tables etc. The rule is, if it is not okay to concurrently access
+a group of objects, then they belong to the same root. (it is okay to concurrenlty access several SharedGroup objects, and
+it is also okay to concurrenlty access several freestanding tables).
+So - To simplify, think of the root as the SharedGroupHandle, and the objects that have a root reference to that SharedGroupHandle
+as children of that root.
+
+When a TightDbHandle class is finalized,we cannot call unbind, as this finalization could happen concurrently with user-thread
+operations on the TightDbHandle's root, or one of the TightDbHandle's root's children. Therefore Unbind has been coded to do this:
+
+if root is null : 
+We are the root and as unbind is being called, we are either being disposed or finalized. 
+If we are being disposed, we are in the user thread and we cannot collide with any other user thread, as we are the only
+user thread in the root and its children by definition. As the TightDbHandle architecture guarentees that all children in
+a non-disposed root will never call unbind on a finalizer thread, we cannot collide with finalizer thread code. Therefore it
+is safe to unbind ourselves. Before we unbind ourselves, we unbind any children present in the unbind list.
+If we are being finalized, we know there is no more user threads accessing our root. Proof by contradiction - our children all 
+have a reference to us. Any user thread in a child would have kept us alive, so we could never be finalized. If another user
+thread have a reference to us, we also could not have been finalized. So the fact that we are being finalized is a guarentee that
+no user threads are accessing us or one of our children. The only access to root and children can be via finalizers.
+Therefore, we know for sure that no user threads can be accessing us, if we are a root.
+
+At unbind, A root will mark it self as _NoMoreUserThreads=true, then unbind its unbind list, then unbind itself, and while doing so, 
+taking a lock on itself to enable serialization with any finalizers in any children. This behavior is safe due to the details described 
+in the paragraph before.
+
+if root is not null : 
+We are a child, we are being called from child.dispose or from a finalizer, our root could be already disposed or it could be still alive.
+In any case, we just call root.RequestUnbind(this) and let the root figure out if we should be unbound at once, or put on its unbind list.
+The root will inspect its own status, if NoMoreUserThreads=true the root will unbind us at once (using lock to ensure serialization with
+other finalizers). If NoMoreUserThreads is false, the root will put us into its unbind list (using lock to ensure serialization of the list
+with other user threads and finalizers), and it will then later unbind us either when it itself finalizes, 
+or when it is called next time from a user thread (during object creation of a new child for that root)
+
+The above logic is all coded into TightDbHandle. The binding does not use TightDbHandle directly, but the various handles inherit from
+TightDbHandle and implement ReleaseHandle, which is the method that should call into c++ and do the actual unbinding of the specific class.
+
+There is a special class, called TightDbHandleOptionalUnbind - this class is instantiated with a boolean, specifying if ReleaseHandle should
+in fact be called or not. GroupHandle and SpecHandle inherit from TightDbHandleOptionalUnbind, and thus have the feature that they can be either
+owned by their root (will be finalized/unbound/released when not used any more), or not owned by their root(will not be finalized/unbound/released
+when not used anymore). 
+GroupHandle:Free standing groups must be deleted, but groups from inside SharedGroup should not be deleted.
+SpecHandle:A Table's Spec should not be unbound, but a subspec should be.
+
+The above explains how TightDbHandle is used for handling the core requirenment that any root object and its children can only be called serially.
+
+Please consult concurrenct.txt for explanations on how we handle the following :
+-Handle leaks
+-Handle recycling
+
+
+Toolbox class
+-------------
+
+This class contains methods that are not really part of core, but helper functions used in diagnostics, such as a method that
+reports what binding dll we have linked to, and what bitness we are running, what version we are, and other system info.
+the Toolbox class is specific for the C# binding.
+
+
+Handled class
+-------------
+
+All TightDb wrapper classes in the C# binding inherit from Handled. Handled implements very few things, amongst those a TightDBHandle
+reference, and some dispose logic, calling the handle's dispose method. The Handled class, and its descendants does NOT implement 
+finalize, so these objects are garbage collected fast, as soon as they are not used anymore.
+The following classes inherit from Handled :
+SharedGroup
+Group
+TableOrView (abstract class, implementing all things common to Table and TableView such as validation and C# specific high level stuff)
+Table
+TableView
+Query
+
+In general, the classes will use methods in their handles to instantiate new c++ instances, and methods in themselves to operate 
+on these wrapped instances. The handles alone are responsible for unbinding. The Query class contains all core operations that
+can be done on a Query, same with Table, TableView etc. The C# classes basically validates input, then call on to core with validated
+parametres.
+
+
+Row class
+---------
+
+Table and TableOrView implement enumeration, and if You do a foreach on a Table (or TableView or Query) You will get Row objects, where 
+each Row object hold the RowIndex of the underlying table, as well as a reference to that table. Row also has all the methods that
+could be naturally called on a table row, such as GetInteger(ColumnIndex) etc. etc. TableRow will call back to its underlying table
+to have these methods executed. The Row class can itself be enumerated and a Foreach(RowCell)
+
+
+
+
+

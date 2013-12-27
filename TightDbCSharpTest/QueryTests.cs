@@ -145,7 +145,7 @@ namespace TightDbCSharpTest
                 var n = 0;
                 foreach (var row in combitable)
                 {
-                    var tableRow = (TableRow) row;
+                    var tableRow = row;
                     int col0 = 1 + (n/(3*3*3))%3;
                     int col1 = 1 + (n/(3*3))%3;
                     int col2 = 1 + (n/3)%3;
@@ -212,7 +212,7 @@ namespace TightDbCSharpTest
             var inttable = GetTableWithMultipleIntegers();
             var query = inttable.Where().Between("intcolumn0",100,199);
             Assert.AreEqual(query.Count(r => r.GetLong("intcolumn0") > 100 && r.GetLong("intcolumn0")<200), 99);
-            foreach (TableRow tr in query)
+            foreach (Row tr in query)
             {
                 Assert.IsTrue(tr.GetLong("intcolumn0")>=100 && tr.GetLong("intcolumn0")<200);
                 Assert.AreEqual(1,tr.GetLong("intcolumn2"));
@@ -222,7 +222,7 @@ namespace TightDbCSharpTest
             var inttable = GetTableWithMultipleIntegers();
             var query = inttable.Where().Between(0, 100, 199);
             Assert.AreEqual(query.Count(r => r.GetLong("intcolumn0") > 100 && r.GetLong("intcolumn0") < 200), 99);
-            foreach (TableRow tr in query)
+            foreach (Row tr in query)
             {
                 Assert.IsTrue(tr.GetLong("intcolumn0") >= 100 && tr.GetLong("intcolumn0") < 200);
                 Assert.AreEqual(1, tr.GetLong("intcolumn2"));

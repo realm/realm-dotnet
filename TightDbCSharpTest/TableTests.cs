@@ -811,10 +811,10 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
                 t.SetString(0, 0, "firstrow");
                 t.SetString(0, 0, "secondrow");
                 t.SetString(0, 0, "thirdrow");
-                foreach (var tableRow in t)
+                foreach (var row in t)
                 {
-                    var isTableRow = (typeof (TableRow) == tableRow.GetType());
-                    Assert.AreEqual(true, isTableRow);
+                    var isRow = (typeof (Row) == row.GetType());
+                    Assert.AreEqual(true, isRow);
                     //assert important as Table's parent also implements an iterator that yields rows. We want TableRows when 
                     //we expicitly iterate a Table with foreach
                 }
@@ -5121,7 +5121,7 @@ datetime:13-05-2007 10:50:59//column 4
 
 
                 //test setting the basic types using anonymous set on tablerow
-                TableRow tablerow = table[0];
+                Row tablerow = table[0];
 
                 tablerow.SetMixed(0, testBinary);
                 Assert.AreEqual(testBinary, tablerow.GetMixedBinary(0));

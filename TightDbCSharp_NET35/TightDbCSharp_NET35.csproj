@@ -92,9 +92,6 @@
     <Compile Include="..\tightDbCSharp\TableOrView.cs">
       <Link>TableOrView.cs</Link>
     </Compile>
-    <Compile Include="..\tightDbCSharp\TableRow.cs">
-      <Link>TableRow.cs</Link>
-    </Compile>
     <Compile Include="..\tightDbCSharp\TableView.cs">
       <Link>TableView.cs</Link>
     </Compile>

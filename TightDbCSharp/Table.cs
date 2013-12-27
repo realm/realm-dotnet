@@ -141,7 +141,7 @@ namespace TightDbCSharp
         /// statements
         /// </summary>
         /// <param name="rowIndex">Zero based index of the row to return</param>
-        public TableRow this[long rowIndex]
+        public Row this[long rowIndex]
         {
             get
             {
@@ -159,7 +159,7 @@ namespace TightDbCSharp
         /// </summary>
         /// <returns>TableRow cursor representing the last row in the table</returns>
         /// <exception cref="InvalidOperationException">If the table is no longer valid</exception>
-        public TableRow Last()
+        public Row Last()
         {
             ValidateIsValid();
             var s = Size;
@@ -171,9 +171,9 @@ namespace TightDbCSharp
         }
        
 
-        private TableRow RowForIndexNoCheck(long rowIndex)
+        private Row RowForIndexNoCheck(long rowIndex)
         {
-            return new TableRow(this, rowIndex);
+            return new Row(this, rowIndex);
         }
 
         
@@ -219,7 +219,7 @@ namespace TightDbCSharp
                 get
                 {
                     ValidateVersion();
-                    return new TableRow(_myTable, _currentRow);                 
+                    return new Row(_myTable, _currentRow);                 
                 } 
             }
 

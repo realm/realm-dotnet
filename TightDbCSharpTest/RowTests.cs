@@ -398,7 +398,7 @@ namespace TightDbCSharpTest
             {
                 table.Add("Hans");
                 table.Add("Grethe");
-                TableRow tr = table[0];
+                Row tr = table[0];
                 Assert.AreEqual(2,table.Size);
                 tr.Remove();
                 Assert.AreEqual(1, table.Size);
@@ -418,12 +418,12 @@ namespace TightDbCSharpTest
             using (var table = new Table(new StringColumn("test")) )
             {
                 table.AddMany(new[] {"Hans", "Grethe"});
-                TableRow tr = table[0];
+                Row tr = table[0];
                 Assert.AreEqual(2, table.Size);
                 Assert.AreEqual(true,tr.IsValid());
                 tr.Remove();
                 Assert.AreEqual(1, table.Size);
-                Assert.AreEqual(true,tr.OwnerTable.IsValid());
+                Assert.AreEqual(true,(tr.Owner as Table).IsValid());
                 Assert.AreEqual(false,tr.IsValid());
                 var grethe = tr.GetString(0);//this should fail bc accessing row after delete or insert is illegal
                 Assert.AreEqual("Grethe",grethe);//this should never run
@@ -492,12 +492,12 @@ namespace TightDbCSharpTest
             using (var table = new Table(new StringColumn("test")) )
             {
                 table.AddMany(new[] {"Hans", "Grethe"});
-                TableRow tr = table[0];
+                Row tr = table[0];
                 Assert.AreEqual(2, table.Size);
                 Assert.AreEqual(true, tr.IsValid());
                 table.Remove(0);
                 Assert.AreEqual(1, table.Size);
-                Assert.AreEqual(true, tr.OwnerTable.IsValid());
+                Assert.AreEqual(true, (tr.Owner as Table).IsValid());
                 Assert.AreEqual(false, tr.IsValid());
                 var grethe = tr.GetString(0);//this should fail bc accessing row after delete or insert is illegal
                 Assert.AreEqual("Grethe", grethe);//this should never run
@@ -523,12 +523,12 @@ namespace TightDbCSharpTest
             {
                 table.Add("Hans");
                 table.Add("Grethe");
-                TableRow tr = table[0];
+                Row tr = table[0];
                 Assert.AreEqual(2, table.Size);
                 Assert.AreEqual(true, tr.IsValid());
                 table2.Remove(0);
                 Assert.AreEqual(1, table.Size);
-                Assert.AreEqual(true, tr.OwnerTable.IsValid());
+                Assert.AreEqual(true, (tr.Owner as Table).IsValid());
                 Assert.AreEqual(false, tr.IsValid());//unit test fails here bc we have two table C# wrappers
                 var grethe = tr.GetString(0); //this should fail bc accessing row after delete or insert is illegal
                 Assert.AreEqual("Grethe", grethe); //this should never run
@@ -545,7 +545,7 @@ namespace TightDbCSharpTest
             using (var t = new Table(new IntColumn("A")))
             {
                 t.Add(42);
-                TableRow tr = t[0];
+                Row tr = t[0];
                 var tester = (long) tr["NoRow"];//exception should be thrown here
                 Assert.AreEqual(0,tester);//use tester
                 Assert.Fail("Accessing table row with a bad column string index should have thrown an exception");

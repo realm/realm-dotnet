@@ -10,7 +10,7 @@ namespace TightDbCSharp
     /// Represents a Query on a table.
     /// Currently under construction
     /// </summary>
-    public class Query : Handled, IEnumerable<TableRow>
+    public class Query : Handled, IEnumerable<Row>
     {
         internal Query(QueryHandle handle,Table underlyingTable)
         {
@@ -284,7 +284,7 @@ namespace TightDbCSharp
         /// <returns>Double with Average of all matching rows</returns>
         public Double Average(string columnName)
         {
-            long columnIndex = GetColumnIndex(columnName);
+            var columnIndex = GetColumnIndex(columnName);
             return UnsafeNativeMethods.QueryAverage(this,columnIndex);            
         }
 
@@ -296,7 +296,7 @@ namespace TightDbCSharp
         /// A IEnumerator that can be used to iterate through the collection, yielding TableRow objects for each row the query matches
         /// </returns>
 
-        public IEnumerator<TableRow> GetEnumerator()
+        public IEnumerator<Row> GetEnumerator()
         {
             var findmore = true;
             long nextToTest = 0;
@@ -307,7 +307,7 @@ namespace TightDbCSharp
                 if (rowToReturn != -1)
                 {
                     nextToTest=rowToReturn+1;
-                    yield return new TableRow(UnderlyingTable, rowToReturn);
+                    yield return new Row(UnderlyingTable, rowToReturn);
                 }
                 else
                 {

@@ -188,6 +188,11 @@ namespace TightDbCSharp
         }
 
 
+        //in Debug mode, the individual handles keep track on what handles they get into their lists, and can answer how the list load
+        //has been, and what the status is. This is used in some unit tests to report how the unbind lists are doing, and to ensure
+        //that we end up having totally empty unbound lists after we have run.
+        //all the code doing this, is guarded by #if DEBUG and not running when we are in release mode
+        //the debug code is fairly expensive timewise, we might consider putting it into its own define        
 #if DEBUG 
         private void AddToDebugLists()
         {
@@ -293,7 +298,7 @@ namespace TightDbCSharp
         /// <param name="handleToUnbind">The core handle that is not needed anymore and should be unbound</param>
         private void RequestUnbind(TightDbHandle handleToUnbind)
         {
-            lock (_unbindListLock)
+            lock (_unbindListLock)//You can lock a lock several times inside the same thread. The top-level-lock is the one that counts
             {
                 //first let's see if we should go to the list or not
                 if (_noMoreUserThread)

@@ -67,7 +67,6 @@
     <Compile Include="RowCell.cs" />
     <Compile Include="SharedGroup.cs" />
     <Compile Include="TableOrView.cs" />
-    <Compile Include="TableRow.cs" />
     <Compile Include="TableView.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
