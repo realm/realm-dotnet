@@ -22,6 +22,7 @@ namespace TightDbCSharp
         }
 
         //acquire a table handle And set root in an atomic fashion (from TableName)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
         internal TableHandle GetTable(String name)
         {
             var th= TableHandle.RootedTableHandle(this); //allocate in advance to avoid allocating in constrained exection region true means do not finalize or call unbind

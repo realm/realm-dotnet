@@ -103,6 +103,7 @@ namespace TightDbCSharp
         //in general, you can pass on root when You are not root Yourself, otherwise pass on null
         //we expect to be in the user thread always in a constructor.
         //therefore we take the opportunity to clear root's unbindlist when we set our root to point to it
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
         internal TightDbHandle(TightDbHandle root)
         {
             if (root == null)//if we are a root object, we need a list for our children and Root is already null
@@ -206,6 +207,7 @@ namespace TightDbCSharp
         //called automatically but only once from criticalhandle when this handle is disposing or finalizing
         //see http://reflector.webtropy.com/default.aspx/4@0/4@0/DEVDIV_TFS/Dev10/Releases/RTMRel/ndp/clr/src/BCL/System/Runtime/InteropServices/CriticalHandle@cs/1305376/CriticalHandle@cs
         //and http://msdn.microsoft.com/en-us/library/system.runtime.interopservices.criticalhandle.releasehandle(v=vs.110).aspx
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2123:OverrideLinkDemandsShouldBeIdenticalToBase"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         protected override bool ReleaseHandle()
         {
             if (IsInvalid)return true;//invalid handles might occour if we throw in construction of one, after root is set, but before the handle has
@@ -234,7 +236,7 @@ namespace TightDbCSharp
                 }
                 return true;
             }
-            catch (Exception)
+            catch (Exception)//okay to catch general exception here, we do really not wish to leak any exceptions right now
             {
                 return false;
                 //it would be really bad if we got an exception in here. We must not pass it on, but have to return false
@@ -259,6 +261,7 @@ namespace TightDbCSharp
         //used in the case we need to set the handle as part of a larger setup operation
         //the original SetHandle method is not callable from other classes, and we need that feature
         //so we overwrite the original one to be able to call it
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
         public new void SetHandle(IntPtr someHandle)
         {
             base.SetHandle(someHandle);

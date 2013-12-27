@@ -266,6 +266,7 @@ namespace TightDbCSharp
         /// Only one writer can exist at a time, so if you call BeginWrite the function might wait until the prior writer do a commit()
         /// </summary>
         /// <returns>Transaction object that inherits from Group and gives read/write acces to all tables in the group</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
         public Transaction BeginWrite()
         {
             ValidateNotInTransaction();

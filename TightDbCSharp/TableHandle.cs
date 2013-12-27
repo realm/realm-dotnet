@@ -55,6 +55,7 @@ namespace TightDbCSharp
         }
 
         //Returns a copy of this table as a new handle
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
         internal TableHandle TableCopyTable()
         {
             var th = RootedTableHandle();//the resulting table is freestanding and its own root

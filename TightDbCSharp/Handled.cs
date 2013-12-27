@@ -112,6 +112,7 @@ namespace TightDbCSharp
         /// Override this if you have managed stuff that needs to be closed down when dispose is called
         /// </summary>
         /// <param name="disposing"></param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
         protected virtual void Dispose(bool disposing)  //was protected virtual earlier on, can be set back to protected virtual if the need arises
         {
             if (_handle!=null && !IsDisposed)//handle could be null if we crashed in the constructor (group with filename to a OS protected area for instance)
