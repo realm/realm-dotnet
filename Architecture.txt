@@ -348,8 +348,8 @@ class structure
 ---------------
 
 
-Handle Classes
---------------
+Handle Classes:
+
 
 Please consult the HandleClasses.classdiagram found in ModelingProject1 in the solution
 
@@ -410,16 +410,16 @@ Please consult concurrenct.txt for explanations on how we handle the following :
 -Handle recycling
 
 
-Toolbox class
--------------
+Toolbox class:
+
 
 This class contains methods that are not really part of core, but helper functions used in diagnostics, such as a method that
 reports what binding dll we have linked to, and what bitness we are running, what version we are, and other system info.
 the Toolbox class is specific for the C# binding.
 
 
-Handled class
--------------
+Handled class:
+
 
 All TightDb wrapper classes in the C# binding inherit from Handled. Handled implements very few things, amongst those a TightDBHandle
 reference, and some dispose logic, calling the handle's dispose method. The Handled class, and its descendants does NOT implement 
@@ -438,8 +438,8 @@ can be done on a Query, same with Table, TableView etc. The C# classes basically
 parametres.
 
 
-Row class
----------
+Row class:
+
 
 Table and TableOrView implement enumeration, and if You do a foreach on a Table (or TableView or Query) You will get Row objects, where 
 each Row object hold the RowIndex of the underlying table, as well as a reference to that table. Row also has all the methods that

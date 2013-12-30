@@ -23,7 +23,6 @@
 
 //using System.IO;
 
-using System;
 using NUnitLite.Runner;
 //using NUnit.Framework.Internal;
 using TightDbCSharp;
@@ -41,11 +40,11 @@ namespace NUnitLite.Tests
     public static class Program
     {
 
-        /// <summary>
-        /// Attempt at running tests without nuinit for debugging purposes
-        /// This is not yet workable (expectedexceptions), but is also not yet used
-        /// </summary>
-        /// <param name="test">the test method to execute</param>
+        // <summary>
+        // Attempt at running tests without nuinit for debugging purposes
+        // This is not yet workable (expectedexceptions), but is also not yet used
+        // </summary>
+        // <param name="test">the test method to execute</param>
   /*      public static void TightDbTester(Action test)
         {
             try

@@ -34,7 +34,7 @@ namespace TightDbCSharpTest
         public static void CreateGroupEmptyTest()
         {
             var g = new Group();
-            Assert.AreEqual(false, g.Invalid);            
+            Assert.AreEqual(true, g.IsValid);            
         }
 
 
@@ -48,7 +48,7 @@ namespace TightDbCSharpTest
             
             using (var g = new Group())
             {
-                Assert.AreEqual(false, g.Invalid);
+                Assert.AreEqual(true, g.IsValid);
             }
         }
 
@@ -85,8 +85,8 @@ namespace TightDbCSharpTest
             if (Is64Bit)
             {
                 using (var g = new Group(@"C:\Windows\System32\Testgroup", Group.OpenMode.ModeReadWrite))
-                {
-                    Assert.AreEqual(false, g.Invalid);
+                {//we don't expect to get this far
+                    Assert.AreEqual(true, g.IsValid);
                     g.Write(@"C:\Windows\System32\Testgroup2");
                 }
             }
@@ -106,8 +106,8 @@ namespace TightDbCSharpTest
 
             using (var g = new Group(@"",Group.OpenMode.ModeReadOnly))
             {
-
-                Assert.AreEqual(false, g.Invalid);            
+                //we should not get this far
+                Assert.AreEqual(true, g.IsValid);            
             }
         }
 
@@ -186,10 +186,7 @@ namespace TightDbCSharpTest
         //todo:make reasonable tests of all 3 kinds of openmode and their edge cases 
         //(no rights, file exists/doesn't exists, illegal filename,null string)
 
-        //this one works. (if you have a directory called Develope in H:\) Do we have a filename/directory problem with the windows build?
-        //perhaps we have a problem with locked or illegal files, what to do?
-        //
-        //probably something wrong with the code here too then
+        //this one works.
         /// <summary>
         /// Test creation of a group file in a legal location
         /// </summary>
@@ -198,7 +195,7 @@ namespace TightDbCSharpTest
         {   
             using (var g = new Group(GroupFilename(),Group.OpenMode.ModeReadWrite))
             {
-                Assert.AreEqual(false, g.Invalid);            
+                Assert.AreEqual(true, g.IsValid);            
             }
         }
 
@@ -212,7 +209,7 @@ namespace TightDbCSharpTest
             var filename = GroupFilename();//the call deletes the file so don't call 2nd time around
             using (var g = new Group(filename, Group.OpenMode.ModeReadWrite))
             {
-                Assert.AreEqual(false, g.Invalid);
+                Assert.AreEqual(true, g.IsValid);
                 g.CreateTable("originaltable", new BoolColumn("TrueFalse"));
                 g.Commit();
             }//now g should be correctly flushed and all
@@ -224,7 +221,7 @@ namespace TightDbCSharpTest
                 }
             using (var g = new Group(filename, Group.OpenMode.ModeReadWrite))
             {
-                Assert.AreEqual(false, g.Invalid);
+                Assert.AreEqual(true, g.IsValid);
                 Assert.AreEqual(true, g.HasTable("Second"));            
             }
         }

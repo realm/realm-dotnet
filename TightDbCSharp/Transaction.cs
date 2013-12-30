@@ -77,7 +77,8 @@ namespace TightDbCSharp
             : base(sharedGroup.State==TransactionState.Read)
         {            
             SetHandle(groupHandle,sharedGroup.State==TransactionState.Read);//the group's dispose should rollback or endread
-            _sharedGroup = sharedGroup;            
+            IsValid = true;
+            _sharedGroup = sharedGroup;
         }
 
 
@@ -90,18 +91,42 @@ namespace TightDbCSharp
 
         /// <summary>
         /// Finish the transaction and discard any changes made while in the transaction.
+        /// Calling if we are a read transaction will just end the read transaction
         /// </summary>
         public void Rollback()
         {
             _sharedGroup.EndTransaction(false);
+            IsValid = false;            
         }
 
         /// <summary>
         /// Finish the transaction and keep any changes made while in the transaction.
+        /// Calling if we are a read transaction will just end the read transaction
         /// </summary>
         new public void Commit() //we use new because we do not want to call the group.commit method on group. Transaction.commit has another meaning
         {
             _sharedGroup.EndTransaction(true);
+            IsValid = false;
+        }
+
+
+        /// <summary>
+        /// Calling EndRead will finish a read transaction
+        /// Calling EndRead with a write transaction is not allowed and will throw an exception
+        /// (side effect of the exception could be a commit, if the transaction is guareded by using and the exception is caught outside the using clause)
+        /// For maximum readabillity, Read transactions should be finished using EndRead, write transaction should be finished using Commit or Rollback        
+        /// </summary>
+        public void EndRead()
+        {
+            if (State == TransactionState.Read)
+            {
+                _sharedGroup.EndTransaction(false);
+                IsValid = false;
+            }
+            else
+            {
+                throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture,"EndRead Cannot be called on transaction with state {0}",State));
+            }
         }
 
 

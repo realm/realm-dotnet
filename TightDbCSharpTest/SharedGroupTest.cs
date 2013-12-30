@@ -36,7 +36,7 @@ namespace TightDbCSharpTest
 
             using (var sharedGroup = new SharedGroup(SharedGroupFileName(), false, DurabilityLevel.DurabilityFull))
             {
-                Assert.AreEqual(false, sharedGroup.Invalid);
+                Assert.AreEqual(true, sharedGroup.IsValid);
 //                Console.WriteLine(String.Format(CultureInfo.InvariantCulture, "Hello from sharedgroup {0}",
 //                    sharedGroup.ObjectIdentification()));
 
@@ -56,7 +56,7 @@ namespace TightDbCSharpTest
 
             using (var sharedGroup = new SharedGroup(SharedGroupFileName(), false, DurabilityLevel.DurabilityFull))
             {
-                Assert.AreEqual(false, sharedGroup.Invalid);
+                Assert.AreEqual(true, sharedGroup.IsValid);
                 sharedGroup.Reserve(1024*1024);
                 //as reserve is not supported on all platforms (sometimes its a NOP) we cannot really easily check
                 //if things worked out or not. But at least this test calls the method
@@ -74,7 +74,7 @@ namespace TightDbCSharpTest
 
             using (var sharedGroup = new SharedGroup(SharedGroupFileName(), false, DurabilityLevel.DurabilityFull))
             {
-                Assert.AreEqual(false, sharedGroup.Invalid);
+                Assert.AreEqual(true, sharedGroup.IsValid);
                 sharedGroup.Reserve(0);
                 //as reserve is not supported on all platforms (sometimes its a NOP) we cannot really easily check
                 //if things worked out or not. But at least this test calls the method
@@ -94,7 +94,7 @@ namespace TightDbCSharpTest
             using (var sharedGroup = new SharedGroup(@"/\/", false, DurabilityLevel.DurabilityFull))//this will throw in the sharedgroup constructor
             {
                 //this line will never execute
-                Assert.AreEqual(false, sharedGroup.Invalid);
+                Assert.AreEqual(true, sharedGroup.IsValid);
             }
         }
 
@@ -345,7 +345,7 @@ namespace TightDbCSharpTest
             using (var sharedGroup = new SharedGroup(SharedGroupFileName(), false, DurabilityLevel.DurabilityFull))
             {
                 //first we need to create a table and put a little data into it
-                Assert.AreEqual(false, sharedGroup.Invalid);//C# construct, so legal even on an unattached shared group                
+                Assert.AreEqual(true, sharedGroup.IsValid);//C# construct, so legal even on an unattached shared group                
 //                Console.WriteLine(String.Format(CultureInfo.InvariantCulture, "Hello from sharedgroup {0}",
 //                    sharedGroup.ObjectIdentification()));
 
@@ -528,14 +528,14 @@ namespace TightDbCSharpTest
             using (var sharedGroup = new SharedGroup(sharedgroupfilename, false, DurabilityLevel.DurabilityFull))
             {
 
-                Assert.AreEqual(false, sharedGroup.Invalid);
+                Assert.AreEqual(true, sharedGroup.IsValid);
                 
                 using (var transaction = sharedGroup.BeginRead())
                 {
                     Assert.AreEqual(true, transaction.ReadOnly);
                     Assert.AreEqual(TransactionState.Read,transaction.State);
-                    Assert.AreEqual(false,sharedGroup.Invalid);
-                    Assert.AreEqual(false, transaction.Invalid);
+                    Assert.AreEqual(true,sharedGroup.IsValid);
+                    Assert.AreEqual(true, transaction.IsValid);
                     try
                     {
                         var fail = transaction.CreateTable("must fail");
@@ -545,8 +545,8 @@ namespace TightDbCSharpTest
                     {
                         Assert.AreEqual(true, transaction.ReadOnly);
                         Assert.AreEqual(TransactionState.Read, transaction.State);
-                        Assert.AreEqual(false, sharedGroup.Invalid);//the outer transaction has not been compromized
-                        Assert.AreEqual(false, transaction.Invalid);//just bc an illegal inner transaction operation was preempted
+                        Assert.AreEqual(true, sharedGroup.IsValid);//the outer transaction has not been compromized
+                        Assert.True(transaction.IsValid);//just bc an illegal inner transaction operation was preempted
                     }
                 }
             }
@@ -676,14 +676,14 @@ namespace TightDbCSharpTest
             using (var sharedGroup = new SharedGroup(sharedgroupfilename, false, DurabilityLevel.DurabilityFull))
             {
 
-                Assert.AreEqual(false, sharedGroup.Invalid);
+                Assert.AreEqual(true, sharedGroup.IsValid);
 
                 using (var transaction = sharedGroup.BeginRead())
                 {
                     Assert.AreEqual(true, transaction.ReadOnly);
                     Assert.AreEqual(TransactionState.Read, transaction.State);
-                    Assert.AreEqual(false, sharedGroup.Invalid);
-                    Assert.AreEqual(false, transaction.Invalid);
+                    Assert.AreEqual(true, sharedGroup.IsValid);
+                    Assert.AreEqual(true, transaction.IsValid);
                     try
                     {
                         using (var transaction2 = sharedGroup.BeginWrite())
@@ -700,11 +700,11 @@ namespace TightDbCSharpTest
                     {
                         Assert.AreEqual(true, transaction.ReadOnly);
                         Assert.AreEqual(TransactionState.Read, transaction.State);
-                        Assert.AreEqual(false, sharedGroup.Invalid);
-                        Assert.AreEqual(false, transaction.Invalid);
+                        Assert.AreEqual(true, sharedGroup.IsValid);
+                        Assert.AreEqual(true, transaction.IsValid);
                     }
                 }
-                Assert.AreEqual(false, sharedGroup.Invalid);//and the shared group should also work after the outer transaction has finished
+                Assert.AreEqual(true, sharedGroup.IsValid);//and the shared group should also work after the outer transaction has finished
             }
         }
     }

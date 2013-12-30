@@ -205,7 +205,7 @@ namespace TightDbCSharp
         /// defaults to false
         /// if Invalid is true something fatal has happened
         /// </summary>
-        public Boolean Invalid { get; private set; }
+        public Boolean IsValid { get; private set; }
 
 
 
@@ -317,7 +317,7 @@ namespace TightDbCSharp
             }
             catch (Exception) //something unexpected and bad happened, the shared group and the group should not be used anymore
             {
-                Invalid = true;//mark the shared group as invalid
+                IsValid = false;//mark the shared group as invalid
                 throw;
             }
         }

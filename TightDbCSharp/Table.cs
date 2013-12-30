@@ -101,6 +101,8 @@ namespace TightDbCSharp
         /// if it is contained in a row in a table, and that table changes, or if the
         /// table is deleted from a group etc. All user-facing operations call
         /// IsValid to check if the table is still valid.
+        /// Therefore users do not have to check IsValid, there will automatically be raised
+        /// exceptions in the case a table is used when it is in InValid state
         /// </summary>
         /// <returns>True if The Table is usable</returns>
         public bool IsValid()

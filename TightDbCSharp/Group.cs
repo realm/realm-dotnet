@@ -43,7 +43,8 @@ namespace TightDbCSharp
         //the caller must know if this group is readonly or not
         private void AcquireHandle(bool readOnly)
         {
-            UnsafeNativeMethods.GroupNew(this,readOnly); //calls sethandle itself            
+            UnsafeNativeMethods.GroupNew(this,readOnly); //calls sethandle itself
+            IsValid = true;
         }
 
 
@@ -117,6 +118,7 @@ namespace TightDbCSharp
         /// <returns>true if the groups parameter is with the same data as this</returns>
         public Boolean EqualsGroup(Group otherGroup)
         {
+            ValidateIsValid();
             return otherGroup != null && UnsafeNativeMethods.GroupEquals(this, otherGroup);
         }
 
@@ -148,6 +150,7 @@ namespace TightDbCSharp
             try
             {
                 UnsafeNativeMethods.GroupNewFile(this, path,openMode);
+                IsValid = true;
             }
             catch (Exception)
             {
@@ -174,6 +177,7 @@ namespace TightDbCSharp
                     throw new ArgumentException("Group cannot be created from an array of size 0", "binaryGroup");
                 
                 UnsafeNativeMethods.GroupFrombinaryData(this, binaryGroup);
+                IsValid = true;
             }
             catch (Exception)
             {
@@ -200,6 +204,7 @@ namespace TightDbCSharp
         /// <returns>true if a table with specified name exists</returns>
         public bool HasTable(string tableName)
         {
+            ValidateIsValid();
             return UnsafeNativeMethods.GroupHasTable(this, tableName);
         }
 
@@ -219,6 +224,7 @@ namespace TightDbCSharp
         /// <exception cref="InvalidEnumArgumentException">Thrown if no table exists with that name</exception>
         public Table GetTable(string tableName)
         {
+            ValidateIsValid();
             if (HasTable(tableName)) 
             {//todo:the HasTable check might be moved to c++ to save an interop roundtrip 
                 return GetTableInternal(tableName);
@@ -261,6 +267,7 @@ namespace TightDbCSharp
         /// <returns>New table that is part of the group, according to specifications given in the parameter</returns>
         public Table CreateTable(string tableName, params ColumnSpec[] schema)
         {
+            ValidateIsValid();
             ValidateReadWrite();
             if (schema != null && schema.Length>0)
             {
@@ -275,6 +282,7 @@ namespace TightDbCSharp
         /// <param name="path"></param>
         public void Write(String path)
         {
+            ValidateIsValid();
             UnsafeNativeMethods.GroupWrite(this, path);
         }
 
@@ -285,6 +293,7 @@ namespace TightDbCSharp
         /// <returns>byte array with the seraialized group in it</returns>
         public byte[] WriteToMemory()
         {
+            ValidateIsValid();
             return UnsafeNativeMethods.GroupWriteToMemory(this);
         }
 
@@ -294,12 +303,14 @@ namespace TightDbCSharp
         /// </summary>
         public void Commit()
         {
+            ValidateIsValid();
             UnsafeNativeMethods.GroupCommit(this);
         }
 
 
         public override string ToString()
         {
+            ValidateIsValid();
             return base.ToString()+" "+UnsafeNativeMethods.GroupToString(this);
         }
 
@@ -310,6 +321,7 @@ namespace TightDbCSharp
         /// <returns>True if the group has no Tables, False if the group has any tables</returns>
         public Boolean IsEmpty()
         {
+            ValidateIsValid();
             return UnsafeNativeMethods.GroupIsEmpty(this);
         }
 
@@ -320,15 +332,28 @@ namespace TightDbCSharp
         /// </summary>
         public long Size
         {
-            get { return UnsafeNativeMethods.GroupSize(this); }
+            get
+            {
+                ValidateIsValid();
+                return UnsafeNativeMethods.GroupSize(this);
+            }
         }
 
         /// <summary>
         /// if true, some unexpected error condition exists and this group should never be used
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        public Boolean Invalid { get; internal set; }//todo:figure a situation where a group becomes invalid, create a unit test for that situation
+        public Boolean IsValid { get; internal set; }//todo:figure a situation where a group becomes invalid, create a unit test for that situation,add code that invalidates a group
 
+        private void ValidateIsValid()
+        {
+            if (!IsValid)
+            {
+                throw new InvalidOperationException("Cannot do operations on group that has IsValid==True");
+            }
+        }
+        
+        
         //The debug only methods Verify, print, print_free etc. are not implemented
         //in the binding a the time being
 
@@ -345,8 +370,8 @@ namespace TightDbCSharp
 
         public IEnumerator<Table> GetEnumerator()
         {
+            ValidateIsValid();
             var current = 0;
-
             while (current < Size)
             {                
                 yield return GetTable(current++);
