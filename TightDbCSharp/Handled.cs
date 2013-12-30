@@ -49,6 +49,9 @@ namespace TightDbCSharp
         /// </summary>
         public bool ReadOnly { get; internal set; }
 
+        /// <summary>
+        /// The TightdbHandle that this wrapper is using to call into c++ core
+        /// </summary>
         protected TightDbHandle Handle
         {
             get { return _handle; }            

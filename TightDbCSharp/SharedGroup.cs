@@ -30,7 +30,7 @@ namespace TightDbCSharp
         /// Write transactions will return much faster, data throughput is much larger, but 
         /// no guarentee than a commit is actaully written to a file when the calls return        
         /// </summary>
-        DurabilityAsync 
+        DurabilityAsync //resharper warning ok, awaiting a windows implementation. todo::Handle this differently if running onlinux
     }
 
     /*

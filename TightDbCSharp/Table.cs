@@ -451,7 +451,7 @@ namespace TightDbCSharp
             }
         }
 
-        protected override void ClearNoCheck()
+        internal override void ClearNoCheck()
         {
             UnsafeNativeMethods.TableClear(this);
         }
