@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace TightDbCSharp
 {
-    public class TableViewHandle:TightDbHandle
+    internal class TableViewHandle:TightDbHandle//todo:consider if we can make the handle classes internal such that users cannot instantiate them
     {
         protected override void Unbind()
         {

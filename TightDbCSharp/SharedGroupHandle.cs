@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace TightDbCSharp
 {
-    public class SharedGroupHandle : TightDbHandle
+    internal class SharedGroupHandle : TightDbHandle
     {
 
         /// <summary>

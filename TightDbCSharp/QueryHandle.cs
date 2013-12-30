@@ -8,7 +8,7 @@ namespace TightDbCSharp
     //so these handles always represent a qeury object that should be released when not used anymore
     //the C# binding methods on query simply return self to add the . nottation again
     //A query will be a child of whatever root its creator has as root (queries are usually created by tableviews and tables)
-    public class QueryHandle:TightDbHandle
+    internal class QueryHandle:TightDbHandle
     {
         public QueryHandle(TightDbHandle root) : base(root)
         {
