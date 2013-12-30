@@ -105,6 +105,8 @@ namespace TightDbCSharp
         /// <returns>True if The Table is usable</returns>
         public bool IsValid()
         {
+            //this could be a virtual method in tableorview and be overridden in table and in tableview, but i fear there would be
+            //a speed penalty as IsValid is called very often. todo:Measure performance penalty of making IsValid a TableOrView virtual method
             //todo:we might want to test HandleIsValid here. I have found no way that we could ever have a Table with an invalid handle,
             //so until i find a way that could happen i skip the test due to performance considerations
             //TightdbHandle can only go invalid if the handle creation succeeds, but the call to core returns a 0 or a -1 instead of a handle

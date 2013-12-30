@@ -6554,12 +6554,12 @@ intfield2:10//column 2
             for (var pass = 1; pass <= 2; pass++)
                 //first pass is with a table that is not inside using, second pass is with a table inside using
             {
-                Table table; //resharper issue warning is okay - 
+                //Table table; //resharper issue warning is okay - 
 
                 using (var tableUsing = new Table(new SubTableColumn("sub", new IntColumn("int"))))
                 {
 
-                    table = (pass == 1) ? new Table(new SubTableColumn("sub", new IntColumn("int"))) : tableUsing;
+                    var table = (pass == 1) ? new Table(new SubTableColumn("sub", new IntColumn("int"))) : tableUsing;
                     //set table to the table inside using or one that is not guarded by dispose
 
                     for (var i = 0; i < 1000; ++i)
@@ -6573,11 +6573,9 @@ intfield2:10//column 2
                     //const int rounds=111;
                     for (var n = 0; n < rounds; ++n)
                     {
-                        Boolean writedot = false;
-
 /*                            Console.WriteLine("{0,6}{1,6}{2,10}{3,10}{4,30}", last, high, GC.GetTotalMemory(false), n,
                                 "Before bulk gc");*/
-                        writedot = (0 != GetSubtableOrphansNoUsing(table, n*100));
+                        var writedot = (0 != GetSubtableOrphansNoUsing(table, n*100));
                         if (n%5 == 0)
                         {
                             GC.Collect();

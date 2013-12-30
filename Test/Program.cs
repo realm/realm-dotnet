@@ -46,7 +46,7 @@ namespace NUnitLite.Tests
         /// This is not yet workable (expectedexceptions), but is also not yet used
         /// </summary>
         /// <param name="test">the test method to execute</param>
-        public static void TightDbTester(Action test)
+  /*      public static void TightDbTester(Action test)
         {
             try
             {
@@ -61,7 +61,7 @@ namespace NUnitLite.Tests
                 Console.WriteLine("Got exception "+e);
             }
         }
-
+*/
         /// <summary>
         /// Run NunitLite Unit test 
         /// Empty parametres will result in all tests being run,

@@ -423,7 +423,12 @@ namespace TightDbCSharpTest
                 Assert.AreEqual(true,tr.IsValid());
                 tr.Remove();
                 Assert.AreEqual(1, table.Size);
-                Assert.AreEqual(true,(tr.Owner as Table).IsValid());
+                var t = tr.Owner as Table;
+                Assert.IsNotNull(t);
+                if (t != null)
+                {
+                    Assert.AreEqual(true, t.IsValid());
+                }
                 Assert.AreEqual(false,tr.IsValid());
                 var grethe = tr.GetString(0);//this should fail bc accessing row after delete or insert is illegal
                 Assert.AreEqual("Grethe",grethe);//this should never run
@@ -497,7 +502,12 @@ namespace TightDbCSharpTest
                 Assert.AreEqual(true, tr.IsValid());
                 table.Remove(0);
                 Assert.AreEqual(1, table.Size);
-                Assert.AreEqual(true, (tr.Owner as Table).IsValid());
+                var t = tr.Owner as Table;
+                Assert.IsNotNull(t);
+                if (t != null)
+                {
+                    Assert.AreEqual(true, t.IsValid());
+                }
                 Assert.AreEqual(false, tr.IsValid());
                 var grethe = tr.GetString(0);//this should fail bc accessing row after delete or insert is illegal
                 Assert.AreEqual("Grethe", grethe);//this should never run
@@ -528,7 +538,12 @@ namespace TightDbCSharpTest
                 Assert.AreEqual(true, tr.IsValid());
                 table2.Remove(0);
                 Assert.AreEqual(1, table.Size);
-                Assert.AreEqual(true, (tr.Owner as Table).IsValid());
+                var t = tr.Owner as Table;
+                Assert.IsNotNull(t);
+                if (t != null)
+                {
+                    Assert.AreEqual(true, t.IsValid());
+                }
                 Assert.AreEqual(false, tr.IsValid());//unit test fails here bc we have two table C# wrappers
                 var grethe = tr.GetString(0); //this should fail bc accessing row after delete or insert is illegal
                 Assert.AreEqual("Grethe", grethe); //this should never run
