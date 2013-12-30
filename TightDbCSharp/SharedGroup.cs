@@ -242,6 +242,7 @@ namespace TightDbCSharp
         /// Calling commit() as soon as you are done with the transaction will free up memory a little faster than relying on dispose
         /// </summary>
         /// <returns></returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
         public Transaction BeginRead()
         {
            ValidateNotInTransaction();

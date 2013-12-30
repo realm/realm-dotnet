@@ -756,6 +756,7 @@ enum DataType {
         private static extern GroupHandle new_group_file32([MarshalAs(UnmanagedType.LPWStr)] string fileName,
             IntPtr fileNameLen, IntPtr openMode);
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
         public static void GroupNewFile(Group group, string fileName, Group.OpenMode openMode)
         {
             IntPtr nativeOpenMode;

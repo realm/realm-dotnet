@@ -36,6 +36,7 @@ namespace TightDbCSharp
         }
 
         //acquire a TableView handle with the result And set Root in an atomic fashion 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
         internal TableViewHandle QueryFindAll()
         {
             var tvHandle = TableViewHandle.RootedTableViewHandle(this);//same root as the query

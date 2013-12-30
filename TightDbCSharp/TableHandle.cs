@@ -115,6 +115,7 @@ namespace TightDbCSharp
 
 
         //acquire a QueryHandle from table_where And set root in an atomic fashion 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
         internal QueryHandle TableWhere()
         {
             var queryHandle = RootedQueryHandle();

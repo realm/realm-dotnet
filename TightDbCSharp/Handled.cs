@@ -33,6 +33,7 @@ namespace TightDbCSharp
         /// True if the c++ resources have been released
         /// True if dispose have been called one way or the other
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
         public bool IsDisposed
         {
             get { return _handle!=null && _handle.IsClosed; }

@@ -37,6 +37,7 @@ namespace TightDbCSharp
         }
 
         //atomic change of transaction state from read to ready
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
         public void SharedGroupCommit()
         {
             IntPtr res;

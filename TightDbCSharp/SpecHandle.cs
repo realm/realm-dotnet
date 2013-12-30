@@ -17,6 +17,7 @@ namespace TightDbCSharp
 
 
         //acquire a spec handle And set IgnoreUnbind in an atomic fashion (spec_get_spec)
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
         internal SpecHandle GetSubSpecHandle(long columnIndex)
         {            
             SpecHandle sh = null;//acc to CA2000 guidelines we guarentee disposal of temp in finally lower down
