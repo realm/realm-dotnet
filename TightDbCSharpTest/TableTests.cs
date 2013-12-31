@@ -1339,10 +1339,11 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
 
 
         /// <summary>
-        /// Test FindAllbinary view and table
+        /// Test FindAllbinary view and table.
+        /// Fails bc core has not yet implemented a working Table.FindAllBinary
         /// </summary>
         [Test]
-        public static void TableFindAllBinarySuccessful()
+        public static void KnownFailTableFindAllBinarySuccessful()
         {
             using (var t = new Table("Field1".Binary(), "Field2".Binary(), "IntField".Int()))
             {
@@ -1377,9 +1378,10 @@ Table Name  : column name is 123 then two non-ascii unicode chars then 678
 
         /// <summary>
         /// Test FindAllbinary view and table, with an empty binary
+        /// This test currently fails because core does not implement Table.FindAllBinary 
         /// </summary>
         [Test]
-        public static void TableFindAllBinaryEmptySuccessful()
+        public static void KnownFailTableFindAllBinaryEmptySuccessful()
         {
             using (var t = new Table("Field1".Binary(), "Field2".Binary(), "IntField".Int()))
             {
@@ -3554,6 +3556,11 @@ Table Name  : cyclic field definition
                 Assert.AreEqual(true, t1.Equals(t2));
                 t2.AddIntColumn("inttie");
                 t1.AddStringColumn("stringie");
+                var cnt1 = t1.ColumnCount;
+                var cnt2 = t2.ColumnCount;
+                var cnt3 = t3.ColumnCount;
+                Assert.AreEqual(2, t1.ColumnCount);
+                Assert.AreEqual(2, t2.ColumnCount);
                 Assert.AreEqual(2, t3.ColumnCount);
             }
         }

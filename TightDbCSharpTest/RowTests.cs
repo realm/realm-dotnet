@@ -518,13 +518,13 @@ namespace TightDbCSharpTest
         /// <summary>
         /// test if a row object gets disabled when the user changes its table in an invalidating way, trough a copy of the table
         /// taken out from a group
-        /// this will liekly only work correctly if we ensure that table wrappers are reused when user requests the sam table
+        /// this will likely only work correctly if we ensure that table wrappers are reused when user requests the sam table
         /// test if a row object gets disabled when the user changes its table in an invalidating way, not going through the rowobject
         /// </summary>
         [Test]
         [ExpectedException("System.InvalidOperationException")]
         //because the table row shouldve been invalidated after it was removed
-        public static void TestRowDeleteInvalidatedThroughGroup()
+        public static void KnownFailTestRowDeleteInvalidatedThroughGroup()
         {
             using (var group = new Group())
             using (var table = group.CreateTable("T1", new StringColumn("test")))

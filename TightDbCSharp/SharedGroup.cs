@@ -200,12 +200,22 @@ namespace TightDbCSharp
         //
         //
         /// <summary>
-        /// in case of unexpected exceptions thrown at unexpected times, the shared group will be invalidated
-        /// for instance if a commit or rollback throws an exception
-        /// defaults to false
-        /// if Invalid is true something fatal has happened
+        /// defaults to true
+        /// if Isvalid is false something fatal has happened with the shared group wrapper        
         /// </summary>
-        public Boolean IsValid { get; private set; }
+        public Boolean IsValid
+        {
+            get { return (!SharedGroupHandle.IsInvalid); }
+            private set
+            {
+//ignore calls where we are set to true - only Handle can set itself to true
+                if (value == false)
+                {
+                    SharedGroupHandle.Dispose();
+                        //this is a safe way to invalidate the handle. Any ongoing transactions will be rolled back
+                }
+            }
+        }
 
 
 

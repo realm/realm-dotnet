@@ -1253,6 +1253,8 @@ intcolumn2:1//column 2
         /// <summary>
         /// check that tableview gets invalidtaed if a table is changed in a object taken out form tablegroup 
         /// and  the view is from antoher instance of same table from same group
+        /// This test currently fails bc C# table state stored in Table is used to invalidate..
+        /// When core has TableView.IsValid  and we start using that, then this test should work
         /// </summary>
         [Test]
    [ExpectedException("System.InvalidOperationException")]
