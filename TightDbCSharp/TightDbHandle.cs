@@ -277,17 +277,35 @@ namespace TightDbCSharp
 #if DEBUG
 
         private static int _rootsInExistance;//increased every time we create a new root
-        private int _thisRootId ;//the ID of this root, used in the dictionaries
+        private int _thisRootId ;//the ID of this root, index into the lists below
         private static readonly List<long> MaxForListType = new List<long>();//max for this root, indexed by rootid
         private static readonly List<long> LastForListType = new List<long>();//last for this root
         private static readonly List<Type> TypeForListType = new List<Type>();//type for this root
 
+        /// <summary>
+        /// Debug mode only.
+        /// This method will report on console any TighDbHandles that have not yet been unbound
+        /// If there are any objects reported, it is an indication that some handles have been leaked,
+        /// and that our cleanup has not yet unbound them.
+        /// It could also be an indication of a bug in the implementation of TightDbHandle or one of its descendants
+        /// The unit Test ToolBoxTests.TestSizeCalls calls this method in debug mode, as it is usually the last unit test
+        /// to run. It then forces a GC and waits for the finalizers trigged by the GC to finish, then it calls again.
+        /// The second call ought to report no notfinalized objects
+        /// </summary>
         public static void ReportUnbindListStatus()
         {
+            var notFinalizedObjects=false;//goes true if we find unfinalized objects
             for (var n=0; n<MaxForListType.Count;++n)
             {
-                if(MaxForListType[n]>0 && LastForListType[n]>0)//just list the interesting ones
-                  Console.WriteLine("ID:{0,5}type:{1,30} Max:{2,8} Last:{3,8}", n,TypeForListType[n], MaxForListType[n],LastForListType[n]);
+                if (MaxForListType[n] > 0 && LastForListType[n] > 0)//just list the interesting ones
+                {
+                    Console.WriteLine("ID:{0,5}type:{1,30} Max:{2,8} Last:{3,8}", n, TypeForListType[n], MaxForListType[n], LastForListType[n]);
+                    notFinalizedObjects = true;//there are still unfinalized objects
+                }
+            }
+            if (!notFinalizedObjects)
+            {
+                Console.WriteLine("No Not-Finalized objects, all is good");
             }
         }
 #endif
