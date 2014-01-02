@@ -3537,16 +3537,18 @@ Table Name  : cyclic field definition
         /// old spec test, modified a bit
         /// Illustrate a problem if the user creates two wrappers
         /// that both wrap the same table from a group, and then changes
-        /// spec i one of them, and then asks the other if spec change is legal
+        /// spec in one of them, and then asks the other if spec change is legal
         /// problem is the wrapper state HasRows - it is not updated in all wrappers
         /// that wrap the same table.
+        /// Reason we have HasRows at all is that (spec)unsaved rows are reported as existing rows
+        /// when accessing a table.
         /// HOWEVER - it is pretty weird to get two table wrappers from the same group
         /// at once in the first place. That in itself should probably be illegal, even though
         /// legal spec operations will work fine if they come in from the wrappers interleaved
         /// 
         /// </summary>
         [Test]
-        public static void TableTwoWrappersChangeSpec()
+        public static void KnownFailTableTwoWrappersChangeSpec()
         {
             using (var g = new Group())
             {
@@ -4047,12 +4049,11 @@ Table Name  : rename columns in subtables via parameters
 
 
         /// <summary>
-        /// when implemented in core, remove this expectation and the throw in UnsafeNativeMethods.TableFindFirstBinary
-        /// and the guard that makes mono compilation not call the dll
+        /// awaiting implementation of findfirstbinary in Table        
         /// </summary>
         [Test]
-        [ExpectedException("System.NotImplementedException")]
-        public static void TableFindFirstBinary()
+        //[ExpectedException("System.NotImplementedException")]
+        public static void KnownFailTableFindFirstBinary()
         {
             using (var table = new Table("radio".Binary(), "int".Int()))
             {

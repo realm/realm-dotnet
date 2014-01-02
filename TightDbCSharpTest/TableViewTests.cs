@@ -1258,7 +1258,7 @@ intcolumn2:1//column 2
         /// </summary>
         [Test]
    [ExpectedException("System.InvalidOperationException")]
-        public static void TableViewIsValidNotLegalThroughGroup()
+        public static void KnownFailTableViewIsValidNotLegalThroughGroup()
         {
             using (var group = new  Group())
             using (var table =  group.CreateTable("T1",new IntColumn("test")))
