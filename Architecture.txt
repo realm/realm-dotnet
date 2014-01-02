@@ -15,15 +15,11 @@ File locations, distribution
 
 The release batch files
 
-runtime code files (c++ dll,C# assembly, 32bit 64 bit etc)
-
-Class structure
-
 How we handle 32,64,debug,release issues
 
-How we wrap c++ classes
+runtime code files (c++ dll,C# assembly, 32bit 64 bit etc)
 
-What the release procedure actually do
+Class structure,How we wrap c++ classes
 
 How the examples archive is set up
 
@@ -220,9 +216,9 @@ how to do that correctly.
 
 
 
+How we handle 32,64,debug,release issues
+----------------------------------------
 
-runtime code files
--------------------
 
 .net is a little bit special when it comes to 32 and 64 bit
 
@@ -287,6 +283,10 @@ A typical call to c++ will look like this (I added in the stuff it depends on)
 
 
 
+runtime code files
+------------------
+
+(see paragraph above)
 This means that the user should distribute the following files always when distributing a c# program using tightdb :
 
 TightDbCSharp.dll  - the binding assembly
@@ -344,8 +344,8 @@ C++ DLL        build number 201310252
 
 
 
-class structure
----------------
+class structure,How we wrap c++ classes
+---------------------------------------
 
 
 Handle Classes:
@@ -444,9 +444,40 @@ Row class:
 Table and TableOrView implement enumeration, and if You do a foreach on a Table (or TableView or Query) You will get Row objects, where 
 each Row object hold the RowIndex of the underlying table, as well as a reference to that table. Row also has all the methods that
 could be naturally called on a table row, such as GetInteger(ColumnIndex) etc. etc. TableRow will call back to its underlying table
-to have these methods executed. The Row class can itself be enumerated and a Foreach(RowCell)
+to have these methods executed. The Row class can itself be enumerated and a Foreach(RowCell) will return cell objects that can be
+called to get/set the value of that field. This implementation enables LinQ to work with tightdb Tables out of the box.
 
 
 
 
+
+How the examples archive is set up
+----------------------------------
+
+The examples archive contain a readme file and a number of directories, each directory containing a fully self-containing and functional C# solution,
+(.net45), that includes a project, that can be run with no installation. The project contains the 3 tightdb files needed to run a program with the 
+tightdb C# binding, and the project is set up to use these files. 
+Therefore people can simply unpack the examples archive, and then experiment with the examples, without having to do any kind of install or setup.
+The examples directory will only work if You have installed Visual Studio 2012, and if you have installed c++ runtime v110 (is usually installed with
+VS).
+The individual projects have been set up to reference the tightdb C# binding file, which is included in the main project directories. The c++ dil's
+have been included in the projects as assets, and they are marked as copy so that the built version of the project will have the two files included
+at the .exe file and therfore they can be called from the C# program.
+
+The unity project is a bit special as it is set up for unity, it contains of a readme file, and some support files, that guide You through creating
+a project file in unity. The unity project is therefore not "run out of the box" as the other projects - it is a tutorial that guides You through
+creating a unity game that uses tightdb.
+
+
+
+
+
+How things are organized on github
+----------------------------------
+The main repository is at https://github.com/Tightdb/tightdb_csharp
+This repository is usually forked by developers, and then they further create a local copy of the fork.
+Use pull requests to get the main repo updated from Your fork.
+Github does not store the release directories, only the source needed to produce releases.
+The Gitignore file contains a lot of temporary and build files that should not be comitted to github.
+Documentation using the tightdb documentation system is very sparse, only the tutorial have been done.
 
