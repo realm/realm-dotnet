@@ -17,12 +17,13 @@ namespace TightDbCSharp
         /// </summary>
         public TransactionState State { get; private set; }
 
-     //should default to 0=ready
-
-        //keep this one even though warned that it is not used. It is in fact used by marshalling
+        /* currenlty not used - shared groups always have their root=null
+         * You can comment in, in the future, if You need to create shared groups that are owned 
+         * by other things
         public SharedGroupHandle(TightDbHandle root) : base(root)
         {
         }
+        */
 
         //empty constructor to keep P/Invoke CriticalHandle support happy
         //Please leave this one in, even though resharper reports it as nont used

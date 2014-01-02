@@ -167,13 +167,13 @@ namespace TightDbCSharpTest
                 Assert.AreEqual(5, table.GetMixedSubTableSize(subColIndex, 10));
                 Assert.AreEqual(5, table.GetMixedSubTableSize(subColName, 10));
                 //todo:activate this code when core works in debug mode reg. getting the size of a mixed subtable
-                /*
+                
                 using (var tableview = table.FindAllInt(0, 0))
                 {
                     Assert.AreEqual(5, tableview.GetMixedSubTableSize(subColIndex, 10));
                     Assert.AreEqual(5, tableview.GetMixedSubTableSize(subColName, 10));
                 }
-                */
+                
             }
         }
 
@@ -3561,9 +3561,9 @@ Table Name  : cyclic field definition
                 var cnt1 = t1.ColumnCount;
                 var cnt2 = t2.ColumnCount;
                 var cnt3 = t3.ColumnCount;
-                Assert.AreEqual(2, t1.ColumnCount);
-                Assert.AreEqual(2, t2.ColumnCount);
-                Assert.AreEqual(2, t3.ColumnCount);
+                Assert.AreEqual(2, cnt1);
+                Assert.AreEqual(2, cnt2);
+                Assert.AreEqual(2, cnt3);
             }
         }
 

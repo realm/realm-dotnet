@@ -99,10 +99,10 @@ namespace TightDbCSharp
         /// If this method returns true, it is safe to call other methods on this table
         /// A table becomes non-valid if it is changed via other tables than itself, or
         /// if it is contained in a row in a table, and that table changes, or if the
-        /// table is deleted from a group etc. All user-facing operations call
+        /// table is deleted from a group etc. All user-facing (public) operations call
         /// IsValid to check if the table is still valid.
         /// Therefore users do not have to check IsValid, there will automatically be raised
-        /// exceptions in the case a table is used when it is in InValid state
+        /// exceptions in the case a table is used when it is in InValid state        
         /// </summary>
         /// <returns>True if The Table is usable</returns>
         public bool IsValid()
@@ -122,7 +122,8 @@ namespace TightDbCSharp
         /// not in the table itself. It also means that every row of the root table have
         /// one of this table, and all these tables share the same column specification
         /// The column layout of Shared Spec tables cannot be changed directly, they
-        /// must be changed by calling modifying operations on the root table.
+        /// must be changed by calling modifying operations on the root table, using
+        /// path syntax.
         /// A Root table can be a freestanding table, or a table inside a mixed column
         /// </summary>
         /// <returns>True if this is not a root table</returns>
@@ -355,6 +356,7 @@ namespace TightDbCSharp
             }
         }
 
+        
 
         //this method is intended to be called on a table with no data in it.
         //the method will create columns in the table, matching the specified schema.        
@@ -436,6 +438,12 @@ namespace TightDbCSharp
             ++Version;
         }
         
+
+        //note that updatefromspec has been removed as we now only use spec to get information about a table and its subtables
+        //shared spec - spec is not used anymore for any metadata changes.
+        //most of the code that has to do with spec updates has been removed in the spec class
+        //instead we use path based operations on table
+
         internal override Spec GetSpec()
         {
             return new Spec(this,TableHandle.GetSpec());//this spec should NOT be deallocated after use 
@@ -460,13 +468,64 @@ namespace TightDbCSharp
             UnsafeNativeMethods.TableClear(this);
         }
 
+        internal override long GetColumnCount()
+        {
+            return UnsafeNativeMethods.TableGetColumnCount(this);
+        }
+
+        internal override string GetColumnNameNoCheck(long columnIndex)//unfortunately an int, bc tight might have been built using 32 bits
+        {
+            return UnsafeNativeMethods.TableGetColumnName(this, columnIndex);
+        }
+
+        //can take invalid name parameter, will then return -1 as the column index
+        internal override long GetColumnIndexNoCheck(String name)
+        {
+            return UnsafeNativeMethods.TableGetColumnIndex(this,name);            
+        }
+
 
         internal override DataType ColumnTypeNoCheck(long columnIndex)
         {
             return UnsafeNativeMethods.TableGetColumnType(this, columnIndex);
         }
 
-        
+        /// <summary>
+        /// add empty row(s) at the end, return the index
+        /// </summary>
+        /// <param name="numberOfRows">How many empty rows to add</param>
+        /// <returns>Zero based row Index of last row added</returns>
+        public long AddEmptyRow(long numberOfRows)
+        {
+            ValidateIsValid();
+            ValidateReadWrite();
+            ++Version;
+            return UnsafeNativeMethods.TableAddEmptyRow(this, numberOfRows);
+        }
+
+
+        /// <summary>
+        /// Insert row(s) at index rowIndex.
+        /// data at rowIndex will be moved row(s) up
+        /// </summary>
+        /// <param name="rowIndex">Zero based row of first row that is moved and cleared</param>
+        /// <param name="rowsToInsert">Number of rows to make space for</param>
+        public void InsertEmptyRow(long rowIndex, long rowsToInsert)
+        {
+            ValidateIsValid();
+            ValidateReadWrite();
+            ValidateInsertRowIndex(rowIndex);
+            UnsafeNativeMethods.TableInsertEmptyRow(this, rowIndex, rowsToInsert);
+            ++Version;
+        }
+
+
+        internal override void RemoveNoCheck(long rowIndex)
+        {
+            UnsafeNativeMethods.TableRemove(this, rowIndex);
+            ++Version;
+        }
+
         internal override DataType GetMixedTypeNoCheck(long columnIndex, long rowIndex)
         {
             return UnsafeNativeMethods.TableGetMixedType(this,columnIndex, rowIndex);
@@ -478,101 +537,11 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableGetMixedDateTime(this, columnIndex, rowIndex);
         }
 
-        //can take invalid name parameter, will then return -1 as the column index
-        internal override long GetColumnIndexNoCheck(String name)
-        {
-            return UnsafeNativeMethods.TableGetColumnIndex(this,name);            
-        }
 
-        internal override long SumLongNoCheck(long columnIndex)
-        {
-            return UnsafeNativeMethods.TableSumLong(this, columnIndex);
-        }
 
-        internal override double SumFloatNoCheck(long columnIndex)
-        {
-            return UnsafeNativeMethods.TableSumFloat(this, columnIndex);           
-        }
 
-        internal override double SumDoubleNoCheck(long columnIndex)
-        {
-            return UnsafeNativeMethods.TableSumDouble(this, columnIndex);            
-        }
 
-        internal override long MinimumLongNoCheck(long columnIndex)
-        {
-            return UnsafeNativeMethods.TableMinimum(this, columnIndex);
-        }
 
-        internal override float MinimumFloatNoCheck(long columnIndex)
-        {
-            return UnsafeNativeMethods.TableMinimumFloat(this, columnIndex);
-        }
-
-        internal override double MinimumDoubleNoCheck(long columnIndex)
-        {
-            return UnsafeNativeMethods.TableMinimumDouble(this, columnIndex);
-        }
-
-        internal override DateTime MinimumDateTimeNoCheck(long columnIndex)
-        {
-            return UnsafeNativeMethods.TableMinimumDateTime(this, columnIndex);
-        }
-
-        internal override long MaximumLongNoCheck(long columnIndex)
-        {
-            return UnsafeNativeMethods.TableMaximumLong(this, columnIndex);
-        }
-
-        internal override float MaximumFloatNoCheck(long columnIndex)
-        {
-            return UnsafeNativeMethods.TableMaximumFloat(this, columnIndex);
-        }
-
-        internal override double MaximumDoubleNoCheck(long columnIndex)
-        {
-            return UnsafeNativeMethods.TableMaximumDouble(this, columnIndex);
-        }
-
-        internal override DateTime MaximumDateTimeNoCheck(long columnIndex)
-        {
-            return UnsafeNativeMethods.TableMaximumDateTime(this, columnIndex);
-        }
-
-        internal override double AverageLongNoCheck(long columnIndex)
-        {
-            return UnsafeNativeMethods.TableAverage(this, columnIndex);
-        }
-
-        internal override double AverageFloatNoCheck(long columnIndex)
-        {
-            return UnsafeNativeMethods.TableAverageFloat(this, columnIndex);
-        }
-
-        internal override double AverageDoubleNoCheck(long columnIndex)
-        {
-            return UnsafeNativeMethods.TableAverageDouble(this, columnIndex);
-        }
-
-        internal override long CountLongNoCheck(long columnIndex, long target)
-        {
-            return UnsafeNativeMethods.TableCountLong(this, columnIndex, target);
-        }
-
-        internal override long CountFloatNoCheck(long columnIndex, float target)
-        {
-            return UnsafeNativeMethods.TableCountFloat(this, columnIndex, target);
-        }
-
-        internal override long CountStringNoCheck(long columnIndex, string target)
-        {
-            return UnsafeNativeMethods.TableCountString(this, columnIndex, target);
-        }
-
-        internal override long CountDoubleNoCheck(long columnIndex, double target)
-        {
-            return UnsafeNativeMethods.TableCountDouble(this, columnIndex, target);
-        }
 
         /// <summary>
         /// Optimizes string columns in the table
@@ -606,16 +575,7 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableToJson(this);
         }
 
-        internal override void RemoveNoCheck(long rowIndex)
-        {
-            UnsafeNativeMethods.TableRemove(this,rowIndex);            
-            ++Version;
-        }
 
-        internal override long GetColumnCount()
-        {
-            return UnsafeNativeMethods.TableGetColumnCount(this);
-        }
 
         //only call this if You are sure that IsValid will return true
         private void ValidateNotSharedSpec()
@@ -625,6 +585,14 @@ namespace TightDbCSharp
                 throw new InvalidOperationException("It is illegal to alter the column structure of sub tables that has been read in from a table row");
             }
         }
+
+
+        //following many methods implement addcolumn and add subcolumn using a slightly different approach, both path based and non path based
+        //versions exist, so You have :
+        //AddBinaryColumn(String Name)
+        //AddBinaryColum(list<int> path,String Name)
+        //so these methods stand in for std::size_t add_column(DataType type, StringData name) 
+        //and std::size_t add_subcolumn(const std::vector<std::size_t>& column_path, DataType type, StringData name)
 
         /// <summary>
         /// add a column to this table.
@@ -1037,44 +1005,13 @@ namespace TightDbCSharp
             SetRowNoCheck(rowIndex,rowData);
         }
 
-        internal override string GetColumnNameNoCheck(long columnIndex)//unfortunately an int, bc tight might have been built using 32 bits
-        {
-            return UnsafeNativeMethods.TableGetColumnName(this, columnIndex);
-        }
-
         
-        /// <summary>
-        /// add empty row(s) at the end, return the index
-        /// </summary>
-        /// <param name="numberOfRows">How many empty rows to add</param>
-        /// <returns>Zero based row Index of last row added</returns>
-        public long AddEmptyRow(long numberOfRows)
-        {
-            ValidateIsValid();
-            ValidateReadWrite();
-            ++Version;
-            return UnsafeNativeMethods.TableAddEmptyRow(this, numberOfRows);            
-        }
 
         internal override byte[] GetBinaryNoCheck(long columnIndex, long rowIndex)
         {
             return UnsafeNativeMethods.TableGetBinary(this,columnIndex,rowIndex);
         }
 
-        internal override Table GetSubTableNoCheck(long columnIndex, long rowIndex)
-        {
-            return new Table(TableHandle.TableGetSubTable(columnIndex,rowIndex),ReadOnly);
-        }
-
-        internal override long GetSubTableSizeNoCheck(long columnIndex, long rowIndex)
-        {
-            return UnsafeNativeMethods.TableGetSubTableSize(this, columnIndex, rowIndex);
-        }
-
-        internal override void ClearSubTableNoCheck(long columnIndex, long rowIndex)
-        {
-            UnsafeNativeMethods.TableClearSubTable(this, columnIndex, rowIndex);
-        }
 
         internal override void SetStringNoCheck(long columnIndex, long rowIndex,string value)
         {
@@ -1120,6 +1057,215 @@ namespace TightDbCSharp
         {
             UnsafeNativeMethods.TableSetSubTable(this,columnIndex,rowIndex,value);            
         }
+
+
+        internal override Table GetSubTableNoCheck(long columnIndex, long rowIndex)
+        {
+            return new Table(TableHandle.TableGetSubTable(columnIndex,rowIndex),ReadOnly);
+        }
+
+        internal override long GetSubTableSizeNoCheck(long columnIndex, long rowIndex)
+        {
+            return UnsafeNativeMethods.TableGetSubTableSize(this, columnIndex, rowIndex);
+        }
+
+        internal override void ClearSubTableNoCheck(long columnIndex, long rowIndex)
+        {
+            UnsafeNativeMethods.TableClearSubTable(this, columnIndex, rowIndex);
+        }
+
+        internal override long CountLongNoCheck(long columnIndex, long target)
+        {
+            return UnsafeNativeMethods.TableCountLong(this, columnIndex, target);
+        }
+
+        internal override long CountStringNoCheck(long columnIndex, string target)
+        {
+            return UnsafeNativeMethods.TableCountString(this, columnIndex, target);
+        }
+
+        internal override long CountFloatNoCheck(long columnIndex, float target)
+        {
+            return UnsafeNativeMethods.TableCountFloat(this, columnIndex, target);
+        }
+
+        internal override long CountDoubleNoCheck(long columnIndex, double target)
+        {
+            return UnsafeNativeMethods.TableCountDouble(this, columnIndex, target);
+        }
+
+        internal override long SumLongNoCheck(long columnIndex)
+        {
+            return UnsafeNativeMethods.TableSumLong(this, columnIndex);
+        }
+
+        internal override double SumFloatNoCheck(long columnIndex)
+        {
+            return UnsafeNativeMethods.TableSumFloat(this, columnIndex);           
+        }
+
+        internal override double SumDoubleNoCheck(long columnIndex)
+        {
+            return UnsafeNativeMethods.TableSumDouble(this, columnIndex);            
+        }        
+
+        internal override long MaximumLongNoCheck(long columnIndex)
+        {
+            return UnsafeNativeMethods.TableMaximumLong(this, columnIndex);
+        }
+
+        internal override float MaximumFloatNoCheck(long columnIndex)
+        {
+            return UnsafeNativeMethods.TableMaximumFloat(this, columnIndex);
+        }
+
+        internal override double MaximumDoubleNoCheck(long columnIndex)
+        {
+            return UnsafeNativeMethods.TableMaximumDouble(this, columnIndex);
+        }
+
+        //in fact not implemented in core yet, just returns 0
+        internal override DateTime MaximumDateTimeNoCheck(long columnIndex)
+        {
+            return UnsafeNativeMethods.TableMaximumDateTime(this, columnIndex);
+        }
+
+        internal override long MinimumLongNoCheck(long columnIndex)
+        {
+            return UnsafeNativeMethods.TableMinimum(this, columnIndex);
+        }
+
+        internal override float MinimumFloatNoCheck(long columnIndex)
+        {
+            return UnsafeNativeMethods.TableMinimumFloat(this, columnIndex);
+        }
+
+        internal override double MinimumDoubleNoCheck(long columnIndex)
+        {
+            return UnsafeNativeMethods.TableMinimumDouble(this, columnIndex);
+        }
+
+        internal override DateTime MinimumDateTimeNoCheck(long columnIndex)
+        {
+            return UnsafeNativeMethods.TableMinimumDateTime(this, columnIndex);
+        }
+
+        internal override double AverageLongNoCheck(long columnIndex)
+        {
+            return UnsafeNativeMethods.TableAverage(this, columnIndex);
+        }
+
+        internal override double AverageFloatNoCheck(long columnIndex)
+        {
+            return UnsafeNativeMethods.TableAverageFloat(this, columnIndex);
+        }
+
+        internal override double AverageDoubleNoCheck(long columnIndex)
+        {
+            return UnsafeNativeMethods.TableAverageDouble(this, columnIndex);
+        }
+
+        //todo:implement size_t lookup(StringData value);
+
+
+        internal override long FindFirstIntNoCheck(long columnIndex, long value)
+        {
+            return UnsafeNativeMethods.TableFindFirstInt(this, columnIndex, value);
+        }
+
+        internal override long FindFirstBoolNoCheck(long columnIndex, bool value)
+        {
+            return UnsafeNativeMethods.TableFindFirstBool(this, columnIndex, value);
+        }
+
+        internal override long FindFirstDateNoCheck(long columnIndex, DateTime value)
+        {
+            return UnsafeNativeMethods.TableFindFirstDate(this, columnIndex, value);
+        }
+
+        internal override long FindFirstFloatNoCheck(long columnIndex, float value)
+        {
+            return UnsafeNativeMethods.TableFindFirstFloat(this, columnIndex, value);
+        }
+
+        internal override long FindFirstDoubleNoCheck(long columnIndex, double value)
+        {
+            return UnsafeNativeMethods.TableFindFirstDouble(this, columnIndex, value);
+        }
+
+        internal override long FindFirstStringNoCheck(long columnIndex, string value)
+        {
+            return UnsafeNativeMethods.TableFindFirstString(this, columnIndex, value);
+        }
+
+        internal override long FindFirstBinaryNoCheck(long columnIndex, byte[] value)
+        {
+            return UnsafeNativeMethods.TableFindFirstBinary(this, columnIndex, value);
+        }
+        
+        internal override TableView FindAllIntNoCheck(long columnIndex, long value)
+        {
+            return new TableView(this,TableHandle.TableFindAllInt(columnIndex,value));
+        }
+
+        internal override TableView FindAllBoolNoCheck(long columnIndex, bool value)
+        {
+            return  new TableView(this,TableHandle.TableFindAllBool(columnIndex,value));//TableFindAllBool returns a TableViewhandle, which is then put into the newly created tableview          
+        }
+              
+        internal override TableView FindAllDateNoCheck(long columnIndex, DateTime value)
+        {
+            return new TableView(this, TableHandle.TableFindAllDateTime(columnIndex,value));
+        }
+
+        internal override TableView FindAllFloatNoCheck(long columnIndex, float value)
+        {
+            return new TableView(this, TableHandle.TableFindAllFloat(columnIndex, value));            
+        }
+
+        internal override TableView FindAllDoubleNoCheck(long columnIndex, double value)
+        {
+            return new TableView(this, TableHandle.TableFindAllDouble(columnIndex, value));
+        }
+
+        internal override TableView FindAllStringNoCheck(long columnIndex, string value)
+        {
+            return new TableView(this,TableHandle.TableFindAllString(columnIndex,value));
+        }
+
+        internal override TableView FindAllBinaryNoCheck(long columnIndex, byte[] value)
+        {
+            TableViewHandle tableViewHandle = TableHandle.TableFindAllBinary(columnIndex, value);
+            if (!tableViewHandle.IsInvalid)            
+                return new TableView(this, tableViewHandle);            
+            throw new NotImplementedException("Table.FindAllBinary is not implemented in core yet - or did not return a valid TableView");            
+        }
+
+
+
+        ff
+
+        private TableView DistinctNoCheck(long columnIndex)
+        {
+            return new TableView(this, TableHandle.TableDistinct(columnIndex));
+        }
+
+        //implements get_distinct_view
+        /// <summary>
+        /// In a indexed string column, returns tableview with all rows with unique strings in that column
+        /// The rows of the first unique strings are returned if several strings are the same
+        /// </summary>
+        /// <param name="columnIndex">zero based index of string column that has an index, Distinct will operate on this column</param>
+        /// <returns>TableView of distinct records from columnIndex</returns>
+        public TableView Distinct(long columnIndex)
+        {
+            ValidateIsValid();
+            ValidateColumnIndexAndTypeString(columnIndex);
+            ValidateMustHaveIndexNoColCheck(columnIndex);
+            return DistinctNoCheck(columnIndex);
+        }
+
+
 
         internal override String GetStringNoCheck(long columnIndex, long rowIndex)
         {
@@ -1189,20 +1335,6 @@ namespace TightDbCSharp
         }
         */
 
-        /// <summary>
-        /// Insert row(s) at index rowIndex.
-        /// data at rowIndex will be moved row(s) up
-        /// </summary>
-        /// <param name="rowIndex">Zero based row of first row that is moved and cleared</param>
-        /// <param name="rowsToInsert">Number of rows to make space for</param>
-        public void InsertEmptyRow(long rowIndex, long rowsToInsert)
-        {
-            ValidateIsValid();
-            ValidateReadWrite();
-            ValidateInsertRowIndex(rowIndex);
-            UnsafeNativeMethods.TableInsertEmptyRow(this, rowIndex, rowsToInsert);
-            ++Version;
-        }
 
         //number of records in this table
         internal override long GetSize()
@@ -1309,59 +1441,8 @@ namespace TightDbCSharp
 
 
 
-        internal override long FindFirstBinaryNoCheck(long columnIndex, byte[] value)
-        {
-            return UnsafeNativeMethods.TableFindFirstBinary(this, columnIndex, value);
-        }
 
-        internal override long FindFirstIntNoCheck(long columnIndex, long value)
-        {
-            return UnsafeNativeMethods.TableFindFirstInt(this, columnIndex, value);
-        }
 
-        internal override long FindFirstStringNoCheck(long columnIndex, string value)
-        {
-            return UnsafeNativeMethods.TableFindFirstString(this, columnIndex, value);
-        }
-
-        internal override long FindFirstDoubleNoCheck(long columnIndex, double value)
-        {
-            return UnsafeNativeMethods.TableFindFirstDouble(this, columnIndex, value);
-        }
-
-        internal override long FindFirstFloatNoCheck(long columnIndex, float value)
-        {
-            return UnsafeNativeMethods.TableFindFirstFloat(this, columnIndex, value);
-        }
-
-        internal override long FindFirstDateNoCheck(long columnIndex, DateTime value)
-        {
-            return UnsafeNativeMethods.TableFindFirstDate(this, columnIndex, value);
-        }
-
-        internal override long FindFirstBoolNoCheck(long columnIndex, bool value)
-        {
-            return UnsafeNativeMethods.TableFindFirstBool(this, columnIndex, value);
-        }
-
-        private TableView DistinctNoCheck(long columnIndex)
-        {
-            return new TableView(this, TableHandle.TableDistinct(columnIndex));
-        }
-
-        /// <summary>
-        /// In a indexed string column, returns tableview with all rows with unique strings in that column
-        /// The rows of the first unique strings are returned if several strings are the same
-        /// </summary>
-        /// <param name="columnIndex">zero based index of string column that has an index, Distinct will operate on this column</param>
-        /// <returns>TableView of distinct records from columnIndex</returns>
-        public TableView Distinct(long columnIndex)
-        {
-            ValidateIsValid();
-            ValidateColumnIndexAndTypeString(columnIndex);
-            ValidateMustHaveIndexNoColCheck(columnIndex);
-            return DistinctNoCheck(columnIndex);
-        }
 
         /// <summary>
         /// In a indexed string column, returns tableview with all rows with unique strings in that column
@@ -1591,43 +1672,6 @@ namespace TightDbCSharp
             }
         }
 
-        internal override TableView FindAllIntNoCheck(long columnIndex, long value)
-        {
-            return new TableView(this,TableHandle.TableFindAllInt(columnIndex,value));
-        }
-
-        internal override TableView FindAllBoolNoCheck(long columnIndex, bool value)
-        {
-            return  new TableView(this,TableHandle.TableFindAllBool(columnIndex,value));//TableFindAllBool returns a TableViewhandle, which is then put into the newly created tableview          
-        }
-              
-        internal override TableView FindAllDateNoCheck(long columnIndex, DateTime value)
-        {
-            return new TableView(this, TableHandle.TableFindAllDateTime(columnIndex,value));
-        }
-
-        internal override TableView FindAllFloatNoCheck(long columnIndex, float value)
-        {
-            return new TableView(this, TableHandle.TableFindAllFloat(columnIndex, value));            
-        }
-
-        internal override TableView FindAllDoubleNoCheck(long columnIndex, double value)
-        {
-            return new TableView(this, TableHandle.TableFindAllDouble(columnIndex, value));
-        }
-
-        internal override TableView FindAllStringNoCheck(long columnIndex, string value)
-        {
-            return new TableView(this,TableHandle.TableFindAllString(columnIndex,value));
-        }
-
-        internal override TableView FindAllBinaryNoCheck(long columnIndex, byte[] value)
-        {
-            TableViewHandle tableViewHandle = TableHandle.TableFindAllBinary(columnIndex, value);
-            if (!tableViewHandle.IsInvalid)            
-                return new TableView(this, tableViewHandle);            
-            throw new NotImplementedException("Table.FindAllBinary is not implemented in core yet - or did not return a valid TableView");            
-        }
 
 /* experiment
         public static Field Field<T>(string name)

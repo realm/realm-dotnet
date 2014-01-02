@@ -10,6 +10,7 @@
            <Word>SharedGroupEndRead</Word>
            <Word>FindAllBinary</Word>
            <Word>IsValid</Word>
+           <Word>EndRead</Word>
          </Recognized>
          <Deprecated>
             <Term PreferredAlternate=""></Term>
@@ -24,6 +25,7 @@
            <Term>SharedGroupEndRead</Term>
            <Term>FindAllBinary</Term>
            <Term>IsValid</Term>
+           <Term>EndRead</Term>
          </DiscreteExceptions>
       </Words>
       <Acronyms>
