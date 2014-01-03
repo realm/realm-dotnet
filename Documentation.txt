@@ -1,4 +1,4 @@
-High level Binding documentation.
+High level C# Binding documentation.
 
 Installing all prerequesites for development is described in the section prereqesites.
 we expect you to have installed all prerequesites in the rest of the documentation, so go get those things installed now..
@@ -24,13 +24,15 @@ How to do static checking is described in the Static Checking section.
 
 #prereqesites
 
-Before You can develop the C# binding, and core, You should have the following software installed :
+Before you can develop the C# binding, and core, you should have the following software installed :
 
 Windows 7 64 bit  (Alternatively Windows 8, but I haven't tested that - vista will NOT work bc of VS12 not running on vista)
 VS2012 Ultimate
 GitExtensions
 Visual Leak Detector
 NUnitLite
+
+Optionally:
 Resharper
 Dotcover
 Please update all this to newest version, install all updates etc. etc. Everything is available in evaluation versions
@@ -61,13 +63,13 @@ VerifyStuff should verify the parametres and throw exceptions if a call with the
 - in unsafeNativeMethods create a static method that takes a C# wrapper and C# friendly parameter types and do the job by calling the extern methods
 - Take a look at existing code for patterns about marshalling various C# types to c++. Each type has its own pattern that is used throughout. Non blittable types have functions on the C# side, and on the c++ side that transform them. Be aware that the pattern for getting strings back from c++ is a bit complex
 - If needed, add the receieving call to the c++ dll in native\tightdb_c_cs\tightdb_c_cs2012.cs
-- see the build section on how to build. Basically, build the c++ program, run the release script at the c++ solution, then build C# and then You can debug the C# part. You will need to build all before debug will use your new c# code, automatic rebuild is broken
+- see the build section on how to build. Basically, build the c++ program, run the release script at the c++ solution, then build C# and then you can debug the C# part. You will need to build all before debug will use your new c# code, automatic rebuild is broken
 
 
 #how to add a new wrapper class
 - figure what type of TightDBHandle matches the new class (always root(inherit from TightDbHandle), sometimes root(Inherit from TightDbHandleOptionalUnbind))
 - Create New Handle class
-- Implement an empty constructor to enable interop to instantiate the wrapper class automatically (If You forget, You get a weird method missing exception when using it)
+- Implement an empty constructor to enable interop to instantiate the wrapper class automatically (If you forget, you get a weird method missing exception when using it)
 - override Unbind and put in a call to deallocate
 - in UnsafeNativeMethods, add the interop stuff, then add a small method that the handle can call to get an IntPtr with the c++ handle (see existing how its done)
 - in the Handle class of the TightDbHandle type that instantiates this new handle, add a method that returns this kind of handle (like TableHandle.TableWhere())
