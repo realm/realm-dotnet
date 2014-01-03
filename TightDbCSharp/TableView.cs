@@ -409,17 +409,11 @@ namespace TightDbCSharp
 
 
 
-        //Todo:Unit tests if tableview invalidation works when the underlying table was modified through the tableview
-        //what i mean:  test it is legal to delete a row through the tableview
-        //test that the tableview invalidates if a row is deleted through the table
-        //test that the tableview invaiddates if a row is deleted thorugh tanother table in the group
-
-
-        //todo:make note in asana that optimally, subtables and tableviews should be unique per handle - that is group should return
+        //todo:optimally,tables, subtables and tableviews should be unique per handle - that is group should return
+        //or, alternatively, the tables, subtables and tableviews should have no state at all (not neccessary easy to do)
         //the same table object if called and asked for the same table object one time more
         //and table should do the same with subtables.
         //this will fix the above mentioned unit test state bug
-
 
         internal override void RemoveNoCheck(long rowIndex)
         {
@@ -434,20 +428,12 @@ namespace TightDbCSharp
             UnsafeNativeMethods.TableViewSetMixedFloat(this,columnIndex,rowIndex,value);
         }
 
-        internal override void SetFloatNoCheck(long columnIndex, long rowIndex, float value)
-        {
-           UnsafeNativeMethods.TableViewSetFloat(this, columnIndex,rowIndex,value);   
-        }
 
         internal override void SetMixedDoubleNoCheck(long columnIndex, long rowIndex, double value)
         {
             UnsafeNativeMethods.TableViewSetMixedDouble(this,columnIndex,rowIndex,value);
         }
 
-        internal override void SetDoubleNoCheck(long columnIndex, long rowIndex, double value)
-        {
-            UnsafeNativeMethods.TableViewSetDouble(this,columnIndex ,rowIndex,value);
-        }
 
         //this method takes a DateTime
         //the value of DateTime.ToUTC will be stored in the database, as TightDB always store UTC dates
@@ -456,20 +442,7 @@ namespace TightDbCSharp
             UnsafeNativeMethods.TableViewSetMixedDate(this,columnIndex,rowIndex,value);
         }
 
-        internal override void SetBinaryNoCheck(long columnIndex, long rowIndex, byte[] value)
-        {
-            UnsafeNativeMethods.TableViewSetBinary(this, columnIndex, rowIndex, value);
-        }
 
-        internal override void SetSubTableNoCheck(long columnIndex, long rowIndex, Table value)
-        {
-            UnsafeNativeMethods.TableViewSetSubTable(this,columnIndex,rowIndex,value);
-        }
-
-        internal override void SetDateTimeNoCheck(long columnIndex, long rowIndex, DateTime value)
-        {
-            UnsafeNativeMethods.TableViewSetDate(this,columnIndex,rowIndex,value);
-        }
 
 
         internal override bool GetMixedBoolNoCheck(long columnIndex, long rowIndex)
@@ -511,17 +484,51 @@ namespace TightDbCSharp
         {
             UnsafeNativeMethods.TableViewClearSubTable(this,columnIndex,rowIndex);
         }
-        //todo:unit test that after clear subtable, earlier subtable wrappers to the cleared table are invalidated
+        //todo:unit test that after clear subtable, earlier subtable wrappers to the cleared table are invalidated (note added to asana)
+
+
+        internal override void SetLongNoCheck(long columnIndex, long rowIndex, long value)
+        {
+            UnsafeNativeMethods.TableViewSetLong(this, columnIndex, rowIndex, value);
+        }
+
+        internal override void SetIntNoCheck(long columnIndex, long rowIndex, int value)
+        {
+            UnsafeNativeMethods.TableViewSetInt(this, columnIndex, rowIndex, value);
+        }
+
+        internal override void SetBoolNoCheck(long columnIndex, long rowIndex, Boolean value)
+        {
+            UnsafeNativeMethods.TableViewSetBool(this, columnIndex, rowIndex, value);
+        }
+
+        internal override void SetDateTimeNoCheck(long columnIndex, long rowIndex, DateTime value)
+        {
+            UnsafeNativeMethods.TableViewSetDate(this, columnIndex, rowIndex, value);
+        }
+
+       
+        internal override void SetFloatNoCheck(long columnIndex, long rowIndex, float value)
+        {
+           UnsafeNativeMethods.TableViewSetFloat(this, columnIndex,rowIndex,value);   
+        }
+
+        internal override void SetDoubleNoCheck(long columnIndex, long rowIndex, double value)
+        {
+            UnsafeNativeMethods.TableViewSetDouble(this,columnIndex ,rowIndex,value);
+        }
 
         internal override void SetStringNoCheck(long columnIndex, long rowIndex, string value)
         {
             UnsafeNativeMethods.TableViewSetString(this , columnIndex, rowIndex, value);
         }
 
-        internal override String GetStringNoCheck(long columnIndex, long rowIndex)
+                internal override void SetBinaryNoCheck(long columnIndex, long rowIndex, byte[] value)
         {
-            return UnsafeNativeMethods.TableviewGetString(this, columnIndex, rowIndex);
+            UnsafeNativeMethods.TableViewSetBinary(this, columnIndex, rowIndex, value);
         }
+
+        //start of mixed setters
 
         internal override void SetMixedLongNoCheck(long columnIndex, long rowIndex, long value)
         {
@@ -563,6 +570,22 @@ namespace TightDbCSharp
             UnsafeNativeMethods.TableViewSetMixedSubTable(this, columnIndex, rowIndex, source);
         }
 
+        //end of mixed setters
+
+        
+
+        internal override void SetSubTableNoCheck(long columnIndex, long rowIndex, Table value)
+        {
+            UnsafeNativeMethods.TableViewSetSubTable(this,columnIndex,rowIndex,value);
+        }
+
+
+        internal override String GetStringNoCheck(long columnIndex, long rowIndex)
+        {
+            return UnsafeNativeMethods.TableviewGetString(this, columnIndex, rowIndex);
+        }
+
+
 
 
         internal override long GetMixedLongNoCheck(long columnIndex, long rowIndex)
@@ -586,23 +609,11 @@ namespace TightDbCSharp
             return UnsafeNativeMethods.TableViewGetDateTime(this, columnIndex, rowIndex);
         }
 
-
-
-
         internal override DataType GetMixedTypeNoCheck(long columnIndex, long rowIndex)
         {
             return UnsafeNativeMethods.TableViewGetMixedType(this, columnIndex, rowIndex);
         }
 
-        internal override void SetLongNoCheck(long columnIndex, long rowIndex, long value)
-        {
-            UnsafeNativeMethods.TableViewSetLong(this, columnIndex, rowIndex, value);
-        }
-
-        internal override void SetIntNoCheck(long columnIndex, long rowIndex, int value)
-        {
-            UnsafeNativeMethods.TableViewSetInt(this, columnIndex, rowIndex, value);
-        }
 
         internal override string GetColumnNameNoCheck(long columnIndex)//unfortunately an int, bc tight might have been built using 32 bits
         {
@@ -706,10 +717,6 @@ namespace TightDbCSharp
             }
         }
 
-        internal override void SetBoolNoCheck(long columnIndex, long rowIndex, Boolean value)
-        {
-            UnsafeNativeMethods.TableViewSetBool(this, columnIndex, rowIndex, value);
-        }
 
         //only call if You are certain that 1: The field type is Int, 2: The columnIndex is in range, 3: The rowIndex is in range
         internal override long GetLongNoCheck(long columnIndex, long rowIndex)

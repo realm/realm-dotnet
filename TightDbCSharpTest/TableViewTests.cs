@@ -1257,21 +1257,27 @@ intcolumn2:1//column 2
         /// When core has TableView.IsValid  and we start using that, then this test should work
         /// </summary>
         [Test]
-   [ExpectedException("System.InvalidOperationException")]
+        [ExpectedException("System.InvalidOperationException")]
         public static void KnownFailTableViewIsValidNotLegalThroughGroup()
         {
-            using (var group = new  Group())
-            using (var table =  group.CreateTable("T1",new IntColumn("test")))
+            using (var group = new Group())
+            using (var table = group.CreateTable("T1", new IntColumn("test")))
             using (var table2 = group.GetTable("T1"))
             {
-                table.AddMany(new List<long> {1, 2, 3, 4, 5, 6, 7, 8, 9, 10,2,2,2,2});//add many takes a collection of row values
-                using (var tableview = table.FindAllInt(0, 2)){
-                Assert.AreEqual(5, tableview.Size);
-                table2.Remove(1);
-                Assert.AreEqual(13,table.Size);
-                Assert.AreEqual(false, tableview.IsValid());//this should return false
-                long size = tableview.Size;//this should throw
-                Assert.AreEqual(2, size);//this should not run
+                table.AddMany(new List<long> {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 2, 2, 2, 2});
+                    //add many takes a collection of row values
+                Assert.AreEqual(14, table.Size);
+                using (var tableview = table.FindAllInt(0, 2))
+                {
+                    Assert.AreEqual(5, tableview.Size);
+                    tableview.RemoveLast();
+                    Assert.AreEqual(4, tableview.Size);
+                    Assert.AreEqual(13, table.Size);
+                    table2.Remove(1);
+                    Assert.AreEqual(12, table.Size);
+                    Assert.AreEqual(false, tableview.IsValid()); //this should return false
+                    long size = tableview.Size; //this should throw
+                    Assert.AreEqual(2, size); //this should not run
                 }
             }
         }

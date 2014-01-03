@@ -17,34 +17,38 @@ namespace TightDbCSharp
     public abstract class TableOrView : Handled//, IEnumerable<Row>
     {
 // ReSharper disable MemberCanBeProtected.Global
+        /// <summary>
+        /// True if the table or TableView has no rows
+        /// todo:optimize by calling c++ is_empty() directly (might be faster, do a performance test first)
+        /// </summary>
+        public Boolean IsEmpty
+        {
+            get { return Size == 0; }
+        }
         internal abstract long GetSize();
 
+        //Column information
         internal abstract long GetColumnCount();
         internal abstract String GetColumnNameNoCheck(long columnIndex);
-        internal abstract Spec GetSpec();
-
-
+        internal abstract long GetColumnIndexNoCheck(string name); //-1 if CI does not exists
         internal abstract DataType ColumnTypeNoCheck(long columnIndex);
+        
+        internal abstract Spec GetSpec();
 
         //getters for table and tableview
         internal abstract long GetLongNoCheck(long columnIndex, long rowIndex);
         internal abstract Boolean GetBoolNoCheck(long columnIndex, long rowIndex);
-        internal abstract String GetStringNoCheck(long columnIndex, long rowIndex);
-        internal abstract byte[] GetBinaryNoCheck(long columnIndex, long rowIndex);
-        internal abstract Table GetSubTableNoCheck(long columnIndex, long rowIndex);
-        internal abstract long GetSubTableSizeNoCheck(long columnIndex, long rowIndex);
-        //mixed is handled by type named GetMixedxxxx methods below
         internal abstract DateTime GetDateTimeNoCheck(long columnIndex, long rowIndex);
         internal abstract float GetFloatNoCheck(long columnIndex, long rowIndex);
         internal abstract Double GetDoubleNoCheck(long columnIndex, long rowIndex);
-
-        internal abstract DataType GetMixedTypeNoCheck(long columnIndex, long rowIndex);
-
+        internal abstract String GetStringNoCheck(long columnIndex, long rowIndex);
+        internal abstract byte[] GetBinaryNoCheck(long columnIndex, long rowIndex);
+        //mixed is handled by type named GetMixedxxxx methods below
         //getters for table and tableview mixed columns
         internal abstract long GetMixedLongNoCheck(long columnIndex, long rowIndex);
         //getmixedint not implemented as it wouldve been slower than calling getmixedlong
         //as it would have to check the size of the value returned form core
-        
+
         internal abstract bool GetMixedBoolNoCheck(long columnIndex, long rowIndex);
         internal abstract String GetMixedStringNoCheck(long columnIndex, long rowIndex);
         internal abstract byte[] GetMixedBinaryNoCheck(long columnIndex, long rowIndex);
@@ -53,8 +57,28 @@ namespace TightDbCSharp
         internal abstract DateTime GetMixedDateTimeNoCheck(long columnIndex, long rowIndex);
         internal abstract float GetMixedFloatNoCheck(long columnIndex, long rowIndex);
         internal abstract Double GetMixedDoubleNoCheck(long columnIndex, long rowIndex);
+        internal abstract DataType GetMixedTypeNoCheck(long columnIndex, long rowIndex);
+        internal abstract long GetSubTableSizeNoCheck(long columnIndex, long rowIndex);
 
-        internal abstract long GetColumnIndexNoCheck(string name); //-1 if CI does not exists
+
+        /// <summary>
+        /// Accessible if you inherit from TableOrView, even as a user of the API.
+        /// Do not call. If columnIndex is invalid, database may become corrupted.
+        /// </summary>
+        /// <param name="columnIndex"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        internal abstract long FindFirstIntNoCheck(long columnIndex, long value);
+        internal abstract long FindFirstBoolNoCheck(long columnIndex, bool value);
+        internal abstract long FindFirstDateNoCheck(long columnIndex, DateTime value);
+        internal abstract long FindFirstFloatNoCheck(long columnIndex, float value);
+        internal abstract long FindFirstDoubleNoCheck(long columnIndex, double value);
+        internal abstract long FindFirstStringNoCheck(long columnIndex, string value);
+        internal abstract long FindFirstBinaryNoCheck(long columnIndex, byte[] value);
+
+
+
+        internal abstract Table GetSubTableNoCheck(long columnIndex, long rowIndex);
 
 
 
@@ -62,14 +86,16 @@ namespace TightDbCSharp
         //Note that more functions exist, that are only availlable with Table
         //in the near future, those will, however, be implemented in tableview in the c++ code, so 
         //they are available here, but throws exceptions if called
+        //note that in core, these functions are sorted by function in table.hpp and by type in tableview.hpp
+        //this is of course a bit confusing, we have chosen to sort by function in the binding
 
         //count aggregrates takes a target value, count will only count rows that has this value
         //count only supported in table for the time being. In tablewiev count will always return 0
         internal abstract long CountLongNoCheck(long columnIndex, long target);
-        internal abstract long CountFloatNoCheck(long columnIndex, float target);
+        internal abstract long CountFloatNoCheck(long columnIndex, float target);        
+        internal abstract long CountDoubleNoCheck(long columnIndex, Double target); 
         internal abstract long CountStringNoCheck(long columnIndex, string target);
-        internal abstract long CountDoubleNoCheck(long columnIndex, Double target);
-
+        
         internal abstract long SumLongNoCheck(long columnIndex);
         internal abstract double SumFloatNoCheck(long columnIndex);
         internal abstract double SumDoubleNoCheck(long columnIndex);
@@ -90,20 +116,6 @@ namespace TightDbCSharp
         internal abstract double AverageDoubleNoCheck(long columnIndex);
 
 
-        /// <summary>
-        /// Accessible if you inherit from TableOrView, even as a user of the API.
-        /// Do not call. If columnIndex is invalid, database may become corrupted.
-        /// </summary>
-        /// <param name="columnIndex"></param>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        internal abstract long FindFirstIntNoCheck(long columnIndex, long value);
-        internal abstract long FindFirstStringNoCheck(long columnIndex, string value);
-        internal abstract long FindFirstBinaryNoCheck(long columnIndex, byte[] value);
-        internal abstract long FindFirstDoubleNoCheck(long columnIndex, double value);
-        internal abstract long FindFirstFloatNoCheck(long columnIndex, float value);
-        internal abstract long FindFirstDateNoCheck(long columnIndex, DateTime value);
-        internal abstract long FindFirstBoolNoCheck(long columnIndex, bool value);
 
 
 
@@ -178,18 +190,15 @@ namespace TightDbCSharp
             }
         }
 
-        internal abstract void SetLongNoCheck(long columnIndex, long rowIndex, long value);
-        internal abstract void SetIntNoCheck(long columnIndex, long rowIndex, int value);
- 
         //does not validate parametres or types
+        internal abstract void SetLongNoCheck(long columnIndex, long rowIndex, long value);
+        internal abstract void SetIntNoCheck(long columnIndex, long rowIndex, int value); 
         internal abstract void SetBoolNoCheck(long columnIndex, long rowIndex, Boolean value);
+        internal abstract void SetDateTimeNoCheck(long columnIndex, long rowIndex, DateTime value);
+        internal abstract void SetFloatNoCheck(long columnIndex, long rowIndex, float value);
+        internal abstract void SetDoubleNoCheck(long columnIndex, long rowIndex, double value);
         internal abstract void SetStringNoCheck(long columnIndex, long rowIndex, string value);
         internal abstract void SetBinaryNoCheck(long columnIndex, long rowIndex, byte[] value);
-        internal abstract void SetSubTableNoCheck(long columnIndex, long rowIndex, Table value);
-        internal abstract void SetDateTimeNoCheck(long columnIndex, long rowIndex, DateTime value);
-        internal abstract void SetDoubleNoCheck(long columnIndex, long rowIndex, double value);
-        internal abstract void SetFloatNoCheck(long columnIndex, long rowIndex, float value);
-
         internal abstract void SetMixedLongNoCheck(long columnIndex, long rowIndex, long value);
         internal abstract void SetMixedIntNoCheck(long columnIndex, long rowIndex, int value);
         internal abstract void SetMixedBoolNoCheck(long columnIndex, long rowIndex, bool value);
@@ -202,6 +211,11 @@ namespace TightDbCSharp
         internal abstract void SetMixedDateTimeNoCheck(long columnIndex, long rowIndex, DateTime value);
         internal abstract void SetMixedFloatNoCheck(long columnIndex, long rowIndex, float value);
         internal abstract void SetMixedDoubleNoCheck(long columnIndex, long rowIndex, double value);
+
+        //todo:add AddInt here as it is now in both core table and core tableView - also add it in the one of the two where it is missing
+
+        internal abstract void SetSubTableNoCheck(long columnIndex, long rowIndex, Table value);
+
 
         internal abstract void ClearSubTableNoCheck(long columnIndex, long rowIndex);
 
@@ -233,13 +247,6 @@ namespace TightDbCSharp
         //all existing and any new row and rowcolumn classes will point to the new contents of the indicies.
 
         
-        /// <summary>
-        /// True if the table or TableView has no rows
-        /// </summary>
-        public Boolean IsEmpty
-        {
-            get { return Size == 0; }
-        }
 
         /// <summary>
         /// Returns the number of rows in the table.
@@ -607,9 +614,9 @@ namespace TightDbCSharp
         public void SetMixed(long columnIndex, long rowIndex, object value)
         {
             ValidateIsValid();
+            ValidateReadWrite();
             ValidateColumnIndexAndTypeMixed(columnIndex);
             ValidateRowIndex(rowIndex);
-            ValidateReadWrite();
             SetMixedNoCheck(columnIndex, rowIndex, value);
         }
 
@@ -662,6 +669,7 @@ namespace TightDbCSharp
         //and handled here.
         private void SetIntArrayInRowNoCheck(long rowIndex, Int32[] ints)
         {
+            ValidateReadWrite();
             ValidateSetRowNumColumns(ints.Length);
             int ix = 0;
             foreach (var i in ints)
@@ -1854,6 +1862,8 @@ namespace TightDbCSharp
 
         //todo:shouldn't we report back if no records were removed because the table was empty?
         //in c++ no reporting is done either : void        remove_last() {if (!pty()) remove(m_size-1);}
+        //todo:performance benchmark this, compared to a call to c++ if a call is faster, we should do that
+        //even though it probably makes the assembly and dll files larger.
 
         /// <summary>
         /// Remove the last row.
@@ -2188,6 +2198,7 @@ namespace TightDbCSharp
         internal void SetLongNoRowCheck(string columnName, long rowIndex, long value)
         {
             long columnIndex = GetColumnIndex(columnName);
+            ValidateReadWrite();
             ValidateTypeInt(columnIndex);
             SetLongNoCheck(columnIndex, rowIndex, value);
         }
@@ -2195,6 +2206,7 @@ namespace TightDbCSharp
         internal void SetIntNoRowCheck(string columnName, long rowIndex, int value)
         {
             long columnIndex = GetColumnIndex(columnName);
+            ValidateReadWrite();
             ValidateTypeInt(columnIndex);
             SetIntNoCheck(columnIndex, rowIndex, value);
         }
@@ -2203,6 +2215,7 @@ namespace TightDbCSharp
         internal void SetFloatNoRowCheck(long columnIndex, long rowIndex, float value)
         {
             ValidateIsValid();
+            ValidateReadWrite();
             ValidateColumnIndexAndTypeFloat(columnIndex);
             SetFloatNoCheck(columnIndex, rowIndex, value);
         }

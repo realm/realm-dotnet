@@ -22,6 +22,7 @@ How to do a coverage test is described in the section Coverage Testing
 How to do static checking is described in the Static Checking section.
 
 
+
 #prereqesites
 
 Before you can develop the C# binding, and core, you should have the following software installed :
@@ -89,6 +90,8 @@ VerifyStuff should verify the parametres and throw exceptions if a call with the
 
 #Coverage Testing
 right click TEST project, select "cover unit tests with dotcover"
+(You need to have DotCover installed of course)
+
 
 #Static Checking
 -build all, tick all and select build all
@@ -96,3 +99,10 @@ right click TEST project, select "cover unit tests with dotcover"
 -in Resharper->Inspect->Code issues in solution, there will be the results for alle code analysis using resharper
 In general strive to have no warnings from either system. If there is a warning that really must be there, try to suppress it (msft suppress with suppression file)
 
+In the TightDbCSharp project there is a CustomDictionary.xml file, this file is referenced as link in the other projects. The file contains
+words that FxCop (code analysis) should not warn about as spelling mistakes -  TableView, SubTable etc. The file can be edited in the vs editor as any
+other textfile.
+
+Most warnings that are false positives or due to bugs in fxcop has been ignored via a supression file. 
+Other warnings are legit, but we have decided not to do something about them. These kinds of warnings are suppressed in the source file, often with
+comments detailing why we suppress them.

@@ -188,7 +188,7 @@ namespace TightDbCSharp
         }
 
      //group.open not implemented as C# groups are always created as a file group or as a binary group
-     //or as an "owns its on memory" group
+     //or as an "owns its own memory" group
 
         //group.is_attached is not implemented due to reasons stated above
 
@@ -253,11 +253,12 @@ namespace TightDbCSharp
             return new Table(GroupHandle.GetTable(tableIndex), ReadOnly);
         }
 
+        //todo:implement the gettable(string, bool wascreated) (gets the table, or create an empty new table and return that)
 
         /// <summary>
         ///  use this method to create new tables in the group
         ///  either a new table with no columns yet is returned,
-        ///  or a table matching the parameter specification is returned.
+        ///  or a table matching the parameter specification is returned.        
         ///  (Known Bug:)
         ///  Do not take the same table out multiple times A, and B from the same group, and then use the tables interleaved,
         ///  Modifying table A will not invalidate TableViews connected to Table B
@@ -306,6 +307,8 @@ namespace TightDbCSharp
             ValidateIsValid();
             UnsafeNativeMethods.GroupCommit(this);
         }
+
+        //todo:implement ToJson (by calling core template<class S> void to_json(S& out))
 
 
         public override string ToString()
