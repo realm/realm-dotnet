@@ -6576,7 +6576,7 @@ intfield2:10//column 2
                     }
                     Console.WriteLine("Added rows to table");
 
-                    const int rounds = 111;
+                    const int rounds = 11;
                     //to make this test catch all bugs set the limit to 111 instead of 13
                     //const int rounds=111;
                     for (var n = 0; n < rounds; ++n)

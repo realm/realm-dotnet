@@ -32,6 +32,7 @@ VS2012 Ultimate
 GitExtensions
 Visual Leak Detector
 NUnitLite
+NUnit
 
 Optionally:
 Resharper
