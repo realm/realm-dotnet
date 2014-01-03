@@ -1243,8 +1243,7 @@ namespace TightDbCSharp
 
 
 
-        ff
-
+        
         private TableView DistinctNoCheck(long columnIndex)
         {
             return new TableView(this, TableHandle.TableDistinct(columnIndex));

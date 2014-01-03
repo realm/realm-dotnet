@@ -572,7 +572,7 @@ namespace TightDbCSharp
 
         //end of mixed setters
 
-        asdfasdf
+        
 
         internal override void SetSubTableNoCheck(long columnIndex, long rowIndex, Table value)
         {
