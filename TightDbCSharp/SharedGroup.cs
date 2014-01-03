@@ -30,7 +30,7 @@ namespace TightDbCSharp
         /// Write transactions will return much faster, data throughput is much larger, but 
         /// no guarentee than a commit is actaully written to a file when the calls return        
         /// </summary>
-        DurabilityAsync //resharper warning ok, awaiting a windows implementation. todo::Handle this differently if running onlinux
+        DurabilityAsync //resharper warning ok, awaiting a windows implementation. todo::Handle this differently if running on linux
     }
 
     /*
@@ -203,6 +203,7 @@ namespace TightDbCSharp
         /// defaults to true
         /// if Isvalid is false something fatal has happened with the shared group wrapper        
         /// </summary>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
         public Boolean IsValid
         {
             get { return (!SharedGroupHandle.IsInvalid); }

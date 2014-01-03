@@ -94,5 +94,17 @@ namespace TightDbCSharp
         {
             return UnsafeNativeMethods.GetCppInfo();
         }
+
+#if DEBUG
+        /// <summary>
+        /// Use in debug mode to get a console output, reporting any not yet unbound handles.
+        /// Usually, after a GC followed by a WaitForPendingFinalizers,  this call should only
+        /// report any still rooted (still referenced) handle objects
+        /// </summary>
+        public static void ReportUnbindListStatus()
+        {
+            TightDbHandle.ReportUnbindListStatus();
+        }
+#endif
     }
 }

@@ -52,7 +52,7 @@ namespace TightDbCSharp
         /// <summary>
         /// The TightdbHandle that this wrapper is using to call into c++ core
         /// </summary>
-        protected TightDbHandle Handle
+        internal TightDbHandle Handle
         {
             get { return _handle; }            
         }

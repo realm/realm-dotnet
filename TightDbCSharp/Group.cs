@@ -311,6 +311,9 @@ namespace TightDbCSharp
         //todo:implement ToJson (by calling core template<class S> void to_json(S& out))
 
 
+        /// <summary>
+        /// Enhance toString to also show the group to string data from core
+        /// </summary>
         public override string ToString()
         {
             ValidateIsValid();

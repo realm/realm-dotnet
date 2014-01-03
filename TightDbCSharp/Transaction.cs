@@ -116,7 +116,7 @@ namespace TightDbCSharp
         /// (side effect of the exception could be a commit, if the transaction is guareded by using and the exception is caught outside the using clause)
         /// For maximum readabillity, Read transactions should be finished using EndRead, write transaction should be finished using Commit or Rollback        
         /// </summary>
-        public void EndRead()
+        public void EndRead()//todo:unit test this
         {
             if (State == TransactionState.Read)
             {

@@ -180,7 +180,10 @@ namespace TightDbCSharp
             }            
         }
 
-        internal override void ClearNoCheck()
+        /// <summary>
+        /// Do not call ClearNoCheck unless you have already validated that the table is not readonly, and that the table is not invalid
+        /// </summary>
+        protected override void ClearNoCheck()
         {
             UnsafeNativeMethods.TableViewClear(this);
         }

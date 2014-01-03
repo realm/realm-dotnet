@@ -4,18 +4,19 @@ using System.Runtime.InteropServices;
 
 namespace TightDbCSharp
 {
-    public class TableHandle:TightDbHandle
+    internal class TableHandle:TightDbHandle
     {
         private TableHandle(TightDbHandle root) : base(root)
         {
         }
 
+        
         //keep this one even though warned that it is not used. It is in fact used by marshalling
         //used by P/Invoke to automatically construct a TableHandle when returning a size_t as a TableHandle
-        private TableHandle()
+        private TableHandle():base(null)//resharper warning OK see above
         {
         }
-
+        
         protected override void Unbind()
         {
             UnsafeNativeMethods.TableUnbind(this);

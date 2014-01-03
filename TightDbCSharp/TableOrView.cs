@@ -240,7 +240,11 @@ namespace TightDbCSharp
             ClearNoCheck();
         }
 
-        internal abstract  void ClearNoCheck();
+        /// <summary>
+        /// Calls native Clear without validating if the tabe/view is invalid or is readonly
+        /// do not allow users to call this method wo validation
+        /// </summary>
+        protected abstract  void ClearNoCheck();
 
         internal abstract void RemoveNoCheck(long rowIndex);
         //removes the row at rowIndex, all rows after that have their index reduced by 1

@@ -4,7 +4,12 @@ using System.Runtime.CompilerServices;
 
 namespace TightDbCSharp
 {
-    internal class SharedGroupHandle : TightDbHandle
+
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1812:AvoidUninstantiatedInternalClasses")]
+    //CA1812 - SharedGroupHandle is in fact instantiated in interop implicitly but fxcop doesn't know about this kind of usage
+    //see the p/invoke calls that return a SharedGroupHandle - while c++ returns an size_t, marshalling will instantiate a fresh 
+    //SharedGroupHandle and then set its handle to the size_t return value (atomically). see concurrency.txt for details.
+    internal class SharedGroupHandle : TightDbHandle  //resharper warning ok Class 'SharedGroupHandle' is never instantiated. Se reason above
     {
 
         /// <summary>
@@ -26,8 +31,7 @@ namespace TightDbCSharp
         */
 
         //empty constructor to keep P/Invoke CriticalHandle support happy
-        //Please leave this one in, even though resharper reports it as nont used
-        public SharedGroupHandle()
+        internal SharedGroupHandle():base(null)//Resharper warning OK Please leave this one in, even though resharper reports it as nont used
         {
         }
 
