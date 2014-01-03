@@ -8,7 +8,7 @@ namespace TightDbCSharp
     {
         //keep this one even though warned that it is not used. It is in fact used by marshalling
         //needed for P/Invoke to be able to create an empty object
-        internal GroupHandle():base(true,null) //if marshalling calls the constructor directly we will create as one that must be unbound
+        internal GroupHandle():base(false,null) //if marshalling calls the constructor directly we will create as one that must be unbound
         {
         }
 
