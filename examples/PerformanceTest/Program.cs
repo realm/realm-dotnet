@@ -495,16 +495,20 @@ namespace PerformanceTest
                 }
                 
                 //search for the last 10000 inserted rows
+                int dummy=0;
                  timer1 = Stopwatch.StartNew();                
                 for (var n = 1000 * 1000; n > 1000 * 1000 - 1000; n--)
 
                     switch (type)
                     {
                         case TestType.Int:
+                            dummy =dummy  + longList.IndexOf(n + i);
                             break;
                         case TestType.String:
+                            dummy = dummy + stringList.IndexOf(n.ToString(CultureInfo.InvariantCulture) + s);
                             break;
                         case TestType.Date:
+                            dummy = dummy + dateTimeList.IndexOf(dt.AddMilliseconds(n));
                             break;
                     }
 
