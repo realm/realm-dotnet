@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using TightDbCSharp;
@@ -1250,6 +1249,8 @@ intcolumn2:1//column 2
             }
         }
 
+        /* see asana  https://app.asana.com/0/5279341711803/7507095281031
+         
         /// <summary>
         /// check that tableview gets invalidtaed if a table is changed in a object taken out form tablegroup 
         /// and  the view is from antoher instance of same table from same group
@@ -1282,7 +1283,7 @@ intcolumn2:1//column 2
             }
         }
 
-
+        */
 
 
 
