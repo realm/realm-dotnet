@@ -76,14 +76,17 @@ xcopy %location%native\tightdb_c_cs\tightdb_c_cs2012\release\files\tightdb_c_cs2
 xcopy %location%native\tightdb_c_cs\tightdb_c_cs2012\release\files\tightdb_c_cs201232r.dll %filesdestination%\NET45 /y
 xcopy %location%native\tightdb_c_cs\tightdb_c_cs2012\release\files\tightdb_c_cs201264r.dll %filesdestination%\NET45 /y
 
-copy %location%Build_note_Daily.txt %readmedestination%\readme_DailyBuild.txt
+:copy %location%Build_note_Daily.txt %readmedestination%\readme_DailyBuild.txt
 copy %location%Install_note.txt %readmedestination%\readme.txt
 
 
 set location=%~dp0
 call %location%update_examples.cmd
 set location=%~dp0
-xcopy %location%examples\*.* %readmedestination%\examples\* /s /y
+:copy selected examples projects to the release
+xcopy %location%examples\*.* %readmedestination%\examples\* /y
+xcopy %location%examples\TutorialSolution\*.* %readmedestination%\examples\TutorialSolution\* /s /y
+xcopy %location%examples\UnityExample\*.* %readmedestination%\examples\UnityExample\* /s /y
 
 :create archive
 cd %readmedestination%
