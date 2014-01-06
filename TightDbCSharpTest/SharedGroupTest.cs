@@ -45,7 +45,7 @@ namespace TightDbCSharpTest
 
 
 
-        
+
         /// <summary>
         /// Test that a call to reserve goes well
         /// </summary>
@@ -91,7 +91,8 @@ namespace TightDbCSharpTest
         public static void CreateSharedgroupInvalidFileNameTest()
         {
             File.Delete(SharedGroupFileName());
-            using (var sharedGroup = new SharedGroup(@"/\/", false, DurabilityLevel.DurabilityFull))//this will throw in the sharedgroup constructor
+            using (var sharedGroup = new SharedGroup(@"/\/", false, DurabilityLevel.DurabilityFull))
+                //this will throw in the sharedgroup constructor
             {
                 //this line will never execute
                 Assert.AreEqual(true, sharedGroup.IsValid);
@@ -125,7 +126,7 @@ namespace TightDbCSharpTest
                 using (var table = transaction.GetTable("test"))
                 {
                     Assert.AreEqual(42, table.GetLong(0, 0));
-                    transaction.Commit();
+                    transaction.EndRead();
                 }
             }
 
@@ -187,7 +188,7 @@ namespace TightDbCSharpTest
         {
             File.Delete(SharedGroupFileName());
             using (
-                var sharedGroup = new SharedGroup(SharedGroupFileName(),false,DurabilityLevel.DurabilityMemoryOnly))
+                var sharedGroup = new SharedGroup(SharedGroupFileName(), false, DurabilityLevel.DurabilityMemoryOnly))
             {
                 using (var transaction = sharedGroup.BeginWrite())
                 {
@@ -217,7 +218,7 @@ namespace TightDbCSharpTest
                 var sharedGroup = new SharedGroup(SharedGroupFileName()))
             {
                 using (var transaction = sharedGroup.BeginWrite())
-                using (var table = transaction.CreateTable("TestTable",new StringColumn("StringColumn")))
+                using (var table = transaction.CreateTable("TestTable", new StringColumn("StringColumn")))
                 {
                     table.AddEmptyRow(1);
                     table.SetString(0, 0, "Hello, Table!");
@@ -264,7 +265,7 @@ namespace TightDbCSharpTest
                         table.SetString(0, 0, "Hello, Table!");
                         Assert.AreEqual("Hello, Table!", table.GetString(0, 0));
                         transaction.Rollback();
-                        Assert.AreEqual("Hello, Table!", table.GetString(0, 0));//should throw
+                        Assert.AreEqual("Hello, Table!", table.GetString(0, 0)); //should throw
                     }
                 }
             }
@@ -290,7 +291,7 @@ namespace TightDbCSharpTest
                         table.SetString(0, 0, "Hello, Table!");
                         Assert.AreEqual("Hello, Table!", table.GetString(0, 0));
                         transaction.Commit();
-                        Assert.AreEqual("Hello, Table!", table.GetString(0, 0));//should throw
+                        Assert.AreEqual("Hello, Table!", table.GetString(0, 0)); //should throw
                     }
                 }
             }
@@ -317,16 +318,16 @@ namespace TightDbCSharpTest
                         table.SetString(0, 0, "Hello, Table!");
                         Assert.AreEqual("Hello, Table!", table.GetString(0, 0));
                         transaction.Commit();
-                        Assert.AreEqual("Hello, Table!", table.GetString(0, 0));//should throw
+                        Assert.AreEqual("Hello, Table!", table.GetString(0, 0)); //should throw
                     }
                 }
             }
         }
 
 
-        
-        
-        
+
+
+
 //todo:same as above but with a commit  - should fail We are not in read trans. so should fail i guess
 //todo: same as above but in a read transaction, shoudl also fail, we are not in a read trans
 
@@ -345,7 +346,8 @@ namespace TightDbCSharpTest
             using (var sharedGroup = new SharedGroup(SharedGroupFileName(), false, DurabilityLevel.DurabilityFull))
             {
                 //first we need to create a table and put a little data into it
-                Assert.AreEqual(true, sharedGroup.IsValid);//C# construct, so legal even on an unattached shared group                
+                Assert.AreEqual(true, sharedGroup.IsValid);
+                    //C# construct, so legal even on an unattached shared group                
 //                Console.WriteLine(String.Format(CultureInfo.InvariantCulture, "Hello from sharedgroup {0}",
 //                    sharedGroup.ObjectIdentification()));
 
@@ -355,12 +357,12 @@ namespace TightDbCSharpTest
                     using (var table = transaction.CreateTable("TestTable",
                         new StringColumn("StringColumn"),
                         new StringColumn("StringColumn2"),
-                        new StringColumn("StringColumn3")                        
+                        new StringColumn("StringColumn3")
                         ))
                     {
                         table.Add(Field01Text, Field02Text, Field03Text);
                     }
-                    transaction.Commit();                    
+                    transaction.Commit();
                 }
 
                 using (var group = sharedGroup.BeginRead())
@@ -369,7 +371,7 @@ namespace TightDbCSharpTest
                     {
                         Assert.AreEqual(Field01Text, table.GetString(0, 0));
                         Assert.AreEqual(Field02Text, table.GetString(1, 0));
-                        Assert.AreEqual(Field03Text, table.GetString(2, 0));                                                
+                        Assert.AreEqual(Field03Text, table.GetString(2, 0));
                     }
                 }
 
@@ -380,17 +382,17 @@ namespace TightDbCSharpTest
                 sharedGroup.ExecuteInWriteTransaction(group =>
                 {
                     using (var table = group.CreateTable("TestTable2", new StringColumn("StringColumn1"),
-                                                                            new StringColumn("StringColumn2"),
-                                                                            new StringColumn("StringColumn3")))
+                        new StringColumn("StringColumn2"),
+                        new StringColumn("StringColumn3")))
                     {
                         table.Add(Field01Text, Field02Text, Field03Text);
-                    }                    
+                    }
                 });
 
 
                 sharedGroup.ExecuteInReadTransaction(transaction =>
                 {
-                    using (var table = transaction.GetTable("TestTable2"))                                      
+                    using (var table = transaction.GetTable("TestTable2"))
                     {
                         Assert.AreEqual(Field01Text, table.GetString(0, 0));
                         Assert.AreEqual(Field02Text, table.GetString(1, 0));
@@ -404,8 +406,8 @@ namespace TightDbCSharpTest
 
                 //the using pattern can also use function methods
                 using (var transaction = sharedGroup.BeginRead())
-                  TestHelperRead2(transaction);
-                
+                    TestHelperRead2(transaction);
+
                 //ExecuteInWriteTransaction takes a method of type "void blabla(Group t)"
                 sharedGroup.ExecuteInWriteTransaction(TestHelperWriter3);
 
@@ -422,7 +424,7 @@ namespace TightDbCSharpTest
         }
 
 
-        static void TestHelperRead2(Group t)
+        private static void TestHelperRead2(Group t)
         {
             using (var table = t.GetTable("TestTable2"))
             {
@@ -433,24 +435,11 @@ namespace TightDbCSharpTest
         }
 
 
-        static void TestHelperWriter3(Group t)
+        private static void TestHelperWriter3(Group t)
         {
             using (var table = t.CreateTable("TestTable3", new StringColumn("StringColumn1"),
-                                                          new StringColumn("StringColumn2"),
-                                                           new StringColumn("StringColumn3")))
-            {
-                table.AddEmptyRow(3);
-                table.SetString(0, 0,Field01Text);
-                table.SetString(1, 0, Field02Text);
-                table.SetString(2, 0, Field03Text);
-            }
-        }
-
-        static void TestHelperWriter4(Group t)
-        {
-            using (var table = t.CreateTable("TestTable4", new StringColumn("StringColumn1"),
-                                                          new StringColumn("StringColumn2"),
-                                                           new StringColumn("StringColumn3")))
+                new StringColumn("StringColumn2"),
+                new StringColumn("StringColumn3")))
             {
                 table.AddEmptyRow(3);
                 table.SetString(0, 0, Field01Text);
@@ -459,11 +448,24 @@ namespace TightDbCSharpTest
             }
         }
 
-        static void TestHelperWriter5(Group t)
+        private static void TestHelperWriter4(Group t)
+        {
+            using (var table = t.CreateTable("TestTable4", new StringColumn("StringColumn1"),
+                new StringColumn("StringColumn2"),
+                new StringColumn("StringColumn3")))
+            {
+                table.AddEmptyRow(3);
+                table.SetString(0, 0, Field01Text);
+                table.SetString(1, 0, Field02Text);
+                table.SetString(2, 0, Field03Text);
+            }
+        }
+
+        private static void TestHelperWriter5(Group t)
         {
             using (var table = t.CreateTable("TestTable5", new StringColumn("StringColumn1"),
-                                                          new StringColumn("StringColumn2"),
-                                                           new StringColumn("StringColumn3")))
+                new StringColumn("StringColumn2"),
+                new StringColumn("StringColumn3")))
             {
                 table.AddEmptyRow(3);
                 table.SetString(0, 0, Field01Text);
@@ -505,12 +507,12 @@ namespace TightDbCSharpTest
             {
                 using (var transaction = sharedGroup.BeginRead())
                 {
-               //     Console.WriteLine(String.Format(CultureInfo.InvariantCulture,
-              //          "Hello from inside a readtransaction {0}", sharedGroup.ObjectIdentification()));
+                    //     Console.WriteLine(String.Format(CultureInfo.InvariantCulture,
+                    //          "Hello from inside a readtransaction {0}", sharedGroup.ObjectIdentification()));
                     Assert.AreEqual(true, transaction.ReadOnly);
                 }
-             //   Console.WriteLine(String.Format(CultureInfo.InvariantCulture, "Hello from sharedgroup {0}",
-            //        sharedGroup.ObjectIdentification()));
+                //   Console.WriteLine(String.Format(CultureInfo.InvariantCulture, "Hello from sharedgroup {0}",
+                //        sharedGroup.ObjectIdentification()));
             }
         }
 
@@ -519,7 +521,7 @@ namespace TightDbCSharpTest
         ///this test could also have been put into tabletest 
         ///also checks that on violation of the readonly contract, that the sharedgroup and the group are invalidated  
         /// </summary>
-        [Test]        
+        [Test]
         public static void SharedgroupReadTransactionReadOnlyTable()
         {
             const string sharedgroupfilename = @"UnitTestSharedGroup";
@@ -529,24 +531,25 @@ namespace TightDbCSharpTest
             {
 
                 Assert.AreEqual(true, sharedGroup.IsValid);
-                
+
                 using (var transaction = sharedGroup.BeginRead())
                 {
                     Assert.AreEqual(true, transaction.ReadOnly);
-                    Assert.AreEqual(TransactionState.Read,transaction.State);
-                    Assert.AreEqual(true,sharedGroup.IsValid);
+                    Assert.AreEqual(TransactionState.Read, transaction.State);
+                    Assert.AreEqual(true, sharedGroup.IsValid);
                     Assert.AreEqual(true, transaction.IsValid);
                     try
                     {
                         var fail = transaction.CreateTable("must fail");
-                        Assert.AreEqual(fail.Size,0);//we should never get this far. assert put in to remove compiler warning
+                        Assert.AreEqual(fail.Size, 0);
+                            //we should never get this far. assert put in to remove compiler warning
                     }
                     catch (InvalidOperationException)
                     {
                         Assert.AreEqual(true, transaction.ReadOnly);
                         Assert.AreEqual(TransactionState.Read, transaction.State);
-                        Assert.AreEqual(true, sharedGroup.IsValid);//the outer transaction has not been compromized
-                        Assert.True(transaction.IsValid);//just bc an illegal inner transaction operation was preempted
+                        Assert.AreEqual(true, sharedGroup.IsValid); //the outer transaction has not been compromized
+                        Assert.True(transaction.IsValid); //just bc an illegal inner transaction operation was preempted
                     }
                 }
             }
@@ -611,7 +614,7 @@ namespace TightDbCSharpTest
                 {
                     name = memtable.GetColumnIndex("Name");
                     foreach (var row in memtable)
-                        fakeConsole.AppendFormat("{0}:{1}", row.RowIndex, row[name]);                    
+                        fakeConsole.AppendFormat("{0}:{1}", row.RowIndex, row[name]);
                 }
             }
             // @@EndExample@@
@@ -667,7 +670,9 @@ namespace TightDbCSharpTest
         /// <summary>
         /// error handling when a transaction is started inside another transaction (which is illegal if done with the same sharedgroup object
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters", MessageId = "NUnit.Framework.Assert.Fail(System.String)"), Test]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization",
+            "CA1303:Do not pass literals as localized parameters",
+            MessageId = "NUnit.Framework.Assert.Fail(System.String)"), Test]
         public static void SharedgroupSeveralStartTransactions()
         {
             const string sharedgroupfilename = @"UnitTestSharedGroup";
@@ -688,7 +693,8 @@ namespace TightDbCSharpTest
                     {
                         using (var transaction2 = sharedGroup.BeginWrite())
                         {
-                            Assert.AreEqual(transaction2.ToString(), transaction2.ToString());//we should never get this far.line added to keep compiler happy
+                            Assert.AreEqual(transaction2.ToString(), transaction2.ToString());
+                                //we should never get this far.line added to keep compiler happy
                             Assert.Fail("starting a transaction while another one is still active did not fail");
                         }
                     }
@@ -704,7 +710,8 @@ namespace TightDbCSharpTest
                         Assert.AreEqual(true, transaction.IsValid);
                     }
                 }
-                Assert.AreEqual(true, sharedGroup.IsValid);//and the shared group should also work after the outer transaction has finished
+                Assert.AreEqual(true, sharedGroup.IsValid);
+                    //and the shared group should also work after the outer transaction has finished
             }
         }
     }
