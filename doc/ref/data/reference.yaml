@@ -14,7 +14,7 @@ STATUS:
             but lacks various methods.
             Compared to other typed language bindings (C++, Java) it currently
             only implements the "dynamic" classes.
-IMPORT    : [typed_table_ref, dyn_table_ref, dyn_query_ref, group_ref, dyn_view_ref, typed_view_ref, shared_group_ref]
+IMPORT    : [typed_table_ref, dyn_table_ref, dyn_query_ref, group_ref, typed_view_ref, dyn_view_ref, shared_group_ref]
 IMPORTPATH: ../../tightdb/doc/ref_cpp/data
 
 CATEGORIES:
