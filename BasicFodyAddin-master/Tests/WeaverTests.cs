@@ -3,6 +3,7 @@ using System.IO;
 using System.Reflection;
 using Mono.Cecil;
 using NUnit.Framework;
+using System.Diagnostics;
 
 [TestFixture]
 public class WeaverTests
@@ -45,30 +46,49 @@ public class WeaverTests
         catch (ReflectionTypeLoadException e)
         {
             foreach (var item in e.LoaderExceptions)
-            {
                 Console.WriteLine("Loader exception: " + item.Message.ToString());
-            }
+
             Assert.Fail("Load failure");
         }
 
         foreach (var t in assembly.GetTypes())
         {
-            Console.WriteLine("Type: " + t.Name);
-            Console.WriteLine("Implements: " + string.Join<System.Type>(", ", t.GetInterfaces()));
-            Console.WriteLine("");
+            Console.WriteLine("Type: " + t.Name + " implements: " + string.Join<System.Type>(", ", t.GetInterfaces()));
         }
 
-        var personType = assembly.GetType("AssemblyToProcess.Person");
+        var personType = assembly.GetType("AssemblyToProcess.PersonTest");
         var person = (dynamic)Activator.CreateInstance(personType);
 
         Assert.AreEqual("John", person.Name);
-
-        //var type = assembly.GetType("Hello");
-        //var instance = (dynamic)Activator.CreateInstance(type);
-
-        //Assert.AreEqual("Hello World", instance.World());
     }
 
+    [Test]
+    public void ValidateClassGeneration()
+    {
+        try
+        {
+            assembly.GetTypes();
+        }
+        catch (ReflectionTypeLoadException e)
+        {
+            foreach (var item in e.LoaderExceptions)
+                Console.WriteLine("Loader exception: " + item.Message.ToString());
+
+            Assert.Fail("Load failure");
+        }
+
+        //var person = new AssemblyToProcess.Person();
+        var personType = assembly.GetType("AssemblyToProcess.Person");
+        var person = (dynamic)Activator.CreateInstance(personType);
+
+        string fullName = person.FullName;
+
+        Debug.WriteLine("person.FullName: " + fullName);
+        //Debug.WriteLine("person.Address: " + person.Address);
+        //person.FullName = "John Smith";
+        //person.Address = "10 Downing Street";
+    }
+    
 #if(DEBUG)
     [Test]
     public void PeVerify()

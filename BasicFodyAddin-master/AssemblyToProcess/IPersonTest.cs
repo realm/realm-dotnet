@@ -5,7 +5,7 @@ using System.Text;
 
 namespace AssemblyToProcess
 {
-    public interface IPerson
+    public interface IPersonTest
     {
         string Name { get; }
     }

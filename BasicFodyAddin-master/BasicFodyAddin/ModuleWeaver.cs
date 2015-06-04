@@ -4,6 +4,7 @@ using Mono.Cecil;
 using Mono.Cecil.Rocks;
 using Mono.Cecil.Cil;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 public class ModuleWeaver
 {
@@ -25,48 +26,66 @@ public class ModuleWeaver
 
     public IEnumerable<TypeDefinition> GetMachingTypes()
     {
-        return ModuleDefinition.GetTypes().Where(x => x.IsInterface);
+        return ModuleDefinition.GetTypes().Where(x => (x.BaseType != null ? x.BaseType.Name == "RealmObject" : false));
     }
 
     public void Execute()
     {
         typeSystem = ModuleDefinition.TypeSystem;
 
+        var assemblyToReference = ModuleDefinition.AssemblyResolver.Resolve("AssemblyToReference");
+
+        var realmObjectType = assemblyToReference.MainModule.GetTypes().First(x => x.Name == "RealmObject");
+        var genericGetValue = realmObjectType.Methods.First(x => x.Name == "GetValue");
+
+        var getValueReference = ModuleDefinition.Import(genericGetValue);
+
         foreach (var type in GetMachingTypes())
         {
-            var className = type.Name.Substring(1);
-            var newType = new TypeDefinition(null, className, TypeAttributes.Public, typeSystem.Object);
-            newType.Interfaces.Add(type);
-            newType.Namespace = type.Namespace;
-
-            AddConstructor(newType);
-
-            foreach (var prop in type.Properties)
+            foreach (var prop in type.Properties.Where(x => !x.CustomAttributes.Any(a => a.AttributeType.Name == "IgnoreAttribute")))
             {
-                var getterName = "get_" + prop.Name;
-                var getter = new MethodDefinition(getterName, MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig | MethodAttributes.NewSlot | MethodAttributes.Virtual | MethodAttributes.Final, typeSystem.String);
-                var getterProcessor = getter.Body.GetILProcessor();
-                getterProcessor.Emit(OpCodes.Ldstr, "John");
-                getterProcessor.Emit(OpCodes.Ret);
-                getter.Overrides.Add(prop.GetMethod);
-                newType.Methods.Add(getter);
+                //Debug.WriteLine("Prop: " + prop);
 
-                var instanceProp = new PropertyDefinition(prop.Name, PropertyAttributes.None, prop.PropertyType);
-                instanceProp.GetMethod = getter;
-                newType.Properties.Add(instanceProp);
+
+                var specializedGetValue = new GenericInstanceMethod(getValueReference);
+                specializedGetValue.GenericArguments.Add(prop.PropertyType);
+
+                prop.GetMethod.Body.Instructions.Clear();
+                var processor = prop.GetMethod.Body.GetILProcessor();
+                processor.Emit(OpCodes.Ldarg_0);
+                processor.Emit(OpCodes.Ldstr, prop.Name);
+                processor.Emit(OpCodes.Call, specializedGetValue);
+                processor.Emit(OpCodes.Stloc_0);
+                processor.Emit(OpCodes.Ldloc_0);
+                processor.Emit(OpCodes.Ret);    
             }
 
-            ModuleDefinition.Types.Add(newType);
+            //var className = type.Name.Substring(1);
+            //var newType = new TypeDefinition(null, className, TypeAttributes.Public, typeSystem.Object);
+            //newType.Interfaces.Add(type);
+            //newType.Namespace = type.Namespace;
+
+            //AddConstructor(newType);
+
+            //foreach (var prop in type.Properties)
+            //{
+            //    var getterName = "get_" + prop.Name;
+            //    var getter = new MethodDefinition(getterName, MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig | MethodAttributes.NewSlot | MethodAttributes.Virtual | MethodAttributes.Final, typeSystem.String);
+            //    var getterProcessor = getter.Body.GetILProcessor();
+            //    getterProcessor.Emit(OpCodes.Ldstr, "John");
+            //    getterProcessor.Emit(OpCodes.Ret);
+            //    getter.Overrides.Add(prop.GetMethod);
+            //    newType.Methods.Add(getter);
+
+            //    var instanceProp = new PropertyDefinition(prop.Name, PropertyAttributes.None, prop.PropertyType);
+            //    instanceProp.GetMethod = getter;
+            //    newType.Properties.Add(instanceProp);
+            //}
+
+            //ModuleDefinition.Types.Add(newType);
         }
 
         return;
-
-        //var newType = new TypeDefinition(null, "Person", TypeAttributes.Public, typeSystem.Object);
-
-        //AddConstructor(newType);
-
-
-        //LogInfo("Added type 'Hello' with method 'World'.");
     }
 
     void AddConstructor(TypeDefinition newType)
