@@ -40,12 +40,14 @@ public class ModuleWeaver
 
         var getValueReference = ModuleDefinition.Import(genericGetValue);
 
+        var wovenAttributeClass = assemblyToReference.MainModule.GetTypes().First(x => x.Name == "WovenAttribute");
+        var wovenAttributeConstructor = ModuleDefinition.Import(wovenAttributeClass.GetConstructors().First());
+
         foreach (var type in GetMachingTypes())
         {
             foreach (var prop in type.Properties.Where(x => !x.CustomAttributes.Any(a => a.AttributeType.Name == "IgnoreAttribute")))
             {
                 //Debug.WriteLine("Prop: " + prop);
-
 
                 var specializedGetValue = new GenericInstanceMethod(getValueReference);
                 specializedGetValue.GenericArguments.Add(prop.PropertyType);
@@ -59,6 +61,8 @@ public class ModuleWeaver
                 processor.Emit(OpCodes.Ldloc_0);
                 processor.Emit(OpCodes.Ret);    
             }
+
+            type.CustomAttributes.Add(new CustomAttribute(wovenAttributeConstructor));
 
             //var className = type.Name.Substring(1);
             //var newType = new TypeDefinition(null, className, TypeAttributes.Public, typeSystem.Object);
