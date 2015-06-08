@@ -33,7 +33,7 @@ public class ModuleWeaver
     {
         typeSystem = ModuleDefinition.TypeSystem;
 
-        var assemblyToReference = ModuleDefinition.AssemblyResolver.Resolve("AssemblyToReference");
+        var assemblyToReference = ModuleDefinition.AssemblyResolver.Resolve("Realm");
 
         var realmObjectType = assemblyToReference.MainModule.GetTypes().First(x => x.Name == "RealmObject");
         var genericGetValue = realmObjectType.Methods.First(x => x.Name == "GetValue");

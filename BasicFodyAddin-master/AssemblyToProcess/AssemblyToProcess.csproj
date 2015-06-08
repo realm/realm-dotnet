@@ -47,9 +47,9 @@
     <Compile Include="Sandbox.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\AssemblyToReference\AssemblyToReference.csproj">
-      <Project>{3b7dd43f-dffb-4119-a199-d4f9cfa0fea2}</Project>
-      <Name>AssemblyToReference</Name>
+    <ProjectReference Include="..\Realm\Realm.csproj">
+      <Project>{2494214e-6005-4eb9-ad2c-1d4bcd7b0223}</Project>
+      <Name>Realm</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
