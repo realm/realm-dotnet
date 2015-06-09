@@ -4,6 +4,7 @@ using System.Reflection;
 using Mono.Cecil;
 using NUnit.Framework;
 using System.Diagnostics;
+using Tests;
 
 [TestFixture]
 public class WeaverTests
@@ -34,11 +35,8 @@ public class WeaverTests
         moduleDefinition.Write(newAssemblyPath);
 
         assembly = Assembly.LoadFile(newAssemblyPath);
-    }
 
-    [Test]
-    public void ValidateHelloWorldIsInjected()
-    {
+        // Try accessing assembly to ensure that the assembly is still valid.
         try
         {
             assembly.GetTypes();
@@ -46,49 +44,65 @@ public class WeaverTests
         catch (ReflectionTypeLoadException e)
         {
             foreach (var item in e.LoaderExceptions)
-                Console.WriteLine("Loader exception: " + item.Message.ToString());
+                Debug.WriteLine("Loader exception: " + item.Message.ToString());
 
             Assert.Fail("Load failure");
         }
-
-        foreach (var t in assembly.GetTypes())
-        {
-            Console.WriteLine("Type: " + t.Name + " implements: " + string.Join<System.Type>(", ", t.GetInterfaces()));
-        }
-
-        var personType = assembly.GetType("AssemblyToProcess.PersonTest");
-        var person = (dynamic)Activator.CreateInstance(personType);
-
-        Assert.AreEqual("John", person.Name);
     }
 
     [Test]
-    public void ValidateClassGeneration()
+    public void ShouldCreateTable()
     {
-        try
-        {
-            assembly.GetTypes();
-        }
-        catch (ReflectionTypeLoadException e)
-        {
-            foreach (var item in e.LoaderExceptions)
-                Console.WriteLine("Loader exception: " + item.Message.ToString());
+        // Arrange
+        var stubConnectionProvider = new StubConnectionProvider();
+        var realm = new RealmIO.Realm(stubConnectionProvider);
 
-            Assert.Fail("Load failure");
-        }
+        // Act
+        realm.CreateObject(assembly.GetType("AssemblyToProcess.Person"));
 
-        //var person = new AssemblyToProcess.Person();
-        var personType = assembly.GetType("AssemblyToProcess.Person");
-        var person = (dynamic)Activator.CreateInstance(personType);
-
-        string fullName = person.FullName;
-
-        Debug.WriteLine("person.FullName: " + fullName);
-        //Debug.WriteLine("person.Address: " + person.Address);
-        //person.FullName = "John Smith";
-        //person.Address = "10 Downing Street";
+        // Assert
+        Assert.That(stubConnectionProvider.HasTable("Person"));
+        var table = stubConnectionProvider.Tables["Person"];
+        Assert.That(table.Columns.Count, Is.EqualTo(5));
+        Assert.That(table.Columns["FirstName"], Is.EqualTo(typeof(string)));
     }
-    
+
+    [Test]
+    public void ShouldSetPropertyInDatabase()
+    {
+        // Arrange
+        var stubConnectionProvider = new StubConnectionProvider();
+        var realm = new RealmIO.Realm(stubConnectionProvider);
+        var person = (dynamic)realm.CreateObject(assembly.GetType("AssemblyToProcess.Person"));
+
+        // Act
+        person.FirstName = "John";
+
+        // Assert
+        var table = stubConnectionProvider.Tables["Person"];
+        Assert.That(table.Rows[0]["FirstName"], Is.EqualTo("John"));
+    }
+
+    [Test]
+    public void MultipleRows()
+    {
+        // Arrange
+        var stubConnectionProvider = new StubConnectionProvider();
+        var realm = new RealmIO.Realm(stubConnectionProvider);
+        var person1 = (dynamic)realm.CreateObject(assembly.GetType("AssemblyToProcess.Person"));
+        var person2 = (dynamic)realm.CreateObject(assembly.GetType("AssemblyToProcess.Person"));
+        person1.FirstName = "John";
+
+        // Act
+        person2.FirstName = "Peter";
+        person1.FirstName = "Joe";
+
+        // Assert
+        var table = stubConnectionProvider.Tables["Person"];
+        Assert.That(table.Rows[0]["FirstName"], Is.EqualTo("Joe"));
+        Assert.That(table.Rows[1]["FirstName"], Is.EqualTo("Peter"));
+    }
+
 #if(DEBUG)
     [Test]
     public void PeVerify()

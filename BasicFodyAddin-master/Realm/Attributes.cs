@@ -4,8 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Realm
+namespace RealmIO
 {
+    //public class RealmObjectAttribute : Attribute
+    //{
+    //}
+
     public class PrimaryKeyAttribute : Attribute
     {
     }

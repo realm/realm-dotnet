@@ -2,19 +2,25 @@
 
 namespace AssemblyToProcess
 {
-    public class Person : Realm.RealmObject
+    public class PhoneNumber : RealmIO.RealmObject
+    {
+        public string Kind { get; set; }
+        public string Number { get; set; }
+    }
+
+    public class Person : RealmIO.RealmObject
     {
         // Automatically implemented (overridden) properties
         public string FirstName { get; set; }
         public string LastName { get; set; }
 
         // Ignored property
-        [Realm.Ignore]
+        [RealmIO.Ignore]
         public bool IsOnline { get; set; }
 
         // Composite property
-        [Realm.Ignore] // TODO: Make unnecessary!
-        public string FullName      // Implicit Realm.Ignore because it's not an auto-propery
+        [RealmIO.Ignore]
+        public string FullName
         {
             get { return FirstName + " " + LastName; }
 
@@ -27,23 +33,32 @@ namespace AssemblyToProcess
         }
         
         // Re-mapped property
-        [Realm.MapTo("Email")]
+        [RealmIO.MapTo("Email")]
         private string Email_ { get; set; }
         
-        // Exposed version of previous property
-        [Realm.Ignore]
+        // Wrapped version of previous property
+        [RealmIO.Ignore]
         public string Email 
         { 
             get { return Email_; } 
-            set { if (!value.Contains("@")) throw new Exception(); Email_ = value; }
+            set { 
+                if (!value.Contains("@")) throw new Exception("Invalid email address"); 
+                Email_ = value; 
+            }
         }
 
         // Manually implemented property
-        [Realm.Ignore] // TODO: Make unnecessary!
+        [RealmIO.Ignore]
         public string Address
         {
             get { return GetValue<string>("Address"); }
             set { SetValue("Address", value); }
         }
+
+        // One-to-one relationship
+        public PhoneNumber PrimaryNumber { get; set; }
+
+        // One-to-many relationship
+        public RealmIO.RealmList<PhoneNumber> PhoneNumbers { get; set; }
     }
 }

@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Realm
+namespace RealmIO
 {
-    public class RealmList<T> : IQueryable where T : RealmObject
+    public class RealmList<T> : IQueryable
     {
         public Type ElementType
         {

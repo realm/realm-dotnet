@@ -58,14 +58,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="StubConnectionProvider.cs" />
     <Compile Include="Verifier.cs" />
     <Compile Include="WeaverTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\AssemblyToProcess\AssemblyToProcess.csproj">
-      <Project>{e97e649f-b703-47e3-b18a-0871d3498742}</Project>
-      <Name>AssemblyToProcess</Name>
-    </ProjectReference>
     <ProjectReference Include="..\BasicFodyAddin\BasicFodyAddin.csproj">
       <Project>{C3578A7B-09A6-4444-9383-0DEAFA4958BD}</Project>
       <Name>BasicFodyAddin</Name>

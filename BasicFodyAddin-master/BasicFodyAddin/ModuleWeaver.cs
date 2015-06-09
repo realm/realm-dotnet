@@ -26,7 +26,8 @@ public class ModuleWeaver
 
     public IEnumerable<TypeDefinition> GetMachingTypes()
     {
-        return ModuleDefinition.GetTypes().Where(x => (x.BaseType != null ? x.BaseType.Name == "RealmObject" : false));
+         return ModuleDefinition.GetTypes().Where(x => (x.BaseType != null ? x.BaseType.Name == "RealmObject" : false));
+        //return ModuleDefinition.GetTypes().Where(x => x.CustomAttributes.Any(a => a.AttributeType.Name == "RealmObjectAttribute"));
     }
 
     public void Execute()
@@ -37,33 +38,59 @@ public class ModuleWeaver
 
         var realmObjectType = assemblyToReference.MainModule.GetTypes().First(x => x.Name == "RealmObject");
         var genericGetValue = realmObjectType.Methods.First(x => x.Name == "GetValue");
-
         var getValueReference = ModuleDefinition.Import(genericGetValue);
+        var genericSetValue = realmObjectType.Methods.First(x => x.Name == "SetValue");
+        var setValueReference = ModuleDefinition.Import(genericSetValue);
+
+        //var realmType = assemblyToReference.MainModule.GetTypes().First(x => x.Name == "Realm");
+        //var genericGetValue = realmType.Methods.First(x => x.Name == "GetValue" && x.IsStatic);
+        //var getValueReference = ModuleDefinition.Import(genericGetValue);
+        //var genericSetValue = realmType.Methods.First(x => x.Name == "SetValue" && x.IsStatic);
+        //var setValueReference = ModuleDefinition.Import(genericSetValue);
 
         var wovenAttributeClass = assemblyToReference.MainModule.GetTypes().First(x => x.Name == "WovenAttribute");
         var wovenAttributeConstructor = ModuleDefinition.Import(wovenAttributeClass.GetConstructors().First());
 
         foreach (var type in GetMachingTypes())
         {
+            Debug.WriteLine("Weaving " + type.Name);
             foreach (var prop in type.Properties.Where(x => !x.CustomAttributes.Any(a => a.AttributeType.Name == "IgnoreAttribute")))
             {
-                //Debug.WriteLine("Prop: " + prop);
+                Debug.Write("  -- Property: " + prop.Name + ".. ");
 
                 var specializedGetValue = new GenericInstanceMethod(getValueReference);
                 specializedGetValue.GenericArguments.Add(prop.PropertyType);
 
                 prop.GetMethod.Body.Instructions.Clear();
-                var processor = prop.GetMethod.Body.GetILProcessor();
-                processor.Emit(OpCodes.Ldarg_0);
-                processor.Emit(OpCodes.Ldstr, prop.Name);
-                processor.Emit(OpCodes.Call, specializedGetValue);
-                processor.Emit(OpCodes.Stloc_0);
-                processor.Emit(OpCodes.Ldloc_0);
-                processor.Emit(OpCodes.Ret);    
+                var getProcessor = prop.GetMethod.Body.GetILProcessor();
+                getProcessor.Emit(OpCodes.Ldarg_0);
+                getProcessor.Emit(OpCodes.Ldstr, prop.Name);
+                getProcessor.Emit(OpCodes.Call, specializedGetValue);
+                getProcessor.Emit(OpCodes.Stloc_0);
+                getProcessor.Emit(OpCodes.Ldloc_0);
+                getProcessor.Emit(OpCodes.Ret);
+
+                Debug.Write("[get] ");
+
+                var specializedSetValue = new GenericInstanceMethod(setValueReference);
+                specializedSetValue.GenericArguments.Add(prop.PropertyType);
+
+                prop.SetMethod.Body.Instructions.Clear();
+                var setProcessor = prop.SetMethod.Body.GetILProcessor();
+                setProcessor.Emit(OpCodes.Ldarg_0);
+                setProcessor.Emit(OpCodes.Ldstr, prop.Name);
+                setProcessor.Emit(OpCodes.Ldarg_1);
+                setProcessor.Emit(OpCodes.Call, specializedSetValue);
+                setProcessor.Emit(OpCodes.Ret);
+
+                Debug.Write("[set] ");
+
+                Debug.WriteLine("");
             }
 
             type.CustomAttributes.Add(new CustomAttribute(wovenAttributeConstructor));
 
+            #region implement from interface
             //var className = type.Name.Substring(1);
             //var newType = new TypeDefinition(null, className, TypeAttributes.Public, typeSystem.Object);
             //newType.Interfaces.Add(type);
@@ -87,6 +114,9 @@ public class ModuleWeaver
             //}
 
             //ModuleDefinition.Types.Add(newType);
+            #endregion
+
+            Debug.WriteLine("");
         }
 
         return;
