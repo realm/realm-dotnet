@@ -44,6 +44,7 @@
   <ItemGroup>
     <Compile Include="Person.cs" />
     <Compile Include="IPersonTest.cs" />
+    <Compile Include="RemappedClass.cs" />
     <Compile Include="Sandbox.cs" />
   </ItemGroup>
   <ItemGroup>

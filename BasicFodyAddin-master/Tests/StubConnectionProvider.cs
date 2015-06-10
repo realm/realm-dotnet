@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
 namespace Tests
 {
-    public class StubConnectionProvider : RealmIO.ICoreProvider
+    public class StubCoreProvider : RealmIO.ICoreProvider
     {
         public class Table
         {
@@ -18,6 +19,34 @@ namespace Tests
         public bool HasTable(string tableName)
         {
             return Tables.ContainsKey(tableName);
+        }
+
+        public void AddBulk(string tableName, dynamic[] data)
+        {
+            if (!Tables.ContainsKey(tableName))
+                Tables[tableName] = new Table();
+
+            var table = Tables[tableName];
+
+            foreach(var inputRow in data)
+            {
+                var row = new Dictionary<string, object>();
+
+                foreach(var prop in inputRow.GetType().GetProperties())
+                {
+                    string propName = prop.Name;
+                    object propValue = prop.GetValue(inputRow);
+                    Type propType = prop.PropertyType;
+
+                    //Debug.WriteLine(propType.Name + " " + propName + " = " + propValue);
+
+                    if (!table.Columns.ContainsKey(propName))
+                        table.Columns[propName] = propType;
+
+                    row[propName] = propValue;
+                }
+                table.Rows.Add(row);
+            }
         }
 
         public void AddTable(string tableName)

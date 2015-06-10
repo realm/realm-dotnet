@@ -58,6 +58,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="QueryTests.cs" />
     <Compile Include="StubConnectionProvider.cs" />
     <Compile Include="Verifier.cs" />
     <Compile Include="WeaverTests.cs" />

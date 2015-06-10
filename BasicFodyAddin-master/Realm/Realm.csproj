@@ -8,7 +8,7 @@
     <ProjectGuid>{2494214E-6005-4EB9-AD2C-1D4BCD7B0223}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Realm</RootNamespace>
+    <RootNamespace>RealmIO</RootNamespace>
     <AssemblyName>Realm</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>Profile7</TargetFrameworkProfile>
@@ -36,8 +36,10 @@
     <Compile Include="Attributes.cs" />
     <Compile Include="ICoreProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Realm.cs" />
     <Compile Include="RealmList.cs" />
     <Compile Include="RealmObject.cs" />
+    <Compile Include="RealmQueryable.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="TightDbCSharp">

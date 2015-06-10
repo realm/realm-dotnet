@@ -56,7 +56,12 @@ public class ModuleWeaver
             Debug.WriteLine("Weaving " + type.Name);
             foreach (var prop in type.Properties.Where(x => !x.CustomAttributes.Any(a => a.AttributeType.Name == "IgnoreAttribute")))
             {
-                Debug.Write("  -- Property: " + prop.Name + ".. ");
+                var propName = prop.Name;
+                var mapToAttribute = prop.CustomAttributes.FirstOrDefault(a => a.AttributeType.Name == "MapToAttribute");
+                if (mapToAttribute != null)
+                    propName = ((string)mapToAttribute.ConstructorArguments[0].Value);
+
+                Debug.Write("  -- Property: " + propName + ".. ");
 
                 var specializedGetValue = new GenericInstanceMethod(getValueReference);
                 specializedGetValue.GenericArguments.Add(prop.PropertyType);
@@ -64,7 +69,7 @@ public class ModuleWeaver
                 prop.GetMethod.Body.Instructions.Clear();
                 var getProcessor = prop.GetMethod.Body.GetILProcessor();
                 getProcessor.Emit(OpCodes.Ldarg_0);
-                getProcessor.Emit(OpCodes.Ldstr, prop.Name);
+                getProcessor.Emit(OpCodes.Ldstr, propName);
                 getProcessor.Emit(OpCodes.Call, specializedGetValue);
                 getProcessor.Emit(OpCodes.Stloc_0);
                 getProcessor.Emit(OpCodes.Ldloc_0);
@@ -78,7 +83,7 @@ public class ModuleWeaver
                 prop.SetMethod.Body.Instructions.Clear();
                 var setProcessor = prop.SetMethod.Body.GetILProcessor();
                 setProcessor.Emit(OpCodes.Ldarg_0);
-                setProcessor.Emit(OpCodes.Ldstr, prop.Name);
+                setProcessor.Emit(OpCodes.Ldstr, propName);
                 setProcessor.Emit(OpCodes.Ldarg_1);
                 setProcessor.Emit(OpCodes.Call, specializedSetValue);
                 setProcessor.Emit(OpCodes.Ret);

@@ -1,25 +1,26 @@
-﻿using System;
+﻿using RealmIO;
+using System;
 
 namespace AssemblyToProcess
 {
-    public class PhoneNumber : RealmIO.RealmObject
+    public class PhoneNumber : RealmObject
     {
         public string Kind { get; set; }
         public string Number { get; set; }
     }
 
-    public class Person : RealmIO.RealmObject
+    public class Person : RealmObject
     {
         // Automatically implemented (overridden) properties
         public string FirstName { get; set; }
         public string LastName { get; set; }
 
         // Ignored property
-        [RealmIO.Ignore]
+        [Ignore]
         public bool IsOnline { get; set; }
 
         // Composite property
-        [RealmIO.Ignore]
+        [Ignore]
         public string FullName
         {
             get { return FirstName + " " + LastName; }
@@ -33,11 +34,11 @@ namespace AssemblyToProcess
         }
         
         // Re-mapped property
-        [RealmIO.MapTo("Email")]
+        [MapTo("Email")]
         private string Email_ { get; set; }
         
         // Wrapped version of previous property
-        [RealmIO.Ignore]
+        [Ignore]
         public string Email 
         { 
             get { return Email_; } 
@@ -48,7 +49,7 @@ namespace AssemblyToProcess
         }
 
         // Manually implemented property
-        [RealmIO.Ignore]
+        [Ignore]
         public string Address
         {
             get { return GetValue<string>("Address"); }
@@ -60,5 +61,11 @@ namespace AssemblyToProcess
 
         // One-to-many relationship
         public RealmIO.RealmList<PhoneNumber> PhoneNumbers { get; set; }
+
+        public Person()
+        {
+            FirstName = "Jesper";
+        }
     }
+
 }
