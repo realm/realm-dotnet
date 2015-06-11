@@ -58,13 +58,18 @@ namespace Tests
         {
             // Arrange
             PrepareForQueries();
+            var query = realm.All<TestEntity>().Where(te => te.Str == "Peter");
 
             // Act
-            var testEntities = realm.All<TestEntity>().Where(te => te.Str == "Peter");
+            query.ToList();
 
             // Assert
-            Assert.That(testEntities.Count(), Is.EqualTo(1));
-            Assert.That(testEntities.First().Str, Is.EqualTo("Peter"));
+            Assert.That(stubCoreProvider.Queries.Count, Is.EqualTo(1));
+            Assert.That(stubCoreProvider.Queries[0].TableName, Is.EqualTo("TestEntity"));
+            Assert.That(stubCoreProvider.Queries[0].Sequence.Count, Is.EqualTo(1));
+            Assert.That(stubCoreProvider.Queries[0].Sequence[0].Name, Is.EqualTo("Equal"));
+            //Assert.That(stubCoreProvider.Queries[0].Sequence[0].Field, Is.EqualTo("Str"));
+            //Assert.That(stubCoreProvider.Queries[0].Sequence[0].Value, Is.EqualTo("Peter"));
         }
     }
 } 

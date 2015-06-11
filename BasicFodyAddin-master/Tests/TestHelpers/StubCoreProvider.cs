@@ -55,16 +55,17 @@ namespace Tests.TestHelpers
             return q;
         }
 
-        public void QueryEqual<T>(ICoreQueryHandle queryHandle, string columnName, T value)
+        public void QueryEqual(ICoreQueryHandle queryHandle, string columnName, object value)
         {
-            throw new NotImplementedException();
+            var q = (Query) queryHandle;
+            q.Sequence.Add(new Query.SequenceElement { Name = "Equal" });
         }
 
-        public object ExecuteQuery(ICoreQueryHandle queryHandle, Type returnType)
+        public IEnumerable ExecuteQuery(ICoreQueryHandle queryHandle, Type returnType)
         {
             var innerType = returnType.GenericTypeArguments[0];
             var result = Activator.CreateInstance(typeof (List<>).MakeGenericType(innerType));
-            return result;
+            return (IEnumerable)result;
             //Oreturn (IQueryable)Activator.CreateInstance(typeof(RealmQuery<>).MakeGenericType(elementType), new object[] { this, expression });
         }
 
@@ -101,6 +102,13 @@ namespace Tests.TestHelpers
         public class Query : ICoreQueryHandle
         {
             public string TableName;
+
+            public class SequenceElement
+            {
+                public string Name;
+            }
+
+            public List<SequenceElement> Sequence = new List<SequenceElement>();
         }
     }
 }

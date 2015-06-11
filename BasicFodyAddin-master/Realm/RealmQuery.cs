@@ -157,6 +157,7 @@ namespace RealmIO
                     break;
                 case ExpressionType.Equal:
                     Debug.WriteLine(" = ");
+                    _coreProvider.QueryEqual(_coreQueryHandle, "", null);
                     break;
                 case ExpressionType.NotEqual:
                     Debug.WriteLine(" <> ");

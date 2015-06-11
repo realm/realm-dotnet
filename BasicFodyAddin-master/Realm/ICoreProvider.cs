@@ -17,8 +17,8 @@ namespace RealmIO
         void SetValue<T>(string tableName, int rowIndex, string propertyName, T value);
 
         ICoreQueryHandle CreateQuery(string tableName);
-        void QueryEqual<T>(ICoreQueryHandle queryHandle, string columnName, T value);
+        void QueryEqual(ICoreQueryHandle queryHandle, string columnName, object value);
 
-        object ExecuteQuery(ICoreQueryHandle queryHandle, Type returnType);
+        IEnumerable ExecuteQuery(ICoreQueryHandle queryHandle, Type returnType);
     }
 }
