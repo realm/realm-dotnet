@@ -6,36 +6,36 @@ namespace RealmIO
 {
     public class RealmObject
     {
-        private Realm managingRealm;
-        private int rowIndex;
+        private Realm _managingRealm;
+        private int _rowIndex;
 
-        public RealmObject()
+        protected RealmObject()
         {
             var modelName = GetType().Name;
 
-            if (GetType().GetTypeInfo().GetCustomAttributes(typeof(WovenAttribute), true).Count() == 0)
+            if (!GetType().GetTypeInfo().GetCustomAttributes(typeof(WovenAttribute), true).Any())
                 Debug.WriteLine("WARNING! The type " + modelName + " is a RealmObject but it has not been woven.");
         }
 
         internal void _Manage(Realm managingRealm, int rowIndex)
         {
-            this.managingRealm = managingRealm;
-            this.rowIndex = rowIndex;
+            _managingRealm = managingRealm;
+            _rowIndex = rowIndex;
         }
 
-        public T GetValue<T>(string propertyName)
+        protected T GetValue<T>(string propertyName)
         {
             var tableName = GetType().Name;
             var isRealmObject = IsAssignableFrom(typeof(T).GetTypeInfo(), typeof(RealmObject).GetTypeInfo());
             var isRealmList = IsAssignableFrom(typeof(T).GetTypeInfo(), typeof(RealmList<>).GetTypeInfo());
             
-            Debug.WriteLine("Getting " + typeof(T).Name + " value for " + tableName + "[" + rowIndex + "]." + propertyName);
+            Debug.WriteLine("Getting " + typeof(T).Name + " value for " + tableName + "[" + _rowIndex + "]." + propertyName);
             if (isRealmList) Debug.WriteLine("It's a realm list");
             if (isRealmObject) Debug.WriteLine("It's a realm object");
 
-            if (managingRealm != null)
+            if (_managingRealm != null)
             {
-                return managingRealm.GetValue<T>(tableName, rowIndex, propertyName);
+                return _managingRealm.GetValue<T>(tableName, _rowIndex, propertyName);
             }
             else
             {
@@ -47,11 +47,11 @@ namespace RealmIO
         protected void SetValue<T>(string propertyName, T value)
         {
             var tableName = GetType().Name;
-            Debug.WriteLine("Setting " + typeof(T).Name + " value for " + tableName + "[" + rowIndex + "]." + propertyName + " to " + value.ToString());
+            Debug.WriteLine("Setting " + typeof(T).Name + " value for " + tableName + "[" + _rowIndex + "]." + propertyName + " to " + value.ToString());
 
-            if (managingRealm != null)
+            if (_managingRealm != null)
             {
-                managingRealm.SetValue<T>(tableName, rowIndex, propertyName, value);
+                _managingRealm.SetValue<T>(tableName, _rowIndex, propertyName, value);
             }
             else
             {
@@ -59,11 +59,11 @@ namespace RealmIO
             }
         }
 
-        public static bool IsAssignableFrom(TypeInfo extendType, TypeInfo baseType)
+        private static bool IsAssignableFrom(TypeInfo extendType, TypeInfo baseType)
         {
             while (!baseType.IsAssignableFrom(extendType))
             {
-                if (extendType.Equals(typeof(object)))
+                if (extendType.Equals(typeof(object).GetTypeInfo()))
                     return false;
 
                 if (extendType.IsGenericType && !extendType.IsGenericTypeDefinition)

@@ -5,6 +5,7 @@ using Mono.Cecil;
 using NUnit.Framework;
 using System.Diagnostics;
 using Tests;
+using Tests.TestHelpers;
 
 [TestFixture]
 public class WeaverTests

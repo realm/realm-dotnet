@@ -2,9 +2,11 @@
 using RealmIO;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Tests.TestHelpers;
 
 namespace Tests
 {
@@ -29,7 +31,7 @@ namespace Tests
 
         private void PrepareForQueries()
         {
-            stubCoreProvider.AddBulk("TestEntity", new[]
+            stubCoreProvider.AddBulk("TestEntity", new dynamic[]
             {
                 new { Str = "John", Number = 1 },
                 new { Str = "Peter", Number = 2 }
@@ -41,13 +43,28 @@ namespace Tests
         {
             // Arrange
             PrepareForQueries();
+            var query = realm.All<TestEntity>();
 
             // Act
-            var testEntities = realm.All<TestEntity>().Where(t => t.Str == "John").ToList();
+            query.ToList();
 
             // Assert
-            Assert.That(testEntities.Count(), Is.EqualTo(2));
-            Assert.That(testEntities.First().Str, Is.EqualTo("John"));
+            Assert.That(stubCoreProvider.Queries.Count, Is.EqualTo(1));
+            Assert.That(stubCoreProvider.Queries[0].TableName, Is.EqualTo("TestEntity"));
+        }
+
+        [Test]
+        public void TestWhereQueryWithEqualToCondition()
+        {
+            // Arrange
+            PrepareForQueries();
+
+            // Act
+            var testEntities = realm.All<TestEntity>().Where(te => te.Str == "Peter");
+
+            // Assert
+            Assert.That(testEntities.Count(), Is.EqualTo(1));
+            Assert.That(testEntities.First().Str, Is.EqualTo("Peter"));
         }
     }
 } 

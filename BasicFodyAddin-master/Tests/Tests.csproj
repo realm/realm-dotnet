@@ -59,7 +59,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="QueryTests.cs" />
-    <Compile Include="StubConnectionProvider.cs" />
+    <Compile Include="TestHelpers\FakeQueryHandle.cs" />
+    <Compile Include="TestHelpers\StubCoreProvider.cs" />
     <Compile Include="Verifier.cs" />
     <Compile Include="WeaverTests.cs" />
   </ItemGroup>
