@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.22823.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BasicFodyAddin", "BasicFodyAddin\BasicFodyAddin.csproj", "{C3578A7B-09A6-4444-9383-0DEAFA4958BD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RealmWeaver", "RealmWeaver\RealmWeaver.csproj", "{C3578A7B-09A6-4444-9383-0DEAFA4958BD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{5A86453B-96FB-4B6E-A283-225BB9F753D3}"
 EndProject

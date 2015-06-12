@@ -4,7 +4,6 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{63786CE5-D899-43DF-AD4E-C2CA3BAC3FC2}</ProjectGuid>
-    
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <ConfigurationName>Debug</ConfigurationName>
@@ -34,10 +33,10 @@
     <PepitaPackage.CreatePackageTask NuGetBuildDirectory="$(SolutionDir)NuGetBuild" MetadataAssembly="$(SolutionDir)BasicFodyAddin\bin\$(ConfigurationName)\BasicFodyAddin.Fody.dll" />
   </Target>
   <ItemGroup>
-    <ProjectReference Include="..\BasicFodyAddin\BasicFodyAddin.csproj">
+    <ProjectReference Include="..\BasicFodyAddin\RealmWeaver.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <Project>{C3578A7B-09A6-4444-9383-0DEAFA4958BD}</Project>
-      <Name>BasicFodyAddin</Name>
+      <Name>RealmWeaver</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="..\packages\PepitaPackage.1.20.0.0\build\PepitaPackage.targets" Condition="Exists('..\packages\PepitaPackage.1.20.0.0\build\PepitaPackage.targets')" />
