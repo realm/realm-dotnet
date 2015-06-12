@@ -51,10 +51,9 @@ namespace Tests.TestHelpers
             q.Sequence.Add(new Query.SequenceElement { Name = "Equal", Field = columnName, Value = value });
         }
 
-        public IEnumerable ExecuteQuery(ICoreQueryHandle queryHandle, Type returnType)
+        public IEnumerable ExecuteQuery(ICoreQueryHandle queryHandle, Type objectType)
         {
-            var innerType = returnType.GenericTypeArguments[0];
-            var result = Activator.CreateInstance(typeof (List<>).MakeGenericType(innerType));
+            var result = Activator.CreateInstance(typeof (List<>).MakeGenericType(objectType));
             return (IEnumerable)result;
             //Oreturn (IQueryable)Activator.CreateInstance(typeof(RealmQuery<>).MakeGenericType(elementType), new object[] { this, expression });
         }

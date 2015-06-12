@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -69,7 +70,6 @@ namespace Tests
             Assert.That(actual, Is.EqualTo("actual value"));
         }
 
-
         [Test]
         public void CreateQueryTest()
         {
@@ -83,5 +83,22 @@ namespace Tests
             // Assert
             Assert.That(query, Is.Not.Null);
         }
+
+        [Test]
+        public void ExecuteQueryTest()
+        {
+            // Arrange
+            var coreProvider = new CoreProvider();
+            coreProvider.AddTable("T1");
+            var query = coreProvider.CreateQuery("T1");
+
+            // Act
+            var enumerable = coreProvider.ExecuteQuery(query, typeof (string));
+
+            // Assert
+            Assert.Pass();
+        }
+
+
     }
 }

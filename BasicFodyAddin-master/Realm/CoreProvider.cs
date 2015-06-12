@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using TightDbCSharp;
@@ -80,10 +81,20 @@ namespace RealmIO
             query.Equal(columnName, (bool) value);
         }
 
-        public IEnumerable ExecuteQuery(ICoreQueryHandle queryHandle, Type returnType)
+        public IEnumerable ExecuteQuery(ICoreQueryHandle queryHandle, Type objectType)
         {
             var query = ((CoreQueryHandle) queryHandle).Query;
-            return null;
+            var list = Activator.CreateInstance(typeof (List<>).MakeGenericType(objectType));
+            var add = list.GetType().GetTypeInfo().GetDeclaredMethod("Add");
+
+            foreach (var r in query)
+            {
+                var o = Activator.CreateInstance(objectType);
+                ((RealmObject)o)._Manage(new CoreRow(r));
+                add.Invoke(list, new [] { o });
+                //yield return o;
+            }
+            return (IEnumerable)list;
         }
     }
 

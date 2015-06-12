@@ -22,6 +22,6 @@ namespace RealmIO
         ICoreQueryHandle CreateQuery(string tableName);
         void QueryEqual(ICoreQueryHandle queryHandle, string columnName, object value);
 
-        IEnumerable ExecuteQuery(ICoreQueryHandle queryHandle, Type returnType);
+        IEnumerable ExecuteQuery(ICoreQueryHandle queryHandle, Type objectType);
     }
 }

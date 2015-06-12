@@ -29,13 +29,11 @@ namespace RealmIO
 
         public IEnumerator<T> GetEnumerator()
         {
-            Debug.WriteLine("Queryable.GetEnumerator: " + Expression);
             return (Provider.Execute<IEnumerable<T>>(Expression)).GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            Debug.WriteLine("Queryable: " + Expression);
             return (Provider.Execute<System.Collections.IEnumerable>(Expression)).GetEnumerator();
         }
     }
@@ -68,7 +66,6 @@ namespace RealmIO
         object IQueryProvider.Execute(Expression expression)
         {
             throw new Exception("Non-generic Execute() called...");
-            //return this.Execute(expression);
         }
 
         public abstract object Execute(Expression expression, Type returnType);
@@ -85,7 +82,6 @@ namespace RealmIO
 
         public override object Execute(Expression expression, Type returnType)
         {
-            //Debug.WriteLine("Provider: " + expression);
             return new RealmQueryVisitor().Process(_coreProvider, expression, returnType);
         }
     }
@@ -99,7 +95,7 @@ namespace RealmIO
         {
             _coreProvider = coreProvider;
             Visit(expression);
-            return _coreProvider.ExecuteQuery(_coreQueryHandle, returnType);
+            return _coreProvider.ExecuteQuery(_coreQueryHandle, returnType.GenericTypeArguments[0]);
         }
 
         private static Expression StripQuotes(Expression e)
@@ -115,12 +111,7 @@ namespace RealmIO
         {
             if (m.Method.DeclaringType == typeof(Queryable) && m.Method.Name == "Where")
             {
-                //Debug.WriteLine("SELECT * FROM (");
-                //this.Visit(m.Arguments[0]);
-                //Debug.WriteLine(") AS T WHERE ");
-                Debug.WriteLine("M(");
                 this.Visit(m.Arguments[0]);
-                Debug.WriteLine(")");
 
                 LambdaExpression lambda = (LambdaExpression)StripQuotes(m.Arguments[1]);
                 this.Visit(lambda.Body);
@@ -134,7 +125,6 @@ namespace RealmIO
             switch (u.NodeType)
             {
                 case ExpressionType.Not:
-                    Debug.WriteLine("!");
                     this.Visit(u.Operand);
                     break;
                 default:
@@ -145,40 +135,30 @@ namespace RealmIO
 
         protected override Expression VisitBinary(BinaryExpression b)
         {
-            Debug.WriteLine("(");
             this.Visit(b.Left);
             switch (b.NodeType)
             {
                 case ExpressionType.And:
-                    Debug.WriteLine(" AND ");
                     break;
                 case ExpressionType.Or:
-                    Debug.WriteLine(" OR");
                     break;
                 case ExpressionType.Equal:
-                    Debug.WriteLine(" = ");
                     _coreProvider.QueryEqual(_coreQueryHandle, ((MemberExpression)b.Left).Member.Name, ((ConstantExpression)b.Right).Value);
                     break;
                 case ExpressionType.NotEqual:
-                    Debug.WriteLine(" <> ");
                     break;
                 case ExpressionType.LessThan:
-                    Debug.WriteLine(" < ");
                     break;
                 case ExpressionType.LessThanOrEqual:
-                    Debug.WriteLine(" <= ");
                     break;
                 case ExpressionType.GreaterThan:
-                    Debug.WriteLine(" > ");
                     break;
                 case ExpressionType.GreaterThanOrEqual:
-                    Debug.WriteLine(" >= ");
                     break;
                 default:
                     throw new NotSupportedException(string.Format("The binary operator '{0}' is not supported", b.NodeType));
             }
             this.Visit(b.Right);
-            Debug.WriteLine(")");
             return b;
         }
 
@@ -193,24 +173,17 @@ namespace RealmIO
 
                 var tableName = q.ElementType.Name;
                 _coreQueryHandle = _coreProvider.CreateQuery(tableName);
-                //Debug.WriteLine("SELECT * FROM ");
-                //Debug.WriteLine(q.ElementType.Name);
             }
             else if (c.Value == null)
             {
-                Debug.WriteLine("NULL");
             }
             else
             {
                 if (c.Value is bool)
                 {
-                    Debug.WriteLine(((bool) c.Value) ? 1 : 0);
                 } 
                 else if (c.Value is string)
                 {
-                    Debug.WriteLine("");
-                    Debug.WriteLine(c.Value);
-                    Debug.WriteLine("");
                 }
                 else if (c.Value.GetType() == typeof (object))
                 {
@@ -218,7 +191,6 @@ namespace RealmIO
                 }
                 else
                 {
-                    Debug.WriteLine(c.Value);
                 }
             }
             return c;
@@ -228,7 +200,6 @@ namespace RealmIO
         {
             if (m.Expression != null && m.Expression.NodeType == ExpressionType.Parameter)
             {
-                Debug.WriteLine(m.Member.Name);
                 return m;
             }
             throw new NotSupportedException(string.Format("The member '{0}' is not supported", m.Member.Name));
