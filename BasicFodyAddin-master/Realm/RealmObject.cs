@@ -6,8 +6,7 @@ namespace RealmIO
 {
     public class RealmObject
     {
-        private Realm _managingRealm;
-        private int _rowIndex;
+        private ICoreRow _coreRow;
 
         protected RealmObject()
         {
@@ -17,10 +16,9 @@ namespace RealmIO
                 Debug.WriteLine("WARNING! The type " + modelName + " is a RealmObject but it has not been woven.");
         }
 
-        internal void _Manage(Realm managingRealm, int rowIndex)
+        internal void _Manage(ICoreRow coreRow)
         {
-            _managingRealm = managingRealm;
-            _rowIndex = rowIndex;
+            _coreRow = coreRow;
         }
 
         protected T GetValue<T>(string propertyName)
@@ -29,13 +27,14 @@ namespace RealmIO
             var isRealmObject = IsAssignableFrom(typeof(T).GetTypeInfo(), typeof(RealmObject).GetTypeInfo());
             var isRealmList = IsAssignableFrom(typeof(T).GetTypeInfo(), typeof(RealmList<>).GetTypeInfo());
             
-            Debug.WriteLine("Getting " + typeof(T).Name + " value for " + tableName + "[" + _rowIndex + "]." + propertyName);
+            //Debug.WriteLine("Getting " + typeof(T).Name + " value for " + tableName + "[" + _rowIndex + "]." + propertyName);
             if (isRealmList) Debug.WriteLine("It's a realm list");
             if (isRealmObject) Debug.WriteLine("It's a realm object");
 
-            if (_managingRealm != null)
+            if (_coreRow != null)
             {
-                return _managingRealm.GetValue<T>(tableName, _rowIndex, propertyName);
+                return _coreRow.GetValue<T>(propertyName);
+                //return _managingRealm.GetValue<T>(tableName, _rowIndex, propertyName);
             }
             else
             {
@@ -47,11 +46,12 @@ namespace RealmIO
         protected void SetValue<T>(string propertyName, T value)
         {
             var tableName = GetType().Name;
-            Debug.WriteLine("Setting " + typeof(T).Name + " value for " + tableName + "[" + _rowIndex + "]." + propertyName + " to " + value.ToString());
+            //Debug.WriteLine("Setting " + typeof(T).Name + " value for " + tableName + "[" + _rowIndex + "]." + propertyName + " to " + value.ToString());
 
-            if (_managingRealm != null)
+            if (_coreRow != null)
             {
-                _managingRealm.SetValue<T>(tableName, _rowIndex, propertyName, value);
+                _coreRow.SetValue<T>(propertyName, value);
+                //_managingRealm.SetValue<T>(tableName, _rowIndex, propertyName, value);
             }
             else
             {

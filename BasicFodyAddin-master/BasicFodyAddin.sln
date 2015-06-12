@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 14
+VisualStudioVersion = 14.0.22823.1
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BasicFodyAddin", "BasicFodyAddin\BasicFodyAddin.csproj", "{C3578A7B-09A6-4444-9383-0DEAFA4958BD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{5A86453B-96FB-4B6E-A283-225BB9F753D3}"
@@ -13,6 +15,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssemblyToProcess", "AssemblyToProcess\AssemblyToProcess.csproj", "{E97E649F-B703-47E3-B18A-0871D3498742}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Realm", "Realm\Realm.csproj", "{2494214E-6005-4EB9-AD2C-1D4BCD7B0223}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationTests", "IntegrationTests\IntegrationTests.csproj", "{85BE0303-787B-4325-9FF3-DFC028A3E6FF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -52,6 +56,14 @@ Global
 		{2494214E-6005-4EB9-AD2C-1D4BCD7B0223}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2494214E-6005-4EB9-AD2C-1D4BCD7B0223}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2494214E-6005-4EB9-AD2C-1D4BCD7B0223}.Release|x86.ActiveCfg = Release|Any CPU
+		{85BE0303-787B-4325-9FF3-DFC028A3E6FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{85BE0303-787B-4325-9FF3-DFC028A3E6FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{85BE0303-787B-4325-9FF3-DFC028A3E6FF}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{85BE0303-787B-4325-9FF3-DFC028A3E6FF}.Debug|x86.Build.0 = Debug|Any CPU
+		{85BE0303-787B-4325-9FF3-DFC028A3E6FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{85BE0303-787B-4325-9FF3-DFC028A3E6FF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{85BE0303-787B-4325-9FF3-DFC028A3E6FF}.Release|x86.ActiveCfg = Release|Any CPU
+		{85BE0303-787B-4325-9FF3-DFC028A3E6FF}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

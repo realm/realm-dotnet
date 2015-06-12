@@ -25,9 +25,9 @@ namespace RealmIO
                 CreateTableFor(objectType);
 
             var result = (RealmObject)Activator.CreateInstance(objectType);
-            var rowIndex = _coreProvider.InsertEmptyRow(objectType.Name);
+            var coreRow = _coreProvider.AddEmptyRow(objectType.Name);
 
-            result._Manage(this, rowIndex);
+            result._Manage(coreRow);
 
             return result;
         }
@@ -36,12 +36,12 @@ namespace RealmIO
         {
             var tableName = objectType.Name;
 
-            if (objectType.GetTypeInfo().GetCustomAttributes(typeof(WovenAttribute), true).Count() == 0)
+            if (!objectType.GetTypeInfo().GetCustomAttributes(typeof(WovenAttribute), true).Any())
                 Debug.WriteLine("WARNING! The type " + tableName + " is a RealmObject but it has not been woven.");
 
             _coreProvider.AddTable(tableName);
 
-            var propertiesToMap = objectType.GetTypeInfo().DeclaredProperties.Where(p => !p.CustomAttributes.Any(a => a.AttributeType == typeof(RealmIO.IgnoreAttribute)));
+            var propertiesToMap = objectType.GetTypeInfo().DeclaredProperties.Where(p => p.CustomAttributes.All(a => a.AttributeType != typeof (IgnoreAttribute)));
             foreach (var p in propertiesToMap)
             {
                 var propertyName = p.Name;
@@ -52,34 +52,11 @@ namespace RealmIO
                 var columnType = p.PropertyType;
                 _coreProvider.AddColumnToTable(tableName, propertyName, columnType);
             }
-
-            //using (var people = new Table(
-            //    new StringColumn("name"),
-            //    new IntColumn("age"),
-            //    new BoolColumn("hired"),
-            //    new SubTableColumn("phones", //sub table specification
-            //        new StringColumn("desc"),
-            //        new StringColumn("number"))))
-            //{
-            //    people.Add("John", 20, true,  new[]{new[] {"home",   "555-1234-555"}});
-            //    //Debug.WriteLine(people.Size); //=>6
-            //}
         }
 
         public RealmQuery<T> All<T>()
         {
             return new RealmQuery<T>(_coreProvider);
         }
-
-        internal T GetValue<T>(string tableName, int rowIndex, string propertyName)
-        {
-            return _coreProvider.GetValue<T>(tableName, rowIndex, propertyName);
-        }
-
-        internal void SetValue<T>(string tableName, int rowIndex, string propertyName, T value)
-        {
-            _coreProvider.SetValue(tableName, rowIndex, propertyName, value);
-        }
     }
-
 }

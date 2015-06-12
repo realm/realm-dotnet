@@ -34,6 +34,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Attributes.cs" />
+    <Compile Include="CoreProvider.cs" />
     <Compile Include="ICoreProvider.cs" />
     <Compile Include="ICoreQueryHandle.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -46,6 +47,14 @@
     <Reference Include="TightDbCSharp">
       <HintPath>..\..\..\..\Wincoder\Develope\tightdb_csharp\examples\TutorialSolution\TightDbCSharp.dll</HintPath>
     </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="tightdb_c_cs201232r.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="tightdb_c_cs201264r.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -32,20 +32,10 @@ namespace Tests.TestHelpers
             Tables[tableName].Columns[columnName] = columnType;
         }
 
-        public int InsertEmptyRow(string tableName)
+        public ICoreRow AddEmptyRow(string tableName)
         {
             Tables[tableName].Rows.Add(new Dictionary<string, object>());
-            return Tables[tableName].Rows.Count - 1;
-        }
-
-        public T GetValue<T>(string tableName, int rowIndex, string propertyName)
-        {
-            return (T)Tables[tableName].Rows[rowIndex][propertyName];
-        }
-
-        public void SetValue<T>(string tableName, int rowIndex, string propertyName, T value)
-        {
-            Tables[tableName].Rows[rowIndex][propertyName] = value;
+            return new FakeRow(Tables[tableName].Rows.Last());
         }
 
         public ICoreQueryHandle CreateQuery(string tableName)
@@ -111,6 +101,26 @@ namespace Tests.TestHelpers
             }
 
             public List<SequenceElement> Sequence = new List<SequenceElement>();
+        }
+    }
+
+    public class FakeRow : ICoreRow
+    {
+        private Dictionary<string, object> _row;
+
+        public FakeRow(Dictionary<string, object> row)
+        {
+            _row = row;
+        }
+
+        public T GetValue<T>(string propertyName)
+        {
+            return (T) _row[propertyName];
+        }
+
+        public void SetValue<T>(string propertyName, T value)
+        {
+            _row[propertyName] = value;
         }
     }
 }
