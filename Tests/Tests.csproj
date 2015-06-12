@@ -67,7 +67,7 @@
     <Compile Include="WeaverTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\BasicFodyAddin\RealmWeaver.csproj">
+    <ProjectReference Include="..\RealmWeaver\RealmWeaver.csproj">
       <Project>{C3578A7B-09A6-4444-9383-0DEAFA4958BD}</Project>
       <Name>RealmWeaver</Name>
     </ProjectReference>

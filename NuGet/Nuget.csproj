@@ -33,7 +33,7 @@
     <PepitaPackage.CreatePackageTask NuGetBuildDirectory="$(SolutionDir)NuGetBuild" MetadataAssembly="$(SolutionDir)BasicFodyAddin\bin\$(ConfigurationName)\BasicFodyAddin.Fody.dll" />
   </Target>
   <ItemGroup>
-    <ProjectReference Include="..\BasicFodyAddin\RealmWeaver.csproj">
+    <ProjectReference Include="..\RealmWeaver\RealmWeaver.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <Project>{C3578A7B-09A6-4444-9383-0DEAFA4958BD}</Project>
       <Name>RealmWeaver</Name>
