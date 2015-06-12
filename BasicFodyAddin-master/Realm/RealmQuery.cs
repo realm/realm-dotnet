@@ -157,7 +157,7 @@ namespace RealmIO
                     break;
                 case ExpressionType.Equal:
                     Debug.WriteLine(" = ");
-                    _coreProvider.QueryEqual(_coreQueryHandle, "", null);
+                    _coreProvider.QueryEqual(_coreQueryHandle, ((MemberExpression)b.Left).Member.Name, ((ConstantExpression)b.Right).Value);
                     break;
                 case ExpressionType.NotEqual:
                     Debug.WriteLine(" <> ");
@@ -202,11 +202,11 @@ namespace RealmIO
             }
             else
             {
-                if (c.Value.GetType() == typeof (bool))
+                if (c.Value is bool)
                 {
                     Debug.WriteLine(((bool) c.Value) ? 1 : 0);
                 } 
-                else if (c.Value.GetType() == typeof (string))
+                else if (c.Value is string)
                 {
                     Debug.WriteLine("");
                     Debug.WriteLine(c.Value);

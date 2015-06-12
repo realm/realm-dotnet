@@ -58,7 +58,7 @@ namespace Tests.TestHelpers
         public void QueryEqual(ICoreQueryHandle queryHandle, string columnName, object value)
         {
             var q = (Query) queryHandle;
-            q.Sequence.Add(new Query.SequenceElement { Name = "Equal" });
+            q.Sequence.Add(new Query.SequenceElement { Name = "Equal", Field = columnName, Value = value });
         }
 
         public IEnumerable ExecuteQuery(ICoreQueryHandle queryHandle, Type returnType)
@@ -106,6 +106,8 @@ namespace Tests.TestHelpers
             public class SequenceElement
             {
                 public string Name;
+                public string Field;
+                public object Value;
             }
 
             public List<SequenceElement> Sequence = new List<SequenceElement>();
