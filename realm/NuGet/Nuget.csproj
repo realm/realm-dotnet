@@ -12,7 +12,7 @@
     <ConfigurationName>Release</ConfigurationName>
   </PropertyGroup>
   <ItemGroup>
-    <None Include="BasicFodyAddin.nuspec" />
+    <None Include="RealmWeaver.nuspec" />
     <None Include="install.ps1" />
     <None Include="packages.config" />
     <None Include="uninstall.ps1" />
@@ -25,12 +25,12 @@
   <Target Name="ReBuild" DependsOnTargets="NuGetBuild" />
   <Target Name="NuGetBuild" DependsOnTargets="Clean">
     <MakeDir Directories="$(SolutionDir)NuGetBuild" />
-    <Copy SourceFiles="$(SolutionDir)NuGet\BasicFodyAddin.nuspec" DestinationFolder="$(SolutionDir)NuGetBuild" />
-    <Copy SourceFiles="$(SolutionDir)BasicFodyAddin\bin\$(ConfigurationName)\BasicFodyAddin.Fody.dll" DestinationFolder="$(SolutionDir)NuGetBuild" />
+    <Copy SourceFiles="$(SolutionDir)NuGet\RealmWeaver.nuspec" DestinationFolder="$(SolutionDir)NuGetBuild" />
+    <Copy SourceFiles="$(SolutionDir)RealmWeaver\bin\$(ConfigurationName)\RealmWeaver.Fody.dll" DestinationFolder="$(SolutionDir)NuGetBuild" />
     <Copy SourceFiles="$(SolutionDir)NuGet\Fody_ToBeDeleted.txt" DestinationFolder="$(SolutionDir)NuGetBuild\Content" />
     <Copy SourceFiles="$(ProjectDir)install.ps1" DestinationFolder="$(SolutionDir)NuGetBuild\Tools" />
     <Copy SourceFiles="$(ProjectDir)uninstall.ps1" DestinationFolder="$(SolutionDir)NuGetBuild\Tools" />
-    <PepitaPackage.CreatePackageTask NuGetBuildDirectory="$(SolutionDir)NuGetBuild" MetadataAssembly="$(SolutionDir)BasicFodyAddin\bin\$(ConfigurationName)\BasicFodyAddin.Fody.dll" />
+    <PepitaPackage.CreatePackageTask NuGetBuildDirectory="$(SolutionDir)NuGetBuild" MetadataAssembly="$(SolutionDir)RealmWeaver\bin\$(ConfigurationName)\RealmWeaver.Fody.dll" />
   </Target>
   <ItemGroup>
     <ProjectReference Include="..\RealmWeaver\RealmWeaver.csproj">
