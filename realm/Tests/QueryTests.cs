@@ -19,19 +19,19 @@ namespace Tests
             public int Number { get; set; }
         }
 
-        private StubCoreProvider stubCoreProvider;
+        private CoreProviderStub _coreProviderStub;
         private Realm realm;
 
         [SetUp]
         public void Setup()
         {
-            stubCoreProvider = new StubCoreProvider();
-            realm = new Realm(stubCoreProvider);
+            _coreProviderStub = new CoreProviderStub();
+            realm = new Realm(_coreProviderStub);
         }
 
         private void PrepareForQueries()
         {
-            stubCoreProvider.AddBulk("TestEntity", new dynamic[]
+            _coreProviderStub.AddBulk("TestEntity", new dynamic[]
             {
                 new { Str = "John", Number = 1 },
                 new { Str = "Peter", Number = 2 }
@@ -49,8 +49,8 @@ namespace Tests
             query.ToList();
 
             // Assert
-            Assert.That(stubCoreProvider.Queries.Count, Is.EqualTo(1));
-            Assert.That(stubCoreProvider.Queries[0].TableName, Is.EqualTo("TestEntity"));
+            Assert.That(_coreProviderStub.Queries.Count, Is.EqualTo(1));
+            Assert.That(_coreProviderStub.Queries[0].TableName, Is.EqualTo("TestEntity"));
         }
 
         [Test]
@@ -64,12 +64,12 @@ namespace Tests
             query.ToList();
 
             // Assert
-            Assert.That(stubCoreProvider.Queries.Count, Is.EqualTo(1));
-            Assert.That(stubCoreProvider.Queries[0].TableName, Is.EqualTo("TestEntity"));
-            Assert.That(stubCoreProvider.Queries[0].Sequence.Count, Is.EqualTo(1));
-            Assert.That(stubCoreProvider.Queries[0].Sequence[0].Name, Is.EqualTo("Equal"));
-            Assert.That(stubCoreProvider.Queries[0].Sequence[0].Field, Is.EqualTo("Str"));
-            Assert.That(stubCoreProvider.Queries[0].Sequence[0].Value, Is.EqualTo("Peter"));
+            Assert.That(_coreProviderStub.Queries.Count, Is.EqualTo(1));
+            Assert.That(_coreProviderStub.Queries[0].TableName, Is.EqualTo("TestEntity"));
+            Assert.That(_coreProviderStub.Queries[0].Sequence.Count, Is.EqualTo(1));
+            Assert.That(_coreProviderStub.Queries[0].Sequence[0].Name, Is.EqualTo("Equal"));
+            Assert.That(_coreProviderStub.Queries[0].Sequence[0].Field, Is.EqualTo("Str"));
+            Assert.That(_coreProviderStub.Queries[0].Sequence[0].Value, Is.EqualTo("Peter"));
         }
     }
 } 

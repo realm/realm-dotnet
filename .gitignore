@@ -1,2 +1,9 @@
 
 *.userprefs
+/realm/*.sdf
+*.userprefs
+/realm/ipch
+/realm/*.opensdf
+.vs
+/tightdb/native/tightdb_c_cs/tightdb_c_cs2012/x64
+/tightdb/native/tightdb_c_cs/tightdb_c_cs2012/release

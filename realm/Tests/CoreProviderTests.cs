@@ -12,7 +12,7 @@ namespace Tests
     [TestFixture]
     public class CoreProviderTests
     {
-        [Test]
+/*        [Test]
         public void ShouldAddTable()
         {
             // Arrange
@@ -99,6 +99,6 @@ namespace Tests
             Assert.Pass();
         }
 
-
+*/
     }
 }

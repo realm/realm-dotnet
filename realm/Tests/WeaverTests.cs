@@ -56,7 +56,7 @@ namespace Tests
         public void ShouldCreateTable()
         {
             // Arrange
-            var stubCoreProvider = new StubCoreProvider();
+            var stubCoreProvider = new CoreProviderStub();
             var realm = new RealmIO.Realm(stubCoreProvider);
 
             // Act
@@ -73,7 +73,7 @@ namespace Tests
         public void ShouldSetPropertyInDatabase()
         {
             // Arrange
-            var stubCoreProvider = new StubCoreProvider();
+            var stubCoreProvider = new CoreProviderStub();
             var realm = new RealmIO.Realm(stubCoreProvider);
             var person = (dynamic)realm.CreateObject(assembly.GetType("AssemblyToProcess.Person"));
 
@@ -89,7 +89,7 @@ namespace Tests
         public void ShouldKeepMultipleRowsSeparate()
         {
             // Arrange
-            var stubCoreProvider = new StubCoreProvider();
+            var stubCoreProvider = new CoreProviderStub();
             var realm = new RealmIO.Realm(stubCoreProvider);
             var person1 = (dynamic)realm.CreateObject(assembly.GetType("AssemblyToProcess.Person"));
             var person2 = (dynamic)realm.CreateObject(assembly.GetType("AssemblyToProcess.Person"));
@@ -109,7 +109,7 @@ namespace Tests
         public void ShouldFollowMapToAttributeOnProperties()
         {
             // Arrange
-            var stubCoreProvider = new StubCoreProvider();
+            var stubCoreProvider = new CoreProviderStub();
             var realm = new RealmIO.Realm(stubCoreProvider);
             var person = (dynamic)realm.CreateObject(assembly.GetType("AssemblyToProcess.Person"));
 
@@ -125,7 +125,7 @@ namespace Tests
         public void ShouldFollowMapToAttributeOnClasses()
         {
             // Arrange
-            var stubCoreProvider = new StubCoreProvider();
+            var stubCoreProvider = new CoreProviderStub();
             var realm = new RealmIO.Realm(stubCoreProvider);
 
             // Act
