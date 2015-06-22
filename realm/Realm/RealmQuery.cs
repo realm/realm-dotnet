@@ -14,15 +14,15 @@ namespace RealmIO
         public IQueryProvider Provider => provider;
         private QueryProvider provider;
 
-        public RealmQuery(QueryProvider queryProvider, Expression expression)
+        public RealmQuery(QueryProvider queryProvider, Expression expression) 
         {
-            Expression = expression;
-            provider = queryProvider;
+            this.provider = queryProvider;
+            this.Expression = expression;
         }
 
         public RealmQuery(ICoreProvider coreProvider) : this(new RealmQueryProvider(coreProvider), null)
         {
-            Expression = Expression.Constant(this);
+            this.Expression = Expression.Constant(this);
         }
 
         public IEnumerator<T> GetEnumerator()

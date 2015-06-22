@@ -44,11 +44,6 @@
     <Compile Include="RealmObject.cs" />
     <Compile Include="RealmQuery.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Reference Include="TightDbCSharp">
-      <HintPath>..\..\..\..\Wincoder\Develope\tightdb_csharp\examples\TutorialSolution\TightDbCSharp.dll</HintPath>
-    </Reference>
-  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

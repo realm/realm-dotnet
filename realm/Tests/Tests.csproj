@@ -3,8 +3,6 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{5A86453B-96FB-4B6E-A283-225BB9F753D3}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
@@ -68,13 +66,13 @@
     <Compile Include="WeaverTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Realm\Realm.csproj">
+      <Project>{2494214E-6005-4EB9-AD2C-1D4BCD7B0223}</Project>
+      <Name>Realm</Name>
+    </ProjectReference>
     <ProjectReference Include="..\RealmWeaver\RealmWeaver.csproj">
       <Project>{C3578A7B-09A6-4444-9383-0DEAFA4958BD}</Project>
       <Name>RealmWeaver</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Realm\Realm.csproj">
-      <Project>{2494214e-6005-4eb9-ad2c-1d4bcd7b0223}</Project>
-      <Name>Realm</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

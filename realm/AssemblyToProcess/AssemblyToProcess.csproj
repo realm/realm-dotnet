@@ -49,7 +49,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Realm\Realm.csproj">
-      <Project>{2494214e-6005-4eb9-ad2c-1d4bcd7b0223}</Project>
+      <Project>{2494214E-6005-4EB9-AD2C-1D4BCD7B0223}</Project>
       <Name>Realm</Name>
     </ProjectReference>
   </ItemGroup>
