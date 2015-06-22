@@ -7,3 +7,5 @@
 .vs
 /tightdb/native/tightdb_c_cs/tightdb_c_cs2012/x64
 /tightdb/native/tightdb_c_cs/tightdb_c_cs2012/release
+
+realm/Tools/RealmWeaver.Fody.dll
