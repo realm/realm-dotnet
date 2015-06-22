@@ -2,9 +2,9 @@
 
 namespace Interop.XamarinMAC
 {
-    public class MyClass
+    public class XamarinMacCoreProvider
     {
-        public MyClass()
+        public XamarinMacCoreProvider()
         {
         }
     }

@@ -53,4 +53,10 @@
   <ItemGroup>
     <ObjcBindingNativeLibrary Include="libsilly2.a" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Realm\Realm.csproj">
+      <Project>{2494214E-6005-4EB9-AD2C-1D4BCD7B0223}</Project>
+      <Name>Realm</Name>
+    </ProjectReference>
+  </ItemGroup>
 </Project>
