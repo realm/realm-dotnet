@@ -222,9 +222,9 @@ extern "C" {
     return query_ptr->find(begin_at_table_row);
   }
 
-
-
-  int main() { return 0; }  // Shut the linker up.. :-/
+#ifdef DYNAMIC  // clang complains when making a dylib if there is no main(). :-/
+  int main() { return 0; }
+#endif
 
     
 #ifdef __cplusplus
