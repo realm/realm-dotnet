@@ -65,20 +65,5 @@ namespace Interop.XamarinIOS
     // For more information, see http://developer.xamarin.com/guides/ios/advanced_topics/binding_objective-c/
     //
 
-    public class Blah
-    {
-        [DllImport("silly2", EntryPoint="realm_get_wrapper_ver", CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr GetWrapperVer();
-
-        [DllImport("silly2", EntryPoint="realm_get_ver_minor", CallingConvention = CallingConvention.Cdecl)]
-        public static extern int GetMinorVer();
-
-        public static void Main(string[] args)
-        {
-            Console.WriteLine("Hello World!");
-            Console.WriteLine("Wrapper version: " + GetWrapperVer());
-            Console.WriteLine("Minor version: " + GetMinorVer());
-        }
-    }
 }
 

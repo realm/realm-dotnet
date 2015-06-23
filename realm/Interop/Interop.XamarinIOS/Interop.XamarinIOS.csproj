@@ -39,8 +39,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="libsilly2.linkwith.cs">
-      <DependentUpon>libsilly2.a</DependentUpon>
+    <Compile Include="..\UnsafeNativeMethods.shared.cs">
+      <Link>UnsafeNativeMethods.shared.cs</Link>
+    </Compile>
+    <Compile Include="InteropConfig.cs" />
+    <Compile Include="libwrappers.linkwith.cs">
+      <DependentUpon>libwrappers.a</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -51,12 +55,14 @@
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.ObjCBinding.CSharp.targets" />
   <ItemGroup>
-    <ObjcBindingNativeLibrary Include="libsilly2.a" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\..\Realm\Realm.csproj">
       <Project>{2494214E-6005-4EB9-AD2C-1D4BCD7B0223}</Project>
       <Name>Realm</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ObjcBindingNativeLibrary Include="..\..\wrappers\DerivedData\wrappers\Build\Products\Debug-iphoneos\libwrappers.a">
+      <Link>libwrappers.a</Link>
+    </ObjcBindingNativeLibrary>
   </ItemGroup>
 </Project>
