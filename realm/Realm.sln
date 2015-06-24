@@ -5,15 +5,9 @@ VisualStudioVersion = 14.0.22823.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RealmWeaver", "RealmWeaver\RealmWeaver.csproj", "{C3578A7B-09A6-4444-9383-0DEAFA4958BD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{5A86453B-96FB-4B6E-A283-225BB9F753D3}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nuget", "NuGet\Nuget.csproj", "{63786CE5-D899-43DF-AD4E-C2CA3BAC3FC2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssemblyToProcess", "AssemblyToProcess\AssemblyToProcess.csproj", "{E97E649F-B703-47E3-B18A-0871D3498742}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Realm", "Realm\Realm.csproj", "{2494214E-6005-4EB9-AD2C-1D4BCD7B0223}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationTests", "IntegrationTests\IntegrationTests.csproj", "{85BE0303-787B-4325-9FF3-DFC028A3E6FF}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4A6B567B-5654-449B-B30A-D7FDE6A7F341}"
 	ProjectSection(SolutionItems) = preProject
@@ -21,13 +15,21 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Playground.XamarinIOS", "Playground.XamarinIOS\Playground.XamarinIOS.csproj", "{F81186BE-F71F-4989-8208-60BC6474FE6D}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Interop", "Interop", "{2591F0E6-164F-491A-9D18-4AB4B255C717}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Interop.XamarinIOS", "Interop\Interop.XamarinIOS\Interop.XamarinIOS.csproj", "{A55BD773-5A29-4B2A-9DB7-1AB1DD38B537}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Interop.XamarinMAC", "Interop\Interop.XamarinMAC\Interop.XamarinMAC.csproj", "{9F2EE4B5-CFD1-45E6-B2DB-969857FBCA2D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{199A5BB3-E248-4A6A-8B86-364185EAFDAA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssemblyToProcess", "AssemblyToProcess\AssemblyToProcess.csproj", "{E97E649F-B703-47E3-B18A-0871D3498742}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RealmTests", "Tests\RealmTests.csproj", "{5A86453B-96FB-4B6E-A283-225BB9F753D3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Playground.XamarinIOS", "Playground.XamarinIOS\Playground.XamarinIOS.csproj", "{F81186BE-F71F-4989-8208-60BC6474FE6D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationTests", "IntegrationTests\IntegrationTests.csproj", "{85BE0303-787B-4325-9FF3-DFC028A3E6FF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -179,6 +181,10 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{A55BD773-5A29-4B2A-9DB7-1AB1DD38B537} = {2591F0E6-164F-491A-9D18-4AB4B255C717}
 		{9F2EE4B5-CFD1-45E6-B2DB-969857FBCA2D} = {2591F0E6-164F-491A-9D18-4AB4B255C717}
+		{E97E649F-B703-47E3-B18A-0871D3498742} = {199A5BB3-E248-4A6A-8B86-364185EAFDAA}
+		{5A86453B-96FB-4B6E-A283-225BB9F753D3} = {199A5BB3-E248-4A6A-8B86-364185EAFDAA}
+		{F81186BE-F71F-4989-8208-60BC6474FE6D} = {199A5BB3-E248-4A6A-8B86-364185EAFDAA}
+		{85BE0303-787B-4325-9FF3-DFC028A3E6FF} = {199A5BB3-E248-4A6A-8B86-364185EAFDAA}
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
