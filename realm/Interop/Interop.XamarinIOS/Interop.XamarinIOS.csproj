@@ -46,6 +46,7 @@
     <Compile Include="libwrappers.linkwith.cs">
       <DependentUpon>libwrappers.a</DependentUpon>
     </Compile>
+    <Compile Include="CoreProvider.cs" />
   </ItemGroup>
   <ItemGroup>
     <ObjcBindingApiDefinition Include="ApiDefinition.cs" />
@@ -61,7 +62,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ObjcBindingNativeLibrary Include="..\..\wrappers\DerivedData\wrappers\Build\Products\Debug-iphoneos\libwrappers.a">
+    <ObjcBindingNativeLibrary Include="..\..\wrappers\build\Release-universal\libwrappers.a">
       <Link>libwrappers.a</Link>
     </ObjcBindingNativeLibrary>
   </ItemGroup>
