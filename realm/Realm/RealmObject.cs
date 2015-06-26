@@ -16,7 +16,7 @@ namespace RealmIO
                 Debug.WriteLine("WARNING! The type " + modelName + " is a RealmObject but it has not been woven.");
         }
 
-        internal void _Manage(ICoreRow coreRow)
+        public void _Manage(ICoreRow coreRow)
         {
             _coreRow = coreRow;
         }
