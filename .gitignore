@@ -26,3 +26,4 @@ xcuserdata
 *.moved-aside
 DerivedData*.xcuserstate
 *.xcuserstate
+/realm/Tests/*.ncrunchproject
