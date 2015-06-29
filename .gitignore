@@ -27,3 +27,7 @@ xcuserdata
 DerivedData*.xcuserstate
 *.xcuserstate
 /realm/Tests/*.ncrunchproject
+/tightdb/examples/TutorialSolution/*.dll
+/tightdb/examples/TutorialSolution/*.user
+/tightdb/examples/TutorialSolution/bin
+/realm/Tools/RealmNetWeaver.Fody.dll

@@ -60,9 +60,9 @@
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Mac\Xamarin.Mac.CSharp.targets" />
   <ItemGroup>
-    <ProjectReference Include="..\..\Realm\Realm.csproj">
+    <ProjectReference Include="..\..\RealmNet\RealmNet.csproj">
       <Project>{2494214E-6005-4EB9-AD2C-1D4BCD7B0223}</Project>
-      <Name>Realm</Name>
+      <Name>RealmNet</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
