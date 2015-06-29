@@ -1,5 +1,5 @@
 ﻿using System;
-using RealmIO;
+using RealmNet;
 
 namespace IntegrationTests
 {
