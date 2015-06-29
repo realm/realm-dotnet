@@ -102,11 +102,11 @@
     <Error Condition="!Exists('..\packages\Fody.1.29.0-beta01\build\Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Fody.1.29.0-beta01\build\Fody.targets'))" />
   </Target>
   <ItemGroup>
-    <ProjectReference Include="..\Interop\Interop.XamarinIOS\Interop.XamarinIOS.csproj">
+    <ProjectReference Include="..\..\Interop\Interop.XamarinIOS\Interop.XamarinIOS.csproj">
       <Project>{A55BD773-5A29-4B2A-9DB7-1AB1DD38B537}</Project>
       <Name>Interop.XamarinIOS</Name>
     </ProjectReference>
-    <ProjectReference Include="..\RealmNet\RealmNet.csproj">
+    <ProjectReference Include="..\..\RealmNet\RealmNet.csproj">
       <Project>{2494214E-6005-4EB9-AD2C-1D4BCD7B0223}</Project>
       <Name>RealmNet</Name>
     </ProjectReference>
