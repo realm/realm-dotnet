@@ -1,15 +1,15 @@
 
 *.userprefs
 /realm/*.sdf
-*.userprefs
 /realm/ipch
 /realm/*.opensdf
 .vs
 /tightdb/native/tightdb_c_cs/tightdb_c_cs2012/x64
 /tightdb/native/tightdb_c_cs/tightdb_c_cs2012/release
-
+packages
 realm/Tools/RealmWeaver.Fody.dll
 realm/wrappers/DerivedData
+realm/wrappers/core/*.a
 
 ### Xcode ###
 build/
@@ -24,5 +24,5 @@ build/
 xcuserdata
 *.xccheckout
 *.moved-aside
-DerivedData
+DerivedData*.xcuserstate
 *.xcuserstate

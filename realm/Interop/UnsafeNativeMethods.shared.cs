@@ -4,6 +4,7 @@ using Interop.Config;
 
 // TODO: Replace this with CriticalHandle
 using TableHandle = System.IntPtr;
+using QueryHandle = System.IntPtr;
 
 public static class UnsafeNativeMethods
 {
@@ -62,6 +63,16 @@ public static class UnsafeNativeMethods
         //return "" if the string is empty, otherwise copy data from the buffer
         Marshal.FreeHGlobal(buffer);
         return retStr;
+    }
+
+    private static IntPtr BoolToIntPtr(Boolean value)
+    {
+        return value ? (IntPtr) 1 : (IntPtr) 0;
+    }
+
+    private static Boolean IntPtrToBool(IntPtr value)
+    {
+        return (IntPtr) 1 == value;
     }
 
     #endregion
@@ -181,4 +192,122 @@ public static class UnsafeNativeMethods
     }
 
     #endregion
+
+    #region public static void table_set_bool(TableHandle tableHandle, long columnIndex, long rowIndex, bool value)
+
+    [DllImport(InteropConfig.L64, EntryPoint = "table_set_bool", CallingConvention = CallingConvention.Cdecl)]
+    private static extern void table_set_bool64(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, IntPtr value);
+
+    [DllImport(InteropConfig.L32, EntryPoint = "table_set_bool", CallingConvention = CallingConvention.Cdecl)]
+    private static extern void table_set_bool32(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, IntPtr value);
+
+    public static void table_set_bool(TableHandle tableHandle, long columnIndex, long rowIndex, bool value)
+    {
+        var marshalledValue = BoolToIntPtr(value);
+
+        if (InteropConfig.Is64Bit)
+            table_set_bool64(tableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, marshalledValue);
+        else
+            table_set_bool32(tableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, marshalledValue);
+    }
+
+    #endregion
+
+    #region public static string table_get_bool(TableHandle tableHandle, long columnIndex, long rowIndex)
+
+    [DllImport(InteropConfig.L64, EntryPoint = "table_get_bool", CallingConvention = CallingConvention.Cdecl)]
+    private static extern IntPtr table_get_bool64(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex);
+
+    [DllImport(InteropConfig.L32, EntryPoint = "table_get_bool", CallingConvention = CallingConvention.Cdecl)]
+    private static extern IntPtr table_get_bool32(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex);
+    
+    public static bool table_get_bool(TableHandle tableHandle, long columnIndex, long rowIndex)
+    {
+        if (InteropConfig.Is64Bit)
+            return IntPtrToBool(table_get_bool64(tableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex));
+        else
+            return IntPtrToBool(table_get_bool64(tableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex));
+    }
+
+    #endregion
+
+#region public static QueryHandle table_where(TableHandle tableHandle)
+
+    [DllImport(InteropConfig.L64, EntryPoint = "table_where", CallingConvention = CallingConvention.Cdecl)]
+    private static extern QueryHandle table_where64(TableHandle handle);
+
+    [DllImport(InteropConfig.L32, EntryPoint = "table_where", CallingConvention = CallingConvention.Cdecl)]
+    private static extern QueryHandle table_where32(TableHandle handle);
+
+    public static QueryHandle table_where(TableHandle tableHandle)
+    {
+        if (InteropConfig.Is64Bit)
+            return table_where64(tableHandle);
+        else
+            return table_where32(tableHandle);
+    }
+
+#endregion
+
+#region public static void query_bool_equal(QueryHandle queryHandle, long columnIndex, bool value)
+
+    //in tightdb c++ this function returns q again, the query object is re-used and keeps its pointer.
+    //so high-level stuff should also return self, to enable stacking of operations query.dothis().dothat()
+    [DllImport(InteropConfig.L64, EntryPoint = "query_bool_equal", CallingConvention = CallingConvention.Cdecl)]
+    private static extern void query_bool_equal64(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
+
+    [DllImport(InteropConfig.L32, EntryPoint = "query_bool_equal", CallingConvention = CallingConvention.Cdecl)]
+    private static extern void query_bool_equal32(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
+
+    public static void query_bool_equal(QueryHandle queryHandle, long columnIndex, bool value)
+    {
+        var ipValue = BoolToIntPtr(value);
+        if (InteropConfig.Is64Bit)
+            query_bool_equal64(queryHandle, (IntPtr)columnIndex, ipValue);
+        else
+            query_bool_equal32(queryHandle, (IntPtr)columnIndex, ipValue);
+    }
+
+#endregion
+
+#region public static void query_string_equal(QueryHandle queryHandle, long columnIndex, string value)
+
+    //in tightdb c++ this function returns q again, the query object is re-used and keeps its pointer.
+    //so high-level stuff should also return self, to enable stacking of operations query.dothis().dothat()
+    [DllImport(InteropConfig.L64, EntryPoint = "query_string_equal", CallingConvention = CallingConvention.Cdecl)]
+    private static extern void query_string_equal64(QueryHandle queryPtr, IntPtr columnIndex,
+        [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
+
+    [DllImport(InteropConfig.L32, EntryPoint = "query_string_equal", CallingConvention = CallingConvention.Cdecl)]
+    private static extern void query_string_equal32(QueryHandle queryPtr, IntPtr columnIndex,
+        [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
+
+    public static void query_string_equal(QueryHandle queryHandle, long columnIndex, string value)
+    {
+        if (InteropConfig.Is64Bit)
+            query_string_equal64(queryHandle, (IntPtr)columnIndex, value, (IntPtr)value.Length);
+        else
+            query_string_equal32(queryHandle, (IntPtr)columnIndex, value, (IntPtr)value.Length);
+    }
+
+#endregion
+
+#region public static long QueryFind(Query query, long lastMatch)
+
+    [DllImport(InteropConfig.L64, EntryPoint = "query_find", CallingConvention = CallingConvention.Cdecl)]
+    private static extern IntPtr query_find64(QueryHandle queryHandle, IntPtr lastMatch);
+
+    [DllImport(InteropConfig.L32, EntryPoint = "query_find", CallingConvention = CallingConvention.Cdecl)]
+    private static extern IntPtr query_find32(QueryHandle queryHandle, IntPtr lastMatch);
+
+    public static long query_find(QueryHandle queryHandle, long lastMatch)
+    {
+        if (InteropConfig.Is64Bit)
+            return (long)query_find64(queryHandle, (IntPtr)lastMatch);
+        else
+            return (long)query_find32(queryHandle, (IntPtr)lastMatch);
+    }
+
+#endregion
+
 }
