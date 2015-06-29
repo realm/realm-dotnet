@@ -52,11 +52,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="XamarinMacCoreProvider.cs" />
     <Compile Include="..\UnsafeNativeMethods.shared.cs">
       <Link>UnsafeNativeMethods.shared.cs</Link>
     </Compile>
     <Compile Include="InteropConfig.cs" />
+    <Compile Include="CoreProvider.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Mac\Xamarin.Mac.CSharp.targets" />
   <ItemGroup>

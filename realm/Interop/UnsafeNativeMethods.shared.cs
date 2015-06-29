@@ -270,6 +270,28 @@ public static class UnsafeNativeMethods
 
 #endregion
 
+#region public static void query_string_equal(QueryHandle queryHandle, long columnIndex, string value)
+
+    //in tightdb c++ this function returns q again, the query object is re-used and keeps its pointer.
+    //so high-level stuff should also return self, to enable stacking of operations query.dothis().dothat()
+    [DllImport(InteropConfig.L64, EntryPoint = "query_string_equal", CallingConvention = CallingConvention.Cdecl)]
+    private static extern void query_string_equal64(QueryHandle queryPtr, IntPtr columnIndex,
+        [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
+
+    [DllImport(InteropConfig.L32, EntryPoint = "query_string_equal", CallingConvention = CallingConvention.Cdecl)]
+    private static extern void query_string_equal32(QueryHandle queryPtr, IntPtr columnIndex,
+        [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
+
+    public static void query_string_equal(QueryHandle queryHandle, long columnIndex, string value)
+    {
+        if (InteropConfig.Is64Bit)
+            query_string_equal64(queryHandle, (IntPtr)columnIndex, value, (IntPtr)value.Length);
+        else
+            query_string_equal32(queryHandle, (IntPtr)columnIndex, value, (IntPtr)value.Length);
+    }
+
+#endregion
+
 #region public static long QueryFind(Query query, long lastMatch)
 
     [DllImport(InteropConfig.L64, EntryPoint = "query_find", CallingConvention = CallingConvention.Cdecl)]
