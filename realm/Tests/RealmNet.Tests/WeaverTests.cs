@@ -4,6 +4,7 @@ using System.IO;
 using System.Reflection;
 using Mono.Cecil;
 using NUnit.Framework;
+using RealmNet;
 using Tests.TestHelpers;
 
 namespace Tests
@@ -14,9 +15,10 @@ namespace Tests
         Assembly assembly;
         string newAssemblyPath;
         string assemblyPath;
+        private CoreProviderStub coreProviderStub_;
 
         [TestFixtureSetUp]
-        public void Setup()
+        public void FixtureSetup()
         {
             var projectPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, @"..\..\..\AssemblyToProcess\AssemblyToProcess.csproj"));
             assemblyPath = Path.Combine(Path.GetDirectoryName(projectPath), @"bin\Debug\AssemblyToProcess.dll");
@@ -52,19 +54,25 @@ namespace Tests
             }
         }
 
+        [SetUp]
+        public void Setup()
+        {
+            coreProviderStub_ = new CoreProviderStub();
+            Realm.ActiveCoreProvider = coreProviderStub_;
+        }
+
         [Test]
         public void ShouldCreateTable()
         {
             // Arrange
-            var stubCoreProvider = new CoreProviderStub();
-            var realm = new RealmNet.Realm(stubCoreProvider);
+            var realm = Realm.GetInstance();
 
             // Act
             realm.CreateObject(assembly.GetType("AssemblyToProcess.Person"));
 
             // Assert
-            Assert.That(stubCoreProvider.HasTable("Person"));
-            var table = stubCoreProvider.Tables["Person"];
+            Assert.That(coreProviderStub_.HasTable("Person"));
+            var table = coreProviderStub_.Tables["Person"];
             Assert.That(table.Columns.Count, Is.EqualTo(5));
             Assert.That(table.Columns["FirstName"], Is.EqualTo(typeof(string)));
         }
@@ -73,15 +81,14 @@ namespace Tests
         public void ShouldSetPropertyInDatabase()
         {
             // Arrange
-            var stubCoreProvider = new CoreProviderStub();
-            var realm = new RealmNet.Realm(stubCoreProvider);
+            var realm = Realm.GetInstance();
             var person = (dynamic)realm.CreateObject(assembly.GetType("AssemblyToProcess.Person"));
 
             // Act
             person.FirstName = "John";
 
             // Assert
-            var table = stubCoreProvider.Tables["Person"];
+            var table = coreProviderStub_.Tables["Person"];
             Assert.That(table.Rows[0]["FirstName"], Is.EqualTo("John"));
         }
 
@@ -89,8 +96,7 @@ namespace Tests
         public void ShouldKeepMultipleRowsSeparate()
         {
             // Arrange
-            var stubCoreProvider = new CoreProviderStub();
-            var realm = new RealmNet.Realm(stubCoreProvider);
+            var realm = Realm.GetInstance();
             var person1 = (dynamic)realm.CreateObject(assembly.GetType("AssemblyToProcess.Person"));
             var person2 = (dynamic)realm.CreateObject(assembly.GetType("AssemblyToProcess.Person"));
             person1.FirstName = "John";
@@ -100,7 +106,7 @@ namespace Tests
             person1.FirstName = "Joe";
 
             // Assert
-            var table = stubCoreProvider.Tables["Person"];
+            var table = coreProviderStub_.Tables["Person"];
             Assert.That(table.Rows[0]["FirstName"], Is.EqualTo("Joe"));
             Assert.That(table.Rows[1]["FirstName"], Is.EqualTo("Peter"));
         }
@@ -109,15 +115,14 @@ namespace Tests
         public void ShouldFollowMapToAttributeOnProperties()
         {
             // Arrange
-            var stubCoreProvider = new CoreProviderStub();
-            var realm = new RealmNet.Realm(stubCoreProvider);
+            var realm = Realm.GetInstance();
             var person = (dynamic)realm.CreateObject(assembly.GetType("AssemblyToProcess.Person"));
 
             // Act
             person.Email = "john@johnson.com";
 
             // Assert
-            var table = stubCoreProvider.Tables["Person"];
+            var table = coreProviderStub_.Tables["Person"];
             Assert.That(table.Rows[0]["Email"], Is.EqualTo("john@johnson.com"));
         }
 
@@ -125,15 +130,14 @@ namespace Tests
         public void ShouldFollowMapToAttributeOnClasses()
         {
             // Arrange
-            var stubCoreProvider = new CoreProviderStub();
-            var realm = new RealmNet.Realm(stubCoreProvider);
+            var realm = Realm.GetInstance();
 
             // Act
             realm.CreateObject(assembly.GetType("AssemblyToProcess.RemappedClass"));
 
             // Assert
-            Assert.That(stubCoreProvider.HasTable("RemappedTable"), "The table RemappedTable was not found");
-            Assert.That(!stubCoreProvider.HasTable("RemappedClass"), "The table RemappedClass was found though it should not exist");
+            Assert.That(coreProviderStub_.HasTable("RemappedTable"), "The table RemappedTable was not found");
+            Assert.That(!coreProviderStub_.HasTable("RemappedClass"), "The table RemappedClass was found though it should not exist");
         }
 
 #if(DEBUG)

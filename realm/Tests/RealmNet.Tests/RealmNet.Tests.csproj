@@ -57,7 +57,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CoreProviderTests.cs" />
-    <Compile Include="IntegrationTests.cs" />
     <Compile Include="QueryTests.cs" />
     <Compile Include="TestHelpers\CoreProviderStub.cs" />
     <Compile Include="TestHelpers\FakeQueryHandle.cs" />

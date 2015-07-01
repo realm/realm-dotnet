@@ -11,12 +11,12 @@ namespace RealmNet
     {
         public Type ElementType => typeof (T);
         public Expression Expression { get; }
-        public IQueryProvider Provider => provider;
-        private QueryProvider provider;
+        public IQueryProvider Provider => _provider;
+        private readonly QueryProvider _provider;
 
         public RealmQuery(QueryProvider queryProvider, Expression expression) 
         {
-            this.provider = queryProvider;
+            this._provider = queryProvider;
             this.Expression = expression;
         }
 

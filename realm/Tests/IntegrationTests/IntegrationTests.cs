@@ -15,8 +15,7 @@ namespace IntegrationTests
         [Test]
         public void SimpleTest()
         {
-            ICoreProvider coreProvider = null;
-            var realm = new Realm(coreProvider);
+            var realm = Realm.GetInstance();
 
             var p1 = realm.CreateObject<Person>();
             p1.FirstName = "John";

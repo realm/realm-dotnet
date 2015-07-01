@@ -7,9 +7,16 @@ namespace RealmNet
 {
     public class Realm
     {
+        public static ICoreProvider ActiveCoreProvider;
+
+        public static Realm GetInstance()
+        {
+            return new Realm(ActiveCoreProvider);
+        }
+
         private readonly ICoreProvider _coreProvider;
 
-        public Realm(ICoreProvider coreProvider) 
+        private Realm(ICoreProvider coreProvider) 
         {
             this._coreProvider = coreProvider;
         }

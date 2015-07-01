@@ -1,21 +1,22 @@
 using System;
 using System.Runtime.InteropServices;
 using Interop.Config;
+using RealmNet.Interop;
 
 // TODO: Replace this with CriticalHandle
-using TableHandle = System.IntPtr;
-using QueryHandle = System.IntPtr;
+//using TableHandle = System.IntPtr;
+//using QueryHandle = System.IntPtr;
 
 public static class UnsafeNativeMethods
 {
     private static DataType IntPtrToDataType(IntPtr value)
     {
-        return (DataType) value;
+        return (DataType)value;
     }
 
     private static IntPtr DataTypeToIntPtr(DataType value)
     {
-        return (IntPtr) value;
+        return (IntPtr)value;
     }
 
     public enum DataType
@@ -23,7 +24,7 @@ public static class UnsafeNativeMethods
         Int = 0,
         Bool = 1,
         String = 2,
-        Binary = 4, 
+        Binary = 4,
         Table = 5,
         Mixed = 6,
         Date = 7,
@@ -31,18 +32,18 @@ public static class UnsafeNativeMethods
         Double = 10,
     }
 
-    [DllImport(InteropConfig.L64, EntryPoint="realm_get_wrapper_ver", CallingConvention = CallingConvention.Cdecl)]
-    public static extern IntPtr GetWrapperVer();
+    [DllImport(InteropConfig.L64, EntryPoint = "realm_get_wrapper_ver", CallingConvention = CallingConvention.Cdecl)]
+    internal static extern IntPtr GetWrapperVer();
 
-    [DllImport(InteropConfig.L64, EntryPoint="realm_get_ver_minor", CallingConvention = CallingConvention.Cdecl)]
-    public static extern int GetMinorVer();
+    [DllImport(InteropConfig.L64, EntryPoint = "realm_get_ver_minor", CallingConvention = CallingConvention.Cdecl)]
+    internal static extern int GetMinorVer();
 
     #region helpers
 
     private static IntPtr StrAllocateBuffer(out long currentBufferSizeChars, long bufferSizeNeededChars)
     {
         currentBufferSizeChars = bufferSizeNeededChars;
-        return Marshal.AllocHGlobal((IntPtr) (bufferSizeNeededChars*sizeof (char)));
+        return Marshal.AllocHGlobal((IntPtr)(bufferSizeNeededChars * sizeof(char)));
         //allocHGlobal instead of  AllocCoTaskMem because allcHGlobal allows lt 2 gig on 64 bit (not that .net supports that right now, but at least this allocation will work with lt 32 bit strings)   
     }
 
@@ -67,17 +68,17 @@ public static class UnsafeNativeMethods
 
     private static IntPtr BoolToIntPtr(Boolean value)
     {
-        return value ? (IntPtr) 1 : (IntPtr) 0;
+        return value ? (IntPtr)1 : (IntPtr)0;
     }
 
     private static Boolean IntPtrToBool(IntPtr value)
     {
-        return (IntPtr) 1 == value;
+        return (IntPtr)1 == value;
     }
 
     #endregion
 
-    #region public static TableHandle new_table()
+    #region internal static TableHandle new_table()
 
     //tightdb_c_cs_API size_t new_table()
     //The TableHandle will be initialized with root=null and that is exactly what we want
@@ -89,14 +90,14 @@ public static class UnsafeNativeMethods
     [DllImport(InteropConfig.L32, EntryPoint = "new_table", CallingConvention = CallingConvention.Cdecl)]
     private static extern TableHandle new_table32();
 
-    public static TableHandle new_table()
+    internal static TableHandle new_table()
     {
         return InteropConfig.Is64Bit ? new_table64() : new_table32();
     }
 
     #endregion
 
-    #region public static long table_add_column(TableHandle tableHandle, DataType type, string name)
+    #region internal static long table_add_column(TableHandle tableHandle, DataType type, string name)
 
     [DllImport(InteropConfig.L64, EntryPoint = "table_add_column", CallingConvention = CallingConvention.Cdecl)]
     private static extern IntPtr table_add_column64(TableHandle tableHandle, IntPtr type,
@@ -106,7 +107,7 @@ public static class UnsafeNativeMethods
     private static extern IntPtr table_add_column32(TableHandle tableHandle, IntPtr type,
         [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
 
-    public static long table_add_column(TableHandle tableHandle, DataType type, string name)
+    internal static long table_add_column(TableHandle tableHandle, DataType type, string name)
     {
         if (InteropConfig.Is64Bit)
             return (long)table_add_column64(tableHandle, DataTypeToIntPtr(type), name, (IntPtr)name.Length);
@@ -116,7 +117,7 @@ public static class UnsafeNativeMethods
 
     #endregion
 
-    #region public static long table_add_empty_row(TableHandle tableHandle, long numberOfRows)
+    #region internal static long table_add_empty_row(TableHandle tableHandle, long numberOfRows)
 
     [DllImport(InteropConfig.L64, EntryPoint = "table_add_empty_row", CallingConvention = CallingConvention.Cdecl)]
     private static extern IntPtr table_add_empty_row64(TableHandle tableHandle, IntPtr numRows);
@@ -124,7 +125,7 @@ public static class UnsafeNativeMethods
     [DllImport(InteropConfig.L32, EntryPoint = "table_add_empty_row", CallingConvention = CallingConvention.Cdecl)]
     private static extern IntPtr table_add_empty_row32(TableHandle tableHandle, IntPtr numRows);
 
-    public static long table_add_empty_row(TableHandle tableHandle, long numberOfRows)
+    internal static long table_add_empty_row(TableHandle tableHandle, long numberOfRows)
     {
         if (InteropConfig.Is64Bit)
             return (long)table_add_empty_row64(tableHandle, (IntPtr)numberOfRows);
@@ -134,7 +135,7 @@ public static class UnsafeNativeMethods
 
     #endregion
 
-    #region public static void table_set_string(TableHandle tableHandle, long columnIndex, long rowIndex, string value)
+    #region internal static void table_set_string(TableHandle tableHandle, long columnIndex, long rowIndex, string value)
 
     //        TIGHTDB_C_CS_API void table_set_int(Table* TablePtr, size_t column_ndx, size_t row_ndx, int64_t value)
     [DllImport(InteropConfig.L64, EntryPoint = "table_set_string", CallingConvention = CallingConvention.Cdecl)]
@@ -145,7 +146,7 @@ public static class UnsafeNativeMethods
     private static extern void table_set_string32(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx,
         [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
 
-    public static void table_set_string(TableHandle tableHandle, long columnIndex, long rowIndex, string value)
+    internal static void table_set_string(TableHandle tableHandle, long columnIndex, long rowIndex, string value)
     {
         if (InteropConfig.Is64Bit)
             table_set_string64(tableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, value, (IntPtr)value.Length);
@@ -155,7 +156,7 @@ public static class UnsafeNativeMethods
 
     #endregion
 
-    #region public static string table_get_string(TableHandle tableHandle, long columnIndex, long rowIndex)
+    #region internal static string table_get_string(TableHandle tableHandle, long columnIndex, long rowIndex)
 
     [DllImport(InteropConfig.L64, EntryPoint = "table_get_string", CallingConvention = CallingConvention.Cdecl)]
     private static extern IntPtr table_get_string64(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex,
@@ -164,8 +165,8 @@ public static class UnsafeNativeMethods
     [DllImport(InteropConfig.L32, EntryPoint = "table_get_string", CallingConvention = CallingConvention.Cdecl)]
     private static extern IntPtr table_get_string32(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex,
         IntPtr buffer, IntPtr bufsize);
-    
-    public static string table_get_string(TableHandle tableHandle, long columnIndex, long rowIndex)
+
+    internal static string table_get_string(TableHandle tableHandle, long columnIndex, long rowIndex)
     {
         long bufferSizeNeededChars = 16;
         IntPtr buffer;
@@ -179,21 +180,21 @@ public static class UnsafeNativeMethods
                 bufferSizeNeededChars =
                     (long)
                     table_get_string64(tableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, buffer,
-                        (IntPtr) currentBufferSizeChars);
+                        (IntPtr)currentBufferSizeChars);
 
             else
                 bufferSizeNeededChars =
                     (long)
                     table_get_string32(tableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, buffer,
-                        (IntPtr) currentBufferSizeChars);
+                        (IntPtr)currentBufferSizeChars);
 
         } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
-        return StrBufToStr(buffer, (int) bufferSizeNeededChars);
+        return StrBufToStr(buffer, (int)bufferSizeNeededChars);
     }
 
     #endregion
 
-    #region public static void table_set_bool(TableHandle tableHandle, long columnIndex, long rowIndex, bool value)
+    #region internal static void table_set_bool(TableHandle tableHandle, long columnIndex, long rowIndex, bool value)
 
     [DllImport(InteropConfig.L64, EntryPoint = "table_set_bool", CallingConvention = CallingConvention.Cdecl)]
     private static extern void table_set_bool64(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, IntPtr value);
@@ -201,7 +202,7 @@ public static class UnsafeNativeMethods
     [DllImport(InteropConfig.L32, EntryPoint = "table_set_bool", CallingConvention = CallingConvention.Cdecl)]
     private static extern void table_set_bool32(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, IntPtr value);
 
-    public static void table_set_bool(TableHandle tableHandle, long columnIndex, long rowIndex, bool value)
+    internal static void table_set_bool(TableHandle tableHandle, long columnIndex, long rowIndex, bool value)
     {
         var marshalledValue = BoolToIntPtr(value);
 
@@ -213,15 +214,15 @@ public static class UnsafeNativeMethods
 
     #endregion
 
-    #region public static string table_get_bool(TableHandle tableHandle, long columnIndex, long rowIndex)
+    #region internal static string table_get_bool(TableHandle tableHandle, long columnIndex, long rowIndex)
 
     [DllImport(InteropConfig.L64, EntryPoint = "table_get_bool", CallingConvention = CallingConvention.Cdecl)]
     private static extern IntPtr table_get_bool64(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex);
 
     [DllImport(InteropConfig.L32, EntryPoint = "table_get_bool", CallingConvention = CallingConvention.Cdecl)]
     private static extern IntPtr table_get_bool32(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex);
-    
-    public static bool table_get_bool(TableHandle tableHandle, long columnIndex, long rowIndex)
+
+    internal static bool table_get_bool(TableHandle tableHandle, long columnIndex, long rowIndex)
     {
         if (InteropConfig.Is64Bit)
             return IntPtrToBool(table_get_bool64(tableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex));
@@ -231,15 +232,15 @@ public static class UnsafeNativeMethods
 
     #endregion
 
-#region public static QueryHandle table_where(TableHandle tableHandle)
+    #region internal static QueryHandle table_where(TableHandle tableHandle)
 
     [DllImport(InteropConfig.L64, EntryPoint = "table_where", CallingConvention = CallingConvention.Cdecl)]
-    private static extern QueryHandle table_where64(TableHandle handle);
+    private static extern IntPtr table_where64(TableHandle handle);
 
     [DllImport(InteropConfig.L32, EntryPoint = "table_where", CallingConvention = CallingConvention.Cdecl)]
-    private static extern QueryHandle table_where32(TableHandle handle);
+    private static extern IntPtr table_where32(TableHandle handle);
 
-    public static QueryHandle table_where(TableHandle tableHandle)
+    internal static IntPtr table_where(TableHandle tableHandle)
     {
         if (InteropConfig.Is64Bit)
             return table_where64(tableHandle);
@@ -247,9 +248,9 @@ public static class UnsafeNativeMethods
             return table_where32(tableHandle);
     }
 
-#endregion
+    #endregion
 
-#region public static void query_bool_equal(QueryHandle queryHandle, long columnIndex, bool value)
+    #region internal static void query_bool_equal(QueryHandle queryHandle, long columnIndex, bool value)
 
     //in tightdb c++ this function returns q again, the query object is re-used and keeps its pointer.
     //so high-level stuff should also return self, to enable stacking of operations query.dothis().dothat()
@@ -259,7 +260,7 @@ public static class UnsafeNativeMethods
     [DllImport(InteropConfig.L32, EntryPoint = "query_bool_equal", CallingConvention = CallingConvention.Cdecl)]
     private static extern void query_bool_equal32(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
 
-    public static void query_bool_equal(QueryHandle queryHandle, long columnIndex, bool value)
+    internal static void query_bool_equal(QueryHandle queryHandle, long columnIndex, bool value)
     {
         var ipValue = BoolToIntPtr(value);
         if (InteropConfig.Is64Bit)
@@ -268,9 +269,9 @@ public static class UnsafeNativeMethods
             query_bool_equal32(queryHandle, (IntPtr)columnIndex, ipValue);
     }
 
-#endregion
+    #endregion
 
-#region public static void query_string_equal(QueryHandle queryHandle, long columnIndex, string value)
+    #region internal static void query_string_equal(QueryHandle queryHandle, long columnIndex, string value)
 
     //in tightdb c++ this function returns q again, the query object is re-used and keeps its pointer.
     //so high-level stuff should also return self, to enable stacking of operations query.dothis().dothat()
@@ -282,7 +283,7 @@ public static class UnsafeNativeMethods
     private static extern void query_string_equal32(QueryHandle queryPtr, IntPtr columnIndex,
         [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
 
-    public static void query_string_equal(QueryHandle queryHandle, long columnIndex, string value)
+    internal static void query_string_equal(QueryHandle queryHandle, long columnIndex, string value)
     {
         if (InteropConfig.Is64Bit)
             query_string_equal64(queryHandle, (IntPtr)columnIndex, value, (IntPtr)value.Length);
@@ -290,9 +291,9 @@ public static class UnsafeNativeMethods
             query_string_equal32(queryHandle, (IntPtr)columnIndex, value, (IntPtr)value.Length);
     }
 
-#endregion
+    #endregion
 
-#region public static long QueryFind(Query query, long lastMatch)
+    #region internal static long QueryFind(Query query, long lastMatch)
 
     [DllImport(InteropConfig.L64, EntryPoint = "query_find", CallingConvention = CallingConvention.Cdecl)]
     private static extern IntPtr query_find64(QueryHandle queryHandle, IntPtr lastMatch);
@@ -300,7 +301,7 @@ public static class UnsafeNativeMethods
     [DllImport(InteropConfig.L32, EntryPoint = "query_find", CallingConvention = CallingConvention.Cdecl)]
     private static extern IntPtr query_find32(QueryHandle queryHandle, IntPtr lastMatch);
 
-    public static long query_find(QueryHandle queryHandle, long lastMatch)
+    internal static long query_find(QueryHandle queryHandle, long lastMatch)
     {
         if (InteropConfig.Is64Bit)
             return (long)query_find64(queryHandle, (IntPtr)lastMatch);
@@ -308,6 +309,180 @@ public static class UnsafeNativeMethods
             return (long)query_find32(queryHandle, (IntPtr)lastMatch);
     }
 
-#endregion
+    #endregion
 
+    internal static IntPtr tableview_find_all_int(TableViewHandle tableViewHandle, long columnIndex, long value)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal static IntPtr tableview_find_all_bool(TableViewHandle tableViewHandle, long columnIndex, bool value)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal static IntPtr tableview_find_all_datetime(TableViewHandle tableViewHandle, long columnIndex, DateTime value)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal static IntPtr tableview_find_all_float(TableViewHandle tableViewHandle, long columnIndex, float value)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal static IntPtr tableview_find_all_double(TableViewHandle tableViewHandle, long columnIndex, double value)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal static IntPtr tableview_find_all_string(TableViewHandle tableViewHandle, long columnIndex, string value)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal static IntPtr tableview_get_subtable(TableViewHandle tableViewHandle, long columnIndex, long rowIndex)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal static void tableview_unbind(TableViewHandle tableViewHandle)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal static void table_unbind(RealmNet.Interop.TableHandle tableHandle)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal static IntPtr table_copy_table(RealmNet.Interop.TableHandle tableHandle)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal static IntPtr table_get_sub_table(RealmNet.Interop.TableHandle tableHandle, long columnIndex, long rowIndex)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal static IntPtr table_distinct(RealmNet.Interop.TableHandle tableHandle, long columnIndex)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal static IntPtr table_find_all_int(RealmNet.Interop.TableHandle tableHandle, long columnIndex, long value)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal static IntPtr table_find_all_bool(RealmNet.Interop.TableHandle tableHandle, long columnIndex, bool value)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal static IntPtr table_find_all_date_time(RealmNet.Interop.TableHandle tableHandle, long columnIndex, DateTime value)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal static IntPtr table_find_all_float(RealmNet.Interop.TableHandle tableHandle, long columnIndex, float value)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal static IntPtr table_find_all_double(RealmNet.Interop.TableHandle tableHandle, long columnIndex, double value)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal static IntPtr table_find_all_string(RealmNet.Interop.TableHandle tableHandle, long columnIndex, string value)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal static IntPtr table_find_all_empty_binary(RealmNet.Interop.TableHandle tableHandle, long columnIndex)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal static IntPtr table_find_all_binary(RealmNet.Interop.TableHandle tableHandle, long columnIndex, IntPtr valuePointer, IntPtr length)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal static IntPtr table_get_spec(RealmNet.Interop.TableHandle tableHandle)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal static IntPtr shared_group_rollback(SharedGroupHandle sharedGroupHandle)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal static IntPtr shared_group_end_read(SharedGroupHandle sharedGroupHandle)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal static void shared_group_delete(IntPtr handle)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal static IntPtr shared_group_commit(SharedGroupHandle sharedGroupHandle)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal static IntPtr shared_group_begin_read(SharedGroupHandle sharedGroupHandle)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal static IntPtr shared_group_begin_write(SharedGroupHandle sharedGroupHandle)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal static IntPtr spec_get_spec(SpecHandle specHandle, long columnIndex)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal static void spec_deallocate(SpecHandle specHandle)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal static IntPtr query_find_all(QueryHandle queryHandle, long start, long end, long limit)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal static IntPtr query_find_all_np(QueryHandle queryHandle)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal static void query_delete(QueryHandle queryHandle)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal static void group_delete(GroupHandle groupHandle)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal static IntPtr group_get_table(GroupHandle groupHandle, string name)
+    {
+        throw new NotImplementedException();
+    }
+
+    internal static IntPtr group_get_table_by_index(GroupHandle groupHandle, long tableIndex)
+    {
+        throw new NotImplementedException();
+    }
 }

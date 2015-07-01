@@ -26,7 +26,8 @@ namespace Tests
         public void Setup()
         {
             _coreProviderStub = new CoreProviderStub();
-            realm = new Realm(_coreProviderStub);
+            Realm.ActiveCoreProvider = _coreProviderStub;
+            realm = Realm.GetInstance();
         }
 
         private void PrepareForQueries()
