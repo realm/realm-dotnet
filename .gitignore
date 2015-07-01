@@ -32,3 +32,5 @@ DerivedData*.xcuserstate
 /tightdb/examples/TutorialSolution/bin
 /realm/Tools/RealmNetWeaver.Fody.dll
 *.ncrunchproject
+*.opensdf
+*.sdf
