@@ -2,8 +2,6 @@ using System;
 using RealmNet;
 using System.Collections.Generic;
 
-//using TableHandle = System.IntPtr;
-//using QueryHandle = System.IntPtr;
 using System.Collections;
 using RealmNet.Interop;
 

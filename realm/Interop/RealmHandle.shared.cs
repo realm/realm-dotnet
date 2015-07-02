@@ -35,14 +35,9 @@ using Microsoft.Win32.SafeHandles;
 namespace RealmNet.Interop
 {
 
-    //[SecurityPermission(SecurityAction.InheritanceDemand, UnmanagedCode = true)]
-    //[SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
-    public abstract class RealmHandle 
-    #if __MonoCS__
-        : SafeHandleZeroOrMinusOneIsInvalid
-    #else
-        : CriticalHandleZeroOrMinusOneIsInvalid
-    #endif
+    [SecurityPermission(SecurityAction.InheritanceDemand, UnmanagedCode = true)]
+    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
+    public abstract class RealmHandle : SafeHandleZeroOrMinusOneIsInvalid
     {
         //Every handle can potentially have an unbind list
         //If the unbind list is instantiated, this handle is a handle for a root object
@@ -120,12 +115,7 @@ namespace RealmNet.Interop
         //we expect to be in the user thread always in a constructor.
         //therefore we take the opportunity to clear root's unbindlist when we set our root to point to it
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
-        internal RealmHandle(RealmHandle root) 
-        #if __MonoCS__
-            : base(true)
-        #else
-            : base(IntPtr.Zero)
-        #endif
+        internal RealmHandle(RealmHandle root)  : base(true)
         {
             if (root == null)//if we are a root object, we need a list for our children and Root is already null
             {
@@ -203,12 +193,7 @@ namespace RealmNet.Interop
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
-        protected  RealmHandle()
-        #if __MonoCS__
-            : base(true)
-        #else
-            : base(IntPtr.Zero)
-        #endif
+        protected  RealmHandle() : base(true)
         {
             _unbindList = GetUnbindList();//we are a root object, we need a list for our children
 #if DEBUG
