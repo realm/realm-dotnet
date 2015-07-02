@@ -2,9 +2,8 @@ using System;
 using RealmNet;
 using System.Collections.Generic;
 
-using TableHandle = System.IntPtr;
-using QueryHandle = System.IntPtr;
 using System.Collections;
+using RealmNet.Interop;
 
 namespace Interop.Providers
 {
@@ -62,7 +61,7 @@ namespace Interop.Providers
 
     public class CoreQueryHandle : ICoreQueryHandle
     {
-        public QueryHandle QueryHandle;
+        internal QueryHandle QueryHandle;
         public Table Table;
     }
 
@@ -105,7 +104,7 @@ namespace Interop.Providers
         {
             var table = _tables[tableName];
             var tableHandle = table.TableHandle;
-            return new CoreQueryHandle() { QueryHandle = UnsafeNativeMethods.table_where(tableHandle), Table = table };
+            return new CoreQueryHandle() { /*QueryHandle = UnsafeNativeMethods.table_where(tableHandle),*/ Table = table };
         }
 
         public void QueryEqual(ICoreQueryHandle queryHandle, string columnName, object value)

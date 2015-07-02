@@ -11,11 +11,13 @@ namespace Playground.XamarinIOS
         public ViewController(IntPtr handle) : base(handle)
         {
             Console.WriteLine("============\n\n\n");
-            Console.WriteLine("Wrapper version: " + UnsafeNativeMethods.GetWrapperVer());
-            Console.WriteLine("Minor version: " + UnsafeNativeMethods.GetMinorVer());
+            //Console.WriteLine("Wrapper version: " + UnsafeNativeMethods.GetWrapperVer());
+            //Console.WriteLine("Minor version: " + UnsafeNativeMethods.GetMinorVer());
 
             var coreProvider = new CoreProvider();
-            var realm = new Realm(coreProvider);
+            Realm.ActiveCoreProvider = coreProvider;
+            var realm = Realm.GetInstance();
+            //var realm = new Realm(coreProvider);
 
             var p1 = realm.CreateObject<Person>();
             p1.FirstName = "John";

@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
 using System.Security.Permissions;
+using Microsoft.Win32.SafeHandles;
 
 //Replaces IntPtr as a handle to a c++ realm class
 //Using criticalHandle makes the binding more robust with regards to out-of-band exceptions and finalization
@@ -29,11 +30,19 @@ using System.Security.Permissions;
  *  
  * see http://reflector.webtropy.com/default.aspx/Dotnetfx_Win7_3@5@1/Dotnetfx_Win7_3@5@1/3@5@1/DEVDIV/depot/DevDiv/releases/whidbey/NetFXspW7/ndp/clr/src/BCL/System/Runtime/InteropServices/CriticalHandle@cs/1/CriticalHandle@cs
  */
+
+
 namespace RealmNet.Interop
 {
-    [SecurityPermission(SecurityAction.InheritanceDemand, UnmanagedCode = true)]
-    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
-    public abstract class RealmHandle : CriticalHandle //ZeroOrMinusOneIsInvalid
+
+    //[SecurityPermission(SecurityAction.InheritanceDemand, UnmanagedCode = true)]
+    //[SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
+    public abstract class RealmHandle 
+    #if __MonoCS__
+        : SafeHandleZeroOrMinusOneIsInvalid
+    #else
+        : CriticalHandleZeroOrMinusOneIsInvalid
+    #endif
     {
         //Every handle can potentially have an unbind list
         //If the unbind list is instantiated, this handle is a handle for a root object
@@ -70,9 +79,9 @@ namespace RealmNet.Interop
 
 
             // We cannot use CriticalHandleZeroOrMinusOneIsInvalid because it's Win32-specific. Thus, we implement it here -- it's only this one property.
-        public override bool IsInvalid {
-            get { return handle == IntPtr.Zero || handle == new IntPtr(-1); }
-        }
+        //public override bool IsInvalid {
+        //    get { return handle == IntPtr.Zero || handle == new IntPtr(-1); }
+        //}
 
 
         /// <summary>
@@ -111,7 +120,12 @@ namespace RealmNet.Interop
         //we expect to be in the user thread always in a constructor.
         //therefore we take the opportunity to clear root's unbindlist when we set our root to point to it
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
-        internal RealmHandle(RealmHandle root) : base(IntPtr.Zero)
+        internal RealmHandle(RealmHandle root) 
+        #if __MonoCS__
+            : base(true)
+        #else
+            : base(IntPtr.Zero)
+        #endif
         {
             if (root == null)//if we are a root object, we need a list for our children and Root is already null
             {
@@ -189,7 +203,12 @@ namespace RealmNet.Interop
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
-        protected  RealmHandle() : base(IntPtr.Zero)
+        protected  RealmHandle()
+        #if __MonoCS__
+            : base(true)
+        #else
+            : base(IntPtr.Zero)
+        #endif
         {
             _unbindList = GetUnbindList();//we are a root object, we need a list for our children
 #if DEBUG

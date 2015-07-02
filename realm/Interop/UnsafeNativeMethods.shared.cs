@@ -1,11 +1,9 @@
 using System;
 using System.Runtime.InteropServices;
 using Interop.Config;
-using RealmNet.Interop;
 
-// TODO: Replace this with CriticalHandle
-//using TableHandle = System.IntPtr;
-//using QueryHandle = System.IntPtr;
+namespace RealmNet.Interop
+{
 
 public static class UnsafeNativeMethods
 {
@@ -80,10 +78,6 @@ public static class UnsafeNativeMethods
 
     #region internal static TableHandle new_table()
 
-    //tightdb_c_cs_API size_t new_table()
-    //The TableHandle will be initialized with root=null and that is exactly what we want
-    //when we ask for a freestanding table
-    //in the call to new_table we atomically acquire a TableHandle that can finalize itself if need be
     [DllImport(InteropConfig.L64, EntryPoint = "new_table", CallingConvention = CallingConvention.Cdecl)]
     private static extern TableHandle new_table64();
 
@@ -92,7 +86,10 @@ public static class UnsafeNativeMethods
 
     internal static TableHandle new_table()
     {
-        return InteropConfig.Is64Bit ? new_table64() : new_table32();
+        if (InteropConfig.Is64Bit)
+            return new_table64();
+        else
+            return new_table32();
     }
 
     #endregion
@@ -485,4 +482,5 @@ public static class UnsafeNativeMethods
     {
         throw new NotImplementedException();
     }
+}
 }

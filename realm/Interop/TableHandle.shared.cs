@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace RealmNet.Interop
 {
-    public class TableHandle:RealmHandle
+    public class TableHandle: RealmHandle
     {
         private TableHandle(RealmHandle root) : base(root)
         {
@@ -12,7 +12,7 @@ namespace RealmNet.Interop
 
         //keep this one even though warned that it is not used. It is in fact used by marshalling
         //used by P/Invoke to automatically construct a TableHandle when returning a size_t as a TableHandle
-        private TableHandle()
+        public TableHandle()
         {
         }
 
