@@ -13,52 +13,6 @@ namespace Interop.Providers
         public Dictionary<string, long> Columns = new Dictionary<string, long>();
     }
 
-    public class CoreRow : ICoreRow
-    {
-        private Table _table;
-        public long RowIndex;
-
-        public CoreRow(Table table, long rowIndex)
-        {
-            this._table = table;
-            this.RowIndex = rowIndex;
-        }
-
-        public T GetValue<T>(string propertyName)
-        {
-            var columnIndex = _table.Columns[propertyName];
-
-            if (typeof(T) == typeof(string))
-            {
-                var value = UnsafeNativeMethods.table_get_string(_table.TableHandle, columnIndex, RowIndex);
-                return (T)Convert.ChangeType(value, typeof(T));
-            }
-            else if (typeof(T) == typeof(bool))
-            {
-                var value = UnsafeNativeMethods.table_get_bool(_table.TableHandle, columnIndex, RowIndex);
-                return (T)Convert.ChangeType(value, typeof(T));
-            }
-            else
-                throw new Exception ("Unsupported type " + typeof(T).Name);
-        }
-
-        public void SetValue<T>(string propertyName, T value)
-        {
-            var columnIndex = _table.Columns[propertyName];
-
-            if (typeof(T) == typeof(string))
-            {
-                UnsafeNativeMethods.table_set_string(_table.TableHandle, columnIndex, RowIndex, value.ToString());
-            }
-            else if (typeof(T) == typeof(bool))
-            {
-                UnsafeNativeMethods.table_set_bool(_table.TableHandle, columnIndex, RowIndex, (bool)Convert.ChangeType(value, typeof(bool)));
-            }
-            else
-                throw new Exception ("Unsupported type " + typeof(T).Name);
-        }
-    }
-
     internal class CoreQueryHandle : ICoreQueryHandle
     {
         public QueryHandle QueryHandle;
@@ -93,13 +47,48 @@ namespace Interop.Providers
             _tables[tableName].Columns[columnName] = columnIndex;
         }
 
-        public ICoreRow AddEmptyRow(string tableName)
+        public long AddEmptyRow(string tableName)
         {
             var tableHandle = _tables[tableName].TableHandle;
             var rowIndex = UnsafeNativeMethods.table_add_empty_row(tableHandle, 1); 
-            return new CoreRow(_tables[tableName], rowIndex);
+            return rowIndex;
         }
 
+        public T GetValue<T>(string tableName, string propertyName, long rowIndex)
+        {
+            var table = _tables[tableName];
+            var columnIndex = table.Columns[propertyName];
+
+            if (typeof(T) == typeof(string))
+            {
+                var value = UnsafeNativeMethods.table_get_string(table.TableHandle, columnIndex, rowIndex);
+                return (T)Convert.ChangeType(value, typeof(T));
+            }
+            else if (typeof(T) == typeof(bool))
+            {
+                var value = UnsafeNativeMethods.table_get_bool(table.TableHandle, columnIndex, rowIndex);
+                return (T)Convert.ChangeType(value, typeof(T));
+            }
+            else
+                throw new Exception ("Unsupported type " + typeof(T).Name);
+        }
+
+        public void SetValue<T>(string tableName, string propertyName, long rowIndex, T value)
+        {
+            var table = _tables[tableName];
+            var columnIndex = table.Columns[propertyName];
+
+            if (typeof(T) == typeof(string))
+            {
+                UnsafeNativeMethods.table_set_string(table.TableHandle, columnIndex, rowIndex, value.ToString());
+            }
+            else if (typeof(T) == typeof(bool))
+            {
+                UnsafeNativeMethods.table_set_bool(table.TableHandle, columnIndex, rowIndex, (bool)Convert.ChangeType(value, typeof(bool)));
+            }
+            else
+                throw new Exception ("Unsupported type " + typeof(T).Name);
+        }
         public ICoreQueryHandle CreateQuery(string tableName)
         {
             var table = _tables[tableName];
@@ -130,7 +119,7 @@ namespace Interop.Providers
                 if (rowIndex != -1)
                 {
                     var o = Activator.CreateInstance(objectType);
-                    ((RealmObject)o)._Manage(new CoreRow(coreQuery.Table, rowIndex));
+                    ((RealmObject)o)._Manage(this, rowIndex);
                     add.Invoke(list, new [] { o });
 
                     nextRowIndex = rowIndex + 1;

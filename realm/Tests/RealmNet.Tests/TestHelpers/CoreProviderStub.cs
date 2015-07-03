@@ -6,26 +6,6 @@ using RealmNet;
 
 namespace Tests.TestHelpers
 {
-    public class FakeRow : ICoreRow
-    {
-        private Dictionary<string, object> _row;
-
-        public FakeRow(Dictionary<string, object> row)
-        {
-            _row = row;
-        }
-
-        public T GetValue<T>(string propertyName)
-        {
-            return (T)_row[propertyName];
-        }
-
-        public void SetValue<T>(string propertyName, T value)
-        {
-            _row[propertyName] = value;
-        }
-    }
-
     public class CoreProviderStub : ICoreProvider
     {
         public class Table
@@ -52,10 +32,20 @@ namespace Tests.TestHelpers
             Tables[tableName].Columns[columnName] = columnType;
         }
 
-        public ICoreRow AddEmptyRow(string tableName)
+        public long AddEmptyRow(string tableName)
         {
             Tables[tableName].Rows.Add(new Dictionary<string, object>());
-            return new FakeRow(Tables[tableName].Rows.Last());
+            return Tables[tableName].Rows.Count - 1;
+        }
+
+        public T GetValue<T>(string tableName, string propertyName, long rowIndex)
+        {
+            return (T)Tables[tableName].Rows[(int)rowIndex][propertyName];
+        }
+
+        public void SetValue<T>(string tableName, string propertyName, long rowIndex, T value)
+        {
+            Tables[tableName].Rows[(int)rowIndex][propertyName] = value;
         }
 
         public ICoreQueryHandle CreateQuery(string tableName)

@@ -6,7 +6,8 @@ namespace RealmNet
 {
     public class RealmObject
     {
-        private ICoreRow _coreRow;
+        private ICoreProvider _coreProvider;
+        private long _rowIndex;
 
         protected RealmObject()
         {
@@ -16,9 +17,10 @@ namespace RealmNet
                 Debug.WriteLine("WARNING! The type " + modelName + " is a RealmObject but it has not been woven.");
         }
 
-        public void _Manage(ICoreRow coreRow)
+        public void _Manage(ICoreProvider coreProvider, long rowIndex)
         {
-            _coreRow = coreRow;
+            _coreProvider = coreProvider;
+            _rowIndex = rowIndex;
         }
 
         protected T GetValue<T>(string propertyName)
@@ -31,10 +33,9 @@ namespace RealmNet
             if (isRealmList) Debug.WriteLine("It's a realm list");
             if (isRealmObject) Debug.WriteLine("It's a realm object");
 
-            if (_coreRow != null)
+            if (_coreProvider != null)
             {
-                return _coreRow.GetValue<T>(propertyName);
-                //return _managingRealm.GetValue<T>(tableName, _rowIndex, propertyName);
+                return _coreProvider.GetValue<T>(tableName, propertyName, _rowIndex);
             }
             else
             {
@@ -48,10 +49,9 @@ namespace RealmNet
             var tableName = GetType().Name;
             //Debug.WriteLine("Setting " + typeof(T).Name + " value for " + tableName + "[" + _rowIndex + "]." + propertyName + " to " + value.ToString());
 
-            if (_coreRow != null)
+            if (_coreProvider != null)
             {
-                _coreRow.SetValue<T>(propertyName, value);
-                //_managingRealm.SetValue<T>(tableName, _rowIndex, propertyName, value);
+                _coreProvider.SetValue<T>(tableName, propertyName, _rowIndex, value);
             }
             else
             {

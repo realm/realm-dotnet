@@ -32,9 +32,9 @@ namespace RealmNet
                 CreateTableFor(objectType);
 
             var result = (RealmObject)Activator.CreateInstance(objectType);
-            var coreRow = _coreProvider.AddEmptyRow(objectType.Name);
+            var rowIndex = _coreProvider.AddEmptyRow(objectType.Name);
 
-            result._Manage(coreRow);
+            result._Manage(_coreProvider, rowIndex);
 
             return result;
         }
