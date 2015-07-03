@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace RealmNet.Interop
 {
-    internal class TableViewHandle:RealmHandle//todo:consider if we can make the handle classes internal such that users cannot instantiate them
+    internal class TableViewHandle:RealmHandle, ITableViewHandle //todo:consider if we can make the handle classes internal such that users cannot instantiate them
     {
         protected override void Unbind()
         {

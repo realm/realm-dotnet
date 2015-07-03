@@ -39,16 +39,16 @@ namespace IntegrationTests
             p3.IsInteresting = true;
             Debug.WriteLine("p3 is named " + p3.FullName);
 
-            //var interestingPeople = from p in realm.All<Person>() where p.IsInteresting == true select p;
+            var interestingPeople = from p in realm.All<Person>() where p.IsInteresting == true select p;
 
-            //Debug.WriteLine("Interesting people include:");
-            //foreach (var p in interestingPeople)
-            //    Debug.WriteLine(" - " + p.FullName + " (" + p.Email + ")");
+            Debug.WriteLine("Interesting people include:");
+            foreach (var p in interestingPeople)
+                Debug.WriteLine(" - " + p.FullName + " (" + p.Email + ")");
 
-            //var johns = from p in realm.All<Person>() where p.FirstName == "John" select p;
-            //Console.WriteLine("People named John:");
-            //foreach (var p in johns)
-            //    Console.WriteLine(" - " + p.FullName + " (" + p.Email + ")");
+            var johns = from p in realm.All<Person>() where p.FirstName == "John" select p;
+            Console.WriteLine("People named John:");
+            foreach (var p in johns)
+                Console.WriteLine(" - " + p.FullName + " (" + p.Email + ")");
         }
     }
 }

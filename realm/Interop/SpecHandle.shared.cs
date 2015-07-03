@@ -7,7 +7,7 @@
 
 namespace RealmNet.Interop
 {
-    internal class SpecHandle : RealmHandleOptionalUnbind
+    internal class SpecHandle : RealmHandleOptionalUnbind, ISpecHandle
     {
         //call with the root for this Spec. That is not neccesary the table, could be the shared group or group - it is the root of the tablehandle
         //or the tablehandle itself if its root is null

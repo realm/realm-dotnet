@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace RealmNet.Interop
 {
-    internal class GroupHandle:RealmHandleOptionalUnbind
+    internal class GroupHandle:RealmHandleOptionalUnbind, IGroupHandle
     {
         //keep this one even though warned that it is not used. It is in fact used by marshalling
         //needed for P/Invoke to be able to create an empty object

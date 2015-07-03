@@ -10,4 +10,6 @@ namespace RealmNet.Interop
     public interface IQueryHandle { }
     public interface IGroupHandle { }
     public interface ISharedGroupHandle { }
+    public interface ISpecHandle { }
+    public interface ITableViewHandle { }
 }

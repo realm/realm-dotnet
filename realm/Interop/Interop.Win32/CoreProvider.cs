@@ -3,6 +3,7 @@ using RealmNet;
 using System.Collections.Generic;
 
 using System.Collections;
+using System.Runtime.CompilerServices;
 using RealmNet.Interop;
 
 namespace Interop.Providers
@@ -11,12 +12,6 @@ namespace Interop.Providers
     {
         public TableHandle TableHandle;
         public Dictionary<string, long> Columns = new Dictionary<string, long>();
-    }
-
-    internal class CoreQueryHandle : ICoreQueryHandle
-    {
-        public QueryHandle QueryHandle;
-        public Table Table;
     }
 
     public class CoreProvider : ICoreProvider
@@ -89,33 +84,46 @@ namespace Interop.Providers
             else
                 throw new Exception ("Unsupported type " + typeof(T).Name);
         }
-        public ICoreQueryHandle CreateQuery(string tableName)
+
+        public IQueryHandle CreateQuery(string tableName)
         {
             var table = _tables[tableName];
             var tableHandle = table.TableHandle;
-            return new CoreQueryHandle() { /*QueryHandle = UnsafeNativeMethods.table_where(tableHandle),*/ Table = table };
+            var queryHandle = tableHandle.TableWhere();
+
+            //At this point sh is invalid due to its handle being uninitialized, but the root is set correctly
+            //a finalize at this point will not leak anything and the handle will not do anything
+
+            //now, set the TableView handle...
+            RuntimeHelpers.PrepareConstrainedRegions();//the following finally will run with no out-of-band exceptions
+            try
+            { }
+            finally
+            {
+                queryHandle.SetHandle(UnsafeNativeMethods.table_where(tableHandle));
+            }//at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
+            return queryHandle;
         }
 
-        public void QueryEqual(ICoreQueryHandle queryHandle, string columnName, object value)
+        public void QueryEqual(IQueryHandle queryHandle, string columnName, object value)
         {
-            var coreQuery = queryHandle as CoreQueryHandle;
-            var columnIndex = coreQuery.Table.Columns[columnName];
+            var columnIndex = UnsafeNativeMethods.query_get_column_index((QueryHandle)queryHandle, columnName);
+
             if (value.GetType() == typeof(bool))
-                UnsafeNativeMethods.query_bool_equal(coreQuery.QueryHandle, columnIndex, (bool)value);
+                UnsafeNativeMethods.query_bool_equal((QueryHandle)queryHandle, columnIndex, (bool)value);
             else if (value.GetType() == typeof(string))
-                UnsafeNativeMethods.query_string_equal(coreQuery.QueryHandle, columnIndex, (string)value);
+                UnsafeNativeMethods.query_string_equal((QueryHandle)queryHandle, columnIndex, (string)value);
         }
 
-        public System.Collections.IEnumerable ExecuteQuery(ICoreQueryHandle queryHandle, Type objectType)
+        public System.Collections.IEnumerable ExecuteQuery(IQueryHandle queryHandle, Type objectType)
         {
-            var coreQuery = queryHandle as CoreQueryHandle;
             var list = Activator.CreateInstance(typeof(List<>).MakeGenericType(objectType));
             var add = list.GetType().GetMethod("Add");
 
             long nextRowIndex = 0;
             while (nextRowIndex != -1)
             {
-                var rowIndex = UnsafeNativeMethods.query_find(coreQuery.QueryHandle, nextRowIndex);
+                var rowIndex = UnsafeNativeMethods.query_find((QueryHandle)queryHandle, nextRowIndex);
                 if (rowIndex != -1)
                 {
                     var o = Activator.CreateInstance(objectType);

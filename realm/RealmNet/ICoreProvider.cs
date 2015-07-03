@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using RealmNet.Interop;
 
 namespace RealmNet
 {
@@ -16,9 +17,9 @@ namespace RealmNet
         T GetValue<T>(string tableName, string propertyName, long rowIndex);
         void SetValue<T>(string tableName, string propertyName, long rowIndex, T value);
 
-        ICoreQueryHandle CreateQuery(string tableName);
-        void QueryEqual(ICoreQueryHandle queryHandle, string columnName, object value);
+        IQueryHandle CreateQuery(string tableName);
+        void QueryEqual(IQueryHandle queryHandle, string columnName, object value);
 
-        IEnumerable ExecuteQuery(ICoreQueryHandle queryHandle, Type objectType);
+        IEnumerable ExecuteQuery(IQueryHandle queryHandle, Type objectType);
     }
 }

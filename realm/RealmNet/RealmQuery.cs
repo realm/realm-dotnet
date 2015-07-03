@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using RealmNet.Interop;
 
 namespace RealmNet
 {
@@ -87,7 +88,7 @@ namespace RealmNet
     public class RealmQueryVisitor : ExpressionVisitor
     {
         private ICoreProvider _coreProvider;
-        private ICoreQueryHandle _coreQueryHandle;
+        private IQueryHandle _coreQueryHandle;
 
         public object Process(ICoreProvider coreProvider, Expression expression, Type returnType)
         {

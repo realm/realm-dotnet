@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace RealmNet.Interop
 {
-    public class TableHandle: RealmHandle
+    public class TableHandle: RealmHandle, ITableHandle
     {
         private TableHandle(RealmHandle root) : base(root)
         {

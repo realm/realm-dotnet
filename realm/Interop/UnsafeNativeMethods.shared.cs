@@ -308,7 +308,28 @@ public static class UnsafeNativeMethods
 
     #endregion
 
-    internal static IntPtr tableview_find_all_int(TableViewHandle tableViewHandle, long columnIndex, long value)
+    #region internal static long query_get_column_index(QueryHandle queryHandle, string columnName)
+
+    [DllImport(InteropConfig.L64, EntryPoint = "query_get_column_index", CallingConvention = CallingConvention.Cdecl)]
+    private static extern IntPtr query_get_column_index64(QueryHandle queryPtr,
+    [MarshalAs(UnmanagedType.LPWStr)] String columnName, IntPtr columnNameLen);
+
+    [DllImport(InteropConfig.L32, EntryPoint = "query_get_column_index", CallingConvention = CallingConvention.Cdecl)]
+    private static extern IntPtr query_get_column_index32(QueryHandle queryPtr,
+        [MarshalAs(UnmanagedType.LPWStr)] String columnName, IntPtr columnNameLen);
+
+    internal static long query_get_column_index(QueryHandle queryHandle, string columnName)
+    {
+        if (InteropConfig.Is64Bit)
+            return (long)query_get_column_index64(queryHandle, columnName, (IntPtr)columnName.Length);
+        else
+            return (long)query_get_column_index32(queryHandle, columnName, (IntPtr)columnName.Length);
+    }
+
+    #endregion
+
+
+        internal static IntPtr tableview_find_all_int(TableViewHandle tableViewHandle, long columnIndex, long value)
     {
         throw new NotImplementedException();
     }
