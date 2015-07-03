@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using RealmNet;
+using RealmNet.Interop;
 
 namespace Tests.TestHelpers
 {
@@ -48,20 +49,20 @@ namespace Tests.TestHelpers
             Tables[tableName].Rows[(int)rowIndex][propertyName] = value;
         }
 
-        public ICoreQueryHandle CreateQuery(string tableName)
+        public IQueryHandle CreateQuery(string tableName)
         {
             var q = new Query {TableName = tableName};
             Queries.Add(q);
             return q;
         }
 
-        public void QueryEqual(ICoreQueryHandle queryHandle, string columnName, object value)
+        public void QueryEqual(IQueryHandle queryHandle, string columnName, object value)
         {
             var q = (Query) queryHandle;
             q.Sequence.Add(new Query.SequenceElement { Name = "Equal", Field = columnName, Value = value });
         }
 
-        public IEnumerable ExecuteQuery(ICoreQueryHandle queryHandle, Type objectType)
+        public IEnumerable ExecuteQuery(IQueryHandle queryHandle, Type objectType)
         {
             var result = Activator.CreateInstance(typeof (List<>).MakeGenericType(objectType));
             return (IEnumerable)result;
@@ -98,7 +99,7 @@ namespace Tests.TestHelpers
             }
         }
 
-        public class Query : ICoreQueryHandle
+        public class Query : IQueryHandle
         {
             public string TableName;
 
