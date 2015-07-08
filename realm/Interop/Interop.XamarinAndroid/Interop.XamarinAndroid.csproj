@@ -3,8 +3,6 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{2379D669-4F4B-4FF6-AF8A-49FEA981EFC3}</ProjectGuid>
     <ProjectTypeGuids>{EFBA0AD7-5A72-4C68-AF49-83D382785DCF};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
@@ -87,7 +85,7 @@
       <Name>RealmNet</Name>
     </ProjectReference>
     <ProjectReference Include="..\InteropShared\InteropShared.csproj">
-      <Project>{8b451911-321f-4244-9999-c1678bed060d}</Project>
+      <Project>{8B451911-321F-4244-9999-C1678BED060D}</Project>
       <Name>InteropShared</Name>
     </ProjectReference>
   </ItemGroup>
