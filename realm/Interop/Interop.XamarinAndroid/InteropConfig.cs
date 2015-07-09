@@ -18,10 +18,7 @@ namespace Interop.Config
         private const string BuildName = "Release";
 #endif
 
-        //the .net library wil always use a c dll that is called wrappers[32/64][r/d]
-        //this dll could have been built with vs2012 or 2010 - we don't really care as long as the C interface is the same, which it will be
-        //if built from the same source.
-        public const string L64 = "wrappers64" + Buildmode;
-        public const string L32 = "wrappers32" + Buildmode;
+        public const string L64 = "realm-wrappers";
+        public const string L32 = "realm-wrappers";
     }
 }

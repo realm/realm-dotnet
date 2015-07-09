@@ -88,4 +88,24 @@
       <Name>Interop.XamarinAndroid</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="wrappers\" />
+    <Folder Include="wrappers\armeabi\" />
+    <Folder Include="wrappers\armeabi-v7\" />
+    <Folder Include="wrappers\x86\" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidNativeLibrary Include="..\..\wrappers\libs\armeabi\librealm-wrappers.so">
+      <Link>wrappers\armeabi\librealm-wrappers.so</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AndroidNativeLibrary>
+    <AndroidNativeLibrary Include="..\..\wrappers\libs\armeabi-v7a\librealm-wrappers.so">
+      <Link>wrappers\armeabi-v7\librealm-wrappers.so</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AndroidNativeLibrary>
+    <AndroidNativeLibrary Include="..\..\wrappers\libs\x86\librealm-wrappers.so">
+      <Link>wrappers\x86\librealm-wrappers.so</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AndroidNativeLibrary>
+  </ItemGroup>
 </Project>
