@@ -6,18 +6,32 @@ FLAGS=-Icore/include -std=c++11 -stdlib=libc++
 help: ## Show this help.
 	@fgrep -h "##" $(MAKEFILE_LIST) | fgrep -v fgrep | sed -e 's/\\$$//' | sed -e 's/##//'
 
-clean:
+clean: ## Remove everything from build/
 	rm -fr build/*
  
-libwrappers.dylib:
-	$(CXX) $(FLAGS) -DDYNAMIC -Lcore -lc++ -lrealm wrappers.cpp -dynamiclib -arch i386 -o libwrappers.dylib -framework CoreFoundation
+all: build/Release-osx/libwrappers.dylib build/Release-ios-universal/libwrappers.a ## Make all the libs
 
- 
-libwrappers-ios.o:
-	$(CXX) $(FLAGS) -c -arch arm64 -arch armv7 wrappers.cpp -o libwrappers-ios.o -isysroot $(SDKROOT)
+build:
+	mkdir build
 
-libwrappers-ios.a: libwrappers-ios.o
+build/Release-osx: | build
+	mkdir build/Release-osx
 
+build/Release-osx/libwrappers.dylib: | build/Release-osx
+	$(CXX) $(FLAGS) -DDYNAMIC -Lcore -lc++ -lrealm wrappers.cpp -dynamiclib -arch i386 -o build/Release-osx/libwrappers.dylib -framework CoreFoundation
+
+
+build/Release-iphoneos/libwrappers.a:
+	xcodebuild -sdk iphoneos -configuration Release -target "wrappers"
+
+build/Release-iphonesimulator/libwrappers.a: wrappers.cpp wrappers.h
+	xcodebuild -sdk iphonesimulator -configuration Release -target "wrappers"
+
+build/Release-ios-universal: | build
+	mkdir build/Release-ios-universal
+
+build/Release-ios-universal/libwrappers.a: build/Release-iphoneos/libwrappers.a build/Release-iphonesimulator/libwrappers.a | build/Release-ios-universal
+	lipo -create -output "build/Release-ios-universal/libwrappers.a" "build/Release-iphoneos/libwrappers.a" "build/Release-iphonesimulator/libwrappers.a"
 
 	#$(CXX) $(FLAGS) wrappers.cpp -c -lrealm-ios -arch arm64 -arch armv7 -isysroot $(SDKROOT)
 
