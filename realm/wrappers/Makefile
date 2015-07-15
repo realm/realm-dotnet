@@ -9,7 +9,7 @@ help: ## Show this help.
 clean: ## Remove everything from build/
 	rm -fr build/*
  
-all: build/Release-osx/libwrappers.dylib build/Release-ios-universal/libwrappers.a ## Make all the libs
+all: build/Release-osx/libwrappers.dylib build/Release-ios-universal/libwrappers.a  ## Make all the libs
 
 build:
 	mkdir build
@@ -19,7 +19,6 @@ build/Release-osx: | build
 
 build/Release-osx/libwrappers.dylib: | build/Release-osx
 	$(CXX) $(FLAGS) -DDYNAMIC -Lcore -lc++ -lrealm wrappers.cpp -dynamiclib -arch i386 -o build/Release-osx/libwrappers.dylib -framework CoreFoundation
-
 
 build/Release-iphoneos/libwrappers.a:
 	xcodebuild -sdk iphoneos -configuration Release -target "wrappers"
@@ -33,8 +32,11 @@ build/Release-ios-universal: | build
 build/Release-ios-universal/libwrappers.a: build/Release-iphoneos/libwrappers.a build/Release-iphonesimulator/libwrappers.a | build/Release-ios-universal
 	lipo -create -output "build/Release-ios-universal/libwrappers.a" "build/Release-iphoneos/libwrappers.a" "build/Release-iphonesimulator/libwrappers.a"
 
+build/Release-android/armeabi/libwrappers.so:
+
+
 	#$(CXX) $(FLAGS) wrappers.cpp -c -lrealm-ios -arch arm64 -arch armv7 -isysroot $(SDKROOT)
 
-.PHONY: all help clean test
+.PHONY: all help clean
 
 
