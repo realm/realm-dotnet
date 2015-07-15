@@ -56,6 +56,15 @@
     <None Include="Assets\AboutAssets.txt" />
     <None Include="FodyWeavers.xml" />
     <None Include="packages.config" />
+    <None Include="..\..\wrappers\build\Release-android\armeabi\libwrappers.so">
+      <Link>wrappers\armeabi\libwrappers.so</Link>
+    </None>
+    <None Include="..\..\wrappers\build\Release-android\armeabi-v7a\libwrappers.so">
+      <Link>wrappers\armeabi-v7\libwrappers.so</Link>
+    </None>
+    <None Include="..\..\wrappers\build\Release-android\x86\libwrappers.so">
+      <Link>wrappers\x86\libwrappers.so</Link>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\layout\Main.axml" />
@@ -93,19 +102,5 @@
     <Folder Include="wrappers\armeabi\" />
     <Folder Include="wrappers\armeabi-v7\" />
     <Folder Include="wrappers\x86\" />
-  </ItemGroup>
-  <ItemGroup>
-    <AndroidNativeLibrary Include="..\..\wrappers\libs\armeabi\librealm-wrappers.so">
-      <Link>wrappers\armeabi\librealm-wrappers.so</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </AndroidNativeLibrary>
-    <AndroidNativeLibrary Include="..\..\wrappers\libs\armeabi-v7a\librealm-wrappers.so">
-      <Link>wrappers\armeabi-v7\librealm-wrappers.so</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </AndroidNativeLibrary>
-    <AndroidNativeLibrary Include="..\..\wrappers\libs\x86\librealm-wrappers.so">
-      <Link>wrappers\x86\librealm-wrappers.so</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </AndroidNativeLibrary>
   </ItemGroup>
 </Project>
