@@ -228,6 +228,14 @@ extern "C" {
     return query_ptr->find(begin_at_table_row);
   }
 
+  //convert from columnName to columnIndex returns -1 if the string is not a column name
+  //assuming that the get_table() does not return anything that must be deleted
+  REALM_CORE_WRAPPER_API size_t query_get_column_index(Query* query_ptr,uint16_t *  column_name,size_t column_name_len)
+  {
+    CSStringAccessor str(column_name,column_name_len);
+    return query_ptr->get_table()->get_column_index(str);
+  }
+
 #ifdef DYNAMIC  // clang complains when making a dylib if there is no main(). :-/
   int main() { return 0; }
 #endif
