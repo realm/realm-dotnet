@@ -34,3 +34,5 @@ DerivedData*.xcuserstate
 *.ncrunchproject
 *.opensdf
 *.sdf
+realm/doxyout
+realm/doxyoutCS
