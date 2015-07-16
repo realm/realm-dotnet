@@ -109,9 +109,5 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="FodyWeavers.xml" />
-    <Content Include="..\..\wrappers\build\Release-osx\libwrappers.dylib">
-      <Link>libwrappers.dylib</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
 </Project>
