@@ -1,3 +1,4 @@
+#!/bin/sh
 # http://stackoverflow.com/questions/3520977/build-fat-static-library-device-simulator-using-xcode-and-sdk-4
 
 TARGET_NAME="wrappers"
@@ -5,7 +6,7 @@ TARGET_NAME="wrappers"
 CONFIGURATION=Release
 DEVICE=iphoneos
 SIMULATOR=iphonesimulator
-FAT=universal
+FAT=ios-universal
 OUTPUT=build
 LIBRARY_NAME=lib${TARGET_NAME}.a
 HEADERS_DIR_NAME=headers
