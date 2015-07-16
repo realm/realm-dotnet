@@ -1,3 +1,4 @@
+#!/bin/sh
 # http://stackoverflow.com/questions/3520977/build-fat-static-library-device-simulator-using-xcode-and-sdk-4
 
 TARGET_NAME="wrappers"
