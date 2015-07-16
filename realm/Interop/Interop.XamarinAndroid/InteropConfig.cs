@@ -18,7 +18,7 @@ namespace Interop.Config
         private const string BuildName = "Release";
 #endif
 
-        public const string L64 = "realm-wrappers";
-        public const string L32 = "realm-wrappers";
+        public const string L64 = "wrappers";
+        public const string L32 = "wrappers";
     }
 }
