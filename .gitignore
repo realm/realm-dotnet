@@ -36,3 +36,5 @@ DerivedData*.xcuserstate
 *.sdf
 realm/doxyout
 realm/doxyoutCS
+*.a
+*.so

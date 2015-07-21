@@ -42,6 +42,7 @@
     <Compile Include="RealmList.cs" />
     <Compile Include="RealmObject.cs" />
     <Compile Include="RealmQuery.cs" />
+    <Compile Include="MockCoreProvider.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Interop\InteropShared\InteropShared.csproj">
