@@ -4,6 +4,8 @@
 #include <realm/util/utf8.hpp>
 #include <realm/lang_bind_helper.hpp>
 
+using namespace realm;
+
 #define REALM_CORE_WRAPPER_API 
 
 //as We've got no idea how the compiler represents an instance of DataType on the stack, perhaps it's better to send back a size_t with the value.
