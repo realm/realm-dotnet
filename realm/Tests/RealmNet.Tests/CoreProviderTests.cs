@@ -6,17 +6,19 @@ using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using RealmNet;
+using InteropShared;
 
+// TODO abstract out the CoreProvider
 namespace Tests
 {
     [TestFixture]
     public class CoreProviderTests
     {
-/*        [Test]
+        [Test]
         public void ShouldAddTable()
         {
             // Arrange
-            var coreProvider = new CoreProvider();
+            var coreProvider = new MockCoreProvider();
 
             // Act
             coreProvider.AddTable("T1");
@@ -29,7 +31,7 @@ namespace Tests
         public void AddColumnShouldNotThrow()
         {
             // Arrange
-            var coreProvider = new CoreProvider();
+            var coreProvider = new MockCoreProvider();
             coreProvider.AddTable("T1");
 
             // Act
@@ -43,7 +45,7 @@ namespace Tests
         public void InsertRowShouldNotThrow()
         {
             // Arrange
-            var coreProvider = new CoreProvider();
+            var coreProvider = new MockCoreProvider();
             coreProvider.AddTable("T1");
 
             // Act
@@ -57,14 +59,14 @@ namespace Tests
         public void SetAndGetValue()
         {
             // Arrange
-            var coreProvider = new CoreProvider();
+            var coreProvider = new MockCoreProvider();
             coreProvider.AddTable("T1");
             coreProvider.AddColumnToTable("T1", "C1", typeof (string));
             coreProvider.AddEmptyRow("T1");
             
             // Act
-            coreProvider.SetValue<string>("T1", 0, "C1", "actual value");
-            var actual = coreProvider.GetValue<string>("T1", 0, "C1");
+            coreProvider.SetValue<string>("T1", "C1", 0, "actual value");
+            var actual = coreProvider.GetValue<string>("T1", "C1", 0);
 
             // Assert
             Assert.That(actual, Is.EqualTo("actual value"));
@@ -74,7 +76,7 @@ namespace Tests
         public void CreateQueryTest()
         {
             // Arrange
-            var coreProvider = new CoreProvider();
+            var coreProvider = new MockCoreProvider();
             coreProvider.AddTable("T1");
 
             // Act
@@ -88,7 +90,7 @@ namespace Tests
         public void ExecuteQueryTest()
         {
             // Arrange
-            var coreProvider = new CoreProvider();
+            var coreProvider = new MockCoreProvider();
             coreProvider.AddTable("T1");
             var query = coreProvider.CreateQuery("T1");
 
@@ -99,6 +101,6 @@ namespace Tests
             Assert.Pass();
         }
 
-*/
+
     }
 }

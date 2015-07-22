@@ -1,0 +1,15 @@
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#17 Add Mock CoreProvider
+
+MockCoreProvider.cs
+- added to RealmNet project so is universal
+
+RealmWinOnly.sln
+- clone of solution with just the minimal targets for testing platform-agnostic code
+
+RealmNet.Tests/CoreProviderTests.cs
+- uncommented entire body
+- changed generic CoreProvider to MockCoreProvider
+- swapped order of propertyName and rowIndex in SetValue calls
+
+
