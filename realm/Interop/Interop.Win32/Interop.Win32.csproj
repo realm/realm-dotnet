@@ -45,6 +45,9 @@
     <Compile Include="..\GroupHandle.shared.cs">
       <Link>GroupHandle.shared.cs</Link>
     </Compile>
+    <Compile Include="..\PreserveAttribute.shared.cs">
+      <Link>PreserveAttribute.shared.cs</Link>
+    </Compile>
     <Compile Include="..\QueryHandle.shared.cs">
       <Link>QueryHandle.shared.cs</Link>
     </Compile>
