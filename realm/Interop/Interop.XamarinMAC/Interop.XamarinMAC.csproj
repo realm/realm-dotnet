@@ -81,6 +81,9 @@
     <Compile Include="..\TableViewHandle.shared.cs">
       <Link>TableViewHandle.shared.cs</Link>
     </Compile>
+    <Compile Include="..\PreserveAttribute.shared.cs">
+      <Link>PreserveAttribute.shared.cs</Link>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Mac\Xamarin.Mac.CSharp.targets" />
   <ItemGroup>
@@ -92,11 +95,5 @@
       <Project>{8B451911-321F-4244-9999-C1678BED060D}</Project>
       <Name>InteropShared</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="..\..\wrappers\libwrappers.dylib">
-      <Link>libwrappers.dylib</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
 </Project>

@@ -7,6 +7,7 @@ using Android.Widget;
 using Android.OS;
 using Interop.Providers;
 using RealmNet;
+using System.Linq;
 
 namespace Playground.XamarinAndroid
 {
@@ -52,18 +53,18 @@ namespace Playground.XamarinAndroid
             p3.IsInteresting = true;
             System.Diagnostics.Debug.WriteLine("p3 is named " + p3.FullName);
 
-            /*
+
             var interestingPeople = from p in realm.All<Person>() where p.IsInteresting == true select p;
 
-            Debug.WriteLine("Interesting people include:");
+            System.Diagnostics.Debug.WriteLine("Interesting people include:");
             foreach (var p in interestingPeople)
                 System.Diagnostics.Debug.WriteLine(" - " + p.FullName + " (" + p.Email + ")");
 
             var johns = from p in realm.All<Person>() where p.FirstName == "John" select p;
-            Console.WriteLine("People named John:");
+            System.Diagnostics.Debug.WriteLine("People named John:");
             foreach (var p in johns)
                 System.Diagnostics.Debug.WriteLine(" - " + p.FullName + " (" + p.Email + ")");
-            */
+            
         }
     }
 }

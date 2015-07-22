@@ -72,6 +72,9 @@
     <Compile Include="InteropConfig.cs" />
     <Compile Include="Resources\Resource.Designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="..\PreserveAttribute.shared.cs">
+      <Link>PreserveAttribute.shared.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\AboutResources.txt" />

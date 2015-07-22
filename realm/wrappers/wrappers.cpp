@@ -168,8 +168,6 @@ extern "C" {
     return LangBindHelper::new_table();
   }
 
-  
-
   REALM_CORE_WRAPPER_API size_t table_add_column(realm::Table* table_ptr,size_t type,  uint16_t * name,size_t name_len)
   {
     CSStringAccessor str(name,name_len);
