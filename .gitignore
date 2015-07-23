@@ -10,6 +10,7 @@ packages
 realm/Tools/RealmWeaver.Fody.dll
 realm/wrappers/DerivedData
 realm/wrappers/core/*.a
+realm/wrappers/core/*.lib
 
 ### Xcode ###
 build/

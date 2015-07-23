@@ -6,7 +6,11 @@
 
 using namespace realm;
 
-#define REALM_CORE_WRAPPER_API 
+#ifdef WIN32
+#define REALM_CORE_WRAPPER_API __declspec( dllexport )
+#else
+#define REALM_CORE_WRAPPER_API
+#endif
 
 //as We've got no idea how the compiler represents an instance of DataType on the stack, perhaps it's better to send back a size_t with the value.
 //we always know the size of a size_t
