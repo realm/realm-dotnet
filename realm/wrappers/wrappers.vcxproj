@@ -101,7 +101,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>C:\repositories\realm-dotnet\realm\wrappers\core\Realm32d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(ProjectDir)core\Realm32d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(PlatformShortName)-$(ConfigurationName)$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
@@ -117,7 +117,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>C:\repositories\realm-dotnet\realm\wrappers\core\Realm64d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(ProjectDir)core\Realm64d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(PlatformShortName)-$(ConfigurationName)$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
