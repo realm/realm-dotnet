@@ -87,7 +87,12 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="wrappersx64-Debug.dll">
+    <Content Include="..\..\wrappers\build\wrappersx64-Debug.dll">
+      <Link>wrappersx64-Debug.dll</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\wrappers\build\wrappersx86-Debug.dll">
+      <Link>wrappersx86-Debug.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
