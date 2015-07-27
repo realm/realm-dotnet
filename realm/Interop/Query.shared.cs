@@ -140,7 +140,7 @@ namespace RealmNet.Interop
         //if the column does not exist, -1 is returned
         private long GetColumnIndexNoCheck(string columnName)
         {
-            return UnsafeNativeMethods.query_get_column_index(this, columnName);
+            return UnsafeNativeMethods.query_get_column_index(this.QueryHandle, columnName);
         }
 
         /// <summary>
@@ -171,7 +171,7 @@ namespace RealmNet.Interop
         /// <returns>query that matches all rows with specified boolean value in specified field</returns>
         public Query Equal(string columnName, Boolean value)
         {
-            UnsafeNativeMethods.query_bool_equal(this, GetColumnIndex(columnName), value);
+            UnsafeNativeMethods.query_bool_equal(this.QueryHandle, GetColumnIndex(columnName), value);
             return this;
         }
 
@@ -184,7 +184,7 @@ namespace RealmNet.Interop
         public Query Equal(long columnIndex, Boolean value)
         {
             UnderlyingTable.ValidateColumnIndex(columnIndex);
-            UnsafeNativeMethods.query_bool_equal(this, columnIndex, value);
+            UnsafeNativeMethods.query_bool_equal(this.QueryHandle, columnIndex, value);
             return this;
         }
 
@@ -262,7 +262,7 @@ namespace RealmNet.Interop
         /// <returns>row Index of the next matching row, or -1 if there was no match</returns>
         public long Find(long beginAtTableRow)
         {
-            return UnsafeNativeMethods.query_find(this, beginAtTableRow);
+            return UnsafeNativeMethods.query_find(this.QueryHandle, beginAtTableRow);
         }
 
 

@@ -245,6 +245,11 @@ namespace RealmNet.Interop
                 return table_where32(tableHandle);
         }
 
+        internal static void table_view_sort(TableView tableView, long columnIndex, bool ascending)
+        {
+            throw new NotImplementedException();
+        }
+
         #endregion
 
         #region internal static void query_bool_equal(QueryHandle queryHandle, long columnIndex, bool value)
@@ -340,6 +345,11 @@ namespace RealmNet.Interop
         }
 
         internal static IntPtr tableview_find_all_datetime(TableViewHandle tableViewHandle, long columnIndex, DateTime value)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal static string table_view_to_string(TableView tableView, long limit)
         {
             throw new NotImplementedException();
         }

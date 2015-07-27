@@ -504,7 +504,7 @@ namespace RealmNet.Interop
             ValidateIsValid();
             ValidateReadWrite();
             ++Version;
-            return UnsafeNativeMethods.table_add_empty_row(this, numberOfRows);
+            return UnsafeNativeMethods.table_add_empty_row(this.TableHandle, numberOfRows);
         }
 
 
@@ -564,7 +564,8 @@ namespace RealmNet.Interop
 
         internal override string ToStringNoCheck(long limit)
         {
-            return UnsafeNativeMethods.table_to_string(this, limit);
+            throw new NotImplementedException();
+            //return UnsafeNativeMethods.table_to_string(this, limit);
         }
 
         internal override string RowToStringNoCheck(long rowIndex)
@@ -615,7 +616,7 @@ namespace RealmNet.Interop
         {
             ValidateNotSharedSpec();
             ValidateReadWrite();
-            long colIx = UnsafeNativeMethods.table_add_column(this, type, name);
+            long colIx = UnsafeNativeMethods.table_add_column(this.TableHandle, type, name);
             ++Version;
             return colIx;
         }
@@ -1019,7 +1020,7 @@ namespace RealmNet.Interop
 
         internal override void SetStringNoCheck(long columnIndex, long rowIndex, string value)
         {
-            UnsafeNativeMethods.table_set_string(this, columnIndex, rowIndex, value);
+            UnsafeNativeMethods.table_set_string(this.TableHandle, columnIndex, rowIndex, value);
         }
 
         internal override void SetBinaryNoCheck(long columnIndex, long rowIndex, byte[] value)
@@ -1272,7 +1273,7 @@ namespace RealmNet.Interop
 
         internal override String GetStringNoCheck(long columnIndex, long rowIndex)
         {
-            return UnsafeNativeMethods.table_get_string(this, columnIndex, rowIndex);
+            return UnsafeNativeMethods.table_get_string(this.TableHandle, columnIndex, rowIndex);
         }
 
 
@@ -1363,12 +1364,12 @@ namespace RealmNet.Interop
 
         internal override Boolean GetBoolNoCheck(long columnIndex, long rowIndex)
         {
-            return UnsafeNativeMethods.table_get_bool(this, columnIndex, rowIndex);
+            return UnsafeNativeMethods.table_get_bool(this.TableHandle, columnIndex, rowIndex);
         }
 
         internal override void SetBoolNoCheck(long columnIndex, long rowIndex, Boolean value)
         {
-            UnsafeNativeMethods.table_set_bool(this, columnIndex, rowIndex, value);
+            UnsafeNativeMethods.table_set_bool(this.TableHandle, columnIndex, rowIndex, value);
         }
 
         internal override void SetLongNoCheck(long columnIndex, long rowIndex, long value)
@@ -1580,7 +1581,7 @@ namespace RealmNet.Interop
             ValidateNotSharedSpec();//You must alter shared spec tables through their top table
             ValidateColumnPath(path, true);
             ValidateReadWrite();
-            return path.Count == 0 ? UnsafeNativeMethods.table_add_column(this, dataType, columnName) : UnsafeNativeMethods.table_add_sub_column(this, path, dataType, columnName);
+            return path.Count == 0 ? UnsafeNativeMethods.table_add_column(this.TableHandle, dataType, columnName) : UnsafeNativeMethods.table_add_sub_column(this, path, dataType, columnName);
         }
 
 

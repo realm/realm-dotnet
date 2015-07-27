@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Interop.Providers;
+using RealmNet.Interop;
 using NUnit.Framework;
 using RealmNet;
 
