@@ -1,5 +1,6 @@
 ﻿using NUnit.Framework;
 using RealmNet;
+using Interop.Providers;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Tests
 {
-    /*
+    
     [TestFixture]
     public class RealmObjectTests
     {
@@ -25,11 +26,11 @@ namespace Tests
         [SetUp]
         public void Setup()
         {
-            _coreProviderStub = new CoreProviderStub();
-            Realm.ActiveCoreProvider = _coreProviderStub;
+            Realm.ActiveCoreProvider = ProviderFactory.Make();
             realm = Realm.GetInstance();
         }
-
+/*
+ * TODO uncomment when have agreed on allObjects and bulk load interface
         private void PrepareForQueries()
         {
             _coreProviderStub.AddBulk("TestEntity", new dynamic[]
@@ -44,7 +45,7 @@ namespace Tests
         {
             // Arrange
             PrepareForQueries();
-            var query = realm.All<TestEntity>();
+            var query = realm.allObjects<TestEntity>();
 
             // Act
             query.ToList();
@@ -72,6 +73,7 @@ namespace Tests
             Assert.That(_coreProviderStub.Queries[0].Sequence[0].Field, Is.EqualTo("Str"));
             Assert.That(_coreProviderStub.Queries[0].Sequence[0].Value, Is.EqualTo("Peter"));
         }
+    */
     }
-*/
+
 } 
