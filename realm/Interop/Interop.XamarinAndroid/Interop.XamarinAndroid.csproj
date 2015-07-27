@@ -32,6 +32,15 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugMock|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;MOCKING_CONFIG</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Mono.Android" />
     <Reference Include="mscorlib" />
@@ -41,6 +50,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\CoreProvider.shared.cs">
+      <Link>CoreProvider.shared.cs</Link>
+    </Compile>
+    <Compile Include="..\CoreProviderFactory.shared.cs">
+      <Link>CoreProviderFactory.shared.cs</Link>
+    </Compile>
     <Compile Include="..\GroupHandle.shared.cs">
       <Link>GroupHandle.shared.cs</Link>
     </Compile>
@@ -68,7 +83,6 @@
     <Compile Include="..\UnsafeNativeMethods.shared.cs">
       <Link>UnsafeNativeMethods.shared.cs</Link>
     </Compile>
-    <Compile Include="CoreProvider.cs" />
     <Compile Include="InteropConfig.cs" />
     <Compile Include="Resources\Resource.Designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
