@@ -15,7 +15,7 @@ namespace RealmNet.Interop
     /// TableView also supports LinQ queries (as it is IEnumerable)
     /// The Row objects returned are merely cursors, no data is transferred until you call row.GetString(col) etc.
     /// </summary>
-    public class TableView : TableOrView, IEnumerable<Row>
+    public class TableView : TableOrView
     {
         private Table _underlyingTable;//the table this view ultimately is viewing (not the view it is viewing, the final table being viewed. Could be a subtable)
         /// <summary>
@@ -40,114 +40,6 @@ namespace RealmNet.Interop
 
         }//used only to make sure that a reference to the table exists until the view is disposed of
 
-
-        /// <summary>
-        /// Returns an enumerator that iterates through the collection.
-        /// </summary>
-        /// <returns>
-        /// IEnimerator  that can be used to iterate through the TableView, Yielding Row objects each representing a row in the tableview
-        /// </returns>
-
-        public IEnumerator<Row> GetEnumerator()
-        {
-            ValidateIsValid();
-            return new Enumerator(this);
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return new Enumerator(this);
-        }
-
-        private class Enumerator : IEnumerator<Row> //probably overkill, current needs could be met by using yield
-        {
-            private long _currentRow = -1;
-            private readonly TableView _myTableView;//the table or view we are iterating            
-            private readonly int _myTableVersion;//version of the underlying table we are viewing
-            private readonly Table _myUnderlyingTable;
-
-            public Enumerator(TableView tableView)
-            {
-                _myTableView = tableView;
-                _myUnderlyingTable = tableView.UnderlyingTable;
-                _myTableVersion = _myUnderlyingTable.Version;
-            }
-
-            //todo:peformance test if inlining this manually will do any good
-
-            private void ValidateVersion()
-            {
-                if (_myTableVersion != _myUnderlyingTable.Version)
-                    throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Table View Iteration failed at row {0} because the table had rows inserted or deleted", _currentRow));
-            }
-
-            public Row Current
-            {
-                get
-                {
-                    ValidateVersion();
-                    return new Row(_myTableView, _currentRow);
-                }
-            }
-
-            object IEnumerator.Current
-            {
-                get { return Current; }
-            }
-
-            public bool MoveNext()
-            {
-                ValidateVersion();
-                return ++_currentRow < _myTableView.Size;
-            }
-
-            public void Reset()
-            {
-                _currentRow = -1;
-            }
-
-            public void Dispose()
-            {
-                //_myTableView = null; //remove reference to Table class
-            }
-        }
-
-
-        /// <summary>
-        /// Return a Row cursor for the row specified by the zero based rowIndex
-        /// </summary>
-        /// <param name="rowIndex">Zero based row Index of the Row to return</param>
-        public Row this[long rowIndex]
-        {
-            get
-            {
-                ValidateIsValid();
-                ValidateRowIndex(rowIndex);
-                return RowForIndexNoCheck(rowIndex);
-            }
-        }
-
-        private Row RowForIndexNoCheck(long rowIndex)
-        {
-            return new Row(this, rowIndex);
-        }
-        /// <summary>
-        /// *not in c++ binding. Is in java binding
-        /// see similar implementation in Table          
-        /// </summary>
-        /// <returns>Row cursor referencing the last row in the table</returns>
-        /// <exception cref="InvalidOperationException">Thrown if the table is empty</exception>
-        public Row Last()
-        {
-            ValidateIsValid();
-            long s = Size;
-            if (s > 0)
-            {
-                return RowForIndexNoCheck(s - 1);
-            }
-            throw new InvalidOperationException("Last called on a TableView with no rows in it");
-        }
-        //*/
 
 
         /// <summary>

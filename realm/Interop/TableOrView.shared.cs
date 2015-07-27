@@ -379,26 +379,6 @@ namespace RealmNet.Interop
             }
         }
 
-        private void SetSubTableNoCheckHighLevel(long columnIndex, long rowIndex, TableView element)
-        {
-            if (element == null)
-            {
-                SetSubtableAsNull(columnIndex, rowIndex);
-            }
-            else
-            {
-                using (var t = GetSubTableNoCheck(columnIndex, rowIndex))
-                {
-                    //  do this when SetSubTable(....tableview has been implemented in core)SetSubTableNoCheck(columnIndex, rowIndex, element);
-                    ValidateEqualScheme(t, element.UnderlyingTable, "Set SubTable with TableView");
-                    //when implemented in core, simply call SetSubTableNoCheck(...elemTableView);
-                    //for now, just call AddMany and let that one iterate through the tableview and get the job done
-                    t.AddMany(element);
-                }
-            }
-        }
-
-
         private void SetSubtableAsNull(long columnIndex, long rowIndex)
         {
             ClearSubTableNoCheck(columnIndex, rowIndex);
@@ -2073,25 +2053,6 @@ namespace RealmNet.Interop
         /// <param name="rowIndex">Zero based row index of the field where the subtable should be set</param>
         /// <param name="value">Table, or Ienumerable that can be evaluated to shema-matching suitable subtable data by the binding</param>
         public void SetSubTable(long columnIndex, long rowIndex, IEnumerable<Object> value)
-        {
-            ValidateIsValid();
-            ValidateColumnAndRowIndex(columnIndex, rowIndex);
-            ValidateTypeSubTable(columnIndex);
-            ValidateReadWrite();
-            SetSubTableNoCheckHighLevel(columnIndex, rowIndex, value);
-        }
-
-        /// <summary>
-        /// Sets a subtable into the specified field.
-        /// The subtable being set must be a TableView or Null
-        /// NULL - will set a new empty subtable
-        /// The TableView variable must have the same schema as the subtable field. A subtable is
-        /// created and all rows in the TableView are copied into the subtable
-        /// </summary>
-        /// <param name="columnIndex">zero based index of the column of the field where the subable should be set</param>
-        /// <param name="rowIndex">Zero based row index of the field where the subtable should be set</param>
-        /// <param name="value">TableView, must have the same structure as the subtable being set</param>
-        public void SetSubTable(long columnIndex, long rowIndex, TableView value)
         {
             ValidateIsValid();
             ValidateColumnAndRowIndex(columnIndex, rowIndex);

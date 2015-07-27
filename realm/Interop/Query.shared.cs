@@ -10,7 +10,7 @@ namespace RealmNet.Interop
     /// Represents a Query on a table.
     /// Currently under construction
     /// </summary>
-    public class Query : Handled, IEnumerable<Row>
+    public class Query : Handled
     {
         internal Query(QueryHandle handle, Table underlyingTable)
         {
@@ -296,7 +296,7 @@ namespace RealmNet.Interop
         /// A IEnumerator that can be used to iterate through the collection, yielding TableRow objects for each row the query matches
         /// </returns>
 
-        public IEnumerator<Row> GetEnumerator()
+        /*public IEnumerator<Row> GetEnumerator()
         {
             var findmore = true;
             long nextToTest = 0;
@@ -321,7 +321,7 @@ namespace RealmNet.Interop
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
-        }
+        }*/
 
 
     }

@@ -65,23 +65,11 @@
     <Compile Include="..\RealmHandleOptionalUnbind.shared.cs">
       <Link>shared\RealmHandleOptionalUnbind.shared.cs</Link>
     </Compile>
-    <Compile Include="..\Row.shared.cs">
-      <Link>shared\Row.shared.cs</Link>
-    </Compile>
-    <Compile Include="..\RowCell.shared.cs">
-      <Link>shared\RowCell.shared.cs</Link>
-    </Compile>
     <Compile Include="..\SharedGroup.shared.cs">
       <Link>shared\SharedGroup.shared.cs</Link>
     </Compile>
     <Compile Include="..\SharedGroupHandle.shared.cs">
       <Link>shared\SharedGroupHandle.shared.cs</Link>
-    </Compile>
-    <Compile Include="..\Spec.shared.cs">
-      <Link>shared\Spec.shared.cs</Link>
-    </Compile>
-    <Compile Include="..\SpecHandle.shared.cs">
-      <Link>shared\SpecHandle.shared.cs</Link>
     </Compile>
     <Compile Include="..\Table.shared.cs">
       <Link>shared\Table.shared.cs</Link>

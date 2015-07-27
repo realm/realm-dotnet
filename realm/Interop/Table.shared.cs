@@ -29,8 +29,7 @@ namespace RealmNet.Interop
     /// Use Add(fieldvalue,fieldvalue,fieldvalue) to add an entire row, 
     /// AddEmptyRow() then SetString(row,col), SetLong(row,col) etc. to add a row field by field.
     /// </summary>
-    public class Table : TableOrView, ICloneable,
-        IEnumerable<Row>
+    public class Table : TableOrView, ICloneable
 
     {
 
@@ -137,113 +136,6 @@ namespace RealmNet.Interop
         {
             return UnsafeNativeMethods.table_has_shared_spec(this);
         }
-
-
-        /// <summary>
-        /// Return a TableRow cursor for the row at the specified index
-        /// The tablerow cursor will have methods for accessing individual fields
-        /// This is the same class that is returned in foreach statements and LinQ
-        /// statements
-        /// </summary>
-        /// <param name="rowIndex">Zero based index of the row to return</param>
-        public Row this[long rowIndex]
-        {
-            get
-            {
-                ValidateIsValid();
-                ValidateRowIndex(rowIndex);
-                return RowForIndexNoCheck(rowIndex);
-            }
-        }
-
-        //resembling the typed back() method or the untyped last method in python (that returns a cursor object)
-        //see similar implementation in TableView 
-        /// <summary>
-        /// Returns the last row in the table, 
-        /// the row with the highest rowindex
-        /// </summary>
-        /// <returns>TableRow cursor representing the last row in the table</returns>
-        /// <exception cref="InvalidOperationException">If the table is no longer valid</exception>
-        public Row Last()
-        {
-            ValidateIsValid();
-            var s = Size;
-            if (s > 0)
-            {
-                return RowForIndexNoCheck(s - 1);
-            }
-            throw new InvalidOperationException("Last called on a Table with no rows in it");
-        }
-
-
-        private Row RowForIndexNoCheck(long rowIndex)
-        {
-            return new Row(this, rowIndex);
-        }
-
-
-
-
-        //the following code enables Table to be enumerated, and makes TableRow the type You get back from an enummeration
-        /// <summary>
-        /// Returns an enumerator that iterates through the table, returning TableRow objects representing each row in the table.
-        /// </summary>
-        /// <returns>
-        /// IEnumerator that yields TableRow objects repesenting the rows in the table
-        /// </returns>
-
-        public IEnumerator<Row> GetEnumerator() { ValidateIsValid(); return new Enumerator(this); }
-        IEnumerator IEnumerable.GetEnumerator() { return new Enumerator(this); }
-
-        class Enumerator : IEnumerator<Row>//probably overkill, current needs could be met by using yield
-
-
-        {
-            long _currentRow = -1;
-            Table _myTable;
-            private readonly int _myTableVersion;
-            public Enumerator(Table table)
-            {
-                _myTable = table;
-                _myTableVersion = table.Version;
-            }
-
-            //todo:peformance test if inlining this manually will do any good
-            private void ValidateVersion()
-            {
-                if (_myTableVersion != _myTable.Version)
-                    throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Table Iteration failed at row {0} because the table had rows inserted or deleted", _currentRow));
-            }
-            //as per msft guidelines, current does not throw an error even if the iterator is invalidated
-            //however, here we DO throw an error as current would otherwise return a TableRow with a potentially illegal rowIndex inside
-            //note we return TableRow from tables (they derive from Row). TableView returns Row
-
-            public Row Current
-
-            {
-                get
-                {
-                    ValidateVersion();
-                    return new Row(_myTable, _currentRow);
-                }
-            }
-
-            object IEnumerator.Current { get { return Current; } }
-
-            public bool MoveNext()
-            {
-                ValidateVersion();
-                return ++_currentRow < _myTable.Size;
-            }
-
-            public void Reset() { _currentRow = -1; }
-            public void Dispose()
-            {
-                _myTable = null; //remove reference to Table class
-            }
-        }
-
-
 
 
 
