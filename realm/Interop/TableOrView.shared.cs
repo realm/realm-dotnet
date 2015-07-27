@@ -33,8 +33,6 @@ namespace RealmNet.Interop
         internal abstract long GetColumnIndexNoCheck(string name); //-1 if CI does not exists
         internal abstract DataType ColumnTypeNoCheck(long columnIndex);
 
-        internal abstract Spec GetSpec();
-
         //getters for table and tableview
         internal abstract long GetLongNoCheck(long columnIndex, long rowIndex);
         internal abstract Boolean GetBoolNoCheck(long columnIndex, long rowIndex);
@@ -274,17 +272,6 @@ namespace RealmNet.Interop
         {
             get { ValidateIsValid(); return GetColumnCount(); }
         }
-
-        /// <summary>
-        /// Return a Spec object that can give information about the table schema
-        /// Depricated - This property will be removed in later versions, as Table gains
-        /// methods that can serve the same purposees.
-        /// </summary>
-        public Spec Spec
-        {
-            get { ValidateIsValid(); return GetSpec(); }
-        }
-
 
         //todo : profile wether int or long makes a time difference in 32bit and 64bit
         //currently following the MSFT library List<T> closely reg. type used
@@ -725,7 +712,7 @@ namespace RealmNet.Interop
                 {
                     rowContents = (string[])rowContents[0];
                 }
-                if (rowContents[0].GetType() == typeof(Row))//special case that can be (should be) removed when Table.SetSubTable(..TableView has been created)
+                /*if (rowContents[0].GetType() == typeof(Row))//special case that can be (should be) removed when Table.SetSubTable(..TableView has been created)
                 {                                         //or if this method is rewritten to take IEnumerable
                     var row = rowContents[0] as Row;      //or if Row starts implementing an interface allowing it to be indexed as object[]
                     if (row != null)
@@ -742,7 +729,7 @@ namespace RealmNet.Interop
                         throw new ArgumentException("ERR001");//this cannot happen so don't waste space on a long description string
                     }
                     return;
-                }
+                }*/
             }
 
             ValidateSetRowNumColumns(rowContents.Length);

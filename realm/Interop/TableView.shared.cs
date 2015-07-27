@@ -113,11 +113,6 @@ namespace RealmNet.Interop
         }
 
 
-        internal override Spec GetSpec()
-        {
-            return UnderlyingTable.Spec;
-        }
-
         /// <summary>
         /// Return a Row cursor for the row specified by the zero based rowIndex
         /// </summary>

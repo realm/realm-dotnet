@@ -84,23 +84,6 @@ namespace RealmNet.Interop
 
 
 
-        //allow foreach to traverse a TableRow and get some TableRowCell objects
-        //if You do a foreach on a TableRow, C# will use the for loop below to do the iteration
-        /// <summary>
-        /// Returns an enumerator that enumerates the row, yielding RowCell objects that
-        /// in turn contain get and set methods, and a value property that gets or sets objects.
-        /// In other words, You can enumerate a row and get the individual fields.
-        /// </summary>
-        /// <returns></returns>
-        public IEnumerator<RowCell> GetEnumerator()
-        {
-            for (long i = 0; i < ColumnCount; i++)
-            {
-                ValidateIsValid();
-                yield return new RowCell(this, i);
-            }
-        }
-
         //todo:test if we become invalid if we change the underlying table through ourselves. We should not.
         /// <summary>
         /// returns false if the underlying table has been changed in other ways than through this tablerow.

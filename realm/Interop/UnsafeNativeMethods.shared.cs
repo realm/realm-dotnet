@@ -474,16 +474,6 @@ namespace RealmNet.Interop
             throw new NotImplementedException();
         }
 
-        internal static IntPtr spec_get_spec(SpecHandle specHandle, long columnIndex)
-        {
-            throw new NotImplementedException();
-        }
-
-        internal static void spec_deallocate(SpecHandle specHandle)
-        {
-            throw new NotImplementedException();
-        }
-
         internal static IntPtr query_find_all(QueryHandle queryHandle, long start, long end, long limit)
         {
             throw new NotImplementedException();
@@ -594,11 +584,6 @@ namespace RealmNet.Interop
             throw new NotImplementedException();
         }
 
-        public static long spec_get_column_count(Spec spec)
-        {
-            throw new NotImplementedException();
-        }
-
         public static bool table_is_attached(Table table)
         {
             throw new NotImplementedException();
@@ -615,16 +600,6 @@ namespace RealmNet.Interop
         }
 
         public static bool shared_group_has_changed(SharedGroup sharedGroup)
-        {
-            throw new NotImplementedException();
-        }
-
-        public static DataType spec_get_column_type(Spec spec, long columnIndex)
-        {
-            throw new NotImplementedException();
-        }
-
-        public static string spec_get_column_name(Spec spec, long columnIndex)
         {
             throw new NotImplementedException();
         }

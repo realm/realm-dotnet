@@ -301,7 +301,6 @@ namespace RealmNet.Interop
             {
                 throw new ArgumentNullException("schema");
             }
-            ValidateColumnChangeIsOkay();
             foreach (var columnSpec in schema)
             {
                 if (columnSpec == null)
@@ -367,7 +366,6 @@ namespace RealmNet.Interop
         private void DefineSchema(ColumnSpec schema)
         {
             ValidateReadWrite();
-            ValidateColumnChangeIsOkay();//ensure this is the top table (not shared spec) and that it is with no rows
             //Spec.AddFieldNoCheck(schema);
             AddColumnNoCheck(new List<long>(), schema);//pass empty list -  this table is validated to be the top table
             //UpdateFromSpecNoCheck();//build table from the spec tree structure            
@@ -436,22 +434,6 @@ namespace RealmNet.Interop
             ValidateColumnIndex(columnIndex);
             UnsafeNativeMethods.table_remove_column(this, columnIndex);
             ++Version;
-        }
-
-
-        //note that updatefromspec has been removed as we now only use spec to get information about a table and its subtables
-        //shared spec - spec is not used anymore for any metadata changes.
-        //most of the code that has to do with spec updates has been removed in the spec class
-        //instead we use path based operations on table
-
-        internal override Spec GetSpec()
-        {
-            return new Spec(this, TableHandle.GetSpec());//this spec should NOT be deallocated after use 
-        }
-
-        private void ValidateColumnChangeIsOkay()
-        {
-            ValidateNotSharedSpec();
         }
 
 
@@ -1531,6 +1513,7 @@ namespace RealmNet.Interop
                 }
             }
 
+            /*
             //for each level 
             //validate that the index into this level is valid (not too large, is a subtable (not a mixed subtable))
             //todo:this method awaits core support for getting information on subtable stuff. Until we get that, we use a temporary spec implementation.
@@ -1567,6 +1550,7 @@ namespace RealmNet.Interop
                             level, path[level], levelSpec.GetColumnName(path[level]), levelSpec.GetColumnType(path[level])));
                 }
             }
+            */
         }
 
 
