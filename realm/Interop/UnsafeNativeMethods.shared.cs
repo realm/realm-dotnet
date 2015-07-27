@@ -1,22 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Interop.Config;
 
 namespace RealmNet.Interop
 {
-
-public static class UnsafeNativeMethods
-{
-    private static DataType IntPtrToDataType(IntPtr value)
-    {
-        return (DataType)value;
-    }
-
-    private static IntPtr DataTypeToIntPtr(DataType value)
-    {
-        return (IntPtr)value;
-    }
-
     public enum DataType
     {
         Int = 0,
@@ -30,478 +18,1370 @@ public static class UnsafeNativeMethods
         Double = 10,
     }
 
-    [DllImport(InteropConfig.L64, EntryPoint = "realm_get_wrapper_ver", CallingConvention = CallingConvention.Cdecl)]
-    internal static extern IntPtr GetWrapperVer();
-
-    [DllImport(InteropConfig.L64, EntryPoint = "realm_get_ver_minor", CallingConvention = CallingConvention.Cdecl)]
-    internal static extern int GetMinorVer();
-
-    #region helpers
-
-    private static IntPtr StrAllocateBuffer(out long currentBufferSizeChars, long bufferSizeNeededChars)
+    public static class UnsafeNativeMethods
     {
-        currentBufferSizeChars = bufferSizeNeededChars;
-        return Marshal.AllocHGlobal((IntPtr)(bufferSizeNeededChars * sizeof(char)));
-        //allocHGlobal instead of  AllocCoTaskMem because allcHGlobal allows lt 2 gig on 64 bit (not that .net supports that right now, but at least this allocation will work with lt 32 bit strings)   
-    }
-
-    private static Boolean StrBufferOverflow(IntPtr buffer, long currentBufferSizeChars, long bufferSizeNeededChars)
-    {
-        if (currentBufferSizeChars < bufferSizeNeededChars)
+        private static DataType IntPtrToDataType(IntPtr value)
         {
-            Marshal.FreeHGlobal(buffer);
-
-            return true;
+            return (DataType)value;
         }
-        return false;
-    }
 
-    private static string StrBufToStr(IntPtr buffer, int bufferSizeNeededChars)
-    {
-        string retStr = bufferSizeNeededChars > 0 ? Marshal.PtrToStringUni(buffer, bufferSizeNeededChars) : "";
-        //return "" if the string is empty, otherwise copy data from the buffer
-        Marshal.FreeHGlobal(buffer);
-        return retStr;
-    }
-
-    private static IntPtr BoolToIntPtr(Boolean value)
-    {
-        return value ? (IntPtr)1 : (IntPtr)0;
-    }
-
-    private static Boolean IntPtrToBool(IntPtr value)
-    {
-        return (IntPtr)1 == value;
-    }
-
-    #endregion
-
-    #region internal static TableHandle new_table()
-
-    [DllImport(InteropConfig.L64, EntryPoint = "new_table", CallingConvention = CallingConvention.Cdecl)]
-    private static extern TableHandle new_table64();
-
-    [DllImport(InteropConfig.L32, EntryPoint = "new_table", CallingConvention = CallingConvention.Cdecl)]
-    private static extern TableHandle new_table32();
-
-    internal static TableHandle new_table()
-    {
-        if (InteropConfig.Is64Bit)
-            return new_table64();
-        else
-            return new_table32();
-    }
-
-    #endregion
-
-    #region internal static long table_add_column(TableHandle tableHandle, DataType type, string name)
-
-    [DllImport(InteropConfig.L64, EntryPoint = "table_add_column", CallingConvention = CallingConvention.Cdecl)]
-    private static extern IntPtr table_add_column64(TableHandle tableHandle, IntPtr type,
-        [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
-
-    [DllImport(InteropConfig.L32, EntryPoint = "table_add_column", CallingConvention = CallingConvention.Cdecl)]
-    private static extern IntPtr table_add_column32(TableHandle tableHandle, IntPtr type,
-        [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
-
-    internal static long table_add_column(TableHandle tableHandle, DataType type, string name)
-    {
-        if (InteropConfig.Is64Bit)
-            return (long)table_add_column64(tableHandle, DataTypeToIntPtr(type), name, (IntPtr)name.Length);
-        else
-            return (long)table_add_column32(tableHandle, DataTypeToIntPtr(type), name, (IntPtr)name.Length);
-    }
-
-    #endregion
-
-    #region internal static long table_add_empty_row(TableHandle tableHandle, long numberOfRows)
-
-    [DllImport(InteropConfig.L64, EntryPoint = "table_add_empty_row", CallingConvention = CallingConvention.Cdecl)]
-    private static extern IntPtr table_add_empty_row64(TableHandle tableHandle, IntPtr numRows);
-
-    [DllImport(InteropConfig.L32, EntryPoint = "table_add_empty_row", CallingConvention = CallingConvention.Cdecl)]
-    private static extern IntPtr table_add_empty_row32(TableHandle tableHandle, IntPtr numRows);
-
-    internal static long table_add_empty_row(TableHandle tableHandle, long numberOfRows)
-    {
-        if (InteropConfig.Is64Bit)
-            return (long)table_add_empty_row64(tableHandle, (IntPtr)numberOfRows);
-        else
-            return (long)table_add_empty_row32(tableHandle, (IntPtr)numberOfRows);
-    }
-
-    #endregion
-
-    #region internal static void table_set_string(TableHandle tableHandle, long columnIndex, long rowIndex, string value)
-
-    //        TIGHTDB_C_CS_API void table_set_int(Table* TablePtr, size_t column_ndx, size_t row_ndx, int64_t value)
-    [DllImport(InteropConfig.L64, EntryPoint = "table_set_string", CallingConvention = CallingConvention.Cdecl)]
-    private static extern void table_set_string64(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx,
-        [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
-
-    [DllImport(InteropConfig.L32, EntryPoint = "table_set_string", CallingConvention = CallingConvention.Cdecl)]
-    private static extern void table_set_string32(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx,
-        [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
-
-    internal static void table_set_string(TableHandle tableHandle, long columnIndex, long rowIndex, string value)
-    {
-        if (InteropConfig.Is64Bit)
-            table_set_string64(tableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, value, (IntPtr)value.Length);
-        else
-            table_set_string32(tableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, value, (IntPtr)value.Length);
-    }
-
-    #endregion
-
-    #region internal static string table_get_string(TableHandle tableHandle, long columnIndex, long rowIndex)
-
-    [DllImport(InteropConfig.L64, EntryPoint = "table_get_string", CallingConvention = CallingConvention.Cdecl)]
-    private static extern IntPtr table_get_string64(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex,
-        IntPtr buffer, IntPtr bufsize);
-
-    [DllImport(InteropConfig.L32, EntryPoint = "table_get_string", CallingConvention = CallingConvention.Cdecl)]
-    private static extern IntPtr table_get_string32(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex,
-        IntPtr buffer, IntPtr bufsize);
-
-    internal static string table_get_string(TableHandle tableHandle, long columnIndex, long rowIndex)
-    {
-        long bufferSizeNeededChars = 16;
-        IntPtr buffer;
-        long currentBufferSizeChars;
-
-        do
+        private static IntPtr DataTypeToIntPtr(DataType value)
         {
-            buffer = StrAllocateBuffer(out currentBufferSizeChars, bufferSizeNeededChars);
+            return (IntPtr)value;
+        }
+
+        [DllImport(InteropConfig.L64, EntryPoint = "realm_get_wrapper_ver", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern IntPtr GetWrapperVer();
+
+        [DllImport(InteropConfig.L64, EntryPoint = "realm_get_ver_minor", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern int GetMinorVer();
+
+        #region helpers
+
+        private static IntPtr StrAllocateBuffer(out long currentBufferSizeChars, long bufferSizeNeededChars)
+        {
+            currentBufferSizeChars = bufferSizeNeededChars;
+            return Marshal.AllocHGlobal((IntPtr)(bufferSizeNeededChars * sizeof(char)));
+            //allocHGlobal instead of  AllocCoTaskMem because allcHGlobal allows lt 2 gig on 64 bit (not that .net supports that right now, but at least this allocation will work with lt 32 bit strings)   
+        }
+
+        private static Boolean StrBufferOverflow(IntPtr buffer, long currentBufferSizeChars, long bufferSizeNeededChars)
+        {
+            if (currentBufferSizeChars < bufferSizeNeededChars)
+            {
+                Marshal.FreeHGlobal(buffer);
+
+                return true;
+            }
+            return false;
+        }
+
+        private static string StrBufToStr(IntPtr buffer, int bufferSizeNeededChars)
+        {
+            string retStr = bufferSizeNeededChars > 0 ? Marshal.PtrToStringUni(buffer, bufferSizeNeededChars) : "";
+            //return "" if the string is empty, otherwise copy data from the buffer
+            Marshal.FreeHGlobal(buffer);
+            return retStr;
+        }
+
+        private static IntPtr BoolToIntPtr(Boolean value)
+        {
+            return value ? (IntPtr)1 : (IntPtr)0;
+        }
+
+        private static Boolean IntPtrToBool(IntPtr value)
+        {
+            return (IntPtr)1 == value;
+        }
+
+        #endregion
+
+        #region internal static TableHandle new_table()
+
+        [DllImport(InteropConfig.L64, EntryPoint = "new_table", CallingConvention = CallingConvention.Cdecl)]
+        private static extern TableHandle new_table64();
+
+        [DllImport(InteropConfig.L32, EntryPoint = "new_table", CallingConvention = CallingConvention.Cdecl)]
+        private static extern TableHandle new_table32();
+
+        internal static TableHandle new_table()
+        {
+            if (InteropConfig.Is64Bit)
+                return new_table64();
+            else
+                return new_table32();
+        }
+
+        #endregion
+
+        #region internal static long table_add_column(TableHandle tableHandle, DataType type, string name)
+
+        [DllImport(InteropConfig.L64, EntryPoint = "table_add_column", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_add_column64(TableHandle tableHandle, IntPtr type,
+            [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
+
+        [DllImport(InteropConfig.L32, EntryPoint = "table_add_column", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_add_column32(TableHandle tableHandle, IntPtr type,
+            [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
+
+        internal static long table_add_column(TableHandle tableHandle, DataType type, string name)
+        {
+            if (InteropConfig.Is64Bit)
+                return (long)table_add_column64(tableHandle, DataTypeToIntPtr(type), name, (IntPtr)name.Length);
+            else
+                return (long)table_add_column32(tableHandle, DataTypeToIntPtr(type), name, (IntPtr)name.Length);
+        }
+
+        #endregion
+
+        #region internal static long table_add_empty_row(TableHandle tableHandle, long numberOfRows)
+
+        [DllImport(InteropConfig.L64, EntryPoint = "table_add_empty_row", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_add_empty_row64(TableHandle tableHandle, IntPtr numRows);
+
+        [DllImport(InteropConfig.L32, EntryPoint = "table_add_empty_row", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_add_empty_row32(TableHandle tableHandle, IntPtr numRows);
+
+        internal static long table_add_empty_row(TableHandle tableHandle, long numberOfRows)
+        {
+            if (InteropConfig.Is64Bit)
+                return (long)table_add_empty_row64(tableHandle, (IntPtr)numberOfRows);
+            else
+                return (long)table_add_empty_row32(tableHandle, (IntPtr)numberOfRows);
+        }
+
+        #endregion
+
+        #region internal static void table_set_string(TableHandle tableHandle, long columnIndex, long rowIndex, string value)
+
+        //        TIGHTDB_C_CS_API void table_set_int(Table* TablePtr, size_t column_ndx, size_t row_ndx, int64_t value)
+        [DllImport(InteropConfig.L64, EntryPoint = "table_set_string", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void table_set_string64(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx,
+            [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
+
+        [DllImport(InteropConfig.L32, EntryPoint = "table_set_string", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void table_set_string32(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx,
+            [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
+
+        internal static void table_set_string(TableHandle tableHandle, long columnIndex, long rowIndex, string value)
+        {
+            if (InteropConfig.Is64Bit)
+                table_set_string64(tableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, value, (IntPtr)value.Length);
+            else
+                table_set_string32(tableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, value, (IntPtr)value.Length);
+        }
+
+        #endregion
+
+        #region internal static string table_get_string(TableHandle tableHandle, long columnIndex, long rowIndex)
+
+        [DllImport(InteropConfig.L64, EntryPoint = "table_get_string", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_get_string64(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex,
+            IntPtr buffer, IntPtr bufsize);
+
+        [DllImport(InteropConfig.L32, EntryPoint = "table_get_string", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_get_string32(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex,
+            IntPtr buffer, IntPtr bufsize);
+
+        internal static string table_get_string(TableHandle tableHandle, long columnIndex, long rowIndex)
+        {
+            long bufferSizeNeededChars = 16;
+            IntPtr buffer;
+            long currentBufferSizeChars;
+
+            do
+            {
+                buffer = StrAllocateBuffer(out currentBufferSizeChars, bufferSizeNeededChars);
+
+                if (InteropConfig.Is64Bit)
+                    bufferSizeNeededChars =
+                        (long)
+                        table_get_string64(tableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, buffer,
+                            (IntPtr)currentBufferSizeChars);
+
+                else
+                    bufferSizeNeededChars =
+                        (long)
+                        table_get_string32(tableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, buffer,
+                            (IntPtr)currentBufferSizeChars);
+
+            } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
+            return StrBufToStr(buffer, (int)bufferSizeNeededChars);
+        }
+
+        #endregion
+
+        #region internal static void table_set_bool(TableHandle tableHandle, long columnIndex, long rowIndex, bool value)
+
+        [DllImport(InteropConfig.L64, EntryPoint = "table_set_bool", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void table_set_bool64(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, IntPtr value);
+
+        [DllImport(InteropConfig.L32, EntryPoint = "table_set_bool", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void table_set_bool32(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, IntPtr value);
+
+        internal static void table_set_bool(TableHandle tableHandle, long columnIndex, long rowIndex, bool value)
+        {
+            var marshalledValue = BoolToIntPtr(value);
 
             if (InteropConfig.Is64Bit)
-                bufferSizeNeededChars =
-                    (long)
-                    table_get_string64(tableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, buffer,
-                        (IntPtr)currentBufferSizeChars);
-
+                table_set_bool64(tableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, marshalledValue);
             else
-                bufferSizeNeededChars =
-                    (long)
-                    table_get_string32(tableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, buffer,
-                        (IntPtr)currentBufferSizeChars);
+                table_set_bool32(tableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, marshalledValue);
+        }
 
-        } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
-        return StrBufToStr(buffer, (int)bufferSizeNeededChars);
-    }
+        #endregion
 
-    #endregion
+        #region internal static string table_get_bool(TableHandle tableHandle, long columnIndex, long rowIndex)
 
-    #region internal static void table_set_bool(TableHandle tableHandle, long columnIndex, long rowIndex, bool value)
+        [DllImport(InteropConfig.L64, EntryPoint = "table_get_bool", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_get_bool64(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex);
 
-    [DllImport(InteropConfig.L64, EntryPoint = "table_set_bool", CallingConvention = CallingConvention.Cdecl)]
-    private static extern void table_set_bool64(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, IntPtr value);
+        [DllImport(InteropConfig.L32, EntryPoint = "table_get_bool", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_get_bool32(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex);
 
-    [DllImport(InteropConfig.L32, EntryPoint = "table_set_bool", CallingConvention = CallingConvention.Cdecl)]
-    private static extern void table_set_bool32(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, IntPtr value);
+        internal static bool table_get_bool(TableHandle tableHandle, long columnIndex, long rowIndex)
+        {
+            if (InteropConfig.Is64Bit)
+                return IntPtrToBool(table_get_bool64(tableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex));
+            else
+                return IntPtrToBool(table_get_bool64(tableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex));
+        }
 
-    internal static void table_set_bool(TableHandle tableHandle, long columnIndex, long rowIndex, bool value)
-    {
-        var marshalledValue = BoolToIntPtr(value);
+        #endregion
 
-        if (InteropConfig.Is64Bit)
-            table_set_bool64(tableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, marshalledValue);
-        else
-            table_set_bool32(tableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, marshalledValue);
-    }
+        #region internal static QueryHandle table_where(TableHandle tableHandle)
 
-    #endregion
+        [DllImport(InteropConfig.L64, EntryPoint = "table_where", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_where64(TableHandle handle);
 
-    #region internal static string table_get_bool(TableHandle tableHandle, long columnIndex, long rowIndex)
+        [DllImport(InteropConfig.L32, EntryPoint = "table_where", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_where32(TableHandle handle);
 
-    [DllImport(InteropConfig.L64, EntryPoint = "table_get_bool", CallingConvention = CallingConvention.Cdecl)]
-    private static extern IntPtr table_get_bool64(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex);
+        internal static IntPtr table_where(TableHandle tableHandle)
+        {
+            if (InteropConfig.Is64Bit)
+                return table_where64(tableHandle);
+            else
+                return table_where32(tableHandle);
+        }
 
-    [DllImport(InteropConfig.L32, EntryPoint = "table_get_bool", CallingConvention = CallingConvention.Cdecl)]
-    private static extern IntPtr table_get_bool32(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex);
+        #endregion
 
-    internal static bool table_get_bool(TableHandle tableHandle, long columnIndex, long rowIndex)
-    {
-        if (InteropConfig.Is64Bit)
-            return IntPtrToBool(table_get_bool64(tableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex));
-        else
-            return IntPtrToBool(table_get_bool64(tableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex));
-    }
+        #region internal static void query_bool_equal(QueryHandle queryHandle, long columnIndex, bool value)
 
-    #endregion
+        //in tightdb c++ this function returns q again, the query object is re-used and keeps its pointer.
+        //so high-level stuff should also return self, to enable stacking of operations query.dothis().dothat()
+        [DllImport(InteropConfig.L64, EntryPoint = "query_bool_equal", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void query_bool_equal64(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
 
-    #region internal static QueryHandle table_where(TableHandle tableHandle)
+        [DllImport(InteropConfig.L32, EntryPoint = "query_bool_equal", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void query_bool_equal32(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
 
-    [DllImport(InteropConfig.L64, EntryPoint = "table_where", CallingConvention = CallingConvention.Cdecl)]
-    private static extern IntPtr table_where64(TableHandle handle);
+        internal static void query_bool_equal(QueryHandle queryHandle, long columnIndex, bool value)
+        {
+            var ipValue = BoolToIntPtr(value);
+            if (InteropConfig.Is64Bit)
+                query_bool_equal64(queryHandle, (IntPtr)columnIndex, ipValue);
+            else
+                query_bool_equal32(queryHandle, (IntPtr)columnIndex, ipValue);
+        }
 
-    [DllImport(InteropConfig.L32, EntryPoint = "table_where", CallingConvention = CallingConvention.Cdecl)]
-    private static extern IntPtr table_where32(TableHandle handle);
+        #endregion
 
-    internal static IntPtr table_where(TableHandle tableHandle)
-    {
-        if (InteropConfig.Is64Bit)
-            return table_where64(tableHandle);
-        else
-            return table_where32(tableHandle);
-    }
+        #region internal static void query_string_equal(QueryHandle queryHandle, long columnIndex, string value)
 
-    #endregion
+        //in tightdb c++ this function returns q again, the query object is re-used and keeps its pointer.
+        //so high-level stuff should also return self, to enable stacking of operations query.dothis().dothat()
+        [DllImport(InteropConfig.L64, EntryPoint = "query_string_equal", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void query_string_equal64(QueryHandle queryPtr, IntPtr columnIndex,
+            [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
 
-    #region internal static void query_bool_equal(QueryHandle queryHandle, long columnIndex, bool value)
+        [DllImport(InteropConfig.L32, EntryPoint = "query_string_equal", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void query_string_equal32(QueryHandle queryPtr, IntPtr columnIndex,
+            [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
 
-    //in tightdb c++ this function returns q again, the query object is re-used and keeps its pointer.
-    //so high-level stuff should also return self, to enable stacking of operations query.dothis().dothat()
-    [DllImport(InteropConfig.L64, EntryPoint = "query_bool_equal", CallingConvention = CallingConvention.Cdecl)]
-    private static extern void query_bool_equal64(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
+        internal static void query_string_equal(QueryHandle queryHandle, long columnIndex, string value)
+        {
+            if (InteropConfig.Is64Bit)
+                query_string_equal64(queryHandle, (IntPtr)columnIndex, value, (IntPtr)value.Length);
+            else
+                query_string_equal32(queryHandle, (IntPtr)columnIndex, value, (IntPtr)value.Length);
+        }
 
-    [DllImport(InteropConfig.L32, EntryPoint = "query_bool_equal", CallingConvention = CallingConvention.Cdecl)]
-    private static extern void query_bool_equal32(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
+        #endregion
 
-    internal static void query_bool_equal(QueryHandle queryHandle, long columnIndex, bool value)
-    {
-        var ipValue = BoolToIntPtr(value);
-        if (InteropConfig.Is64Bit)
-            query_bool_equal64(queryHandle, (IntPtr)columnIndex, ipValue);
-        else
-            query_bool_equal32(queryHandle, (IntPtr)columnIndex, ipValue);
-    }
+        #region internal static long QueryFind(Query query, long lastMatch)
 
-    #endregion
+        [DllImport(InteropConfig.L64, EntryPoint = "query_find", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr query_find64(QueryHandle queryHandle, IntPtr lastMatch);
 
-    #region internal static void query_string_equal(QueryHandle queryHandle, long columnIndex, string value)
+        [DllImport(InteropConfig.L32, EntryPoint = "query_find", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr query_find32(QueryHandle queryHandle, IntPtr lastMatch);
 
-    //in tightdb c++ this function returns q again, the query object is re-used and keeps its pointer.
-    //so high-level stuff should also return self, to enable stacking of operations query.dothis().dothat()
-    [DllImport(InteropConfig.L64, EntryPoint = "query_string_equal", CallingConvention = CallingConvention.Cdecl)]
-    private static extern void query_string_equal64(QueryHandle queryPtr, IntPtr columnIndex,
-        [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
+        internal static long query_find(QueryHandle queryHandle, long lastMatch)
+        {
+            if (InteropConfig.Is64Bit)
+                return (long)query_find64(queryHandle, (IntPtr)lastMatch);
+            else
+                return (long)query_find32(queryHandle, (IntPtr)lastMatch);
+        }
 
-    [DllImport(InteropConfig.L32, EntryPoint = "query_string_equal", CallingConvention = CallingConvention.Cdecl)]
-    private static extern void query_string_equal32(QueryHandle queryPtr, IntPtr columnIndex,
-        [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
+        #endregion
 
-    internal static void query_string_equal(QueryHandle queryHandle, long columnIndex, string value)
-    {
-        if (InteropConfig.Is64Bit)
-            query_string_equal64(queryHandle, (IntPtr)columnIndex, value, (IntPtr)value.Length);
-        else
-            query_string_equal32(queryHandle, (IntPtr)columnIndex, value, (IntPtr)value.Length);
-    }
+        #region internal static long query_get_column_index(QueryHandle queryHandle, string columnName)
 
-    #endregion
-
-    #region internal static long QueryFind(Query query, long lastMatch)
-
-    [DllImport(InteropConfig.L64, EntryPoint = "query_find", CallingConvention = CallingConvention.Cdecl)]
-    private static extern IntPtr query_find64(QueryHandle queryHandle, IntPtr lastMatch);
-
-    [DllImport(InteropConfig.L32, EntryPoint = "query_find", CallingConvention = CallingConvention.Cdecl)]
-    private static extern IntPtr query_find32(QueryHandle queryHandle, IntPtr lastMatch);
-
-    internal static long query_find(QueryHandle queryHandle, long lastMatch)
-    {
-        if (InteropConfig.Is64Bit)
-            return (long)query_find64(queryHandle, (IntPtr)lastMatch);
-        else
-            return (long)query_find32(queryHandle, (IntPtr)lastMatch);
-    }
-
-    #endregion
-
-    #region internal static long query_get_column_index(QueryHandle queryHandle, string columnName)
-
-    [DllImport(InteropConfig.L64, EntryPoint = "query_get_column_index", CallingConvention = CallingConvention.Cdecl)]
-    private static extern IntPtr query_get_column_index64(QueryHandle queryPtr,
-    [MarshalAs(UnmanagedType.LPWStr)] String columnName, IntPtr columnNameLen);
-
-    [DllImport(InteropConfig.L32, EntryPoint = "query_get_column_index", CallingConvention = CallingConvention.Cdecl)]
-    private static extern IntPtr query_get_column_index32(QueryHandle queryPtr,
+        [DllImport(InteropConfig.L64, EntryPoint = "query_get_column_index", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr query_get_column_index64(QueryHandle queryPtr,
         [MarshalAs(UnmanagedType.LPWStr)] String columnName, IntPtr columnNameLen);
 
-    internal static long query_get_column_index(QueryHandle queryHandle, string columnName)
-    {
-        if (InteropConfig.Is64Bit)
-            return (long)query_get_column_index64(queryHandle, columnName, (IntPtr)columnName.Length);
-        else
-            return (long)query_get_column_index32(queryHandle, columnName, (IntPtr)columnName.Length);
-    }
+        [DllImport(InteropConfig.L32, EntryPoint = "query_get_column_index", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr query_get_column_index32(QueryHandle queryPtr,
+            [MarshalAs(UnmanagedType.LPWStr)] String columnName, IntPtr columnNameLen);
 
-    #endregion
+        internal static long query_get_column_index(QueryHandle queryHandle, string columnName)
+        {
+            if (InteropConfig.Is64Bit)
+                return (long)query_get_column_index64(queryHandle, columnName, (IntPtr)columnName.Length);
+            else
+                return (long)query_get_column_index32(queryHandle, columnName, (IntPtr)columnName.Length);
+        }
+
+        #endregion
 
 
         internal static IntPtr tableview_find_all_int(TableViewHandle tableViewHandle, long columnIndex, long value)
-    {
-        throw new NotImplementedException();
-    }
+        {
+            throw new NotImplementedException();
+        }
 
-    internal static IntPtr tableview_find_all_bool(TableViewHandle tableViewHandle, long columnIndex, bool value)
-    {
-        throw new NotImplementedException();
-    }
+        internal static IntPtr tableview_find_all_bool(TableViewHandle tableViewHandle, long columnIndex, bool value)
+        {
+            throw new NotImplementedException();
+        }
 
-    internal static IntPtr tableview_find_all_datetime(TableViewHandle tableViewHandle, long columnIndex, DateTime value)
-    {
-        throw new NotImplementedException();
-    }
+        internal static IntPtr tableview_find_all_datetime(TableViewHandle tableViewHandle, long columnIndex, DateTime value)
+        {
+            throw new NotImplementedException();
+        }
 
-    internal static IntPtr tableview_find_all_float(TableViewHandle tableViewHandle, long columnIndex, float value)
-    {
-        throw new NotImplementedException();
-    }
+        internal static IntPtr tableview_find_all_float(TableViewHandle tableViewHandle, long columnIndex, float value)
+        {
+            throw new NotImplementedException();
+        }
 
-    internal static IntPtr tableview_find_all_double(TableViewHandle tableViewHandle, long columnIndex, double value)
-    {
-        throw new NotImplementedException();
-    }
+        internal static IntPtr tableview_find_all_double(TableViewHandle tableViewHandle, long columnIndex, double value)
+        {
+            throw new NotImplementedException();
+        }
 
-    internal static IntPtr tableview_find_all_string(TableViewHandle tableViewHandle, long columnIndex, string value)
-    {
-        throw new NotImplementedException();
-    }
+        internal static IntPtr tableview_find_all_string(TableViewHandle tableViewHandle, long columnIndex, string value)
+        {
+            throw new NotImplementedException();
+        }
 
-    internal static IntPtr tableview_get_subtable(TableViewHandle tableViewHandle, long columnIndex, long rowIndex)
-    {
-        throw new NotImplementedException();
-    }
+        internal static IntPtr tableview_get_subtable(TableViewHandle tableViewHandle, long columnIndex, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
 
-    internal static void tableview_unbind(TableViewHandle tableViewHandle)
-    {
-        throw new NotImplementedException();
-    }
+        internal static void tableview_unbind(TableViewHandle tableViewHandle)
+        {
+            throw new NotImplementedException();
+        }
 
-    internal static void table_unbind(RealmNet.Interop.TableHandle tableHandle)
-    {
-        throw new NotImplementedException();
-    }
+        internal static void table_unbind(TableHandle tableHandle)
+        {
+            throw new NotImplementedException();
+        }
 
-    internal static IntPtr table_copy_table(RealmNet.Interop.TableHandle tableHandle)
-    {
-        throw new NotImplementedException();
-    }
+        internal static IntPtr table_copy_table(TableHandle tableHandle)
+        {
+            throw new NotImplementedException();
+        }
 
-    internal static IntPtr table_get_sub_table(RealmNet.Interop.TableHandle tableHandle, long columnIndex, long rowIndex)
-    {
-        throw new NotImplementedException();
-    }
+        internal static IntPtr table_get_sub_table(TableHandle tableHandle, long columnIndex, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
 
-    internal static IntPtr table_distinct(RealmNet.Interop.TableHandle tableHandle, long columnIndex)
-    {
-        throw new NotImplementedException();
-    }
+        internal static IntPtr table_distinct(TableHandle tableHandle, long columnIndex)
+        {
+            throw new NotImplementedException();
+        }
 
-    internal static IntPtr table_find_all_int(RealmNet.Interop.TableHandle tableHandle, long columnIndex, long value)
-    {
-        throw new NotImplementedException();
-    }
+        internal static IntPtr table_find_all_int(TableHandle tableHandle, long columnIndex, long value)
+        {
+            throw new NotImplementedException();
+        }
 
-    internal static IntPtr table_find_all_bool(RealmNet.Interop.TableHandle tableHandle, long columnIndex, bool value)
-    {
-        throw new NotImplementedException();
-    }
+        internal static IntPtr table_find_all_bool(TableHandle tableHandle, long columnIndex, bool value)
+        {
+            throw new NotImplementedException();
+        }
 
-    internal static IntPtr table_find_all_date_time(RealmNet.Interop.TableHandle tableHandle, long columnIndex, DateTime value)
-    {
-        throw new NotImplementedException();
-    }
+        internal static IntPtr table_find_all_date_time(TableHandle tableHandle, long columnIndex, DateTime value)
+        {
+            throw new NotImplementedException();
+        }
 
-    internal static IntPtr table_find_all_float(RealmNet.Interop.TableHandle tableHandle, long columnIndex, float value)
-    {
-        throw new NotImplementedException();
-    }
+        internal static IntPtr table_find_all_float(TableHandle tableHandle, long columnIndex, float value)
+        {
+            throw new NotImplementedException();
+        }
 
-    internal static IntPtr table_find_all_double(RealmNet.Interop.TableHandle tableHandle, long columnIndex, double value)
-    {
-        throw new NotImplementedException();
-    }
+        internal static IntPtr table_find_all_double(TableHandle tableHandle, long columnIndex, double value)
+        {
+            throw new NotImplementedException();
+        }
 
-    internal static IntPtr table_find_all_string(RealmNet.Interop.TableHandle tableHandle, long columnIndex, string value)
-    {
-        throw new NotImplementedException();
-    }
+        internal static IntPtr table_find_all_string(TableHandle tableHandle, long columnIndex, string value)
+        {
+            throw new NotImplementedException();
+        }
 
-    internal static IntPtr table_find_all_empty_binary(RealmNet.Interop.TableHandle tableHandle, long columnIndex)
-    {
-        throw new NotImplementedException();
-    }
+        internal static IntPtr table_find_all_empty_binary(TableHandle tableHandle, long columnIndex)
+        {
+            throw new NotImplementedException();
+        }
 
-    internal static IntPtr table_find_all_binary(RealmNet.Interop.TableHandle tableHandle, long columnIndex, IntPtr valuePointer, IntPtr length)
-    {
-        throw new NotImplementedException();
-    }
+        internal static IntPtr table_find_all_binary(TableHandle tableHandle, long columnIndex, IntPtr valuePointer, IntPtr length)
+        {
+            throw new NotImplementedException();
+        }
 
-    internal static IntPtr table_get_spec(RealmNet.Interop.TableHandle tableHandle)
-    {
-        throw new NotImplementedException();
-    }
+        internal static IntPtr table_get_spec(TableHandle tableHandle)
+        {
+            throw new NotImplementedException();
+        }
 
-    internal static IntPtr shared_group_rollback(SharedGroupHandle sharedGroupHandle)
-    {
-        throw new NotImplementedException();
-    }
+        internal static IntPtr shared_group_rollback(SharedGroupHandle sharedGroupHandle)
+        {
+            throw new NotImplementedException();
+        }
 
-    internal static IntPtr shared_group_end_read(SharedGroupHandle sharedGroupHandle)
-    {
-        throw new NotImplementedException();
-    }
+        internal static IntPtr shared_group_end_read(SharedGroupHandle sharedGroupHandle)
+        {
+            throw new NotImplementedException();
+        }
 
-    internal static void shared_group_delete(IntPtr handle)
-    {
-        throw new NotImplementedException();
-    }
+        internal static void shared_group_delete(IntPtr handle)
+        {
+            throw new NotImplementedException();
+        }
 
-    internal static IntPtr shared_group_commit(SharedGroupHandle sharedGroupHandle)
-    {
-        throw new NotImplementedException();
-    }
+        internal static IntPtr shared_group_commit(SharedGroupHandle sharedGroupHandle)
+        {
+            throw new NotImplementedException();
+        }
 
-    internal static IntPtr shared_group_begin_read(SharedGroupHandle sharedGroupHandle)
-    {
-        throw new NotImplementedException();
-    }
+        internal static IntPtr shared_group_begin_read(SharedGroupHandle sharedGroupHandle)
+        {
+            throw new NotImplementedException();
+        }
 
-    internal static IntPtr shared_group_begin_write(SharedGroupHandle sharedGroupHandle)
-    {
-        throw new NotImplementedException();
-    }
+        internal static IntPtr shared_group_begin_write(SharedGroupHandle sharedGroupHandle)
+        {
+            throw new NotImplementedException();
+        }
 
-    internal static IntPtr spec_get_spec(SpecHandle specHandle, long columnIndex)
-    {
-        throw new NotImplementedException();
-    }
+        internal static IntPtr spec_get_spec(SpecHandle specHandle, long columnIndex)
+        {
+            throw new NotImplementedException();
+        }
 
-    internal static void spec_deallocate(SpecHandle specHandle)
-    {
-        throw new NotImplementedException();
-    }
+        internal static void spec_deallocate(SpecHandle specHandle)
+        {
+            throw new NotImplementedException();
+        }
 
-    internal static IntPtr query_find_all(QueryHandle queryHandle, long start, long end, long limit)
-    {
-        throw new NotImplementedException();
-    }
+        internal static IntPtr query_find_all(QueryHandle queryHandle, long start, long end, long limit)
+        {
+            throw new NotImplementedException();
+        }
 
-    internal static IntPtr query_find_all_np(QueryHandle queryHandle)
-    {
-        throw new NotImplementedException();
-    }
+        internal static IntPtr query_find_all_np(QueryHandle queryHandle)
+        {
+            throw new NotImplementedException();
+        }
 
-    internal static void query_delete(QueryHandle queryHandle)
-    {
-        throw new NotImplementedException();
-    }
+        internal static void query_delete(QueryHandle queryHandle)
+        {
+            throw new NotImplementedException();
+        }
 
-    internal static void group_delete(GroupHandle groupHandle)
-    {
-        throw new NotImplementedException();
-    }
+        internal static void group_delete(GroupHandle groupHandle)
+        {
+            throw new NotImplementedException();
+        }
 
-    internal static IntPtr group_get_table(GroupHandle groupHandle, string name)
-    {
-        throw new NotImplementedException();
-    }
+        internal static IntPtr group_get_table(GroupHandle groupHandle, string name)
+        {
+            throw new NotImplementedException();
+        }
 
-    internal static IntPtr group_get_table_by_index(GroupHandle groupHandle, long tableIndex)
-    {
-        throw new NotImplementedException();
+        internal static IntPtr group_get_table_by_index(GroupHandle groupHandle, long tableIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void group_new(Group @group, bool readOnly)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static bool group_equals(Group @group, Group otherGroup)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void group_new_file(Group @group, string path, Group.OpenMode openMode)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void group_frombinary_data(Group @group, byte[] binaryGroup)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static bool group_has_table(Group @group, string tableName)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static long query_count(Query query, long start, long end, long limit)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void group_write(Group @group, string path)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static byte[] group_write_to_memory(Group @group)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void group_commit(Group @group)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static object group_to_string(Group @group)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void query_int_greater(Query query, long getColumnIndex, long value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static bool group_is_empty(Group @group)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static long group_size(Group @group)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void query_int_between(Query query, long columnIndex, long lowValue, long highValue)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static double query_average(Query query, long columnIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void new_shared_group_file_defaults(SharedGroup sharedGroup, string fileName)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static long spec_get_column_count(Spec spec)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static bool table_is_attached(Table table)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void new_shared_group_file(SharedGroup sharedGroup, string fileName, bool noCreate, DurabilityLevel durabilityLevel)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void shared_group_reserve(SharedGroup sharedGroup, long bytesToReserve)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static bool shared_group_has_changed(SharedGroup sharedGroup)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static DataType spec_get_column_type(Spec spec, long columnIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static string spec_get_column_name(Spec spec, long columnIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static bool table_has_shared_spec(Table table)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_view_clear(TableView tableView)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_new(Table table, bool isReadOnly)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_rename_column(Table table, long columnIndex, string newName)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static DateTime table_view_get_mixed_date_time(TableView tableView, long columnIndex, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static long table_view_get_column_index(TableView tableView, string name)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_remove_column(Table table, long columnIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static long table_view_sum_long(TableView tableView, long columnIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static double table_view_sum_float(TableView tableView, long columnIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static double table_view_sum_double(TableView tableView, long columnIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static long table_view_minimum_long(TableView tableView, long columnIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static bool spec_equals_spec(Table tableA, Table tableB)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static float table_view_minimum_float(TableView tableView, long columnIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static double table_view_minimum_double(TableView tableView, long columnIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static DateTime table_view_minimum_date_time(TableView tableView, long columnIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_clear(Table table)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static long table_get_column_count(Table table)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_view_sort(TableView tableView, long columnIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static string table_get_column_name(Table table, long columnIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static long table_get_column_index(Table table, string name)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static long table_view_maximum(TableView tableView, long columnIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static float table_view_maximum_float(TableView tableView, long columnIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static double table_view_maximum_double(TableView tableView, long columnIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static DateTime table_view_maximum_date_time(TableView tableView, long columnIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static double table_view_average_long(TableView tableView, long columnIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static double table_view_average_float(TableView tableView, long columnIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static DataType table_get_column_type(Table table, long columnIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static double table_view_average_double(TableView tableView, long columnIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static long table_view_count_long(TableView tableView, long columnIndex, long target)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static long table_view_count_float(TableView tableView, long columnIndex, float target)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static long table_view_count_string(TableView tableView, long columnIndex, string target)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_insert_empty_row(Table table, long rowIndex, long rowsToInsert)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static long table_view_count_double(TableView tableView, long columnIndex, double target)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static long table_view_get_source_index(TableView tableView, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static string table_view_to_json(TableView tableView)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static string table_view_to_string(TableView tableView)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static string table_view_row_to_string(TableView tableView, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_remove(Table table, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_view_remove_row(TableView tableView, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static DataType table_get_mixed_type(Table table, long columnIndex, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static DateTime table_get_mixed_date_time(Table table, long columnIndex, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_view_set_mixed_float(TableView tableView, long columnIndex, long rowIndex, float value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_optimize(Table table)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_view_set_mixed_double(TableView tableView, long columnIndex, long rowIndex, double value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static string table_to_string(Table table)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_view_set_mixed_date(TableView tableView, long columnIndex, long rowIndex, DateTime value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static bool table_view_get_mixed_bool(TableView tableView, long columnIndex, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static string table_row_to_string(Table table, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static string table_view_get_mixed_string(TableView tableView, long columnIndex, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static string table_to_json(Table table)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static byte[] table_view_get_mixed_binary(TableView tableView, long columnIndex, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static long table_view_get_sub_table_size(TableView tableView, long columnIndex, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static byte[] table_view_get_binary(TableView tableView, long columnIndex, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_view_clear_sub_table(TableView tableView, long columnIndex, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_view_set_long(TableView tableView, long columnIndex, long rowIndex, long value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_view_set_int(TableView tableView, long columnIndex, long rowIndex, int value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_view_set_bool(TableView tableView, long columnIndex, long rowIndex, bool value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_view_set_date(TableView tableView, long columnIndex, long rowIndex, DateTime value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_view_set_float(TableView tableView, long columnIndex, long rowIndex, float value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_view_set_double(TableView tableView, long columnIndex, long rowIndex, double value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_view_set_string(TableView tableView, long columnIndex, long rowIndex, string value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_view_set_binary(TableView tableView, long columnIndex, long rowIndex, byte[] value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_view_set_mixed_long(TableView tableView, long columnIndex, long rowIndex, long value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_view_set_mixed_int(TableView tableView, long columnIndex, long rowIndex, int value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_view_set_mixed_bool(TableView tableView, long columnIndex, long rowIndex, bool value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_view_set_mixed_string(TableView tableView, long columnIndex, long rowIndex, string value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_view_set_mixed_binary(TableView tableView, long columnIndex, long rowIndex, byte[] value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_view_set_mixed_empty_sub_table(TableView tableView, long columnIndex, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_view_set_mixed_sub_table(TableView tableView, long columnIndex, long rowIndex, Table source)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_view_set_sub_table(TableView tableView, long columnIndex, long rowIndex, Table value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static string tableview_get_string(TableView tableView, long columnIndex, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static long table_view_get_mixed_int(TableView tableView, long columnIndex, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static double table_view_get_mixed_double(TableView tableView, long columnIndex, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static float table_view_get_mixed_float(TableView tableView, long columnIndex, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static DateTime table_view_get_date_time(TableView tableView, long columnIndex, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static DataType table_view_get_mixed_type(TableView tableView, long columnIndex, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static string table_view_get_column_name(TableView tableView, long columnIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static long table_view_get_column_count(TableView tableView)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static DataType table_view_get_column_type(TableView tableView, long columnIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static long table_view_size(TableView tableView)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static bool table_view_get_bool(TableView tableView, long columnIndex, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static bool table_has_index(Table table, long columnIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static long table_view_get_int(TableView tableView, long columnIndex, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static double table_view_get_double(TableView tableView, long columnIndex, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static float table_view_get_float(TableView tableView, long columnIndex, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static long table_view_find_first_binary(TableView tableView, long columnIndex, byte[] value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static long table_view_find_first_int(TableView tableView, long columnIndex, long value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static long table_view_find_first_string(TableView tableView, long columnIndex, string value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static long table_view_find_first_double(TableView tableView, long columnIndex, double value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static long table_view_find_first_float(TableView tableView, long columnIndex, float value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static long table_view_find_first_date(TableView tableView, long columnIndex, DateTime value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static long table_view_find_first_bool(TableView tableView, long columnIndex, bool value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static byte[] table_get_binary(Table table, long columnIndex, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_set_binary(Table table, long columnIndex, long rowIndex, byte[] value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_add_int(Table table, long columnIndex, long value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_set_sub_table(Table table, long columnIndex, long rowIndex, Table value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static long table_get_sub_table_size(Table table, long columnIndex, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_clear_sub_table(Table table, long columnIndex, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static long table_count_long(Table table, long columnIndex, long target)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static long table_count_string(Table table, long columnIndex, string target)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static long table_count_float(Table table, long columnIndex, float target)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static long table_count_double(Table table, long columnIndex, double target)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static long table_sum_long(Table table, long columnIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static double table_sum_float(Table table, long columnIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static double table_sum_double(Table table, long columnIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static long table_maximum_long(Table table, long columnIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static float table_maximum_float(Table table, long columnIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static double table_maximum_double(Table table, long columnIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static DateTime table_maximum_date_time(Table table, long columnIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static long table_minimum(Table table, long columnIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static float table_minimum_float(Table table, long columnIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static double table_minimum_double(Table table, long columnIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static DateTime table_minimum_date_time(Table table, long columnIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static double table_average(Table table, long columnIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static double table_average_float(Table table, long columnIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static double table_average_double(Table table, long columnIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static long table_find_first_int(Table table, long columnIndex, long value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static long table_find_first_bool(Table table, long columnIndex, bool value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static long table_find_first_date(Table table, long columnIndex, DateTime value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static long table_find_first_float(Table table, long columnIndex, float value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static long table_find_first_double(Table table, long columnIndex, double value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static long table_find_first_string(Table table, long columnIndex, string value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static long table_find_first_binary(Table table, long columnIndex, byte[] value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_set_mixed_float(Table table, long columnIndex, long rowIndex, float value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_set_float(Table table, long columnIndex, long rowIndex, float value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_set_mixed_double(Table table, long columnIndex, long rowIndex, double value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_set_double(Table table, long columnIndex, long rowIndex, double value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_set_mixed_date(Table table, long columnIndex, long rowIndex, DateTime value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_set_date(Table table, long columnIndex, long rowIndex, DateTime value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static bool table_get_mixed_bool(Table table, long columnIndex, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static string table_get_mixed_string(Table table, long columnIndex, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static byte[] table_get_mixed_binary(Table table, long columnIndex, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static long table_size(Table table)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static long table_get_int(Table table, long columnIndex, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static double table_get_double(Table table, long columnIndex, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static float table_get_float(Table table, long columnIndex, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_set_long(Table table, long columnIndex, long rowIndex, long value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_set_int(Table table, long columnIndex, long rowIndex, int value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_set_mixed_long(Table table, long columnIndex, long rowIndex, long value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_set_mixed_int(Table table, long columnIndex, long rowIndex, int value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_set_mixed_bool(Table table, long columnIndex, long rowIndex, bool value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_set_mixed_string(Table table, long columnIndex, long rowIndex, string value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_set_mixed_binary(Table table, long columnIndex, long rowIndex, byte[] value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_set_mixed_sub_table(Table table, long columnIndex, long rowIndex, Table source)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_set_mixed_empty_sub_table(Table table, long columnIndex, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static long table_get_mixed_int(Table table, long columnIndex, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static double table_get_mixed_double(Table table, long columnIndex, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static float table_get_mixed_float(Table table, long columnIndex, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static DateTime table_get_date_time(Table table, long columnIndex, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_set_index(Table table, long columnIndex)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static long table_add_sub_column(Table table, IList<long> path, DataType dataType, string columnName)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_rename_sub_column(Table table, IList<long> path, string name)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static void table_remove_sub_column(Table table, IList<long> path)
+        {
+            throw new NotImplementedException();
+        }
     }
-}
 }

@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
 namespace RealmNet.Interop
 {
@@ -16,7 +17,7 @@ namespace RealmNet.Interop
 
 
         //acquire a TableView handle with the result And set Root in an atomic fashion 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
+        [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
         internal TableViewHandle QueryFindAll(long start, long end, long limit)
         {
             var tvHandle = TableViewHandle.RootedTableViewHandle(this);//same root as the query
@@ -36,7 +37,7 @@ namespace RealmNet.Interop
         }
 
         //acquire a TableView handle with the result And set Root in an atomic fashion 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
+        [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
         internal TableViewHandle QueryFindAll()
         {
             var tvHandle = TableViewHandle.RootedTableViewHandle(this);//same root as the query

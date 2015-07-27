@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
 //isOwned is introduced as a flag that determines if this handle should be unbound or not. In some cases we should NOT call back to c++
 //when we are done with a spec, but in other cases we should.
@@ -17,7 +18,7 @@ namespace RealmNet.Interop
 
 
         //acquire a spec handle And set IgnoreUnbind in an atomic fashion (spec_get_spec)
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
+        [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
         internal SpecHandle GetSubSpecHandle(long columnIndex)
         {            
             SpecHandle sh = null;//acc to CA2000 guidelines we guarentee disposal of temp in finally lower down
