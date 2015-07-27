@@ -112,7 +112,7 @@ namespace RealmNet.Interop
             //so until i find a way that could happen i skip the test due to performance considerations
             //TightdbHandle can only go invalid if the handle creation succeeds, but the call to core returns a 0 or a -1 instead of a handle
             //and if *that* happens, we throw an exception, so the Table object is not even instantiated
-            return UnsafeNativeMethods.table_is_attached(this);//the first part ensures that the second part is only called on a valid handle
+            return UnsafeNativeMethods.table_is_attached(this.TableHandle);//the first part ensures that the second part is only called on a valid handle
         }
 
         /// <summary>
@@ -134,7 +134,7 @@ namespace RealmNet.Interop
 
         private bool HasSharedSpecNoCheck()
         {
-            return UnsafeNativeMethods.table_has_shared_spec(this);
+            return UnsafeNativeMethods.table_has_shared_spec(this.TableHandle);
         }
 
 
@@ -298,7 +298,7 @@ namespace RealmNet.Interop
 
         private void TableNew(bool isReadOnly)
         {
-            UnsafeNativeMethods.table_new(this, isReadOnly);
+            UnsafeNativeMethods.table_new(this.TableHandle, isReadOnly);
         }
 
         /// <summary>
@@ -311,7 +311,7 @@ namespace RealmNet.Interop
             ValidateReadWrite();
             ValidateColumnIndex(columnIndex);
             ValidateNotSharedSpec();
-            UnsafeNativeMethods.table_rename_column(this, columnIndex, newName);
+            UnsafeNativeMethods.table_rename_column(this.TableHandle, columnIndex, newName);
         }
 
         /// <summary>
@@ -324,7 +324,7 @@ namespace RealmNet.Interop
         {
             ValidateReadWrite();
             ValidateColumnIndex(columnIndex);
-            UnsafeNativeMethods.table_remove_column(this, columnIndex);
+            UnsafeNativeMethods.table_remove_column(this.TableHandle, columnIndex);
             ++Version;
         }
 
@@ -343,29 +343,29 @@ namespace RealmNet.Interop
         /// </summary>
         protected override void ClearNoCheck()
         {
-            UnsafeNativeMethods.table_clear(this);
+            UnsafeNativeMethods.table_clear(this.TableHandle);
         }
 
         internal override long GetColumnCount()
         {
-            return UnsafeNativeMethods.table_get_column_count(this);
+            return UnsafeNativeMethods.table_get_column_count(this.TableHandle);
         }
 
         internal override string GetColumnNameNoCheck(long columnIndex)//unfortunately an int, bc tight might have been built using 32 bits
         {
-            return UnsafeNativeMethods.table_get_column_name(this, columnIndex);
+            return UnsafeNativeMethods.table_get_column_name(this.TableHandle, columnIndex);
         }
 
         //can take invalid name parameter, will then return -1 as the column index
         internal override long GetColumnIndexNoCheck(String name)
         {
-            return UnsafeNativeMethods.table_get_column_index(this, name);
+            return UnsafeNativeMethods.table_get_column_index(this.TableHandle, name);
         }
 
 
         internal override DataType ColumnTypeNoCheck(long columnIndex)
         {
-            return UnsafeNativeMethods.table_get_column_type(this, columnIndex);
+            return UnsafeNativeMethods.table_get_column_type(this.TableHandle, columnIndex);
         }
 
         /// <summary>
@@ -393,26 +393,26 @@ namespace RealmNet.Interop
             ValidateIsValid();
             ValidateReadWrite();
             ValidateInsertRowIndex(rowIndex);
-            UnsafeNativeMethods.table_insert_empty_row(this, rowIndex, rowsToInsert);
+            UnsafeNativeMethods.table_insert_empty_row(this.TableHandle, rowIndex, rowsToInsert);
             ++Version;
         }
 
 
         internal override void RemoveNoCheck(long rowIndex)
         {
-            UnsafeNativeMethods.table_remove(this, rowIndex);
+            UnsafeNativeMethods.table_remove(this.TableHandle, rowIndex);
             ++Version;
         }
 
         internal override DataType GetMixedTypeNoCheck(long columnIndex, long rowIndex)
         {
-            return UnsafeNativeMethods.table_get_mixed_type(this, columnIndex, rowIndex);
+            return UnsafeNativeMethods.table_get_mixed_type(this.TableHandle, columnIndex, rowIndex);
         }
 
 
         internal override DateTime GetMixedDateTimeNoCheck(long columnIndex, long rowIndex)
         {
-            return UnsafeNativeMethods.table_get_mixed_date_time(this, columnIndex, rowIndex);
+            return UnsafeNativeMethods.table_get_mixed_date_time(this.TableHandle, columnIndex, rowIndex);
         }
 
 
@@ -428,30 +428,30 @@ namespace RealmNet.Interop
         {
             ValidateIsValid();
             ValidateReadWrite();//optimize changes internal table structures so cannot be done unless readwrite access
-            UnsafeNativeMethods.table_optimize(this);
+            UnsafeNativeMethods.table_optimize(this.TableHandle);
         }
 
         internal override string ToStringNoCheck()
         {
-            return UnsafeNativeMethods.table_to_string(this);
+            return UnsafeNativeMethods.table_to_string(this.TableHandle);
         }
 
         internal override string ToStringNoCheck(long limit)
         {
             throw new NotImplementedException();
-            //return UnsafeNativeMethods.table_to_string(this, limit);
+            //return UnsafeNativeMethods.table_to_string(this.TableHandle, limit);
         }
 
         internal override string RowToStringNoCheck(long rowIndex)
         {
-            return UnsafeNativeMethods.table_row_to_string(this, rowIndex);
+            return UnsafeNativeMethods.table_row_to_string(this.TableHandle, rowIndex);
         }
 
 
         internal override string ToJsonNoCheck()
         {
             ValidateIsValid();
-            return UnsafeNativeMethods.table_to_json(this);
+            return UnsafeNativeMethods.table_to_json(this.TableHandle);
         }
 
 
@@ -755,7 +755,7 @@ namespace RealmNet.Interop
         private Boolean HasIndexNoCheck(long columnIndex)
         {
 
-            return UnsafeNativeMethods.table_has_index(this, columnIndex);
+            return UnsafeNativeMethods.table_has_index(this.TableHandle, columnIndex);
         }
 
         /// <summary>
@@ -879,7 +879,7 @@ namespace RealmNet.Interop
             ValidateIsValid();
             ValidateReadWrite();
             ValidateInsertRowIndex(rowIndex);
-            UnsafeNativeMethods.table_insert_empty_row(this, rowIndex, 1);
+            UnsafeNativeMethods.table_insert_empty_row(this.TableHandle, rowIndex, 1);
             ++Version;
             SetRowNoCheck(rowIndex, rowData);
         }
@@ -888,7 +888,7 @@ namespace RealmNet.Interop
 
         internal override byte[] GetBinaryNoCheck(long columnIndex, long rowIndex)
         {
-            return UnsafeNativeMethods.table_get_binary(this, columnIndex, rowIndex);
+            return UnsafeNativeMethods.table_get_binary(this.TableHandle, columnIndex, rowIndex);
         }
 
 
@@ -899,7 +899,7 @@ namespace RealmNet.Interop
 
         internal override void SetBinaryNoCheck(long columnIndex, long rowIndex, byte[] value)
         {
-            UnsafeNativeMethods.table_set_binary(this, columnIndex, rowIndex, value);
+            UnsafeNativeMethods.table_set_binary(this.TableHandle, columnIndex, rowIndex, value);
         }
 
         /// <summary>
@@ -914,7 +914,7 @@ namespace RealmNet.Interop
             ValidateReadWrite();
             ValidateColumnIndex(columnIndex);
             ValidateTypeInt(columnIndex);
-            UnsafeNativeMethods.table_add_int(this, columnIndex, value);
+            UnsafeNativeMethods.table_add_int(this.TableHandle, columnIndex, value);
         }
 
 
@@ -929,12 +929,12 @@ namespace RealmNet.Interop
         {
             var columnIndex = GetColumnIndex(columnName);
             ValidateTypeInt(columnIndex);
-            UnsafeNativeMethods.table_add_int(this, columnIndex, value);
+            UnsafeNativeMethods.table_add_int(this.TableHandle, columnIndex, value);
         }
 
         internal override void SetSubTableNoCheck(long columnIndex, long rowIndex, Table value)
         {
-            UnsafeNativeMethods.table_set_sub_table(this, columnIndex, rowIndex, value);
+            UnsafeNativeMethods.table_set_sub_table(this.TableHandle, columnIndex, rowIndex, value.TableHandle);
         }
 
 
@@ -945,103 +945,103 @@ namespace RealmNet.Interop
 
         internal override long GetSubTableSizeNoCheck(long columnIndex, long rowIndex)
         {
-            return UnsafeNativeMethods.table_get_sub_table_size(this, columnIndex, rowIndex);
+            return UnsafeNativeMethods.table_get_sub_table_size(this.TableHandle, columnIndex, rowIndex);
         }
 
         internal override void ClearSubTableNoCheck(long columnIndex, long rowIndex)
         {
-            UnsafeNativeMethods.table_clear_sub_table(this, columnIndex, rowIndex);
+            UnsafeNativeMethods.table_clear_sub_table(this.TableHandle, columnIndex, rowIndex);
         }
 
         internal override long CountLongNoCheck(long columnIndex, long target)
         {
-            return UnsafeNativeMethods.table_count_long(this, columnIndex, target);
+            return UnsafeNativeMethods.table_count_long(this.TableHandle, columnIndex, target);
         }
 
         internal override long CountStringNoCheck(long columnIndex, string target)
         {
-            return UnsafeNativeMethods.table_count_string(this, columnIndex, target);
+            return UnsafeNativeMethods.table_count_string(this.TableHandle, columnIndex, target);
         }
 
         internal override long CountFloatNoCheck(long columnIndex, float target)
         {
-            return UnsafeNativeMethods.table_count_float(this, columnIndex, target);
+            return UnsafeNativeMethods.table_count_float(this.TableHandle, columnIndex, target);
         }
 
         internal override long CountDoubleNoCheck(long columnIndex, double target)
         {
-            return UnsafeNativeMethods.table_count_double(this, columnIndex, target);
+            return UnsafeNativeMethods.table_count_double(this.TableHandle, columnIndex, target);
         }
 
         internal override long SumLongNoCheck(long columnIndex)
         {
-            return UnsafeNativeMethods.table_sum_long(this, columnIndex);
+            return UnsafeNativeMethods.table_sum_long(this.TableHandle, columnIndex);
         }
 
         internal override double SumFloatNoCheck(long columnIndex)
         {
-            return UnsafeNativeMethods.table_sum_float(this, columnIndex);
+            return UnsafeNativeMethods.table_sum_float(this.TableHandle, columnIndex);
         }
 
         internal override double SumDoubleNoCheck(long columnIndex)
         {
-            return UnsafeNativeMethods.table_sum_double(this, columnIndex);
+            return UnsafeNativeMethods.table_sum_double(this.TableHandle, columnIndex);
         }
 
         internal override long MaximumLongNoCheck(long columnIndex)
         {
-            return UnsafeNativeMethods.table_maximum_long(this, columnIndex);
+            return UnsafeNativeMethods.table_maximum_long(this.TableHandle, columnIndex);
         }
 
         internal override float MaximumFloatNoCheck(long columnIndex)
         {
-            return UnsafeNativeMethods.table_maximum_float(this, columnIndex);
+            return UnsafeNativeMethods.table_maximum_float(this.TableHandle, columnIndex);
         }
 
         internal override double MaximumDoubleNoCheck(long columnIndex)
         {
-            return UnsafeNativeMethods.table_maximum_double(this, columnIndex);
+            return UnsafeNativeMethods.table_maximum_double(this.TableHandle, columnIndex);
         }
 
         //in fact not implemented in core yet, just returns 0
         internal override DateTime MaximumDateTimeNoCheck(long columnIndex)
         {
-            return UnsafeNativeMethods.table_maximum_date_time(this, columnIndex);
+            return UnsafeNativeMethods.table_maximum_date_time(this.TableHandle, columnIndex);
         }
 
         internal override long MinimumLongNoCheck(long columnIndex)
         {
-            return UnsafeNativeMethods.table_minimum(this, columnIndex);
+            return UnsafeNativeMethods.table_minimum(this.TableHandle, columnIndex);
         }
 
         internal override float MinimumFloatNoCheck(long columnIndex)
         {
-            return UnsafeNativeMethods.table_minimum_float(this, columnIndex);
+            return UnsafeNativeMethods.table_minimum_float(this.TableHandle, columnIndex);
         }
 
         internal override double MinimumDoubleNoCheck(long columnIndex)
         {
-            return UnsafeNativeMethods.table_minimum_double(this, columnIndex);
+            return UnsafeNativeMethods.table_minimum_double(this.TableHandle, columnIndex);
         }
 
         internal override DateTime MinimumDateTimeNoCheck(long columnIndex)
         {
-            return UnsafeNativeMethods.table_minimum_date_time(this, columnIndex);
+            return UnsafeNativeMethods.table_minimum_date_time(this.TableHandle, columnIndex);
         }
 
         internal override double AverageLongNoCheck(long columnIndex)
         {
-            return UnsafeNativeMethods.table_average(this, columnIndex);
+            return UnsafeNativeMethods.table_average(this.TableHandle, columnIndex);
         }
 
         internal override double AverageFloatNoCheck(long columnIndex)
         {
-            return UnsafeNativeMethods.table_average_float(this, columnIndex);
+            return UnsafeNativeMethods.table_average_float(this.TableHandle, columnIndex);
         }
 
         internal override double AverageDoubleNoCheck(long columnIndex)
         {
-            return UnsafeNativeMethods.table_average_double(this, columnIndex);
+            return UnsafeNativeMethods.table_average_double(this.TableHandle, columnIndex);
         }
 
         //todo:implement size_t lookup(StringData value);
@@ -1049,37 +1049,37 @@ namespace RealmNet.Interop
 
         internal override long FindFirstIntNoCheck(long columnIndex, long value)
         {
-            return UnsafeNativeMethods.table_find_first_int(this, columnIndex, value);
+            return UnsafeNativeMethods.table_find_first_int(this.TableHandle, columnIndex, value);
         }
 
         internal override long FindFirstBoolNoCheck(long columnIndex, bool value)
         {
-            return UnsafeNativeMethods.table_find_first_bool(this, columnIndex, value);
+            return UnsafeNativeMethods.table_find_first_bool(this.TableHandle, columnIndex, value);
         }
 
         internal override long FindFirstDateNoCheck(long columnIndex, DateTime value)
         {
-            return UnsafeNativeMethods.table_find_first_date(this, columnIndex, value);
+            return UnsafeNativeMethods.table_find_first_date(this.TableHandle, columnIndex, value);
         }
 
         internal override long FindFirstFloatNoCheck(long columnIndex, float value)
         {
-            return UnsafeNativeMethods.table_find_first_float(this, columnIndex, value);
+            return UnsafeNativeMethods.table_find_first_float(this.TableHandle, columnIndex, value);
         }
 
         internal override long FindFirstDoubleNoCheck(long columnIndex, double value)
         {
-            return UnsafeNativeMethods.table_find_first_double(this, columnIndex, value);
+            return UnsafeNativeMethods.table_find_first_double(this.TableHandle, columnIndex, value);
         }
 
         internal override long FindFirstStringNoCheck(long columnIndex, string value)
         {
-            return UnsafeNativeMethods.table_find_first_string(this, columnIndex, value);
+            return UnsafeNativeMethods.table_find_first_string(this.TableHandle, columnIndex, value);
         }
 
         internal override long FindFirstBinaryNoCheck(long columnIndex, byte[] value)
         {
-            return UnsafeNativeMethods.table_find_first_binary(this, columnIndex, value);
+            return UnsafeNativeMethods.table_find_first_binary(this.TableHandle, columnIndex, value);
         }
 
         internal override TableView FindAllIntNoCheck(long columnIndex, long value)
@@ -1155,47 +1155,47 @@ namespace RealmNet.Interop
 
         internal override void SetMixedFloatNoCheck(long columnIndex, long rowIndex, float value)
         {
-            UnsafeNativeMethods.table_set_mixed_float(this, columnIndex, rowIndex, value);
+            UnsafeNativeMethods.table_set_mixed_float(this.TableHandle, columnIndex, rowIndex, value);
         }
 
         internal override void SetFloatNoCheck(long columnIndex, long rowIndex, float value)
         {
-            UnsafeNativeMethods.table_set_float(this, columnIndex, rowIndex, value);
+            UnsafeNativeMethods.table_set_float(this.TableHandle, columnIndex, rowIndex, value);
         }
 
         internal override void SetMixedDoubleNoCheck(long columnIndex, long rowIndex, double value)
         {
-            UnsafeNativeMethods.table_set_mixed_double(this, columnIndex, rowIndex, value);
+            UnsafeNativeMethods.table_set_mixed_double(this.TableHandle, columnIndex, rowIndex, value);
         }
 
         internal override void SetDoubleNoCheck(long columnIndex, long rowIndex, double value)
         {
-            UnsafeNativeMethods.table_set_double(this, columnIndex, rowIndex, value);
+            UnsafeNativeMethods.table_set_double(this.TableHandle, columnIndex, rowIndex, value);
         }
 
         internal override void SetMixedDateTimeNoCheck(long columnIndex, long rowIndex, DateTime value)
         {
-            UnsafeNativeMethods.table_set_mixed_date(this, columnIndex, rowIndex, value);
+            UnsafeNativeMethods.table_set_mixed_date(this.TableHandle, columnIndex, rowIndex, value);
         }
 
         internal override void SetDateTimeNoCheck(long columnIndex, long rowIndex, DateTime value)
         {
-            UnsafeNativeMethods.table_set_date(this, columnIndex, rowIndex, value);
+            UnsafeNativeMethods.table_set_date(this.TableHandle, columnIndex, rowIndex, value);
         }
 
         internal override bool GetMixedBoolNoCheck(long columnIndex, long rowIndex)
         {
-            return UnsafeNativeMethods.table_get_mixed_bool(this, columnIndex, rowIndex);
+            return UnsafeNativeMethods.table_get_mixed_bool(this.TableHandle, columnIndex, rowIndex);
         }
 
         internal override String GetMixedStringNoCheck(long columnIndex, long rowIndex)
         {
-            return UnsafeNativeMethods.table_get_mixed_string(this, columnIndex, rowIndex);
+            return UnsafeNativeMethods.table_get_mixed_string(this.TableHandle, columnIndex, rowIndex);
         }
 
         internal override byte[] GetMixedBinaryNoCheck(long columnIndex, long rowIndex)
         {
-            return UnsafeNativeMethods.table_get_mixed_binary(this, columnIndex, rowIndex);
+            return UnsafeNativeMethods.table_get_mixed_binary(this.TableHandle, columnIndex, rowIndex);
         }
 
         internal override Table GetMixedSubTableNoCheck(long columnIndex, long rowIndex)
@@ -1209,7 +1209,7 @@ namespace RealmNet.Interop
         //fixme:Resharper rightly marks this one down as never used
         private void InsertInt(long columnIndex, long rowIndex, long value)
         {
-            UnsafeNativeMethods.table_insert_int(this, columnIndex, rowIndex, value);            
+            UnsafeNativeMethods.table_insert_int(this.TableHandle, columnIndex, rowIndex, value);            
         }
         */
 
@@ -1217,23 +1217,23 @@ namespace RealmNet.Interop
         //number of records in this table
         internal override long GetSize()
         {
-            return UnsafeNativeMethods.table_size(this);
+            return UnsafeNativeMethods.table_size(this.TableHandle);
         }
 
         //only call if You are certain that 1: The field type is Int, 2: The columnIndex is in range, 3: The rowIndex is in range
         internal override long GetLongNoCheck(long columnIndex, long rowIndex)
         {
-            return UnsafeNativeMethods.table_get_int(this, columnIndex, rowIndex);
+            return UnsafeNativeMethods.table_get_int(this.TableHandle, columnIndex, rowIndex);
         }
 
         internal override Double GetDoubleNoCheck(long columnIndex, long rowIndex)
         {
-            return UnsafeNativeMethods.table_get_double(this, columnIndex, rowIndex);
+            return UnsafeNativeMethods.table_get_double(this.TableHandle, columnIndex, rowIndex);
         }
 
         internal override float GetFloatNoCheck(long columnIndex, long rowIndex)
         {
-            return UnsafeNativeMethods.table_get_float(this, columnIndex, rowIndex);
+            return UnsafeNativeMethods.table_get_float(this.TableHandle, columnIndex, rowIndex);
         }
 
         internal override Boolean GetBoolNoCheck(long columnIndex, long rowIndex)
@@ -1248,73 +1248,73 @@ namespace RealmNet.Interop
 
         internal override void SetLongNoCheck(long columnIndex, long rowIndex, long value)
         {
-            UnsafeNativeMethods.table_set_long(this, columnIndex, rowIndex, value);
+            UnsafeNativeMethods.table_set_long(this.TableHandle, columnIndex, rowIndex, value);
         }
 
 
         internal override void SetIntNoCheck(long columnIndex, long rowIndex, int value)
         {
-            UnsafeNativeMethods.table_set_int(this, columnIndex, rowIndex, value);
+            UnsafeNativeMethods.table_set_int(this.TableHandle, columnIndex, rowIndex, value);
         }
 
         internal override void SetMixedLongNoCheck(long columnIndex, long rowIndex, long value)
         {
-            UnsafeNativeMethods.table_set_mixed_long(this, columnIndex, rowIndex, value);
+            UnsafeNativeMethods.table_set_mixed_long(this.TableHandle, columnIndex, rowIndex, value);
         }
 
         internal override void SetMixedIntNoCheck(long columnIndex, long rowIndex, int value)
         {
-            UnsafeNativeMethods.table_set_mixed_int(this, columnIndex, rowIndex, value);
+            UnsafeNativeMethods.table_set_mixed_int(this.TableHandle, columnIndex, rowIndex, value);
         }
 
         internal override void SetMixedBoolNoCheck(long columnIndex, long rowIndex, bool value)
         {
-            UnsafeNativeMethods.table_set_mixed_bool(this, columnIndex, rowIndex, value);
+            UnsafeNativeMethods.table_set_mixed_bool(this.TableHandle, columnIndex, rowIndex, value);
         }
 
         internal override void SetMixedStringNoCheck(long columnIndex, long rowIndex, string value)
         {
-            UnsafeNativeMethods.table_set_mixed_string(this, columnIndex, rowIndex, value);
+            UnsafeNativeMethods.table_set_mixed_string(this.TableHandle, columnIndex, rowIndex, value);
         }
 
         internal override void SetMixedBinaryNoCheck(long columnIndex, long rowIndex, byte[] value)
         {
-            UnsafeNativeMethods.table_set_mixed_binary(this, columnIndex, rowIndex, value);
+            UnsafeNativeMethods.table_set_mixed_binary(this.TableHandle, columnIndex, rowIndex, value);
         }
 
 
         //a copy of source will be set into the field
         internal override void SetMixedSubTableNoCheck(long columnIndex, long rowIndex, Table source)
         {
-            UnsafeNativeMethods.table_set_mixed_sub_table(this, columnIndex, rowIndex, source);
+            UnsafeNativeMethods.table_set_mixed_sub_table(this.TableHandle, columnIndex, rowIndex, source.TableHandle);
         }
 
         //might be used if You want an empty subtable set up and then change its contents and layout at a later time
         internal override void SetMixedEmptySubtableNoCheck(long columnIndex, long rowIndex)
         {
-            UnsafeNativeMethods.table_set_mixed_empty_sub_table(this, columnIndex, rowIndex);
+            UnsafeNativeMethods.table_set_mixed_empty_sub_table(this.TableHandle, columnIndex, rowIndex);
         }
 
 
         internal override long GetMixedLongNoCheck(long columnIndex, long rowIndex)
         {
-            return UnsafeNativeMethods.table_get_mixed_int(this, columnIndex, rowIndex);
+            return UnsafeNativeMethods.table_get_mixed_int(this.TableHandle, columnIndex, rowIndex);
         }
 
         internal override Double GetMixedDoubleNoCheck(long columnIndex, long rowIndex)
         {
-            return UnsafeNativeMethods.table_get_mixed_double(this, columnIndex, rowIndex);
+            return UnsafeNativeMethods.table_get_mixed_double(this.TableHandle, columnIndex, rowIndex);
         }
 
         internal override float GetMixedFloatNoCheck(long columnIndex, long rowIndex)
         {
-            return UnsafeNativeMethods.table_get_mixed_float(this, columnIndex, rowIndex);
+            return UnsafeNativeMethods.table_get_mixed_float(this.TableHandle, columnIndex, rowIndex);
         }
 
 
         internal override DateTime GetDateTimeNoCheck(long columnIndex, long rowIndex)
         {
-            return UnsafeNativeMethods.table_get_date_time(this, columnIndex, rowIndex);
+            return UnsafeNativeMethods.table_get_date_time(this.TableHandle, columnIndex, rowIndex);
         }
 
 
@@ -1340,7 +1340,7 @@ namespace RealmNet.Interop
         private void SetIndexNoCheck(long columnIndex)
         {
             ValidateReadWrite();
-            UnsafeNativeMethods.table_set_index(this, columnIndex);
+            UnsafeNativeMethods.table_set_index(this.TableHandle, columnIndex);
         }
 
         /// <summary>
@@ -1457,7 +1457,7 @@ namespace RealmNet.Interop
             ValidateNotSharedSpec();//You must alter shared spec tables through their top table
             ValidateColumnPath(path, true);
             ValidateReadWrite();
-            return path.Count == 0 ? UnsafeNativeMethods.table_add_column(this.TableHandle, dataType, columnName) : UnsafeNativeMethods.table_add_sub_column(this, path, dataType, columnName);
+            return path.Count == 0 ? UnsafeNativeMethods.table_add_column(this.TableHandle, dataType, columnName) : UnsafeNativeMethods.table_add_sub_column(this.TableHandle, path, dataType, columnName);
         }
 
 
@@ -1508,10 +1508,10 @@ namespace RealmNet.Interop
             ValidateReadWrite();
             if (path.Count > 1) //this test bc tablerenamesubcolumn does not work with a path of length 1
             {
-                UnsafeNativeMethods.table_rename_sub_column(this, path, name);
+                UnsafeNativeMethods.table_rename_sub_column(this.TableHandle, path, name);
             }
             else
-                UnsafeNativeMethods.table_rename_column(this, path[0], name);
+                UnsafeNativeMethods.table_rename_column(this.TableHandle, path[0], name);
         }
 
 
@@ -1545,11 +1545,11 @@ namespace RealmNet.Interop
             ValidateReadWrite();
             if (path.Count > 1) //this test because TableRemoveSubcolumn does not accept a path with only one number
             {
-                UnsafeNativeMethods.table_remove_sub_column(this, path);
+                UnsafeNativeMethods.table_remove_sub_column(this.TableHandle, path);
             }
             else
             {
-                UnsafeNativeMethods.table_remove_column(this, path[0]);
+                UnsafeNativeMethods.table_remove_column(this.TableHandle, path[0]);
             }
         }
 

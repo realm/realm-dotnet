@@ -43,7 +43,7 @@ namespace RealmNet.Interop
         //the caller must know if this group is readonly or not
         private void AcquireHandle(bool readOnly)
         {
-            UnsafeNativeMethods.group_new(this, readOnly); //calls sethandle itself
+            UnsafeNativeMethods.group_new(this.GroupHandle, readOnly); //calls sethandle itself
             IsValid = true;
         }
 
@@ -115,7 +115,7 @@ namespace RealmNet.Interop
         public Boolean EqualsGroup(Group otherGroup)
         {
             ValidateIsValid();
-            return otherGroup != null && UnsafeNativeMethods.group_equals(this, otherGroup);
+            return otherGroup != null && UnsafeNativeMethods.group_equals(this.GroupHandle, otherGroup.GroupHandle);
         }
 
 
@@ -145,7 +145,7 @@ namespace RealmNet.Interop
         {
             try
             {
-                UnsafeNativeMethods.group_new_file(this, path, openMode);
+                UnsafeNativeMethods.group_new_file(this.GroupHandle, path, openMode);
                 IsValid = true;
             }
             catch (Exception)
@@ -172,7 +172,7 @@ namespace RealmNet.Interop
                 if (binaryGroup.Length == 0)
                     throw new ArgumentException("Group cannot be created from an array of size 0", "binaryGroup");
 
-                UnsafeNativeMethods.group_frombinary_data(this, binaryGroup);
+                UnsafeNativeMethods.group_frombinary_data(this.GroupHandle, binaryGroup);
                 IsValid = true;
             }
             catch (Exception)
@@ -201,7 +201,7 @@ namespace RealmNet.Interop
         public bool HasTable(string tableName)
         {
             ValidateIsValid();
-            return UnsafeNativeMethods.group_has_table(this, tableName);
+            return UnsafeNativeMethods.group_has_table(this.GroupHandle, tableName);
         }
 
 
@@ -280,7 +280,7 @@ namespace RealmNet.Interop
         public void Write(String path)
         {
             ValidateIsValid();
-            UnsafeNativeMethods.group_write(this, path);
+            UnsafeNativeMethods.group_write(this.GroupHandle, path);
         }
 
 
@@ -291,7 +291,7 @@ namespace RealmNet.Interop
         public byte[] WriteToMemory()
         {
             ValidateIsValid();
-            return UnsafeNativeMethods.group_write_to_memory(this);
+            return UnsafeNativeMethods.group_write_to_memory(this.GroupHandle);
         }
 
 
@@ -301,7 +301,7 @@ namespace RealmNet.Interop
         public void Commit()
         {
             ValidateIsValid();
-            UnsafeNativeMethods.group_commit(this);
+            UnsafeNativeMethods.group_commit(this.GroupHandle);
         }
 
         //todo:implement ToJson (by calling core template<class S> void to_json(S& out))
@@ -313,7 +313,7 @@ namespace RealmNet.Interop
         public override string ToString()
         {
             ValidateIsValid();
-            return base.ToString() + " " + UnsafeNativeMethods.group_to_string(this);
+            return base.ToString() + " " + UnsafeNativeMethods.group_to_string(this.GroupHandle);
         }
 
         /// <summary>
@@ -324,7 +324,7 @@ namespace RealmNet.Interop
         public Boolean IsEmpty()
         {
             ValidateIsValid();
-            return UnsafeNativeMethods.group_is_empty(this);
+            return UnsafeNativeMethods.group_is_empty(this.GroupHandle);
         }
 
 
@@ -337,7 +337,7 @@ namespace RealmNet.Interop
             get
             {
                 ValidateIsValid();
-                return UnsafeNativeMethods.group_size(this);
+                return UnsafeNativeMethods.group_size(this.GroupHandle);
             }
         }
 

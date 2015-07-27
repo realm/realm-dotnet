@@ -106,7 +106,7 @@ namespace RealmNet.Interop
         public long Count(long start, long end, long limit)
         {
             ValidateStartEndLimit(start, end, limit);
-            return UnsafeNativeMethods.query_count(this, start, end, limit);
+            return UnsafeNativeMethods.query_count(this.QueryHandle, start, end, limit);
         }
 
 
@@ -118,7 +118,7 @@ namespace RealmNet.Interop
         public long Count()
         {
             ValidateStartEndLimit(0, -1, -1);
-            return UnsafeNativeMethods.query_count(this, 0, -1, -1);
+            return UnsafeNativeMethods.query_count(this.QueryHandle, 0, -1, -1);
         }
 
 
@@ -198,7 +198,7 @@ namespace RealmNet.Interop
         /// <returns>Query that matches </returns>
         public Query Greater(string columnName, long value)
         {
-            UnsafeNativeMethods.query_int_greater(this, GetColumnIndex(columnName), value);
+            UnsafeNativeMethods.query_int_greater(this.QueryHandle, GetColumnIndex(columnName), value);
             return this;
         }
 
@@ -213,7 +213,7 @@ namespace RealmNet.Interop
         public Query Greater(long columnIndex, long value)
         {
             UnderlyingTable.ValidateColumnIndex(columnIndex);
-            UnsafeNativeMethods.query_int_greater(this, columnIndex, value);
+            UnsafeNativeMethods.query_int_greater(this.QueryHandle, columnIndex, value);
             return this;
         }
 
@@ -235,7 +235,7 @@ namespace RealmNet.Interop
         //if You call this one, remember to return this to your caller
         private void BetweenNoCheck(long columnIndex, long lowValue, long highValue)
         {
-            UnsafeNativeMethods.query_int_between(this, columnIndex, lowValue, highValue);
+            UnsafeNativeMethods.query_int_between(this.QueryHandle, columnIndex, lowValue, highValue);
         }
 
         /// <summary>
@@ -273,7 +273,7 @@ namespace RealmNet.Interop
         /// <returns>Double with Average of all matching rows</returns>
         public Double Average(long columnIndex)
         {
-            return UnsafeNativeMethods.query_average(this, columnIndex);
+            return UnsafeNativeMethods.query_average(this.QueryHandle, columnIndex);
         }
 
 
@@ -285,7 +285,7 @@ namespace RealmNet.Interop
         public Double Average(string columnName)
         {
             var columnIndex = GetColumnIndex(columnName);
-            return UnsafeNativeMethods.query_average(this, columnIndex);
+            return UnsafeNativeMethods.query_average(this.QueryHandle, columnIndex);
         }
 
 

@@ -323,7 +323,7 @@ namespace RealmNet.Interop
             {
                 //this should be okay in fact
             }
-            if (!UnsafeNativeMethods.spec_equals_spec(tableA, tableB))
+            if (!UnsafeNativeMethods.spec_equals_spec(tableA.TableHandle, tableB.TableHandle))
             {
                 throw new ArgumentOutOfRangeException(
                     String.Format(CultureInfo.InvariantCulture,
