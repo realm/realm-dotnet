@@ -1,14 +1,13 @@
 using System;
-using RealmNet;
-using System.Collections.Generic;
-
 using System.Collections;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using RealmNet;
 using RealmNet.Interop;
 
-namespace Interop.Providers
+namespace RealmNet.Interop
 {
-    public class Table
+    public class Table_
     {
         public TableHandle TableHandle;
         public Dictionary<string, long> Columns = new Dictionary<string, long>();
@@ -16,7 +15,7 @@ namespace Interop.Providers
 
     public class CoreProvider : ICoreProvider
     {
-        private Dictionary<string, Table> _tables = new Dictionary<string, Table>();
+        private Dictionary<string, Table_> _tables = new Dictionary<string, Table_>();
 
         public bool HasTable(string tableName)
         {
@@ -26,17 +25,17 @@ namespace Interop.Providers
         public void AddTable(string tableName)
         {
             var tableHandle = UnsafeNativeMethods.new_table();
-            _tables[tableName] = new Table() { TableHandle = tableHandle };
+            _tables[tableName] = new Table_() { TableHandle = tableHandle };
         }
 
         public void AddColumnToTable(string tableName, string columnName, Type columnType)
         {
             var tableHandle = _tables[tableName].TableHandle;
-            UnsafeNativeMethods.DataType dataType = UnsafeNativeMethods.DataType.Int;
+            DataType dataType = DataType.Int;
             if (columnType == typeof(string))
-                dataType = UnsafeNativeMethods.DataType.String;
+                dataType = DataType.String;
             else if (columnType == typeof(bool))
-                dataType = UnsafeNativeMethods.DataType.Bool; 
+                dataType = DataType.Bool; 
                 
             var columnIndex = UnsafeNativeMethods.table_add_column(tableHandle, dataType, columnName);
             _tables[tableName].Columns[columnName] = columnIndex;
@@ -115,7 +114,7 @@ namespace Interop.Providers
                 UnsafeNativeMethods.query_string_equal((QueryHandle)queryHandle, columnIndex, (string)value);
         }
 
-        public System.Collections.IEnumerable ExecuteQuery(IQueryHandle queryHandle, Type objectType)
+        public IEnumerable ExecuteQuery(IQueryHandle queryHandle, Type objectType)
         {
             var list = Activator.CreateInstance(typeof(List<>).MakeGenericType(objectType));
             var add = list.GetType().GetMethod("Add");
