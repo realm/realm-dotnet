@@ -30,6 +30,17 @@
     <ConsolePause>false</ConsolePause>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugMock|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;MOCKING_CONFIG</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="Xamarin.iOS" />
@@ -46,7 +57,12 @@
     <Compile Include="libwrappers.linkwith.cs">
       <DependentUpon>libwrappers.a</DependentUpon>
     </Compile>
-    <Compile Include="CoreProvider.cs" />
+    <Compile Include="..\CoreProvider.shared.cs">
+      <Link>CoreProvider.shared.cs</Link>
+    </Compile>
+    <Compile Include="..\CoreProviderFactory.shared.cs">
+      <Link>CoreProviderFactory.shared.cs</Link>
+    </Compile>
     <Compile Include="..\GroupHandle.shared.cs">
       <Link>GroupHandle.shared.cs</Link>
     </Compile>

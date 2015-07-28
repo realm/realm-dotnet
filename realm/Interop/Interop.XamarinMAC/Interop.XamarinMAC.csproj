@@ -42,6 +42,22 @@
     <EnableCodeSigning>false</EnableCodeSigning>
     <EnablePackageSigning>false</EnablePackageSigning>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugMock|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;MOCKING_CONFIG</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+    <UseRefCounting>false</UseRefCounting>
+    <UseSGen>false</UseSGen>
+    <IncludeMonoRuntime>false</IncludeMonoRuntime>
+    <EnablePackageSigning>false</EnablePackageSigning>
+    <EnableCodeSigning>false</EnableCodeSigning>
+    <CreatePackage>false</CreatePackage>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -56,7 +72,12 @@
       <Link>UnsafeNativeMethods.shared.cs</Link>
     </Compile>
     <Compile Include="InteropConfig.cs" />
-    <Compile Include="CoreProvider.cs" />
+    <Compile Include="..\CoreProvider.shared.cs">
+      <Link>CoreProvider.shared.cs</Link>
+    </Compile>
+    <Compile Include="..\CoreProviderFactory.shared.cs">
+      <Link>CoreProviderFactory.shared.cs</Link>
+    </Compile>
     <Compile Include="..\GroupHandle.shared.cs">
       <Link>GroupHandle.shared.cs</Link>
     </Compile>

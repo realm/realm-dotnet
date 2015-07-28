@@ -4,11 +4,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Interop.Providers;
 using NUnit.Framework;
 using RealmNet;
 using InteropShared;
+using RealmNet.Interop;
 
-// TODO abstract out the CoreProvider
 namespace Tests
 {
     [TestFixture]
@@ -18,7 +19,7 @@ namespace Tests
         public void ShouldAddTable()
         {
             // Arrange
-            var coreProvider = new MockCoreProvider();
+            var coreProvider  = ProviderFactory.Make();
 
             // Act
             coreProvider.AddTable("T1");
@@ -31,7 +32,7 @@ namespace Tests
         public void AddColumnShouldNotThrow()
         {
             // Arrange
-            var coreProvider = new MockCoreProvider();
+            var coreProvider  = ProviderFactory.Make();
             coreProvider.AddTable("T1");
 
             // Act
@@ -45,7 +46,7 @@ namespace Tests
         public void InsertRowShouldNotThrow()
         {
             // Arrange
-            var coreProvider = new MockCoreProvider();
+            var coreProvider  = ProviderFactory.Make();
             coreProvider.AddTable("T1");
 
             // Act
@@ -59,7 +60,7 @@ namespace Tests
         public void SetAndGetValue()
         {
             // Arrange
-            var coreProvider = new MockCoreProvider();
+            var coreProvider  = ProviderFactory.Make();
             coreProvider.AddTable("T1");
             coreProvider.AddColumnToTable("T1", "C1", typeof (string));
             coreProvider.AddEmptyRow("T1");
@@ -76,7 +77,7 @@ namespace Tests
         public void CreateQueryTest()
         {
             // Arrange
-            var coreProvider = new MockCoreProvider();
+            var coreProvider  = ProviderFactory.Make();
             coreProvider.AddTable("T1");
 
             // Act
@@ -90,7 +91,7 @@ namespace Tests
         public void ExecuteQueryTest()
         {
             // Arrange
-            var coreProvider = new MockCoreProvider();
+            var coreProvider  = ProviderFactory.Make();
             coreProvider.AddTable("T1");
             var query = coreProvider.CreateQuery("T1");
 
