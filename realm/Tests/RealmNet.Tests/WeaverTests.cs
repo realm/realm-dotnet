@@ -2,12 +2,10 @@
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
-using Interop.Providers;
-using InteropShared;
 using Mono.Cecil;
 using NUnit.Framework;
 using RealmNet;
-using RealmNet.Interop;
+using Tests.TestHelpers;
 
 namespace Tests
 {
@@ -17,6 +15,7 @@ namespace Tests
         Assembly assembly;
         string newAssemblyPath;
         string assemblyPath;
+        private CoreProviderStub coreProviderStub_;
 
         [TestFixtureSetUp]
         public void FixtureSetup()
@@ -58,7 +57,8 @@ namespace Tests
         [SetUp]
         public void Setup()
         {
-            Realm.ActiveCoreProvider = ProviderFactory.Make();
+            coreProviderStub_ = new CoreProviderStub();
+            Realm.ActiveCoreProvider = coreProviderStub_;
         }
 
         [Test]
@@ -71,10 +71,10 @@ namespace Tests
             realm.CreateObject(assembly.GetType("AssemblyToProcess.Person"));
 
             // Assert
-            Assert.That(Realm.ActiveCoreProvider.HasTable("Person"));
-           // var table = coreProviderStub_.Tables["Person"];
-           // Assert.That(table.Columns.Count, Is.EqualTo(5));
-           // Assert.That(table.Columns["FirstName"], Is.EqualTo(typeof(string)));
+            Assert.That(coreProviderStub_.HasTable("Person"));
+            var table = coreProviderStub_.Tables["Person"];
+            Assert.That(table.Columns.Count, Is.EqualTo(5));
+            Assert.That(table.Columns["FirstName"], Is.EqualTo(typeof(string)));
         }
 
         [Test]
@@ -88,8 +88,8 @@ namespace Tests
             person.FirstName = "John";
 
             // Assert
-           // var table = coreProviderStub_.Tables["Person"];
-           // Assert.That(table.Rows[0]["FirstName"], Is.EqualTo("John"));
+            var table = coreProviderStub_.Tables["Person"];
+            Assert.That(table.Rows[0]["FirstName"], Is.EqualTo("John"));
         }
 
         [Test]
@@ -106,9 +106,9 @@ namespace Tests
             person1.FirstName = "Joe";
 
             // Assert
-           // var table = coreProviderStub_.Tables["Person"];
-           // Assert.That(table.Rows[0]["FirstName"], Is.EqualTo("Joe"));
-           // Assert.That(table.Rows[1]["FirstName"], Is.EqualTo("Peter"));
+            var table = coreProviderStub_.Tables["Person"];
+            Assert.That(table.Rows[0]["FirstName"], Is.EqualTo("Joe"));
+            Assert.That(table.Rows[1]["FirstName"], Is.EqualTo("Peter"));
         }
 
         [Test]
@@ -122,8 +122,8 @@ namespace Tests
             person.Email = "john@johnson.com";
 
             // Assert
-           // var table = coreProviderStub_.Tables["Person"];
-           // Assert.That(table.Rows[0]["Email"], Is.EqualTo("john@johnson.com"));
+            var table = coreProviderStub_.Tables["Person"];
+            Assert.That(table.Rows[0]["Email"], Is.EqualTo("john@johnson.com"));
         }
 
         [Test]
@@ -136,8 +136,8 @@ namespace Tests
             realm.CreateObject(assembly.GetType("AssemblyToProcess.RemappedClass"));
 
             // Assert
-           // Assert.That(coreProviderStub_.HasTable("RemappedTable"), "The table RemappedTable was not found");
-           // Assert.That(!coreProviderStub_.HasTable("RemappedClass"), "The table RemappedClass was found though it should not exist");
+            Assert.That(coreProviderStub_.HasTable("RemappedTable"), "The table RemappedTable was not found");
+            Assert.That(!coreProviderStub_.HasTable("RemappedClass"), "The table RemappedClass was found though it should not exist");
         }
 
 #if(DEBUG)
