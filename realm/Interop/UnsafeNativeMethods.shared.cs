@@ -579,7 +579,7 @@ namespace RealmNet.Interop
             throw new NotImplementedException();
         }
 
-        public static void new_shared_group_file_defaults(SharedGroup sharedGroup, string fileName)
+        public static void new_shared_group_file_defaults(SharedGroupHandle sharedGroup, string fileName)
         {
             throw new NotImplementedException();
         }
@@ -589,17 +589,17 @@ namespace RealmNet.Interop
             throw new NotImplementedException();
         }
 
-        public static void new_shared_group_file(SharedGroup sharedGroup, string fileName, bool noCreate, DurabilityLevel durabilityLevel)
+        public static void new_shared_group_file(SharedGroupHandle sharedGroup, string fileName, bool noCreate, DurabilityLevel durabilityLevel)
         {
             throw new NotImplementedException();
         }
 
-        public static void shared_group_reserve(SharedGroup sharedGroup, long bytesToReserve)
+        public static void shared_group_reserve(SharedGroupHandle sharedGroup, long bytesToReserve)
         {
             throw new NotImplementedException();
         }
 
-        public static bool shared_group_has_changed(SharedGroup sharedGroup)
+        public static bool shared_group_has_changed(SharedGroupHandle sharedGroup)
         {
             throw new NotImplementedException();
         }

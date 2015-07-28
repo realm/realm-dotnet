@@ -46,7 +46,7 @@ namespace RealmNet.Interop
         /// <param name="fileName">(path and)File name of sharedgroup to connect to, or sharedgroup to create </param>
         public SharedGroup(String fileName)
         {
-            UnsafeNativeMethods.new_shared_group_file_defaults(this, fileName);//this call will set the sharedgrouphandle
+            UnsafeNativeMethods.new_shared_group_file_defaults(this.SharedGroupHandle, fileName);//this call will set the sharedgrouphandle
         }
 
         internal SharedGroupHandle SharedGroupHandle
@@ -73,7 +73,7 @@ namespace RealmNet.Interop
         /// <param name="durabilityLevel">Durability Level (durability_Full or durability_MemOnly)</param>
         public SharedGroup(String fileName, Boolean noCreate, DurabilityLevel durabilityLevel)
         {
-            UnsafeNativeMethods.new_shared_group_file(this, fileName, noCreate, durabilityLevel);
+            UnsafeNativeMethods.new_shared_group_file(this.SharedGroupHandle, fileName, noCreate, durabilityLevel);
         }
 
 
@@ -130,7 +130,7 @@ namespace RealmNet.Interop
             {
                 throw new ArgumentOutOfRangeException("bytesToReserve", String.Format(CultureInfo.InvariantCulture, "Shared Group Reserve called with too low a value {0}", bytesToReserve));
             }
-            UnsafeNativeMethods.shared_group_reserve(this, bytesToReserve);
+            UnsafeNativeMethods.shared_group_reserve(this.SharedGroupHandle, bytesToReserve);
         }
 
         //todo:unit test with two threads - create SG, check it has not changed. create thread and run that thread (it then updates the sg) and then await it, and when it is finishe,
@@ -144,7 +144,7 @@ namespace RealmNet.Interop
         {
             get
             {
-                return UnsafeNativeMethods.shared_group_has_changed(this);
+                return UnsafeNativeMethods.shared_group_has_changed(this.SharedGroupHandle);
             }
         }
 
