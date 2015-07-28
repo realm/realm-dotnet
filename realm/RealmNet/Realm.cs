@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using RealmNet.Interop;
 
 namespace RealmNet
 {
@@ -9,16 +11,18 @@ namespace RealmNet
     {
         public static ICoreProvider ActiveCoreProvider;
 
-        public static Realm GetInstance()
+        public static Realm GetInstance(string path = null)
         {
-            return new Realm(ActiveCoreProvider);
+            return new Realm(ActiveCoreProvider, path);
         }
 
         private readonly ICoreProvider _coreProvider;
+        private ISharedGroupHandle sharedGroupHandle_;
 
-        private Realm(ICoreProvider coreProvider) 
+        private Realm(ICoreProvider coreProvider, string path) 
         {
             this._coreProvider = coreProvider;
+            sharedGroupHandle_ = coreProvider.CreateSharedGroup(path);
         }
 
         public T CreateObject<T>() where T : RealmObject

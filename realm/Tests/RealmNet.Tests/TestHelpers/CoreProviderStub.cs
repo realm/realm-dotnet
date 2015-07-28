@@ -18,6 +18,11 @@ namespace Tests.TestHelpers
         public Dictionary<string, Table> Tables = new Dictionary<string, Table>();
         public List<Query> Queries = new List<Query>();
 
+        public ISharedGroupHandle CreateSharedGroup(string filename)
+        {
+            throw new NotImplementedException();
+        }
+
         public bool HasTable(string tableName)
         {
             return Tables.ContainsKey(tableName);

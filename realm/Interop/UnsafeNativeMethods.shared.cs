@@ -579,9 +579,22 @@ namespace RealmNet.Interop
             throw new NotImplementedException();
         }
 
-        public static void new_shared_group_file_defaults(SharedGroupHandle sharedGroup, string fileName)
+        [DllImport(InteropConfig.L64, EntryPoint = "new_shared_group_file_defaults", CallingConvention = CallingConvention.Cdecl)]
+        private static extern SharedGroupHandle new_shared_group_file_defaults64(
+            [MarshalAs(UnmanagedType.LPWStr)] string fileName,
+            IntPtr fileNameLen);
+
+        [DllImport(InteropConfig.L32, EntryPoint = "new_shared_group_file_defaults", CallingConvention = CallingConvention.Cdecl)]
+        private static extern SharedGroupHandle new_shared_group_file_defaults32(
+            [MarshalAs(UnmanagedType.LPWStr)] string fileName,
+            IntPtr fileNameLen);
+
+        public static SharedGroupHandle new_shared_group_file_defaults(string filename)
         {
-            throw new NotImplementedException();
+            if (InteropConfig.Is64Bit)
+                return new_shared_group_file_defaults64(filename, (IntPtr)filename.Length);
+            else
+                return new_shared_group_file_defaults32(filename, (IntPtr)filename.Length);
         }
 
         public static bool table_is_attached(TableHandle TableHandle)

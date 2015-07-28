@@ -452,6 +452,13 @@ REALM_CORE_WRAPPER_API size_t group_has_table(Group* group_ptr, uint16_t * table
     return bool_to_size_t(group_ptr->has_table(str));
 }
 
+//return a new shared group connected to a file, no_create and durabillity level are left to the defaults defined in core
+REALM_CORE_WRAPPER_API SharedGroup* new_shared_group_file_defaults(uint16_t * name,size_t name_len)
+{
+    CSStringAccessor str(name,name_len);
+    return new SharedGroup(StringData(str));   
+}
+
 #pragma endregion // }}}
 
 #ifdef DYNAMIC  // clang complains when making a dylib if there is no main(). :-/

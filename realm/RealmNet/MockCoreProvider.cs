@@ -52,6 +52,11 @@ namespace InteropShared
         {}
 
 
+        public ISharedGroupHandle CreateSharedGroup(string filename)
+        {
+            throw new NotImplementedException();
+        }
+
         public bool HasTable(string tableName)
         {
             bool ret = _tables.ContainsKey(tableName);

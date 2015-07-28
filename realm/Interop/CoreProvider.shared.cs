@@ -17,6 +17,11 @@ namespace RealmNet.Interop
     {
         private Dictionary<string, Table_> _tables = new Dictionary<string, Table_>();
 
+        public ISharedGroupHandle CreateSharedGroup(string filename)
+        {
+            return UnsafeNativeMethods.new_shared_group_file_defaults(filename);
+        }
+
         public bool HasTable(string tableName)
         {
             return _tables.ContainsKey(tableName);

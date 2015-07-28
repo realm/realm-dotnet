@@ -9,6 +9,7 @@ namespace RealmNet
 {
     public interface ICoreProvider
     {
+        ISharedGroupHandle CreateSharedGroup(string filename); 
         bool HasTable(string tableName);
         void AddTable(string tableName);
         void AddColumnToTable(string tableName, string columnName, Type columnType);

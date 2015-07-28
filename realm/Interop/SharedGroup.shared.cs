@@ -46,7 +46,7 @@ namespace RealmNet.Interop
         /// <param name="fileName">(path and)File name of sharedgroup to connect to, or sharedgroup to create </param>
         public SharedGroup(String fileName)
         {
-            UnsafeNativeMethods.new_shared_group_file_defaults(this.SharedGroupHandle, fileName);//this call will set the sharedgrouphandle
+            //UnsafeNativeMethods.new_shared_group_file_defaults(this.SharedGroupHandle, fileName);//this call will set the sharedgrouphandle
         }
 
         internal SharedGroupHandle SharedGroupHandle
