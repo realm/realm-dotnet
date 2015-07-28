@@ -14,8 +14,24 @@ RealmNet.Tests/CoreProviderTests.cs
 
 
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-#28 Get all objects and refactor mock provider
-Restoring WeaverTests to state where it has just one failure as before
+#25 Get all objects and refactor mock provider
+
+RealmWinOnly.sln
+- add DebugMock configuration
+
+Realm.sln
+- added DebugMock configuration for all as copy of Debug
+
+CoreProvider.cs
+- copied to common CoreProvider.shared.cs
+
+Interop.Win32.csproj
+Interop.XamrainAndroid.csproj
+Interop.XamarinIOS.csproj
+Interop.XamarinMac.csproj
+- linked in CoreProviderFactory.shared.cs
+- removed its own CoreProvider.cs
+- linked in CoreProvider.shared.cs
 
 RealmNet.Tests.csproj
 - linked in CoreProviderFactory.shared.cs
@@ -24,3 +40,10 @@ RealmNet.Tests.csproj
 CoreProviderFactory.shared.cs
 - added file 
 
+QueryTests.cs
+- comment out for now as expects queryProviderStub to implement different interface
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Fix build problems with #28 
+- CoreProviderFactory.shared.cs - take out Using clauses unused 
+- roll back wrappers.vcxproj to Kristian's 9ee46d4
