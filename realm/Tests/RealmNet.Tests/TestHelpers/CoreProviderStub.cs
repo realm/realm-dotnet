@@ -20,7 +20,7 @@ namespace Tests.TestHelpers
 
         public ISharedGroupHandle CreateSharedGroup(string filename)
         {
-            throw new NotImplementedException();
+            return null;
         }
 
         public bool HasTable(string tableName)
@@ -116,6 +116,12 @@ namespace Tests.TestHelpers
             }
 
             public List<SequenceElement> Sequence = new List<SequenceElement>();
+            public void Dispose()
+            {
+                throw new NotImplementedException();
+            }
+
+            public bool IsClosed => false;
         }
     }
 }

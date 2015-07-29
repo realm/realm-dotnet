@@ -6,10 +6,15 @@ using System.Threading.Tasks;
 
 namespace RealmNet.Interop
 {
-    public interface ITableHandle { }
-    public interface IQueryHandle { }
-    public interface IGroupHandle { }
-    public interface ISharedGroupHandle { }
-    public interface ISpecHandle { }
-    public interface ITableViewHandle { }
+    public interface IHandle : IDisposable
+    {
+        bool IsClosed { get;  }
+    }
+
+    public interface ITableHandle : IHandle { }
+    public interface IQueryHandle : IHandle { }
+    public interface IGroupHandle : IHandle { }
+    public interface ISharedGroupHandle : IHandle { }
+    public interface ISpecHandle : IHandle { }
+    public interface ITableViewHandle : IHandle { }
 }

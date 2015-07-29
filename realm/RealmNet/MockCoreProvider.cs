@@ -36,6 +36,11 @@ namespace InteropShared
         }
 
         private readonly string queryTable;
+        public void Dispose()
+        {
+        }
+
+        public bool IsClosed => false;
     }
 
     public class MockCoreProvider : ICoreProvider

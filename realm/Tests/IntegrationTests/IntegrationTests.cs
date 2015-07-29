@@ -26,6 +26,12 @@ namespace IntegrationTests
             _realm = Realm.GetInstance(_databasePath);
         }
 
+        [TearDown]
+        public void TearDown()
+        {
+            _realm.Dispose();
+        }
+
         [Test]
         public void SimpleTest()
         {
@@ -64,8 +70,9 @@ namespace IntegrationTests
         public void TestSharedGroupWritesSomethingToDisk()
         {
             // Arrange
-            var p1 = _realm.CreateObject<Person>();
             Debug.WriteLine("File size before write: " + new FileInfo(_databasePath).Length);
+            Debug.WriteLine(_databasePath);
+            var p1 = _realm.CreateObject<Person>();
 
             // Act
             p1.FirstName = "John";
