@@ -459,6 +459,10 @@ REALM_CORE_WRAPPER_API SharedGroup* new_shared_group_file_defaults(uint16_t * na
     return new SharedGroup(StringData(str));   
 }
 
+REALM_CORE_WRAPPER_API void shared_group_delete(SharedGroup* g) {
+    delete g;
+}
+
 #pragma endregion // }}}
 
 #ifdef DYNAMIC  // clang complains when making a dylib if there is no main(). :-/

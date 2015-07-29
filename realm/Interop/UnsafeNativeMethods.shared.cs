@@ -454,9 +454,18 @@ namespace RealmNet.Interop
             throw new NotImplementedException();
         }
 
-        internal static void shared_group_delete(IntPtr handle)
+        [DllImport(InteropConfig.L64, EntryPoint = "shared_group_delete", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void shared_group_delete64(IntPtr handle);
+
+        [DllImport(InteropConfig.L32, EntryPoint = "shared_group_delete", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void shared_group_delete32(IntPtr handle);
+
+        public static void shared_group_delete(IntPtr sharedGroupHandle)
         {
-            throw new NotImplementedException();
+            if (InteropConfig.Is64Bit)
+                shared_group_delete64(sharedGroupHandle);
+            else
+                shared_group_delete32(sharedGroupHandle);
         }
 
         internal static IntPtr shared_group_commit(SharedGroupHandle sharedGroupHandle)
