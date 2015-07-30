@@ -40,3 +40,4 @@ realm/doxyout
 realm/doxyoutCS
 *.a
 *.so
+Resource.Designer.cs
