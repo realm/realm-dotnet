@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using RealmNet.Interop;
 
-namespace RealmNet.Interop
+namespace RealmNet
 {
     /// <summary>
     /// This class performs housekeeping reg. wrapping c++ objects.
@@ -41,12 +42,12 @@ namespace RealmNet.Interop
         /// <summary>
         /// The TightdbHandle that this wrapper is using to call into c++ core
         /// </summary>
-        internal RealmHandle Handle
+        internal IRealmHandle Handle
         {
             get { return _handle; }
         }
 
-        private RealmHandle _handle;//will store the c++ handle for this class. The actual type is specific for what is wrapped,
+        private IRealmHandle _handle;//will store the c++ handle for this class. The actual type is specific for what is wrapped,
         //protected because we want other classes to use the specific handle, for instance TableView.TableViewHandle instead of TableView.Handle
         //e.g. a SharedGroup will have a SharedGroupHandle stored here, and SharedGroup will have a SharedGroupHandle property that returns this hande
         //as SharedGroupHandle (because as is faster than a typecast)
@@ -57,7 +58,7 @@ namespace RealmNet.Interop
 
         //store the pointer to the c++ class, and do neccessary housekeeping
         //now, shouldbedisposed should already have been set atomically inside the newHandle class
-        internal void SetHandle(RealmHandle newHandle, bool isReadOnly)
+        internal void SetHandle(IRealmHandle newHandle, bool isReadOnly)
         {
             ReadOnly = isReadOnly;
             _handle = newHandle;

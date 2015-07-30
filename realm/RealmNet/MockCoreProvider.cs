@@ -135,6 +135,31 @@ namespace InteropShared
             notifyOnCall ($"ExecuteQuery");
             return ret;
         }
+
+        public IGroupHandle NewGroup()
+        {
+            throw new NotImplementedException();
+        }
+
+        public IGroupHandle NewGroupFromFile(string path, GroupOpenMode openMode)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void GroupCommit(IGroupHandle groupHandle)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool GroupIsEmpty(IGroupHandle groupHandle)
+        {
+            throw new NotImplementedException();
+        }
+
+        public long GroupSize(IGroupHandle groupHandle)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
 

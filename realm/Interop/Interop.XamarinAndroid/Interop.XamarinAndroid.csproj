@@ -44,17 +44,8 @@
     <Compile Include="..\CoreProvider.shared.cs">
       <Link>shared\CoreProvider.shared.cs</Link>
     </Compile>
-    <Compile Include="..\Group.shared.cs">
-      <Link>shared\Group.shared.cs</Link>
-    </Compile>
     <Compile Include="..\GroupHandle.shared.cs">
       <Link>shared\GroupHandle.shared.cs</Link>
-    </Compile>
-    <Compile Include="..\Handled.shared.cs">
-      <Link>shared\Handled.shared.cs</Link>
-    </Compile>
-    <Compile Include="..\Query.shared.cs">
-      <Link>shared\Query.shared.cs</Link>
     </Compile>
     <Compile Include="..\QueryHandle.shared.cs">
       <Link>shared\QueryHandle.shared.cs</Link>
@@ -65,29 +56,14 @@
     <Compile Include="..\RealmHandleOptionalUnbind.shared.cs">
       <Link>shared\RealmHandleOptionalUnbind.shared.cs</Link>
     </Compile>
-    <Compile Include="..\SharedGroup.shared.cs">
-      <Link>shared\SharedGroup.shared.cs</Link>
-    </Compile>
     <Compile Include="..\SharedGroupHandle.shared.cs">
       <Link>shared\SharedGroupHandle.shared.cs</Link>
-    </Compile>
-    <Compile Include="..\Table.shared.cs">
-      <Link>shared\Table.shared.cs</Link>
     </Compile>
     <Compile Include="..\TableHandle.shared.cs">
       <Link>shared\TableHandle.shared.cs</Link>
     </Compile>
-    <Compile Include="..\TableOrView.shared.cs">
-      <Link>shared\TableOrView.shared.cs</Link>
-    </Compile>
-    <Compile Include="..\TableView.shared.cs">
-      <Link>shared\TableView.shared.cs</Link>
-    </Compile>
     <Compile Include="..\TableViewHandle.shared.cs">
       <Link>shared\TableViewHandle.shared.cs</Link>
-    </Compile>
-    <Compile Include="..\Transaction.shared.cs">
-      <Link>shared\Transaction.shared.cs</Link>
     </Compile>
     <Compile Include="..\UnsafeNativeMethods.shared.cs">
       <Link>shared\UnsafeNativeMethods.shared.cs</Link>

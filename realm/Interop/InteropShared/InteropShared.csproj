@@ -38,6 +38,7 @@
     <!-- A reference to the entire .NET Framework is automatically included -->
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GroupOpenMode.cs" />
     <Compile Include="HandleInterfaces.cs" />
     <Compile Include="ICoreProvider.cs" />
     <Compile Include="PreserveAttribute.cs" />

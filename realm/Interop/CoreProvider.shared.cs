@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using InteropShared;
 using RealmNet;
 using RealmNet.Interop;
 
@@ -141,6 +142,31 @@ namespace RealmNet.Interop
             }
 
             return (IEnumerable)list;
+        }
+
+        public IGroupHandle NewGroup()
+        {
+            throw new NotImplementedException();
+        }
+
+        public IGroupHandle NewGroupFromFile(string path, GroupOpenMode openMode)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void GroupCommit(IGroupHandle groupHandle)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool GroupIsEmpty(IGroupHandle groupHandle)
+        {
+            throw new NotImplementedException();
+        }
+
+        public long GroupSize(IGroupHandle groupHandle)
+        {
+            throw new NotImplementedException();
         }
     }
 }

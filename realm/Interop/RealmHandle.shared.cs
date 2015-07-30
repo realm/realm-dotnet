@@ -37,7 +37,7 @@ namespace RealmNet.Interop
 
     [SecurityPermission(SecurityAction.InheritanceDemand, UnmanagedCode = true)]
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
-    public abstract class RealmHandle : SafeHandleZeroOrMinusOneIsInvalid
+    public abstract class RealmHandle : SafeHandleZeroOrMinusOneIsInvalid, IRealmHandle
     {
         //Every handle can potentially have an unbind list
         //If the unbind list is instantiated, this handle is a handle for a root object

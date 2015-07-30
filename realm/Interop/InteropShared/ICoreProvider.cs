@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using InteropShared;
 using RealmNet.Interop;
 
 namespace RealmNet
@@ -22,5 +23,11 @@ namespace RealmNet
         void QueryEqual(IQueryHandle queryHandle, string columnName, object value);
 
         IEnumerable ExecuteQuery(IQueryHandle queryHandle, Type objectType);
+
+        IGroupHandle NewGroup();
+        IGroupHandle NewGroupFromFile(string path, GroupOpenMode openMode);
+        void GroupCommit(IGroupHandle groupHandle);
+        bool GroupIsEmpty(IGroupHandle groupHandle);
+        long GroupSize(IGroupHandle groupHandle);
     }
 }

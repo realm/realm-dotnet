@@ -3,15 +3,17 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using InteropShared;
+using RealmNet.Interop;
 
-namespace RealmNet.Interop
+namespace RealmNet
 {
     /// <summary>
     /// Handles a collection of tables that are not shared with other
     /// processes or programs. (see SharedGroup)
     /// </summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix")]
-    public class Group : Handled, IEnumerable<Table>
+    public class Group : Handled
     {
 
         /// <summary>
@@ -43,38 +45,11 @@ namespace RealmNet.Interop
         //the caller must know if this group is readonly or not
         private void AcquireHandle(bool readOnly)
         {
-            UnsafeNativeMethods.group_new(this.GroupHandle, readOnly); //calls sethandle itself
+            SetHandle(Realm.ActiveCoreProvider.NewGroup(), readOnly);
+            //UnsafeNativeMethods.GroupNew(this.GroupHandle, readOnly); //calls sethandle itself
             IsValid = true;
         }
 
-        /// <summary>
-        ///  //Open in read-only mode. Fail if the file does not already exist.
-        ///  mode_ReadOnly,
-        ///  //Open in read/write mode. Create the file if it doesn't exist.
-        ///  mode_ReadWrite,
-        ///  //Open in read/write mode. Fail if the file does not already exist.
-        ///  mode_ReadWriteNoCreate
-        /// </summary>        
-        public enum OpenMode    //nested type inside Group, as in core. CA10344 warning ignored.
-        {
-
-            /// <summary>
-            /// Open in read-only mode. Fail if the file does not already exist.
-            /// </summary>
-            ModeReadOnly,
-
-            /// <summary>
-            /// Open in read/write mode. Create the file if it doesn't exist.
-            /// </summary>
-
-            ModeReadWrite,
-
-            /// <summary>
-            /// Open in read/write mode. Fail if the file does not already exist.
-            /// </summary>
-
-            ModeReadWriteNoCreate
-        }
 
         /*MSDN 
          * By default, the operator == tests for reference equality by determining if two references indicate the same object,
@@ -103,7 +78,7 @@ namespace RealmNet.Interop
 
         //As stated above, it is not a good idea to overide the == operator or implement the IComparable interface on 
         //mutable reference types. We will provide a hook into group== by supplying a third alternative
-
+/*
         /// <summary>
         /// Compare this group with another group for equality. Two groups are equal if, and
         /// only if, they contain the same tables in the same order, that
@@ -117,7 +92,7 @@ namespace RealmNet.Interop
             ValidateIsValid();
             return otherGroup != null && UnsafeNativeMethods.group_equals(this.GroupHandle, otherGroup.GroupHandle);
         }
-
+*/
 
         //TODO:(also in asana)erorr handling if user specifies an illegal filename or path.
         //We will probably have to do the error handling on the c++ side. It is
@@ -141,11 +116,12 @@ namespace RealmNet.Interop
         /// ModeReadWrite: Open in read/write mode. Create the file if it doesn't exist.
         /// ModeReadWriteNoCreate : Open in read/write mode. Fail if the file does not already exist.
         /// </param>
-        public Group(string path, OpenMode openMode)
+        public Group(string path, GroupOpenMode openMode)
         {
             try
             {
-                UnsafeNativeMethods.group_new_file(this.GroupHandle, path, openMode);
+                var handle = Realm.ActiveCoreProvider.NewGroupFromFile(path, openMode);
+                SetHandle(handle, openMode == GroupOpenMode.ModeReadOnly);
                 IsValid = true;
             }
             catch (Exception)
@@ -156,7 +132,7 @@ namespace RealmNet.Interop
             }
         }
 
-
+/*
         /// <summary>
         /// Create a Group from a binary representation craeted with WriteToMemory
         /// </summary>
@@ -189,7 +165,7 @@ namespace RealmNet.Interop
         //group.is_attached is not implemented due to reasons stated above
 
 
-
+            
 
         //todo:implement get_table_name(std::size_t table_ndx)
 
@@ -204,12 +180,13 @@ namespace RealmNet.Interop
             return UnsafeNativeMethods.group_has_table(this.GroupHandle, tableName);
         }
 
-
-        internal GroupHandle GroupHandle
+*/
+        internal IGroupHandle GroupHandle
         {
-            get { return Handle as GroupHandle; }
+            get { return Handle as IGroupHandle; }
         }
 
+        /*
         /// <summary>
         /// use this method to get a table that already exists in the group
         /// will return the table associated with tableName in the group, or if no such table exists,
@@ -248,8 +225,6 @@ namespace RealmNet.Interop
             }
             return new Table(GroupHandle.GetTable(tableIndex), ReadOnly);
         }
-
-        //todo:implement the gettable(string, bool wascreated) (gets the table, or create an empty new table and return that)
 
         /// <summary>
         ///  use this method to create new tables in the group
@@ -293,7 +268,7 @@ namespace RealmNet.Interop
             ValidateIsValid();
             return UnsafeNativeMethods.group_write_to_memory(this.GroupHandle);
         }
-
+        */
 
         /// <summary>
         /// Flushes changes to the group back to its file
@@ -301,7 +276,7 @@ namespace RealmNet.Interop
         public void Commit()
         {
             ValidateIsValid();
-            UnsafeNativeMethods.group_commit(this.GroupHandle);
+            Realm.ActiveCoreProvider.GroupCommit(this.GroupHandle);
         }
 
         //todo:implement ToJson (by calling core template<class S> void to_json(S& out))
@@ -313,7 +288,7 @@ namespace RealmNet.Interop
         public override string ToString()
         {
             ValidateIsValid();
-            return base.ToString() + " " + UnsafeNativeMethods.group_to_string(this.GroupHandle);
+            return base.ToString() + " " + GroupHandle;
         }
 
         /// <summary>
@@ -324,7 +299,7 @@ namespace RealmNet.Interop
         public Boolean IsEmpty()
         {
             ValidateIsValid();
-            return UnsafeNativeMethods.group_is_empty(this.GroupHandle);
+            return Realm.ActiveCoreProvider.GroupIsEmpty(this.GroupHandle);
         }
 
 
@@ -337,7 +312,7 @@ namespace RealmNet.Interop
             get
             {
                 ValidateIsValid();
-                return UnsafeNativeMethods.group_size(this.GroupHandle);
+                return Realm.ActiveCoreProvider.GroupSize(this.GroupHandle);
             }
         }
 
@@ -353,36 +328,6 @@ namespace RealmNet.Interop
             {
                 throw new InvalidOperationException("Cannot do operations on group that has IsValid==True");
             }
-        }
-
-
-        //The debug only methods Verify, print, print_free etc. are not implemented
-        //in the binding a the time being
-
-
-
-
-        /// <summary>
-        /// Returns an enumerator that iterates through the Tables in the group.
-        /// </summary>
-        /// <returns>
-        /// A IEnumerator that can be used to iterate through the tables in the group
-        /// Yielding Table obejcts
-        /// </returns>
-        public IEnumerator<Table> GetEnumerator()
-        {
-            ValidateIsValid();
-            var current = 0;
-            while (current < Size)
-            {
-                yield return GetTable(current++);
-            }
-        }
-
-        //this will return the generic enumerator above when doing foreach TableRow tr in Query, as it is the closest match
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
         }
     }
 }

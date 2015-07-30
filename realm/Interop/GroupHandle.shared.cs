@@ -62,6 +62,10 @@ namespace RealmNet.Interop
         internal GroupHandle(bool ignoreUnbind,RealmHandle root) : base(ignoreUnbind,root)
         {            
         }
-        
+
+        public override string ToString()
+        {
+            return UnsafeNativeMethods.group_to_string(this);
+        }
     }
 }

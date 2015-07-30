@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using InteropShared;
 using RealmNet;
 using RealmNet.Interop;
 
@@ -72,6 +73,31 @@ namespace Tests.TestHelpers
             var result = Activator.CreateInstance(typeof (List<>).MakeGenericType(objectType));
             return (IEnumerable)result;
             //Oreturn (IQueryable)Activator.CreateInstance(typeof(RealmQuery<>).MakeGenericType(elementType), new object[] { this, expression });
+        }
+
+        public IGroupHandle NewGroup()
+        {
+            throw new NotImplementedException();
+        }
+
+        public IGroupHandle NewGroupFromFile(string path, GroupOpenMode openMode)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void GroupCommit(IGroupHandle groupHandle)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool GroupIsEmpty(IGroupHandle groupHandle)
+        {
+            throw new NotImplementedException();
+        }
+
+        public long GroupSize(IGroupHandle groupHandle)
+        {
+            throw new NotImplementedException();
         }
 
         // Non-interface helpers:

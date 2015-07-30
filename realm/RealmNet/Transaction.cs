@@ -1,7 +1,8 @@
 using System;
 using System.Globalization;
+using RealmNet.Interop;
 
-namespace RealmNet.Interop
+namespace RealmNet
 {
 
     /// <summary>
@@ -13,7 +14,7 @@ namespace RealmNet.Interop
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix")]
     public class Transaction : Group
     {
-        private readonly SharedGroup _sharedGroup;//pointer to the shared group this transaction is handling
+        private readonly Realm _realm;//pointer to the shared group this transaction is handling
 
         //todo : unit test that checks what happen if the user just creats a transaction object and starts using it
         /*
@@ -73,12 +74,12 @@ namespace RealmNet.Interop
         //transactions from the instant moment we get a group handle from core in a transaction starting operation
         //see SharedGroupHandle.cs for more info.
 
-        internal Transaction(GroupHandle groupHandle, SharedGroup sharedGroup)
-            : base(sharedGroup.State == TransactionState.Read)
+        internal Transaction(IGroupHandle groupHandle, Realm realm)
+            : base(realm.State == TransactionState.Read)
         {
-            SetHandle(groupHandle, sharedGroup.State == TransactionState.Read);//the group's dispose should rollback or endread
+            SetHandle(groupHandle, realm.State == TransactionState.Read);//the group's dispose should rollback or endread
             IsValid = true;
-            _sharedGroup = sharedGroup;
+            _realm = realm;
         }
 
 
@@ -87,7 +88,7 @@ namespace RealmNet.Interop
         ///  Read or Write. If it is Ready, the transaction has already been comitted.
         /// See TransactionState 
         /// </summary>
-        public TransactionState State { get { return _sharedGroup.State; } }
+        public TransactionState State { get { return _realm.State; } }
 
         /// <summary>
         /// Finish the transaction and discard any changes made while in the transaction.
@@ -95,7 +96,7 @@ namespace RealmNet.Interop
         /// </summary>
         public void Rollback()
         {
-            _sharedGroup.EndTransaction(false);
+            _realm.EndTransaction(false);
             IsValid = false;
         }
 
@@ -105,7 +106,7 @@ namespace RealmNet.Interop
         /// </summary>
         new public void Commit() //we use new because we do not want to call the group.commit method on group. Transaction.commit has another meaning
         {
-            _sharedGroup.EndTransaction(true);
+            _realm.EndTransaction(true);
             IsValid = false;
         }
 
@@ -120,7 +121,7 @@ namespace RealmNet.Interop
         {
             if (State == TransactionState.Read)
             {
-                _sharedGroup.EndTransaction(false);
+                _realm.EndTransaction(false);
                 IsValid = false;
             }
             else
@@ -142,8 +143,8 @@ namespace RealmNet.Interop
             try
             {
                 if (!disposing) return;
-                if (_sharedGroup == null) return; //we simply cannot rollback if shared group is null
-                if (_sharedGroup.InTransaction())
+                if (_realm == null) return; //we simply cannot rollback if shared group is null
+                if (_realm.InTransaction())
                     Rollback();
                 //if this fails somehow, the SharedGroupHandle will take care in its finalizer. Let the user handle exceptions
             }
@@ -161,7 +162,7 @@ namespace RealmNet.Interop
         /// </summary>
         public override string ToString()
         {
-            return base.ToString() + String.Format(CultureInfo.InvariantCulture, " State:{0}", _sharedGroup.State);
+            return base.ToString() + String.Format(CultureInfo.InvariantCulture, " State:{0}", _realm.State);
         }
     }
 }

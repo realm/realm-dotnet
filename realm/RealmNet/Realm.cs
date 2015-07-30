@@ -81,6 +81,8 @@ namespace RealmNet
             get { return _sharedGroupHandle != null && _sharedGroupHandle.IsClosed; }
         }
 
+        public TransactionState State { get; set; }
+
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// Calling dispose will free any c++ structures created to keep track of the handled object.
@@ -112,6 +114,16 @@ namespace RealmNet
                 //ask Handle to dispose of itself (unbind)
                 _sharedGroupHandle.Dispose();
             }
+        }
+
+        public void EndTransaction(bool commit)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool InTransaction()
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Interop.Config;
+using InteropShared;
 
 namespace RealmNet.Interop
 {
@@ -333,6 +334,13 @@ namespace RealmNet.Interop
 
         #endregion
 
+        public static string group_to_string(GroupHandle groupHandle)
+        {
+            throw new NotImplementedException();
+        }
+
+
+
 
         internal static IntPtr tableview_find_all_int(TableViewHandle tableViewHandle, long columnIndex, long value)
         {
@@ -523,7 +531,7 @@ namespace RealmNet.Interop
             throw new NotImplementedException();
         }
 
-        public static void group_new_file(GroupHandle @GroupHandle, string path, Group.OpenMode openMode)
+        public static void group_new_file(GroupHandle @GroupHandle, string path, GroupOpenMode openMode)
         {
             throw new NotImplementedException();
         }
@@ -554,11 +562,6 @@ namespace RealmNet.Interop
         }
 
         public static void group_commit(GroupHandle @GroupHandle)
-        {
-            throw new NotImplementedException();
-        }
-
-        public static object group_to_string(GroupHandle @GroupHandle)
         {
             throw new NotImplementedException();
         }
@@ -611,10 +614,10 @@ namespace RealmNet.Interop
             throw new NotImplementedException();
         }
 
-        public static void new_shared_group_file(SharedGroupHandle sharedGroup, string fileName, bool noCreate, DurabilityLevel durabilityLevel)
+/*        public static void new_shared_group_file(SharedGroupHandle sharedGroup, string fileName, bool noCreate, DurabilityLevel durabilityLevel)
         {
             throw new NotImplementedException();
-        }
+        }*/
 
         public static void shared_group_reserve(SharedGroupHandle sharedGroup, long bytesToReserve)
         {
