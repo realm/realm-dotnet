@@ -13,3 +13,22 @@ RealmNet.Tests/CoreProviderTests.cs
 - swapped order of propertyName and rowIndex in SetValue calls
 
 
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#53 Splitting out the solutions to be platform-specific
+
+Realm.sln refactored into
+- RealmFoundation.sln
+- RealmWin.sln
+- RealmXamarinAndroid.sln
+- RealmXamarinIOS.sln
+- RealmXamarinMac.sln
+
+RealmNetWeaver.Tests.csproj
+- added
+
+RealmNet.Tests.csproj
+- removed
+
+IntegrationTests.csproj
+- comment out body of SimpleTest until merge in more of the Mock Provider stuff after this
+
