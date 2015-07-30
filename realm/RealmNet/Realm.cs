@@ -8,7 +8,7 @@ using RealmNet.Interop;
 
 namespace RealmNet
 {
-    public class Realm : IDisposable
+    public class Realm : Handled
     {
         public static ICoreProvider ActiveCoreProvider;
 
@@ -18,12 +18,13 @@ namespace RealmNet
         }
 
         private readonly ICoreProvider _coreProvider;
-        private ISharedGroupHandle _sharedGroupHandle;
+        //private ISharedGroupHandle _sharedGroupHandle;
 
         private Realm(ICoreProvider coreProvider, string path) 
         {
             _coreProvider = coreProvider;
-            _sharedGroupHandle = coreProvider.CreateSharedGroup(path);
+            //_sharedGroupHandle = coreProvider.CreateSharedGroup(path);
+            SetHandle(coreProvider.CreateSharedGroup(path), false);
         }
 
         public T CreateObject<T>() where T : RealmObject
@@ -71,6 +72,7 @@ namespace RealmNet
             return new RealmQuery<T>(_coreProvider);
         }
 
+        /*
         /// <summary>
         /// True if the c++ resources have been released
         /// True if dispose have been called one way or the other
@@ -80,9 +82,11 @@ namespace RealmNet
         {
             get { return _sharedGroupHandle != null && _sharedGroupHandle.IsClosed; }
         }
+        */
 
         public TransactionState State { get; set; }
 
+        /*
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// Calling dispose will free any c++ structures created to keep track of the handled object.
@@ -115,6 +119,7 @@ namespace RealmNet
                 _sharedGroupHandle.Dispose();
             }
         }
+        */
 
         public void EndTransaction(bool commit)
         {
