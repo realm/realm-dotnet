@@ -452,14 +452,34 @@ namespace RealmNet.Interop
             throw new NotImplementedException();
         }
 
-        internal static IntPtr shared_group_rollback(SharedGroupHandle sharedGroupHandle)
+        //todo:add return value to rollback if c++ threw an exception
+        [DllImport(InteropConfig.L64, EntryPoint = "shared_group_rollback", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr shared_group_rollback64(SharedGroupHandle handle);
+
+        [DllImport(InteropConfig.L32, EntryPoint = "shared_group_rollback", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr shared_group_rollback32(SharedGroupHandle handle);
+
+
+        //called by SharedGroupHandle atomically
+        public static IntPtr shared_group_rollback(SharedGroupHandle sharedGroupHandle)
         {
-            throw new NotImplementedException();
+            return (InteropConfig.Is64Bit)
+                ? shared_group_rollback64(sharedGroupHandle)
+                : shared_group_rollback32(sharedGroupHandle);
         }
 
-        internal static IntPtr shared_group_end_read(SharedGroupHandle sharedGroupHandle)
+        [DllImport(InteropConfig.L64, EntryPoint = "shared_group_end_read", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr shared_group_end_read64(SharedGroupHandle handle);
+
+        [DllImport(InteropConfig.L32, EntryPoint = "shared_group_end_read", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr shared_group_end_read32(SharedGroupHandle handle);
+
+        //called by SharedGroupHandle atomically to set state correctly
+        public static IntPtr shared_group_end_read(SharedGroupHandle sharedgroupHandle)
         {
-            throw new NotImplementedException();
+            return (InteropConfig.Is64Bit)
+                ? shared_group_end_read64(sharedgroupHandle)
+                : shared_group_end_read32(sharedgroupHandle);
         }
 
         [DllImport(InteropConfig.L64, EntryPoint = "shared_group_delete", CallingConvention = CallingConvention.Cdecl)]
@@ -476,19 +496,54 @@ namespace RealmNet.Interop
                 shared_group_delete32(sharedGroupHandle);
         }
 
-        internal static IntPtr shared_group_commit(SharedGroupHandle sharedGroupHandle)
+
+        [DllImport(InteropConfig.L64, EntryPoint = "shared_group_commit", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr shared_group_commit64(SharedGroupHandle sharedGroupHandle);
+
+        [DllImport(InteropConfig.L32, EntryPoint = "shared_group_commit", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr shared_group_commit32(SharedGroupHandle sharedGroupHandle);
+
+
+        //called by SharedGroupHandle atomically as an ongoing transaction is a sort of leak protected resource
+        public static IntPtr shared_group_commit(SharedGroupHandle sharedGroupHandle)
         {
-            throw new NotImplementedException();
+            return (InteropConfig.Is64Bit)
+                ? shared_group_commit64(sharedGroupHandle)
+                : shared_group_commit32(sharedGroupHandle);
         }
 
-        internal static IntPtr shared_group_begin_read(SharedGroupHandle sharedGroupHandle)
+
+
+        //this is complicated.
+        //The call to shared_group_begin_read must result in us always having two things inside a sharedgroup
+        //handle : the shared group pointer, AND the shared group transaction state set to InReadTransaction
+
+        [DllImport(InteropConfig.L64, EntryPoint = "shared_group_begin_read", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr shared_group_begin_read64(SharedGroupHandle sharedGroupPtr);
+
+        [DllImport(InteropConfig.L32, EntryPoint = "shared_group_begin_read", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr shared_group_begin_read32(SharedGroupHandle sharedGroupPtr);
+
+        //used by sharedgrouphandle to start transactions
+        public static IntPtr shared_group_begin_read(SharedGroupHandle sharedGroupHandle)
         {
-            throw new NotImplementedException();
+            return InteropConfig.Is64Bit ? shared_group_begin_read64(sharedGroupHandle) : shared_group_begin_read32(sharedGroupHandle);
+            //sharedGrup.Handle used bc we call shardgroup to doa beginread
         }
 
-        internal static IntPtr shared_group_begin_write(SharedGroupHandle sharedGroupHandle)
+        [DllImport(InteropConfig.L64, EntryPoint = "shared_group_begin_write", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr shared_group_begin_write64(SharedGroupHandle sharedGroupPtr);
+
+        [DllImport(InteropConfig.L32, EntryPoint = "shared_group_begin_write", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr shared_group_begin_write32(SharedGroupHandle sharedGroupPtr);
+
+        //used by sharedgrouphandle to start writetransactions. Group handle is returned
+        public static IntPtr shared_group_begin_write(SharedGroupHandle sharedGroupHandle)
         {
-            throw new NotImplementedException();
+            if (InteropConfig.Is64Bit)
+                return shared_group_begin_write64(sharedGroupHandle);
+            //sharedGrup.Handle used bc we call shardgroup to doa beginread
+            return shared_group_begin_write32(sharedGroupHandle);
         }
 
         internal static IntPtr query_find_all(QueryHandle queryHandle, long start, long end, long limit)
@@ -511,9 +566,24 @@ namespace RealmNet.Interop
             throw new NotImplementedException();
         }
 
-        internal static IntPtr group_get_table(GroupHandle groupHandle, string name)
+        //If the name exists in the group, the table associated with the name is returned
+        //if the name does not exist in the group, a new table is created and returned
+        [DllImport(InteropConfig.L64, EntryPoint = "group_get_or_add_table", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr group_get_or_add_table64(GroupHandle groupHandle,
+            [MarshalAs(UnmanagedType.LPWStr)] String tableName, IntPtr tableNameLen);
+
+        [DllImport(InteropConfig.L32, EntryPoint = "group_get_or_add_table", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr group_get_or_add_table32(GroupHandle groupHandle,
+            [MarshalAs(UnmanagedType.LPWStr)] String tableName, IntPtr tableNameLen);
+
+
+        //used by GroupHandle to get a table handle atomically with the group handle as root
+        //therefore returns intptr
+        internal static IntPtr group_get_or_add_table(GroupHandle groupHandle, string tableName)
         {
-            throw new NotImplementedException();
+            return (InteropConfig.Is64Bit)
+                ? group_get_or_add_table64(groupHandle, tableName, (IntPtr) tableName.Length)
+                : group_get_or_add_table32(groupHandle, tableName, (IntPtr) tableName.Length);
         }
 
         internal static IntPtr group_get_table_by_index(GroupHandle groupHandle, long tableIndex)

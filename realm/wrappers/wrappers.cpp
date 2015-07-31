@@ -431,10 +431,11 @@ REALM_CORE_WRAPPER_API size_t group_size( Group* group_ptr){
 }
 
 //should be disposed by calling unbind_table_ref
-REALM_CORE_WRAPPER_API Table* group_get_table(Group* group_ptr,uint16_t* table_name,size_t table_name_len)
+REALM_CORE_WRAPPER_API Table* group_get_or_add_table(Group* group_ptr,uint16_t* table_name,size_t table_name_len)
 {   
     CSStringAccessor str(table_name,table_name_len);
-    return LangBindHelper::get_table(*group_ptr,str);
+    bool dummy;
+    return LangBindHelper::get_or_add_table(*group_ptr,str, &dummy);
 }
 
 //langbindhelper should be extended to have get_table_by_index itself if it wsa friend with Group it could
@@ -463,6 +464,70 @@ REALM_CORE_WRAPPER_API void shared_group_delete(SharedGroup* g) {
     delete g;
 }
 
+//binding must ensure that the returned group is never modified
+REALM_CORE_WRAPPER_API const Group* shared_group_begin_read(SharedGroup* shared_group_ptr)
+{
+	try {
+    return &shared_group_ptr->begin_read();    
+   }
+    catch (...) {
+    return NULL;
+   }
+}
+
+//binding must ensure that the returned group is never modified
+//although we return -1 on exceptions, core promises to never throw any
+REALM_CORE_WRAPPER_API size_t shared_group_end_read(SharedGroup* shared_group_ptr)
+{    
+   try {
+      shared_group_ptr->end_read();    
+      return 0;
+   } 
+    catch (...){
+    
+        return -1;
+    }   
+}
+
+//binding must ensure that the returned group is never modified
+REALM_CORE_WRAPPER_API const Group* shared_group_begin_write(SharedGroup* shared_group_ptr)
+{
+   try {
+      return &shared_group_ptr->begin_write();    
+    }
+   catch (...) {
+   return NULL;
+   }
+}
+
+//we cannot let exceptions flow back to C# because that only works with windows and .net
+//- mono runtime crashes itself if we let an exception throw back to the c# caller
+REALM_CORE_WRAPPER_API size_t shared_group_commit(SharedGroup* shared_group_ptr)
+{
+   try {
+      shared_group_ptr->commit();
+      return 0;
+    } 
+    catch (...)
+    {
+      return -1;//indicates that something went wrong. Expand with more error codes later...
+   }
+}
+
+
+//currently, we don't transmit exception error codes back to the binding
+//todo:return more specific error codes than just -1
+//however, rollback() is NOEXCEPT so theretically it should never throw any errors at us
+REALM_CORE_WRAPPER_API size_t shared_group_rollback(SharedGroup* shared_group_ptr)
+{
+	try {
+      shared_group_ptr->rollback();
+	  return 0;//indicate success
+	}
+	catch(...){
+		return -1;//something impossible happened
+	}
+}
 #pragma endregion // }}}
 
 #ifdef DYNAMIC  // clang complains when making a dylib if there is no main(). :-/
