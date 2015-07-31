@@ -18,12 +18,13 @@ namespace RealmNet
         }
 
         private readonly ICoreProvider _coreProvider;
-        //private ISharedGroupHandle _sharedGroupHandle;
+
+        private ISharedGroupHandle SharedGroupHandle => Handle as ISharedGroupHandle;
+        private IGroupHandle _transactionGroupHandle;
 
         private Realm(ICoreProvider coreProvider, string path) 
         {
             _coreProvider = coreProvider;
-            //_sharedGroupHandle = coreProvider.CreateSharedGroup(path);
             SetHandle(coreProvider.CreateSharedGroup(path), false);
         }
 
@@ -34,7 +35,7 @@ namespace RealmNet
 
         public object CreateObject(Type objectType)
         {
-            if (!_coreProvider.HasTable(objectType.Name))
+            if (!_coreProvider.HasTable(_transactionGroupHandle, objectType.Name))
                 CreateTableFor(objectType);
 
             var result = (RealmObject)Activator.CreateInstance(objectType);
@@ -52,7 +53,7 @@ namespace RealmNet
             if (!objectType.GetTypeInfo().GetCustomAttributes(typeof(WovenAttribute), true).Any())
                 Debug.WriteLine("WARNING! The type " + tableName + " is a RealmObject but it has not been woven.");
 
-            _coreProvider.AddTable(tableName);
+            _coreProvider.AddTable(_transactionGroupHandle, tableName);
 
             var propertiesToMap = objectType.GetTypeInfo().DeclaredProperties.Where(p => p.CustomAttributes.All(a => a.AttributeType != typeof (IgnoreAttribute)));
             foreach (var p in propertiesToMap)
@@ -72,63 +73,119 @@ namespace RealmNet
             return new RealmQuery<T>(_coreProvider);
         }
 
-        /*
-        /// <summary>
-        /// True if the c++ resources have been released
-        /// True if dispose have been called one way or the other
-        /// </summary>
-        [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
-        public bool IsDisposed
+        internal TransactionState State
         {
-            get { return _sharedGroupHandle != null && _sharedGroupHandle.IsClosed; }
+            get { return SharedGroupHandle.State; }
+//            set { SharedGroupHandle.State = value; }
         }
-        */
+                    
 
-        public TransactionState State { get; set; }
 
-        /*
+        //this is the only place where a read transaction can be initiated
         /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// Calling dispose will free any c++ structures created to keep track of the handled object.
-        /// Dispose with no parametres is called by by the user indirectly via the using keyword, or directly by the user
-        /// by him calling Displose()
+        /// initiates a Read transaction by returning a Transaction object that is also a Group object.
+        /// The group object will represent the database as it was when BeginRead was executed and will stay in that state
+        /// even as the database is being changed by other processes, it is a snapshot.
+        /// The group returned is read only, it is illegal to make changes to it.
+        /// Transaction.Commit() will dispose of the underlying structures maintaining the readonly view of the database, 
+        /// the structures will also be disposed if the transaction goes out of scope.
+        /// Calling commit() as soon as you are done with the transaction will free up memory a little faster than relying on dispose
         /// </summary>
-        public void Dispose()
+        /// <returns></returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
+        public Transaction BeginRead()
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);//tell finalizer thread/GC it does not have to call finalize - we have already disposed of unmanaged resources
-            //above is added in case someone inherits from a handled resource and implements a finalizer - the binding does not need the call, as the
-            //binding does not introduce finalizers in any C# wrapper classes (only in the Handle classes via the finalizer in CriticalHandle
-            //if we decide to make the user facing tightdb classes (table,tableview,group, sharedgroup etc. final, then we can save above call)
-            //todo:Measure by test and by code inspection any performance gains from not calling SuppressFinalize(this) and making the classes final
+           ValidateNotInTransaction();
+           _transactionGroupHandle = SharedGroupHandle.StartTransaction(TransactionState.Read);//SGH.StartTransaction is atomic reg. transaction state and calling core
+           if (_transactionGroupHandle.IsInvalid)
+               throw new InvalidOperationException("Cannot start Read Transaction, probably an IO error with the SharedGroup file");
+           return new Transaction(_transactionGroupHandle, this);
         }
 
-        //using a very simple dispose pattern as we will just call on to Handle.Dispose in both a finalizing and in a disposing situation
-        //leaving this method in here so that classes derived from this one can implement a finalizer and have that finalizer call dispose(false)
+        //this is the only place where a write transaction can be initiated
         /// <summary>
-        /// Override this if you have managed stuff that needs to be closed down when dispose is called
+        /// Initiate a write transaction by returning a Transaction that is also a Group.
+        /// You can then modify the tables in the group exclusively. Your modifications will not be visible to readers simultaneously 
+        /// reading data from the database - until you do transaction.commit(). At that point any new readers will see the updated database,
+        /// existing readers will continue to see their copy of the database as it was when they started their read transaction.
+        /// Only one writer can exist at a time, so if you call BeginWrite the function might wait until the prior writer do a commit()
         /// </summary>
-        /// <param name="disposing"></param>
-        [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
-        protected virtual void Dispose(bool disposing)
+        /// <returns>Transaction object that inherits from Group and gives read/write acces to all tables in the group</returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
+        public Transaction BeginWrite()
         {
-            if (_sharedGroupHandle != null && !IsDisposed)//handle could be null if we crashed in the constructor (group with filename to a OS protected area for instance)
+            ValidateNotInTransaction();
+            _transactionGroupHandle = SharedGroupHandle.StartTransaction(TransactionState.Write);
+            if (_transactionGroupHandle.IsInvalid)
+                throw new InvalidOperationException("Cannot start Write Transaction, probably an IO error with the SharedGroup file");
+            return new Transaction(_transactionGroupHandle, this);
+        }
+
+        //called by the user directly or indirectly via dispose. Finalizer in SharedGroupHandle might also end
+        /// <summary>
+        /// defaults to true
+        /// if Isvalid is false something fatal has happened with the shared group wrapper        
+        /// </summary>
+        public bool IsValid
+        {
+            get { return (!SharedGroupHandle.IsInvalid); }
+            private set
             {
-                //no matter if we are being called from a dispose in a user thread, or from a finalizer, we should
-                //ask Handle to dispose of itself (unbind)
-                _sharedGroupHandle.Dispose();
+                //ignore calls where we are set to true - only Handle can set itself to true
+                if (value == false)
+                {
+                    SharedGroupHandle.Dispose();
+                        //this is a safe way to invalidate the handle. Any ongoing transactions will be rolled back
+                }
             }
         }
-        */
 
-        public void EndTransaction(bool commit)
+        //a transaction, but using its own code
+        //A transaction class does not have a finalizer. Leaked transaction objects will result in open transactions
+        //until the user explicitly call close transaction on the shared group, or disposes the shared group
+        //note that calling EndTransaction when there is no ongoing transaction will not create any problems. It will be a NoOp
+        internal void EndTransaction(bool commit)
         {
-            throw new NotImplementedException();
+            try
+            {
+                switch (State)
+                {
+                    case TransactionState.Read:
+                        SharedGroupHandle.SharedGroupEndRead();
+                        break;
+                    case TransactionState.Write:
+                        if (commit)
+                        {
+                            SharedGroupHandle.SharedGroupCommit();
+                        }
+                        else
+                        {
+                            SharedGroupHandle.SharedGroupRollback();                        
+                        }
+                        break;
+                }                
+            }
+            catch (Exception) //something unexpected and bad happened, the shared group and the group should not be used anymore
+            {
+                IsValid = false;//mark the shared group as invalid
+                throw;
+            }
         }
 
+
+        /// <summary>
+        /// True if this SharedGroup is currently in a read or a write transaction
+        /// </summary>
+        /// <returns></returns>
         public bool InTransaction()
         {
-            throw new NotImplementedException();
+            return (State == TransactionState.Read||
+                    State == TransactionState.Write);
+        }
+                 
+        private void ValidateNotInTransaction()
+        {
+            if (InTransaction()) throw new InvalidOperationException("SharedGroup Cannot start a transaction when already inside one");
         }
     }
 }
