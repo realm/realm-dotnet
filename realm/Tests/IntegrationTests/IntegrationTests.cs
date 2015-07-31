@@ -35,12 +35,27 @@ namespace IntegrationTests
         [Test]
         public void SimpleTest()
         {
-            var p1 = _realm.CreateObject<Person>();
-            p1.FirstName = "John";
-            p1.LastName = "Smith";
-            p1.IsInteresting = true;
-            p1.Email = "john@smith.com";
-            Debug.WriteLine("p1 is named " + p1.FullName);
+            Person p1;
+            Debug.WriteLine("A");
+            using (var transaction = _realm.BeginWrite())
+            {
+                Debug.WriteLine("B");
+                p1 = _realm.CreateObject<Person>();
+                Debug.WriteLine("C");
+                p1.FirstName = "John";
+                p1.LastName = "Smith";
+                p1.IsInteresting = true;
+                p1.Email = "john@smith.com";
+                transaction.Commit();
+                Debug.WriteLine("D");
+            }
+            Debug.WriteLine("E");
+            Debug.WriteLine("P1 access: " + p1.IsOnline);
+            using (var rt = _realm.BeginRead())
+            {
+                Debug.WriteLine("p1 is named " + p1.FullName);
+            }
+
 
             var p2 = _realm.CreateObject<Person>();
             p2.FullName = "John Doe";
@@ -72,10 +87,13 @@ namespace IntegrationTests
             // Arrange
             Debug.WriteLine("File size before write: " + new FileInfo(_databasePath).Length);
             Debug.WriteLine(_databasePath);
-            var p1 = _realm.CreateObject<Person>();
 
             // Act
-            p1.FirstName = "John";
+            using (var transaction = _realm.BeginWrite())
+            {
+                _realm.CreateObject<Person>();
+                transaction.Commit();
+            }
 
             // Assert
             Debug.WriteLine("File size after write: " + new FileInfo(_databasePath).Length);

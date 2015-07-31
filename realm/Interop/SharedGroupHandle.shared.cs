@@ -71,7 +71,7 @@ namespace RealmNet.Interop
         }
 
         //will end a transaction if one is ongoing will soon change to calling inside when commits get atomical
-        private void AbortTransaction()
+        public void AbortTransaction()
         {
             if (State == TransactionState.Read)
             {
@@ -91,7 +91,7 @@ namespace RealmNet.Interop
         /// The binding will never call this method unless there is an ongoing write transaction
         /// </summary>
         /// <exception cref="InvalidOperationException"></exception>
-        internal void SharedGroupRollback()
+        public void SharedGroupRollback()
         {
             IntPtr res;
             RuntimeHelpers.PrepareConstrainedRegions(); //the following finally will run with no out-of-band exceptions
@@ -112,7 +112,7 @@ namespace RealmNet.Interop
 
         //atomically call end read and set state back to ready
         //todo:in c++ end read is tagged as cannot throw exceptions. so i guess it's okay to just return -1 if we got an exception in c++ anyways
-        internal void SharedGroupEndRead()
+        public void SharedGroupEndRead()
         {
             IntPtr res;
             RuntimeHelpers.PrepareConstrainedRegions(); //the following finally will run with no out-of-band exceptions
@@ -140,7 +140,7 @@ namespace RealmNet.Interop
         //must be called with InReadTransaction or InWriteTransaction  otherwise an empty grouphandle is returned
         //other methods that create sharedgrouphandles are in UnsafeNativeMethods
         //http://msdn.microsoft.com/en-us/library/system.runtime.compilerservices.runtimehelpers.prepareconstrainedregions(v=vs.110).aspx
-        internal GroupHandle StartTransaction(TransactionState tstate)
+        public IGroupHandle StartTransaction(TransactionState tstate)
         {
             GroupHandle gh = null;
             try
