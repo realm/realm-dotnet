@@ -11,8 +11,8 @@ namespace RealmNet
     public interface ICoreProvider
     {
         ISharedGroupHandle CreateSharedGroup(string filename); 
-        bool HasTable(string tableName);
-        void AddTable(string tableName);
+        bool HasTable(IGroupHandle groupHandle, string tableName);
+        void AddTable(IGroupHandle groupHandle, string tableName);
         void AddColumnToTable(string tableName, string columnName, Type columnType);
         long AddEmptyRow(string tableName);
 

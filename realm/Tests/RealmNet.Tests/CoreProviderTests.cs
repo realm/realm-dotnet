@@ -21,10 +21,10 @@ namespace Tests
             var coreProvider = new MockCoreProvider();
 
             // Act
-            coreProvider.AddTable("T1");
+            coreProvider.AddTable(null, "T1");
 
             // Assert
-            Assert.That(coreProvider.HasTable("T1"));
+            Assert.That(coreProvider.HasTable(null, "T1"));
         }
 
         [Test]
@@ -32,7 +32,7 @@ namespace Tests
         {
             // Arrange
             var coreProvider = new MockCoreProvider();
-            coreProvider.AddTable("T1");
+            coreProvider.AddTable(null, "T1");
 
             // Act
             coreProvider.AddColumnToTable("T1", "C1", typeof (string));
@@ -46,7 +46,7 @@ namespace Tests
         {
             // Arrange
             var coreProvider = new MockCoreProvider();
-            coreProvider.AddTable("T1");
+            coreProvider.AddTable(null, "T1");
 
             // Act
             coreProvider.AddEmptyRow("T1");
@@ -60,7 +60,7 @@ namespace Tests
         {
             // Arrange
             var coreProvider = new MockCoreProvider();
-            coreProvider.AddTable("T1");
+            coreProvider.AddTable(null,  "T1");
             coreProvider.AddColumnToTable("T1", "C1", typeof (string));
             coreProvider.AddEmptyRow("T1");
             
@@ -77,7 +77,7 @@ namespace Tests
         {
             // Arrange
             var coreProvider = new MockCoreProvider();
-            coreProvider.AddTable("T1");
+            coreProvider.AddTable(null, "T1");
 
             // Act
             var query = coreProvider.CreateQuery("T1");
@@ -91,7 +91,7 @@ namespace Tests
         {
             // Arrange
             var coreProvider = new MockCoreProvider();
-            coreProvider.AddTable("T1");
+            coreProvider.AddTable(null, "T1");
             var query = coreProvider.CreateQuery("T1");
 
             // Act

@@ -23,15 +23,16 @@ namespace RealmNet.Interop
             return UnsafeNativeMethods.new_shared_group_file_defaults(filename);
         }
 
-        public bool HasTable(string tableName)
+        public bool HasTable(IGroupHandle groupHandle, string tableName)
         {
             return _tables.ContainsKey(tableName);
         }
 
-        public void AddTable(string tableName)
+        public void AddTable(IGroupHandle groupHandle, string tableName)
         {
-            var tableHandle = UnsafeNativeMethods.new_table();
-            _tables[tableName] = new Table_() { TableHandle = tableHandle };
+            var gh = groupHandle as GroupHandle;
+            var tableHandle = gh.GetTable(tableName);
+            _tables[tableName] = new Table_ { TableHandle = tableHandle };
         }
 
         public void AddColumnToTable(string tableName, string columnName, Type columnType)

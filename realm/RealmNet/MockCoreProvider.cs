@@ -41,6 +41,7 @@ namespace InteropShared
         }
 
         public bool IsClosed => false;
+        public bool IsInvalid => false;
     }
 
     public class MockCoreProvider : ICoreProvider
@@ -62,14 +63,14 @@ namespace InteropShared
             throw new NotImplementedException();
         }
 
-        public bool HasTable(string tableName)
+        public bool HasTable(IGroupHandle groupHandle, string tableName)
         {
             bool ret = _tables.ContainsKey(tableName);
             notifyOnCall ($"HasTable({tableName}) return {ret}");
             return ret;
         }
 
-        public void AddTable(string tableName)
+        public void AddTable(IGroupHandle groupHandle, string tableName)
         {
             notifyOnCall ($"AddTable({tableName})");
             _tables.Add(tableName, new MockTable());

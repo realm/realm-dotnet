@@ -24,12 +24,12 @@ namespace Tests.TestHelpers
             return null;
         }
 
-        public bool HasTable(string tableName)
+        public bool HasTable(IGroupHandle groupHandle, string tableName)
         {
             return Tables.ContainsKey(tableName);
         }
 
-        public void AddTable(string tableName)
+        public void AddTable(IGroupHandle groupHandle, string tableName)
         {
             Tables[tableName] = new Table();
         }
@@ -148,6 +148,7 @@ namespace Tests.TestHelpers
             }
 
             public bool IsClosed => false;
+            public bool IsInvalid => false;
         }
     }
 }
