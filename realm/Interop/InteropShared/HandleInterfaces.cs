@@ -18,7 +18,6 @@ namespace RealmNet.Interop
     public interface ISharedGroupHandle : IRealmHandle {
         IGroupHandle StartTransaction(TransactionState read);
         void SharedGroupCommit();
-        void AbortTransaction();
 
         /// <summary>
         /// This will roll back any write transaction this shared group handle have active.

@@ -71,7 +71,7 @@ namespace RealmNet.Interop
         }
 
         //will end a transaction if one is ongoing will soon change to calling inside when commits get atomical
-        public void AbortTransaction()
+        private void AbortTransaction()
         {
             if (State == TransactionState.Read)
             {
