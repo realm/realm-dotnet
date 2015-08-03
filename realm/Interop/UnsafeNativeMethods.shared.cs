@@ -611,11 +611,20 @@ namespace RealmNet.Interop
             throw new NotImplementedException();
         }
 
-        public static bool group_has_table(GroupHandle @GroupHandle, string tableName)
-        {
-            throw new NotImplementedException();
-        }
+        [DllImport(InteropConfig.L64, EntryPoint = "group_has_table", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr group_has_table64(GroupHandle groupHandle,
+            [MarshalAs(UnmanagedType.LPWStr)] String tableName, IntPtr tableNameLen);
 
+        [DllImport(InteropConfig.L32, EntryPoint = "group_has_table", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr group_has_table32(GroupHandle groupHandle,
+            [MarshalAs(UnmanagedType.LPWStr)] String tableName, IntPtr tableNameLen);
+
+        public static bool group_has_table(GroupHandle groupHandle, string tableName)
+        {
+            return IntPtrToBool(InteropConfig.Is64Bit
+                ? group_has_table64(groupHandle, tableName, (IntPtr) tableName.Length)
+                : group_has_table32(groupHandle, tableName, (IntPtr) tableName.Length));
+        }
         public static long query_count(QueryHandle QueryHandle, long start, long end, long limit)
         {
             throw new NotImplementedException();
@@ -794,9 +803,20 @@ namespace RealmNet.Interop
             throw new NotImplementedException();
         }
 
-        public static long table_get_column_index(TableHandle TableHandle, string name)
+        [DllImport(InteropConfig.L32, EntryPoint = "table_get_column_index", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_get_column_index32(TableHandle tablehandle,
+            [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
+
+        [DllImport(InteropConfig.L64, EntryPoint = "table_get_column_index", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr table_get_column_index64(TableHandle tablehandle,
+            [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
+
+        //returns -1 if the column string does not match a column index
+        public static long table_get_column_index(TableHandle tableHandle, string name)
         {
-            throw new NotImplementedException();
+            return InteropConfig.Is64Bit
+                ? (long) table_get_column_index64(tableHandle, name, (IntPtr) name.Length)
+                : (long) table_get_column_index32(tableHandle, name, (IntPtr) name.Length);
         }
 
         public static long table_view_maximum(TableViewHandle TableViewHandle, long columnIndex)

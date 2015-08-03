@@ -227,6 +227,18 @@ extern "C" {
     return new Query(table_ptr->where());            
   }
 
+  REALM_CORE_WRAPPER_API size_t table_get_column_index(Table* table_ptr, uint16_t *  column_name, size_t column_name_len)
+  {
+      CSStringAccessor str = CSStringAccessor(column_name, column_name_len);
+      return table_ptr->get_column_index(str);
+  }
+
+  REALM_CORE_WRAPPER_API size_t tableview_get_column_index(TableView* tableView_ptr, uint16_t *  column_name, size_t column_name_len)
+  {
+      CSStringAccessor str = CSStringAccessor(column_name, column_name_len);
+      return tableView_ptr->get_column_index(str);
+  }
+
 #pragma endregion // }}}
 
 #pragma region query // {{{
