@@ -35,50 +35,58 @@ namespace IntegrationTests
         [Test]
         public void SimpleTest()
         {
-            Person p1;
-            Debug.WriteLine("A");
+            Person p1, p2, p3;
             using (var transaction = _realm.BeginWrite())
             {
-                Debug.WriteLine("B");
                 p1 = _realm.CreateObject<Person>();
-                Debug.WriteLine("C");
                 p1.FirstName = "John";
                 p1.LastName = "Smith";
                 p1.IsInteresting = true;
                 p1.Email = "john@smith.com";
                 transaction.Commit();
-                Debug.WriteLine("D");
             }
-            Debug.WriteLine("E");
-            Debug.WriteLine("P1 access: " + p1.IsOnline);
             using (var rt = _realm.BeginRead())
             {
                 Debug.WriteLine("p1 is named " + p1.FullName);
             }
 
+            using (var transaction = _realm.BeginWrite())
+            {
+                p2 = _realm.CreateObject<Person>();
+                p2.FullName = "John Doe";
+                p2.IsInteresting = false;
+                p2.Email = "john@deo.com";
+                transaction.Commit();
+            }
+            using (var rt = _realm.BeginRead())
+            {
+                Debug.WriteLine("p2 is named " + p2.FullName);
+            }
 
-            var p2 = _realm.CreateObject<Person>();
-            p2.FullName = "John Doe";
-            p2.IsInteresting = false;
-            p2.Email = "john@deo.com";
-            Debug.WriteLine("p2 is named " + p2.FullName);
+            using (var transaction = _realm.BeginWrite())
+            {
+                p3 = _realm.CreateObject<Person>();
+                p3.FullName = "Peter Jameson";
+                p3.Email = "peter@jameson.com";
+                p3.IsInteresting = true;
+                transaction.Commit();
+            }
 
-            var p3 = _realm.CreateObject<Person>();
-            p3.FullName = "Peter Jameson";
-            p3.Email = "peter@jameson.com";
-            p3.IsInteresting = true;
-            Debug.WriteLine("p3 is named " + p3.FullName);
+            using (var rt = _realm.BeginRead())
+            {
+                Debug.WriteLine("p3 is named " + p3.FullName);
 
-            var interestingPeople = from p in _realm.All<Person>() where p.IsInteresting == true select p;
+                var interestingPeople = from p in _realm.All<Person>() where p.IsInteresting == true select p;
 
-            Debug.WriteLine("Interesting people include:");
-            foreach (var p in interestingPeople)
-                Debug.WriteLine(" - " + p.FullName + " (" + p.Email + ")");
+                Debug.WriteLine("Interesting people include:");
+                foreach (var p in interestingPeople)
+                    Debug.WriteLine(" - " + p.FullName + " (" + p.Email + ")");
 
-            var johns = from p in _realm.All<Person>() where p.FirstName == "John" select p;
-            Console.WriteLine("People named John:");
-            foreach (var p in johns)
-                Console.WriteLine(" - " + p.FullName + " (" + p.Email + ")");
+                var johns = from p in _realm.All<Person>() where p.FirstName == "John" select p;
+                Console.WriteLine("People named John:");
+                foreach (var p in johns)
+                    Console.WriteLine(" - " + p.FullName + " (" + p.Email + ")");
+            }
         }
 
         [Test]
