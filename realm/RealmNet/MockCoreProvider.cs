@@ -76,13 +76,13 @@ namespace InteropShared
             _tables.Add(tableName, new MockTable());
         }
 
-        public void AddColumnToTable(string tableName, string columnName, Type columnType)
+        public void AddColumnToTable(IGroupHandle groupHandle, string tableName, string columnName, Type columnType)
         {
             notifyOnCall ($"AddColumnToTable({tableName}, col={columnName}, type={columnType})");
             _tables[tableName].AddColumn(columnName, columnType);
         }
 
-        public long AddEmptyRow(string tableName)
+        public long AddEmptyRow(IGroupHandle groupHandle, string tableName)
         {
             var table = _tables[tableName];
             table.Rows.Add( new object[table.Columns.Count] );
@@ -91,7 +91,7 @@ namespace InteropShared
             return numRows;
         }
 
-        public T GetValue<T>(string tableName, string propertyName, long rowIndex)
+        public T GetValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, long rowIndex)
         {
             var table = _tables[tableName];
             Type expectedType = table.Columns[propertyName];
@@ -105,7 +105,7 @@ namespace InteropShared
             return ret;
         }
 
-        public void SetValue<T>(string tableName, string propertyName, long rowIndex, T value)
+        public void SetValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, long rowIndex, T value)
         {
             notifyOnCall ($"SetValue({tableName}, prop={propertyName}, row={rowIndex}, val={value})");
             var table = _tables[tableName];
@@ -118,7 +118,7 @@ namespace InteropShared
             row[colIndex] = value;
         }
 
-        public IQueryHandle CreateQuery(string tableName)
+        public IQueryHandle CreateQuery(IGroupHandle groupHandle, string tableName)
         {
             notifyOnCall ($"CreateQuery({tableName})");
             return new MockQuery(tableName);

@@ -21,7 +21,7 @@ namespace RealmNet
             this.Expression = expression;
         }
 
-        public RealmQuery(ICoreProvider coreProvider) : this(new RealmQueryProvider(coreProvider), null)
+        public RealmQuery(Realm realm, ICoreProvider coreProvider) : this(new RealmQueryProvider(realm, coreProvider), null)
         {
             this.Expression = Expression.Constant(this);
         }
@@ -72,26 +72,30 @@ namespace RealmNet
 
     public class RealmQueryProvider : QueryProvider
     {
+        private Realm _realm;
         private ICoreProvider _coreProvider;
 
-        public RealmQueryProvider(ICoreProvider coreProvider)
+        public RealmQueryProvider(Realm realm, ICoreProvider coreProvider)
         {
+            _realm = realm;
             _coreProvider = coreProvider;
         }
 
         public override object Execute(Expression expression, Type returnType)
         {
-            return new RealmQueryVisitor().Process(_coreProvider, expression, returnType);
+            return new RealmQueryVisitor().Process(_realm, _coreProvider, expression, returnType);
         }
     }
 
     public class RealmQueryVisitor : ExpressionVisitor
     {
+        private Realm _realm;
         private ICoreProvider _coreProvider;
         private IQueryHandle _coreQueryHandle;
 
-        public object Process(ICoreProvider coreProvider, Expression expression, Type returnType)
+        public object Process(Realm realm, ICoreProvider coreProvider, Expression expression, Type returnType)
         {
+            _realm = realm;
             _coreProvider = coreProvider;
             Visit(expression);
             return _coreProvider.ExecuteQuery(_coreQueryHandle, returnType.GenericTypeArguments[0]);
@@ -171,7 +175,7 @@ namespace RealmNet
                     throw new Exception("We already have a table...");
 
                 var tableName = q.ElementType.Name;
-                _coreQueryHandle = _coreProvider.CreateQuery(tableName);
+                _coreQueryHandle = _coreProvider.CreateQuery(_realm.TransactionGroupHandle, tableName);
             }
             else if (c.Value == null)
             {

@@ -8,16 +8,8 @@ using RealmNet.Interop;
 
 namespace RealmNet.Interop
 {
-    public class Table_
-    {
-        public TableHandle TableHandle;
-        public Dictionary<string, long> Columns = new Dictionary<string, long>();
-    }
-
     public class CoreProvider : ICoreProvider
     {
-        private Dictionary<string, Table_> _tables = new Dictionary<string, Table_>();
-
         public ISharedGroupHandle CreateSharedGroup(string filename)
         {
             return UnsafeNativeMethods.new_shared_group_file_defaults(filename);
@@ -25,19 +17,29 @@ namespace RealmNet.Interop
 
         public bool HasTable(IGroupHandle groupHandle, string tableName)
         {
-            return _tables.ContainsKey(tableName);
+            var gh = groupHandle as GroupHandle;
+            return UnsafeNativeMethods.group_has_table(gh, tableName);
+        }
+
+        private TableHandle GetTable(IGroupHandle groupHandle, string tableName)
+        {
+            var gh = groupHandle as GroupHandle;
+            return gh.GetTable(tableName);
         }
 
         public void AddTable(IGroupHandle groupHandle, string tableName)
         {
-            var gh = groupHandle as GroupHandle;
-            var tableHandle = gh.GetTable(tableName);
-            _tables[tableName] = new Table_ { TableHandle = tableHandle };
+            GetTable(groupHandle, tableName);
         }
 
-        public void AddColumnToTable(string tableName, string columnName, Type columnType)
+        private long GetColumnIndex(TableHandle tableHandle, string columnName)
         {
-            var tableHandle = _tables[tableName].TableHandle;
+            return UnsafeNativeMethods.table_get_column_index(tableHandle, columnName);
+        }
+
+        public void AddColumnToTable(IGroupHandle groupHandle, string tableName, string columnName, Type columnType)
+        {
+            var tableHandle = GetTable(groupHandle, tableName);
             DataType dataType = DataType.Int;
             if (columnType == typeof(string))
                 dataType = DataType.String;
@@ -45,56 +47,54 @@ namespace RealmNet.Interop
                 dataType = DataType.Bool; 
                 
             var columnIndex = UnsafeNativeMethods.table_add_column(tableHandle, dataType, columnName);
-            _tables[tableName].Columns[columnName] = columnIndex;
         }
 
-        public long AddEmptyRow(string tableName)
+        public long AddEmptyRow(IGroupHandle groupHandle, string tableName)
         {
-            var tableHandle = _tables[tableName].TableHandle;
+            var tableHandle = GetTable(groupHandle, tableName);
             var rowIndex = UnsafeNativeMethods.table_add_empty_row(tableHandle, 1); 
             return rowIndex;
         }
 
-        public T GetValue<T>(string tableName, string propertyName, long rowIndex)
+        public T GetValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, long rowIndex)
         {
-            var table = _tables[tableName];
-            var columnIndex = table.Columns[propertyName];
+            var tableHandle = GetTable(groupHandle, tableName);
+            var columnIndex = GetColumnIndex(tableHandle, propertyName);
 
             if (typeof(T) == typeof(string))
             {
-                var value = UnsafeNativeMethods.table_get_string(table.TableHandle, columnIndex, rowIndex);
+                var value = UnsafeNativeMethods.table_get_string(tableHandle, columnIndex, rowIndex);
                 return (T)Convert.ChangeType(value, typeof(T));
             }
             else if (typeof(T) == typeof(bool))
             {
-                var value = UnsafeNativeMethods.table_get_bool(table.TableHandle, columnIndex, rowIndex);
+                var value = UnsafeNativeMethods.table_get_bool(tableHandle, columnIndex, rowIndex);
                 return (T)Convert.ChangeType(value, typeof(T));
             }
             else
                 throw new Exception ("Unsupported type " + typeof(T).Name);
         }
 
-        public void SetValue<T>(string tableName, string propertyName, long rowIndex, T value)
+        public void SetValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, long rowIndex, T value)
         {
-            var table = _tables[tableName];
-            var columnIndex = table.Columns[propertyName];
+            var tableHandle = GetTable(groupHandle, tableName);
+            var columnIndex = GetColumnIndex(tableHandle, propertyName);
 
             if (typeof(T) == typeof(string))
             {
-                UnsafeNativeMethods.table_set_string(table.TableHandle, columnIndex, rowIndex, value.ToString());
+                UnsafeNativeMethods.table_set_string(tableHandle, columnIndex, rowIndex, value.ToString());
             }
             else if (typeof(T) == typeof(bool))
             {
-                UnsafeNativeMethods.table_set_bool(table.TableHandle, columnIndex, rowIndex, (bool)Convert.ChangeType(value, typeof(bool)));
+                UnsafeNativeMethods.table_set_bool(tableHandle, columnIndex, rowIndex, (bool)Convert.ChangeType(value, typeof(bool)));
             }
             else
                 throw new Exception ("Unsupported type " + typeof(T).Name);
         }
 
-        public IQueryHandle CreateQuery(string tableName)
+        public IQueryHandle CreateQuery(IGroupHandle groupHandle, string tableName)
         {
-            var table = _tables[tableName];
-            var tableHandle = table.TableHandle;
+            var tableHandle = GetTable(groupHandle, tableName);
             var queryHandle = tableHandle.TableWhere();
 
             //At this point sh is invalid due to its handle being uninitialized, but the root is set correctly
@@ -123,26 +123,28 @@ namespace RealmNet.Interop
 
         public IEnumerable ExecuteQuery(IQueryHandle queryHandle, Type objectType)
         {
-            var list = Activator.CreateInstance(typeof(List<>).MakeGenericType(objectType));
-            var add = list.GetType().GetMethod("Add");
+            return null;
 
-            long nextRowIndex = 0;
-            while (nextRowIndex != -1)
-            {
-                var rowIndex = UnsafeNativeMethods.query_find((QueryHandle)queryHandle, nextRowIndex);
-                if (rowIndex != -1)
-                {
-                    var o = Activator.CreateInstance(objectType);
-                    ((RealmObject)o)._Manage(this, rowIndex);
-                    add.Invoke(list, new [] { o });
+            //var list = Activator.CreateInstance(typeof(List<>).MakeGenericType(objectType));
+            //var add = list.GetType().GetMethod("Add");
 
-                    nextRowIndex = rowIndex + 1;
-                }
-                else
-                    nextRowIndex = -1;
-            }
+            //long nextRowIndex = 0;
+            //while (nextRowIndex != -1)
+            //{
+            //    var rowIndex = UnsafeNativeMethods.query_find((QueryHandle)queryHandle, nextRowIndex);
+            //    if (rowIndex != -1)
+            //    {
+            //        var o = Activator.CreateInstance(objectType);
+            //        ((RealmObject)o)._Manage(_realm, this, rowIndex);
+            //        add.Invoke(list, new [] { o });
 
-            return (IEnumerable)list;
+            //        nextRowIndex = rowIndex + 1;
+            //    }
+            //    else
+            //        nextRowIndex = -1;
+            //}
+
+            //return (IEnumerable)list;
         }
 
         public IGroupHandle NewGroup()

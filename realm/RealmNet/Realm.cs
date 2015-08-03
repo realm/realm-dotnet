@@ -39,9 +39,9 @@ namespace RealmNet
                 CreateTableFor(objectType);
 
             var result = (RealmObject)Activator.CreateInstance(objectType);
-            var rowIndex = _coreProvider.AddEmptyRow(objectType.Name);
+            var rowIndex = _coreProvider.AddEmptyRow(_transactionGroupHandle, objectType.Name);
 
-            result._Manage(_coreProvider, rowIndex);
+            result._Manage(this, _coreProvider, rowIndex);
 
             return result;
         }
@@ -64,13 +64,13 @@ namespace RealmNet
                     propertyName = ((string)mapToAttribute.ConstructorArguments[0].Value);
                 
                 var columnType = p.PropertyType;
-                _coreProvider.AddColumnToTable(tableName, propertyName, columnType);
+                _coreProvider.AddColumnToTable(_transactionGroupHandle, tableName, propertyName, columnType);
             }
         }
 
         public RealmQuery<T> All<T>()
         {
-            return new RealmQuery<T>(_coreProvider);
+            return new RealmQuery<T>(this, _coreProvider);
         }
 
         internal TransactionState State
@@ -78,7 +78,8 @@ namespace RealmNet
             get { return SharedGroupHandle.State; }
 //            set { SharedGroupHandle.State = value; }
         }
-                    
+
+        internal IGroupHandle TransactionGroupHandle => _transactionGroupHandle;
 
 
         //this is the only place where a read transaction can be initiated

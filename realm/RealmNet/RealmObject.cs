@@ -6,6 +6,7 @@ namespace RealmNet
 {
     public class RealmObject
     {
+        private Realm _realm;
         private ICoreProvider _coreProvider;
         private long _rowIndex;
 
@@ -17,8 +18,9 @@ namespace RealmNet
                 Debug.WriteLine("WARNING! The type " + modelName + " is a RealmObject but it has not been woven.");
         }
 
-        public void _Manage(ICoreProvider coreProvider, long rowIndex)
+        public void _Manage(Realm realm, ICoreProvider coreProvider, long rowIndex)
         {
+            _realm = realm;
             _coreProvider = coreProvider;
             _rowIndex = rowIndex;
         }
@@ -35,7 +37,7 @@ namespace RealmNet
 
             if (_coreProvider != null)
             {
-                return _coreProvider.GetValue<T>(tableName, propertyName, _rowIndex);
+                return _coreProvider.GetValue<T>(_realm.TransactionGroupHandle, tableName, propertyName, _rowIndex);
             }
             else
             {
@@ -51,7 +53,7 @@ namespace RealmNet
 
             if (_coreProvider != null)
             {
-                _coreProvider.SetValue<T>(tableName, propertyName, _rowIndex, value);
+                _coreProvider.SetValue<T>(_realm.TransactionGroupHandle, tableName, propertyName, _rowIndex, value);
             }
             else
             {

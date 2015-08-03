@@ -13,13 +13,13 @@ namespace RealmNet
         ISharedGroupHandle CreateSharedGroup(string filename); 
         bool HasTable(IGroupHandle groupHandle, string tableName);
         void AddTable(IGroupHandle groupHandle, string tableName);
-        void AddColumnToTable(string tableName, string columnName, Type columnType);
-        long AddEmptyRow(string tableName);
+        void AddColumnToTable(IGroupHandle groupHandle, string tableName, string columnName, Type columnType);
+        long AddEmptyRow(IGroupHandle groupHandle, string tableName);
 
-        T GetValue<T>(string tableName, string propertyName, long rowIndex);
-        void SetValue<T>(string tableName, string propertyName, long rowIndex, T value);
+        T GetValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, long rowIndex);
+        void SetValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, long rowIndex, T value);
 
-        IQueryHandle CreateQuery(string tableName);
+        IQueryHandle CreateQuery(IGroupHandle groupHandle, string tableName);
         void QueryEqual(IQueryHandle queryHandle, string columnName, object value);
 
         IEnumerable ExecuteQuery(IQueryHandle queryHandle, Type objectType);
