@@ -36,6 +36,12 @@ namespace InteropShared
         }
 
         private readonly string queryTable;
+        public void Dispose()
+        {
+        }
+
+        public bool IsClosed => false;
+        public bool IsInvalid => false;
     }
 
     public class MockCoreProvider : ICoreProvider
@@ -52,26 +58,31 @@ namespace InteropShared
         {}
 
 
-        public bool HasTable(string tableName)
+        public ISharedGroupHandle CreateSharedGroup(string filename)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool HasTable(IGroupHandle groupHandle, string tableName)
         {
             bool ret = _tables.ContainsKey(tableName);
             notifyOnCall ($"HasTable({tableName}) return {ret}");
             return ret;
         }
 
-        public void AddTable(string tableName)
+        public void AddTable(IGroupHandle groupHandle, string tableName)
         {
             notifyOnCall ($"AddTable({tableName})");
             _tables.Add(tableName, new MockTable());
         }
 
-        public void AddColumnToTable(string tableName, string columnName, Type columnType)
+        public void AddColumnToTable(IGroupHandle groupHandle, string tableName, string columnName, Type columnType)
         {
             notifyOnCall ($"AddColumnToTable({tableName}, col={columnName}, type={columnType})");
             _tables[tableName].AddColumn(columnName, columnType);
         }
 
-        public long AddEmptyRow(string tableName)
+        public long AddEmptyRow(IGroupHandle groupHandle, string tableName)
         {
             var table = _tables[tableName];
             table.Rows.Add( new object[table.Columns.Count] );
@@ -80,7 +91,7 @@ namespace InteropShared
             return numRows;
         }
 
-        public T GetValue<T>(string tableName, string propertyName, long rowIndex)
+        public T GetValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, long rowIndex)
         {
             var table = _tables[tableName];
             Type expectedType = table.Columns[propertyName];
@@ -94,7 +105,7 @@ namespace InteropShared
             return ret;
         }
 
-        public void SetValue<T>(string tableName, string propertyName, long rowIndex, T value)
+        public void SetValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, long rowIndex, T value)
         {
             notifyOnCall ($"SetValue({tableName}, prop={propertyName}, row={rowIndex}, val={value})");
             var table = _tables[tableName];
@@ -107,7 +118,7 @@ namespace InteropShared
             row[colIndex] = value;
         }
 
-        public IQueryHandle CreateQuery(string tableName)
+        public IQueryHandle CreateQuery(IGroupHandle groupHandle, string tableName)
         {
             notifyOnCall ($"CreateQuery({tableName})");
             return new MockQuery(tableName);
@@ -118,12 +129,37 @@ namespace InteropShared
             notifyOnCall ($"QueryEqual(col={columnName}, val={value})");
         }
 
-        public System.Collections.IEnumerable ExecuteQuery(IQueryHandle queryHandle, Type objectType)
+        public IEnumerable<long> ExecuteQuery(IQueryHandle queryHandle, Type objectType)
         {
-            IEnumerable ret = default(Array);
+            IEnumerable<long> ret = default(List<long>);
 //            notifyOnCall ($"ExecuteQuery found {ret.Count()})");
             notifyOnCall ($"ExecuteQuery");
             return ret;
+        }
+
+        public IGroupHandle NewGroup()
+        {
+            throw new NotImplementedException();
+        }
+
+        public IGroupHandle NewGroupFromFile(string path, GroupOpenMode openMode)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void GroupCommit(IGroupHandle groupHandle)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool GroupIsEmpty(IGroupHandle groupHandle)
+        {
+            throw new NotImplementedException();
+        }
+
+        public long GroupSize(IGroupHandle groupHandle)
+        {
+            throw new NotImplementedException();
         }
     }
 }

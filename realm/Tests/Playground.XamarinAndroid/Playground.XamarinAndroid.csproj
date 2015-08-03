@@ -79,6 +79,10 @@
   </Target>
   -->
   <ItemGroup>
+    <ProjectReference Include="..\..\Interop\InteropShared\InteropShared.csproj">
+      <Project>{8B451911-321F-4244-9999-C1678BED060D}</Project>
+      <Name>InteropShared</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\RealmNet\RealmNet.csproj">
       <Project>{2494214E-6005-4EB9-AD2C-1D4BCD7B0223}</Project>
       <Name>RealmNet</Name>
@@ -88,12 +92,7 @@
       <Name>Interop.XamarinAndroid</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="wrappers\" />
-    <Folder Include="wrappers\armeabi\" />
-    <Folder Include="wrappers\armeabi-v7\" />
-    <Folder Include="wrappers\x86\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <AndroidNativeLibrary Include="..\..\wrappers\build\Release-android\armeabi\libwrappers.so">
       <Link>wrappers\armeabi\libwrappers.so</Link>

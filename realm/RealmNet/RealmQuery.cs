@@ -21,7 +21,7 @@ namespace RealmNet
             this.Expression = expression;
         }
 
-        public RealmQuery(ICoreProvider coreProvider) : this(new RealmQueryProvider(coreProvider), null)
+        public RealmQuery(Realm realm, ICoreProvider coreProvider) : this(new RealmQueryProvider(realm, coreProvider), null)
         {
             this.Expression = Expression.Constant(this);
         }
@@ -39,12 +39,12 @@ namespace RealmNet
 
     public abstract class QueryProvider : IQueryProvider
     {
-        IQueryable<S> IQueryProvider.CreateQuery<S>(Expression expression)
+        public IQueryable<S> CreateQuery<S>(Expression expression)
         {
             return new RealmQuery<S>(this, expression);
         }
 
-        IQueryable IQueryProvider.CreateQuery(Expression expression)
+        public IQueryable CreateQuery(Expression expression)
         {
             Type elementType = TypeSystem.GetElementType(expression.Type);
             try
@@ -57,12 +57,12 @@ namespace RealmNet
             }
         }
 
-        S IQueryProvider.Execute<S>(Expression expression)
+        public S Execute<S>(Expression expression)
         {
             return (S)this.Execute(expression, typeof(S));
         }
 
-        object IQueryProvider.Execute(Expression expression)
+        public object Execute(Expression expression)
         {
             throw new Exception("Non-generic Execute() called...");
         }
@@ -72,29 +72,46 @@ namespace RealmNet
 
     public class RealmQueryProvider : QueryProvider
     {
+        private Realm _realm;
         private ICoreProvider _coreProvider;
 
-        public RealmQueryProvider(ICoreProvider coreProvider)
+        public RealmQueryProvider(Realm realm, ICoreProvider coreProvider)
         {
+            _realm = realm;
             _coreProvider = coreProvider;
         }
 
         public override object Execute(Expression expression, Type returnType)
         {
-            return new RealmQueryVisitor().Process(_coreProvider, expression, returnType);
+            return new RealmQueryVisitor().Process(_realm, _coreProvider, expression, returnType);
         }
     }
 
     public class RealmQueryVisitor : ExpressionVisitor
     {
+        private Realm _realm;
         private ICoreProvider _coreProvider;
         private IQueryHandle _coreQueryHandle;
 
-        public object Process(ICoreProvider coreProvider, Expression expression, Type returnType)
+        public IEnumerable Process(Realm realm, ICoreProvider coreProvider, Expression expression, Type returnType)
         {
+            _realm = realm;
             _coreProvider = coreProvider;
+
             Visit(expression);
-            return _coreProvider.ExecuteQuery(_coreQueryHandle, returnType.GenericTypeArguments[0]);
+
+            var innerType = returnType.GenericTypeArguments[0];
+            var list = Activator.CreateInstance(typeof(List<>).MakeGenericType(innerType));
+            var add = list.GetType().GetTypeInfo().GetDeclaredMethod("Add");
+
+            var indices = _coreProvider.ExecuteQuery(_coreQueryHandle, innerType);
+            foreach (var rowIndex in indices)
+            {
+                var o = Activator.CreateInstance(innerType);
+                ((RealmObject)o)._Manage(_realm, _coreProvider, rowIndex);
+                add.Invoke(list, new[] { o });
+            }
+            return (IEnumerable)list;
         }
 
         private static Expression StripQuotes(Expression e)
@@ -171,7 +188,7 @@ namespace RealmNet
                     throw new Exception("We already have a table...");
 
                 var tableName = q.ElementType.Name;
-                _coreQueryHandle = _coreProvider.CreateQuery(tableName);
+                _coreQueryHandle = _coreProvider.CreateQuery(_realm.TransactionGroupHandle, tableName);
             }
             else if (c.Value == null)
             {

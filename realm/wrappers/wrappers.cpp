@@ -39,6 +39,14 @@ inline size_t bool_to_size_t(bool value) {
   return 0;
 }
 
+//call this if something went wrong and You want to return an error code where C#
+//expects a boolean or error code.
+//the inline should end up with no more code than just returning the constant
+//but will allow us to adopt another scheme later on
+inline size_t bool_to_size_t_with_errorcode(size_t errorcode){
+	return errorcode;
+}
+
 //stringdata is utf8
 //cshapbuffer is a c# stringbuilder buffer marshalled as utf16 bufsize is the size of the csharp buffer measured in 16 bit words. The buffer is in fact one char larger than that, to make room for a terminating null character
 //this method will transcode the utf8 string data inside stringdata to utf16 and put the transcoded data in the buffer. the return value is the size of the buffer that was
@@ -156,6 +164,7 @@ CSStringAccessor::CSStringAccessor(uint16_t* csbuffer, size_t csbufsize)
 extern "C" {
 #endif
 
+#pragma region version  // {{{
 
   REALM_CORE_WRAPPER_API size_t realm_get_wrapper_ver()
   {
@@ -166,6 +175,10 @@ extern "C" {
   {
     return realm::Version::get_minor();
   }
+
+#pragma endregion // }}}
+
+#pragma region table // {{{
 
   //return a newly constructed top level table 
   REALM_CORE_WRAPPER_API Table* new_table()//should be disposed by calling unbind_table_ref
@@ -214,6 +227,22 @@ extern "C" {
     return new Query(table_ptr->where());            
   }
 
+  REALM_CORE_WRAPPER_API size_t table_get_column_index(Table* table_ptr, uint16_t *  column_name, size_t column_name_len)
+  {
+      CSStringAccessor str = CSStringAccessor(column_name, column_name_len);
+      return table_ptr->get_column_index(str);
+  }
+
+  REALM_CORE_WRAPPER_API size_t tableview_get_column_index(TableView* tableView_ptr, uint16_t *  column_name, size_t column_name_len)
+  {
+      CSStringAccessor str = CSStringAccessor(column_name, column_name_len);
+      return tableView_ptr->get_column_index(str);
+  }
+
+#pragma endregion // }}}
+
+#pragma region query // {{{
+
   //the query_bool_equal will never return null
   REALM_CORE_WRAPPER_API void query_bool_equal(Query * query_ptr, size_t columnIndex, size_t value)
   {    
@@ -239,6 +268,279 @@ extern "C" {
     CSStringAccessor str(column_name,column_name_len);
     return query_ptr->get_table()->get_column_index(str);
   }
+
+#pragma endregion // }}}
+
+#pragma region group // {{{
+
+//GROUP IMPLEMENTATION
+
+//C# will call with a pinned array of bytes and its size. no copying occours except inside tightdb where the data is of course
+//changed into a newly created group. The data pointed to by data must not be accessed after this call is finished, as C# will
+//deallocate it again as soon as the call returns
+//NOTE THAT tHE GROUP RETURNED HERE MUST BE FREED BY CALLING GROUP_DELETE WHEN IT IS NOT USED ANYMORE BY C#
+REALM_CORE_WRAPPER_API Group* group_from_binary_data(const char* data, std::size_t size)
+{
+	try {
+      BinaryData bd(data,size);
+      return new Group(bd,false);
+	} 
+	catch (...)
+	{
+		return NULL;
+	}
+}
+
+
+REALM_CORE_WRAPPER_API Group* new_group() //should be disposed by calling group_delete
+{
+    return  new Group();    
+}
+
+REALM_CORE_WRAPPER_API void group_delete(Group* group_ptr )
+{  
+    delete(group_ptr);
+}
+
+
+/*
+    enum OpenMode {
+        /// Open in read-only mode. Fail if the file does not already exist.
+        mode_ReadOnly,
+        /// Open in read/write mode. Create the file if it doesn't exist.
+        mode_ReadWrite,
+        /// Open in read/write mode. Fail if the file does not already exist.
+        mode_ReadWriteNoCreate
+    };
+*/
+
+  REALM_CORE_WRAPPER_API Group* new_group_file(uint16_t * name, size_t name_len, size_t openMode)//should be disposed by calling group_delete
+{      
+
+    //no like taking an enum from C# now it is unknown what underlying type Group::OpenMode might have
+    //but we know that on any concievable platform, interop and C# marshalling works with size_t
+    //so we convert the size_t to a valid Group::OpenMode here.
+
+    Group::OpenMode om=Group::mode_ReadOnly;//this is the default value,if openMode==0
+
+    if (openMode==1){
+        om=Group::mode_ReadWrite;
+    } else if(openMode==2) {
+        om=Group::mode_ReadWriteNoCreate;
+    }
+
+    //in effect. 1 gives ReadWrite, 2 gives ReadWriteNoCreate, anything else give ReadOnly
+
+    try{
+      CSStringAccessor name2(name,name_len);
+
+      return new Group(StringData(name2), 0, om); 
+    }
+
+    catch (std::exception& ) {
+        return NULL;
+    }
+    catch (...) {
+        std::cerr<<"CPPDLL: something non exception caught - returning NULL\n";
+        return NULL;
+    }
+}
+
+//write group to specified file
+REALM_CORE_WRAPPER_API size_t group_write(Group* group_ptr,uint16_t * name, size_t name_len)
+
+{   
+    try {
+    CSStringAccessor str(name,name_len);    
+    group_ptr->write(StringData(str));
+    return 0;//0 means no exception thrown
+    }
+    //if the file is already there, or other file related trouble
+   catch (...) {             
+       return 1;//1 means IO problem exception was thrown. C# always use IOException in cases like this anyways so no need to detail it out further
+   }
+}
+
+/// Write this database to a memory buffer.
+///
+/// Ownership of the returned buffer is transferred to the
+/// caller. The memory will have been allocated using
+/// std::malloc().
+//  BinaryData write_to_mem() const;
+// The caller should call group_write_to_mem_free with the pointer returned from group_write_to_mem
+//function returns a pointer to the data.
+REALM_CORE_WRAPPER_API const char * group_write_to_mem(Group*  group_ptr,  size_t* size)
+{
+
+    BinaryData bd=group_ptr->write_to_mem();
+    *size = bd.size();
+    return  bd.data();//pointer to all the data;
+}
+
+//must be called with a pointer that was returned by group_write_to_mem
+//DO NOT CALL IF THAT POINTER RETURNED WAS NULL
+REALM_CORE_WRAPPER_API void group_write_to_mem_free(char * binarydata_ptr){
+    if(binarydata_ptr!=NULL)  {
+     std::free(binarydata_ptr);
+    }
+}
+
+REALM_CORE_WRAPPER_API size_t group_commit(Group* group_ptr){
+try {
+	group_ptr->commit();
+	return 0;
+}
+ catch(...){
+	 return 1;
+ }
+}
+
+REALM_CORE_WRAPPER_API size_t group_equals(Group* group_ptr1, Group* group_ptr2)
+{
+	try {
+		return bool_to_size_t(*group_ptr1==*group_ptr2);//utilizing operator overload
+	}
+	catch(...){
+		return bool_to_size_t_with_errorcode(-1);//will return error -1 to a C# function expecting a bool
+	}	
+}
+
+//inequality is handled in the binding by negating equality and thus we save one interop entry, and linking in the code for !=
+
+
+REALM_CORE_WRAPPER_API size_t group_to_string(Group* group_ptr,uint16_t * data, size_t bufsize,size_t limit)
+{   
+   std::ostringstream ss;
+   group_ptr->to_string(ss);
+   std::string str = ss.str();   
+   return stringdata_to_csharpstringbuffer(str,data,bufsize);
+}
+
+
+//return packed size_t with errorcode or a encoded boolean
+REALM_CORE_WRAPPER_API size_t  group_is_empty(Group* group_ptr) {
+	try {
+		return bool_to_size_t(group_ptr->is_empty());//if we don't get an exception things went well
+	}
+	catch(...)//things did not go well
+	{
+		return bool_to_size_t_with_errorcode(-1);//return an error code to indicate this
+		//1 as error means that is_empty is not to be trusted and that there was an
+		//exception when asking the group. Binding should throw a general exception
+		//InvalidOperation or the like, and in text describe that a call to is empty
+		//failed in an unspecified way.
+	}
+}
+
+
+REALM_CORE_WRAPPER_API size_t group_size( Group* group_ptr){
+	try{
+		return group_ptr->size();
+	}
+	catch (...){
+		return -1;//-1 indicates an exception was thrown in core
+	}
+}
+
+//should be disposed by calling unbind_table_ref
+REALM_CORE_WRAPPER_API Table* group_get_or_add_table(Group* group_ptr,uint16_t* table_name,size_t table_name_len)
+{   
+    CSStringAccessor str(table_name,table_name_len);
+    bool dummy;
+    return LangBindHelper::get_or_add_table(*group_ptr,str, &dummy);
+}
+
+//langbindhelper should be extended to have get_table_by_index itself if it wsa friend with Group it could
+//call the private group method that takes an index and returns a table. Round tripping via name seems a bit
+//inefficient
+REALM_CORE_WRAPPER_API Table* group_get_table_by_index(Group* group_ptr,size_t table_ndx)
+{
+	StringData sd = group_ptr->get_table_name(table_ndx);
+    return LangBindHelper::get_table(*group_ptr,sd);
+}
+
+REALM_CORE_WRAPPER_API size_t group_has_table(Group* group_ptr, uint16_t * table_name,size_t table_name_len)//should be disposed by calling unbind_table_ref
+{    
+    CSStringAccessor str(table_name,table_name_len);
+    return bool_to_size_t(group_ptr->has_table(str));
+}
+
+//return a new shared group connected to a file, no_create and durabillity level are left to the defaults defined in core
+REALM_CORE_WRAPPER_API SharedGroup* new_shared_group_file_defaults(uint16_t * name,size_t name_len)
+{
+    CSStringAccessor str(name,name_len);
+    return new SharedGroup(StringData(str));   
+}
+
+REALM_CORE_WRAPPER_API void shared_group_delete(SharedGroup* g) {
+    delete g;
+}
+
+//binding must ensure that the returned group is never modified
+REALM_CORE_WRAPPER_API const Group* shared_group_begin_read(SharedGroup* shared_group_ptr)
+{
+	try {
+    return &shared_group_ptr->begin_read();    
+   }
+    catch (...) {
+    return NULL;
+   }
+}
+
+//binding must ensure that the returned group is never modified
+//although we return -1 on exceptions, core promises to never throw any
+REALM_CORE_WRAPPER_API size_t shared_group_end_read(SharedGroup* shared_group_ptr)
+{    
+   try {
+      shared_group_ptr->end_read();    
+      return 0;
+   } 
+    catch (...){
+    
+        return -1;
+    }   
+}
+
+//binding must ensure that the returned group is never modified
+REALM_CORE_WRAPPER_API const Group* shared_group_begin_write(SharedGroup* shared_group_ptr)
+{
+   try {
+      return &shared_group_ptr->begin_write();    
+    }
+   catch (...) {
+   return NULL;
+   }
+}
+
+//we cannot let exceptions flow back to C# because that only works with windows and .net
+//- mono runtime crashes itself if we let an exception throw back to the c# caller
+REALM_CORE_WRAPPER_API size_t shared_group_commit(SharedGroup* shared_group_ptr)
+{
+   try {
+      shared_group_ptr->commit();
+      return 0;
+    } 
+    catch (...)
+    {
+      return -1;//indicates that something went wrong. Expand with more error codes later...
+   }
+}
+
+
+//currently, we don't transmit exception error codes back to the binding
+//todo:return more specific error codes than just -1
+//however, rollback() is NOEXCEPT so theretically it should never throw any errors at us
+REALM_CORE_WRAPPER_API size_t shared_group_rollback(SharedGroup* shared_group_ptr)
+{
+	try {
+      shared_group_ptr->rollback();
+	  return 0;//indicate success
+	}
+	catch(...){
+		return -1;//something impossible happened
+	}
+}
+#pragma endregion // }}}
 
 #ifdef DYNAMIC  // clang complains when making a dylib if there is no main(). :-/
   int main() { return 0; }

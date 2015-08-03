@@ -49,40 +49,37 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Resources\" />
+    <Folder Include="shared\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="..\UnsafeNativeMethods.shared.cs">
-      <Link>UnsafeNativeMethods.shared.cs</Link>
-    </Compile>
     <Compile Include="InteropConfig.cs" />
-    <Compile Include="CoreProvider.cs" />
+    <Compile Include="..\CoreProvider.shared.cs">
+      <Link>shared\CoreProvider.shared.cs</Link>
+    </Compile>
     <Compile Include="..\GroupHandle.shared.cs">
-      <Link>GroupHandle.shared.cs</Link>
+      <Link>shared\GroupHandle.shared.cs</Link>
     </Compile>
     <Compile Include="..\QueryHandle.shared.cs">
-      <Link>QueryHandle.shared.cs</Link>
+      <Link>shared\QueryHandle.shared.cs</Link>
     </Compile>
     <Compile Include="..\RealmHandle.shared.cs">
-      <Link>RealmHandle.shared.cs</Link>
+      <Link>shared\RealmHandle.shared.cs</Link>
     </Compile>
     <Compile Include="..\RealmHandleOptionalUnbind.shared.cs">
-      <Link>RealmHandleOptionalUnbind.shared.cs</Link>
+      <Link>shared\RealmHandleOptionalUnbind.shared.cs</Link>
     </Compile>
     <Compile Include="..\SharedGroupHandle.shared.cs">
-      <Link>SharedGroupHandle.shared.cs</Link>
-    </Compile>
-    <Compile Include="..\SpecHandle.shared.cs">
-      <Link>SpecHandle.shared.cs</Link>
+      <Link>shared\SharedGroupHandle.shared.cs</Link>
     </Compile>
     <Compile Include="..\TableHandle.shared.cs">
-      <Link>TableHandle.shared.cs</Link>
+      <Link>shared\TableHandle.shared.cs</Link>
     </Compile>
     <Compile Include="..\TableViewHandle.shared.cs">
-      <Link>TableViewHandle.shared.cs</Link>
+      <Link>shared\TableViewHandle.shared.cs</Link>
     </Compile>
-    <Compile Include="..\PreserveAttribute.shared.cs">
-      <Link>PreserveAttribute.shared.cs</Link>
+    <Compile Include="..\UnsafeNativeMethods.shared.cs">
+      <Link>shared\UnsafeNativeMethods.shared.cs</Link>
     </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Mac\Xamarin.Mac.CSharp.targets" />

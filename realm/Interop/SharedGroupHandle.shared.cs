@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 
@@ -37,7 +38,7 @@ namespace RealmNet.Interop
         }
 
         //atomic change of transaction state from read to ready
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
+        [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
         public void SharedGroupCommit()
         {
             IntPtr res;
@@ -90,7 +91,7 @@ namespace RealmNet.Interop
         /// The binding will never call this method unless there is an ongoing write transaction
         /// </summary>
         /// <exception cref="InvalidOperationException"></exception>
-        internal void SharedGroupRollback()
+        public void SharedGroupRollback()
         {
             IntPtr res;
             RuntimeHelpers.PrepareConstrainedRegions(); //the following finally will run with no out-of-band exceptions
@@ -111,7 +112,7 @@ namespace RealmNet.Interop
 
         //atomically call end read and set state back to ready
         //todo:in c++ end read is tagged as cannot throw exceptions. so i guess it's okay to just return -1 if we got an exception in c++ anyways
-        internal void SharedGroupEndRead()
+        public void SharedGroupEndRead()
         {
             IntPtr res;
             RuntimeHelpers.PrepareConstrainedRegions(); //the following finally will run with no out-of-band exceptions
@@ -139,7 +140,7 @@ namespace RealmNet.Interop
         //must be called with InReadTransaction or InWriteTransaction  otherwise an empty grouphandle is returned
         //other methods that create sharedgrouphandles are in UnsafeNativeMethods
         //http://msdn.microsoft.com/en-us/library/system.runtime.compilerservices.runtimehelpers.prepareconstrainedregions(v=vs.110).aspx
-        internal GroupHandle StartTransaction(TransactionState tstate)
+        public IGroupHandle StartTransaction(TransactionState tstate)
         {
             GroupHandle gh = null;
             try

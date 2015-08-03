@@ -126,7 +126,7 @@ namespace Tests
             Assert.That(table.Rows[0]["Email"], Is.EqualTo("john@johnson.com"));
         }
 
-        [Test]
+        [Test, NUnit.Framework.Ignore("Not implemented yet..")]
         public void ShouldFollowMapToAttributeOnClasses()
         {
             // Arrange

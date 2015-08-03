@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.ConstrainedExecution;
-using System.Runtime.InteropServices;
 using System.Security.Permissions;
 using Microsoft.Win32.SafeHandles;
 
@@ -37,7 +37,7 @@ namespace RealmNet.Interop
 
     [SecurityPermission(SecurityAction.InheritanceDemand, UnmanagedCode = true)]
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
-    public abstract class RealmHandle : SafeHandleZeroOrMinusOneIsInvalid
+    public abstract class RealmHandle : SafeHandleZeroOrMinusOneIsInvalid, IRealmHandle
     {
         //Every handle can potentially have an unbind list
         //If the unbind list is instantiated, this handle is a handle for a root object
@@ -114,7 +114,7 @@ namespace RealmNet.Interop
         //in general, you can pass on root when You are not root Yourself, otherwise pass on null
         //we expect to be in the user thread always in a constructor.
         //therefore we take the opportunity to clear root's unbindlist when we set our root to point to it
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
+        [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
         internal RealmHandle(RealmHandle root)  : base(true)
         {
             if (root == null)//if we are a root object, we need a list for our children and Root is already null
@@ -191,7 +191,7 @@ namespace RealmNet.Interop
             return new List<RealmHandle>();//todo:experiment with what might be a decent initial list size
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
+        [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands"), SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
         protected  RealmHandle() : base(true)
         {
@@ -220,7 +220,7 @@ namespace RealmNet.Interop
         //called automatically but only once from criticalhandle when this handle is disposing or finalizing
         //see http://reflector.webtropy.com/default.aspx/4@0/4@0/DEVDIV_TFS/Dev10/Releases/RTMRel/ndp/clr/src/BCL/System/Runtime/InteropServices/CriticalHandle@cs/1305376/CriticalHandle@cs
         //and http://msdn.microsoft.com/en-us/library/system.runtime.interopservices.criticalhandle.releasehandle(v=vs.110).aspx
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2123:OverrideLinkDemandsShouldBeIdenticalToBase"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
+        [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands"), SuppressMessage("Microsoft.Security", "CA2123:OverrideLinkDemandsShouldBeIdenticalToBase"), SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         protected override bool ReleaseHandle()
         {
             if (IsInvalid)return true;//invalid handles might occour if we throw in construction of one, after root is set, but before the handle has
@@ -274,7 +274,7 @@ namespace RealmNet.Interop
         //used in the case we need to set the handle as part of a larger setup operation
         //the original SetHandle method is not callable from other classes, and we need that feature
         //so we overwrite the original one to be able to call it
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
+        [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
         public new void SetHandle(IntPtr someHandle)
         {
             base.SetHandle(someHandle);

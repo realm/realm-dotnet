@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 
@@ -22,7 +23,7 @@ namespace RealmNet.Interop
         }
 
         //acquire a table handle And set root in an atomic fashion (from TableName)
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
+        [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
         internal TableHandle GetTable(String name)
         {
             var th= TableHandle.RootedTableHandle(this); //allocate in advance to avoid allocating in constrained exection region true means do not finalize or call unbind
@@ -33,11 +34,11 @@ namespace RealmNet.Interop
             {}
             finally
             {              
-              th.SetHandle(UnsafeNativeMethods.group_get_table(this, name));//if something goes wrong in c++ land IntPtr.Zero is returned
+              th.SetHandle(UnsafeNativeMethods.group_get_or_add_table(this, name));//if something goes wrong in c++ land IntPtr.Zero is returned
             }//at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
             if (th.IsInvalid)
             {
-                throw new ArgumentOutOfRangeException(String.Format(CultureInfo.InvariantCulture,"Group.GetTable did not get a Table back from core. The name specified is probably invalid :({0})",name));
+                throw new ArgumentOutOfRangeException(String.Format(CultureInfo.InvariantCulture,"Group.GetTable did not get a Table back from core. The name specified is probably invalid: {0}",name));
             }
             return th;
         }
@@ -61,6 +62,10 @@ namespace RealmNet.Interop
         internal GroupHandle(bool ignoreUnbind,RealmHandle root) : base(ignoreUnbind,root)
         {            
         }
-        
+
+        public override string ToString()
+        {
+            return UnsafeNativeMethods.group_to_string(this);
+        }
     }
 }

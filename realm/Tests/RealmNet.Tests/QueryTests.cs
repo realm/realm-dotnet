@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Tests.TestHelpers;
 
 namespace Tests
 {
@@ -19,58 +18,58 @@ namespace Tests
             public int Number { get; set; }
         }
 
-        private CoreProviderStub _coreProviderStub;
+        //private MockCoreProvider _coreProviderStub;
         private Realm realm;
 
-        [SetUp]
-        public void Setup()
-        {
-            _coreProviderStub = new CoreProviderStub();
-            Realm.ActiveCoreProvider = _coreProviderStub;
-            realm = Realm.GetInstance();
-        }
+        //[SetUp]
+        //public void Setup()
+        //{
+        //    _coreProviderStub = new MockCoreProvider();
+        //    Realm.ActiveCoreProvider = _coreProviderStub;
+        //    realm = Realm.GetInstance();
+        //}
 
-        private void PrepareForQueries()
-        {
-            _coreProviderStub.AddBulk("TestEntity", new dynamic[]
-            {
-                new { Str = "John", Number = 1 },
-                new { Str = "Peter", Number = 2 }
-            });
-        }
+        //private void PrepareForQueries()
+        //{
+        //    _coreProviderStub.AddBulk("TestEntity", new dynamic[]
+        //    {
+        //        new { Str = "John", Number = 1 },
+        //        new { Str = "Peter", Number = 2 }
+        //    });
+        //}
 
-        [Test]
-        public void AllShouldReturnQueryable()
-        {
-            // Arrange
-            PrepareForQueries();
-            var query = realm.All<TestEntity>();
+        //[Test]
+        //public void AllShouldReturnQueryable()
+        //{
+        //    // Arrange
+        //    PrepareForQueries();
+        //    var query = realm.All<TestEntity>();
 
-            // Act
-            query.ToList();
+        //    // Act
+        //    query.ToList();
 
-            // Assert
-            Assert.That(_coreProviderStub.Queries.Count, Is.EqualTo(1));
-            Assert.That(_coreProviderStub.Queries[0].TableName, Is.EqualTo("TestEntity"));
-        }
+        //    // Assert
+        //    Assert.That(_coreProviderStub.Queries.Count, Is.EqualTo(1));
+        //    Assert.That(_coreProviderStub.Queries[0].TableName, Is.EqualTo("TestEntity"));
+        //}
 
-        [Test]
-        public void TestWhereQueryWithEqualToCondition()
-        {
-            // Arrange
-            PrepareForQueries();
-            var query = realm.All<TestEntity>().Where(te => te.Str == "Peter");
+        //[Test]
+        //public void TestWhereQueryWithEqualToCondition()
+        //{
+        //    // Arrange
+        //    PrepareForQueries();
+        //    var query = realm.All<TestEntity>().Where(te => te.Str == "Peter");
 
-            // Act
-            query.ToList();
+        //    // Act
+        //    query.ToList();
 
-            // Assert
-            Assert.That(_coreProviderStub.Queries.Count, Is.EqualTo(1));
-            Assert.That(_coreProviderStub.Queries[0].TableName, Is.EqualTo("TestEntity"));
-            Assert.That(_coreProviderStub.Queries[0].Sequence.Count, Is.EqualTo(1));
-            Assert.That(_coreProviderStub.Queries[0].Sequence[0].Name, Is.EqualTo("Equal"));
-            Assert.That(_coreProviderStub.Queries[0].Sequence[0].Field, Is.EqualTo("Str"));
-            Assert.That(_coreProviderStub.Queries[0].Sequence[0].Value, Is.EqualTo("Peter"));
-        }
+        //    // Assert
+        //    Assert.That(_coreProviderStub.Queries.Count, Is.EqualTo(1));
+        //    Assert.That(_coreProviderStub.Queries[0].TableName, Is.EqualTo("TestEntity"));
+        //    Assert.That(_coreProviderStub.Queries[0].Sequence.Count, Is.EqualTo(1));
+        //    Assert.That(_coreProviderStub.Queries[0].Sequence[0].Name, Is.EqualTo("Equal"));
+        //    Assert.That(_coreProviderStub.Queries[0].Sequence[0].Field, Is.EqualTo("Str"));
+        //    Assert.That(_coreProviderStub.Queries[0].Sequence[0].Value, Is.EqualTo("Peter"));
+        //}
     }
 } 
