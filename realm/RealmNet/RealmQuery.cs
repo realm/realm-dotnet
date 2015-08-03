@@ -39,12 +39,12 @@ namespace RealmNet
 
     public abstract class QueryProvider : IQueryProvider
     {
-        IQueryable<S> IQueryProvider.CreateQuery<S>(Expression expression)
+        public IQueryable<S> CreateQuery<S>(Expression expression)
         {
             return new RealmQuery<S>(this, expression);
         }
 
-        IQueryable IQueryProvider.CreateQuery(Expression expression)
+        public IQueryable CreateQuery(Expression expression)
         {
             Type elementType = TypeSystem.GetElementType(expression.Type);
             try
@@ -57,12 +57,12 @@ namespace RealmNet
             }
         }
 
-        S IQueryProvider.Execute<S>(Expression expression)
+        public S Execute<S>(Expression expression)
         {
             return (S)this.Execute(expression, typeof(S));
         }
 
-        object IQueryProvider.Execute(Expression expression)
+        public object Execute(Expression expression)
         {
             throw new Exception("Non-generic Execute() called...");
         }
@@ -93,12 +93,25 @@ namespace RealmNet
         private ICoreProvider _coreProvider;
         private IQueryHandle _coreQueryHandle;
 
-        public object Process(Realm realm, ICoreProvider coreProvider, Expression expression, Type returnType)
+        public IEnumerable Process(Realm realm, ICoreProvider coreProvider, Expression expression, Type returnType)
         {
             _realm = realm;
             _coreProvider = coreProvider;
+
             Visit(expression);
-            return _coreProvider.ExecuteQuery(_coreQueryHandle, returnType.GenericTypeArguments[0]);
+
+            var innerType = returnType.GenericTypeArguments[0];
+            var list = Activator.CreateInstance(typeof(List<>).MakeGenericType(innerType));
+            var add = list.GetType().GetTypeInfo().GetDeclaredMethod("Add");
+
+            var indices = _coreProvider.ExecuteQuery(_coreQueryHandle, innerType);
+            foreach (var rowIndex in indices)
+            {
+                var o = Activator.CreateInstance(innerType);
+                ((RealmObject)o)._Manage(_realm, _coreProvider, rowIndex);
+                add.Invoke(list, new[] { o });
+            }
+            return (IEnumerable)list;
         }
 
         private static Expression StripQuotes(Expression e)

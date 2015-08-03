@@ -129,9 +129,9 @@ namespace InteropShared
             notifyOnCall ($"QueryEqual(col={columnName}, val={value})");
         }
 
-        public System.Collections.IEnumerable ExecuteQuery(IQueryHandle queryHandle, Type objectType)
+        public IEnumerable<long> ExecuteQuery(IQueryHandle queryHandle, Type objectType)
         {
-            IEnumerable ret = default(Array);
+            IEnumerable<long> ret = default(List<long>);
 //            notifyOnCall ($"ExecuteQuery found {ret.Count()})");
             notifyOnCall ($"ExecuteQuery");
             return ret;

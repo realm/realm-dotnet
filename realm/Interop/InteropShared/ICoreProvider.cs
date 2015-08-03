@@ -22,7 +22,7 @@ namespace RealmNet
         IQueryHandle CreateQuery(IGroupHandle groupHandle, string tableName);
         void QueryEqual(IQueryHandle queryHandle, string columnName, object value);
 
-        IEnumerable ExecuteQuery(IQueryHandle queryHandle, Type objectType);
+        IEnumerable<long> ExecuteQuery(IQueryHandle queryHandle, Type objectType);
 
         IGroupHandle NewGroup();
         IGroupHandle NewGroupFromFile(string path, GroupOpenMode openMode);

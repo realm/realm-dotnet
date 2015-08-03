@@ -121,30 +121,22 @@ namespace RealmNet.Interop
                 UnsafeNativeMethods.query_string_equal((QueryHandle)queryHandle, columnIndex, (string)value);
         }
 
-        public IEnumerable ExecuteQuery(IQueryHandle queryHandle, Type objectType)
+        public IEnumerable<long> ExecuteQuery(IQueryHandle queryHandle, Type objectType)
         {
-            return null;
-
-            //var list = Activator.CreateInstance(typeof(List<>).MakeGenericType(objectType));
-            //var add = list.GetType().GetMethod("Add");
-
-            //long nextRowIndex = 0;
-            //while (nextRowIndex != -1)
-            //{
-            //    var rowIndex = UnsafeNativeMethods.query_find((QueryHandle)queryHandle, nextRowIndex);
-            //    if (rowIndex != -1)
-            //    {
-            //        var o = Activator.CreateInstance(objectType);
-            //        ((RealmObject)o)._Manage(_realm, this, rowIndex);
-            //        add.Invoke(list, new [] { o });
-
-            //        nextRowIndex = rowIndex + 1;
-            //    }
-            //    else
-            //        nextRowIndex = -1;
-            //}
-
-            //return (IEnumerable)list;
+            long nextRowIndex = 0;
+            while (nextRowIndex != -1)
+            {
+                var rowIndex = UnsafeNativeMethods.query_find((QueryHandle)queryHandle, nextRowIndex);
+                if (rowIndex != -1)
+                {
+                    nextRowIndex = rowIndex + 1;
+                    yield return rowIndex;
+                }
+                else
+                {
+                    yield break;
+                }
+            }
         }
 
         public IGroupHandle NewGroup()
