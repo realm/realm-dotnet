@@ -71,8 +71,6 @@ public class ModuleWeaver
                 getProcessor.Emit(OpCodes.Ldarg_0);
                 getProcessor.Emit(OpCodes.Ldstr, propName);
                 getProcessor.Emit(OpCodes.Call, specializedGetValue);
-                getProcessor.Emit(OpCodes.Stloc_0);
-                getProcessor.Emit(OpCodes.Ldloc_0);
                 getProcessor.Emit(OpCodes.Ret);
 
                 Debug.Write("[get] ");
