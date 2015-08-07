@@ -39,12 +39,16 @@
     <Compile Include="Group.cs" />
     <Compile Include="Handled.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="QueryProvider.cs" />
     <Compile Include="Realm.cs" />
     <Compile Include="RealmList.cs" />
     <Compile Include="RealmObject.cs" />
     <Compile Include="RealmQuery.cs" />
     <Compile Include="MockCoreProvider.cs" />
+    <Compile Include="RealmQueryProvider.cs" />
+    <Compile Include="RealmQueryVisitor.cs" />
     <Compile Include="Transaction.cs" />
+    <Compile Include="TypeSystem.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Interop\InteropShared\InteropShared.csproj">

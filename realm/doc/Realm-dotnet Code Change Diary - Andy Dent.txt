@@ -32,3 +32,14 @@ RealmNet.Tests.csproj
 IntegrationTests.csproj
 - comment out body of SimpleTest until merge in more of the Mock Provider stuff after this
 
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#50 Mocking merge on refactored
+
+RealmQuery.cs 
+- refactored out all the classes and types
+- QueryProviders.cs
+- RealmQueryProvider.cs
+- RealmQueryVisitor.cs
+- TypeSystem.cs
+
