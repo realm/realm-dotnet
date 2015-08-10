@@ -32,28 +32,7 @@ RealmNet.Tests.csproj
 IntegrationTests.csproj
 - comment out body of SimpleTest until merge in more of the Mock Provider stuff after this
 
--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-Fixing bad IL
-(this comment should have been checked in with the code changes, is now on another branch)
 
-ModuleWeaver.cs
-- remove the emitting of a pointless copying of the return value off and back onto the stack
-  as a side-effect was corrupting the IL
-  
--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-#59 Fixing Configs
-
-Interop.Win32.csproj
-- add  Condition="'$(Platform)' == 'x64'" on the ItemGroup for wrappersx64
-- add  Condition="'$(Platform)' == 'x6'" on the ItemGroup for wrappersx64
-
-
-Realm.sln
-- use new x86/64 configs for Interop.win32
-- configurations changed to exclude things for other platforms 
-  (Debug only, need to go through and do all for Release - see #60
-  
-  
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #50 Mocking merge on refactored
 
@@ -76,3 +55,27 @@ RealmNet.Tests
 FodyWeavers.xml
 - edited the generated file adding   <RealmNetWeaver />
 
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#50 LINQ on one table - update Mock for new ICoreProvider interfaces
+
+MockCoreProvider
+- MockSharedGroupHandle added as nested class
+- CreateSharedGroup
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#50 LINQ on one table - single query operators mocked
+
+QueryTests.cs
+- removed old tests
+
+MockQueryTestsBase.cs
+- added with common test data setup
+
+MockQuerySingleTableTests.cs
+- added
+
+MockSharedGroupHandle
+
+RealmPureNetLINQ.sln
+- added to only build AnyCPU with just RealmNet tests
