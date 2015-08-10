@@ -73,27 +73,56 @@ namespace RealmNet
         protected override Expression VisitBinary(BinaryExpression b)
         {
             this.Visit(b.Left);
-            switch (b.NodeType)
+            if (b.NodeType == ExpressionType.And)
             {
-                case ExpressionType.And:
-                    break;
-                case ExpressionType.Or:
-                    break;
-                case ExpressionType.Equal:
-                    _coreProvider.QueryEqual(_coreQueryHandle, ((MemberExpression)b.Left).Member.Name, ((ConstantExpression)b.Right).Value);
-                    break;
-                case ExpressionType.NotEqual:
-                    break;
-                case ExpressionType.LessThan:
-                    break;
-                case ExpressionType.LessThanOrEqual:
-                    break;
-                case ExpressionType.GreaterThan:
-                    break;
-                case ExpressionType.GreaterThanOrEqual:
-                    break;
-                default:
-                    throw new NotSupportedException(string.Format("The binary operator '{0}' is not supported", b.NodeType));
+            }
+            else if (b.NodeType == ExpressionType.And)
+            {
+            }
+            else
+            {
+                var leftMember = b.Left as MemberExpression;
+                if (leftMember == null)
+                    throw new NotSupportedException(string.Format("The lhs of the binary operator '{0}' should be a member expression", b.NodeType));
+                var leftName = leftMember.Member.Name;
+                var rightConst = b.Right as ConstantExpression;
+                if (rightConst == null)
+                    throw new NotSupportedException(string.Format("The rhs of the binary operator '{0}' should be a constant expression", b.NodeType));
+
+                var rightValue = rightConst.Value;
+                switch (b.NodeType)
+                {
+                    case ExpressionType.And:
+                        break;
+                    case ExpressionType.Or:
+                        break;
+                    case ExpressionType.Equal:
+                        _coreProvider.AddQueryEqual(_coreQueryHandle, leftName, rightValue);
+                        break;
+
+                    case ExpressionType.NotEqual:
+                        _coreProvider.AddQueryNotEqual(_coreQueryHandle, leftName, rightValue);
+                        break;
+
+                    case ExpressionType.LessThan:
+                        _coreProvider.AddQueryLessThan(_coreQueryHandle, leftName, rightValue);
+                        break;
+
+                    case ExpressionType.LessThanOrEqual:
+                        _coreProvider.AddQueryLessThanOrEqual(_coreQueryHandle, leftName, rightValue);
+                        break;
+
+                    case ExpressionType.GreaterThan:
+                        _coreProvider.AddQueryGreaterThan(_coreQueryHandle, leftName, rightValue);
+                        break;
+
+                    case ExpressionType.GreaterThanOrEqual:
+                        _coreProvider.AddQueryGreaterThanOrEqual(_coreQueryHandle, leftName, rightValue);
+                        break;
+
+                    default:
+                        throw new NotSupportedException(string.Format("The binary operator '{0}' is not supported", b.NodeType));
+                }
             }
             this.Visit(b.Right);
             return b;

@@ -17,10 +17,12 @@ namespace Tests
         {
             public string NameStr { get; set; }
             public int IntNum { get; set; }
+            public double DoubleNum { get; set; }
         }
 
         protected Realm realm;
         protected List<String> providerLog;
+        protected RealmQuery<TestEntity> testEntities;
 
         [SetUp]
         public void Setup()
@@ -29,6 +31,7 @@ namespace Tests
             providerLog = new List<String>();  
             Realm.ActiveCoreProvider = new MockCoreProvider((msg) => { providerLog.Add(msg); });
             realm = Realm.GetInstance();
+            testEntities = realm.All<TestEntity>();
             PrepareForQueries();
         }
 
@@ -39,18 +42,22 @@ namespace Tests
                 var te1 = realm.CreateObject<TestEntity>();
                 te1.NameStr = "John";
                 te1.IntNum = 1;
+                te1.DoubleNum = 0.99;
                 var te2 = realm.CreateObject<TestEntity>();
                 te2.NameStr = "Peter";
                 te2.IntNum = 2;
+                te2.DoubleNum = 999.99;
                 // TODO we should make more idiomatic syntax work such as 
                 //var autoAdded = new TestEntity {Str = "Johnnie", Number = 3};
                 //autoAdded = new TestEntity { Str = "Xanh Li", Number = 4 };
                 var te3 = realm.CreateObject<TestEntity>();
                 te3.NameStr = "Johnnie";
                 te3.IntNum = 3;
+                te3.DoubleNum = 3.1415;
                 var te4 = realm.CreateObject<TestEntity>();
                 te4.NameStr = "Xanh Li";
                 te4.IntNum = 9;
+                te4.DoubleNum = -5.0e6;
                 writeWith.Commit();
             }
         }

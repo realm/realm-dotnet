@@ -20,7 +20,12 @@ namespace RealmNet
         void SetValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, long rowIndex, T value);
 
         IQueryHandle CreateQuery(IGroupHandle groupHandle, string tableName);
-        void QueryEqual(IQueryHandle queryHandle, string columnName, object value);
+        void AddQueryEqual(IQueryHandle queryHandle, string columnName, object value);
+        void AddQueryNotEqual(IQueryHandle queryHandle, string columnName, object value);
+        void AddQueryLessThan(IQueryHandle queryHandle, string columnName, object value);
+        void AddQueryLessThanOrEqual(IQueryHandle queryHandle, string columnName, object value);
+        void AddQueryGreaterThan(IQueryHandle queryHandle, string columnName, object value);
+        void AddQueryGreaterThanOrEqual(IQueryHandle queryHandle, string columnName, object value);
 
         IEnumerable<long> ExecuteQuery(IQueryHandle queryHandle, Type objectType);
 

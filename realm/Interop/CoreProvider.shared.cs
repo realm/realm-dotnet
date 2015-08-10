@@ -92,6 +92,7 @@ namespace RealmNet.Interop
                 throw new Exception ("Unsupported type " + typeof(T).Name);
         }
 
+        #region Queries
         public IQueryHandle CreateQuery(IGroupHandle groupHandle, string tableName)
         {
             var tableHandle = GetTable(groupHandle, tableName);
@@ -111,7 +112,7 @@ namespace RealmNet.Interop
             return queryHandle;
         }
 
-        public void QueryEqual(IQueryHandle queryHandle, string columnName, object value)
+        public void AddQueryEqual(IQueryHandle queryHandle, string columnName, object value)
         {
             var columnIndex = UnsafeNativeMethods.query_get_column_index((QueryHandle)queryHandle, columnName);
 
@@ -120,6 +121,32 @@ namespace RealmNet.Interop
             else if (value.GetType() == typeof(string))
                 UnsafeNativeMethods.query_string_equal((QueryHandle)queryHandle, columnIndex, (string)value);
         }
+
+        public void AddQueryNotEqual(IQueryHandle queryHandle, string columnName, object value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void AddQueryLessThan(IQueryHandle queryHandle, string columnName, object value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void AddQueryLessThanOrEqual(IQueryHandle queryHandle, string columnName, object value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void AddQueryGreaterThan(IQueryHandle queryHandle, string columnName, object value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void AddQueryGreaterThanOrEqual(IQueryHandle queryHandle, string columnName, object value)
+        {
+            throw new NotImplementedException();
+        }
+
 
         public IEnumerable<long> ExecuteQuery(IQueryHandle queryHandle, Type objectType)
         {
@@ -138,6 +165,7 @@ namespace RealmNet.Interop
                 }
             }
         }
+        #endregion  // Queries
 
         public IGroupHandle NewGroup()
         {

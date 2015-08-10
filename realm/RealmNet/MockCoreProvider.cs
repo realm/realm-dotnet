@@ -173,9 +173,34 @@ namespace InteropShared
             return new MockQuery(tableName);
         }
 
-        public void QueryEqual(IQueryHandle queryHandle, string columnName, object value)
+        public void AddQueryEqual(IQueryHandle queryHandle, string columnName, object value)
         {
-            notifyOnCall ($"QueryEqual(col={columnName}, val={value})");
+            notifyOnCall ($"AddQueryEqual(col={columnName}, val={value})");
+        }
+
+        public void AddQueryNotEqual(IQueryHandle queryHandle, string columnName, object value)
+        {
+            notifyOnCall($"AddQueryNotEqual(col={columnName}, val={value})");
+        }
+
+        public void AddQueryLessThan(IQueryHandle queryHandle, string columnName, object value)
+        {
+            notifyOnCall($"AddQueryLessThan(col={columnName}, val={value})");
+        }
+
+        public void AddQueryLessThanOrEqual(IQueryHandle queryHandle, string columnName, object value)
+        {
+            notifyOnCall($"AddQueryLessThanOrEqual(col={columnName}, val={value})");
+        }
+
+        public void AddQueryGreaterThan(IQueryHandle queryHandle, string columnName, object value)
+        {
+            notifyOnCall($"AddQueryGreaterThan(col={columnName}, val={value})");
+        }
+
+        public void AddQueryGreaterThanOrEqual(IQueryHandle queryHandle, string columnName, object value)
+        {
+            notifyOnCall($"AddQueryGreaterThanOrEqual(col={columnName}, val={value})");
         }
 
         public IEnumerable<long> ExecuteQuery(IQueryHandle queryHandle, Type objectType)

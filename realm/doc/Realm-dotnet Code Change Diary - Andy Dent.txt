@@ -65,7 +65,7 @@ MockCoreProvider
 
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #50 LINQ on one table - single query operators mocked
-
+	
 QueryTests.cs
 - removed old tests
 
@@ -73,9 +73,39 @@ MockQueryTestsBase.cs
 - added with common test data setup
 
 MockQuerySingleTableTests.cs
-- added
+- added (copying some logic from previous QueryTests.cs editing)
+- TestWhereQueryWithEqualToString refactored to combinatorial TestWhereQueryWithEqual
 
 MockSharedGroupHandle
+- added
 
 RealmPureNetLINQ.sln
 - added to only build AnyCPU with just RealmNet tests
+
+
+ICoreProvider.cs
+- QueryEqual renamed AddQueryEqual
+- added declarations for 
+	AddQueryNotEqual
+	AddQueryLessThan
+	AddQueryLessOrEqual
+	AddQueryGreaterThan
+	AddQueryGreaterOrEqual
+
+
+MockCoreProvider.cs
+- QueryEqual renamed AddQueryEqual
+- added declarations for 
+	AddQueryNotEqual
+	AddQueryLessThan
+	AddQueryLessOrEqual
+	AddQueryGreaterThan
+	AddQueryGreaterOrEqual
+
+
+RealmQueryVisitor.cs
+- VisitBinary 
+  - refactored a bit
+  - checks arguments
+  - added rest of binary clauses
+  
