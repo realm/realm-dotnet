@@ -8,6 +8,7 @@ using RealmNet.Interop;
 using RealmNet;
 
 namespace InteropShared
+
 {
     public class MockTable
     {
@@ -44,8 +45,56 @@ namespace InteropShared
         public bool IsInvalid => false;
     }
 
+
     public class MockCoreProvider : ICoreProvider
     {
+        private class MockTransaction : IGroupHandle
+        {
+            private bool _isClosed = false;
+
+            public void Dispose()
+            {
+                _isClosed = true;
+            }
+
+            public bool IsClosed { get { return _isClosed; } }
+            public bool IsInvalid { get { return false; } }
+        }
+
+
+        private class MockSharedGroupHandle : ISharedGroupHandle
+        {
+            public bool IsClosed { get; }
+            public bool IsInvalid { get; }
+            public IGroupHandle StartTransaction(TransactionState read)
+            {
+                State = read;
+                return new MockTransaction();
+            }
+
+            public void SharedGroupCommit()
+            {
+                State = TransactionState.Ready;
+            }
+
+            public void SharedGroupRollback()
+            {
+                State = TransactionState.Ready;
+            }
+
+            public void SharedGroupEndRead()
+            {
+            }
+
+            public TransactionState State { get; private set; }
+            public void Dispose()
+            {
+                
+            }
+        }
+
+
+
         private Dictionary<string, MockTable> _tables = new Dictionary<string, MockTable>();
         private Action<String> notifyOnCall;
 
@@ -60,7 +109,7 @@ namespace InteropShared
 
         public ISharedGroupHandle CreateSharedGroup(string filename)
         {
-            throw new NotImplementedException();
+            return new MockSharedGroupHandle();
         }
 
         public bool HasTable(IGroupHandle groupHandle, string tableName)
@@ -88,7 +137,7 @@ namespace InteropShared
             table.Rows.Add( new object[table.Columns.Count] );
             var numRows = table.Rows.Count;
             notifyOnCall($"AddEmptyRow({tableName}) now has {numRows} rows");
-            return numRows;
+            return numRows - 1;  // index of added row
         }
 
         public T GetValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, long rowIndex)
@@ -124,17 +173,40 @@ namespace InteropShared
             return new MockQuery(tableName);
         }
 
-        public void QueryEqual(IQueryHandle queryHandle, string columnName, object value)
+        public void AddQueryEqual(IQueryHandle queryHandle, string columnName, object value)
         {
-            notifyOnCall ($"QueryEqual(col={columnName}, val={value})");
+            notifyOnCall ($"AddQueryEqual(col={columnName}, val={value})");
+        }
+
+        public void AddQueryNotEqual(IQueryHandle queryHandle, string columnName, object value)
+        {
+            notifyOnCall($"AddQueryNotEqual(col={columnName}, val={value})");
+        }
+
+        public void AddQueryLessThan(IQueryHandle queryHandle, string columnName, object value)
+        {
+            notifyOnCall($"AddQueryLessThan(col={columnName}, val={value})");
+        }
+
+        public void AddQueryLessThanOrEqual(IQueryHandle queryHandle, string columnName, object value)
+        {
+            notifyOnCall($"AddQueryLessThanOrEqual(col={columnName}, val={value})");
+        }
+
+        public void AddQueryGreaterThan(IQueryHandle queryHandle, string columnName, object value)
+        {
+            notifyOnCall($"AddQueryGreaterThan(col={columnName}, val={value})");
+        }
+
+        public void AddQueryGreaterThanOrEqual(IQueryHandle queryHandle, string columnName, object value)
+        {
+            notifyOnCall($"AddQueryGreaterThanOrEqual(col={columnName}, val={value})");
         }
 
         public IEnumerable<long> ExecuteQuery(IQueryHandle queryHandle, Type objectType)
         {
-            IEnumerable<long> ret = default(List<long>);
-//            notifyOnCall ($"ExecuteQuery found {ret.Count()})");
-            notifyOnCall ($"ExecuteQuery");
-            return ret;
+            notifyOnCall($"ExecuteQuery");
+            return new List<long>();
         }
 
         public IGroupHandle NewGroup()

@@ -39,18 +39,29 @@
     <Compile Include="Group.cs" />
     <Compile Include="Handled.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="QueryProvider.cs" />
     <Compile Include="Realm.cs" />
     <Compile Include="RealmList.cs" />
     <Compile Include="RealmObject.cs" />
     <Compile Include="RealmQuery.cs" />
     <Compile Include="MockCoreProvider.cs" />
+    <Compile Include="RealmQueryProvider.cs" />
+    <Compile Include="RealmQueryVisitor.cs" />
     <Compile Include="Transaction.cs" />
+    <Compile Include="TypeSystem.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Interop\InteropShared\InteropShared.csproj">
       <Project>{8B451911-321F-4244-9999-C1678BED060D}</Project>
       <Name>InteropShared</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Analyzer Include="..\packages\Microsoft.AnalyzerPowerPack.1.0.1\analyzers\dotnet\cs\Microsoft.AnalyzerPowerPack.Common.dll" />
+    <Analyzer Include="..\packages\Microsoft.AnalyzerPowerPack.1.0.1\analyzers\dotnet\cs\Microsoft.AnalyzerPowerPack.CSharp.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

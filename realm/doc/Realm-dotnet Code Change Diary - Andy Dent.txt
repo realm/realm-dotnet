@@ -32,25 +32,99 @@ RealmNet.Tests.csproj
 IntegrationTests.csproj
 - comment out body of SimpleTest until merge in more of the Mock Provider stuff after this
 
--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-Fixing bad IL
-(this comment should have been checked in with the code changes, is now on another branch)
 
-ModuleWeaver.cs
-- remove the emitting of a pointless copying of the return value off and back onto the stack
-  as a side-effect was corrupting the IL
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#50 Mocking merge on refactored
+
+RealmQuery.cs 
+- refactored out all the classes and types
+- QueryProviders.cs
+- RealmQueryProvider.cs
+- RealmQueryVisitor.cs
+- TypeSystem.cs
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#50 LINQ on one table - weaving in the sample
+
+RealmNet.Tests
+- packages.config
+  removed bogus old line   <package id="FodyCecil" version="1.28.3" targetFramework="net45" developmentDependency="true" />
+- used NuGet PM Install-Package Fody -Version 1.28.3 to get same version as other projects
+
+FodyWeavers.xml
+- edited the generated file adding   <RealmNetWeaver />
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#50 LINQ on one table - update Mock for new ICoreProvider interfaces
+
+MockCoreProvider
+- MockSharedGroupHandle added as nested class
+- CreateSharedGroup
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#50 LINQ on one table - single query operators mocked
+	
+QueryTests.cs
+- removed old tests
+
+MockQueryTestsBase.cs
+- added with common test data setup
+- removed PrepareForQueries - not needed for mocking tests
+
+MockQuerySingleTableTests.cs
+- added (copying some logic from previous QueryTests.cs editing)
+- TestWhereQueryWithEqualToString refactored to combinatorial TestWhereQueryWithEqual
+- SetupCreatedFourRows removed as no longer loading data
+
+MockSharedGroupHandle
+- added
+
+RealmPureNetLINQ.sln
+- added to only build AnyCPU with just RealmNet tests
+
+
+ICoreProvider.cs
+- QueryEqual renamed AddQueryEqual
+- added declarations for 
+	AddQueryNotEqual
+	AddQueryLessThan
+	AddQueryLessOrEqual
+	AddQueryGreaterThan
+	AddQueryGreaterOrEqual
+
+
+MockCoreProvider.cs
+- QueryEqual renamed AddQueryEqual
+- added declarations for 
+	AddQueryNotEqual
+	AddQueryLessThan
+	AddQueryLessOrEqual
+	AddQueryGreaterThan
+	AddQueryGreaterOrEqual
+
+
+RealmQueryVisitor.cs
+- VisitBinary 
+  - refactored a bit
+  - checks arguments
+  - added rest of binary clauses
   
+
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-#59 Fixing Configs
+#50 LINQ on one table - simple tests of results with LINQ to Objects
 
-Interop.Win32.csproj
-- add  Condition="'$(Platform)' == 'x64'" on the ItemGroup for wrappersx64
-- add  Condition="'$(Platform)' == 'x6'" on the ItemGroup for wrappersx64
+QueryTestsBase.cs
+- added
 
+QuerySingleTableTests.cs
+- added
+
+RealmNet.Tests
+- added configs for x64, x86, ARM and iOS defining USING_REALM_BACKEND
 
 Realm.sln
-- use new x86/64 configs for Interop.win32
-- configurations changed to exclude things for other platforms 
-  (Debug only, need to go through and do all for Release - see #60
-  
-  
+- set Debug config mappings to build new RealmNet.Tests configs as per solution platform
+
+
