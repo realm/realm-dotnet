@@ -116,15 +116,38 @@ namespace RealmNet.Interop
         {
             var columnIndex = UnsafeNativeMethods.query_get_column_index((QueryHandle)queryHandle, columnName);
 
-            if (value.GetType() == typeof(bool))
-                UnsafeNativeMethods.query_bool_equal((QueryHandle)queryHandle, columnIndex, (bool)value);
-            else if (value.GetType() == typeof(string))
+            var valueType = value.GetType();
+            if (value.GetType() == typeof(string))
                 UnsafeNativeMethods.query_string_equal((QueryHandle)queryHandle, columnIndex, (string)value);
+            else if (valueType == typeof(bool))
+                UnsafeNativeMethods.query_bool_equal((QueryHandle)queryHandle, columnIndex, (bool)value);
+            else if (valueType == typeof(int))
+                UnsafeNativeMethods.query_int_equal((QueryHandle)queryHandle, columnIndex, (int)value);
+            else if (valueType == typeof(float))
+                UnsafeNativeMethods.query_float_equal((QueryHandle)queryHandle, columnIndex, (float)value);
+            else if (valueType == typeof(double))
+                UnsafeNativeMethods.query_double_equal((QueryHandle)queryHandle, columnIndex, (double)value);
+            else
+                throw new NotImplementedException();
         }
 
         public void AddQueryNotEqual(IQueryHandle queryHandle, string columnName, object value)
         {
-            throw new NotImplementedException();
+            var columnIndex = UnsafeNativeMethods.query_get_column_index((QueryHandle)queryHandle, columnName);
+
+            var valueType = value.GetType();
+            if (value.GetType() == typeof(string))
+                UnsafeNativeMethods.query_string_not_equal((QueryHandle)queryHandle, columnIndex, (string)value);
+            else if (valueType == typeof(bool))
+                UnsafeNativeMethods.query_bool_not_equal((QueryHandle)queryHandle, columnIndex, (bool)value);
+            else if (valueType == typeof(int))
+                UnsafeNativeMethods.query_int_not_equal((QueryHandle)queryHandle, columnIndex, (int)value);
+            else if (valueType == typeof(float))
+                UnsafeNativeMethods.query_float_not_equal((QueryHandle)queryHandle, columnIndex, (float)value);
+            else if (valueType == typeof(double))
+                UnsafeNativeMethods.query_double_not_equal((QueryHandle)queryHandle, columnIndex, (double)value);
+            else
+                throw new NotImplementedException();
         }
 
         public void AddQueryLessThan(IQueryHandle queryHandle, string columnName, object value)

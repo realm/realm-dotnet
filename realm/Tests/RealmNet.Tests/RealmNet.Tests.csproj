@@ -164,9 +164,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Interop\Interop.XamarinAndroid\Interop.XamarinAndroid.csproj">
-      <Project>{2379D669-4F4B-4FF6-AF8A-49FEA981EFC3}</Project>
-      <Name>Interop.XamarinAndroid</Name>
+    <ProjectReference Include="..\..\Interop\Interop.Win32\Interop.Win32.csproj">
+      <Project>{c211ede7-cc8e-4f53-a9df-0b105a350bbf}</Project>
+      <Name>Interop.Win32</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Interop\InteropShared\InteropShared.csproj">
       <Project>{8B451911-321F-4244-9999-C1678BED060D}</Project>

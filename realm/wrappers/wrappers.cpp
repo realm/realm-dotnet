@@ -241,20 +241,7 @@ extern "C" {
 
 #pragma endregion // }}}
 
-#pragma region query // {{{
-
-  //the query_bool_equal will never return null
-  REALM_CORE_WRAPPER_API void query_bool_equal(Query * query_ptr, size_t columnIndex, size_t value)
-  {    
-    query_ptr->equal(columnIndex,size_t_to_bool(value));    
-    //return &(query_ptr->equal(columnIndex,size_t_to_bool(value)));//is this okay? will I get the address of a Query object that i can call in another pinvoke?
-  }
-
-  REALM_CORE_WRAPPER_API void query_string_equal(Query * query_ptr, size_t columnIndex, uint16_t* value, size_t value_len)
-  {    
-    CSStringAccessor str(value, value_len);
-    query_ptr->equal(columnIndex, str);
-  }
+#pragma region query general // {{{
 
   REALM_CORE_WRAPPER_API size_t query_find(Query * query_ptr, size_t begin_at_table_row) 
   {
@@ -270,6 +257,80 @@ extern "C" {
   }
 
 #pragma endregion // }}}
+
+#pragma region query string // {{{
+
+  REALM_CORE_WRAPPER_API void query_string_equal(Query * query_ptr, size_t columnIndex, uint16_t* value, size_t value_len)
+  {
+	  CSStringAccessor str(value, value_len);
+	  query_ptr->equal(columnIndex, str);
+  }
+
+  REALM_CORE_WRAPPER_API void query_string_not_equal(Query * query_ptr, size_t columnIndex, uint16_t* value, size_t value_len)
+  {
+	  CSStringAccessor str(value, value_len);
+	  query_ptr->not_equal(columnIndex, str);
+  }
+
+#pragma endregion // }}}
+
+
+#pragma region query bool // {{{
+  REALM_CORE_WRAPPER_API void query_bool_equal(Query * query_ptr, size_t columnIndex, size_t value)
+  {
+	  query_ptr->equal(columnIndex, size_t_to_bool(value));
+  }
+
+  REALM_CORE_WRAPPER_API void query_bool_not_equal(Query * query_ptr, size_t columnIndex, size_t value)
+  {
+	  query_ptr->not_equal(columnIndex, size_t_to_bool(value));
+  }
+
+#pragma endregion // }}}
+
+
+#pragma region query int // {{{
+  REALM_CORE_WRAPPER_API void query_int_equal(Query * query_ptr, size_t columnIndex, size_t value)
+  {
+	  query_ptr->equal(columnIndex, static_cast<int>(value));
+  }
+
+  REALM_CORE_WRAPPER_API void query_int_not_equal(Query * query_ptr, size_t columnIndex, size_t value)
+  {
+	  query_ptr->not_equal(columnIndex, static_cast<int>(value));
+  }
+
+  REALM_CORE_WRAPPER_API void query_int_less(Query * query_ptr, size_t columnIndex, size_t value)
+  {
+	  query_ptr->less(columnIndex, static_cast<int>(value));
+  }
+
+  REALM_CORE_WRAPPER_API void query_int_less_equal(Query * query_ptr, size_t columnIndex, size_t value)
+  {
+	  query_ptr->less_equal(columnIndex, static_cast<int>(value));
+  }
+
+  REALM_CORE_WRAPPER_API void query_int_greater(Query * query_ptr, size_t columnIndex, size_t value)
+  {
+	  query_ptr->greater(columnIndex, static_cast<int>(value));
+  }
+
+  REALM_CORE_WRAPPER_API void query_int_greater_equal(Query * query_ptr, size_t columnIndex, size_t value)
+  {
+	  query_ptr->greater_equal(columnIndex, static_cast<int>(value));
+  }
+
+#pragma endregion // }}}
+
+
+#pragma region query float // {{{
+#pragma endregion // }}}
+
+
+#pragma region query double // {{{
+#pragma endregion // }}}
+
+
 
 #pragma region group // {{{
 

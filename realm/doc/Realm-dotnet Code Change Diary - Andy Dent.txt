@@ -128,3 +128,35 @@ Realm.sln
 - set Debug config mappings to build new RealmNet.Tests configs as per solution platform
 
 
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#66 LINQ through to the core - string, bool equals and int searches
+
+wrappers.cpp
+added
+- query_string_not_equal
+- query_bool_not_equal
+- query_int_equal, query_int_not_equal, query_int_less, query_int_less_equal, query_int_greater, query_int_greater_equal
+
+
+UnsafeNativeMethods.shared.cs
+added
+- query_string_not_equal
+- query_bool_not_equal
+- query_int_equal, query_int_not_equal, query_int_less, query_int_less_equal, query_int_greater, query_int_greater_equal
+
+added stubs
+- query_float_equal, query_float_not_equal
+
+
+CoreProviderShared.cs
+- AddQueryEqual Added int, float and double cases
+- AddQueryNotEqual filled out with string, bool, int, float & double cases
+
+
+QueryTestsBase.cs
+- Setup 
+  - GetTempFileName
+  - commented out float and double fields after realising not yet imp
+
+Interop.Win32.csproj
+- set back target platform from .Net 4.6 to 4.5 for compatibility with others

@@ -186,6 +186,8 @@ namespace Tests
         #endregion  // Int Comparisons
 
 
+        /*
+        Not until have setting float and double issue #67, sep issue #68 for implementing these
         #region Float Comparisons
         [Test]
         public void TestWhereQueryWithEqualToFloat()
@@ -358,6 +360,7 @@ namespace Tests
             Assert.AreEqual(3, res.Count());
         }
         #endregion  // Double Comparisons
+    */
 
         #region DateTime Comparisons
         // TODO full range
