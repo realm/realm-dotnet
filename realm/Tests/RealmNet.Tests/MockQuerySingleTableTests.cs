@@ -14,13 +14,6 @@ namespace Tests
     public class MockQuerySingleTableTests : MockQueryTestsBase
     {
         [Test]
-        public void SetupCreatedFourRows()
-        {
-            // Assert
-            Assert.AreEqual(4, providerLog.Count((msg) => msg.StartsWith("AddEmptyRow"))); 
-        }
-
-        [Test]
         public void AllShouldReturnQueryable()
         {
             // Arrange
@@ -30,7 +23,7 @@ namespace Tests
             var res = query.ToList();
 
             // Assert
-            Assert.That(query !=null && query is IQueryable);  // Resharper says latter is always true by compilation but worth making the point
+            Assert.That(query !=null);
             Assert.That(res != null);
             Assert.AreEqual(1, providerLog.Count((msg) => msg.StartsWith("ExecuteQuery")));
         }

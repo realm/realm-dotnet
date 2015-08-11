@@ -71,10 +71,12 @@ QueryTests.cs
 
 MockQueryTestsBase.cs
 - added with common test data setup
+- removed PrepareForQueries - not needed for mocking tests
 
 MockQuerySingleTableTests.cs
 - added (copying some logic from previous QueryTests.cs editing)
 - TestWhereQueryWithEqualToString refactored to combinatorial TestWhereQueryWithEqual
+- SetupCreatedFourRows removed as no longer loading data
 
 MockSharedGroupHandle
 - added
