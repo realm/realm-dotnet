@@ -111,3 +111,20 @@ RealmQueryVisitor.cs
   - checks arguments
   - added rest of binary clauses
   
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#50 LINQ on one table - simple tests of results with LINQ to Objects
+
+QueryTestsBase.cs
+- added
+
+QuerySingleTableTests.cs
+- added
+
+RealmNet.Tests
+- added configs for x64, x86, ARM and iOS defining USING_REALM_BACKEND
+
+Realm.sln
+- set Debug config mappings to build new RealmNet.Tests configs as per solution platform
+
+
