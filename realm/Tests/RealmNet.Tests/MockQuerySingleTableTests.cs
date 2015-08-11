@@ -58,6 +58,38 @@ namespace Tests
         }
         #endregion
 
+
+        #region Bool Comparisons
+        [Test]
+        public void TestWhereQueryWithEqualToBool()
+        {
+            // Arrange
+            var query = testEntities.Where(te => te.IsCool == false);
+
+            // Act
+            var res = query.ToList();
+
+            // Assert
+            Assert.That(res != null);
+            Assert.AreEqual(1, providerLog.Count((msg) => msg.StartsWith("AddQueryEqual")));
+        }
+
+        [Test]
+        public void TestWhereQueryWithNotEqualToBool()
+        {
+            // Arrange
+            var query = testEntities.Where(te => te.IsCool != false);
+
+            // Act
+            var res = query.ToList();
+
+            // Assert
+            Assert.That(res != null);
+            Assert.AreEqual(1, providerLog.Count((msg) => msg.StartsWith("AddQueryNotEqual")));
+        }
+        #endregion
+
+
         #region Int Comparisons
         [Test]
         public void TestWhereQueryWithEqualToInt()
@@ -143,6 +175,93 @@ namespace Tests
             Assert.AreEqual(1, providerLog.Count((msg) => msg.StartsWith("AddQueryGreaterThanOrEqual")));
         }
         #endregion  // Int Comparisons
+
+
+        #region Float Comparisons
+        [Test]
+        public void TestWhereQueryWithEqualToFloat()
+        {
+            // Arrange
+            var query = testEntities.Where(te => te.FloatNum == 0.99);
+
+            // Act
+            var res = query.ToList();
+
+            // Assert
+            Assert.That(res != null);
+            Assert.AreEqual(1, providerLog.Count((msg) => msg.StartsWith("AddQueryEqual")));
+        }
+
+        [Test]
+        public void TestWhereQueryWithNotEqualToFloat()
+        {
+            // Arrange
+            var query = testEntities.Where(te => te.FloatNum != 0.0001);
+
+            // Act
+            var res = query.ToList();
+
+            // Assert
+            Assert.That(res != null);
+            Assert.AreEqual(1, providerLog.Count((msg) => msg.StartsWith("AddQueryNotEqual")));
+        }
+
+        [Test]
+        public void TestWhereQueryWithLessThanFloat()
+        {
+            // Arrange
+            var query = testEntities.Where(te => te.FloatNum < 4.2);
+
+            // Act
+            var res = query.ToList();
+
+            // Assert
+            Assert.That(res != null);
+            Assert.AreEqual(1, providerLog.Count((msg) => msg.StartsWith("AddQueryLessThan")));
+        }
+
+        [Test]
+        public void TestWhereQueryWithLessThanOrEqualFloat()
+        {
+            // Arrange
+            var query = testEntities.Where(te => te.FloatNum <= 4.2);
+
+            // Act
+            var res = query.ToList();
+
+            // Assert
+            Assert.That(res != null);
+            Assert.AreEqual(1, providerLog.Count((msg) => msg.StartsWith("AddQueryLessThanOrEqual")));
+        }
+
+        [Test]
+        public void TestWhereQueryWithGreaterThanFloat()
+        {
+            // Arrange
+            var query = testEntities.Where(te => te.FloatNum > 42.999);
+
+            // Act
+            var res = query.ToList();
+
+            // Assert
+            Assert.That(res != null);
+            Assert.AreEqual(1, providerLog.Count((msg) => msg.StartsWith("AddQueryGreaterThan")));
+        }
+
+        [Test]
+        public void TestWhereQueryWithGreaterThanOrEqualFloat()
+        {
+            // Arrange
+            var query = testEntities.Where(te => te.FloatNum >= 1.0e-5);
+
+            // Act
+            var res = query.ToList();
+
+            // Assert
+            Assert.That(res != null);
+            Assert.AreEqual(1, providerLog.Count((msg) => msg.StartsWith("AddQueryGreaterThanOrEqual")));
+        }
+        #endregion  // Float Comparisons
 
 
         #region Double Comparisons

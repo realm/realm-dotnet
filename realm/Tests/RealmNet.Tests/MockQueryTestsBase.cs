@@ -16,7 +16,9 @@ namespace Tests
         protected class TestEntity : RealmObject
         {
             public string NameStr { get; set; }
+            public bool IsCool { get; set; }
             public int IntNum { get; set; }
+            public double FloatNum { get; set; }
             public double DoubleNum { get; set; }
         }
 
