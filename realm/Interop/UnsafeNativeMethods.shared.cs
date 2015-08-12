@@ -95,25 +95,9 @@ namespace RealmNet.Interop
 
         #endregion
 
-        #region internal static long table_add_column(TableHandle tableHandle, DataType type, string name)
-
-        [DllImport(InteropConfig.L64, EntryPoint = "table_add_column", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_add_column64(TableHandle tableHandle, IntPtr type,
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_add_column", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern IntPtr table_add_column(TableHandle tableHandle, IntPtr type,
             [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
-
-        [DllImport(InteropConfig.L32, EntryPoint = "table_add_column", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_add_column32(TableHandle tableHandle, IntPtr type,
-            [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
-
-        internal static long table_add_column(TableHandle tableHandle, DataType type, string name)
-        {
-            if (InteropConfig.Is64Bit)
-                return (long)table_add_column64(tableHandle, DataTypeToIntPtr(type), name, (IntPtr)name.Length);
-            else
-                return (long)table_add_column32(tableHandle, DataTypeToIntPtr(type), name, (IntPtr)name.Length);
-        }
-
-        #endregion
 
         #region internal static long table_add_empty_row(TableHandle tableHandle, long numberOfRows)
 

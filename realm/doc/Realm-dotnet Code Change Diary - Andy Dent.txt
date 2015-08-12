@@ -160,3 +160,23 @@ QueryTestsBase.cs
 
 Interop.Win32.csproj
 - set back target platform from .Net 4.6 to 4.5 for compatibility with others
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#66 LINQ through to the core - refactoring platforms
+
+
+Interop.Win32.csproj
+- added REALM_32 and REALM_64 
+
+InteropConfig.cs
+- Is64Bit added cases to use hardcoding depending on REALM_32 and REALM_64
+- added DLL_NAME
+
+CoreProvider.shared.cs
+- RealmColType added conversion function
+- AddColumnToTable refactored to one-liner
+
+UnsafeNativeMethods.shared.cs
+- AddColumnToTable stripped back to just declaration using DLL_NAME
+
