@@ -10,6 +10,32 @@ namespace RealmNet.Interop
 {
     public class CoreProvider : ICoreProvider
     {
+        // returns magic numbers from core, formerly the enum DataType in UnsafeNativeMethods.shared.cs
+        static internal IntPtr RealmColType(Type columnType)
+        {
+            // ordered in decreasing likelihood of type
+            if (columnType == typeof(string))
+                return (IntPtr)2;
+            if (columnType == typeof(int))
+                return (IntPtr)0;
+            if (columnType == typeof(float))
+                return (IntPtr)9;
+            if (columnType == typeof(double))
+                return (IntPtr)10;
+            if (columnType == typeof(DateTime))
+                return (IntPtr)7;
+            if (columnType == typeof(bool))
+                return (IntPtr)1;
+            /*
+            TODO
+                    Binary = 4,
+                    Table = 5,
+                    Mixed = 6,
+
+            */
+            throw new NotImplementedException();
+        }
+
         public ISharedGroupHandle CreateSharedGroup(string filename)
         {
             return UnsafeNativeMethods.new_shared_group_file_defaults(filename);
@@ -39,14 +65,7 @@ namespace RealmNet.Interop
 
         public void AddColumnToTable(IGroupHandle groupHandle, string tableName, string columnName, Type columnType)
         {
-            var tableHandle = GetTable(groupHandle, tableName);
-            DataType dataType = DataType.Int;
-            if (columnType == typeof(string))
-                dataType = DataType.String;
-            else if (columnType == typeof(bool))
-                dataType = DataType.Bool; 
-                
-            var columnIndex = UnsafeNativeMethods.table_add_column(tableHandle, dataType, columnName);
+            var columnIndex = UnsafeNativeMethods.table_add_column(GetTable(groupHandle, tableName), RealmColType(columnType), columnName, (IntPtr)columnName.Length);
         }
 
         public long AddEmptyRow(IGroupHandle groupHandle, string tableName)
@@ -116,15 +135,38 @@ namespace RealmNet.Interop
         {
             var columnIndex = UnsafeNativeMethods.query_get_column_index((QueryHandle)queryHandle, columnName);
 
-            if (value.GetType() == typeof(bool))
-                UnsafeNativeMethods.query_bool_equal((QueryHandle)queryHandle, columnIndex, (bool)value);
-            else if (value.GetType() == typeof(string))
+            var valueType = value.GetType();
+            if (value.GetType() == typeof(string))
                 UnsafeNativeMethods.query_string_equal((QueryHandle)queryHandle, columnIndex, (string)value);
+            else if (valueType == typeof(bool))
+                UnsafeNativeMethods.query_bool_equal((QueryHandle)queryHandle, columnIndex, (bool)value);
+            else if (valueType == typeof(int))
+                UnsafeNativeMethods.query_int_equal((QueryHandle)queryHandle, columnIndex, (int)value);
+            else if (valueType == typeof(float))
+                UnsafeNativeMethods.query_float_equal((QueryHandle)queryHandle, columnIndex, (float)value);
+            else if (valueType == typeof(double))
+                UnsafeNativeMethods.query_double_equal((QueryHandle)queryHandle, columnIndex, (double)value);
+            else
+                throw new NotImplementedException();
         }
 
         public void AddQueryNotEqual(IQueryHandle queryHandle, string columnName, object value)
         {
-            throw new NotImplementedException();
+            var columnIndex = UnsafeNativeMethods.query_get_column_index((QueryHandle)queryHandle, columnName);
+
+            var valueType = value.GetType();
+            if (value.GetType() == typeof(string))
+                UnsafeNativeMethods.query_string_not_equal((QueryHandle)queryHandle, columnIndex, (string)value);
+            else if (valueType == typeof(bool))
+                UnsafeNativeMethods.query_bool_not_equal((QueryHandle)queryHandle, columnIndex, (bool)value);
+            else if (valueType == typeof(int))
+                UnsafeNativeMethods.query_int_not_equal((QueryHandle)queryHandle, columnIndex, (int)value);
+            else if (valueType == typeof(float))
+                UnsafeNativeMethods.query_float_not_equal((QueryHandle)queryHandle, columnIndex, (float)value);
+            else if (valueType == typeof(double))
+                UnsafeNativeMethods.query_double_not_equal((QueryHandle)queryHandle, columnIndex, (double)value);
+            else
+                throw new NotImplementedException();
         }
 
         public void AddQueryLessThan(IQueryHandle queryHandle, string columnName, object value)

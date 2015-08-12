@@ -45,7 +45,7 @@ namespace Tests
         {
             // use a mock where we're going to collate all the calls
             Realm.ActiveCoreProvider = new CoreProvider();
-            realm = Realm.GetInstance();
+            realm = Realm.GetInstance(System.IO.Path.GetTempFileName());
             testEntities = realm.All<TestEntity>();
 
             using (var writeWith = realm.BeginWrite())  // not strictly necessary for Mock backend
@@ -54,14 +54,14 @@ namespace Tests
                 te1.NameStr = "John";
                 te1.IsCool = false;
                 te1.IntNum = 1;
-                te1.FloatNum = 0.99;
-                te1.DoubleNum = 0.99;
+                // not until #67 te1.FloatNum = 0.99;
+                // not until #67 te1.DoubleNum = 0.99;
                 var te2 = realm.CreateObject<TestEntity>();
                 te2.NameStr = "Peter";
                 te2.IsCool = false;
                 te2.IntNum = 2;
-                te2.FloatNum = 999.99;
-                te2.DoubleNum = 999.99;
+                // not until #67 te2.FloatNum = 999.99;
+                // not until #67 te2.DoubleNum = 999.99;
                 // TODO we should make more idiomatic syntax work such as 
                 //var autoAdded = new TestEntity {Str = "Johnnie", Number = 3};
                 //autoAdded = new TestEntity { Str = "Xanh Li", Number = 4 };
@@ -69,14 +69,14 @@ namespace Tests
                 te3.NameStr = "Johnnie";
                 te3.IsCool = true;
                 te3.IntNum = 3;
-                te3.FloatNum = 3.1415;
-                te3.DoubleNum = 3.1415;
+                // not until #67 te3.FloatNum = 3.1415;
+                // not until #67 te3.DoubleNum = 3.1415;
                 var te4 = realm.CreateObject<TestEntity>();
                 te4.NameStr = "Xanh Li";
                 te4.IsCool = false;
                 te4.IntNum = 9;
-                te4.FloatNum = -5.0e6;
-                te4.DoubleNum = -5.0e6;
+                // not until #67 te4.FloatNum = -5.0e6;
+                // not until #67 te4.DoubleNum = -5.0e6;
                 writeWith.Commit();
             }
         }
