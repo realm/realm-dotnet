@@ -186,15 +186,16 @@ UnsafeNativeMethods.shared.cs
 UnsafeNativeMethods.shared.cs
 - ALL wrapper functions (except table_get_string) selecting between 32 and 64bit variations 
   cleaned up to single extern
-- table_get_string removed bitness switch but left its loop
+- table_get_string removed 
 
 CoreProvider.shared.cs
 - added BoolToIntPtr and IntPtrToBool copied from UnsafeNativeMethods.shared.cs
+- added StrBufferOverflow, StrBufToStr and StrAllocateBuffer from UnsafeNativeMethods.shared.cs
 
 Cleaned up functions to use externs rather than wrappers from UnsafeNativeMethods:
 - AddEmptyRow
 - SetValue<T>
-- GetValue<T> except still use wrapper table_get_string
+- GetValue<T> 
 - GetColumnIndex also changed return type to IntPtr
 - AddQueryEqual
 - AddQueryNotEqual

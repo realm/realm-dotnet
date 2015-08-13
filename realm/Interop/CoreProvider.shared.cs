@@ -1,11 +1,8 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using InteropShared;
-using RealmNet;
-using RealmNet.Interop;
-
+using System.Runtime.InteropServices;
 
 namespace RealmNet.Interop
 {
@@ -48,7 +45,34 @@ namespace RealmNet.Interop
         {
             return (IntPtr)1 == value;
         }
-        #endregion
+
+
+        private static IntPtr StrAllocateBuffer(out long currentBufferSizeChars, long bufferSizeNeededChars)
+        {
+            currentBufferSizeChars = bufferSizeNeededChars;
+            return Marshal.AllocHGlobal((IntPtr)(bufferSizeNeededChars * sizeof(char)));
+            //allocHGlobal instead of  AllocCoTaskMem because allcHGlobal allows lt 2 gig on 64 bit (not that .net supports that right now, but at least this allocation will work with lt 32 bit strings)   
+        }
+
+        private static string StrBufToStr(IntPtr buffer, int bufferSizeNeededChars)
+        {
+            string retStr = bufferSizeNeededChars > 0 ? Marshal.PtrToStringUni(buffer, bufferSizeNeededChars) : "";
+            //return "" if the string is empty, otherwise copy data from the buffer
+            Marshal.FreeHGlobal(buffer);
+            return retStr;
+        }
+        private static Boolean StrBufferOverflow(IntPtr buffer, long currentBufferSizeChars, long bufferSizeNeededChars)
+        {
+            if (currentBufferSizeChars < bufferSizeNeededChars)
+            {
+                Marshal.FreeHGlobal(buffer);
+
+                return true;
+            }
+            return false;
+        }
+
+        #endregion  // helpers
 
 
         public ISharedGroupHandle CreateSharedGroup(string filename)
@@ -95,8 +119,18 @@ namespace RealmNet.Interop
 
             if (typeof(T) == typeof(string))
             {
-                var value = UnsafeNativeMethods.table_get_string(tableHandle, columnIndex, (IntPtr)rowIndex);
-                return (T)Convert.ChangeType(value, typeof(T));
+                long bufferSizeNeededChars = 16;
+                IntPtr buffer;
+                long currentBufferSizeChars;
+
+                do
+                {
+                    buffer = StrAllocateBuffer(out currentBufferSizeChars, bufferSizeNeededChars);
+                    bufferSizeNeededChars = (long)UnsafeNativeMethods.table_get_string(tableHandle, columnIndex, (IntPtr)rowIndex, buffer,
+                            (IntPtr)currentBufferSizeChars);
+
+                } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
+                return (T)Convert.ChangeType(StrBufToStr(buffer, (int)bufferSizeNeededChars), typeof(T));
             }
             else if (typeof(T) == typeof(bool))
             {

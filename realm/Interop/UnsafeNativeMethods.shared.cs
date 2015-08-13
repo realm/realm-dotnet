@@ -6,6 +6,8 @@ using InteropShared;
 
 namespace RealmNet.Interop
 {
+    // TODO probably remove this and the helpers IntPtrToDataType and DataTypeToIntPtr 
+    // when some of the NotImplemented accessors below are finished
     public enum DataType
     {
         Int = 0,
@@ -41,35 +43,7 @@ namespace RealmNet.Interop
         [DllImport(InteropConfig.L64, EntryPoint = "realm_get_ver_minor", CallingConvention = CallingConvention.Cdecl)]
         internal static extern int GetMinorVer();
         */
-        #region helpers
 
-        private static IntPtr StrAllocateBuffer(out long currentBufferSizeChars, long bufferSizeNeededChars)
-        {
-            currentBufferSizeChars = bufferSizeNeededChars;
-            return Marshal.AllocHGlobal((IntPtr)(bufferSizeNeededChars * sizeof(char)));
-            //allocHGlobal instead of  AllocCoTaskMem because allcHGlobal allows lt 2 gig on 64 bit (not that .net supports that right now, but at least this allocation will work with lt 32 bit strings)   
-        }
-
-        private static Boolean StrBufferOverflow(IntPtr buffer, long currentBufferSizeChars, long bufferSizeNeededChars)
-        {
-            if (currentBufferSizeChars < bufferSizeNeededChars)
-            {
-                Marshal.FreeHGlobal(buffer);
-
-                return true;
-            }
-            return false;
-        }
-
-        private static string StrBufToStr(IntPtr buffer, int bufferSizeNeededChars)
-        {
-            string retStr = bufferSizeNeededChars > 0 ? Marshal.PtrToStringUni(buffer, bufferSizeNeededChars) : "";
-            //return "" if the string is empty, otherwise copy data from the buffer
-            Marshal.FreeHGlobal(buffer);
-            return retStr;
-        }
-
-        #endregion
 
 // TODO work out if new_table should be mapped as it's not currently in use
 /*
@@ -92,24 +66,6 @@ namespace RealmNet.Interop
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_string", CallingConvention = CallingConvention.Cdecl)]
         internal static extern IntPtr table_get_string(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex,
             IntPtr buffer, IntPtr bufsize);
-
-        internal static string table_get_string(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex)
-        {
-            long bufferSizeNeededChars = 16;
-            IntPtr buffer;
-            long currentBufferSizeChars;
-
-            do
-            {
-                buffer = StrAllocateBuffer(out currentBufferSizeChars, bufferSizeNeededChars);
-                    bufferSizeNeededChars =
-                        (long)
-                        table_get_string(tableHandle, columnIndex, rowIndex, buffer,
-                            (IntPtr)currentBufferSizeChars);
-
-            } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
-            return StrBufToStr(buffer, (int)bufferSizeNeededChars);
-        }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_bool", CallingConvention = CallingConvention.Cdecl)]
         internal static extern void table_set_bool(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, IntPtr value);
