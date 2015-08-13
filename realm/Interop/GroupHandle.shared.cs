@@ -34,7 +34,7 @@ namespace RealmNet.Interop
             {}
             finally
             {              
-              th.SetHandle(UnsafeNativeMethods.group_get_or_add_table(this, name));//if something goes wrong in c++ land IntPtr.Zero is returned
+                th.SetHandle(UnsafeNativeMethods.group_get_or_add_table(this, name, (IntPtr)name.Length));//if something goes wrong in c++ land IntPtr.Zero is returned
             }//at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
             if (th.IsInvalid)
             {

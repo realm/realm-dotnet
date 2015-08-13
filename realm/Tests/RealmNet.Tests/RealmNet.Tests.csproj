@@ -164,9 +164,17 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Interop\Interop.Win32\Interop.Win32.csproj">
+    <ProjectReference Include="..\..\Interop\Interop.Win32\Interop.Win32.csproj" Condition="'$(Platform)' == 'x86' Or '$(Platform)' == 'x64'">
       <Project>{c211ede7-cc8e-4f53-a9df-0b105a350bbf}</Project>
       <Name>Interop.Win32</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Interop\Interop.XamarinAndroid\Interop.XamarinAndroid.csproj" Condition="'$(Platform)' == 'ARM'">
+      <Project>{2379d669-4f4b-4ff6-af8a-49fea981efc3}</Project>
+      <Name>Interop.XamarinAndroid</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Interop\Interop.XamarinIOS\Interop.XamarinIOS.csproj" Condition="'$(Platform)' == 'iPhone' Or '$(Platform)' == 'iPhoneSimulator'">
+      <Project>{a55bd773-5a29-4b2a-9db7-1ab1dd38b537}</Project>
+      <Name>Interop.XamarinIOS</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Interop\InteropShared\InteropShared.csproj">
       <Project>{8B451911-321F-4244-9999-C1678BED060D}</Project>

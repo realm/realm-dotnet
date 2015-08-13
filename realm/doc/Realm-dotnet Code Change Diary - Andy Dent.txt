@@ -169,7 +169,7 @@ Interop.Win32.csproj
 Interop.Win32.csproj
 - added REALM_32 and REALM_64 
 
-InteropConfig.cs
+Interop.Win32/InteropConfig.cs
 - Is64Bit added cases to use hardcoding depending on REALM_32 and REALM_64
 - added DLL_NAME
 
@@ -180,3 +180,39 @@ CoreProvider.shared.cs
 UnsafeNativeMethods.shared.cs
 - AddColumnToTable stripped back to just declaration using DLL_NAME
 
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#79 propagating refactoring pattern from #66
+
+UnsafeNativeMethods.shared.cs
+- ALL wrapper functions (except table_get_string) selecting between 32 and 64bit variations 
+  cleaned up to single extern
+- table_get_string removed bitness switch but left its loop
+
+CoreProvider.shared.cs
+- added BoolToIntPtr and IntPtrToBool copied from UnsafeNativeMethods.shared.cs
+
+Cleaned up functions to use externs rather than wrappers from UnsafeNativeMethods:
+- AddEmptyRow
+- SetValue<T>
+- GetValue<T> except still use wrapper table_get_string
+- GetColumnIndex also changed return type to IntPtr
+- AddQueryEqual
+- AddQueryNotEqual
+- CreateSharedGroup
+- HasTable
+- AddQueryNotEqual
+
+RealmNet.Tests.csproj
+- added references to interop Win32, IOS and Android with platform condition
+
+Interop.XamarinAndroid/InteropConfig.cs
+- Is64Bit added cases to use hardcoding depending on REALM_32 and REALM_64
+- added DLL_NAME
+
+Interop.XamarinIOS/InteropConfig.cs
+- Is64Bit added cases to use hardcoding depending on REALM_32 and REALM_64
+- added DLL_NAME
+
+
+Interop.XamarinMac/InteropConfig.cs
+- added DLL_NAME

@@ -31,12 +31,16 @@ namespace RealmNet.Interop
             return (IntPtr)value;
         }
 
+        /*
+        AD Note I think these can probably go but will just comment out for now
+        If they were in regular use they would have linkage to 32bit as well?
+
         [DllImport(InteropConfig.L64, EntryPoint = "realm_get_wrapper_ver", CallingConvention = CallingConvention.Cdecl)]
         internal static extern IntPtr GetWrapperVer();
 
         [DllImport(InteropConfig.L64, EntryPoint = "realm_get_ver_minor", CallingConvention = CallingConvention.Cdecl)]
         internal static extern int GetMinorVer();
-
+        */
         #region helpers
 
         private static IntPtr StrAllocateBuffer(out long currentBufferSizeChars, long bufferSizeNeededChars)
@@ -65,90 +69,31 @@ namespace RealmNet.Interop
             return retStr;
         }
 
-        private static IntPtr BoolToIntPtr(Boolean value)
-        {
-            return value ? (IntPtr)1 : (IntPtr)0;
-        }
-
-        private static Boolean IntPtrToBool(IntPtr value)
-        {
-            return (IntPtr)1 == value;
-        }
-
         #endregion
 
-        #region internal static TableHandle new_table()
-
-        [DllImport(InteropConfig.L64, EntryPoint = "new_table", CallingConvention = CallingConvention.Cdecl)]
-        private static extern TableHandle new_table64();
-
-        [DllImport(InteropConfig.L32, EntryPoint = "new_table", CallingConvention = CallingConvention.Cdecl)]
-        private static extern TableHandle new_table32();
-
-        internal static TableHandle new_table()
-        {
-            if (InteropConfig.Is64Bit)
-                return new_table64();
-            else
-                return new_table32();
-        }
-
-        #endregion
+// TODO work out if new_table should be mapped as it's not currently in use
+/*
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "new_table", CallingConvention = CallingConvention.Cdecl)]
+        private static extern TableHandle new_table();
+*/
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_add_column", CallingConvention = CallingConvention.Cdecl)]
         internal static extern IntPtr table_add_column(TableHandle tableHandle, IntPtr type,
             [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
 
-        #region internal static long table_add_empty_row(TableHandle tableHandle, long numberOfRows)
 
-        [DllImport(InteropConfig.L64, EntryPoint = "table_add_empty_row", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_add_empty_row64(TableHandle tableHandle, IntPtr numRows);
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_add_empty_row", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern IntPtr table_add_empty_row(TableHandle tableHandle, IntPtr numRows);
 
-        [DllImport(InteropConfig.L32, EntryPoint = "table_add_empty_row", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_add_empty_row32(TableHandle tableHandle, IntPtr numRows);
-
-        internal static long table_add_empty_row(TableHandle tableHandle, long numberOfRows)
-        {
-            if (InteropConfig.Is64Bit)
-                return (long)table_add_empty_row64(tableHandle, (IntPtr)numberOfRows);
-            else
-                return (long)table_add_empty_row32(tableHandle, (IntPtr)numberOfRows);
-        }
-
-        #endregion
-
-        #region internal static void table_set_string(TableHandle tableHandle, long columnIndex, long rowIndex, string value)
-
-        //        TIGHTDB_C_CS_API void table_set_int(TableHandle* TablePtr, size_t column_ndx, size_t row_ndx, int64_t value)
-        [DllImport(InteropConfig.L64, EntryPoint = "table_set_string", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void table_set_string64(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx,
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_string", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void table_set_string(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx,
             [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
 
-        [DllImport(InteropConfig.L32, EntryPoint = "table_set_string", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void table_set_string32(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx,
-            [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
-
-        internal static void table_set_string(TableHandle tableHandle, long columnIndex, long rowIndex, string value)
-        {
-            if (InteropConfig.Is64Bit)
-                table_set_string64(tableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, value, (IntPtr)value.Length);
-            else
-                table_set_string32(tableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, value, (IntPtr)value.Length);
-        }
-
-        #endregion
-
-        #region internal static string table_get_string(TableHandle tableHandle, long columnIndex, long rowIndex)
-
-        [DllImport(InteropConfig.L64, EntryPoint = "table_get_string", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_get_string64(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex,
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_string", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern IntPtr table_get_string(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex,
             IntPtr buffer, IntPtr bufsize);
 
-        [DllImport(InteropConfig.L32, EntryPoint = "table_get_string", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_get_string32(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex,
-            IntPtr buffer, IntPtr bufsize);
-
-        internal static string table_get_string(TableHandle tableHandle, long columnIndex, long rowIndex)
+        internal static string table_get_string(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex)
         {
             long bufferSizeNeededChars = 16;
             IntPtr buffer;
@@ -157,378 +102,84 @@ namespace RealmNet.Interop
             do
             {
                 buffer = StrAllocateBuffer(out currentBufferSizeChars, bufferSizeNeededChars);
-
-                if (InteropConfig.Is64Bit)
                     bufferSizeNeededChars =
                         (long)
-                        table_get_string64(tableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, buffer,
-                            (IntPtr)currentBufferSizeChars);
-
-                else
-                    bufferSizeNeededChars =
-                        (long)
-                        table_get_string32(tableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, buffer,
+                        table_get_string(tableHandle, columnIndex, rowIndex, buffer,
                             (IntPtr)currentBufferSizeChars);
 
             } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
             return StrBufToStr(buffer, (int)bufferSizeNeededChars);
         }
 
-        #endregion
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_bool", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void table_set_bool(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, IntPtr value);
 
-        #region internal static void table_set_bool(TableHandle tableHandle, long columnIndex, long rowIndex, bool value)
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_bool", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern IntPtr table_get_bool(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex);
 
-        [DllImport(InteropConfig.L64, EntryPoint = "table_set_bool", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void table_set_bool64(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, IntPtr value);
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_where", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern IntPtr table_where(TableHandle handle);
 
-        [DllImport(InteropConfig.L32, EntryPoint = "table_set_bool", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void table_set_bool32(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, IntPtr value);
-
-        internal static void table_set_bool(TableHandle tableHandle, long columnIndex, long rowIndex, bool value)
-        {
-            var marshalledValue = BoolToIntPtr(value);
-
-            if (InteropConfig.Is64Bit)
-                table_set_bool64(tableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, marshalledValue);
-            else
-                table_set_bool32(tableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex, marshalledValue);
-        }
-
-        #endregion
-
-        #region internal static string table_get_bool(TableHandle tableHandle, long columnIndex, long rowIndex)
-
-        [DllImport(InteropConfig.L64, EntryPoint = "table_get_bool", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_get_bool64(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex);
-
-        [DllImport(InteropConfig.L32, EntryPoint = "table_get_bool", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_get_bool32(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex);
-
-        internal static bool table_get_bool(TableHandle tableHandle, long columnIndex, long rowIndex)
-        {
-            if (InteropConfig.Is64Bit)
-                return IntPtrToBool(table_get_bool64(tableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex));
-            else
-                return IntPtrToBool(table_get_bool64(tableHandle, (IntPtr)columnIndex, (IntPtr)rowIndex));
-        }
-
-        #endregion
-
-        #region internal static QueryHandle table_where(TableHandle tableHandle)
-
-        [DllImport(InteropConfig.L64, EntryPoint = "table_where", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_where64(TableHandle handle);
-
-        [DllImport(InteropConfig.L32, EntryPoint = "table_where", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_where32(TableHandle handle);
-
-        internal static IntPtr table_where(TableHandle tableHandle)
-        {
-            if (InteropConfig.Is64Bit)
-                return table_where64(tableHandle);
-            else
-                return table_where32(tableHandle);
-        }
-
-        internal static void table_view_sort(TableViewHandle TableViewHandle, long columnIndex, bool ascending)
-        {
-            throw new NotImplementedException();
-        }
-
-        #endregion
-
-        //in tightdb c++ each of the operator functions such as query_string_equal
+        //c++ each of the operator functions such as query_string_equal
         //returns q again, the QueryHandle object is re-used and keeps its pointer.
         //so high-level stuff should also return self, to enable stacking of operations QueryHandle.dothis().dothat()
 
-        #region query string
-        #region internal static void query_string_equal(QueryHandle queryHandle, long columnIndex, string value)
 
-        [DllImport(InteropConfig.L64, EntryPoint = "query_string_equal", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void query_string_equal64(QueryHandle queryPtr, IntPtr columnIndex,
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_string_equal", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void query_string_equal(QueryHandle queryPtr, IntPtr columnIndex,
             [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
 
-        [DllImport(InteropConfig.L32, EntryPoint = "query_string_equal", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void query_string_equal32(QueryHandle queryPtr, IntPtr columnIndex,
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_string_not_equal", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void query_string_not_equal(QueryHandle queryPtr, IntPtr columnIndex,
             [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
 
-        internal static void query_string_equal(QueryHandle queryHandle, long columnIndex, string value)
-        {
-            if (InteropConfig.Is64Bit)
-                query_string_equal64(queryHandle, (IntPtr)columnIndex, value, (IntPtr)value.Length);
-            else
-                query_string_equal32(queryHandle, (IntPtr)columnIndex, value, (IntPtr)value.Length);
-        }
-        #endregion
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_bool_equal", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void query_bool_equal(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
 
-        #region internal static void query_string_not_equal(QueryHandle queryHandle, long columnIndex, string value)
-        [DllImport(InteropConfig.L64, EntryPoint = "query_string_not_equal", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void query_string_not_equal64(QueryHandle queryPtr, IntPtr columnIndex,
-            [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_bool_not_equal", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void query_bool_not_equal(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
 
-        [DllImport(InteropConfig.L32, EntryPoint = "query_string_not_equal", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void query_string_not_equal32(QueryHandle queryPtr, IntPtr columnIndex,
-            [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_int_equal", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void query_int_equal(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
 
-        internal static void query_string_not_equal(QueryHandle queryHandle, long columnIndex, string value)
-        {
-            if (InteropConfig.Is64Bit)
-                query_string_not_equal64(queryHandle, (IntPtr)columnIndex, value, (IntPtr)value.Length);
-            else
-                query_string_not_equal32(queryHandle, (IntPtr)columnIndex, value, (IntPtr)value.Length);
-        }
-        #endregion
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_int_not_equal", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void query_int_not_equal(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
 
-        #endregion // query string
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_int_less", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void query_int_less(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
 
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_int_less_equal", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void query_int_less_equal(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
 
-        #region query bool
-        #region internal static void query_bool_equal(QueryHandle queryHandle, long columnIndex, bool value)
-        [DllImport(InteropConfig.L64, EntryPoint = "query_bool_equal", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void query_bool_equal64(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_int_greater", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void query_int_greater(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
 
-        [DllImport(InteropConfig.L32, EntryPoint = "query_bool_equal", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void query_bool_equal32(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_int_greater_equal", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void query_int_greater_equal(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
 
-        internal static void query_bool_equal(QueryHandle queryHandle, long columnIndex, bool value)
-        {
-            var ipValue = BoolToIntPtr(value);
-            if (InteropConfig.Is64Bit)
-                query_bool_equal64(queryHandle, (IntPtr)columnIndex, ipValue);
-            else
-                query_bool_equal32(queryHandle, (IntPtr)columnIndex, ipValue);
-        }
-        #endregion
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_float_equal", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void query_float_equal(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
 
-        #region internal static void query_bool_not_equal(QueryHandle queryHandle, long columnIndex, bool value)
-        [DllImport(InteropConfig.L64, EntryPoint = "query_bool_not_equal", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void query_bool_not_equal64(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_float_not_equal", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void query_float_not_equal(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
 
-        [DllImport(InteropConfig.L32, EntryPoint = "query_bool_not_equal", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void query_bool_not_equal32(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_double_equal", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void query_double_equal(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
 
-        internal static void query_bool_not_equal(QueryHandle queryHandle, long columnIndex, bool value)
-        {
-            var ipValue = BoolToIntPtr(value);
-            if (InteropConfig.Is64Bit)
-                query_bool_not_equal64(queryHandle, (IntPtr)columnIndex, ipValue);
-            else
-                query_bool_not_equal32(queryHandle, (IntPtr)columnIndex, ipValue);
-        }
-        #endregion
-        #endregion // query bool
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_double_not_equal", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void query_double_not_equal(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
 
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_find", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern IntPtr query_find(QueryHandle queryHandle, IntPtr lastMatch);
 
-        #region query int
-        #region internal static void query_int_equal(QueryHandle queryHandle, long columnIndex, int value)
-        [DllImport(InteropConfig.L64, EntryPoint = "query_int_equal", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void query_int_equal64(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
-
-        [DllImport(InteropConfig.L32, EntryPoint = "query_int_equal", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void query_int_equal32(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
-
-        internal static void query_int_equal(QueryHandle queryHandle, long columnIndex, int value)
-        {
-            IntPtr ipValue = (IntPtr)value;
-            if (InteropConfig.Is64Bit)
-                query_int_equal64(queryHandle, (IntPtr)columnIndex, ipValue);
-            else
-                query_int_equal32(queryHandle, (IntPtr)columnIndex, ipValue);
-        }
-        #endregion
-
-        #region internal static void query_int_not_equal(QueryHandle queryHandle, long columnIndex, bool value)
-        [DllImport(InteropConfig.L64, EntryPoint = "query_int_not_equal", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void query_int_not_equal64(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
-
-        [DllImport(InteropConfig.L32, EntryPoint = "query_int_not_equal", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void query_int_not_equal32(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
-
-        internal static void query_int_not_equal(QueryHandle queryHandle, long columnIndex, int value)
-        {
-            IntPtr ipValue = (IntPtr)value;
-            if (InteropConfig.Is64Bit)
-                query_int_not_equal64(queryHandle, (IntPtr)columnIndex, ipValue);
-            else
-                query_int_not_equal32(queryHandle, (IntPtr)columnIndex, ipValue);
-        }
-        #endregion
-
-        #region internal static void query_int_less(QueryHandle queryHandle, long columnIndex, int value)
-        [DllImport(InteropConfig.L64, EntryPoint = "query_int_less", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void query_int_less64(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
-
-        [DllImport(InteropConfig.L32, EntryPoint = "query_int_less", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void query_int_less32(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
-
-        internal static void query_int_less(QueryHandle queryHandle, long columnIndex, int value)
-        {
-            IntPtr ipValue = (IntPtr)value;
-            if (InteropConfig.Is64Bit)
-                query_int_less64(queryHandle, (IntPtr)columnIndex, ipValue);
-            else
-                query_int_less32(queryHandle, (IntPtr)columnIndex, ipValue);
-        }
-        #endregion
-
-        #region internal static void query_int_less_equal(QueryHandle queryHandle, long columnIndex, bool value)
-        [DllImport(InteropConfig.L64, EntryPoint = "query_int_less_equal", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void query_int_less_equal64(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
-
-        [DllImport(InteropConfig.L32, EntryPoint = "query_int_less_equal", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void query_int_less_equal32(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
-
-        internal static void query_int_less_equal(QueryHandle queryHandle, long columnIndex, int value)
-        {
-            IntPtr ipValue = (IntPtr)value;
-            if (InteropConfig.Is64Bit)
-                query_int_less_equal64(queryHandle, (IntPtr)columnIndex, ipValue);
-            else
-                query_int_less_equal32(queryHandle, (IntPtr)columnIndex, ipValue);
-        }
-        #endregion
-
-        #region internal static void query_int_greater(QueryHandle queryHandle, long columnIndex, int value)
-        [DllImport(InteropConfig.L64, EntryPoint = "query_int_greater", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void query_int_greater64(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
-
-        [DllImport(InteropConfig.L32, EntryPoint = "query_int_greater", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void query_int_greater32(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
-
-        internal static void query_int_greater(QueryHandle queryHandle, long columnIndex, int value)
-        {
-            IntPtr ipValue = (IntPtr)value;
-            if (InteropConfig.Is64Bit)
-                query_int_greater64(queryHandle, (IntPtr)columnIndex, ipValue);
-            else
-                query_int_greater32(queryHandle, (IntPtr)columnIndex, ipValue);
-        }
-        #endregion
-
-        #region internal static void query_int_greater_equal(QueryHandle queryHandle, long columnIndex, bool value)
-        [DllImport(InteropConfig.L64, EntryPoint = "query_int_greater_equal", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void query_int_greater_equal64(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
-
-        [DllImport(InteropConfig.L32, EntryPoint = "query_int_greater_equal", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void query_int_greater_equal32(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
-
-        internal static void query_int_greater_equal(QueryHandle queryHandle, long columnIndex, int value)
-        {
-            IntPtr ipValue = (IntPtr)value;
-            if (InteropConfig.Is64Bit)
-                query_int_greater_equal64(queryHandle, (IntPtr)columnIndex, ipValue);
-            else
-                query_int_greater_equal32(queryHandle, (IntPtr)columnIndex, ipValue);
-        }
-        #endregion
-
-        #endregion // query int
-
-
-        #region query float
-        #region internal static void query_float_equal(QueryHandle queryHandle, long columnIndex, float value)
-        [DllImport(InteropConfig.L64, EntryPoint = "query_float_equal", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void query_float_equal64(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
-
-        [DllImport(InteropConfig.L32, EntryPoint = "query_float_equal", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void query_float_equal32(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
-
-        internal static void query_float_equal(QueryHandle queryHandle, long columnIndex, float value)
-        {
-            throw new NotImplementedException();
-        }
-        #endregion
-
-        #region internal static void query_float_not_equal(QueryHandle queryHandle, long columnIndex, bool value)
-        [DllImport(InteropConfig.L64, EntryPoint = "query_float_not_equal", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void query_float_not_equal64(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
-
-        [DllImport(InteropConfig.L32, EntryPoint = "query_float_not_equal", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void query_float_not_equal32(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
-
-        internal static void query_float_not_equal(QueryHandle queryHandle, long columnIndex, float value)
-        {
-            throw new NotImplementedException();
-        }
-        #endregion
-
-        #endregion // query float
-
-
-        #region query double
-        #region internal static void query_double_equal(QueryHandle queryHandle, long columnIndex, double value)
-        [DllImport(InteropConfig.L64, EntryPoint = "query_double_equal", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void query_double_equal64(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
-
-        [DllImport(InteropConfig.L32, EntryPoint = "query_double_equal", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void query_double_equal32(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
-
-        internal static void query_double_equal(QueryHandle queryHandle, long columnIndex, double value)
-        {
-            throw new NotImplementedException();
-        }
-        #endregion
-
-        #region internal static void query_double_not_equal(QueryHandle queryHandle, long columnIndex, bool value)
-        [DllImport(InteropConfig.L64, EntryPoint = "query_double_not_equal", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void query_double_not_equal64(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
-
-        [DllImport(InteropConfig.L32, EntryPoint = "query_double_not_equal", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void query_double_not_equal32(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
-
-        internal static void query_double_not_equal(QueryHandle queryHandle, long columnIndex, double value)
-        {
-            throw new NotImplementedException();
-        }
-        #endregion
-
-        #endregion // query double
-
-
-        #region internal static long QueryFind(QueryHandle QueryHandle, long lastMatch)
-
-        [DllImport(InteropConfig.L64, EntryPoint = "query_find", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr query_find64(QueryHandle queryHandle, IntPtr lastMatch);
-
-        [DllImport(InteropConfig.L32, EntryPoint = "query_find", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr query_find32(QueryHandle queryHandle, IntPtr lastMatch);
-
-        internal static long query_find(QueryHandle queryHandle, long lastMatch)
-        {
-            if (InteropConfig.Is64Bit)
-                return (long)query_find64(queryHandle, (IntPtr)lastMatch);
-            else
-                return (long)query_find32(queryHandle, (IntPtr)lastMatch);
-        }
-
-        #endregion
-
-        #region internal static long query_get_column_index(QueryHandle queryHandle, string columnName)
-
-        [DllImport(InteropConfig.L64, EntryPoint = "query_get_column_index", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr query_get_column_index64(QueryHandle queryPtr,
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_get_column_index", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern IntPtr query_get_column_index(QueryHandle queryPtr,
         [MarshalAs(UnmanagedType.LPWStr)] String columnName, IntPtr columnNameLen);
-
-        [DllImport(InteropConfig.L32, EntryPoint = "query_get_column_index", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr query_get_column_index32(QueryHandle queryPtr,
-            [MarshalAs(UnmanagedType.LPWStr)] String columnName, IntPtr columnNameLen);
-
-        internal static long query_get_column_index(QueryHandle queryHandle, string columnName)
-        {
-            if (InteropConfig.Is64Bit)
-                return (long)query_get_column_index64(queryHandle, columnName, (IntPtr)columnName.Length);
-            else
-                return (long)query_get_column_index32(queryHandle, columnName, (IntPtr)columnName.Length);
-        }
-
-        #endregion
 
         public static string group_to_string(GroupHandle groupHandle)
         {
             throw new NotImplementedException();
         }
-
-
 
 
         internal static IntPtr tableview_find_all_int(TableViewHandle tableViewHandle, long columnIndex, long value)
@@ -657,83 +308,24 @@ namespace RealmNet.Interop
                 : shared_group_rollback32(sharedGroupHandle);
         }
 
-        [DllImport(InteropConfig.L64, EntryPoint = "shared_group_end_read", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr shared_group_end_read64(SharedGroupHandle handle);
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_group_end_read", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern IntPtr shared_group_end_read(SharedGroupHandle handle);
 
-        [DllImport(InteropConfig.L32, EntryPoint = "shared_group_end_read", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr shared_group_end_read32(SharedGroupHandle handle);
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_group_delete", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void shared_group_delete(IntPtr handle);
 
-        //called by SharedGroupHandle atomically to set state correctly
-        public static IntPtr shared_group_end_read(SharedGroupHandle sharedgroupHandle)
-        {
-            return (InteropConfig.Is64Bit)
-                ? shared_group_end_read64(sharedgroupHandle)
-                : shared_group_end_read32(sharedgroupHandle);
-        }
-
-        [DllImport(InteropConfig.L64, EntryPoint = "shared_group_delete", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void shared_group_delete64(IntPtr handle);
-
-        [DllImport(InteropConfig.L32, EntryPoint = "shared_group_delete", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void shared_group_delete32(IntPtr handle);
-
-        public static void shared_group_delete(IntPtr sharedGroupHandle)
-        {
-            if (InteropConfig.Is64Bit)
-                shared_group_delete64(sharedGroupHandle);
-            else
-                shared_group_delete32(sharedGroupHandle);
-        }
-
-
-        [DllImport(InteropConfig.L64, EntryPoint = "shared_group_commit", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr shared_group_commit64(SharedGroupHandle sharedGroupHandle);
-
-        [DllImport(InteropConfig.L32, EntryPoint = "shared_group_commit", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr shared_group_commit32(SharedGroupHandle sharedGroupHandle);
-
-
-        //called by SharedGroupHandle atomically as an ongoing transaction is a sort of leak protected resource
-        public static IntPtr shared_group_commit(SharedGroupHandle sharedGroupHandle)
-        {
-            return (InteropConfig.Is64Bit)
-                ? shared_group_commit64(sharedGroupHandle)
-                : shared_group_commit32(sharedGroupHandle);
-        }
-
-
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_group_commit", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern IntPtr shared_group_commit(SharedGroupHandle sharedGroupHandle);
 
         //this is complicated.
         //The call to shared_group_begin_read must result in us always having two things inside a sharedgroup
         //handle : the shared group pointer, AND the shared group transaction state set to InReadTransaction
 
-        [DllImport(InteropConfig.L64, EntryPoint = "shared_group_begin_read", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr shared_group_begin_read64(SharedGroupHandle sharedGroupPtr);
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_group_begin_read", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern IntPtr shared_group_begin_read(SharedGroupHandle sharedGroupPtr);
 
-        [DllImport(InteropConfig.L32, EntryPoint = "shared_group_begin_read", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr shared_group_begin_read32(SharedGroupHandle sharedGroupPtr);
-
-        //used by sharedgrouphandle to start transactions
-        public static IntPtr shared_group_begin_read(SharedGroupHandle sharedGroupHandle)
-        {
-            return InteropConfig.Is64Bit ? shared_group_begin_read64(sharedGroupHandle) : shared_group_begin_read32(sharedGroupHandle);
-            //sharedGrup.Handle used bc we call shardgroup to doa beginread
-        }
-
-        [DllImport(InteropConfig.L64, EntryPoint = "shared_group_begin_write", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr shared_group_begin_write64(SharedGroupHandle sharedGroupPtr);
-
-        [DllImport(InteropConfig.L32, EntryPoint = "shared_group_begin_write", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr shared_group_begin_write32(SharedGroupHandle sharedGroupPtr);
-
-        //used by sharedgrouphandle to start writetransactions. Group handle is returned
-        public static IntPtr shared_group_begin_write(SharedGroupHandle sharedGroupHandle)
-        {
-            if (InteropConfig.Is64Bit)
-                return shared_group_begin_write64(sharedGroupHandle);
-            //sharedGrup.Handle used bc we call shardgroup to doa beginread
-            return shared_group_begin_write32(sharedGroupHandle);
-        }
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_group_begin_write", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern IntPtr shared_group_begin_write(SharedGroupHandle sharedGroupPtr);
 
         internal static IntPtr query_find_all(QueryHandle queryHandle, long start, long end, long limit)
         {
@@ -757,23 +349,9 @@ namespace RealmNet.Interop
 
         //If the name exists in the group, the table associated with the name is returned
         //if the name does not exist in the group, a new table is created and returned
-        [DllImport(InteropConfig.L64, EntryPoint = "group_get_or_add_table", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr group_get_or_add_table64(GroupHandle groupHandle,
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "group_get_or_add_table", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern IntPtr group_get_or_add_table(GroupHandle groupHandle,
             [MarshalAs(UnmanagedType.LPWStr)] String tableName, IntPtr tableNameLen);
-
-        [DllImport(InteropConfig.L32, EntryPoint = "group_get_or_add_table", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr group_get_or_add_table32(GroupHandle groupHandle,
-            [MarshalAs(UnmanagedType.LPWStr)] String tableName, IntPtr tableNameLen);
-
-
-        //used by GroupHandle to get a table handle atomically with the group handle as root
-        //therefore returns intptr
-        internal static IntPtr group_get_or_add_table(GroupHandle groupHandle, string tableName)
-        {
-            return (InteropConfig.Is64Bit)
-                ? group_get_or_add_table64(groupHandle, tableName, (IntPtr) tableName.Length)
-                : group_get_or_add_table32(groupHandle, tableName, (IntPtr) tableName.Length);
-        }
 
         internal static IntPtr group_get_table_by_index(GroupHandle groupHandle, long tableIndex)
         {
@@ -800,20 +378,10 @@ namespace RealmNet.Interop
             throw new NotImplementedException();
         }
 
-        [DllImport(InteropConfig.L64, EntryPoint = "group_has_table", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr group_has_table64(GroupHandle groupHandle,
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "group_has_table", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern IntPtr group_has_table(GroupHandle groupHandle,
             [MarshalAs(UnmanagedType.LPWStr)] String tableName, IntPtr tableNameLen);
 
-        [DllImport(InteropConfig.L32, EntryPoint = "group_has_table", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr group_has_table32(GroupHandle groupHandle,
-            [MarshalAs(UnmanagedType.LPWStr)] String tableName, IntPtr tableNameLen);
-
-        public static bool group_has_table(GroupHandle groupHandle, string tableName)
-        {
-            return IntPtrToBool(InteropConfig.Is64Bit
-                ? group_has_table64(groupHandle, tableName, (IntPtr) tableName.Length)
-                : group_has_table32(groupHandle, tableName, (IntPtr) tableName.Length));
-        }
         public static long query_count(QueryHandle QueryHandle, long start, long end, long limit)
         {
             throw new NotImplementedException();
@@ -859,23 +427,10 @@ namespace RealmNet.Interop
             throw new NotImplementedException();
         }
 
-        [DllImport(InteropConfig.L64, EntryPoint = "new_shared_group_file_defaults", CallingConvention = CallingConvention.Cdecl)]
-        private static extern SharedGroupHandle new_shared_group_file_defaults64(
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "new_shared_group_file_defaults", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern SharedGroupHandle new_shared_group_file_defaults(
             [MarshalAs(UnmanagedType.LPWStr)] string fileName,
             IntPtr fileNameLen);
-
-        [DllImport(InteropConfig.L32, EntryPoint = "new_shared_group_file_defaults", CallingConvention = CallingConvention.Cdecl)]
-        private static extern SharedGroupHandle new_shared_group_file_defaults32(
-            [MarshalAs(UnmanagedType.LPWStr)] string fileName,
-            IntPtr fileNameLen);
-
-        public static SharedGroupHandle new_shared_group_file_defaults(string filename)
-        {
-            if (InteropConfig.Is64Bit)
-                return new_shared_group_file_defaults64(filename, (IntPtr)filename.Length);
-            else
-                return new_shared_group_file_defaults32(filename, (IntPtr)filename.Length);
-        }
 
         public static bool table_is_attached(TableHandle TableHandle)
         {
@@ -992,21 +547,10 @@ namespace RealmNet.Interop
             throw new NotImplementedException();
         }
 
-        [DllImport(InteropConfig.L32, EntryPoint = "table_get_column_index", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_get_column_index32(TableHandle tablehandle,
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_column_index", CallingConvention = CallingConvention.Cdecl)]
+         //returns -1 if the column string does not match a column index
+       internal static extern IntPtr table_get_column_index(TableHandle tablehandle,
             [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
-
-        [DllImport(InteropConfig.L64, EntryPoint = "table_get_column_index", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr table_get_column_index64(TableHandle tablehandle,
-            [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
-
-        //returns -1 if the column string does not match a column index
-        public static long table_get_column_index(TableHandle tableHandle, string name)
-        {
-            return InteropConfig.Is64Bit
-                ? (long) table_get_column_index64(tableHandle, name, (IntPtr) name.Length)
-                : (long) table_get_column_index32(tableHandle, name, (IntPtr) name.Length);
-        }
 
         public static long table_view_maximum(TableViewHandle TableViewHandle, long columnIndex)
         {
