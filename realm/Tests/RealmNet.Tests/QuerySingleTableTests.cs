@@ -20,8 +20,7 @@ namespace Tests
             Assert.AreEqual(4, testEntities.Count()); 
         }
 
-#if USING_REALM_BACKEND
-
+#if USING_REALM_BACKEND        
         [Test]
         public void AllShouldReturnQueryable()
         {
