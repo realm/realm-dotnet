@@ -75,9 +75,7 @@ namespace RealmNet
         {
             _coreProvider.AddQueryGroupBegin(_coreQueryHandle);
             Visit(b.Left);
-            _coreProvider.AddQueryGroupEnd(_coreQueryHandle);
             combineWith(_coreQueryHandle);
-            _coreProvider.AddQueryGroupBegin(_coreQueryHandle);
             Visit(b.Right);
             _coreProvider.AddQueryGroupEnd(_coreQueryHandle);
         }
