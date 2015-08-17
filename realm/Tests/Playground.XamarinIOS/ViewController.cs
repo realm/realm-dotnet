@@ -3,24 +3,141 @@ using UIKit;
 using RealmNet.Interop;
 using RealmNet;
 using System.Linq;
+using System.IO;
+using System.Collections.Generic;
 
 namespace Playground.XamarinIOS
 {
+    public class ClassWithRawMethod
+    {
+        //private TimeSpan ts = new TimeSpan(5);
+
+        public void Call()
+        {
+            ViewController.Counter++; 
+            // System.Threading.Thread.Sleep(ts);
+        }
+    }
+
+    public interface IVirtualized
+    {
+        void Call();
+    }
+
+    public class VirtualizedClass : IVirtualized
+    {
+        //private TimeSpan ts = new TimeSpan(5);
+
+        public void Call()
+        {
+            ViewController.Counter++; 
+            //System.Threading.Thread.Sleep(ts);
+        }
+    }
+
     public partial class ViewController : UIViewController
     {
-        public ViewController(IntPtr handle) : base(handle)
+        public void Write(string text)
         {
-            var docsPath = Environment.GetFolderPath (Environment.SpecialFolder.MyDocuments);
-            var filePath = docsPath + "/db.realm";
+            //Console.Write(text);
+            InvokeOnMainThread(() => DebugText.Text += text);
+        }
 
-            Console.WriteLine("============\n\n\n");
-            Console.WriteLine("File: " + filePath);
+        public void WriteLine(string text)
+        {
+            Write(text + "\r\n");
+        }
+
+        public static int Counter = 0;
+
+        public void RawBenchmark()
+        {
+            var sw = new System.Diagnostics.Stopwatch();
+            Write("Raw... ");
+
+            var instance = new ClassWithRawMethod();
+
+            sw.Start();
+            for (var i = 0; i < 1000000; i++)
+            {
+                instance.Call();
+            }
+            sw.Stop();
+
+            Write(sw.ElapsedMilliseconds + "\r\n");
+        }
+
+        public void VirtualizedBenchmark()
+        {
+            var sw = new System.Diagnostics.Stopwatch();
+            Write("Virtualized... ");
+
+            IVirtualized instance = new VirtualizedClass();
+
+            sw.Start();
+            for (var i = 0; i < 1000000; i++)
+            {
+                instance.Call();
+            }
+            sw.Stop();
+
+            Write(sw.ElapsedMilliseconds + "\r\n");
+        }
+
+        public void BranchBenchmark()
+        {
+            var sw = new System.Diagnostics.Stopwatch();
+            Write("Branching... ");
+
+            var instance1 = new ClassWithRawMethod();
+            var instance2 = new ClassWithRawMethod();
+
+            sw.Start();
+            for (var i = 0; i < 1000000; i++)
+            {
+                if (IntPtr.Size == 8)
+                    instance1.Call();
+                else
+                    instance2.Call();
+            }
+            sw.Stop();
+
+            Write(sw.ElapsedMilliseconds + "\r\n");
+        }
+
+        private void RunBenchmark()
+        {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
+
+            for (var i = 0; i < 10; i++)
+            {
+                RawBenchmark();
+                BranchBenchmark();
+                VirtualizedBenchmark();
+            }
+        }
+
+        private void IntegrationTest()
+        {
+            var dbFilename = "db.realm";
+            string documentsPath = Environment.GetFolderPath (Environment.SpecialFolder.Personal); // Documents folder
+            string libraryPath = Path.Combine (documentsPath, "..", "Library"); // Library folder
+            var path = Path.Combine(documentsPath, dbFilename);
+
+            WriteLine("============\n\n\n");
+            WriteLine("File: " + path);
+
+
+            //System.Threading.Thread.Sleep(20000);
+
             //Console.WriteLine("Wrapper version: " + UnsafeNativeMethods.GetWrapperVer());
             //Console.WriteLine("Minor version: " + UnsafeNativeMethods.GetMinorVer());
 
             var coreProvider = new CoreProvider();
             Realm.ActiveCoreProvider = coreProvider;
-            var realm = Realm.GetInstance(filePath);
+            var realm = Realm.GetInstance(path);
 
             Person p1, p2, p3;
             using (var transaction = realm.BeginWrite())
@@ -34,7 +151,7 @@ namespace Playground.XamarinIOS
             }
             using (var rt = realm.BeginRead())
             {
-                Console.WriteLine("p1 is named " + p1.FullName);
+                WriteLine("p1 is named " + p1.FullName);
             }
 
             using (var transaction = realm.BeginWrite())
@@ -47,7 +164,7 @@ namespace Playground.XamarinIOS
             }
             using (var rt = realm.BeginRead())
             {
-                Console.WriteLine("p2 is named " + p2.FullName);
+                WriteLine("p2 is named " + p2.FullName);
             }
 
             using (var transaction = realm.BeginWrite())
@@ -61,60 +178,32 @@ namespace Playground.XamarinIOS
 
             using (var rt = realm.BeginRead())
             {
-                Console.WriteLine("p3 is named " + p3.FullName);
+                WriteLine("p3 is named " + p3.FullName);
 
                 var interestingPeople = from p in realm.All<Person>() where p.IsInteresting == true select p;
 
-                Console.WriteLine("Interesting people include:");
+                WriteLine("Interesting people include:");
                 foreach (var p in interestingPeople)
-                    Console.WriteLine(" - " + p.FullName + " (" + p.Email + ")");
+                    WriteLine(" - " + p.FullName + " (" + p.Email + ")");
 
                 var johns = from p in realm.All<Person>() where p.FirstName == "John" select p;
-                Console.WriteLine("People named John:");
+                WriteLine("People named John:");
                 foreach (var p in johns)
-                    Console.WriteLine(" - " + p.FullName + " (" + p.Email + ")");
+                    WriteLine(" - " + p.FullName + " (" + p.Email + ")");
             }
+        }
 
-            /*
-
-            var p1 = realm.CreateObject<Person>();
-            p1.FirstName = "John";
-            p1.LastName = "Smith";
-            p1.IsInteresting = true;
-            p1.Email = "john@smith.com";
-            Console.WriteLine("p1 is named " + p1.FullName);
-
-            var p2 = realm.CreateObject<Person>();
-            p2.FullName = "John Doe";
-            p2.IsInteresting = false;
-            p2.Email = "john@deo.com";
-            Console.WriteLine("p2 is named " + p2.FullName);
-
-            var p3 = realm.CreateObject<Person>();
-            p3.FullName = "Peter Jameson";
-            p3.Email = "peter@jameson.com";
-            p3.IsInteresting = true;
-            Console.WriteLine("p3 is named " + p3.FullName);
-
-            var interestingPeople = from p in realm.All<Person>() where p.IsInteresting == true select p;
-            Console.WriteLine("Interesting people include:");
-            foreach (var p in interestingPeople)
-                Console.WriteLine(" - " + p.FullName + " (" + p.Email + ")");
-
-            var johns = from p in realm.All<Person>() where p.FirstName == "John" select p;
-            Console.WriteLine("People named John:");
-            foreach (var p in johns)
-                Console.WriteLine(" - " + p.FullName + " (" + p.Email + ")");
-
-            */
-
-            Console.WriteLine("\n\n\n============");
+        public ViewController(IntPtr handle) : base(handle)
+        {
         }
 
         public override void ViewDidLoad()
         {
             base.ViewDidLoad();
             // Perform any additional setup after loading the view, typically from a nib.
+
+            //new System.Threading.Thread(RunBenchmark).Start();
+            new System.Threading.Thread(IntegrationTest).Start();
         }
 
         public override void DidReceiveMemoryWarning()
