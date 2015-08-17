@@ -73,6 +73,12 @@ namespace RealmNet.Interop
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_bool", CallingConvention = CallingConvention.Cdecl)]
         internal static extern IntPtr table_get_bool(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex);
 
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_int64", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void table_set_int64(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, Int64 value);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_int64", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern Int64 table_get_int64(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex);
+
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_where", CallingConvention = CallingConvention.Cdecl)]
         internal static extern IntPtr table_where(TableHandle handle);
 
@@ -1082,27 +1088,12 @@ namespace RealmNet.Interop
             throw new NotImplementedException();
         }
 
-        public static long table_get_int(TableHandle TableHandle, long columnIndex, long rowIndex)
-        {
-            throw new NotImplementedException();
-        }
-
         public static double table_get_double(TableHandle TableHandle, long columnIndex, long rowIndex)
         {
             throw new NotImplementedException();
         }
 
         public static float table_get_float(TableHandle TableHandle, long columnIndex, long rowIndex)
-        {
-            throw new NotImplementedException();
-        }
-
-        public static void table_set_long(TableHandle TableHandle, long columnIndex, long rowIndex, long value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public static void table_set_int(TableHandle TableHandle, long columnIndex, long rowIndex, int value)
         {
             throw new NotImplementedException();
         }

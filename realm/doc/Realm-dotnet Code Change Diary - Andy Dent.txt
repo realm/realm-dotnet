@@ -219,7 +219,7 @@ Interop.XamarinMac/InteropConfig.cs
 - added DLL_NAME
 
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-#72 LINQ Combinatorial Expressions
+#72 LINQ Combinatorial Expressions plus int support
 
 MockQuerySingleTableComboTests.cs added
 
@@ -237,15 +237,22 @@ MockCoreProvider.cs
 
 CoreProvider.shared.cs
 - AddQueryGroupBegin/End added
-- AddQueryAnd added STUB WHILST WORKING OUT HOW ANDS WORK IN CORE
+- AddQueryAnd added (does nothing)
 - AddQueryOr added
+- AddQueryNotEqual and AddQueryEqual -  comment out unimplemented float/double
+- AddQueryLessThan, AddQueryLessThanorEqual, AddQueryGreaterThan and AddQueryGreaterThanOrEqual added
 
 
 RealmQueryVisitor
 - VisitBinary
   - use correct types - AndAlso and OrElse instead of And and Or
   - restructure to use groups and and/or
-  
+- VisitCombination added to help VisitCombination
+
+wrappers.cpp
+- table_set_int64, table_get_int64 added  
   
 UnsafeNativeMethods.shared.cs
 - added query_begin_group/ query_end_group
+- added table_set_int64, get_int64
+- removed stubs table_set_long, table_set_int, table_get_long

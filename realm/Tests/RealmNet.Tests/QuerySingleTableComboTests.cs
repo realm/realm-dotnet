@@ -86,7 +86,7 @@ namespace Tests
         }
 
         [Test]
-        public void TestSimpleOrTwoFieldsMatcheTwo()
+        public void TestSimpleOrTwoFieldsMatchesTwo()
         {
             // Arrange
             var query = testEntities.Where(te => te.NameStr == "Peter" || te.IntNum == 4);
@@ -117,10 +117,10 @@ namespace Tests
         #endregion  // Simple Or
 
         [Test]
-        public void TestNested()
+        public void TestPrecedence()
         {
             // Arrange
-            var query = testEntities.Where(te => (te.NameStr == "Peter" && te.IntNum == 2) || te.IntNum > 3);
+            var query = testEntities.Where(te => te.IntNum > 3 || te.NameStr == "Peter" && te.IntNum > 0 );
 
             // Act
             var res = query.ToList();
@@ -129,6 +129,20 @@ namespace Tests
             Assert.AreEqual(2, res.Count());
             Assert.AreEqual("Peter", res[0].NameStr);
             Assert.AreEqual("Xanh Li", res[1].NameStr);
+        }
+
+        [Test]
+        public void TestNested()
+        {
+            // Arrange
+            var query = testEntities.Where(te => te.NameStr == "Peter" && (te.IntNum == 2 || te.IntNum > 3));
+
+            // Act
+            var res = query.ToList();
+
+            // Assert
+            Assert.AreEqual(1, res.Count());
+            Assert.AreEqual("Peter", res[0].NameStr);
         }
     }
 }

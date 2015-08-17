@@ -200,8 +200,13 @@ extern "C" {
 
   //returns false=0  true=1 we use a size_t as it is likely the fastest type to return
   REALM_CORE_WRAPPER_API size_t table_get_bool(Table* table_ptr, size_t column_ndx, size_t row_ndx)
-  {    
-    return bool_to_size_t(table_ptr->get_bool(column_ndx,row_ndx));
+  {
+	  return bool_to_size_t(table_ptr->get_bool(column_ndx, row_ndx));
+  }
+
+  REALM_CORE_WRAPPER_API int64_t table_get_int64(Table* table_ptr, size_t column_ndx, size_t row_ndx)
+  {
+	  return table_ptr->get_int(column_ndx, row_ndx);
   }
 
   REALM_CORE_WRAPPER_API size_t table_get_string(Table* table_ptr, size_t column_ndx, size_t row_ndx, uint16_t * datatochsarp, size_t bufsize)
@@ -211,9 +216,14 @@ extern "C" {
   }
 
   //call with false=0  true=1 we use a size_t as it is likely the fastest type to return
-  REALM_CORE_WRAPPER_API void table_set_bool(Table* table_ptr, size_t column_ndx, size_t row_ndx,size_t value)
-  {    
-    table_ptr->set_bool(column_ndx,row_ndx,size_t_to_bool(value));     
+  REALM_CORE_WRAPPER_API void table_set_bool(Table* table_ptr, size_t column_ndx, size_t row_ndx, size_t value)
+  {
+	  table_ptr->set_bool(column_ndx, row_ndx, size_t_to_bool(value));
+  }
+
+  REALM_CORE_WRAPPER_API void table_set_int64(Table* table_ptr, size_t column_ndx, size_t row_ndx, int64_t value)
+  {
+	  table_ptr->set_int(column_ndx, row_ndx, value);
   }
 
   REALM_CORE_WRAPPER_API void table_set_string(Table* table_ptr, size_t column_ndx, size_t row_ndx,uint16_t* value,size_t value_len)

@@ -137,6 +137,16 @@ namespace RealmNet.Interop
                 var value = IntPtrToBool( UnsafeNativeMethods.table_get_bool(tableHandle, columnIndex, (IntPtr)rowIndex) );
                 return (T)Convert.ChangeType(value, typeof(T));
             }
+            else if (typeof(T) == typeof(int))  // System.Int32 regardless of bitness
+            {
+                var value = UnsafeNativeMethods.table_get_int64(tableHandle, columnIndex, (IntPtr)rowIndex);
+                return (T)Convert.ChangeType(value, typeof(T));
+            }
+            else if (typeof(T) == typeof(Int64)) 
+            {
+                var value = UnsafeNativeMethods.table_get_int64(tableHandle, columnIndex, (IntPtr)rowIndex);
+                return (T)Convert.ChangeType(value, typeof(T));
+            }
             else
                 throw new Exception ("Unsupported type " + typeof(T).Name);
         }
@@ -155,6 +165,16 @@ namespace RealmNet.Interop
             {
                 var marshalledValue = BoolToIntPtr((bool)Convert.ChangeType(value, typeof(bool)));
                 UnsafeNativeMethods.table_set_bool(tableHandle, columnIndex, (IntPtr)rowIndex, marshalledValue);
+            }
+            else if (typeof(T) == typeof(int))  // System.Int32 regardless of bitness
+            {
+                Int64 marshalledValue = Convert.ToInt64(value);
+                UnsafeNativeMethods.table_set_int64(tableHandle, columnIndex, (IntPtr)rowIndex, marshalledValue);
+            }
+            else if (typeof(T) == typeof(Int64))
+            {
+                Int64 marshalledValue = Convert.ToInt64(value);
+                UnsafeNativeMethods.table_set_int64(tableHandle, columnIndex, (IntPtr)rowIndex, marshalledValue);
             }
             else
                 throw new Exception ("Unsupported type " + typeof(T).Name);
@@ -195,9 +215,9 @@ namespace RealmNet.Interop
             else if (valueType == typeof(int))
                 UnsafeNativeMethods.query_int_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((int)value));
             else if (valueType == typeof(float))
-                UnsafeNativeMethods.query_float_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((float)value));
+                ;// see issue 68 UnsafeNativeMethods.query_float_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((float)value));
             else if (valueType == typeof(double))
-                UnsafeNativeMethods.query_double_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((double)value));
+                ;// see issue 68 UnsafeNativeMethods.query_double_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((double)value));
             else
                 throw new NotImplementedException();
         }
@@ -217,31 +237,95 @@ namespace RealmNet.Interop
             else if (valueType == typeof(int))
                 UnsafeNativeMethods.query_int_not_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((int)value));
             else if (valueType == typeof(float))
-                UnsafeNativeMethods.query_float_not_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((float)value));
+                ;// see issue 68 UnsafeNativeMethods.query_float_not_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((float)value));
             else if (valueType == typeof(double))
-                UnsafeNativeMethods.query_double_not_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((double)value));
+                ;// see issue 68 UnsafeNativeMethods.query_double_not_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((double)value));
             else
                 throw new NotImplementedException();
         }
 
         public void AddQueryLessThan(IQueryHandle queryHandle, string columnName, object value)
         {
-            throw new NotImplementedException();
+            var columnIndex = UnsafeNativeMethods.query_get_column_index((QueryHandle)queryHandle, columnName, (IntPtr)columnName.Length);
+
+            var valueType = value.GetType();
+            if (value.GetType() == typeof(string))
+            {
+                throw new NotImplementedException();  // NOT IMPLEMENTED IN CORE
+            }
+            else if (valueType == typeof(bool))
+                throw new NotImplementedException();  // NOT IMPLEMENTED IN CORE and doesn't make sense
+            else if (valueType == typeof(int))
+                UnsafeNativeMethods.query_int_less((QueryHandle)queryHandle, columnIndex, (IntPtr)((int)value));
+            else if (valueType == typeof(float))
+                ;// see issue 68 UnsafeNativeMethods.query_float_less((QueryHandle)queryHandle, columnIndex, (IntPtr)((float)value));
+            else if (valueType == typeof(double))
+                ;// see issue 68 UnsafeNativeMethods.query_double_less((QueryHandle)queryHandle, columnIndex, (IntPtr)((double)value));
+            else
+                throw new NotImplementedException();
         }
 
         public void AddQueryLessThanOrEqual(IQueryHandle queryHandle, string columnName, object value)
         {
-            throw new NotImplementedException();
+            var columnIndex = UnsafeNativeMethods.query_get_column_index((QueryHandle)queryHandle, columnName, (IntPtr)columnName.Length);
+
+            var valueType = value.GetType();
+            if (value.GetType() == typeof(string))
+            {
+                throw new NotImplementedException();  // NOT IMPLEMENTED IN CORE
+            }
+            else if (valueType == typeof(bool))
+                throw new NotImplementedException();  // NOT IMPLEMENTED IN CORE and doesn't make sense
+            else if (valueType == typeof(int))
+                UnsafeNativeMethods.query_int_less_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((int)value));
+            else if (valueType == typeof(float))
+                ;// see issue 68 UnsafeNativeMethods.query_float_less_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((float)value));
+            else if (valueType == typeof(double))
+                ;// see issue 68 UnsafeNativeMethods.query_double_less_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((double)value));
+            else
+                throw new NotImplementedException();
         }
 
         public void AddQueryGreaterThan(IQueryHandle queryHandle, string columnName, object value)
         {
-            throw new NotImplementedException();
+            var columnIndex = UnsafeNativeMethods.query_get_column_index((QueryHandle)queryHandle, columnName, (IntPtr)columnName.Length);
+
+            var valueType = value.GetType();
+            if (value.GetType() == typeof(string))
+            {
+                throw new NotImplementedException();  // NOT IMPLEMENTED IN CORE
+            }
+            else if (valueType == typeof(bool))
+                throw new NotImplementedException();  // NOT IMPLEMENTED IN CORE and doesn't make sense
+            else if (valueType == typeof(int))
+                UnsafeNativeMethods.query_int_greater((QueryHandle)queryHandle, columnIndex, (IntPtr)((int)value));
+            else if (valueType == typeof(float))
+                ;// see issue 68 UnsafeNativeMethods.query_float_greater((QueryHandle)queryHandle, columnIndex, (IntPtr)((float)value));
+            else if (valueType == typeof(double))
+                ;// see issue 68 UnsafeNativeMethods.query_double_greater((QueryHandle)queryHandle, columnIndex, (IntPtr)((double)value));
+            else
+                throw new NotImplementedException();
         }
 
         public void AddQueryGreaterThanOrEqual(IQueryHandle queryHandle, string columnName, object value)
         {
-            throw new NotImplementedException();
+            var columnIndex = UnsafeNativeMethods.query_get_column_index((QueryHandle)queryHandle, columnName, (IntPtr)columnName.Length);
+
+            var valueType = value.GetType();
+            if (value.GetType() == typeof(string))
+            {
+                throw new NotImplementedException();  // NOT IMPLEMENTED IN CORE
+            }
+            else if (valueType == typeof(bool))
+                throw new NotImplementedException();  // NOT IMPLEMENTED IN CORE and doesn't make sense
+            else if (valueType == typeof(int))
+                UnsafeNativeMethods.query_int_greater_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((int)value));
+            else if (valueType == typeof(float))
+                ;// see issue 68 UnsafeNativeMethods.query_float_greater_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((float)value));
+            else if (valueType == typeof(double))
+                ;// see issue 68 UnsafeNativeMethods.query_double_greater_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((double)value));
+            else
+                throw new NotImplementedException();
         }
 
         public void AddQueryGroupBegin(IQueryHandle queryHandle)
@@ -256,7 +340,7 @@ namespace RealmNet.Interop
 
         public void AddQueryAnd(IQueryHandle queryHandle)
         {
-            throw new NotImplementedException();
+           // does nothing as subsequent groups automatically ANDed
         }
 
         public void AddQueryOr(IQueryHandle queryHandle)
