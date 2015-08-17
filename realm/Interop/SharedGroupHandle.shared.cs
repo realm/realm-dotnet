@@ -27,6 +27,7 @@ namespace RealmNet.Interop
 
         //empty constructor to keep P/Invoke CriticalHandle support happy
         //Please leave this one in, even though resharper reports it as nont used
+        [Preserve]
         public SharedGroupHandle()
         {
         }
