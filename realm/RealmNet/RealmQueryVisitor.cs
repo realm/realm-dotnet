@@ -5,6 +5,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using RealmNet.Interop;
+using System.Diagnostics;  // for Debug.Writeline - as a PCL don't have Console
 
 namespace RealmNet
 {
@@ -70,14 +71,27 @@ namespace RealmNet
             return u;
         }
 
+        protected void VisitCombination(BinaryExpression b,  Action<IQueryHandle> combineWith )
+        {
+            _coreProvider.AddQueryGroupBegin(_coreQueryHandle);
+            Visit(b.Left);
+            _coreProvider.AddQueryGroupEnd(_coreQueryHandle);
+            combineWith(_coreQueryHandle);
+            _coreProvider.AddQueryGroupBegin(_coreQueryHandle);
+            Visit(b.Right);
+            _coreProvider.AddQueryGroupEnd(_coreQueryHandle);
+        }
+
+
         protected override Expression VisitBinary(BinaryExpression b)
         {
-            this.Visit(b.Left);
-            if (b.NodeType == ExpressionType.And)
+            if (b.NodeType == ExpressionType.AndAlso)  // Boolean And with short-circuit
             {
+                VisitCombination(b, (qh) => _coreProvider.AddQueryAnd(qh) );
             }
-            else if (b.NodeType == ExpressionType.And)
+            else if (b.NodeType == ExpressionType.OrElse)  // Boolean Or with short-circuit
             {
+                VisitCombination(b, qh => _coreProvider.AddQueryOr(qh) );
             }
             else
             {
@@ -92,10 +106,6 @@ namespace RealmNet
                 var rightValue = rightConst.Value;
                 switch (b.NodeType)
                 {
-                    case ExpressionType.And:
-                        break;
-                    case ExpressionType.Or:
-                        break;
                     case ExpressionType.Equal:
                         _coreProvider.AddQueryEqual(_coreQueryHandle, leftName, rightValue);
                         break;
@@ -124,7 +134,6 @@ namespace RealmNet
                         throw new NotSupportedException(string.Format("The binary operator '{0}' is not supported", b.NodeType));
                 }
             }
-            this.Visit(b.Right);
             return b;
         }
 

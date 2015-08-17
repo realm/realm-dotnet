@@ -181,7 +181,7 @@ UnsafeNativeMethods.shared.cs
 - AddColumnToTable stripped back to just declaration using DLL_NAME
 
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-#79 propagating refactoring pattern from #66
+#70 propagating refactoring pattern from #66
 
 UnsafeNativeMethods.shared.cs
 - ALL wrapper functions (except table_get_string) selecting between 32 and 64bit variations 
@@ -217,3 +217,35 @@ Interop.XamarinIOS/InteropConfig.cs
 
 Interop.XamarinMac/InteropConfig.cs
 - added DLL_NAME
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#72 LINQ Combinatorial Expressions
+
+MockQuerySingleTableComboTests.cs added
+
+QuerySingleTableComboTests.cs added
+
+ICoreProvider.cs
+- AddQueryGroupBegin/End added
+- AddQueryAnd/Or added
+
+
+MockCoreProvider.cs
+- AddQueryGroupBegin/End added
+- AddQueryAnd/Or added
+
+
+CoreProvider.shared.cs
+- AddQueryGroupBegin/End added
+- AddQueryAnd added STUB WHILST WORKING OUT HOW ANDS WORK IN CORE
+- AddQueryOr added
+
+
+RealmQueryVisitor
+- VisitBinary
+  - use correct types - AndAlso and OrElse instead of And and Or
+  - restructure to use groups and and/or
+  
+  
+UnsafeNativeMethods.shared.cs
+- added query_begin_group/ query_end_group

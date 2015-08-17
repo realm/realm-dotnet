@@ -26,6 +26,10 @@ namespace RealmNet
         void AddQueryLessThanOrEqual(IQueryHandle queryHandle, string columnName, object value);
         void AddQueryGreaterThan(IQueryHandle queryHandle, string columnName, object value);
         void AddQueryGreaterThanOrEqual(IQueryHandle queryHandle, string columnName, object value);
+        void AddQueryGroupBegin(IQueryHandle queryHandle);
+        void AddQueryGroupEnd(IQueryHandle queryHandle);
+        void AddQueryAnd(IQueryHandle queryHandle);
+        void AddQueryOr(IQueryHandle queryHandle);
 
         IEnumerable<long> ExecuteQuery(IQueryHandle queryHandle, Type objectType);
 

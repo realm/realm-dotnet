@@ -203,6 +203,27 @@ namespace InteropShared
             notifyOnCall($"AddQueryGreaterThanOrEqual(col={columnName}, val={value})");
         }
 
+        public void AddQueryGroupBegin(IQueryHandle queryHandle)
+        {
+            notifyOnCall($"AddQueryGroupBegin");
+        }
+
+        public void AddQueryGroupEnd(IQueryHandle queryHandle)
+        {
+            notifyOnCall($"AddQueryGroupEnd");
+        }
+
+        public void AddQueryAnd(IQueryHandle queryHandle)
+        {
+            notifyOnCall($"AddQueryAnd");
+        }
+
+        public void AddQueryOr(IQueryHandle queryHandle)
+        {
+            notifyOnCall($"AddQueryOr");
+        }
+
+
         public IEnumerable<long> ExecuteQuery(IQueryHandle queryHandle, Type objectType)
         {
             notifyOnCall($"ExecuteQuery");

@@ -244,6 +244,26 @@ namespace RealmNet.Interop
             throw new NotImplementedException();
         }
 
+        public void AddQueryGroupBegin(IQueryHandle queryHandle)
+        {
+            UnsafeNativeMethods.query_begin_group((QueryHandle)queryHandle);
+        }
+
+        public void AddQueryGroupEnd(IQueryHandle queryHandle)
+        {
+            UnsafeNativeMethods.query_end_group((QueryHandle)queryHandle);
+        }
+
+        public void AddQueryAnd(IQueryHandle queryHandle)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void AddQueryOr(IQueryHandle queryHandle)
+        {
+            UnsafeNativeMethods.query_or((QueryHandle)queryHandle);
+        }
+
 
         public IEnumerable<long> ExecuteQuery(IQueryHandle queryHandle, Type objectType)
         {

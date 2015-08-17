@@ -198,8 +198,10 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MockQuerySingleTableComboTests.cs" />
     <Compile Include="MockQuerySingleTableTests.cs" />
     <Compile Include="MockQueryTestsBase.cs" />
+    <Compile Include="QuerySingleTableComboTests.cs" />
     <Compile Include="QuerySingleTableTests.cs" />
     <Compile Include="QueryTestsBase.cs" />
   </ItemGroup>
