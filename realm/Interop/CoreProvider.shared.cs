@@ -77,7 +77,7 @@ namespace RealmNet.Interop
 
         public ISharedGroupHandle CreateSharedGroup(string filename)
         {
-            return UnsafeNativeMethods.new_shared_group_file_defaults(filename, (IntPtr)filename.Length);
+            return UnsafeNativeMethods.new_shared_group_file(filename, (IntPtr)filename.Length, (IntPtr)0, (IntPtr)0);
         }
 
         public bool HasTable(IGroupHandle groupHandle, string tableName)

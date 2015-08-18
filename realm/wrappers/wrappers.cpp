@@ -47,6 +47,14 @@ inline size_t bool_to_size_t_with_errorcode(size_t errorcode){
     return errorcode;
 }
 
+//a size_t sent from C# with value 0 means durability_full, other values means durabillity_memonly, but please
+//use 1 for durabillity_memonly to make room for later extensions
+inline SharedGroup::DurabilityLevel size_t_to_durabilitylevel(size_t value) {
+    if (value==0) 
+        return SharedGroup::durability_Full;
+    return SharedGroup::durability_MemOnly;
+}
+
 //stringdata is utf8
 //cshapbuffer is a c# stringbuilder buffer marshalled as utf16 bufsize is the size of the csharp buffer measured in 16 bit words. The buffer is in fact one char larger than that, to make room for a terminating null character
 //this method will transcode the utf8 string data inside stringdata to utf16 and put the transcoded data in the buffer. the return value is the size of the buffer that was
@@ -560,6 +568,20 @@ REALM_CORE_WRAPPER_API SharedGroup* new_shared_group_file_defaults(uint16_t * na
 {
     CSStringAccessor str(name,name_len);
     return new SharedGroup(StringData(str));   
+}
+
+//returns NULL if an exception was thrown, otherwise a shared group handle
+//exceptions are thrown usually if there is some kind of IO eror, e.g. the filename is invalid or with not enought rights
+//or locked or something
+REALM_CORE_WRAPPER_API SharedGroup* new_shared_group_file(uint16_t * name,size_t name_len,size_t no_create,size_t durabillity_level)
+{
+	try {
+    CSStringAccessor str(name,name_len);
+    return new SharedGroup(StringData(str),size_t_to_bool(no_create), size_t_to_durabilitylevel(durabillity_level));   
+	}
+	catch (...) {
+		return NULL;
+	}
 }
 
 REALM_CORE_WRAPPER_API void shared_group_delete(SharedGroup* g) {

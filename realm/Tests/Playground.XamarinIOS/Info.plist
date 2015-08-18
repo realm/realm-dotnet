@@ -43,5 +43,10 @@
 	</array>
 	<key>XSAppIconAssets</key>
 	<string>Resources/Images.xcassets/AppIcons.appiconset</string>
+	<key>SecTaskAccess</key>
+	<array>
+		<string>allowed</string>
+		<string>debug</string>
+	</array>
 </dict>
 </plist>
