@@ -31,7 +31,7 @@ namespace Tests
             var res = query.ToList();
 
             // Assert
-            Assert.That(query !=null && query is IQueryable);  // Resharper says latter is always true by compilation but worth making the point
+            Assert.That(query !=null);
             Assert.That(res != null);
         }
 #endif
@@ -47,7 +47,6 @@ namespace Tests
             var res = query.ToList();
 
             // Assert
-            Assert.That(res != null);
             Assert.AreEqual(1, res.Count());
         }
 
@@ -64,10 +63,10 @@ namespace Tests
             Assert.That(res != null);
             Assert.AreEqual(3, res.Count());
         }
-        #endregion  // String Comparisons
+ #endregion  // String Comparisons
 
 
-        #region Bool Comparisons
+#region Bool Comparisons
         [Test]
         public void TestWhereQueryWithEqualToBool()
         {
@@ -78,7 +77,6 @@ namespace Tests
             var res = query.ToList();
 
             // Assert
-            Assert.That(res != null);
             Assert.AreEqual(1, res.Count());
         }
 
@@ -92,13 +90,12 @@ namespace Tests
             var res = query.ToList();
 
             // Assert
-            Assert.That(res != null);
             Assert.AreEqual(3, res.Count());
         }
-        #endregion  // Bool Comparisons
+#endregion  // Bool Comparisons
 
 
-        #region Int Comparisons
+#region Int Comparisons
         [Test]
         public void TestWhereQueryWithEqualToInt()
         {
@@ -109,7 +106,6 @@ namespace Tests
             var res = query.ToList();
 
             // Assert
-            Assert.That(res != null);
             Assert.AreEqual(1, res.Count());
         }
 
@@ -123,7 +119,6 @@ namespace Tests
             var res = query.ToList();
 
             // Assert
-            Assert.That(res != null);
             Assert.AreEqual(3, res.Count());
         }
 
@@ -137,7 +132,6 @@ namespace Tests
             var res = query.ToList();
 
             // Assert
-            Assert.That(res != null);
             Assert.AreEqual(1, res.Count());
         }
 
@@ -151,7 +145,6 @@ namespace Tests
             var res = query.ToList();
 
             // Assert
-            Assert.That(res != null);
             Assert.AreEqual(2, res.Count());
         }
 
@@ -165,7 +158,6 @@ namespace Tests
             var res = query.ToList();
 
             // Assert
-            Assert.That(res != null);
             Assert.AreEqual(2, res.Count());
         }
 
@@ -179,15 +171,14 @@ namespace Tests
             var res = query.ToList();
 
             // Assert
-            Assert.That(res != null);
             Assert.AreEqual(3, res.Count());
         }
-        #endregion  // Int Comparisons
+#endregion  // Int Comparisons
 
 
         /*
         Not until have setting float and double issue #67, sep issue #68 for implementing these
-        #region Float Comparisons
+#region Float Comparisons
         [Test]
         public void TestWhereQueryWithEqualToFloat()
         {
@@ -198,7 +189,6 @@ namespace Tests
             var res = query.ToList();
 
             // Assert
-            Assert.That(res != null);
             Assert.AreEqual(1, res.Count());
         }
 
@@ -212,7 +202,6 @@ namespace Tests
             var res = query.ToList();
 
             // Assert
-            Assert.That(res != null);
             Assert.AreEqual(4, res.Count());
         }
 
@@ -226,7 +215,6 @@ namespace Tests
             var res = query.ToList();
 
             // Assert
-            Assert.That(res != null);
             Assert.AreEqual(3, res.Count());
         }
 
@@ -240,7 +228,6 @@ namespace Tests
             var res = query.ToList();
 
             // Assert
-            Assert.That(res != null);
             Assert.AreEqual(3, res.Count());
         }
 
@@ -254,7 +241,6 @@ namespace Tests
             var res = query.ToList();
 
             // Assert
-            Assert.That(res != null);
             Assert.AreEqual(1, res.Count());
         }
 
@@ -268,13 +254,12 @@ namespace Tests
             var res = query.ToList();
 
             // Assert
-            Assert.That(res != null);
             Assert.AreEqual(3, res.Count());
         }
-        #endregion  // Float Comparisons
+#endregion  // Float Comparisons
 
 
-        #region Double Comparisons
+#region Double Comparisons
         [Test]
         public void TestWhereQueryWithEqualToDouble()
         {
@@ -285,7 +270,6 @@ namespace Tests
             var res = query.ToList();
 
             // Assert
-            Assert.That(res != null);
             Assert.AreEqual(1, res.Count());
         }
 
@@ -299,7 +283,6 @@ namespace Tests
             var res = query.ToList();
 
             // Assert
-            Assert.That(res != null);
             Assert.AreEqual(4, res.Count());
         }
 
@@ -313,7 +296,6 @@ namespace Tests
             var res = query.ToList();
 
             // Assert
-            Assert.That(res != null);
             Assert.AreEqual(3, res.Count());
         }
 
@@ -327,7 +309,6 @@ namespace Tests
             var res = query.ToList();
 
             // Assert
-            Assert.That(res != null);
             Assert.AreEqual(3, res.Count());
         }
 
@@ -341,7 +322,6 @@ namespace Tests
             var res = query.ToList();
 
             // Assert
-            Assert.That(res != null);
             Assert.AreEqual(1, res.Count());
         }
 
@@ -355,18 +335,17 @@ namespace Tests
             var res = query.ToList();
 
             // Assert
-            Assert.That(res != null);
             Assert.AreEqual(3, res.Count());
         }
-        #endregion  // Double Comparisons
+#endregion  // Double Comparisons
     */
 
-        #region DateTime Comparisons
+#region DateTime Comparisons
         // TODO full range
-        #endregion // DateTime Comparisons
+#endregion // DateTime Comparisons
 
-        #region Binary Comparisons
+#region Binary Comparisons
         // TODO == and !=
-        #endregion // Binary Comparisons
+#endregion // Binary Comparisons
     }
 } 

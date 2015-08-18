@@ -21,6 +21,7 @@ Solutions - Platform Specific
 The platform-specific solutions let us build a GUI test program and run unit tests specifically against that platform. 
 
 All have the pattern of including projects for platform _Blah_:
+
 - RealmNet
 - RealmNet.tests
 - InteropShared
@@ -28,7 +29,9 @@ All have the pattern of including projects for platform _Blah_:
 - Playground.Blah
 
 Currently, our platform-specific solutions are:
+
 - RealmWin
+- RealmPureNetLINQ - runs as _AnyCPU_ for quick debugging of LINQ stuff with mock core
 - RealmXamarinAndroid
 - RealmXamarinIOS
 - RealmXamarinMac
