@@ -185,7 +185,7 @@ namespace RealmNet.Interop
 
         internal static void table_unbind(TableHandle tableHandle)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         internal static IntPtr table_copy_table(TableHandle tableHandle)
@@ -295,7 +295,7 @@ namespace RealmNet.Interop
 
         internal static void query_delete(QueryHandle queryHandle)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         internal static void group_delete(GroupHandle groupHandle)
