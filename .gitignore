@@ -9,8 +9,8 @@
 packages
 realm/Tools/RealmWeaver.Fody.dll
 realm/wrappers/DerivedData
-realm/wrappers/core/*.a
-realm/wrappers/core/*.lib
+realm/wrappers/core
+realm/wrappers/realm-core*.bz2
 /tightdb/examples/TutorialSolution/obj
 
 ### Xcode ###
