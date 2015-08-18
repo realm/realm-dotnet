@@ -22,7 +22,7 @@ namespace Tests
         // TODO share this with MockQueryTestsBase to avoid duplication
 
         protected class TestEntity
-            #if USING_REALM_BACKEND
+            #if USING_REALM_CORE
              : RealmObject  // if not using Realm is pure object
             #endif
         {
@@ -35,7 +35,7 @@ namespace Tests
             // TODO add DateTime
         }
 
-#if USING_REALM_BACKEND
+#if USING_REALM_CORE
         protected Realm realm;
         protected RealmQuery<TestEntity> testEntities;
 

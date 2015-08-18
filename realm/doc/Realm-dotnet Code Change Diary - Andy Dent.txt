@@ -256,3 +256,34 @@ UnsafeNativeMethods.shared.cs
 - added query_begin_group/ query_end_group
 - added table_set_int64, get_int64
 - removed stubs table_set_long, table_set_int, table_get_long
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#72 LINQ Combinatorial Expressions response to code review
+
+Rename USING_REALM_BACKEND to USING_REALM_CORE
+- QuerySingleTableComboTests.cs
+- QuerySingleTableTests.cs
+- QueryTestsBase.cs
+- RealmNet.Tests.csproj
+
+wrappers.cpp
+- fix tabs to 4 spaces
+- query_group_begin, query_group_end and query_or added
+
+UnsafeNativeMethods.shared.cs
+- call new wrapper query_group_begin, query_group_end and query_or instead of mistakenly 
+  binding to names of core methods on Query
+  
+QuerySingleTableTests.cs  
+QuerySingleTableComboTests.cs  
+- remove redundant Assert.That(res != null);
+
+CoreProviderShared.cs
+- throw new Exception("Unsupported type " + valueType.Name) for string & bool in
+	AddQueryLessThan
+	AddQueryLessThanOrEqual 
+	AddQueryGreaterThan
+    AddQueryGreaterThanOrEqual
+    
+    

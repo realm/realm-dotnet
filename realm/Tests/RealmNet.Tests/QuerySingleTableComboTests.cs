@@ -20,7 +20,7 @@ namespace Tests
             Assert.AreEqual(4, testEntities.Count());
         }
 
-#if USING_REALM_BACKEND
+#if USING_REALM_CORE
         [Test]
         public void AllShouldReturnQueryable()
         {
@@ -31,7 +31,6 @@ namespace Tests
             var res = query.ToList();
 
             // Assert
-            Assert.That(query !=null && query is IQueryable);  // Resharper says latter is always true by compilation but worth making the point
             Assert.That(res != null);
         }
 #endif
@@ -47,7 +46,6 @@ namespace Tests
             var res = query.ToList();
 
             // Assert
-            Assert.That(res != null);
             Assert.AreEqual(1, res.Count());
             Assert.AreEqual("Peter", res[0].NameStr);
         }
@@ -62,7 +60,6 @@ namespace Tests
             var res = query.ToList();
 
             // Assert
-            Assert.That(res != null);
             Assert.AreEqual(0, res.Count());
         }
 
@@ -80,7 +77,6 @@ namespace Tests
             var res = query.ToList();
 
             // Assert
-            Assert.That(res != null);
             Assert.AreEqual(1, res.Count());
             Assert.AreEqual("Peter", res[0].NameStr);
         }
@@ -110,7 +106,6 @@ namespace Tests
             var res = query.ToList();
 
             // Assert
-            Assert.That(res != null);
             Assert.AreEqual(0, res.Count());
         }
 

@@ -249,18 +249,14 @@ namespace RealmNet.Interop
             var columnIndex = UnsafeNativeMethods.query_get_column_index((QueryHandle)queryHandle, columnName, (IntPtr)columnName.Length);
 
             var valueType = value.GetType();
-            if (value.GetType() == typeof(string))
-            {
-                throw new NotImplementedException();  // NOT IMPLEMENTED IN CORE
-            }
-            else if (valueType == typeof(bool))
-                throw new NotImplementedException();  // NOT IMPLEMENTED IN CORE and doesn't make sense
-            else if (valueType == typeof(int))
+            if (valueType == typeof(int))
                 UnsafeNativeMethods.query_int_less((QueryHandle)queryHandle, columnIndex, (IntPtr)((int)value));
             else if (valueType == typeof(float))
                 ;// see issue 68 UnsafeNativeMethods.query_float_less((QueryHandle)queryHandle, columnIndex, (IntPtr)((float)value));
             else if (valueType == typeof(double))
                 ;// see issue 68 UnsafeNativeMethods.query_double_less((QueryHandle)queryHandle, columnIndex, (IntPtr)((double)value));
+            else if (valueType == typeof(string) || valueType == typeof(bool))
+                throw new Exception("Unsupported type " + valueType.Name);
             else
                 throw new NotImplementedException();
         }
@@ -270,18 +266,14 @@ namespace RealmNet.Interop
             var columnIndex = UnsafeNativeMethods.query_get_column_index((QueryHandle)queryHandle, columnName, (IntPtr)columnName.Length);
 
             var valueType = value.GetType();
-            if (value.GetType() == typeof(string))
-            {
-                throw new NotImplementedException();  // NOT IMPLEMENTED IN CORE
-            }
-            else if (valueType == typeof(bool))
-                throw new NotImplementedException();  // NOT IMPLEMENTED IN CORE and doesn't make sense
-            else if (valueType == typeof(int))
+            if (valueType == typeof(int))
                 UnsafeNativeMethods.query_int_less_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((int)value));
             else if (valueType == typeof(float))
                 ;// see issue 68 UnsafeNativeMethods.query_float_less_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((float)value));
             else if (valueType == typeof(double))
                 ;// see issue 68 UnsafeNativeMethods.query_double_less_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((double)value));
+            else if (valueType == typeof(string) || valueType == typeof(bool))
+                throw new Exception("Unsupported type " + valueType.Name);
             else
                 throw new NotImplementedException();
         }
@@ -291,18 +283,14 @@ namespace RealmNet.Interop
             var columnIndex = UnsafeNativeMethods.query_get_column_index((QueryHandle)queryHandle, columnName, (IntPtr)columnName.Length);
 
             var valueType = value.GetType();
-            if (value.GetType() == typeof(string))
-            {
-                throw new NotImplementedException();  // NOT IMPLEMENTED IN CORE
-            }
-            else if (valueType == typeof(bool))
-                throw new NotImplementedException();  // NOT IMPLEMENTED IN CORE and doesn't make sense
-            else if (valueType == typeof(int))
+            if (valueType == typeof(int))
                 UnsafeNativeMethods.query_int_greater((QueryHandle)queryHandle, columnIndex, (IntPtr)((int)value));
             else if (valueType == typeof(float))
                 ;// see issue 68 UnsafeNativeMethods.query_float_greater((QueryHandle)queryHandle, columnIndex, (IntPtr)((float)value));
             else if (valueType == typeof(double))
                 ;// see issue 68 UnsafeNativeMethods.query_double_greater((QueryHandle)queryHandle, columnIndex, (IntPtr)((double)value));
+            else if (valueType == typeof(string) || valueType == typeof(bool))
+                throw new Exception("Unsupported type " + valueType.Name);
             else
                 throw new NotImplementedException();
         }
@@ -312,18 +300,14 @@ namespace RealmNet.Interop
             var columnIndex = UnsafeNativeMethods.query_get_column_index((QueryHandle)queryHandle, columnName, (IntPtr)columnName.Length);
 
             var valueType = value.GetType();
-            if (value.GetType() == typeof(string))
-            {
-                throw new NotImplementedException();  // NOT IMPLEMENTED IN CORE
-            }
-            else if (valueType == typeof(bool))
-                throw new NotImplementedException();  // NOT IMPLEMENTED IN CORE and doesn't make sense
-            else if (valueType == typeof(int))
+            if (valueType == typeof(int))
                 UnsafeNativeMethods.query_int_greater_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((int)value));
             else if (valueType == typeof(float))
                 ;// see issue 68 UnsafeNativeMethods.query_float_greater_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((float)value));
             else if (valueType == typeof(double))
                 ;// see issue 68 UnsafeNativeMethods.query_double_greater_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((double)value));
+            else if (valueType == typeof(string) || valueType == typeof(bool))
+                throw new Exception("Unsupported type " + valueType.Name);
             else
                 throw new NotImplementedException();
         }

@@ -138,14 +138,14 @@ namespace RealmNet.Interop
         internal static extern IntPtr query_get_column_index(QueryHandle queryPtr,
         [MarshalAs(UnmanagedType.LPWStr)] String columnName, IntPtr columnNameLen);
 
-        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "group", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern IntPtr query_begin_group(QueryHandle queryHandle);
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_begin_group", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void query_begin_group(QueryHandle queryHandle);
 
-        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "end_group", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern IntPtr query_end_group(QueryHandle queryHandle);
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_end_group", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void query_end_group(QueryHandle queryHandle);
 
-        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "Or", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern IntPtr query_or(QueryHandle queryHandle);
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_or", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void query_or(QueryHandle queryHandle);
 
         public static string group_to_string(GroupHandle groupHandle)
         {
