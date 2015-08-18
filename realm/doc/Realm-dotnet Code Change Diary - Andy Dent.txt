@@ -181,7 +181,7 @@ UnsafeNativeMethods.shared.cs
 - AddColumnToTable stripped back to just declaration using DLL_NAME
 
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-#79 propagating refactoring pattern from #66
+#70 propagating refactoring pattern from #66
 
 UnsafeNativeMethods.shared.cs
 - ALL wrapper functions (except table_get_string) selecting between 32 and 64bit variations 
@@ -217,3 +217,73 @@ Interop.XamarinIOS/InteropConfig.cs
 
 Interop.XamarinMac/InteropConfig.cs
 - added DLL_NAME
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#72 LINQ Combinatorial Expressions plus int support
+
+MockQuerySingleTableComboTests.cs added
+
+QuerySingleTableComboTests.cs added
+
+ICoreProvider.cs
+- AddQueryGroupBegin/End added
+- AddQueryAnd/Or added
+
+
+MockCoreProvider.cs
+- AddQueryGroupBegin/End added
+- AddQueryAnd/Or added
+
+
+CoreProvider.shared.cs
+- AddQueryGroupBegin/End added
+- AddQueryAnd added (does nothing)
+- AddQueryOr added
+- AddQueryNotEqual and AddQueryEqual -  comment out unimplemented float/double
+- AddQueryLessThan, AddQueryLessThanorEqual, AddQueryGreaterThan and AddQueryGreaterThanOrEqual added
+
+
+RealmQueryVisitor
+- VisitBinary
+  - use correct types - AndAlso and OrElse instead of And and Or
+  - restructure to use groups and and/or
+- VisitCombination added to help VisitCombination
+
+wrappers.cpp
+- table_set_int64, table_get_int64 added  
+  
+UnsafeNativeMethods.shared.cs
+- added query_begin_group/ query_end_group
+- added table_set_int64, get_int64
+- removed stubs table_set_long, table_set_int, table_get_long
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#72 LINQ Combinatorial Expressions response to code review
+
+Rename USING_REALM_BACKEND to USING_REALM_CORE
+- QuerySingleTableComboTests.cs
+- QuerySingleTableTests.cs
+- QueryTestsBase.cs
+- RealmNet.Tests.csproj
+
+wrappers.cpp
+- fix tabs to 4 spaces
+- query_group_begin, query_group_end and query_or added
+
+UnsafeNativeMethods.shared.cs
+- call new wrapper query_group_begin, query_group_end and query_or instead of mistakenly 
+  binding to names of core methods on Query
+  
+QuerySingleTableTests.cs  
+QuerySingleTableComboTests.cs  
+- remove redundant Assert.That(res != null);
+
+CoreProviderShared.cs
+- throw new Exception("Unsupported type " + valueType.Name) for string & bool in
+	AddQueryLessThan
+	AddQueryLessThanOrEqual 
+	AddQueryGreaterThan
+    AddQueryGreaterThanOrEqual
+    
+    

@@ -44,7 +44,7 @@ inline size_t bool_to_size_t(bool value) {
 //the inline should end up with no more code than just returning the constant
 //but will allow us to adopt another scheme later on
 inline size_t bool_to_size_t_with_errorcode(size_t errorcode){
-	return errorcode;
+    return errorcode;
 }
 
 //a size_t sent from C# with value 0 means durability_full, other values means durabillity_memonly, but please
@@ -208,8 +208,13 @@ extern "C" {
 
   //returns false=0  true=1 we use a size_t as it is likely the fastest type to return
   REALM_CORE_WRAPPER_API size_t table_get_bool(Table* table_ptr, size_t column_ndx, size_t row_ndx)
-  {    
-    return bool_to_size_t(table_ptr->get_bool(column_ndx,row_ndx));
+  {
+      return bool_to_size_t(table_ptr->get_bool(column_ndx, row_ndx));
+  }
+
+  REALM_CORE_WRAPPER_API int64_t table_get_int64(Table* table_ptr, size_t column_ndx, size_t row_ndx)
+  {
+      return table_ptr->get_int(column_ndx, row_ndx);
   }
 
   REALM_CORE_WRAPPER_API size_t table_get_string(Table* table_ptr, size_t column_ndx, size_t row_ndx, uint16_t * datatochsarp, size_t bufsize)
@@ -219,9 +224,14 @@ extern "C" {
   }
 
   //call with false=0  true=1 we use a size_t as it is likely the fastest type to return
-  REALM_CORE_WRAPPER_API void table_set_bool(Table* table_ptr, size_t column_ndx, size_t row_ndx,size_t value)
-  {    
-    table_ptr->set_bool(column_ndx,row_ndx,size_t_to_bool(value));     
+  REALM_CORE_WRAPPER_API void table_set_bool(Table* table_ptr, size_t column_ndx, size_t row_ndx, size_t value)
+  {
+      table_ptr->set_bool(column_ndx, row_ndx, size_t_to_bool(value));
+  }
+
+  REALM_CORE_WRAPPER_API void table_set_int64(Table* table_ptr, size_t column_ndx, size_t row_ndx, int64_t value)
+  {
+      table_ptr->set_int(column_ndx, row_ndx, value);
   }
 
   REALM_CORE_WRAPPER_API void table_set_string(Table* table_ptr, size_t column_ndx, size_t row_ndx,uint16_t* value,size_t value_len)
@@ -266,18 +276,37 @@ extern "C" {
 
 #pragma endregion // }}}
 
+#pragma region query group // {{{
+
+  REALM_CORE_WRAPPER_API void query_group_begin(Query * query_ptr)
+  {
+      query_ptr->group();
+  }
+
+  REALM_CORE_WRAPPER_API void query_group_end(Query * query_ptr)
+  {
+      query_ptr->end_group();
+  }
+
+  REALM_CORE_WRAPPER_API void query_or(Query * query_ptr)
+  {
+      query_ptr->Or();
+  }
+
+#pragma endregion // }}}
+
 #pragma region query string // {{{
 
   REALM_CORE_WRAPPER_API void query_string_equal(Query * query_ptr, size_t columnIndex, uint16_t* value, size_t value_len)
   {
-	  CSStringAccessor str(value, value_len);
-	  query_ptr->equal(columnIndex, str);
+      CSStringAccessor str(value, value_len);
+      query_ptr->equal(columnIndex, str);
   }
 
   REALM_CORE_WRAPPER_API void query_string_not_equal(Query * query_ptr, size_t columnIndex, uint16_t* value, size_t value_len)
   {
-	  CSStringAccessor str(value, value_len);
-	  query_ptr->not_equal(columnIndex, str);
+      CSStringAccessor str(value, value_len);
+      query_ptr->not_equal(columnIndex, str);
   }
 
 #pragma endregion // }}}
@@ -286,12 +315,12 @@ extern "C" {
 #pragma region query bool // {{{
   REALM_CORE_WRAPPER_API void query_bool_equal(Query * query_ptr, size_t columnIndex, size_t value)
   {
-	  query_ptr->equal(columnIndex, size_t_to_bool(value));
+      query_ptr->equal(columnIndex, size_t_to_bool(value));
   }
 
   REALM_CORE_WRAPPER_API void query_bool_not_equal(Query * query_ptr, size_t columnIndex, size_t value)
   {
-	  query_ptr->not_equal(columnIndex, size_t_to_bool(value));
+      query_ptr->not_equal(columnIndex, size_t_to_bool(value));
   }
 
 #pragma endregion // }}}
@@ -300,32 +329,32 @@ extern "C" {
 #pragma region query int // {{{
   REALM_CORE_WRAPPER_API void query_int_equal(Query * query_ptr, size_t columnIndex, size_t value)
   {
-	  query_ptr->equal(columnIndex, static_cast<int>(value));
+      query_ptr->equal(columnIndex, static_cast<int>(value));
   }
 
   REALM_CORE_WRAPPER_API void query_int_not_equal(Query * query_ptr, size_t columnIndex, size_t value)
   {
-	  query_ptr->not_equal(columnIndex, static_cast<int>(value));
+      query_ptr->not_equal(columnIndex, static_cast<int>(value));
   }
 
   REALM_CORE_WRAPPER_API void query_int_less(Query * query_ptr, size_t columnIndex, size_t value)
   {
-	  query_ptr->less(columnIndex, static_cast<int>(value));
+      query_ptr->less(columnIndex, static_cast<int>(value));
   }
 
   REALM_CORE_WRAPPER_API void query_int_less_equal(Query * query_ptr, size_t columnIndex, size_t value)
   {
-	  query_ptr->less_equal(columnIndex, static_cast<int>(value));
+      query_ptr->less_equal(columnIndex, static_cast<int>(value));
   }
 
   REALM_CORE_WRAPPER_API void query_int_greater(Query * query_ptr, size_t columnIndex, size_t value)
   {
-	  query_ptr->greater(columnIndex, static_cast<int>(value));
+      query_ptr->greater(columnIndex, static_cast<int>(value));
   }
 
   REALM_CORE_WRAPPER_API void query_int_greater_equal(Query * query_ptr, size_t columnIndex, size_t value)
   {
-	  query_ptr->greater_equal(columnIndex, static_cast<int>(value));
+      query_ptr->greater_equal(columnIndex, static_cast<int>(value));
   }
 
 #pragma endregion // }}}
@@ -350,14 +379,14 @@ extern "C" {
 //NOTE THAT tHE GROUP RETURNED HERE MUST BE FREED BY CALLING GROUP_DELETE WHEN IT IS NOT USED ANYMORE BY C#
 REALM_CORE_WRAPPER_API Group* group_from_binary_data(const char* data, std::size_t size)
 {
-	try {
+    try {
       BinaryData bd(data,size);
       return new Group(bd,false);
-	} 
-	catch (...)
-	{
-		return NULL;
-	}
+    } 
+    catch (...)
+    {
+        return NULL;
+    }
 }
 
 
@@ -456,22 +485,22 @@ REALM_CORE_WRAPPER_API void group_write_to_mem_free(char * binarydata_ptr){
 
 REALM_CORE_WRAPPER_API size_t group_commit(Group* group_ptr){
 try {
-	group_ptr->commit();
-	return 0;
+    group_ptr->commit();
+    return 0;
 }
  catch(...){
-	 return 1;
+     return 1;
  }
 }
 
 REALM_CORE_WRAPPER_API size_t group_equals(Group* group_ptr1, Group* group_ptr2)
 {
-	try {
-		return bool_to_size_t(*group_ptr1==*group_ptr2);//utilizing operator overload
-	}
-	catch(...){
-		return bool_to_size_t_with_errorcode(-1);//will return error -1 to a C# function expecting a bool
-	}	
+    try {
+        return bool_to_size_t(*group_ptr1==*group_ptr2);//utilizing operator overload
+    }
+    catch(...){
+        return bool_to_size_t_with_errorcode(-1);//will return error -1 to a C# function expecting a bool
+    }	
 }
 
 //inequality is handled in the binding by negating equality and thus we save one interop entry, and linking in the code for !=
@@ -488,27 +517,27 @@ REALM_CORE_WRAPPER_API size_t group_to_string(Group* group_ptr,uint16_t * data, 
 
 //return packed size_t with errorcode or a encoded boolean
 REALM_CORE_WRAPPER_API size_t  group_is_empty(Group* group_ptr) {
-	try {
-		return bool_to_size_t(group_ptr->is_empty());//if we don't get an exception things went well
-	}
-	catch(...)//things did not go well
-	{
-		return bool_to_size_t_with_errorcode(-1);//return an error code to indicate this
-		//1 as error means that is_empty is not to be trusted and that there was an
-		//exception when asking the group. Binding should throw a general exception
-		//InvalidOperation or the like, and in text describe that a call to is empty
-		//failed in an unspecified way.
-	}
+    try {
+        return bool_to_size_t(group_ptr->is_empty());//if we don't get an exception things went well
+    }
+    catch(...)//things did not go well
+    {
+        return bool_to_size_t_with_errorcode(-1);//return an error code to indicate this
+        //1 as error means that is_empty is not to be trusted and that there was an
+        //exception when asking the group. Binding should throw a general exception
+        //InvalidOperation or the like, and in text describe that a call to is empty
+        //failed in an unspecified way.
+    }
 }
 
 
 REALM_CORE_WRAPPER_API size_t group_size( Group* group_ptr){
-	try{
-		return group_ptr->size();
-	}
-	catch (...){
-		return -1;//-1 indicates an exception was thrown in core
-	}
+    try{
+        return group_ptr->size();
+    }
+    catch (...){
+        return -1;//-1 indicates an exception was thrown in core
+    }
 }
 
 //should be disposed by calling unbind_table_ref
@@ -524,7 +553,7 @@ REALM_CORE_WRAPPER_API Table* group_get_or_add_table(Group* group_ptr,uint16_t* 
 //inefficient
 REALM_CORE_WRAPPER_API Table* group_get_table_by_index(Group* group_ptr,size_t table_ndx)
 {
-	StringData sd = group_ptr->get_table_name(table_ndx);
+    StringData sd = group_ptr->get_table_name(table_ndx);
     return LangBindHelper::get_table(*group_ptr,sd);
 }
 
@@ -562,7 +591,7 @@ REALM_CORE_WRAPPER_API void shared_group_delete(SharedGroup* g) {
 //binding must ensure that the returned group is never modified
 REALM_CORE_WRAPPER_API const Group* shared_group_begin_read(SharedGroup* shared_group_ptr)
 {
-	try {
+    try {
     return &shared_group_ptr->begin_read();    
    }
     catch (...) {
@@ -615,13 +644,13 @@ REALM_CORE_WRAPPER_API size_t shared_group_commit(SharedGroup* shared_group_ptr)
 //however, rollback() is NOEXCEPT so theretically it should never throw any errors at us
 REALM_CORE_WRAPPER_API size_t shared_group_rollback(SharedGroup* shared_group_ptr)
 {
-	try {
+    try {
       shared_group_ptr->rollback();
-	  return 0;//indicate success
-	}
-	catch(...){
-		return -1;//something impossible happened
-	}
+      return 0;//indicate success
+    }
+    catch(...){
+        return -1;//something impossible happened
+    }
 }
 #pragma endregion // }}}
 
