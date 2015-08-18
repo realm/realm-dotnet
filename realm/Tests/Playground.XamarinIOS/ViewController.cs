@@ -5,6 +5,7 @@ using RealmNet;
 using System.Linq;
 using System.IO;
 using System.Collections.Generic;
+using Foundation;
 
 namespace Playground.XamarinIOS
 {
@@ -39,7 +40,7 @@ namespace Playground.XamarinIOS
     {
         public void Write(string text)
         {
-            //Console.Write(text);
+            Console.Write(text);
             InvokeOnMainThread(() => DebugText.Text += text);
         }
 
@@ -122,22 +123,26 @@ namespace Playground.XamarinIOS
         private void IntegrationTest()
         {
             var dbFilename = "db.realm";
-            string documentsPath = Environment.GetFolderPath (Environment.SpecialFolder.Personal); // Documents folder
-            string libraryPath = Path.Combine (documentsPath, "..", "Library"); // Library folder
-            var path = Path.Combine(documentsPath, dbFilename);
+
+            string libraryPath;
+
+            if (UIDevice.CurrentDevice.CheckSystemVersion(8, 0)) {  // > ios 8
+                libraryPath = NSFileManager.DefaultManager.GetUrls (NSSearchPathDirectory.LibraryDirectory, NSSearchPathDomain.User) [0].Path;
+            } else {
+                var docdir = Environment.GetFolderPath (Environment.SpecialFolder.MyDocuments);
+                libraryPath = Path.GetFullPath(Path.Combine (docdir, "..", "Library")); 
+            }
+
+            var path = Path.Combine(libraryPath, dbFilename);
 
             WriteLine("============\n\n\n");
             WriteLine("File: " + path);
 
-
-            //System.Threading.Thread.Sleep(20000);
-
-            //Console.WriteLine("Wrapper version: " + UnsafeNativeMethods.GetWrapperVer());
-            //Console.WriteLine("Minor version: " + UnsafeNativeMethods.GetMinorVer());
-
             var coreProvider = new CoreProvider();
             Realm.ActiveCoreProvider = coreProvider;
             var realm = Realm.GetInstance(path);
+
+            WriteLine("####Past SharedGroup constructor####");
 
             Person p1, p2, p3;
             using (var transaction = realm.BeginWrite())
