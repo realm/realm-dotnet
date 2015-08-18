@@ -21,16 +21,8 @@ namespace Interop.Config
             get { return (IntPtr.Size == 8); }
 #endif
 		}
-        public const string L32 = "(unimplemented)";
-        public const string L64 = "__Internal";
-        
-        //TODO eventually retire L32 and L64 for platform-conditional builds using DLL_NAME
-#if REALM_32
-        public const string DLL_NAME = "(unimplemented) 32BIT";
-#elif REALM_64
+
+        // This is always the "name" of the dll, regardless of bit-width.
         public const string DLL_NAME = "__Internal";
-#else
-        public const string DLL_NAME = "** error see InteropConfig.cs DLL_NAME";
-#endif
     }
 }
