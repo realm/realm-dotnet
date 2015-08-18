@@ -85,21 +85,21 @@ namespace RealmNet.Interop
         internal static extern void query_string_equal(QueryHandle queryPtr, IntPtr columnIndex,
             [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
 
-        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_string_not_equal", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern void query_string_not_equal(QueryHandle queryPtr, IntPtr columnIndex,
-            [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
+        //[DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_string_not_equal", CallingConvention = CallingConvention.Cdecl)]
+        //internal static extern void query_string_not_equal(QueryHandle queryPtr, IntPtr columnIndex,
+        //    [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_bool_equal", CallingConvention = CallingConvention.Cdecl)]
         internal static extern void query_bool_equal(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
 
-        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_bool_not_equal", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern void query_bool_not_equal(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
+        //[DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_bool_not_equal", CallingConvention = CallingConvention.Cdecl)]
+        //internal static extern void query_bool_not_equal(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
 
-        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_int_equal", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern void query_int_equal(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
+        //[DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_int_equal", CallingConvention = CallingConvention.Cdecl)]
+        //internal static extern void query_int_equal(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
 
-        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_int_not_equal", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern void query_int_not_equal(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
+        //[DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_int_not_equal", CallingConvention = CallingConvention.Cdecl)]
+        //internal static extern void query_int_not_equal(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_int_less", CallingConvention = CallingConvention.Cdecl)]
         internal static extern void query_int_less(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
@@ -113,17 +113,17 @@ namespace RealmNet.Interop
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_int_greater_equal", CallingConvention = CallingConvention.Cdecl)]
         internal static extern void query_int_greater_equal(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
 
-        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_float_equal", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern void query_float_equal(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
+//        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_float_equal", CallingConvention = CallingConvention.Cdecl)]
+//        internal static extern void query_float_equal(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
 
-        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_float_not_equal", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern void query_float_not_equal(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
+//        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_float_not_equal", CallingConvention = CallingConvention.Cdecl)]
+//        internal static extern void query_float_not_equal(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
 
-        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_double_equal", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern void query_double_equal(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
+//        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_double_equal", CallingConvention = CallingConvention.Cdecl)]
+//        internal static extern void query_double_equal(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
 
-        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_double_not_equal", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern void query_double_not_equal(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
+//        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_double_not_equal", CallingConvention = CallingConvention.Cdecl)]
+//        internal static extern void query_double_not_equal(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_find", CallingConvention = CallingConvention.Cdecl)]
         internal static extern IntPtr query_find(QueryHandle queryHandle, IntPtr lastMatch);
@@ -185,7 +185,7 @@ namespace RealmNet.Interop
 
         internal static void table_unbind(TableHandle tableHandle)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         internal static IntPtr table_copy_table(TableHandle tableHandle)
@@ -249,10 +249,10 @@ namespace RealmNet.Interop
         }
 
         //todo:add return value to rollback if c++ threw an exception
-        [DllImport(InteropConfig.L64, EntryPoint = "shared_group_rollback", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_group_rollback", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr shared_group_rollback64(SharedGroupHandle handle);
 
-        [DllImport(InteropConfig.L32, EntryPoint = "shared_group_rollback", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_group_rollback", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr shared_group_rollback32(SharedGroupHandle handle);
 
 
@@ -295,7 +295,7 @@ namespace RealmNet.Interop
 
         internal static void query_delete(QueryHandle queryHandle)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         internal static void group_delete(GroupHandle groupHandle)
@@ -387,6 +387,12 @@ namespace RealmNet.Interop
         internal static extern SharedGroupHandle new_shared_group_file_defaults(
             [MarshalAs(UnmanagedType.LPWStr)] string fileName,
             IntPtr fileNameLen);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "new_shared_group_file", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern SharedGroupHandle new_shared_group_file(
+            [MarshalAs(UnmanagedType.LPWStr)] string fileName,
+            IntPtr fileNameLen, IntPtr noCreate, IntPtr durabilityLevel);
+        
 
         public static bool table_is_attached(TableHandle TableHandle)
         {

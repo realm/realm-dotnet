@@ -77,7 +77,7 @@ namespace RealmNet.Interop
 
         public ISharedGroupHandle CreateSharedGroup(string filename)
         {
-            return UnsafeNativeMethods.new_shared_group_file_defaults(filename, (IntPtr)filename.Length);
+            return UnsafeNativeMethods.new_shared_group_file(filename, (IntPtr)filename.Length, (IntPtr)0, (IntPtr)0);
         }
 
         public bool HasTable(IGroupHandle groupHandle, string tableName)
@@ -192,12 +192,12 @@ namespace RealmNet.Interop
             }
             else if (valueType == typeof(bool))
                 UnsafeNativeMethods.query_bool_equal((QueryHandle)queryHandle, columnIndex, BoolToIntPtr((bool)value));
-            else if (valueType == typeof(int))
-                UnsafeNativeMethods.query_int_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((int)value));
-            else if (valueType == typeof(float))
-                UnsafeNativeMethods.query_float_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((float)value));
-            else if (valueType == typeof(double))
-                UnsafeNativeMethods.query_double_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((double)value));
+            //else if (valueType == typeof(int))
+            //    UnsafeNativeMethods.query_int_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((int)value));
+            //else if (valueType == typeof(float))
+            //    UnsafeNativeMethods.query_float_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((float)value));
+            //else if (valueType == typeof(double))
+            //    UnsafeNativeMethods.query_double_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((double)value));
             else
                 throw new NotImplementedException();
         }
@@ -207,20 +207,20 @@ namespace RealmNet.Interop
             var columnIndex = UnsafeNativeMethods.query_get_column_index((QueryHandle)queryHandle, columnName, (IntPtr)columnName.Length);
 
             var valueType = value.GetType();
-            if (value.GetType() == typeof(string))
-            {
-                string valueStr = (string)value;
-                UnsafeNativeMethods.query_string_not_equal((QueryHandle)queryHandle, columnIndex, valueStr, (IntPtr)valueStr.Length);
-            }
-            else if (valueType == typeof(bool))
-                UnsafeNativeMethods.query_bool_not_equal((QueryHandle)queryHandle, columnIndex, BoolToIntPtr((bool)value));
-            else if (valueType == typeof(int))
-                UnsafeNativeMethods.query_int_not_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((int)value));
-            else if (valueType == typeof(float))
-                UnsafeNativeMethods.query_float_not_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((float)value));
-            else if (valueType == typeof(double))
-                UnsafeNativeMethods.query_double_not_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((double)value));
-            else
+            //if (value.GetType() == typeof(string))
+            //{
+            //    string valueStr = (string)value;
+            //    UnsafeNativeMethods.query_string_not_equal((QueryHandle)queryHandle, columnIndex, valueStr, (IntPtr)valueStr.Length);
+            //}
+            //else if (valueType == typeof(bool))
+            //    UnsafeNativeMethods.query_bool_not_equal((QueryHandle)queryHandle, columnIndex, BoolToIntPtr((bool)value));
+            //else if (valueType == typeof(int))
+            //    UnsafeNativeMethods.query_int_not_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((int)value));
+            //else if (valueType == typeof(float))
+            //    UnsafeNativeMethods.query_float_not_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((float)value));
+            //else if (valueType == typeof(double))
+            //    UnsafeNativeMethods.query_double_not_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((double)value));
+            //else
                 throw new NotImplementedException();
         }
 
