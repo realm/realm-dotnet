@@ -321,3 +321,5 @@ CoreProvider.shared.cs
   query_begin_group => query_group_begin
   query_end_group => query_group_end
 
+ViewController.cs
+- IntegrationTest - change one addition to show the new Add syntax working
