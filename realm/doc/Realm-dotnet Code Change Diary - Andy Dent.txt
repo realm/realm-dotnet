@@ -286,4 +286,30 @@ CoreProviderShared.cs
 	AddQueryGreaterThan
     AddQueryGreaterThanOrEqual
     
-    
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#63 Standalone Objects and better Add syntax
+
+StandaloneCoreProvider.cs
+- created as stripped copy of MockCoreProvider
+
+QueryProvider.cs
+- use T instead of S in generics, to prevent compiler warning
+
+Realm.cs
+- Add added to adopt objects and create one-off write transactions
+- ActiveWriteTransaction added
+- CreateObject factored mostly out to AdoptNewObject two versions
+- CreateTableFor made static
+
+
+Transaction.cs
+- changed _realm to internal so Realm can access
+
+RealmObject.cs
+- added inRealm and isStandalone boolean tests    
+- constructor check if is active write trans and make standalone otherwise
+- SetValue remove code checking if coreProvider null
+
+QueryTestsBase.cs
+- TestEntity now descend from RealmObject even when USING_REALM_CORE not defined

@@ -14,7 +14,7 @@ namespace RealmNet
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix")]
     public class Transaction : Group
     {
-        private readonly Realm _realm;//pointer to the shared group this transaction is handling
+        internal readonly Realm _realm;//pointer to the shared group this transaction is handling
 
         //todo : unit test that checks what happen if the user just creats a transaction object and starts using it
         /*
