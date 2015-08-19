@@ -313,3 +313,11 @@ RealmObject.cs
 
 QueryTestsBase.cs
 - TestEntity now descend from RealmObject even when USING_REALM_CORE not defined
+
+
+UnsafeNativeMethods.shared.cs
+CoreProvider.shared.cs
+- fix wrapper calls and rename for consistency
+  query_begin_group => query_group_begin
+  query_end_group => query_group_end
+

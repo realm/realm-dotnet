@@ -174,10 +174,12 @@ namespace Playground.XamarinIOS
 
             using (var transaction = realm.BeginWrite())
             {
-                p3 = realm.CreateObject<Person>();
+/*                p3 = realm.CreateObject<Person>();
                 p3.FullName = "Peter Jameson";
                 p3.Email = "peter@jameson.com";
                 p3.IsInteresting = true;
+*/
+                p3 = new Person { FullName = "Peter Jameson", Email = "peter@jameson.com", IsInteresting = true };
                 transaction.Commit();
             }
 
@@ -185,6 +187,7 @@ namespace Playground.XamarinIOS
             {
                 WriteLine("p3 is named " + p3.FullName);
 
+// original uses LINQ to Objects                var interestingPeople = from p in realm.All<Person>() where p.IsInteresting == true select p;
                 var interestingPeople = from p in realm.All<Person>() where p.IsInteresting == true select p;
 
                 WriteLine("Interesting people include:");
