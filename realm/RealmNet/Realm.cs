@@ -11,16 +11,21 @@ namespace RealmNet
     public class Realm : Handled
     {
         public static ICoreProvider ActiveCoreProvider;
-        [ThreadStatic] static Transaction ActiveWriteTransaction;  
+        [ThreadStatic] static Transaction ActiveTransaction;  
 
         public static Realm GetInstance(string path = null)
         {
             return new Realm(ActiveCoreProvider, path);
         }
 
-        internal static Realm RealmWritingThisThread()
+        internal static Realm RealmWithActiveTransactionThisTread()
         {
-            return ActiveWriteTransaction?._realm;
+            return ActiveTransaction?._realm;
+        }
+
+        internal static void ForgetActiveTransactionThisTread()
+        {
+            ActiveTransaction = null;  // transaction Dispose should reset its realm's state to Ready
         }
 
         private readonly ICoreProvider _coreProvider;
@@ -158,7 +163,7 @@ namespace RealmNet
             if (_transactionGroupHandle.IsInvalid)
                 throw new InvalidOperationException("Cannot start Write Transaction, probably an IO error with the SharedGroup file");
             var ret = new Transaction(_transactionGroupHandle, this);
-            ActiveWriteTransaction = ret;  // static PER THREAD
+            ActiveTransaction = ret;  // static PER THREAD
             return ret;
         }
 

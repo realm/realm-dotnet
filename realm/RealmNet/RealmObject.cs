@@ -20,11 +20,14 @@ namespace RealmNet
 
             // TODO consider a more direct approach where we just grab tha active coreProvider for this thread
             // so creating objects gets lighter
-            var writingRealm = Realm.RealmWritingThisThread();
-            if (writingRealm == null)
-                Realm.AdoptNewObject(this, null, StandaloneCoreProvider.GetInstance(), null);
-            else
-                writingRealm.AdoptNewObject(this);
+            var realmInTransaction = Realm.RealmWithActiveTransactionThisTread();
+            if (realmInTransaction == null)
+                Realm.AdoptNewObject (this, null, StandaloneCoreProvider.GetInstance (), null);
+            else if (realmInTransaction.State == RealmNet.Interop.TransactionState.Write)
+                realmInTransaction.AdoptNewObject (this);
+            else {
+                // TODO bind a newly created read somehow to LINQ operation????
+            }
         }
 
 

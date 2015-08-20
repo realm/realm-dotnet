@@ -152,7 +152,6 @@ namespace Playground.XamarinIOS
                 p1.LastName = "Smith";
                 p1.IsInteresting = true;
                 p1.Email = "john@smith.com";
-                transaction.Commit();
             }
             using (var rt = realm.BeginRead())
             {
@@ -165,7 +164,6 @@ namespace Playground.XamarinIOS
                 p2.FullName = "John Doe";
                 p2.IsInteresting = false;
                 p2.Email = "john@deo.com";
-                transaction.Commit();
             }
             using (var rt = realm.BeginRead())
             {
@@ -180,14 +178,12 @@ namespace Playground.XamarinIOS
                 p3.IsInteresting = true;
 */
                 p3 = new Person { FullName = "Peter Jameson", Email = "peter@jameson.com", IsInteresting = true };
-                transaction.Commit();
             }
 
             using (var rt = realm.BeginRead())
             {
                 WriteLine("p3 is named " + p3.FullName);
 
-// original uses LINQ to Objects                var interestingPeople = from p in realm.All<Person>() where p.IsInteresting == true select p;
                 var interestingPeople = from p in realm.All<Person>() where p.IsInteresting == true select p;
 
                 WriteLine("Interesting people include:");

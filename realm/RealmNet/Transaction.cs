@@ -30,7 +30,7 @@ namespace RealmNet
         //You need to be totally clear on the difference between finalize and dispose if You want to understand the following text
 
         //disposal and finalization:
-        //transaction dispose will be handled in the Transaction class and will close or roll back the transaction
+        //transaction dispose will be handled in the Transaction class and will COMMIT the transaction
         //transaction dispose will typicall be called when the transaction goes out of scope in a using statement,
         //or be called directly from the user, in case using is too complicated.
         //or be called by the binding in case the user uses lambda expressions or executeintransaction
@@ -77,7 +77,7 @@ namespace RealmNet
         internal Transaction(IGroupHandle groupHandle, Realm realm)
             : base(realm.State == TransactionState.Read)
         {
-            SetHandle(groupHandle, realm.State == TransactionState.Read);//the group's dispose should rollback or endread
+            SetHandle(groupHandle, realm.State == TransactionState.Read);//the group's dispose should commit or endread
             IsValid = true;
             _realm = realm;
         }
@@ -143,9 +143,10 @@ namespace RealmNet
             try
             {
                 if (!disposing) return;
-                if (_realm == null) return; //we simply cannot rollback if shared group is null
+                Realm.ForgetActiveTransactionThisTread();
+                if (_realm == null) return; //we simply cannot commit/rollback if shared group is null
                 if (_realm.InTransaction())
-                    Rollback();
+                    Commit();
                 //if this fails somehow, the SharedGroupHandle will take care in its finalizer. Let the user handle exceptions
             }
             finally
