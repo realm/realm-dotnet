@@ -338,3 +338,18 @@ Realm.cs
 - ActiveWriteTransaction renamed ActiveTransaction
 - RealmWritingThisThread renamed RealmWithActiveTransactionThisTread
 - ForgetActiveTransactionThisTread added
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#63 new Add Syntax - demo file
+
+HomePageTests.cs added
+
+IntegrationTests.csproj
+- added HomePageTests
+
+Realm.cs
+- constructor, cope with null ActiveProvider and path 
+- DefaultPathProvider added
+
+
+ 
