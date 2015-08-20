@@ -43,13 +43,5 @@ namespace HomePageTests
 
         }
 
-        // standard test infrastructure
-        [SetUp]
-        public void Setup()
-        {
-            Realm.ActiveCoreProvider = new CoreProvider();
-            Realm.DefaultPathProvider = () => Path.GetTempFileName();
-        }
-
-        } // HomePageTests
+    } // HomePageTests
 }
