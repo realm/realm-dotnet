@@ -12,10 +12,12 @@ using RealmNet;
 // shows code like the samples on the realm.io home page
 namespace HomePageTests
 {
+
+    // Realm Objects Look like Regular Objects…
     public class Dog : RealmObject
     {
-        public string name = "";
-        public int age = 0;
+        public string name { get; set; }
+        public int age { get; set; }
     }
 
     [TestFixture]
@@ -27,10 +29,18 @@ namespace HomePageTests
             var mydog = new Dog() { name = "Rex" };
             Console.WriteLine($"name of dog:{mydog.name}");
 
-            var realm = new Realm();
+            // Offer Easy Persistence…
+            var realm = Realm.GetInstance();
             using (var writer = realm.BeginWrite()) {
                 realm.Add( mydog );
             }
+
+            // Can be Queried… with standard LINQ
+            var r = realm.All<Dog>().Where(dog => dog.age > 8);
+
+            // Queries are chainable
+            var r2 = r.Where(dog => dog.name.Contains("rex"));
+
         }
 
         // standard test infrastructure
@@ -39,7 +49,6 @@ namespace HomePageTests
         {
             Realm.ActiveCoreProvider = new CoreProvider();
             Realm.DefaultPathProvider = () => Path.GetTempFileName();
-
         }
 
         } // HomePageTests

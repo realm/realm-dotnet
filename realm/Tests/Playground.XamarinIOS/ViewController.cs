@@ -120,6 +120,37 @@ namespace Playground.XamarinIOS
             }
         }
 
+        // Realm Objects Look like Regular Objects…
+        public class Dog : RealmObject
+        {
+            public string name { get; set; }
+            public int age { get; set; }
+        }
+
+
+        private void HomePageTest()
+        {
+            Realm.ActiveCoreProvider = new CoreProvider();
+            Realm.DefaultPathProvider = () => Path.GetTempFileName();
+
+
+
+            var mydog = new Dog() { name = "Rex" };
+            Console.WriteLine($"name of dog:{mydog.name}");
+
+            // Offer Easy Persistence…
+            var realm = Realm.GetInstance();
+            using (var writer = realm.BeginWrite()) {
+                realm.Add( mydog );
+            }
+
+            // Can be Queried… with standard LINQ
+            var r = realm.All<Dog>().Where(dog => dog.age > 8);
+
+            // Queries are chainable
+            var r2 = r.Where(dog => dog.name.Contains("rex"));
+        }
+
         private void IntegrationTest()
         {
             var dbFilename = "db.realm";
@@ -207,7 +238,8 @@ namespace Playground.XamarinIOS
             // Perform any additional setup after loading the view, typically from a nib.
 
             //new System.Threading.Thread(RunBenchmark).Start();
-            new System.Threading.Thread(IntegrationTest).Start();
+            new System.Threading.Thread(HomePageTest).Start();
+//            new System.Threading.Thread(IntegrationTest).Start();
         }
 
         public override void DidReceiveMemoryWarning()
