@@ -36,6 +36,17 @@ namespace Playground.XamarinIOS
         }
     }
 
+    public class StaticTest
+    {
+        public static StaticTest instance = new StaticTest();
+
+        public StaticTest()
+        {
+            Console.WriteLine("!!!");
+        }
+
+    }
+
     public partial class ViewController : UIViewController
     {
         public void Write(string text)
@@ -212,6 +223,9 @@ namespace Playground.XamarinIOS
             {
                 WriteLine("p3 is named " + p3.FullName);
 
+                var allPeople = realm.All<Person>().ToList();
+                WriteLine("There are " + allPeople.Count() + " in total");
+
                 var interestingPeople = from p in realm.All<Person>() where p.IsInteresting == true select p;
 
                 WriteLine("Interesting people include:");
@@ -222,6 +236,14 @@ namespace Playground.XamarinIOS
                 WriteLine("People named John:");
                 foreach (var p in johns)
                     WriteLine(" - " + p.FullName + " (" + p.Email + ")");
+            }
+
+            using (realm.BeginWrite())
+            {
+                realm.Remove(p2);
+
+                var allPeople = realm.All<Person>().ToList();
+                WriteLine("After deleting one, there are " + allPeople.Count() + " in total");
             }
         }
 
