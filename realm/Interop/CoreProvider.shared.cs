@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using InteropShared;
 using System.Runtime.InteropServices;
+using System.Linq;
 
 namespace RealmNet.Interop
 {
     public class CoreProvider : ICoreProvider
     {
-
         #region helpers
         // returns magic numbers from core, formerly the enum DataType in UnsafeNativeMethods.shared.cs
         internal static IntPtr RealmColType(Type columnType)
@@ -110,6 +110,11 @@ namespace RealmNet.Interop
         public long AddEmptyRow(IGroupHandle groupHandle, string tableName)
         {
             return (long)UnsafeNativeMethods.table_add_empty_row(GetTable(groupHandle, tableName), (IntPtr)1); 
+        }
+
+        public void RemoveRow(IGroupHandle groupHandle, string tableName, long rowIndex)
+        {
+            UnsafeNativeMethods.table_remove_row(GetTable(groupHandle, tableName), (IntPtr)rowIndex);
         }
 
         public T GetValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, long rowIndex)
@@ -375,6 +380,17 @@ namespace RealmNet.Interop
         public long GroupSize(IGroupHandle groupHandle)
         {
             throw new NotImplementedException();
+        }
+
+        public IEnumerable<Type> GetRealmTypes() 
+        {
+            var realmTypes =
+                from a in AppDomain.CurrentDomain.GetAssemblies()
+                from t in a.DefinedTypes
+                    where t.IsSubclassOf(typeof(RealmObject))
+                select t;
+
+            return realmTypes;
         }
     }
 }

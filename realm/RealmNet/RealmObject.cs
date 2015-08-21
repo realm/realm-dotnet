@@ -13,9 +13,9 @@ namespace RealmNet
         // TODO - debate over isValid (Java) vs invalidated (Swift) and triple-state of standalone vs in realm vs formerly in realm and deleted
         public bool IsStandalone { get { return _coreProvider != null && _coreProvider.GetType() == typeof(StandaloneCoreProvider); } }
 
-
         public bool InRealm { get { return _coreProvider != null && _coreProvider.GetType () != typeof(StandaloneCoreProvider); } }
 
+        internal long RowIndex { get { return _rowIndex; } }
 
         protected RealmObject()
         {

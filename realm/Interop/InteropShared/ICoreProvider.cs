@@ -16,6 +16,8 @@ namespace RealmNet
         void AddColumnToTable(IGroupHandle groupHandle, string tableName, string columnName, Type columnType);
         long AddEmptyRow(IGroupHandle groupHandle, string tableName);
 
+        void RemoveRow(IGroupHandle groupHandle, string tableName, long rowIndex);
+
         T GetValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, long rowIndex);
         void SetValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, long rowIndex, T value);
 
@@ -38,5 +40,7 @@ namespace RealmNet
         void GroupCommit(IGroupHandle groupHandle);
         bool GroupIsEmpty(IGroupHandle groupHandle);
         long GroupSize(IGroupHandle groupHandle);
+
+        IEnumerable<Type> GetRealmTypes();
     }
 }

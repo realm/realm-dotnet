@@ -263,6 +263,9 @@ namespace RealmNet.Interop
             throw new NotImplementedException();
         }
 
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_remove_row", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void table_remove_row(TableHandle tableHandle, IntPtr intPtr);
+
         //todo:add return value to rollback if c++ threw an exception
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_group_rollback", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr shared_group_rollback64(SharedGroupHandle handle);

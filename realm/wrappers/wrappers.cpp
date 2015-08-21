@@ -257,6 +257,11 @@ extern "C" {
       return tableView_ptr->get_column_index(str);
   }
 
+  REALM_CORE_WRAPPER_API void table_remove_row(Table* table_ptr, size_t row_ndx)
+  {
+    table_ptr->remove(row_ndx);
+  }
+
 #pragma endregion // }}}
 
 #pragma region query general // {{{

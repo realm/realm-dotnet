@@ -140,6 +140,11 @@ namespace InteropShared
             return numRows - 1;  // index of added row
         }
 
+        public void RemoveRow(IGroupHandle groupHandle, string tableName, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
         public T GetValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, long rowIndex)
         {
             var table = _tables[tableName];
@@ -251,6 +256,11 @@ namespace InteropShared
         }
 
         public long GroupSize(IGroupHandle groupHandle)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<Type> GetRealmTypes() 
         {
             throw new NotImplementedException();
         }

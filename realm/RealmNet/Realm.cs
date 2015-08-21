@@ -37,6 +37,7 @@ namespace RealmNet
         {
             _coreProvider = coreProvider;
             SetHandle(coreProvider.CreateSharedGroup(path), false);
+            //CreateTables()
         }
 
         // TODO consider retiring this in favor of just creating object instances
@@ -216,6 +217,11 @@ namespace RealmNet
                 IsValid = false;//mark the shared group as invalid
                 throw;
             }
+        }
+
+        public void Remove(RealmObject obj)
+        {
+            _coreProvider.RemoveRow(_transactionGroupHandle, obj.GetType().Name, obj.RowIndex);
         }
 
 

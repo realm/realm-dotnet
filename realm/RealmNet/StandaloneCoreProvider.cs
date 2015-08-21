@@ -101,6 +101,11 @@ namespace RealmNet
             row[colIndex] = value;
         }
 
+        public void RemoveRow(IGroupHandle groupHandle, string tableName, long rowIndex)
+        {
+            throw new NotImplementedException();
+        }
+
         public IQueryHandle CreateQuery(IGroupHandle groupHandle, string tableName)
         {
             return null;
@@ -183,6 +188,11 @@ namespace RealmNet
         }
 
         public long GroupSize(IGroupHandle groupHandle)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<Type> GetRealmTypes() 
         {
             throw new NotImplementedException();
         }
