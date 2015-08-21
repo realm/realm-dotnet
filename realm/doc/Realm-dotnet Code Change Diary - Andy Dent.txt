@@ -286,4 +286,73 @@ CoreProviderShared.cs
 	AddQueryGreaterThan
     AddQueryGreaterThanOrEqual
     
-    
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#63 Standalone Objects and better Add syntax
+
+StandaloneCoreProvider.cs
+- created as stripped copy of MockCoreProvider
+
+QueryProvider.cs
+- use T instead of S in generics, to prevent compiler warning
+
+Realm.cs
+- Add added to adopt objects and create one-off write transactions
+- ActiveWriteTransaction added
+- CreateObject factored mostly out to AdoptNewObject two versions
+- CreateTableFor made static
+
+
+Transaction.cs
+- changed _realm to internal so Realm can access
+
+RealmObject.cs
+- added inRealm and isStandalone boolean tests    
+- constructor check if is active write trans and make standalone otherwise
+- SetValue remove code checking if coreProvider null
+
+QueryTestsBase.cs
+- TestEntity now descend from RealmObject even when USING_REALM_CORE not defined
+
+
+UnsafeNativeMethods.shared.cs
+CoreProvider.shared.cs
+- fix wrapper calls and rename for consistency
+  query_begin_group => query_group_begin
+  query_end_group => query_group_end
+
+ViewController.cs
+- IntegrationTest - change one addition to show the new Add syntax working
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#63 Standalone Objects - Minor fixes to transactions
+
+Transaction.cs
+- Dispose 
+  - now do a Commit instead of Rollback
+  - call ForgetActiveTransactionThisTread
+
+
+Realm.cs
+- ActiveWriteTransaction renamed ActiveTransaction
+- RealmWritingThisThread renamed RealmWithActiveTransactionThisTread
+- ForgetActiveTransactionThisTread added
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#63 new Add Syntax - demo file
+
+HomePageTests.cs added
+
+IntegrationTests.csproj
+- added HomePageTests
+
+Realm.cs
+- constructor, cope with null ActiveProvider and path 
+
+RealmObject.cs
+- RealmObject InRealm and IsStandalone made properties
+
+ 
+
+ 

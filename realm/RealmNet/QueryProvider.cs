@@ -7,9 +7,9 @@ namespace RealmNet
 {
     public abstract class QueryProvider : IQueryProvider
     {
-        public IQueryable<S> CreateQuery<S>(Expression expression)
+        public IQueryable<T> CreateQuery<T>(Expression expression)
         {
-            return new RealmQuery<S>(this, expression);
+            return new RealmQuery<T>(this, expression);
         }
 
         public IQueryable CreateQuery(Expression expression)
@@ -25,9 +25,9 @@ namespace RealmNet
             }
         }
 
-        public S Execute<S>(Expression expression)
+        public T Execute<T>(Expression expression)
         {
-            return (S)this.Execute(expression, typeof(S));
+            return (T)this.Execute(expression, typeof(T));
         }
 
         public object Execute(Expression expression)

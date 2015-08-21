@@ -21,10 +21,7 @@ namespace Tests
     {
         // TODO share this with MockQueryTestsBase to avoid duplication
 
-        protected class TestEntity
-            #if USING_REALM_CORE
-             : RealmObject  // if not using Realm is pure object
-            #endif
+        protected class TestEntity : RealmObject  // if not using Realm core will be standalone objects
         {
             public string NameStr { get; set; }
             public bool IsCool { get; set; }
@@ -48,7 +45,7 @@ namespace Tests
             realm = Realm.GetInstance(System.IO.Path.GetTempFileName());
             testEntities = realm.All<TestEntity>();
 
-            using (var writeWith = realm.BeginWrite())  // not strictly necessary for Mock backend
+            using (var writeWith = realm.BeginWrite())
             {
                 var te1 = realm.CreateObject<TestEntity>();
                 te1.NameStr = "John";
@@ -62,21 +59,10 @@ namespace Tests
                 te2.IntNum = 2;
                 // not until #67 te2.FloatNum = 999.99;
                 // not until #67 te2.DoubleNum = 999.99;
-                // TODO we should make more idiomatic syntax work such as 
-                //var autoAdded = new TestEntity {Str = "Johnnie", Number = 3};
-                //autoAdded = new TestEntity { Str = "Xanh Li", Number = 4 };
-                var te3 = realm.CreateObject<TestEntity>();
-                te3.NameStr = "Johnnie";
-                te3.IsCool = true;
-                te3.IntNum = 3;
-                // not until #67 te3.FloatNum = 3.1415;
-                // not until #67 te3.DoubleNum = 3.1415;
-                var te4 = realm.CreateObject<TestEntity>();
-                te4.NameStr = "Xanh Li";
-                te4.IsCool = false;
-                te4.IntNum = 9;
-                // not until #67 te4.FloatNum = -5.0e6;
-                // not until #67 te4.DoubleNum = -5.0e6;
+
+                // alternative, simpler creation syntax
+                var te3 = new TestEntity {NameStr = "Johnnie", IntNum = 3, IsCool = true /* not until #67, FloatNum = 3.1415, DoubleNum = 3.1415 */};
+                var te4 = new TestEntity {NameStr = "Xanh Li", IntNum = 9, IsCool = false /* not until #67, FloatNum = -5.0e6, DoubleNum = -5.0e6 */ };
                 writeWith.Commit();
             }
         }

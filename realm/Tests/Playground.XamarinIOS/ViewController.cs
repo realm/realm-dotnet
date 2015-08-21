@@ -120,6 +120,34 @@ namespace Playground.XamarinIOS
             }
         }
 
+        // Realm Objects Look like Regular Objects…
+        public class Dog : RealmObject
+        {
+            public string name { get; set; }
+            public int age { get; set; }
+        }
+
+
+        private void HomePageTest()
+        {
+            Realm.ActiveCoreProvider = new CoreProvider();
+
+            var mydog = new Dog() { name = "Rex" };
+            Console.WriteLine($"name of dog:{mydog.name}");
+
+            // Offer Easy Persistence…
+            var realm = Realm.GetInstance(Path.GetTempFileName());
+            using (var writer = realm.BeginWrite()) {
+                realm.Add( mydog );
+            }
+
+            // Can be Queried… with standard LINQ
+            var r = realm.All<Dog>().Where(dog => dog.age > 8);
+
+            // Queries are chainable
+            var r2 = r.Where(dog => dog.name.Contains("rex"));
+        }
+
         private void IntegrationTest()
         {
             var dbFilename = "db.realm";
@@ -152,7 +180,6 @@ namespace Playground.XamarinIOS
                 p1.LastName = "Smith";
                 p1.IsInteresting = true;
                 p1.Email = "john@smith.com";
-                transaction.Commit();
             }
             using (var rt = realm.BeginRead())
             {
@@ -165,7 +192,6 @@ namespace Playground.XamarinIOS
                 p2.FullName = "John Doe";
                 p2.IsInteresting = false;
                 p2.Email = "john@deo.com";
-                transaction.Commit();
             }
             using (var rt = realm.BeginRead())
             {
@@ -174,11 +200,12 @@ namespace Playground.XamarinIOS
 
             using (var transaction = realm.BeginWrite())
             {
-                p3 = realm.CreateObject<Person>();
+/*                p3 = realm.CreateObject<Person>();
                 p3.FullName = "Peter Jameson";
                 p3.Email = "peter@jameson.com";
                 p3.IsInteresting = true;
-                transaction.Commit();
+*/
+                p3 = new Person { FullName = "Peter Jameson", Email = "peter@jameson.com", IsInteresting = true };
             }
 
             using (var rt = realm.BeginRead())
@@ -208,7 +235,8 @@ namespace Playground.XamarinIOS
             // Perform any additional setup after loading the view, typically from a nib.
 
             //new System.Threading.Thread(RunBenchmark).Start();
-            new System.Threading.Thread(IntegrationTest).Start();
+            new System.Threading.Thread(HomePageTest).Start();
+//            new System.Threading.Thread(IntegrationTest).Start();
         }
 
         public override void DidReceiveMemoryWarning()
