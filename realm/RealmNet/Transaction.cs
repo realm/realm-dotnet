@@ -142,9 +142,11 @@ namespace RealmNet
         {
             try
             {
-                if (!disposing) return;
+                if (!disposing) 
+                    return;
                 Realm.ForgetActiveTransactionThisTread();
-                if (_realm == null) return; //we simply cannot commit/rollback if shared group is null
+                if (_realm == null) 
+                    return; //we simply cannot commit/rollback if shared group is null
                 if (_realm.InTransaction())
                     Commit();
                 //if this fails somehow, the SharedGroupHandle will take care in its finalizer. Let the user handle exceptions

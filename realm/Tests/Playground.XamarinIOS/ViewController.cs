@@ -131,15 +131,12 @@ namespace Playground.XamarinIOS
         private void HomePageTest()
         {
             Realm.ActiveCoreProvider = new CoreProvider();
-            Realm.DefaultPathProvider = () => Path.GetTempFileName();
-
-
 
             var mydog = new Dog() { name = "Rex" };
             Console.WriteLine($"name of dog:{mydog.name}");
 
             // Offer Easy Persistence…
-            var realm = Realm.GetInstance();
+            var realm = Realm.GetInstance(Path.GetTempFileName());
             using (var writer = realm.BeginWrite()) {
                 realm.Add( mydog );
             }
