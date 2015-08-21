@@ -10,6 +10,13 @@ namespace RealmNet
         private ICoreProvider _coreProvider;
         private long _rowIndex;
 
+        // TODO - debate over isValid (Java) vs invalidated (Swift) and triple-state of standalone vs in realm vs formerly in realm and deleted
+        public bool IsStandalone { get { return _coreProvider != null && _coreProvider.GetType() == typeof(StandaloneCoreProvider); } }
+
+
+        public bool InRealm { get { return _coreProvider != null && _coreProvider.GetType () != typeof(StandaloneCoreProvider); } }
+
+
         protected RealmObject()
         {
             var modelName = GetType().Name;
@@ -37,18 +44,6 @@ namespace RealmNet
             //TODO copies properties from object to core provider BEFORE replacing with incoming
             _coreProvider = coreProvider;
             _rowIndex = rowIndex;
-        }
-
-        // TODO - debate over isValid (Java) vs invalidated (Swift) and triple-state of standalone vs in realm vs formerly in realm and deleted
-        public bool IsStandalone()
-        {
-            return _coreProvider != null && _coreProvider.GetType() == typeof(StandaloneCoreProvider);
-        }
-
-
-        public bool InRealm()
-        {
-            return _coreProvider != null && _coreProvider.GetType() != typeof(StandaloneCoreProvider);
         }
 
 

@@ -349,7 +349,10 @@ IntegrationTests.csproj
 
 Realm.cs
 - constructor, cope with null ActiveProvider and path 
-- DefaultPathProvider added
 
+RealmObject.cs
+- RealmObject InRealm and IsStandalone made properties
+
+ 
 
  

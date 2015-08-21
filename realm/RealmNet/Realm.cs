@@ -97,12 +97,12 @@ namespace RealmNet
             if (State == TransactionState.Write)
             {
                 // MOST EFFICIENT - object should have picked up this state and already assigned itself to the core provider
-                Debug.Assert(adoptingObject.InRealm());
+                Debug.Assert(adoptingObject.InRealm);
                 // this is effectively a noop but it will be intuitive to users and is a good chance to check transaction validitity
             }
             else
             {
-                Debug.Assert(adoptingObject.IsStandalone());
+                Debug.Assert(adoptingObject.IsStandalone);
                 var oneShot = BeginWrite();  // implicit one-shot Write transaction
                 var tableName = adoptingObject.GetType().Name;
                 adoptingObject._Manage(this, _coreProvider, _coreProvider.AddEmptyRow(_transactionGroupHandle, tableName));
