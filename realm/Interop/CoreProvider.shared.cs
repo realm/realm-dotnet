@@ -314,12 +314,12 @@ namespace RealmNet.Interop
 
         public void AddQueryGroupBegin(IQueryHandle queryHandle)
         {
-            UnsafeNativeMethods.query_begin_group((QueryHandle)queryHandle);
+            UnsafeNativeMethods.query_group_begin((QueryHandle)queryHandle);
         }
 
         public void AddQueryGroupEnd(IQueryHandle queryHandle)
         {
-            UnsafeNativeMethods.query_end_group((QueryHandle)queryHandle);
+            UnsafeNativeMethods.query_group_end((QueryHandle)queryHandle);
         }
 
         public void AddQueryAnd(IQueryHandle queryHandle)

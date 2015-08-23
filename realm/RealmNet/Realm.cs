@@ -11,10 +11,21 @@ namespace RealmNet
     public class Realm : Handled
     {
         public static ICoreProvider ActiveCoreProvider;
+        [ThreadStatic] static Transaction ActiveTransaction;  
 
         public static Realm GetInstance(string path = null)
         {
             return new Realm(ActiveCoreProvider, path);
+        }
+
+        internal static Realm RealmWithActiveTransactionThisTread()
+        {
+            return ActiveTransaction?._realm;
+        }
+
+        internal static void ForgetActiveTransactionThisTread()
+        {
+            ActiveTransaction = null;  // transaction Dispose should reset its realm's state to Ready
         }
 
         private readonly ICoreProvider _coreProvider;
@@ -28,32 +39,41 @@ namespace RealmNet
             SetHandle(coreProvider.CreateSharedGroup(path), false);
         }
 
+        // TODO consider retiring this in favor of just creating object instances
         public T CreateObject<T>() where T : RealmObject
         {
             return (T)CreateObject(typeof(T));
         }
 
+
         public object CreateObject(Type objectType)
         {
-            if (!_coreProvider.HasTable(_transactionGroupHandle, objectType.Name))
-                CreateTableFor(objectType);
-
-            var result = (RealmObject)Activator.CreateInstance(objectType);
-            var rowIndex = _coreProvider.AddEmptyRow(_transactionGroupHandle, objectType.Name);
-
-            result._Manage(this, _coreProvider, rowIndex);
-
-            return result;
+            // relies on RealmObject ctor calling back to AdoptNewObject
+            return (RealmObject)Activator.CreateInstance(objectType);
         }
 
-        private void CreateTableFor(Type objectType)
+        internal void AdoptNewObject(RealmObject adoptingObject)
+        {
+            AdoptNewObject(adoptingObject, this, _coreProvider, _transactionGroupHandle);
+        }
+
+        internal static void AdoptNewObject(RealmObject adoptingObject, Realm usingRealm, ICoreProvider usingProvider, IGroupHandle transGroupHandle)
+        {
+            var objectType = adoptingObject.GetType();
+            if (!usingProvider.HasTable(transGroupHandle, objectType.Name))
+                CreateTableFor(objectType, usingProvider, transGroupHandle);
+            var rowIndex = usingProvider.AddEmptyRow(transGroupHandle, objectType.Name);
+            adoptingObject._Manage(usingRealm, usingProvider, rowIndex);
+        }
+
+        private static void CreateTableFor(Type objectType, ICoreProvider usingProvider, IGroupHandle transGroupHandle)
         {
             var tableName = objectType.Name;
 
             if (!objectType.GetTypeInfo().GetCustomAttributes(typeof(WovenAttribute), true).Any())
                 Debug.WriteLine("WARNING! The type " + tableName + " is a RealmObject but it has not been woven.");
 
-            _coreProvider.AddTable(_transactionGroupHandle, tableName);
+            usingProvider.AddTable(transGroupHandle, tableName);
 
             var propertiesToMap = objectType.GetTypeInfo().DeclaredProperties.Where(p => p.CustomAttributes.All(a => a.AttributeType != typeof (IgnoreAttribute)));
             foreach (var p in propertiesToMap)
@@ -64,7 +84,29 @@ namespace RealmNet
                     propertyName = ((string)mapToAttribute.ConstructorArguments[0].Value);
                 
                 var columnType = p.PropertyType;
-                _coreProvider.AddColumnToTable(_transactionGroupHandle, tableName, propertyName, columnType);
+                usingProvider.AddColumnToTable(transGroupHandle, tableName, propertyName, columnType);
+            }
+        }
+
+
+        public void Add(RealmObject adoptingObject)
+        {
+            if (State == TransactionState.Read)  // TODO debate if track "implicit read transactions" differently and allow this
+                throw new InvalidOperationException("You are in a Read transaction and cannot add objects");
+
+            if (State == TransactionState.Write)
+            {
+                // MOST EFFICIENT - object should have picked up this state and already assigned itself to the core provider
+                Debug.Assert(adoptingObject.InRealm);
+                // this is effectively a noop but it will be intuitive to users and is a good chance to check transaction validitity
+            }
+            else
+            {
+                Debug.Assert(adoptingObject.IsStandalone);
+                var oneShot = BeginWrite();  // implicit one-shot Write transaction
+                var tableName = adoptingObject.GetType().Name;
+                adoptingObject._Manage(this, _coreProvider, _coreProvider.AddEmptyRow(_transactionGroupHandle, tableName));
+                oneShot.Commit();
             }
         }
 
@@ -115,11 +157,14 @@ namespace RealmNet
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
         public Transaction BeginWrite()
         {
+            // TODO cope with multiple write transactions FROM DIFFERENT REALMS in same thread - issue #85
             ValidateNotInTransaction();
             _transactionGroupHandle = SharedGroupHandle.StartTransaction(TransactionState.Write);
             if (_transactionGroupHandle.IsInvalid)
                 throw new InvalidOperationException("Cannot start Write Transaction, probably an IO error with the SharedGroup file");
-            return new Transaction(_transactionGroupHandle, this);
+            var ret = new Transaction(_transactionGroupHandle, this);
+            ActiveTransaction = ret;  // static PER THREAD
+            return ret;
         }
 
         //called by the user directly or indirectly via dispose. Finalizer in SharedGroupHandle might also end

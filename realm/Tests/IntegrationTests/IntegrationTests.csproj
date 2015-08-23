@@ -48,13 +48,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="HomePageTests.cs" />
     <Compile Include="IntegrationTests.cs" />
     <Compile Include="Person.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Interop\Interop.Win32\Interop.Win32.csproj">
-      <Project>{c211ede7-cc8e-4f53-a9df-0b105a350bbf}</Project>
+      <Project>{C211EDE7-CC8E-4F53-A9DF-0B105A350BBF}</Project>
       <Name>Interop.Win32</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Interop\InteropShared\InteropShared.csproj">
