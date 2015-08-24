@@ -40,7 +40,5 @@ namespace RealmNet
         void GroupCommit(IGroupHandle groupHandle);
         bool GroupIsEmpty(IGroupHandle groupHandle);
         long GroupSize(IGroupHandle groupHandle);
-
-        IEnumerable<Type> GetRealmTypes();
     }
 }

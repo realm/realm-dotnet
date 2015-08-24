@@ -191,11 +191,6 @@ namespace RealmNet
         {
             throw new NotImplementedException();
         }
-
-        public IEnumerable<Type> GetRealmTypes() 
-        {
-            throw new NotImplementedException();
-        }
     }
 }
 

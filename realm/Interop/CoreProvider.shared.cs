@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using InteropShared;
 using System.Runtime.InteropServices;
-using System.Linq;
 
 namespace RealmNet.Interop
 {
@@ -380,17 +379,6 @@ namespace RealmNet.Interop
         public long GroupSize(IGroupHandle groupHandle)
         {
             throw new NotImplementedException();
-        }
-
-        public IEnumerable<Type> GetRealmTypes() 
-        {
-            var realmTypes =
-                from a in AppDomain.CurrentDomain.GetAssemblies()
-                from t in a.DefinedTypes
-                    where t.IsSubclassOf(typeof(RealmObject))
-                select t;
-
-            return realmTypes;
         }
     }
 }
