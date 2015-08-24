@@ -24,34 +24,39 @@ public class ModuleWeaver
         LogInfo = m => { };
     }
 
-    public IEnumerable<TypeDefinition> GetMachingTypes()
+    public IEnumerable<TypeDefinition> GetMatchingTypes()
     {
          return ModuleDefinition.GetTypes().Where(x => (x.BaseType != null ? x.BaseType.Name == "RealmObject" : false));
         //return ModuleDefinition.GetTypes().Where(x => x.CustomAttributes.Any(a => a.AttributeType.Name == "RealmObjectAttribute"));
     }
 
+
+    internal MethodReference MethodNamed(TypeDefinition assemblyType, string name)
+    {
+        return ModuleDefinition.Import(assemblyType.Methods.First(x => x.Name == name));
+    }
+
+
     public void Execute()
     {
+        // UNCOMMENT THIS DEBUGGER LAUNCH TO BE ABLE TO RUN A SEPARATE VS INSTANCE TO DEBUG WEAVING WHILST BUILDING
+        // note that it may work better with a different VS version, eg: use VS2012 to debug a VS2015 build
+        // System.Diagnostics.Debugger.Launch();  
+
         typeSystem = ModuleDefinition.TypeSystem;
 
         var assemblyToReference = ModuleDefinition.AssemblyResolver.Resolve("RealmNet");
 
         var realmObjectType = assemblyToReference.MainModule.GetTypes().First(x => x.Name == "RealmObject");
-        var genericGetValue = realmObjectType.Methods.First(x => x.Name == "GetValue");
-        var getValueReference = ModuleDefinition.Import(genericGetValue);
-        var genericSetValue = realmObjectType.Methods.First(x => x.Name == "SetValue");
-        var setValueReference = ModuleDefinition.Import(genericSetValue);
-
-        //var realmType = assemblyToReference.MainModule.GetTypes().First(x => x.Name == "RealmNet");
-        //var genericGetValue = realmType.Methods.First(x => x.Name == "GetValue" && x.IsStatic);
-        //var getValueReference = ModuleDefinition.Import(genericGetValue);
-        //var genericSetValue = realmType.Methods.First(x => x.Name == "SetValue" && x.IsStatic);
-        //var setValueReference = ModuleDefinition.Import(genericSetValue);
+        var genericGetValueReference = MethodNamed(realmObjectType, "GetValue");
+        var genericSetValueReference = MethodNamed(realmObjectType, "SetValue");
+        var getListValueReference = MethodNamed(realmObjectType, "GetListValue");
+        var setListValueReference = MethodNamed(realmObjectType, "SetListValue");
 
         var wovenAttributeClass = assemblyToReference.MainModule.GetTypes().First(x => x.Name == "WovenAttribute");
         var wovenAttributeConstructor = ModuleDefinition.Import(wovenAttributeClass.GetConstructors().First());
 
-        foreach (var type in GetMachingTypes())
+        foreach (var type in GetMatchingTypes())
         {
             Debug.WriteLine("Weaving " + type.Name);
             foreach (var prop in type.Properties.Where(x => !x.CustomAttributes.Any(a => a.AttributeType.Name == "IgnoreAttribute")))
@@ -62,68 +67,95 @@ public class ModuleWeaver
                     propName = ((string)mapToAttribute.ConstructorArguments[0].Value);
 
                 Debug.Write("  -- Property: " + propName + ".. ");
-
-                var specializedGetValue = new GenericInstanceMethod(getValueReference);
-                specializedGetValue.GenericArguments.Add(prop.PropertyType);
-
-                prop.GetMethod.Body.Instructions.Clear();
-                var getProcessor = prop.GetMethod.Body.GetILProcessor();
-                getProcessor.Emit(OpCodes.Ldarg_0);
-                getProcessor.Emit(OpCodes.Ldstr, propName);
-                getProcessor.Emit(OpCodes.Call, specializedGetValue);
-                getProcessor.Emit(OpCodes.Ret);
-
-                Debug.Write("[get] ");
-
-                var specializedSetValue = new GenericInstanceMethod(setValueReference);
-                specializedSetValue.GenericArguments.Add(prop.PropertyType);
-
-                prop.SetMethod.Body.Instructions.Clear();
-                var setProcessor = prop.SetMethod.Body.GetILProcessor();
-                setProcessor.Emit(OpCodes.Ldarg_0);
-                setProcessor.Emit(OpCodes.Ldstr, propName);
-                setProcessor.Emit(OpCodes.Ldarg_1);
-                setProcessor.Emit(OpCodes.Call, specializedSetValue);
-                setProcessor.Emit(OpCodes.Ret);
-
-                Debug.Write("[set] ");
+                //TODO check if has either setter or getter and adjust accordingly - https://github.com/realm/realm-dotnet/issues/101
+                if (prop.PropertyType.Namespace == "System.Collections.Generic")
+                {
+                    Debug.Assert(prop.PropertyType.Name == "IList`1");
+                    AddListGetter(prop, getListValueReference);
+                    AddListSetter(prop, setListValueReference);
+                }
+                else
+                {
+                    Debug.Assert(prop.PropertyType.Namespace == "System");
+                    Debug.Assert(prop.PropertyType.IsPrimitive || prop.PropertyType.Name == "String");
+                    AddGetter(prop, genericGetValueReference);
+                    AddSetter(prop, genericSetValueReference);
+                }
 
                 Debug.WriteLine("");
             }
 
             type.CustomAttributes.Add(new CustomAttribute(wovenAttributeConstructor));
-
-            #region implement from interface
-            //var className = type.Name.Substring(1);
-            //var newType = new TypeDefinition(null, className, TypeAttributes.Public, typeSystem.Object);
-            //newType.Interfaces.Add(type);
-            //newType.Namespace = type.Namespace;
-
-            //AddConstructor(newType);
-
-            //foreach (var prop in type.Properties)
-            //{
-            //    var getterName = "get_" + prop.Name;
-            //    var getter = new MethodDefinition(getterName, MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig | MethodAttributes.NewSlot | MethodAttributes.Virtual | MethodAttributes.Final, typeSystem.String);
-            //    var getterProcessor = getter.Body.GetILProcessor();
-            //    getterProcessor.Emit(OpCodes.Ldstr, "John");
-            //    getterProcessor.Emit(OpCodes.Ret);
-            //    getter.Overrides.Add(prop.GetMethod);
-            //    newType.Methods.Add(getter);
-
-            //    var instanceProp = new PropertyDefinition(prop.Name, PropertyAttributes.None, prop.PropertyType);
-            //    instanceProp.GetMethod = getter;
-            //    newType.Properties.Add(instanceProp);
-            //}
-
-            //ModuleDefinition.Types.Add(newType);
-            #endregion
-
             Debug.WriteLine("");
         }
 
         return;
     }
+
+
+    void AddListGetter(PropertyDefinition prop, MethodReference getValueReference)
+    {
+        var specializedGetValue = new GenericInstanceMethod(getValueReference);
+        specializedGetValue.GenericArguments.Add(prop.PropertyType);
+
+        prop.GetMethod.Body.Instructions.Clear();
+        var getProcessor = prop.GetMethod.Body.GetILProcessor();
+        getProcessor.Emit(OpCodes.Ldarg_0);
+        getProcessor.Emit(OpCodes.Ldstr, prop.Name);
+        getProcessor.Emit(OpCodes.Call, specializedGetValue);
+        getProcessor.Emit(OpCodes.Ret);
+        Debug.Write("[get] ");
+    }
+
+
+    void AddListSetter(PropertyDefinition prop, MethodReference setValueReference)
+    {
+        var specializedSetValue = new GenericInstanceMethod(setValueReference);
+        specializedSetValue.GenericArguments.Add(prop.PropertyType);
+
+        prop.SetMethod.Body.Instructions.Clear();
+        var setProcessor = prop.SetMethod.Body.GetILProcessor();
+        setProcessor.Emit(OpCodes.Ldarg_0);
+        setProcessor.Emit(OpCodes.Ldstr, prop.Name);
+        setProcessor.Emit(OpCodes.Ldarg_1);
+        setProcessor.Emit(OpCodes.Call, specializedSetValue);
+        setProcessor.Emit(OpCodes.Ret);
+
+        Debug.Write("[set] ");
+    }
+
+
+    void AddGetter(PropertyDefinition prop, MethodReference getValueReference)
+    {
+        var specializedGetValue = new GenericInstanceMethod(getValueReference);
+        specializedGetValue.GenericArguments.Add(prop.PropertyType);
+
+        prop.GetMethod.Body.Instructions.Clear();
+        var getProcessor = prop.GetMethod.Body.GetILProcessor();
+        getProcessor.Emit(OpCodes.Ldarg_0);
+        getProcessor.Emit(OpCodes.Ldstr, prop.Name);
+        getProcessor.Emit(OpCodes.Call, specializedGetValue);
+        getProcessor.Emit(OpCodes.Ret);
+        Debug.Write("[get] ");
+    }
+
+
+    void AddSetter(PropertyDefinition prop, MethodReference setValueReference)
+    {
+        var specializedSetValue = new GenericInstanceMethod(setValueReference);
+        specializedSetValue.GenericArguments.Add(prop.PropertyType);
+
+        prop.SetMethod.Body.Instructions.Clear();
+        var setProcessor = prop.SetMethod.Body.GetILProcessor();
+        setProcessor.Emit(OpCodes.Ldarg_0);
+        setProcessor.Emit(OpCodes.Ldstr, prop.Name);
+        setProcessor.Emit(OpCodes.Ldarg_1);
+        setProcessor.Emit(OpCodes.Call, specializedSetValue);
+        setProcessor.Emit(OpCodes.Ret);
+
+        Debug.Write("[set] ");
+    }
+
 
     void AddConstructor(TypeDefinition newType)
     {

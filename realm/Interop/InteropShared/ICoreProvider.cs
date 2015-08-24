@@ -18,6 +18,8 @@ namespace RealmNet
 
         T GetValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, long rowIndex);
         void SetValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, long rowIndex, T value);
+        IList<T> GetListValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, long rowIndex);
+        void SetListValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, long rowIndex, IList<T> value);
 
         IQueryHandle CreateQuery(IGroupHandle groupHandle, string tableName);
         void AddQueryEqual(IQueryHandle queryHandle, string columnName, object value);

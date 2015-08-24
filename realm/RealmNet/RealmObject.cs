@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Collections.Generic;
 
 namespace RealmNet
 {
@@ -51,10 +52,10 @@ namespace RealmNet
         {
 #if DEBUG
             var isRealmObject = IsAssignableFrom(typeof(T).GetTypeInfo(), typeof(RealmObject).GetTypeInfo());
-            var isRealmList = IsAssignableFrom(typeof(T).GetTypeInfo(), typeof(RealmList<>).GetTypeInfo());
-            
+            //ASD remove soon var isRealmList = IsAssignableFrom(typeof(T).GetTypeInfo(), typeof(RealmList<>).GetTypeInfo());
+
             //Debug.WriteLine("Getting " + typeof(T).Name + " value for " + tableName + "[" + _rowIndex + "]." + propertyName);
-            if (isRealmList) Debug.WriteLine("It's a realm list");
+            //ASD remove soon  if (isRealmList) Debug.WriteLine("It's a realm list");
             if (isRealmObject) Debug.WriteLine("It's a realm object");
 #endif
             return _coreProvider.GetValue<T>(_realm?.TransactionGroupHandle, GetType().Name, propertyName, _rowIndex);
@@ -63,6 +64,24 @@ namespace RealmNet
         protected void SetValue<T>(string propertyName, T value)
         {
             _coreProvider.SetValue<T>(_realm?.TransactionGroupHandle, GetType().Name, propertyName, _rowIndex, value);
+        }
+
+
+
+        protected IList<T> GetListValue<T>(string propertyName)
+        {
+            var ret = _coreProvider.GetListValue<T>(_realm?.TransactionGroupHandle, GetType().Name, propertyName, _rowIndex);
+            if (ret == null)
+            {
+                ret = new RealmRelatedList<T>(this);  // need an empty list so things like Add can be called on it
+                SetListValue<T>(propertyName, ret);
+            }
+            return ret;
+        }
+
+        protected void SetListValue<T>(string propertyName, IList<T> value)
+        {
+            _coreProvider.SetListValue<T>(_realm?.TransactionGroupHandle, GetType().Name, propertyName, _rowIndex, value);
         }
 
         private static bool IsAssignableFrom(TypeInfo extendType, TypeInfo baseType)

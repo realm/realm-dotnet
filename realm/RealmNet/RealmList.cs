@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace RealmNet
 {
+    // TODO decide if we need this - may be a top-level alternative to using List<SomeRealmObject> in RealmObjects
     public class RealmList<T> : IQueryable
     {
         public Type ElementType

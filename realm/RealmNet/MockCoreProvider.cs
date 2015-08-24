@@ -36,7 +36,8 @@ namespace InteropShared
             queryTable = tableName;
         }
 
-        private readonly string queryTable;
+        internal readonly string queryTable;
+
         public void Dispose()
         {
         }
@@ -167,6 +168,41 @@ namespace InteropShared
             row[colIndex] = value;
         }
 
+
+        public IList<T> GetListValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, long rowIndex)
+        {
+            var table = _tables[tableName];
+            Type expectedType = table.Columns[propertyName];
+            int colIndex = table.ColumnIndexes[propertyName];
+            Debug.Assert(expectedType == typeof(IList<T>));
+
+            int index = (int)rowIndex;
+            var row = _tables[tableName].Rows[index];
+            IList<T> ret = (IList<T>)row[colIndex];
+            if (ret == null)
+            {
+                notifyOnCall($"GetListValue({tableName}, prop={propertyName}, row={rowIndex}) null, adding empty list");
+            }
+            else
+                notifyOnCall($"GetListValue({tableName}, prop={propertyName}, row={rowIndex}) returns {ret}");
+            return ret;
+        }
+
+
+        public void SetListValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, long rowIndex, IList<T> value)
+        {
+            notifyOnCall($"SetListValue({tableName}, prop={propertyName}, row={rowIndex}, val={value})");
+            var table = _tables[tableName];
+            Type expectedType = table.Columns[propertyName];
+            int colIndex = table.ColumnIndexes[propertyName];
+            Debug.Assert(expectedType == typeof(IList<T>));
+
+            int index = (int)rowIndex;
+            var row = _tables[tableName].Rows[index];
+            row[colIndex] = value;
+        }
+
+
         public IQueryHandle CreateQuery(IGroupHandle groupHandle, string tableName)
         {
             notifyOnCall ($"CreateQuery({tableName})");
@@ -227,7 +263,17 @@ namespace InteropShared
         public IEnumerable<long> ExecuteQuery(IQueryHandle queryHandle, Type objectType)
         {
             notifyOnCall($"ExecuteQuery");
-            return new List<long>();
+            var mq = queryHandle as MockQuery;
+            if (mq == null)
+                return new List<long>();
+
+            var table = _tables[mq.queryTable];
+            // TODO actually search the table
+            var numRows = table.Rows.Count;
+            var ret = new List<long>(numRows);
+            for (int i = 0; i < numRows; ++i)
+                ret[i] = i;
+            return ret;  // return a default of indexes of all known rows
         }
 
         public IGroupHandle NewGroup()
