@@ -268,6 +268,9 @@ extern "C" {
 
   REALM_CORE_WRAPPER_API size_t query_find(Query * query_ptr, size_t begin_at_table_row) 
   {
+    if (begin_at_table_row >= query_ptr->get_table()->size())
+      return not_found;
+
     return query_ptr->find(begin_at_table_row);
   }
 

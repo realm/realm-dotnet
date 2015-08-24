@@ -76,6 +76,9 @@ namespace IntegrationTests
             {
                 Debug.WriteLine("p3 is named " + p3.FullName);
 
+                var allPeople = _realm.All<Person>().ToList();
+                Debug.WriteLine("There are " + allPeople.Count() + " in total");
+
                 var interestingPeople = from p in _realm.All<Person>() where p.IsInteresting == true select p;
 
                 Debug.WriteLine("Interesting people include:");
