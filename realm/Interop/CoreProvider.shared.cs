@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using InteropShared;
 using System.Runtime.InteropServices;
+using System.Linq;
+using System.IO;
 
 namespace RealmNet.Interop
 {
@@ -74,9 +76,21 @@ namespace RealmNet.Interop
 
         #endregion  // helpers
 
-
         public ISharedGroupHandle CreateSharedGroup(string filename)
         {
+            if (filename == null)
+            {
+                const string realmFilename = "Todo.realm";
+                #if __IOS__
+                string documentsPath = Environment.GetFolderPath (Environment.SpecialFolder.Personal); // Documents folder
+                string libraryPath = Path.Combine (documentsPath, "..", "Library"); // Library folder
+                filename = Path.Combine(libraryPath, realmFilename);
+                #else
+                string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.Personal); // Documents folder
+                filename = Path.Combine(documentsPath, realmFilename);
+                #endif
+            }
+
             return UnsafeNativeMethods.new_shared_group_file(filename, (IntPtr)filename.Length, (IntPtr)0, (IntPtr)0);
         }
 
