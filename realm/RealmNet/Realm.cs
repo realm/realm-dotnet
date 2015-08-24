@@ -37,7 +37,6 @@ namespace RealmNet
         {
             _coreProvider = coreProvider;
             SetHandle(coreProvider.CreateSharedGroup(path), false);
-            //CreateTables()
         }
 
         // TODO consider retiring this in favor of just creating object instances
