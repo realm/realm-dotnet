@@ -19,5 +19,21 @@ namespace RealmNet.Interop
         public long RowIndex => (long)UnsafeNativeMethods.row_get_row_index(this);
         public bool IsAttached => UnsafeNativeMethods.IntPtrToBool(UnsafeNativeMethods.row_get_is_attached(this));
 
+        public override bool Equals(object p)
+        {
+            // If parameter is null, return false. 
+            if (Object.ReferenceEquals(p, null))
+            {
+                return false;
+            }
+
+            // Optimization for a common success case. 
+            if (Object.ReferenceEquals(this, p))
+            {
+                return true;
+            }
+
+            return ((RowHandle) p).RowIndex == RowIndex;
+        }
     }
 }
