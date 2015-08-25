@@ -35,42 +35,6 @@ namespace RealmNet.Interop
             throw new NotImplementedException();
         }
 
-        internal static IntPtr BoolToIntPtr(Boolean value)
-        {
-            return value ? (IntPtr)1 : (IntPtr)0;
-        }
-
-        internal static Boolean IntPtrToBool(IntPtr value)
-        {
-            return (IntPtr)1 == value;
-        }
-
-
-        private static IntPtr StrAllocateBuffer(out long currentBufferSizeChars, long bufferSizeNeededChars)
-        {
-            currentBufferSizeChars = bufferSizeNeededChars;
-            return Marshal.AllocHGlobal((IntPtr)(bufferSizeNeededChars * sizeof(char)));
-            //allocHGlobal instead of  AllocCoTaskMem because allcHGlobal allows lt 2 gig on 64 bit (not that .net supports that right now, but at least this allocation will work with lt 32 bit strings)   
-        }
-
-        private static string StrBufToStr(IntPtr buffer, int bufferSizeNeededChars)
-        {
-            string retStr = bufferSizeNeededChars > 0 ? Marshal.PtrToStringUni(buffer, bufferSizeNeededChars) : "";
-            //return "" if the string is empty, otherwise copy data from the buffer
-            Marshal.FreeHGlobal(buffer);
-            return retStr;
-        }
-        private static Boolean StrBufferOverflow(IntPtr buffer, long currentBufferSizeChars, long bufferSizeNeededChars)
-        {
-            if (currentBufferSizeChars < bufferSizeNeededChars)
-            {
-                Marshal.FreeHGlobal(buffer);
-
-                return true;
-            }
-            return false;
-        }
-
         #endregion  // helpers
 
 
@@ -106,20 +70,23 @@ namespace RealmNet.Interop
             var columnIndex = UnsafeNativeMethods.table_add_column(GetTable(groupHandle, tableName), RealmColType(columnType), columnName, (IntPtr)columnName.Length);
         }
 
-        public long AddEmptyRow(IGroupHandle groupHandle, string tableName)
+        public IRowHandle AddEmptyRow(IGroupHandle groupHandle, string tableName)
         {
-            return (long)UnsafeNativeMethods.table_add_empty_row(GetTable(groupHandle, tableName), (IntPtr)1); 
+            return UnsafeNativeMethods.table_add_empty_row(GetTable(groupHandle, tableName)); 
         }
 
-        public void RemoveRow(IGroupHandle groupHandle, string tableName, long rowIndex)
+        public void RemoveRow(IGroupHandle groupHandle, string tableName, IRowHandle rowHandle)
         {
-            UnsafeNativeMethods.table_remove_row(GetTable(groupHandle, tableName), (IntPtr)rowIndex);
+            UnsafeNativeMethods.table_remove_row(GetTable(groupHandle, tableName), (RowHandle)rowHandle);
         }
 
-        public T GetValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, long rowIndex)
+        public T GetValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, IRowHandle rowHandle)
         {
             var tableHandle = GetTable(groupHandle, tableName);
             var columnIndex = GetColumnIndex(tableHandle, propertyName);
+
+            // TODO: This is not threadsafe. table_get_* should take an IRowHandle instead.
+            var rowIndex = ((RowHandle) rowHandle).RowIndex;
 
             if (typeof(T) == typeof(string))
             {
@@ -129,16 +96,16 @@ namespace RealmNet.Interop
 
                 do
                 {
-                    buffer = StrAllocateBuffer(out currentBufferSizeChars, bufferSizeNeededChars);
+                    buffer = UnsafeNativeMethods.StrAllocateBuffer(out currentBufferSizeChars, bufferSizeNeededChars);
                     bufferSizeNeededChars = (long)UnsafeNativeMethods.table_get_string(tableHandle, columnIndex, (IntPtr)rowIndex, buffer,
                             (IntPtr)currentBufferSizeChars);
 
-                } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
-                return (T)Convert.ChangeType(StrBufToStr(buffer, (int)bufferSizeNeededChars), typeof(T));
+                } while (UnsafeNativeMethods.StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
+                return (T)Convert.ChangeType(UnsafeNativeMethods.StrBufToStr(buffer, (int)bufferSizeNeededChars), typeof(T));
             }
             else if (typeof(T) == typeof(bool))
             {
-                var value = IntPtrToBool( UnsafeNativeMethods.table_get_bool(tableHandle, columnIndex, (IntPtr)rowIndex) );
+                var value = UnsafeNativeMethods.IntPtrToBool( UnsafeNativeMethods.table_get_bool(tableHandle, columnIndex, (IntPtr)rowIndex) );
                 return (T)Convert.ChangeType(value, typeof(T));
             }
             else if (typeof(T) == typeof(int))  // System.Int32 regardless of bitness
@@ -155,10 +122,13 @@ namespace RealmNet.Interop
                 throw new Exception ("Unsupported type " + typeof(T).Name);
         }
 
-        public void SetValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, long rowIndex, T value)
+        public void SetValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, IRowHandle rowHandle, T value)
         {
             var tableHandle = GetTable(groupHandle, tableName);
             var columnIndex = GetColumnIndex(tableHandle, propertyName);
+
+            // TODO: This is not threadsafe. table_get_* should take an IRowHandle instead.
+            var rowIndex = ((RowHandle) rowHandle).RowIndex;
 
             if (typeof(T) == typeof(string))
             {
@@ -167,7 +137,7 @@ namespace RealmNet.Interop
             }
             else if (typeof(T) == typeof(bool))
             {
-                var marshalledValue = BoolToIntPtr((bool)Convert.ChangeType(value, typeof(bool)));
+                var marshalledValue = UnsafeNativeMethods.BoolToIntPtr((bool)Convert.ChangeType(value, typeof(bool)));
                 UnsafeNativeMethods.table_set_bool(tableHandle, columnIndex, (IntPtr)rowIndex, marshalledValue);
             }
             else if (typeof(T) == typeof(int))  // System.Int32 regardless of bitness
@@ -215,7 +185,7 @@ namespace RealmNet.Interop
                 UnsafeNativeMethods.query_string_equal((QueryHandle)queryHandle, columnIndex, valueStr, (IntPtr)valueStr.Length);
             }
             else if (valueType == typeof(bool))
-                UnsafeNativeMethods.query_bool_equal((QueryHandle)queryHandle, columnIndex, BoolToIntPtr((bool)value));
+                UnsafeNativeMethods.query_bool_equal((QueryHandle)queryHandle, columnIndex, UnsafeNativeMethods.BoolToIntPtr((bool)value));
             else if (valueType == typeof(int))
                 UnsafeNativeMethods.query_int_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((int)value));
             else if (valueType == typeof(float))
@@ -237,7 +207,7 @@ namespace RealmNet.Interop
                 UnsafeNativeMethods.query_string_not_equal((QueryHandle)queryHandle, columnIndex, valueStr, (IntPtr)valueStr.Length);
             }
             else if (valueType == typeof(bool))
-                UnsafeNativeMethods.query_bool_not_equal((QueryHandle)queryHandle, columnIndex, BoolToIntPtr((bool)value));
+                UnsafeNativeMethods.query_bool_not_equal((QueryHandle)queryHandle, columnIndex, UnsafeNativeMethods.BoolToIntPtr((bool)value));
             else if (valueType == typeof(int))
                 UnsafeNativeMethods.query_int_not_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((int)value));
             else if (valueType == typeof(float))
@@ -337,16 +307,16 @@ namespace RealmNet.Interop
         }
 
 
-        public IEnumerable<long> ExecuteQuery(IQueryHandle queryHandle, Type objectType)
+        public IEnumerable<IRowHandle> ExecuteQuery(IQueryHandle queryHandle, Type objectType)
         {
             long nextRowIndex = 0;
             while (nextRowIndex != -1)
             {
-                long rowIndex = (long)UnsafeNativeMethods.query_find((QueryHandle)queryHandle, (IntPtr)nextRowIndex);
-                if (rowIndex != -1)
+                var rowHandle = UnsafeNativeMethods.query_find((QueryHandle)queryHandle, (IntPtr)nextRowIndex);
+                if (!rowHandle.IsInvalid)
                 {
-                    nextRowIndex = rowIndex + 1;
-                    yield return rowIndex;
+                    nextRowIndex = rowHandle.RowIndex + 1;
+                    yield return rowHandle;
                 }
                 else
                 {

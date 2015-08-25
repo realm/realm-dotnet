@@ -220,7 +220,7 @@ namespace RealmNet
 
         public void Remove(RealmObject obj)
         {
-            _coreProvider.RemoveRow(_transactionGroupHandle, obj.GetType().Name, obj.RowIndex);
+            _coreProvider.RemoveRow(_transactionGroupHandle, obj.GetType().Name, obj.RowHandle);
         }
 
 

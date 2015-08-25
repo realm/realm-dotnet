@@ -68,40 +68,40 @@ namespace RealmNet
             _tables[tableName].AddColumn(columnName, columnType);
         }
 
-        public long AddEmptyRow(IGroupHandle groupHandle, string tableName)
+        public IRowHandle AddEmptyRow(IGroupHandle groupHandle, string tableName)
         {
             var table = _tables[tableName];
             table.Rows.Add( new object[table.Columns.Count] );
             var numRows = table.Rows.Count;
-            return numRows - 1;  // index of added row
+            return new FakeRowHandle { Index = numRows - 1 };  // index of added row
         }
 
-        public T GetValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, long rowIndex)
+        public T GetValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, IRowHandle rowHandle)
         {
             var table = _tables[tableName];
             Type expectedType = table.Columns[propertyName];
             int colIndex = table.ColumnIndexes[propertyName];
             Debug.Assert(expectedType == typeof(T));
 
-            int index = (int)rowIndex;
+            var index = ((FakeRowHandle)rowHandle).Index;
             var row = _tables[tableName].Rows[index];
             T ret = (T)row[colIndex];
             return ret;
         }
 
-        public void SetValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, long rowIndex, T value)
+        public void SetValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, IRowHandle rowHandle, T value)
         {
             var table = _tables[tableName];
             Type expectedType = table.Columns[propertyName];
             int colIndex = table.ColumnIndexes[propertyName];
             Debug.Assert(expectedType == typeof(T));
 
-            int index = (int)rowIndex;
+            var index = ((FakeRowHandle)rowHandle).Index;
             var row = _tables[tableName].Rows[index];
             row[colIndex] = value;
         }
 
-        public void RemoveRow(IGroupHandle groupHandle, string tableName, long rowIndex)
+        public void RemoveRow(IGroupHandle groupHandle, string tableName, IRowHandle rowHandle)
         {
             throw new NotImplementedException();
         }
@@ -162,7 +162,7 @@ namespace RealmNet
         }
 
 
-        public IEnumerable<long> ExecuteQuery(IQueryHandle queryHandle, Type objectType)
+        public IEnumerable<IRowHandle> ExecuteQuery(IQueryHandle queryHandle, Type objectType)
         {
             throw new NotImplementedException();
         }

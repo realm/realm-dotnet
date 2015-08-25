@@ -95,6 +95,7 @@
     <Compile Include="..\RealmHandleOptionalUnbind.shared.cs">
       <Link>shared\RealmHandleOptionalUnbind.shared.cs</Link>
     </Compile>
+    <Compile Include="..\RowHandle.shared.cs" />
     <Compile Include="..\SharedGroupHandle.shared.cs">
       <Link>shared\SharedGroupHandle.shared.cs</Link>
     </Compile>
