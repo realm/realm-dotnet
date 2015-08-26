@@ -36,17 +36,6 @@ namespace Playground.XamarinIOS
         }
     }
 
-    public class StaticTest
-    {
-        public static StaticTest instance = new StaticTest();
-
-        public StaticTest()
-        {
-            Console.WriteLine("!!!");
-        }
-
-    }
-
     public partial class ViewController : UIViewController
     {
         public void Write(string text)
