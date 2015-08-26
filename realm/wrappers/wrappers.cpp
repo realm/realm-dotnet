@@ -195,6 +195,11 @@ extern "C" {
     return LangBindHelper::new_table();
   }
 
+  REALM_CORE_WRAPPER_API void table_unbind(Table* table_ptr)
+  {
+    LangBindHelper::unbind_table_ptr(table_ptr);
+  }
+
   REALM_CORE_WRAPPER_API size_t table_add_column(realm::Table* table_ptr,size_t type,  uint16_t * name,size_t name_len)
   {
     CSStringAccessor str(name,name_len);
@@ -268,6 +273,11 @@ extern "C" {
 
 #pragma region row // {{{
 
+  REALM_CORE_WRAPPER_API void row_delete(Row* row_ptr)
+  {
+    delete row_ptr;
+  }
+
   REALM_CORE_WRAPPER_API size_t row_get_row_index(Row* row_ptr)
   {
     return row_ptr->get_index();
@@ -281,6 +291,11 @@ extern "C" {
 #pragma endregion // }}}
 
 #pragma region query general // {{{
+
+  REALM_CORE_WRAPPER_API void query_delete(Query* query_ptr)
+  {
+    delete(query_ptr);
+  }
 
   // TODO: Replace this with TableView.
   REALM_CORE_WRAPPER_API Row* query_find(Query * query_ptr, size_t begin_at_table_row) 
