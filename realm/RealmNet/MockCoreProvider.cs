@@ -149,7 +149,7 @@ namespace InteropShared
             Debug.Assert(expectedType == typeof(T));
 
             int index = (int)rowIndex;
-            var row = _tables[tableName].Rows[index];
+            var row = table.Rows[index];
             T ret = (T)row[colIndex];
             notifyOnCall ($"GetValue({tableName}, prop={propertyName}, row={rowIndex}) returns {ret}");
             return ret;
@@ -164,7 +164,7 @@ namespace InteropShared
             Debug.Assert(expectedType == typeof(T));
 
             int index = (int)rowIndex;
-            var row = _tables[tableName].Rows[index];
+            var row = table.Rows[index];
             row[colIndex] = value;
         }
 
@@ -177,7 +177,7 @@ namespace InteropShared
             Debug.Assert(expectedType == typeof(IList<T>));
 
             int index = (int)rowIndex;
-            var row = _tables[tableName].Rows[index];
+            var row = table.Rows[index];
             IList<T> ret = (IList<T>)row[colIndex];
             if (ret == null)
             {
@@ -198,7 +198,7 @@ namespace InteropShared
             Debug.Assert(expectedType == typeof(IList<T>));
 
             int index = (int)rowIndex;
-            var row = _tables[tableName].Rows[index];
+            var row = table.Rows[index];
             row[colIndex] = value;
         }
 
@@ -270,7 +270,7 @@ namespace InteropShared
             var table = _tables[mq.queryTable];
             // TODO actually search the table
             var numRows = table.Rows.Count;
-            var ret = new List<long>(numRows);
+            var ret = new long[numRows];
             for (int i = 0; i < numRows; ++i)
                 ret[i] = i;
             return ret;  // return a default of indexes of all known rows

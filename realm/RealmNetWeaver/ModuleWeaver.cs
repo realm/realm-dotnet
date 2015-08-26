@@ -68,18 +68,21 @@ public class ModuleWeaver
 
                 Debug.Write("  -- Property: " + propName + ".. ");
                 //TODO check if has either setter or getter and adjust accordingly - https://github.com/realm/realm-dotnet/issues/101
-                if (prop.PropertyType.Namespace == "System.Collections.Generic")
+                if (prop.PropertyType.Namespace == "RealmNet" && prop.PropertyType.Name == "RealmList`1")
+              // TODO maybe support this?  ||prop.PropertyType.Namespace == "System.Collections.Generic" && prop.PropertyType.Name == "IList`1")
                 {
-                    Debug.Assert(prop.PropertyType.Name == "IList`1");
-                    AddListGetter(prop, getListValueReference);
-                    AddListSetter(prop, setListValueReference);
+                    // we may handle things differently here to handle init with a braced collection
+                    AddGetter(prop, genericGetValueReference);
+                    AddSetter(prop, genericSetValueReference);  // with casting in the RealmObject methods, should just work
                 }
-                else
+                else if (prop.PropertyType.Namespace == "System" 
+                    && (prop.PropertyType.IsPrimitive || prop.PropertyType.Name == "String"))
                 {
-                    Debug.Assert(prop.PropertyType.Namespace == "System");
-                    Debug.Assert(prop.PropertyType.IsPrimitive || prop.PropertyType.Name == "String");
                     AddGetter(prop, genericGetValueReference);
                     AddSetter(prop, genericSetValueReference);
+                }
+                else {
+                    throw new NotSupportedException($"class '{type.Name}' field '{propName}' is a {prop.PropertyType.Name} which is not yet supported");
                 }
 
                 Debug.WriteLine("");
@@ -90,38 +93,6 @@ public class ModuleWeaver
         }
 
         return;
-    }
-
-
-    void AddListGetter(PropertyDefinition prop, MethodReference getValueReference)
-    {
-        var specializedGetValue = new GenericInstanceMethod(getValueReference);
-        specializedGetValue.GenericArguments.Add(prop.PropertyType);
-
-        prop.GetMethod.Body.Instructions.Clear();
-        var getProcessor = prop.GetMethod.Body.GetILProcessor();
-        getProcessor.Emit(OpCodes.Ldarg_0);
-        getProcessor.Emit(OpCodes.Ldstr, prop.Name);
-        getProcessor.Emit(OpCodes.Call, specializedGetValue);
-        getProcessor.Emit(OpCodes.Ret);
-        Debug.Write("[get] ");
-    }
-
-
-    void AddListSetter(PropertyDefinition prop, MethodReference setValueReference)
-    {
-        var specializedSetValue = new GenericInstanceMethod(setValueReference);
-        specializedSetValue.GenericArguments.Add(prop.PropertyType);
-
-        prop.SetMethod.Body.Instructions.Clear();
-        var setProcessor = prop.SetMethod.Body.GetILProcessor();
-        setProcessor.Emit(OpCodes.Ldarg_0);
-        setProcessor.Emit(OpCodes.Ldstr, prop.Name);
-        setProcessor.Emit(OpCodes.Ldarg_1);
-        setProcessor.Emit(OpCodes.Call, specializedSetValue);
-        setProcessor.Emit(OpCodes.Ret);
-
-        Debug.Write("[set] ");
     }
 
 

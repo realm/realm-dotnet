@@ -68,19 +68,20 @@ namespace RealmNet
 
 
 
-        protected IList<T> GetListValue<T>(string propertyName)
+        protected RealmList<T> GetListValue<T>(string propertyName) where T : RealmObject
         {
-            var ret = _coreProvider.GetListValue<T>(_realm?.TransactionGroupHandle, GetType().Name, propertyName, _rowIndex);
+            RealmList<T> ret = (RealmList <T>)_coreProvider.GetListValue<T>(_realm?.TransactionGroupHandle, GetType().Name, propertyName, _rowIndex);
             if (ret == null)
             {
-                ret = new RealmRelatedList<T>(this);  // need an empty list so things like Add can be called on it
+                ret = new RealmList<T>();  // need an empty list so things like Add can be called on it
                 SetListValue<T>(propertyName, ret);
             }
             return ret;
         }
 
-        protected void SetListValue<T>(string propertyName, IList<T> value)
+        protected void SetListValue<T>(string propertyName, RealmList<T> value) where T : RealmObject
         {
+            //ASD var dumpFor = typeof(T);
             _coreProvider.SetListValue<T>(_realm?.TransactionGroupHandle, GetType().Name, propertyName, _rowIndex, value);
         }
 

@@ -47,7 +47,6 @@
     <Compile Include="MockCoreProvider.cs" />
     <Compile Include="RealmQueryProvider.cs" />
     <Compile Include="RealmQueryVisitor.cs" />
-    <Compile Include="RealmRelatedList.cs" />
     <Compile Include="StandaloneCoreProvider.cs" />
     <Compile Include="Transaction.cs" />
     <Compile Include="TypeSystem.cs" />

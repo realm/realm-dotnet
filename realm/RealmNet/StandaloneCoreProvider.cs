@@ -84,7 +84,7 @@ namespace RealmNet
             Debug.Assert(expectedType == typeof(T));
 
             int index = (int)rowIndex;
-            var row = _tables[tableName].Rows[index];
+            var row = table.Rows[index];
             T ret = (T)row[colIndex];
             return ret;
         }
@@ -97,11 +97,12 @@ namespace RealmNet
             Debug.Assert(expectedType == typeof(T));
 
             int index = (int)rowIndex;
-            var row = _tables[tableName].Rows[index];
+            var row = table.Rows[index];
             row[colIndex] = value;
         }
 
 
+        //TODO decide if these make any sense - do standalone objects have related data?
         public IList<T> GetListValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, long rowIndex)
         {
             var table = _tables[tableName];
@@ -110,12 +111,13 @@ namespace RealmNet
             Debug.Assert(expectedType == typeof(List<T>));
 
             int index = (int)rowIndex;
-            var row = _tables[tableName].Rows[index];
+            var row = table.Rows[index];
             IList<T> ret = (IList<T>)row[colIndex];
             return ret;
         }
 
 
+        //TODO decide if these make any sense - do standalone objects have related data?
         public void SetListValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, long rowIndex, IList<T> value)
         {
             var table = _tables[tableName];
@@ -124,7 +126,7 @@ namespace RealmNet
             Debug.Assert(expectedType == typeof(T));
 
             int index = (int)rowIndex;
-            var row = _tables[tableName].Rows[index];
+            var row = table.Rows[index];
             row[colIndex] = value;
         }
 

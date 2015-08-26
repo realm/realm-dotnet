@@ -1,5 +1,6 @@
 ﻿using NUnit.Framework;
 using RealmNet;
+using System;
 using RealmNet.Interop;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,13 +19,15 @@ namespace Tests
             public string Name { get; set; }
             public string Color { get; set; } = "Brown";
             public bool Vaccinated { get; set; } = true;
-           // TODO Owner owner { get; set; }
+            // here to create Fody error feedback until we support in https://github.com/realm/realm-dotnet/issues/36
+            // public DateTime born { get; set; }
+            // TODO Owner owner { get; set; }
         }
 
         class Owner : RealmObject
         {
             public string Name { get; set; }
-            public IList<Dog> Dogs { get; set; }
+            public RealmList<Dog> Dogs { get; set; } // TODO allow this if we can preserve init through weaving = new RealmList<Dog>();
         }
 
         protected Realm realm;
@@ -41,12 +44,16 @@ namespace Tests
             realm = Realm.GetInstance(System.IO.Path.GetTempFileName());
 
             // we don't keep any variables pointing to these as they are all added to Realm
-            using (var writeWith = realm.BeginWrite())
+            using (realm.BeginWrite())
             {
-                new Owner {Name = "Tim", Dogs = {
+                new Owner {Name = "Tim", Dogs = new RealmList<Dog> {
                     new Dog {Name = "Bilbo Fleabaggins"},
                     new Dog {Name = "Earl Yippington III" }
                     } };
+                /*
+                These would work if we can preserve init through weaving, like:
+                public RealmList<Dog> Dogs { get; set; } = new RealmList<Dog>();
+
                 new Owner {Name = "JP", Dogs = { new Dog { Name = "Deputy Dawg", Vaccinated=false } } };
                 new Owner {Name = "Arwa", Dogs = { new Dog { Name = "Hairy Pawter", Color = "Black" } } };
                 new Owner {Name = "Joe", Dogs = { new Dog { Name = "Jabba the Mutt", Vaccinated = false } } };
@@ -58,9 +65,10 @@ namespace Tests
                 new Owner {Name = "Emily", Dogs = { new Dog { Name = "Pickles McPorkchop" } } };
                 new Owner {Name = "Katsumi", Dogs = { new Dog { Name = "Sir Yaps-a-lot", Vaccinated = false } } };
                 new Owner {Name = "Morgan", Dogs = { new Dog { Name = "Rudy Loosebooty" } } };
+                */
                 // to show you can assign later, create the Owner then assign their Dog
                 var b = new Owner {Name = "Bjarne"};  
-                b.Dogs = new List<Dog> { new Dog { Name = "Madame Barklouder", Vaccinated = false, Color = "White" }};
+                b.Dogs = new RealmList<Dog> { new Dog { Name = "Madame Barklouder", Vaccinated = false, Color = "White" }};
             }
         }
 
@@ -84,7 +92,8 @@ namespace Tests
             var furryBosses = realm.All<Dog>();
             foreach (var dog in furryBosses)
             {
-                Debug.WriteLine($"{dog.Name} is {dog.Color}");
+                var color = dog.Color == null ? "A dog of indeterminate color" : dog.Color;
+                Debug.WriteLine($"{dog.Name} is {color}");
             }
         }
 
