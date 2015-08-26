@@ -124,7 +124,7 @@
   <ItemGroup Condition="'$(Platform)' == 'x64'">
     <Content Include="..\..\wrappers\build\wrappersx64-Debug.dll">
       <Link>wrappersx64-Debug.dll</Link>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup Condition="'$(Platform)' == 'x86'">
