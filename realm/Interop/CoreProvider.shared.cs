@@ -86,7 +86,7 @@ namespace RealmNet.Interop
             var columnIndex = GetColumnIndex(tableHandle, propertyName);
 
             // TODO: This is not threadsafe. table_get_* should take an IRowHandle instead.
-            var rowIndex = ((RowHandle) rowHandle).RowIndex;
+            var rowIndex = rowHandle.RowIndex;
 
             if (typeof(T) == typeof(string))
             {

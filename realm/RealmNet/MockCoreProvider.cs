@@ -273,6 +273,7 @@ namespace InteropShared
         public bool IsClosed { get; }
         public bool IsInvalid { get; }
         public bool IsAttached { get; }
+        public long RowIndex { get; }
     }
 }
 

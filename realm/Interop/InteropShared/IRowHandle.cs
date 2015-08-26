@@ -1,6 +1,8 @@
 namespace RealmNet.Interop
 {
-    public interface IRowHandle : IRealmHandle {
+    public interface IRowHandle : IRealmHandle
+    {
         bool IsAttached { get; }
+        long RowIndex { get; }
     }
 }
