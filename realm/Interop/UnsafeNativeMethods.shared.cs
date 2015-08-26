@@ -197,10 +197,8 @@ namespace RealmNet.Interop
             throw new NotImplementedException();
         }
 
-        internal static void table_unbind(TableHandle tableHandle)
-        {
-            //throw new NotImplementedException();
-        }
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_unbind", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void table_unbind(TableHandle tableHandle);
 
         internal static IntPtr table_copy_table(TableHandle tableHandle)
         {
@@ -310,10 +308,8 @@ namespace RealmNet.Interop
             throw new NotImplementedException();
         }
 
-        internal static void query_delete(QueryHandle queryHandle)
-        {
-            //throw new NotImplementedException();
-        }
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_delete", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void query_delete(QueryHandle queryHandle);
 
         internal static void group_delete(GroupHandle groupHandle)
         {
@@ -332,6 +328,9 @@ namespace RealmNet.Interop
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "row_get_is_attached",
             CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr row_get_is_attached(RowHandle rowHandle);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "row_delete", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void row_delete(RowHandle rowHandle);
 
         internal static IntPtr group_get_table_by_index(GroupHandle groupHandle, long tableIndex)
         {
@@ -1223,5 +1222,6 @@ namespace RealmNet.Interop
             }
             return false;
         }
+
     }
 }

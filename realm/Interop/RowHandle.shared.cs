@@ -13,7 +13,7 @@ namespace RealmNet.Interop
 
         protected override void Unbind()
         {
-            throw new NotImplementedException();
+            UnsafeNativeMethods.row_delete(this);
         }
 
         public long RowIndex => (long)UnsafeNativeMethods.row_get_row_index(this);
