@@ -137,7 +137,7 @@ namespace InteropShared
             table.Rows.Add( new object[table.Columns.Count] );
             var numRows = table.Rows.Count;
             notifyOnCall($"AddEmptyRow({tableName}) now has {numRows} rows");
-            return new FakeRowHandle { Index = numRows - 1 };  // index of added row
+            return new FakeRowHandle { RowIndex = numRows - 1 };  // index of added row
         }
 
         public void RemoveRow(IGroupHandle groupHandle, string tableName, IRowHandle rowHandle)
@@ -152,7 +152,7 @@ namespace InteropShared
             var colIndex = table.ColumnIndexes[propertyName];
             Debug.Assert(expectedType == typeof(T));
 
-            var index = ((FakeRowHandle)rowHandle).Index;
+            var index = (int)rowHandle.RowIndex;
             var row = _tables[tableName].Rows[index];
             var ret = (T)row[colIndex];
             notifyOnCall ($"GetValue({tableName}, prop={propertyName}, row={index}) returns {ret}");
@@ -161,7 +161,7 @@ namespace InteropShared
 
         public void SetValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, IRowHandle rowHandle, T value)
         {
-            var index = ((FakeRowHandle)rowHandle).Index;
+            var index = (int)rowHandle.RowIndex;
 
             notifyOnCall ($"SetValue({tableName}, prop={propertyName}, row={index}, val={value})");
             var table = _tables[tableName];
@@ -264,7 +264,6 @@ namespace InteropShared
 
     public class FakeRowHandle : IRowHandle
     {
-        public int Index { get; set; }
         public void Dispose()
         {
             throw new NotImplementedException();
@@ -273,7 +272,7 @@ namespace InteropShared
         public bool IsClosed { get; }
         public bool IsInvalid { get; }
         public bool IsAttached { get; }
-        public long RowIndex { get; }
+        public long RowIndex { get; set;  }
     }
 }
 

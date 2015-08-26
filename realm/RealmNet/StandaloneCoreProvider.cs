@@ -73,7 +73,7 @@ namespace RealmNet
             var table = _tables[tableName];
             table.Rows.Add( new object[table.Columns.Count] );
             var numRows = table.Rows.Count;
-            return new FakeRowHandle { Index = numRows - 1 };  // index of added row
+            return new FakeRowHandle { RowIndex = numRows - 1 };  // index of added row
         }
 
         public T GetValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, IRowHandle rowHandle)
@@ -83,7 +83,7 @@ namespace RealmNet
             int colIndex = table.ColumnIndexes[propertyName];
             Debug.Assert(expectedType == typeof(T));
 
-            var index = ((FakeRowHandle)rowHandle).Index;
+            var index = (int)rowHandle.RowIndex;
             var row = _tables[tableName].Rows[index];
             T ret = (T)row[colIndex];
             return ret;
@@ -96,7 +96,7 @@ namespace RealmNet
             int colIndex = table.ColumnIndexes[propertyName];
             Debug.Assert(expectedType == typeof(T));
 
-            var index = ((FakeRowHandle)rowHandle).Index;
+            var index = (int)rowHandle.RowIndex;
             var row = _tables[tableName].Rows[index];
             row[colIndex] = value;
         }
