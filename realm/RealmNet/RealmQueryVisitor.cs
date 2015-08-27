@@ -26,11 +26,11 @@ namespace RealmNet
             var list = Activator.CreateInstance(typeof(List<>).MakeGenericType(innerType));
             var add = list.GetType().GetTypeInfo().GetDeclaredMethod("Add");
 
-            var indices = _coreProvider.ExecuteQuery(_coreQueryHandle, innerType);
-            foreach (var rowIndex in indices)
+            var handles = _coreProvider.ExecuteQuery(_coreQueryHandle, innerType);
+            foreach (var rowHandle in handles)
             {
                 var o = Activator.CreateInstance(innerType);
-                ((RealmObject)o)._Manage(_realm, _coreProvider, rowIndex);
+                ((RealmObject)o)._Manage(_realm, _coreProvider, rowHandle);
                 add.Invoke(list, new[] { o });
             }
             return (IEnumerable)list;
@@ -55,7 +55,7 @@ namespace RealmNet
                 this.Visit(lambda.Body);
                 return m;
             }
-            throw new NotSupportedException(string.Format("The method '{0}' is not supported", m.Method.Name));
+            throw new NotSupportedException($"The method '{m.Method.Name}' is not supported");
         }
 
         protected override Expression VisitUnary(UnaryExpression u)
@@ -66,7 +66,7 @@ namespace RealmNet
                     this.Visit(u.Operand);
                     break;
                 default:
-                    throw new NotSupportedException(string.Format("The unary operator '{0}' is not supported", u.NodeType));
+                    throw new NotSupportedException($"The unary operator '{u.NodeType}' is not supported");
             }
             return u;
         }
