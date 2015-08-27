@@ -68,68 +68,53 @@ namespace RealmNet
             _tables[tableName].AddColumn(columnName, columnType);
         }
 
-        public long AddEmptyRow(IGroupHandle groupHandle, string tableName)
+        public IRowHandle AddEmptyRow(IGroupHandle groupHandle, string tableName)
         {
             var table = _tables[tableName];
             table.Rows.Add( new object[table.Columns.Count] );
             var numRows = table.Rows.Count;
-            return numRows - 1;  // index of added row
+            return new FakeRowHandle { RowIndex = numRows - 1 };  // index of added row
         }
 
-        public T GetValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, long rowIndex)
+        public T GetValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, IRowHandle rowHandle)
         {
             var table = _tables[tableName];
             Type expectedType = table.Columns[propertyName];
             int colIndex = table.ColumnIndexes[propertyName];
             Debug.Assert(expectedType == typeof(T));
 
-            int index = (int)rowIndex;
-            var row = table.Rows[index];
+            var index = (int)rowHandle.RowIndex;
+            var row = _tables[tableName].Rows[index];
             T ret = (T)row[colIndex];
             return ret;
         }
 
-        public void SetValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, long rowIndex, T value)
+        public void SetValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, IRowHandle rowHandle, T value)
         {
             var table = _tables[tableName];
             Type expectedType = table.Columns[propertyName];
             int colIndex = table.ColumnIndexes[propertyName];
             Debug.Assert(expectedType == typeof(T));
 
-            int index = (int)rowIndex;
-            var row = table.Rows[index];
+            var index = (int)rowHandle.RowIndex;
+            var row = _tables[tableName].Rows[index];
             row[colIndex] = value;
         }
 
-
-        //TODO decide if these make any sense - do standalone objects have related data?
-        public IList<T> GetListValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, long rowIndex)
+        public IList<T> GetListValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, IRowHandle rowHandle)
         {
-            var table = _tables[tableName];
-            Type expectedType = table.Columns[propertyName];
-            int colIndex = table.ColumnIndexes[propertyName];
-            Debug.Assert(expectedType == typeof(List<T>));
-
-            int index = (int)rowIndex;
-            var row = table.Rows[index];
-            IList<T> ret = (IList<T>)row[colIndex];
-            return ret;
+            throw new NotImplementedException();
         }
 
-
-        //TODO decide if these make any sense - do standalone objects have related data?
-        public void SetListValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, long rowIndex, IList<T> value)
+        public void SetListValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, IRowHandle rowHandle, IList<T> value)
         {
-            var table = _tables[tableName];
-            Type expectedType = table.Columns[propertyName];
-            int colIndex = table.ColumnIndexes[propertyName];
-            Debug.Assert(expectedType == typeof(T));
-
-            int index = (int)rowIndex;
-            var row = table.Rows[index];
-            row[colIndex] = value;
+            throw new NotImplementedException();
         }
 
+        public void RemoveRow(IGroupHandle groupHandle, string tableName, IRowHandle rowHandle)
+        {
+            throw new NotImplementedException();
+        }
 
         public IQueryHandle CreateQuery(IGroupHandle groupHandle, string tableName)
         {
@@ -187,7 +172,7 @@ namespace RealmNet
         }
 
 
-        public IEnumerable<long> ExecuteQuery(IQueryHandle queryHandle, Type objectType)
+        public IEnumerable<IRowHandle> ExecuteQuery(IQueryHandle queryHandle, Type objectType)
         {
             throw new NotImplementedException();
         }

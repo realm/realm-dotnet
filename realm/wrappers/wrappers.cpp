@@ -195,15 +195,22 @@ extern "C" {
     return LangBindHelper::new_table();
   }
 
+  REALM_CORE_WRAPPER_API void table_unbind(Table* table_ptr)
+  {
+    LangBindHelper::unbind_table_ptr(table_ptr);
+  }
+
   REALM_CORE_WRAPPER_API size_t table_add_column(realm::Table* table_ptr,size_t type,  uint16_t * name,size_t name_len)
   {
     CSStringAccessor str(name,name_len);
     return table_ptr->add_column(size_t_to_datatype(type),str);
   }
 
-  REALM_CORE_WRAPPER_API size_t table_add_empty_row(Table* table_ptr, size_t num_rows)
+  REALM_CORE_WRAPPER_API Row* table_add_empty_row(Table* table_ptr)
   {   
-    return table_ptr->add_empty_row(num_rows);
+    size_t row_ndx = table_ptr->add_empty_row(1);
+    return new Row((*table_ptr)[row_ndx]);
+    //return table_ptr->add_empty_row(num_rows);
   }
 
   //returns false=0  true=1 we use a size_t as it is likely the fastest type to return
@@ -257,16 +264,51 @@ extern "C" {
       return tableView_ptr->get_column_index(str);
   }
 
+  REALM_CORE_WRAPPER_API void table_remove_row(Table* table_ptr, Row* row_ptr)
+  {
+    table_ptr->move_last_over(row_ptr->get_index());
+  }
+
+#pragma endregion // }}}
+
+#pragma region row // {{{
+
+  REALM_CORE_WRAPPER_API void row_delete(Row* row_ptr)
+  {
+    delete row_ptr;
+  }
+
+  REALM_CORE_WRAPPER_API size_t row_get_row_index(Row* row_ptr)
+  {
+    return row_ptr->get_index();
+  }
+
+  REALM_CORE_WRAPPER_API size_t row_get_is_attached(Row* row_ptr)
+  {
+    return bool_to_size_t(row_ptr->is_attached());
+  }
+
 #pragma endregion // }}}
 
 #pragma region query general // {{{
 
-  REALM_CORE_WRAPPER_API size_t query_find(Query * query_ptr, size_t begin_at_table_row) 
+  REALM_CORE_WRAPPER_API void query_delete(Query* query_ptr)
+  {
+    delete(query_ptr);
+  }
+
+  // TODO: Replace this with TableView.
+  REALM_CORE_WRAPPER_API Row* query_find(Query * query_ptr, size_t begin_at_table_row) 
   {
     if (begin_at_table_row >= query_ptr->get_table()->size())
-      return not_found;
+      return nullptr;
 
-    return query_ptr->find(begin_at_table_row);
+    size_t row_ndx = query_ptr->find(begin_at_table_row);
+    
+    if (row_ndx == not_found)
+      return nullptr;
+
+    return new Row((*query_ptr->get_table())[row_ndx]);
   }
 
   //convert from columnName to columnIndex returns -1 if the string is not a column name
@@ -313,7 +355,6 @@ extern "C" {
   }
 
 #pragma endregion // }}}
-
 
 #pragma region query bool // {{{
   REALM_CORE_WRAPPER_API void query_bool_equal(Query * query_ptr, size_t columnIndex, size_t value)

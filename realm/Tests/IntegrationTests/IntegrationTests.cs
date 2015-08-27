@@ -110,5 +110,34 @@ namespace IntegrationTests
             Debug.WriteLine("File size after write: " + new FileInfo(_databasePath).Length);
             Assert.That(new FileInfo(_databasePath).Length, Is.GreaterThan(0));
         }
+
+        [Test]
+        public void RemoveTest()
+        {
+            // Arrange
+            Person p1, p2, p3;
+            using (_realm.BeginWrite())
+            {
+                p1 = new Person { FirstName = "A" };
+                p2 = new Person { FirstName = "B" };
+                p3 = new Person { FirstName = "C" };
+            }
+
+            // Act
+            using (_realm.BeginWrite())
+                _realm.Remove(p2);
+
+            // Assert
+            using (_realm.BeginRead())
+            {
+                Assert.That(!p2.InRealm);
+
+                var allPeople = _realm.All<Person>().ToList();
+                foreach(var p in allPeople)
+                    Debug.WriteLine("Person: " + p.FirstName);
+
+                Assert.That(allPeople, Is.EquivalentTo(new List<Person> { p1, p3 }));
+            }
+        }
     }
 }

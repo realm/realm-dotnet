@@ -81,6 +81,9 @@
     <Compile Include="..\UnsafeNativeMethods.shared.cs">
       <Link>shared\UnsafeNativeMethods.shared.cs</Link>
     </Compile>
+    <Compile Include="..\RowHandle.shared.cs">
+      <Link>shared\RowHandle.shared.cs</Link>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Mac\Xamarin.Mac.CSharp.targets" />
   <ItemGroup>

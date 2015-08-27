@@ -71,6 +71,9 @@
     <Compile Include="InteropConfig.cs" />
     <Compile Include="Resources\Resource.Designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="..\RowHandle.shared.cs">
+      <Link>shared\RowHandle.shared.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\AboutResources.txt" />
