@@ -71,7 +71,7 @@ namespace RealmNet
 
         protected RealmList<T> GetListValue<T>(string propertyName) where T : RealmObject
         {
-            RealmList<T> ret = (RealmList <T>)_coreProvider.GetListValue<T>(_realm?.TransactionGroupHandle, GetType().Name, propertyName, _rowHandle);
+            var ret = (RealmList <T>)_coreProvider.GetListValue<T>(_realm?.TransactionGroupHandle, GetType().Name, propertyName, _rowHandle);
             if (ret == null)
             {
                 ret = new RealmList<T>();  // need an empty list so things like Add can be called on it
