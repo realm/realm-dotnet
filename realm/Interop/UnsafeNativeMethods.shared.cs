@@ -55,9 +55,8 @@ namespace RealmNet.Interop
         internal static extern IntPtr table_add_column(TableHandle tableHandle, IntPtr type,
             [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
 
-
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_add_empty_row", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern IntPtr table_add_empty_row(TableHandle tableHandle, IntPtr numRows);
+        internal static extern RowHandle table_add_empty_row(TableHandle tableHandle);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_string", CallingConvention = CallingConvention.Cdecl)]
         internal static extern void table_set_string(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx,
@@ -132,7 +131,7 @@ namespace RealmNet.Interop
 //        internal static extern void query_double_not_equal(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_find", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern IntPtr query_find(QueryHandle queryHandle, IntPtr lastMatch);
+        internal static extern RowHandle query_find(QueryHandle queryHandle, IntPtr lastMatch);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_get_column_index", CallingConvention = CallingConvention.Cdecl)]
         internal static extern IntPtr query_get_column_index(QueryHandle queryPtr,
@@ -198,10 +197,8 @@ namespace RealmNet.Interop
             throw new NotImplementedException();
         }
 
-        internal static void table_unbind(TableHandle tableHandle)
-        {
-            //throw new NotImplementedException();
-        }
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_unbind", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void table_unbind(TableHandle tableHandle);
 
         internal static IntPtr table_copy_table(TableHandle tableHandle)
         {
@@ -263,6 +260,9 @@ namespace RealmNet.Interop
             throw new NotImplementedException();
         }
 
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_remove_row", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void table_remove_row(TableHandle tableHandle, RowHandle rowHandle);
+
         //todo:add return value to rollback if c++ threw an exception
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_group_rollback", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr shared_group_rollback64(SharedGroupHandle handle);
@@ -308,10 +308,8 @@ namespace RealmNet.Interop
             throw new NotImplementedException();
         }
 
-        internal static void query_delete(QueryHandle queryHandle)
-        {
-            //throw new NotImplementedException();
-        }
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_delete", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void query_delete(QueryHandle queryHandle);
 
         internal static void group_delete(GroupHandle groupHandle)
         {
@@ -323,6 +321,16 @@ namespace RealmNet.Interop
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "group_get_or_add_table", CallingConvention = CallingConvention.Cdecl)]
         internal static extern IntPtr group_get_or_add_table(GroupHandle groupHandle,
             [MarshalAs(UnmanagedType.LPWStr)] String tableName, IntPtr tableNameLen);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "row_get_row_index", CallingConvention = CallingConvention.Cdecl )]
+        public static extern IntPtr row_get_row_index(RowHandle rowHandle);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "row_get_is_attached",
+            CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr row_get_is_attached(RowHandle rowHandle);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "row_delete", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void row_delete(RowHandle rowHandle);
 
         internal static IntPtr group_get_table_by_index(GroupHandle groupHandle, long tableIndex)
         {
@@ -1178,5 +1186,42 @@ namespace RealmNet.Interop
         {
             throw new NotImplementedException();
         }
+
+        public static IntPtr BoolToIntPtr(Boolean value)
+        {
+            return value ? (IntPtr)1 : (IntPtr)0;
+        }
+
+        public static Boolean IntPtrToBool(IntPtr value)
+        {
+            return (IntPtr)1 == value;
+        }
+
+        public static IntPtr StrAllocateBuffer(out long currentBufferSizeChars, long bufferSizeNeededChars)
+        {
+            currentBufferSizeChars = bufferSizeNeededChars;
+            return Marshal.AllocHGlobal((IntPtr)(bufferSizeNeededChars * sizeof(char)));
+            //allocHGlobal instead of  AllocCoTaskMem because allcHGlobal allows lt 2 gig on 64 bit (not that .net supports that right now, but at least this allocation will work with lt 32 bit strings)   
+        }
+
+        public static string StrBufToStr(IntPtr buffer, int bufferSizeNeededChars)
+        {
+            string retStr = bufferSizeNeededChars > 0 ? Marshal.PtrToStringUni(buffer, bufferSizeNeededChars) : "";
+            //return "" if the string is empty, otherwise copy data from the buffer
+            Marshal.FreeHGlobal(buffer);
+            return retStr;
+        }
+
+        public static Boolean StrBufferOverflow(IntPtr buffer, long currentBufferSizeChars, long bufferSizeNeededChars)
+        {
+            if (currentBufferSizeChars < bufferSizeNeededChars)
+            {
+                Marshal.FreeHGlobal(buffer);
+
+                return true;
+            }
+            return false;
+        }
+
     }
 }

@@ -14,10 +14,14 @@ namespace RealmNet
         bool HasTable(IGroupHandle groupHandle, string tableName);
         void AddTable(IGroupHandle groupHandle, string tableName);
         void AddColumnToTable(IGroupHandle groupHandle, string tableName, string columnName, Type columnType);
-        long AddEmptyRow(IGroupHandle groupHandle, string tableName);
+        IRowHandle AddEmptyRow(IGroupHandle groupHandle, string tableName);
 
-        T GetValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, long rowIndex);
-        void SetValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, long rowIndex, T value);
+        void RemoveRow(IGroupHandle groupHandle, string tableName, IRowHandle rowHandle);
+
+        T GetValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, IRowHandle rowHandle);
+        void SetValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, IRowHandle rowHandle, T value);
+        IList<T> GetListValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, IRowHandle rowHandle);
+        void SetListValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, IRowHandle rowHandle, IList<T> value);
 
         IQueryHandle CreateQuery(IGroupHandle groupHandle, string tableName);
         void AddQueryEqual(IQueryHandle queryHandle, string columnName, object value);
@@ -31,7 +35,7 @@ namespace RealmNet
         void AddQueryAnd(IQueryHandle queryHandle);
         void AddQueryOr(IQueryHandle queryHandle);
 
-        IEnumerable<long> ExecuteQuery(IQueryHandle queryHandle, Type objectType);
+        IEnumerable<IRowHandle> ExecuteQuery(IQueryHandle queryHandle, Type objectType);
 
         IGroupHandle NewGroup();
         IGroupHandle NewGroupFromFile(string path, GroupOpenMode openMode);

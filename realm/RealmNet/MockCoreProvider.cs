@@ -131,40 +131,56 @@ namespace InteropShared
             _tables[tableName].AddColumn(columnName, columnType);
         }
 
-        public long AddEmptyRow(IGroupHandle groupHandle, string tableName)
+        public IRowHandle AddEmptyRow(IGroupHandle groupHandle, string tableName)
         {
             var table = _tables[tableName];
             table.Rows.Add( new object[table.Columns.Count] );
             var numRows = table.Rows.Count;
             notifyOnCall($"AddEmptyRow({tableName}) now has {numRows} rows");
-            return numRows - 1;  // index of added row
+            return new FakeRowHandle { RowIndex = numRows - 1 };  // index of added row
         }
 
-        public T GetValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, long rowIndex)
+        public void RemoveRow(IGroupHandle groupHandle, string tableName, IRowHandle rowHandle)
+        {
+            throw new NotImplementedException();
+        }
+
+        public T GetValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, IRowHandle rowHandle)
         {
             var table = _tables[tableName];
-            Type expectedType = table.Columns[propertyName];
-            int colIndex = table.ColumnIndexes[propertyName];
+            var expectedType = table.Columns[propertyName];
+            var colIndex = table.ColumnIndexes[propertyName];
             Debug.Assert(expectedType == typeof(T));
 
-            int index = (int)rowIndex;
-            var row = _tables[tableName].Rows[index];
-            T ret = (T)row[colIndex];
-            notifyOnCall ($"GetValue({tableName}, prop={propertyName}, row={rowIndex}) returns {ret}");
+            var index = (int)rowHandle.RowIndex;
+            var row = table.Rows[index];
+            var ret = (T)row[colIndex];
+            notifyOnCall ($"GetValue({tableName}, prop={propertyName}, row={index}) returns {ret}");
             return ret;
         }
 
-        public void SetValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, long rowIndex, T value)
+        public void SetValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, IRowHandle rowHandle, T value)
         {
-            notifyOnCall ($"SetValue({tableName}, prop={propertyName}, row={rowIndex}, val={value})");
+            var index = (int)rowHandle.RowIndex;
+
+            notifyOnCall ($"SetValue({tableName}, prop={propertyName}, row={index}, val={value})");
             var table = _tables[tableName];
-            Type expectedType = table.Columns[propertyName];
-            int colIndex = table.ColumnIndexes[propertyName];
+            var expectedType = table.Columns[propertyName];
+            var colIndex = table.ColumnIndexes[propertyName];
             Debug.Assert(expectedType == typeof(T));
 
-            int index = (int)rowIndex;
-            var row = _tables[tableName].Rows[index];
+            var row = table.Rows[index];
             row[colIndex] = value;
+        }
+
+        public IList<T> GetListValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, IRowHandle rowHandle)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetListValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, IRowHandle rowHandle, IList<T> value)
+        {
+            throw new NotImplementedException();
         }
 
         public IQueryHandle CreateQuery(IGroupHandle groupHandle, string tableName)
@@ -224,10 +240,10 @@ namespace InteropShared
         }
 
 
-        public IEnumerable<long> ExecuteQuery(IQueryHandle queryHandle, Type objectType)
+        public IEnumerable<IRowHandle> ExecuteQuery(IQueryHandle queryHandle, Type objectType)
         {
             notifyOnCall($"ExecuteQuery");
-            return new List<long>();
+            return new List<IRowHandle>();
         }
 
         public IGroupHandle NewGroup()
@@ -254,6 +270,19 @@ namespace InteropShared
         {
             throw new NotImplementedException();
         }
+    }
+
+    public class FakeRowHandle : IRowHandle
+    {
+        public void Dispose()
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool IsClosed { get; }
+        public bool IsInvalid { get; }
+        public bool IsAttached { get; }
+        public long RowIndex { get; set;  }
     }
 }
 

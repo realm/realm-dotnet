@@ -198,6 +198,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ListTests.cs" />
     <Compile Include="MockQuerySingleTableComboTests.cs" />
     <Compile Include="MockQuerySingleTableTests.cs" />
     <Compile Include="MockQueryTestsBase.cs" />

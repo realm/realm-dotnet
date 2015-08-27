@@ -218,6 +218,11 @@ namespace RealmNet
             }
         }
 
+        public void Remove(RealmObject obj)
+        {
+            _coreProvider.RemoveRow(_transactionGroupHandle, obj.GetType().Name, obj.RowHandle);
+        }
+
 
         /// <summary>
         /// True if this SharedGroup is currently in a read or a write transaction
