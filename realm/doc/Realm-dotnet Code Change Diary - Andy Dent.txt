@@ -353,6 +353,45 @@ Realm.cs
 RealmObject.cs
 - RealmObject InRealm and IsStandalone made properties
 
- 
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#91 Link and LinkedList samples
 
- 
+ListTests.cs
+- added
+
+ICoreProvider.cs
+ - added List<T> GetListValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, long rowIndex);
+
+MockCoreProvider.cs
+- MockQuery make queryTable internal 
+- added GetListValue, SetListValue
+
+StandaloneCoreProvider.cs
+- added GetListValue, SetListValue
+
+RealmObject.cs
+- added GetListValue, SetListValue forwarding to the provider
+
+ModuleWeaver.cs
+- Execute
+  - added commented-out, with explanation, break to be able to debug weaving
+  - factord out MethodNamed
+  - factored out AddGetter and AddSetter
+  - added detection of lists to call AddListGetter and AddListSetter
+  
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#91 Link and LinkedList - cleanup
+
+RealmRelatedList temp class 
+- renamed RealmList.cs discarding the old RealmList
+
+
+MockCoreProvider.cs
+StandaloneCoreProvider.cs
+- fix minor repeated lookup in GetValue, SetValue, GetListValue, SetListValue
+
+RealmObject.cs
+- GetListValue, SetListValue now take and return RealmList<T>
+
+ListTests.cs
+- explicitly assign RealmList<Dog> rather than using simple braced init

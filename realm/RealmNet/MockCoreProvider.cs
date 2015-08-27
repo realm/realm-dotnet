@@ -153,7 +153,7 @@ namespace InteropShared
             Debug.Assert(expectedType == typeof(T));
 
             var index = (int)rowHandle.RowIndex;
-            var row = _tables[tableName].Rows[index];
+            var row = table.Rows[index];
             var ret = (T)row[colIndex];
             notifyOnCall ($"GetValue({tableName}, prop={propertyName}, row={index}) returns {ret}");
             return ret;
@@ -169,8 +169,18 @@ namespace InteropShared
             var colIndex = table.ColumnIndexes[propertyName];
             Debug.Assert(expectedType == typeof(T));
 
-            var row = _tables[tableName].Rows[index];
+            var row = table.Rows[index];
             row[colIndex] = value;
+        }
+
+        public IList<T> GetListValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, IRowHandle rowHandle)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetListValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, IRowHandle rowHandle, IList<T> value)
+        {
+            throw new NotImplementedException();
         }
 
         public IQueryHandle CreateQuery(IGroupHandle groupHandle, string tableName)

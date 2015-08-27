@@ -101,6 +101,16 @@ namespace RealmNet
             row[colIndex] = value;
         }
 
+        public IList<T> GetListValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, IRowHandle rowHandle)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetListValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, IRowHandle rowHandle, IList<T> value)
+        {
+            throw new NotImplementedException();
+        }
+
         public void RemoveRow(IGroupHandle groupHandle, string tableName, IRowHandle rowHandle)
         {
             throw new NotImplementedException();

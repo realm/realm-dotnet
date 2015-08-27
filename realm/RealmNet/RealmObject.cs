@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Collections.Generic;
 using RealmNet.Interop;
 
 namespace RealmNet
@@ -52,10 +53,10 @@ namespace RealmNet
         {
 #if DEBUG
             var isRealmObject = IsAssignableFrom(typeof(T).GetTypeInfo(), typeof(RealmObject).GetTypeInfo());
-            var isRealmList = IsAssignableFrom(typeof(T).GetTypeInfo(), typeof(RealmList<>).GetTypeInfo());
-            
+            //ASD remove soon var isRealmList = IsAssignableFrom(typeof(T).GetTypeInfo(), typeof(RealmList<>).GetTypeInfo());
+
             //Debug.WriteLine("Getting " + typeof(T).Name + " value for " + tableName + "[" + _rowIndex + "]." + propertyName);
-            if (isRealmList) Debug.WriteLine("It's a realm list");
+            //ASD remove soon  if (isRealmList) Debug.WriteLine("It's a realm list");
             if (isRealmObject) Debug.WriteLine("It's a realm object");
 #endif
             return _coreProvider.GetValue<T>(_realm?.TransactionGroupHandle, GetType().Name, propertyName, _rowHandle);
@@ -64,6 +65,25 @@ namespace RealmNet
         protected void SetValue<T>(string propertyName, T value)
         {
             _coreProvider.SetValue<T>(_realm?.TransactionGroupHandle, GetType().Name, propertyName, _rowHandle, value);
+        }
+
+
+
+        protected RealmList<T> GetListValue<T>(string propertyName) where T : RealmObject
+        {
+            var ret = (RealmList <T>)_coreProvider.GetListValue<T>(_realm?.TransactionGroupHandle, GetType().Name, propertyName, _rowHandle);
+            if (ret == null)
+            {
+                ret = new RealmList<T>();  // need an empty list so things like Add can be called on it
+                SetListValue<T>(propertyName, ret);
+            }
+            return ret;
+        }
+
+        protected void SetListValue<T>(string propertyName, RealmList<T> value) where T : RealmObject
+        {
+            //ASD var dumpFor = typeof(T);
+            _coreProvider.SetListValue<T>(_realm?.TransactionGroupHandle, GetType().Name, propertyName, _rowHandle, value);
         }
 
         private static bool IsAssignableFrom(TypeInfo extendType, TypeInfo baseType)
