@@ -154,6 +154,16 @@ namespace RealmNet.Interop
                 throw new Exception ("Unsupported type " + typeof(T).Name);
         }
 
+        public IList<T> GetListValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, IRowHandle rowHandle)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SetListValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, IRowHandle rowHandle, IList<T> value)
+        {
+            throw new NotImplementedException();
+        }
+
         #region Queries
         public IQueryHandle CreateQuery(IGroupHandle groupHandle, string tableName)
         {
