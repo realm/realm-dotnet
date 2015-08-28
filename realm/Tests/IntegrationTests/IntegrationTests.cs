@@ -1,30 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using RealmNet.Interop;
 using NUnit.Framework;
 using RealmNet;
 
 namespace IntegrationTests
 {
     [TestFixture]
-    public class IntegrationTests
+    public abstract class AbstractIntegrationTests
     {
         private string _databasePath;
-        private Realm _realm;
+        protected Realm _realm;
 
         [SetUp]
-        public void Setup()
+        public void BaseSetup()
         {
-            var coreProvider = new CoreProvider();
-            Realm.ActiveCoreProvider = coreProvider;
-            _databasePath = Path.GetTempFileName();
+            Setup();
+            _databasePath = GetTempDatabasePath();
             _realm = Realm.GetInstance(_databasePath);
         }
+
+        protected virtual void Setup () { }
+        protected abstract string GetTempDatabasePath();
 
         [TearDown]
         public void TearDown()
@@ -86,30 +83,30 @@ namespace IntegrationTests
                     Debug.WriteLine(" - " + p.FullName + " (" + p.Email + ")");
 
                 var johns = from p in _realm.All<Person>() where p.FirstName == "John" select p;
-                Console.WriteLine("People named John:");
+                Debug.WriteLine("People named John:");
                 foreach (var p in johns)
-                    Console.WriteLine(" - " + p.FullName + " (" + p.Email + ")");
+                    Debug.WriteLine(" - " + p.FullName + " (" + p.Email + ")");
             }
         }
 
-        [Test]
-        public void TestSharedGroupWritesSomethingToDisk()
-        {
-            // Arrange
-            Debug.WriteLine("File size before write: " + new FileInfo(_databasePath).Length);
-            Debug.WriteLine(_databasePath);
+        //[Test]
+        //public void TestSharedGroupWritesSomethingToDisk()
+        //{
+        //    // Arrange
+        //    Debug.WriteLine("File size before write: " + new FileInfo(_databasePath).Length);
+        //    Debug.WriteLine(_databasePath);
 
-            // Act
-            using (var transaction = _realm.BeginWrite())
-            {
-                _realm.CreateObject<Person>();
-                transaction.Commit();
-            }
+        //    // Act
+        //    using (var transaction = _realm.BeginWrite())
+        //    {
+        //        _realm.CreateObject<Person>();
+        //        transaction.Commit();
+        //    }
 
-            // Assert
-            Debug.WriteLine("File size after write: " + new FileInfo(_databasePath).Length);
-            Assert.That(new FileInfo(_databasePath).Length, Is.GreaterThan(0));
-        }
+        //    // Assert
+        //    Debug.WriteLine("File size after write: " + new FileInfo(_databasePath).Length);
+        //    Assert.That(new FileInfo(_databasePath).Length, Is.GreaterThan(0));
+        //}
 
         [Test]
         public void RemoveTest()
