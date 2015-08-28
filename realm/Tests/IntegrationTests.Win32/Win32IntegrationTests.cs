@@ -6,7 +6,7 @@ using RealmNet.Interop;
 namespace IntegrationTests.Win32
 {
     [TestFixture]
-    public class Win32Tests : AbstractIntegrationTests
+    public class Win32IntegrationTests : AbstractIntegrationTests
     {
         protected override void Setup()
         {

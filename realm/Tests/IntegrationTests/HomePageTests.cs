@@ -39,8 +39,6 @@ namespace HomePageTests
 
             // Queries are chainable
             var r2 = r.Where(dog => dog.name.Contains("rex"));
-
         }
-
     } // HomePageTests
 }

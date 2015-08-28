@@ -37,9 +37,11 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="HomePageTests.cs" />
-    <Compile Include="IntegrationTests.cs" />
+    <Compile Include="AbstractIntegrationTests.cs" />
+    <Compile Include="AbstractPerformanceTests.cs" />
     <Compile Include="Person.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestHelpers.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="nunit.framework, Version=3.0.5715.30859, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">

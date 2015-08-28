@@ -44,8 +44,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Win32Tests.cs" />
+    <Compile Include="Win32IntegrationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Win32PerformanceTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Interop\Interop.Win32\Interop.Win32.csproj">
