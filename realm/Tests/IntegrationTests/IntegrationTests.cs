@@ -89,25 +89,6 @@ namespace IntegrationTests
             }
         }
 
-        //[Test]
-        //public void TestSharedGroupWritesSomethingToDisk()
-        //{
-        //    // Arrange
-        //    Debug.WriteLine("File size before write: " + new FileInfo(_databasePath).Length);
-        //    Debug.WriteLine(_databasePath);
-
-        //    // Act
-        //    using (var transaction = _realm.BeginWrite())
-        //    {
-        //        _realm.CreateObject<Person>();
-        //        transaction.Commit();
-        //    }
-
-        //    // Assert
-        //    Debug.WriteLine("File size after write: " + new FileInfo(_databasePath).Length);
-        //    Assert.That(new FileInfo(_databasePath).Length, Is.GreaterThan(0));
-        //}
-
         [Test]
         public void RemoveTest()
         {
