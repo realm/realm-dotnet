@@ -1,0 +1,157 @@
+// methods previously in UnsafeNativeMethods.shared.cs which are
+// possibly going to be implemented in future but not in Aug 2015
+
+
+        /*
+        AD Note I think these can probably go but will just comment out for now
+        If they were in regular use they would have linkage to 32bit as well?
+
+        [DllImport(InteropConfig.L64, EntryPoint = "realm_get_wrapper_ver", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern IntPtr GetWrapperVer();
+
+        [DllImport(InteropConfig.L64, EntryPoint = "realm_get_ver_minor", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern int GetMinorVer();
+        */
+
+
+    // TODO probably remove this and the helpers IntPtrToDataType and DataTypeToIntPtr 
+    // when some of the NotImplemented accessors below are finished
+    public enum DataType
+    {
+        Int = 0,
+        Bool = 1,
+        String = 2,
+        Binary = 4,
+        Table = 5,
+        Mixed = 6,
+        Date = 7,
+        Float = 9,
+        Double = 10,
+    }
+
+
+        private static DataType IntPtrToDataType(IntPtr value)
+        {
+            return (DataType)value;
+        }
+
+        private static IntPtr DataTypeToIntPtr(DataType value)
+        {
+            return (IntPtr)value;
+        }
+
+
+
+
+
+// TODO work out if new_table should be mapped as it's not currently in use
+/*
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "new_table", CallingConvention = CallingConvention.Cdecl)]
+        private static extern TableHandle new_table();
+*/
+
+
+
+//        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_float_equal", CallingConvention = CallingConvention.Cdecl)]
+//        internal static extern void query_float_equal(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
+
+//        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_float_not_equal", CallingConvention = CallingConvention.Cdecl)]
+//        internal static extern void query_float_not_equal(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
+
+//        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_double_equal", CallingConvention = CallingConvention.Cdecl)]
+//        internal static extern void query_double_equal(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
+
+//        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_double_not_equal", CallingConvention = CallingConvention.Cdecl)]
+//        internal static extern void query_double_not_equal(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
+
+
+
+// all of form
+
+        {
+            throw new NotImplementedException();
+        }
+        
+        
+        internal static IntPtr group_get_table_by_index(GroupHandle groupHandle, long tableIndex)
+        internal static IntPtr query_find_all_np(QueryHandle queryHandle)
+        internal static IntPtr query_find_all(QueryHandle queryHandle, long start, long end, long limit)
+        internal static IntPtr table_copy_table(TableHandle tableHandle)
+        internal static IntPtr table_distinct(TableHandle tableHandle, long columnIndex)
+        internal static IntPtr table_find_all_binary(TableHandle tableHandle, long columnIndex, IntPtr valuePointer, IntPtr length)
+        internal static IntPtr table_find_all_bool(TableHandle tableHandle, long columnIndex, bool value)
+        internal static IntPtr table_find_all_date_time(TableHandle tableHandle, long columnIndex, DateTime value)
+        internal static IntPtr table_find_all_double(TableHandle tableHandle, long columnIndex, double value)
+        internal static IntPtr table_find_all_empty_binary(TableHandle tableHandle, long columnIndex)
+        internal static IntPtr table_find_all_float(TableHandle tableHandle, long columnIndex, float value)
+        internal static IntPtr table_find_all_int(TableHandle tableHandle, long columnIndex, long value)
+        internal static IntPtr table_find_all_string(TableHandle tableHandle, long columnIndex, string value)
+        internal static IntPtr table_get_spec(TableHandle tableHandle)
+        internal static IntPtr table_get_sub_table(TableHandle tableHandle, long columnIndex, long rowIndex)
+        internal static void group_delete(GroupHandle groupHandle)
+        public static bool group_equals(GroupHandle @GroupHandle, GroupHandle otherGroup)
+        public static bool group_is_empty(GroupHandle @GroupHandle)
+        public static bool shared_group_has_changed(SharedGroupHandle sharedGroup)
+        public static bool table_has_index(TableHandle TableHandle, long columnIndex)
+        public static bool table_has_shared_spec(TableHandle TableHandle)
+        public static bool table_is_attached(TableHandle TableHandle)
+        public static byte[] group_write_to_memory(GroupHandle @GroupHandle)
+        public static byte[] table_get_binary(TableHandle TableHandle, long columnIndex, long rowIndex)
+        public static DataType table_get_column_type(TableHandle TableHandle, long columnIndex)
+        public static DateTime table_get_date_time(TableHandle TableHandle, long columnIndex, long rowIndex)
+        public static DateTime table_maximum_date_time(TableHandle TableHandle, long columnIndex)
+        public static DateTime table_minimum_date_time(TableHandle TableHandle, long columnIndex)
+        public static double table_average_double(TableHandle TableHandle, long columnIndex)
+        public static double table_average_float(TableHandle TableHandle, long columnIndex)
+        public static double table_average(TableHandle TableHandle, long columnIndex)
+        public static double table_maximum_double(TableHandle TableHandle, long columnIndex)
+        public static double table_minimum_double(TableHandle TableHandle, long columnIndex)
+        public static double table_sum_double(TableHandle TableHandle, long columnIndex)
+        public static double table_sum_float(TableHandle TableHandle, long columnIndex)
+        public static float table_maximum_float(TableHandle TableHandle, long columnIndex)
+        public static float table_minimum_float(TableHandle TableHandle, long columnIndex)
+        public static long group_size(GroupHandle @GroupHandle)
+        public static long table_add_sub_column(TableHandle TableHandle, IList<long> path, DataType dataType, string columnName)
+        public static long table_count_double(TableHandle TableHandle, long columnIndex, double target)
+        public static long table_count_float(TableHandle TableHandle, long columnIndex, float target)
+        public static long table_count_long(TableHandle TableHandle, long columnIndex, long target)
+        public static long table_count_string(TableHandle TableHandle, long columnIndex, string target)
+        public static long table_find_first_binary(TableHandle TableHandle, long columnIndex, byte[] value)
+        public static long table_find_first_bool(TableHandle TableHandle, long columnIndex, bool value)
+        public static long table_find_first_date(TableHandle TableHandle, long columnIndex, DateTime value)
+        public static long table_find_first_double(TableHandle TableHandle, long columnIndex, double value)
+        public static long table_find_first_float(TableHandle TableHandle, long columnIndex, float value)
+        public static long table_find_first_int(TableHandle TableHandle, long columnIndex, long value)
+        public static long table_find_first_string(TableHandle TableHandle, long columnIndex, string value)
+        public static long table_get_column_count(TableHandle TableHandle)
+        public static long table_get_sub_table_size(TableHandle TableHandle, long columnIndex, long rowIndex)
+        public static long table_maximum_long(TableHandle TableHandle, long columnIndex)
+        public static long table_minimum(TableHandle TableHandle, long columnIndex)
+        public static long table_size(TableHandle TableHandle)
+        public static long table_sum_long(TableHandle TableHandle, long columnIndex)
+        public static string group_to_string(GroupHandle groupHandle)
+        public static string table_get_column_name(TableHandle TableHandle, long columnIndex)
+        public static string table_row_to_string(TableHandle TableHandle, long rowIndex)
+        public static string table_to_json(TableHandle TableHandle)
+        public static string table_to_string(TableHandle TableHandle)
+        public static void group_commit(GroupHandle @GroupHandle)
+        public static void group_frombinary_data(GroupHandle @GroupHandle, byte[] binaryGroup)
+        public static void group_new_file(GroupHandle @GroupHandle, string path, GroupOpenMode openMode)
+        public static void group_new(GroupHandle @GroupHandle, bool readOnly)
+        public static void group_write(GroupHandle @GroupHandle, string path)
+        public static void new_shared_group_file(SharedGroupHandle sharedGroup, string fileName, bool noCreate, DurabilityLevel durabilityLevel)
+        public static void shared_group_reserve(SharedGroupHandle sharedGroup, long bytesToReserve)
+        public static void table_add_int(TableHandle TableHandle, long columnIndex, long value)
+        public static void table_clear_sub_table(TableHandle TableHandle, long columnIndex, long rowIndex)
+        public static void table_clear(TableHandle TableHandle)
+        public static void table_insert_empty_row(TableHandle TableHandle, long rowIndex, long rowsToInsert)
+        public static void table_new(TableHandle TableHandle, bool isReadOnly)
+        public static void table_optimize(TableHandle TableHandle)
+        public static void table_remove_sub_column(TableHandle TableHandle, IList<long> path)
+        public static void table_remove(TableHandle TableHandle, long rowIndex)
+        public static void table_rename_column(TableHandle TableHandle, long columnIndex, string newName)
+        public static void table_rename_sub_column(TableHandle TableHandle, IList<long> path, string name)
+        public static void table_set_binary(TableHandle TableHandle, long columnIndex, long rowIndex, byte[] value)
+        public static void table_set_date(TableHandle TableHandle, long columnIndex, long rowIndex, DateTime value)
+        public static void table_set_index(TableHandle TableHandle, long columnIndex)
+        public static void table_set_sub_table(TableHandle TableHandle, long columnIndex, long rowIndex, TableHandle value)

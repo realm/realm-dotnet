@@ -15,7 +15,7 @@ namespace RealmNet.Interop
         {
         }
 
-
+/*
         //acquire a TableView handle with the result And set Root in an atomic fashion 
         [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
         internal TableViewHandle QueryFindAll(long start, long end, long limit)
@@ -31,7 +31,7 @@ namespace RealmNet.Interop
             { }
             finally
             {
-                tvHandle.SetHandle(UnsafeNativeMethods.query_find_all(this, start, end , limit));
+                tvHandle.SetHandle(NativeQuery.query_find_all(this, start, end , limit));
             }//at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
             return tvHandle;
         }
@@ -51,14 +51,15 @@ namespace RealmNet.Interop
             { }
             finally
             {
-                tvHandle.SetHandle(UnsafeNativeMethods.query_find_all_np(this));
+                tvHandle.SetHandle(NativeQuery.query_find_all_np(this));
             }//at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
             return tvHandle;
         }
-
+*/
         protected override void Unbind()
         {
-            UnsafeNativeMethods.query_delete(this);
+            NativeQuery.query_delete(this);
         }
+        
     }
 }
