@@ -395,3 +395,47 @@ RealmObject.cs
 
 ListTests.cs
 - explicitly assign RealmList<Dog> rather than using simple braced init
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#82 splitting unsafe native methods
+
+UnsafeNativeMethods.shared.cs refactored into
+- NativeQuery.shared.cs
+- NativeTable.shared.cs
+- NativeGroup.shared.cs
+- Plus a bunch of unimplemented and commented-out decls copied to
+  - Unimplemented_NativeMethods_Arguable.txt
+  - Unimplemented_NativeMethods_MixedFields.txt
+  - Unimplemented_NativeMethods_TableView.txt
+- BoolToIntPtr and IntPtrToBool copied back to CoreProvider.shared.cs as that's the only place left they are used
+
+IN projects
+  interop.Win32.csproj
+  Interop.XamarinAndroid.csproj
+  Interop.XamarinIOS.csproj
+  Interop.XamarinMac.csproj
+- Replace link to UnsafeNativeMethods.shared.cs with three links to  
+  - NativeQuery.shared.cs
+  - NativeTable.shared.cs
+  - NativeGroup.shared.cs
+  - NativeSharedGroup.shared.cs
+- drop TableViewHandle.shared.cs for now
+
+General change, UnsafeNativeMethods class changed to NativeQuery/Group/Table as required
+
+RowHandle.cs
+- IsAttached lambda removed the call to UnsafeNativeMethods.IntPtrToBool and just compare ==1
+  allowed moving that function out of UnsafeNativeMethods and don't think simple, time-critical
+  stuff should be calling across assemblies for trivia.
+  
+QueryHandle.shared.cs
+
+Group.cs
+- comment out calls to Group methods that previously just threw NotImplemented exceptions
+  
+Renames after refactoring, to simplify:
+NativeGroup.group_ =?> NativeGroup.
+NativeQuery.query_ => NativeQuery.
+NativeTable.table_ => NativeTable.
+NativeGroup.shared_group_ => NativeSharedGroup.

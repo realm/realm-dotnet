@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{053927C0-4CB4-44AB-8A64-09048E6085A8}</ProjectGuid>
+    <ProjectGuid>{5A86453B-96FB-4B6E-A283-225BB9F753D3}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Tests</RootNamespace>
@@ -165,15 +165,15 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Interop\Interop.Win32\Interop.Win32.csproj" Condition="'$(Platform)' == 'x86' Or '$(Platform)' == 'x64'">
-      <Project>{c211ede7-cc8e-4f53-a9df-0b105a350bbf}</Project>
+      <Project>{C211EDE7-CC8E-4F53-A9DF-0B105A350BBF}</Project>
       <Name>Interop.Win32</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Interop\Interop.XamarinAndroid\Interop.XamarinAndroid.csproj" Condition="'$(Platform)' == 'ARM'">
-      <Project>{2379d669-4f4b-4ff6-af8a-49fea981efc3}</Project>
+      <Project>{2379D669-4F4B-4FF6-AF8A-49FEA981EFC3}</Project>
       <Name>Interop.XamarinAndroid</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Interop\Interop.XamarinIOS\Interop.XamarinIOS.csproj" Condition="'$(Platform)' == 'iPhone' Or '$(Platform)' == 'iPhoneSimulator'">
-      <Project>{a55bd773-5a29-4b2a-9db7-1ab1dd38b537}</Project>
+      <Project>{A55BD773-5A29-4B2A-9DB7-1AB1DD38B537}</Project>
       <Name>Interop.XamarinIOS</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Interop\InteropShared\InteropShared.csproj">
