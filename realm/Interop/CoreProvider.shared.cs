@@ -77,13 +77,13 @@ namespace RealmNet.Interop
 
         public ISharedGroupHandle CreateSharedGroup(string filename)
         {
-            return NativeGroup.new_shared_group_file(filename, (IntPtr)filename.Length, (IntPtr)0, (IntPtr)0);
+            return NativeSharedGroup.new_shared_group_file(filename, (IntPtr)filename.Length, (IntPtr)0, (IntPtr)0);
         }
 
         public bool HasTable(IGroupHandle groupHandle, string tableName)
         {
             var gh = groupHandle as GroupHandle;
-            return NativeGroup.group_has_table(gh, tableName, (IntPtr)tableName.Length) == (IntPtr)1;
+            return NativeGroup.has_table(gh, tableName, (IntPtr)tableName.Length) == (IntPtr)1;
         }
 
         private TableHandle GetTable(IGroupHandle groupHandle, string tableName)
@@ -99,22 +99,22 @@ namespace RealmNet.Interop
 
         private IntPtr GetColumnIndex(TableHandle tableHandle, string columnName)
         {
-            return NativeTable.table_get_column_index(tableHandle, columnName, (IntPtr)columnName.Length);
+            return NativeTable.get_column_index(tableHandle, columnName, (IntPtr)columnName.Length);
         }
 
         public void AddColumnToTable(IGroupHandle groupHandle, string tableName, string columnName, Type columnType)
         {
-            var columnIndex = NativeTable.table_add_column(GetTable(groupHandle, tableName), RealmColType(columnType), columnName, (IntPtr)columnName.Length);
+            var columnIndex = NativeTable.add_column(GetTable(groupHandle, tableName), RealmColType(columnType), columnName, (IntPtr)columnName.Length);
         }
 
         public IRowHandle AddEmptyRow(IGroupHandle groupHandle, string tableName)
         {
-            return NativeTable.table_add_empty_row(GetTable(groupHandle, tableName)); 
+            return NativeTable.add_empty_row(GetTable(groupHandle, tableName)); 
         }
 
         public void RemoveRow(IGroupHandle groupHandle, string tableName, IRowHandle rowHandle)
         {
-            NativeTable.table_remove_row(GetTable(groupHandle, tableName), (RowHandle)rowHandle);
+            NativeTable.remove_row(GetTable(groupHandle, tableName), (RowHandle)rowHandle);
         }
 
         public T GetValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, IRowHandle rowHandle)
@@ -134,7 +134,7 @@ namespace RealmNet.Interop
                 do
                 {
                     buffer = StrAllocateBuffer(out currentBufferSizeChars, bufferSizeNeededChars);
-                    bufferSizeNeededChars = (long)NativeTable.table_get_string(tableHandle, columnIndex, (IntPtr)rowIndex, buffer,
+                    bufferSizeNeededChars = (long)NativeTable.get_string(tableHandle, columnIndex, (IntPtr)rowIndex, buffer,
                             (IntPtr)currentBufferSizeChars);
 
                 } while (StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
@@ -142,17 +142,17 @@ namespace RealmNet.Interop
             }
             else if (typeof(T) == typeof(bool))
             {
-                var value = IntPtrToBool( NativeTable.table_get_bool(tableHandle, columnIndex, (IntPtr)rowIndex) );
+                var value = IntPtrToBool( NativeTable.get_bool(tableHandle, columnIndex, (IntPtr)rowIndex) );
                 return (T)Convert.ChangeType(value, typeof(T));
             }
             else if (typeof(T) == typeof(int))  // System.Int32 regardless of bitness
             {
-                var value = NativeTable.table_get_int64(tableHandle, columnIndex, (IntPtr)rowIndex);
+                var value = NativeTable.get_int64(tableHandle, columnIndex, (IntPtr)rowIndex);
                 return (T)Convert.ChangeType(value, typeof(T));
             }
             else if (typeof(T) == typeof(Int64)) 
             {
-                var value = NativeTable.table_get_int64(tableHandle, columnIndex, (IntPtr)rowIndex);
+                var value = NativeTable.get_int64(tableHandle, columnIndex, (IntPtr)rowIndex);
                 return (T)Convert.ChangeType(value, typeof(T));
             }
             else
@@ -170,22 +170,22 @@ namespace RealmNet.Interop
             if (typeof(T) == typeof(string))
             {
                 var str = value.ToString();
-                NativeTable.table_set_string(tableHandle, columnIndex, (IntPtr)rowIndex, str, (IntPtr)str.Length);
+                NativeTable.set_string(tableHandle, columnIndex, (IntPtr)rowIndex, str, (IntPtr)str.Length);
             }
             else if (typeof(T) == typeof(bool))
             {
                 var marshalledValue = BoolToIntPtr((bool)Convert.ChangeType(value, typeof(bool)));
-                NativeTable.table_set_bool(tableHandle, columnIndex, (IntPtr)rowIndex, marshalledValue);
+                NativeTable.set_bool(tableHandle, columnIndex, (IntPtr)rowIndex, marshalledValue);
             }
             else if (typeof(T) == typeof(int))  // System.Int32 regardless of bitness
             {
                 Int64 marshalledValue = Convert.ToInt64(value);
-                NativeTable.table_set_int64(tableHandle, columnIndex, (IntPtr)rowIndex, marshalledValue);
+                NativeTable.set_int64(tableHandle, columnIndex, (IntPtr)rowIndex, marshalledValue);
             }
             else if (typeof(T) == typeof(Int64))
             {
                 Int64 marshalledValue = Convert.ToInt64(value);
-                NativeTable.table_set_int64(tableHandle, columnIndex, (IntPtr)rowIndex, marshalledValue);
+                NativeTable.set_int64(tableHandle, columnIndex, (IntPtr)rowIndex, marshalledValue);
             }
             else
                 throw new Exception ("Unsupported type " + typeof(T).Name);
@@ -216,66 +216,66 @@ namespace RealmNet.Interop
             { }
             finally
             {
-                queryHandle.SetHandle(NativeTable.table_where(tableHandle));
+                queryHandle.SetHandle(NativeTable.where(tableHandle));
             }//at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
             return queryHandle;
         }
 
         public void AddQueryEqual(IQueryHandle queryHandle, string columnName, object value)
         {
-            var columnIndex = NativeQuery.query_get_column_index((QueryHandle)queryHandle, columnName, (IntPtr)columnName.Length);
+            var columnIndex = NativeQuery.get_column_index((QueryHandle)queryHandle, columnName, (IntPtr)columnName.Length);
 
             var valueType = value.GetType();
             if (value.GetType() == typeof(string))
             {
                 string valueStr = (string)value;
-                NativeQuery.query_string_equal((QueryHandle)queryHandle, columnIndex, valueStr, (IntPtr)valueStr.Length);
+                NativeQuery.string_equal((QueryHandle)queryHandle, columnIndex, valueStr, (IntPtr)valueStr.Length);
             }
             else if (valueType == typeof(bool))
-                NativeQuery.query_bool_equal((QueryHandle)queryHandle, columnIndex, BoolToIntPtr((bool)value));
+                NativeQuery.bool_equal((QueryHandle)queryHandle, columnIndex, BoolToIntPtr((bool)value));
             else if (valueType == typeof(int))
-                NativeQuery.query_int_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((int)value));
+                NativeQuery.int_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((int)value));
             else if (valueType == typeof(float))
-                ;// see issue 68 NativeQuery.query_float_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((float)value));
+                ;// see issue 68 NativeQuery.float_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((float)value));
             else if (valueType == typeof(double))
-                ;// see issue 68 NativeQuery.query_double_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((double)value));
+                ;// see issue 68 NativeQuery.double_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((double)value));
             else
                 throw new NotImplementedException();
         }
 
         public void AddQueryNotEqual(IQueryHandle queryHandle, string columnName, object value)
         {
-            var columnIndex = NativeQuery.query_get_column_index((QueryHandle)queryHandle, columnName, (IntPtr)columnName.Length);
+            var columnIndex = NativeQuery.get_column_index((QueryHandle)queryHandle, columnName, (IntPtr)columnName.Length);
 
             var valueType = value.GetType();
             if (value.GetType() == typeof(string))
             {
                 string valueStr = (string)value;
-                NativeQuery.query_string_not_equal((QueryHandle)queryHandle, columnIndex, valueStr, (IntPtr)valueStr.Length);
+                NativeQuery.string_not_equal((QueryHandle)queryHandle, columnIndex, valueStr, (IntPtr)valueStr.Length);
             }
             else if (valueType == typeof(bool))
-                NativeQuery.query_bool_not_equal((QueryHandle)queryHandle, columnIndex, BoolToIntPtr((bool)value));
+                NativeQuery.bool_not_equal((QueryHandle)queryHandle, columnIndex, BoolToIntPtr((bool)value));
             else if (valueType == typeof(int))
-                NativeQuery.query_int_not_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((int)value));
+                NativeQuery.int_not_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((int)value));
             else if (valueType == typeof(float))
-                ;// see issue 68 NativeQuery.query_float_not_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((float)value));
+                ;// see issue 68 NativeQuery.float_not_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((float)value));
             else if (valueType == typeof(double))
-                ;// see issue 68 NativeQuery.query_double_not_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((double)value));
+                ;// see issue 68 NativeQuery.double_not_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((double)value));
             else
                 throw new NotImplementedException();
         }
 
         public void AddQueryLessThan(IQueryHandle queryHandle, string columnName, object value)
         {
-            var columnIndex = NativeQuery.query_get_column_index((QueryHandle)queryHandle, columnName, (IntPtr)columnName.Length);
+            var columnIndex = NativeQuery.get_column_index((QueryHandle)queryHandle, columnName, (IntPtr)columnName.Length);
 
             var valueType = value.GetType();
             if (valueType == typeof(int))
-                NativeQuery.query_int_less((QueryHandle)queryHandle, columnIndex, (IntPtr)((int)value));
+                NativeQuery.int_less((QueryHandle)queryHandle, columnIndex, (IntPtr)((int)value));
             else if (valueType == typeof(float))
-                ;// see issue 68 NativeQuery.query_float_less((QueryHandle)queryHandle, columnIndex, (IntPtr)((float)value));
+                ;// see issue 68 NativeQuery.float_less((QueryHandle)queryHandle, columnIndex, (IntPtr)((float)value));
             else if (valueType == typeof(double))
-                ;// see issue 68 NativeQuery.query_double_less((QueryHandle)queryHandle, columnIndex, (IntPtr)((double)value));
+                ;// see issue 68 NativeQuery.double_less((QueryHandle)queryHandle, columnIndex, (IntPtr)((double)value));
             else if (valueType == typeof(string) || valueType == typeof(bool))
                 throw new Exception("Unsupported type " + valueType.Name);
             else
@@ -284,15 +284,15 @@ namespace RealmNet.Interop
 
         public void AddQueryLessThanOrEqual(IQueryHandle queryHandle, string columnName, object value)
         {
-            var columnIndex = NativeQuery.query_get_column_index((QueryHandle)queryHandle, columnName, (IntPtr)columnName.Length);
+            var columnIndex = NativeQuery.get_column_index((QueryHandle)queryHandle, columnName, (IntPtr)columnName.Length);
 
             var valueType = value.GetType();
             if (valueType == typeof(int))
-                NativeQuery.query_int_less_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((int)value));
+                NativeQuery.int_less_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((int)value));
             else if (valueType == typeof(float))
-                ;// see issue 68 NativeQuery.query_float_less_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((float)value));
+                ;// see issue 68 NativeQuery.float_less_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((float)value));
             else if (valueType == typeof(double))
-                ;// see issue 68 NativeQuery.query_double_less_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((double)value));
+                ;// see issue 68 NativeQuery.double_less_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((double)value));
             else if (valueType == typeof(string) || valueType == typeof(bool))
                 throw new Exception("Unsupported type " + valueType.Name);
             else
@@ -301,15 +301,15 @@ namespace RealmNet.Interop
 
         public void AddQueryGreaterThan(IQueryHandle queryHandle, string columnName, object value)
         {
-            var columnIndex = NativeQuery.query_get_column_index((QueryHandle)queryHandle, columnName, (IntPtr)columnName.Length);
+            var columnIndex = NativeQuery.get_column_index((QueryHandle)queryHandle, columnName, (IntPtr)columnName.Length);
 
             var valueType = value.GetType();
             if (valueType == typeof(int))
-                NativeQuery.query_int_greater((QueryHandle)queryHandle, columnIndex, (IntPtr)((int)value));
+                NativeQuery.int_greater((QueryHandle)queryHandle, columnIndex, (IntPtr)((int)value));
             else if (valueType == typeof(float))
-                ;// see issue 68 NativeQuery.query_float_greater((QueryHandle)queryHandle, columnIndex, (IntPtr)((float)value));
+                ;// see issue 68 NativeQuery.float_greater((QueryHandle)queryHandle, columnIndex, (IntPtr)((float)value));
             else if (valueType == typeof(double))
-                ;// see issue 68 NativeQuery.query_double_greater((QueryHandle)queryHandle, columnIndex, (IntPtr)((double)value));
+                ;// see issue 68 NativeQuery.double_greater((QueryHandle)queryHandle, columnIndex, (IntPtr)((double)value));
             else if (valueType == typeof(string) || valueType == typeof(bool))
                 throw new Exception("Unsupported type " + valueType.Name);
             else
@@ -318,15 +318,15 @@ namespace RealmNet.Interop
 
         public void AddQueryGreaterThanOrEqual(IQueryHandle queryHandle, string columnName, object value)
         {
-            var columnIndex = NativeQuery.query_get_column_index((QueryHandle)queryHandle, columnName, (IntPtr)columnName.Length);
+            var columnIndex = NativeQuery.get_column_index((QueryHandle)queryHandle, columnName, (IntPtr)columnName.Length);
 
             var valueType = value.GetType();
             if (valueType == typeof(int))
-                NativeQuery.query_int_greater_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((int)value));
+                NativeQuery.int_greater_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((int)value));
             else if (valueType == typeof(float))
-                ;// see issue 68 NativeQuery.query_float_greater_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((float)value));
+                ;// see issue 68 NativeQuery.float_greater_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((float)value));
             else if (valueType == typeof(double))
-                ;// see issue 68 NativeQuery.query_double_greater_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((double)value));
+                ;// see issue 68 NativeQuery.double_greater_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((double)value));
             else if (valueType == typeof(string) || valueType == typeof(bool))
                 throw new Exception("Unsupported type " + valueType.Name);
             else
@@ -335,12 +335,12 @@ namespace RealmNet.Interop
 
         public void AddQueryGroupBegin(IQueryHandle queryHandle)
         {
-            NativeQuery.query_group_begin((QueryHandle)queryHandle);
+            NativeQuery.group_begin((QueryHandle)queryHandle);
         }
 
         public void AddQueryGroupEnd(IQueryHandle queryHandle)
         {
-            NativeQuery.query_group_end((QueryHandle)queryHandle);
+            NativeQuery.group_end((QueryHandle)queryHandle);
         }
 
         public void AddQueryAnd(IQueryHandle queryHandle)
@@ -350,7 +350,7 @@ namespace RealmNet.Interop
 
         public void AddQueryOr(IQueryHandle queryHandle)
         {
-            NativeQuery.query_or((QueryHandle)queryHandle);
+            NativeQuery.or((QueryHandle)queryHandle);
         }
 
 
@@ -359,7 +359,7 @@ namespace RealmNet.Interop
             long nextRowIndex = 0;
             while (nextRowIndex != -1)
             {
-                var rowHandle = NativeQuery.query_find((QueryHandle)queryHandle, (IntPtr)nextRowIndex);
+                var rowHandle = NativeQuery.find((QueryHandle)queryHandle, (IntPtr)nextRowIndex);
                 if (!rowHandle.IsInvalid)
                 {
                     nextRowIndex = rowHandle.RowIndex + 1;

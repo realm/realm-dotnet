@@ -434,3 +434,8 @@ QueryHandle.shared.cs
 Group.cs
 - comment out calls to Group methods that previously just threw NotImplemented exceptions
   
+Renames after refactoring, to simplify:
+NativeGroup.group_ =?> NativeGroup.
+NativeQuery.query_ => NativeQuery.
+NativeTable.table_ => NativeTable.
+NativeGroup.shared_group_ => NativeSharedGroup.

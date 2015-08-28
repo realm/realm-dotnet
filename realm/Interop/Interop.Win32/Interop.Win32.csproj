@@ -105,6 +105,9 @@
     <Compile Include="..\NativeGroup.shared.cs">
       <Link>shared\NativeGroup.shared.cs</Link>
     </Compile>
+    <Compile Include="..\NativeSharedGroup.shared.cs">
+      <Link>shared\NativeSharedGroup.shared.cs</Link>
+    </Compile>
     <Compile Include="..\NativeQuery.shared.cs">
       <Link>shared\NativeQuery.shared.cs</Link>
     </Compile>

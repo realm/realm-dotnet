@@ -31,7 +31,7 @@ namespace RealmNet.Interop
             { }
             finally
             {
-                tvHandle.SetHandle(NativeQuery.query_find_all(this, start, end , limit));
+                tvHandle.SetHandle(NativeQuery.find_all(this, start, end , limit));
             }//at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
             return tvHandle;
         }
@@ -51,14 +51,14 @@ namespace RealmNet.Interop
             { }
             finally
             {
-                tvHandle.SetHandle(NativeQuery.query_find_all_np(this));
+                tvHandle.SetHandle(NativeQuery.find_all_np(this));
             }//at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
             return tvHandle;
         }
 */
         protected override void Unbind()
         {
-            NativeQuery.query_delete(this);
+            NativeQuery.delete(this);
         }
         
     }
