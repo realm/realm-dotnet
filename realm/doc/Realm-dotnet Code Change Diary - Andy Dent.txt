@@ -419,6 +419,7 @@ IN projects
   - NativeQuery.shared.cs
   - NativeTable.shared.cs
   - NativeGroup.shared.cs
+  - NativeSharedGroup.shared.cs
 - drop TableViewHandle.shared.cs for now
 
 General change, UnsafeNativeMethods class changed to NativeQuery/Group/Table as required
