@@ -150,25 +150,9 @@ namespace Playground.XamarinIOS
 
         private void IntegrationTest()
         {
-            var dbFilename = "db.realm";
-
-            string libraryPath;
-
-            if (UIDevice.CurrentDevice.CheckSystemVersion(8, 0)) {  // > ios 8
-                libraryPath = NSFileManager.DefaultManager.GetUrls (NSSearchPathDirectory.LibraryDirectory, NSSearchPathDomain.User) [0].Path;
-            } else {
-                var docdir = Environment.GetFolderPath (Environment.SpecialFolder.MyDocuments);
-                libraryPath = Path.GetFullPath(Path.Combine (docdir, "..", "Library")); 
-            }
-
-            var path = Path.Combine(libraryPath, dbFilename);
-
-            WriteLine("============\n\n\n");
-            WriteLine("File: " + path);
-
             var coreProvider = new CoreProvider();
             Realm.ActiveCoreProvider = coreProvider;
-            var realm = Realm.GetInstance(path);
+            var realm = Realm.GetInstance();
 
             WriteLine("####Past SharedGroup constructor####");
 
@@ -246,8 +230,8 @@ namespace Playground.XamarinIOS
             // Perform any additional setup after loading the view, typically from a nib.
 
             //new System.Threading.Thread(RunBenchmark).Start();
-            new System.Threading.Thread(HomePageTest).Start();
-//            new System.Threading.Thread(IntegrationTest).Start();
+            //new System.Threading.Thread(HomePageTest).Start();
+            new System.Threading.Thread(IntegrationTest).Start();
         }
 
         public override void DidReceiveMemoryWarning()
