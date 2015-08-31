@@ -35,7 +35,7 @@ namespace RealmNet.Interop
         protected override void Unbind()
         {
             AbortTransaction(); //stop any leaked ongoing transaction. remove this when core do this automatically
-            UnsafeNativeMethods.shared_group_delete(handle);
+            NativeSharedGroup.delete(handle);
         }
 
         //atomic change of transaction state from read to ready
@@ -52,7 +52,7 @@ namespace RealmNet.Interop
             {
                 try
                 {
-                    res = UnsafeNativeMethods.shared_group_commit(this);
+                    res = NativeSharedGroup.commit(this);
                 }
                 finally
                 {
@@ -101,7 +101,7 @@ namespace RealmNet.Interop
             }
             finally
             {
-                res = UnsafeNativeMethods.shared_group_rollback(this);
+                res = NativeSharedGroup.rollback(this);
                 State = TransactionState.Ready;
             }
             if (res == IntPtr.Zero)
@@ -122,7 +122,7 @@ namespace RealmNet.Interop
             }
             finally
             {
-                res = UnsafeNativeMethods.shared_group_end_read(this);
+                res = NativeSharedGroup.end_read(this);
                 State = TransactionState.Ready;
             }
             if (res == IntPtr.Zero)
@@ -139,7 +139,7 @@ namespace RealmNet.Interop
         //this method ensures that *if* we get a transaction back, *then* we also manage to set transactionstate to InReadTransaction
         //in the same atomic unit.
         //must be called with InReadTransaction or InWriteTransaction  otherwise an empty grouphandle is returned
-        //other methods that create sharedgrouphandles are in UnsafeNativeMethods
+        //other methods that create sharedgrouphandles are in NativeGroup
         //http://msdn.microsoft.com/en-us/library/system.runtime.compilerservices.runtimehelpers.prepareconstrainedregions(v=vs.110).aspx
         public IGroupHandle StartTransaction(TransactionState tstate)
         {
@@ -161,11 +161,11 @@ namespace RealmNet.Interop
                     //at this very point, doing nothing as the handle is not set yet
                     if (State == TransactionState.Read)
                     {
-                        gh.SetHandle(UnsafeNativeMethods.shared_group_begin_read(this));
+                        gh.SetHandle(NativeSharedGroup.begin_read(this));
                     }
                     if (State == TransactionState.Write)
                     {
-                        gh.SetHandle(UnsafeNativeMethods.shared_group_begin_write(this));
+                        gh.SetHandle(NativeSharedGroup.begin_write(this));
                     }
                     //at this point temp's finalizer will guarenteee no leaking transactions
                     //gh = temp;
