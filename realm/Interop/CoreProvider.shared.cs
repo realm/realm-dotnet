@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using InteropShared;
 using System.Runtime.InteropServices;
+using System.Linq;
+using System.IO;
 
 namespace RealmNet.Interop
 {
@@ -74,9 +76,30 @@ namespace RealmNet.Interop
 
         #endregion  // helpers
 
-
         public ISharedGroupHandle CreateSharedGroup(string filename)
         {
+            if (filename == null)
+            {
+                const string realmFilename = "db.realm";
+                #if __IOS__
+                string libraryPath;
+                if (UIDevice.CurrentDevice.CheckSystemVersion(8, 0))  // > ios 8
+                {
+                    libraryPath = NSFileManager.DefaultManager.GetUrls (NSSearchPathDirectory.LibraryDirectory, NSSearchPathDomain.User) [0].Path;
+                } 
+                else 
+                {
+                    var docdir = Environment.GetFolderPath (Environment.SpecialFolder.MyDocuments);
+                    libraryPath = Path.GetFullPath(Path.Combine (docdir, "..", "Library")); 
+                }
+
+                filename = Path.Combine(libraryPath, realmFilename);
+                #else
+                var documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.Personal); // Documents folder
+                filename = Path.Combine(documentsPath, realmFilename);
+                #endif
+            }
+
             return NativeSharedGroup.new_shared_group_file(filename, (IntPtr)filename.Length, (IntPtr)0, (IntPtr)0);
         }
 
