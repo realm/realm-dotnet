@@ -27,6 +27,8 @@ namespace IntegrationTests.Win32
         {
             Debug.WriteLine($"Raw performance check for {count:n} entries -------------");
 
+            var s = "String value";
+
             using (_realm.BeginWrite())
             {
                 _realm.CreateObject<Person>(); 
@@ -34,14 +36,13 @@ namespace IntegrationTests.Win32
                 var gh = _realm.GetPropertyValue<GroupHandle>("TransactionGroupHandle");
                 var tablePtr = gh.GetTable("Person");
 
-                var s = "String value";
-
                 var sw = Stopwatch.StartNew();
 
                 for (var rowIndex = 0; rowIndex < count; rowIndex++)
                 {
                     NativeTable.add_empty_row(tablePtr);
                     NativeTable.set_string(tablePtr, (IntPtr) 0, (IntPtr) rowIndex, s, (IntPtr) s.Length);
+                    NativeTable.set_bool(tablePtr, (IntPtr) 3, (IntPtr) rowIndex, (IntPtr)1);
                 }
 
                 sw.Stop();

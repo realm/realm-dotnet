@@ -31,13 +31,17 @@ namespace IntegrationTests
         {
             Debug.WriteLine($"Binding-based performance check for {count:n} entries -------------");
 
+            var s = "String value";
+
             using (_realm.BeginWrite())
             {
                 var sw = Stopwatch.StartNew();
 
                 for (var rowIndex = 0; rowIndex < count; rowIndex++)
                 {
-                    _realm.CreateObject<Person>();
+                    var p = _realm.CreateObject<Person>();
+                    p.FirstName = s;
+                    p.IsInteresting = true;
                 }
 
                 sw.Stop();
