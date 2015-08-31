@@ -46,12 +46,16 @@ namespace RealmNet.Interop
                 const string realmFilename = "Todo.realm";
                 #if __IOS__
                 string libraryPath;
-                if (UIDevice.CurrentDevice.CheckSystemVersion(8, 0)) {  // > ios 8
+                if (UIDevice.CurrentDevice.CheckSystemVersion(8, 0))  // > ios 8
+                {
                     libraryPath = NSFileManager.DefaultManager.GetUrls (NSSearchPathDirectory.LibraryDirectory, NSSearchPathDomain.User) [0].Path;
-                } else {
+                } 
+                else 
+                {
                     var docdir = Environment.GetFolderPath (Environment.SpecialFolder.MyDocuments);
                     libraryPath = Path.GetFullPath(Path.Combine (docdir, "..", "Library")); 
                 }
+
                 filename = Path.Combine(libraryPath, realmFilename);
                 #else
                 var documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.Personal); // Documents folder
