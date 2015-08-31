@@ -21,22 +21,33 @@ namespace IntegrationTests.Win32
             return Path.GetTempFileName();
         }
 
+        [TestCase(10)]
         [TestCase(100)]
         public void RawPerformanceTest(int count)
         {
-            Debug.WriteLine("Performance check for " + count + " entries");
+            Debug.WriteLine($"Raw performance check for {count:n} entries -------------");
 
-            var sgh = _realm.GetPropertyValue<SharedGroupHandle>("Handle");
-            var w = NativeSharedGroup.begin_write(sgh);
-
-            var s = "String value";
-
-            for (var rowIndex = 0; rowIndex < count; rowIndex++)
+            using (_realm.BeginWrite())
             {
-                //NativeTable.set_string(tablePtr, 0, (IntPtr)rowIndex, s, s.Length);
+                _realm.CreateObject<Person>(); 
 
+                var gh = _realm.GetPropertyValue<GroupHandle>("TransactionGroupHandle");
+                var tablePtr = gh.GetTable("Person");
+
+                var s = "String value";
+
+                var sw = Stopwatch.StartNew();
+
+                for (var rowIndex = 0; rowIndex < count; rowIndex++)
+                {
+                    NativeTable.add_empty_row(tablePtr);
+                    NativeTable.set_string(tablePtr, (IntPtr) 0, (IntPtr) rowIndex, s, (IntPtr) s.Length);
+                }
+
+                sw.Stop();
+
+                Debug.WriteLine("Time spent: " + sw.Elapsed);
             }
-
         }
     }
 }

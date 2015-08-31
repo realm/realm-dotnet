@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,10 +25,25 @@ namespace IntegrationTests
         protected virtual void Setup () { }
         protected abstract string GetTempDatabasePath();
 
-        [Test]
-        public void SimplePerformanceTest()
+        [TestCase(10)]
+        [TestCase(100)]
+        public void SimplePerformanceTest(int count)
         {
-            
+            Debug.WriteLine($"Binding-based performance check for {count:n} entries -------------");
+
+            using (_realm.BeginWrite())
+            {
+                var sw = Stopwatch.StartNew();
+
+                for (var rowIndex = 0; rowIndex < count; rowIndex++)
+                {
+                    _realm.CreateObject<Person>();
+                }
+
+                sw.Stop();
+
+                Debug.WriteLine("Time spent: " + sw.Elapsed);
+            }
         }
     }
 }
