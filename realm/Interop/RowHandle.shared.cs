@@ -13,11 +13,11 @@ namespace RealmNet.Interop
 
         protected override void Unbind()
         {
-            UnsafeNativeMethods.row_delete(this);
+            NativeTable.row_delete(this);
         }
 
-        public long RowIndex => (long)UnsafeNativeMethods.row_get_row_index(this);
-        public bool IsAttached => UnsafeNativeMethods.IntPtrToBool(UnsafeNativeMethods.row_get_is_attached(this));
+        public long RowIndex => (long)NativeTable.row_get_row_index(this);
+        public bool IsAttached => NativeTable.row_get_is_attached(this)==(IntPtr)1;  // inline equiv of IntPtrToBool
 
         public override bool Equals(object p)
         {

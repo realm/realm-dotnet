@@ -61,11 +61,17 @@
     <Compile Include="..\TableHandle.shared.cs">
       <Link>shared\TableHandle.shared.cs</Link>
     </Compile>
-    <Compile Include="..\TableViewHandle.shared.cs">
-      <Link>shared\TableViewHandle.shared.cs</Link>
+    <Compile Include="..\NativeGroup.shared.cs">
+      <Link>shared\NativeGroup.shared.cs</Link>
     </Compile>
-    <Compile Include="..\UnsafeNativeMethods.shared.cs">
-      <Link>shared\UnsafeNativeMethods.shared.cs</Link>
+    <Compile Include="..\NativeSharedGroup.shared.cs">
+      <Link>shared\NativeSharedGroup.shared.cs</Link>
+    </Compile>
+    <Compile Include="..\NativeQuery.shared.cs">
+      <Link>shared\NativeQuery.shared.cs</Link>
+    </Compile>
+    <Compile Include="..\NativeTable.shared.cs">
+      <Link>shared\NativeTable.shared.cs</Link>
     </Compile>
     <Compile Include="InteropConfig.cs" />
     <Compile Include="Resources\Resource.Designer.cs" />

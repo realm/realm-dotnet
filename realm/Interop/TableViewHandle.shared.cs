@@ -7,7 +7,7 @@ namespace RealmNet.Interop
     {
         protected override void Unbind()
         {
-            UnsafeNativeMethods.tableview_unbind(this);
+            NativeTable.tableview_unbind(this);
         }
 
         //used in Table to create TableviewHandles atomically, specifying both root and handle at the same time
@@ -54,7 +54,7 @@ namespace RealmNet.Interop
             { }
             finally
             {
-                tvHandle.SetHandle(UnsafeNativeMethods.tableview_find_all_int(this,columnIndex, value));
+                tvHandle.SetHandle(NativeTable.tableview_find_all_int(this,columnIndex, value));
             }//at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
             return tvHandle;
         }
@@ -74,7 +74,7 @@ namespace RealmNet.Interop
             { }
             finally
             {
-                tvHandle.SetHandle(UnsafeNativeMethods.tableview_find_all_bool(this, columnIndex, value));
+                tvHandle.SetHandle(NativeTable.tableview_find_all_bool(this, columnIndex, value));
             }//at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
             return tvHandle;
         }
@@ -94,7 +94,7 @@ namespace RealmNet.Interop
             { }
             finally
             {
-                tvHandle.SetHandle(UnsafeNativeMethods.tableview_find_all_datetime(this,columnIndex, value));
+                tvHandle.SetHandle(NativeTable.tableview_find_all_datetime(this,columnIndex, value));
             }//at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
             return tvHandle;
         }
@@ -113,7 +113,7 @@ namespace RealmNet.Interop
             { }
             finally
             {
-                tvHandle.SetHandle(UnsafeNativeMethods.tableview_find_all_float(this, columnIndex, value));
+                tvHandle.SetHandle(NativeTable.tableview_find_all_float(this, columnIndex, value));
             }//at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
             return tvHandle;
         }
@@ -132,7 +132,7 @@ namespace RealmNet.Interop
             { }
             finally
             {
-                tvHandle.SetHandle(UnsafeNativeMethods.tableview_find_all_double(this, columnIndex, value));
+                tvHandle.SetHandle(NativeTable.tableview_find_all_double(this, columnIndex, value));
             }//at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
             return tvHandle;
         }
@@ -152,7 +152,7 @@ namespace RealmNet.Interop
             { }
             finally
             {
-                tvHandle.SetHandle(UnsafeNativeMethods.tableview_find_all_string(this, columnIndex, value));
+                tvHandle.SetHandle(NativeTable.tableview_find_all_string(this, columnIndex, value));
             }//at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
             return tvHandle;
         }
@@ -172,7 +172,7 @@ namespace RealmNet.Interop
             { }
             finally
             {
-                tHandle.SetHandle(UnsafeNativeMethods.tableview_get_subtable(this, columnIndex, rowIndex));
+                tHandle.SetHandle(NativeTable.tableview_get_subtable(this, columnIndex, rowIndex));
             }//at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
             return tHandle;
         }

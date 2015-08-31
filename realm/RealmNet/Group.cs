@@ -46,7 +46,7 @@ namespace RealmNet
         private void AcquireHandle(bool readOnly)
         {
             SetHandle(Realm.ActiveCoreProvider.NewGroup(), readOnly);
-            //UnsafeNativeMethods.GroupNew(this.GroupHandle, readOnly); //calls sethandle itself
+            //NativeGroup.groupNew(this.GroupHandle, readOnly); //calls sethandle itself
             IsValid = true;
         }
 
@@ -90,7 +90,7 @@ namespace RealmNet
         public Boolean EqualsGroup(Group otherGroup)
         {
             ValidateIsValid();
-            return otherGroup != null && UnsafeNativeMethods.group_equals(this.GroupHandle, otherGroup.GroupHandle);
+            return otherGroup != null && NativeGroup.equals(this.GroupHandle, otherGroup.GroupHandle);
         }
 */
 
@@ -148,7 +148,7 @@ namespace RealmNet
                 if (binaryGroup.Length == 0)
                     throw new ArgumentException("Group cannot be created from an array of size 0", "binaryGroup");
 
-                UnsafeNativeMethods.group_frombinary_data(this.GroupHandle, binaryGroup);
+                NativeGroup.frombinary_data(this.GroupHandle, binaryGroup);
                 IsValid = true;
             }
             catch (Exception)
@@ -177,7 +177,7 @@ namespace RealmNet
         public bool HasTable(string tableName)
         {
             ValidateIsValid();
-            return UnsafeNativeMethods.group_has_table(this.GroupHandle, tableName);
+            return NativeGroup.has_table(this.GroupHandle, tableName);
         }
 
 */
@@ -255,7 +255,7 @@ namespace RealmNet
         public void Write(String path)
         {
             ValidateIsValid();
-            UnsafeNativeMethods.group_write(this.GroupHandle, path);
+            NativeGroup.write(this.GroupHandle, path);
         }
 
 
@@ -266,7 +266,7 @@ namespace RealmNet
         public byte[] WriteToMemory()
         {
             ValidateIsValid();
-            return UnsafeNativeMethods.group_write_to_memory(this.GroupHandle);
+            return NativeGroup.write_to_memory(this.GroupHandle);
         }
         */
 

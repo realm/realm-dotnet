@@ -62,8 +62,8 @@ namespace RealmNet
             var objectType = adoptingObject.GetType();
             if (!usingProvider.HasTable(transGroupHandle, objectType.Name))
                 CreateTableFor(objectType, usingProvider, transGroupHandle);
-            var rowIndex = usingProvider.AddEmptyRow(transGroupHandle, objectType.Name);
-            adoptingObject._Manage(usingRealm, usingProvider, rowIndex);
+            var rowHandle = usingProvider.AddEmptyRow(transGroupHandle, objectType.Name);
+            adoptingObject._Manage(usingRealm, usingProvider, rowHandle);
         }
 
         private static void CreateTableFor(Type objectType, ICoreProvider usingProvider, IGroupHandle transGroupHandle)
