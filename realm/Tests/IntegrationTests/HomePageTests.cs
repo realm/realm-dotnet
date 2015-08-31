@@ -12,7 +12,6 @@ using RealmNet;
 // shows code like the samples on the realm.io home page
 namespace HomePageTests
 {
-
     // Realm Objects Look like Regular Objects…
     public class Dog : RealmObject
     {
@@ -27,7 +26,7 @@ namespace HomePageTests
         public void CreateObjectAndPersist()
         {
             var mydog = new Dog() { name = "Rex" };
-            Console.WriteLine($"name of dog:{mydog.name}");
+            Debug.WriteLine($"name of dog:{mydog.name}");
 
             // Offer Easy Persistence…
             var realm = Realm.GetInstance();
@@ -40,8 +39,6 @@ namespace HomePageTests
 
             // Queries are chainable
             var r2 = r.Where(dog => dog.name.Contains("rex"));
-
         }
-
     } // HomePageTests
 }
