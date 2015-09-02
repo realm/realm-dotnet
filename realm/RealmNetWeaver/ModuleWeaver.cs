@@ -61,28 +61,28 @@ public class ModuleWeaver
             Debug.WriteLine("Weaving " + type.Name);
             foreach (var prop in type.Properties.Where(x => !x.CustomAttributes.Any(a => a.AttributeType.Name == "IgnoreAttribute")))
             {
-                var propName = prop.Name;
+                var columnName = prop.Name;
                 var mapToAttribute = prop.CustomAttributes.FirstOrDefault(a => a.AttributeType.Name == "MapToAttribute");
                 if (mapToAttribute != null)
-                    propName = ((string)mapToAttribute.ConstructorArguments[0].Value);
+                    columnName = ((string)mapToAttribute.ConstructorArguments[0].Value);
 
-                Debug.Write("  -- Property: " + propName + ".. ");
+                Debug.Write("  -- Property: " + prop.Name + " (column: " + columnName + ".. ");
                 //TODO check if has either setter or getter and adjust accordingly - https://github.com/realm/realm-dotnet/issues/101
                 if (prop.PropertyType.Namespace == "RealmNet" && prop.PropertyType.Name == "RealmList`1")
               // TODO maybe support this?  ||prop.PropertyType.Namespace == "System.Collections.Generic" && prop.PropertyType.Name == "IList`1")
                 {
                     // we may handle things differently here to handle init with a braced collection
-                    AddGetter(prop, propName, genericGetValueReference);
-                    AddSetter(prop, propName, genericSetValueReference);  // with casting in the RealmObject methods, should just work
+                    AddGetter(prop, columnName, genericGetValueReference);
+                    AddSetter(prop, columnName, genericSetValueReference);  // with casting in the RealmObject methods, should just work
                 }
                 else if (prop.PropertyType.Namespace == "System" 
                     && (prop.PropertyType.IsPrimitive || prop.PropertyType.Name == "String"))
                 {
-                    AddGetter(prop, propName, genericGetValueReference);
-                    AddSetter(prop, propName, genericSetValueReference);
+                    AddGetter(prop, columnName, genericGetValueReference);
+                    AddSetter(prop, columnName, genericSetValueReference);
                 }
                 else {
-                    throw new NotSupportedException($"class '{type.Name}' field '{propName}' is a {prop.PropertyType.Name} which is not yet supported");
+                    throw new NotSupportedException($"class '{type.Name}' field '{columnName}' is a {prop.PropertyType.Name} which is not yet supported");
                 }
 
                 Debug.WriteLine("");
@@ -96,7 +96,7 @@ public class ModuleWeaver
     }
 
 
-    void AddGetter(PropertyDefinition prop, string propName, MethodReference getValueReference)
+    void AddGetter(PropertyDefinition prop, string columnName, MethodReference getValueReference)
     {
         var specializedGetValue = new GenericInstanceMethod(getValueReference);
         specializedGetValue.GenericArguments.Add(prop.PropertyType);
@@ -104,14 +104,14 @@ public class ModuleWeaver
         prop.GetMethod.Body.Instructions.Clear();
         var getProcessor = prop.GetMethod.Body.GetILProcessor();
         getProcessor.Emit(OpCodes.Ldarg_0);
-        getProcessor.Emit(OpCodes.Ldstr, propName);
+        getProcessor.Emit(OpCodes.Ldstr, columnName);
         getProcessor.Emit(OpCodes.Call, specializedGetValue);
         getProcessor.Emit(OpCodes.Ret);
         Debug.Write("[get] ");
     }
 
 
-    void AddSetter(PropertyDefinition prop, string propName, MethodReference setValueReference)
+    void AddSetter(PropertyDefinition prop, string columnName, MethodReference setValueReference)
     {
         var specializedSetValue = new GenericInstanceMethod(setValueReference);
         specializedSetValue.GenericArguments.Add(prop.PropertyType);
@@ -119,7 +119,7 @@ public class ModuleWeaver
         prop.SetMethod.Body.Instructions.Clear();
         var setProcessor = prop.SetMethod.Body.GetILProcessor();
         setProcessor.Emit(OpCodes.Ldarg_0);
-        setProcessor.Emit(OpCodes.Ldstr, propName);
+        setProcessor.Emit(OpCodes.Ldstr, columnName);
         setProcessor.Emit(OpCodes.Ldarg_1);
         setProcessor.Emit(OpCodes.Call, specializedSetValue);
         setProcessor.Emit(OpCodes.Ret);
