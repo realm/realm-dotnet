@@ -25,8 +25,8 @@ namespace IntegrationTests
         protected virtual void Setup () { }
         protected abstract string GetTempDatabasePath();
 
-        [TestCase(10)]
-        [TestCase(100)]
+        [TestCase(1000)]
+        [TestCase(10000)]
         public void SimplePerformanceTest(int count)
         {
             Debug.WriteLine($"Binding-based performance check for {count:n} entries -------------");

@@ -21,8 +21,8 @@ namespace IntegrationTests.Win32
             return Path.GetTempFileName();
         }
 
-        [TestCase(10)]
         [TestCase(100)]
+        [TestCase(10000)]
         public void RawPerformanceTest(int count)
         {
             Debug.WriteLine($"Raw performance check for {count:n} entries -------------");
