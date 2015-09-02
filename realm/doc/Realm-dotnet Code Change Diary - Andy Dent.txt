@@ -439,3 +439,15 @@ NativeGroup.group_ =?> NativeGroup.
 NativeQuery.query_ => NativeQuery.
 NativeTable.table_ => NativeTable.
 NativeGroup.shared_group_ => NativeSharedGroup.
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Fix Integration Tests copying Wrappers DLL
+
+Wrappers.vcxproj
+- Linker / Input / Additional Dependencies
+  changed libs to point to core Realm32d.lib and Realm64d.lib
+
+IntegrationTests.Win32.csproj
+- added afterbuild target to copy DLL and PDB to output area (doesn't show in VS - edit csproj)
+
