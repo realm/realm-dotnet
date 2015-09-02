@@ -101,7 +101,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>$(SolutionDir)..\..\realm-core\build\vs2013\$(platform)\Static lib, debug\realm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)..\..\realm-core\build\vs2013\lib\Realm32d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(PlatformShortName)-$(ConfigurationName)$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
@@ -117,7 +117,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>$(SolutionDir)..\..\realm-core\build\vs2013\$(platform)\Static lib, debug\realm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)..\..\realm-core\build\vs2013\lib\Realm64d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(PlatformShortName)-$(ConfigurationName)$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
