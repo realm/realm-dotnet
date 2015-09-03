@@ -463,7 +463,8 @@ IntegrationTestsAsLib.IOS
 - added packages.config to get NUnit and Fody
 
 Interop.XamarionIOS/AssemblyInfo.cs
-- added [assembly: InternalsVisibleTo("IntegrationTests.IOS")]
+- added [assembly: InternalsVisibleTo("IntegrationTestsAsLib.IOS")]
+
 
 Copy and rename Win32 => IOS
 - Win32IntegrationTests.csproj

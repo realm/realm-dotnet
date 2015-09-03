@@ -34,4 +34,4 @@ using Foundation;
 //[assembly: AssemblyDelaySign(false)]
 //[assembly: AssemblyKeyFile("")]
 
-[assembly: InternalsVisibleTo("IntegrationTests.IOS")]
+[assembly: InternalsVisibleTo("IntegrationTestsAsLib.IOS")]
