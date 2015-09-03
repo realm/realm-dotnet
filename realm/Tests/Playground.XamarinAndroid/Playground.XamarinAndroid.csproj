@@ -14,7 +14,7 @@
     <AndroidResgenFile>Resources\Resource.Designer.cs</AndroidResgenFile>
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
     <AndroidUseLatestPlatformSdk>True</AndroidUseLatestPlatformSdk>
-    <TargetFrameworkVersion>v5.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v5.1</TargetFrameworkVersion>
     <AndroidManifest>Properties\AndroidManifest.xml</AndroidManifest>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -79,14 +79,6 @@
   </Target>
   -->
   <ItemGroup>
-    <ProjectReference Include="..\..\Interop\InteropShared\InteropShared.csproj">
-      <Project>{8B451911-321F-4244-9999-C1678BED060D}</Project>
-      <Name>InteropShared</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\RealmNet\RealmNet.csproj">
-      <Project>{2494214E-6005-4EB9-AD2C-1D4BCD7B0223}</Project>
-      <Name>RealmNet</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\Interop\Interop.XamarinAndroid\Interop.XamarinAndroid.csproj">
       <Project>{2379D669-4F4B-4FF6-AF8A-49FEA981EFC3}</Project>
       <Name>Interop.XamarinAndroid</Name>

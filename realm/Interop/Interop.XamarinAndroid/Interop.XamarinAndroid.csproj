@@ -86,16 +86,7 @@
   <ItemGroup>
     <AndroidResource Include="Resources\Values\Strings.xml" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\RealmNet\RealmNet.csproj">
-      <Project>{2494214E-6005-4EB9-AD2C-1D4BCD7B0223}</Project>
-      <Name>RealmNet</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\InteropShared\InteropShared.csproj">
-      <Project>{8B451911-321F-4244-9999-C1678BED060D}</Project>
-      <Name>InteropShared</Name>
-    </ProjectReference>
-  </ItemGroup>
+  <Import Project="..\Interop.Shared\Interop.Shared.projitems" Label="Shared" Condition="Exists('..\Interop.Shared\Interop.Shared.projitems')" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -83,17 +83,8 @@
   <ItemGroup>
     <ObjcBindingApiDefinition Include="ApiDefinition.cs" />
   </ItemGroup>
+  <Import Project="..\Interop.Shared\Interop.Shared.projitems" Label="Shared" Condition="Exists('..\Interop.Shared\Interop.Shared.projitems')" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.ObjCBinding.CSharp.targets" />
-  <ItemGroup>
-    <ProjectReference Include="..\..\RealmNet\RealmNet.csproj">
-      <Project>{2494214E-6005-4EB9-AD2C-1D4BCD7B0223}</Project>
-      <Name>RealmNet</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\InteropShared\InteropShared.csproj">
-      <Project>{8B451911-321F-4244-9999-C1678BED060D}</Project>
-      <Name>InteropShared</Name>
-    </ProjectReference>
-  </ItemGroup>
   <ItemGroup>
     <ObjcBindingNativeLibrary Include="..\..\wrappers\build\Release-ios-universal\libwrappers.a">
       <Link>libwrappers.a</Link>
