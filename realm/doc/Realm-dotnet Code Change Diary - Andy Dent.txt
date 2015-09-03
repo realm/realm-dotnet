@@ -451,3 +451,24 @@ Wrappers.vcxproj
 IntegrationTests.Win32.csproj
 - added afterbuild target to copy DLL and PDB to output area (doesn't show in VS - edit csproj)
 
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#118 Adding IntegrationTests.IOS
+
+IntegrationTests.IOS
+- created as "Unified API" iOS Unit tests project (which is a full-blown app!)
+
+IntegrationTestsAsLib.IOS
+- created as library project
+- added packages.config to get NUnit and Fody
+
+Interop.XamarionIOS/AssemblyInfo.cs
+- added [assembly: InternalsVisibleTo("IntegrationTests.IOS")]
+
+Copy and rename Win32 => IOS
+- Win32IntegrationTests.csproj
+- Win32IntegrationTests.cs 
+- Win32PerformanceTests.cs
+
+CoreProvider.shared.cs
+- added using UIKit and Foundation in order to be able to build on IOS
