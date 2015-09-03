@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -6,9 +6,9 @@
     <ProjectTypeGuids>{8FFB629D-F513-41CE-95D2-7ECE97B6EEEC};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <ProjectGuid>{A55BD773-5A29-4B2A-9DB7-1AB1DD38B537}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>Interop.XamarinIOS</RootNamespace>
+    <RootNamespace>RealmNet</RootNamespace>
     <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
-    <AssemblyName>Interop.XamarinIOS</AssemblyName>
+    <AssemblyName>RealmNet.XamarinIOS</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -35,7 +35,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Resources\" />
-    <Folder Include="shared\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -43,47 +42,11 @@
     <Compile Include="libwrappers.linkwith.cs">
       <DependentUpon>libwrappers.a</DependentUpon>
     </Compile>
-    <Compile Include="..\CoreProvider.shared.cs">
-      <Link>shared\CoreProvider.shared.cs</Link>
-    </Compile>
-    <Compile Include="..\GroupHandle.shared.cs">
-      <Link>shared\GroupHandle.shared.cs</Link>
-    </Compile>
-    <Compile Include="..\QueryHandle.shared.cs">
-      <Link>shared\QueryHandle.shared.cs</Link>
-    </Compile>
-    <Compile Include="..\RealmHandle.shared.cs">
-      <Link>shared\RealmHandle.shared.cs</Link>
-    </Compile>
-    <Compile Include="..\RealmHandleOptionalUnbind.shared.cs">
-      <Link>shared\RealmHandleOptionalUnbind.shared.cs</Link>
-    </Compile>
-    <Compile Include="..\SharedGroupHandle.shared.cs">
-      <Link>shared\SharedGroupHandle.shared.cs</Link>
-    </Compile>
-    <Compile Include="..\TableHandle.shared.cs">
-      <Link>shared\TableHandle.shared.cs</Link>
-    </Compile>
-    <Compile Include="..\NativeGroup.shared.cs">
-      <Link>shared\NativeGroup.shared.cs</Link>
-    </Compile>
-    <Compile Include="..\NativeSharedGroup.shared.cs">
-      <Link>shared\NativeSharedGroup.shared.cs</Link>
-    </Compile>
-    <Compile Include="..\NativeQuery.shared.cs">
-      <Link>shared\NativeQuery.shared.cs</Link>
-    </Compile>
-    <Compile Include="..\NativeTable.shared.cs">
-      <Link>shared\NativeTable.shared.cs</Link>
-    </Compile>
-    <Compile Include="..\RowHandle.shared.cs">
-      <Link>shared\RowHandle.shared.cs</Link>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ObjcBindingApiDefinition Include="ApiDefinition.cs" />
   </ItemGroup>
-  <Import Project="..\Interop.Shared\Interop.Shared.projitems" Label="Shared" Condition="Exists('..\Interop.Shared\Interop.Shared.projitems')" />
+  <Import Project="..\RealmNet.Shared\RealmNet.Shared.projitems" Label="Shared" Condition="Exists('..\RealmNet.Shared\RealmNet.Shared.projitems')" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.ObjCBinding.CSharp.targets" />
   <ItemGroup>
     <ObjcBindingNativeLibrary Include="..\..\wrappers\build\Release-ios-universal\libwrappers.a">
