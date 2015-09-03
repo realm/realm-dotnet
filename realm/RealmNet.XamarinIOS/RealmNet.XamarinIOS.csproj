@@ -49,7 +49,7 @@
   <Import Project="..\RealmNet.Shared\RealmNet.Shared.projitems" Label="Shared" Condition="Exists('..\RealmNet.Shared\RealmNet.Shared.projitems')" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.ObjCBinding.CSharp.targets" />
   <ItemGroup>
-    <ObjcBindingNativeLibrary Include="..\..\wrappers\build\Release-ios-universal\libwrappers.a">
+    <ObjcBindingNativeLibrary Include="..\wrappers\build\Release-ios-universal\libwrappers.a">
       <Link>libwrappers.a</Link>
     </ObjcBindingNativeLibrary>
   </ItemGroup>

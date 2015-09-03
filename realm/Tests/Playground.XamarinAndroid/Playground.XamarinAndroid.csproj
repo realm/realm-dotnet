@@ -78,12 +78,6 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-  <ItemGroup>
-    <ProjectReference Include="..\..\Interop\Interop.XamarinAndroid\Interop.XamarinAndroid.csproj">
-      <Project>{2379D669-4F4B-4FF6-AF8A-49FEA981EFC3}</Project>
-      <Name>Interop.XamarinAndroid</Name>
-    </ProjectReference>
-  </ItemGroup>
   <ItemGroup />
   <ItemGroup>
     <AndroidNativeLibrary Include="..\..\wrappers\build\Release-android\armeabi\libwrappers.so">
@@ -95,5 +89,11 @@
     <AndroidNativeLibrary Include="..\..\wrappers\build\Release-android\x86\libwrappers.so">
       <Link>wrappers\x86\libwrappers.so</Link>
     </AndroidNativeLibrary>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\RealmNet.XamarinAndroid\RealmNet.XamarinAndroid.csproj">
+      <Project>{2379D669-4F4B-4FF6-AF8A-49FEA981EFC3}</Project>
+      <Name>RealmNet.XamarinAndroid</Name>
+    </ProjectReference>
   </ItemGroup>
 </Project>
