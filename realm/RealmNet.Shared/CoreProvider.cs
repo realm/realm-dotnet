@@ -83,9 +83,9 @@ namespace RealmNet.Interop
                 const string realmFilename = "db.realm";
                 #if __IOS__
                 string libraryPath;
-                if (UIDevice.CurrentDevice.CheckSystemVersion(8, 0))  // > ios 8
+                if (UIKit.UIDevice.CurrentDevice.CheckSystemVersion(8, 0))  // > ios 8
                 {
-                    libraryPath = NSFileManager.DefaultManager.GetUrls (NSSearchPathDirectory.LibraryDirectory, NSSearchPathDomain.User) [0].Path;
+                    libraryPath = Foundation.NSFileManager.DefaultManager.GetUrls (Foundation.NSSearchPathDirectory.LibraryDirectory, Foundation.NSSearchPathDomain.User) [0].Path;
                 } 
                 else 
                 {

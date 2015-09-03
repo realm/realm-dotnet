@@ -9,7 +9,7 @@ using System.Diagnostics;  // for Debug.Writeline - as a PCL don't have Console
 
 namespace RealmNet
 {
-    public class RealmQueryVisitor : ExpressionVisitor
+    public class RealmQueryVisitor// : ExpressionVisitor
     {
         private Realm _realm;
         private ICoreProvider _coreProvider;
@@ -22,9 +22,9 @@ namespace RealmNet
 
             Visit(expression);
 
-            var innerType = returnType.GenericTypeArguments[0];
+            var innerType = returnType.GetGenericArguments()[0];
             var list = Activator.CreateInstance(typeof(List<>).MakeGenericType(innerType));
-            var add = list.GetType().GetTypeInfo().GetDeclaredMethod("Add");
+            var add = list.GetType().GetMethod("Add");
 
             var handles = _coreProvider.ExecuteQuery(_coreQueryHandle, innerType);
             foreach (var rowHandle in handles)
@@ -36,6 +36,11 @@ namespace RealmNet
             return (IEnumerable)list;
         }
 
+        private void Visit(Expression expression)
+        {
+            throw new NotImplementedException();
+        }
+
         private static Expression StripQuotes(Expression e)
         {
             while (e.NodeType == ExpressionType.Quote)
@@ -45,7 +50,7 @@ namespace RealmNet
             return e;
         }
 
-        protected override Expression VisitMethodCall(MethodCallExpression m)
+        protected  Expression VisitMethodCall(MethodCallExpression m)
         {
             if (m.Method.DeclaringType == typeof(Queryable) && m.Method.Name == "Where")
             {
@@ -58,7 +63,7 @@ namespace RealmNet
             throw new NotSupportedException($"The method '{m.Method.Name}' is not supported");
         }
 
-        protected override Expression VisitUnary(UnaryExpression u)
+        protected  Expression VisitUnary(UnaryExpression u)
         {
             switch (u.NodeType)
             {
@@ -81,7 +86,7 @@ namespace RealmNet
         }
 
 
-        protected override Expression VisitBinary(BinaryExpression b)
+        protected  Expression VisitBinary(BinaryExpression b)
         {
             if (b.NodeType == ExpressionType.AndAlso)  // Boolean And with short-circuit
             {
@@ -135,7 +140,7 @@ namespace RealmNet
             return b;
         }
 
-        protected override Expression VisitConstant(ConstantExpression c)
+        protected  Expression VisitConstant(ConstantExpression c)
         {
             IQueryable q = c.Value as IQueryable;
             if (q != null)

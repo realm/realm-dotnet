@@ -23,7 +23,7 @@ namespace RealmNet
         {
             var modelName = GetType().Name;
 
-            if (!GetType().GetTypeInfo().GetCustomAttributes(typeof(WovenAttribute), true).Any())
+            if (!GetType().GetCustomAttributes(typeof(WovenAttribute), true).Any())
                 Debug.WriteLine("WARNING! The type " + modelName + " is a RealmObject but it has not been woven.");
 
 
@@ -52,12 +52,12 @@ namespace RealmNet
         protected T GetValue<T>(string propertyName)
         {
 #if DEBUG
-            var isRealmObject = IsAssignableFrom(typeof(T).GetTypeInfo(), typeof(RealmObject).GetTypeInfo());
+            //var isRealmObject = IsAssignableFrom(typeof(T).GetTypeInfo(), typeof(RealmObject).GetTypeInfo());
             //ASD remove soon var isRealmList = IsAssignableFrom(typeof(T).GetTypeInfo(), typeof(RealmList<>).GetTypeInfo());
 
             //Debug.WriteLine("Getting " + typeof(T).Name + " value for " + tableName + "[" + _rowIndex + "]." + propertyName);
             //ASD remove soon  if (isRealmList) Debug.WriteLine("It's a realm list");
-            if (isRealmObject) Debug.WriteLine("It's a realm object");
+            //if (isRealmObject) Debug.WriteLine("It's a realm object");
 #endif
             return _coreProvider.GetValue<T>(_realm?.TransactionGroupHandle, GetType().Name, propertyName, _rowHandle);
         }
@@ -86,24 +86,24 @@ namespace RealmNet
             _coreProvider.SetListValue<T>(_realm?.TransactionGroupHandle, GetType().Name, propertyName, _rowHandle, value);
         }
 
-        private static bool IsAssignableFrom(TypeInfo extendType, TypeInfo baseType)
-        {
-            while (!baseType.IsAssignableFrom(extendType))
-            {
-                if (extendType.Equals(typeof(object).GetTypeInfo()))
-                    return false;
+        //private static bool IsAssignableFrom(TypeInfo extendType, TypeInfo baseType)
+        //{
+        //    while (!baseType.IsAssignableFrom(extendType))
+        //    {
+        //        if (extendType.Equals(typeof(object).GetTypeInfo()))
+        //            return false;
 
-                if (extendType.IsGenericType && !extendType.IsGenericTypeDefinition)
-                {
-                    extendType = extendType.GetGenericTypeDefinition().GetTypeInfo();
-                }
-                else
-                {
-                    extendType = extendType.BaseType.GetTypeInfo();
-                }
-            }
-            return true;
-        }
+        //        if (extendType.IsGenericType && !extendType.IsGenericTypeDefinition)
+        //        {
+        //            extendType = extendType.GetGenericTypeDefinition().GetTypeInfo();
+        //        }
+        //        else
+        //        {
+        //            extendType = extendType.BaseType.GetTypeInfo();
+        //        }
+        //    }
+        //    return true;
+        //}
 
         public override bool Equals(object p)
         {

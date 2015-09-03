@@ -70,18 +70,18 @@ namespace RealmNet
         {
             var tableName = objectType.Name;
 
-            if (!objectType.GetTypeInfo().GetCustomAttributes(typeof(WovenAttribute), true).Any())
+            if (!objectType.GetCustomAttributes(typeof(WovenAttribute), true).Any())
                 Debug.WriteLine("WARNING! The type " + tableName + " is a RealmObject but it has not been woven.");
 
             usingProvider.AddTable(transGroupHandle, tableName);
 
-            var propertiesToMap = objectType.GetTypeInfo().DeclaredProperties.Where(p => p.CustomAttributes.All(a => a.AttributeType != typeof (IgnoreAttribute)));
+            var propertiesToMap = objectType.GetProperties().Where(p => p.GetCustomAttributes(false).All(a => !(a is IgnoreAttribute)));
             foreach (var p in propertiesToMap)
             {
                 var propertyName = p.Name;
-                var mapToAttribute = p.CustomAttributes.FirstOrDefault(a => a.AttributeType == typeof(MapToAttribute));
+                var mapToAttribute = p.GetCustomAttributes(false).FirstOrDefault(a => a is MapToAttribute) as MapToAttribute;
                 if (mapToAttribute != null)
-                    propertyName = ((string)mapToAttribute.ConstructorArguments[0].Value);
+                    propertyName = mapToAttribute.Mapping;
                 
                 var columnType = p.PropertyType;
                 usingProvider.AddColumnToTable(transGroupHandle, tableName, propertyName, columnType);

@@ -6,9 +6,9 @@
     <ProjectTypeGuids>{A3F8F2AB-B479-4A4A-A458-A89E7DC349F1};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <ProjectGuid>{9F2EE4B5-CFD1-45E6-B2DB-969857FBCA2D}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>Interop.XamarinMAC</RootNamespace>
+    <RootNamespace>RealmNet</RootNamespace>
     <MonoMacResourcePrefix>Resources</MonoMacResourcePrefix>
-    <AssemblyName>Interop.XamarinMAC</AssemblyName>
+    <AssemblyName>RealmNet</AssemblyName>
     <TargetFrameworkIdentifier>Xamarin.Mac</TargetFrameworkIdentifier>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
   </PropertyGroup>
@@ -49,57 +49,11 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Resources\" />
-    <Folder Include="shared\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="InteropConfig.cs" />
-    <Compile Include="..\CoreProvider.shared.cs">
-      <Link>shared\CoreProvider.shared.cs</Link>
-    </Compile>
-    <Compile Include="..\GroupHandle.shared.cs">
-      <Link>shared\GroupHandle.shared.cs</Link>
-    </Compile>
-    <Compile Include="..\QueryHandle.shared.cs">
-      <Link>shared\QueryHandle.shared.cs</Link>
-    </Compile>
-    <Compile Include="..\RealmHandle.shared.cs">
-      <Link>shared\RealmHandle.shared.cs</Link>
-    </Compile>
-    <Compile Include="..\RealmHandleOptionalUnbind.shared.cs">
-      <Link>shared\RealmHandleOptionalUnbind.shared.cs</Link>
-    </Compile>
-    <Compile Include="..\SharedGroupHandle.shared.cs">
-      <Link>shared\SharedGroupHandle.shared.cs</Link>
-    </Compile>
-    <Compile Include="..\TableHandle.shared.cs">
-      <Link>shared\TableHandle.shared.cs</Link>
-    </Compile>
-    <Compile Include="..\NativeGroup.shared.cs">
-      <Link>shared\NativeGroup.shared.cs</Link>
-    </Compile>
-    <Compile Include="..\NativeSharedGroup.shared.cs">
-      <Link>shared\NativeSharedGroup.shared.cs</Link>
-    </Compile>
-    <Compile Include="..\NativeQuery.shared.cs">
-      <Link>shared\NativeQuery.shared.cs</Link>
-    </Compile>
-    <Compile Include="..\NativeTable.shared.cs">
-      <Link>shared\NativeTable.shared.cs</Link>
-    </Compile>
-    <Compile Include="..\RowHandle.shared.cs">
-      <Link>shared\RowHandle.shared.cs</Link>
-    </Compile>
   </ItemGroup>
+  <Import Project="..\RealmNet.Shared\RealmNet.Shared.projitems" Label="Shared" Condition="Exists('..\RealmNet.Shared\RealmNet.Shared.projitems')" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Mac\Xamarin.Mac.CSharp.targets" />
-  <ItemGroup>
-    <ProjectReference Include="..\..\RealmNet\RealmNet.csproj">
-      <Project>{2494214E-6005-4EB9-AD2C-1D4BCD7B0223}</Project>
-      <Name>RealmNet</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\InteropShared\InteropShared.csproj">
-      <Project>{8B451911-321F-4244-9999-C1678BED060D}</Project>
-      <Name>InteropShared</Name>
-    </ProjectReference>
-  </ItemGroup>
 </Project>
