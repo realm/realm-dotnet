@@ -5,6 +5,10 @@ using InteropShared;
 using System.Runtime.InteropServices;
 using System.Linq;
 using System.IO;
+#if __IOS__
+using  UIKit;  // for UIDevice
+using Foundation;  // for NSFileManager
+#endif
 
 namespace RealmNet.Interop
 {

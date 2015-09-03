@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;  // for InternalsVisibleTo
 
 using Foundation;
 
@@ -32,3 +33,5 @@ using Foundation;
 
 //[assembly: AssemblyDelaySign(false)]
 //[assembly: AssemblyKeyFile("")]
+
+[assembly: InternalsVisibleTo("IntegrationTestsIOS")]
