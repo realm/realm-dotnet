@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>RealmNet</RootNamespace>
     <MonoMacResourcePrefix>Resources</MonoMacResourcePrefix>
-    <AssemblyName>RealmNet.XamarinMAC</AssemblyName>
+    <AssemblyName>RealmNet</AssemblyName>
     <TargetFrameworkIdentifier>Xamarin.Mac</TargetFrameworkIdentifier>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
   </PropertyGroup>

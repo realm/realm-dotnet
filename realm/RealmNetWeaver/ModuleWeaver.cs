@@ -45,7 +45,7 @@ public class ModuleWeaver
 
         typeSystem = ModuleDefinition.TypeSystem;
 
-        var assemblyToReference = ModuleDefinition.AssemblyResolver.Resolve("Interop.Win32");
+        var assemblyToReference = ModuleDefinition.AssemblyResolver.Resolve("RealmNet");
 
         var realmObjectType = assemblyToReference.MainModule.GetTypes().First(x => x.Name == "RealmObject");
         var genericGetValueReference = MethodNamed(realmObjectType, "GetValue");

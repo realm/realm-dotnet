@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>RealmNet</RootNamespace>
     <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
-    <AssemblyName>RealmNet.XamarinIOS</AssemblyName>
+    <AssemblyName>RealmNet</AssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
