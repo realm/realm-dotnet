@@ -7,8 +7,8 @@
     <ProjectGuid>{C211EDE7-CC8E-4F53-A9DF-0B105A350BBF}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Interop.Win32</RootNamespace>
-    <AssemblyName>Interop.Win32</AssemblyName>
+    <RootNamespace>RealmNet</RootNamespace>
+    <AssemblyName>RealmNet.Win32</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
@@ -78,56 +78,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\CoreProvider.shared.cs">
-      <Link>shared\CoreProvider.shared.cs</Link>
-    </Compile>
-    <Compile Include="..\GroupHandle.shared.cs">
-      <Link>shared\GroupHandle.shared.cs</Link>
-    </Compile>
-    <Compile Include="..\QueryHandle.shared.cs">
-      <Link>shared\QueryHandle.shared.cs</Link>
-    </Compile>
-    <Compile Include="..\RealmHandle.shared.cs">
-      <Link>shared\RealmHandle.shared.cs</Link>
-    </Compile>
-    <Compile Include="..\RealmHandleOptionalUnbind.shared.cs">
-      <Link>shared\RealmHandleOptionalUnbind.shared.cs</Link>
-    </Compile>
-    <Compile Include="..\RowHandle.shared.cs" />
-    <Compile Include="..\SharedGroupHandle.shared.cs">
-      <Link>shared\SharedGroupHandle.shared.cs</Link>
-    </Compile>
-    <Compile Include="..\TableHandle.shared.cs">
-      <Link>shared\TableHandle.shared.cs</Link>
-    </Compile>
-    <Compile Include="..\NativeGroup.shared.cs">
-      <Link>shared\NativeGroup.shared.cs</Link>
-    </Compile>
-    <Compile Include="..\NativeSharedGroup.shared.cs">
-      <Link>shared\NativeSharedGroup.shared.cs</Link>
-    </Compile>
-    <Compile Include="..\NativeQuery.shared.cs">
-      <Link>shared\NativeQuery.shared.cs</Link>
-    </Compile>
-    <Compile Include="..\NativeTable.shared.cs">
-      <Link>shared\NativeTable.shared.cs</Link>
-    </Compile>
     <Compile Include="InteropConfig.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup Condition="'$(Platform)' == 'x64'">
-    <Content Include="..\..\wrappers\build\wrappersx64-Debug.dll">
+    <Content Include="..\wrappers\build\wrappersx64-Debug.dll">
       <Link>wrappersx64-Debug.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup Condition="'$(Platform)' == 'x86'">
-    <Content Include="..\..\wrappers\build\wrappersx86-Debug.dll">
+    <Content Include="..\wrappers\build\wrappersx86-Debug.dll">
       <Link>wrappersx86-Debug.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-  <Import Project="..\Interop.Shared\Interop.Shared.projitems" Label="Shared" />
+  <Import Project="..\RealmNet.Shared\RealmNet.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
