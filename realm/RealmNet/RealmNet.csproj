@@ -52,12 +52,6 @@
     <Compile Include="TypeSystem.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Interop\InteropShared\InteropShared.csproj">
-      <Project>{8B451911-321F-4244-9999-C1678BED060D}</Project>
-      <Name>InteropShared</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

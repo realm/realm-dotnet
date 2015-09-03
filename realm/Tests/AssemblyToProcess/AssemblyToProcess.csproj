@@ -47,11 +47,5 @@
     <Compile Include="RemappedClass.cs" />
     <Compile Include="Sandbox.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\RealmNet\RealmNet.csproj">
-      <Project>{2494214E-6005-4EB9-AD2C-1D4BCD7B0223}</Project>
-      <Name>RealmNet</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

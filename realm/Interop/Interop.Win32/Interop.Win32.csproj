@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Interop.Win32</RootNamespace>
     <AssemblyName>Interop.Win32</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -74,9 +74,7 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
@@ -117,16 +115,6 @@
     <Compile Include="InteropConfig.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\RealmNet\RealmNet.csproj">
-      <Project>{2494214E-6005-4EB9-AD2C-1D4BCD7B0223}</Project>
-      <Name>RealmNet</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\InteropShared\InteropShared.csproj">
-      <Project>{8B451911-321F-4244-9999-C1678BED060D}</Project>
-      <Name>InteropShared</Name>
-    </ProjectReference>
-  </ItemGroup>
   <ItemGroup Condition="'$(Platform)' == 'x64'">
     <Content Include="..\..\wrappers\build\wrappersx64-Debug.dll">
       <Link>wrappersx64-Debug.dll</Link>
@@ -139,6 +127,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+  <Import Project="..\Interop.Shared\Interop.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

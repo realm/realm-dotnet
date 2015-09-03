@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>826c8753-5c4a-4e95-b483-179b9892c008</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>Interop.Shared</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Attributes.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Group.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)GroupOpenMode.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Handled.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)HandleInterfaces.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ICoreProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IRowHandle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ISharedGroupHandle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MockCoreProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PreserveAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)QueryProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Realm.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RealmList.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RealmObject.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RealmQuery.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RealmQueryProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RealmQueryVisitor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)StandaloneCoreProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Transaction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TransactionState.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TypeSystem.cs" />
+  </ItemGroup>
+</Project>
