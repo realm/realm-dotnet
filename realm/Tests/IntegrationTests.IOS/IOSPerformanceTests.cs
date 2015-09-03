@@ -11,9 +11,15 @@ namespace IntegrationTests.IOS
     [TestFixture]
     public class IOSPerformanceTests : AbstractPerformanceTests
     {
+        [SetUp]
         protected override void Setup()
         {
             Realm.ActiveCoreProvider = new CoreProvider();
+            // NUnitLite on Xamarin devices doesn't call based on SetUp attribute
+            // copied here from the AbstractPerformanceTests.BaseSetup
+            _databasePath = GetTempDatabasePath();
+            _realm = Realm.GetInstance(_databasePath);
+
         }
 
         protected override string GetTempDatabasePath()

@@ -455,16 +455,11 @@ IntegrationTests.Win32.csproj
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #118 Adding IntegrationTests.IOS
 
+Interop.XamarionIOS/AssemblyInfo.cs
+- added [assembly: InternalsVisibleTo("IntegrationTestsIOS")]
+
 IntegrationTests.IOS
 - created as "Unified API" iOS Unit tests project (which is a full-blown app!)
-
-IntegrationTestsAsLib.IOS
-- created as library project
-- added packages.config to get NUnit and Fody
-
-Interop.XamarionIOS/AssemblyInfo.cs
-- added [assembly: InternalsVisibleTo("IntegrationTestsAsLib.IOS")]
-
 
 Copy and rename Win32 => IOS
 - Win32IntegrationTests.csproj
@@ -473,3 +468,7 @@ Copy and rename Win32 => IOS
 
 CoreProvider.shared.cs
 - added using UIKit and Foundation in order to be able to build on IOS
+
+AbstractPerformanceTests.cs
+- changed _databasePath to protected so can set in the subclass Setup
+

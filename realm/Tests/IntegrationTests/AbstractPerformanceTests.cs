@@ -11,7 +11,7 @@ namespace IntegrationTests
 {
     public abstract class AbstractPerformanceTests
     {
-        private string _databasePath;
+        protected string _databasePath;
         protected Realm _realm;
 
         [SetUp]

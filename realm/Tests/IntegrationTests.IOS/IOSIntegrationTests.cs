@@ -10,6 +10,7 @@ namespace IntegrationTests.IOS
     {
         protected override void Setup()
         {
+            BaseSetup ();
             Realm.ActiveCoreProvider = new CoreProvider();
         }
 
