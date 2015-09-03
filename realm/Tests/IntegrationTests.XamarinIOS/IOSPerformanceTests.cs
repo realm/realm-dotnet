@@ -6,7 +6,7 @@ using NUnit.Framework;
 using RealmNet;
 using RealmNet.Interop;
 
-namespace IntegrationTests.IOS
+namespace IntegrationTests.XamarinIOS
 {
     [TestFixture]
     public class IOSPerformanceTests : AbstractPerformanceTests

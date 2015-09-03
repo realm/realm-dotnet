@@ -6,7 +6,7 @@ using Foundation;
 using UIKit;
 using MonoTouch.NUnit.UI;
 
-namespace IntegrationTests.IOS
+namespace IntegrationTests.XamarinIOS
 {
     // The UIApplicationDelegate for the application. This class is responsible for launching the
     // User Interface of the application, as well as listening (and optionally responding) to

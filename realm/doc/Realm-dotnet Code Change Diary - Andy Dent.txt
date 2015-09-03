@@ -472,3 +472,23 @@ CoreProvider.shared.cs
 AbstractPerformanceTests.cs
 - changed _databasePath to protected so can set in the subclass Setup
 
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Merging IntegrationTests.IOS with the new shared project arch
+
+IntegrationTests.Win32
+- added reference to RealmNet.Win32
+
+IntegrationTests.IOS
+- renamed IntegrationTests.XamarinIOS
+- removed reference to IntegrationTests project
+- removed reference to RealmNet Project
+- removed reference to InteropShared Project
+- added reference to RealmNet.XamarinIOS project
+- added direct links to files
+  AbstractIntegrationTests.cs
+  AbstractPerformanceTests.cs
+  Person.cs
+  TestHelpers.cs
+
+Realm.sln
+- added IntegrationTests.XamarinIOS  

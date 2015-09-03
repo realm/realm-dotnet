@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Foundation;
 using UIKit;
 
-namespace IntegrationTests.IOS
+namespace IntegrationTests.XamarinIOS
 {
     public class Application
     {

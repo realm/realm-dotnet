@@ -95,6 +95,10 @@
     <Compile Include="Win32PerformanceTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\RealmNet.Win32\RealmNet.Win32.csproj">
+      <Project>{c211ede7-cc8e-4f53-a9df-0b105a350bbf}</Project>
+      <Name>RealmNet.Win32</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\wrappers\wrappers.vcxproj">
       <Project>{a1e763ad-24b9-4d6b-aaca-282bb33e350f}</Project>
       <Name>wrappers</Name>
