@@ -1,7 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
-
-namespace RealmNet.Interop
+﻿namespace RealmNet
 {
     //tables and tableviews will always return query c++ classes that must be unbound
     //all other query returning calls (on query itself) will return the same object as was called,

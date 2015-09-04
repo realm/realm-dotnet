@@ -1,10 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Interop.Config;
-using InteropShared;
 
-namespace RealmNet.Interop
+namespace RealmNet
 {
     internal static class NativeGroup
     {

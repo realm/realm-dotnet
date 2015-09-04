@@ -1,14 +1,8 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-//using System.Text;
-using RealmNet.Interop;
-using RealmNet;
 
-namespace InteropShared
-
+namespace RealmNet
 {
     public class MockTable
     {

@@ -32,7 +32,7 @@ using Microsoft.Win32.SafeHandles;
  */
 
 
-namespace RealmNet.Interop
+namespace RealmNet
 {
 
     [SecurityPermission(SecurityAction.InheritanceDemand, UnmanagedCode = true)]

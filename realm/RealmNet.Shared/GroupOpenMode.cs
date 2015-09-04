@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace InteropShared
+namespace RealmNet
 {
     /// <summary>
     ///  //Open in read-only mode. Fail if the file does not already exist.
