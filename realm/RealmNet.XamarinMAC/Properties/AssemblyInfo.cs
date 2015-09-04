@@ -4,11 +4,11 @@ using System.Runtime.CompilerServices;
 // Information about this assembly is defined by the following attributes.
 // Change them to the values specific to your project.
 
-[assembly: AssemblyTitle("Interop.XamarinMAC")]
+[assembly: AssemblyTitle("RealmNet.XamarinMAC")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("")]
+[assembly: AssemblyProduct("RealmNet.XamarinMAC")]
 [assembly: AssemblyCopyright("kristian")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
