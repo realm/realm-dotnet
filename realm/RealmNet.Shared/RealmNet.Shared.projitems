@@ -11,6 +11,7 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Attributes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CoreProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ExpressionVisitor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Group.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GroupHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)GroupOpenMode.cs" />
