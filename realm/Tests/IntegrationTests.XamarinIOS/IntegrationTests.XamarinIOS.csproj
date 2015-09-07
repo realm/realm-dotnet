@@ -79,20 +79,8 @@
     <Compile Include="UnitTestAppDelegate.cs" />
     <Compile Include="IOSIntegrationTests.cs" />
     <Compile Include="IOSPerformanceTests.cs" />
-    <Compile Include="..\IntegrationTests\AbstractIntegrationTests.cs">
-      <Link>AbstractIntegrationTests.cs</Link>
-    </Compile>
-    <Compile Include="..\IntegrationTests\AbstractPerformanceTests.cs">
-      <Link>AbstractPerformanceTests.cs</Link>
-    </Compile>
-    <Compile Include="..\IntegrationTests\Person.cs">
-      <Link>Person.cs</Link>
-    </Compile>
-    <Compile Include="..\IntegrationTests\TestHelpers.cs">
-      <Link>TestHelpers.cs</Link>
-    </Compile>
   </ItemGroup>
-  <Import Project="..\..\RealmNet.Shared\RealmNet.Shared.projitems" Label="Shared" Condition="Exists('..\..\RealmNet.Shared\RealmNet.Shared.projitems')" />
+  <Import Project="..\IntegrationTests.Shared\IntegrationTests.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
   <ItemGroup>
     <ProjectReference Include="..\..\RealmNet.XamarinIOS\RealmNet.XamarinIOS.csproj">

@@ -72,7 +72,7 @@ namespace RealmNet
 
             usingProvider.AddTable(transGroupHandle, tableName);
 
-            var propertiesToMap = objectType.GetProperties().Where(p => p.GetCustomAttributes(false).All(a => !(a is IgnoreAttribute)));
+            var propertiesToMap = objectType.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly).Where(p => !p.GetCustomAttributes(false).Any(a => (a is IgnoreAttribute)));
             foreach (var p in propertiesToMap)
             {
                 var propertyName = p.Name;
