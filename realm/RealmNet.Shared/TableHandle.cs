@@ -1,9 +1,7 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
-namespace RealmNet.Interop
+namespace RealmNet
 {
     public class TableHandle: RealmHandle, ITableHandle
     {

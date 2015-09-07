@@ -1,16 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using InteropShared;
 using System.Runtime.InteropServices;
-using System.Linq;
 using System.IO;
 #if __IOS__
 using  UIKit;  // for UIDevice
 using Foundation;  // for NSFileManager
 #endif
 
-namespace RealmNet.Interop
+namespace RealmNet
 {
     public class CoreProvider : ICoreProvider
     {

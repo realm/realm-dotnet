@@ -1,9 +1,5 @@
-using System;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
-using System.Collections.Generic;
-using RealmNet.Interop;
 
 namespace RealmNet
 {
@@ -32,7 +28,7 @@ namespace RealmNet
             var realmInTransaction = Realm.RealmWithActiveTransactionThisTread();
             if (realmInTransaction == null)
                 Realm.AdoptNewObject (this, null, StandaloneCoreProvider.GetInstance (), null);
-            else if (realmInTransaction.State == RealmNet.Interop.TransactionState.Write)
+            else if (realmInTransaction.State == TransactionState.Write)
                 realmInTransaction.AdoptNewObject (this);
             else {
                 // TODO bind a newly created read somehow to LINQ operation????
@@ -108,13 +104,13 @@ namespace RealmNet
         public override bool Equals(object p)
         {
             // If parameter is null, return false. 
-            if (Object.ReferenceEquals(p, null))
+            if (ReferenceEquals(p, null))
             {
                 return false;
             }
 
             // Optimization for a common success case. 
-            if (Object.ReferenceEquals(this, p))
+            if (ReferenceEquals(this, p))
             {
                 return true;
             }

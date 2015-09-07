@@ -1,10 +1,5 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Globalization;
-using InteropShared;
-using RealmNet.Interop;
+using System.Diagnostics.CodeAnalysis;
 
 namespace RealmNet
 {
@@ -12,7 +7,7 @@ namespace RealmNet
     /// Handles a collection of tables that are not shared with other
     /// processes or programs. (see SharedGroup)
     /// </summary>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix")]
+    [SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix")]
     public class Group : Handled
     {
 
@@ -319,7 +314,7 @@ namespace RealmNet
         /// <summary>
         /// if true, some unexpected error condition exists and this group should never be used
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         public Boolean IsValid { get; internal set; }//todo:figure a situation where a group becomes invalid, create a unit test for that situation,add code that invalidates a group
 
         private void ValidateIsValid()
