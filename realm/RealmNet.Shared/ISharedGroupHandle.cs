@@ -1,4 +1,4 @@
-﻿namespace RealmNet.Interop
+﻿namespace RealmNet
 {
     public interface ISharedGroupHandle : IRealmHandle {
         IGroupHandle StartTransaction(TransactionState read);

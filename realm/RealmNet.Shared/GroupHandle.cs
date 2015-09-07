@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 
-namespace RealmNet.Interop
+namespace RealmNet
 {
     internal class GroupHandle:RealmHandleOptionalUnbind, IGroupHandle
     {

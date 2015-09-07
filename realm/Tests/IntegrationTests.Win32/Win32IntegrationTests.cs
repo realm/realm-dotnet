@@ -1,7 +1,6 @@
 ﻿using System.IO;
 using NUnit.Framework;
 using RealmNet;
-using RealmNet.Interop;
 
 namespace IntegrationTests.Win32
 {

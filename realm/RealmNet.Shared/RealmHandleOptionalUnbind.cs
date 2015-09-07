@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace RealmNet.Interop
+namespace RealmNet
 {
     //implements functionality such that the individual object can set up in the constructor if it should be unbound
     //or if it is safe to just use the handle without unbinding when we are finished.

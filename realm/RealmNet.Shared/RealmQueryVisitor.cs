@@ -3,9 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
-using RealmNet.Interop;
-using System.Diagnostics;  // for Debug.Writeline - as a PCL don't have Console
 
 namespace RealmNet
 {

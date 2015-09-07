@@ -27,21 +27,21 @@ namespace IntegrationTests
             }
         }
         
-        public string Email { get; set; }
-        //// Re-mapped property
-        //[MapTo("Email")]
-        //private string Email_ { get; set; }
-        
-        //// Wrapped version of previous property
-        //[Ignore]
-        //public string Email 
-        //{ 
-        //    get { return Email_; } 
-        //    set { 
-        //        if (!value.Contains("@")) throw new Exception("Invalid email address"); 
-        //        Email_ = value; 
-        //    }
-        //}
+        // Re-mapped property
+        [MapTo("Email")]
+        private string Email_ { get; set; }
+
+        // Wrapped version of previous property
+        [Ignore]
+        public string Email
+        {
+            get { return Email_; }
+            set
+            {
+                if (!value.Contains("@")) throw new Exception("Invalid email address");
+                Email_ = value;
+            }
+        }
 
         public bool IsInteresting { get; set; }
     }

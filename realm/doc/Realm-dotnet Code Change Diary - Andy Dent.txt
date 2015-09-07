@@ -492,3 +492,13 @@ IntegrationTests.IOS
 
 Realm.sln
 - added IntegrationTests.XamarinIOS  
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Fix renaming of IntegrationTests.IOS to IntegrationTests.XamarinIOS
+
+IntegrationTests.XamarinIOS.csproj
+- change assembly name from IntegrationTestsIOS to IntegrationTestsXamarinIOS
+
+RealmNet.XamarinIOS/Properties/AssemblyInfo.cs
+- change InternalsVisibleTo target to IntegrationTestsXamarinIOS

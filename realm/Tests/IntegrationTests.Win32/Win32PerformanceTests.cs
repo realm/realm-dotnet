@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using System.Reflection;
 using NUnit.Framework;
 using RealmNet;
-using RealmNet.Interop;
 
 namespace IntegrationTests.Win32
 {

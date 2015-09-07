@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Linq;
-using System.Reflection;
-using RealmNet.Interop;
 
 namespace RealmNet
 {
@@ -75,7 +72,7 @@ namespace RealmNet
 
             usingProvider.AddTable(transGroupHandle, tableName);
 
-            var propertiesToMap = objectType.GetProperties().Where(p => p.GetCustomAttributes(false).All(a => !(a is IgnoreAttribute)));
+            var propertiesToMap = objectType.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly).Where(p => !p.GetCustomAttributes(false).Any(a => (a is IgnoreAttribute)));
             foreach (var p in propertiesToMap)
             {
                 var propertyName = p.Name;
@@ -135,7 +132,7 @@ namespace RealmNet
         /// Calling commit() as soon as you are done with the transaction will free up memory a little faster than relying on dispose
         /// </summary>
         /// <returns></returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
+        [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
         public Transaction BeginRead()
         {
            ValidateNotInTransaction();
@@ -154,7 +151,7 @@ namespace RealmNet
         /// Only one writer can exist at a time, so if you call BeginWrite the function might wait until the prior writer do a commit()
         /// </summary>
         /// <returns>Transaction object that inherits from Group and gives read/write acces to all tables in the group</returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
+        [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
         public Transaction BeginWrite()
         {
             // TODO cope with multiple write transactions FROM DIFFERENT REALMS in same thread - issue #85

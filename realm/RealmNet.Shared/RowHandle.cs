@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace RealmNet.Interop
+namespace RealmNet
 {
     public class RowHandle: RealmHandle, IRowHandle
     {
