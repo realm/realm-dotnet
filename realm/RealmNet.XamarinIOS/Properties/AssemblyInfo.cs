@@ -34,4 +34,4 @@ using Foundation;
 //[assembly: AssemblyDelaySign(false)]
 //[assembly: AssemblyKeyFile("")]
 
-[assembly: InternalsVisibleTo("IntegrationTestsIOS")]
+[assembly: InternalsVisibleTo("IntegrationTestsXamarinIOS")]
