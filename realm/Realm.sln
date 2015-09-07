@@ -51,6 +51,9 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "IntegrationTests.Shared", "
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		RealmNet.Shared\RealmNet.Shared.projitems*{826c8753-5c4a-4e95-b483-179b9892c008}*SharedItemsImports = 13
+		Tests\IntegrationTests.Shared\IntegrationTests.Shared.projitems*{06146619-d21c-414c-bfe3-2f59acba412e}*SharedItemsImports = 13
+		RealmNet.Shared\RealmNet.Shared.projitems*{c211ede7-cc8e-4f53-a9df-0b105a350bbf}*SharedItemsImports = 4
 		Tests\IntegrationTests.Shared\IntegrationTests.Shared.projitems*{bfc1c1b7-2864-4456-9dec-309a3f006b66}*SharedItemsImports = 4
 		RealmNet.Shared\RealmNet.Shared.projitems*{826c8753-5c4a-4e95-b483-179b9892c008}*SharedItemsImports = 13
 		Tests\IntegrationTests.Shared\IntegrationTests.Shared.projitems*{06146619-d21c-414c-bfe3-2f59acba412e}*SharedItemsImports = 13

@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 
 namespace RealmNet
 {
-    public class RealmQueryVisitor// : ExpressionVisitor
+    public class RealmQueryVisitor : RealmNet.ExpressionVisitor
     {
         private Realm _realm;
         private ICoreProvider _coreProvider;
@@ -33,11 +33,6 @@ namespace RealmNet
             return (IEnumerable)list;
         }
 
-        private void Visit(Expression expression)
-        {
-            throw new NotImplementedException();
-        }
-
         private static Expression StripQuotes(Expression e)
         {
             while (e.NodeType == ExpressionType.Quote)
@@ -47,7 +42,7 @@ namespace RealmNet
             return e;
         }
 
-        protected  Expression VisitMethodCall(MethodCallExpression m)
+        internal override Expression VisitMethodCall(MethodCallExpression m)
         {
             if (m.Method.DeclaringType == typeof(Queryable) && m.Method.Name == "Where")
             {
@@ -60,7 +55,7 @@ namespace RealmNet
             throw new NotSupportedException($"The method '{m.Method.Name}' is not supported");
         }
 
-        protected  Expression VisitUnary(UnaryExpression u)
+        internal override Expression VisitUnary(UnaryExpression u)
         {
             switch (u.NodeType)
             {
@@ -83,7 +78,7 @@ namespace RealmNet
         }
 
 
-        protected  Expression VisitBinary(BinaryExpression b)
+        internal override Expression VisitBinary(BinaryExpression b)
         {
             if (b.NodeType == ExpressionType.AndAlso)  // Boolean And with short-circuit
             {
@@ -137,7 +132,7 @@ namespace RealmNet
             return b;
         }
 
-        protected  Expression VisitConstant(ConstantExpression c)
+        internal override Expression VisitConstant(ConstantExpression c)
         {
             IQueryable q = c.Value as IQueryable;
             if (q != null)
@@ -171,7 +166,7 @@ namespace RealmNet
             return c;
         }
 
-        protected  Expression VisitMemberAccess(MemberExpression m)
+        internal override Expression VisitMemberAccess(MemberExpression m)
         {
             if (m.Expression != null && m.Expression.NodeType == ExpressionType.Parameter)
             {
