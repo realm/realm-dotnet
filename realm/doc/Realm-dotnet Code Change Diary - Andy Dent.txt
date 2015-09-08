@@ -567,3 +567,15 @@ RealmNet.XamarinIOS.csproj
 
 RealmNet.XamarinMac.csproj
 - replace AnyCPU with x64Mac
+
+
+Playground.XamarinAndroid/MainActivity.cs 
+IntegrationTests.XamarinIOS/IOSIntegrationTests.cs
+IntegrationTests.XamarinIOS/IOSPerformanceTests.cs
+  - removed using RealmNet.Interop 
+
+IntegrationTests.XamarinIOS/IOSPerformanceTests.cs
+  
+IntegrationTests.Shared/AbstractIntegrationTests.cs  
+IntegrationTests.Shared/AbstractPerformanceTests.cs  
+- change protection on _databasePath so could update in subclass (NUnitLite issue)  
