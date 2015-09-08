@@ -541,3 +541,9 @@ Cleaning up old solutions - delete all but Realm.sln and RealmWin.sln
 - RealmXamarinAndroid.sln
 - RealmXamarinIOS.sln
 - RealmXamarinMac.sln
+
+RealmNet.win32.csproj
+- added reference to wrappers.vcxproj
+
+wrappers.vcxproj
+- Debug|Win32 and Debug|x64 platform toolset changed from v140_xp to v140

@@ -99,6 +99,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\wrappers\wrappers.vcxproj">
+      <Project>{a1e763ad-24b9-4d6b-aaca-282bb33e350f}</Project>
+      <Name>wrappers</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="..\RealmNet.Shared\RealmNet.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
