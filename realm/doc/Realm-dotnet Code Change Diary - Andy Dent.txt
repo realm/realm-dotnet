@@ -524,6 +524,10 @@ iPhone and iPhoneSimulator
 - RealmNet.XamarinIOS
 - RealmNetWeaver
 
+ARM
+- Playground.XamarinAndroid
+- RealmNet.XamarinAndroid
+- RealmNetWeaver
 
 RealmNet.XamarinIOS.csproj
 - manually edited file to replace AnyCPU platforms with iPhone and iPhoneSimulator
@@ -544,6 +548,22 @@ Cleaning up old solutions - delete all but Realm.sln and RealmWin.sln
 
 RealmNet.win32.csproj
 - added reference to wrappers.vcxproj
+- changed default platform from AnyCPU to x86
+- removed AnyCPU platforms
+
+IntegrationTests.Win32.csproj
+- changed default platform from AnyCPU to x86
+- removed AnyCPU platforms
 
 wrappers.vcxproj
 - Debug|Win32 and Debug|x64 platform toolset changed from v140_xp to v140
+
+RealmNet.XamarinAndroid.csproj
+Playground.XamarinAndroid.csproj
+- replace AnyCPU with ARM
+
+RealmNet.XamarinIOS.csproj
+- changed default AnyCPU platform to iPhoneSimulator
+
+RealmNet.XamarinMac.csproj
+- replace AnyCPU with x64Mac
