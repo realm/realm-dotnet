@@ -504,20 +504,40 @@ RealmNet.XamarinIOS/Properties/AssemblyInfo.cs
 - change InternalsVisibleTo target to IntegrationTestsXamarinIOS
 
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-#139 Fix project configs so only build in the correct configs
+#139 Fix project configs
 
-Realm.sln, changed Configuration Manager
+Realm.sln - replaced by RealmNet.sln
+- changed Configuration Manager
 Debug + Release
-AnyCPU - none
+AnyCPU
+  - RealmNetWeaver
 
-x64
-  - IntegrationTests.Win32  
-  - RealmNetWeaver
-  - RealmNet.Win32
-  - wrappers
-x86
-  - IntegrationTests.Win32  
-  - RealmNetWeaver
-  - RealmNet.Win32
-  - wrappers
+x86 and x64
+- IntegrationTests.Win32  
+- RealmNetWeaver
+- RealmNet.Win32
+- wrappers
+
+iPhone and iPhoneSimulator
+- IntegrationTests.XamarinIOS
+- Playground.XamarinIOS
+- RealmNet.XamarinIOS
+- RealmNetWeaver
+
+
+RealmNet.XamarinIOS.csproj
+- manually edited file to replace AnyCPU platforms with iPhone and iPhoneSimulator
+  copying settings from IntegrationTests.XamarionIOS.csproj  
+  - changed OutputPath from bin\Debug or bin\Release to bin\$(Platform)\$(Configuration)
+- iPhoneSimulator configs
+  - added <MtouchArch>i386
+  - added <MtouchLink>None
+  - added MtouchDebug for debug
   
+Cleaning up old solutions - delete all but Realm.sln and RealmWin.sln
+- RealmFoundation.sln
+- RealmFoundation.sln
+- RealmPureNetLINQ.sln
+- RealmXamarinAndroid.sln
+- RealmXamarinIOS.sln
+- RealmXamarinMac.sln
