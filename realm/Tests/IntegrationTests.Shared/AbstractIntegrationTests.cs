@@ -9,7 +9,7 @@ namespace IntegrationTests
     [TestFixture]
     public abstract class AbstractIntegrationTests
     {
-        private string _databasePath;
+        protected string _databasePath;
         protected Realm _realm;
 
         [SetUp]

@@ -115,6 +115,7 @@ Builds `RealmNetWeaver.Fody`
 Builds our NuGet package, not yet ready
 
 ### AssemblyToProcess Project ###
+Used only by `WeaverTests.cs`
 
 ### IntegrationTests Project ###
 
