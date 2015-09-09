@@ -41,3 +41,4 @@ realm/doxyoutCS
 *.a
 *.so
 Resource.Designer.cs
+realm/doxyoutCS_docOnly
