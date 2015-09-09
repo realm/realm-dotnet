@@ -79,7 +79,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\RealmNet.Win32\RealmNet.Win32.csproj">
-      <Project>{C211EDE7-CC8E-4F53-A9DF-0B105A350BBF}</Project>
+      <Project>{c211ede7-cc8e-4f53-a9df-0b105a350bbf}</Project>
       <Name>RealmNet.Win32</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\wrappers\wrappers.vcxproj">

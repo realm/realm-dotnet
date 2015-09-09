@@ -1,109 +1,88 @@
 Solutions
 ==============
 
-After refactoring of the original Realm.sln.
-
-
-RealmFoundation.sln
--------------------
-Builds and tests a couple of key projects included as DLLs in the others.
-- RealmNet
-- RealmNet.Tests, (using MockCoreProvider rather than a background)
-- InteropShared
-- RealmNetWeaver
-- RealmNetWeaver.Tests
-- Nuget
+After refactoring of the original Realm.sln - we now have RealmNet.sln as the main one.
 
 
 Solutions - Platform Specific
 ------------------------------
 
-The platform-specific solutions let us build a GUI test program and run unit tests specifically against that platform. 
+The only platform-specific solutiion left at present is `RealmWin.sln` for easier testing of just Win32 without unloading other projects, in Visual Studio.
 
-All have the pattern of including projects for platform _Blah_:
-
-- RealmNet
-- RealmNet.tests
-- InteropShared
-- Interop.Blah
-- Playground.Blah
-
-Currently, our platform-specific solutions are:
-
-- RealmWin
-- RealmPureNetLINQ - runs as _AnyCPU_ for quick debugging of LINQ stuff with mock core
-- RealmXamarinAndroid
-- RealmXamarinIOS
-- RealmXamarinMac
 
 
 Projects - Platform specific 
 ----------------------------
-All the platform interop projects depend on InteropShared and are used in the above.
+All the **RealmNet** projects depend on RealmNet.Shared.shproj  and provide Realm for that platform.
 
-### Interop.Win32 project ###
+### RealmNet.Win32 ###
 References:
 
-- InteropShared
-- Mono.Android
-- mscorlib
-- RealmNet
-- System
-- System.Xml
-- System.Xml.Linq
+* RealmNet.Shared.shproj
+* Mono.Android
+* mscorlib
+* System
+* System.Xml
+* System.Xml.Linq
 
 Includes Realm core via  `wrappersx86.dll` and `wrappersx64.dll` being built alongside the wrappers.vcxproj native c++ project
 
 
-### Interop.XamarinAndroid project ###
+### RealmNet.XamarinAndroid  ###
 References:
 
-- InteropShared
-- Mono.Android
-- mscorlib
-- RealmNet
-- System
-- System.Xml
-- System.Xml.Linq
+* RealmNet.Shared.shproj
+* Mono.Android
+* mscorlib
+* System
+* System.Xml
+* System.Xml.Linq
 
 Includes Realm core via `libwrappers.so`
 
 
-### Interop.XamarinIOS project ###
+### RealmNet.XamarinIOS ###
 References:
 
-- InteropShared
-- RealmNet
-- System
-- Xamarin.IOS
+* RealmNet.Shared.shproj
+* System
+* Xamarin.IOS
 
 Includes Realm core via `libwrappers.a` 
 
 
-### Interop.XamarinMAC project ###
+### RealmNet.XamarinMAC  ###
 References:
 
-- InteropShared
-- RealmNet
-- System
-- System.Core
-- Xamarin.Mac
+* RealmNet.Shared.shproj
+* System
+* System.Core
+* Xamarin.Mac
 
 Includes Realm core via `libwrappers.dylib` 
 
 
 Shared Projects
 ---------------
-### InteropShared project ###
-Provides the core classes used by the other Interop.
+These are `.shproj` projects which are a compile-time inclusion of files into the assembly using them and do not generate an assembly themselves.
 
-### RealmNet project ###
+### IntegrationTests.Shared.shproj ###
+Testing classes used directly in all the Integration Test projects
+
+### RealmNet.Shared.shproj ###
 The core database classes
 
-### RealmNet.Tests ###
-Tests for the core database classes, will run against the current platform. 
-Regarded as _integration tests_ because going usually through a layer to exercise the backend
 
+Test Projects
+-----------------
+* IntegrationTests.Win32 - allows tests to be run with TestDriven.net 🚀
+* IntegrationTests.XamarinIOS - GUI test runner
+* IntegrationTests.XamarinAndroid - GUI test runner
+
+Demo Apps
+---------------
+* Playground.XamarinIOS
+* Playground.XamarinAndroid
 
 Other
 -----
@@ -115,9 +94,7 @@ Builds `RealmNetWeaver.Fody`
 Builds our NuGet package, not yet ready
 
 ### AssemblyToProcess Project ###
-Used only by `WeaverTests.cs`
-
-### IntegrationTests Project ###
+Used only by `WeaverTests.cs` **not currently in use as needs fixing**
 
 ### Wrappers Project ###
-Builds the wrappers for pure Windows (libwrappers on other platforms built by external scripts)
+Builds the wrappers for pure Windows (libwrappers on other platforms downloaded by external scripts)
