@@ -75,7 +75,7 @@ The core database classes
 
 Test Projects
 -----------------
-* IntegrationTests.Win32 - allows tests to be run with TestRunner.net
+* IntegrationTests.Win32 - allows tests to be run with TestDriven.net 🚀
 * IntegrationTests.XamarinIOS - GUI test runner
 * IntegrationTests.XamarinAndroid - GUI test runner
 
