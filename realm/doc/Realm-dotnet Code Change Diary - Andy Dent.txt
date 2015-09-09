@@ -581,7 +581,7 @@ IntegrationTests.Shared/AbstractPerformanceTests.cs
 - change protection on _databasePath so could update in subclass (NUnitLite issue)  
 
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-#148 Add Android Integration Tests
+#148 Add Android Integration Tests and Refactor Testing
 
 IntegrationTests.XamarinAndroid.csproj
 - created as "Android Unit test" project
@@ -592,5 +592,24 @@ IntegrationTests.XamarinAndroid.csproj
 Interop.XamarionAndroid/AssemblyInfo.cs
 - added [assembly: InternalsVisibleTo("IntegrationTests.XamarinAndroid")]
 
-
+In IntegrationTests.shared project
+- AbstractIntegrationTests.cs 
+  - renamed IntegrationTests.cs 
+  - made non-abstract
+  - BaseSetup renaned Setup
+  - removed empty virtual Setup
+  - removed GetTempDatabasePath
+  - set CoreProvider
+  
+- AbstractPerformanceTests 
+  - renamed PerformanceTests.cs
+  - made non-abstract
+  - BaseSetup renaned Setup
+  - removed empty virtual Setup
+  - removed GetTempDatabasePath
+  - set CoreProvider
+  - moved  RawPerformanceTest over from Win32PerformanceTest
+ 
+- Win32PerformanceTest - gutted so just there to run tests
+- Win32IntegrationTest - gutted
 
