@@ -13,11 +13,11 @@ namespace RealmNet
 
         protected override void Unbind()
         {
-            NativeTable.row_delete(this);
+            NativeRow.row_delete(this);
         }
 
-        public long RowIndex => (long)NativeTable.row_get_row_index(this);
-        public bool IsAttached => NativeTable.row_get_is_attached(this)==(IntPtr)1;  // inline equiv of IntPtrToBool
+        public long RowIndex => (long)NativeRow.row_get_row_index(this);
+        public bool IsAttached => NativeRow.row_get_is_attached(this)==(IntPtr)1;  // inline equiv of IntPtrToBool
 
         public override bool Equals(object p)
         {

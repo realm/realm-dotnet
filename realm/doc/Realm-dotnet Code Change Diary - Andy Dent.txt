@@ -616,3 +616,9 @@ In IntegrationTests.shared project
 
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #104 splitting wrappers.cpp
+
+NativeTable.cs
+- split some methods off to new NativeRow.cs
+
+RowHandle.cs
+- use new NativeRow instead

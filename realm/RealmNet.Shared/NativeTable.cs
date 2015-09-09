@@ -6,17 +6,6 @@ namespace RealmNet
 {
     internal static class NativeTable
     {
-
-        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "row_get_row_index", CallingConvention = CallingConvention.Cdecl )]
-        public static extern IntPtr row_get_row_index(RowHandle rowHandle);
-
-        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "row_get_is_attached",
-            CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr row_get_is_attached(RowHandle rowHandle);
-
-        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "row_delete", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void row_delete(RowHandle rowHandle);
-
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_add_column", CallingConvention = CallingConvention.Cdecl)]
         internal static extern IntPtr add_column(TableHandle tableHandle, IntPtr type,
             [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
