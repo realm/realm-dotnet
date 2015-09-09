@@ -1,27 +1,25 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.IO;
 using NUnit.Framework;
 using RealmNet;
 
 namespace IntegrationTests
 {
     [TestFixture]
-    public abstract class AbstractIntegrationTests
+    public class IntegrationTests
     {
         protected string _databasePath;
         protected Realm _realm;
 
         [SetUp]
-        public void BaseSetup()
+        public void Setup()
         {
-            Setup();
-            _databasePath = GetTempDatabasePath();
+            Realm.ActiveCoreProvider = new CoreProvider();
+            _databasePath = Path.GetTempFileName();
             _realm = Realm.GetInstance(_databasePath);
         }
-
-        protected virtual void Setup () { }
-        protected abstract string GetTempDatabasePath();
 
         [TearDown]
         public void TearDown()

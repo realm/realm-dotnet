@@ -2,19 +2,11 @@
 using NUnit.Framework;
 using RealmNet;
 
+// class to give us a point to run the tests in Windows with TestRunner.dotnet
 namespace IntegrationTests.Win32
 {
     [TestFixture]
-    public class Win32IntegrationTests : AbstractIntegrationTests
+    public class Win32IntegrationTests : IntegrationTests
     {
-        protected override void Setup()
-        {
-            Realm.ActiveCoreProvider = new CoreProvider();
-        }
-
-        protected override  string GetTempDatabasePath()
-        {
-            return Path.GetTempFileName();
-        }
     }
 }
