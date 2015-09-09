@@ -579,3 +579,18 @@ IntegrationTests.XamarinIOS/IOSPerformanceTests.cs
 IntegrationTests.Shared/AbstractIntegrationTests.cs  
 IntegrationTests.Shared/AbstractPerformanceTests.cs  
 - change protection on _databasePath so could update in subclass (NUnitLite issue)  
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#148 Add Android Integration Tests
+
+IntegrationTests.XamarinAndroid.csproj
+- created as "Android Unit test" project
+- changed Target Framework from 5.1 down to 4.4
+- added reference to RealmNet.XamarinAndroid
+- added reference to IntegrationTests.Shared
+
+Interop.XamarionAndroid/AssemblyInfo.cs
+- added [assembly: InternalsVisibleTo("IntegrationTests.XamarinAndroid")]
+
+
+
