@@ -9,7 +9,7 @@ namespace IntegrationTests
         public string FirstName { get; set; }
         public string LastName { get; set; }
 
-        // Ignored property
+        // Property that's not persisted in Realm
         [Ignore]
         public bool IsOnline { get; set; }
 
