@@ -10,7 +10,7 @@ namespace RealmNet
     /// </summary>
     public class StandaloneCoreProvider : ICoreProvider
     {
-        private class StandaloneBackingTable
+        private class StandaloneBackingTable : ITableHandle
         {
             public Dictionary<string, Type> Columns = new Dictionary<string, Type>();
             public Dictionary<string, int> ColumnIndexes = null;
@@ -27,6 +27,10 @@ namespace RealmNet
                     ColumnIndexes[key] = index++;
                 }
             }
+
+            public void Dispose() { } 
+            public bool IsClosed { get; }
+            public bool IsInvalid { get; }
         }
         static StandaloneCoreProvider sharedStandalones;
 
@@ -52,19 +56,26 @@ namespace RealmNet
             return ret;
         }
 
-        public void AddTable(IGroupHandle groupHandle, string tableName)
+        public ITableHandle AddTable(IGroupHandle groupHandle, string tableName)
         {
-            _tables.Add(tableName, new StandaloneBackingTable());
+            var table = new StandaloneBackingTable();
+            _tables.Add(tableName, table);
+            return table;
         }
 
-        public void AddColumnToTable(IGroupHandle groupHandle, string tableName, string columnName, Type columnType)
+        public ITableHandle GetTableHandle(IGroupHandle groupHandle, string tableName)
         {
-            _tables[tableName].AddColumn(columnName, columnType);
+            return _tables[tableName];
         }
 
-        public IRowHandle AddEmptyRow(IGroupHandle groupHandle, string tableName)
+        public void AddColumnToTable(ITableHandle tableHandle, string columnName, Type columnType)
         {
-            var table = _tables[tableName];
+            ((StandaloneBackingTable)tableHandle).AddColumn(columnName, columnType);
+        }
+
+        public IRowHandle AddEmptyRow(ITableHandle tableHandle)
+        {
+            var table = (StandaloneBackingTable)tableHandle;
             table.Rows.Add( new object[table.Columns.Count] );
             var numRows = table.Rows.Count;
             return new FakeRowHandle { RowIndex = numRows - 1 };  // index of added row

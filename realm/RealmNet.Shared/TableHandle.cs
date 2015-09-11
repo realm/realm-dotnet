@@ -18,7 +18,7 @@ namespace RealmNet
 
         protected override void Unbind()
         {
-            NativeTable.unbind(this);
+            NativeTable.unbind(handle);
         }
 
         /*
