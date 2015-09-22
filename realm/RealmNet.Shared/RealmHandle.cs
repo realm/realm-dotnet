@@ -223,11 +223,16 @@ namespace RealmNet
         [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands"), SuppressMessage("Microsoft.Security", "CA2123:OverrideLinkDemandsShouldBeIdenticalToBase"), SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         protected override bool ReleaseHandle()
         {
-            if (IsInvalid)return true;//invalid handles might occour if we throw in construction of one, after root is set, but before the handle has
-            //been acquired. In that case, release should just do nothing at all - nothing to release
-            //also, of course if we were called somehow with an invalid handle (should never happen except as stated above), it would not be a good idea co pass it to core
+            // Invalid handles might occour if we throw in construction of one, after root is set, but before the handle has been acquired.
+            // In that case, release should just do nothing at all - there is nothing to release.
+            // Also, of course if we were called somehow with an invalid handle (should never happen except as stated above), it would not be a good idea to pass it to core
+            if (IsInvalid)
+                return true;
+
+#if !DEBUG
             try
             {
+#endif
                 //if we are a root object then we can safely assume that no more user threads are going this way:                    
                 //if we are a root object and in a finalizer thread , then we know that no more user threads will hit us
                 //if we are a root object and being called via dispose, then we know that the Table(or whatever) wrapper will block any further calls
@@ -248,12 +253,14 @@ namespace RealmNet
                     //note that the this instance cannot and will never be aroot itself bc root != null
                 }
                 return true;
+#if !DEBUG
             }
             catch (Exception)//okay to catch general exception here, we do really not wish to leak any exceptions right now
             {
                 return false;
                 //it would be really bad if we got an exception in here. We must not pass it on, but have to return false
             }
+#endif
         }
 
 

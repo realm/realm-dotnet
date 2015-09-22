@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.IO;
+using System.Runtime.ConstrainedExecution;
 #if __IOS__
 using  UIKit;  // for UIDevice
 using Foundation;  // for NSFileManager
@@ -111,15 +113,17 @@ namespace RealmNet
             return NativeGroup.has_table(gh, tableName, (IntPtr)tableName.Length) == (IntPtr)1;
         }
 
-        private TableHandle GetTable(IGroupHandle groupHandle, string tableName)
+        public ITableHandle GetTableHandle(IGroupHandle groupHandle, string tableName)
         {
             var gh = groupHandle as GroupHandle;
-            return gh.GetTable(tableName);
+            var result = gh.GetTable(tableName);
+
+            return result;
         }
 
-        public void AddTable(IGroupHandle groupHandle, string tableName)
+        public ITableHandle AddTable(IGroupHandle groupHandle, string tableName)
         {
-            GetTable(groupHandle, tableName);
+            return GetTableHandle(groupHandle, tableName);
         }
 
         private IntPtr GetColumnIndex(TableHandle tableHandle, string columnName)
@@ -127,24 +131,34 @@ namespace RealmNet
             return NativeTable.get_column_index(tableHandle, columnName, (IntPtr)columnName.Length);
         }
 
-        public void AddColumnToTable(IGroupHandle groupHandle, string tableName, string columnName, Type columnType)
+        public void AddColumnToTable(ITableHandle tableHandle, string columnName, Type columnType)
         {
-            var columnIndex = NativeTable.add_column(GetTable(groupHandle, tableName), RealmColType(columnType), columnName, (IntPtr)columnName.Length);
+            NativeTable.add_column((TableHandle)tableHandle, RealmColType(columnType), columnName, (IntPtr)columnName.Length);
         }
 
-        public IRowHandle AddEmptyRow(IGroupHandle groupHandle, string tableName)
+        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+        public IRowHandle AddEmptyRow(ITableHandle tableHandle)
         {
-            return NativeTable.add_empty_row(GetTable(groupHandle, tableName)); 
+            var rowHandle = new RowHandle();
+
+            RuntimeHelpers.PrepareConstrainedRegions();
+            try {/* Execute the finally block as a constrained region. See: https://msdn.microsoft.com/en-us/library/ms228973(v=vs.110).aspx */ }
+            finally
+            {
+                var rowPtr = NativeTable.add_empty_row(tableHandle as TableHandle);
+                rowHandle.SetHandle(rowPtr);
+            }
+            return rowHandle;
         }
 
         public void RemoveRow(IGroupHandle groupHandle, string tableName, IRowHandle rowHandle)
         {
-            NativeTable.remove_row(GetTable(groupHandle, tableName), (RowHandle)rowHandle);
+            NativeTable.remove_row((TableHandle)GetTableHandle(groupHandle, tableName), (RowHandle)rowHandle);
         }
 
         public T GetValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, IRowHandle rowHandle)
         {
-            var tableHandle = GetTable(groupHandle, tableName);
+            var tableHandle = (TableHandle)GetTableHandle(groupHandle, tableName);
             var columnIndex = GetColumnIndex(tableHandle, propertyName);
 
             // TODO: This is not threadsafe. table_get_* should take an IRowHandle instead.
@@ -186,7 +200,7 @@ namespace RealmNet
 
         public void SetValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, IRowHandle rowHandle, T value)
         {
-            var tableHandle = GetTable(groupHandle, tableName);
+            var tableHandle = (TableHandle)GetTableHandle(groupHandle, tableName);
             var columnIndex = GetColumnIndex(tableHandle, propertyName);
 
             // TODO: This is not threadsafe. table_get_* should take an IRowHandle instead.
@@ -229,7 +243,7 @@ namespace RealmNet
         #region Queries
         public IQueryHandle CreateQuery(IGroupHandle groupHandle, string tableName)
         {
-            var tableHandle = GetTable(groupHandle, tableName);
+            var tableHandle = (TableHandle)GetTableHandle(groupHandle, tableName);
             var queryHandle = tableHandle.TableWhere();
 
             //At this point sh is invalid due to its handle being uninitialized, but the root is set correctly

@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace RealmNet
 {
@@ -30,11 +32,18 @@ namespace RealmNet
 
         private ISharedGroupHandle SharedGroupHandle => Handle as ISharedGroupHandle;
         private IGroupHandle _transactionGroupHandle;
+        private readonly Dictionary<string, ITableHandle> _tableHandles = new Dictionary<string, ITableHandle>();
 
         private Realm(ICoreProvider coreProvider, string path) 
         {
             _coreProvider = coreProvider;
-            SetHandle(coreProvider.CreateSharedGroup(path), false);
+
+            RuntimeHelpers.PrepareConstrainedRegions();//the following finally will run with no out-of-band exceptions
+            try { }
+            finally
+            {
+                SetHandle(coreProvider.CreateSharedGroup(path), false);
+            }
         }
 
         // TODO consider retiring this in favor of just creating object instances
@@ -57,21 +66,37 @@ namespace RealmNet
 
         internal static void AdoptNewObject(RealmObject adoptingObject, Realm usingRealm, ICoreProvider usingProvider, IGroupHandle transGroupHandle)
         {
+            ITableHandle tableHandle;
+
             var objectType = adoptingObject.GetType();
-            if (!usingProvider.HasTable(transGroupHandle, objectType.Name))
-                CreateTableFor(objectType, usingProvider, transGroupHandle);
-            var rowHandle = usingProvider.AddEmptyRow(transGroupHandle, objectType.Name);
+
+            if (usingRealm?._tableHandles.ContainsKey(objectType.Name) ?? false)
+            {
+                tableHandle = usingRealm._tableHandles[objectType.Name];
+            }
+            else
+            {
+                if (usingProvider.HasTable(transGroupHandle, objectType.Name))
+                    tableHandle = usingProvider.GetTableHandle(transGroupHandle, objectType.Name);
+                else
+                    tableHandle = CreateTableFor(objectType, usingProvider, transGroupHandle);
+
+                // TODO: Enable this when we have implicit transactions so keeping table handles alive works.
+                //if (usingRealm != null)       
+                //    usingRealm._tableHandles[objectType.Name] = tableHandle;
+            }
+            var rowHandle = usingProvider.AddEmptyRow(tableHandle);
             adoptingObject._Manage(usingRealm, usingProvider, rowHandle);
         }
 
-        private static void CreateTableFor(Type objectType, ICoreProvider usingProvider, IGroupHandle transGroupHandle)
+        private static ITableHandle CreateTableFor(Type objectType, ICoreProvider usingProvider, IGroupHandle transGroupHandle)
         {
             var tableName = objectType.Name;
 
             if (!objectType.GetCustomAttributes(typeof(WovenAttribute), true).Any())
                 Debug.WriteLine("WARNING! The type " + tableName + " is a RealmObject but it has not been woven.");
 
-            usingProvider.AddTable(transGroupHandle, tableName);
+            var tableHandle = usingProvider.AddTable(transGroupHandle, tableName);
 
             var propertiesToMap = objectType.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly).Where(p => !p.GetCustomAttributes(false).Any(a => (a is IgnoreAttribute)));
             foreach (var p in propertiesToMap)
@@ -82,8 +107,9 @@ namespace RealmNet
                     propertyName = mapToAttribute.Mapping;
                 
                 var columnType = p.PropertyType;
-                usingProvider.AddColumnToTable(transGroupHandle, tableName, propertyName, columnType);
+                usingProvider.AddColumnToTable(tableHandle, propertyName, columnType);
             }
+            return tableHandle;
         }
 
 
@@ -103,7 +129,8 @@ namespace RealmNet
                 Debug.Assert(adoptingObject.IsStandalone);
                 var oneShot = BeginWrite();  // implicit one-shot Write transaction
                 var tableName = adoptingObject.GetType().Name;
-                adoptingObject._Manage(this, _coreProvider, _coreProvider.AddEmptyRow(_transactionGroupHandle, tableName));
+                var tableHandle = _coreProvider.GetTableHandle(_transactionGroupHandle, tableName);
+                adoptingObject._Manage(this, _coreProvider, _coreProvider.AddEmptyRow(tableHandle));
                 oneShot.Commit();
             }
         }

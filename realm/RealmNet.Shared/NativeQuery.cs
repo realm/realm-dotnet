@@ -65,7 +65,7 @@ namespace RealmNet
         internal static extern void or(QueryHandle queryHandle);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_delete", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern void delete(QueryHandle queryHandle);
+        internal static extern void delete(IntPtr queryHandle);
 
         public static long count(QueryHandle QueryHandle, long start, long end, long limit)
         {
