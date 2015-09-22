@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.IO;
+using System.Runtime.ConstrainedExecution;
 #if __IOS__
 using  UIKit;  // for UIDevice
 using Foundation;  // for NSFileManager
@@ -135,10 +136,13 @@ namespace RealmNet
             NativeTable.add_column((TableHandle)tableHandle, RealmColType(columnType), columnName, (IntPtr)columnName.Length);
         }
 
+        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         public IRowHandle AddEmptyRow(ITableHandle tableHandle)
         {
             var rowHandle = new RowHandle();
-            try { }
+
+            RuntimeHelpers.PrepareConstrainedRegions();
+            try {/* Execute the finally block as a constrained region. See: https://msdn.microsoft.com/en-us/library/ms228973(v=vs.110).aspx */ }
             finally
             {
                 var rowPtr = NativeTable.add_empty_row(tableHandle as TableHandle);
