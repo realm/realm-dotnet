@@ -4,6 +4,7 @@
 #include <realm/commit_log.hpp>
 #include <realm/lang_bind_helper.hpp>
 #include "object-store/shared_realm.hpp"
+#include "object-store/schema.hpp"
 
 
 enum class RealmErrorType {
@@ -77,9 +78,19 @@ RealmErrorType realm_error_get_type(const RealmError* error)
     return error->type;
 }
 
-Schema* realm_schema_new()
+std::vector<ObjectSchema>* realm_new_object_schemas()
 {
-    return new Schema;
+    return new std::vector<ObjectSchema>();
+}
+
+void realm_object_schemas_add_class(std::vector<ObjectSchema>* object_schemas, ObjectSchema* cls)
+{
+    object_schemas->push_back(*cls);
+}
+
+Schema* realm_schema_new(std::vector<ObjectSchema>* object_schemas)
+{
+    return new Schema(*object_schemas);
 }
 
 ObjectSchema* realm_object_schema_new(const char* name)
@@ -102,12 +113,6 @@ void realm_object_schema_add_property(ObjectSchema* cls, const char* name, DataT
     cls->properties.push_back(std::move(p));
 }
 
-
-void realm_schema_add_class(Schema* schema, const char* name, ObjectSchema* cls)
-{
-    (*schema)[name] = *cls;
-}
-
 SharedRealm* realm_open(RealmError** err, Schema* schema, const char* path, bool read_only, SharedGroup::DurabilityLevel durability,
                         const char* encryption_key)
 {
@@ -115,7 +120,10 @@ SharedRealm* realm_open(RealmError** err, Schema* schema, const char* path, bool
     config.path = path;
     config.read_only = read_only;
     config.in_memory = durability != SharedGroup::durability_Full;
-    config.encryption_key = encryption_key;
+
+    //config.encryption_key = encryption_key;
+    config.encryption_key = std::vector<char>(&encryption_key[0], &encryption_key[strlen(encryption_key)]);
+
     config.schema.reset(schema);
     return new SharedRealm{Realm::get_shared_realm(config)};
 }
