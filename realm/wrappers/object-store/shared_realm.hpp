@@ -22,6 +22,7 @@
 #include <map>
 #include <memory>
 #include <thread>
+#include <mutex>
 #include <vector>
 
 #include "object_store.hpp"
