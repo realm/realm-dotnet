@@ -23,6 +23,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)MockCoreProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NativeGroup.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NativeQuery.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NativeRow.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NativeSharedGroup.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NativeTable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PreserveAttribute.cs" />

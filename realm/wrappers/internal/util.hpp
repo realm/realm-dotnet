@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-#ifndef REALM_JAVA_UTIL_HPP
-#define REALM_JAVA_UTIL_HPP
+#ifndef REALM_BINDING_UTIL_HPP
+#define REALM_BINDING_UTIL_HPP
 
 #include <string>
 #include <sstream>
 #include <memory>
-
-#include <jni.h>
 
 // Used by logging
 #define __STDC_FORMAT_MACROS
@@ -32,21 +30,12 @@
 #include <realm/util/safe_int_ops.hpp>
 #include <realm/lang_bind_helper.hpp>
 
-#include "io_realm_internal_Util.h"
+//J #include "io_realm_internal_Util.h"
 
 
 #define TRACE               1       // disable for performance
 #define CHECK_PARAMETERS    1       // Check all parameters in API and throw exceptions in java if invalid
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved);
-
-#ifdef __cplusplus
-}
-#endif
 
 // Use this macro when logging a pointer using '%p'
 #define VOID_PTR(ptr) reinterpret_cast<void*>(ptr)
@@ -83,11 +72,6 @@ std::string num_to_string(T pNumber)
  return oOStrStream.str();
 }
 
-
-#define MAX_JLONG  0x7FFFFFFFFFFFFFFFLL
-#define MIN_JLONG -0x8000000000000000LL
-#define MAX_JINT   0x7FFFFFFFL
-#define MAX_JSIZE  MAX_JINT
 
 // Helper macros for better readability
 // Use S64() when logging
@@ -521,4 +505,4 @@ private:
 };
 
 
-#endif // REALM_JAVA_UTIL_HPP
+#endif // REALM_BINDING_UTIL_HPP

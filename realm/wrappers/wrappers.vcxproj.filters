@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="internal">
+      <UniqueIdentifier>{860c6431-bc3e-4939-9ba2-e2fa1c715985}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="wrappers.h">
@@ -21,6 +24,9 @@
     <ClInclude Include="..\..\..\realm-core\src\win32\pthread\pthread.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="internal\util.hpp">
+      <Filter>internal</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="wrappers.cpp">
@@ -28,6 +34,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\realm-core\src\win32\pthread\pthread.c">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="internal\util.cpp">
+      <Filter>internal</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
