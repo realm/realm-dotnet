@@ -3,19 +3,23 @@
 #include <realm/table.hpp>
 #include <realm/commit_log.hpp>
 #include <realm/lang_bind_helper.hpp>
-#include "object-store/shared_realm.hpp"
-#include "object-store/schema.hpp"
+#include "ffi.hpp"
+#include "transact_log_handler.hpp"
+#include "shared_realm.hpp"
+#include "schema.hpp"
 
+#ifdef WIN32
+#define REALM_API __declspec( dllexport )
+#else
+#define REALM_API
+#endif
 
-enum class RealmErrorType {
-    unknown = 0,
-    system = 1
-};
+using namespace realm;
 
-struct RealmError {
-    RealmErrorType type;
-    std::string message;
-};
+namespace binding {
+    realm::RealmDelegate* delegate_instance;
+    void process_error(RealmError* realm_error);
+}
 
 static
 void convert_exception_to_error(RealmError* error)
@@ -45,15 +49,16 @@ struct Default<void> {
 };
 
 template <class F>
-auto handle_errors(RealmError** out_error, F&& func) -> decltype(func())
+auto handle_errors(F&& func) -> decltype(func())
 {
     using RetVal = decltype(func());
     try {
         return func();
     }
     catch (...) {
-        *out_error = new RealmError;
-        convert_exception_to_error(*out_error);
+        RealmError* out_error = new RealmError;
+        convert_exception_to_error(out_error);
+        binding::process_error(out_error);
         return Default<RetVal>::default_value();
     }
 }
@@ -78,29 +83,29 @@ RealmErrorType realm_error_get_type(const RealmError* error)
     return error->type;
 }
 
-std::vector<ObjectSchema>* realm_new_object_schemas()
+REALM_API std::vector<ObjectSchema>* realm_new_object_schemas()
 {
     return new std::vector<ObjectSchema>();
 }
 
-void realm_object_schemas_add_class(std::vector<ObjectSchema>* object_schemas, ObjectSchema* cls)
+REALM_API void realm_object_schemas_add_class(std::vector<ObjectSchema>* object_schemas, ObjectSchema* cls)
 {
     object_schemas->push_back(*cls);
 }
 
-Schema* realm_schema_new(std::vector<ObjectSchema>* object_schemas)
+REALM_API Schema* realm_schema_new(std::vector<ObjectSchema>* object_schemas)
 {
     return new Schema(*object_schemas);
 }
 
-ObjectSchema* realm_object_schema_new(const char* name)
+REALM_API ObjectSchema* realm_object_schema_new(const char* name)
 {
     auto p = new ObjectSchema;
     p->name = name;
     return p;
 }
 
-void realm_object_schema_add_property(ObjectSchema* cls, const char* name, DataType type, const char* object_type,
+REALM_API void realm_object_schema_add_property(ObjectSchema* cls, const char* name, DataType type, const char* object_type,
                                       bool is_primary, bool is_indexed, bool is_nullable)
 {
     Property p;
@@ -113,7 +118,7 @@ void realm_object_schema_add_property(ObjectSchema* cls, const char* name, DataT
     cls->properties.push_back(std::move(p));
 }
 
-SharedRealm* realm_open(RealmError** err, Schema* schema, const char* path, bool read_only, SharedGroup::DurabilityLevel durability,
+REALM_API SharedRealm* realm_open(Schema* schema, const char* path, bool read_only, SharedGroup::DurabilityLevel durability,
                         const char* encryption_key)
 {
     Realm::Config config;
@@ -128,148 +133,150 @@ SharedRealm* realm_open(RealmError** err, Schema* schema, const char* path, bool
     return new SharedRealm{Realm::get_shared_realm(config)};
 }
 
-void realm_destroy(SharedRealm* realm)
+REALM_API void realm_destroy(SharedRealm* realm)
 {
     delete realm;
 }
 
-bool realm_has_table(SharedRealm* realm, const char* name)
+REALM_API bool realm_has_table(SharedRealm* realm, const char* name)
 {
     Group* g = (*realm)->read_group();
     return g->has_table(name);
 }
 
-void realm_begin_transaction(RealmError** err, SharedRealm* realm)
+REALM_API void realm_begin_transaction(SharedRealm* realm)
 {
-    handle_errors(err, [&]() {
+    handle_errors([&]() {
         (*realm)->begin_transaction();
     });
 }
 
-void realm_commit_transaction(RealmError** err, SharedRealm* realm)
+REALM_API void realm_commit_transaction(SharedRealm* realm)
 {
-    handle_errors(err, [&]() {
+    handle_errors([&]() {
         (*realm)->commit_transaction();
     });
 }
 
-void realm_cancel_transaction(RealmError** err, SharedRealm* realm)
+REALM_API void realm_cancel_transaction(SharedRealm* realm)
 {
-    handle_errors(err, [&]() {
+    handle_errors([&]() {
         (*realm)->cancel_transaction();
     });
 }
 
-bool realm_is_in_transaction(SharedRealm* realm)
+REALM_API bool realm_is_in_transaction(SharedRealm* realm)
 {
     return (*realm)->is_in_transaction();
 }
 
-bool realm_refresh(SharedRealm* realm)
+REALM_API bool realm_refresh(SharedRealm* realm)
 {
     return (*realm)->refresh();
 }
 
-void realm_shared_group_promote_to_write(RealmError** err, SharedGroup* sg, ClientHistory* hist)
+REALM_API void realm_shared_group_promote_to_write(SharedGroup* sg, ClientHistory* hist)
 {
-    handle_errors(err, [&]() {
-	LangBindHelper::promote_to_write(*sg, *hist);
+    handle_errors([&]() {
+	    //LangBindHelper::promote_to_write(*sg, *hist);
+        transaction::begin(*sg, *hist, binding::delegate_instance);
     });
 }
 
-SharedGroup::version_type realm_shared_group_commit(RealmError** err, SharedGroup* sg)
+REALM_API SharedGroup::version_type realm_shared_group_commit(SharedGroup* sg)
 {
-    return handle_errors(err, [&]() {
+    return handle_errors([&]() {
         return sg->commit();
     });
 }
 
-void realm_shared_group_commit_and_continue_as_read(RealmError** err,
-									 SharedGroup* sg)
+REALM_API void realm_shared_group_commit_and_continue_as_read(SharedGroup* sg, ClientHistory* hist)
 {
-    LangBindHelper::commit_and_continue_as_read(*sg);
+    //LangBindHelper::commit_and_continue_as_read(*sg);
+    transaction::commit(*sg, *hist, binding::delegate_instance);
 }
 
-void realm_shared_group_rollback(SharedGroup* sg)
+REALM_API void realm_shared_group_rollback(SharedGroup* sg)
 {
     sg->rollback();
 }
 
-void realm_shared_group_rollback_and_continue_as_read(RealmError** err, SharedGroup* sg, ClientHistory* hist)
+REALM_API void realm_shared_group_rollback_and_continue_as_read(SharedGroup* sg, ClientHistory* hist)
 {
-    handle_errors(err, [&]() {
-	LangBindHelper::rollback_and_continue_as_read(*sg, *hist);
+    handle_errors([&]() {
+        //LangBindHelper::rollback_and_continue_as_read(*sg, *hist);
+        transaction::cancel(*sg, *hist, binding::delegate_instance);
     });
 }
 
-void realm_table_retain(const Table* table)
+REALM_API void realm_table_retain(const Table* table)
 {
     LangBindHelper::bind_table_ptr(table);
 }
 
-void realm_table_release(const Table* table)
+REALM_API void realm_table_release(const Table* table)
 {
     LangBindHelper::unbind_table_ptr(table);
 }
 
-const Table* realm_get_table(RealmError** err, SharedGroup* sg, const char* name)
+REALM_API const Table* realm_get_table(SharedGroup* sg, const char* name)
 {
     using sgf = _impl::SharedGroupFriend;
-    return handle_errors(err, [&]() {
+    return handle_errors([&]() {
         auto& group = sgf::get_group(*sg);
         return LangBindHelper::get_table(group, name);
     });
 }
 
-Table* realm_get_table_mut(RealmError** err, SharedGroup* sg, const char* name)
+REALM_API Table* realm_get_table_mut(SharedGroup* sg, const char* name)
 {
     using sgf = _impl::SharedGroupFriend;
-    return handle_errors(err, [&]() {
+    return handle_errors([&]() {
         auto& group = sgf::get_group(*sg);
         return LangBindHelper::get_table(group, name);
     });
 }
 
-Table* realm_add_table(RealmError** err, SharedGroup* sg, const char* name)
+REALM_API Table* realm_add_table(SharedGroup* sg, const char* name)
 {
     using sgf = _impl::SharedGroupFriend;
-    return handle_errors(err, [&]() {
+    return handle_errors([&]() {
         auto& group = sgf::get_group(*sg);
         return LangBindHelper::add_table(group, name);
     });
 }
 
-size_t realm_table_add_column(RealmError** err, Table* table, DataType type, const char* name, bool nullable)
+REALM_API size_t realm_table_add_column(Table* table, DataType type, const char* name, bool nullable)
 {
-    return handle_errors(err, [&]() {
+    return handle_errors([&]() {
         return table->add_column(type, name, nullable);
     });
 }
 
-size_t realm_table_add_empty_row(RealmError** err, Table* table)
+REALM_API size_t realm_table_add_empty_row(Table* table)
 {
-    return handle_errors(err, [&]() {
+    return handle_errors([&]() {
         return table->add_empty_row();
     });
 }
 
-int64_t realm_table_get_int(const Table* table, size_t col_ndx, size_t row_ndx)
+REALM_API int64_t realm_table_get_int(const Table* table, size_t col_ndx, size_t row_ndx)
 {
     return table->get_int(col_ndx, row_ndx);
 }
 
-void realm_table_set_int(RealmError** err, Table* table, size_t col_ndx, size_t row_ndx, int64_t value)
+REALM_API void realm_table_set_int(Table* table, size_t col_ndx, size_t row_ndx, int64_t value)
 {
-    return handle_errors(err, [&]() {
+    return handle_errors([&]() {
         table->set_int(col_ndx, row_ndx, value);
     });
 }
 
-void realm_row_destroy(Table::RowExpr* expr) {
+REALM_API void realm_row_destroy(Table::RowExpr* expr) {
     delete expr;
 }
 
-int64_t realm_row_get_int(const Table::RowExpr* expr, size_t col_ndx) {
+REALM_API int64_t realm_row_get_int(const Table::RowExpr* expr, size_t col_ndx) {
     return expr->get_int(col_ndx);
 }
 

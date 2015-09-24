@@ -161,6 +161,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\realm-core\src\win32\pthread\pthread.h" />
+    <ClInclude Include="object-store\ffi.hpp" />
     <ClInclude Include="object-store\index_set.hpp" />
     <ClInclude Include="object-store\object_schema.hpp" />
     <ClInclude Include="object-store\object_store.hpp" />
@@ -174,6 +175,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\realm-core\src\win32\pthread\pthread.c" />
+    <ClCompile Include="object-store\ffi.cpp" />
     <ClCompile Include="object-store\index_set.cpp" />
     <ClCompile Include="object-store\object_schema.cpp" />
     <ClCompile Include="object-store\object_store.cpp" />
@@ -181,7 +183,7 @@
     <ClCompile Include="object-store\shared_realm.cpp" />
     <ClCompile Include="object-store\transact_log_handler.cpp" />
     <ClCompile Include="object-store\windows\external_commit_helper.cpp" />
-    <ClCompile Include="realm.cpp" />
+    <ClCompile Include="realm-csharp.cpp" />
     <ClCompile Include="wrappers.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

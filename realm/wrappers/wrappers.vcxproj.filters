@@ -48,15 +48,15 @@
     <ClInclude Include="object-store\windows\external_commit_helper.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="object-store\ffi.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="wrappers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\realm-core\src\win32\pthread\pthread.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="realm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="object-store\index_set.cpp">
@@ -78,6 +78,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="object-store\windows\external_commit_helper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="realm-csharp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="object-store\ffi.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
