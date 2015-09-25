@@ -14,6 +14,8 @@ namespace RealmNet
 {
     public class CoreProvider : ICoreProvider
     {
+        private static bool sDoneCommonSetup = false;
+
         #region helpers
 
         static IntPtr BoolToIntPtr(Boolean value)
@@ -79,6 +81,16 @@ namespace RealmNet
         }
 
         #endregion  // helpers
+
+
+        public CoreProvider()
+        {
+            // setup shared stuff if hasn't been set
+            if (!sDoneCommonSetup) {
+                NativeCommon.SetupExceptionThrower();
+                sDoneCommonSetup = true;
+            }
+        }
 
         public ISharedGroupHandle CreateSharedGroup(string filename)
         {

@@ -622,3 +622,46 @@ NativeTable.cs
 
 RowHandle.cs
 - use new NativeRow instead
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#155 EXCEPTION HANDLING IN WRAPPERS - CSHARP SIDE AND COMMS WITHOUT THROWING
+
+wrappers.cpp
+- added ManagedExceptionThrowerT, ManagedExceptionThrower and set_exception_thrower
+
+RealmNet.Shared.csproj
+- added copies of Java exceptions
+	RealmEncryptionNotSupportedException
+	RealmException
+	RealmIOException
+	RealmMigrationNeededException
+- added more exceptions to support the codes in RealmExceptionCodes.cs
+	RealmRowInvalidException
+	RealmRuntimeErrorException
+	RealmFatalErrorException
+	RealmOutOfMemoryException
+	RealmUnsupportedOperationException
+	RealmTableInvalidException
+	RealmIndexOutOfBoundsException	
+	RealmFileAccessErrorException
+	RealmFileNotFoundException
+	RealmIOFailedException
+	RealmIllegalArgumentException
+	RealmNoSuchMethodException
+	RealmNoSuchFieldException
+	RealmClassNotFoundException
+
+RealmExceptionCodes.cs 
+- added enum to RealmNet.shared
+
+CoreProvider.cs
+- added CoreProvider ctor to set common inc calling SetupExceptionThrower
+- added static field sDoneCommonSetup
+
+
+Added "unsafe" compilation option to enable the callback
+- RealmNet.XamarionIOS
+- RealmNet.XamarionAndroid
+
+

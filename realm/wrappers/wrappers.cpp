@@ -3,6 +3,8 @@
 #include <realm.hpp>
 #include <realm/util/utf8.hpp>
 #include <realm/lang_bind_helper.hpp>
+#include <exception>
+#include <string>
 
 using namespace realm;
 
@@ -11,6 +13,18 @@ using namespace realm;
 #else
 #define REALM_CORE_WRAPPER_API
 #endif
+
+
+using ManagedExceptionThrowerT = void(*)(size_t exceptionCode, void* utf8Str, size_t strLen);
+
+// CALLBACK TO THROW IN MANAGED SPACE
+static ManagedExceptionThrowerT ManagedExceptionThrower = nullptr;
+
+extern "C" void set_exception_thrower(ManagedExceptionThrowerT userThrower)
+{
+    ManagedExceptionThrower = userThrower;
+}
+
 
 //as We've got no idea how the compiler represents an instance of DataType on the stack, perhaps it's better to send back a size_t with the value.
 //we always know the size of a size_t
@@ -115,7 +129,7 @@ class CSStringAccessor {
   public:
     CSStringAccessor(uint16_t *, size_t);
 
-    operator realm::StringData() const REALM_NOEXCEPT
+    operator realm::StringData() const //ASD has this vanished from core? REALM_NOEXCEPT
     {
       return realm::StringData(m_data.get(), m_size);
     }
