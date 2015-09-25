@@ -1,11 +1,11 @@
-#include "wrappers.h"
+#include "wrappers.hpp"
 
 #include <realm.hpp>
 #include <realm/util/utf8.hpp>
 #include <realm/lang_bind_helper.hpp>
 #include <exception>
 #include <string>
-#include "ExceptionsToManaged.h"
+#include "ExceptionsToManaged.hpp"
 
 
 using namespace realm;

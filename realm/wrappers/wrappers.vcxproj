@@ -161,8 +161,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\realm-core\src\win32\pthread\pthread.h" />
-    <ClInclude Include="ExceptionsToManaged.h" />
-    <ClInclude Include="wrappers.h" />
+    <ClInclude Include="ExceptionsToManaged.hpp" />
+    <ClInclude Include="wrappers.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\realm-core\src\win32\pthread\pthread.c" />
