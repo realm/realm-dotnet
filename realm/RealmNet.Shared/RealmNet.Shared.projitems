@@ -44,5 +44,28 @@
     <Compile Include="$(MSBuildThisFileDirectory)Transaction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TransactionState.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TypeSystem.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmEncryptionNotSupportedException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmIOException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmMigrationNeededException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NativeCommon.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmExceptionCodes.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmRuntimeErrorException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmRowInvalidException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmClassNotFoundException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmFatalErrorException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmFileAccessErrorException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmFileNotFoundException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmIllegalArgumentException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmIndexOutOfBoundsException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmIOFailedException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmNoSuchFieldException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmNoSuchMethodException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmOutOfMemoryException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmTableInvalidException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmUnsupportedOperationException.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)exceptions\" />
   </ItemGroup>
 </Project>
