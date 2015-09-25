@@ -1,4 +1,6 @@
-#pragma once
+#ifndef EXCEPTIONS_TO_MANAGED_H
+#define EXCEPTIONS_TO_MANAGED_H
+
 
 /// @warning Keep these codes aligned with RealmExceptionCodes.cs
 
@@ -34,3 +36,5 @@ namespace realm
     void ThrowManaged(const std::exception& exc, RealmExceptionCodes exceptionCode, const std::string& message = "");
     void ThrowManaged();
 }
+
+#endif  // EXCEPTIONS_TO_MANAGED_H
