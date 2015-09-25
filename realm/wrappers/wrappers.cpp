@@ -5,6 +5,8 @@
 #include <realm/lang_bind_helper.hpp>
 #include <exception>
 #include <string>
+#include "ExceptionsToManaged.h"
+
 
 using namespace realm;
 
@@ -14,12 +16,7 @@ using namespace realm;
 #define REALM_CORE_WRAPPER_API
 #endif
 
-
-using ManagedExceptionThrowerT = void(*)(size_t exceptionCode, void* utf8Str, size_t strLen);
-
-// CALLBACK TO THROW IN MANAGED SPACE
-static ManagedExceptionThrowerT ManagedExceptionThrower = nullptr;
-
+#pragma endregion
 
 //as We've got no idea how the compiler represents an instance of DataType on the stack, perhaps it's better to send back a size_t with the value.
 //we always know the size of a size_t
@@ -180,12 +177,6 @@ CSStringAccessor::CSStringAccessor(uint16_t* csbuffer, size_t csbufsize)
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-REALM_CORE_WRAPPER_API void set_exception_thrower(ManagedExceptionThrowerT userThrower)
-{
-    ManagedExceptionThrower = userThrower;
-}
-
 
 #pragma region version  // {{{
 
@@ -494,7 +485,8 @@ REALM_CORE_WRAPPER_API void group_delete(Group* group_ptr )
       return new Group(StringData(name2), 0, om); 
     }
 
-    catch (std::exception& ) {
+    catch (std::exception& exc) {
+        ThrowManaged(exc, RealmExceptionCodes::Exception_IOFailed);  // TODO get better message argument like Java
         return NULL;
     }
     catch (...) {
@@ -513,7 +505,8 @@ REALM_CORE_WRAPPER_API size_t group_write(Group* group_ptr,uint16_t * name, size
     return 0;//0 means no exception thrown
     }
     //if the file is already there, or other file related trouble
-   catch (...) {             
+   catch (...) {     
+       ThrowManaged();
        return 1;//1 means IO problem exception was thrown. C# always use IOException in cases like this anyways so no need to detail it out further
    }
 }
