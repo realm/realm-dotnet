@@ -161,10 +161,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\realm-core\src\win32\pthread\pthread.h" />
-    <ClInclude Include="wrappers.h" />
+    <ClInclude Include="ExceptionsToManaged.hpp" />
+    <ClInclude Include="wrappers.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\realm-core\src\win32\pthread\pthread.c" />
+    <ClCompile Include="ExceptionsToManaged.cpp" />
     <ClCompile Include="wrappers.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

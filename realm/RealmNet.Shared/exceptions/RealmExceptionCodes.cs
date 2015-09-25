@@ -1,4 +1,5 @@
-﻿namespace RealmNet
+﻿/// @warning Keep these codes aligned with ExceptionsToManaged.h in wrappers
+namespace RealmNet
 {
     /**
      * These numeric codes are based on the Java "test" codes in Util.java
