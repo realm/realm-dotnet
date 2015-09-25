@@ -20,11 +20,6 @@ using ManagedExceptionThrowerT = void(*)(size_t exceptionCode, void* utf8Str, si
 // CALLBACK TO THROW IN MANAGED SPACE
 static ManagedExceptionThrowerT ManagedExceptionThrower = nullptr;
 
-extern "C" void set_exception_thrower(ManagedExceptionThrowerT userThrower)
-{
-    ManagedExceptionThrower = userThrower;
-}
-
 
 //as We've got no idea how the compiler represents an instance of DataType on the stack, perhaps it's better to send back a size_t with the value.
 //we always know the size of a size_t
@@ -185,6 +180,12 @@ CSStringAccessor::CSStringAccessor(uint16_t* csbuffer, size_t csbufsize)
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+REALM_CORE_WRAPPER_API void set_exception_thrower(ManagedExceptionThrowerT userThrower)
+{
+    ManagedExceptionThrower = userThrower;
+}
+
 
 #pragma region version  // {{{
 
