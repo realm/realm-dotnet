@@ -5,7 +5,7 @@
 #include <realm/lang_bind_helper.hpp>
 #include <exception>
 #include <string>
-#include "ExceptionsToManaged.hpp"
+#include "exceptions_to_managed.hpp"
 
 
 using namespace realm;

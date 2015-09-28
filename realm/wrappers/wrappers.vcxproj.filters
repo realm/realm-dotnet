@@ -18,7 +18,7 @@
     <ClInclude Include="..\..\..\realm-core\src\win32\pthread\pthread.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ExceptionsToManaged.hpp">
+    <ClInclude Include="exceptions_to_managed.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="wrappers.hpp">
@@ -32,7 +32,7 @@
     <ClCompile Include="..\..\..\realm-core\src\win32\pthread\pthread.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ExceptionsToManaged.cpp">
+    <ClCompile Include="exceptions_to_managed.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

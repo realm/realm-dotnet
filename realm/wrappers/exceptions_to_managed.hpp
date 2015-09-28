@@ -7,14 +7,12 @@
 #include <exception>
 #include <string>
 
-namespace realm
-{
+namespace realm {
     /**
     * These numeric codes are based on the Java "test" codes in Util.java
     * To aid anyone comparing code, they have retained the same names.
     */
-    enum class RealmExceptionCodes : size_t
-    {
+    enum class RealmExceptionCodes : size_t {
         Exception_ClassNotFound = 0,
         Exception_NoSuchField = 1,
         Exception_NoSuchMethod = 2,
@@ -35,6 +33,6 @@ namespace realm
 
     void ThrowManaged(const std::exception& exc, RealmExceptionCodes exceptionCode, const std::string& message = "");
     void ThrowManaged();
-}
+}  // namespace realm
 
 #endif  // EXCEPTIONS_TO_MANAGED_H
