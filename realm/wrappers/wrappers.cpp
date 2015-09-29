@@ -1,16 +1,35 @@
-#include "wrappers.h"
+/*
+* Copyright 2015 Realm Inc.
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+
+#include "wrappers.hpp"
+#include "WindowsDLLWrapperDecls.h"
 
 #include <realm.hpp>
 #include <realm/util/utf8.hpp>
 #include <realm/lang_bind_helper.hpp>
+#include <exception>
+#include <string>
+#include "exceptions_to_managed.hpp"
+#include "exception_catcher.hpp"
+
 
 using namespace realm;
 
-#ifdef WIN32
-#define REALM_CORE_WRAPPER_API __declspec( dllexport )
-#else
-#define REALM_CORE_WRAPPER_API
-#endif
+
+#pragma endregion
 
 //as We've got no idea how the compiler represents an instance of DataType on the stack, perhaps it's better to send back a size_t with the value.
 //we always know the size of a size_t
@@ -115,7 +134,7 @@ class CSStringAccessor {
   public:
     CSStringAccessor(uint16_t *, size_t);
 
-    operator realm::StringData() const REALM_NOEXCEPT
+    operator realm::StringData() const //ASD has this vanished from core? REALM_NOEXCEPT
     {
       return realm::StringData(m_data.get(), m_size);
     }
@@ -427,10 +446,7 @@ REALM_CORE_WRAPPER_API Group* group_from_binary_data(const char* data, std::size
       BinaryData bd(data,size);
       return new Group(bd,false);
     } 
-    catch (...)
-    {
-        return NULL;
-    }
+    CATCH_STD
 }
 
 
@@ -478,29 +494,18 @@ REALM_CORE_WRAPPER_API void group_delete(Group* group_ptr )
 
       return new Group(StringData(name2), 0, om); 
     }
-
-    catch (std::exception& ) {
-        return NULL;
-    }
-    catch (...) {
-        std::cerr<<"CPPDLL: something non exception caught - returning NULL\n";
-        return NULL;
-    }
+    CATCH_STD
 }
 
 //write group to specified file
 REALM_CORE_WRAPPER_API size_t group_write(Group* group_ptr,uint16_t * name, size_t name_len)
-
 {   
     try {
-    CSStringAccessor str(name,name_len);    
-    group_ptr->write(StringData(str));
-    return 0;//0 means no exception thrown
+        CSStringAccessor str(name,name_len);    
+        group_ptr->write(StringData(str));
+        return 0;//0 means no exception thrown
     }
-    //if the file is already there, or other file related trouble
-   catch (...) {             
-       return 1;//1 means IO problem exception was thrown. C# always use IOException in cases like this anyways so no need to detail it out further
-   }
+    CATCH_STD
 }
 
 /// Write this database to a memory buffer.
@@ -527,14 +532,13 @@ REALM_CORE_WRAPPER_API void group_write_to_mem_free(char * binarydata_ptr){
     }
 }
 
-REALM_CORE_WRAPPER_API size_t group_commit(Group* group_ptr){
-try {
-    group_ptr->commit();
-    return 0;
-}
- catch(...){
-     return 1;
- }
+REALM_CORE_WRAPPER_API size_t group_commit(Group* group_ptr)
+{
+    try {
+        group_ptr->commit();
+        return 0;
+    }
+    CATCH_STD
 }
 
 REALM_CORE_WRAPPER_API size_t group_equals(Group* group_ptr1, Group* group_ptr2)
@@ -542,9 +546,7 @@ REALM_CORE_WRAPPER_API size_t group_equals(Group* group_ptr1, Group* group_ptr2)
     try {
         return bool_to_size_t(*group_ptr1==*group_ptr2);//utilizing operator overload
     }
-    catch(...){
-        return bool_to_size_t_with_errorcode(-1);//will return error -1 to a C# function expecting a bool
-    }	
+    CATCH_STD
 }
 
 //inequality is handled in the binding by negating equality and thus we save one interop entry, and linking in the code for !=
@@ -560,28 +562,21 @@ REALM_CORE_WRAPPER_API size_t group_to_string(Group* group_ptr,uint16_t * data, 
 
 
 //return packed size_t with errorcode or a encoded boolean
-REALM_CORE_WRAPPER_API size_t  group_is_empty(Group* group_ptr) {
+REALM_CORE_WRAPPER_API size_t  group_is_empty(Group* group_ptr) 
+{
     try {
         return bool_to_size_t(group_ptr->is_empty());//if we don't get an exception things went well
     }
-    catch(...)//things did not go well
-    {
-        return bool_to_size_t_with_errorcode(-1);//return an error code to indicate this
-        //1 as error means that is_empty is not to be trusted and that there was an
-        //exception when asking the group. Binding should throw a general exception
-        //InvalidOperation or the like, and in text describe that a call to is empty
-        //failed in an unspecified way.
-    }
+    CATCH_STD
 }
 
 
-REALM_CORE_WRAPPER_API size_t group_size( Group* group_ptr){
+REALM_CORE_WRAPPER_API size_t group_size( Group* group_ptr)
+{
     try{
         return group_ptr->size();
     }
-    catch (...){
-        return -1;//-1 indicates an exception was thrown in core
-    }
+    CATCH_STD
 }
 
 //should be disposed by calling unbind_table_ref
@@ -636,11 +631,9 @@ REALM_CORE_WRAPPER_API void shared_group_delete(SharedGroup* g) {
 REALM_CORE_WRAPPER_API const Group* shared_group_begin_read(SharedGroup* shared_group_ptr)
 {
     try {
-    return &shared_group_ptr->begin_read();    
+        return &shared_group_ptr->begin_read();    
    }
-    catch (...) {
-    return NULL;
-   }
+    CATCH_STD
 }
 
 //binding must ensure that the returned group is never modified
@@ -663,9 +656,7 @@ REALM_CORE_WRAPPER_API const Group* shared_group_begin_write(SharedGroup* shared
    try {
       return &shared_group_ptr->begin_write();    
     }
-   catch (...) {
-   return NULL;
-   }
+   CATCH_STD
 }
 
 //we cannot let exceptions flow back to C# because that only works with windows and .net
@@ -692,9 +683,7 @@ REALM_CORE_WRAPPER_API size_t shared_group_rollback(SharedGroup* shared_group_pt
       shared_group_ptr->rollback();
       return 0;//indicate success
     }
-    catch(...){
-        return -1;//something impossible happened
-    }
+    CATCH_STD
 }
 #pragma endregion // }}}
 

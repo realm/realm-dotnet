@@ -13,7 +13,7 @@ namespace RealmNet
 
         protected override void Unbind()
         {
-            NativeRow.row_delete(this);
+            NativeRow.row_delete(handle);
         }
 
         public long RowIndex => (long)NativeRow.row_get_row_index(this);

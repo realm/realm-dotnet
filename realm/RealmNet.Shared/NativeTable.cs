@@ -11,7 +11,7 @@ namespace RealmNet
             [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_add_empty_row", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern RowHandle add_empty_row(TableHandle tableHandle);
+        internal static extern IntPtr add_empty_row(TableHandle tableHandle);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_string", CallingConvention = CallingConvention.Cdecl)]
         internal static extern void set_string(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx,
@@ -57,7 +57,7 @@ namespace RealmNet
         internal static extern IntPtr where(TableHandle handle);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_unbind", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern void unbind(TableHandle tableHandle);
+        internal static extern void unbind(IntPtr tableHandle);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_remove_row", CallingConvention = CallingConvention.Cdecl)]
         public static extern void remove_row(TableHandle tableHandle, RowHandle rowHandle);

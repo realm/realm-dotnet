@@ -4,11 +4,13 @@ using System.Diagnostics;
 
 namespace RealmNet
 {
-    public class MockTable
+    public class MockTable : ITableHandle
     {
         public Dictionary<string, Type> Columns = new Dictionary<string, Type>();
         public Dictionary<string, int> ColumnIndexes = null;
         public List<object[]> Rows = new List<object[]>();
+
+        public string Name { get; set; }
 
         public void AddColumn(string columnName, Type columnType)
         {
@@ -21,6 +23,10 @@ namespace RealmNet
                 ColumnIndexes[key] = index++;
             }
         }
+
+        public void Dispose() { }
+        public bool IsClosed { get; }
+        public bool IsInvalid { get; }
     }
 
     public class MockQuery : IQueryHandle
@@ -113,16 +119,30 @@ namespace RealmNet
             return ret;
         }
 
-        public void AddTable(IGroupHandle groupHandle, string tableName)
+        public ITableHandle AddTable(IGroupHandle groupHandle, string tableName)
         {
             notifyOnCall ($"AddTable({tableName})");
-            _tables.Add(tableName, new MockTable());
+            var table = new MockTable() { Name = tableName };
+            _tables.Add(tableName, table);
+            return table;
         }
 
-        public void AddColumnToTable(IGroupHandle groupHandle, string tableName, string columnName, Type columnType)
+        public ITableHandle GetTableHandle(IGroupHandle groupHandle, string tableName)
         {
-            notifyOnCall ($"AddColumnToTable({tableName}, col={columnName}, type={columnType})");
-            _tables[tableName].AddColumn(columnName, columnType);
+            notifyOnCall ($"GetTableHandle({tableName})");
+            return _tables[tableName];
+        }
+
+
+        public void AddColumnToTable(ITableHandle tableHandle, string columnName, Type columnType)
+        {
+            notifyOnCall ($"AddColumnToTable({((MockTable)tableHandle).Name}, col={columnName}, type={columnType})");
+            ((MockTable)tableHandle).AddColumn(columnName, columnType);
+        }
+
+        public IRowHandle AddEmptyRow(ITableHandle tableHandle)
+        {
+            throw new NotImplementedException();
         }
 
         public IRowHandle AddEmptyRow(IGroupHandle groupHandle, string tableName)

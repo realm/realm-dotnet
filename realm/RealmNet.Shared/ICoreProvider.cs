@@ -7,9 +7,10 @@ namespace RealmNet
     {
         ISharedGroupHandle CreateSharedGroup(string filename); 
         bool HasTable(IGroupHandle groupHandle, string tableName);
-        void AddTable(IGroupHandle groupHandle, string tableName);
-        void AddColumnToTable(IGroupHandle groupHandle, string tableName, string columnName, Type columnType);
-        IRowHandle AddEmptyRow(IGroupHandle groupHandle, string tableName);
+        ITableHandle AddTable(IGroupHandle groupHandle, string tableName);
+        ITableHandle GetTableHandle(IGroupHandle groupHandle, string tableName);
+        void AddColumnToTable(ITableHandle tableHandle, string columnName, Type columnType);
+        IRowHandle AddEmptyRow(ITableHandle tableHandle);
 
         void RemoveRow(IGroupHandle groupHandle, string tableName, IRowHandle rowHandle);
 

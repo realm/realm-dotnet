@@ -8,19 +8,7 @@ namespace RealmNet
     {
         //todo:add return value to rollback if c++ threw an exception
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_group_rollback", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr rollback64(SharedGroupHandle handle);
-
-        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_group_rollback", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr rollback32(SharedGroupHandle handle);
-
-
-        //called by SharedGroupHandle atomically
-        public static IntPtr rollback(SharedGroupHandle sharedGroupHandle)
-        {
-            return (InteropConfig.Is64Bit)
-                ? rollback64(sharedGroupHandle)
-                : rollback32(sharedGroupHandle);
-        }
+        internal static extern IntPtr rollback(SharedGroupHandle handle);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_group_end_read", CallingConvention = CallingConvention.Cdecl)]
         internal static extern IntPtr end_read(SharedGroupHandle handle);

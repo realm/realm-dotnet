@@ -14,6 +14,6 @@ namespace RealmNet
         public static extern IntPtr row_get_is_attached(RowHandle rowHandle);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "row_delete", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void row_delete(RowHandle rowHandle);
+        public static extern void row_delete(IntPtr rowHandle);
     }
 }

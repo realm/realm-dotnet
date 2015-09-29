@@ -63,9 +63,9 @@ namespace RealmNet
         {            
         }
 
-        public override string ToString()
-        {
-            return NativeGroup.to_string(this);  // AD WARNING 2015-06-26 this currently throws NotImplementedException
-        }
+        //public override string ToString()
+        //{
+        //    return NativeGroup.to_string(this);  // AD WARNING 2015-06-26 this currently throws NotImplementedException
+        //}
     }
 }
