@@ -9,6 +9,7 @@ C# Overview
 -----------------
 The C# implementation described below is based on the Java exceptions but with limitations based on the platform. The essence of the difference is that the JNI layer can throw exceptions direct to Java from C++ but C# needs a delegate calling from C++ to throw the exceptions in _managed space._
 
+A very similar pattern is used to capture the C++ exceptions except we just pass them as a parameter to ConvertException rather than re-throwing as done in the Java code.
 
 @dot
 digraph { 
@@ -22,6 +23,9 @@ ManagedExceptionThrower[shape=invhouse]
 coreException [label="a std::exception\n thrown from core"]
 ThrowManaged
 CATCH_STD
+ConvertException
+"Binding invalid\n parameter detection"-> ThrowManaged
+
 
   /*  C# */
 node [fontcolor="orange", color="orange"]
@@ -34,7 +38,7 @@ SetupExceptionThrower -> set_exception_thrower [label="passes pointer to delegat
 
 set_exception_thrower -> ManagedExceptionThrower [label="sets static\n function pointer"]
 
-coreException ->  CATCH_STD ->ThrowManaged 
+coreException ->  CATCH_STD -> ConvertException -> ThrowManaged 
 ThrowManaged -> ManagedExceptionThrower [label=" callback with\n code for switch"]
 ManagedExceptionThrower -> ExceptionThrower [label="points to\n managed function"]
 ExceptionThrower  -> "Exception should be\n caught by user code" [style=dotted]
@@ -131,7 +135,8 @@ coreException [label="a std::exception\n thrown from core"]
 CATCH_FILE
 CATCH_STD
 
-coreException -> CATCH_FILE -> ThrowException
+"Binding invalid\n parameter detection"-> ThrowException
+coreExcep ion -> CATCH_FILE -> ThrowException
 coreException -> CATCH_STD -> ConvertException
 
 ConvertException -> ConvertException [label=" Rethrows exception"]
