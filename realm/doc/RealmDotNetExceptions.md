@@ -124,6 +124,8 @@ To get to that point, it usually  maps exceptions through a very lightweight mac
 
 A few other exceptions are caught by `CATCH_FILE`  which includes a range of catch clauses and thus directly calls `ThrowExcaption`.
 
+Note that although `ThrowException` has a case for the enum `RuntimeError`, it is only used once. The chain through `CATCH_STD` invoking `ConvertException` maps all the `std::RuntimeError` through its default handling of `std::Exception`.
+
 @dot
 digraph { 
   node[shape = box]
