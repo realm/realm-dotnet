@@ -14,6 +14,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		48259DB31BB2E09C00FC0B4C /* object-store */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "object-store"; sourceTree = "<group>"; };
 		48D101381B39902E004A4B2C /* libwrappers.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libwrappers.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		48D1013F1B39913D004A4B2C /* wrappers.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrappers.cpp; sourceTree = "<group>"; };
 		48D101401B39913D004A4B2C /* wrappers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrappers.h; sourceTree = "<group>"; };
@@ -37,6 +38,7 @@
 		48D1012F1B39902E004A4B2C = {
 			isa = PBXGroup;
 			children = (
+				48259DB31BB2E09C00FC0B4C /* object-store */,
 				48D1013F1B39913D004A4B2C /* wrappers.cpp */,
 				48D101401B39913D004A4B2C /* wrappers.h */,
 				48D101431B3991B6004A4B2C /* librealm-ios.a */,
