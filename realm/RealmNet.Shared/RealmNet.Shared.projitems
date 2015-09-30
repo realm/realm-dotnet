@@ -43,6 +43,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)RealmQueryProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RealmQueryVisitor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RowHandle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SchemaHandle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SharedRealmHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SharedGroupHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)StandaloneCoreProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TableHandle.cs" />
