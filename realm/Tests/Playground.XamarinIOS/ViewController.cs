@@ -1,6 +1,6 @@
 ﻿using System;
 using UIKit;
-using RealmNet.Interop;
+using RealmNet;
 using RealmNet;
 using System.Linq;
 using System.IO;
