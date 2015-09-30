@@ -1,6 +1,9 @@
 Java vs C# Mapping Layers
 ====================
 
+
+How Checked vs Unchecked works in Java
+------------------------------------------------------
 The Java layer has calls to Checked or Unchecked versions of functions in the JNI.
 
 This is invoked by 

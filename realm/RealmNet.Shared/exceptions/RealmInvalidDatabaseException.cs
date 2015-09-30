@@ -16,18 +16,13 @@
 
 using System;
 
-namespace RealmNet
-{
+namespace RealmNet {
 
-/**
- * Class for reporting problems with Realm files.
- */
-public class RealmIOException :  RealmException {
+public class RealmInvalidDatabaseException : RealmFileAccessErrorException {
 
-
-        public RealmIOException(String message)  : base(message) {
+    public RealmInvalidDatabaseException(String message) : base(message)
+    {
     }
-
 }
 
-}
+} // namespace RealmNet

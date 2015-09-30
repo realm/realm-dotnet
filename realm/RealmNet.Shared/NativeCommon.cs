@@ -1,3 +1,19 @@
+/*
+ * Copyright 2015 Realm Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+ 
 /**
 @file NativeCommon.cs provides mappings to common functions that don't fit the Table classes etc.
 */
@@ -11,8 +27,8 @@ using System.Text;
 using ObjCRuntime;
 #endif
 
-namespace RealmNet
-{
+namespace RealmNet {
+
     internal static class NativeCommon
     {
         // declare the type for the MonoPInvokeCallback
@@ -30,65 +46,38 @@ namespace RealmNet
 
             // these are increasing enum value order
             switch ((RealmExceptionCodes)exceptionCode) {
-            case RealmExceptionCodes.Exception_ClassNotFound :
-                throw new RealmClassNotFoundException(message);
-                break;
+            case RealmExceptionCodes.RealmError:
+                throw new RealmException(message);
 
-            case RealmExceptionCodes.Exception_NoSuchField :
-                throw new RealmNoSuchFieldException(message);
-                break;
-
-            case RealmExceptionCodes.Exception_NoSuchMethod :
-                throw new RealmNoSuchMethodException(message);
-                break;
-
-            case RealmExceptionCodes.Exception_IllegalArgument :
-                throw new RealmIllegalArgumentException(message);
-                break;
-
-            case RealmExceptionCodes.Exception_IOFailed :
-                throw new RealmIOFailedException(message);
-                break;
-
-            case RealmExceptionCodes.Exception_FileNotFound :
-                throw new RealmFileNotFoundException(message);
-                break;
-
-            case RealmExceptionCodes.Exception_FileAccessError :
+            case RealmExceptionCodes.RealmFileAccessError:
                 throw new RealmFileAccessErrorException(message);
-                break;
 
-            case RealmExceptionCodes.Exception_IndexOutOfBounds :
-                throw new RealmIndexOutOfBoundsException(message);
-                break;
+            case RealmExceptionCodes.RealmDecryptionFailed:
+                throw new RealmDecryptionFailedException(message);
 
-            case RealmExceptionCodes.Exception_TableInvalid :
-                throw new RealmTableInvalidException(message);
-                break;
+            case RealmExceptionCodes.RealmFileExists:
+                throw new RealmFileExistsException(message);
 
-            case RealmExceptionCodes.Exception_UnsupportedOperation :
-                throw new RealmUnsupportedOperationException(message);
-                break;
+            case RealmExceptionCodes.RealmFileNotFound :
+                throw new RealmFileNotFoundException(message);
 
-            case RealmExceptionCodes.Exception_OutOfMemory :
+            case RealmExceptionCodes.RealmInvalidDatabase :
+                throw new RealmInvalidDatabaseException(message);
+
+            case RealmExceptionCodes.RealmOutOfMemory :
                 throw new RealmOutOfMemoryException(message);
-                break;
 
-            case RealmExceptionCodes.Exception_FatalError :
-                throw new RealmFatalErrorException(message);
-                break;
+            case RealmExceptionCodes.RealmPermissionDenied :
+                throw new RealmPermissionDeniedException(message);
 
-            case RealmExceptionCodes.Exception_RuntimeError :
-                throw new RealmRuntimeErrorException(message);
-                break;
+            case RealmExceptionCodes.StdArgumentOutOfRange :
+                throw new ArgumentOutOfRangeException(message);
 
-            case RealmExceptionCodes.Exception_RowInvalid :
-                throw new RealmRowInvalidException(message);
-                break;
+            case RealmExceptionCodes.StdIndexOutOfRange :
+                throw new IndexOutOfRangeException(message);
 
-            case RealmExceptionCodes.Exception_EncryptionNotSupported :
-                throw new RealmEncryptionNotSupportedException(message);
-                break;
+            case RealmExceptionCodes.StdInvalidOperation :
+                throw new InvalidOperationException(message);
 
             default:
                 throw new Exception(message);
@@ -105,4 +94,4 @@ namespace RealmNet
 		}
 
 	}
-}
+}  // namespace RealmNet

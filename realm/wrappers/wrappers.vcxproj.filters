@@ -24,6 +24,12 @@
     <ClInclude Include="wrappers.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="realm_export_decls.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="exception_catcher.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="wrappers.cpp">
@@ -33,6 +39,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="exceptions_to_managed.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="exception_catcher.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

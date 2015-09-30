@@ -1,3 +1,19 @@
+/*
+* Copyright 2015 Realm Inc.
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+
 #ifndef EXCEPTIONS_TO_MANAGED_H
 #define EXCEPTIONS_TO_MANAGED_H
 
@@ -13,25 +29,21 @@ namespace realm {
     * To aid anyone comparing code, they have retained the same names.
     */
     enum class RealmExceptionCodes : size_t {
-        Exception_ClassNotFound = 0,
-        Exception_NoSuchField = 1,
-        Exception_NoSuchMethod = 2,
-        Exception_IllegalArgument = 3,
-        Exception_IOFailed = 4,
-        Exception_FileNotFound = 5,
-        Exception_FileAccessError = 6,
-        Exception_IndexOutOfBounds = 7,
-        Exception_TableInvalid = 8,
-        Exception_UnsupportedOperation = 9,
-        Exception_OutOfMemory = 10,
-        Exception_FatalError = 11,
-        Exception_RuntimeError = 12,
-        Exception_RowInvalid = 13,
-        Exception_EncryptionNotSupported = 14
+        RealmError = 0,
+        RealmFileAccessError = 1,
+        RealmDecryptionFailed = 2,
+        RealmFileExists = 3,
+        RealmFileNotFound = 4,
+        RealmInvalidDatabase = 5,
+        RealmOutOfMemory = 6,
+        RealmPermissionDenied = 7,
+
+        StdArgumentOutOfRange = 100,
+        StdIndexOutOfRange = 101,
+        StdInvalidOperation = 102
     };
 
-
-    void ThrowManaged(const std::exception& exc, RealmExceptionCodes exceptionCode, const std::string& message = "");
+    void ThrowManaged(RealmExceptionCodes exceptionCode, const std::string& message = "");
     void ThrowManaged();
 }  // namespace realm
 

@@ -1,4 +1,21 @@
+/*
+* Copyright 2015 Realm Inc.
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+
 #include "wrappers.hpp"
+#include "realm_export_decls.h"
 
 #include <realm.hpp>
 #include <realm/util/utf8.hpp>
@@ -6,15 +23,11 @@
 #include <exception>
 #include <string>
 #include "exceptions_to_managed.hpp"
+#include "exception_catcher.hpp"
 
 
 using namespace realm;
 
-#ifdef WIN32
-#define REALM_CORE_WRAPPER_API __declspec( dllexport )
-#else
-#define REALM_CORE_WRAPPER_API
-#endif
 
 #pragma endregion
 
@@ -180,12 +193,12 @@ extern "C" {
 
 #pragma region version  // {{{
 
-  REALM_CORE_WRAPPER_API size_t realm_get_wrapper_ver()
+  REALM_EXPORT size_t realm_get_wrapper_ver()
   {
     return 20150616;
   }
 
-  REALM_CORE_WRAPPER_API int realm_get_ver_minor()
+  REALM_EXPORT int realm_get_ver_minor()
   {
     return realm::Version::get_minor();
   }
@@ -195,24 +208,24 @@ extern "C" {
 #pragma region table // {{{
 
   //return a newly constructed top level table 
-  REALM_CORE_WRAPPER_API Table* new_table()//should be disposed by calling unbind_table_ref
+  REALM_EXPORT Table* new_table()//should be disposed by calling unbind_table_ref
   {
     //return reinterpret_cast<size_t>(LangBindHelper::new_table());	 
     return LangBindHelper::new_table();
   }
 
-  REALM_CORE_WRAPPER_API void table_unbind(Table* table_ptr)
+  REALM_EXPORT void table_unbind(Table* table_ptr)
   {
     LangBindHelper::unbind_table_ptr(table_ptr);
   }
 
-  REALM_CORE_WRAPPER_API size_t table_add_column(realm::Table* table_ptr,size_t type,  uint16_t * name,size_t name_len)
+  REALM_EXPORT size_t table_add_column(realm::Table* table_ptr,size_t type,  uint16_t * name,size_t name_len)
   {
     CSStringAccessor str(name,name_len);
     return table_ptr->add_column(size_t_to_datatype(type),str);
   }
 
-  REALM_CORE_WRAPPER_API Row* table_add_empty_row(Table* table_ptr)
+  REALM_EXPORT Row* table_add_empty_row(Table* table_ptr)
   {   
     size_t row_ndx = table_ptr->add_empty_row(1);
     return new Row((*table_ptr)[row_ndx]);
@@ -220,57 +233,57 @@ extern "C" {
   }
 
   //returns false=0  true=1 we use a size_t as it is likely the fastest type to return
-  REALM_CORE_WRAPPER_API size_t table_get_bool(Table* table_ptr, size_t column_ndx, size_t row_ndx)
+  REALM_EXPORT size_t table_get_bool(Table* table_ptr, size_t column_ndx, size_t row_ndx)
   {
       return bool_to_size_t(table_ptr->get_bool(column_ndx, row_ndx));
   }
 
-  REALM_CORE_WRAPPER_API int64_t table_get_int64(Table* table_ptr, size_t column_ndx, size_t row_ndx)
+  REALM_EXPORT int64_t table_get_int64(Table* table_ptr, size_t column_ndx, size_t row_ndx)
   {
       return table_ptr->get_int(column_ndx, row_ndx);
   }
 
-  REALM_CORE_WRAPPER_API size_t table_get_string(Table* table_ptr, size_t column_ndx, size_t row_ndx, uint16_t * datatochsarp, size_t bufsize)
+  REALM_EXPORT size_t table_get_string(Table* table_ptr, size_t column_ndx, size_t row_ndx, uint16_t * datatochsarp, size_t bufsize)
   {
     StringData fielddata=table_ptr->get_string(column_ndx, row_ndx);
     return stringdata_to_csharpstringbuffer(fielddata, datatochsarp,bufsize);
   }
 
   //call with false=0  true=1 we use a size_t as it is likely the fastest type to return
-  REALM_CORE_WRAPPER_API void table_set_bool(Table* table_ptr, size_t column_ndx, size_t row_ndx, size_t value)
+  REALM_EXPORT void table_set_bool(Table* table_ptr, size_t column_ndx, size_t row_ndx, size_t value)
   {
       table_ptr->set_bool(column_ndx, row_ndx, size_t_to_bool(value));
   }
 
-  REALM_CORE_WRAPPER_API void table_set_int64(Table* table_ptr, size_t column_ndx, size_t row_ndx, int64_t value)
+  REALM_EXPORT void table_set_int64(Table* table_ptr, size_t column_ndx, size_t row_ndx, int64_t value)
   {
       table_ptr->set_int(column_ndx, row_ndx, value);
   }
 
-  REALM_CORE_WRAPPER_API void table_set_string(Table* table_ptr, size_t column_ndx, size_t row_ndx,uint16_t* value,size_t value_len)
+  REALM_EXPORT void table_set_string(Table* table_ptr, size_t column_ndx, size_t row_ndx,uint16_t* value,size_t value_len)
   {
     CSStringAccessor str(value,value_len);
     table_ptr->set_string(column_ndx,row_ndx,str);
   }
 
-  REALM_CORE_WRAPPER_API Query* table_where(Table* table_ptr)
+  REALM_EXPORT Query* table_where(Table* table_ptr)
   {   
     return new Query(table_ptr->where());            
   }
 
-  REALM_CORE_WRAPPER_API size_t table_get_column_index(Table* table_ptr, uint16_t *  column_name, size_t column_name_len)
+  REALM_EXPORT size_t table_get_column_index(Table* table_ptr, uint16_t *  column_name, size_t column_name_len)
   {
       CSStringAccessor str = CSStringAccessor(column_name, column_name_len);
       return table_ptr->get_column_index(str);
   }
 
-  REALM_CORE_WRAPPER_API size_t tableview_get_column_index(TableView* tableView_ptr, uint16_t *  column_name, size_t column_name_len)
+  REALM_EXPORT size_t tableview_get_column_index(TableView* tableView_ptr, uint16_t *  column_name, size_t column_name_len)
   {
       CSStringAccessor str = CSStringAccessor(column_name, column_name_len);
       return tableView_ptr->get_column_index(str);
   }
 
-  REALM_CORE_WRAPPER_API void table_remove_row(Table* table_ptr, Row* row_ptr)
+  REALM_EXPORT void table_remove_row(Table* table_ptr, Row* row_ptr)
   {
     table_ptr->move_last_over(row_ptr->get_index());
   }
@@ -279,17 +292,17 @@ extern "C" {
 
 #pragma region row // {{{
 
-  REALM_CORE_WRAPPER_API void row_delete(Row* row_ptr)
+  REALM_EXPORT void row_delete(Row* row_ptr)
   {
     delete row_ptr;
   }
 
-  REALM_CORE_WRAPPER_API size_t row_get_row_index(Row* row_ptr)
+  REALM_EXPORT size_t row_get_row_index(Row* row_ptr)
   {
     return row_ptr->get_index();
   }
 
-  REALM_CORE_WRAPPER_API size_t row_get_is_attached(Row* row_ptr)
+  REALM_EXPORT size_t row_get_is_attached(Row* row_ptr)
   {
     return bool_to_size_t(row_ptr->is_attached());
   }
@@ -298,13 +311,13 @@ extern "C" {
 
 #pragma region query general // {{{
 
-  REALM_CORE_WRAPPER_API void query_delete(Query* query_ptr)
+  REALM_EXPORT void query_delete(Query* query_ptr)
   {
     delete(query_ptr);
   }
 
   // TODO: Replace this with TableView.
-  REALM_CORE_WRAPPER_API Row* query_find(Query * query_ptr, size_t begin_at_table_row) 
+  REALM_EXPORT Row* query_find(Query * query_ptr, size_t begin_at_table_row) 
   {
     if (begin_at_table_row >= query_ptr->get_table()->size())
       return nullptr;
@@ -319,7 +332,7 @@ extern "C" {
 
   //convert from columnName to columnIndex returns -1 if the string is not a column name
   //assuming that the get_table() does not return anything that must be deleted
-  REALM_CORE_WRAPPER_API size_t query_get_column_index(Query* query_ptr,uint16_t *  column_name,size_t column_name_len)
+  REALM_EXPORT size_t query_get_column_index(Query* query_ptr,uint16_t *  column_name,size_t column_name_len)
   {
     CSStringAccessor str(column_name,column_name_len);
     return query_ptr->get_table()->get_column_index(str);
@@ -329,17 +342,17 @@ extern "C" {
 
 #pragma region query group // {{{
 
-  REALM_CORE_WRAPPER_API void query_group_begin(Query * query_ptr)
+  REALM_EXPORT void query_group_begin(Query * query_ptr)
   {
       query_ptr->group();
   }
 
-  REALM_CORE_WRAPPER_API void query_group_end(Query * query_ptr)
+  REALM_EXPORT void query_group_end(Query * query_ptr)
   {
       query_ptr->end_group();
   }
 
-  REALM_CORE_WRAPPER_API void query_or(Query * query_ptr)
+  REALM_EXPORT void query_or(Query * query_ptr)
   {
       query_ptr->Or();
   }
@@ -348,13 +361,13 @@ extern "C" {
 
 #pragma region query string // {{{
 
-  REALM_CORE_WRAPPER_API void query_string_equal(Query * query_ptr, size_t columnIndex, uint16_t* value, size_t value_len)
+  REALM_EXPORT void query_string_equal(Query * query_ptr, size_t columnIndex, uint16_t* value, size_t value_len)
   {
       CSStringAccessor str(value, value_len);
       query_ptr->equal(columnIndex, str);
   }
 
-  REALM_CORE_WRAPPER_API void query_string_not_equal(Query * query_ptr, size_t columnIndex, uint16_t* value, size_t value_len)
+  REALM_EXPORT void query_string_not_equal(Query * query_ptr, size_t columnIndex, uint16_t* value, size_t value_len)
   {
       CSStringAccessor str(value, value_len);
       query_ptr->not_equal(columnIndex, str);
@@ -363,12 +376,12 @@ extern "C" {
 #pragma endregion // }}}
 
 #pragma region query bool // {{{
-  REALM_CORE_WRAPPER_API void query_bool_equal(Query * query_ptr, size_t columnIndex, size_t value)
+  REALM_EXPORT void query_bool_equal(Query * query_ptr, size_t columnIndex, size_t value)
   {
       query_ptr->equal(columnIndex, size_t_to_bool(value));
   }
 
-  REALM_CORE_WRAPPER_API void query_bool_not_equal(Query * query_ptr, size_t columnIndex, size_t value)
+  REALM_EXPORT void query_bool_not_equal(Query * query_ptr, size_t columnIndex, size_t value)
   {
       query_ptr->not_equal(columnIndex, size_t_to_bool(value));
   }
@@ -377,32 +390,32 @@ extern "C" {
 
 
 #pragma region query int // {{{
-  REALM_CORE_WRAPPER_API void query_int_equal(Query * query_ptr, size_t columnIndex, size_t value)
+  REALM_EXPORT void query_int_equal(Query * query_ptr, size_t columnIndex, size_t value)
   {
       query_ptr->equal(columnIndex, static_cast<int>(value));
   }
 
-  REALM_CORE_WRAPPER_API void query_int_not_equal(Query * query_ptr, size_t columnIndex, size_t value)
+  REALM_EXPORT void query_int_not_equal(Query * query_ptr, size_t columnIndex, size_t value)
   {
       query_ptr->not_equal(columnIndex, static_cast<int>(value));
   }
 
-  REALM_CORE_WRAPPER_API void query_int_less(Query * query_ptr, size_t columnIndex, size_t value)
+  REALM_EXPORT void query_int_less(Query * query_ptr, size_t columnIndex, size_t value)
   {
       query_ptr->less(columnIndex, static_cast<int>(value));
   }
 
-  REALM_CORE_WRAPPER_API void query_int_less_equal(Query * query_ptr, size_t columnIndex, size_t value)
+  REALM_EXPORT void query_int_less_equal(Query * query_ptr, size_t columnIndex, size_t value)
   {
       query_ptr->less_equal(columnIndex, static_cast<int>(value));
   }
 
-  REALM_CORE_WRAPPER_API void query_int_greater(Query * query_ptr, size_t columnIndex, size_t value)
+  REALM_EXPORT void query_int_greater(Query * query_ptr, size_t columnIndex, size_t value)
   {
       query_ptr->greater(columnIndex, static_cast<int>(value));
   }
 
-  REALM_CORE_WRAPPER_API void query_int_greater_equal(Query * query_ptr, size_t columnIndex, size_t value)
+  REALM_EXPORT void query_int_greater_equal(Query * query_ptr, size_t columnIndex, size_t value)
   {
       query_ptr->greater_equal(columnIndex, static_cast<int>(value));
   }
@@ -427,25 +440,22 @@ extern "C" {
 //changed into a newly created group. The data pointed to by data must not be accessed after this call is finished, as C# will
 //deallocate it again as soon as the call returns
 //NOTE THAT tHE GROUP RETURNED HERE MUST BE FREED BY CALLING GROUP_DELETE WHEN IT IS NOT USED ANYMORE BY C#
-REALM_CORE_WRAPPER_API Group* group_from_binary_data(const char* data, std::size_t size)
+REALM_EXPORT Group* group_from_binary_data(const char* data, std::size_t size)
 {
     try {
       BinaryData bd(data,size);
       return new Group(bd,false);
     } 
-    catch (...)
-    {
-        return NULL;
-    }
+    CATCH_STD
 }
 
 
-REALM_CORE_WRAPPER_API Group* new_group() //should be disposed by calling group_delete
+REALM_EXPORT Group* new_group() //should be disposed by calling group_delete
 {
     return  new Group();    
 }
 
-REALM_CORE_WRAPPER_API void group_delete(Group* group_ptr )
+REALM_EXPORT void group_delete(Group* group_ptr )
 {  
     delete(group_ptr);
 }
@@ -462,7 +472,7 @@ REALM_CORE_WRAPPER_API void group_delete(Group* group_ptr )
     };
 */
 
-  REALM_CORE_WRAPPER_API Group* new_group_file(uint16_t * name, size_t name_len, size_t openMode)//should be disposed by calling group_delete
+  REALM_EXPORT Group* new_group_file(uint16_t * name, size_t name_len, size_t openMode)//should be disposed by calling group_delete
 {      
 
     //no like taking an enum from C# now it is unknown what underlying type Group::OpenMode might have
@@ -484,31 +494,18 @@ REALM_CORE_WRAPPER_API void group_delete(Group* group_ptr )
 
       return new Group(StringData(name2), 0, om); 
     }
-
-    catch (std::exception& exc) {
-        ThrowManaged(exc, RealmExceptionCodes::Exception_IOFailed);  // TODO get better message argument like Java
-        return NULL;
-    }
-    catch (...) {
-        std::cerr<<"CPPDLL: something non exception caught - returning NULL\n";
-        return NULL;
-    }
+    CATCH_STD
 }
 
 //write group to specified file
-REALM_CORE_WRAPPER_API size_t group_write(Group* group_ptr,uint16_t * name, size_t name_len)
-
+REALM_EXPORT size_t group_write(Group* group_ptr,uint16_t * name, size_t name_len)
 {   
     try {
-    CSStringAccessor str(name,name_len);    
-    group_ptr->write(StringData(str));
-    return 0;//0 means no exception thrown
+        CSStringAccessor str(name,name_len);    
+        group_ptr->write(StringData(str));
+        return 0;//0 means no exception thrown
     }
-    //if the file is already there, or other file related trouble
-   catch (...) {     
-       ThrowManaged();
-       return 1;//1 means IO problem exception was thrown. C# always use IOException in cases like this anyways so no need to detail it out further
-   }
+    CATCH_STD
 }
 
 /// Write this database to a memory buffer.
@@ -519,7 +516,7 @@ REALM_CORE_WRAPPER_API size_t group_write(Group* group_ptr,uint16_t * name, size
 //  BinaryData write_to_mem() const;
 // The caller should call group_write_to_mem_free with the pointer returned from group_write_to_mem
 //function returns a pointer to the data.
-REALM_CORE_WRAPPER_API const char * group_write_to_mem(Group*  group_ptr,  size_t* size)
+REALM_EXPORT const char * group_write_to_mem(Group*  group_ptr,  size_t* size)
 {
 
     BinaryData bd=group_ptr->write_to_mem();
@@ -529,36 +526,33 @@ REALM_CORE_WRAPPER_API const char * group_write_to_mem(Group*  group_ptr,  size_
 
 //must be called with a pointer that was returned by group_write_to_mem
 //DO NOT CALL IF THAT POINTER RETURNED WAS NULL
-REALM_CORE_WRAPPER_API void group_write_to_mem_free(char * binarydata_ptr){
+REALM_EXPORT void group_write_to_mem_free(char * binarydata_ptr){
     if(binarydata_ptr!=NULL)  {
      std::free(binarydata_ptr);
     }
 }
 
-REALM_CORE_WRAPPER_API size_t group_commit(Group* group_ptr){
-try {
-    group_ptr->commit();
-    return 0;
-}
- catch(...){
-     return 1;
- }
+REALM_EXPORT size_t group_commit(Group* group_ptr)
+{
+    try {
+        group_ptr->commit();
+        return 0;
+    }
+    CATCH_STD
 }
 
-REALM_CORE_WRAPPER_API size_t group_equals(Group* group_ptr1, Group* group_ptr2)
+REALM_EXPORT size_t group_equals(Group* group_ptr1, Group* group_ptr2)
 {
     try {
         return bool_to_size_t(*group_ptr1==*group_ptr2);//utilizing operator overload
     }
-    catch(...){
-        return bool_to_size_t_with_errorcode(-1);//will return error -1 to a C# function expecting a bool
-    }	
+    CATCH_STD
 }
 
 //inequality is handled in the binding by negating equality and thus we save one interop entry, and linking in the code for !=
 
 
-REALM_CORE_WRAPPER_API size_t group_to_string(Group* group_ptr,uint16_t * data, size_t bufsize,size_t limit)
+REALM_EXPORT size_t group_to_string(Group* group_ptr,uint16_t * data, size_t bufsize,size_t limit)
 {   
    std::ostringstream ss;
    group_ptr->to_string(ss);
@@ -568,32 +562,25 @@ REALM_CORE_WRAPPER_API size_t group_to_string(Group* group_ptr,uint16_t * data, 
 
 
 //return packed size_t with errorcode or a encoded boolean
-REALM_CORE_WRAPPER_API size_t  group_is_empty(Group* group_ptr) {
+REALM_EXPORT size_t  group_is_empty(Group* group_ptr) 
+{
     try {
         return bool_to_size_t(group_ptr->is_empty());//if we don't get an exception things went well
     }
-    catch(...)//things did not go well
-    {
-        return bool_to_size_t_with_errorcode(-1);//return an error code to indicate this
-        //1 as error means that is_empty is not to be trusted and that there was an
-        //exception when asking the group. Binding should throw a general exception
-        //InvalidOperation or the like, and in text describe that a call to is empty
-        //failed in an unspecified way.
-    }
+    CATCH_STD
 }
 
 
-REALM_CORE_WRAPPER_API size_t group_size( Group* group_ptr){
+REALM_EXPORT size_t group_size( Group* group_ptr)
+{
     try{
         return group_ptr->size();
     }
-    catch (...){
-        return -1;//-1 indicates an exception was thrown in core
-    }
+    CATCH_STD
 }
 
 //should be disposed by calling unbind_table_ref
-REALM_CORE_WRAPPER_API Table* group_get_or_add_table(Group* group_ptr,uint16_t* table_name,size_t table_name_len)
+REALM_EXPORT Table* group_get_or_add_table(Group* group_ptr,uint16_t* table_name,size_t table_name_len)
 {   
     CSStringAccessor str(table_name,table_name_len);
     bool dummy;
@@ -603,20 +590,20 @@ REALM_CORE_WRAPPER_API Table* group_get_or_add_table(Group* group_ptr,uint16_t* 
 //langbindhelper should be extended to have get_table_by_index itself if it wsa friend with Group it could
 //call the private group method that takes an index and returns a table. Round tripping via name seems a bit
 //inefficient
-REALM_CORE_WRAPPER_API Table* group_get_table_by_index(Group* group_ptr,size_t table_ndx)
+REALM_EXPORT Table* group_get_table_by_index(Group* group_ptr,size_t table_ndx)
 {
     StringData sd = group_ptr->get_table_name(table_ndx);
     return LangBindHelper::get_table(*group_ptr,sd);
 }
 
-REALM_CORE_WRAPPER_API size_t group_has_table(Group* group_ptr, uint16_t * table_name,size_t table_name_len)//should be disposed by calling unbind_table_ref
+REALM_EXPORT size_t group_has_table(Group* group_ptr, uint16_t * table_name,size_t table_name_len)//should be disposed by calling unbind_table_ref
 {    
     CSStringAccessor str(table_name,table_name_len);
     return bool_to_size_t(group_ptr->has_table(str));
 }
 
 //return a new shared group connected to a file, no_create and durabillity level are left to the defaults defined in core
-REALM_CORE_WRAPPER_API SharedGroup* new_shared_group_file_defaults(uint16_t * name,size_t name_len)
+REALM_EXPORT SharedGroup* new_shared_group_file_defaults(uint16_t * name,size_t name_len)
 {
     CSStringAccessor str(name,name_len);
     return new SharedGroup(StringData(str));   
@@ -625,7 +612,7 @@ REALM_CORE_WRAPPER_API SharedGroup* new_shared_group_file_defaults(uint16_t * na
 //returns NULL if an exception was thrown, otherwise a shared group handle
 //exceptions are thrown usually if there is some kind of IO eror, e.g. the filename is invalid or with not enought rights
 //or locked or something
-REALM_CORE_WRAPPER_API SharedGroup* new_shared_group_file(uint16_t * name,size_t name_len,size_t no_create,size_t durabillity_level)
+REALM_EXPORT SharedGroup* new_shared_group_file(uint16_t * name,size_t name_len,size_t no_create,size_t durabillity_level)
 {
 	try {
     CSStringAccessor str(name,name_len);
@@ -636,24 +623,22 @@ REALM_CORE_WRAPPER_API SharedGroup* new_shared_group_file(uint16_t * name,size_t
 	}
 }
 
-REALM_CORE_WRAPPER_API void shared_group_delete(SharedGroup* g) {
+REALM_EXPORT void shared_group_delete(SharedGroup* g) {
     delete g;
 }
 
 //binding must ensure that the returned group is never modified
-REALM_CORE_WRAPPER_API const Group* shared_group_begin_read(SharedGroup* shared_group_ptr)
+REALM_EXPORT const Group* shared_group_begin_read(SharedGroup* shared_group_ptr)
 {
     try {
-    return &shared_group_ptr->begin_read();    
+        return &shared_group_ptr->begin_read();    
    }
-    catch (...) {
-    return NULL;
-   }
+    CATCH_STD
 }
 
 //binding must ensure that the returned group is never modified
 //although we return -1 on exceptions, core promises to never throw any
-REALM_CORE_WRAPPER_API size_t shared_group_end_read(SharedGroup* shared_group_ptr)
+REALM_EXPORT size_t shared_group_end_read(SharedGroup* shared_group_ptr)
 {    
    try {
       shared_group_ptr->end_read();    
@@ -666,19 +651,17 @@ REALM_CORE_WRAPPER_API size_t shared_group_end_read(SharedGroup* shared_group_pt
 }
 
 //binding must ensure that the returned group is never modified
-REALM_CORE_WRAPPER_API const Group* shared_group_begin_write(SharedGroup* shared_group_ptr)
+REALM_EXPORT const Group* shared_group_begin_write(SharedGroup* shared_group_ptr)
 {
    try {
       return &shared_group_ptr->begin_write();    
     }
-   catch (...) {
-   return NULL;
-   }
+   CATCH_STD
 }
 
 //we cannot let exceptions flow back to C# because that only works with windows and .net
 //- mono runtime crashes itself if we let an exception throw back to the c# caller
-REALM_CORE_WRAPPER_API size_t shared_group_commit(SharedGroup* shared_group_ptr)
+REALM_EXPORT size_t shared_group_commit(SharedGroup* shared_group_ptr)
 {
    try {
       shared_group_ptr->commit();
@@ -694,15 +677,13 @@ REALM_CORE_WRAPPER_API size_t shared_group_commit(SharedGroup* shared_group_ptr)
 //currently, we don't transmit exception error codes back to the binding
 //todo:return more specific error codes than just -1
 //however, rollback() is NOEXCEPT so theretically it should never throw any errors at us
-REALM_CORE_WRAPPER_API size_t shared_group_rollback(SharedGroup* shared_group_ptr)
+REALM_EXPORT size_t shared_group_rollback(SharedGroup* shared_group_ptr)
 {
     try {
       shared_group_ptr->rollback();
       return 0;//indicate success
     }
-    catch(...){
-        return -1;//something impossible happened
-    }
+    CATCH_STD
 }
 #pragma endregion // }}}
 

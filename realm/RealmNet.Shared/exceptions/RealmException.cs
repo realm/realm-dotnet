@@ -16,16 +16,16 @@
 
 using System;
 
-namespace RealmNet
-{
+namespace RealmNet {
 
  /**
  * RealmException is Realm specific exceptions.
  */
 public class RealmException :  Exception {
 
-        public RealmException(String detailMessage)  : base(detailMessage)  {
+    public RealmException(String detailMessage) : base(detailMessage)
+    {
     }
 }
 
-}
+}  // namespace RealmNet

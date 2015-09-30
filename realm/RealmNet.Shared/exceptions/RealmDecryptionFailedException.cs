@@ -16,19 +16,13 @@
 
 using System;
 
-namespace RealmNet
-{
-/**
- * On some devices (HTC One X for example), for some reason, the system doesn't pass the right
- * parameter (siginfo_t.si_addr) to the segfault signal handler which our encryption mechanism
- * relies on. Realm will try to detect if this problem exists on the device when an encrypted
- * Realm is being created/opened. A RealmFatalErrorException will be thrown if this
- * problem exists which means that encryption cannot be used on this device.
- */
-public class RealmFatalErrorException :  RealmException {
-        public RealmFatalErrorException(String message) : base(message) {
-       
+namespace RealmNet {
+
+public class RealmDecryptionFailedException : RealmFileAccessErrorException {
+
+    public RealmDecryptionFailedException(String message) : base(message)
+    {
     }
 }
 
-}
+} // namespace RealmNet

@@ -162,11 +162,14 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\realm-core\src\win32\pthread\pthread.h" />
     <ClInclude Include="exceptions_to_managed.hpp" />
+    <ClInclude Include="exception_catcher.hpp" />
+    <ClInclude Include="realm_export_decls.h" />
     <ClInclude Include="wrappers.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\realm-core\src\win32\pthread\pthread.c" />
     <ClCompile Include="exceptions_to_managed.cpp" />
+    <ClCompile Include="exception_catcher.cpp" />
     <ClCompile Include="wrappers.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -623,6 +623,12 @@ NativeTable.cs
 RowHandle.cs
 - use new NativeRow instead
 
+WindowsDLLWrapperDecls.h
+- added as requested in PR to have central
+
+
+exception_catcher.h/cpp
+- added
 
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #155 EXCEPTION HANDLING IN WRAPPERS - CSHARP SIDE AND COMMS WITHOUT THROWING
@@ -666,7 +672,7 @@ Added "unsafe" compilation option to enable the callback
 
 
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-#155 Intercepting exceptions in wrappers
+#155 Intercepting exceptions in wrappers - Reconcile exceptions with spreadsheet
 
 ExceptionsToManaged.cpp/.h 
 - added
@@ -674,6 +680,47 @@ ExceptionsToManaged.cpp/.h
 
 Wrappers.cpp
 - moved exception throwing code to ExceptionsToManaged.cpp
-- new_group_file - call ThrowManaged with an exception and code
-- group_write - call ThrowManaged()
+- all catch statements replaced by CATCH_STD macro
+
+Removed exception classes added to support codes as we are NOT forwarding them
+	RealmClassNotFoundException
+	RealmEncryptionNotSupportedException
+	RealmFatalErrorException
+	RealmIllegalArgumentException
+	RealmIndexOutOfBoundsException	
+	RealmIOException
+	RealmIOFailedException
+	RealmMigrationNeededException
+	RealmNoSuchFieldException
+	RealmNoSuchMethodException
+	RealmRowInvalidException
+	RealmTableInvalidException
+	RealmUnsupportedOperationException
+
+
+Added new subclasses of RealmFileAccessException
+	RealmFileExistsException
+	RealmPermissionDeniedException
+	RealmDecryptionFailedException
+	RealmInvalidDatabaseException
+
+
+RealmExceptionCodes.cs
+ExceptionsToManaged.h
+- rewrote codes to match new exceptions hierarchy from spreadsheet
+
+
+ExceptionsToManaged.cpp
+- change "if" checks to asserts as per PR review
+- realm::ThrowManaged don't take exception parameter any more
+
+NativeCommon.cs
+- ExceptionThrower updated to new codes and exception types
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#155 Intercepting exceptions in wrappers - responses to PR
+WindowsDLLWrapperDecls.h
+- renamed realm_export_decls.h
+- REALM_CORE_WRAPPER_API renamed REALM_EXPORT
 
