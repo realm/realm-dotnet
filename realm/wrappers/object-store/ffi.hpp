@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef REALM_FFI
-#define REALM_FFI
+#ifndef REALM_FFI_HPP
+#define REALM_FFI_HPP
 
 #include <string>
 
@@ -35,4 +35,4 @@ struct RealmError {
 
 }
 
-#endif // REALM_FFI
+#endif // REALM_FFI_HPP
