@@ -15,40 +15,19 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="wrappers.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\realm-core\src\win32\pthread\pthread.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="object-store\index_set.hpp">
+    <ClInclude Include="exceptions_to_managed.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="object-store\object_schema.hpp">
+    <ClInclude Include="wrappers.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="object-store\object_store.hpp">
+    <ClInclude Include="realm_export_decls.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="object-store\property.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="object-store\realm_delegate.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="object-store\schema.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="object-store\shared_realm.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="object-store\transact_log_handler.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="object-store\windows\external_commit_helper.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="object-store\ffi.hpp">
+    <ClInclude Include="exception_catcher.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -59,31 +38,10 @@
     <ClCompile Include="..\..\..\realm-core\src\win32\pthread\pthread.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="object-store\index_set.cpp">
+    <ClCompile Include="exceptions_to_managed.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="object-store\object_schema.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="object-store\object_store.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="object-store\schema.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="object-store\shared_realm.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="object-store\transact_log_handler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="object-store\windows\external_commit_helper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="realm-csharp.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="object-store\ffi.cpp">
+    <ClCompile Include="exception_catcher.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

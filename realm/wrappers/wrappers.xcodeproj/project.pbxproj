@@ -7,17 +7,24 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		42A540B21BBB31DF00C5F98E /* exception_catcher.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42A540AE1BBB31DF00C5F98E /* exception_catcher.cpp */; settings = {ASSET_TAGS = (); }; };
+		42A540B31BBB31DF00C5F98E /* exception_catcher.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 42A540AF1BBB31DF00C5F98E /* exception_catcher.hpp */; settings = {ASSET_TAGS = (); }; };
+		42A540B41BBB31DF00C5F98E /* exceptions_to_managed.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42A540B01BBB31DF00C5F98E /* exceptions_to_managed.cpp */; settings = {ASSET_TAGS = (); }; };
+		42A540B51BBB31DF00C5F98E /* exceptions_to_managed.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 42A540B11BBB31DF00C5F98E /* exceptions_to_managed.hpp */; settings = {ASSET_TAGS = (); }; };
 		48D101411B39913D004A4B2C /* wrappers.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48D1013F1B39913D004A4B2C /* wrappers.cpp */; };
-		48D101421B39913D004A4B2C /* wrappers.h in Headers */ = {isa = PBXBuildFile; fileRef = 48D101401B39913D004A4B2C /* wrappers.h */; };
+		48D101421B39913D004A4B2C /* wrappers.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48D101401B39913D004A4B2C /* wrappers.hpp */; };
 		48D101451B3991B6004A4B2C /* librealm-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 48D101431B3991B6004A4B2C /* librealm-ios.a */; };
 		48D101461B3991B6004A4B2C /* librealm.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 48D101441B3991B6004A4B2C /* librealm.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		48259DB31BB2E09C00FC0B4C /* object-store */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "object-store"; sourceTree = "<group>"; };
+		42A540AE1BBB31DF00C5F98E /* exception_catcher.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = exception_catcher.cpp; sourceTree = "<group>"; };
+		42A540AF1BBB31DF00C5F98E /* exception_catcher.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = exception_catcher.hpp; sourceTree = "<group>"; };
+		42A540B01BBB31DF00C5F98E /* exceptions_to_managed.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = exceptions_to_managed.cpp; sourceTree = "<group>"; };
+		42A540B11BBB31DF00C5F98E /* exceptions_to_managed.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = exceptions_to_managed.hpp; sourceTree = "<group>"; };
 		48D101381B39902E004A4B2C /* libwrappers.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libwrappers.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		48D1013F1B39913D004A4B2C /* wrappers.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = wrappers.cpp; sourceTree = "<group>"; };
-		48D101401B39913D004A4B2C /* wrappers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = wrappers.h; sourceTree = "<group>"; };
+		48D101401B39913D004A4B2C /* wrappers.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = wrappers.hpp; sourceTree = "<group>"; };
 		48D101431B3991B6004A4B2C /* librealm-ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "librealm-ios.a"; path = "core/librealm-ios.a"; sourceTree = "<group>"; };
 		48D101441B3991B6004A4B2C /* librealm.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = librealm.a; path = core/librealm.a; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -38,9 +45,12 @@
 		48D1012F1B39902E004A4B2C = {
 			isa = PBXGroup;
 			children = (
-				48259DB31BB2E09C00FC0B4C /* object-store */,
+				42A540AE1BBB31DF00C5F98E /* exception_catcher.cpp */,
+				42A540AF1BBB31DF00C5F98E /* exception_catcher.hpp */,
+				42A540B01BBB31DF00C5F98E /* exceptions_to_managed.cpp */,
+				42A540B11BBB31DF00C5F98E /* exceptions_to_managed.hpp */,
 				48D1013F1B39913D004A4B2C /* wrappers.cpp */,
-				48D101401B39913D004A4B2C /* wrappers.h */,
+				48D101401B39913D004A4B2C /* wrappers.hpp */,
 				48D101431B3991B6004A4B2C /* librealm-ios.a */,
 				48D101441B3991B6004A4B2C /* librealm.a */,
 				48D101391B39902E004A4B2C /* Products */,
@@ -62,7 +72,9 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				48D101421B39913D004A4B2C /* wrappers.h in Headers */,
+				48D101421B39913D004A4B2C /* wrappers.hpp in Headers */,
+				42A540B31BBB31DF00C5F98E /* exception_catcher.hpp in Headers */,
+				42A540B51BBB31DF00C5F98E /* exceptions_to_managed.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -122,7 +134,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				42A540B21BBB31DF00C5F98E /* exception_catcher.cpp in Sources */,
 				48D101411B39913D004A4B2C /* wrappers.cpp in Sources */,
+				42A540B41BBB31DF00C5F98E /* exceptions_to_managed.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

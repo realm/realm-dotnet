@@ -161,29 +161,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\realm-core\src\win32\pthread\pthread.h" />
-    <ClInclude Include="object-store\ffi.hpp" />
-    <ClInclude Include="object-store\index_set.hpp" />
-    <ClInclude Include="object-store\object_schema.hpp" />
-    <ClInclude Include="object-store\object_store.hpp" />
-    <ClInclude Include="object-store\property.hpp" />
-    <ClInclude Include="object-store\realm_delegate.hpp" />
-    <ClInclude Include="object-store\schema.hpp" />
-    <ClInclude Include="object-store\shared_realm.hpp" />
-    <ClInclude Include="object-store\transact_log_handler.hpp" />
-    <ClInclude Include="object-store\windows\external_commit_helper.hpp" />
-    <ClInclude Include="wrappers.h" />
+    <ClInclude Include="exceptions_to_managed.hpp" />
+    <ClInclude Include="exception_catcher.hpp" />
+    <ClInclude Include="realm_export_decls.h" />
+    <ClInclude Include="wrappers.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\realm-core\src\win32\pthread\pthread.c" />
-    <ClCompile Include="object-store\ffi.cpp" />
-    <ClCompile Include="object-store\index_set.cpp" />
-    <ClCompile Include="object-store\object_schema.cpp" />
-    <ClCompile Include="object-store\object_store.cpp" />
-    <ClCompile Include="object-store\schema.cpp" />
-    <ClCompile Include="object-store\shared_realm.cpp" />
-    <ClCompile Include="object-store\transact_log_handler.cpp" />
-    <ClCompile Include="object-store\windows\external_commit_helper.cpp" />
-    <ClCompile Include="realm-csharp.cpp" />
+    <ClCompile Include="exceptions_to_managed.cpp" />
+    <ClCompile Include="exception_catcher.cpp" />
     <ClCompile Include="wrappers.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
