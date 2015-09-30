@@ -15,7 +15,7 @@
 */
 
 #include "exceptions_to_managed.hpp"
-#include "WindowsDLLWrapperDecls.h"
+#include "realm_export_decls.h"
 #include <cassert>
 
 using namespace realm;
@@ -42,7 +42,7 @@ void realm::ThrowManaged()
 
 extern "C" {
     
-    REALM_CORE_WRAPPER_API void set_exception_thrower(ManagedExceptionThrowerT userThrower)
+    REALM_EXPORT void set_exception_thrower(ManagedExceptionThrowerT userThrower)
     {
         ManagedExceptionThrower = userThrower;
     }

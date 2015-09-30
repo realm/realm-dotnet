@@ -11,8 +11,10 @@ The Visual Studio project wrappers.vcxproj shows files as they are broken down.
 
 Building Wrappers
 -----------------------
-* Android - built with the makefile `jni/Android.mk`
-* IOS builds `libwrappers.a` via `Makefile` with a download step pulling the core from `http://static.realm.io/downloads/core/realm-core-$(CORE_VER).tar.bz2` so you currently have to know the version of core being built
+* Android - built with the makefile `jni/Android.mk` and will eventually be covered by the `make all` below
+* IOS builds `libwrappers.a` via `Makefile` with a download step pulling the core from `http://static.realm.io/downloads/core/realm-core-$(CORE_VER).tar.bz2` 
+	* go into the wrappers dir and just `make all`
+	* if you have added, deleted or renamed files, you need to update `wrappers.xcodeproj`
 * Windows builds `wrappersx86.dll` and `wrappersx64.dll` with the `wrappers.vcxproj` which is included in RealmNet.sln and getting core from the adjacent `realm-core` directory
 
 

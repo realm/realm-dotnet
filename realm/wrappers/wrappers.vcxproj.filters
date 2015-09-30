@@ -24,7 +24,7 @@
     <ClInclude Include="wrappers.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="WindowsDLLWrapperDecls.h">
+    <ClInclude Include="realm_export_decls.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="exception_catcher.hpp">

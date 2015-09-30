@@ -717,3 +717,10 @@ ExceptionsToManaged.cpp
 NativeCommon.cs
 - ExceptionThrower updated to new codes and exception types
 
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#155 Intercepting exceptions in wrappers - responses to PR
+WindowsDLLWrapperDecls.h
+- renamed realm_export_decls.h
+- REALM_CORE_WRAPPER_API renamed REALM_EXPORT
+

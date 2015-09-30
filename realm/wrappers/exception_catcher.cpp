@@ -16,7 +16,6 @@
 
 #include <stdexcept>
 #include <sstream>
-
 #include "exception_catcher.hpp"
 #include "exceptions_to_managed.hpp"
 
@@ -30,7 +29,7 @@ using namespace realm;
 /**
 @note mostly copied from util.cpp in Java but has a much richer range of exceptions
 */
-void ConvertException(const char *file, int line)
+void ConvertException(const char* file, int line)
 {
     std::ostringstream ss;
     // use a lambda to avoid repeating the following composition in each catch

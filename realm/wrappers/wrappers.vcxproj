@@ -163,7 +163,7 @@
     <ClInclude Include="..\..\..\realm-core\src\win32\pthread\pthread.h" />
     <ClInclude Include="exceptions_to_managed.hpp" />
     <ClInclude Include="exception_catcher.hpp" />
-    <ClInclude Include="WindowsDLLWrapperDecls.h" />
+    <ClInclude Include="realm_export_decls.h" />
     <ClInclude Include="wrappers.hpp" />
   </ItemGroup>
   <ItemGroup>
