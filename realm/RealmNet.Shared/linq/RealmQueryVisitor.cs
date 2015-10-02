@@ -27,7 +27,7 @@ namespace RealmNet
             foreach (var rowHandle in handles)
             {
                 var o = Activator.CreateInstance(innerType);
-                ((RealmObject)o)._Manage(_realm, _coreProvider, rowHandle);
+                ((RealmObject)o)._Manage(_realm, rowHandle);
                 add.Invoke(list, new[] { o });
             }
             return (IEnumerable)list;

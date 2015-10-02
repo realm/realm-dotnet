@@ -18,7 +18,6 @@ namespace IntegrationTests
         [SetUp]
         public void Setup()
         {
-            Realm.ActiveCoreProvider = new CoreProvider();
             _databasePath = Path.GetTempFileName();
             _realm = Realm.GetInstance(_databasePath);
         }
