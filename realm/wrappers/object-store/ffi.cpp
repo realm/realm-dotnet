@@ -1,4 +1,5 @@
 #include <iostream>
+#include <codecvt>
 #include <realm.hpp>
 #include <realm/table.hpp>
 #include <realm/commit_log.hpp>
@@ -7,6 +8,7 @@
 #include "transact_log_handler.hpp"
 #include "shared_realm.hpp"
 #include "schema.hpp"
+#include "utf16accessor.hpp"
 
 #ifdef WIN32
 #define REALM_EXPORT __declspec( dllexport )
@@ -101,14 +103,20 @@ REALM_EXPORT Schema* schema_new(ObjectSchema* object_schemas, size_t len)
 REALM_EXPORT Schema* schema_generate()
 {
     ObjectSchema os1;
-    os1.name = "os1";
+    os1.name = "Person";
 
     Property p1;
-    p1.name = "Property 1";
-    p1.type = PropertyType::PropertyTypeInt;
+    p1.name = "FirstName";
+    p1.type = PropertyType::PropertyTypeString;
     p1.object_type = std::string();
 
+    Property p2;
+    p2.name = "LastName";
+    p2.type = PropertyType::PropertyTypeString;
+    p2.object_type = std::string();
+
     os1.properties.push_back(std::move(p1));
+    os1.properties.push_back(std::move(p2));
 
     std::vector<ObjectSchema> oss = { os1 };
     
@@ -141,11 +149,14 @@ REALM_EXPORT bool shared_realm_has_table(SharedRealm* realm, const char* name)
     return g->has_table(name);
 }
 
-REALM_EXPORT Table* shared_realm_get_table(SharedRealm* realm, const char* name)
+REALM_EXPORT Table* shared_realm_get_table(SharedRealm* realm, uint16_t* table_name, size_t table_name_len)
 {
     Group* g = (*realm)->read_group();
+
+    Utf16StringAccessor str(table_name,table_name_len);
+
     bool dummy; // get_or_add_table sets this to true if the table was added.
-    return LangBindHelper::get_or_add_table(*g, name, &dummy);
+    return LangBindHelper::get_or_add_table(*g, str, &dummy);
 }
 
 REALM_EXPORT void shared_realm_begin_transaction(SharedRealm* realm)
