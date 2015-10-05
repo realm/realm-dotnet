@@ -91,7 +91,28 @@ REALM_EXPORT void object_schema_add_property(ObjectSchema* cls, const char* name
 
 REALM_EXPORT Schema* schema_new(ObjectSchema* object_schemas, size_t len)
 {
-    return new Schema(std::vector<ObjectSchema>(object_schemas, object_schemas + len * sizeof(ObjectSchema)));
+    std::vector<ObjectSchema> os;
+    for (int i = 0; i != len; ++i)
+        os.push_back(object_schemas[i]);
+
+    return new Schema(os);
+}
+
+REALM_EXPORT Schema* schema_generate()
+{
+    ObjectSchema os1;
+    os1.name = "os1";
+
+    Property p1;
+    p1.name = "Property 1";
+    p1.type = PropertyType::PropertyTypeInt;
+    p1.object_type = std::string();
+
+    os1.properties.push_back(std::move(p1));
+
+    std::vector<ObjectSchema> oss = { os1 };
+    
+    return new Schema(oss);
 }
 
 REALM_EXPORT SharedRealm* shared_realm_open(Schema* schema, const char* path, bool read_only, SharedGroup::DurabilityLevel durability,
@@ -118,6 +139,13 @@ REALM_EXPORT bool shared_realm_has_table(SharedRealm* realm, const char* name)
 {
     Group* g = (*realm)->read_group();
     return g->has_table(name);
+}
+
+REALM_EXPORT Table* shared_realm_get_table(SharedRealm* realm, const char* name)
+{
+    Group* g = (*realm)->read_group();
+    bool dummy; // get_or_add_table sets this to true if the table was added.
+    return LangBindHelper::get_or_add_table(*g, name, &dummy);
 }
 
 REALM_EXPORT void shared_realm_begin_transaction(SharedRealm* realm)
@@ -151,40 +179,6 @@ REALM_EXPORT bool shared_realm_refresh(SharedRealm* realm)
     return (*realm)->refresh();
 }
 
-//REALM_EXPORT void shared_group_promote_to_write(SharedGroup* sg, ClientHistory* hist)
-//{
-//    handle_errors([&]() {
-//	    //LangBindHelper::promote_to_write(*sg, *hist);
-//        transaction::begin(*sg, *hist, binding::delegate_instance);
-//    });
-//}
-//
-//REALM_EXPORT SharedGroup::version_type shared_group_commit(SharedGroup* sg)
-//{
-//    return handle_errors([&]() {
-//        return sg->commit();
-//    });
-//}
-//
-//REALM_EXPORT void shared_group_commit_and_continue_as_read(SharedGroup* sg, ClientHistory* hist)
-//{
-//    //LangBindHelper::commit_and_continue_as_read(*sg);
-//    transaction::commit(*sg, *hist, binding::delegate_instance);
-//}
-//
-//REALM_EXPORT void shared_group_rollback(SharedGroup* sg)
-//{
-//    sg->rollback();
-//}
-//
-//REALM_EXPORT void shared_group_rollback_and_continue_as_read(SharedGroup* sg, ClientHistory* hist)
-//{
-//    handle_errors([&]() {
-//        //LangBindHelper::rollback_and_continue_as_read(*sg, *hist);
-//        transaction::cancel(*sg, *hist, binding::delegate_instance);
-//    });
-//}
-//
 //REALM_EXPORT void table_retain(const Table* table)
 //{
 //    LangBindHelper::bind_table_ptr(table);
