@@ -56,6 +56,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmFileAccessErrorException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmFileNotFoundException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmOutOfMemoryException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Transaction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TransactionState.cs" />
   </ItemGroup>
 </Project>
