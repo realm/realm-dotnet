@@ -59,6 +59,35 @@ namespace RealmNet
 
         protected void SetValue<T>(string propertyName, T value)
         {
+            if (_realm == null)
+                throw new Exception("This object is not managed. Create through CreateObject");
+
+            var tableHandle = _realm._tableHandles[GetType()];
+            var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
+            var rowIndex = _rowHandle.RowIndex;
+
+            if (typeof(T) == typeof(string))
+            {
+                var str = value.ToString();
+                NativeTable.set_string(tableHandle, columnIndex, (IntPtr)rowIndex, str, (IntPtr)str.Length);
+            }
+            else if (typeof(T) == typeof(bool))
+            {
+                var marshalledValue = BoolToIntPtr((bool)Convert.ChangeType(value, typeof(bool)));
+                NativeTable.set_bool(tableHandle, columnIndex, (IntPtr)rowIndex, marshalledValue);
+            }
+            else if (typeof(T) == typeof(int))  // System.Int32 regardless of bitness
+            {
+                Int64 marshalledValue = Convert.ToInt64(value);
+                NativeTable.set_int64(tableHandle, columnIndex, (IntPtr)rowIndex, marshalledValue);
+            }
+            else if (typeof(T) == typeof(Int64))
+            {
+                Int64 marshalledValue = Convert.ToInt64(value);
+                NativeTable.set_int64(tableHandle, columnIndex, (IntPtr)rowIndex, marshalledValue);
+            }
+            else
+                throw new Exception ("Unsupported type " + typeof(T).Name);
         }
 
         #region helpers
