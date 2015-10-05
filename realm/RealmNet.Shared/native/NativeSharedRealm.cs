@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Text;
 using Interop.Config;
 
 namespace RealmNet
@@ -41,6 +39,6 @@ namespace RealmNet
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_table",
             CallingConvention = CallingConvention.Cdecl)]
-        internal static extern IntPtr get_table(string tableName);
+        internal static extern IntPtr get_table(SharedRealmHandle sharedRealm, [MarshalAs(UnmanagedType.LPWStr)]string tableName, IntPtr tableNameLength);
     }
 }
