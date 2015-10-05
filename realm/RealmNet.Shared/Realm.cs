@@ -9,40 +9,70 @@ using System.Text;
 
 namespace RealmNet
 {
-    public class Realm
+    public class Realm : IDisposable
     {
-        private static List<Type> _realmObjectClasses;
+        private static IEnumerable<Type> _realmObjectClasses;
 
         static Realm()
         {
-            _realmObjectClasses = Assembly.GetExecutingAssembly().GetTypes()
-                .Where(t => typeof(RealmObject).IsAssignableFrom(t))
-                .ToList();
+            _realmObjectClasses =
+                from a in AppDomain.CurrentDomain.GetAssemblies()
+                from t in a.GetTypes()
+                    .Where(t => t != typeof (RealmObject) && typeof (RealmObject).IsAssignableFrom(t))
+                select t;
 
-            _realmObjectClasses.ForEach(realmType =>
+            foreach(var realmType in _realmObjectClasses)
             {
                 if (!realmType.GetCustomAttributes(typeof(WovenAttribute), true).Any())
                     Debug.WriteLine("WARNING! The type " + realmType.Name + " is a RealmObject but it has not been woven.");
-            });
+            }
         }
 
+        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         public static Realm GetInstance(string databasePath)
         {
-            throw new NotImplementedException();
+            var schemaPtr = NativeSchema.generate();
+            var schemaHandle = new SchemaHandle();
+            schemaHandle.SetHandle(schemaPtr);
+
+            var srHandle = new SharedRealmHandle();
+
+            RuntimeHelpers.PrepareConstrainedRegions();
+            try { /* Retain handle in a constrained execution region */ }
+            finally
+            {
+                var srPtr = NativeSharedRealm.open(schemaHandle, databasePath, (IntPtr)0, (IntPtr)0, "");
+                srHandle.SetHandle(srPtr);
+            }
+
+            return new Realm(srHandle);
         }
 
-        internal Dictionary<Type, TableHandle> _tableHandles = new Dictionary<Type, TableHandle>();
-
-        public Realm()
+        private SharedRealmHandle _sharedRealmHandle;
+        internal Dictionary<Type, TableHandle> _tableHandles;
+        
+        private Realm(SharedRealmHandle sharedRealmHandle)
         {
-            _realmObjectClasses.ForEach((realmType) => _tableHandles[realmType] = GetTable(realmType));
+            _sharedRealmHandle = sharedRealmHandle;
+            _tableHandles = _realmObjectClasses.ToDictionary(t => t, GetTable);
         }
 
         public IGroupHandle TransactionGroupHandle { get { throw new NotImplementedException(); } }
 
-        private static TableHandle GetTable(Type realmType)
+        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+        private TableHandle GetTable(Type realmType)
         {
-            throw new NotImplementedException();
+            var result = new TableHandle();
+            var tableName = "class_" + realmType.Name;
+
+            RuntimeHelpers.PrepareConstrainedRegions();
+            try { /* Retain handle in a constrained execution region */ }
+            finally
+            {
+                var tablePtr = NativeSharedRealm.get_table(_sharedRealmHandle, tableName, (IntPtr)tableName.Length);
+                result.SetHandle(tablePtr);
+            }
+            return result;
         }
 
         public T CreateObject<T>() where T : RealmObject
@@ -79,9 +109,9 @@ namespace RealmNet
             return rowHandle;
         }
 
-        public IDisposable BeginWrite()
+        public Transaction BeginWrite()
         {
-            throw new NotImplementedException();
+            return new Transaction(_sharedRealmHandle);
         }
 
         public IEnumerable<T> All<T>() where T: RealmObject
@@ -90,6 +120,11 @@ namespace RealmNet
         }
 
         public void Remove(RealmObject p2)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Dispose()
         {
             throw new NotImplementedException();
         }
