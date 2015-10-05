@@ -50,8 +50,8 @@ public class ModuleWeaver
         var realmObjectType = assemblyToReference.MainModule.GetTypes().First(x => x.Name == "RealmObject");
         var genericGetValueReference = MethodNamed(realmObjectType, "GetValue");
         var genericSetValueReference = MethodNamed(realmObjectType, "SetValue");
-        var getListValueReference = MethodNamed(realmObjectType, "GetListValue");
-        var setListValueReference = MethodNamed(realmObjectType, "SetListValue");
+        //var getListValueReference = MethodNamed(realmObjectType, "GetListValue");
+        //var setListValueReference = MethodNamed(realmObjectType, "SetListValue");
 
         var wovenAttributeClass = assemblyToReference.MainModule.GetTypes().First(x => x.Name == "WovenAttribute");
         var wovenAttributeConstructor = ModuleDefinition.Import(wovenAttributeClass.GetConstructors().First());
