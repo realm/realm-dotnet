@@ -95,7 +95,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;WRAPPERS_EXPORTS;HAVE_STRUCT_TIMESPEC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\..\realm-core\src;..\..\..\realm-core\src\win32;..\..\..\realm-core\src\win32\pthread;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\realm-core\src;..\..\..\realm-core\src\win32\pthread;object-store\windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/DPTW32_STATIC_LIB /DREALM_DEBUG /DREALM_ENABLE_REPLICATION %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -111,7 +111,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;WRAPPERS_EXPORTS;HAVE_STRUCT_TIMESPEC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\..\realm-core\src;..\..\..\realm-core\src\win32;..\..\..\realm-core\src\win32\pthread;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\realm-core\src;..\..\..\realm-core\src\win32\pthread;object-store\windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/DPTW32_STATIC_LIB /DREALM_DEBUG /DREALM_ENABLE_REPLICATION %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -129,7 +129,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;WRAPPERS_EXPORTS;HAVE_STRUCT_TIMESPEC;REALM_ENABLE_REPLICATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\..\realm-core\src;..\..\..\realm-core\src\win32\pthread</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\realm-core\src;..\..\..\realm-core\src\win32\pthread;object-store\windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -148,7 +148,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;WRAPPERS_EXPORTS;HAVE_STRUCT_TIMESPEC;REALM_ENABLE_REPLICATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\..\realm-core\src;..\..\..\realm-core\src\win32\pthread</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\realm-core\src;..\..\..\realm-core\src\win32\pthread;object-store\windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -163,6 +163,17 @@
     <ClInclude Include="..\..\..\realm-core\src\win32\pthread\pthread.h" />
     <ClInclude Include="exceptions_to_managed.hpp" />
     <ClInclude Include="exception_catcher.hpp" />
+    <ClInclude Include="object-store\ffi.hpp" />
+    <ClInclude Include="object-store\index_set.hpp" />
+    <ClInclude Include="object-store\object_schema.hpp" />
+    <ClInclude Include="object-store\object_store.hpp" />
+    <ClInclude Include="object-store\property.hpp" />
+    <ClInclude Include="object-store\realm_delegate.hpp" />
+    <ClInclude Include="object-store\schema.hpp" />
+    <ClInclude Include="object-store\shared_realm.hpp" />
+    <ClInclude Include="object-store\transact_log_handler.hpp" />
+    <ClInclude Include="object-store\utf16accessor.hpp" />
+    <ClInclude Include="object-store\windows\external_commit_helper.hpp" />
     <ClInclude Include="realm_export_decls.h" />
     <ClInclude Include="wrappers.hpp" />
   </ItemGroup>
@@ -170,6 +181,15 @@
     <ClCompile Include="..\..\..\realm-core\src\win32\pthread\pthread.c" />
     <ClCompile Include="exceptions_to_managed.cpp" />
     <ClCompile Include="exception_catcher.cpp" />
+    <ClCompile Include="object-store\ffi.cpp" />
+    <ClCompile Include="object-store\index_set.cpp" />
+    <ClCompile Include="object-store\object_schema.cpp" />
+    <ClCompile Include="object-store\object_store.cpp" />
+    <ClCompile Include="object-store\schema.cpp" />
+    <ClCompile Include="object-store\shared_realm.cpp" />
+    <ClCompile Include="object-store\transact_log_handler.cpp" />
+    <ClCompile Include="object-store\windows\external_commit_helper.cpp" />
+    <ClCompile Include="realm-csharp.cpp" />
     <ClCompile Include="wrappers.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

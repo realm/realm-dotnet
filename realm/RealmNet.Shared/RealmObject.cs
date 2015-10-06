@@ -1,105 +1,96 @@
-using System.Diagnostics;
-using System.Linq;
+using System;
+using System.Runtime.InteropServices;
 
 namespace RealmNet
 {
     public class RealmObject
     {
-        private Realm _realm;  // TODO - Andy thinks we can drop this member
-        private ICoreProvider _coreProvider;
+        private Realm _realm;
         private IRowHandle _rowHandle;
-
-        // TODO - debate over isValid (Java) vs invalidated (Swift) and triple-state of standalone vs in realm vs formerly in realm and deleted
-        public bool IsStandalone => _coreProvider is StandaloneCoreProvider;
-        public bool InRealm => _rowHandle != null && !_rowHandle.IsInvalid && _rowHandle.IsAttached;
 
         internal IRowHandle RowHandle => _rowHandle;
 
-        protected RealmObject()
-        {
-            var modelName = GetType().Name;
-
-            if (!GetType().GetCustomAttributes(typeof(WovenAttribute), true).Any())
-                Debug.WriteLine("WARNING! The type " + modelName + " is a RealmObject but it has not been woven.");
-
-
-            // TODO consider a more direct approach where we just grab tha active coreProvider for this thread
-            // so creating objects gets lighter
-            var realmInTransaction = Realm.RealmWithActiveTransactionThisTread();
-            if (realmInTransaction == null)
-                Realm.AdoptNewObject (this, null, StandaloneCoreProvider.GetInstance (), null);
-            else if (realmInTransaction.State == TransactionState.Write)
-                realmInTransaction.AdoptNewObject (this);
-            else {
-                // TODO bind a newly created read somehow to LINQ operation????
-            }
-        }
-
-
-        public void _Manage(Realm realm, ICoreProvider coreProvider, IRowHandle rowHandle)
+        internal void _Manage(Realm realm, IRowHandle rowHandle)
         {
             _realm = realm;
-            //TODO copies properties from object to core provider BEFORE replacing with incoming
-            _coreProvider = coreProvider;
             _rowHandle = rowHandle;
         }
 
-
         protected T GetValue<T>(string propertyName)
         {
-#if DEBUG
-            //var isRealmObject = IsAssignableFrom(typeof(T).GetTypeInfo(), typeof(RealmObject).GetTypeInfo());
-            //ASD remove soon var isRealmList = IsAssignableFrom(typeof(T).GetTypeInfo(), typeof(RealmList<>).GetTypeInfo());
+            if (_realm == null)
+                throw new Exception("This object is not managed. Create through CreateObject");
 
-            //Debug.WriteLine("Getting " + typeof(T).Name + " value for " + tableName + "[" + _rowIndex + "]." + propertyName);
-            //ASD remove soon  if (isRealmList) Debug.WriteLine("It's a realm list");
-            //if (isRealmObject) Debug.WriteLine("It's a realm object");
-#endif
-            return _coreProvider.GetValue<T>(_realm?.TransactionGroupHandle, GetType().Name, propertyName, _rowHandle);
+            var tableHandle = _realm._tableHandles[GetType()];
+            var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
+            var rowIndex = _rowHandle.RowIndex;
+
+            if (typeof(T) == typeof(string))
+            {
+                long bufferSizeNeededChars = 16;
+                IntPtr buffer;
+                long currentBufferSizeChars;
+
+                do
+                {
+                    buffer = MarshalHelpers.StrAllocateBuffer(out currentBufferSizeChars, bufferSizeNeededChars);
+                    bufferSizeNeededChars = (long)NativeTable.get_string(tableHandle, columnIndex, (IntPtr)rowIndex, buffer,
+                            (IntPtr)currentBufferSizeChars);
+
+                } while (MarshalHelpers.StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
+                return (T)Convert.ChangeType(MarshalHelpers.StrBufToStr(buffer, (int)bufferSizeNeededChars), typeof(T));
+            }
+            else if (typeof(T) == typeof(bool))
+            {
+                var value = MarshalHelpers.IntPtrToBool( NativeTable.get_bool(tableHandle, columnIndex, (IntPtr)rowIndex) );
+                return (T)Convert.ChangeType(value, typeof(T));
+            }
+            else if (typeof(T) == typeof(int))  // System.Int32 regardless of bitness
+            {
+                var value = NativeTable.get_int64(tableHandle, columnIndex, (IntPtr)rowIndex);
+                return (T)Convert.ChangeType(value, typeof(T));
+            }
+            else if (typeof(T) == typeof(Int64)) 
+            {
+                var value = NativeTable.get_int64(tableHandle, columnIndex, (IntPtr)rowIndex);
+                return (T)Convert.ChangeType(value, typeof(T));
+            }
+            else
+                throw new Exception ("Unsupported type " + typeof(T).Name);
         }
 
         protected void SetValue<T>(string propertyName, T value)
         {
-            _coreProvider.SetValue<T>(_realm?.TransactionGroupHandle, GetType().Name, propertyName, _rowHandle, value);
-        }
+            if (_realm == null)
+                throw new Exception("This object is not managed. Create through CreateObject");
 
+            var tableHandle = _realm._tableHandles[GetType()];
+            var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
+            var rowIndex = _rowHandle.RowIndex;
 
-
-        protected RealmList<T> GetListValue<T>(string propertyName) where T : RealmObject
-        {
-            var ret = (RealmList <T>)_coreProvider.GetListValue<T>(_realm?.TransactionGroupHandle, GetType().Name, propertyName, _rowHandle);
-            if (ret == null)
+            if (typeof(T) == typeof(string))
             {
-                ret = new RealmList<T>();  // need an empty list so things like Add can be called on it
-                SetListValue<T>(propertyName, ret);
+                var str = value.ToString();
+                NativeTable.set_string(tableHandle, columnIndex, (IntPtr)rowIndex, str, (IntPtr)str.Length);
             }
-            return ret;
+            else if (typeof(T) == typeof(bool))
+            {
+                var marshalledValue = MarshalHelpers.BoolToIntPtr((bool)Convert.ChangeType(value, typeof(bool)));
+                NativeTable.set_bool(tableHandle, columnIndex, (IntPtr)rowIndex, marshalledValue);
+            }
+            else if (typeof(T) == typeof(int))  // System.Int32 regardless of bitness
+            {
+                Int64 marshalledValue = Convert.ToInt64(value);
+                NativeTable.set_int64(tableHandle, columnIndex, (IntPtr)rowIndex, marshalledValue);
+            }
+            else if (typeof(T) == typeof(Int64))
+            {
+                Int64 marshalledValue = Convert.ToInt64(value);
+                NativeTable.set_int64(tableHandle, columnIndex, (IntPtr)rowIndex, marshalledValue);
+            }
+            else
+                throw new Exception ("Unsupported type " + typeof(T).Name);
         }
-
-        protected void SetListValue<T>(string propertyName, RealmList<T> value) where T : RealmObject
-        {
-            //ASD var dumpFor = typeof(T);
-            _coreProvider.SetListValue<T>(_realm?.TransactionGroupHandle, GetType().Name, propertyName, _rowHandle, value);
-        }
-
-        //private static bool IsAssignableFrom(TypeInfo extendType, TypeInfo baseType)
-        //{
-        //    while (!baseType.IsAssignableFrom(extendType))
-        //    {
-        //        if (extendType.Equals(typeof(object).GetTypeInfo()))
-        //            return false;
-
-        //        if (extendType.IsGenericType && !extendType.IsGenericTypeDefinition)
-        //        {
-        //            extendType = extendType.GetGenericTypeDefinition().GetTypeInfo();
-        //        }
-        //        else
-        //        {
-        //            extendType = extendType.BaseType.GetTypeInfo();
-        //        }
-        //    }
-        //    return true;
-        //}
 
         public override bool Equals(object p)
         {

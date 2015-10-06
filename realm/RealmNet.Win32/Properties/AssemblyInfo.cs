@@ -37,3 +37,4 @@ using System.Runtime.InteropServices;
 
 
 [assembly: InternalsVisibleTo("IntegrationTests.Win32")]
+[assembly: InternalsVisibleTo("Playground.Win32")]

@@ -19,7 +19,7 @@ namespace RealmNet
             this.Expression = expression;
         }
 
-        public RealmQuery(Realm realm, ICoreProvider coreProvider) : this(new RealmQueryProvider(realm, coreProvider), null)
+        public RealmQuery(Realm realm) : this(new RealmQueryProvider(realm), null)
         {
             this.Expression = Expression.Constant(this);
         }

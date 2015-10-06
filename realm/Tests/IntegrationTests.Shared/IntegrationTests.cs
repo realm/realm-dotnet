@@ -16,7 +16,6 @@ namespace IntegrationTests
         [SetUp]
         public void Setup()
         {
-            Realm.ActiveCoreProvider = new CoreProvider();
             _databasePath = Path.GetTempFileName();
             _realm = Realm.GetInstance(_databasePath);
         }
@@ -40,10 +39,7 @@ namespace IntegrationTests
                 p1.Email = "john@smith.com";
                 transaction.Commit();
             }
-            using (var rt = _realm.BeginRead())
-            {
-                Debug.WriteLine("p1 is named " + p1.FullName);
-            }
+            Debug.WriteLine("p1 is named " + p1.FullName);
 
             using (var transaction = _realm.BeginWrite())
             {
@@ -53,10 +49,7 @@ namespace IntegrationTests
                 p2.Email = "john@deo.com";
                 transaction.Commit();
             }
-            using (var rt = _realm.BeginRead())
-            {
-                Debug.WriteLine("p2 is named " + p2.FullName);
-            }
+            Debug.WriteLine("p2 is named " + p2.FullName);
 
             using (var transaction = _realm.BeginWrite())
             {
@@ -67,36 +60,36 @@ namespace IntegrationTests
                 transaction.Commit();
             }
 
-            using (var rt = _realm.BeginRead())
-            {
-                Debug.WriteLine("p3 is named " + p3.FullName);
+            Debug.WriteLine("p3 is named " + p3.FullName);
 
-                var allPeople = _realm.All<Person>().ToList();
-                Debug.WriteLine("There are " + allPeople.Count() + " in total");
+            var allPeople = _realm.All<Person>().ToList();
+            Debug.WriteLine("There are " + allPeople.Count() + " in total");
 
-                var interestingPeople = from p in _realm.All<Person>() where p.IsInteresting == true select p;
+            var interestingPeople = from p in _realm.All<Person>() where p.IsInteresting == true select p;
 
-                Debug.WriteLine("Interesting people include:");
-                foreach (var p in interestingPeople)
-                    Debug.WriteLine(" - " + p.FullName + " (" + p.Email + ")");
+            Debug.WriteLine("Interesting people include:");
+            foreach (var p in interestingPeople)
+                Debug.WriteLine(" - " + p.FullName + " (" + p.Email + ")");
 
-                var johns = from p in _realm.All<Person>() where p.FirstName == "John" select p;
-                Debug.WriteLine("People named John:");
-                foreach (var p in johns)
-                    Debug.WriteLine(" - " + p.FullName + " (" + p.Email + ")");
-            }
+            var johns = from p in _realm.All<Person>() where p.FirstName == "John" select p;
+            Debug.WriteLine("People named John:");
+            foreach (var p in johns)
+                Debug.WriteLine(" - " + p.FullName + " (" + p.Email + ")");
         }
 
-        [Test, NUnit.Framework.Ignore("Fails until implicit transactions are implemented")]
+        [Test]
         public void RemoveTest()
         {
             // Arrange
             Person p1, p2, p3;
             using (_realm.BeginWrite())
             {
-                p1 = new Person { FirstName = "A" };
-                p2 = new Person { FirstName = "B" };
-                p3 = new Person { FirstName = "C" };
+                //p1 = new Person { FirstName = "A" };
+                //p2 = new Person { FirstName = "B" };
+                //p3 = new Person { FirstName = "C" };
+                p1 = _realm.CreateObject<Person>(); p1.FirstName = "A";
+                p2 = _realm.CreateObject<Person>(); p2.FirstName = "B";
+                p3 = _realm.CreateObject<Person>(); p3.FirstName = "C";
             }
 
             // Act
@@ -104,16 +97,13 @@ namespace IntegrationTests
                 _realm.Remove(p2);
 
             // Assert
-            using (_realm.BeginRead())
-            {
-                Assert.That(!p2.InRealm);
+            //Assert.That(!p2.InRealm);
 
-                var allPeople = _realm.All<Person>().ToList();
-                foreach(var p in allPeople)
-                    Debug.WriteLine("Person: " + p.FirstName);
+            var allPeople = _realm.All<Person>().ToList();
+            foreach (var p in allPeople)
+                Debug.WriteLine("Person: " + p.FirstName);
 
-                Assert.That(allPeople, Is.EquivalentTo(new List<Person> { p1, p3 }));
-            }
+            Assert.That(allPeople, Is.EquivalentTo(new List<Person> { p1, p3 }));
         }
     }
 }
