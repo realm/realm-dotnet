@@ -77,16 +77,19 @@ namespace IntegrationTests
                 Debug.WriteLine(" - " + p.FullName + " (" + p.Email + ")");
         }
 
-        [Test, NUnit.Framework.Ignore("Fails until implicit transactions are implemented")]
+        [Test]
         public void RemoveTest()
         {
             // Arrange
             Person p1, p2, p3;
             using (_realm.BeginWrite())
             {
-                p1 = new Person { FirstName = "A" };
-                p2 = new Person { FirstName = "B" };
-                p3 = new Person { FirstName = "C" };
+                //p1 = new Person { FirstName = "A" };
+                //p2 = new Person { FirstName = "B" };
+                //p3 = new Person { FirstName = "C" };
+                p1 = _realm.CreateObject<Person>(); p1.FirstName = "A";
+                p2 = _realm.CreateObject<Person>(); p2.FirstName = "B";
+                p3 = _realm.CreateObject<Person>(); p3.FirstName = "C";
             }
 
             // Act

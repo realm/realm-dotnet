@@ -117,12 +117,12 @@ namespace RealmNet
 
         public void Remove(RealmObject p2)
         {
-            throw new NotImplementedException();
+            var tableHandle = _tableHandles[p2.GetType()];
+            NativeTable.remove_row(tableHandle, (RowHandle)p2.RowHandle);
         }
 
         public void Dispose()
         {
-            throw new NotImplementedException();
         }
     }
 }
