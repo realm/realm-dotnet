@@ -10,7 +10,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Attributes.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CoreProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmDecryptionFailedException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmFileExistsException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmInvalidDatabaseException.cs" />
@@ -29,7 +28,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)handles\SharedGroupHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)handles\SharedRealmHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)handles\TableHandle.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ICoreProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)linq\ExpressionVisitor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)linq\QueryProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)linq\RealmQuery.cs" />
@@ -37,7 +35,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)linq\RealmQueryVisitor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)linq\TypeSystem.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MarshalHelpers.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)MockCoreProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)native\NativeCommon.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)native\NativeGroup.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)native\NativeObjectSchema.cs" />
@@ -51,7 +48,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Realm.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RealmList.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RealmObject.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)StandaloneCoreProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmExceptionCodes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmFileAccessErrorException.cs" />

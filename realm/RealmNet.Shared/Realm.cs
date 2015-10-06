@@ -55,8 +55,6 @@ namespace RealmNet
             _tableHandles = RealmObjectClasses.ToDictionary(t => t, GetTable);
         }
 
-        public IGroupHandle TransactionGroupHandle { get { throw new NotImplementedException(); } }
-
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         private TableHandle GetTable(Type realmType)
         {
