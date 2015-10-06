@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
-using Interop.Config;
 
 namespace RealmNet
 {
+#if !DISABLE_NATIVE
     internal static class NativeObjectSchema
     {
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_schema_new", CallingConvention = CallingConvention.Cdecl)]
@@ -16,4 +16,5 @@ namespace RealmNet
         internal static extern void add_property(IntPtr objectSchema, string name, IntPtr type,
             string objectType, IntPtr isPrimary, IntPtr isIndexed, IntPtr isNullable);
     }
+#endif
 }

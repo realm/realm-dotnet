@@ -1,9 +1,9 @@
 using System;
 using System.Runtime.InteropServices;
-using Interop.Config;
 
 namespace RealmNet
 {
+#if !DISABLE_NATIVE
     internal static class NativeQuery
     {
 
@@ -77,4 +77,5 @@ namespace RealmNet
         }
 
 	}
+#endif
 }

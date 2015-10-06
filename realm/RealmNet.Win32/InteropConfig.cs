@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace Interop.Config
+namespace RealmNet
 {
     public static class InteropConfig
     {

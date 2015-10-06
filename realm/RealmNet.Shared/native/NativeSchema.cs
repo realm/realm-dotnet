@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
-using Interop.Config;
 
 namespace RealmNet
 {
+#if !DISABLE_NATIVE
     internal static class NativeSchema
     {
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "schema_new", CallingConvention = CallingConvention.Cdecl)]
@@ -14,4 +14,5 @@ namespace RealmNet
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "schema_generate", CallingConvention = CallingConvention.Cdecl)]
         internal static extern IntPtr generate();
     }
+#endif
 }
