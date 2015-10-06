@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace RealmNet
 {
-    public class TableHandle: RealmHandle, ITableHandle
+    public class TableHandle: RealmHandle
     {
         private TableHandle(RealmHandle root) : base(root)
         {

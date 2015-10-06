@@ -6,11 +6,11 @@ namespace RealmNet
     public class RealmObject
     {
         private Realm _realm;
-        private IRowHandle _rowHandle;
+        private RowHandle _rowHandle;
 
-        internal IRowHandle RowHandle => _rowHandle;
+        internal RowHandle RowHandle => _rowHandle;
 
-        internal void _Manage(Realm realm, IRowHandle rowHandle)
+        internal void _Manage(Realm realm, RowHandle rowHandle)
         {
             _realm = realm;
             _rowHandle = rowHandle;
