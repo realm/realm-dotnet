@@ -105,18 +105,10 @@ REALM_EXPORT Schema* schema_generate()
     ObjectSchema os1;
     os1.name = "Person";
 
-    Property p1;
-    p1.name = "FirstName";
-    p1.type = PropertyType::PropertyTypeString;
-    p1.object_type = std::string();
-
-    Property p2;
-    p2.name = "LastName";
-    p2.type = PropertyType::PropertyTypeString;
-    p2.object_type = std::string();
-
-    os1.properties.push_back(std::move(p1));
-    os1.properties.push_back(std::move(p2));
+    object_schema_add_property(&os1, "FirstName", DataType::type_String, nullptr, false, false, false);
+    object_schema_add_property(&os1, "LastName", DataType::type_String, nullptr, false, false, false);
+    object_schema_add_property(&os1, "Email", DataType::type_String, nullptr, false, false, false);
+    object_schema_add_property(&os1, "IsInteresting", DataType::type_Bool, nullptr, false, false, false);
 
     std::vector<ObjectSchema> oss = { os1 };
     

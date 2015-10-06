@@ -2,26 +2,24 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.ConstrainedExecution;
-using System.Text;
 
 namespace RealmNet
 {
     public class Realm : IDisposable
     {
-        private static IEnumerable<Type> _realmObjectClasses;
+        private static readonly IEnumerable<Type> RealmObjectClasses;
 
         static Realm()
         {
-            _realmObjectClasses =
+            RealmObjectClasses =
                 from a in AppDomain.CurrentDomain.GetAssemblies()
                 from t in a.GetTypes()
                     .Where(t => t != typeof (RealmObject) && typeof (RealmObject).IsAssignableFrom(t))
                 select t;
 
-            foreach(var realmType in _realmObjectClasses)
+            foreach(var realmType in RealmObjectClasses)
             {
                 if (!realmType.GetCustomAttributes(typeof(WovenAttribute), true).Any())
                     Debug.WriteLine("WARNING! The type " + realmType.Name + " is a RealmObject but it has not been woven.");
@@ -54,7 +52,7 @@ namespace RealmNet
         private Realm(SharedRealmHandle sharedRealmHandle)
         {
             _sharedRealmHandle = sharedRealmHandle;
-            _tableHandles = _realmObjectClasses.ToDictionary(t => t, GetTable);
+            _tableHandles = RealmObjectClasses.ToDictionary(t => t, GetTable);
         }
 
         public IGroupHandle TransactionGroupHandle { get { throw new NotImplementedException(); } }
@@ -114,9 +112,9 @@ namespace RealmNet
             return new Transaction(_sharedRealmHandle);
         }
 
-        public IEnumerable<T> All<T>() where T: RealmObject
+        public RealmQuery<T> All<T>() where T: RealmObject
         {
-            throw new NotImplementedException();
+            return new RealmQuery<T>(this);
         }
 
         public void Remove(RealmObject p2)

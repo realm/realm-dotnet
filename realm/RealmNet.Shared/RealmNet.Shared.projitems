@@ -36,6 +36,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)linq\RealmQueryProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)linq\RealmQueryVisitor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)linq\TypeSystem.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MarshalHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MockCoreProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)native\NativeCommon.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)native\NativeGroup.cs" />

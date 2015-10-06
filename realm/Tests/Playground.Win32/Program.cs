@@ -21,8 +21,8 @@ namespace Playground.Win32
                 p1 = realm.CreateObject<Person>();
                 p1.FirstName = "John";
                 p1.LastName = "Smith";
-                //p1.IsInteresting = true;
-                //p1.Email = "john@smith.com";
+                p1.IsInteresting = true;
+                p1.Email = "john@smith.com";
                 transaction.Commit();
             }
             Console.WriteLine("p1 is named " + p1.FullName);
