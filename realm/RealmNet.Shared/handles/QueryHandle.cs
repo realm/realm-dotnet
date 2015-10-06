@@ -6,7 +6,7 @@
     //so these handles always represent a qeury object that should be released when not used anymore
     //the C# binding methods on query simply return self to add the . nottation again
     //A query will be a child of whatever root its creator has as root (queries are usually created by tableviews and tables)
-    internal class QueryHandle:RealmHandle, IQueryHandle
+    public class QueryHandle:RealmHandle
     {
         public QueryHandle(RealmHandle root) : base(root)
         {

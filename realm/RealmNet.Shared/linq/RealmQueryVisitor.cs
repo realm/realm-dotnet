@@ -10,7 +10,7 @@ namespace RealmNet
     public class RealmQueryVisitor : RealmNet.ExpressionVisitor
     {
         private Realm _realm;
-        private IQueryHandle _coreQueryHandle;
+        private QueryHandle _coreQueryHandle;
 
         public IEnumerable Process(Realm realm, Expression expression, Type returnType)
         {
@@ -32,12 +32,12 @@ namespace RealmNet
             return (IEnumerable)list;
         }
 
-        private IEnumerable<IRowHandle> ExecuteQuery(IQueryHandle queryHandle, Type objectType)
+        private IEnumerable<RowHandle> ExecuteQuery(QueryHandle queryHandle, Type objectType)
         {
             long nextRowIndex = 0;
             while (nextRowIndex != -1)
             {
-                var rowHandle = NativeQuery.find((QueryHandle)queryHandle, (IntPtr)nextRowIndex);
+                var rowHandle = NativeQuery.find(queryHandle, (IntPtr)nextRowIndex);
                 if (!rowHandle.IsInvalid)
                 {
                     nextRowIndex = rowHandle.RowIndex + 1;
@@ -85,13 +85,13 @@ namespace RealmNet
             return u;
         }
 
-        protected void VisitCombination(BinaryExpression b,  Action<IQueryHandle> combineWith )
+        protected void VisitCombination(BinaryExpression b,  Action<QueryHandle> combineWith )
         {
-            NativeQuery.group_begin((QueryHandle)_coreQueryHandle);
+            NativeQuery.group_begin(_coreQueryHandle);
             Visit(b.Left);
             combineWith(_coreQueryHandle);
             Visit(b.Right);
-            NativeQuery.group_end((QueryHandle)_coreQueryHandle);
+            NativeQuery.group_end(_coreQueryHandle);
         }
 
 
@@ -103,7 +103,7 @@ namespace RealmNet
             }
             else if (b.NodeType == ExpressionType.OrElse)  // Boolean Or with short-circuit
             {
-                VisitCombination(b, qh => NativeQuery.or((QueryHandle)qh) );
+                VisitCombination(b, qh => NativeQuery.or(qh) );
             }
             else
             {
@@ -151,7 +151,9 @@ namespace RealmNet
             return b;
         }
 
-        private void AddQueryEqual(IQueryHandle queryHandle, string columnName, object value)
+#pragma warning disable 0642    // Disable warning about empty statements (See issue #68)
+
+        private void AddQueryEqual(QueryHandle queryHandle, string columnName, object value)
         {
             var columnIndex = NativeQuery.get_column_index((QueryHandle)queryHandle, columnName, (IntPtr)columnName.Length);
 
@@ -173,7 +175,7 @@ namespace RealmNet
                 throw new NotImplementedException();
         }
 
-        private void AddQueryNotEqual(IQueryHandle queryHandle, string columnName, object value)
+        private void AddQueryNotEqual(QueryHandle queryHandle, string columnName, object value)
         {
             var columnIndex = NativeQuery.get_column_index((QueryHandle)queryHandle, columnName, (IntPtr)columnName.Length);
 
@@ -195,7 +197,7 @@ namespace RealmNet
                 throw new NotImplementedException();
         }
 
-        private void AddQueryLessThan(IQueryHandle queryHandle, string columnName, object value)
+        private void AddQueryLessThan(QueryHandle queryHandle, string columnName, object value)
         {
             var columnIndex = NativeQuery.get_column_index((QueryHandle)queryHandle, columnName, (IntPtr)columnName.Length);
 
@@ -212,7 +214,7 @@ namespace RealmNet
                 throw new NotImplementedException();
         }
 
-        private void AddQueryLessThanOrEqual(IQueryHandle queryHandle, string columnName, object value)
+        private void AddQueryLessThanOrEqual(QueryHandle queryHandle, string columnName, object value)
         {
             var columnIndex = NativeQuery.get_column_index((QueryHandle)queryHandle, columnName, (IntPtr)columnName.Length);
 
@@ -229,7 +231,7 @@ namespace RealmNet
                 throw new NotImplementedException();
         }
 
-        private void AddQueryGreaterThan(IQueryHandle queryHandle, string columnName, object value)
+        private void AddQueryGreaterThan(QueryHandle queryHandle, string columnName, object value)
         {
             var columnIndex = NativeQuery.get_column_index((QueryHandle)queryHandle, columnName, (IntPtr)columnName.Length);
 
@@ -246,7 +248,7 @@ namespace RealmNet
                 throw new NotImplementedException();
         }
 
-        private void AddQueryGreaterThanOrEqual(IQueryHandle queryHandle, string columnName, object value)
+        private void AddQueryGreaterThanOrEqual(QueryHandle queryHandle, string columnName, object value)
         {
             var columnIndex = NativeQuery.get_column_index((QueryHandle)queryHandle, columnName, (IntPtr)columnName.Length);
 
@@ -262,6 +264,8 @@ namespace RealmNet
             else
                 throw new NotImplementedException();
         }
+
+#pragma warning restore 0642
 
         internal override Expression VisitConstant(ConstantExpression c)
         {
@@ -296,7 +300,7 @@ namespace RealmNet
             return c;
         }
 
-        private IQueryHandle CreateQuery(Type elementType)
+        private QueryHandle CreateQuery(Type elementType)
         {
             var tableHandle = _realm._tableHandles[elementType];
             var queryHandle = tableHandle.TableWhere();
