@@ -41,12 +41,12 @@ namespace RealmNet
         /// <summary>
         /// The TightdbHandle that this wrapper is using to call into c++ core
         /// </summary>
-        internal IRealmHandle Handle
+        internal RealmHandle Handle
         {
             get { return _handle; }
         }
 
-        private IRealmHandle _handle;//will store the c++ handle for this class. The actual type is specific for what is wrapped,
+        private RealmHandle _handle;//will store the c++ handle for this class. The actual type is specific for what is wrapped,
         //protected because we want other classes to use the specific handle, for instance TableView.TableViewHandle instead of TableView.Handle
         //e.g. a SharedGroup will have a SharedGroupHandle stored here, and SharedGroup will have a SharedGroupHandle property that returns this hande
         //as SharedGroupHandle (because as is faster than a typecast)
@@ -57,7 +57,7 @@ namespace RealmNet
 
         //store the pointer to the c++ class, and do neccessary housekeeping
         //now, shouldbedisposed should already have been set atomically inside the newHandle class
-        internal void SetHandle(IRealmHandle newHandle, bool isReadOnly)
+        internal void SetHandle(RealmHandle newHandle, bool isReadOnly)
         {
             ReadOnly = isReadOnly;
             _handle = newHandle;

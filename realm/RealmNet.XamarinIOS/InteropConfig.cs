@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Interop.Config
+namespace RealmNet
 {
     public static class InteropConfig
     {
