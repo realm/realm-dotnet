@@ -1,7 +1,7 @@
 ﻿using System;
 using RealmNet;
 
-namespace IntegrationTests
+namespace UnitTests
 {
     public class Person : RealmObject
     {

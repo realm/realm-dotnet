@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using IntegrationTests;
 using NUnit.Framework;
 using RealmNet;
 
