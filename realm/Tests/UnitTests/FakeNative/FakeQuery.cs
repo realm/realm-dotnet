@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
+using UnitTests;
 
 namespace RealmNet
 {
@@ -64,7 +65,8 @@ namespace RealmNet
 
         internal static RowHandle find(QueryHandle queryHandle, IntPtr lastMatch)
         {
-            throw new NotImplementedException();
+            Logger.LogCall();
+            return new RowHandle();
         }
 
         internal static IntPtr get_column_index(QueryHandle queryPtr, String columnName, IntPtr columnNameLen)

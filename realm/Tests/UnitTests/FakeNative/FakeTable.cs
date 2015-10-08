@@ -72,7 +72,8 @@ namespace RealmNet
 
         internal static IntPtr where(TableHandle handle)
         {
-            throw new NotImplementedException();
+            Logger.LogCall();
+            return (IntPtr) 0;
         }
 
         internal static void unbind(IntPtr tableHandle)

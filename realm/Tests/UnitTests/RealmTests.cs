@@ -1,7 +1,7 @@
-﻿using IntegrationTests;
+﻿using System.Linq;
+using IntegrationTests;
 using NUnit.Framework;
 using RealmNet;
-using UnitTests;
 
 namespace UnitTests
 {
@@ -25,7 +25,7 @@ namespace UnitTests
         }
 
         [Test]
-        public void CreateObject()
+        public void CreateObjectShouldAddEmptyRow()
         {
             // Arrange
             var r = Realm.GetInstance("");
@@ -35,6 +35,21 @@ namespace UnitTests
 
             // Assert
             Assert.That(Logger.Instance.LogList[1], Is.EqualTo("NativeTable.add_empty_row()"));
+        }
+
+        [Test]
+        public void AllShouldCreateQuery()
+        {
+            // Arrange
+            var r = Realm.GetInstance("");
+            var q = r.All<Person>();
+
+            // Act
+            q.ToList();
+
+            // Assert
+            Assert.That(Logger.Instance.LogList[1], Is.EqualTo("NativeTable.where()"));
+            Assert.That(Logger.Instance.LogList[2], Is.EqualTo("NativeQuery.find()"));
         }
     }
 }
