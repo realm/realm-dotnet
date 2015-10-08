@@ -1,6 +1,5 @@
 using System;
 using System.Runtime.InteropServices;
-using Interop.Config;
 
 namespace RealmNet
 {
