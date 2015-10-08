@@ -50,6 +50,8 @@
     <Compile Include="FakeNative\FakeRow.cs" />
     <Compile Include="FakeNative\FakeSchema.cs" />
     <Compile Include="FakeNative\FakeTable.cs" />
+    <Compile Include="FakeNative\Logger.cs" />
+    <Compile Include="Person.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RealmTests.cs" />
   </ItemGroup>

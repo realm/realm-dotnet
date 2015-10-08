@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using UnitTests;
 
 namespace RealmNet
 {
     internal static class NativeSharedRealm
     {
-        internal static IntPtr open(SchemaHandle schemaHandle, string path, IntPtr readOnly,
-            IntPtr durability, string encryptionKey)
+        internal static IntPtr open(SchemaHandle schemaHandle, string path, IntPtr readOnly, IntPtr durability, string encryptionKey)
         {
             return (IntPtr) 0;
         }
@@ -47,6 +43,7 @@ namespace RealmNet
 
         internal static IntPtr get_table(SharedRealmHandle sharedRealm, string tableName, IntPtr tableNameLength)
         {
+            Logger.LogCall($"{nameof(tableName)} = \"{tableName}\"");
             return (IntPtr) 0;
         }
     }

@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
+using UnitTests;
 
 namespace RealmNet
 {
@@ -13,7 +14,8 @@ namespace RealmNet
 
         internal static IntPtr add_empty_row(TableHandle tableHandle)
         {
-            throw new NotImplementedException();
+            Logger.LogCall();
+            return (IntPtr) 0;
         }
 
         internal static void set_string(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx,
