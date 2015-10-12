@@ -14,7 +14,7 @@ namespace RealmNet
 
         protected override void Unbind()
         {
-            NativeSharedRealm.delete(handle);
+            NativeSharedRealm.destroy(handle);
         }
     }
 }

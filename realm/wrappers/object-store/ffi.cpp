@@ -69,13 +69,18 @@ extern "C" {
 
 using namespace realm;
 
-REALM_EXPORT ObjectSchema* object_schema_new(const char* name)
+REALM_EXPORT ObjectSchema* object_schema_create(const char* name)
 {
     std::cout << "Creating object schema '" << name << "'.\r\n";
 
     auto p = new ObjectSchema;
     p->name = name;
     return p;
+}
+
+REALM_EXPORT void object_schema_destroy(ObjectSchema* object_schema)
+{
+    delete object_schema;
 }
 
 REALM_EXPORT void object_schema_add_property(ObjectSchema* cls, const char* name, DataType type, const char* object_type,
@@ -106,9 +111,14 @@ REALM_EXPORT void schema_initializer_add_object_schema(std::vector<ObjectSchema>
     schema_initializer->push_back(*object_schema);
 }
 
-REALM_EXPORT Schema* schema_new(std::vector<ObjectSchema>* object_schemas, size_t len)
+REALM_EXPORT Schema* schema_create(std::vector<ObjectSchema>* object_schemas, size_t len)
 {
     return new Schema(*object_schemas);
+}
+
+REALM_EXPORT void schema_destroy(Schema* schema)
+{
+    delete schema;
 }
 
 REALM_EXPORT SharedRealm* shared_realm_open(Schema* schema, const char* path, bool read_only, SharedGroup::DurabilityLevel durability,
@@ -126,7 +136,7 @@ REALM_EXPORT SharedRealm* shared_realm_open(Schema* schema, const char* path, bo
     return new SharedRealm{Realm::get_shared_realm(config)};
 }
 
-REALM_EXPORT void shared_realm_delete(SharedRealm* realm)
+REALM_EXPORT void shared_realm_destroy(SharedRealm* realm)
 {
     delete realm;
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.ConstrainedExecution;
 
@@ -29,9 +30,15 @@ namespace RealmNet
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         public static Realm GetInstance(string databasePath)
         {
-            var schemaPtr = NativeSchema.generate();
-            var schemaHandle = new SchemaHandle();
-            schemaHandle.SetHandle(schemaPtr);
+            var schemaInitializer = new SchemaInitializerHandle();
+
+            foreach (var realmObjectClass in RealmObjectClasses)
+            {
+                var objectSchemaHandle = GenerateObjectSchema(realmObjectClass);
+                NativeSchema.initializer_add_object_schema(schemaInitializer, objectSchemaHandle);
+            }
+
+            var schemaHandle = new SchemaHandle(schemaInitializer);
 
             var srHandle = new SharedRealmHandle();
 
@@ -44,6 +51,30 @@ namespace RealmNet
             }
 
             return new Realm(srHandle);
+        }
+
+        private static ObjectSchemaHandle GenerateObjectSchema(Type objectClass)
+        {
+            var objectSchemaHandle = new ObjectSchemaHandle(objectClass.Name);
+
+            var propertiesToMap = objectClass.GetProperties(BindingFlags.Instance | BindingFlags.DeclaredOnly | BindingFlags.NonPublic | BindingFlags.Public)
+                .Where(p =>
+                {
+                    return p.GetCustomAttributes(false).All(a => a.GetType() != typeof (IgnoreAttribute));
+                });
+
+            foreach (var p in propertiesToMap)
+            {
+                var propertyName = p.Name;
+                var mapToAttribute = p.GetCustomAttributes(false).FirstOrDefault(a => a.GetType() == typeof(MapToAttribute));
+                if (mapToAttribute != null)
+                    propertyName = ((MapToAttribute) mapToAttribute).Mapping;
+                
+                var columnType = p.PropertyType;
+                NativeObjectSchema.add_property(objectSchemaHandle, propertyName, MarshalHelpers.RealmColType(columnType), "", (IntPtr)0, (IntPtr)0, (IntPtr)0);
+            }
+
+            return objectSchemaHandle;
         }
 
         private SharedRealmHandle _sharedRealmHandle;

@@ -15,12 +15,13 @@ namespace RealmNet
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "schema_initializer_add_object_schema",
             CallingConvention = CallingConvention.Cdecl)]
-        internal static extern void initializer_add_object_schema(SchemaInitializerHandle initializer, IntPtr objectSchema);
+        internal static extern void initializer_add_object_schema(SchemaInitializerHandle initializer, ObjectSchemaHandle objectSchema);
 
-        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "schema_new", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern IntPtr schema_new(SchemaInitializerHandle schemaInitializer);
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "schema_create", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern IntPtr create(SchemaInitializerHandle schemaInitializer);
 
-        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "schema_generate", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern IntPtr generate();
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "schema_destroy",
+            CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void destroy(IntPtr schemaPtr);
     }
 }

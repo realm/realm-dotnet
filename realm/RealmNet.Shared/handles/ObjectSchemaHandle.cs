@@ -5,22 +5,21 @@ using System.Runtime.CompilerServices;
 
 namespace RealmNet
 {
-    internal class SchemaHandle : RealmHandle
+    internal class ObjectSchemaHandle : RealmHandle
     {
-        [Preserve("Constructor used by marshaling, cannot be removed by linker")]
-        public SchemaHandle(SchemaInitializerHandle schemaInitializerHandle)
+        public ObjectSchemaHandle(string name)
         {
             RuntimeHelpers.PrepareConstrainedRegions();
             try { /**/ }
             finally
             {
-                SetHandle(NativeSchema.create(schemaInitializerHandle));
+                SetHandle(NativeObjectSchema.create(name));
             }
         }
 
         protected override void Unbind()
         {
-            NativeSchema.destroy(handle);
+            NativeObjectSchema.destroy(handle);
         }
     }
 }

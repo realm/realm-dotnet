@@ -71,14 +71,12 @@ namespace Playground.Win32
 
             var osses = new SchemaInitializerHandle();
 
-            var os1 = NativeObjectSchema.object_schema_new("Person");
+            var os1 = new ObjectSchemaHandle("Person");
             NativeSchema.initializer_add_object_schema(osses, os1);
-            var os2 = NativeObjectSchema.object_schema_new("Nummer 2");
+            var os2 = new ObjectSchemaHandle("number 2");
             NativeSchema.initializer_add_object_schema(osses, os2);
-            var s = NativeSchema.schema_new(osses);
 
-            var sh = new SchemaHandle();
-            sh.SetHandle(s);
+            var sh = new SchemaHandle(osses);
 
             var sr = NativeSharedRealm.open(sh, path, (IntPtr)0, (IntPtr)0, "");
             var srh = new SharedRealmHandle();
@@ -90,8 +88,8 @@ namespace Playground.Win32
 
         static void Main(string[] args)
         {
-            //SimpleTest();
-            CheckTablesTest();
+            SimpleTest();
+            //CheckTablesTest();
         }
     }
 }
