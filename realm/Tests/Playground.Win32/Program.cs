@@ -68,12 +68,14 @@ namespace Playground.Win32
             var path = Path.GetTempFileName();
             Console.WriteLine("Path: " + path);
 
-            //var os1 = NativeObjectSchema.object_schema_new("123 hej med dig ☃ <- snemand!");
-            //var os2 = NativeObjectSchema.object_schema_new("Nummer 2");
-            //var osses = new[] { os1, os2 };
-            //NativeSchema.schema_new(osses, (IntPtr) osses.Length);
 
-            var s = NativeSchema.generate();
+            var osses = new SchemaInitializerHandle();
+
+            var os1 = NativeObjectSchema.object_schema_new("Person");
+            NativeSchema.initializer_add_object_schema(osses, os1);
+            var os2 = NativeObjectSchema.object_schema_new("Nummer 2");
+            NativeSchema.initializer_add_object_schema(osses, os2);
+            var s = NativeSchema.schema_new(osses);
 
             var sh = new SchemaHandle();
             sh.SetHandle(s);
@@ -88,8 +90,8 @@ namespace Playground.Win32
 
         static void Main(string[] args)
         {
-            SimpleTest();
-            //CheckTablesTest();
+            //SimpleTest();
+            CheckTablesTest();
         }
     }
 }
