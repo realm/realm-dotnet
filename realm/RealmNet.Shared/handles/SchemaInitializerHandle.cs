@@ -2,16 +2,17 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Runtime.ConstrainedExecution;
 
 namespace RealmNet
 {
     internal class SchemaInitializerHandle : RealmHandle
     {
-        [Preserve("Constructor used by marshaling, cannot be removed by linker")]
+        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         public SchemaInitializerHandle()
         {
             RuntimeHelpers.PrepareConstrainedRegions();
-            try { /**/ }
+            try { /* Retain handle in a constrained execution region */ }
             finally
             {
                 SetHandle(NativeSchema.initializer_create());
