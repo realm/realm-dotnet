@@ -105,7 +105,7 @@ REALM_EXPORT void schema_initializer_destroy(std::vector<ObjectSchema>* schema_i
 
 REALM_EXPORT void schema_initializer_add_object_schema(std::vector<ObjectSchema>* schema_initializer, ObjectSchema* object_schema)
 {
-    schema_initializer->push_back(*object_schema);
+    schema_initializer->push_back(std::move(*object_schema));
 }
 
 REALM_EXPORT Schema* schema_create(std::vector<ObjectSchema>* object_schemas, size_t len)
