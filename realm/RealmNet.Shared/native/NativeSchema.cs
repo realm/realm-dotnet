@@ -19,9 +19,5 @@ namespace RealmNet
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "schema_create", CallingConvention = CallingConvention.Cdecl)]
         internal static extern IntPtr create(SchemaInitializerHandle schemaInitializer);
-
-        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "schema_destroy",
-            CallingConvention = CallingConvention.Cdecl)]
-        internal static extern void destroy(IntPtr schemaPtr);
     }
 }

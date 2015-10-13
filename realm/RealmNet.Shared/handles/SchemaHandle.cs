@@ -20,7 +20,8 @@ namespace RealmNet
 
         protected override void Unbind()
         {
-            NativeSchema.destroy(handle);
+            // Intentionally left blank -- the config object inside c++ has taken ownership and will 
+            // delete this when necessary.
         }
     }
 }

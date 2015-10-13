@@ -116,11 +116,6 @@ REALM_EXPORT Schema* schema_create(std::vector<ObjectSchema>* object_schemas, si
     return new Schema(*object_schemas);
 }
 
-REALM_EXPORT void schema_destroy(Schema* schema)
-{
-    delete schema;
-}
-
 REALM_EXPORT SharedRealm* shared_realm_open(Schema* schema, const char* path, bool read_only, SharedGroup::DurabilityLevel durability,
                         const char* encryption_key)
 {
