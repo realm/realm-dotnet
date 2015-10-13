@@ -75,7 +75,7 @@ namespace RealmNet
         {
             if (ReadOnly)
             {
-                throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "{0} {1}", ToString(), " Is Read Only and cannot be modified "));
+                throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "{0} {1}", ToString(), " Is Read Only and cannot be modified "));
             }
         }
 

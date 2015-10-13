@@ -23,8 +23,7 @@ namespace binding {
     void process_error(RealmError* realm_error);
 }
 
-static
-void convert_exception_to_error(RealmError* error)
+static void convert_exception_to_error(RealmError* error)
 {
     try {
         throw;
@@ -71,8 +70,6 @@ using namespace realm;
 
 REALM_EXPORT ObjectSchema* object_schema_create(const char* name)
 {
-    std::cout << "Creating object schema '" << name << "'.\r\n";
-
     auto p = new ObjectSchema;
     p->name = name;
     return p;
@@ -124,7 +121,6 @@ REALM_EXPORT SharedRealm* shared_realm_open(Schema* schema, const char* path, bo
     config.read_only = read_only;
     config.in_memory = durability != SharedGroup::durability_Full;
 
-    //config.encryption_key = encryption_key;
     config.encryption_key = std::vector<char>(&encryption_key[0], &encryption_key[strlen(encryption_key)]);
 
     config.schema.reset(schema);

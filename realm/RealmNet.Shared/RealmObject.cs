@@ -70,7 +70,7 @@ namespace RealmNet
 
             if (typeof(T) == typeof(string))
             {
-                var str = value as string; // value.ToString();
+                var str = value as string;
                 NativeTable.set_string(tableHandle, columnIndex, (IntPtr)rowIndex, str, (IntPtr)(str?.Length ?? 0));
             }
             else if (typeof(T) == typeof(bool))
