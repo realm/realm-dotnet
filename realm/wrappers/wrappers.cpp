@@ -136,7 +136,7 @@ class CSStringAccessor {
 
     operator realm::StringData() const //ASD has this vanished from core? REALM_NOEXCEPT
     {
-      return realm::StringData(m_data.get(), m_size);
+      return m_data != nullptr ? realm::StringData(m_data.get(), m_size) : nullptr;
     }
     bool error;
   private:
@@ -154,6 +154,11 @@ CSStringAccessor::CSStringAccessor(uint16_t* csbuffer, size_t csbufsize)
   // input. This is guaranteed to be enough. However, to avoid
   // excessive over allocation, this is not done for larger input
   // strings.
+
+    if (csbuffer == nullptr) {
+        m_data = nullptr;
+        return;
+    }
 
   error=false;
   typedef realm::util::Utf8x16<uint16_t,std::char_traits<char16_t>>Xcode;    //This might not work in old compilers (the std::char_traits<char16_t> ).     

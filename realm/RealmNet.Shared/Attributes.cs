@@ -13,6 +13,10 @@ namespace RealmNet
     {
     }
 
+    public class IndexedAttribute : Attribute
+    {
+    }
+
     public class IgnoreAttribute : Attribute
     {
     }

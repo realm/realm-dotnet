@@ -65,13 +65,20 @@ namespace RealmNet
 
             foreach (var p in propertiesToMap)
             {
-                var propertyName = p.Name;
-                var mapToAttribute = p.GetCustomAttributes(false).FirstOrDefault(a => a.GetType() == typeof(MapToAttribute));
-                if (mapToAttribute != null)
-                    propertyName = ((MapToAttribute) mapToAttribute).Mapping;
-                
+                var mapToAttribute = p.GetCustomAttributes(false).FirstOrDefault(a => a is MapToAttribute) as MapToAttribute;
+                var propertyName = mapToAttribute != null ? mapToAttribute.Mapping : p.Name;
+
+                var primaryKeyAttribute = p.GetCustomAttributes(false).FirstOrDefault(a => a is PrimaryKeyAttribute);
+                var isPrimaryKey = primaryKeyAttribute != null;
+
+                var indexedAttribute = p.GetCustomAttributes(false).FirstOrDefault(a => a is IndexedAttribute);
+                var isIndexed = indexedAttribute != null;
+
+                var isNullable = !p.PropertyType.IsValueType || Nullable.GetUnderlyingType(p.PropertyType) != null;
+
                 var columnType = p.PropertyType;
-                NativeObjectSchema.add_property(objectSchemaHandle, propertyName, MarshalHelpers.RealmColType(columnType), "", (IntPtr)0, (IntPtr)0, (IntPtr)0);
+                NativeObjectSchema.add_property(objectSchemaHandle, propertyName, MarshalHelpers.RealmColType(columnType), "", 
+                    MarshalHelpers.BoolToIntPtr(isPrimaryKey), MarshalHelpers.BoolToIntPtr(isIndexed), MarshalHelpers.BoolToIntPtr(isNullable));
             }
 
             return objectSchemaHandle;
