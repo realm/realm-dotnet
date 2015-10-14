@@ -41,6 +41,7 @@ namespace Playground.Win32
             {
                 p3 = realm.CreateObject<Person>();
                 p3.FullName = "Peter Jameson";
+                p3.FirstName = null;
                 p3.Email = "peter@jameson.com";
                 p3.IsInteresting = true;
                 transaction.Commit();
@@ -71,9 +72,9 @@ namespace Playground.Win32
 
             var osses = new SchemaInitializerHandle();
 
-            var os1 = new ObjectSchemaHandle("Person");
+            var os1 = NativeObjectSchema.create("Person");
             NativeSchema.initializer_add_object_schema(osses, os1);
-            var os2 = new ObjectSchemaHandle("number 2");
+            var os2 = NativeObjectSchema.create("number 2");
             NativeSchema.initializer_add_object_schema(osses, os2);
 
             var sh = new SchemaHandle(osses);

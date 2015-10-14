@@ -20,7 +20,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)handles\RealmHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)handles\RowHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)handles\SchemaInitializerHandle.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)handles\ObjectSchemaHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)handles\SchemaHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)handles\SharedRealmHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)handles\TableHandle.cs" />

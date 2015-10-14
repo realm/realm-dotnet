@@ -13,7 +13,7 @@ namespace RealmNet
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_schema_add_property",
             CallingConvention = CallingConvention.Cdecl)]
-        internal static extern void add_property(ObjectSchemaHandle objectSchemaHandle, string name, IntPtr type,
+        internal static extern void add_property(IntPtr objectSchemaHandle, string name, IntPtr type,
             string objectType, IntPtr isPrimary, IntPtr isIndexed, IntPtr isNullable);
     }
 }

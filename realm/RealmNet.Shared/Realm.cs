@@ -53,9 +53,9 @@ namespace RealmNet
             return new Realm(srHandle);
         }
 
-        private static ObjectSchemaHandle GenerateObjectSchema(Type objectClass)
+        private static IntPtr GenerateObjectSchema(Type objectClass)
         {
-            var objectSchemaHandle = new ObjectSchemaHandle(objectClass.Name);
+            var objectSchemaPtr = NativeObjectSchema.create(objectClass.Name);
 
             var propertiesToMap = objectClass.GetProperties(BindingFlags.Instance | BindingFlags.DeclaredOnly | BindingFlags.NonPublic | BindingFlags.Public)
                 .Where(p =>
@@ -77,11 +77,11 @@ namespace RealmNet
                 var isNullable = !p.PropertyType.IsValueType || Nullable.GetUnderlyingType(p.PropertyType) != null;
 
                 var columnType = p.PropertyType;
-                NativeObjectSchema.add_property(objectSchemaHandle, propertyName, MarshalHelpers.RealmColType(columnType), "", 
+                NativeObjectSchema.add_property(objectSchemaPtr, propertyName, MarshalHelpers.RealmColType(columnType), "", 
                     MarshalHelpers.BoolToIntPtr(isPrimaryKey), MarshalHelpers.BoolToIntPtr(isIndexed), MarshalHelpers.BoolToIntPtr(isNullable));
             }
 
-            return objectSchemaHandle;
+            return objectSchemaPtr;
         }
 
         private SharedRealmHandle _sharedRealmHandle;
