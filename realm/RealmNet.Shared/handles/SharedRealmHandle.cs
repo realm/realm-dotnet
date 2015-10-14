@@ -1,9 +1,4 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
-using System.Runtime.CompilerServices;
-
-namespace RealmNet
+﻿namespace RealmNet
 {
     internal class SharedRealmHandle : RealmHandle
     {
@@ -14,7 +9,7 @@ namespace RealmNet
 
         protected override void Unbind()
         {
-            NativeSharedRealm.delete(handle);
+            NativeSharedRealm.destroy(handle);
         }
     }
 }

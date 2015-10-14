@@ -68,15 +68,15 @@ namespace Playground.Win32
             var path = Path.GetTempFileName();
             Console.WriteLine("Path: " + path);
 
-            //var os1 = NativeObjectSchema.object_schema_new("123 hej med dig ☃ <- snemand!");
-            //var os2 = NativeObjectSchema.object_schema_new("Nummer 2");
-            //var osses = new[] { os1, os2 };
-            //NativeSchema.schema_new(osses, (IntPtr) osses.Length);
 
-            var s = NativeSchema.generate();
+            var osses = new SchemaInitializerHandle();
 
-            var sh = new SchemaHandle();
-            sh.SetHandle(s);
+            var os1 = new ObjectSchemaHandle("Person");
+            NativeSchema.initializer_add_object_schema(osses, os1);
+            var os2 = new ObjectSchemaHandle("number 2");
+            NativeSchema.initializer_add_object_schema(osses, os2);
+
+            var sh = new SchemaHandle(osses);
 
             var sr = NativeSharedRealm.open(sh, path, (IntPtr)0, (IntPtr)0, "");
             var srh = new SharedRealmHandle();

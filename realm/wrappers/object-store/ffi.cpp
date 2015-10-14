@@ -23,8 +23,7 @@ namespace binding {
     void process_error(RealmError* realm_error);
 }
 
-static
-void convert_exception_to_error(RealmError* error)
+static void convert_exception_to_error(RealmError* error)
 {
     try {
         throw;
@@ -69,13 +68,16 @@ extern "C" {
 
 using namespace realm;
 
-REALM_EXPORT ObjectSchema* object_schema_new(const char* name)
+REALM_EXPORT ObjectSchema* object_schema_create(const char* name)
 {
-    std::cout << "Creating object schema '" << name << "'.\r\n";
-
     auto p = new ObjectSchema;
     p->name = name;
     return p;
+}
+
+REALM_EXPORT void object_schema_destroy(ObjectSchema* object_schema)
+{
+    delete object_schema;
 }
 
 REALM_EXPORT void object_schema_add_property(ObjectSchema* cls, const char* name, DataType type, const char* object_type,
@@ -91,28 +93,24 @@ REALM_EXPORT void object_schema_add_property(ObjectSchema* cls, const char* name
     cls->properties.push_back(std::move(p));
 }
 
-REALM_EXPORT Schema* schema_new(ObjectSchema* object_schemas, size_t len)
+REALM_EXPORT std::vector<ObjectSchema>* schema_initializer_create()
 {
-    std::vector<ObjectSchema> os;
-    for (int i = 0; i != len; ++i)
-        os.push_back(object_schemas[i]);
-
-    return new Schema(os);
+    return new std::vector<ObjectSchema>();
 }
 
-REALM_EXPORT Schema* schema_generate()
+REALM_EXPORT void schema_initializer_destroy(std::vector<ObjectSchema>* schema_initializer)
 {
-    ObjectSchema os1;
-    os1.name = "Person";
+    delete schema_initializer;
+}
 
-    object_schema_add_property(&os1, "FirstName", DataType::type_String, nullptr, false, false, false);
-    object_schema_add_property(&os1, "LastName", DataType::type_String, nullptr, false, false, false);
-    object_schema_add_property(&os1, "Email", DataType::type_String, nullptr, false, false, false);
-    object_schema_add_property(&os1, "IsInteresting", DataType::type_Bool, nullptr, false, false, false);
+REALM_EXPORT void schema_initializer_add_object_schema(std::vector<ObjectSchema>* schema_initializer, ObjectSchema* object_schema)
+{
+    schema_initializer->push_back(std::move(*object_schema));
+}
 
-    std::vector<ObjectSchema> oss = { os1 };
-    
-    return new Schema(oss);
+REALM_EXPORT Schema* schema_create(std::vector<ObjectSchema>* object_schemas, size_t len)
+{
+    return new Schema(*object_schemas);
 }
 
 REALM_EXPORT SharedRealm* shared_realm_open(Schema* schema, const char* path, bool read_only, SharedGroup::DurabilityLevel durability,
@@ -123,14 +121,13 @@ REALM_EXPORT SharedRealm* shared_realm_open(Schema* schema, const char* path, bo
     config.read_only = read_only;
     config.in_memory = durability != SharedGroup::durability_Full;
 
-    //config.encryption_key = encryption_key;
     config.encryption_key = std::vector<char>(&encryption_key[0], &encryption_key[strlen(encryption_key)]);
 
     config.schema.reset(schema);
     return new SharedRealm{Realm::get_shared_realm(config)};
 }
 
-REALM_EXPORT void shared_realm_delete(SharedRealm* realm)
+REALM_EXPORT void shared_realm_destroy(SharedRealm* realm)
 {
     delete realm;
 }
