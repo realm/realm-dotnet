@@ -16,13 +16,29 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef REALM_EXPORT
+#include <realm.hpp>
+#include "error_handling.hpp"
+#include "marshalling.hpp"
+#include "realm_export_decls.h"
 
-// define the wrapper for linking as a DLL in Windows, otherwise null
-#ifdef WIN32
-#define REALM_EXPORT __declspec( dllexport )
-#else
-#define REALM_EXPORT
-#endif
+using namespace realm;
+using namespace realm::binding;
 
-#endif  // REALM_EXPORT
+extern "C" {
+
+REALM_EXPORT void row_delete(Row* row_ptr)
+{
+    delete row_ptr;
+}
+
+REALM_EXPORT size_t row_get_row_index(const Row* row_ptr)
+{
+    return row_ptr->get_index();
+}
+
+REALM_EXPORT size_t row_get_is_attached(const Row* row_ptr)
+{
+    return bool_to_size_t(row_ptr->is_attached());
+}
+
+}   // extern "C"
