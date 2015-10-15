@@ -27,11 +27,6 @@ using namespace realm::binding;
 
 extern "C" {
 
-REALM_EXPORT Table* new_table()
-{
-    return LangBindHelper::new_table();
-}
-
 REALM_EXPORT void table_unbind(Table* table_ptr)
 {
     LangBindHelper::unbind_table_ptr(table_ptr);

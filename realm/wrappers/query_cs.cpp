@@ -32,7 +32,7 @@ extern "C" {
 
 #pragma region query general // {{{
 
-REALM_EXPORT void query_delete(Query* query_ptr)
+REALM_EXPORT void query_destroy(Query* query_ptr)
 {
     delete(query_ptr);
 }

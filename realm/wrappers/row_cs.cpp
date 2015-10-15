@@ -26,7 +26,7 @@ using namespace realm::binding;
 
 extern "C" {
 
-REALM_EXPORT void row_delete(Row* row_ptr)
+REALM_EXPORT void row_destroy(Row* row_ptr)
 {
     delete row_ptr;
 }
