@@ -21,5 +21,10 @@ namespace UnitTests
             var type = stackTrace.GetFrame(0).GetMethod().DeclaringType;
             LogString(type.Name + "." + caller + "(" + parameters + ")");
         }
+
+        public static void Clear()
+        {
+            Instance.LogList.Clear();
+        }
     }
 }
