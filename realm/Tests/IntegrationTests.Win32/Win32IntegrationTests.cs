@@ -9,15 +9,5 @@ namespace IntegrationTests.Win32
     [TestFixture]
     public class Win32IntegrationTests : IntegrationTests
     {
-        [Test]
-        public void Tester()
-        {
-            var os1 = NativeObjectSchema.object_schema_new("123 hej med ☃ dig!");
-            var os2 = NativeObjectSchema.object_schema_new("Nummer 2");
-
-            var osses = new[] { os1, os2 };
-
-            NativeSchema.schema_new(osses, (IntPtr) osses.Length);
-        }
     }
 }

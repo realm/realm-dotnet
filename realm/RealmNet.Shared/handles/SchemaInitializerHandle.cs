@@ -1,25 +1,27 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Runtime.ConstrainedExecution;
 
 namespace RealmNet
 {
-    internal class SchemaHandle : RealmHandle
+    internal class SchemaInitializerHandle : RealmHandle
     {
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-        public SchemaHandle(SchemaInitializerHandle schemaInitializerHandle)
+        public SchemaInitializerHandle()
         {
             RuntimeHelpers.PrepareConstrainedRegions();
             try { /* Retain handle in a constrained execution region */ }
             finally
             {
-                SetHandle(NativeSchema.create(schemaInitializerHandle));
+                SetHandle(NativeSchema.initializer_create());
             }
         }
 
         protected override void Unbind()
         {
-            // Intentionally left blank -- the config object inside c++ has taken ownership and will 
-            // delete this when necessary.
+            NativeSchema.initializer_destroy(handle);
         }
     }
 }

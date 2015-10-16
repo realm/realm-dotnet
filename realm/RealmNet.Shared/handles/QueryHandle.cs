@@ -55,7 +55,7 @@
 */
         protected override void Unbind()
         {
-            NativeQuery.delete(handle);
+            NativeQuery.destroy(handle);
         }
         
     }

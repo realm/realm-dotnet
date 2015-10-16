@@ -7,6 +7,11 @@ namespace RealmNet
 {
     internal static class NativeObjectSchema
     {
+        internal static IntPtr create([MarshalAs(UnmanagedType.LPStr)] string name)
+        {
+            return (IntPtr) 0;
+        }
+
         internal static IntPtr object_schema_new(string name)
         {
             return (IntPtr) 0;

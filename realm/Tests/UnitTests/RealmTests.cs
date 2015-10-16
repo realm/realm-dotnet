@@ -48,7 +48,7 @@ namespace UnitTests
 
             // Assert
             Assert.That(Logger.Instance.LogList[1], Is.EqualTo("NativeTable.where()"));
-            Assert.That(Logger.Instance.LogList[2], Is.EqualTo("NativeQuery.find()"));
+            Assert.That(Logger.Instance.LogList[3], Is.EqualTo("NativeQuery.find()"));
         }
     }
 }

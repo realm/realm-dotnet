@@ -16,11 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef REALM_UTF16_ACCESSOR_HPP
-#define REALM_UTF16_ACCESSOR_HPP
+#ifndef MARSHALLING_HPP
+#define MARSHALLING_HPP
 
 #include <realm.hpp>
 #include <realm/util/utf8.hpp>
+
+namespace realm {
+namespace binding {
 
 class Utf16StringAccessor {
 public:
@@ -74,4 +77,52 @@ private:
     std::size_t m_size;
 };
 
-#endif /* defined(REALM_UTF16_ACCESSOR_HPP) */
+//as We've got no idea how the compiler represents an instance of DataType on the stack, perhaps it's better to send back a size_t with the value.
+//we always know the size of a size_t
+inline DataType size_t_to_datatype(size_t value) {
+    return (DataType)value;//todo:ask if this is a valid typecast. Or would it be better to use e.g int64? or reintepret_cast
+}
+
+//the followng functions convert to/from the types that we know have these features :
+//* No marshalling involved - the transfer is fast
+//* Blittable to C# types - the transfer is done without changes to the values (fast)
+//* Types, that does not change on the c++ side between compileres and platforms
+//* Types that have a mirror C# type that behaves the same way on different platforms (like IntPtr and size_t)
+
+//bool is stored differently on different c++ compilers so use a size_t instead when p/invoking
+inline bool size_t_to_bool(size_t value)
+{
+    return value == 1;//here i assume 1 and size_t can be compared in a meaningfull way. C# sends a size_t = 1 when true,and =0 when false
+}
+
+//send 1 for true, 0 for false.
+//this function is compatible with the error checking functions in C#
+//so You can send with this one, and check with an error checking one in C#
+//useful if Your method has several exit paths, some of which are erorr conditions
+inline size_t bool_to_size_t(bool value) {
+    if (value) return 1;
+    return 0;
+}
+
+//call this if something went wrong and You want to return an error code where C#
+//expects a boolean or error code.
+//the inline should end up with no more code than just returning the constant
+//but will allow us to adopt another scheme later on
+inline size_t bool_to_size_t_with_errorcode(size_t errorcode) {
+    return errorcode;
+}
+
+//a size_t sent from C# with value 0 means durability_full, other values means durabillity_memonly, but please
+//use 1 for durabillity_memonly to make room for later extensions
+inline SharedGroup::DurabilityLevel size_t_to_durabilitylevel(size_t value) {
+    if (value == 0)
+        return SharedGroup::durability_Full;
+    return SharedGroup::durability_MemOnly;
+}
+
+size_t stringdata_to_csharpstringbuffer(StringData str, uint16_t * csharpbuffer, size_t bufsize); //note bufsize is _in_16bit_words 
+
+} // namespace binding
+} // namespace realm
+
+#endif // MARSHALLING_HPP

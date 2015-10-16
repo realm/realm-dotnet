@@ -7,14 +7,22 @@ namespace RealmNet
 {
     internal static class NativeSchema
     {
-        internal static IntPtr schema_new(IntPtr[] objectSchemas, IntPtr objectSchemaCount)
-        {
-            throw new NotImplementedException();
-        }
-
-        internal static IntPtr generate()
+        internal static IntPtr create(SchemaInitializerHandle schemaInitializerHandle)
         {
             return (IntPtr) 0;
+        }
+
+        internal static IntPtr initializer_create()
+        {
+            return (IntPtr) 0;
+        }
+
+        internal static void initializer_destroy(IntPtr initializerPtr)
+        {
+        }
+
+        internal static void initializer_add_object_schema(SchemaInitializerHandle initializer, IntPtr objectSchema)
+        {
         }
     }
 }

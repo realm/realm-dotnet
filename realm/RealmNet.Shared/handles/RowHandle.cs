@@ -13,7 +13,7 @@ namespace RealmNet
 
         protected override void Unbind()
         {
-            NativeRow.row_delete(handle);
+            NativeRow.destroy(handle);
         }
 
         public long RowIndex => (long)NativeRow.row_get_row_index(this);
@@ -22,13 +22,13 @@ namespace RealmNet
         public override bool Equals(object p)
         {
             // If parameter is null, return false. 
-            if (Object.ReferenceEquals(p, null))
+            if (ReferenceEquals(p, null))
             {
                 return false;
             }
 
             // Optimization for a common success case. 
-            if (Object.ReferenceEquals(this, p))
+            if (ReferenceEquals(this, p))
             {
                 return true;
             }

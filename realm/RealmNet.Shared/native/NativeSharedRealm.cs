@@ -10,8 +10,8 @@ namespace RealmNet
         internal static extern IntPtr open(SchemaHandle schemaHandle, string path, IntPtr readOnly,
             IntPtr durability, string encryptionKey);
 
-        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_delete", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern IntPtr delete(IntPtr sharedRealm);
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_destroy", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern IntPtr destroy(IntPtr sharedRealm);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_has_table",
             CallingConvention = CallingConvention.Cdecl)]

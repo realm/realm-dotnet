@@ -15,7 +15,7 @@ namespace RealmNet
             throw new NotImplementedException();
         }
 
-        public static void row_delete(IntPtr rowHandle)
+        public static void destroy(IntPtr rowHandle)
         {
             throw new NotImplementedException();
         }

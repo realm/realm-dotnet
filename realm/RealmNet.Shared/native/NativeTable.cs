@@ -67,6 +67,6 @@ namespace RealmNet
        internal static extern IntPtr get_column_index(TableHandle tablehandle,
             [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
 
-	}
+    }
 #endif
 }

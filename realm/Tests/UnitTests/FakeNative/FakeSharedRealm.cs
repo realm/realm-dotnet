@@ -10,7 +10,7 @@ namespace RealmNet
             return (IntPtr) 0;
         }
 
-        internal static IntPtr delete(IntPtr sharedRealm)
+        internal static IntPtr destroy(IntPtr sharedRealm)
         {
             return (IntPtr) 0;
         }

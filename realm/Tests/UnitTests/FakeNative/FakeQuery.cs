@@ -89,7 +89,7 @@ namespace RealmNet
             throw new NotImplementedException();
         }
 
-        internal static void delete(IntPtr queryHandle)
+        internal static void destroy(IntPtr queryHandle)
         {
             throw new NotImplementedException();
         }
@@ -104,5 +104,5 @@ namespace RealmNet
             throw new NotImplementedException();
         }
 
-	}
+    }
 }
