@@ -16,23 +16,23 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef REALM_FFI_HPP
-#define REALM_FFI_HPP
-
-#include <string>
+#include "error_handling.hpp"
 
 namespace realm {
 
-enum class RealmErrorType {
-    unknown = 0,
-    system = 1
-};
-
-struct RealmError {
-    RealmErrorType type;
-    std::string message;
-};
-
+void convert_exception_to_error(RealmError* error)
+{
+    try {
+        throw;
+    }
+    catch (const std::exception& ex) {
+        error->type = RealmErrorType::system;
+        error->message = ex.what();
+    }
+    catch (...) {
+        error->type = RealmErrorType::unknown;
+        error->message = "Unknown exception thrown";
+    }
 }
 
-#endif // REALM_FFI_HPP
+}
