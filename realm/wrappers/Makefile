@@ -29,7 +29,7 @@ build:
 build/Release-osx: | build
 	mkdir build/Release-osx
 
-build/Release-osx/libwrappers.dylib: core | build/Release-osx
+build/Release-osx/libwrappers.dylib: core $(SRCS) | build/Release-osx
 	$(CXX) $(FLAGS) -DDYNAMIC -Lcore -lc++ -lrealm $(SRCS) -dynamiclib -arch i386 -o build/Release-osx/libwrappers.dylib -framework CoreFoundation
 
 build/Release-iphoneos/libwrappers.a: core $(SRCS)
@@ -45,8 +45,6 @@ build/Release-ios-universal/libwrappers.a: build/Release-iphoneos/libwrappers.a 
 	lipo -create -output "build/Release-ios-universal/libwrappers.a" "build/Release-iphoneos/libwrappers.a" "build/Release-iphonesimulator/libwrappers.a"
 
 build/Release-android/armeabi/libwrappers.so:
-
-	#$(CXX) $(FLAGS) wrappers.cpp -c -lrealm-ios -arch arm64 -arch armv7 -isysroot $(SDKROOT)
 
 .PHONY: all help clean
 
