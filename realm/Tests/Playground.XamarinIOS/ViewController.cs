@@ -128,31 +128,29 @@ namespace Playground.XamarinIOS
         }
 
 
-        private void HomePageTest()
-        {
-            Realm.ActiveCoreProvider = new CoreProvider();
-
-            var mydog = new Dog() { name = "Rex" };
-            Console.WriteLine($"name of dog:{mydog.name}");
-
-            // Offer Easy Persistence…
-            var realm = Realm.GetInstance(Path.GetTempFileName());
-            using (var writer = realm.BeginWrite()) {
-                realm.Add( mydog );
-            }
-
-            // Can be Queried… with standard LINQ
-            var r = realm.All<Dog>().Where(dog => dog.age > 8);
-
-            // Queries are chainable
-            var r2 = r.Where(dog => dog.name.Contains("rex"));
-        }
+//        private void HomePageTest()
+//        {
+//            Realm.ActiveCoreProvider = new CoreProvider();
+//
+//            var mydog = new Dog() { name = "Rex" };
+//            Console.WriteLine($"name of dog:{mydog.name}");
+//
+//            // Offer Easy Persistence…
+//            var realm = Realm.GetInstance(Path.GetTempFileName());
+//            using (var writer = realm.BeginWrite()) {
+//                realm.Add( mydog );
+//            }
+//
+//            // Can be Queried… with standard LINQ
+//            var r = realm.All<Dog>().Where(dog => dog.age > 8);
+//
+//            // Queries are chainable
+//            var r2 = r.Where(dog => dog.name.Contains("rex"));
+//        }
 
         private void IntegrationTest()
         {
-            var coreProvider = new CoreProvider();
-            Realm.ActiveCoreProvider = coreProvider;
-            var realm = Realm.GetInstance();
+            var realm = Realm.GetInstance(Path.GetTempFileName());
 
             WriteLine("####Past SharedGroup constructor####");
 
@@ -164,11 +162,9 @@ namespace Playground.XamarinIOS
                 p1.LastName = "Smith";
                 p1.IsInteresting = true;
                 p1.Email = "john@smith.com";
+                transaction.Commit();
             }
-            using (var rt = realm.BeginRead())
-            {
-                WriteLine("p1 is named " + p1.FullName);
-            }
+            WriteLine("p1 is named " + p1.FullName);
 
             using (var transaction = realm.BeginWrite())
             {
@@ -176,47 +172,44 @@ namespace Playground.XamarinIOS
                 p2.FullName = "John Doe";
                 p2.IsInteresting = false;
                 p2.Email = "john@deo.com";
+                transaction.Commit();
             }
-            using (var rt = realm.BeginRead())
-            {
-                WriteLine("p2 is named " + p2.FullName);
-            }
+            WriteLine("p2 is named " + p2.FullName);
 
             using (var transaction = realm.BeginWrite())
             {
-/*                p3 = realm.CreateObject<Person>();
+                p3 = realm.CreateObject<Person>();
                 p3.FullName = "Peter Jameson";
                 p3.Email = "peter@jameson.com";
                 p3.IsInteresting = true;
-*/
-                p3 = new Person { FullName = "Peter Jameson", Email = "peter@jameson.com", IsInteresting = true };
+
+                //p3 = new Person { FullName = "Peter Jameson", Email = "peter@jameson.com", IsInteresting = true };
+                transaction.Commit();
             }
 
-            using (var rt = realm.BeginRead())
-            {
-                WriteLine("p3 is named " + p3.FullName);
+            WriteLine("p3 is named " + p3.FullName);
 
-                var allPeople = realm.All<Person>().ToList();
-                WriteLine("There are " + allPeople.Count() + " in total");
+            var allPeople = realm.All<Person>().ToList();
+            WriteLine("There are " + allPeople.Count() + " in total");
 
-                var interestingPeople = from p in realm.All<Person>() where p.IsInteresting == true select p;
+            var interestingPeople = from p in realm.All<Person>() where p.IsInteresting == true select p;
 
-                WriteLine("Interesting people include:");
-                foreach (var p in interestingPeople)
-                    WriteLine(" - " + p.FullName + " (" + p.Email + ")");
+            WriteLine("Interesting people include:");
+            foreach (var p in interestingPeople)
+                WriteLine(" - " + p.FullName + " (" + p.Email + ")");
 
-                var johns = from p in realm.All<Person>() where p.FirstName == "John" select p;
-                WriteLine("People named John:");
-                foreach (var p in johns)
-                    WriteLine(" - " + p.FullName + " (" + p.Email + ")");
-            }
+            var johns = from p in realm.All<Person>() where p.FirstName == "John" select p;
+            WriteLine("People named John:");
+            foreach (var p in johns)
+                WriteLine(" - " + p.FullName + " (" + p.Email + ")");
 
-            using (realm.BeginWrite())
+            using (var transaction = realm.BeginWrite())
             {
                 realm.Remove(p2);
 
-                var allPeople = realm.All<Person>().ToList();
-                WriteLine("After deleting one, there are " + allPeople.Count() + " in total");
+                var allPeopleAfterDelete = realm.All<Person>().ToList();
+                WriteLine("After deleting one, there are " + allPeopleAfterDelete.Count() + " in total");
+                transaction.Commit();
             }
         }
 

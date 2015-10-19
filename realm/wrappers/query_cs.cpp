@@ -30,8 +30,6 @@ using namespace realm::binding;
 
 extern "C" {
 
-#pragma region query general // {{{
-
 REALM_EXPORT void query_destroy(Query* query_ptr)
 {
     delete(query_ptr);
@@ -59,10 +57,6 @@ REALM_EXPORT size_t query_get_column_index(Query* query_ptr, uint16_t *  column_
     return query_ptr->get_table()->get_column_index(str);
 }
 
-#pragma endregion // }}}
-
-#pragma region query group // {{{
-
 REALM_EXPORT void query_group_begin(Query * query_ptr)
 {
     query_ptr->group();
@@ -78,10 +72,6 @@ REALM_EXPORT void query_or(Query * query_ptr)
     query_ptr->Or();
 }
 
-#pragma endregion // }}}
-
-#pragma region query string // {{{
-
 REALM_EXPORT void query_string_equal(Query * query_ptr, size_t columnIndex, uint16_t* value, size_t value_len)
 {
     Utf16StringAccessor str(value, value_len);
@@ -94,9 +84,6 @@ REALM_EXPORT void query_string_not_equal(Query * query_ptr, size_t columnIndex, 
     query_ptr->not_equal(columnIndex, str);
 }
 
-#pragma endregion // }}}
-
-#pragma region query bool // {{{
 REALM_EXPORT void query_bool_equal(Query * query_ptr, size_t columnIndex, size_t value)
 {
     query_ptr->equal(columnIndex, size_t_to_bool(value));
@@ -107,10 +94,6 @@ REALM_EXPORT void query_bool_not_equal(Query * query_ptr, size_t columnIndex, si
     query_ptr->not_equal(columnIndex, size_t_to_bool(value));
 }
 
-#pragma endregion // }}}
-
-
-#pragma region query int // {{{
 REALM_EXPORT void query_int_equal(Query * query_ptr, size_t columnIndex, size_t value)
 {
     query_ptr->equal(columnIndex, static_cast<int>(value));
@@ -140,7 +123,5 @@ REALM_EXPORT void query_int_greater_equal(Query * query_ptr, size_t columnIndex,
 {
     query_ptr->greater_equal(columnIndex, static_cast<int>(value));
 }
-
-#pragma endregion // }}}
 
 }   // extern "C"

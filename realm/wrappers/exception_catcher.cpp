@@ -21,7 +21,7 @@
 
 // core headers for exception types
 #include "realm/util/file.hpp" 
-#include "realm/util/encrypted_file_mapping.hpp"
+//#include "realm/util/encrypted_file_mapping.hpp"
 #include "realm/alloc_slab.hpp"
 
 using namespace realm;
@@ -52,9 +52,9 @@ void ConvertException(const char* file, int line)
     catch (const util::File::PermissionDenied& e) {
         ThrowManaged(RealmExceptionCodes::RealmPermissionDenied, msg(e));
     }
-    catch (const util::DecryptionFailed& e) {
-        ThrowManaged(RealmExceptionCodes::RealmDecryptionFailed, msg(e));
-    }
+    //catch (const util::DecryptionFailed& e) {
+    //    ThrowManaged(RealmExceptionCodes::RealmDecryptionFailed, msg(e));
+    //}
     catch (const InvalidDatabase& e) {
         ThrowManaged(RealmExceptionCodes::RealmInvalidDatabase, msg(e));
     }
