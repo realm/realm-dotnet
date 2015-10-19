@@ -64,7 +64,6 @@ namespace AssemblyToProcess
 
         public Person()
         {
-            FirstName = "Jesper";
         }
     }
 
