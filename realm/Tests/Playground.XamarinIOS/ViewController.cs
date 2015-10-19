@@ -162,6 +162,7 @@ namespace Playground.XamarinIOS
                 p1.LastName = "Smith";
                 p1.IsInteresting = true;
                 p1.Email = "john@smith.com";
+                transaction.Commit();
             }
             WriteLine("p1 is named " + p1.FullName);
 
@@ -171,17 +172,19 @@ namespace Playground.XamarinIOS
                 p2.FullName = "John Doe";
                 p2.IsInteresting = false;
                 p2.Email = "john@deo.com";
+                transaction.Commit();
             }
             WriteLine("p2 is named " + p2.FullName);
 
             using (var transaction = realm.BeginWrite())
             {
-/*                p3 = realm.CreateObject<Person>();
+                p3 = realm.CreateObject<Person>();
                 p3.FullName = "Peter Jameson";
                 p3.Email = "peter@jameson.com";
                 p3.IsInteresting = true;
-*/
-                p3 = new Person { FullName = "Peter Jameson", Email = "peter@jameson.com", IsInteresting = true };
+
+                //p3 = new Person { FullName = "Peter Jameson", Email = "peter@jameson.com", IsInteresting = true };
+                transaction.Commit();
             }
 
             WriteLine("p3 is named " + p3.FullName);
@@ -200,12 +203,13 @@ namespace Playground.XamarinIOS
             foreach (var p in johns)
                 WriteLine(" - " + p.FullName + " (" + p.Email + ")");
 
-            using (realm.BeginWrite())
+            using (var transaction = realm.BeginWrite())
             {
                 realm.Remove(p2);
 
                 var allPeopleAfterDelete = realm.All<Person>().ToList();
                 WriteLine("After deleting one, there are " + allPeopleAfterDelete.Count() + " in total");
+                transaction.Commit();
             }
         }
 
