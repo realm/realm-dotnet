@@ -1,7 +1,11 @@
+OS_SRCS=$(wildcard object-store/*.cpp)
+ECH_SRCS=object-store/apple/external_commit_helper.cpp
+SRCS=$(wildcard *.cpp) $(OS_SRCS) $(ECH_SRCS)
+OBJS=$(subst .cc,.o,$(SRCS))
+
 SDKROOT=$(shell xcrun --sdk iphoneos --show-sdk-path)
-#CXX=clang++
 CXX=$(shell xcrun --sdk iphoneos --find clang++)
-FLAGS=-Icore/include -std=c++11 -stdlib=libc++  
+FLAGS=-Icore/include -Iobject-store/apple -std=c++14 -stdlib=libc++  
 CORE_VER=0.92.1
 
 help: ## Show this help.
@@ -25,13 +29,13 @@ build:
 build/Release-osx: | build
 	mkdir build/Release-osx
 
-build/Release-osx/libwrappers.dylib: core | build/Release-osx
-	$(CXX) $(FLAGS) -DDYNAMIC -Lcore -lc++ -lrealm wrappers.cpp -dynamiclib -arch i386 -o build/Release-osx/libwrappers.dylib -framework CoreFoundation
+build/Release-osx/libwrappers.dylib: core $(SRCS) | build/Release-osx
+	$(CXX) $(FLAGS) -DDYNAMIC -Lcore -lc++ -lrealm $(SRCS) -dynamiclib -arch i386 -o build/Release-osx/libwrappers.dylib -framework CoreFoundation
 
-build/Release-iphoneos/libwrappers.a: core
+build/Release-iphoneos/libwrappers.a: core $(SRCS)
 	xcodebuild -sdk iphoneos -configuration Release -target "wrappers"
 
-build/Release-iphonesimulator/libwrappers.a: core wrappers.cpp wrappers.h
+build/Release-iphonesimulator/libwrappers.a: core $(SRCS)
 	xcodebuild -sdk iphonesimulator -configuration Release -target "wrappers"
 
 build/Release-ios-universal: | build
@@ -41,8 +45,6 @@ build/Release-ios-universal/libwrappers.a: build/Release-iphoneos/libwrappers.a 
 	lipo -create -output "build/Release-ios-universal/libwrappers.a" "build/Release-iphoneos/libwrappers.a" "build/Release-iphonesimulator/libwrappers.a"
 
 build/Release-android/armeabi/libwrappers.so:
-
-	#$(CXX) $(FLAGS) wrappers.cpp -c -lrealm-ios -arch arm64 -arch armv7 -isysroot $(SDKROOT)
 
 .PHONY: all help clean
 

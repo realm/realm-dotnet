@@ -22,7 +22,8 @@ namespace RealmNet
             if (!_isOpen)
                 return;
 
-            var exceptionOccurred = Marshal.GetExceptionPointers() != IntPtr.Zero || Marshal.GetExceptionCode() != 0;
+            //var exceptionOccurred = Marshal.GetExceptionPointers() != IntPtr.Zero || Marshal.GetExceptionCode() != 0;
+            var exceptionOccurred = true; // TODO: Can we find this out on iOS? Otherwise, we have to remove it!
             if (exceptionOccurred)
                 Rollback();
             else

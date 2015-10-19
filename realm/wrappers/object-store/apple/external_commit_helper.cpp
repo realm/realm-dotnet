@@ -18,7 +18,7 @@
 
 #include "external_commit_helper.hpp"
 
-#include "shared_realm.hpp"
+#include "../shared_realm.hpp"
 
 #include <assert.h>
 #include <sys/event.h>

@@ -58,7 +58,7 @@ REALM_EXPORT Table* shared_realm_get_table(SharedRealm* realm, uint16_t* table_n
 {
     Group* g = (*realm)->read_group();
 
-    Utf16StringAccessor str(table_name,table_name_len);
+    Utf16StringAccessor str(table_name, table_name_len);
 
     bool dummy; // get_or_add_table sets this to true if the table was added.
     return LangBindHelper::get_or_add_table(*g, str, &dummy);
@@ -66,23 +66,23 @@ REALM_EXPORT Table* shared_realm_get_table(SharedRealm* realm, uint16_t* table_n
 
 REALM_EXPORT void shared_realm_begin_transaction(SharedRealm* realm)
 {
-    handle_errors([&]() {
+    HANDLE_ERRORS_OPEN
         (*realm)->begin_transaction();
-    });
+    HANDLE_ERRORS_CLOSE
 }
 
 REALM_EXPORT void shared_realm_commit_transaction(SharedRealm* realm)
 {
-    handle_errors([&]() {
+    HANDLE_ERRORS_OPEN
         (*realm)->commit_transaction();
-    });
+    HANDLE_ERRORS_CLOSE
 }
 
 REALM_EXPORT void shared_realm_cancel_transaction(SharedRealm* realm)
 {
-    handle_errors([&]() {
+    HANDLE_ERRORS_OPEN
         (*realm)->cancel_transaction();
-    });
+    HANDLE_ERRORS_CLOSE
 }
 
 REALM_EXPORT bool shared_realm_is_in_transaction(SharedRealm* realm)
