@@ -67,6 +67,9 @@ auto handle_errors(F&& func) -> decltype(func())
     }
 }
 
+#define HANDLE_ERRORS_OPEN handle_errors([&]() {
+#define HANDLE_ERRORS_CLOSE });
+
 } // namespace realm
 
 #endif // ERROR_HANDLING_HPP
