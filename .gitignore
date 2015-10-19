@@ -42,3 +42,5 @@ realm/doxyoutCS
 *.so
 Resource.Designer.cs
 realm/doxyoutCS_docOnly
+
+*.ncrunchproject
