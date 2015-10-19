@@ -104,14 +104,6 @@ inline size_t bool_to_size_t(bool value) {
     return 0;
 }
 
-//call this if something went wrong and You want to return an error code where C#
-//expects a boolean or error code.
-//the inline should end up with no more code than just returning the constant
-//but will allow us to adopt another scheme later on
-inline size_t bool_to_size_t_with_errorcode(size_t errorcode) {
-    return errorcode;
-}
-
 //a size_t sent from C# with value 0 means durability_full, other values means durabillity_memonly, but please
 //use 1 for durabillity_memonly to make room for later extensions
 inline SharedGroup::DurabilityLevel size_t_to_durabilitylevel(size_t value) {
