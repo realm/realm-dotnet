@@ -44,3 +44,4 @@ Resource.Designer.cs
 realm/doxyoutCS_docOnly
 
 *.DotSettings
+*.ncrunchproject
