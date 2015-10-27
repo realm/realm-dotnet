@@ -19,7 +19,7 @@
 #include <iostream>
 #include <functional>
 #include <list>
-#include "object-store/realm_delegate.hpp"
+#include "object-store/realm_binding_context.hpp"
 #include "error_handling.hpp"
 
 using namespace realm;
@@ -27,13 +27,13 @@ using namespace realm;
 namespace realm {
 namespace binding {
 
-class CSharpRealmDelegate: public RealmDelegate {
+class CSharpRealmBindingContext: public RealmBindingContext {
 public:
     // A token returned from add_notification that can be used to remove the
     // notification later
     struct token : private std::list<std::function<void()>>::iterator {
         token(std::list<std::function<void()>>::iterator it) : std::list<std::function<void()>>::iterator(it) { }
-        friend class CSharpRealmDelegate;
+        friend class CSharpRealmBindingContext;
     };
 
     token add_notification(std::function<void()> func)
@@ -61,12 +61,7 @@ private:
     std::list<std::function<void()>> m_registered_notifications;
 };
 
-CSharpRealmDelegate* delegate_instance = new CSharpRealmDelegate();
-
-void process_error(RealmError* error) 
-{
-    // Blah!
-}
+CSharpRealmBindingContext* binding_context_instance = new CSharpRealmBindingContext();
 
 }
 }
