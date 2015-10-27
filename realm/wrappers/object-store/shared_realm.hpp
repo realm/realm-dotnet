@@ -29,12 +29,15 @@
 
 namespace realm {
     class ClientHistory;
-    class ExternalCommitHelper;
     class Realm;
     class RealmCache;
-    class RealmDelegate;
+    class RealmBindingContext;
     typedef std::shared_ptr<Realm> SharedRealm;
     typedef std::weak_ptr<Realm> WeakRealm;
+
+    namespace _impl {
+        class ExternalCommitHelper;
+    }
 
     class Realm : public std::enable_shared_from_this<Realm>
     {
@@ -115,10 +118,10 @@ namespace realm {
 
         Group *m_group = nullptr;
 
-        std::shared_ptr<ExternalCommitHelper> m_notifier;
+        std::shared_ptr<_impl::ExternalCommitHelper> m_notifier;
 
       public:
-        std::unique_ptr<RealmDelegate> m_delegate;
+        std::unique_ptr<RealmBindingContext> m_binding_context;
 
         // FIXME private
         Group *read_group();
@@ -137,56 +140,6 @@ namespace realm {
       private:
         std::map<std::string, std::map<std::thread::id, WeakRealm>> m_cache;
         std::mutex m_mutex;
-    };
-
-    class RealmFileException : public std::runtime_error
-    {
-      public:
-        enum class Kind
-        {
-            /** Thrown for any I/O related exception scenarios when a realm is opened. */
-            AccessError,
-            /** Thrown if the user does not have permission to open or create
-             the specified file in the specified access mode when the realm is opened. */
-            PermissionDenied,
-            /** Thrown if no_create was specified and the file did already exist when the realm is opened. */
-            Exists,
-            /** Thrown if no_create was specified and the file was not found when the realm is opened. */
-            NotFound,
-            /** Thrown if the database file is currently open in another
-             process which cannot share with the current process due to an
-             architecture mismatch. */
-            IncompatibleLockFile,
-        };
-        RealmFileException(Kind kind, std::string message) : std::runtime_error(message), m_kind(kind) {}
-        Kind kind() const { return m_kind; }
-        
-      private:
-        Kind m_kind;
-    };
-
-    class MismatchedConfigException : public std::runtime_error
-    {
-      public:
-        MismatchedConfigException(std::string message) : std::runtime_error(message) {}
-    };
-
-    class InvalidTransactionException : public std::runtime_error
-    {
-      public:
-        InvalidTransactionException(std::string message) : std::runtime_error(message) {}
-    };
-
-    class IncorrectThreadException : public std::runtime_error
-    {
-      public:
-        IncorrectThreadException(std::string message) : std::runtime_error(message) {}
-    };
-
-    class UnitializedRealmException : public std::runtime_error
-    {
-      public:
-        UnitializedRealmException(std::string message) : std::runtime_error(message) {}
     };
 }
 

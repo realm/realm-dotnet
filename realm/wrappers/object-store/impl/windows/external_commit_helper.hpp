@@ -16,30 +16,27 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#include "external_commit_helper.hpp"
+#ifndef REALM_EXTERNAL_COMMIT_HELPER_HPP
+#define REALM_EXTERNAL_COMMIT_HELPER_HPP
 
-#include "../shared_realm.hpp"
+#include <mutex>
+#include <vector>
 
-using namespace realm;
+namespace realm {
+class Realm;
 
-// Fake external commit helper for windows. Doesn't do anything yet.
-ExternalCommitHelper::ExternalCommitHelper(Realm* realm)
-{
-}
+namespace _impl {
+class ExternalCommitHelper {
+public:
+    ExternalCommitHelper(Realm* realm);
+    ~ExternalCommitHelper();
 
-ExternalCommitHelper::~ExternalCommitHelper()
-{
-}
+    void notify_others();
+    void add_realm(Realm* realm);
+    void remove_realm(Realm* realm);
+};
 
-void ExternalCommitHelper::add_realm(realm::Realm* realm)
-{
-}
+} // namespace _impl
+} // namespace realm
 
-void ExternalCommitHelper::remove_realm(realm::Realm* realm)
-{
-}
-
-void ExternalCommitHelper::notify_others()
-{
-}
-
+#endif /* REALM_EXTERNAL_COMMIT_HELPER_HPP */
