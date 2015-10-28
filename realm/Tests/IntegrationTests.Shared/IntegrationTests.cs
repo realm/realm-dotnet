@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.IO;
@@ -78,11 +79,69 @@ namespace IntegrationTests
         }
 
         [Test]
+        public void CreateObjectTest()
+        {
+            // Act
+            _realm.CreateObject<Person>();
+
+            // Assert
+            var allPeople = _realm.All<Person>().ToList();
+            Assert.That(allPeople.Count, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void SetAndGetPropertyTest()
+        {
+           // Arrange
+            var p = _realm.CreateObject<Person>();
+
+            // Act
+            using (var transaction = _realm.BeginWrite())
+            {
+                p.FirstName = "John";
+                p.IsInteresting = true;
+                transaction.Commit();
+            }
+
+            var receivedFirstName = p.FirstName;
+            var receivedIsInteresting = p.IsInteresting;
+
+            // Assert
+            Assert.That(receivedFirstName, Is.EqualTo("John"));
+            Assert.That(receivedIsInteresting, Is.True);
+        }
+
+        [Test]
+        public void SetRemappedPropertyTest()
+        {
+           // Arrange
+            var p = _realm.CreateObject<Person>();
+
+            // Act
+            p.Email = "John@a.com";
+            var receivedEmail = p.Email;
+
+            // Assert
+            Assert.That(receivedEmail, Is.EqualTo("John@a.com"));
+        }
+
+        [Test]
+        public void SetPropertyOutsideTransactionShouldFail()
+        {
+           // Arrange
+            var p = _realm.CreateObject<Person>();
+
+            // Act and assert
+            Assert.Throws<Exception>(() => p.FirstName = "John");
+        }
+
+
+        [Test]
         public void RemoveTest()
         {
             // Arrange
             Person p1, p2, p3;
-            using (_realm.BeginWrite())
+            using (var transaction = _realm.BeginWrite())
             {
                 //p1 = new Person { FirstName = "A" };
                 //p2 = new Person { FirstName = "B" };
@@ -90,19 +149,20 @@ namespace IntegrationTests
                 p1 = _realm.CreateObject<Person>(); p1.FirstName = "A";
                 p2 = _realm.CreateObject<Person>(); p2.FirstName = "B";
                 p3 = _realm.CreateObject<Person>(); p3.FirstName = "C";
+                transaction.Commit();
             }
 
             // Act
-            using (_realm.BeginWrite())
+            using (var transaction = _realm.BeginWrite())
+            {
                 _realm.Remove(p2);
+                transaction.Commit();
+            }
 
             // Assert
             //Assert.That(!p2.InRealm);
 
             var allPeople = _realm.All<Person>().ToList();
-            foreach (var p in allPeople)
-                Debug.WriteLine("Person: " + p.FirstName);
-
             Assert.That(allPeople, Is.EquivalentTo(new List<Person> { p1, p3 }));
         }
     }

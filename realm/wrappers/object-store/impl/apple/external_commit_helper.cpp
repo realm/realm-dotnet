@@ -18,7 +18,7 @@
 
 #include "external_commit_helper.hpp"
 
-#include "../shared_realm.hpp"
+#include "shared_realm.hpp"
 
 #include <assert.h>
 #include <sys/event.h>
@@ -30,6 +30,7 @@
 #include <sstream>
 
 using namespace realm;
+using namespace realm::_impl;
 
 namespace {
 // Write a byte to a pipe to notify anyone waiting for data on the pipe

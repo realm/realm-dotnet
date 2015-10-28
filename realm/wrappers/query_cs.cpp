@@ -21,7 +21,7 @@
 #include <realm/lang_bind_helper.hpp>
 #include "marshalling.hpp"
 #include "error_handling.hpp"
-#include "realm_export_decls.h"
+#include "realm_export_decls.hpp"
 #include "object-store/shared_realm.hpp"
 #include "object-store/schema.hpp"
 
