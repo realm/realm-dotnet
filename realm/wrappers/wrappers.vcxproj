@@ -172,7 +172,7 @@
     <ClInclude Include="object-store\realm_error_type.hpp" />
     <ClInclude Include="object-store\schema.hpp" />
     <ClInclude Include="object-store\shared_realm.hpp" />
-    <ClInclude Include="realm_export_decls.h" />
+    <ClInclude Include="realm_export_decls.hpp" />
     <ClInclude Include="marshalling.hpp" />
   </ItemGroup>
   <ItemGroup>

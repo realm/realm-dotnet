@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef REALM_EXPORT
+#ifndef REALM_EXPORT_DECLS_HPP
 
 // define the wrapper for linking as a DLL in Windows, otherwise null
 #ifdef WIN32
@@ -25,4 +25,4 @@
 #define REALM_EXPORT
 #endif
 
-#endif  // REALM_EXPORT
+#endif  // REALM_EXPORT_DECLS_HPP

@@ -17,7 +17,7 @@
 #include <stdexcept>
 #include <sstream>
 #include <cassert>
-#include "realm_export_decls.h"
+#include "realm_export_decls.hpp"
 #include "object-store/realm_error_type.hpp"
 #include "error_handling.hpp"
 
