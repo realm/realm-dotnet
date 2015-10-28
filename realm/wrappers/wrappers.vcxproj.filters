@@ -51,9 +51,6 @@
     <ClInclude Include="object-store\shared_realm.hpp">
       <Filter>Header Files\object-store</Filter>
     </ClInclude>
-    <ClInclude Include="object-store\impl\windows\external_commit_helper.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="object-store\impl\transact_log_handler.hpp">
       <Filter>Header Files\object-store</Filter>
     </ClInclude>
@@ -61,6 +58,9 @@
       <Filter>Header Files\object-store</Filter>
     </ClInclude>
     <ClInclude Include="object-store\realm_binding_context.hpp">
+      <Filter>Header Files\object-store</Filter>
+    </ClInclude>
+    <ClInclude Include="object-store\impl\windows\external_commit_helper.hpp">
       <Filter>Header Files\object-store</Filter>
     </ClInclude>
   </ItemGroup>
@@ -107,14 +107,14 @@
     <ClCompile Include="object_schema_cs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="object-store\impl\windows\external_commit_helper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="object-store\impl\transact_log_handler.cpp">
       <Filter>Source Files\object-store</Filter>
     </ClCompile>
     <ClCompile Include="error_handling.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="object-store\impl\windows\external_commit_helper.cpp">
+      <Filter>Source Files\object-store</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
