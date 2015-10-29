@@ -24,9 +24,6 @@
     <ClInclude Include="exceptions_to_managed.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="realm_export_decls.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="exception_catcher.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -65,6 +62,9 @@
     </ClInclude>
     <ClInclude Include="object-store\transact_log_handler.hpp">
       <Filter>Header Files\object-store</Filter>
+    </ClInclude>
+    <ClInclude Include="realm_export_decls.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
