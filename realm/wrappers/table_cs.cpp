@@ -20,7 +20,7 @@
 #include <realm/lang_bind_helper.hpp>
 #include "error_handling.hpp"
 #include "marshalling.hpp"
-#include "realm_export_decls.h"
+#include "realm_export_decls.hpp"
 
 using namespace realm;
 using namespace realm::binding;

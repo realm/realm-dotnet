@@ -173,7 +173,7 @@
     <ClInclude Include="object-store\shared_realm.hpp" />
     <ClInclude Include="object-store\transact_log_handler.hpp" />
     <ClInclude Include="object-store\windows\external_commit_helper.hpp" />
-    <ClInclude Include="realm_export_decls.h" />
+    <ClInclude Include="realm_export_decls.hpp" />
     <ClInclude Include="marshalling.hpp" />
   </ItemGroup>
   <ItemGroup>
