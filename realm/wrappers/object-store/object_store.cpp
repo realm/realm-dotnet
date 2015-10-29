@@ -36,9 +36,9 @@ const size_t c_versionColumnIndex = 0;
 
 const char * const c_primaryKeyTableName = "pk";
 const char * const c_primaryKeyObjectClassColumnName = "pk_table";
-const size_t c_primaryKeyObjectClassColumnIndex =  0;
+const size_t c_primaryKeyObjectClassColumnIndex = 0;
 const char * const c_primaryKeyPropertyNameColumnName = "pk_property";
-const size_t c_primaryKeyPropertyNameColumnIndex =  1;
+const size_t c_primaryKeyPropertyNameColumnIndex = 1;
 
 const size_t c_zeroRowIndex = 0;
 
@@ -149,6 +149,13 @@ static inline bool property_has_changed(Property const& p1, Property const& p2) 
         || p1.is_nullable != p2.is_nullable;
 }
 
+static inline bool property_can_be_migrated_to_nullable(const Property& old_property, const Property& new_property) {
+    return old_property.type == new_property.type
+        && !old_property.is_nullable
+        && new_property.is_nullable
+        && new_property.name == old_property.name;
+}
+
 void ObjectStore::verify_schema(Schema const& actual_schema, Schema& target_schema, bool allow_missing_tables) {
     std::vector<ObjectSchemaValidationException> errors;
     for (auto &object_schema : target_schema) {
@@ -156,7 +163,7 @@ void ObjectStore::verify_schema(Schema const& actual_schema, Schema& target_sche
         if (matching_schema == actual_schema.end()) {
             if (!allow_missing_tables) {
                 errors.emplace_back(ObjectSchemaValidationException(object_schema.name,
-                                    "Missing table for object type '" + object_schema.name + "'."));
+                    "Missing table for object type '" + object_schema.name + "'."));
             }
             continue;
         }
@@ -170,7 +177,7 @@ void ObjectStore::verify_schema(Schema const& actual_schema, Schema& target_sche
 }
 
 std::vector<ObjectSchemaValidationException> ObjectStore::verify_object_schema(ObjectSchema const& table_schema,
-                                                                               ObjectSchema& target_schema) {
+    ObjectSchema& target_schema) {
     std::vector<ObjectSchemaValidationException> exceptions;
 
     // check to see if properties are the same
@@ -205,6 +212,45 @@ std::vector<ObjectSchemaValidationException> ObjectStore::verify_object_schema(O
     return exceptions;
 }
 
+template <typename T>
+static void copy_property_values(const Property& old_property, const Property& new_property, Table& table,
+    T(Table::*getter)(std::size_t, std::size_t) const noexcept,
+    void (Table::*setter)(std::size_t, std::size_t, T)) {
+    size_t old_column = old_property.table_column, new_column = new_property.table_column;
+    size_t count = table.size();
+    for (size_t i = 0; i < count; i++) {
+        (table.*setter)(new_column, i, (table.*getter)(old_column, i));
+    }
+}
+
+static void copy_property_values(const Property& source, const Property& destination, Table& table) {
+    switch (destination.type) {
+    case PropertyTypeInt:
+        copy_property_values(source, destination, table, &Table::get_int, &Table::set_int);
+        break;
+    case PropertyTypeBool:
+        copy_property_values(source, destination, table, &Table::get_bool, &Table::set_bool);
+        break;
+    case PropertyTypeFloat:
+        copy_property_values(source, destination, table, &Table::get_float, &Table::set_float);
+        break;
+    case PropertyTypeDouble:
+        copy_property_values(source, destination, table, &Table::get_double, &Table::set_double);
+        break;
+    case PropertyTypeString:
+        copy_property_values(source, destination, table, &Table::get_string, &Table::set_string);
+        break;
+    case PropertyTypeData:
+        copy_property_values(source, destination, table, &Table::get_binary, &Table::set_binary);
+        break;
+    case PropertyTypeDate:
+        copy_property_values(source, destination, table, &Table::get_datetime, &Table::set_datetime);
+        break;
+    default:
+        break;
+    }
+}
+
 // set references to tables on targetSchema and create/update any missing or out-of-date tables
 // if update existing is true, updates existing tables, otherwise validates existing tables
 // NOTE: must be called from within write transaction
@@ -230,13 +276,40 @@ bool ObjectStore::create_tables(Group *group, Schema &target_schema, bool update
         ObjectSchema current_schema(group, target_object_schema->name);
         std::vector<Property> &target_props = target_object_schema->properties;
 
+        // handle columns changing from required to optional
+        for (auto& current_prop : current_schema.properties) {
+            auto target_prop = target_object_schema->property_for_name(current_prop.name);
+            if (!target_prop || !property_can_be_migrated_to_nullable(current_prop, *target_prop))
+                continue;
+
+            target_prop->table_column = current_prop.table_column;
+            current_prop.table_column = current_prop.table_column + 1;
+
+            table->insert_column(target_prop->table_column, DataType(target_prop->type), target_prop->name, target_prop->is_nullable);
+            copy_property_values(current_prop, *target_prop, *table);
+            table->remove_column(current_prop.table_column);
+
+            current_prop.table_column = target_prop->table_column;
+            changed = true;
+        }
+
+        bool inserted_placeholder_column = false;
+
         // remove extra columns
         size_t deleted = 0;
         for (auto& current_prop : current_schema.properties) {
             current_prop.table_column -= deleted;
 
             auto target_prop = target_object_schema->property_for_name(current_prop.name);
-            if (!target_prop || property_has_changed(current_prop, *target_prop)) {
+            if (!target_prop || (property_has_changed(current_prop, *target_prop)
+                && !property_can_be_migrated_to_nullable(current_prop, *target_prop))) {
+                if (deleted == current_schema.properties.size() - 1) {
+                    // We're about to remove the last column from the table. Insert a placeholder column to preserve
+                    // the number of rows in the table for the addition of new columns below.
+                    table->add_column(type_Bool, "placeholder");
+                    inserted_placeholder_column = true;
+                }
+
                 table->remove_column(current_prop.table_column);
                 ++deleted;
                 current_prop.table_column = npos;
@@ -251,24 +324,33 @@ bool ObjectStore::create_tables(Group *group, Schema &target_schema, bool update
             // add any new properties (no old column or old column was removed due to not matching)
             if (!current_prop || current_prop->table_column == npos) {
                 switch (target_prop.type) {
-                        // for objects and arrays, we have to specify target table
-                    case PropertyTypeObject:
-                    case PropertyTypeArray: {
-                        TableRef link_table = ObjectStore::table_for_object_type(group, target_prop.object_type);
-                        target_prop.table_column = table->add_column_link(DataType(target_prop.type), target_prop.name, *link_table);
-                        break;
-                    }
-                    default:
-                        target_prop.table_column = table->add_column(DataType(target_prop.type),
-                                                                     target_prop.name,
-                                                                     target_prop.is_nullable);
-                        break;
+                    // for objects and arrays, we have to specify target table
+                case PropertyTypeObject:
+                case PropertyTypeArray: {
+                    TableRef link_table = ObjectStore::table_for_object_type(group, target_prop.object_type);
+                    target_prop.table_column = table->add_column_link(DataType(target_prop.type), target_prop.name, *link_table);
+                    break;
+                }
+                default:
+                    target_prop.table_column = table->add_column(DataType(target_prop.type),
+                        target_prop.name,
+                        target_prop.is_nullable);
+                    break;
                 }
 
                 changed = true;
             }
             else {
                 target_prop.table_column = current_prop->table_column;
+            }
+        }
+
+        if (inserted_placeholder_column) {
+            // We inserted a placeholder due to removing all columns from the table. Remove it, and update the indices
+            // of any columns that we inserted after it.
+            table->remove_column(0);
+            for (auto& target_prop : target_props) {
+                target_prop.table_column--;
             }
         }
 
@@ -322,8 +404,8 @@ bool ObjectStore::needs_update(Schema const& old_schema, Schema const& schema) {
 }
 
 bool ObjectStore::update_realm_with_schema(Group *group, Schema const& old_schema,
-                                           uint64_t version, Schema &schema,
-                                           MigrationFunction migration) {
+    uint64_t version, Schema &schema,
+    MigrationFunction migration) {
     // Recheck the schema version after beginning the write transaction as
     // another process may have done the migration after we opened the read
     // transaction
@@ -437,7 +519,7 @@ DuplicatePrimaryKeyValueException::DuplicatePrimaryKeyValueException(std::string
 SchemaValidationException::SchemaValidationException(std::vector<ObjectSchemaValidationException> const& errors) :
     m_validation_errors(errors)
 {
-    m_what ="Migration is required due to the following errors: ";
+    m_what = "Migration is required due to the following errors: ";
     for (auto const& error : errors) {
         m_what += std::string("\n- ") + error.what();
     }
@@ -487,7 +569,7 @@ MismatchedPropertiesException::MismatchedPropertiesException(std::string const& 
 {
     if (new_property.type != old_property.type) {
         m_what = "Property types for '" + old_property.name + "' property do not match. Old type '" + string_for_property_type(old_property.type) +
-        "', new type '" + string_for_property_type(new_property.type) + "'";
+            "', new type '" + string_for_property_type(new_property.type) + "'";
     }
     else if (new_property.object_type != old_property.object_type) {
         m_what = "Target object type for property '" + old_property.name + "' do not match. Old type '" + old_property.object_type + "', new type '" + new_property.object_type + "'";
