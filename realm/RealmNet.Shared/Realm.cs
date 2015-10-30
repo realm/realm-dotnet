@@ -10,6 +10,8 @@ namespace RealmNet
 {
     public class Realm : IDisposable
     {
+        #region static
+
         private static readonly IEnumerable<Type> RealmObjectClasses;
 
         static Realm()
@@ -46,7 +48,9 @@ namespace RealmNet
             try { /* Retain handle in a constrained execution region */ }
             finally
             {
-                var srPtr = NativeSharedRealm.open(schemaHandle, databasePath, (IntPtr)0, (IntPtr)0, "");
+                var readOnly = false;
+                var durability = false;
+                var srPtr = NativeSharedRealm.open(schemaHandle, databasePath, (IntPtr)databasePath.Length, MarshalHelpers.BoolToIntPtr(readOnly), MarshalHelpers.BoolToIntPtr(durability), "", (IntPtr)0);
                 srHandle.SetHandle(srPtr);
             }
 
@@ -84,9 +88,13 @@ namespace RealmNet
             return objectSchemaPtr;
         }
 
+        #endregion
+
         private SharedRealmHandle _sharedRealmHandle;
         internal Dictionary<Type, TableHandle> _tableHandles;
-        
+
+        internal bool IsInTransaction => MarshalHelpers.IntPtrToBool(NativeSharedRealm.is_in_transaction(_sharedRealmHandle));
+
         private Realm(SharedRealmHandle sharedRealmHandle)
         {
             _sharedRealmHandle = sharedRealmHandle;
@@ -116,6 +124,9 @@ namespace RealmNet
 
         public object CreateObject(Type objectType)
         {
+            if (!IsInTransaction)
+                throw new Exception("Cannot create Realm object outside write transactions");
+
             var result = (RealmObject)Activator.CreateInstance(objectType);
 
             var tableHandle = _tableHandles[objectType];
@@ -155,6 +166,9 @@ namespace RealmNet
 
         public void Remove(RealmObject p2)
         {
+            if (!IsInTransaction)
+                throw new Exception("Cannot remove Realm object outside write transactions");
+
             var tableHandle = _tableHandles[p2.GetType()];
             NativeTable.remove_row(tableHandle, (RowHandle)p2.RowHandle);
         }
