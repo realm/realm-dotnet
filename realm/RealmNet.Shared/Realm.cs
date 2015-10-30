@@ -27,6 +27,8 @@ namespace RealmNet
                 if (!realmType.GetCustomAttributes(typeof(WovenAttribute), true).Any())
                     Debug.WriteLine("WARNING! The type " + realmType.Name + " is a RealmObject but it has not been woven.");
             }
+
+            NativeCommon.SetupExceptionThrower();
         }
 
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
