@@ -9,7 +9,30 @@ using RealmNet;
 namespace IntegrationTests
 {
     [TestFixture]
-    public class IntegrationTests
+    public class RealmIntegrationTests
+    {
+        [Test]
+        public void GetInstanceTest()
+        {
+            // Arrange, act and "assert" that no exception is thrown
+            Realm.GetInstance(Path.GetTempFileName());
+        }
+
+        [Test]
+        public void GetInstanceShouldThrowIfFileIsLocked()
+        {
+            // Arrange
+            var databasePath = Path.GetTempFileName();
+            using (File.Open(databasePath, FileMode.Open, FileAccess.Read, FileShare.None))     // Lock the file
+            {
+                // Act and assert
+                Assert.Throws<RealmPermissionDeniedException>(() => Realm.GetInstance(databasePath));
+            }
+        }
+    }
+
+    [TestFixture]
+    public class RealmObjectIntegrationTests
     {
         protected string _databasePath;
         protected Realm _realm;

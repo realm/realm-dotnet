@@ -7,7 +7,12 @@ using RealmNet;
 namespace IntegrationTests.Win32
 {
     [TestFixture]
-    public class Win32IntegrationTests : IntegrationTests
+    public class Win32RealmIntegrationTests : RealmIntegrationTests
+    {
+    }
+
+    [TestFixture]
+    public class Win32RealmObjectIntegrationTests : RealmObjectIntegrationTests
     {
     }
 }
