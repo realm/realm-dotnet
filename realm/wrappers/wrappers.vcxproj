@@ -162,8 +162,6 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\realm-core\src\win32\pthread\pthread.h" />
     <ClInclude Include="error_handling.hpp" />
-    <ClInclude Include="exceptions_to_managed.hpp" />
-    <ClInclude Include="exception_catcher.hpp" />
     <ClInclude Include="object-store\index_set.hpp" />
     <ClInclude Include="object-store\object_schema.hpp" />
     <ClInclude Include="object-store\object_store.hpp" />
@@ -179,8 +177,6 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\realm-core\src\win32\pthread\pthread.c" />
     <ClCompile Include="error_handling.cpp" />
-    <ClCompile Include="exceptions_to_managed.cpp" />
-    <ClCompile Include="exception_catcher.cpp" />
     <ClCompile Include="marshalling.cpp" />
     <ClCompile Include="object-store\index_set.cpp" />
     <ClCompile Include="object-store\object_schema.cpp" />
