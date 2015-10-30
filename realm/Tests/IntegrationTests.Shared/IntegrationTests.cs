@@ -27,7 +27,7 @@ namespace IntegrationTests
             _realm.Dispose();
         }
 
-        [Test]
+        [Test, Explicit("Manual test for debugging")]
         public void SimpleTest()
         {
             Person p1, p2, p3;
@@ -81,7 +81,7 @@ namespace IntegrationTests
         [Test]
         public void CreateObjectTest()
         {
-            // Act
+            // Arrange and act
             using (var transaction = _realm.BeginWrite())
             {
                 _realm.CreateObject<Person>();
@@ -153,7 +153,6 @@ namespace IntegrationTests
                 p = _realm.CreateObject<Person>();
                 transaction.Commit();
             }
-            var receivedEmail = p.Email;
 
             // Act and assert
             Assert.Throws<Exception>(() => p.FirstName = "John");
