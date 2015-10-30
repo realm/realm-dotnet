@@ -25,16 +25,19 @@
 namespace realm {
 class Realm;
 
-class ExternalCommitHelper {
-public:
-    ExternalCommitHelper(Realm* realm);
-    ~ExternalCommitHelper();
+namespace _impl {
 
-    void notify_others();
-    void add_realm(Realm* realm);
-    void remove_realm(Realm* realm);
-};
+    class ExternalCommitHelper {
+    public:
+        ExternalCommitHelper(Realm* realm);
+        ~ExternalCommitHelper();
 
+        void notify_others();
+        void add_realm(Realm* realm);
+        void remove_realm(Realm* realm);
+    };
+
+} // namespace _impl
 } // namespace realm
 
 #endif /* REALM_EXTERNAL_COMMIT_HELPER_HPP */

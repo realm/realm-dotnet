@@ -23,23 +23,23 @@
 using namespace realm;
 
 // Fake external commit helper for windows. Doesn't do anything yet.
-ExternalCommitHelper::ExternalCommitHelper(Realm* realm)
+realm::_impl::ExternalCommitHelper::ExternalCommitHelper(Realm* realm)
 {
 }
 
-ExternalCommitHelper::~ExternalCommitHelper()
+realm::_impl::ExternalCommitHelper::~ExternalCommitHelper()
 {
 }
 
-void ExternalCommitHelper::add_realm(realm::Realm* realm)
+void realm::_impl::ExternalCommitHelper::add_realm(realm::Realm* realm)
 {
 }
 
-void ExternalCommitHelper::remove_realm(realm::Realm* realm)
+void realm::_impl::ExternalCommitHelper::remove_realm(realm::Realm* realm)
 {
 }
 
-void ExternalCommitHelper::notify_others()
+void realm::_impl::ExternalCommitHelper::notify_others()
 {
 }
 
