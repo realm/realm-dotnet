@@ -6,8 +6,8 @@ namespace RealmNet
     internal static class NativeSharedRealm
     {
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_open", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern IntPtr open(SchemaHandle schemaHandle, string path, IntPtr readOnly,
-            IntPtr durability, string encryptionKey);
+        internal static extern IntPtr open(SchemaHandle schemaHandle, [MarshalAs(UnmanagedType.LPWStr)]string path, IntPtr pathLength, IntPtr readOnly,
+            IntPtr durability, [MarshalAs(UnmanagedType.LPWStr)]string encryptionKey, IntPtr encryptionKeyLength);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_destroy", CallingConvention = CallingConvention.Cdecl)]
         internal static extern IntPtr destroy(IntPtr sharedRealm);

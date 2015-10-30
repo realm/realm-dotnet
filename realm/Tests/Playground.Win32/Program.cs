@@ -79,7 +79,7 @@ namespace Playground.Win32
 
             var sh = new SchemaHandle(osses);
 
-            var sr = NativeSharedRealm.open(sh, path, (IntPtr)0, (IntPtr)0, "");
+            var sr = NativeSharedRealm.open(sh, path, (IntPtr)path.Length, (IntPtr)0, (IntPtr)0, "", (IntPtr)0);
             var srh = new SharedRealmHandle();
             srh.SetHandle(sr);
 

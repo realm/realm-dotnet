@@ -71,6 +71,15 @@ public:
     {
         return realm::StringData(m_data.get(), m_size);
     }
+
+    std::string to_string() const
+    {
+        return std::string(m_data.get(), m_size);
+    }
+
+    const char* data() const { return m_data.get();  }
+    size_t size() const { return m_size;  }
+
     bool error;
 private:
     std::unique_ptr<char[]> m_data;

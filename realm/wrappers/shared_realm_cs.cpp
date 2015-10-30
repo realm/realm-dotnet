@@ -29,16 +29,20 @@ using namespace realm::binding;
 
 extern "C" {
 
-REALM_EXPORT SharedRealm* shared_realm_open(Schema* schema, const char* path, bool read_only, SharedGroup::DurabilityLevel durability,
-                        const char* encryption_key)
+REALM_EXPORT SharedRealm* shared_realm_open(Schema* schema, uint16_t* path, size_t path_len, bool read_only, SharedGroup::DurabilityLevel durability,
+                        uint16_t* encryption_key, size_t encryption_key_len)
 {
     return handle_errors([&]() {
+        Utf16StringAccessor pathStr(path, path_len);
+        Utf16StringAccessor encryptionStr(encryption_key, encryption_key_len);
+
+
         Realm::Config config;
-        config.path = path;
+        config.path = pathStr.to_string();
         config.read_only = read_only;
         config.in_memory = durability != SharedGroup::durability_Full;
 
-        config.encryption_key = std::vector<char>(&encryption_key[0], &encryption_key[strlen(encryption_key)]);
+        config.encryption_key = std::vector<char>(&encryptionStr.data()[0], &encryptionStr.data()[encryptionStr.size()]);
 
         config.schema.reset(schema);
         return new SharedRealm{Realm::get_shared_realm(config)};
@@ -52,11 +56,13 @@ REALM_EXPORT void shared_realm_destroy(SharedRealm* realm)
     });
 }
 
-REALM_EXPORT bool shared_realm_has_table(SharedRealm* realm, const char* name)
+REALM_EXPORT size_t shared_realm_has_table(SharedRealm* realm, uint16_t* table_name, size_t table_name_len)
 {
     return handle_errors([&]() {
         Group* g = (*realm)->read_group();
-        return g->has_table(name);
+        Utf16StringAccessor str(table_name, table_name_len);
+
+        return bool_to_size_t(g->has_table(str));
     });
 }
 
@@ -64,7 +70,6 @@ REALM_EXPORT Table* shared_realm_get_table(SharedRealm* realm, uint16_t* table_n
 {
     return handle_errors([&]() {
         Group* g = (*realm)->read_group();
-
         Utf16StringAccessor str(table_name, table_name_len);
 
         bool dummy; // get_or_add_table sets this to true if the table was added.
@@ -93,17 +98,17 @@ REALM_EXPORT void shared_realm_cancel_transaction(SharedRealm* realm)
     });
 }
 
-REALM_EXPORT bool shared_realm_is_in_transaction(SharedRealm* realm)
+REALM_EXPORT size_t shared_realm_is_in_transaction(SharedRealm* realm)
 {
     return handle_errors([&]() {
-        return (*realm)->is_in_transaction();
+        return bool_to_size_t((*realm)->is_in_transaction());
     });
 }
 
-REALM_EXPORT bool shared_realm_refresh(SharedRealm* realm)
+REALM_EXPORT size_t shared_realm_refresh(SharedRealm* realm)
 {
     return handle_errors([&]() {
-        return (*realm)->refresh();
+        return bool_to_size_t((*realm)->refresh());
     });
 }
 
