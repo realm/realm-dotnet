@@ -82,7 +82,7 @@ namespace IntegrationTests
         {
             // Arrange
             Person p1, p2, p3;
-            using (_realm.BeginWrite())
+            using (var transaction = _realm.BeginWrite())
             {
                 //p1 = new Person { FirstName = "A" };
                 //p2 = new Person { FirstName = "B" };
@@ -90,11 +90,14 @@ namespace IntegrationTests
                 p1 = _realm.CreateObject<Person>(); p1.FirstName = "A";
                 p2 = _realm.CreateObject<Person>(); p2.FirstName = "B";
                 p3 = _realm.CreateObject<Person>(); p3.FirstName = "C";
+                transaction.Commit();
             }
 
             // Act
-            using (_realm.BeginWrite())
-                _realm.Remove(p2);
+            using (var transaction = _realm.BeginWrite ()) {
+                _realm.Remove (p2);
+                transaction.Commit ();
+            }
 
             // Assert
             //Assert.That(!p2.InRealm);
