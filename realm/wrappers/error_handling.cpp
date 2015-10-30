@@ -34,6 +34,12 @@ static ManagedExceptionThrowerT ManagedExceptionThrower = nullptr;
 
 namespace realm {
 
+    void throw_exception(RealmErrorType error_type, const std::string message)
+    {
+        assert(ManagedExceptionThrower != nullptr);
+        ManagedExceptionThrower((size_t)error_type, (void*)message.data(), message.size());
+    }
+
     /**
     @note mostly copied from util.cpp in Java but has a much richer range of exceptions
     */
@@ -50,7 +56,7 @@ namespace realm {
         }
         catch (const RealmFileException& e) {
 
-            switch (e.kind) {
+            switch (e.kind()) {
             case RealmFileException::Kind::AccessError:
                 throw_exception(RealmErrorType::RealmFileAccessError, msg(e));
                 break;
@@ -98,12 +104,6 @@ namespace realm {
             ss << "Unknown exception caught which doesn't descend from std::exception"; //, in " << file << " line " << line;
             throw_exception(RealmErrorType::RealmError, ss.str());
         }
-    }
-
-    void throw_exception(RealmErrorType error_type, const std::string message)
-    {
-        assert(ManagedExceptionThrower != nullptr);
-        ManagedExceptionThrower((size_t)error_type, (void*)message.data(), message.size());
     }
 
 }   // namespace realm
