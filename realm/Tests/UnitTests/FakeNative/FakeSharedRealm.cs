@@ -5,7 +5,7 @@ namespace RealmNet
 {
     internal static class NativeSharedRealm
     {
-        internal static IntPtr open(SchemaHandle schemaHandle, string path, IntPtr readOnly, IntPtr durability, string encryptionKey)
+        internal static IntPtr open(SchemaHandle schemaHandle, string path, IntPtr pathLength, IntPtr readOnly, IntPtr durability, string encryptionKey, IntPtr encryptionKeyLength)
         {
             return (IntPtr) 0;
         }
@@ -20,21 +20,26 @@ namespace RealmNet
             return (IntPtr) 0;
         }
 
+        private static bool _isInTransaction = false;
+
         internal static void begin_transaction(SharedRealmHandle sharedRealm)
         {
+            _isInTransaction = true;
         }
 
         internal static void commit_transaction(SharedRealmHandle sharedRealm)
         {
+            _isInTransaction = false;
         }
 
         internal static void cancel_transaction(SharedRealmHandle sharedRealm)
         {
+            _isInTransaction = false;
         }
 
         internal static IntPtr is_in_transaction(SharedRealmHandle sharedRealm)
         {
-            return (IntPtr) 0;
+            return MarshalHelpers.BoolToIntPtr(_isInTransaction);
         }
 
         internal static void refresh(SharedRealmHandle sharedRealm)

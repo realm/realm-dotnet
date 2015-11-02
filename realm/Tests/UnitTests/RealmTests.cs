@@ -39,7 +39,8 @@ namespace UnitTests
             Logger.Clear();
 
             // Act
-            r.CreateObject<Person>();
+            using(r.BeginWrite())
+                r.CreateObject<Person>();
 
             // Assert
             Assert.That(Logger.Instance.LogList[0], Is.EqualTo("NativeTable.add_empty_row()"));

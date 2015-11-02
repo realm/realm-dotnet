@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FakeNative\FakeCommon.cs" />
     <Compile Include="FakeNative\FakeSharedRealm.cs" />
     <Compile Include="FakeNative\FakeObjectSchema.cs" />
     <Compile Include="FakeNative\FakeQuery.cs" />

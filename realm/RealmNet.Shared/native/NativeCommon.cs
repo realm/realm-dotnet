@@ -35,11 +35,11 @@ namespace RealmNet {
         public delegate void ExceptionThrowerCallback (IntPtr exceptionCode, IntPtr utf8String, IntPtr stringLen);
 
 
-		#if __IOS__
-		[MonoPInvokeCallback (typeof (ExceptionThrowerCallback))]
-		#endif
-		unsafe public static void ExceptionThrower(IntPtr exceptionCode, IntPtr utf8String, IntPtr stringLen)
-		{
+        #if __IOS__
+        [MonoPInvokeCallback (typeof (ExceptionThrowerCallback))]
+        #endif
+        unsafe public static void ExceptionThrower(IntPtr exceptionCode, IntPtr utf8String, IntPtr stringLen)
+        {
             String message = ((Int64)stringLen > 0) ?
                 new String((sbyte*)utf8String, 0 /* start offset */, (int)stringLen, Encoding.UTF8)
                 : "no detail on exception";
@@ -82,17 +82,16 @@ namespace RealmNet {
             default:
                 throw new Exception(message);
             }
-		}
+        }
 
 
-		// once-off setup of a function pointer in the DLL which will be used later to throw managed exceptions       
+        // once-off setup of a function pointer in the DLL which will be used later to throw managed exceptions       
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "set_exception_thrower", CallingConvention = CallingConvention.Cdecl)]
-		public static extern void set_exception_thrower(ExceptionThrowerCallback callback);
-		public static void SetupExceptionThrower()
-		{
-			set_exception_thrower (ExceptionThrower);
-		}
-
-	}
+        public static extern void set_exception_thrower(ExceptionThrowerCallback callback);
+        public static void SetupExceptionThrower()
+        {
+            set_exception_thrower (ExceptionThrower);
+        }
+    }
 #endif
 }  // namespace RealmNet

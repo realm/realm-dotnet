@@ -21,25 +21,10 @@
 
 #include <string>
 #include <realm.hpp>
-#include "object-store/realm_delegate.hpp"
 
 namespace realm {
 
-enum class RealmErrorType {
-    unknown = 0,
-    system = 1
-};
-
-struct RealmError {
-    RealmErrorType type;
-    std::string message;
-};
-
-namespace binding {
-    void process_error(RealmError* error);
-}
-
-void convert_exception_to_error(RealmError* error);
+void convert_exception();
 
 template <class T>
 struct Default {
@@ -60,15 +45,10 @@ auto handle_errors(F&& func) -> decltype(func())
         return func();
     }
     catch (...) {
-        RealmError* out_error = new RealmError;
-        convert_exception_to_error(out_error);
-        binding::process_error(out_error);
+        convert_exception();
         return Default<RetVal>::default_value();
     }
 }
-
-#define HANDLE_ERRORS_OPEN handle_errors([&]() {
-#define HANDLE_ERRORS_CLOSE });
 
 } // namespace realm
 

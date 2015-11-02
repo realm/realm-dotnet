@@ -162,8 +162,6 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\realm-core\src\win32\pthread\pthread.h" />
     <ClInclude Include="error_handling.hpp" />
-    <ClInclude Include="exceptions_to_managed.hpp" />
-    <ClInclude Include="exception_catcher.hpp" />
     <ClInclude Include="object-store\index_set.hpp" />
     <ClInclude Include="object-store\object_schema.hpp" />
     <ClInclude Include="object-store\object_store.hpp" />
@@ -173,14 +171,12 @@
     <ClInclude Include="object-store\shared_realm.hpp" />
     <ClInclude Include="object-store\transact_log_handler.hpp" />
     <ClInclude Include="object-store\windows\external_commit_helper.hpp" />
-    <ClInclude Include="realm_export_decls.h" />
+    <ClInclude Include="realm_export_decls.hpp" />
     <ClInclude Include="marshalling.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\realm-core\src\win32\pthread\pthread.c" />
     <ClCompile Include="error_handling.cpp" />
-    <ClCompile Include="exceptions_to_managed.cpp" />
-    <ClCompile Include="exception_catcher.cpp" />
     <ClCompile Include="marshalling.cpp" />
     <ClCompile Include="object-store\index_set.cpp" />
     <ClCompile Include="object-store\object_schema.cpp" />

@@ -63,11 +63,6 @@ private:
 
 CSharpRealmDelegate* delegate_instance = new CSharpRealmDelegate();
 
-void process_error(RealmError* error) 
-{
-    // Blah!
-}
-
 }
 }
 

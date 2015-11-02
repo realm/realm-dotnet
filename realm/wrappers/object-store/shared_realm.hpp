@@ -22,23 +22,26 @@
 #include <map>
 #include <memory>
 #include <thread>
-#include <mutex>
 #include <vector>
+#include <mutex>
 
 #include "object_store.hpp"
 
 namespace realm {
     class ClientHistory;
-    class ExternalCommitHelper;
     class Realm;
     class RealmCache;
     class RealmDelegate;
     typedef std::shared_ptr<Realm> SharedRealm;
     typedef std::weak_ptr<Realm> WeakRealm;
 
+    namespace _impl {
+        class ExternalCommitHelper;
+    }
+
     class Realm : public std::enable_shared_from_this<Realm>
     {
-      public:
+    public:
         typedef std::function<void(SharedRealm old_realm, SharedRealm realm)> MigrationFunction;
 
         struct Config
@@ -101,7 +104,7 @@ namespace realm {
 
         ~Realm();
 
-      private:
+    private:
         Realm(Config config);
 
         Config m_config;
@@ -115,9 +118,9 @@ namespace realm {
 
         Group *m_group = nullptr;
 
-        std::shared_ptr<ExternalCommitHelper> m_notifier;
+        std::shared_ptr<_impl::ExternalCommitHelper> m_notifier;
 
-      public:
+    public:
         std::unique_ptr<RealmDelegate> m_delegate;
 
         // FIXME private
@@ -127,65 +130,65 @@ namespace realm {
 
     class RealmCache
     {
-      public:
+    public:
         SharedRealm get_realm(const std::string &path, std::thread::id thread_id = std::this_thread::get_id());
         SharedRealm get_any_realm(const std::string &path);
         void remove(const std::string &path, std::thread::id thread_id);
         void cache_realm(SharedRealm &realm, std::thread::id thread_id = std::this_thread::get_id());
         void clear();
 
-      private:
+    private:
         std::map<std::string, std::map<std::thread::id, WeakRealm>> m_cache;
         std::mutex m_mutex;
     };
 
     class RealmFileException : public std::runtime_error
     {
-      public:
+    public:
         enum class Kind
         {
             /** Thrown for any I/O related exception scenarios when a realm is opened. */
             AccessError,
             /** Thrown if the user does not have permission to open or create
-             the specified file in the specified access mode when the realm is opened. */
+            the specified file in the specified access mode when the realm is opened. */
             PermissionDenied,
             /** Thrown if no_create was specified and the file did already exist when the realm is opened. */
             Exists,
             /** Thrown if no_create was specified and the file was not found when the realm is opened. */
             NotFound,
             /** Thrown if the database file is currently open in another
-             process which cannot share with the current process due to an
-             architecture mismatch. */
+            process which cannot share with the current process due to an
+            architecture mismatch. */
             IncompatibleLockFile,
         };
         RealmFileException(Kind kind, std::string message) : std::runtime_error(message), m_kind(kind) {}
         Kind kind() const { return m_kind; }
-        
-      private:
+
+    private:
         Kind m_kind;
     };
 
     class MismatchedConfigException : public std::runtime_error
     {
-      public:
+    public:
         MismatchedConfigException(std::string message) : std::runtime_error(message) {}
     };
 
     class InvalidTransactionException : public std::runtime_error
     {
-      public:
+    public:
         InvalidTransactionException(std::string message) : std::runtime_error(message) {}
     };
 
     class IncorrectThreadException : public std::runtime_error
     {
-      public:
+    public:
         IncorrectThreadException(std::string message) : std::runtime_error(message) {}
     };
 
     class UnitializedRealmException : public std::runtime_error
     {
-      public:
+    public:
         UnitializedRealmException(std::string message) : std::runtime_error(message) {}
     };
 }
