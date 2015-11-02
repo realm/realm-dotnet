@@ -64,29 +64,6 @@ namespace Playground.Win32
                 Console.WriteLine(" - " + p.FullName + " (" + p.Email + ")");
         }
 
-        private static void CheckTablesTest()
-        {
-            var path = Path.GetTempFileName();
-            Console.WriteLine("Path: " + path);
-
-
-            var osses = new SchemaInitializerHandle();
-
-            var os1 = NativeObjectSchema.create("Person");
-            NativeSchema.initializer_add_object_schema(osses, os1);
-            var os2 = NativeObjectSchema.create("number 2");
-            NativeSchema.initializer_add_object_schema(osses, os2);
-
-            var sh = new SchemaHandle(osses);
-
-            var sr = NativeSharedRealm.open(sh, path, (IntPtr)path.Length, (IntPtr)0, (IntPtr)0, "", (IntPtr)0);
-            var srh = new SharedRealmHandle();
-            srh.SetHandle(sr);
-
-            Console.WriteLine("Has table 'no': " + NativeSharedRealm.has_table(srh, "no"));
-            Console.WriteLine("Has table 'class_Person': " + NativeSharedRealm.has_table(srh, "class_Person"));
-        }
-
         static void Main(string[] args)
         {
             SimpleTest();
