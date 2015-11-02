@@ -50,9 +50,9 @@ namespace RealmNet
             try { /* Retain handle in a constrained execution region */ }
             finally
             {
-                var readOnly = false;
-                var durability = false;
-                var srPtr = NativeSharedRealm.open(schemaHandle, databasePath, (IntPtr)databasePath.Length, MarshalHelpers.BoolToIntPtr(readOnly), MarshalHelpers.BoolToIntPtr(durability), "", (IntPtr)0);
+                var readOnly = MarshalHelpers.BoolToIntPtr(false);
+                var durability = MarshalHelpers.BoolToIntPtr(false);
+                var srPtr = NativeSharedRealm.open(schemaHandle, databasePath, (IntPtr)databasePath.Length, readOnly, durability, "", (IntPtr)0);
                 srHandle.SetHandle(srPtr);
             }
 
@@ -127,7 +127,7 @@ namespace RealmNet
         public object CreateObject(Type objectType)
         {
             if (!IsInTransaction)
-                throw new Exception("Cannot create Realm object outside write transactions");
+                throw new RealmOutsideTransactionException("Cannot create Realm object outside write transactions");
 
             var result = (RealmObject)Activator.CreateInstance(objectType);
 

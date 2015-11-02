@@ -163,7 +163,7 @@ namespace IntegrationTests
         public void CreateObjectOutsideTransactionShouldFail()
         {
             // Arrange, act and assert
-            Assert.Throws<Exception>(() => _realm.CreateObject<Person>());
+            Assert.Throws<RealmOutsideTransactionException>(() => _realm.CreateObject<Person>());
         }
 
         [Test]
@@ -178,7 +178,7 @@ namespace IntegrationTests
             }
 
             // Act and assert
-            Assert.Throws<Exception>(() => p.FirstName = "John");
+            Assert.Throws<RealmOutsideTransactionException>(() => p.FirstName = "John");
         }
 
 

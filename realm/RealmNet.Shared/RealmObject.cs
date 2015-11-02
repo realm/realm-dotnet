@@ -65,7 +65,7 @@ namespace RealmNet
                 throw new Exception("This object is not managed. Create through CreateObject");
 
             if (!_realm.IsInTransaction)
-                throw new Exception("Cannot set values outside transaction");
+                throw new RealmOutsideTransactionException("Cannot set values outside transaction");
 
             var tableHandle = _realm._tableHandles[GetType()];
             var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
