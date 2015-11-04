@@ -1,5 +1,5 @@
 OS_SRCS=$(wildcard object-store/*.cpp)
-ECH_SRCS=object-store/apple/external_commit_helper.cpp
+ECH_SRCS=object-store/impl/apple/external_commit_helper.cpp
 SRCS=$(wildcard *.cpp) $(OS_SRCS) $(ECH_SRCS)
 OBJS=$(subst .cc,.o,$(SRCS))
 
