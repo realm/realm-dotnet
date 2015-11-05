@@ -5,7 +5,7 @@ OBJS=$(subst .cc,.o,$(SRCS))
 
 SDKROOT=$(shell xcrun --sdk iphoneos --show-sdk-path)
 CXX=$(shell xcrun --sdk iphoneos --find clang++)
-FLAGS=-Icore/include -Iobject-store/apple -std=c++14 -stdlib=libc++  
+FLAGS=-Icore/include -Iobject-store -Iobject-store/impl -Iobject-store/impl/apple -std=c++14 -stdlib=libc++  
 CORE_VER=0.92.1
 
 help: ## Show this help.
