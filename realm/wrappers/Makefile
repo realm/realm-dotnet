@@ -1,11 +1,11 @@
 OS_SRCS=$(wildcard object-store/*.cpp)
-ECH_SRCS=object-store/apple/external_commit_helper.cpp
+ECH_SRCS=object-store/impl/apple/external_commit_helper.cpp
 SRCS=$(wildcard *.cpp) $(OS_SRCS) $(ECH_SRCS)
 OBJS=$(subst .cc,.o,$(SRCS))
 
 SDKROOT=$(shell xcrun --sdk iphoneos --show-sdk-path)
 CXX=$(shell xcrun --sdk iphoneos --find clang++)
-FLAGS=-Icore/include -Iobject-store/apple -std=c++14 -stdlib=libc++  
+FLAGS=-Icore/include -Iobject-store -Iobject-store/impl -Iobject-store/impl/apple -std=c++14 -stdlib=libc++  
 CORE_VER=0.92.1
 
 help: ## Show this help.
