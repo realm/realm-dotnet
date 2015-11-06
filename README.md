@@ -2,13 +2,11 @@
 
 Main Points
 ---------------
-The working code is in the `realm` subdir with `tightdb` retained as legacy because it still contains a lot of documentation and partial implementations from which we're drawing.
-
 The top solution `RealmNet.sln` allows you to build for all the platforms and different test environments. We currently support IOS and Android as our major platforms. You can also build Win32 with Visual Studio and Mac with Xamarin Studio.
 
-See `realm/doc/RealmDotNetProjects.md` for a description of the different solutions and projects that provides a lot more detail.
+See `doc/RealmDotNetProjects.md` for a description of the different solutions and projects that provides a lot more detail.
 
-The following instructions are valid as of 9 Sep 2015 but are **under construction** and, in particular, we are moving towards having automated download of the code needed by the Wrappers.
+The following instructions are valid as of 6 Nov 2015 but are **under construction** and, in particular, we are moving towards having automated download of the code needed by the Wrappers.
 
 
 Adding Binaries
