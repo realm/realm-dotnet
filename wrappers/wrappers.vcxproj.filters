@@ -21,9 +21,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="object-store\windows\external_commit_helper.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="error_handling.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -42,9 +39,6 @@
     <ClInclude Include="object-store\property.hpp">
       <Filter>Header Files\object-store</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\realm-core\src\win32\pthread\pthread.h">
-      <Filter>Header Files\object-store</Filter>
-    </ClInclude>
     <ClInclude Include="object-store\realm_delegate.hpp">
       <Filter>Header Files\object-store</Filter>
     </ClInclude>
@@ -60,11 +54,14 @@
     <ClInclude Include="realm_export_decls.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\realm-core\src\win32\pthread\pthread.h">
+      <Filter>Header Files\object-store</Filter>
+    </ClInclude>
+    <ClInclude Include="object-store\impl\windows\external_commit_helper.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="object-store\windows\external_commit_helper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="realm-csharp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -92,9 +89,6 @@
     <ClCompile Include="object-store\object_store.cpp">
       <Filter>Source Files\object-store</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\realm-core\src\win32\pthread\pthread.c">
-      <Filter>Source Files\object-store</Filter>
-    </ClCompile>
     <ClCompile Include="object-store\schema.cpp">
       <Filter>Source Files\object-store</Filter>
     </ClCompile>
@@ -111,6 +105,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="object_schema_cs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\realm-core\src\win32\pthread\pthread.c">
+      <Filter>Source Files\object-store</Filter>
+    </ClCompile>
+    <ClCompile Include="object-store\impl\windows\external_commit_helper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
