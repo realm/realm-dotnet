@@ -95,13 +95,13 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;WRAPPERS_EXPORTS;HAVE_STRUCT_TIMESPEC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\..\realm-core\src;..\..\..\realm-core\src\win32\pthread;object-store\windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\realm-core\src;..\..\realm-core\src\win32\pthread;object-store\;object-store\impl;object-store\impl\windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/DPTW32_STATIC_LIB /DREALM_DEBUG /DREALM_ENABLE_REPLICATION %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>$(SolutionDir)..\..\realm-core\build\vs2013\lib\realm$(PlatformArchitecture)d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)..\realm-core\build\vs2013\lib\realm$(PlatformArchitecture)d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(PlatformShortName)-$(ConfigurationName)$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
@@ -111,13 +111,13 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;WRAPPERS_EXPORTS;HAVE_STRUCT_TIMESPEC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\..\realm-core\src;..\..\..\realm-core\src\win32\pthread;object-store\windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\realm-core\src;..\..\realm-core\src\win32\pthread;object-store\;object-store\impl;object-store\impl\windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/DPTW32_STATIC_LIB /DREALM_DEBUG /DREALM_ENABLE_REPLICATION %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>$(SolutionDir)..\..\realm-core\build\vs2013\lib\realm$(PlatformArchitecture)d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)..\realm-core\build\vs2013\lib\realm$(PlatformArchitecture)d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(PlatformShortName)-$(ConfigurationName)$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
@@ -129,7 +129,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;WRAPPERS_EXPORTS;HAVE_STRUCT_TIMESPEC;REALM_ENABLE_REPLICATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\..\realm-core\src;..\..\..\realm-core\src\win32\pthread;object-store\windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\realm-core\src;..\..\realm-core\src\win32\pthread;object-store\;object-store\impl;object-store\impl\windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -137,7 +137,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <OutputFile>$(OutDir)$(TargetName)$(PlatformShortName)-$(ConfigurationName)$(TargetExt)</OutputFile>
-      <AdditionalDependencies>$(SolutionDir)..\..\realm-core\build\vs2013\lib\realm$(PlatformArchitecture).lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)..\realm-core\build\vs2013\lib\realm$(PlatformArchitecture).lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -148,7 +148,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;WRAPPERS_EXPORTS;HAVE_STRUCT_TIMESPEC;REALM_ENABLE_REPLICATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\..\realm-core\src;..\..\..\realm-core\src\win32\pthread;object-store\windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\realm-core\src;..\..\realm-core\src\win32\pthread;object-store\;object-store\impl;object-store\impl\windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -156,11 +156,11 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <OutputFile>$(OutDir)$(TargetName)$(PlatformShortName)-$(ConfigurationName)$(TargetExt)</OutputFile>
-      <AdditionalDependencies>$(SolutionDir)..\..\realm-core\build\vs2013\lib\realm$(PlatformArchitecture).lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)..\realm-core\build\vs2013\lib\realm$(PlatformArchitecture).lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\realm-core\src\win32\pthread\pthread.h" />
+    <ClInclude Include="..\..\realm-core\src\win32\pthread\pthread.h" />
     <ClInclude Include="error_handling.hpp" />
     <ClInclude Include="object-store\index_set.hpp" />
     <ClInclude Include="object-store\object_schema.hpp" />
@@ -170,12 +170,12 @@
     <ClInclude Include="object-store\schema.hpp" />
     <ClInclude Include="object-store\shared_realm.hpp" />
     <ClInclude Include="object-store\transact_log_handler.hpp" />
-    <ClInclude Include="object-store\windows\external_commit_helper.hpp" />
+    <ClInclude Include="object-store\impl\windows\external_commit_helper.hpp" />
     <ClInclude Include="realm_export_decls.hpp" />
     <ClInclude Include="marshalling.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\realm-core\src\win32\pthread\pthread.c" />
+    <ClCompile Include="..\..\realm-core\src\win32\pthread\pthread.c" />
     <ClCompile Include="error_handling.cpp" />
     <ClCompile Include="marshalling.cpp" />
     <ClCompile Include="object-store\index_set.cpp" />
@@ -184,7 +184,7 @@
     <ClCompile Include="object-store\schema.cpp" />
     <ClCompile Include="object-store\shared_realm.cpp" />
     <ClCompile Include="object-store\transact_log_handler.cpp" />
-    <ClCompile Include="object-store\windows\external_commit_helper.cpp" />
+    <ClCompile Include="object-store\impl\windows\external_commit_helper.cpp" />
     <ClCompile Include="object_schema_cs.cpp" />
     <ClCompile Include="query_cs.cpp" />
     <ClCompile Include="realm-csharp.cpp" />
