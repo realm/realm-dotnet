@@ -21,7 +21,7 @@ namespace Tests
             var projectPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, @"..\..\..\AssemblyToProcess\AssemblyToProcess.csproj"));
             _assemblyPath = Path.Combine(Path.GetDirectoryName(projectPath), @"bin\Debug\AssemblyToProcess.dll");
 #if (!DEBUG)
-        assemblyPath = assemblyPath.Replace("Debug", "Release");
+            _assemblyPath = _assemblyPath.Replace("Debug", "Release");
 #endif
 
             _newAssemblyPath = _assemblyPath.Replace(".dll", ".processed.dll");
