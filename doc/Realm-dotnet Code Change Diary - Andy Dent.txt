@@ -1,0 +1,757 @@
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#17 Add Mock CoreProvider
+
+MockCoreProvider.cs
+- added to RealmNet project so is universal
+
+RealmWinOnly.sln
+- clone of solution with just the minimal targets for testing platform-agnostic code
+
+RealmNet.Tests/CoreProviderTests.cs
+- uncommented entire body
+- changed generic CoreProvider to MockCoreProvider
+- swapped order of propertyName and rowIndex in SetValue calls
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#53 Splitting out the solutions to be platform-specific
+
+Realm.sln refactored into
+- RealmFoundation.sln
+- RealmWin.sln
+- RealmXamarinAndroid.sln
+- RealmXamarinIOS.sln
+- RealmXamarinMac.sln
+
+RealmNetWeaver.Tests.csproj
+- added
+
+RealmNet.Tests.csproj
+- removed
+
+IntegrationTests.csproj
+- comment out body of SimpleTest until merge in more of the Mock Provider stuff after this
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#50 Mocking merge on refactored
+
+RealmQuery.cs 
+- refactored out all the classes and types
+- QueryProviders.cs
+- RealmQueryProvider.cs
+- RealmQueryVisitor.cs
+- TypeSystem.cs
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#50 LINQ on one table - weaving in the sample
+
+RealmNet.Tests
+- packages.config
+  removed bogus old line   <package id="FodyCecil" version="1.28.3" targetFramework="net45" developmentDependency="true" />
+- used NuGet PM Install-Package Fody -Version 1.28.3 to get same version as other projects
+
+FodyWeavers.xml
+- edited the generated file adding   <RealmNetWeaver />
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#50 LINQ on one table - update Mock for new ICoreProvider interfaces
+
+MockCoreProvider
+- MockSharedGroupHandle added as nested class
+- CreateSharedGroup
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#50 LINQ on one table - single query operators mocked
+	
+QueryTests.cs
+- removed old tests
+
+MockQueryTestsBase.cs
+- added with common test data setup
+- removed PrepareForQueries - not needed for mocking tests
+
+MockQuerySingleTableTests.cs
+- added (copying some logic from previous QueryTests.cs editing)
+- TestWhereQueryWithEqualToString refactored to combinatorial TestWhereQueryWithEqual
+- SetupCreatedFourRows removed as no longer loading data
+
+MockSharedGroupHandle
+- added
+
+RealmPureNetLINQ.sln
+- added to only build AnyCPU with just RealmNet tests
+
+
+ICoreProvider.cs
+- QueryEqual renamed AddQueryEqual
+- added declarations for 
+	AddQueryNotEqual
+	AddQueryLessThan
+	AddQueryLessOrEqual
+	AddQueryGreaterThan
+	AddQueryGreaterOrEqual
+
+
+MockCoreProvider.cs
+- QueryEqual renamed AddQueryEqual
+- added declarations for 
+	AddQueryNotEqual
+	AddQueryLessThan
+	AddQueryLessOrEqual
+	AddQueryGreaterThan
+	AddQueryGreaterOrEqual
+
+
+RealmQueryVisitor.cs
+- VisitBinary 
+  - refactored a bit
+  - checks arguments
+  - added rest of binary clauses
+  
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#50 LINQ on one table - simple tests of results with LINQ to Objects
+
+QueryTestsBase.cs
+- added
+
+QuerySingleTableTests.cs
+- added
+
+RealmNet.Tests
+- added configs for x64, x86, ARM and iOS defining USING_REALM_BACKEND
+
+Realm.sln
+- set Debug config mappings to build new RealmNet.Tests configs as per solution platform
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#66 LINQ through to the core - string, bool equals and int searches
+
+wrappers.cpp
+added
+- query_string_not_equal
+- query_bool_not_equal
+- query_int_equal, query_int_not_equal, query_int_less, query_int_less_equal, query_int_greater, query_int_greater_equal
+
+
+UnsafeNativeMethods.shared.cs
+added
+- query_string_not_equal
+- query_bool_not_equal
+- query_int_equal, query_int_not_equal, query_int_less, query_int_less_equal, query_int_greater, query_int_greater_equal
+
+added stubs
+- query_float_equal, query_float_not_equal
+
+
+CoreProviderShared.cs
+- AddQueryEqual Added int, float and double cases
+- AddQueryNotEqual filled out with string, bool, int, float & double cases
+
+
+QueryTestsBase.cs
+- Setup 
+  - GetTempFileName
+  - commented out float and double fields after realising not yet imp
+
+Interop.Win32.csproj
+- set back target platform from .Net 4.6 to 4.5 for compatibility with others
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#66 LINQ through to the core - refactoring platforms
+
+
+Interop.Win32.csproj
+- added REALM_32 and REALM_64 
+
+Interop.Win32/InteropConfig.cs
+- Is64Bit added cases to use hardcoding depending on REALM_32 and REALM_64
+- added DLL_NAME
+
+CoreProvider.shared.cs
+- RealmColType added conversion function
+- AddColumnToTable refactored to one-liner
+
+UnsafeNativeMethods.shared.cs
+- AddColumnToTable stripped back to just declaration using DLL_NAME
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#70 propagating refactoring pattern from #66
+
+UnsafeNativeMethods.shared.cs
+- ALL wrapper functions (except table_get_string) selecting between 32 and 64bit variations 
+  cleaned up to single extern
+- table_get_string removed 
+
+CoreProvider.shared.cs
+- added BoolToIntPtr and IntPtrToBool copied from UnsafeNativeMethods.shared.cs
+- added StrBufferOverflow, StrBufToStr and StrAllocateBuffer from UnsafeNativeMethods.shared.cs
+
+Cleaned up functions to use externs rather than wrappers from UnsafeNativeMethods:
+- AddEmptyRow
+- SetValue<T>
+- GetValue<T> 
+- GetColumnIndex also changed return type to IntPtr
+- AddQueryEqual
+- AddQueryNotEqual
+- CreateSharedGroup
+- HasTable
+- AddQueryNotEqual
+
+RealmNet.Tests.csproj
+- added references to interop Win32, IOS and Android with platform condition
+
+Interop.XamarinAndroid/InteropConfig.cs
+- Is64Bit added cases to use hardcoding depending on REALM_32 and REALM_64
+- added DLL_NAME
+
+Interop.XamarinIOS/InteropConfig.cs
+- Is64Bit added cases to use hardcoding depending on REALM_32 and REALM_64
+- added DLL_NAME
+
+
+Interop.XamarinMac/InteropConfig.cs
+- added DLL_NAME
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#72 LINQ Combinatorial Expressions plus int support
+
+MockQuerySingleTableComboTests.cs added
+
+QuerySingleTableComboTests.cs added
+
+ICoreProvider.cs
+- AddQueryGroupBegin/End added
+- AddQueryAnd/Or added
+
+
+MockCoreProvider.cs
+- AddQueryGroupBegin/End added
+- AddQueryAnd/Or added
+
+
+CoreProvider.shared.cs
+- AddQueryGroupBegin/End added
+- AddQueryAnd added (does nothing)
+- AddQueryOr added
+- AddQueryNotEqual and AddQueryEqual -  comment out unimplemented float/double
+- AddQueryLessThan, AddQueryLessThanorEqual, AddQueryGreaterThan and AddQueryGreaterThanOrEqual added
+
+
+RealmQueryVisitor
+- VisitBinary
+  - use correct types - AndAlso and OrElse instead of And and Or
+  - restructure to use groups and and/or
+- VisitCombination added to help VisitCombination
+
+wrappers.cpp
+- table_set_int64, table_get_int64 added  
+  
+UnsafeNativeMethods.shared.cs
+- added query_begin_group/ query_end_group
+- added table_set_int64, get_int64
+- removed stubs table_set_long, table_set_int, table_get_long
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#72 LINQ Combinatorial Expressions response to code review
+
+Rename USING_REALM_BACKEND to USING_REALM_CORE
+- QuerySingleTableComboTests.cs
+- QuerySingleTableTests.cs
+- QueryTestsBase.cs
+- RealmNet.Tests.csproj
+
+wrappers.cpp
+- fix tabs to 4 spaces
+- query_group_begin, query_group_end and query_or added
+
+UnsafeNativeMethods.shared.cs
+- call new wrapper query_group_begin, query_group_end and query_or instead of mistakenly 
+  binding to names of core methods on Query
+  
+QuerySingleTableTests.cs  
+QuerySingleTableComboTests.cs  
+- remove redundant Assert.That(res != null);
+
+CoreProviderShared.cs
+- throw new Exception("Unsupported type " + valueType.Name) for string & bool in
+	AddQueryLessThan
+	AddQueryLessThanOrEqual 
+	AddQueryGreaterThan
+    AddQueryGreaterThanOrEqual
+    
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#63 Standalone Objects and better Add syntax
+
+StandaloneCoreProvider.cs
+- created as stripped copy of MockCoreProvider
+
+QueryProvider.cs
+- use T instead of S in generics, to prevent compiler warning
+
+Realm.cs
+- Add added to adopt objects and create one-off write transactions
+- ActiveWriteTransaction added
+- CreateObject factored mostly out to AdoptNewObject two versions
+- CreateTableFor made static
+
+
+Transaction.cs
+- changed _realm to internal so Realm can access
+
+RealmObject.cs
+- added inRealm and isStandalone boolean tests    
+- constructor check if is active write trans and make standalone otherwise
+- SetValue remove code checking if coreProvider null
+
+QueryTestsBase.cs
+- TestEntity now descend from RealmObject even when USING_REALM_CORE not defined
+
+
+UnsafeNativeMethods.shared.cs
+CoreProvider.shared.cs
+- fix wrapper calls and rename for consistency
+  query_begin_group => query_group_begin
+  query_end_group => query_group_end
+
+ViewController.cs
+- IntegrationTest - change one addition to show the new Add syntax working
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#63 Standalone Objects - Minor fixes to transactions
+
+Transaction.cs
+- Dispose 
+  - now do a Commit instead of Rollback
+  - call ForgetActiveTransactionThisTread
+
+
+Realm.cs
+- ActiveWriteTransaction renamed ActiveTransaction
+- RealmWritingThisThread renamed RealmWithActiveTransactionThisTread
+- ForgetActiveTransactionThisTread added
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#63 new Add Syntax - demo file
+
+HomePageTests.cs added
+
+IntegrationTests.csproj
+- added HomePageTests
+
+Realm.cs
+- constructor, cope with null ActiveProvider and path 
+
+RealmObject.cs
+- RealmObject InRealm and IsStandalone made properties
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#91 Link and LinkedList samples
+
+ListTests.cs
+- added
+
+ICoreProvider.cs
+ - added List<T> GetListValue<T>(IGroupHandle groupHandle, string tableName, string propertyName, long rowIndex);
+
+MockCoreProvider.cs
+- MockQuery make queryTable internal 
+- added GetListValue, SetListValue
+
+StandaloneCoreProvider.cs
+- added GetListValue, SetListValue
+
+RealmObject.cs
+- added GetListValue, SetListValue forwarding to the provider
+
+ModuleWeaver.cs
+- Execute
+  - added commented-out, with explanation, break to be able to debug weaving
+  - factord out MethodNamed
+  - factored out AddGetter and AddSetter
+  - added detection of lists to call AddListGetter and AddListSetter
+  
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#91 Link and LinkedList - cleanup
+
+RealmRelatedList temp class 
+- renamed RealmList.cs discarding the old RealmList
+
+
+MockCoreProvider.cs
+StandaloneCoreProvider.cs
+- fix minor repeated lookup in GetValue, SetValue, GetListValue, SetListValue
+
+RealmObject.cs
+- GetListValue, SetListValue now take and return RealmList<T>
+
+ListTests.cs
+- explicitly assign RealmList<Dog> rather than using simple braced init
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#82 splitting unsafe native methods
+
+UnsafeNativeMethods.shared.cs refactored into
+- NativeQuery.shared.cs
+- NativeTable.shared.cs
+- NativeGroup.shared.cs
+- Plus a bunch of unimplemented and commented-out decls copied to
+  - Unimplemented_NativeMethods_Arguable.txt
+  - Unimplemented_NativeMethods_MixedFields.txt
+  - Unimplemented_NativeMethods_TableView.txt
+- BoolToIntPtr and IntPtrToBool copied back to CoreProvider.shared.cs as that's the only place left they are used
+
+IN projects
+  interop.Win32.csproj
+  Interop.XamarinAndroid.csproj
+  Interop.XamarinIOS.csproj
+  Interop.XamarinMac.csproj
+- Replace link to UnsafeNativeMethods.shared.cs with three links to  
+  - NativeQuery.shared.cs
+  - NativeTable.shared.cs
+  - NativeGroup.shared.cs
+  - NativeSharedGroup.shared.cs
+- drop TableViewHandle.shared.cs for now
+
+General change, UnsafeNativeMethods class changed to NativeQuery/Group/Table as required
+
+RowHandle.cs
+- IsAttached lambda removed the call to UnsafeNativeMethods.IntPtrToBool and just compare ==1
+  allowed moving that function out of UnsafeNativeMethods and don't think simple, time-critical
+  stuff should be calling across assemblies for trivia.
+  
+QueryHandle.shared.cs
+
+Group.cs
+- comment out calls to Group methods that previously just threw NotImplemented exceptions
+  
+Renames after refactoring, to simplify:
+NativeGroup.group_ =?> NativeGroup.
+NativeQuery.query_ => NativeQuery.
+NativeTable.table_ => NativeTable.
+NativeGroup.shared_group_ => NativeSharedGroup.
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Fix Integration Tests copying Wrappers DLL
+
+Wrappers.vcxproj
+- Linker / Input / Additional Dependencies
+  changed libs to point to core Realm32d.lib and Realm64d.lib
+
+IntegrationTests.Win32.csproj
+- added afterbuild target to copy DLL and PDB to output area (doesn't show in VS - edit csproj)
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#118 Adding IntegrationTests.IOS
+
+Interop.XamarionIOS/AssemblyInfo.cs
+- added [assembly: InternalsVisibleTo("IntegrationTestsIOS")]
+
+IntegrationTests.IOS
+- created as "Unified API" iOS Unit tests project (which is a full-blown app!)
+
+Copy and rename Win32 => IOS
+- Win32IntegrationTests.csproj
+- Win32IntegrationTests.cs 
+- Win32PerformanceTests.cs
+
+CoreProvider.shared.cs
+- added using UIKit and Foundation in order to be able to build on IOS
+
+AbstractPerformanceTests.cs
+- changed _databasePath to protected so can set in the subclass Setup
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Merging IntegrationTests.IOS with the new shared project arch
+
+IntegrationTests.Win32
+- added reference to RealmNet.Win32
+
+IntegrationTests.IOS
+- renamed IntegrationTests.XamarinIOS
+- removed reference to IntegrationTests project
+- removed reference to RealmNet Project
+- removed reference to InteropShared Project
+- added reference to RealmNet.XamarinIOS project
+- added direct links to files
+  AbstractIntegrationTests.cs
+  AbstractPerformanceTests.cs
+  Person.cs
+  TestHelpers.cs
+
+Realm.sln
+- added IntegrationTests.XamarinIOS  
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Fix renaming of IntegrationTests.IOS to IntegrationTests.XamarinIOS
+
+IntegrationTests.XamarinIOS.csproj
+- change assembly name from IntegrationTestsIOS to IntegrationTestsXamarinIOS
+
+RealmNet.XamarinIOS/Properties/AssemblyInfo.cs
+- change InternalsVisibleTo target to IntegrationTestsXamarinIOS
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#139 Fix project configs
+
+Realm.sln - replaced by RealmNet.sln
+- changed Configuration Manager
+Debug + Release
+AnyCPU
+  - RealmNetWeaver
+
+x86 and x64
+- IntegrationTests.Win32  
+- RealmNetWeaver
+- RealmNet.Win32
+- wrappers
+
+iPhone and iPhoneSimulator
+- IntegrationTests.XamarinIOS
+- Playground.XamarinIOS
+- RealmNet.XamarinIOS
+- RealmNetWeaver
+
+ARM
+- Playground.XamarinAndroid
+- RealmNet.XamarinAndroid
+- RealmNetWeaver
+
+RealmNet.XamarinIOS.csproj
+- manually edited file to replace AnyCPU platforms with iPhone and iPhoneSimulator
+  copying settings from IntegrationTests.XamarionIOS.csproj  
+  - changed OutputPath from bin\Debug or bin\Release to bin\$(Platform)\$(Configuration)
+- iPhoneSimulator configs
+  - added <MtouchArch>i386
+  - added <MtouchLink>None
+  - added MtouchDebug for debug
+  
+Cleaning up old solutions - delete all but Realm.sln and RealmWin.sln
+- RealmFoundation.sln
+- RealmFoundation.sln
+- RealmPureNetLINQ.sln
+- RealmXamarinAndroid.sln
+- RealmXamarinIOS.sln
+- RealmXamarinMac.sln
+
+RealmNet.win32.csproj
+- added reference to wrappers.vcxproj
+- changed default platform from AnyCPU to x86
+- removed AnyCPU platforms
+
+IntegrationTests.Win32.csproj
+- changed default platform from AnyCPU to x86
+- removed AnyCPU platforms
+
+wrappers.vcxproj
+- Debug|Win32 and Debug|x64 platform toolset changed from v140_xp to v140
+
+RealmNet.XamarinAndroid.csproj
+Playground.XamarinAndroid.csproj
+- replace AnyCPU with ARM
+
+RealmNet.XamarinIOS.csproj
+- changed default AnyCPU platform to iPhoneSimulator
+
+RealmNet.XamarinMac.csproj
+- replace AnyCPU with x64Mac
+
+
+Playground.XamarinAndroid/MainActivity.cs 
+IntegrationTests.XamarinIOS/IOSIntegrationTests.cs
+IntegrationTests.XamarinIOS/IOSPerformanceTests.cs
+  - removed using RealmNet.Interop 
+
+IntegrationTests.XamarinIOS/IOSPerformanceTests.cs
+  
+IntegrationTests.Shared/AbstractIntegrationTests.cs  
+IntegrationTests.Shared/AbstractPerformanceTests.cs  
+- change protection on _databasePath so could update in subclass (NUnitLite issue)  
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#148 Add Android Integration Tests and Refactor Testing
+
+IntegrationTests.XamarinAndroid.csproj
+- created as "Android Unit test" project
+- changed Target Framework from 5.1 down to 4.4
+- added reference to RealmNet.XamarinAndroid
+- added reference to IntegrationTests.Shared
+
+Interop.XamarionAndroid/AssemblyInfo.cs
+- added [assembly: InternalsVisibleTo("IntegrationTests.XamarinAndroid")]
+
+In IntegrationTests.shared project
+- AbstractIntegrationTests.cs 
+  - renamed IntegrationTests.cs 
+  - made non-abstract
+  - BaseSetup renaned Setup
+  - removed empty virtual Setup
+  - removed GetTempDatabasePath
+  - set CoreProvider
+  
+- AbstractPerformanceTests 
+  - renamed PerformanceTests.cs
+  - made non-abstract
+  - BaseSetup renaned Setup
+  - removed empty virtual Setup
+  - removed GetTempDatabasePath
+  - set CoreProvider
+  - moved  RawPerformanceTest over from Win32PerformanceTest
+ 
+- Win32PerformanceTest - gutted so just there to run tests
+- Win32IntegrationTest - gutted
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#104 splitting wrappers.cpp
+
+NativeTable.cs
+- split some methods off to new NativeRow.cs
+
+RowHandle.cs
+- use new NativeRow instead
+
+WindowsDLLWrapperDecls.h
+- added as requested in PR to have central
+
+
+exception_catcher.h/cpp
+- added
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#155 EXCEPTION HANDLING IN WRAPPERS - CSHARP SIDE AND COMMS WITHOUT THROWING
+
+wrappers.cpp
+- added ManagedExceptionThrowerT, ManagedExceptionThrower and set_exception_thrower
+
+RealmNet.Shared.csproj
+- added copies of Java exceptions
+	RealmEncryptionNotSupportedException
+	RealmException
+	RealmIOException
+	RealmMigrationNeededException
+- added more exceptions to support the codes in RealmExceptionCodes.cs
+	RealmRowInvalidException
+	RealmRuntimeErrorException
+	RealmFatalErrorException
+	RealmOutOfMemoryException
+	RealmUnsupportedOperationException
+	RealmTableInvalidException
+	RealmIndexOutOfBoundsException	
+	RealmFileAccessErrorException
+	RealmFileNotFoundException
+	RealmIOFailedException
+	RealmIllegalArgumentException
+	RealmNoSuchMethodException
+	RealmNoSuchFieldException
+	RealmClassNotFoundException
+
+RealmExceptionCodes.cs 
+- added enum to RealmNet.shared
+
+CoreProvider.cs
+- added CoreProvider ctor to set common inc calling SetupExceptionThrower
+- added static field sDoneCommonSetup
+
+
+Added "unsafe" compilation option to enable the callback
+- RealmNet.XamarionIOS
+- RealmNet.XamarionAndroid
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#155 Intercepting exceptions in wrappers - Reconcile exceptions with spreadsheet
+
+ExceptionsToManaged.cpp/.h 
+- added
+- ThrowManaged overloaded function added
+
+Wrappers.cpp
+- moved exception throwing code to ExceptionsToManaged.cpp
+- all catch statements replaced by CATCH_STD macro
+
+Removed exception classes added to support codes as we are NOT forwarding them
+	RealmClassNotFoundException
+	RealmEncryptionNotSupportedException
+	RealmFatalErrorException
+	RealmIllegalArgumentException
+	RealmIndexOutOfBoundsException	
+	RealmIOException
+	RealmIOFailedException
+	RealmMigrationNeededException
+	RealmNoSuchFieldException
+	RealmNoSuchMethodException
+	RealmRowInvalidException
+	RealmTableInvalidException
+	RealmUnsupportedOperationException
+
+
+Added new subclasses of RealmFileAccessException
+	RealmFileExistsException
+	RealmPermissionDeniedException
+	RealmDecryptionFailedException
+	RealmInvalidDatabaseException
+
+
+RealmExceptionCodes.cs
+ExceptionsToManaged.h
+- rewrote codes to match new exceptions hierarchy from spreadsheet
+
+
+ExceptionsToManaged.cpp
+- change "if" checks to asserts as per PR review
+- realm::ThrowManaged don't take exception parameter any more
+
+NativeCommon.cs
+- ExceptionThrower updated to new codes and exception types
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#155 Intercepting exceptions in wrappers - responses to PR
+WindowsDLLWrapperDecls.h
+- renamed realm_export_decls.h
+- REALM_CORE_WRAPPER_API renamed REALM_EXPORT
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Fixed integration tests to actually test if stored and fix IOS test
+
+IntegrationTests.cs
+- SetAndGetPropertyTest get object back from the store
+
+
+IntegrationTests.XamarinIOS.csproj
+- added packages.config
+- added FodyWeavers.xml
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#67 Adding float and double support
+
+IntegrationTests.shared/Person.cs
+- added Score, Latitude and Longitude
+
+IntegrationTests.cs
+- SimpleTest - added setters for Score, Latitude and Longitude
+- SetAndGetPropertyTest added Score and Latitude tests
+
+
+RealmObject.cs
+- SetValue<T>, GetValue<T> - added cases for single and double
+
+NativeTable.cs
+- replaced dummy set/get_float/double with DLL Import calls
+
+table_cs.cpp
+- added table_set_float/double table_get_float/double
