@@ -64,6 +64,20 @@ REALM_EXPORT int64_t table_get_int64(const Table* table_ptr, size_t column_ndx, 
     });
 }
 
+REALM_EXPORT float table_get_float(const Table* table_ptr, size_t column_ndx, size_t row_ndx)
+{
+    return handle_errors([&]() {
+        return table_ptr->get_float(column_ndx, row_ndx);
+    });
+}
+
+REALM_EXPORT double table_get_double(const Table* table_ptr, size_t column_ndx, size_t row_ndx)
+{
+    return handle_errors([&]() {
+        return table_ptr->get_double(column_ndx, row_ndx);
+    });
+}
+
 REALM_EXPORT size_t table_get_string(const Table* table_ptr, size_t column_ndx, size_t row_ndx, uint16_t * datatochsarp, size_t bufsize)
 {
     return handle_errors([&]() {
@@ -83,6 +97,20 @@ REALM_EXPORT void table_set_int64(Table* table_ptr, size_t column_ndx, size_t ro
 {
     return handle_errors([&]() {
         table_ptr->set_int(column_ndx, row_ndx, value);
+    });
+}
+
+REALM_EXPORT void table_set_float(Table* table_ptr, size_t column_ndx, size_t row_ndx, float value)
+{
+    return handle_errors([&]() {
+        table_ptr->set_float(column_ndx, row_ndx, value);
+    });
+}
+
+REALM_EXPORT void table_set_double(Table* table_ptr, size_t column_ndx, size_t row_ndx, double value)
+{
+    return handle_errors([&]() {
+        table_ptr->set_double(column_ndx, row_ndx, value);
     });
 }
 

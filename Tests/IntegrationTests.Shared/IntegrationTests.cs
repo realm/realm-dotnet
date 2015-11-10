@@ -61,6 +61,9 @@ namespace IntegrationTests
                 p1.LastName = "Smith";
                 p1.IsInteresting = true;
                 p1.Email = "john@smith.com";
+                p1.Score = -0.9907f;
+                p1.Latitude = 51.508530;
+                p1.Longitude = 0.076132;
                 transaction.Commit();
             }
             Debug.WriteLine("p1 is named " + p1.FullName);
@@ -71,6 +74,9 @@ namespace IntegrationTests
                 p2.FullName = "John Doe";
                 p2.IsInteresting = false;
                 p2.Email = "john@deo.com";
+                p2.Score = 100;
+                p2.Latitude = 40.7637286;
+                p2.Longitude = -73.9748113;
                 transaction.Commit();
             }
             Debug.WriteLine("p2 is named " + p2.FullName);
@@ -81,6 +87,9 @@ namespace IntegrationTests
                 p3.FullName = "Peter Jameson";
                 p3.Email = "peter@jameson.com";
                 p3.IsInteresting = true;
+                p3.Score = 42.42f;
+                p3.Latitude = 37.7798657;
+                p3.Longitude = -122.394179;
                 transaction.Commit();
             }
 
@@ -127,16 +136,23 @@ namespace IntegrationTests
                 // Act
                 p.FirstName = "John";
                 p.IsInteresting = true;
+                p.Score = -0.9907f;
+                p.Latitude = 51.508530;
+                p.Longitude = 0.076132;
                 transaction.Commit();
             }
             var allPeople = _realm.All<Person>().ToList();
             Person p2 = allPeople[0];  // pull it back out of the database otherwise can't tell if just a dumb property
             var receivedFirstName = p2.FirstName;
             var receivedIsInteresting = p2.IsInteresting;
+            var receivedScore = p2.Score;
+            var receivedLatitude = p2.Latitude;
 
             // Assert
             Assert.That(receivedFirstName, Is.EqualTo("John"));
             Assert.That(receivedIsInteresting, Is.True);
+            Assert.That(receivedScore, Is.EqualTo(-0.9907f));
+            Assert.That(receivedLatitude, Is.EqualTo(51.508530));
         }
 
         [Test]
