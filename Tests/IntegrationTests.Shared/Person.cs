@@ -8,6 +8,9 @@ namespace IntegrationTests
         // Automatically implemented (overridden) properties
         public string FirstName { get; set; }
         public string LastName { get; set; }
+        public float Score { get; set; }
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
 
         // Property that's not persisted in Realm
         [Ignore]

@@ -724,3 +724,34 @@ WindowsDLLWrapperDecls.h
 - renamed realm_export_decls.h
 - REALM_CORE_WRAPPER_API renamed REALM_EXPORT
 
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Fixed integration tests to actually test if stored and fix IOS test
+
+IntegrationTests.cs
+- SetAndGetPropertyTest get object back from the store
+
+
+IntegrationTests.XamarinIOS.csproj
+- added packages.config
+- added FodyWeavers.xml
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#67 Adding float and double support
+
+IntegrationTests.shared/Person.cs
+- added Score, Latitude and Longitude
+
+IntegrationTests.cs
+- SimpleTest - added setters for Score, Latitude and Longitude
+- SetAndGetPropertyTest added Score and Latitude tests
+
+
+RealmObject.cs
+- SetValue<T>, GetValue<T> - added cases for single and double
+
+NativeTable.cs
+- replaced dummy set/get_float/double with DLL Import calls
+
+table_cs.cpp
+- added table_set_float/double table_get_float/double

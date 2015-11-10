@@ -40,19 +40,29 @@ namespace RealmNet
                 } while (MarshalHelpers.StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
                 return (T)Convert.ChangeType(MarshalHelpers.StrBufToStr(buffer, (int)bufferSizeNeededChars), typeof(T));
             }
-            else if (typeof(T) == typeof(bool))
+            if (typeof(T) == typeof(bool))
             {
                 var value = MarshalHelpers.IntPtrToBool( NativeTable.get_bool(tableHandle, columnIndex, (IntPtr)rowIndex) );
                 return (T)Convert.ChangeType(value, typeof(T));
             }
-            else if (typeof(T) == typeof(int))  // System.Int32 regardless of bitness
+            if (typeof(T) == typeof(int))  // System.Int32 regardless of bitness
             {
                 var value = NativeTable.get_int64(tableHandle, columnIndex, (IntPtr)rowIndex);
                 return (T)Convert.ChangeType(value, typeof(T));
             }
-            else if (typeof(T) == typeof(Int64)) 
+            if (typeof(T) == typeof(Int64)) 
             {
                 var value = NativeTable.get_int64(tableHandle, columnIndex, (IntPtr)rowIndex);
+                return (T)Convert.ChangeType(value, typeof(T));
+            }
+            if (typeof(T) == typeof(float)) 
+            {
+                var value = NativeTable.get_float(tableHandle, columnIndex, (IntPtr)rowIndex);
+                return (T)Convert.ChangeType(value, typeof(T));
+            }
+            if (typeof(T) == typeof(double)) 
+            {
+                var value = NativeTable.get_double(tableHandle, columnIndex, (IntPtr)rowIndex);
                 return (T)Convert.ChangeType(value, typeof(T));
             }
             else
@@ -90,6 +100,16 @@ namespace RealmNet
             {
                 Int64 marshalledValue = Convert.ToInt64(value);
                 NativeTable.set_int64(tableHandle, columnIndex, (IntPtr)rowIndex, marshalledValue);
+            }
+            else if (typeof(T) == typeof(float))
+            {
+                float marshalledValue = Convert.ToSingle(value);
+                NativeTable.set_float(tableHandle, columnIndex, (IntPtr)rowIndex, marshalledValue);
+            }
+            else if (typeof(T) == typeof(double))
+            {
+                double marshalledValue = Convert.ToDouble(value);
+                NativeTable.set_double(tableHandle, columnIndex, (IntPtr)rowIndex, marshalledValue);
             }
             else
                 throw new Exception ("Unsupported type " + typeof(T).Name);
