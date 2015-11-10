@@ -50,22 +50,22 @@ namespace RealmNet
             throw new NotImplementedException();
         }
 
-        public static void set_float(TableHandle TableHandle, long columnIndex, long rowIndex, float value)
+        public static void set_float(TableHandle TableHandle, IntPtr columnIndex, IntPtr rowIndex, float value)
         {
             throw new NotImplementedException();
         }
 
-        public static float get_float(TableHandle TableHandle, long columnIndex, long rowIndex)
+        public static float get_float(TableHandle TableHandle, IntPtr columnIndex, IntPtr rowIndex)
         {
             throw new NotImplementedException();
         }
 
-        public static void set_double(TableHandle TableHandle, long columnIndex, long rowIndex, double value)
+        public static void set_double(TableHandle TableHandle, IntPtr columnIndex, IntPtr rowIndex, double value)
         {
             throw new NotImplementedException();
         }
 
-        public static double get_double(TableHandle TableHandle, long columnIndex, long rowIndex)
+        public static double get_double(TableHandle TableHandle, IntPtr columnIndex, IntPtr rowIndex)
         {
             throw new NotImplementedException();
         }
