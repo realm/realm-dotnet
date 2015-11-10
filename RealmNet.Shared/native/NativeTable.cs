@@ -32,25 +32,17 @@ namespace RealmNet
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_int64", CallingConvention = CallingConvention.Cdecl)]
         internal static extern Int64 get_int64(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex);
 
-        public static void set_float(TableHandle TableHandle, long columnIndex, long rowIndex, float value)
-        {
-            throw new NotImplementedException();
-        }
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_float", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void set_float(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, float value);
 
-        public static float get_float(TableHandle TableHandle, long columnIndex, long rowIndex)
-        {
-            throw new NotImplementedException();
-        }
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_float", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern float get_float(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex);
 
-        public static void set_double(TableHandle TableHandle, long columnIndex, long rowIndex, double value)
-        {
-            throw new NotImplementedException();
-        }
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_double", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void set_double(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, double value);
 
-        public static double get_double(TableHandle TableHandle, long columnIndex, long rowIndex)
-        {
-            throw new NotImplementedException();
-        }
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_double", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern double get_double(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_where", CallingConvention = CallingConvention.Cdecl)]
         internal static extern IntPtr where(TableHandle handle);
