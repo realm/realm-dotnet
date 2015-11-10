@@ -224,3 +224,4 @@ wrappers/realm-core*.bz2
 doxyout
 doxyoutCS
 doxyoutCS_docOnly
+RealmNetWeaver.Fody.dll

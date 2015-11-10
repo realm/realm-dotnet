@@ -120,19 +120,19 @@ namespace IntegrationTests
         public void SetAndGetPropertyTest()
         {
             // Arrange
-            Person p;
             using (var transaction = _realm.BeginWrite())
             {
-                p = _realm.CreateObject<Person>();
+                Person p = _realm.CreateObject<Person>();
 
                 // Act
                 p.FirstName = "John";
                 p.IsInteresting = true;
                 transaction.Commit();
             }
-
-            var receivedFirstName = p.FirstName;
-            var receivedIsInteresting = p.IsInteresting;
+            var allPeople = _realm.All<Person>().ToList();
+            Person p2 = allPeople[0];  // pull it back out of the database otherwise can't tell if just a dumb property
+            var receivedFirstName = p2.FirstName;
+            var receivedIsInteresting = p2.IsInteresting;
 
             // Assert
             Assert.That(receivedFirstName, Is.EqualTo("John"));
