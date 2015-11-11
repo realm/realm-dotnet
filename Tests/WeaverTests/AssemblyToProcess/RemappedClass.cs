@@ -1,4 +1,8 @@
-﻿using RealmNet;
+﻿/* Copyright 2015 Realm Inc - All Rights Reserved
+ * Proprietary and Confidential
+ */
+ 
+using RealmNet;
 using System;
 using System.Collections.Generic;
 using System.Linq;

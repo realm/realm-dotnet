@@ -1,4 +1,8 @@
-﻿namespace RealmNet
+﻿/* Copyright 2015 Realm Inc - All Rights Reserved
+ * Proprietary and Confidential
+ */
+ 
+namespace RealmNet
 {
     //tables and tableviews will always return query c++ classes that must be unbound
     //all other query returning calls (on query itself) will return the same object as was called,

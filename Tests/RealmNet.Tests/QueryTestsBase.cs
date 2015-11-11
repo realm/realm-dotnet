@@ -1,4 +1,8 @@
-﻿using NUnit.Framework;
+﻿/* Copyright 2015 Realm Inc - All Rights Reserved
+ * Proprietary and Confidential
+ */
+ 
+using NUnit.Framework;
 using RealmNet;
 using RealmNet.Interop;
 using System.Collections.Generic;
