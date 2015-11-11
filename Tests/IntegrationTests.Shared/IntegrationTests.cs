@@ -50,13 +50,12 @@ namespace IntegrationTests
             _realm.Dispose();
         }
 
-        [Test, Explicit("Manual test for debugging")]
-        public void SimpleTest()
+
+        void MakeThreePeople() 
         {
             Person p1, p2, p3;
-            using (var transaction = _realm.BeginWrite())
-            {
-                p1 = _realm.CreateObject<Person>();
+            using (var transaction = _realm.BeginWrite ()) {
+                p1 = _realm.CreateObject<Person> ();
                 p1.FirstName = "John";
                 p1.LastName = "Smith";
                 p1.IsInteresting = true;
@@ -64,37 +63,39 @@ namespace IntegrationTests
                 p1.Score = -0.9907f;
                 p1.Latitude = 51.508530;
                 p1.Longitude = 0.076132;
-                transaction.Commit();
+                transaction.Commit ();
             }
-            Debug.WriteLine("p1 is named " + p1.FullName);
+            Debug.WriteLine ("p1 is named " + p1.FullName);
 
-            using (var transaction = _realm.BeginWrite())
-            {
-                p2 = _realm.CreateObject<Person>();
-                p2.FullName = "John Doe";
+            using (var transaction = _realm.BeginWrite ()) {
+                p2 = _realm.CreateObject<Person> ();
+                p2.FullName = "John Doe";  // uses our setter whcih splits and maps to First/Lastname
                 p2.IsInteresting = false;
                 p2.Email = "john@deo.com";
                 p2.Score = 100;
                 p2.Latitude = 40.7637286;
                 p2.Longitude = -73.9748113;
-                transaction.Commit();
+                transaction.Commit ();
             }
-            Debug.WriteLine("p2 is named " + p2.FullName);
+            Debug.WriteLine ("p2 is named " + p2.FullName);
 
-            using (var transaction = _realm.BeginWrite())
-            {
-                p3 = _realm.CreateObject<Person>();
+            using (var transaction = _realm.BeginWrite ()) {
+                p3 = _realm.CreateObject<Person> ();
                 p3.FullName = "Peter Jameson";
                 p3.Email = "peter@jameson.com";
                 p3.IsInteresting = true;
                 p3.Score = 42.42f;
                 p3.Latitude = 37.7798657;
                 p3.Longitude = -122.394179;
-                transaction.Commit();
+                transaction.Commit ();
             }
-
             Debug.WriteLine("p3 is named " + p3.FullName);
+        }
 
+        [Test, Explicit("Manual test for debugging")]
+        public void SimpleTest()
+        {
+            MakeThreePeople ();
             var allPeople = _realm.All<Person>().ToList();
             Debug.WriteLine("There are " + allPeople.Count() + " in total");
 
@@ -228,5 +229,70 @@ namespace IntegrationTests
 
             Assert.That(allPeople, Is.EquivalentTo(new List<Person> { p1, p3 }));
         }
+
+
+        // Extension method rather than SQL-style LINQ
+        [Test]
+        public void SearchComparingFloat()
+        {
+            MakeThreePeople (); 
+            var s0 = _realm.All<Person>().Where( p => p.Score == 42.42f).ToList();
+            Assert.That(s0.Count, Is.EqualTo(1));
+            Assert.That(s0[0].Score, Is.EqualTo(42.42f));
+
+            var s1 = _realm.All<Person>().Where( p => p.Score != 100.0f).ToList();
+            Assert.That(s1.Count, Is.EqualTo(2));
+            Assert.That(s1[0].Score, Is.EqualTo(-0.9907f));
+            Assert.That(s1[1].Score, Is.EqualTo(42.42f));
+
+            var s2 = _realm.All<Person>().Where( p => p.Score < 0).ToList();
+            Assert.That(s2.Count, Is.EqualTo(1));
+            Assert.That(s2[0].Score, Is.EqualTo(-0.9907f));
+
+            var s3 = _realm.All<Person>().Where( p => p.Score <= 42.42f).ToList();
+            Assert.That(s3.Count, Is.EqualTo(2));
+            Assert.That(s3[0].Score, Is.EqualTo(-0.9907f));
+            Assert.That(s3[1].Score, Is.EqualTo(42.42f));
+
+            var s4 = _realm.All<Person>().Where( p => p.Score > 99.0f).ToList();
+            Assert.That(s4.Count, Is.EqualTo(1));
+            Assert.That(s4[0].Score, Is.EqualTo(100.0f));
+
+            var s5 = _realm.All<Person>().Where( p => p.Score >= 100).ToList();
+            Assert.That(s5.Count, Is.EqualTo(1));
+            Assert.That(s5[0].Score, Is.EqualTo(100.0f));
+        }
+
+        [Test]
+        public void SearchComparingDouble()
+        {
+            MakeThreePeople (); 
+            var s0 = _realm.All<Person>().Where( p => p.Latitude == 40.7637286).ToList();
+            Assert.That(s0.Count, Is.EqualTo(1));
+            Assert.That(s0[0].Latitude, Is.EqualTo(40.7637286));
+
+            var s1 = _realm.All<Person>().Where( p => p.Latitude != 40.7637286).ToList();
+            Assert.That(s1.Count, Is.EqualTo(2));
+            Assert.That(s1[0].Latitude, Is.EqualTo(51.508530));
+            Assert.That(s1[1].Latitude, Is.EqualTo(37.7798657));
+
+            var s2 = _realm.All<Person>().Where( p => p.Latitude < 40).ToList();
+            Assert.That(s2.Count, Is.EqualTo(1));
+            Assert.That(s2[0].Latitude, Is.EqualTo(37.7798657));
+
+            var s3 = _realm.All<Person>().Where( p => p.Latitude <= 40.7637286).ToList();
+            Assert.That(s3.Count, Is.EqualTo(2));
+            Assert.That(s3[0].Latitude, Is.EqualTo(40.7637286));
+            Assert.That(s3[1].Latitude, Is.EqualTo(37.7798657));
+
+            var s4 = _realm.All<Person>().Where( p => p.Latitude > 50).ToList();
+            Assert.That(s4.Count, Is.EqualTo(1));
+            Assert.That(s4[0].Latitude, Is.EqualTo(51.508530));
+
+            var s5 = _realm.All<Person>().Where( p => p.Latitude >= 51.508530).ToList();
+            Assert.That(s5.Count, Is.EqualTo(1));
+            Assert.That(s5[0].Latitude, Is.EqualTo(51.508530));
+        }
+
     }
 }

@@ -42,10 +42,41 @@ namespace RealmNet
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_int_greater_equal", CallingConvention = CallingConvention.Cdecl)]
         internal static extern void int_greater_equal(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
 
-        public static void int_between(QueryHandle QueryHandle, long columnIndex, long lowValue, long highValue)
-        {
-            throw new NotImplementedException();
-        }
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_float_equal", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void float_equal(QueryHandle queryPtr, IntPtr columnIndex, float value);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_float_not_equal", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void float_not_equal(QueryHandle queryPtr, IntPtr columnIndex, float value);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_float_less", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void float_less(QueryHandle queryPtr, IntPtr columnIndex, float value);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_float_less_equal", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void float_less_equal(QueryHandle queryPtr, IntPtr columnIndex, float value);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_float_greater", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void float_greater(QueryHandle queryPtr, IntPtr columnIndex, float value);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_float_greater_equal", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void float_greater_equal(QueryHandle queryPtr, IntPtr columnIndex, float value);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_double_equal", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void double_equal(QueryHandle queryPtr, IntPtr columnIndex, double value);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_double_not_equal", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void double_not_equal(QueryHandle queryPtr, IntPtr columnIndex, double value);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_double_less", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void double_less(QueryHandle queryPtr, IntPtr columnIndex, double value);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_double_less_equal", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void double_less_equal(QueryHandle queryPtr, IntPtr columnIndex, double value);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_double_greater", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void double_greater(QueryHandle queryPtr, IntPtr columnIndex, double value);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_double_greater_equal", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void double_greater_equal(QueryHandle queryPtr, IntPtr columnIndex, double value);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_find", CallingConvention = CallingConvention.Cdecl)]
         internal static extern RowHandle find(QueryHandle queryHandle, IntPtr lastMatch);
