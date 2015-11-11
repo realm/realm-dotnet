@@ -33,7 +33,27 @@ namespace RealmNet
             throw new NotImplementedException();
         }
 
+        internal static void float_equal(QueryHandle queryPtr, IntPtr columnIndex, float value)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal static void double_equal(QueryHandle queryPtr, IntPtr columnIndex, double value)
+        {
+            throw new NotImplementedException();
+        }
+
         internal static void int_not_equal(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal static void float_not_equal(QueryHandle queryPtr, IntPtr columnIndex, float value)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal static void double_not_equal(QueryHandle queryPtr, IntPtr columnIndex, double value)
         {
             throw new NotImplementedException();
         }
@@ -43,7 +63,27 @@ namespace RealmNet
             throw new NotImplementedException();
         }
 
+        internal static void float_less(QueryHandle queryPtr, IntPtr columnIndex, float value)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal static void double_less(QueryHandle queryPtr, IntPtr columnIndex, double value)
+        {
+            throw new NotImplementedException();
+        }
+
         internal static void int_less_equal(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal static void float_less_equal(QueryHandle queryPtr, IntPtr columnIndex, float value)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal static void double_less_equal(QueryHandle queryPtr, IntPtr columnIndex, double value)
         {
             throw new NotImplementedException();
         }
@@ -53,12 +93,27 @@ namespace RealmNet
             throw new NotImplementedException();
         }
 
+        internal static void float_greater(QueryHandle queryPtr, IntPtr columnIndex, float value)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal static void double_greater(QueryHandle queryPtr, IntPtr columnIndex, double value)
+        {
+            throw new NotImplementedException();
+        }
+
         internal static void int_greater_equal(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value)
         {
             throw new NotImplementedException();
         }
 
-        public static void int_between(QueryHandle QueryHandle, long columnIndex, long lowValue, long highValue)
+        internal static void float_greater_equal(QueryHandle queryPtr, IntPtr columnIndex, float value)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal static void double_greater_equal(QueryHandle queryPtr, IntPtr columnIndex, double value)
         {
             throw new NotImplementedException();
         }
