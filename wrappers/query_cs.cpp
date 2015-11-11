@@ -156,4 +156,88 @@ REALM_EXPORT void query_int_greater_equal(Query * query_ptr, size_t columnIndex,
     });
 }
 
+REALM_EXPORT void query_float_equal(Query * query_ptr, size_t columnIndex, float value)
+{
+    handle_errors([&]() {
+        query_ptr->equal(columnIndex, static_cast<float>(value));
+    });
+}
+
+REALM_EXPORT void query_float_not_equal(Query * query_ptr, size_t columnIndex, float value)
+{
+    handle_errors([&]() {
+        query_ptr->not_equal(columnIndex, static_cast<float>(value));
+    });
+}
+
+REALM_EXPORT void query_float_less(Query * query_ptr, size_t columnIndex, float value)
+{
+    handle_errors([&]() {
+        query_ptr->less(columnIndex, static_cast<float>(value));
+    });
+}
+
+REALM_EXPORT void query_float_less_equal(Query * query_ptr, size_t columnIndex, float value)
+{
+    handle_errors([&]() {
+        query_ptr->less_equal(columnIndex, static_cast<float>(value));
+    });
+}
+
+REALM_EXPORT void query_float_greater(Query * query_ptr, size_t columnIndex, float value)
+{
+    handle_errors([&]() {
+        query_ptr->greater(columnIndex, static_cast<float>(value));
+    });
+}
+
+REALM_EXPORT void query_float_greater_equal(Query * query_ptr, size_t columnIndex, float value)
+{
+    handle_errors([&]() {
+        query_ptr->greater_equal(columnIndex, static_cast<float>(value));
+    });
+}
+
+REALM_EXPORT void query_double_equal(Query * query_ptr, size_t columnIndex, double value)
+{
+    handle_errors([&]() {
+        query_ptr->equal(columnIndex, static_cast<double>(value));
+    });
+}
+
+REALM_EXPORT void query_double_not_equal(Query * query_ptr, size_t columnIndex, double value)
+{
+    handle_errors([&]() {
+        query_ptr->not_equal(columnIndex, static_cast<double>(value));
+    });
+}
+
+REALM_EXPORT void query_double_less(Query * query_ptr, size_t columnIndex, double value)
+{
+    handle_errors([&]() {
+        query_ptr->less(columnIndex, static_cast<double>(value));
+    });
+}
+
+REALM_EXPORT void query_double_less_equal(Query * query_ptr, size_t columnIndex, double value)
+{
+    handle_errors([&]() {
+        query_ptr->less_equal(columnIndex, static_cast<double>(value));
+    });
+}
+
+REALM_EXPORT void query_double_greater(Query * query_ptr, size_t columnIndex, double value)
+{
+    handle_errors([&]() {
+        query_ptr->greater(columnIndex, static_cast<double>(value));
+    });
+}
+
+REALM_EXPORT void query_double_greater_equal(Query * query_ptr, size_t columnIndex, double value)
+{
+    handle_errors([&]() {
+        query_ptr->greater_equal(columnIndex, static_cast<double>(value));
+    });
+}
+
 }   // extern "C"

@@ -168,9 +168,9 @@ namespace RealmNet
             else if (valueType == typeof(int))
                 NativeQuery.int_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((int)value));
             else if (valueType == typeof(float))
-                ;// see issue 68 NativeQuery.float_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((float)value));
+                NativeQuery.float_equal((QueryHandle)queryHandle, columnIndex, (float)value);
             else if (valueType == typeof(double))
-                ;// see issue 68 NativeQuery.double_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((double)value));
+                NativeQuery.double_equal((QueryHandle)queryHandle, columnIndex, (double)value);
             else
                 throw new NotImplementedException();
         }
@@ -190,9 +190,9 @@ namespace RealmNet
             else if (valueType == typeof(int))
                 NativeQuery.int_not_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((int)value));
             else if (valueType == typeof(float))
-                ;// see issue 68 NativeQuery.float_not_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((float)value));
+                NativeQuery.float_not_equal((QueryHandle)queryHandle, columnIndex, (float)value);
             else if (valueType == typeof(double))
-                ;// see issue 68 NativeQuery.double_not_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((double)value));
+                NativeQuery.double_not_equal((QueryHandle)queryHandle, columnIndex, (double)value);
             else
                 throw new NotImplementedException();
         }
@@ -205,9 +205,9 @@ namespace RealmNet
             if (valueType == typeof(int))
                 NativeQuery.int_less((QueryHandle)queryHandle, columnIndex, (IntPtr)((int)value));
             else if (valueType == typeof(float))
-                ;// see issue 68 NativeQuery.float_less((QueryHandle)queryHandle, columnIndex, (IntPtr)((float)value));
+                NativeQuery.float_less((QueryHandle)queryHandle, columnIndex, (float)value);
             else if (valueType == typeof(double))
-                ;// see issue 68 NativeQuery.double_less((QueryHandle)queryHandle, columnIndex, (IntPtr)((double)value));
+                NativeQuery.double_less((QueryHandle)queryHandle, columnIndex, (double)value);
             else if (valueType == typeof(string) || valueType == typeof(bool))
                 throw new Exception("Unsupported type " + valueType.Name);
             else
@@ -222,9 +222,9 @@ namespace RealmNet
             if (valueType == typeof(int))
                 NativeQuery.int_less_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((int)value));
             else if (valueType == typeof(float))
-                ;// see issue 68 NativeQuery.float_less_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((float)value));
+                NativeQuery.float_less_equal((QueryHandle)queryHandle, columnIndex, (float)value);
             else if (valueType == typeof(double))
-                ;// see issue 68 NativeQuery.double_less_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((double)value));
+                NativeQuery.double_less_equal((QueryHandle)queryHandle, columnIndex, (double)value);
             else if (valueType == typeof(string) || valueType == typeof(bool))
                 throw new Exception("Unsupported type " + valueType.Name);
             else
@@ -239,9 +239,9 @@ namespace RealmNet
             if (valueType == typeof(int))
                 NativeQuery.int_greater((QueryHandle)queryHandle, columnIndex, (IntPtr)((int)value));
             else if (valueType == typeof(float))
-                ;// see issue 68 NativeQuery.float_greater((QueryHandle)queryHandle, columnIndex, (IntPtr)((float)value));
+                NativeQuery.float_greater((QueryHandle)queryHandle, columnIndex, (float)value);
             else if (valueType == typeof(double))
-                ;// see issue 68 NativeQuery.double_greater((QueryHandle)queryHandle, columnIndex, (IntPtr)((double)value));
+                NativeQuery.double_greater((QueryHandle)queryHandle, columnIndex, (double)value);
             else if (valueType == typeof(string) || valueType == typeof(bool))
                 throw new Exception("Unsupported type " + valueType.Name);
             else
@@ -256,9 +256,9 @@ namespace RealmNet
             if (valueType == typeof(int))
                 NativeQuery.int_greater_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((int)value));
             else if (valueType == typeof(float))
-                ;// see issue 68 NativeQuery.float_greater_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((float)value));
+                NativeQuery.float_greater_equal((QueryHandle)queryHandle, columnIndex, (float)value);
             else if (valueType == typeof(double))
-                ;// see issue 68 NativeQuery.double_greater_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((double)value));
+                NativeQuery.double_greater_equal((QueryHandle)queryHandle, columnIndex, (double)value);
             else if (valueType == typeof(string) || valueType == typeof(bool))
                 throw new Exception("Unsupported type " + valueType.Name);
             else

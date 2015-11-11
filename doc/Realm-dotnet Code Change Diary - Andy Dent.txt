@@ -755,3 +755,52 @@ NativeTable.cs
 
 table_cs.cpp
 - added table_set_float/double table_get_float/double
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#68 Adding float and double search support
+
+IntegrationTests.cs
+- SimpleTest refactored data creation out to MakeThreePeople
+- SearchComparingFloat added
+- SearchComparingDouble added
+
+query_cs.cpp - added wrapper functions
+	query_float_equal
+	query_float_not_equal
+	query_float_less
+	query_float_less_equal
+	query_float_greater
+	query_float_greater_equal
+	query_double_equal
+	query_double_not_equal
+	query_double_less
+	query_double_less_equal
+	query_double_greater
+	query_double_greater_equal
+
+
+NativeQuery.cs 
+- removed unused int_between
+- added DLLImports for 
+	"query_float_equal"
+	"query_float_not_equal"
+	"query_float_less"
+	"query_float_less_equal"
+	"query_float_greater"
+	"query_float_greater_equal"
+	"query_double_equal"
+	"query_double_not_equal"
+	"query_double_less"
+	"query_double_less_equal"
+	"query_double_greater"
+	"query_double_greater_equal"
+
+RealmQueryVisitor.cs - add float and double cases to
+	AddQueryEqual
+	AddQueryNotEqual
+	AddQueryLessThan
+	AddQueryLessThanOrEqual
+	AddQueryGreaterThan
+	AddQueryGreaterThanOrEqual
+	
