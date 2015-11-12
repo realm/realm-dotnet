@@ -1,4 +1,8 @@
-﻿using Foundation;
+﻿/* Copyright 2015 Realm Inc - All Rights Reserved
+ * Proprietary and Confidential
+ */
+ 
+using Foundation;
 using UIKit;
 
 namespace Playground.XamarinIOS
@@ -23,7 +27,7 @@ namespace Playground.XamarinIOS
 
             // Code to start the Xamarin Test Cloud Agent
             #if ENABLE_TEST_CLOUD
-			Xamarin.Calabash.Start();
+            Xamarin.Calabash.Start();
             #endif
 
             return true;

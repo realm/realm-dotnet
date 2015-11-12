@@ -1,4 +1,8 @@
-﻿using UIKit;
+﻿/* Copyright 2015 Realm Inc - All Rights Reserved
+ * Proprietary and Confidential
+ */
+ 
+using UIKit;
 
 namespace Playground.XamarinIOS
 {

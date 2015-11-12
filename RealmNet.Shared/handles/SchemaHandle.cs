@@ -1,4 +1,8 @@
-﻿using System.Runtime.CompilerServices;
+﻿/* Copyright 2015 Realm Inc - All Rights Reserved
+ * Proprietary and Confidential
+ */
+ 
+using System.Runtime.CompilerServices;
 using System.Runtime.ConstrainedExecution;
 
 namespace RealmNet
