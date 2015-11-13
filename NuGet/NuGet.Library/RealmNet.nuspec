@@ -20,6 +20,5 @@
   </metadata>
   <files>
     <file src="../../RealmNet.XamarinIOS/bin/iPhone/Release/RealmNet.dll" target="lib/Xamarin.iOS10" />
-    <file src="FodyWeavers.xml" target="content" />
   </files>
 </package>
