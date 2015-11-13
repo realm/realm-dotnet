@@ -20,7 +20,10 @@
     <Optimize>false</Optimize>
   </PropertyGroup>
   <ItemGroup>
-    <None Include="RealmNetWeaver.nuspec" />
+    <Content Include="readme.txt" />
+    <None Include="RealmNetWeaver.Fody.nuspec">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="install.ps1" />
     <None Include="packages.config" />
     <None Include="uninstall.ps1" />
@@ -33,7 +36,7 @@
   <Target Name="ReBuild" DependsOnTargets="NuGetBuild" />
   <Target Name="NuGetBuild" DependsOnTargets="Clean">
     <MakeDir Directories="$(SolutionDir)NuGetBuild" />
-    <Copy SourceFiles="$(SolutionDir)NuGet\RealmNetWeaver.nuspec" DestinationFolder="$(SolutionDir)NuGetBuild" />
+    <Copy SourceFiles="$(SolutionDir)NuGet\RealmNetWeaver.Fody.nuspec" DestinationFolder="$(SolutionDir)NuGetBuild" />
     <Copy SourceFiles="$(SolutionDir)RealmNetWeaver\bin\$(ConfigurationName)\RealmNetWeaver.Fody.dll" DestinationFolder="$(SolutionDir)NuGetBuild" />
     <Copy SourceFiles="$(SolutionDir)NuGet\Fody_ToBeDeleted.txt" DestinationFolder="$(SolutionDir)NuGetBuild\Content" />
     <Copy SourceFiles="$(ProjectDir)install.ps1" DestinationFolder="$(SolutionDir)NuGetBuild\Tools" />
@@ -48,9 +51,9 @@
     <Error Condition="!Exists('..\packages\PepitaPackage.1.20.0.0\build\PepitaPackage.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\PepitaPackage.1.20.0.0\build\PepitaPackage.targets'))" />
   </Target>
   <ItemGroup>
-    <ProjectReference Include="..\RealmNetWeaver\RealmNetWeaver.csproj">
+    <ProjectReference Include="..\..\RealmNetWeaver\RealmNetWeaver.Fody.csproj">
       <Project>{C3578A7B-09A6-4444-9383-0DEAFA4958BD}</Project>
-      <Name>RealmNetWeaver</Name>
+      <Name>RealmNetWeaver.Fody</Name>
       <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
     </ProjectReference>
   </ItemGroup>
