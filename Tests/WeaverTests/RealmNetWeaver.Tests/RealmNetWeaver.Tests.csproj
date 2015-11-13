@@ -66,6 +66,10 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
+    <ProjectReference Include="..\..\..\RealmNetWeaver\RealmNetWeaver.Fody.csproj">
+      <Project>{c3578a7b-09a6-4444-9383-0deafa4958bd}</Project>
+      <Name>RealmNetWeaver.Fody</Name>
+    </ProjectReference>
     <ProjectReference Include="..\RealmNet.FakeForWeaverTests\RealmNet.FakeForWeaverTests.csproj">
       <Project>{e6d5d6d7-4af6-46e0-9c6a-efb120d7f01d}</Project>
       <Name>RealmNet.FakeForWeaverTests</Name>
