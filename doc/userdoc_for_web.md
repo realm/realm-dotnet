@@ -187,8 +187,8 @@ public class Person : RealmObject{}
 You can use this property like you would any other:
 
 ```c#
-Person jim = new Person();
-Dog rex = new Dog();
+var jim = new Person();
+var rex = new Dog();
 rex.owner = jim;
 ```
 
@@ -241,11 +241,19 @@ _Andy note: there's a long section for these in Cocoa with the assumption that y
 
 ### Indexed Properties
 
-**TBD work out syntax for this that makes C# sense**
-
 Currently only strings and integers can be indexed.
 
 Indexing a property will greatly speed up queries where the property is compared for equality (i.e. the `=` and `IN` operators), at the cost of slower insertions.
+
+To index a property, simply add the `[Indexed]` attribute to the property declaration, e.g.:
+
+````c#
+public class Person : RealmObject {
+    [Indexed]
+    public string Name { get; set; }
+    public RealmList<Dog> Dogs { get; set; } 
+}
+````
 
 ### Default Property Values
 
@@ -253,7 +261,24 @@ Indexing a property will greatly speed up queries where the property is compared
 
 ### Primary Keys
 
-**TBD work out syntax for this that makes C# sense - via attributes?**
+**TBD  update syntax when current discussions on Primary Key are complete**
+
+A single `[PrimaryKey]` attribute can be specified on **one** property to set the model's primary key. Declaring a primary key allows objects to be
+looked up and updated efficiently and enforces uniqueness for each value.
+Once an object with a primary key is added to a Realm, the primary key cannot be changed.
+
+Note that putting the `[PrimryKey]` attribute on multiple properties is undefined behaviour  and may cause runtime errors or just use one of the attributed properties.
+
+````c#
+public class Person : RealmObject {
+    [PrimryKey]
+    public string SSN { get; set; }
+    [Indexed]
+    public string Name { get; set; }
+    public RealmList<Dog> Dogs { get; set; } 
+}
+````
+
 
 ### Ignored Properties
 
@@ -277,7 +302,7 @@ your code to minimize the number of write transactions.
 
 
 Because write transactions could potentially fail like any other disk IO
-operations,  **TBD decide if document exceptions here**  so you can handle and recover from failures
+operations, you should be prepared to handle exceptions from writes **TBD decide if document exceptions here**  so you can handle and recover from failures
 like running out of disk space. There are no other recoverable errors. For
 brevity, our code samples don't handle these errors but you certainly should in
 your production applications.
@@ -286,6 +311,131 @@ your production applications.
 
 When you have defined a model you can instantiate your {{ RealmObject }} subclass
 and add the new instance to the Realm. Consider this simple model:
+
+```c#
+// Define your models like regular C# classes
+public class Dog : RealmObject {
+    public string name { get; set; }
+    public int age { get; set; }
+}
+```
+
+We can create new objects in several ways:
+
+**TBD confirm that these all work after the move to ObjectStore**
+
+```c#
+// (1) Create a Dog object and then set its properties
+var mydog = new Dog();
+mydog.name = "Rex";
+myDog.age = 10;
+
+// (2) Create a Dog object with a more generic call then set it
+var mydog = realm.CreateObject<Dog> ();
+mydog.name = "Rex";
+myDog.age = 10;
+
+// (3) Create a Dog object and init in 
+var mydog = new Dog() { name = "Rex", age = 10 };
+```
+
+### Adding Objects
+
+You can add an object to a Realm like so:
+
+
+```c#
+// Define your models like regular C# classes
+public class Dog : RealmObject {
+    public string name { get; set; }
+    public int age { get; set; }
+    public Owner owner { get; set; }
+}
+
+public class Person : RealmObject {
+    public string Name { get; set; }
+    public RealmList<Dog> Dogs { get; set; } 
+}
+
+// Use them like regular C# objects
+Dog mydog = new Dog();
+mydog.name = "Rex";
+Debug.WriteLine(Name of dog: $"{mydog.name}");
+
+// Persist your data easily
+  Realm realm = Realm.GetInstance(Path.GetTempFileName());
+  using (var trans = realm.BeginWrite()) {
+      realm.addObject(mydog);
+      trans.Commit();
+  }
+
+// Query it with standard LINQ, either syntax
+  var r = realm.All<Dog>().Where( d => d.age > 8);
+  var r2 = from d in realm.All<Dog>() where  d.age > 8 select d;
+```
+
+After you have added the object to the Realm you can continue using it, and all changes you make to it will be persisted (and must be made within a write transaction). Any changes are made available to other threads that use the same Realm when the write transaction is committed.
+
+Please note that writes block each other, and will block the thread they are made on if multiple writes are in progress.
+This is similar to other persistence solutions and we recommend that you use the usual best-practices for this situation, namely offloading your writes to a [separate thread](#background-operations).
+
+Due to Realm’s MVCC architecture, reads are _not_ blocked while a write transaction is open. Unless you need to make simultaneous writes from many threads at once, you should favor larger write transactions that do more work over many fine-grained write transactions.
+
+**TBD add link to API page for more details, like**
+See [RLMRealm](api/Classes/RLMRealm.html#) and [RLMObject](api/Classes/RLMObject.html#) for more details. 
+
+### Updating Objects
+
+Realm a few ways to update objects, all of which offer different tradeoffs
+depending on the situation. Choose which one is best for your situation:
+
+
+
+#### Typed Updates
+
+You can update any object by setting its properties within a write transaction.
+
+{% objc %}
+```c#
+// Update an object with a transaction
+using (var trans = realm.BeginWrite()) {
+  author.name = "Thomas Pynchon";
+  trans.Commit();
+}
+```
+
+#### Updating Objects With Primary Keys
+
+If you have a [primary key](#customizing-models) on your model, you can update
+an object or insert a new one if it doesn't exist yet using
+
+**TBD implement c# updates via primary keys**
+
+If a book with a primary key id of 1 was not in the database, this would create
+a new book instead.
+
+You can also partially update objects with primary keys by passing the subset of
+values you wish to update, along with the primary key:
+
+### Deleting Objects
+
+Pass the object to be deleted to the `Realm Remove` method within a write transaction.
+
+```c#
+Book cheeseBook = ... // Book stored in Realm
+
+// Delete an object with a transaction
+using (var trans = realm.BeginWrite()) {
+  realm.Remove(cheeseBook);
+  trans.Commit();
+}
+```
+
+You can also delete all objects stored in a Realm. Note the Realm file will maintain its size on disk to efficiently reuse that space for future objects.
+
+**TBD syntax for deleting all**
+
+## Queries
 
 
 
@@ -315,8 +465,10 @@ Features missing from this preview version which are expected to be added prior 
 * Binary Data fields (e.g.: for storing pictures)
 * Indexing
 * specifying Primary Key
+* Updating Objects With Primary Keys
 * Null values for primitive types such as int and float
 * default values - the standard way of defining them is not compatible with the weaving
+* Delete all objects
 * More LINQ operations
 * Searching by related data
 * cascading deletes
