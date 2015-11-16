@@ -803,4 +803,16 @@ RealmQueryVisitor.cs - add float and double cases to
 	AddQueryLessThanOrEqual
 	AddQueryGreaterThan
 	AddQueryGreaterThanOrEqual
-	
+
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#110 implementing relationships
+
+MarshalHelpers.cs
+- RealmColType added cases for RealmObject and RealmList	
+
+RelationshipTests.cs
+- added (based on old ListTests.cs in RealmNet)
+
+
