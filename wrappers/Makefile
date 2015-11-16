@@ -14,9 +14,13 @@ help: ## Show this help.
 clean: ## Remove everything from build/
 	rm -fr build/*
  
-all: build/Release-osx/libwrappers.dylib build/Release-ios-universal/libwrappers.a iosdbg ## Make all the libs
+all: osx ios iosdbg ## Make all the libs
 
 iosdbg: build/Debug-ios-universal/libwrappers.a  
+
+ios: build/Release-ios-universal/libwrappers.a 
+
+osx: build/Release-osx/libwrappers.dylib 
 
 core: realm-core-$(CORE_VER).tar.bz2
 	tar xjf realm-core-$(CORE_VER).tar.bz2
