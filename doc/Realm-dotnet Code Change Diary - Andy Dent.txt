@@ -805,6 +805,17 @@ RealmQueryVisitor.cs - add float and double cases to
 	AddQueryGreaterThanOrEqual
 
 
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Making wrappers build for IOS with debug to aid debugging from XCode
+
+Makefile
+- add multiple targets including iosdbg
+
+RealmNet.XamarinIOS.csproj
+- change the path to libwrappers to include the $(Configuration)
+
+	
+
 
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #110 implementing relationships

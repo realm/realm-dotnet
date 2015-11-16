@@ -14,7 +14,13 @@ help: ## Show this help.
 clean: ## Remove everything from build/
 	rm -fr build/*
  
-all: build/Release-osx/libwrappers.dylib build/Release-ios-universal/libwrappers.a  ## Make all the libs
+all: osx ios iosdbg ## Make all the libs
+
+iosdbg: build/Debug-ios-universal/libwrappers.a  
+
+ios: build/Release-ios-universal/libwrappers.a 
+
+osx: build/Release-osx/libwrappers.dylib 
 
 core: realm-core-$(CORE_VER).tar.bz2
 	tar xjf realm-core-$(CORE_VER).tar.bz2
@@ -43,6 +49,19 @@ build/Release-ios-universal: | build
 
 build/Release-ios-universal/libwrappers.a: build/Release-iphoneos/libwrappers.a build/Release-iphonesimulator/libwrappers.a | build/Release-ios-universal
 	lipo -create -output "build/Release-ios-universal/libwrappers.a" "build/Release-iphoneos/libwrappers.a" "build/Release-iphonesimulator/libwrappers.a"
+
+
+build/Debug-iphoneos/libwrappers.a: core $(SRCS)
+	xcodebuild -sdk iphoneos -configuration Debug -target "wrappers"
+
+build/Debug-iphonesimulator/libwrappers.a: core $(SRCS)
+	xcodebuild -sdk iphonesimulator -configuration Debug -target "wrappers"
+
+build/Debug-ios-universal: | build
+	mkdir build/Debug-ios-universal
+
+build/Debug-ios-universal/libwrappers.a: build/Debug-iphoneos/libwrappers.a build/Debug-iphonesimulator/libwrappers.a | build/Debug-ios-universal
+	lipo -create -output "build/Debug-ios-universal/libwrappers.a" "build/Debug-iphoneos/libwrappers.a" "build/Debug-iphonesimulator/libwrappers.a"
 
 build/Release-android/armeabi/libwrappers.so:
 
