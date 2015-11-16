@@ -24,5 +24,29 @@ Tools:
 	* Static Lib, debug **platforms** x86 and x64
 	* Static Lib, release **platforms** x86 and x64
 
-### other still to be clarified
+### iOS and OS X wrappers
 
+Build using the `Makefile` in wrappers which downloads the _current_ static core library and builds the wrapper configurations, including running `lipo` to combine libraries.
+
+Use `make all` to build all the wrappers. If you just want to update a Debug build, use `make iosdbg`.
+
+The `RealmNet.XamarinIOS.csproj` includes Release or Debug libraries depending on configuration.
+
+### android Wrappers 
+
+currently don't build (see issue 164) as they don't have a download step
+
+
+
+Debugging Wrappers
+------------------
+
+Under Visual Studio, you should be able to seamlessly debug from the managed world of most of the binding down into the C++ wrappers provided you _Enable native debugging_ in the `Realmnet.Win32.csproj` options.
+
+To debug wrappers on IOS, say for the `IntegrationTests.IOS` project 
+
+* you must first have run that project to get it onto the IOS Simulator, say from Xamarin Studio. 
+* After the test app is on the simulator, _stop running from Xamarin Studio_ - only one debugger can connect at a time.
+* Manually launch the test app on the simulator
+* open the `wrappers.xcodeproj` in XCode and manually connect to the process using the menu item Debug - Attach to Process. Scroll down through the System Processes until you find `IntegrationTestsXamarionIOS.` 
+* The debugger should show the live process and allow you to set breakpoints which will cause the app to pause when they are hit, just as if you had launched a native app from inside XCode.
