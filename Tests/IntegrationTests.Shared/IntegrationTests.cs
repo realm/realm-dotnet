@@ -33,6 +33,13 @@ namespace IntegrationTests
                 Assert.Throws<RealmPermissionDeniedException>(() => Realm.GetInstance(databasePath));
             }
         }
+
+        [Test]
+        public void GetInstanceShouldThrowWithBadPath()
+        {
+            // Arrange
+            Assert.Throws<RealmPermissionDeniedException>(() => Realm.GetInstance("/"));
+        }
     }
 
     [TestFixture]
