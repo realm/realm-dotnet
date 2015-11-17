@@ -17,11 +17,11 @@ namespace IntegrationTests
         public double Longitude { get; set; }
 
         // Property that's not persisted in Realm
-        [Ignore]
+        [Ignored]
         public bool IsOnline { get; set; }
 
         // Composite property
-        [Ignore]
+        [Ignored]
         public string FullName
         {
             get { return FirstName + " " + LastName; }
@@ -39,7 +39,7 @@ namespace IntegrationTests
         private string Email_ { get; set; }
 
         // Wrapped version of previous property
-        [Ignore]
+        [Ignored]
         public string Email
         {
             get { return Email_; }

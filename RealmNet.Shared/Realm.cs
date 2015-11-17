@@ -70,7 +70,7 @@ namespace RealmNet
             var propertiesToMap = objectClass.GetProperties(BindingFlags.Instance | BindingFlags.DeclaredOnly | BindingFlags.NonPublic | BindingFlags.Public)
                 .Where(p =>
                 {
-                    return p.GetCustomAttributes(false).All(a => a.GetType() != typeof (IgnoreAttribute));
+                    return p.GetCustomAttributes(false).All(a => a.GetType() != typeof (IgnoredAttribute));
                 });
 
             foreach (var p in propertiesToMap)
@@ -78,8 +78,8 @@ namespace RealmNet
                 var mapToAttribute = p.GetCustomAttributes(false).FirstOrDefault(a => a is MapToAttribute) as MapToAttribute;
                 var propertyName = mapToAttribute != null ? mapToAttribute.Mapping : p.Name;
 
-                var primaryKeyAttribute = p.GetCustomAttributes(false).FirstOrDefault(a => a is PrimaryKeyAttribute);
-                var isPrimaryKey = primaryKeyAttribute != null;
+                var IdentifierAttribute = p.GetCustomAttributes(false).FirstOrDefault(a => a is IdentifierAttribute);
+                var isIdentifier = IdentifierAttribute != null;
 
                 var indexedAttribute = p.GetCustomAttributes(false).FirstOrDefault(a => a is IndexedAttribute);
                 var isIndexed = indexedAttribute != null;
@@ -88,7 +88,7 @@ namespace RealmNet
 
                 var columnType = p.PropertyType;
                 NativeObjectSchema.add_property(objectSchemaPtr, propertyName, MarshalHelpers.RealmColType(columnType), "", 
-                    MarshalHelpers.BoolToIntPtr(isPrimaryKey), MarshalHelpers.BoolToIntPtr(isIndexed), MarshalHelpers.BoolToIntPtr(isNullable));
+                    MarshalHelpers.BoolToIntPtr(isIdentifier), MarshalHelpers.BoolToIntPtr(isIndexed), MarshalHelpers.BoolToIntPtr(isNullable));
             }
 
             return objectSchemaPtr;

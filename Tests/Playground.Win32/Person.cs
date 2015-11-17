@@ -14,11 +14,11 @@ namespace Playground.Win32
         public string LastName { get; set; }
 
         // Property that's not persisted in Realm
-        [Ignore]
+        [Ignored]
         public bool IsOnline { get; set; }
 
         // Composite property
-        [Ignore]
+        [Ignored]
         public string FullName
         {
             get { return FirstName + " " + LastName; }
@@ -36,7 +36,7 @@ namespace Playground.Win32
         private string Email_ { get; set; }
 
         // Wrapped version of previous property
-        [Ignore]
+        [Ignored]
         public string Email
         {
             get { return Email_; }
