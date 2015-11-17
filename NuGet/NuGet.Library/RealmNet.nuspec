@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata minClientVersion="2.8">
+    <id>RealmNet</id>
+    <version>1.0</version>
+    <title>RealmNet</title>
+    <authors>Realm</authors>
+    <owners>Realm</owners>
+    <developmentDependency>true</developmentDependency>
+    <licenseUrl>http://www.opensource.org/licenses/mit-license.php</licenseUrl>
+    <projectUrl>http://github.com/realm/realm-dotnet</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Realm.Net</description>
+    <summary />
+    <language>en-US</language>
+    <tags>Realm</tags>
+    <dependencies>
+      <dependency id="RealmNetWeaver.Fody" version="1.0"/>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="../../RealmNet.XamarinIOS/bin/iPhone/Release/RealmNet.dll" target="lib/Xamarin.iOS10" />
+  </files>
+</package>

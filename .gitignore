@@ -103,6 +103,7 @@ _TeamCity*
 _NCrunch_*
 .*crunch*.local.xml
 nCrunchTemp_*
+*.ncrunchproject
 
 # NuGet Packages
 *.nupkg
@@ -225,3 +226,4 @@ doxyout
 doxyoutCS
 doxyoutCS_docOnly
 RealmNetWeaver.Fody.dll
+NuGetBuild
