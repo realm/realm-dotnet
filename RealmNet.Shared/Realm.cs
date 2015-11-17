@@ -70,7 +70,7 @@ namespace RealmNet
             var propertiesToMap = objectClass.GetProperties(BindingFlags.Instance | BindingFlags.DeclaredOnly | BindingFlags.NonPublic | BindingFlags.Public)
                 .Where(p =>
                 {
-                    return p.GetCustomAttributes(false).All(a => a.GetType() != typeof (IgnoreAttribute));
+                    return p.GetCustomAttributes(false).All(a => a.GetType() != typeof (IgnoredAttribute));
                 });
 
             foreach (var p in propertiesToMap)

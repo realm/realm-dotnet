@@ -14,7 +14,7 @@ namespace RealmNet
     {
     }
 
-    public class IgnoreAttribute : Attribute
+    public class IgnoredAttribute : Attribute
     {
     }
 

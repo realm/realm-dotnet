@@ -20,11 +20,11 @@ namespace AssemblyToProcess
         public string LastName { get; set; }
 
         // Ignored property
-        [Ignore]
+        [Ignored]
         public bool IsOnline { get; set; }
 
         // Composite property
-        [Ignore]
+        [Ignored]
         public string FullName
         {
             get { return FirstName + " " + LastName; }
@@ -42,7 +42,7 @@ namespace AssemblyToProcess
         private string Email_ { get; set; }
         
         // Wrapped version of previous property
-        [Ignore]
+        [Ignored]
         public string Email 
         { 
             get { return Email_; } 
@@ -53,7 +53,7 @@ namespace AssemblyToProcess
         }
 
         // Manually implemented property
-        [Ignore]
+        [Ignored]
         public string Address
         {
             get { return GetValue<string>("Address"); }
