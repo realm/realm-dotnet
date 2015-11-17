@@ -33,12 +33,6 @@ namespace realm {
     */
     void realm::convert_exception()
     {
-        std::ostringstream ss;
-        // use a lambda to avoid repeating the following composition in each catch
-        auto msg = [&](auto e) -> std::string {
-            ss << e.what(); // << " in " << file << " line " << line;
-            return ss.str();
-        };
         try {
             throw;  // rethrow so we can add typing information by different catches
         }
@@ -46,51 +40,50 @@ namespace realm {
 
             switch (e.kind()) {
             case RealmFileException::Kind::AccessError:
-                throw_exception(RealmErrorType::RealmFileAccessError, msg(e));
+                throw_exception(RealmErrorType::RealmFileAccessError, e.what());
                 break;
             case RealmFileException::Kind::Exists:
-                throw_exception(RealmErrorType::RealmFileExists, msg(e));
+                throw_exception(RealmErrorType::RealmFileExists, e.what());
                 break;
             case RealmFileException::Kind::IncompatibleLockFile:
-                throw_exception(RealmErrorType::RealmIncompatibleLockFile, msg(e));
+                throw_exception(RealmErrorType::RealmIncompatibleLockFile, e.what());
                 break;
             case RealmFileException::Kind::NotFound:
-                throw_exception(RealmErrorType::RealmFileNotFound, msg(e));
+                throw_exception(RealmErrorType::RealmFileNotFound, e.what());
                 break;
             case RealmFileException::Kind::PermissionDenied:
-                throw_exception(RealmErrorType::RealmPermissionDenied, msg(e));
+                throw_exception(RealmErrorType::RealmPermissionDenied, e.what());
                 break;
             default:
-                throw_exception(RealmErrorType::RealmError, msg(e));
+                throw_exception(RealmErrorType::RealmError, e.what());
             }
         }
         catch (const MismatchedConfigException& e) {
-            throw_exception(RealmErrorType::RealmMismatchedConfig, msg(e));
+            throw_exception(RealmErrorType::RealmMismatchedConfig, e.what());
         }
         catch (const InvalidTransactionException& e) {
-            throw_exception(RealmErrorType::RealmInvalidTransaction, msg(e));
+            throw_exception(RealmErrorType::RealmInvalidTransaction, e.what());
         }
         catch (const IncorrectThreadException& e) {
-            throw_exception(RealmErrorType::RealmIncorrectThread, msg(e));
+            throw_exception(RealmErrorType::RealmIncorrectThread, e.what());
         }
         catch (const UnitializedRealmException& e) {
-            throw_exception(RealmErrorType::RealmUnitializedRealm, msg(e));
+            throw_exception(RealmErrorType::RealmUnitializedRealm, e.what());
         }
         //catch (const util::DecryptionFailed& e) {
-        //    throw_exception(RealmExceptionCodes::RealmDecryptionFailed, msg(e), nullptr);
+        //    throw_exception(RealmExceptionCodes::RealmDecryptionFailed, e.what(), nullptr);
         //}
         catch (const InvalidDatabase& e) {
-            throw_exception(RealmErrorType::RealmInvalidDatabase, msg(e));
+            throw_exception(RealmErrorType::RealmInvalidDatabase, e.what());
         }
         catch (const std::bad_alloc& e) {
-            throw_exception(RealmErrorType::RealmOutOfMemory, msg(e));
+            throw_exception(RealmErrorType::RealmOutOfMemory, e.what());
         }
         catch (const std::exception& e) {
-            throw_exception(RealmErrorType::RealmError, msg(e));
+            throw_exception(RealmErrorType::RealmError, e.what());
         }
         catch (...) {
-            ss << "Unknown exception caught which doesn't descend from std::exception"; //, in " << file << " line " << line;
-            throw_exception(RealmErrorType::RealmError, ss.str());
+            throw_exception(RealmErrorType::RealmError, "Unknown exception caught which doesn't descend from std::exception");
         }
     }
 

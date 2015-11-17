@@ -814,4 +814,15 @@ Makefile
 RealmNet.XamarinIOS.csproj
 - change the path to libwrappers to include the $(Configuration)
 
-	
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#198 Fix Exception Throwing
+
+error_handling.cpp
+- realm::convert_exception cleaned up to directly use e.what() instead of lambda
+  which was originally composing message with file and line but had been
+  cut back to just call what() but was on base class so not hitting override.
+
+IntegrationTests.cs
+- added  GetInstanceShouldThrowWithBadPath
+
+  	
