@@ -31,5 +31,12 @@ namespace RealmNet
 #else
         public const string DLL_NAME = "** error see InteropConfig.cs DLL_NAME";
 #endif
+
+        public static string GetDefaultDatabasePath()
+        {
+            const string dbFilename = "db.realm";
+            var documentsPath = System.Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+            return System.IO.Path.Combine(documentsPath, dbFilename);
+        }
     }
 }
