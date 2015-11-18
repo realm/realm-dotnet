@@ -63,7 +63,7 @@ public class ModuleWeaver
         foreach (var type in GetMatchingTypes())
         {
             Debug.WriteLine("Weaving " + type.Name);
-            foreach (var prop in type.Properties.Where(x => !x.CustomAttributes.Any(a => a.AttributeType.Name == "IgnoreAttribute")))
+            foreach (var prop in type.Properties.Where(x => !x.CustomAttributes.Any(a => a.AttributeType.Name == "IgnoredAttribute")))
             {
                 var columnName = prop.Name;
                 var mapToAttribute = prop.CustomAttributes.FirstOrDefault(a => a.AttributeType.Name == "MapToAttribute");
