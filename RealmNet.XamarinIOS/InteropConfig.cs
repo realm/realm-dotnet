@@ -3,6 +3,9 @@
  */
  
 using System;
+using UIKit;
+using Foundation;
+using System.IO;
 
 namespace RealmNet
 {
@@ -42,7 +45,7 @@ namespace RealmNet
                 var docDir = Environment.GetFolderPath (Environment.SpecialFolder.MyDocuments);
                 libDir = System.IO.Path.GetFullPath(System.IO.Path.Combine (docDir, "..", "Library")); 
             }
-            return System.IO.Path.Combine(libDir, dbFilename);
+            return Path.Combine(libDir, dbFilename);
         }
     }
 }
