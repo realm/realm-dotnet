@@ -36,14 +36,14 @@ namespace RealmNet
         {
             const string dbFilename = "db.realm";
             string libDir;
-            if (UIDevice.CurrentDevice.CheckSystemVersion(8, 0))
+            if (UIDevice.CurrentDevice.CheckSystemVersion(8, 0))    // For iOS 8.0 or higher
             {
                 libDir = NSFileManager.DefaultManager.GetUrls (NSSearchPathDirectory.LibraryDirectory, NSSearchPathDomain.User) [0].Path;
             }
             else
             {
                 var docDir = Environment.GetFolderPath (Environment.SpecialFolder.MyDocuments);
-                libDir = System.IO.Path.GetFullPath(System.IO.Path.Combine (docDir, "..", "Library")); 
+                libDir = Path.GetFullPath(System.IO.Path.Combine (docDir, "..", "Library")); 
             }
             return Path.Combine(libDir, dbFilename);
         }
