@@ -23,7 +23,6 @@ namespace RealmNet
 #endif
         }
 
-        //TODO eventually retire L32 and L64 for platform-conditional builds using DLL_NAME
 #if REALM_32
         public const string DLL_NAME = "wrappers";
 #elif REALM_64
