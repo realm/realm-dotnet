@@ -3,6 +3,9 @@
  */
  
 using System;
+using UIKit;
+using Foundation;
+using System.IO;
 
 namespace RealmNet
 {
@@ -28,5 +31,21 @@ namespace RealmNet
 
         // This is always the "name" of the dll, regardless of bit-width.
         public const string DLL_NAME = "__Internal";
+
+        public static string GetDefaultDatabasePath()
+        {
+            const string dbFilename = "db.realm";
+            string libDir;
+            if (UIDevice.CurrentDevice.CheckSystemVersion(8, 0))    // For iOS 8.0 or higher
+            {
+                libDir = NSFileManager.DefaultManager.GetUrls (NSSearchPathDirectory.LibraryDirectory, NSSearchPathDomain.User) [0].Path;
+            }
+            else
+            {
+                var docDir = Environment.GetFolderPath (Environment.SpecialFolder.MyDocuments);
+                libDir = Path.GetFullPath(System.IO.Path.Combine (docDir, "..", "Library")); 
+            }
+            return Path.Combine(libDir, dbFilename);
+        }
     }
 }

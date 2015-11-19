@@ -23,18 +23,6 @@ namespace RealmNet
 #endif
         }
 
-#if (DEBUG)
-        private const string Buildmode = "d";
-        private const string BuildName = "Debug";
-#else
-        private const string Buildmode = "r";
-        private const string BuildName = "Release";
-#endif
-
-        public const string L64 = "wrappers";
-        public const string L32 = "wrappers";
-
-        //TODO eventually retire L32 and L64 for platform-conditional builds using DLL_NAME
 #if REALM_32
         public const string DLL_NAME = "wrappers";
 #elif REALM_64
@@ -42,5 +30,12 @@ namespace RealmNet
 #else
         public const string DLL_NAME = "** error see InteropConfig.cs DLL_NAME";
 #endif
+
+        public static string GetDefaultDatabasePath()
+        {
+            const string dbFilename = "db.realm";
+            var documentsPath = System.Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+            return System.IO.Path.Combine(documentsPath, dbFilename);
+        }
     }
 }
