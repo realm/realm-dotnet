@@ -5,6 +5,10 @@ The RealmNet package contains the fundamentals for Realm whereas the RealmNetWea
 package contains a [Fody](https://github.com/Fody/Fody) weaver, 
 responsible for turning your RealmObject subclasses into persisted ones.
 
+For the private beta, you should have received these packages as raw .nupkg files.
+After the beta period, the packages will be available in the official NuGet package
+repository.
+
 ## Xamarin Studio on OSX
 
 In order to add these to your project, you need to let Xamarin Studio use a folder 
