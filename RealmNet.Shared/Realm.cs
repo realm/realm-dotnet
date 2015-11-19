@@ -36,8 +36,11 @@ namespace RealmNet
         }
 
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-        public static Realm GetInstance(string databasePath)
+        public static Realm GetInstance(string databasePath = null)
         {
+            if (databasePath == null)
+                databasePath = InteropConfig.GetDefaultDatabasePath();
+
             var schemaInitializer = new SchemaInitializerHandle();
 
             foreach (var realmObjectClass in RealmObjectClasses)

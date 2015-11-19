@@ -14,11 +14,11 @@ namespace Playground.XamarinIOS
         public string LastName { get; set; }
 
         // Ignored property
-        [Ignore]
+        [Ignored]
         public bool IsOnline { get; set; }
 
         // Composite property
-        [Ignore]
+        [Ignored]
         public string FullName
         {
             get { return FirstName + " " + LastName; }
@@ -36,7 +36,7 @@ namespace Playground.XamarinIOS
         private string Email_ { get; set; }
 
         // Wrapped version of previous property
-        [Ignore]
+        [Ignored]
         public string Email 
         { 
             get { return Email_; } 
