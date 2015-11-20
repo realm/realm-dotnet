@@ -65,7 +65,7 @@ namespace RealmNet
                 return (IntPtr)1;  // type_Bool
             if (columnType.BaseType == typeof(RealmObject))
                 return (IntPtr)12;  // type_Link
-            if (columnType.IsGenericType && columnType.FullName.StartsWith("RealmNet.RealmList"))
+            if (columnType.IsGenericType && columnType.Name == "RealmList`1" && columnType.Namespace == "RealmNet" )
                 return (IntPtr)13;  // type_LinkList 
             /*
             TODO

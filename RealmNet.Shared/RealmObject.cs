@@ -85,22 +85,33 @@ namespace RealmNet
             var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
             var rowIndex = _rowHandle.RowIndex;
 
-            if (typeof(T) == typeof(string)) {
+            if (typeof(T) == typeof(string)) 
+            {
                 var str = value as string;
                 NativeTable.set_string (tableHandle, columnIndex, (IntPtr)rowIndex, str, (IntPtr)(str?.Length ?? 0));
-            } else if (typeof(T) == typeof(bool)) {
+            } 
+            else if (typeof(T) == typeof(bool)) 
+            {
                 var marshalledValue = MarshalHelpers.BoolToIntPtr ((bool)Convert.ChangeType (value, typeof(bool)));
                 NativeTable.set_bool (tableHandle, columnIndex, (IntPtr)rowIndex, marshalledValue);
-            } else if (typeof(T) == typeof(int)) {  // System.Int32 regardless of bitness
+            } 
+            else if (typeof(T) == typeof(int)) 
+            {  // System.Int32 regardless of bitness
                 Int64 marshalledValue = Convert.ToInt64 (value);
                 NativeTable.set_int64 (tableHandle, columnIndex, (IntPtr)rowIndex, marshalledValue);
-            } else if (typeof(T) == typeof(Int64)) {
+            } 
+            else if (typeof(T) == typeof(Int64)) 
+            {
                 Int64 marshalledValue = Convert.ToInt64 (value);
                 NativeTable.set_int64 (tableHandle, columnIndex, (IntPtr)rowIndex, marshalledValue);
-            } else if (typeof(T) == typeof(float)) {
+            } 
+            else if (typeof(T) == typeof(float)) 
+            {
                 float marshalledValue = Convert.ToSingle (value);
                 NativeTable.set_float (tableHandle, columnIndex, (IntPtr)rowIndex, marshalledValue);
-            } else if (typeof(T) == typeof(double)) {
+            } 
+            else if (typeof(T) == typeof(double)) 
+            {
                 double marshalledValue = Convert.ToDouble (value);
                 NativeTable.set_double (tableHandle, columnIndex, (IntPtr)rowIndex, marshalledValue);
             }

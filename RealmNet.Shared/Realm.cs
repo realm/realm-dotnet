@@ -85,7 +85,7 @@ namespace RealmNet
                 var isIndexed = indexedAttribute != null;
 
                 var isNullable = !(p.PropertyType.IsValueType || 
-                    p.PropertyType.FullName.StartsWith("RealmNet.RealmList")) ||
+                    p.PropertyType.Name == "RealmList`1") ||
                     Nullable.GetUnderlyingType(p.PropertyType) != null;
 
                 var objectType = "";
