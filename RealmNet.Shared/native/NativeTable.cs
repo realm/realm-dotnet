@@ -24,6 +24,15 @@ namespace RealmNet
         internal static extern IntPtr get_string(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex,
             IntPtr buffer, IntPtr bufsize);
 
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_link", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void set_link(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, IntPtr targetRowNdx);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_clear_link", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void clear_link(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_link", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern IntPtr get_link(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex);
+
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_bool", CallingConvention = CallingConvention.Cdecl)]
         internal static extern void set_bool(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, IntPtr value);
 

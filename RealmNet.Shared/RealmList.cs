@@ -79,7 +79,7 @@ namespace RealmNet
         public void Add(T item)
         {
             // TODO add a relationship
-            //throw new NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public void Clear()

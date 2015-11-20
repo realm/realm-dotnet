@@ -24,13 +24,14 @@ namespace Tests
             public bool Vaccinated { get; set; } = true;
             // here to create Fody error feedback until we support in https://github.com/realm/realm-dotnet/issues/36
             // public DateTime born { get; set; }
-            // TODO Owner owner { get; set; }
+            //Owner owner { get; set; }
         }
 
         class Owner : RealmObject
         {
             public string Name { get; set; }
-            public RealmList<Dog> Dogs { get; set; } // TODO allow this if we can preserve init through weaving = new RealmList<Dog>();
+            public Dog TopDog { get; set; }
+//            public RealmList<Dog> Dogs { get; set; } // TODO allow this if we can preserve init through weaving = new RealmList<Dog>();
         }
 
         protected Realm realm;
@@ -44,10 +45,34 @@ namespace Tests
             // we don't keep any variables pointing to these as they are all added to Realm
             using (var trans = realm.BeginWrite())
             {
+                /* syntax we want back
                 new Owner {Name = "Tim", Dogs = new RealmList<Dog> {
                     new Dog {Name = "Bilbo Fleabaggins"},
                     new Dog {Name = "Earl Yippington III" }
                     } };
+                    */
+                Owner o1 = realm.CreateObject<Owner> ();
+                o1.Name = "Tim";
+
+                Dog d1 = realm.CreateObject<Dog> ();
+                d1.Name = "Bilbo Fleabaggins";
+                d1.Color = "Black";
+                o1.TopDog = d1;  // set a one-one relationship
+                //o1.Dogs.Add (d1);
+
+                Dog d2 = realm.CreateObject<Dog> ();
+                d2.Name = "Earl Yippington III";
+                d2.Color = "White";
+                //o1.Dogs.Add (d2);
+
+                // lonely people and dogs
+                Owner o2 = realm.CreateObject<Owner> ();
+                o2.Name = "Dani";  // the dog-less
+
+                Dog d3 = realm.CreateObject<Dog> ();  // will remain unassigned
+                d3.Name = "Maggie Mongrel";
+                d3.Color = "Grey";
+
                 /*
                 These would work if we can preserve init through weaving, like:
                 public RealmList<Dog> Dogs { get; set; } = new RealmList<Dog>();
@@ -65,35 +90,41 @@ namespace Tests
                 new Owner {Name = "Morgan", Dogs = { new Dog { Name = "Rudy Loosebooty" } } };
                 */
                 // to show you can assign later, create the Owner then assign their Dog
+
+                    /* syntax for later
                 var b = new Owner {Name = "Bjarne"};  
                 b.Dogs = new RealmList<Dog> { new Dog { Name = "Madame Barklouder", Vaccinated = false, Color = "White" }};
+                */
                 trans.Commit ();
             }
         }
 
 
         [Test]
-        public void ListAllOwners()
+        public void TimHasATopDog()
         {
-            // Arrange
-            var owners = realm.All<Owner>();
-            foreach (var o in owners)
-            {
-                Debug.WriteLine(o.Name);
-            }
+            var tim = realm.All<Owner>().Where( p => p.Name == "Tim").ToList().First();
+            Assert.That(tim.TopDog.Name, Is.EqualTo( "Bilbo Fleabaggins"));
         }
 
 
         [Test]
-        public void ListAllDogs()
+        public void TimRetiredHisTopDog()
         {
-            // Arrange
-            var furryBosses = realm.All<Dog>();
-            foreach (var dog in furryBosses)
-            {
-                var color = dog.Color == null ? "A dog of indeterminate color" : dog.Color;
-                Debug.WriteLine($"{dog.Name} is {color}");
-            }
+            var tim = realm.All<Owner>().Where( p => p.Name == "Tim").ToList().First();
+            using (var trans = realm.BeginWrite()) {
+                tim.TopDog = null;
+                trans.Commit ();
+            }                
+            Assert.That(tim.TopDog, Is.Null);
+        }
+
+
+        [Test]
+        public void DaniHasNoDog()
+        {
+            var dani = realm.All<Owner>().Where( p => p.Name == "Dani").ToList().First();
+            Assert.That(dani.TopDog, Is.Null);
         }
 
     }

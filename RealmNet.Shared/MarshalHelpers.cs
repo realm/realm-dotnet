@@ -63,7 +63,7 @@ namespace RealmNet
                 return (IntPtr)7;  // type_DateTime
             if (columnType == typeof(bool))
                 return (IntPtr)1;  // type_Bool
-            if (columnType == typeof(RealmObject))
+            if (columnType.BaseType == typeof(RealmObject))
                 return (IntPtr)12;  // type_Link
             if (columnType.IsGenericType && columnType.FullName.StartsWith("RealmNet.RealmList"))
                 return (IntPtr)13;  // type_LinkList 

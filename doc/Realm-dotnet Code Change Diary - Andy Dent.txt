@@ -814,7 +814,18 @@ Makefile
 RealmNet.XamarinIOS.csproj
 - change the path to libwrappers to include the $(Configuration)
 
-	
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#198 Fix Exception Throwing
+
+error_handling.cpp
+- realm::convert_exception cleaned up to directly use e.what() instead of lambda
+  which was originally composing message with file and line but had been
+  cut back to just call what() but was on base class so not hitting override.
+
+IntegrationTests.cs
+- added  GetInstanceShouldThrowWithBadPath
+
+  		
 
 
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
@@ -826,4 +837,36 @@ MarshalHelpers.cs
 RelationshipTests.cs
 - added (based on old ListTests.cs in RealmNet)
 
+Realm.cs
+- Realm.GenerateObjectSchema 
+  - exclude lists from being nullable
+  - set the objectType for links
+- CreateRowHandle made internal so can use when creating linked objects
+
+ModuleWeaver.cs
+- added genericGet/SetListValueReference
+- added genericGet/SetObjectValueReference
+- Execute
+  - use new method references for RealmList and RealmObject properties
+  - (side fix) change check to "IgnoredAttribute" from "IgnoreAttribute"
+  - check for strings before related types (optimisation)
+  - add test weaving in RealmObjects
+- IsRealmObject added 
+
+RealmObject.cs  
+- Set/GetObjectValue added
+- set/GetListValue added (stubbed)
+
+   
+table_cs.cpp
+Added methods:
+- table_set_link
+- table_get_link  
+- table_clear_link
+
+NativeTable.cs
+added decls for 
+- set_link
+- clear_link
+- get_link
 

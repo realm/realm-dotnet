@@ -36,6 +36,17 @@ REALM_EXPORT Row* table_add_empty_row(Table* table_ptr)
     });
 }
 
+REALM_EXPORT Row* table_get_link(Table* table_ptr, size_t column_ndx, size_t row_ndx)
+{
+    return handle_errors([&]() -> Row* {
+        const size_t link_row_ndx = table_ptr->get_link(column_ndx, row_ndx);
+        if (link_row_ndx == realm::npos)
+            return nullptr;
+        auto target_table_ptr = table_ptr->get_link_target(column_ndx);
+        return new Row((*target_table_ptr)[link_row_ndx]);
+    });
+}
+
 REALM_EXPORT size_t table_get_bool(const Table* table_ptr, size_t column_ndx, size_t row_ndx)
 {
     return handle_errors([&]() {
@@ -69,6 +80,20 @@ REALM_EXPORT size_t table_get_string(const Table* table_ptr, size_t column_ndx, 
     return handle_errors([&]() {
         StringData fielddata = table_ptr->get_string(column_ndx, row_ndx);
         return stringdata_to_csharpstringbuffer(fielddata, datatochsarp, bufsize);
+    });
+}
+
+REALM_EXPORT void table_set_link(Table* table_ptr, size_t column_ndx, size_t row_ndx, size_t target_row_ndx)
+{
+    return handle_errors([&]() {
+        table_ptr->set_link(column_ndx, row_ndx, target_row_ndx);
+    });
+}
+
+REALM_EXPORT void table_clear_link(Table* table_ptr, size_t column_ndx, size_t row_ndx)
+{
+    return handle_errors([&]() {
+        table_ptr->nullify_link(column_ndx, row_ndx);
     });
 }
 

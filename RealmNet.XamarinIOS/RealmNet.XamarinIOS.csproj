@@ -81,8 +81,16 @@
   </ItemGroup>
   <Import Project="..\RealmNet.Shared\RealmNet.Shared.projitems" Label="Shared" Condition="Exists('..\RealmNet.Shared\RealmNet.Shared.projitems')" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.ObjCBinding.CSharp.targets" />
-  <ItemGroup>
-    <ObjcBindingNativeLibrary Include="..\wrappers\build\$(Configuration)-ios-universal\libwrappers.a">
+  <!-- Instead of including macro inline, which seems unreliably to work only on load, use a conditional so absolute paths are selected
+     <ObjcBindingNativeLibrary Include="..\wrappers\build\$(Configuration)-ios-universal\libwrappers.a">
+ -->
+  <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <ObjcBindingNativeLibrary Include="..\wrappers\build\Debug-ios-universal\libwrappers.a">
+      <Link>libwrappers.a</Link>
+    </ObjcBindingNativeLibrary>
+  </ItemGroup>
+  <ItemGroup Condition=" '$(Configuration)' == 'Release' ">
+    <ObjcBindingNativeLibrary Include="..\wrappers\build\Release-ios-universal\libwrappers.a">
       <Link>libwrappers.a</Link>
     </ObjcBindingNativeLibrary>
   </ItemGroup>

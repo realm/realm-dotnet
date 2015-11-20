@@ -84,10 +84,21 @@ namespace RealmNet
                 var indexedAttribute = p.GetCustomAttributes(false).FirstOrDefault(a => a is IndexedAttribute);
                 var isIndexed = indexedAttribute != null;
 
-                var isNullable = !p.PropertyType.IsValueType || Nullable.GetUnderlyingType(p.PropertyType) != null;
+                var isNullable = !(p.PropertyType.IsValueType || 
+                    p.PropertyType.FullName.StartsWith("RealmNet.RealmList")) ||
+                    Nullable.GetUnderlyingType(p.PropertyType) != null;
 
+                var objectType = "";
+                if (!p.PropertyType.IsValueType && p.PropertyType.Name!="String") {
+                    if (p.PropertyType.Name == "RealmList`1")
+                        objectType = p.PropertyType.GenericTypeArguments [0].Name;
+                    else {
+                        if (p.PropertyType.BaseType.Name == "RealmObject")
+                            objectType = p.PropertyType.Name;
+                    }
+                }
                 var columnType = p.PropertyType;
-                NativeObjectSchema.add_property(objectSchemaPtr, propertyName, MarshalHelpers.RealmColType(columnType), "", 
+                NativeObjectSchema.add_property(objectSchemaPtr, propertyName, MarshalHelpers.RealmColType(columnType), objectType, 
                     MarshalHelpers.BoolToIntPtr(isPrimaryKey), MarshalHelpers.BoolToIntPtr(isIndexed), MarshalHelpers.BoolToIntPtr(isNullable));
             }
 
@@ -146,7 +157,7 @@ namespace RealmNet
         }
 
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-        private static RowHandle CreateRowHandle(IntPtr rowPtr)
+        internal static RowHandle CreateRowHandle(IntPtr rowPtr)
         {
             var rowHandle = new RowHandle();
 
