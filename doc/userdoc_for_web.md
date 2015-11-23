@@ -11,12 +11,44 @@ tagline: "C# Docs"
 Realm {% binding_name %} enables you to efficiently write your app's model layer
 in a safe, persisted and fast way. Here's what it looks like:
 
+
 ```c#
 // Define your models like regular C# classes
 public class Dog : RealmObject {
-    public string name { get; set; }
-    public int age { get; set; }
-    public Owner owner { get; set; }
+    public string Name { get; set; }
+    public int Age { get; set; }
+    public Owner Owner { get; set; }
+}
+
+public class Person : RealmObject {
+    public string Name { get; set; }
+    public RealmList<Dog> Dogs { get; set; } 
+}
+
+
+// Persist your data easily
+  Realm realm = Realm.GetInstance(Path.GetTempFileName());
+  using (var trans = realm.BeginWrite()) {
+    var mydog = realm.CreateObject<Dog> ();
+    mydog.name = "Rex";
+    trans.Commit();
+  }
+
+// Query it with standard LINQ, either syntax
+  var r = realm.All<Dog>().Where( d => d.age > 8);
+  var r2 = from d in realm.All<Dog>() where  d.age > 8 select d;
+```
+
+
+### Future Syntax ###
+
+
+```c#
+// Define your models like regular C# classes
+public class Dog : RealmObject {
+    public string Name { get; set; }
+    public int Age { get; set; }
+    public Owner Owner { get; set; }
 }
 
 public class Person : RealmObject {
@@ -40,6 +72,8 @@ Debug.WriteLine(Name of dog: $"{mydog.name}");
   var r = realm.All<Dog>().Where( d => d.age > 8);
   var r2 = from d in realm.All<Dog>() where  d.age > 8 select d;
 ```
+
+Note that we follow the case conventions of typical C# code so you see public properties using CamelCase, which is different to some of the other samples you may have seen in other binding documentation.
 
 ## Getting Started
 
@@ -101,16 +135,14 @@ The main restrictions are that you can only use an object on the thread which it
 
 Relationships and nested data structures are modeled simply by including properties of the target type or `RealmList` for typed lists of objects.
 
-**TBD confirm how relationships work**
-
 ````c#
 public class Person;
 
 // Dog model
 public class Dog : RealmObject {
-    public string name { get; set; }
-    public int age { get; set; }
-    public Owner owner { get; set; }
+    public string Name { get; set; }
+    public int Age { get; set; }
+    public Owner Owner { get; set; }
 }
 
 public class Person : RealmObject {
@@ -121,11 +153,11 @@ public class Person : RealmObject {
 
 ### Controlling property persistence ###
 
-Classes which descend from `RealmObject` are processed by the _Fody_ weaver at compilation time. All their properties that have automatic setters or getters are presumed to be persistent and have setters and getters generated to map them to the internal Realm storage. 
+Classes which descend from `RealmObject` are processed by the [Fody weaver](https://github.com/Fody/Fody) at compilation time. All their properties that have automatic setters or getters are presumed to be persistent and have setters and getters generated to map them to the internal Realm storage. 
 
 We also provide some C# [attributes](https://msdn.microsoft.com/en-us/library/z0w1kczw.aspx) to add metadata to control persistence.
 
-To avoid a property being made persistent, simply add the `[Ignore]` attribute.
+To avoid a property being made persistent, simply add the `[Ignored]` attribute.
 
 To have a property remapped so you can apply a custom setter, use the `[MapTo]` attribute :
 
@@ -150,10 +182,10 @@ To have a property remapped so you can apply a custom setter, use the `[MapTo]` 
 
 
 ### Supported Types
-Realm supports the following property types:  `bool`, `int`, `float`, `double`, `NSString`, `DateTime` **TBD** [truncated to the second](#nsdate-is-truncated-to-the-second), **TBD** something like `NSData`, 
+Realm supports the following property types:  `bool`, `int`, `float`, `double`, `NSString`, `DateTime` **TBD**, **TBD** something like `NSData`, 
 
 
-You can use `RealmList<Object>` and `RealmObject` subclasses to model
+You can use `RealmList<myRealmObject>` and `RealmObject` subclasses to model
 relationships such as to-many and to-one.
 
 **TBD say something about optional properties here?**
@@ -165,33 +197,37 @@ relationships such as to-many and to-one.
 
 {{ RealmList }}s implement the standard .Net `IList` generic interface.
 
-**TBD after finishing relationships more details on RealmList**
-
 _Andy note - I don't like the way the Cocoa docs describe it here because the Dog class has already been described in the Model section._
 
 <span id="to-one"></span>
 
 #### To-One Relationships
 
-For many-to-one or one-to-one relationships, simply declare a property with the type of your {{ RealmObject }} subclass:
+For many-to-one or one-to-one relationships, simply declare a property with the type of your {{ RealmObject }} subclass. In C#, you don't need to make forward declarations of classes before using them for property declarations.
 
 ```c#
 public class Dog : RealmObject {
 // ... other property declarations
-    public Person owner;
+    public Owner Owner;
 }
 
-public class Person : RealmObject{}
+public class Owner : RealmObject{}
 ```
 
 You can use this property like you would any other:
 
 ```c#
-var jim = new Person();
-var rex = new Dog();
+var jim = realm.CreateObject<Owner> ()
+var rex = realm.CreateObject<Dog> ();
+rex.name = "Rex";
 rex.owner = jim;
 ```
 
+To break the relationship, simply assign null:
+
+```c#
+rex.owner = null;
+```
 
 When using {{ RealmObject }} properties, you can access nested properties using normal property syntax. For example `rex.owner.address.country` will traverse the object graph and automatically fetch each object from Realm as needed.
 
@@ -214,13 +250,13 @@ public class Person : RealmObject {
 
 You can access and assign {{ RealmList }} properties as usual:
 
-**TBD check the list syntax when completed**
+**TBD allow syntax to assign multiple dogs**
 
 ````c#
 // Jim is owner of Rex and all dogs named "Fido"
 var someDogs = realm.All<Dog>().Where( d => d.name contains "Fido");
-jim.dogs.Add(someDogs);
-jim.dogs Add(rex);
+jim.Dogs.Add(someDogs);  // not yet implemented
+jim.Dogs Add(rex);
 ````
 
 **TBD work out equivalent of assigning nil to the RLMArray to empty it out**
@@ -259,19 +295,21 @@ public class Person : RealmObject {
 
 **TBD we have an outstanding issue to fix this as our weaver kills them**
 
-### Primary Keys
+### Identifier attributes
 
-**TBD  update syntax when current discussions on Primary Key are complete**
-
-A single `[PrimaryKey]` attribute can be specified on **one** property to set the model's primary key. Declaring a primary key allows objects to be
+A single `[Identifier]` attribute can be specified on **one** property to set the model's identifier. Declaring an identifier allows objects to be
 looked up and updated efficiently and enforces uniqueness for each value.
-Once an object with a primary key is added to a Realm, the primary key cannot be changed.
+Once an object with an identifier is added to a Realm, the identifier cannot be changed.
 
-Note that putting the `[PrimryKey]` attribute on multiple properties is undefined behaviour  and may cause runtime errors or just use one of the attributed properties.
+If you come from a traditional database background, you can think of the Identifier as being very similar to a SQL _Primary key._
+
+From an object modelling perspective, the Identifier is like a persistent pointer to an object. You can use the Identifier to quickly lookup the object to get a reference to it in a different thread.
+
+Note that putting the `[Identifier]` attribute on multiple properties is undefined behaviour  and may cause runtime errors or just use one of the attributed properties.
 
 ````c#
 public class Person : RealmObject {
-    [PrimryKey]
+    [Identifier]
     public string SSN { get; set; }
     [Indexed]
     public string Name { get; set; }
@@ -282,11 +320,9 @@ public class Person : RealmObject {
 
 ### Ignored Properties
 
-Use the `[Ignore]` attribute to make a property be left alone and just treated as a standard C# property.
+Use the `[Ignored]` attribute to make a property be left alone and just treated as a standard C# property.
 
-**TBD in the pipeline we have a task to ignore if have a getter**
-
-If you define a setter or getter function on the property then it is automatically ignored.
+If you define a setter or getter function on the property then it is automatically ignored (future feature not included in the beta)
 
 ## Writes
 
@@ -322,27 +358,24 @@ public class Dog : RealmObject {
 
 We can create new objects in several ways:
 
-**TBD confirm that these all work after the move to ObjectStore**
-
 ```c#
-// (1) Create a Dog object and then set its properties
-var mydog = new Dog();
-mydog.name = "Rex";
-myDog.age = 10;
-
-// (2) Create a Dog object with a more generic call then set it
+// (1) Create a Dog object with a generic call then set its properties
 var mydog = realm.CreateObject<Dog> ();
 mydog.name = "Rex";
 myDog.age = 10;
 
-// (3) Create a Dog object and init in 
+// (2) Create a Dog object and then set its properties (future syntax)
+var mydog = new Dog();
+mydog.name = "Rex";
+myDog.age = 10;
+
+// (3) Create a Dog object and init in one go (future syntax)
 var mydog = new Dog() { name = "Rex", age = 10 };
 ```
 
 ### Adding Objects
 
 You can add an object to a Realm like so:
-
 
 ```c#
 // Define your models like regular C# classes
@@ -357,16 +390,12 @@ public class Person : RealmObject {
     public RealmList<Dog> Dogs { get; set; } 
 }
 
-// Use them like regular C# objects
-Dog mydog = new Dog();
-mydog.name = "Rex";
-Debug.WriteLine(Name of dog: $"{mydog.name}");
-
 // Persist your data easily
   Realm realm = Realm.GetInstance(Path.GetTempFileName());
   using (var trans = realm.BeginWrite()) {
-      realm.addObject(mydog);
-      trans.Commit();
+    var mydog = realm.CreateObject<Dog> ();
+    mydog.name = "Rex";
+    trans.Commit();
   }
 
 // Query it with standard LINQ, either syntax
@@ -387,9 +416,7 @@ See [RLMRealm](api/Classes/RLMRealm.html#) and [RLMObject](api/Classes/RLMObject
 ### Updating Objects
 
 Realm a few ways to update objects, all of which offer different tradeoffs
-depending on the situation. Choose which one is best for your situation:
-
-
+depending on the situation. Choose which one is best for your situation (currently the C# implementation only supports directly setting properties):
 
 #### Typed Updates
 
@@ -399,23 +426,11 @@ You can update any object by setting its properties within a write transaction.
 ```c#
 // Update an object with a transaction
 using (var trans = realm.BeginWrite()) {
-  author.name = "Thomas Pynchon";
+  author.Name = "Thomas Pynchon";
   trans.Commit();
 }
 ```
 
-#### Updating Objects With Primary Keys
-
-If you have a [primary key](#customizing-models) on your model, you can update
-an object or insert a new one if it doesn't exist yet using
-
-**TBD implement c# updates via primary keys**
-
-If a book with a primary key id of 1 was not in the database, this would create
-a new book instead.
-
-You can also partially update objects with primary keys by passing the subset of
-values you wish to update, along with the primary key:
 
 ### Deleting Objects
 
@@ -454,8 +469,7 @@ Realm aims to strike a balance between flexibility and performance. In order to 
 2. Property names must be between 0 and 63 bytes in length. UTF8 characters are supported. An exception will be thrown at your app's initialization if this limit is exceeded.
 3. **TBD binary data** properties cannot hold data exceeding 16MB in size. To store larger amounts of data, either break it up into 16MB chunks or store it directly on the file system, storing paths to these files in the realm. An exception will be thrown at runtime if your app attempts to store more than 16MB in a single property.
 4. **TBD DateTime** properties may have other limitations.
-5. Any single Realm file cannot be larger than the amount of memory your application would be allowed to map in iOS — this changes per device, and depends on how fragmented the memory space is at that point in time (there is a radar open about this issue: rdar://17119975). If you need to store more data, you can map it over multiple Realm files.
-
+5. IOS Limitation: The total size of all open Realm files cannot be larger than the amount of memory your application would be allowed to map in iOS — this changes per device, and depends on how fragmented the memory space is at that point in time (there is a radar open about this issue: rdar://17119975). If you need to store more data, you can split into multiple Realm files and open and close them as needed.
 
 ### Preview Limitations
 Features missing from this preview version which are expected to be added prior to release:
@@ -463,11 +477,11 @@ Features missing from this preview version which are expected to be added prior 
 * API reference
 * DateTime fields
 * Binary Data fields (e.g.: for storing pictures)
+* Assigning list values to RealmList fields to add multiple relationships in one go
 * Indexing
-* specifying Primary Key
-* Updating Objects With Primary Keys
-* Null values for primitive types such as int and float
-* default values - the standard way of defining them is not compatible with the weaving
+* Updating Objects by their Identifier
+* Null values for primitive types such as int, bool, float and double
+* Default values - the standard way of defining them is not compatible with the weaving
 * Delete all objects
 * More LINQ operations
 * Searching by related data
