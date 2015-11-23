@@ -71,7 +71,7 @@ namespace RealmNet
             }
             if (typeof(T) == typeof(DateTimeOffset))
             {
-                var unixTimeSeconds = NativeTable.get_int64(tableHandle, columnIndex, (IntPtr)rowIndex);
+                var unixTimeSeconds = NativeTable.get_datetime_seconds(tableHandle, columnIndex, (IntPtr)rowIndex);
                 var value = MarshalHelpers.UnixTimeSecondsToDateTimeOffset(unixTimeSeconds);
                 return (T)(object)value;
             }
@@ -124,7 +124,7 @@ namespace RealmNet
             else if (typeof(T) == typeof(DateTimeOffset))
             {
                 Int64 marshalledValue = MarshalHelpers.DateTimeOffsetToUnixTimeSeconds((DateTimeOffset)(object)value);
-                NativeTable.set_int64(tableHandle, columnIndex, (IntPtr)rowIndex, marshalledValue);
+                NativeTable.set_datetime_seconds(tableHandle, columnIndex, (IntPtr)rowIndex, marshalledValue);
             }
             else
                 throw new Exception ("Unsupported type " + typeof(T).Name);

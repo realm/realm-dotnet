@@ -16,6 +16,12 @@ namespace RealmNet
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_add_empty_row", CallingConvention = CallingConvention.Cdecl)]
         internal static extern IntPtr add_empty_row(TableHandle tableHandle);
 
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_datetime_seconds", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void set_datetime_seconds(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, Int64 value);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_datetime_seconds", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern Int64 get_datetime_seconds(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex);
+
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_string", CallingConvention = CallingConvention.Cdecl)]
         internal static extern void set_string(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx,
             [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
