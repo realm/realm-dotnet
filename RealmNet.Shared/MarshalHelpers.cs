@@ -56,7 +56,7 @@ namespace RealmNet
                 return (IntPtr)9;
             if (columnType == typeof(double))
                 return (IntPtr)10;
-            if (columnType == typeof(DateTime))
+            if (columnType == typeof(DateTimeOffset))
                 return (IntPtr)7;
             if (columnType == typeof(bool))
                 return (IntPtr)1;

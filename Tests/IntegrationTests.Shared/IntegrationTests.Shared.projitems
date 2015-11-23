@@ -9,6 +9,7 @@
     <Import_RootNamespace>IntegrationTests.Shared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)DateTimeTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)IntegrationTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PerformanceTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Person.cs" />
