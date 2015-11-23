@@ -214,7 +214,7 @@ To have a property remapped so you can apply a custom setter, use the `[MapTo]` 
 
 
 ### Supported Types
-Realm supports the following property types:  `bool`, `int`, `float`, `double`, `NSString`, `DateTime` **TBD**, **TBD** something like `NSData`, 
+Realm supports the following property types:  `bool`, `integer`, `float`, `double`, `string`, [DateTimeOffset](https://msdn.microsoft.com/en-us/library/bb384267.aspx), **TBD** something like `NSData`, 
 
 
 You can use `RealmList<myRealmObject>` and `RealmObject` subclasses to model
@@ -523,14 +523,13 @@ Realm aims to strike a balance between flexibility and performance. In order to 
 1. Class names must be between 0 and 63 bytes in length. UTF8 characters are supported. An exception will be thrown at your app's initialization if this limit is exceeded.
 2. Property names must be between 0 and 63 bytes in length. UTF8 characters are supported. An exception will be thrown at your app's initialization if this limit is exceeded.
 3. **TBD binary data** properties cannot hold data exceeding 16MB in size. To store larger amounts of data, either break it up into 16MB chunks or store it directly on the file system, storing paths to these files in the realm. An exception will be thrown at runtime if your app attempts to store more than 16MB in a single property.
-4. **TBD DateTime** properties may have other limitations.
+4. `DateTimeOffset` properties are stored truncated to seconds precision so they are compatible with `NSDate` and Java dates.
 5. IOS Limitation: The total size of all open Realm files cannot be larger than the amount of memory your application would be allowed to map in iOS — this changes per device, and depends on how fragmented the memory space is at that point in time (there is a radar open about this issue: rdar://17119975). If you need to store more data, you can split into multiple Realm files and open and close them as needed.
 
 ### Preview Limitations
 Features missing from this preview version which are expected to be added prior to release:
 
 * API reference
-* DateTime fields
 * Binary Data fields (e.g.: for storing pictures)
 * Assigning list values to RealmList fields to add multiple relationships in one go
 * Indexing
