@@ -40,6 +40,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		423263231C034D9400F1C9C1 /* shared_linklist.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = shared_linklist.hpp; sourceTree = "<group>"; };
 		42C21FB51BFF796B0080A0F2 /* linklist_cs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = linklist_cs.cpp; sourceTree = "<group>"; };
 		48115BA61BEA3A1300224F7B /* external_commit_helper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = external_commit_helper.cpp; path = "object-store/impl/apple/external_commit_helper.cpp"; sourceTree = "<group>"; };
 		48115BA71BEA3A1300224F7B /* external_commit_helper.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = external_commit_helper.hpp; path = "object-store/impl/apple/external_commit_helper.hpp"; sourceTree = "<group>"; };
@@ -89,6 +90,7 @@
 		48D1012F1B39902E004A4B2C = {
 			isa = PBXGroup;
 			children = (
+				423263231C034D9400F1C9C1 /* shared_linklist.hpp */,
 				42C21FB51BFF796B0080A0F2 /* linklist_cs.cpp */,
 				48CD1A321BD4E9EF004C6DC0 /* error_handling.cpp */,
 				48CD1A331BD4E9EF004C6DC0 /* error_handling.hpp */,

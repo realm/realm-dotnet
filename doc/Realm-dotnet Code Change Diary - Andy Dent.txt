@@ -883,7 +883,7 @@ RealmList.cs
 
 table_cs.cpp
 Added methods:
-- table_get_linklist
+- table_get_linklist (now returning a SharedLinkViewRef)
 
 linklist_cs.cpp
 - added with methods
@@ -922,3 +922,5 @@ TableHandle.cs
 RowHandle.cs
 - made RowHandle internal because users should not be using
 
+wrappers/shared_linklist.hpp
+- added to declare the SharedLinkViewRef

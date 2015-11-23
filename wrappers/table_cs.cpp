@@ -7,9 +7,13 @@
 #include "error_handling.hpp"
 #include "marshalling.hpp"
 #include "realm_export_decls.hpp"
+#include "shared_linklist.hpp"
+
+#include <memory>
 
 using namespace realm;
 using namespace realm::binding;
+
 
 extern "C" {
 
@@ -47,13 +51,14 @@ REALM_EXPORT Row* table_get_link(Table* table_ptr, size_t column_ndx, size_t row
   });
 }
 
-REALM_EXPORT LinkView* table_get_linklist(Table* table_ptr, size_t column_ndx, size_t row_ndx)
+REALM_EXPORT SharedLinkViewRef* table_get_linklist(Table* table_ptr, size_t column_ndx, size_t row_ndx)
 {
-  return handle_errors([&]() -> LinkView* {
-    LinkViewRef vr = table_ptr->get_linklist(column_ndx, row_ndx);
-    return vr.get();  //TODO verify this is safe to return and not going to be taken out of scope and deleted
+  return handle_errors([&]() -> SharedLinkViewRef* {
+    SharedLinkViewRef sr = std::make_shared<LinkViewRef>(table_ptr->get_linklist(column_ndx, row_ndx));
+    return new SharedLinkViewRef{ sr };  // weird double-layering necessary to get a raw pointer to a shared_ptr
   });
 }
+
 
 REALM_EXPORT size_t table_get_bool(const Table* table_ptr, size_t column_ndx, size_t row_ndx)
 {

@@ -16,18 +16,21 @@ namespace RealmNet
         {
             get
             {
-                throw new NotImplementedException();
+                return null;  // TODO return real object
+                // throw new NotImplementedException();
             }
         }
 
         public bool MoveNext()
         {
-            throw new NotImplementedException();
+            return false;  // TODO return real iteration status
+            //throw new NotImplementedException();
         }
 
         public void Reset()
         {
-            throw new NotImplementedException();
+            // TODO clear the relatinships
+            // throw new NotImplementedException();
         }
     }
 
@@ -40,13 +43,17 @@ namespace RealmNet
         {
             _parent = parent;
             _listHandle = adoptedList;
-            var modelName = parent.GetType().Name;
 
-            if (!parent.GetType().GetCustomAttributes(typeof(WovenAttribute), true).Any())
-                Debug.WriteLine("WARNING! The parent type " + modelName + " is a RealmObject but it has not been woven.");
-
+            if (!parent.GetType ().GetCustomAttributes (typeof(WovenAttribute), true).Any ())
+            {
+                var modelName = parent.GetType ().Name;
+                Debug.WriteLine ("WARNING! The parent type " + modelName + " is a RealmObject but it has not been woven.");
+            }
+            // suppressing the following warning as it is apparently ALWAYS triggered - the type bound here is NOT the woven object
+            /*
             if (!typeof(T).GetType().GetCustomAttributes(typeof(WovenAttribute), true).Any())
                 Debug.WriteLine("WARNING! The list contains a type " + typeof(T).Name + " which is a RealmObject but it has not been woven.");
+            */
         }
 
         #region implementing IList members
@@ -54,7 +61,8 @@ namespace RealmNet
         {
             get
             {
-                throw new NotImplementedException();
+                return null;  // TODO return real object
+                //throw new NotImplementedException();
             }
 
             set
@@ -77,7 +85,7 @@ namespace RealmNet
         {
             get
             {
-                throw new NotImplementedException();
+                return false;  // TODO decide if this is realistic
             }
         }
 
@@ -91,12 +99,14 @@ namespace RealmNet
 
         public void Clear()
         {
-            throw new NotImplementedException();
+            // TODO clear relationship
+            //throw new NotImplementedException();
         }
 
         public bool Contains(T item)
         {
-            throw new NotImplementedException();
+            return false;  // TODO return real object
+            //throw new NotImplementedException();
         }
 
         public void CopyTo(T[] array, int arrayIndex)
@@ -106,17 +116,20 @@ namespace RealmNet
 
         public IEnumerator<T> GetEnumerator()
         {
-            throw new NotImplementedException();
+            return null;  // TODO return real iter
+            //throw new NotImplementedException();
         }
 
         public int IndexOf(T item)
         {
-            throw new NotImplementedException();
+            return 0;  // TODO return real object index
+            //throw new NotImplementedException();
         }
 
         public void Insert(int index, T item)
         {
-            throw new NotImplementedException();
+            // TODO return real object
+            //throw new NotImplementedException();
         }
 
         public bool Remove(T item)
@@ -131,7 +144,8 @@ namespace RealmNet
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            throw new NotImplementedException();
+            return null;  // TODO return real object iter
+            //throw new NotImplementedException();
         }
 
         #endregion
