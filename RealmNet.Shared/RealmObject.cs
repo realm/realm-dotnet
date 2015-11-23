@@ -69,6 +69,12 @@ namespace RealmNet
                 var value = NativeTable.get_double(tableHandle, columnIndex, (IntPtr)rowIndex);
                 return (T)Convert.ChangeType(value, typeof(T));
             }
+            if (typeof(T) == typeof(DateTimeOffset))
+            {
+                var unixTimeSeconds = NativeTable.get_int64(tableHandle, columnIndex, (IntPtr)rowIndex);
+                var value = MarshalHelpers.UnixTimeSecondsToDateTimeOffset(unixTimeSeconds);
+                return (T)(object)value;
+            }
             else
                 throw new Exception ("Unsupported type " + typeof(T).Name);
         }
@@ -114,6 +120,11 @@ namespace RealmNet
             {
                 double marshalledValue = Convert.ToDouble(value);
                 NativeTable.set_double(tableHandle, columnIndex, (IntPtr)rowIndex, marshalledValue);
+            }
+            else if (typeof(T) == typeof(DateTimeOffset))
+            {
+                Int64 marshalledValue = MarshalHelpers.DateTimeOffsetToUnixTimeSeconds((DateTimeOffset)(object)value);
+                NativeTable.set_int64(tableHandle, columnIndex, (IntPtr)rowIndex, marshalledValue);
             }
             else
                 throw new Exception ("Unsupported type " + typeof(T).Name);

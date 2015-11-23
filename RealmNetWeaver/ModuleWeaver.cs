@@ -80,7 +80,7 @@ public class ModuleWeaver
                     AddSetter(prop, columnName, genericSetValueReference);  // with casting in the RealmObject methods, should just work
                 }
                 else if (prop.PropertyType.Namespace == "System" 
-                    && (prop.PropertyType.IsPrimitive || prop.PropertyType.Name == "String"))
+                    && (prop.PropertyType.IsPrimitive || prop.PropertyType.Name == "String" || prop.PropertyType.Name == "DateTimeOffset"))
                 {
                     AddGetter(prop, columnName, genericGetValueReference);
                     AddSetter(prop, columnName, genericSetValueReference);

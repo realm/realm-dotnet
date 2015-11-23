@@ -16,6 +16,8 @@ namespace IntegrationTests
         public double Latitude { get; set; }
         public double Longitude { get; set; }
 
+        public DateTimeOffset Birthday { get; set; }
+
         // Property that's not persisted in Realm
         [Ignored]
         public bool IsOnline { get; set; }
