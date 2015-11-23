@@ -3,13 +3,11 @@
  */
  
 using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace RealmNet
 {
-    class MarshalHelpers
+    internal class MarshalHelpers
     {
         public static IntPtr BoolToIntPtr(Boolean value)
         {
