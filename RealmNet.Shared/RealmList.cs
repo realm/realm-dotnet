@@ -83,8 +83,10 @@ namespace RealmNet
 
         public void Add(T item)
         {
-            // TODO add a relationship
-            throw new NotImplementedException();
+            var ro = item as RealmObject;
+            Debug.Assert (ro != null, "can't have instantiated collection without being Realm objects");
+            var rowIndex = ro.RowHandle.RowIndex;
+            NativeLinkList.add(_listHandle, (IntPtr)rowIndex);        
         }
 
         public void Clear()

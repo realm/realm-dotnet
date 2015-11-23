@@ -58,7 +58,7 @@ namespace Tests
                 d1.Name = "Bilbo Fleabaggins";
                 d1.Color = "Black";
                 o1.TopDog = d1;  // set a one-one relationship
-                //o1.Dogs.Add (d1);
+                o1.Dogs.Add (d1);
 
                 Dog d2 = realm.CreateObject<Dog> ();
                 d2.Name = "Earl Yippington III";

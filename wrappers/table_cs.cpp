@@ -51,8 +51,6 @@ REALM_EXPORT LinkView* table_get_linklist(Table* table_ptr, size_t column_ndx, s
 {
   return handle_errors([&]() -> LinkView* {
     LinkViewRef vr = table_ptr->get_linklist(column_ndx, row_ndx);
-    if (vr->is_empty())
-      return nullptr;
     return vr.get();  //TODO verify this is safe to return and not going to be taken out of scope and deleted
   });
 }

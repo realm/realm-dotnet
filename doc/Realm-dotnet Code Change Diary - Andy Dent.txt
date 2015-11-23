@@ -879,6 +879,7 @@ RealmList.cs
 - added field _listHandle
 - ctor renamed CompleteInit for 2-stage init
 - Count method stub implemented
+- Add method stub implemented
 
 table_cs.cpp
 Added methods:
