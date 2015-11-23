@@ -72,7 +72,7 @@ namespace RealmNet
             if (typeof(T) == typeof(DateTimeOffset))
             {
                 var unixTimeSeconds = NativeTable.get_datetime_seconds(tableHandle, columnIndex, (IntPtr)rowIndex);
-                var value = MarshalHelpers.UnixTimeSecondsToDateTimeOffset(unixTimeSeconds);
+                var value = DateTimeOffsetExtensions.FromUnixTimeSeconds(unixTimeSeconds);
                 return (T)(object)value;
             }
             else
@@ -123,7 +123,7 @@ namespace RealmNet
             }
             else if (typeof(T) == typeof(DateTimeOffset))
             {
-                Int64 marshalledValue = MarshalHelpers.DateTimeOffsetToUnixTimeSeconds((DateTimeOffset)(object)value);
+                Int64 marshalledValue = ((DateTimeOffset)(object)value).ToUnixTimeSeconds();
                 NativeTable.set_datetime_seconds(tableHandle, columnIndex, (IntPtr)rowIndex, marshalledValue);
             }
             else

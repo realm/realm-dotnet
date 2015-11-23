@@ -45,20 +45,6 @@ namespace RealmNet
             return false;
         }
 
-        //TODO: This should be a pair of extension methods on DateTimeOffset, mimicking .Net 4.6's DateTimeOffset.ToUnixTimeSeconds and its counterpart
-        //but let's store it here for now
-        private static readonly DateTimeOffset UnixEpoch = new DateTimeOffset(1970, 1, 1, 0, 0, 0, TimeSpan.Zero);
-
-        public static Int64 DateTimeOffsetToUnixTimeSeconds(DateTimeOffset value)
-        {
-            return Convert.ToInt64((value.ToUniversalTime() - UnixEpoch).TotalSeconds);
-        }
-
-        public static DateTimeOffset UnixTimeSecondsToDateTimeOffset(Int64 value)
-        {
-            return UnixEpoch.AddSeconds(value);
-        }
-
         public static IntPtr RealmColType(Type columnType)
         {
             // ordered in decreasing likelihood of type
