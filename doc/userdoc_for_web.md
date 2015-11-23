@@ -452,6 +452,29 @@ You can also delete all objects stored in a Realm. Note the Realm file will main
 
 ## Queries
 
+Queries are based on the standard LINQ syntax.
+
+You get a basic, typed collection of all objects of a given type using the `All` method
+
+### _Fluent_ or Extension Syntax ###
+
+```c#
+  var oldDogs = realm.All<Dog>().Where( d => d.age > 8);
+```
+
+### Query Expression Syntax ###
+
+```c#
+  var oldDogs = from d in realm.All<Dog>() where  d.age > 8 select d;
+```
+
+Regardless of which syntax you use, the resulting `RealmQuery` collection conforms to the [IQueryable interface](https://msdn.microsoft.com/en-us/library/system.linq.iqueryable.aspx) so you can further iterate or process it:
+
+```c#
+  foreach (var d in oldDogs) {
+    Debug.WriteLine(d.Name);
+  }
+```
 
 
 ## Current Limitations
