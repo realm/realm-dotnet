@@ -7,6 +7,7 @@ SDKROOT=$(shell xcrun --sdk iphoneos --show-sdk-path)
 CXX=$(shell xcrun --sdk iphoneos --find clang++)
 FLAGS=-Icore/include -Iobject-store -Iobject-store/impl -Iobject-store/impl/apple -std=c++14 -stdlib=libc++  
 CORE_VER=0.92.1
+CORE_ANDROID_VER=0.89.0
 
 help: ## Show this help.
 	@fgrep -h "##" $(MAKEFILE_LIST) | fgrep -v fgrep | sed -e 's/\\$$//' | sed -e 's/##//'
@@ -73,6 +74,20 @@ build/Debug-ios-universal/libwrappers.a: build/Debug-iphoneos/libwrappers.a buil
 
 android: build/Release-android/armeabi/libwrappers.so build/Release-android/armeabi-v7a/libwrappers.so build/Release-android/x86/libwrappers.so
 
+core-android: realm-core-android-$(CORE_ANDROID_VER).tar.gz
+	mkdir core-android
+	tar xzf realm-core-android-$(CORE_ANDROID_VER).tar.gz -C core-android/
+	mkdir core-android/armeabi
+	mv core-android/librealm-android-arm.a core-android/armeabi/librealm-android.a
+	mkdir core-android/armeabi-v7a
+	mv core-android/librealm-android-arm-v7a.a core-android/armeabi-v7a/librealm-android.a
+	mkdir core-android/x86
+	mv core-android/librealm-android-x86.a core-android/x86/librealm-android.a
+	touch core-android
+
+realm-core-android-$(CORE_ANDROID_VER).tar.gz:
+	curl -o realm-core-android-$(CORE_ANDROID_VER).tar.gz "http://static.realm.io/downloads/core/realm-core-android-$(CORE_ANDROID_VER).tar.gz"
+
 build/Release-android: | build
 	mkdir build/Release-android
 
@@ -94,7 +109,7 @@ build/Release-android/x86: | build/Release-android
 build/Release-android/x86/libwrappers.so: | build/Release-android/x86 libs
 	cp ./libs/x86/librealm-android.so ./build/Release-android/x86/libwrappers.so
 
-libs:
+libs: | core-android
 	$(NDK_ROOT)/ndk-build APP_PLATFORM=android-9
 	
 
