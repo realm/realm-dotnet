@@ -33,6 +33,9 @@ namespace RealmNet
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_link", CallingConvention = CallingConvention.Cdecl)]
         internal static extern IntPtr get_link(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex);
 
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_linklist", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern IntPtr get_linklist(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex);
+
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_bool", CallingConvention = CallingConvention.Cdecl)]
         internal static extern void set_bool(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, IntPtr value);
 

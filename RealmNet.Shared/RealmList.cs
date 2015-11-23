@@ -5,6 +5,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Diagnostics;
 
 namespace RealmNet
 {
@@ -31,20 +33,21 @@ namespace RealmNet
 
     public class RealmList<T> : IList<T> where T : RealmObject
     {
-        //private RealmObject _parent;  // we only make sense within an owning object
+        private RealmObject _parent;  // we only make sense within an owning object
+        private LinkListHandle _listHandle;
 
-//        internal RealmList(RealmObject parent)
-        public RealmList()
+        internal void CompleteInit(RealmObject parent, LinkListHandle adoptedList)
         {
-            //_parent = parent;
-/*            var modelName = parent.GetType().Name;
+            _parent = parent;
+            _listHandle = adoptedList;
+            var modelName = parent.GetType().Name;
 
-            if (!parent.GetType().GetTypeInfo().GetCustomAttributes(typeof(WovenAttribute), true).Any())
+            if (!parent.GetType().GetCustomAttributes(typeof(WovenAttribute), true).Any())
                 Debug.WriteLine("WARNING! The parent type " + modelName + " is a RealmObject but it has not been woven.");
 
-            if (!typeof(T).GetTypeInfo().GetCustomAttributes(typeof(WovenAttribute), true).Any())
+            if (!typeof(T).GetType().GetCustomAttributes(typeof(WovenAttribute), true).Any())
                 Debug.WriteLine("WARNING! The list contains a type " + typeof(T).Name + " which is a RealmObject but it has not been woven.");
-*/        }
+        }
 
         #region implementing IList members
         public T this[int index]
@@ -64,7 +67,9 @@ namespace RealmNet
         {
             get
             {
-                throw new NotImplementedException();
+                if (_listHandle.IsInvalid)
+                    return 0;
+                return (int)NativeLinkList.size (_listHandle);
             }
         }
 

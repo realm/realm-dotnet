@@ -870,3 +870,54 @@ added decls for
 - clear_link
 - get_link
 
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#110 implementing relationships - finishing lists (toMany relationships)
+
+RealmList.cs
+- made ctor internal instead of public
+- uncomment field _parent
+- added field _listHandle
+- ctor renamed CompleteInit for 2-stage init
+- Count method stub implemented
+
+table_cs.cpp
+Added methods:
+- table_get_linklist
+
+linklist_cs.cpp
+- added with methods
+  linklist_add
+  linklist_size
+  linklist_destroy
+
+wrappers.xcodeproj
+- added linklist_cs.cpp
+
+LinkListHandle
+- added with method Unbind
+
+NativeTable.cs
+added decls for
+- get_linklist
+
+NativeLinkList.cs
+- added with mappings to
+  linklist_add
+  linklist_size
+  linklist_destroy
+
+RealmNet.shared.csproj
+- added NativeLinkList.cs
+
+RealmObject.cs
+- SetListValue now just throws
+- GetListValue
+
+
+TableHandle.cs
+- added RootedLinkListHandle
+- added TableLinkList
+
+RowHandle.cs
+- made RowHandle internal because users should not be using
+

@@ -24,14 +24,14 @@ namespace Tests
             public bool Vaccinated { get; set; } = true;
             // here to create Fody error feedback until we support in https://github.com/realm/realm-dotnet/issues/36
             // public DateTime born { get; set; }
-            //Owner owner { get; set; }
+            //Owner Owner { get; set; }  will uncomment when verifying that we have back-links from ToMany relationships
         }
 
         class Owner : RealmObject
         {
             public string Name { get; set; }
             public Dog TopDog { get; set; }
-//            public RealmList<Dog> Dogs { get; set; } // TODO allow this if we can preserve init through weaving = new RealmList<Dog>();
+            public RealmList<Dog> Dogs { get; set; } // TODO allow this if we can preserve init through weaving = new RealmList<Dog>();
         }
 
         protected Realm realm;
@@ -45,7 +45,7 @@ namespace Tests
             // we don't keep any variables pointing to these as they are all added to Realm
             using (var trans = realm.BeginWrite())
             {
-                /* syntax we want back
+                /* syntax we want back needs ability for constructor to auto-bind to active write transaction
                 new Owner {Name = "Tim", Dogs = new RealmList<Dog> {
                     new Dog {Name = "Bilbo Fleabaggins"},
                     new Dog {Name = "Earl Yippington III" }
@@ -116,15 +116,24 @@ namespace Tests
                 tim.TopDog = null;
                 trans.Commit ();
             }                
-            Assert.That(tim.TopDog, Is.Null);
+            var tim2 = realm.All<Owner>().Where( p => p.Name == "Tim").ToList().First();
+            Assert.That(tim2.TopDog, Is.Null);  // the dog departure was saved
         }
 
 
         [Test]
-        public void DaniHasNoDog()
+        public void DaniHasNoTopDog()
         {
             var dani = realm.All<Owner>().Where( p => p.Name == "Dani").ToList().First();
             Assert.That(dani.TopDog, Is.Null);
+        }
+
+
+        [Test]
+        public void DaniHasNoDogs()
+        {
+            var dani = realm.All<Owner>().Where( p => p.Name == "Dani").ToList().First();
+            Assert.That(dani.Dogs.Count(), Is.EqualTo(0));  // ToMany relationships always return a RealmList
         }
 
     }

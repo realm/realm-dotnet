@@ -38,13 +38,23 @@ REALM_EXPORT Row* table_add_empty_row(Table* table_ptr)
 
 REALM_EXPORT Row* table_get_link(Table* table_ptr, size_t column_ndx, size_t row_ndx)
 {
-    return handle_errors([&]() -> Row* {
-        const size_t link_row_ndx = table_ptr->get_link(column_ndx, row_ndx);
-        if (link_row_ndx == realm::npos)
-            return nullptr;
-        auto target_table_ptr = table_ptr->get_link_target(column_ndx);
-        return new Row((*target_table_ptr)[link_row_ndx]);
-    });
+  return handle_errors([&]() -> Row* {
+    const size_t link_row_ndx = table_ptr->get_link(column_ndx, row_ndx);
+    if (link_row_ndx == realm::npos)
+      return nullptr;
+    auto target_table_ptr = table_ptr->get_link_target(column_ndx);
+    return new Row((*target_table_ptr)[link_row_ndx]);
+  });
+}
+
+REALM_EXPORT LinkView* table_get_linklist(Table* table_ptr, size_t column_ndx, size_t row_ndx)
+{
+  return handle_errors([&]() -> LinkView* {
+    LinkViewRef vr = table_ptr->get_linklist(column_ndx, row_ndx);
+    if (vr->is_empty())
+      return nullptr;
+    return vr.get();  //TODO verify this is safe to return and not going to be taken out of scope and deleted
+  });
 }
 
 REALM_EXPORT size_t table_get_bool(const Table* table_ptr, size_t column_ndx, size_t row_ndx)

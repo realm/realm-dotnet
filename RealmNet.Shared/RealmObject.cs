@@ -120,30 +120,22 @@ namespace RealmNet
         }
 
 
-        protected RealmList<T> GetListValue<T>(string propertyName) where T : RealmObject
+        protected T GetListValue<T>(string propertyName) where T : RealmList<RealmObject>
         {
             if (_realm == null)
                 throw new Exception("This object is not managed. Create through CreateObject");
 
             var tableHandle = _realm._tableHandles[GetType()];
             var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
-            var rowIndex = _rowHandle.RowIndex;
-            //TODO FINISH IMPLEMENTING
-            return null;
+            var listHandle = tableHandle.TableLinkList (columnIndex, _rowHandle);
+            var ret = (T)Activator.CreateInstance(typeof(T));
+            ret.CompleteInit (this, listHandle);
+            return ret;
         }
 
-        protected void SetListValue<T>(string propertyName, RealmList<T> value) where T : RealmObject
+        protected void SetListValue<T>(string propertyName, T value) where T : RealmList<RealmObject>
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
-
-            if (!_realm.IsInTransaction)
-                throw new RealmOutsideTransactionException("Cannot set values outside transaction");
-
-            var tableHandle = _realm._tableHandles[GetType()];
-            var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
-            var rowIndex = _rowHandle.RowIndex;
-//TODO FINISH IMPLEMENTING
+            throw new NotImplementedException ("Setting a relationship list is not yet implemented");
         }
 
 
