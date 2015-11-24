@@ -1,0 +1,542 @@
+---
+layout: docs
+tagline: "C# Docs"
+---
+
+<div class="col-md-8">
+<div class="docs-wrapper">
+
+# Realm {% binding_name %} <span class="version">{% render_version %}</span>
+
+Realm {% binding_name %} enables you to efficiently write your app's model layer
+in a safe, persisted and fast way. Here's what it looks like:
+
+
+```c#
+// Define your models like regular C# classes
+public class Dog : RealmObject {
+    public string Name { get; set; }
+    public int Age { get; set; }
+    public Owner Owner { get; set; }
+}
+
+public class Person : RealmObject {
+    public string Name { get; set; }
+    public RealmList<Dog> Dogs { get; set; } 
+}
+
+
+// Persist your data easily
+  Realm realm = Realm.GetInstance();
+  using (var trans = realm.BeginWrite()) {
+    var mydog = realm.CreateObject<Dog> ();
+    mydog.name = "Rex";
+    trans.Commit();
+  }
+
+// Query it with standard LINQ, either syntax
+  var r = realm.All<Dog>().Where( d => d.age > 8);
+  var r2 = from d in realm.All<Dog>() where  d.age > 8 select d;
+```
+
+
+## Getting Started
+
+
+### Installing with NuGet
+
+# Installing the NuGet packages
+
+Realm for Xamarin consists of two NuGet packages: RealmNet and RealmNetWeaver.
+The RealmNet package contains the fundamentals for Realm whereas the RealmNetWeaver 
+package contains a [Fody](https://github.com/Fody/Fody) weaver, 
+responsible for turning your RealmObject subclasses into persisted ones.
+
+For the private beta, you should have received these packages as raw .nupkg files.
+After the beta period, the packages will be available in the official NuGet package
+repository.
+
+## Xamarin Studio on OSX
+
+In order to add these to your project, you need to let Xamarin Studio use a folder 
+as a NuGet repository. You do this in the menu Xamarin Studio -> Preferences -> NuGet/Sources. 
+Click the Add button, type a name like "Local", and set the URL to point to your folder. 
+If, say, your OSX username is John and you created a RealmNet folder on your desktop,
+this would be "/Users/John/Desktop/". Username and Password should be left blank.
+
+Now, you should be able to add Realm to an iOS project. Click Add Package on your project, 
+select your Local (or whatever you named it before) repository in the dropdown in the 
+upper left corner, you should be see both packages. 
+*It's important that you add RealmNetWeaver first and then RealmNet*. Dependencies don't seem to 
+work in local package repositories. 
+Select RealmNetWeaver first add it and close the dialog. Open it again and add RealmNet.
+
+At this point, you should have the two packages installed. If your project was already using 
+Fody you were asked if you wanted to replace FodyWeavers.xml or not.
+Whether you did this or not, the important thing is that you end up with a FodyWeavers.xml file 
+that contains all the weavers you want active, including RealmNetWeaver.
+
+This is an example of how your FodyWeavers.xml file would look if you were using the 
+[PropertyChanged weaver](https://www.nuget.org/packages/PropertyChanged.Fody/) and Realm:
+
+    <?xml version="1.0" encoding="utf-8" ?>
+    <Weavers>
+      <PropertyChanged />
+      <RealmNetWeaver />
+    </Weavers>
+
+
+### Prerequisites
+* Apps using Realm can target: 
+	* **Apple via Xamarin:** iOS 7 or later, OS X 10.9 or later & WatchKit. 
+	* **Android via Xamarin:** Android version ?????? or later
+
+### tvOS ###
+Although tvOS is in beta, we're currently evaluating what Realm would look like
+on the platform. Whilst Xamarin have []early support](https://developer.xamarin.com/guides/ios/tvos/) we will not be adding C# bindings for tvOS until after the Cocoa bindings have shipped.
+
+### Realm Browser
+We also provide a [standalone Mac app named Realm Browser](https://itunes.apple.com/app/realm-browser/id1007457278) to read and edit .realm databases.
+
+<img class="img-responsive img-rounded" src="/assets/docs/browser.png" alt="Realm Browser" />
+
+You can generate a test database with sample data using the menu item **Tools > Generate demo database**.
+
+If you need help finding your app’s Realm file, check this [StackOverflow answer](http://stackoverflow.com/a/28465803/3838010) for detailed instructions.
+
+The Realm Browser is [available on the Mac App Store](https://itunes.apple.com/app/realm-browser/id1007457278).
+
+### API Reference
+
+**TBD link to be added after generating a C# reference**
+
+**TBD also add some comments on how/if our code comments support Intellisense**
+
+### Examples
+
+**TBD prefer a sub-index of examples rather than just referring to the zip**
+
+## Getting Help
+
+**TBD add help instructions for now which are non-public**
+
+## Models
+
+Realm data models are defined using traditional C# classes with properties.
+Simply subclass {{ RealmObject }}  to create your Realm data model objects.
+Realm model objects mostly function like any other C# objects - you can add your own methods and events to them and use them like you would any other object.
+The main restrictions are that you can only use an object on the thread which it was created, and you use custom getters and setters for any persisted properties.
+
+Relationships and nested data structures are modeled simply by including properties of the target type or `RealmList` for typed lists of objects.
+
+````c#
+public class Person;
+
+// Dog model
+public class Dog : RealmObject {
+    public string Name { get; set; }
+    public int Age { get; set; }
+    public Owner Owner { get; set; }
+}
+
+public class Person : RealmObject {
+    public string Name { get; set; }
+    public RealmList<Dog> Dogs { get; set; } 
+}
+````
+
+### Controlling property persistence ###
+
+Classes which descend from `RealmObject` are processed by the [Fody weaver](https://github.com/Fody/Fody) at compilation time. All their properties that have automatic setters and getters are presumed to be persistent and have setters and getters generated to map them to the internal Realm storage. 
+
+We also provide some C# [attributes](https://msdn.microsoft.com/en-us/library/z0w1kczw.aspx) to add metadata to control persistence.
+
+To avoid a property being made persistent, simply add the `[Ignored]` attribute.
+
+To have a property remapped so you can apply a custom setter, use the `[MapTo]` attribute :
+
+```c#
+        [MapTo("Email")]
+        private string Email_ { get; set; }
+        
+        // Wrapped version of previous property
+        [Ignore]
+        public string Email
+        {
+            get { return Email_; }
+            set
+            {
+                if (!value.Contains("@")) throw new Exception("Invalid email address");
+                Email_ = value;
+            }
+        }
+```
+
+
+
+
+### Supported Types
+Realm supports the following property types:  `bool`, `integer`, `float`, `double`, `string`, [DateTimeOffset](https://msdn.microsoft.com/en-us/library/bb384267.aspx), **TBD** something like `NSData`, 
+
+
+You can use `RealmList<myRealmObject>` and `RealmObject` subclasses to model
+relationships such as to-many and to-one.
+
+**TBD say something about optional properties here?**
+
+
+### Relationships
+
+{{ RealmObject }}s can be linked to each other by using {{ RealmObject }} and {{ RealmList }} properties.
+
+{{ RealmList }}s implement the standard .Net `IList` generic interface.
+
+_Andy note - I don't like the way the Cocoa docs describe it here because the Dog class has already been described in the Model section._
+
+<span id="to-one"></span>
+
+#### To-One Relationships
+
+For many-to-one or one-to-one relationships, simply declare a property with the type of your {{ RealmObject }} subclass.
+
+```c#
+public class Dog : RealmObject {
+// ... other property declarations
+    public Owner Owner;
+}
+
+public class Owner : RealmObject{}
+```
+
+You can use this property like you would any other:
+
+```c#
+var jim = realm.CreateObject<Owner> ()
+var rex = realm.CreateObject<Dog> ();
+rex.name = "Rex";
+rex.owner = jim;
+```
+
+To break the relationship, simply assign null:
+
+```c#
+rex.owner = null;
+```
+
+When using {{ RealmObject }} properties, you can access nested properties using normal property syntax. For example `rex.owner.address.country` will traverse the object graph and automatically fetch each object from Realm as needed.
+
+<span id="to-many"></span>
+
+#### To-Many Relationships
+
+You can define a to-many relationship using {{ RealmList }} properties. {{ RealmList }}s contain other {{ RealmObject }}s of a single type and conform to `IList`.
+
+To add a “dogs” property on our Person model that links to multiple dogs, we simply declare it as a `RealmList<Dog>` property.
+
+````c#
+public class Dog;
+
+public class Person : RealmObject {
+// ... other property declarations
+    public RealmList<Dog> Dogs { get; set; } 
+}
+````
+
+You can access and assign {{ RealmList }} properties as usual:
+
+**TBD allow syntax to assign multiple dogs**
+
+````c#
+// Jim is owner of Rex and all dogs named "Fido"
+var someDogs = realm.All<Dog>().Where( d => d.name contains "Fido");
+jim.Dogs.Add(someDogs);  // not yet implemented
+jim.Dogs Add(rex);
+````
+
+**TBD work out equivalent of assigning nil to the RLMArray to empty it out**
+
+#### Inverse Relationships
+
+With inverse relationships (also known as backlinks), you can obtain all objects linking to a given object through a specific property. 
+
+**TBD work out syntax for this that makes C# sense**
+
+### Optional Properties
+
+Realm stores primitives such as `int` directly, without [Boxing](https://msdn.microsoft.com/en-us/library/yz2be5wk.aspx) them as objects.
+
+**TBD work out syntax for this that makes C# sense - do we have nulls?**
+
+_Andy note: there's a long section for these in Cocoa with the assumption that you have to override requiredProperties to force properties to be required. The Cocoa docs (and binding?) also don't mention how nullable column work_
+
+### Indexed Properties
+
+Currently only strings and integers can be indexed.
+
+Indexing a property will greatly speed up queries where the property is compared for equality (i.e. the `=` and `IN` operators), at the cost of slower insertions.
+
+To index a property, simply add the `[Indexed]` attribute to the property declaration, e.g.:
+
+````c#
+public class Person : RealmObject {
+    [Indexed]
+    public string Name { get; set; }
+    public RealmList<Dog> Dogs { get; set; } 
+}
+````
+
+### Default Property Values
+
+**TBD we have an outstanding issue to fix this as our weaver kills them**
+
+### Identifier attributes
+
+A single `[Identifier]` attribute can be specified on **one** property to set the model's identifier. Declaring an identifier allows objects to be
+looked up and updated efficiently and enforces uniqueness for each value.
+Once an object with an identifier is added to a Realm, the identifier cannot be changed.
+
+If you come from a traditional database background, you can think of the Identifier as being very similar to a SQL _Primary key._
+
+From an object modelling perspective, the Identifier is like a persistent pointer to an object. You can use the Identifier to quickly lookup the object to get a reference to it in a different thread.
+
+Note that putting the `[Identifier]` attribute on multiple properties is undefined behaviour  and may cause runtime errors or just use one of the attributed properties.
+
+````c#
+public class Person : RealmObject {
+    [Identifier]
+    public string SSN { get; set; }
+    [Indexed]
+    public string Name { get; set; }
+    public RealmList<Dog> Dogs { get; set; } 
+}
+````
+
+
+### Ignored Properties
+
+Use the `[Ignored]` attribute to make a property be left alone and just treated as a standard C# property.
+
+If you define a setter or getter function on the property then it is automatically ignored (future feature not included in the beta)
+
+## Writes
+
+<div class="alert alert-warning">
+All changes to an object (addition, modification and deletion) must be done within a write transaction.
+</div>
+
+To share objects between threads or re-use them between app launches you must persist them to a Realm, an operation which must be done within a write transaction.
+
+Since write transactions incur non-negligible overhead, you should architect
+your code to minimize the number of write transactions.
+
+
+Because write transactions could potentially fail like any other disk IO
+operations, you should be prepared to handle exceptions from writes **TBD decide if document exceptions here**  so you can handle and recover from failures
+like running out of disk space. There are no other recoverable errors. For
+brevity, our code samples don't handle these errors but you certainly should in
+your production applications.
+
+### Creating Objects
+
+When you have defined a model you can instantiate your {{ RealmObject }} subclass
+and add the new instance to the Realm. Consider this simple model:
+
+```c#
+// Define your models like regular C# classes
+public class Dog : RealmObject {
+    public string name { get; set; }
+    public int age { get; set; }
+}
+```
+
+We can create new objects in several ways:
+
+```c#
+// (1) Create a Dog object with a generic call then set its properties
+var mydog = realm.CreateObject<Dog> ();
+mydog.name = "Rex";
+myDog.age = 10;
+
+// (2) Create a Dog object and then set its properties (future syntax)
+var mydog = new Dog();
+mydog.name = "Rex";
+myDog.age = 10;
+
+// (3) Create a Dog object and init in one go (future syntax)
+var mydog = new Dog() { name = "Rex", age = 10 };
+```
+
+### Adding Objects
+
+You can add an object to a Realm like so:
+
+```c#
+// Define your models like regular C# classes
+public class Dog : RealmObject {
+    public string name { get; set; }
+    public int age { get; set; }
+    public Owner owner { get; set; }
+}
+
+public class Person : RealmObject {
+    public string Name { get; set; }
+    public RealmList<Dog> Dogs { get; set; } 
+}
+
+// Persist your data easily
+  Realm realm = Realm.GetInstance();
+  using (var trans = realm.BeginWrite()) {
+    var mydog = realm.CreateObject<Dog> ();
+    mydog.name = "Rex";
+    trans.Commit();
+  }
+
+// Query it with standard LINQ, either syntax
+  var r = realm.All<Dog>().Where( d => d.age > 8);
+  var r2 = from d in realm.All<Dog>() where  d.age > 8 select d;
+```
+
+After you have added the object to the Realm you can continue using it, and all changes you make to it will be persisted (and must be made within a write transaction). Any changes are made available to other threads that use the same Realm when the write transaction is committed.
+
+Please note that writes block each other, and will block the thread they are made on if multiple writes are in progress.
+This is similar to other persistence solutions and we recommend that you use the usual best-practices for this situation, namely offloading your writes to a [separate thread](#background-operations).
+
+Due to Realm’s MVCC architecture, reads are _not_ blocked while a write transaction is open. Unless you need to make simultaneous writes from many threads at once, you should favor larger write transactions that do more work over many fine-grained write transactions.
+
+**TBD add link to API page for more details, like**
+See [RLMRealm](api/Classes/RLMRealm.html#) and [RLMObject](api/Classes/RLMObject.html#) for more details. 
+
+### Updating Objects
+
+Realm a few ways to update objects, all of which offer different tradeoffs
+depending on the situation. Choose which one is best for your situation (currently the C# implementation only supports directly setting properties):
+
+#### Typed Updates
+
+You can update any object by setting its properties within a write transaction.
+
+```c#
+// Update an object with a transaction
+using (var trans = realm.BeginWrite()) {
+  author.Name = "Thomas Pynchon";
+  trans.Commit();
+}
+```
+
+
+### Deleting Objects
+
+Pass the object to be deleted to the `Realm Remove` method within a write transaction.
+
+```c#
+Book cheeseBook = ... // Book stored in Realm
+
+// Delete an object with a transaction
+using (var trans = realm.BeginWrite()) {
+  realm.Remove(cheeseBook);
+  trans.Commit();
+}
+```
+
+You can also delete all objects stored in a Realm. Note the Realm file will maintain its size on disk to efficiently reuse that space for future objects.
+
+**TBD syntax for deleting all**
+
+## Queries
+
+Queries are based on the standard LINQ syntax.
+
+You get a basic, typed collection of all objects of a given type using the `All` method
+
+### _Fluent_ or Extension Syntax ###
+
+```c#
+  var oldDogs = realm.All<Dog>().Where( d => d.age > 8);
+```
+
+### Query Expression Syntax ###
+
+```c#
+  var oldDogs = from d in realm.All<Dog>() where  d.age > 8 select d;
+```
+
+Regardless of which syntax you use, the resulting `RealmQuery` collection conforms to the [IQueryable interface](https://msdn.microsoft.com/en-us/library/system.linq.iqueryable.aspx) so you can further iterate or process it:
+
+```c#
+  foreach (var d in oldDogs) {
+    Debug.WriteLine(d.Name);
+  }
+```
+
+
+## Current Limitations
+
+Realm is currently in beta and we are continuously adding features and fixing issues while working towards a 1.0 release. Until then, we've compiled a list of our most commonly hit limitations.
+
+Please refer to our **TBD beta repo?** [GitHub issues](https://github.com/realm/realm-dotnet/issues) for a more comprehensive list of known issues. 
+
+
+#### General Limits
+
+Realm aims to strike a balance between flexibility and performance. In order to accomplish this goal, realistic limits are imposed on various aspects of storing information in a realm. For example:
+
+1. Class names must be between 0 and 63 bytes in length. UTF8 characters are supported. An exception will be thrown at your app's initialization if this limit is exceeded.
+2. Property names must be between 0 and 63 bytes in length. UTF8 characters are supported. An exception will be thrown at your app's initialization if this limit is exceeded.
+3. **TBD binary data** properties cannot hold data exceeding 16MB in size. To store larger amounts of data, either break it up into 16MB chunks or store it directly on the file system, storing paths to these files in the realm. An exception will be thrown at runtime if your app attempts to store more than 16MB in a single property.
+4. `DateTimeOffset` properties are stored truncated to seconds precision so they are compatible with `NSDate` and Java dates.
+5. IOS Limitation: The total size of all open Realm files cannot be larger than the amount of memory your application would be allowed to map in iOS — this changes per device, and depends on how fragmented the memory space is at that point in time (there is a radar open about this issue: rdar://17119975). If you need to store more data, you can split into multiple Realm files and open and close them as needed.
+
+### Preview Limitations
+Features missing from this preview version which are expected to be added prior to release:
+
+* API reference
+* Binary Data fields (e.g.: for storing pictures)
+* Assigning list values to RealmList fields to add multiple relationships in one go
+* Indexing
+* Updating Objects by their Identifier
+* Null values for primitive types such as int, bool, float and double
+* Default values - the standard way of defining them is not compatible with the weaving
+* Delete all objects
+* More LINQ operations
+* Searching by related data
+* cascading deletes
+* optional properties - are not currently part of C# but we will be adding a way to annotate a property, probably with an attribute, to indicate it is optional
+
+## FAQ
+
+#### How big is the Realm library?
+
+Once your app is built for release, Realm should only add around **TBD measure on different platforms and confirm if we include bitcode** XXX to its size. The releases we distribute are significantly larger because iOS releases include support for the iOS and watchOS simulators, some debug symbols, and bitcode, which are all stripped by Xcode automatically when you build your app. **TBD Android releases include ???? platforms**
+
+#### Should I use Realm in production applications?
+
+Realm has been used in production in commercial products since 2012.
+
+You should expect our C# APIs to change as we evolve the product from community feedback — and you should expect more features & bugfixes to come along as well.
+
+#### Do I have to pay to use Realm?
+
+No, Realm is entirely free to use, even in commercial projects.
+
+#### How do you guys plan on making money?
+
+We’re actually already generating revenue selling enterprise products and services around our technology.
+If you need more than what is currently in our releases or in [realm-cocoa](http://github.com/realm/realm-cocoa), we’re always happy to chat [by email](mailto:info@realm.io).
+Otherwise, we are committed to developing [realm-cocoa](http://github.com/realm/realm-cocoa) in the open, and to keep it free and open-source under the Apache 2.0 license.
+
+#### I see references to a "core" in the code, what is that?
+
+The core is referring to our internal C++ storage engine. It is not currently open-source but we do plan on open-sourcing it also under the Apache 2.0 license once we’ve had a chance to clean it, rename it, and finalize major features inside of it. In the meantime, its binary releases are made available under the Realm Core (TightDB) Binary [License](https://github.com/realm/realm-cocoa/blob/master/LICENSE).
+
+
+</div><!--/docs-wrapper -->
+</div><!--/col-->
+
+<div class="col-md-3 col-md-offset-1">
+<div class="navbar-docs visible-md visible-lg" data-spy="affix" data-offset-top="180">
+
+* toc
+{:toc .nav .nav-pills .nav-stacked}
+
+</div>
+</div>
