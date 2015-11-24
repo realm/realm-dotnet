@@ -76,6 +76,9 @@ namespace realm {
         catch (const InvalidDatabase& e) {
             throw_exception(RealmErrorType::RealmInvalidDatabase, e.what());
         }
+        catch (const IndexOutOfRangeException& e) {
+            throw_exception(RealmErrorType::StdIndexOutOfRange, e.what());
+        }
         catch (const std::bad_alloc& e) {
             throw_exception(RealmErrorType::RealmOutOfMemory, e.what());
         }

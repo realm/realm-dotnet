@@ -50,5 +50,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmOutOfMemoryException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transaction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TransactionState.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)native\NativeLinkList.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)handles\LinkListHandle.cs" />
   </ItemGroup>
 </Project>

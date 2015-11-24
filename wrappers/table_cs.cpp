@@ -7,9 +7,13 @@
 #include "error_handling.hpp"
 #include "marshalling.hpp"
 #include "realm_export_decls.hpp"
+#include "shared_linklist.hpp"
+
+#include <memory>
 
 using namespace realm;
 using namespace realm::binding;
+
 
 extern "C" {
 
@@ -35,6 +39,26 @@ REALM_EXPORT Row* table_add_empty_row(Table* table_ptr)
         return new Row((*table_ptr)[row_ndx]);
     });
 }
+
+REALM_EXPORT Row* table_get_link(Table* table_ptr, size_t column_ndx, size_t row_ndx)
+{
+  return handle_errors([&]() -> Row* {
+    const size_t link_row_ndx = table_ptr->get_link(column_ndx, row_ndx);
+    if (link_row_ndx == realm::npos)
+      return nullptr;
+    auto target_table_ptr = table_ptr->get_link_target(column_ndx);
+    return new Row((*target_table_ptr)[link_row_ndx]);
+  });
+}
+
+REALM_EXPORT SharedLinkViewRef* table_get_linklist(Table* table_ptr, size_t column_ndx, size_t row_ndx)
+{
+  return handle_errors([&]() -> SharedLinkViewRef* {
+    SharedLinkViewRef sr = std::make_shared<LinkViewRef>(table_ptr->get_linklist(column_ndx, row_ndx));
+    return new SharedLinkViewRef{ sr };  // weird double-layering necessary to get a raw pointer to a shared_ptr
+  });
+}
+
 
 REALM_EXPORT size_t table_get_bool(const Table* table_ptr, size_t column_ndx, size_t row_ndx)
 {
@@ -77,6 +101,20 @@ REALM_EXPORT int64_t table_get_datetime_seconds(const Table* table_ptr, size_t c
 	return handle_errors([&]() {
 		return table_ptr->get_datetime(column_ndx, row_ndx).get_datetime();
 	});
+}
+
+REALM_EXPORT void table_set_link(Table* table_ptr, size_t column_ndx, size_t row_ndx, size_t target_row_ndx)
+{
+    return handle_errors([&]() {
+        table_ptr->set_link(column_ndx, row_ndx, target_row_ndx);
+    });
+}
+
+REALM_EXPORT void table_clear_link(Table* table_ptr, size_t column_ndx, size_t row_ndx)
+{
+    return handle_errors([&]() {
+        table_ptr->nullify_link(column_ndx, row_ndx);
+    });
 }
 
 REALM_EXPORT void table_set_bool(Table* table_ptr, size_t column_ndx, size_t row_ndx, size_t value)
