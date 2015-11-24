@@ -69,17 +69,6 @@ namespace RealmNet
         {
             _parent = parent;
             _listHandle = adoptedList;
-
-            if (!parent.GetType ().GetCustomAttributes (typeof(WovenAttribute), true).Any ())
-            {
-                var modelName = parent.GetType ().Name;
-                Debug.WriteLine ("WARNING! The parent type " + modelName + " is a RealmObject but it has not been woven.");
-            }
-            // suppressing the following warning as it is apparently ALWAYS triggered - the type bound here is NOT the woven object
-            /*
-            if (!typeof(T).GetType().GetCustomAttributes(typeof(WovenAttribute), true).Any())
-                Debug.WriteLine("WARNING! The list contains a type " + typeof(T).Name + " which is a RealmObject but it has not been woven.");
-            */
         }
 
         #region implementing IList properties
