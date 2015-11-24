@@ -27,7 +27,7 @@ public class Person : RealmObject {
 
 
 // Persist your data easily
-  Realm realm = Realm.GetInstance(Path.GetTempFileName());
+  Realm realm = Realm.GetInstance();
   using (var trans = realm.BeginWrite()) {
     var mydog = realm.CreateObject<Dog> ();
     mydog.name = "Rex";
@@ -39,41 +39,6 @@ public class Person : RealmObject {
   var r2 = from d in realm.All<Dog>() where  d.age > 8 select d;
 ```
 
-
-### Future Syntax ###
-
-
-```c#
-// Define your models like regular C# classes
-public class Dog : RealmObject {
-    public string Name { get; set; }
-    public int Age { get; set; }
-    public Owner Owner { get; set; }
-}
-
-public class Person : RealmObject {
-    public string Name { get; set; }
-    public RealmList<Dog> Dogs { get; set; } 
-}
-
-// Use them like regular C# objects
-Dog mydog = new Dog();
-mydog.name = "Rex";
-Debug.WriteLine(Name of dog: $"{mydog.name}");
-
-// Persist your data easily
-  Realm realm = Realm.GetInstance(Path.GetTempFileName());
-  using (var trans = realm.BeginWrite()) {
-      realm.addObject(mydog);
-      trans.Commit();
-  }
-
-// Query it with standard LINQ, either syntax
-  var r = realm.All<Dog>().Where( d => d.age > 8);
-  var r2 = from d in realm.All<Dog>() where  d.age > 8 select d;
-```
-
-Note that we follow the case conventions of typical C# code so you see public properties using CamelCase, which is different to some of the other samples you may have seen in other binding documentation.
 
 ## Getting Started
 
@@ -124,10 +89,7 @@ This is an example of how your FodyWeavers.xml file would look if you were using
 ### Prerequisites
 * Apps using Realm can target: 
 	* **Apple via Xamarin:** iOS 7 or later, OS X 10.9 or later & WatchKit. 
-	* **Apple via Unity:** iOS 7 or later, OS X 10.9 or later. 
 	* **Android via Xamarin:** Android version ?????? or later
-	* **Android via Unity:** Android version ?????? or later
-	* **Windows:**  Windows Phone 8 or later, Windows Desktop 8 or later. Visual Studio 2013 or later. 
 
 ### tvOS ###
 Although tvOS is in beta, we're currently evaluating what Realm would look like
@@ -161,7 +123,7 @@ The Realm Browser is [available on the Mac App Store](https://itunes.apple.com/a
 ## Models
 
 Realm data models are defined using traditional C# classes with properties.
-Simply subclass {{ RealmObject }} or an existing model class to create your Realm data model objects.
+Simply subclass {{ RealmObject }}  to create your Realm data model objects.
 Realm model objects mostly function like any other C# objects - you can add your own methods and events to them and use them like you would any other object.
 The main restrictions are that you can only use an object on the thread which it was created, and you use custom getters and setters for any persisted properties.
 
@@ -185,7 +147,7 @@ public class Person : RealmObject {
 
 ### Controlling property persistence ###
 
-Classes which descend from `RealmObject` are processed by the [Fody weaver](https://github.com/Fody/Fody) at compilation time. All their properties that have automatic setters or getters are presumed to be persistent and have setters and getters generated to map them to the internal Realm storage. 
+Classes which descend from `RealmObject` are processed by the [Fody weaver](https://github.com/Fody/Fody) at compilation time. All their properties that have automatic setters and getters are presumed to be persistent and have setters and getters generated to map them to the internal Realm storage. 
 
 We also provide some C# [attributes](https://msdn.microsoft.com/en-us/library/z0w1kczw.aspx) to add metadata to control persistence.
 
@@ -235,7 +197,7 @@ _Andy note - I don't like the way the Cocoa docs describe it here because the Do
 
 #### To-One Relationships
 
-For many-to-one or one-to-one relationships, simply declare a property with the type of your {{ RealmObject }} subclass. In C#, you don't need to make forward declarations of classes before using them for property declarations.
+For many-to-one or one-to-one relationships, simply declare a property with the type of your {{ RealmObject }} subclass.
 
 ```c#
 public class Dog : RealmObject {
@@ -362,7 +324,6 @@ If you define a setter or getter function on the property then it is automatical
 All changes to an object (addition, modification and deletion) must be done within a write transaction.
 </div>
 
-Realm objects can be instantiated and used as standalone just like regular C# objects.
 To share objects between threads or re-use them between app launches you must persist them to a Realm, an operation which must be done within a write transaction.
 
 Since write transactions incur non-negligible overhead, you should architect
@@ -423,7 +384,7 @@ public class Person : RealmObject {
 }
 
 // Persist your data easily
-  Realm realm = Realm.GetInstance(Path.GetTempFileName());
+  Realm realm = Realm.GetInstance();
   using (var trans = realm.BeginWrite()) {
     var mydog = realm.CreateObject<Dog> ();
     mydog.name = "Rex";
@@ -454,7 +415,6 @@ depending on the situation. Choose which one is best for your situation (current
 
 You can update any object by setting its properties within a write transaction.
 
-{% objc %}
 ```c#
 // Update an object with a transaction
 using (var trans = realm.BeginWrite()) {
@@ -552,7 +512,7 @@ Once your app is built for release, Realm should only add around **TBD measure o
 
 Realm has been used in production in commercial products since 2012.
 
-You should expect our Objective-C & Swift APIs to change as we evolve the product from community feedback — and you should expect more features & bugfixes to come along as well.
+You should expect our C# APIs to change as we evolve the product from community feedback — and you should expect more features & bugfixes to come along as well.
 
 #### Do I have to pay to use Realm?
 
@@ -568,9 +528,6 @@ Otherwise, we are committed to developing [realm-cocoa](http://github.com/realm/
 
 The core is referring to our internal C++ storage engine. It is not currently open-source but we do plan on open-sourcing it also under the Apache 2.0 license once we’ve had a chance to clean it, rename it, and finalize major features inside of it. In the meantime, its binary releases are made available under the Realm Core (TightDB) Binary [License](https://github.com/realm/realm-cocoa/blob/master/LICENSE).
 
-#### I see a network call to Mixpanel when I run my app, what is that?
-
-Realm collects anonymous analytics when your app is run with a debugger attached, or when it runs in a simulator. This is completely anonymous and helps us improve the product by flagging which versions of Realm, iOS, OS X, or which language you target and which versions we can deprecate support for. **This call does not run when your app is in production, or running on your user’s devices** — only from inside your simulator or when a debugger is attached. You can see exactly how & what we collect, as well as the rationale for it in our [source code](https://github.com/realm/realm-cocoa/blob/master/Realm/RLMAnalytics.mm).
 
 </div><!--/docs-wrapper -->
 </div><!--/col-->
