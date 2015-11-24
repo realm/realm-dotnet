@@ -24,7 +24,16 @@ namespace RealmNet
             }
 
 
-            public object Current
+            public T Current
+            {
+                get
+                {
+                    return enumerating[index];
+                }
+            }
+
+            // also needed - https://msdn.microsoft.com/en-us/library/s793z9y2.aspx
+            object IEnumerator.Current
             {
                 get
                 {
@@ -143,7 +152,7 @@ namespace RealmNet
 
         public IEnumerator<T> GetEnumerator()
         {
-            return (IEnumerator<T>)new RealmListEnumerator<T>(this);
+            return (IEnumerator<T>)new RealmListEnumerator(this);
         }
 
 
@@ -179,7 +188,7 @@ namespace RealmNet
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return new RealmListEnumerator<T>(this);
+            return new RealmListEnumerator(this);
         }
 
         #endregion

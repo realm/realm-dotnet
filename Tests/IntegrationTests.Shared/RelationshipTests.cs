@@ -109,6 +109,19 @@ namespace Tests
 
 
         [Test]
+        public void TimHasTwoIterableDogs()
+        {
+            var tim = realm.All<Owner>().Where( p => p.Name == "Tim").ToList().First();
+            var dogNames = new List<string>();
+            foreach (var dog in tim.Dogs)
+            {
+                dogNames.Add(dog.Name);
+            }
+            Assert.That(dogNames, Is.EquivalentTo( new List<String> {"Bilbo Fleabaggins", "Earl Yippington III"}));
+        }
+
+
+        [Test]
         public void TimRetiredHisTopDog()
         {
             var tim = realm.All<Owner>().Where( p => p.Name == "Tim").ToList().First();

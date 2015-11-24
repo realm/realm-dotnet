@@ -939,7 +939,7 @@ Added tests
   TimAddsADogLater 
   TimAddsADogByInsert
   TimLosesHisDogsInOneClear
-  
+  TimHasTwoIterableDogs
 
 RealmList.cs
 - const ITEM_NOT_FOUND added
