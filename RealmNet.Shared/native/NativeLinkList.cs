@@ -13,6 +13,18 @@ namespace RealmNet
             CallingConvention = CallingConvention.Cdecl)]
         public static extern void add(LinkListHandle linklistHandle, IntPtr row_ndx);
 
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "linklist_erase",
+            CallingConvention = CallingConvention.Cdecl)]
+        public static extern void erase(LinkListHandle linklistHandle, IntPtr row_ndx);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "linklist_get",
+            CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr get(LinkListHandle linklistHandle, IntPtr link_ndx);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "linklist_find",
+            CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr find(LinkListHandle linklistHandle, IntPtr link_ndx, IntPtr start_from);
+
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "linklist_size",
             CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr size(LinkListHandle linklistHandle);

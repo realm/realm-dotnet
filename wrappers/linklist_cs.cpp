@@ -15,10 +15,32 @@ extern "C" {
 
 REALM_EXPORT void linklist_add(SharedLinkViewRef* linklist_ptr, size_t row_ndx)
 {
-    handle_errors([&]() {
-        (**linklist_ptr)->add(row_ndx);
-    });
+  handle_errors([&]() {
+    (**linklist_ptr)->add(row_ndx);
+  });
 }
+
+REALM_EXPORT Row* linklist_get(SharedLinkViewRef* linklist_ptr, size_t link_ndx)
+{
+  return handle_errors([&]() -> Row* {
+    auto rowExpr = (**linklist_ptr)->get(link_ndx);
+    return new Row(rowExpr);
+  });
+}
+
+REALM_EXPORT size_t linklist_find(SharedLinkViewRef* linklist_ptr, size_t row_ndx, size_t start_from)
+{
+  return handle_errors([&]() {
+    return (**linklist_ptr)->find(row_ndx, start_from);
+  });
+}
+
+  REALM_EXPORT void linklist_erase(SharedLinkViewRef* linklist_ptr, size_t link_ndx)
+  {
+    handle_errors([&]() {
+      _impl::LinkListFriend::do_remove(***linklist_ptr,  link_ndx);
+    });
+  }
 
 
 REALM_EXPORT size_t linklist_size(SharedLinkViewRef* linklist_ptr)

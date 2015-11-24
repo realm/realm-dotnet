@@ -139,6 +139,18 @@ namespace RealmNet
         }
 
 
+        /**
+         * Shared factory to make an object in the realm from a known row
+        */ 
+        internal RealmObject MakeRealmObject(System.Type objectType, IntPtr rowPtr) {
+            if (rowPtr == (IntPtr)0)
+                return null;
+            RealmObject ret = (RealmObject)Activator.CreateInstance(objectType);
+            var relatedHandle = Realm.CreateRowHandle (rowPtr);
+            ret._Manage(_realm, relatedHandle);
+            return ret;
+        }
+
         protected T GetObjectValue<T>(string propertyName) where T : RealmObject
         {
             if (_realm == null)
@@ -148,12 +160,7 @@ namespace RealmNet
             var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
             var rowIndex = _rowHandle.RowIndex;
             var linkedRowPtr = NativeTable.get_link (tableHandle, columnIndex, (IntPtr)rowIndex);
-            if (linkedRowPtr == (IntPtr)0)
-                return null;
-            var o = Activator.CreateInstance(typeof(T));
-            var relatedHandle = Realm.CreateRowHandle (linkedRowPtr);
-            ((RealmObject)o)._Manage(_realm, relatedHandle);
-            return (T)o;
+            return (T)MakeRealmObject(typeof(T), linkedRowPtr);
         }
 
         // TODO make not generic

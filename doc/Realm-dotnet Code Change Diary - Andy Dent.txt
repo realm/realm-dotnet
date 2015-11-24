@@ -871,7 +871,8 @@ added decls for
 - get_link
 
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-#110 implementing relationships - finishing lists (toMany relationships)
+#110 implementing relationships - finishing lists 
+(toMany relationships basics and Add)
 
 RealmList.cs
 - made ctor internal instead of public
@@ -924,3 +925,37 @@ RowHandle.cs
 
 wrappers/shared_linklist.hpp
 - added to declare the SharedLinkViewRef
+
+RelationsihpTests.cs
+- TimAcquiresASecondDog added to test Add
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#110 implementing relationships - finishing lists (toMany relationships)
+
+RelationsihpTests.cs
+- TimLosesHisDog added
+
+RealmList.cs
+- const ITEM_NOT_FOUND added
+- implemented previously stubbed methods
+  Contains
+  IndexOf
+  RemoveAt
+  Remove
+
+NativeLinkList.cs
+added declarations for
+  linklist_erase 
+  linklist_get 
+  linklist_find
+
+wrappers/linklist_cs.cpp
+added
+  linklist_erase 
+  linklist_get 
+  linklist_find
+
+RealmObject.cs
+- refactroed out MakeObject from GetObjectValue
+

@@ -12,6 +12,7 @@ namespace RealmNet
 {
     public class RealmListEnumerator<T> : IEnumerator
     {
+
         public object Current
         {
             get
@@ -36,6 +37,8 @@ namespace RealmNet
 
     public class RealmList<T> : IList<T> where T : RealmObject
     {
+        public const int ITEM_NOT_FOUND = -1;
+
         private RealmObject _parent;  // we only make sense within an owning object
         private LinkListHandle _listHandle;
 
@@ -61,8 +64,8 @@ namespace RealmNet
         {
             get
             {
-                return null;  // TODO return real object
-                //throw new NotImplementedException();
+                var linkedRowPtr = NativeLinkList.get (_listHandle, (IntPtr)index);
+                return (T)_parent.MakeRealmObject(typeof(T), linkedRowPtr);
             }
 
             set
@@ -91,9 +94,7 @@ namespace RealmNet
 
         public void Add(T item)
         {
-            var ro = item as RealmObject;
-            Debug.Assert (ro != null, "can't have instantiated collection without being Realm objects");
-            var rowIndex = ro.RowHandle.RowIndex;
+            var rowIndex = ((RealmObject)item).RowHandle.RowIndex;
             NativeLinkList.add(_listHandle, (IntPtr)rowIndex);        
         }
 
@@ -105,8 +106,7 @@ namespace RealmNet
 
         public bool Contains(T item)
         {
-            return false;  // TODO return real object
-            //throw new NotImplementedException();
+            return IndexOf(item) != ITEM_NOT_FOUND;
         }
 
         public void CopyTo(T[] array, int arrayIndex)
@@ -122,8 +122,8 @@ namespace RealmNet
 
         public int IndexOf(T item)
         {
-            return 0;  // TODO return real object index
-            //throw new NotImplementedException();
+            var rowIndex = ((RealmObject)item).RowHandle.RowIndex;
+            return (int)NativeLinkList.find(_listHandle, (IntPtr)rowIndex, (IntPtr)0);        
         }
 
         public void Insert(int index, T item)
@@ -134,12 +134,16 @@ namespace RealmNet
 
         public bool Remove(T item)
         {
-            throw new NotImplementedException();
+            int index = IndexOf (item);
+            if (index == ITEM_NOT_FOUND)
+                return false;
+            RemoveAt (index);
+            return true;
         }
 
         public void RemoveAt(int index)
         {
-            throw new NotImplementedException();
+            NativeLinkList.erase(_listHandle, (IntPtr)index);        
         }
 
         IEnumerator IEnumerable.GetEnumerator()

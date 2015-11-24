@@ -63,7 +63,7 @@ namespace Tests
                 Dog d2 = realm.CreateObject<Dog> ();
                 d2.Name = "Earl Yippington III";
                 d2.Color = "White";
-                //o1.Dogs.Add (d2);
+                o1.Dogs.Add (d2);
 
                 // lonely people and dogs
                 Owner o2 = realm.CreateObject<Owner> ();
@@ -118,6 +118,54 @@ namespace Tests
             }                
             var tim2 = realm.All<Owner>().Where( p => p.Name == "Tim").ToList().First();
             Assert.That(tim2.TopDog, Is.Null);  // the dog departure was saved
+        }
+
+
+        [Test]
+        public void TimAcquiresAThirdDog()
+        {
+            var tim = realm.All<Owner>().Where( p => p.Name == "Tim").ToList().First();
+            Assert.That(tim.TopDog.Name, Is.EqualTo( "Bilbo Fleabaggins"));
+            Assert.That(tim.Dogs.Count(), Is.EqualTo(2));  
+            using (var trans = realm.BeginWrite()) {
+                var dog3 = realm.All<Dog>().Where( p => p.Name == "Maggie Mongrel").ToList().First();
+                tim.Dogs.Add (dog3);
+                trans.Commit ();
+            }
+            var tim2 = realm.All<Owner>().Where( p => p.Name == "Tim").ToList().First();
+            Assert.That(tim2.Dogs.Count(), Is.EqualTo(3));  
+            Assert.That(tim2.Dogs[2].Name, Is.EqualTo("Maggie Mongrel")); 
+        }
+
+
+        [Test]
+        public void TimLosesHisDogsByOrder()
+        {
+            var tim = realm.All<Owner>().Where( p => p.Name == "Tim").ToList().First();
+            Assert.That(tim.Dogs.Count(), Is.EqualTo(2));  
+            using (var trans = realm.BeginWrite()) {
+                tim.Dogs.RemoveAt(0);
+                trans.Commit ();
+            }                
+            var tim2 = realm.All<Owner>().Where( p => p.Name == "Tim").ToList().First();
+            Assert.That(tim2.Dogs.Count(), Is.EqualTo(1)); 
+            Assert.That(tim2.Dogs[0].Name, Is.EqualTo("Earl Yippington III")); 
+        }
+
+
+        [Test]
+        public void TimLosesBilbo()
+        {
+            var bilbo = realm.All<Dog>().Where( p => p.Name == "Bilbo Fleabaggins").ToList().First();
+            var tim = realm.All<Owner>().Where( p => p.Name == "Tim").ToList().First();
+            Assert.That(tim.Dogs.Count(), Is.EqualTo(2));  
+            using (var trans = realm.BeginWrite()) {
+                tim.Dogs.Remove(bilbo);
+                trans.Commit ();
+            }                
+            var tim2 = realm.All<Owner>().Where( p => p.Name == "Tim").ToList().First();
+            Assert.That(tim2.Dogs.Count(), Is.EqualTo(1)); 
+            Assert.That(tim2.Dogs[0].Name, Is.EqualTo("Earl Yippington III")); 
         }
 
 
