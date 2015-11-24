@@ -934,28 +934,47 @@ RelationsihpTests.cs
 #110 implementing relationships - finishing lists (toMany relationships)
 
 RelationsihpTests.cs
-- TimLosesHisDog added
+Added tests
+  TimLosesHisDogsByOrder
+  TimAddsADogLater 
+  TimAddsADogByInsert
+  TimLosesHisDogsInOneClear
+  
 
 RealmList.cs
 - const ITEM_NOT_FOUND added
+- IsFixedSize added
 - implemented previously stubbed methods
   Contains
+  Clear
   IndexOf
   RemoveAt
   Remove
+  GetEnumerator
+- RealmListEnumerator<T> filled out all methods  
 
 NativeLinkList.cs
 added declarations for
   linklist_erase 
   linklist_get 
   linklist_find
+  linklist_insert
+  linklist_clear
 
 wrappers/linklist_cs.cpp
 added
   linklist_erase 
   linklist_get 
   linklist_find
+  linklist_insert
+  linklist_clear
 
 RealmObject.cs
 - refactroed out MakeObject from GetObjectValue
 
+
+shared_realm.hpp
+- added IndexOutOfRangeException
+
+wrappers/error_handling.cpp
+- added case for IndexOutOfRangeException

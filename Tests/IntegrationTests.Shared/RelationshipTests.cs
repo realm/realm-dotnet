@@ -122,10 +122,9 @@ namespace Tests
 
 
         [Test]
-        public void TimAcquiresAThirdDog()
+        public void TimAddsADogLater()
         {
             var tim = realm.All<Owner>().Where( p => p.Name == "Tim").ToList().First();
-            Assert.That(tim.TopDog.Name, Is.EqualTo( "Bilbo Fleabaggins"));
             Assert.That(tim.Dogs.Count(), Is.EqualTo(2));  
             using (var trans = realm.BeginWrite()) {
                 var dog3 = realm.All<Dog>().Where( p => p.Name == "Maggie Mongrel").ToList().First();
@@ -135,6 +134,23 @@ namespace Tests
             var tim2 = realm.All<Owner>().Where( p => p.Name == "Tim").ToList().First();
             Assert.That(tim2.Dogs.Count(), Is.EqualTo(3));  
             Assert.That(tim2.Dogs[2].Name, Is.EqualTo("Maggie Mongrel")); 
+        }
+
+
+        [Test]
+        public void TimAddsADogByInsert()
+        {
+            var tim = realm.All<Owner>().Where( p => p.Name == "Tim").ToList().First();
+            Assert.That(tim.Dogs.Count(), Is.EqualTo(2));  
+            using (var trans = realm.BeginWrite()) {
+                var dog3 = realm.All<Dog>().Where( p => p.Name == "Maggie Mongrel").ToList().First();
+                tim.Dogs.Insert (1, dog3);
+                trans.Commit ();
+            }
+            var tim2 = realm.All<Owner>().Where( p => p.Name == "Tim").ToList().First();
+            Assert.That(tim2.Dogs.Count(), Is.EqualTo(3));  
+            Assert.That(tim2.Dogs[1].Name, Is.EqualTo("Maggie Mongrel")); 
+            Assert.That(tim2.Dogs[2].Name, Is.EqualTo("Earl Yippington III")); 
         }
 
 
@@ -150,6 +166,27 @@ namespace Tests
             var tim2 = realm.All<Owner>().Where( p => p.Name == "Tim").ToList().First();
             Assert.That(tim2.Dogs.Count(), Is.EqualTo(1)); 
             Assert.That(tim2.Dogs[0].Name, Is.EqualTo("Earl Yippington III")); 
+            using (var trans = realm.BeginWrite()) {
+                tim.Dogs.RemoveAt(0);
+                trans.Commit ();
+            }                
+            var tim3 = realm.All<Owner>().Where( p => p.Name == "Tim").ToList().First();
+            Assert.That(tim2.Dogs.Count(), Is.EqualTo(0)); 
+            Assert.That(tim3.Dogs.Count(), Is.EqualTo(0)); // reloaded object has same empty related set
+        }
+
+
+        [Test]
+        public void TimLosesHisDogsInOneClear()
+        {
+            var tim = realm.All<Owner>().Where( p => p.Name == "Tim").ToList().First();
+            Assert.That(tim.Dogs.Count(), Is.EqualTo(2));  
+            using (var trans = realm.BeginWrite()) {
+                tim.Dogs.Clear();
+                trans.Commit ();
+            }                
+            var tim2 = realm.All<Owner>().Where( p => p.Name == "Tim").ToList().First();
+            Assert.That(tim2.Dogs.Count(), Is.EqualTo(0)); 
         }
 
 
@@ -182,6 +219,38 @@ namespace Tests
         {
             var dani = realm.All<Owner>().Where( p => p.Name == "Dani").ToList().First();
             Assert.That(dani.Dogs.Count(), Is.EqualTo(0));  // ToMany relationships always return a RealmList
+            int dogsIterated = 0; 
+            foreach (var d in dani.Dogs)
+            {
+                dogsIterated++;
+            }
+            Assert.That(dogsIterated, Is.EqualTo(0));
+        }
+
+
+        [Test]
+        public void TestExceptionsFromEmptyListOutOfRange()
+        {
+            var dani = realm.All<Owner>().Where( p => p.Name == "Dani").ToList().First();
+            Assert.Throws<IndexOutOfRangeException>( () => dani.Dogs.RemoveAt(0) );
+            var bilbo = realm.All<Dog>().Where( p => p.Name == "Bilbo Fleabaggins").ToList().First();
+            Dog scratch;  // for assignment in following getters
+            Assert.Throws<IndexOutOfRangeException>( () => dani.Dogs.Insert(-1, bilbo) );
+            Assert.Throws<IndexOutOfRangeException>( () => dani.Dogs.Insert(0, bilbo) );
+            Assert.Throws<IndexOutOfRangeException>( () => scratch = dani.Dogs[0] );
+        }
+
+
+        [Test]
+        public void TestExceptionsFromTimsDogsOutOfRange()
+        {
+            var tim = realm.All<Owner>().Where( p => p.Name == "Tim").ToList().First();
+            Assert.Throws<IndexOutOfRangeException>( () => tim.Dogs.RemoveAt(4) );
+            var bilbo = realm.All<Dog>().Where( p => p.Name == "Bilbo Fleabaggins").ToList().First();
+            Dog scratch;  // for assignment in following getters
+            Assert.Throws<IndexOutOfRangeException>( () => tim.Dogs.Insert(-1, bilbo) );
+            Assert.Throws<IndexOutOfRangeException>( () => tim.Dogs.Insert(3, bilbo) );
+            Assert.Throws<IndexOutOfRangeException>( () => scratch = tim.Dogs[99] );
         }
 
     }

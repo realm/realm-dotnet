@@ -191,6 +191,21 @@ namespace realm {
     public:
         UnitializedRealmException(std::string message) : std::runtime_error(message) {}
     };
+  
+    class IndexOutOfRangeException : public std::runtime_error
+    {
+      static std::string makeMessage(std::string context, size_t bad_index, size_t count)
+      {
+        std::ostringstream ss;
+        ss << context << " index:" << bad_index << " beyond range of:" << count;
+        return ss.str();
+      }
+
+    public:
+      IndexOutOfRangeException(std::string message) : std::runtime_error(message) {}
+      IndexOutOfRangeException(std::string context, size_t bad_index, size_t count):
+        std::runtime_error(makeMessage(context, bad_index, count)) {}
+    };
 }
 
 #endif /* defined(REALM_REALM_HPP) */

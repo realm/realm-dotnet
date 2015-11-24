@@ -49,7 +49,7 @@ namespace RealmNet
                 var value = MarshalHelpers.IntPtrToBool( NativeTable.get_bool(tableHandle, columnIndex, (IntPtr)rowIndex) );
                 return (T)Convert.ChangeType(value, typeof(T));
             }
-            if (typeof(T) == typeof(int))  // System.Int32 regardless of bitness
+            if (typeof(T) == typeof(int))  // System.Int32 regardless of process being 32 or 64bit
             {
                 var value = NativeTable.get_int64(tableHandle, columnIndex, (IntPtr)rowIndex);
                 return (T)Convert.ChangeType(value, typeof(T));
@@ -96,7 +96,7 @@ namespace RealmNet
                 NativeTable.set_bool (tableHandle, columnIndex, (IntPtr)rowIndex, marshalledValue);
             } 
             else if (typeof(T) == typeof(int)) 
-            {  // System.Int32 regardless of bitness
+            {  // System.Int32 regardless of process being 32 or 64bit
                 Int64 marshalledValue = Convert.ToInt64 (value);
                 NativeTable.set_int64 (tableHandle, columnIndex, (IntPtr)rowIndex, marshalledValue);
             } 
@@ -141,10 +141,11 @@ namespace RealmNet
 
         /**
          * Shared factory to make an object in the realm from a known row
+         * @param rowPtr may be null if a relationship lookup has failed.
         */ 
         internal RealmObject MakeRealmObject(System.Type objectType, IntPtr rowPtr) {
             if (rowPtr == (IntPtr)0)
-                return null;
+                return null;  // typically no related object
             RealmObject ret = (RealmObject)Activator.CreateInstance(objectType);
             var relatedHandle = Realm.CreateRowHandle (rowPtr);
             ret._Manage(_realm, relatedHandle);

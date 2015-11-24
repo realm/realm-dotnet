@@ -10,33 +10,47 @@ using System.Diagnostics;
 
 namespace RealmNet
 {
-    public class RealmListEnumerator<T> : IEnumerator
+    public class RealmList<T> : IList<T> where T : RealmObject
     {
-
-        public object Current
+        private class RealmListEnumerator : IEnumerator<T> 
         {
-            get
+            private int index;
+            private RealmList<T> enumerating;
+
+            internal RealmListEnumerator(RealmList<T> parent)
             {
-                return null;  // TODO return real object
-                // throw new NotImplementedException();
+                index = -1;
+                enumerating = parent;
+            }
+
+
+            public object Current
+            {
+                get
+                {
+                    return enumerating[index];
+                }
+            }
+
+            public bool MoveNext()
+            {
+                index++;
+                if (index >= enumerating.Count)
+                    return false;
+                return true;
+            }
+
+            public void Reset()
+            {
+                index = -1;  // by definition BEFORE first item
+            }
+
+            public void Dispose() 
+            {
             }
         }
 
-        public bool MoveNext()
-        {
-            return false;  // TODO return real iteration status
-            //throw new NotImplementedException();
-        }
 
-        public void Reset()
-        {
-            // TODO clear the relatinships
-            // throw new NotImplementedException();
-        }
-    }
-
-    public class RealmList<T> : IList<T> where T : RealmObject
-    {
         public const int ITEM_NOT_FOUND = -1;
 
         private RealmObject _parent;  // we only make sense within an owning object
@@ -59,21 +73,7 @@ namespace RealmNet
             */
         }
 
-        #region implementing IList members
-        public T this[int index]
-        {
-            get
-            {
-                var linkedRowPtr = NativeLinkList.get (_listHandle, (IntPtr)index);
-                return (T)_parent.MakeRealmObject(typeof(T), linkedRowPtr);
-            }
-
-            set
-            {
-                throw new NotImplementedException();
-            }
-        }
-
+        #region implementing IList properties
         public int Count
         {
             get
@@ -86,11 +86,38 @@ namespace RealmNet
 
         public bool IsReadOnly
         {
+            get { return false; }
+        }
+
+        public bool IsFixedSize
+        {
+            get { return false; }
+        }
+
+        public bool IsSynchronized
+        {
+            get { return true; }
+        }
+
+        public T this[int index]
+        {
             get
             {
-                return false;  // TODO decide if this is realistic
+                if (index < 0)
+                    throw new IndexOutOfRangeException ();
+                var linkedRowPtr = NativeLinkList.get (_listHandle, (IntPtr)index);
+                return (T)_parent.MakeRealmObject(typeof(T), linkedRowPtr);
+            }
+
+            set
+            {
+                throw new NotImplementedException();
             }
         }
+        #endregion
+
+        #region implementing IList members
+
 
         public void Add(T item)
         {
@@ -100,8 +127,7 @@ namespace RealmNet
 
         public void Clear()
         {
-            // TODO clear relationship
-            //throw new NotImplementedException();
+            NativeLinkList.clear(_listHandle);        
         }
 
         public bool Contains(T item)
@@ -114,11 +140,12 @@ namespace RealmNet
             throw new NotImplementedException();
         }
 
+
         public IEnumerator<T> GetEnumerator()
         {
-            return null;  // TODO return real iter
-            //throw new NotImplementedException();
+            return (IEnumerator<T>)new RealmListEnumerator<T>(this);
         }
+
 
         public int IndexOf(T item)
         {
@@ -128,8 +155,10 @@ namespace RealmNet
 
         public void Insert(int index, T item)
         {
-            // TODO return real object
-            //throw new NotImplementedException();
+            if (index < 0)
+                throw new IndexOutOfRangeException ();
+            var rowIndex = ((RealmObject)item).RowHandle.RowIndex;
+            NativeLinkList.insert(_listHandle, (IntPtr)index, (IntPtr)rowIndex);        
         }
 
         public bool Remove(T item)
@@ -143,28 +172,16 @@ namespace RealmNet
 
         public void RemoveAt(int index)
         {
+            if (index < 0)
+                throw new IndexOutOfRangeException ();
             NativeLinkList.erase(_listHandle, (IntPtr)index);        
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return null;  // TODO return real object iter
-            //throw new NotImplementedException();
+            return new RealmListEnumerator<T>(this);
         }
 
         #endregion
-        /*
-                protected T GetValue<T>(string propertyName)
-                {
-                    return _coreProvider.GetValue<T>(_realm?.TransactionGroupHandle, GetType().Name, propertyName, _rowIndex);
-                }
-
-                protected void SetValue<T>(string propertyName, T value)
-                {
-                    _coreProvider.SetValue<T>(_realm?.TransactionGroupHandle, GetType().Name, propertyName, _rowIndex, value);
-                }
-        */
-
-
     }
 }
