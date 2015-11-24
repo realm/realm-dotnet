@@ -22,6 +22,8 @@ public class ModuleWeaver
 
     TypeSystem typeSystem;
 
+    MethodReference realmObjectIsManagedGetter;
+
     // Init logging delegates to make testing easier
     public ModuleWeaver()
     {
@@ -52,6 +54,7 @@ public class ModuleWeaver
         var assemblyToReference = ModuleDefinition.AssemblyResolver.Resolve("RealmNet");
 
         var realmObjectType = assemblyToReference.MainModule.GetTypes().First(x => x.Name == "RealmObject");
+        realmObjectIsManagedGetter = ModuleDefinition.ImportReference(realmObjectType.Properties.Single(x => x.Name == "IsManaged").GetMethod);
         var genericGetValueReference = MethodNamed(realmObjectType, "GetValue");
         var genericSetValueReference = MethodNamed(realmObjectType, "SetValue");
         //var getListValueReference = MethodNamed(realmObjectType, "GetListValue");
@@ -105,12 +108,36 @@ public class ModuleWeaver
         var specializedGetValue = new GenericInstanceMethod(getValueReference);
         specializedGetValue.GenericArguments.Add(prop.PropertyType);
 
-        prop.GetMethod.Body.Instructions.Clear();
-        var getProcessor = prop.GetMethod.Body.GetILProcessor();
-        getProcessor.Emit(OpCodes.Ldarg_0);
-        getProcessor.Emit(OpCodes.Ldstr, columnName);
-        getProcessor.Emit(OpCodes.Call, specializedGetValue);
-        getProcessor.Emit(OpCodes.Ret);
+        /// A synthesized property getter looks like this:
+        ///   0: ldarg.0
+        ///   1: ldfld <backingField>
+        ///   2: ret
+        /// We want to change it so it looks like this:
+        ///   0: ldarg.0
+        ///   1: call RealmNet.RealmObject.get_IsManaged
+        ///   2: brfalse.s 7
+        ///   3: ldarg.0
+        ///   4: ldstr <columnName>
+        ///   5: call RealmNet.RealmObject.GetValue<T>
+        ///   6: ret
+        ///   7: ldarg.0
+        ///   8: ldfld <backingField>
+        ///   9: ret
+        /// This is roughly equivalent to:
+        ///   if (!base.IsManaged) return this.<backingField>;
+        ///   else return base.GetValue<T>(<columnName>);
+
+        var start = prop.GetMethod.Body.Instructions.First();
+        var il = prop.GetMethod.Body.GetILProcessor();
+
+        il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));
+        il.InsertBefore(start, il.Create(OpCodes.Call, realmObjectIsManagedGetter));
+        il.InsertBefore(start, il.Create(OpCodes.Brfalse_S, start));
+        il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));
+        il.InsertBefore(start, il.Create(OpCodes.Ldstr, columnName));
+        il.InsertBefore(start, il.Create(OpCodes.Call, specializedGetValue));
+        il.InsertBefore(start, il.Create(OpCodes.Ret));
+
         Debug.Write("[get] ");
     }
 
@@ -120,13 +147,39 @@ public class ModuleWeaver
         var specializedSetValue = new GenericInstanceMethod(setValueReference);
         specializedSetValue.GenericArguments.Add(prop.PropertyType);
 
-        prop.SetMethod.Body.Instructions.Clear();
-        var setProcessor = prop.SetMethod.Body.GetILProcessor();
-        setProcessor.Emit(OpCodes.Ldarg_0);
-        setProcessor.Emit(OpCodes.Ldstr, columnName);
-        setProcessor.Emit(OpCodes.Ldarg_1);
-        setProcessor.Emit(OpCodes.Call, specializedSetValue);
-        setProcessor.Emit(OpCodes.Ret);
+        /// A synthesized property setter looks like this:
+        ///   0: ldarg.0
+        ///   1: ldarg.1
+        ///   2: stfld <backingField>
+        ///   3: ret
+        /// We want to change it so it looks like this:
+        ///   0: ldarg.0
+        ///   1: call RealmNet.RealmObject.get_IsManaged
+        ///   2: brfalse.s 8
+        ///   3: ldarg.0
+        ///   4: ldstr <columnName>
+        ///   5: ldarg.1
+        ///   6: call RealmNet.RealmObject.SetValue<T>
+        ///   7: ret
+        ///   8: ldarg.0
+        ///   9: ldarg.1
+        ///   10: stfld <backingField>
+        ///   11: ret
+        /// This is roughly equivalent to:
+        ///   if (!base.IsManaged) this.<backingField> = value;
+        ///   else base.SetValue<T>(<columnName>, value);
+
+        var start = prop.SetMethod.Body.Instructions.First();
+        var il = prop.SetMethod.Body.GetILProcessor();
+
+        il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));
+        il.InsertBefore(start, il.Create(OpCodes.Call, realmObjectIsManagedGetter));
+        il.InsertBefore(start, il.Create(OpCodes.Brfalse_S, start));
+        il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));
+        il.InsertBefore(start, il.Create(OpCodes.Ldstr, columnName));
+        il.InsertBefore(start, il.Create(OpCodes.Ldarg_1));
+        il.InsertBefore(start, il.Create(OpCodes.Call, specializedSetValue));
+        il.InsertBefore(start, il.Create(OpCodes.Ret));
 
         Debug.Write("[set] ");
     }

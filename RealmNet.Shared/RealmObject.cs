@@ -14,6 +14,8 @@ namespace RealmNet
 
         internal RowHandle RowHandle => _rowHandle;
 
+        internal protected bool IsManaged => _realm != null;
+
         internal void _Manage(Realm realm, RowHandle rowHandle)
         {
             _realm = realm;
