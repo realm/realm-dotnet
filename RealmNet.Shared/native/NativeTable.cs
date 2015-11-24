@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 
 namespace RealmNet
 {
+#if !DISABLE_NATIVE
     internal static class NativeTable
     {
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_add_column", CallingConvention = CallingConvention.Cdecl)]
@@ -69,4 +70,5 @@ namespace RealmNet
             [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
 
     }
+#endif
 }

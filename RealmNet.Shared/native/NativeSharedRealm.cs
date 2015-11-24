@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 
 namespace RealmNet
 {
+#if !DISABLE_NATIVE
     internal static class NativeSharedRealm
     {
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_open", CallingConvention = CallingConvention.Cdecl)]
@@ -44,4 +45,5 @@ namespace RealmNet
             CallingConvention = CallingConvention.Cdecl)]
         internal static extern IntPtr get_table(SharedRealmHandle sharedRealm, [MarshalAs(UnmanagedType.LPWStr)]string tableName, IntPtr tableNameLength);
     }
+#endif
 }

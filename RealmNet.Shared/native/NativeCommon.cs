@@ -16,6 +16,7 @@ using ObjCRuntime;
 
 namespace RealmNet {
 
+#if !DISABLE_NATIVE
     internal static class NativeCommon
     {
         // declare the type for the MonoPInvokeCallback
@@ -79,6 +80,6 @@ namespace RealmNet {
         {
             set_exception_thrower (ExceptionThrower);
         }
-
     }
+#endif
 }  // namespace RealmNet

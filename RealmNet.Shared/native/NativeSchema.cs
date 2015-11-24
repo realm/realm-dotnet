@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 
 namespace RealmNet
 {
+#if !DISABLE_NATIVE
     internal static class NativeSchema
     {
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "schema_initializer_create", CallingConvention = CallingConvention.Cdecl)]
@@ -21,4 +22,5 @@ namespace RealmNet
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "schema_create", CallingConvention = CallingConvention.Cdecl)]
         internal static extern IntPtr create(SchemaInitializerHandle schemaInitializer);
     }
+#endif
 }

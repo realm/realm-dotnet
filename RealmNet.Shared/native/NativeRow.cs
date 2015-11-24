@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 
 namespace RealmNet
 {
+#if !DISABLE_NATIVE
     internal static class NativeRow
     {
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "row_get_row_index", CallingConvention = CallingConvention.Cdecl)]
@@ -19,4 +20,5 @@ namespace RealmNet
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "row_destroy", CallingConvention = CallingConvention.Cdecl)]
         public static extern void destroy(IntPtr rowHandle);
     }
+#endif
 }
