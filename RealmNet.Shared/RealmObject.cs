@@ -1,8 +1,11 @@
 /* Copyright 2015 Realm Inc - All Rights Reserved
  * Proprietary and Confidential
  */
- 
+
 using System;
+using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace RealmNet
@@ -20,6 +23,26 @@ namespace RealmNet
         {
             _realm = realm;
             _rowHandle = rowHandle;
+        }
+
+        internal void _CopyDataFromBackingFieldsToRow()
+        {
+            Debug.Assert(this.IsManaged);
+
+            var thisType = this.GetType();
+            var wovenProperties = from prop in thisType.GetProperties()
+                                  let backingField = prop.GetCustomAttributes(false)
+                                                         .OfType<WovenPropertyAttribute>()
+                                                         .Select(a => a.BackingFieldName)
+                                                         .SingleOrDefault()
+                                  where backingField != null
+                                  select new { Info = prop, Field = thisType.GetField(backingField, BindingFlags.Instance | BindingFlags.NonPublic) };
+
+            foreach (var prop in wovenProperties)
+            {
+                var value = prop.Field.GetValue(this);
+                prop.Info.SetValue(this, value, null);
+            }
         }
 
         protected T GetValue<T>(string propertyName)

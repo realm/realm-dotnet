@@ -1,8 +1,9 @@
 ﻿/* Copyright 2015 Realm Inc - All Rights Reserved
  * Proprietary and Confidential
  */
- 
+
 using System;
+using System.Reflection;
 
 namespace RealmNet
 {
@@ -29,5 +30,16 @@ namespace RealmNet
 
     public class WovenAttribute : Attribute
     {
+    }
+
+    [AttributeUsage(AttributeTargets.Property)]
+    public class WovenPropertyAttribute : Attribute
+    {
+        internal string BackingFieldName { get; private set; }
+
+        public WovenPropertyAttribute(string backingFieldName)
+        {
+            this.BackingFieldName = backingFieldName;
+        }
     }
 }

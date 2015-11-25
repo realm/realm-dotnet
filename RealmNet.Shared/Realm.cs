@@ -148,6 +148,23 @@ namespace RealmNet
             return result;
         }
 
+        public void Add<T>(T obj) where T : RealmObject
+        {
+            if (obj == null)
+                throw new ArgumentNullException(nameof(obj));
+
+            if (!IsInTransaction)
+                throw new RealmOutsideTransactionException("Cannot add a Realm object outside write transactions");
+
+            var tableHandle = _tableHandles[typeof(T)];
+
+            var rowPtr = NativeTable.add_empty_row(tableHandle);
+            var rowHandle = CreateRowHandle(rowPtr);
+
+            obj._Manage(this, rowHandle);
+            obj._CopyDataFromBackingFieldsToRow();
+        }
+
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         private static RowHandle CreateRowHandle(IntPtr rowPtr)
         {

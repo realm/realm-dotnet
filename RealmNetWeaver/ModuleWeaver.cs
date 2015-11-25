@@ -63,6 +63,11 @@ public class ModuleWeaver
         var wovenAttributeClass = assemblyToReference.MainModule.GetTypes().First(x => x.Name == "WovenAttribute");
         var wovenAttributeConstructor = ModuleDefinition.Import(wovenAttributeClass.GetConstructors().First());
 
+        var wovenPropertyAttributeClass = assemblyToReference.MainModule.GetTypes().First(x => x.Name == "WovenPropertyAttribute");
+        var wovenPropertyAttributeConstructor = ModuleDefinition.ImportReference(wovenPropertyAttributeClass.GetConstructors().First());
+        var corlib = ModuleDefinition.AssemblyResolver.Resolve((AssemblyNameReference)ModuleDefinition.TypeSystem.CoreLibrary);
+        var stringType = ModuleDefinition.ImportReference(corlib.MainModule.GetType("System.String"));
+
         foreach (var type in GetMatchingTypes())
         {
             Debug.WriteLine("Weaving " + type.Name);
@@ -72,6 +77,8 @@ public class ModuleWeaver
                 var mapToAttribute = prop.CustomAttributes.FirstOrDefault(a => a.AttributeType.Name == "MapToAttribute");
                 if (mapToAttribute != null)
                     columnName = ((string)mapToAttribute.ConstructorArguments[0].Value);
+
+                var backingField = GetBackingField(prop);
 
                 Debug.Write("  -- Property: " + prop.Name + " (column: " + columnName + ".. ");
                 //TODO check if has either setter or getter and adjust accordingly - https://github.com/realm/realm-dotnet/issues/101
@@ -92,6 +99,10 @@ public class ModuleWeaver
                     throw new NotSupportedException($"class '{type.Name}' field '{columnName}' is a {prop.PropertyType.Name} which is not yet supported");
                 }
 
+                var wovenPropertyAttribute = new CustomAttribute(wovenPropertyAttributeConstructor);
+                wovenPropertyAttribute.ConstructorArguments.Add(new CustomAttributeArgument(stringType, backingField.Name));
+                prop.CustomAttributes.Add(wovenPropertyAttribute);
+
                 Debug.WriteLine("");
             }
 
@@ -101,7 +112,6 @@ public class ModuleWeaver
 
         return;
     }
-
 
     void AddGetter(PropertyDefinition prop, string columnName, MethodReference getValueReference)
     {
@@ -203,5 +213,14 @@ public class ModuleWeaver
         processor.Emit(OpCodes.Ldstr, "Hello World!!");
         processor.Emit(OpCodes.Ret);
         newType.Methods.Add(method);
+    }
+
+    private static FieldReference GetBackingField(PropertyDefinition property)
+    {
+        return property.GetMethod.Body.Instructions
+            .Where(o => o.OpCode == OpCodes.Ldfld)
+            .Select(o => o.Operand)
+            .OfType<FieldReference>()
+            .SingleOrDefault();
     }
 }

@@ -195,6 +195,19 @@ namespace IntegrationTests
         }
 
         [Test]
+        public void AddOutsideTransactionShouldFail()
+        {
+            var obj = new Person();
+            Assert.Throws<RealmOutsideTransactionException>(() => _realm.Add(obj));
+        }
+
+        [Test]
+        public void AddNullObjectShouldFail()
+        {
+            Assert.Throws<ArgumentNullException>(() => _realm.Add(null as Person));
+        }
+
+        [Test]
         public void SetPropertyOutsideTransactionShouldFail()
         {
             // Arrange
