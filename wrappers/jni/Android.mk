@@ -6,11 +6,11 @@ LOCAL_MODULE    := librealm-android
 LOCAL_SRC_FILES := ../core-android/$(TARGET_ARCH_ABI)/librealm-android.a
 include $(PREBUILT_STATIC_LIBRARY)
 
-include $(CLEAR_VARS)
+#include $(CLEAR_VARS)
 
-OS_SRCS=$(wildcard object-store/*.cpp)
-ECH_SRCS=object-store/impl/apple/external_commit_helper.cpp
-SRCS=$(wildcard *.cpp) $(OS_SRCS) $(ECH_SRCS)
+OS_SRCS=$(wildcard ../object-store/*.cpp)
+ECH_SRCS=../object-store/impl/android/external_commit_helper.cpp
+SRCS=$(wildcard ../*.cpp)
 
 LOCAL_MODULE := wrappers
 LOCAL_CFLAGS := 
