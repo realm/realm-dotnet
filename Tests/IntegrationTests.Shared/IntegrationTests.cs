@@ -208,6 +208,22 @@ namespace IntegrationTests
         }
 
         [Test]
+        public void AddAnObjectFromAnotherRealmShouldFail()
+        {
+            Person p;
+            using (var transaction = _realm.BeginWrite())
+            {
+                p = _realm.CreateObject<Person>();
+                transaction.Commit();
+            }
+
+            using (var otherRealm = Realm.GetInstance(Path.GetTempFileName()))
+            {
+                Assert.Throws<RealmObjectOwnedByAnotherRealmException>(() => otherRealm.Add(p));
+            }
+        }
+
+        [Test]
         public void SetPropertyOutsideTransactionShouldFail()
         {
             // Arrange

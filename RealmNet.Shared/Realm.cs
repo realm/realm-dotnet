@@ -153,6 +153,16 @@ namespace RealmNet
             if (obj == null)
                 throw new ArgumentNullException(nameof(obj));
 
+            if (obj.IsManaged)
+            {
+                // the object is already owned by this realm, so do nothing I guess
+                if (obj.Realm._sharedRealmHandle == this._sharedRealmHandle)
+                    return;
+
+                throw new RealmObjectOwnedByAnotherRealmException("Cannot add an object to a realm when it's already owned by another realm");
+            }
+
+
             if (!IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot add a Realm object outside write transactions");
 
