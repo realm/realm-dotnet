@@ -48,9 +48,6 @@
     <ClInclude Include="object-store\shared_realm.hpp">
       <Filter>Header Files\object-store</Filter>
     </ClInclude>
-    <ClInclude Include="object-store\transact_log_handler.hpp">
-      <Filter>Header Files\object-store</Filter>
-    </ClInclude>
     <ClInclude Include="realm_export_decls.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -59,6 +56,9 @@
     </ClInclude>
     <ClInclude Include="object-store\impl\windows\external_commit_helper.hpp">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="object-store\impl\transact_log_handler.hpp">
+      <Filter>Header Files\object-store</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -95,9 +95,6 @@
     <ClCompile Include="object-store\shared_realm.cpp">
       <Filter>Source Files\object-store</Filter>
     </ClCompile>
-    <ClCompile Include="object-store\transact_log_handler.cpp">
-      <Filter>Source Files\object-store</Filter>
-    </ClCompile>
     <ClCompile Include="row_cs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -112,6 +109,9 @@
     </ClCompile>
     <ClCompile Include="object-store\impl\windows\external_commit_helper.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="object-store\impl\transact_log_handler.cpp">
+      <Filter>Source Files\object-store</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
