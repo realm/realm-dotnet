@@ -19,7 +19,7 @@
 #include "shared_realm.hpp"
 
 #include "external_commit_helper.hpp"
-#include "realm_delegate.hpp"
+#include "binding_context.hpp"
 #include "schema.hpp"
 #include "transact_log_handler.hpp"
 
@@ -47,6 +47,8 @@ Realm::Config::Config(const Config& c)
     }
 }
 
+Realm::Config::Config() = default;
+Realm::Config::Config(Config&&) = default;
 Realm::Config::~Config() = default;
 
 Realm::Config& Realm::Config::operator=(realm::Realm::Config const& c)
@@ -73,18 +75,22 @@ Realm::Realm(Config config)
         }
     }
     catch (util::File::PermissionDenied const& ex) {
-        throw RealmFileException(RealmFileException::Kind::PermissionDenied, "Unable to open a realm at path '" + m_config.path +
-            "'. Please use a path where your app has " + (m_config.read_only ? "read" : "read-write") + " permissions.");
+        throw RealmFileException(RealmFileException::Kind::PermissionDenied, ex.get_path(),
+                                 "Unable to open a realm at path '" + ex.get_path() +
+                                 "'. Please use a path where your app has " + (m_config.read_only ? "read" : "read-write") + " permissions.");
     }
     catch (util::File::Exists const& ex) {
-        throw RealmFileException(RealmFileException::Kind::Exists, "Unable to open a realm at path '" + m_config.path + "'");
+        throw RealmFileException(RealmFileException::Kind::Exists, ex.get_path(),
+                                 "File at path '" + ex.get_path() + "' already exists.");
     }
     catch (util::File::AccessError const& ex) {
-        throw RealmFileException(RealmFileException::Kind::AccessError, "Unable to open a realm at path '" + m_config.path + "'");
+        throw RealmFileException(RealmFileException::Kind::AccessError, ex.get_path(),
+                                 "Unable to open a realm at path '" + ex.get_path() + "'");
     }
-    catch (IncompatibleLockFile const&) {
-        throw RealmFileException(RealmFileException::Kind::IncompatibleLockFile, "Realm file is currently open in another process "
-            "which cannot share access with this process. All processes sharing a single file must be the same architecture.");
+    catch (IncompatibleLockFile const& ex) {
+        throw RealmFileException(RealmFileException::Kind::IncompatibleLockFile, m_config.path,
+                                 "Realm file is currently open in another process "
+                                 "which cannot share access with this process. All processes sharing a single file must be the same architecture.");
     }
 }
 
@@ -199,7 +205,9 @@ bool Realm::update_schema(std::unique_ptr<Schema> schema, uint64_t version)
     auto migration_function = [&](Group*, Schema&) {
         SharedRealm old_realm(new Realm(old_config));
         auto updated_realm = shared_from_this();
-        m_config.migration_function(old_realm, updated_realm);
+        if (m_config.migration_function) {
+            m_config.migration_function(old_realm, updated_realm);
+        }
     };
 
     try {
@@ -231,7 +239,14 @@ static void check_read_write(Realm *realm)
 void Realm::verify_thread() const
 {
     if (m_thread_id != std::this_thread::get_id()) {
-        throw IncorrectThreadException("Realm accessed from incorrect thread.");
+        throw IncorrectThreadException();
+    }
+}
+
+void Realm::verify_in_write() const
+{
+    if (!is_in_transaction()) {
+        throw InvalidTransactionException("Cannot modify persisted objects outside of a write transaction.");
     }
 }
 
@@ -247,7 +262,7 @@ void Realm::begin_transaction()
     // make sure we have a read transaction
     read_group();
 
-    transaction::begin(*m_shared_group, *m_history, m_delegate.get());
+    transaction::begin(*m_shared_group, *m_history, m_binding_context.get());
     m_in_transaction = true;
 }
 
@@ -261,7 +276,7 @@ void Realm::commit_transaction()
     }
 
     m_in_transaction = false;
-    transaction::commit(*m_shared_group, *m_history, m_delegate.get());
+    transaction::commit(*m_shared_group, *m_history, m_binding_context.get());
     m_notifier->notify_others();
 }
 
@@ -275,14 +290,12 @@ void Realm::cancel_transaction()
     }
 
     m_in_transaction = false;
-    transaction::cancel(*m_shared_group, *m_history, m_delegate.get());
+    transaction::cancel(*m_shared_group, *m_history, m_binding_context.get());
 }
 
 void Realm::invalidate()
 {
     verify_thread();
-    check_read_write(this);
-
     if (m_in_transaction) {
         cancel_transaction();
     }
@@ -320,15 +333,15 @@ void Realm::notify()
     verify_thread();
 
     if (m_shared_group->has_changed()) { // Throws
-        if (m_delegate) {
-            m_delegate->changes_available();
+        if (m_binding_context) {
+            m_binding_context->changes_available();
         }
         if (m_auto_refresh) {
             if (m_group) {
-                transaction::advance(*m_shared_group, *m_history, m_delegate.get());
+                transaction::advance(*m_shared_group, *m_history, m_binding_context.get());
             }
-            else if (m_delegate) {
-                m_delegate->did_change({}, {});
+            else if (m_binding_context) {
+                m_binding_context->did_change({}, {});
             }
         }
     }
@@ -351,7 +364,7 @@ bool Realm::refresh()
     }
 
     if (m_group) {
-        transaction::advance(*m_shared_group, *m_history, m_delegate.get());
+        transaction::advance(*m_shared_group, *m_history, m_binding_context.get());
     }
     else {
         // Create the read transaction
@@ -368,6 +381,22 @@ uint64_t Realm::get_schema_version(const realm::Realm::Config &config)
     }
 
     return ObjectStore::get_schema_version(Realm(config).read_group());
+}
+
+void Realm::close()
+{
+    invalidate();
+
+    if (m_notifier) {
+        m_notifier->remove_realm(this);
+    }
+
+    m_group = nullptr;
+    m_shared_group = nullptr;
+    m_history = nullptr;
+    m_read_only_group = nullptr;
+    m_notifier = nullptr;
+    m_binding_context = nullptr;
 }
 
 SharedRealm RealmCache::get_realm(const std::string &path, std::thread::id thread_id)
@@ -442,6 +471,13 @@ void RealmCache::cache_realm(SharedRealm &realm, std::thread::id thread_id)
 void RealmCache::clear()
 {
     std::lock_guard<std::mutex> lock(m_mutex);
+    for (auto const& path : m_cache) {
+        for (auto const& thread : path.second) {
+            if (auto realm = thread.second.lock()) {
+                realm->close();
+            }
+        }
+    }
 
     m_cache.clear();
 }

@@ -1,4 +1,4 @@
-﻿/* Copyright 2015 Realm Inc - All Rights Reserved
+/* Copyright 2015 Realm Inc - All Rights Reserved
  * Proprietary and Confidential
  */
  
@@ -47,24 +47,29 @@ namespace RealmNet
 
         public static IntPtr RealmColType(Type columnType)
         {
+            // values correspond to core/data_type.hpp enum DataType
             // ordered in decreasing likelihood of type
             if (columnType == typeof(string))
-                return (IntPtr)2;
+                return (IntPtr)2;  // type_String
             if (columnType == typeof(int))
-                return (IntPtr)0;
+                return (IntPtr)0;  // type_Int
             if (columnType == typeof(float))
-                return (IntPtr)9;
+                return (IntPtr)9;  // type_Float
             if (columnType == typeof(double))
-                return (IntPtr)10;
+                return (IntPtr)10; // type_Double
             if (columnType == typeof(DateTimeOffset))
-                return (IntPtr)7;
+                return (IntPtr)7;  // type_DateTime
             if (columnType == typeof(bool))
-                return (IntPtr)1;
+                return (IntPtr)1;  // type_Bool
+            if (columnType.BaseType == typeof(RealmObject))
+                return (IntPtr)12;  // type_Link
+            if (columnType.IsGenericType && columnType.Name == "RealmList`1" && columnType.Namespace == "RealmNet" )
+                return (IntPtr)13;  // type_LinkList 
             /*
             TODO
-                    Binary = 4,
-                    Table = 5,
-                    Mixed = 6,
+                    Binary = 4,  // type_Binary
+                    Table = 5, // type_Table for sub-tables, not relatinoships????
+                    Mixed = 6, // type_Mixed
 
             */
             throw new NotImplementedException();
