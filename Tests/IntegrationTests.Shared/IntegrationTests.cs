@@ -224,6 +224,19 @@ namespace IntegrationTests
         }
 
         [Test]
+        public void AddAnObjectToRealmItAlreadyBelongsToShouldFail()
+        {
+            Person p;
+            using (var transaction = _realm.BeginWrite())
+            {
+                p = _realm.CreateObject<Person>();
+                transaction.Commit();
+            }
+
+            Assert.Throws<RealmObjectAlreadyOwnedByRealmException>(() => _realm.Add(p));
+        }
+
+        [Test]
         public void SetPropertyOutsideTransactionShouldFail()
         {
             // Arrange

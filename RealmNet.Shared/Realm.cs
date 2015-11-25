@@ -157,7 +157,7 @@ namespace RealmNet
             {
                 // the object is already owned by this realm, so do nothing I guess
                 if (obj.Realm._sharedRealmHandle == this._sharedRealmHandle)
-                    return;
+                    throw new RealmObjectAlreadyOwnedByRealmException("The object is already owned by this realm");
 
                 throw new RealmObjectOwnedByAnotherRealmException("Cannot add an object to a realm when it's already owned by another realm");
             }

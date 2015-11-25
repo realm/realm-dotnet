@@ -11,6 +11,7 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Attributes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmDecryptionFailedException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmObjectAlreadyOwnedByRealmException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmObjectOwnedByAnotherRealmException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmOutsideTransactionException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmFileExistsException.cs" />
