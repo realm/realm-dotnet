@@ -65,10 +65,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent Condition="'Windows_NT'=='$(os)'">xcopy/Y $(TargetPath) $(SolutionDir)Tools</PostBuildEvent>
-    <PostBuildEvent Condition="'Unix'=='$(os)'">cp $(TargetPath) $(SolutionDir)Tools</PostBuildEvent>
-  </PropertyGroup>
-  <PropertyGroup>
-    <PostBuildEvent>xcopy /Y "$(TargetPath)" "$(SolutionDir)Tools"</PostBuildEvent>
+    <PostBuildEvent Condition="'Windows_NT'=='$(os)'">xcopy /Y "$(TargetPath)" "$(SolutionDir)Tools"</PostBuildEvent>
+    <PostBuildEvent Condition="'Unix'=='$(os)'">cp "$(TargetPath)" "$(SolutionDir)Tools"</PostBuildEvent>
   </PropertyGroup>
 </Project>
