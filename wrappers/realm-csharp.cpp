@@ -5,7 +5,7 @@
 #include <iostream>
 #include <functional>
 #include <list>
-#include "object-store/realm_delegate.hpp"
+#include "object-store/binding_context.hpp"
 #include "error_handling.hpp"
 
 using namespace realm;
@@ -13,7 +13,7 @@ using namespace realm;
 namespace realm {
 namespace binding {
 
-class CSharpRealmDelegate: public RealmDelegate {
+class CSharpRealmDelegate: public BindingContext {
 public:
     // A token returned from add_notification that can be used to remove the
     // notification later

@@ -978,3 +978,23 @@ shared_realm.hpp
 
 wrappers/error_handling.cpp
 - added case for IndexOutOfRangeException
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Migrating to Core 0.95.0
+
+Merged current ObjectStore subtree
+
+Makefile
+- bumped Core version number to 0.95.0
+
+
+wrappers/object-store/transact_log_handler.*pp
+- removed our old copies so we use those in object-store/impl
+
+wrappers/realm-csharp.cpp
+- replaced include of realm_delegate.hpp with object-store/binding_context.hpp
+- CSharpRealmDelegate parent changed from RealmDelegate to BindingContext
+
+wrappers.xcodeproj
+- replaced librealm-ios with librealm-ios-no-bitcode
+
