@@ -53,6 +53,8 @@
     <None Include="Resources\AboutResources.txt" />
     <None Include="Assets\AboutAssets.txt" />
     <None Include="Properties\AndroidManifest.xml" />
+    <None Include="FodyWeavers.xml" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\drawable-hdpi\Icon.png" />
@@ -62,7 +64,19 @@
     <AndroidResource Include="Resources\drawable-xxxhdpi\Icon.png" />
   </ItemGroup>
   <Import Project="..\IntegrationTests.Shared\IntegrationTests.Shared.projitems" Label="Shared" Condition="Exists('..\IntegrationTests.Shared\IntegrationTests.Shared.projitems')" />
-  <Import Project="$(MSBuildExtensionsPath)\Novell\Novell.MonoDroid.CSharp.targets" />
+  <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
+  <Import Project="..\..\packages\Fody.1.29.3\build\portable-net+sl+win+wpa+wp\Fody.targets" Condition="Exists('..\..\packages\Fody.1.29.3\build\portable-net+sl+win+wpa+wp\Fody.targets')" />
+  <ItemGroup>
+    <AndroidNativeLibrary Include="..\..\wrappers\build\Release-android\armeabi\libwrappers.so">
+      <Link>wrappers\armeabi\libwrappers.so</Link>
+    </AndroidNativeLibrary>
+    <AndroidNativeLibrary Include="..\..\wrappers\build\Release-android\armeabi-v7a\libwrappers.so">
+      <Link>wrappers\armeabi-v7\libwrappers.so</Link>
+    </AndroidNativeLibrary>
+    <AndroidNativeLibrary Include="..\..\wrappers\build\Release-android\x86\libwrappers.so">
+      <Link>wrappers\x86\libwrappers.so</Link>
+    </AndroidNativeLibrary>
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\RealmNet.XamarinAndroid\RealmNet.XamarinAndroid.csproj">
       <Project>{2379D669-4F4B-4FF6-AF8A-49FEA981EFC3}</Project>

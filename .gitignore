@@ -229,3 +229,5 @@ doxyoutCS
 doxyoutCS_docOnly
 RealmNetWeaver.Fody.dll
 NuGetBuild
+realm-core-android-*.tar.gz
+*.so
