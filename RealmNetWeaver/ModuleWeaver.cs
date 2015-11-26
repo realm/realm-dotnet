@@ -1,4 +1,4 @@
-﻿/* Copyright 2015 Realm Inc - All Rights Reserved
+/* Copyright 2015 Realm Inc - All Rights Reserved
  * Proprietary and Confidential
  */
  
@@ -30,10 +30,18 @@ public class ModuleWeaver
         LogInfo = m => { };
     }
 
-    public IEnumerable<TypeDefinition> GetMatchingTypes()
+    IEnumerable<TypeDefinition> GetMatchingTypes()
     {
-         return ModuleDefinition.GetTypes().Where(x => (x.BaseType != null ? x.BaseType.Name == "RealmObject" : false));
-        //return ModuleDefinition.GetTypes().Where(x => x.CustomAttributes.Any(a => a.AttributeType.Name == "RealmObjectAttribute"));
+        return ModuleDefinition.GetTypes().Where(x => (x.BaseType != null && x.BaseType.Name == "RealmObject"));
+    }
+
+    bool IsRealmObject(TypeReference prop)
+    {
+        string leafClassName = prop.Name;
+        // TODO make smart enough to cope with subclasses of classes descending from RealmObject
+        // for now is good enough to cope with only direct subclasses
+        var matches = ModuleDefinition.GetTypes().Where(x => (x.BaseType != null && x.BaseType.Name == "RealmObject" && x.Name == leafClassName));
+        return matches.Count() == 1;
     }
 
 
@@ -57,8 +65,10 @@ public class ModuleWeaver
         realmObjectIsManagedGetter = ModuleDefinition.ImportReference(realmObjectType.Properties.Single(x => x.Name == "IsManaged").GetMethod);
         var genericGetValueReference = MethodNamed(realmObjectType, "GetValue");
         var genericSetValueReference = MethodNamed(realmObjectType, "SetValue");
-        //var getListValueReference = MethodNamed(realmObjectType, "GetListValue");
-        //var setListValueReference = MethodNamed(realmObjectType, "SetListValue");
+        var genericGetListValueReference = MethodNamed(realmObjectType, "GetListValue");
+        var genericSetListValueReference = MethodNamed(realmObjectType, "SetListValue");
+        var genericGetObjectValueReference = MethodNamed(realmObjectType, "GetObjectValue");
+        var genericSetObjectValueReference = MethodNamed(realmObjectType, "SetObjectValue");
 
         var wovenAttributeClass = assemblyToReference.MainModule.GetTypes().First(x => x.Name == "WovenAttribute");
         var wovenAttributeConstructor = ModuleDefinition.Import(wovenAttributeClass.GetConstructors().First());
@@ -82,21 +92,25 @@ public class ModuleWeaver
 
                 Debug.Write("  -- Property: " + prop.Name + " (column: " + columnName + ".. ");
                 //TODO check if has either setter or getter and adjust accordingly - https://github.com/realm/realm-dotnet/issues/101
-                if (prop.PropertyType.Namespace == "RealmNet" && prop.PropertyType.Name == "RealmList`1")
-              // TODO maybe support this?  ||prop.PropertyType.Namespace == "System.Collections.Generic" && prop.PropertyType.Name == "IList`1")
-                {
-                    // we may handle things differently here to handle init with a braced collection
-                    AddGetter(prop, columnName, genericGetValueReference);
-                    AddSetter(prop, columnName, genericSetValueReference);  // with casting in the RealmObject methods, should just work
-                }
-                else if (prop.PropertyType.Namespace == "System" 
-                    && (prop.PropertyType.IsPrimitive || prop.PropertyType.Name == "String" || prop.PropertyType.Name == "DateTimeOffset"))
+                if (prop.PropertyType.Namespace == "System" 
+                    && (prop.PropertyType.IsPrimitive || prop.PropertyType.Name == "String" || prop.PropertyType.Name == "DateTimeOffset"))  // most common tested first
                 {
                     AddGetter(prop, columnName, genericGetValueReference);
                     AddSetter(prop, columnName, genericSetValueReference);
                 }
+                else if (prop.PropertyType.Namespace == "RealmNet" && prop.PropertyType.Name == "RealmList`1")
+                {
+                    // we may handle things differently here to handle init with a braced collection
+                    AddGetter(prop, columnName, genericGetListValueReference);
+                    AddSetter(prop, columnName, genericSetListValueReference);  
+                }
+                else if (IsRealmObject(prop.PropertyType))
+                {                    
+                    AddGetter(prop, columnName, genericGetObjectValueReference);
+                    AddSetter(prop, columnName, genericSetObjectValueReference);  // with casting in the RealmObject methods, should just work
+                }
                 else {
-                    throw new NotSupportedException($"class '{type.Name}' field '{columnName}' is a {prop.PropertyType.Name} which is not yet supported");
+                    throw new NotSupportedException($"class '{type.Name}' field '{columnName}' is a {prop.PropertyType} which is not yet supported");
                 }
 
                 var wovenPropertyAttribute = new CustomAttribute(wovenPropertyAttributeConstructor);

@@ -68,9 +68,15 @@ namespace realm {
         static Schema schema_from_group(const Group *group);
 
         // deletes the table for the given type
-        static void delete_data_for_object(Group *group, const StringData &object_type);
+        static void delete_data_for_object(Group *group, StringData object_type);
 
-      private:
+        // indicates if this group contains any objects
+        static bool is_empty(const Group *group);
+
+        static std::string table_name_for_object_type(StringData class_name);
+        static StringData object_type_for_table_name(StringData table_name);
+
+    private:
         // set a new schema version
         static void set_schema_version(Group *group, uint64_t version);
 
@@ -99,9 +105,7 @@ namespace realm {
         // must be in write transaction to set
         static void set_primary_key_for_object(Group *group, StringData object_type, StringData primary_key);
 
-        static TableRef table_for_object_type_create_if_needed(Group *group, const StringData &object_type, bool &created);
-        static std::string table_name_for_object_type(const std::string &class_name);
-        static std::string object_type_for_table_name(const std::string &table_name);
+        static TableRef table_for_object_type_create_if_needed(Group *group, StringData object_type, bool &created);
 
         // returns if any indexes were changed
         static bool update_indexes(Group *group, Schema &schema);
@@ -137,6 +141,8 @@ namespace realm {
     class DuplicatePrimaryKeyValueException : public MigrationException {
       public:
         DuplicatePrimaryKeyValueException(std::string const& object_type, Property const& property);
+        DuplicatePrimaryKeyValueException(std::string const& object_type, Property const& property, const std::string message);
+
         std::string object_type() const { return m_object_type; }
         Property const& property() const { return m_property; }
       private:

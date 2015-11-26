@@ -1,4 +1,4 @@
-﻿/* Copyright 2015 Realm Inc - All Rights Reserved
+/* Copyright 2015 Realm Inc - All Rights Reserved
  * Proprietary and Confidential
  */
  
@@ -87,10 +87,21 @@ namespace RealmNet
                 var indexedAttribute = p.GetCustomAttributes(false).FirstOrDefault(a => a is IndexedAttribute);
                 var isIndexed = indexedAttribute != null;
 
-                var isNullable = !p.PropertyType.IsValueType || Nullable.GetUnderlyingType(p.PropertyType) != null;
+                var isNullable = !(p.PropertyType.IsValueType || 
+                    p.PropertyType.Name == "RealmList`1") ||
+                    Nullable.GetUnderlyingType(p.PropertyType) != null;
 
+                var objectType = "";
+                if (!p.PropertyType.IsValueType && p.PropertyType.Name!="String") {
+                    if (p.PropertyType.Name == "RealmList`1")
+                        objectType = p.PropertyType.GetGenericArguments()[0].Name;
+                    else {
+                        if (p.PropertyType.BaseType.Name == "RealmObject")
+                            objectType = p.PropertyType.Name;
+                    }
+                }
                 var columnType = p.PropertyType;
-                NativeObjectSchema.add_property(objectSchemaPtr, propertyName, MarshalHelpers.RealmColType(columnType), "", 
+                NativeObjectSchema.add_property(objectSchemaPtr, propertyName, MarshalHelpers.RealmColType(columnType), objectType, 
                     MarshalHelpers.BoolToIntPtr(isIdentifier), MarshalHelpers.BoolToIntPtr(isIndexed), MarshalHelpers.BoolToIntPtr(isNullable));
             }
 
@@ -148,23 +159,22 @@ namespace RealmNet
             return result;
         }
 
-        public void Add<T>(T obj) where T : RealmObject
+        public void Attach<T>(T obj) where T : RealmObject
         {
             if (obj == null)
                 throw new ArgumentNullException(nameof(obj));
 
             if (obj.IsManaged)
             {
-                // the object is already owned by this realm, so do nothing I guess
                 if (obj.Realm._sharedRealmHandle == this._sharedRealmHandle)
                     throw new RealmObjectAlreadyOwnedByRealmException("The object is already owned by this realm");
 
-                throw new RealmObjectOwnedByAnotherRealmException("Cannot add an object to a realm when it's already owned by another realm");
+                throw new RealmObjectOwnedByAnotherRealmException("Cannot attach an object to a realm when it's already owned by another realm");
             }
 
 
             if (!IsInTransaction)
-                throw new RealmOutsideTransactionException("Cannot add a Realm object outside write transactions");
+                throw new RealmOutsideTransactionException("Cannot attach a Realm object outside write transactions");
 
             var tableHandle = _tableHandles[typeof(T)];
 
@@ -176,7 +186,7 @@ namespace RealmNet
         }
 
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-        private static RowHandle CreateRowHandle(IntPtr rowPtr)
+        internal static RowHandle CreateRowHandle(IntPtr rowPtr)
         {
             var rowHandle = new RowHandle();
 

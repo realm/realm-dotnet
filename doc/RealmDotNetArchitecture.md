@@ -1,10 +1,22 @@
 Architecture
 ==============
 
+## ObjectStore-based Architecture
+@dot
+digraph { 
+  node[shape = box]
+  edge[arrowhead=vee]
+  
+Realm
+}
+@enddot
+
+
 Diagrams for the architecture discussion for refactoring the dotNet architecture.
 
 Currently as at 2015-08-24
 ---------------------------
+(this was the old architecture from the first proof of concept)
 
 @dot
 digraph { 
