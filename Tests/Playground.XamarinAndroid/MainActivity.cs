@@ -11,6 +11,7 @@ using Android.Widget;
 using Android.OS;
 using RealmNet;
 using System.Linq;
+using System.IO;
 
 namespace Playground.XamarinAndroid
 {
@@ -18,6 +19,76 @@ namespace Playground.XamarinAndroid
     public class MainActivity : Activity
     {
         int count = 1;
+
+        private void WriteLine(string message)
+        {
+            Console.WriteLine(message);
+        }
+
+        private void IntegrationTest()
+        {
+            var realm = Realm.GetInstance(Path.GetTempFileName());
+
+            WriteLine("####Past SharedGroup constructor####");
+
+            Person p1, p2, p3;
+            using (var transaction = realm.BeginWrite())
+            {
+                p1 = realm.CreateObject<Person>();
+                p1.FirstName = "John";
+                p1.LastName = "Smith";
+                p1.IsInteresting = true;
+                p1.Email = "john@smith.com";
+                transaction.Commit();
+            }
+            WriteLine("p1 is named " + p1.FullName);
+
+            using (var transaction = realm.BeginWrite())
+            {
+                p2 = realm.CreateObject<Person>();
+                p2.FullName = "John Doe";
+                p2.IsInteresting = false;
+                p2.Email = "john@deo.com";
+                transaction.Commit();
+            }
+            WriteLine("p2 is named " + p2.FullName);
+
+            using (var transaction = realm.BeginWrite())
+            {
+                p3 = realm.CreateObject<Person>();
+                p3.FullName = "Peter Jameson";
+                p3.Email = "peter@jameson.com";
+                p3.IsInteresting = true;
+
+                //p3 = new Person { FullName = "Peter Jameson", Email = "peter@jameson.com", IsInteresting = true };
+                transaction.Commit();
+            }
+
+            WriteLine("p3 is named " + p3.FullName);
+
+            var allPeople = realm.All<Person>().ToList();
+            WriteLine("There are " + allPeople.Count() + " in total");
+
+            var interestingPeople = from p in realm.All<Person>() where p.IsInteresting == true select p;
+
+            WriteLine("Interesting people include:");
+            foreach (var p in interestingPeople)
+                WriteLine(" - " + p.FullName + " (" + p.Email + ")");
+
+            var johns = from p in realm.All<Person>() where p.FirstName == "John" select p;
+            WriteLine("People named John:");
+            foreach (var p in johns)
+                WriteLine(" - " + p.FullName + " (" + p.Email + ")");
+
+            using (var transaction = realm.BeginWrite())
+            {
+                realm.Remove(p2);
+
+                var allPeopleAfterDelete = realm.All<Person>().ToList();
+                WriteLine("After deleting one, there are " + allPeopleAfterDelete.Count() + " in total");
+                transaction.Commit();
+            }
+        }
 
         protected override void OnCreate(Bundle bundle)
         {
@@ -32,42 +103,8 @@ namespace Playground.XamarinAndroid
 
             button.Click += delegate { button.Text = string.Format("{0} clicks!", count++); };
 
+            IntegrationTest();
 
-            var coreProvider = new CoreProvider();
-            Realm.ActiveCoreProvider = coreProvider;
-            var realm = Realm.GetInstance();
-
-            var p1 = realm.CreateObject<Person>();
-            p1.FirstName = "John";
-            p1.LastName = "Smith";
-            p1.IsInteresting = true;
-            p1.Email = "john@smith.com";
-            System.Diagnostics.Debug.WriteLine("p1 is named " + p1.FullName);
-
-            var p2 = realm.CreateObject<Person>();
-            p2.FullName = "John Doe";
-            p2.IsInteresting = false;
-            p2.Email = "john@deo.com";
-            System.Diagnostics.Debug.WriteLine("p2 is named " + p2.FullName);
-
-            var p3 = realm.CreateObject<Person>();
-            p3.FullName = "Peter Jameson";
-            p3.Email = "peter@jameson.com";
-            p3.IsInteresting = true;
-            System.Diagnostics.Debug.WriteLine("p3 is named " + p3.FullName);
-
-
-            var interestingPeople = from p in realm.All<Person>() where p.IsInteresting == true select p;
-
-            System.Diagnostics.Debug.WriteLine("Interesting people include:");
-            foreach (var p in interestingPeople)
-                System.Diagnostics.Debug.WriteLine(" - " + p.FullName + " (" + p.Email + ")");
-
-            var johns = from p in realm.All<Person>() where p.FirstName == "John" select p;
-            System.Diagnostics.Debug.WriteLine("People named John:");
-            foreach (var p in johns)
-                System.Diagnostics.Debug.WriteLine(" - " + p.FullName + " (" + p.Email + ")");
-            
         }
     }
 }
