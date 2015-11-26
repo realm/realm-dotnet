@@ -213,10 +213,16 @@ namespace RealmNet
             var tableHandle = _realm._tableHandles[GetType()];
             var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
             var rowIndex = _rowHandle.RowIndex;
-            if (value==null)
-                NativeTable.clear_link (tableHandle, columnIndex, (IntPtr)rowIndex);
+            if (value == null)
+            {
+                NativeTable.clear_link(tableHandle, columnIndex, (IntPtr)rowIndex);
+            }
             else
-                NativeTable.set_link (tableHandle, columnIndex, (IntPtr)rowIndex, (IntPtr)value.RowHandle.RowIndex);
+            {
+                if (!value.IsManaged)
+                    _realm.Attach(value);
+                NativeTable.set_link(tableHandle, columnIndex, (IntPtr)rowIndex, (IntPtr)value.RowHandle.RowIndex);
+            }
 
         }
 

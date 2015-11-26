@@ -94,7 +94,7 @@ namespace RealmNet
                 var objectType = "";
                 if (!p.PropertyType.IsValueType && p.PropertyType.Name!="String") {
                     if (p.PropertyType.Name == "RealmList`1")
-                        objectType = p.PropertyType.GenericTypeArguments [0].Name;
+                        objectType = p.PropertyType.GetGenericArguments()[0].Name;
                     else {
                         if (p.PropertyType.BaseType.Name == "RealmObject")
                             objectType = p.PropertyType.Name;
