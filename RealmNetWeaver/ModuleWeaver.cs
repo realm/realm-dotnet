@@ -17,6 +17,8 @@ public class ModuleWeaver
 
     public Action<string> LogWarning { get; set; }
 
+    public Action<string, SequencePoint> LogErrorPoint { get; set; }
+
     // An instance of Mono.Cecil.ModuleDefinition for processing
     public ModuleDefinition ModuleDefinition { get; set; }
 
@@ -26,6 +28,8 @@ public class ModuleWeaver
     public ModuleWeaver()
     {
         LogInfo = m => { };
+        LogWarning = m => { };
+        LogErrorPoint = (m, p) => { };
     }
 
     IEnumerable<TypeDefinition> GetMatchingTypes()
@@ -75,6 +79,8 @@ public class ModuleWeaver
             Debug.WriteLine("Weaving " + type.Name);
             foreach (var prop in type.Properties.Where(x => !x.CustomAttributes.Any(a => a.AttributeType.Name == "IgnoredAttribute")))
             {
+                var sequencePoint = prop.GetMethod.Body.Instructions.First().SequencePoint;
+
                 var columnName = prop.Name;
                 var mapToAttribute = prop.CustomAttributes.FirstOrDefault(a => a.AttributeType.Name == "MapToAttribute");
                 if (mapToAttribute != null)
@@ -100,7 +106,7 @@ public class ModuleWeaver
                     AddSetter(prop, columnName, genericSetObjectValueReference);  // with casting in the RealmObject methods, should just work
                 }
                 else {
-                    throw new NotSupportedException($"class '{type.Name}' field '{columnName}' is a {prop.PropertyType} which is not yet supported");
+                    LogErrorPoint($"class '{type.Name}' field '{columnName}' is a {prop.PropertyType} which is not yet supported", sequencePoint);
                 }
 
                 Debug.WriteLine("");
