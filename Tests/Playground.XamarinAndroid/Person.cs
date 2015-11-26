@@ -14,11 +14,11 @@ namespace Playground.XamarinAndroid
         public string LastName { get; set; }
 
         // Ignored property
-        [Ignore]
+        [Ignored]
         public bool IsOnline { get; set; }
 
         // Composite property
-        [Ignore]
+        [Ignored]
         public string FullName
         {
             get { return FirstName + " " + LastName; }
