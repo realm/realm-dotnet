@@ -64,7 +64,7 @@ build/Debug-iphonesimulator/libwrappers.a: core $(SRCS)
 build/Debug-ios-universal: | build
 	mkdir -p build/Debug-ios-universal
 
-build/Debug-ios-universal/libwrappers.a: build/Debug-iphoneos/libwrappers-core-debug.a build/Debug-iphonesimulator/libwrappers-core-debug.a | build/Debug-ios-universal
+build/Debug-ios-universal/libwrappers.a: build/Debug-iphoneos/libwrappers.a build/Debug-iphonesimulator/libwrappers.a | build/Debug-ios-universal
 	lipo -create -output "build/Debug-ios-universal/libwrappers.a" "build/Debug-iphoneos/libwrappers-core-debug.a" "build/Debug-iphonesimulator/libwrappers-core-debug.a"
 
 .PHONY: osx ios iosdbg
