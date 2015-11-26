@@ -53,5 +53,12 @@ namespace IntegrationTests
         }
 
         public bool IsInteresting { get; set; }
+
+        private string _nickname;
+        public string Nickname
+        {
+            get { return _nickname; }
+            set { _nickname = value; }
+        }
     }
 }
