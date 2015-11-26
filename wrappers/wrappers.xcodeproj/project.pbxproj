@@ -7,6 +7,35 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		424266FD1C070B9500670B1C /* row_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48CD1A3A1BD4E9EF004C6DC0 /* row_cs.cpp */; };
+		424266FE1C070B9500670B1C /* schema.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48CD1A521BD4E9FF004C6DC0 /* schema.cpp */; };
+		424266FF1C070B9500670B1C /* schema_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48CD1A3B1BD4E9EF004C6DC0 /* schema_cs.cpp */; };
+		424267001C070B9500670B1C /* table_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48CD1A3D1BD4E9EF004C6DC0 /* table_cs.cpp */; };
+		424267011C070B9500670B1C /* marshalling.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48CD1A341BD4E9EF004C6DC0 /* marshalling.cpp */; };
+		424267021C070B9500670B1C /* external_commit_helper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48115BA61BEA3A1300224F7B /* external_commit_helper.cpp */; };
+		424267031C070B9500670B1C /* object_schema_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48CD1A361BD4E9EF004C6DC0 /* object_schema_cs.cpp */; };
+		424267041C070B9500670B1C /* shared_realm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48CD1A541BD4E9FF004C6DC0 /* shared_realm.cpp */; };
+		424267051C070B9500670B1C /* transact_log_handler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4294FAD51C05B1F4008064C9 /* transact_log_handler.cpp */; };
+		424267061C070B9500670B1C /* query_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48CD1A371BD4E9EF004C6DC0 /* query_cs.cpp */; };
+		424267071C070B9500670B1C /* index_set.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48CD1A4A1BD4E9FF004C6DC0 /* index_set.cpp */; };
+		424267081C070B9500670B1C /* shared_realm_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48CD1A3C1BD4E9EF004C6DC0 /* shared_realm_cs.cpp */; };
+		424267091C070B9500670B1C /* error_handling.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48CD1A321BD4E9EF004C6DC0 /* error_handling.cpp */; };
+		4242670A1C070B9500670B1C /* linklist_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42C21FB51BFF796B0080A0F2 /* linklist_cs.cpp */; };
+		4242670B1C070B9500670B1C /* object_store.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48CD1A4E1BD4E9FF004C6DC0 /* object_store.cpp */; };
+		4242670C1C070B9500670B1C /* object_schema.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48CD1A4C1BD4E9FF004C6DC0 /* object_schema.cpp */; };
+		424267111C070B9500670B1C /* object_schema.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48CD1A4D1BD4E9FF004C6DC0 /* object_schema.hpp */; };
+		424267121C070B9500670B1C /* property.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48CD1A501BD4E9FF004C6DC0 /* property.hpp */; };
+		424267131C070B9500670B1C /* external_commit_helper.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48115BA71BEA3A1300224F7B /* external_commit_helper.hpp */; };
+		424267141C070B9500670B1C /* binding_context.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 4294FAD91C05B8E5008064C9 /* binding_context.hpp */; };
+		424267151C070B9500670B1C /* object_store.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48CD1A4F1BD4E9FF004C6DC0 /* object_store.hpp */; };
+		424267161C070B9500670B1C /* index_set.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48CD1A4B1BD4E9FF004C6DC0 /* index_set.hpp */; };
+		424267171C070B9500670B1C /* error_handling.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48CD1A331BD4E9EF004C6DC0 /* error_handling.hpp */; };
+		424267181C070B9500670B1C /* schema.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48CD1A531BD4E9FF004C6DC0 /* schema.hpp */; };
+		424267191C070B9500670B1C /* transact_log_handler.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 4294FAD61C05B1F4008064C9 /* transact_log_handler.hpp */; };
+		4242671A1C070B9500670B1C /* shared_realm.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48CD1A551BD4E9FF004C6DC0 /* shared_realm.hpp */; };
+		4242671B1C070B9500670B1C /* marshalling.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48CD1A351BD4E9EF004C6DC0 /* marshalling.hpp */; };
+		424267211C070BE500670B1C /* librealm-ios-no-bitcode-dbg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 424267201C070BE500670B1C /* librealm-ios-no-bitcode-dbg.a */; };
+		424267231C070BEA00670B1C /* librealm-dbg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 424267221C070BEA00670B1C /* librealm-dbg.a */; };
 		4294FAD71C05B1F4008064C9 /* transact_log_handler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4294FAD51C05B1F4008064C9 /* transact_log_handler.cpp */; };
 		4294FAD81C05B1F4008064C9 /* transact_log_handler.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 4294FAD61C05B1F4008064C9 /* transact_log_handler.hpp */; };
 		4294FADA1C05B8E5008064C9 /* binding_context.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 4294FAD91C05B8E5008064C9 /* binding_context.hpp */; };
@@ -40,6 +69,9 @@
 
 /* Begin PBXFileReference section */
 		423263231C034D9400F1C9C1 /* shared_linklist.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = shared_linklist.hpp; sourceTree = "<group>"; };
+		4242671F1C070B9500670B1C /* libwrappers-core-debug.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libwrappers-core-debug.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		424267201C070BE500670B1C /* librealm-ios-no-bitcode-dbg.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "librealm-ios-no-bitcode-dbg.a"; path = "core/librealm-ios-no-bitcode-dbg.a"; sourceTree = "<group>"; };
+		424267221C070BEA00670B1C /* librealm-dbg.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "librealm-dbg.a"; path = "core/librealm-dbg.a"; sourceTree = "<group>"; };
 		4294FAD51C05B1F4008064C9 /* transact_log_handler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = transact_log_handler.cpp; path = "object-store/impl/transact_log_handler.cpp"; sourceTree = "<group>"; };
 		4294FAD61C05B1F4008064C9 /* transact_log_handler.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = transact_log_handler.hpp; path = "object-store/impl/transact_log_handler.hpp"; sourceTree = "<group>"; };
 		4294FAD91C05B8E5008064C9 /* binding_context.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = binding_context.hpp; path = "object-store/binding_context.hpp"; sourceTree = "<group>"; };
@@ -73,6 +105,15 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		4242670D1C070B9500670B1C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				424267231C070BEA00670B1C /* librealm-dbg.a in Frameworks */,
+				424267211C070BE500670B1C /* librealm-ios-no-bitcode-dbg.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		48D101351B39902E004A4B2C /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -88,6 +129,8 @@
 		48D1012F1B39902E004A4B2C = {
 			isa = PBXGroup;
 			children = (
+				424267221C070BEA00670B1C /* librealm-dbg.a */,
+				424267201C070BE500670B1C /* librealm-ios-no-bitcode-dbg.a */,
 				4294FAD91C05B8E5008064C9 /* binding_context.hpp */,
 				4294FAD51C05B1F4008064C9 /* transact_log_handler.cpp */,
 				4294FAD61C05B1F4008064C9 /* transact_log_handler.hpp */,
@@ -126,6 +169,7 @@
 			isa = PBXGroup;
 			children = (
 				48D101381B39902E004A4B2C /* libwrappers.a */,
+				4242671F1C070B9500670B1C /* libwrappers-core-debug.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -133,6 +177,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
+		424267101C070B9500670B1C /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				424267111C070B9500670B1C /* object_schema.hpp in Headers */,
+				424267121C070B9500670B1C /* property.hpp in Headers */,
+				424267131C070B9500670B1C /* external_commit_helper.hpp in Headers */,
+				424267141C070B9500670B1C /* binding_context.hpp in Headers */,
+				424267151C070B9500670B1C /* object_store.hpp in Headers */,
+				424267161C070B9500670B1C /* index_set.hpp in Headers */,
+				424267171C070B9500670B1C /* error_handling.hpp in Headers */,
+				424267181C070B9500670B1C /* schema.hpp in Headers */,
+				424267191C070B9500670B1C /* transact_log_handler.hpp in Headers */,
+				4242671A1C070B9500670B1C /* shared_realm.hpp in Headers */,
+				4242671B1C070B9500670B1C /* marshalling.hpp in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		48D101361B39902E004A4B2C /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
@@ -154,6 +216,23 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
+		424266FB1C070B9500670B1C /* wrappers-core-debug */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4242671C1C070B9500670B1C /* Build configuration list for PBXNativeTarget "wrappers-core-debug" */;
+			buildPhases = (
+				424266FC1C070B9500670B1C /* Sources */,
+				4242670D1C070B9500670B1C /* Frameworks */,
+				424267101C070B9500670B1C /* Headers */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "wrappers-core-debug";
+			productName = wrappers;
+			productReference = 4242671F1C070B9500670B1C /* libwrappers-core-debug.a */;
+			productType = "com.apple.product-type.library.static";
+		};
 		48D101371B39902E004A4B2C /* wrappers */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 48D1013C1B39902E004A4B2C /* Build configuration list for PBXNativeTarget "wrappers" */;
@@ -198,11 +277,35 @@
 			projectRoot = "";
 			targets = (
 				48D101371B39902E004A4B2C /* wrappers */,
+				424266FB1C070B9500670B1C /* wrappers-core-debug */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
+		424266FC1C070B9500670B1C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				424266FD1C070B9500670B1C /* row_cs.cpp in Sources */,
+				424266FE1C070B9500670B1C /* schema.cpp in Sources */,
+				424266FF1C070B9500670B1C /* schema_cs.cpp in Sources */,
+				424267001C070B9500670B1C /* table_cs.cpp in Sources */,
+				424267011C070B9500670B1C /* marshalling.cpp in Sources */,
+				424267021C070B9500670B1C /* external_commit_helper.cpp in Sources */,
+				424267031C070B9500670B1C /* object_schema_cs.cpp in Sources */,
+				424267041C070B9500670B1C /* shared_realm.cpp in Sources */,
+				424267051C070B9500670B1C /* transact_log_handler.cpp in Sources */,
+				424267061C070B9500670B1C /* query_cs.cpp in Sources */,
+				424267071C070B9500670B1C /* index_set.cpp in Sources */,
+				424267081C070B9500670B1C /* shared_realm_cs.cpp in Sources */,
+				424267091C070B9500670B1C /* error_handling.cpp in Sources */,
+				4242670A1C070B9500670B1C /* linklist_cs.cpp in Sources */,
+				4242670B1C070B9500670B1C /* object_store.cpp in Sources */,
+				4242670C1C070B9500670B1C /* object_schema.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		48D101341B39902E004A4B2C /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -229,6 +332,60 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
+		4242671D1C070B9500670B1C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				ENABLE_BITCODE = NO;
+				EXECUTABLE_PREFIX = lib;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					REALM_DEBUG,
+					"$(inherited)",
+				);
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					./core/include,
+					"./object-store",
+					"./object-store/impl",
+					"./object-store/impl/apple",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					./core,
+					"$(PROJECT_DIR)/core",
+				);
+				ONLY_ACTIVE_ARCH = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		4242671E1C070B9500670B1C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				ENABLE_BITCODE = NO;
+				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
+					./core/include,
+					"./object-store",
+					"./object-store/impl",
+					"./object-store/impl/apple",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					./core,
+					"$(PROJECT_DIR)/core",
+				);
+				ONLY_ACTIVE_ARCH = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		48D1013A1B39902E004A4B2C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -256,6 +413,7 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
+					REALM_HAVE_CONFIG,
 					"$(inherited)",
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
@@ -300,6 +458,7 @@
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = REALM_HAVE_CONFIG;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
@@ -370,6 +529,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		4242671C1C070B9500670B1C /* Build configuration list for PBXNativeTarget "wrappers-core-debug" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4242671D1C070B9500670B1C /* Debug */,
+				4242671E1C070B9500670B1C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		48D101331B39902E004A4B2C /* Build configuration list for PBXProject "wrappers" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

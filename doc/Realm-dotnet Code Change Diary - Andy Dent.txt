@@ -986,7 +986,7 @@ Merged current ObjectStore subtree
 
 Makefile
 - bumped Core version number to 0.95.0
-
+- corrected names of debug libwrappers.a 
 
 wrappers/object-store/transact_log_handler.*pp
 - removed our old copies so we use those in object-store/impl
@@ -1002,7 +1002,15 @@ wrappers.xcodeproj
 Realm	.sln
 - replaced old RealmNetWeaver.csproj with RealmNetWeaver.Fody.csproj
 
+Added definition of REALM_HAVE_CONFIG in
+- Wrappers/Application.mk
+- Wrappers/Android.mk
+- Wrappers.xcodeproj
 
+IntegrationTests.XamarinAndroid.csproj
+- add wrappers folder so it has linked wrappers+core
+- added Fody package
+- added RealmNetWeaver into generated FodyWeavers.xml
 
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 Ensuring Relationships work on Win32

@@ -7,6 +7,7 @@ APP_CPPFLAGS += -std=c++11
 APP_CPPFLAGS += -frtti
 APP_CPPFLAGS += -fexceptions
 APP_CPPFLAGS += -pthread
+APP_CPPFLAGS += -DREALM_HAVE_CONFIG
 
 # Instruct to use the static GNU STL implementation
 APP_STL := gnustl_static
