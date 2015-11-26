@@ -997,4 +997,21 @@ wrappers/realm-csharp.cpp
 
 wrappers.xcodeproj
 - replaced librealm-ios with librealm-ios-no-bitcode
+- set Enable Bitcode to No (was Yes)
 
+Realm	.sln
+- replaced old RealmNetWeaver.csproj with RealmNetWeaver.Fody.csproj
+
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Ensuring Relationships work on Win32
+
+RealmNet.Win32.csproj
+- changed to target .Net 4.5 (see issue #222)
+
+Win32RelationshipTests.cs
+- added so could do relationship testing under current release
+
+RelationshipTests.cs
+- corrected namespace to IntegrationTests.Shared

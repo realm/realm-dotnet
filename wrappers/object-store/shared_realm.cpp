@@ -461,7 +461,7 @@ void RealmCache::cache_realm(SharedRealm &realm, std::thread::id thread_id)
 
     auto path_iter = m_cache.find(realm->config().path);
     if (path_iter == m_cache.end()) {
-        m_cache.emplace(realm->config().path, std::map<std::thread::id, WeakRealm>{ {thread_id, realm}});
+        m_cache.emplace(realm->config().path, std::map<std::thread::id, WeakRealm>{{thread_id, realm}});
     }
     else {
         path_iter->second.emplace(thread_id, realm);
