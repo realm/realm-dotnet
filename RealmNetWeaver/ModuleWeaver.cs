@@ -15,7 +15,7 @@ public class ModuleWeaver
     // Will log an informational message to MSBuild
     public Action<string> LogInfo { get; set; }
 
-    public Action<string> LogWarning { get; set; }
+    public Action<string, SequencePoint> LogWarningPoint { get; set; }
 
     public Action<string, SequencePoint> LogErrorPoint { get; set; }
 
@@ -28,7 +28,7 @@ public class ModuleWeaver
     public ModuleWeaver()
     {
         LogInfo = m => { };
-        LogWarning = m => { };
+        LogWarningPoint = (m, p) => { };
         LogErrorPoint = (m, p) => { };
     }
 
@@ -96,12 +96,22 @@ public class ModuleWeaver
                 }
                 else if (prop.PropertyType.Namespace == "RealmNet" && prop.PropertyType.Name == "RealmList`1")
                 {
+                    if (!prop.IsAutomatic())
+                    {
+                        LogWarningPoint($"{type.Name}.{columnName} is not an automatic property but its type is a RealmList which normally indicates a relationship", sequencePoint);
+                    }
+
                     // we may handle things differently here to handle init with a braced collection
                     AddGetter(prop, columnName, genericGetListValueReference);
                     AddSetter(prop, columnName, genericSetListValueReference);  
                 }
                 else if (IsRealmObject(prop.PropertyType))
-                {                    
+                {
+                    if (!prop.IsAutomatic())
+                    {
+                        LogWarningPoint($"{type.Name}.{columnName} is not an automatic property but its type is a RealmObject which normally indicates a relationship", sequencePoint);
+                    }
+
                     AddGetter(prop, columnName, genericGetObjectValueReference);
                     AddSetter(prop, columnName, genericSetObjectValueReference);  // with casting in the RealmObject methods, should just work
                 }
