@@ -199,6 +199,48 @@ namespace IntegrationTests
         }
 
         [Test]
+        public void AttachOutsideTransactionShouldFail()
+        {
+            var obj = new Person();
+            Assert.Throws<RealmOutsideTransactionException>(() => _realm.Attach(obj));
+        }
+
+        [Test]
+        public void AttachNullObjectShouldFail()
+        {
+            Assert.Throws<ArgumentNullException>(() => _realm.Attach(null as Person));
+        }
+
+        [Test]
+        public void AttachAnObjectFromAnotherRealmShouldFail()
+        {
+            Person p;
+            using (var transaction = _realm.BeginWrite())
+            {
+                p = _realm.CreateObject<Person>();
+                transaction.Commit();
+            }
+
+            using (var otherRealm = Realm.GetInstance(Path.GetTempFileName()))
+            {
+                Assert.Throws<RealmObjectOwnedByAnotherRealmException>(() => otherRealm.Attach(p));
+            }
+        }
+
+        [Test]
+        public void AttachAnObjectToRealmItAlreadyBelongsToShouldFail()
+        {
+            Person p;
+            using (var transaction = _realm.BeginWrite())
+            {
+                p = _realm.CreateObject<Person>();
+                transaction.Commit();
+            }
+
+            Assert.Throws<RealmObjectAlreadyOwnedByRealmException>(() => _realm.Attach(p));
+        }
+
+        [Test]
         public void SetPropertyOutsideTransactionShouldFail()
         {
             // Arrange

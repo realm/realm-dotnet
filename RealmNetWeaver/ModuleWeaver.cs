@@ -24,6 +24,8 @@ public class ModuleWeaver
 
     TypeSystem typeSystem;
 
+    MethodReference realmObjectIsManagedGetter;
+
     // Init logging delegates to make testing easier
     public ModuleWeaver()
     {
@@ -64,6 +66,7 @@ public class ModuleWeaver
         var assemblyToReference = ModuleDefinition.AssemblyResolver.Resolve("RealmNet");
 
         var realmObjectType = assemblyToReference.MainModule.GetTypes().First(x => x.Name == "RealmObject");
+        realmObjectIsManagedGetter = ModuleDefinition.ImportReference(realmObjectType.Properties.Single(x => x.Name == "IsManaged").GetMethod);
         var genericGetValueReference = MethodNamed(realmObjectType, "GetValue");
         var genericSetValueReference = MethodNamed(realmObjectType, "SetValue");
         var genericGetListValueReference = MethodNamed(realmObjectType, "GetListValue");
@@ -73,6 +76,11 @@ public class ModuleWeaver
 
         var wovenAttributeClass = assemblyToReference.MainModule.GetTypes().First(x => x.Name == "WovenAttribute");
         var wovenAttributeConstructor = ModuleDefinition.Import(wovenAttributeClass.GetConstructors().First());
+
+        var wovenPropertyAttributeClass = assemblyToReference.MainModule.GetTypes().First(x => x.Name == "WovenPropertyAttribute");
+        var wovenPropertyAttributeConstructor = ModuleDefinition.ImportReference(wovenPropertyAttributeClass.GetConstructors().First());
+        var corlib = ModuleDefinition.AssemblyResolver.Resolve((AssemblyNameReference)ModuleDefinition.TypeSystem.CoreLibrary);
+        var stringType = ModuleDefinition.ImportReference(corlib.MainModule.GetType("System.String"));
 
         foreach (var type in GetMatchingTypes())
         {
@@ -86,13 +94,15 @@ public class ModuleWeaver
                 if (mapToAttribute != null)
                     columnName = ((string)mapToAttribute.ConstructorArguments[0].Value);
 
+                var backingField = GetBackingField(prop);
+
                 Debug.Write("  -- Property: " + prop.Name + " (column: " + columnName + ".. ");
                 //TODO check if has either setter or getter and adjust accordingly - https://github.com/realm/realm-dotnet/issues/101
                 if (prop.PropertyType.Namespace == "System" 
                     && (prop.PropertyType.IsPrimitive || prop.PropertyType.Name == "String" || prop.PropertyType.Name == "DateTimeOffset"))  // most common tested first
                 {
-                    AddGetter(prop, columnName, genericGetValueReference);
-                    AddSetter(prop, columnName, genericSetValueReference);
+                    ReplaceGetter(prop, columnName, new GenericInstanceMethod(genericGetValueReference) { GenericArguments = { prop.PropertyType } });
+                    ReplaceSetter(prop, columnName, new GenericInstanceMethod(genericSetValueReference) { GenericArguments = { prop.PropertyType } });
                 }
                 else if (prop.PropertyType.Namespace == "RealmNet" && prop.PropertyType.Name == "RealmList`1")
                 {
@@ -102,8 +112,9 @@ public class ModuleWeaver
                     }
 
                     // we may handle things differently here to handle init with a braced collection
-                    AddGetter(prop, columnName, genericGetListValueReference);
-                    AddSetter(prop, columnName, genericSetListValueReference);  
+                    var elementType = ((GenericInstanceType)prop.PropertyType).GenericArguments.Single();
+                    ReplaceGetter(prop, columnName, new GenericInstanceMethod(genericGetListValueReference) { GenericArguments = { elementType } });
+                    ReplaceSetter(prop, columnName, new GenericInstanceMethod(genericSetListValueReference) { GenericArguments = { elementType } });  
                 }
                 else if (IsRealmObject(prop.PropertyType))
                 {
@@ -112,12 +123,16 @@ public class ModuleWeaver
                         LogWarningPoint($"{type.Name}.{columnName} is not an automatic property but its type is a RealmObject which normally indicates a relationship", sequencePoint);
                     }
 
-                    AddGetter(prop, columnName, genericGetObjectValueReference);
-                    AddSetter(prop, columnName, genericSetObjectValueReference);  // with casting in the RealmObject methods, should just work
+                    ReplaceGetter(prop, columnName, new GenericInstanceMethod(genericGetObjectValueReference) { GenericArguments = { prop.PropertyType } });
+                    ReplaceSetter(prop, columnName, new GenericInstanceMethod(genericSetObjectValueReference) { GenericArguments = { prop.PropertyType } });  // with casting in the RealmObject methods, should just work
                 }
                 else {
                     LogErrorPoint($"class '{type.Name}' field '{columnName}' is a {prop.PropertyType} which is not yet supported", sequencePoint);
                 }
+
+                var wovenPropertyAttribute = new CustomAttribute(wovenPropertyAttributeConstructor);
+                wovenPropertyAttribute.ConstructorArguments.Add(new CustomAttributeArgument(stringType, backingField.Name));
+                prop.CustomAttributes.Add(wovenPropertyAttribute);
 
                 Debug.WriteLine("");
             }
@@ -129,34 +144,76 @@ public class ModuleWeaver
         return;
     }
 
-
-    void AddGetter(PropertyDefinition prop, string columnName, MethodReference getValueReference)
+    void ReplaceGetter(PropertyDefinition prop, string columnName, MethodReference getValueReference)
     {
-        var specializedGetValue = new GenericInstanceMethod(getValueReference);
-        specializedGetValue.GenericArguments.Add(prop.PropertyType);
+        /// A synthesized property getter looks like this:
+        ///   0: ldarg.0
+        ///   1: ldfld <backingField>
+        ///   2: ret
+        /// We want to change it so it looks like this:
+        ///   0: ldarg.0
+        ///   1: call RealmNet.RealmObject.get_IsManaged
+        ///   2: brfalse.s 7
+        ///   3: ldarg.0
+        ///   4: ldstr <columnName>
+        ///   5: call RealmNet.RealmObject.GetValue<T>
+        ///   6: ret
+        ///   7: ldarg.0
+        ///   8: ldfld <backingField>
+        ///   9: ret
+        /// This is roughly equivalent to:
+        ///   if (!base.IsManaged) return this.<backingField>;
+        ///   else return base.GetValue<T>(<columnName>);
 
-        prop.GetMethod.Body.Instructions.Clear();
-        var getProcessor = prop.GetMethod.Body.GetILProcessor();
-        getProcessor.Emit(OpCodes.Ldarg_0);
-        getProcessor.Emit(OpCodes.Ldstr, columnName);
-        getProcessor.Emit(OpCodes.Call, specializedGetValue);
-        getProcessor.Emit(OpCodes.Ret);
+        var start = prop.GetMethod.Body.Instructions.First();
+        var il = prop.GetMethod.Body.GetILProcessor();
+
+        il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));
+        il.InsertBefore(start, il.Create(OpCodes.Call, realmObjectIsManagedGetter));
+        il.InsertBefore(start, il.Create(OpCodes.Brfalse_S, start));
+        il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));
+        il.InsertBefore(start, il.Create(OpCodes.Ldstr, columnName));
+        il.InsertBefore(start, il.Create(OpCodes.Call, getValueReference));
+        il.InsertBefore(start, il.Create(OpCodes.Ret));
+
         Debug.Write("[get] ");
     }
 
-
-    void AddSetter(PropertyDefinition prop, string columnName, MethodReference setValueReference)
+    void ReplaceSetter(PropertyDefinition prop, string columnName, MethodReference setValueReference)
     {
-        var specializedSetValue = new GenericInstanceMethod(setValueReference);
-        specializedSetValue.GenericArguments.Add(prop.PropertyType);
+        /// A synthesized property setter looks like this:
+        ///   0: ldarg.0
+        ///   1: ldarg.1
+        ///   2: stfld <backingField>
+        ///   3: ret
+        /// We want to change it so it looks like this:
+        ///   0: ldarg.0
+        ///   1: call RealmNet.RealmObject.get_IsManaged
+        ///   2: brfalse.s 8
+        ///   3: ldarg.0
+        ///   4: ldstr <columnName>
+        ///   5: ldarg.1
+        ///   6: call RealmNet.RealmObject.SetValue<T>
+        ///   7: ret
+        ///   8: ldarg.0
+        ///   9: ldarg.1
+        ///   10: stfld <backingField>
+        ///   11: ret
+        /// This is roughly equivalent to:
+        ///   if (!base.IsManaged) this.<backingField> = value;
+        ///   else base.SetValue<T>(<columnName>, value);
 
-        prop.SetMethod.Body.Instructions.Clear();
-        var setProcessor = prop.SetMethod.Body.GetILProcessor();
-        setProcessor.Emit(OpCodes.Ldarg_0);
-        setProcessor.Emit(OpCodes.Ldstr, columnName);
-        setProcessor.Emit(OpCodes.Ldarg_1);
-        setProcessor.Emit(OpCodes.Call, specializedSetValue);
-        setProcessor.Emit(OpCodes.Ret);
+        var start = prop.SetMethod.Body.Instructions.First();
+        var il = prop.SetMethod.Body.GetILProcessor();
+
+        il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));
+        il.InsertBefore(start, il.Create(OpCodes.Call, realmObjectIsManagedGetter));
+        il.InsertBefore(start, il.Create(OpCodes.Brfalse_S, start));
+        il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));
+        il.InsertBefore(start, il.Create(OpCodes.Ldstr, columnName));
+        il.InsertBefore(start, il.Create(OpCodes.Ldarg_1));
+        il.InsertBefore(start, il.Create(OpCodes.Call, setValueReference));
+        il.InsertBefore(start, il.Create(OpCodes.Ret));
 
         Debug.Write("[set] ");
     }
@@ -180,5 +237,14 @@ public class ModuleWeaver
         processor.Emit(OpCodes.Ldstr, "Hello World!!");
         processor.Emit(OpCodes.Ret);
         newType.Methods.Add(method);
+    }
+
+    private static FieldReference GetBackingField(PropertyDefinition property)
+    {
+        return property.GetMethod.Body.Instructions
+            .Where(o => o.OpCode == OpCodes.Ldfld)
+            .Select(o => o.Operand)
+            .OfType<FieldReference>()
+            .SingleOrDefault();
     }
 }
