@@ -221,7 +221,9 @@ packages
 Tools/RealmWeaver.Fody.dll
 wrappers/DerivedData
 wrappers/core
+wrappers/core-android
 wrappers/realm-core*.bz2
+wrappers/realm-core-android*.gz
 doxyout
 doxyoutCS
 doxyoutCS_docOnly
