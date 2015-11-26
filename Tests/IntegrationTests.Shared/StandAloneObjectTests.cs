@@ -24,7 +24,7 @@ namespace IntegrationTests.Shared
         {
             string firstName = null;
             Assert.DoesNotThrow(() => firstName = _person.FirstName);
-            Assert.IsNullOrEmpty(firstName);
+            Assert.That(string.IsNullOrEmpty(firstName));
         }
 
         [Test]
