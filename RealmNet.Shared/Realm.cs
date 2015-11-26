@@ -81,8 +81,8 @@ namespace RealmNet
                 var mapToAttribute = p.GetCustomAttributes(false).FirstOrDefault(a => a is MapToAttribute) as MapToAttribute;
                 var propertyName = mapToAttribute != null ? mapToAttribute.Mapping : p.Name;
 
-                var IdentifierAttribute = p.GetCustomAttributes(false).FirstOrDefault(a => a is IdentifierAttribute);
-                var isIdentifier = IdentifierAttribute != null;
+                var objectIdAttribute = p.GetCustomAttributes(false).FirstOrDefault(a => a is ObjectIdAttribute);
+                var isObjectId = objectIdAttribute != null;
 
                 var indexedAttribute = p.GetCustomAttributes(false).FirstOrDefault(a => a is IndexedAttribute);
                 var isIndexed = indexedAttribute != null;
@@ -94,7 +94,7 @@ namespace RealmNet
                 var objectType = "";
                 if (!p.PropertyType.IsValueType && p.PropertyType.Name!="String") {
                     if (p.PropertyType.Name == "RealmList`1")
-                        objectType = p.PropertyType.GenericTypeArguments [0].Name;
+                        objectType = p.PropertyType.GetGenericArguments()[0].Name;
                     else {
                         if (p.PropertyType.BaseType.Name == "RealmObject")
                             objectType = p.PropertyType.Name;
@@ -102,7 +102,7 @@ namespace RealmNet
                 }
                 var columnType = p.PropertyType;
                 NativeObjectSchema.add_property(objectSchemaPtr, propertyName, MarshalHelpers.RealmColType(columnType), objectType, 
-                    MarshalHelpers.BoolToIntPtr(isIdentifier), MarshalHelpers.BoolToIntPtr(isIndexed), MarshalHelpers.BoolToIntPtr(isNullable));
+                    MarshalHelpers.BoolToIntPtr(isObjectId), MarshalHelpers.BoolToIntPtr(isIndexed), MarshalHelpers.BoolToIntPtr(isNullable));
             }
 
             return objectSchemaPtr;
@@ -157,6 +157,32 @@ namespace RealmNet
             result._Manage(this, rowHandle);
 
             return result;
+        }
+
+        public void Attach<T>(T obj) where T : RealmObject
+        {
+            if (obj == null)
+                throw new ArgumentNullException(nameof(obj));
+
+            if (obj.IsManaged)
+            {
+                if (obj.Realm._sharedRealmHandle == this._sharedRealmHandle)
+                    throw new RealmObjectAlreadyOwnedByRealmException("The object is already owned by this realm");
+
+                throw new RealmObjectOwnedByAnotherRealmException("Cannot attach an object to a realm when it's already owned by another realm");
+            }
+
+
+            if (!IsInTransaction)
+                throw new RealmOutsideTransactionException("Cannot attach a Realm object outside write transactions");
+
+            var tableHandle = _tableHandles[typeof(T)];
+
+            var rowPtr = NativeTable.add_empty_row(tableHandle);
+            var rowHandle = CreateRowHandle(rowPtr);
+
+            obj._Manage(this, rowHandle);
+            obj._CopyDataFromBackingFieldsToRow();
         }
 
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]

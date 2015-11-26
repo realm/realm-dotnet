@@ -119,6 +119,7 @@ namespace RealmNet
 
         public void Add(T item)
         {
+            this.AttachObjectIfNeeded(item);
             var rowIndex = ((RealmObject)item).RowHandle.RowIndex;
             NativeLinkList.add(_listHandle, (IntPtr)rowIndex);        
         }
@@ -147,6 +148,9 @@ namespace RealmNet
 
         public int IndexOf(T item)
         {
+            if (!item.IsManaged)
+                throw new ArgumentException("Value does not belong to a realm", nameof(item));
+
             var rowIndex = ((RealmObject)item).RowHandle.RowIndex;
             return (int)NativeLinkList.find(_listHandle, (IntPtr)rowIndex, (IntPtr)0);        
         }
@@ -155,6 +159,8 @@ namespace RealmNet
         {
             if (index < 0)
                 throw new IndexOutOfRangeException ();
+
+            this.AttachObjectIfNeeded(item);
             var rowIndex = ((RealmObject)item).RowHandle.RowIndex;
             NativeLinkList.insert(_listHandle, (IntPtr)index, (IntPtr)rowIndex);        
         }
@@ -178,6 +184,12 @@ namespace RealmNet
         IEnumerator IEnumerable.GetEnumerator()
         {
             return new RealmListEnumerator(this);
+        }
+
+        private void AttachObjectIfNeeded(T obj)
+        {
+            if (!obj.IsManaged)
+                _parent.Realm.Attach(obj);
         }
 
         #endregion

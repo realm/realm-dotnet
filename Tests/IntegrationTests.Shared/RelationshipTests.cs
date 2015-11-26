@@ -12,7 +12,7 @@ using System.Diagnostics;
 
 // NOTE some of the following data comes from Tim's data used in the Browser screenshot in the Mac app store
 // unlike the Cocoa definitions, we use Pascal casing for properties
-namespace Tests
+namespace IntegrationTests.Shared
 {
     [TestFixture]
     public class RelationshipTests
@@ -266,5 +266,38 @@ namespace Tests
             Assert.Throws<IndexOutOfRangeException>( () => scratch = tim.Dogs[99] );
         }
 
+        [Test]
+        public void TestSettingStandAloneObjectToRelationship()
+        {
+            var owner = realm.All<Owner>().ToList().First();
+            var dog = new Dog { Name = "Astro" };
+            
+            using (var trans = realm.BeginWrite())
+            {
+                owner.TopDog = dog;
+                trans.Commit();
+            }
+
+            var dogAgain = realm.All<Dog>().Where(d => d.Name == "Astro").ToList().SingleOrDefault();
+            Assert.That(dogAgain, Is.Not.Null);
+            Assert.That(dog.IsManaged);
+        }
+
+        [Test]
+        public void TestAddingStandAloneObjectToToManyRelationship()
+        {
+            var owner = realm.All<Owner>().ToList().First();
+            var dog = new Dog { Name = "Astro" };
+
+            using (var trans = realm.BeginWrite())
+            {
+                owner.Dogs.Add(dog);
+                trans.Commit();
+            }
+
+            var dogAgain = realm.All<Dog>().Where(d => d.Name == "Astro").ToList().SingleOrDefault();
+            Assert.That(dogAgain, Is.Not.Null);
+            Assert.That(dog.IsManaged);
+        }
     }
 } 

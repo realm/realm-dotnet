@@ -1,8 +1,11 @@
 /* Copyright 2015 Realm Inc - All Rights Reserved
  * Proprietary and Confidential
  */
- 
+
 using System;
+using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace RealmNet
@@ -12,12 +15,35 @@ namespace RealmNet
         private Realm _realm;
         private RowHandle _rowHandle;
 
+        internal Realm Realm => _realm;
         internal RowHandle RowHandle => _rowHandle;
+
+        internal protected bool IsManaged => _realm != null;
 
         internal void _Manage(Realm realm, RowHandle rowHandle)
         {
             _realm = realm;
             _rowHandle = rowHandle;
+        }
+
+        internal void _CopyDataFromBackingFieldsToRow()
+        {
+            Debug.Assert(this.IsManaged);
+
+            var thisType = this.GetType();
+            var wovenProperties = from prop in thisType.GetProperties()
+                                  let backingField = prop.GetCustomAttributes(false)
+                                                         .OfType<WovenPropertyAttribute>()
+                                                         .Select(a => a.BackingFieldName)
+                                                         .SingleOrDefault()
+                                  where backingField != null
+                                  select new { Info = prop, Field = thisType.GetField(backingField, BindingFlags.Instance | BindingFlags.NonPublic) };
+
+            foreach (var prop in wovenProperties)
+            {
+                var value = prop.Field.GetValue(this);
+                prop.Info.SetValue(this, value, null);
+            }
         }
 
         protected T GetValue<T>(string propertyName)
@@ -131,7 +157,7 @@ namespace RealmNet
         }
 
 
-        protected T GetListValue<T>(string propertyName) where T : RealmList<RealmObject>
+        protected RealmList<T> GetListValue<T>(string propertyName) where T : RealmObject
         {
             if (_realm == null)
                 throw new Exception("This object is not managed. Create through CreateObject");
@@ -139,12 +165,12 @@ namespace RealmNet
             var tableHandle = _realm._tableHandles[GetType()];
             var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
             var listHandle = tableHandle.TableLinkList (columnIndex, _rowHandle);
-            var ret = (T)Activator.CreateInstance(typeof(T));
+            var ret = Activator.CreateInstance<RealmList<T>>();
             ret.CompleteInit (this, listHandle);
             return ret;
         }
 
-        protected void SetListValue<T>(string propertyName, T value) where T : RealmList<RealmObject>
+        protected void SetListValue<T>(string propertyName, RealmList<T> value) where T : RealmObject
         {
             throw new NotImplementedException ("Setting a relationship list is not yet implemented");
         }
@@ -187,10 +213,16 @@ namespace RealmNet
             var tableHandle = _realm._tableHandles[GetType()];
             var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
             var rowIndex = _rowHandle.RowIndex;
-            if (value==null)
-                NativeTable.clear_link (tableHandle, columnIndex, (IntPtr)rowIndex);
+            if (value == null)
+            {
+                NativeTable.clear_link(tableHandle, columnIndex, (IntPtr)rowIndex);
+            }
             else
-                NativeTable.set_link (tableHandle, columnIndex, (IntPtr)rowIndex, (IntPtr)value.RowHandle.RowIndex);
+            {
+                if (!value.IsManaged)
+                    _realm.Attach(value);
+                NativeTable.set_link(tableHandle, columnIndex, (IntPtr)rowIndex, (IntPtr)value.RowHandle.RowIndex);
+            }
 
         }
 

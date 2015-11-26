@@ -65,8 +65,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent Condition="'Windows_NT'=='$(os)'">xcopy/Y $(TargetPath) $(SolutionDir)Tools</PostBuildEvent>
-    <PostBuildEvent Condition="'Unix'=='$(os)'">cp $(TargetPath) $(SolutionDir)Tools</PostBuildEvent>
-  </PropertyGroup>
+  <Target Name="AfterBuild">
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(SolutionDir)Tools" />
+  </Target>
 </Project>

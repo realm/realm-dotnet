@@ -339,13 +339,6 @@ bool ObjectStore::create_tables(Group *group, Schema &target_schema, bool update
                                                                      target_prop.is_nullable);
                         break;
                 }
-                default:
-                    target_prop.table_column = table->add_column(DataType(target_prop.type),
-                        target_prop.name,
-                        target_prop.is_nullable);
-                    break;
-                }
-
                 changed = true;
             }
             else {
