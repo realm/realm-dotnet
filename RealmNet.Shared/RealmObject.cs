@@ -157,7 +157,7 @@ namespace RealmNet
         }
 
 
-        protected T GetListValue<T>(string propertyName) where T : RealmList<RealmObject>
+        protected RealmList<T> GetListValue<T>(string propertyName) where T : RealmObject
         {
             if (_realm == null)
                 throw new Exception("This object is not managed. Create through CreateObject");
@@ -165,12 +165,12 @@ namespace RealmNet
             var tableHandle = _realm._tableHandles[GetType()];
             var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
             var listHandle = tableHandle.TableLinkList (columnIndex, _rowHandle);
-            var ret = (T)Activator.CreateInstance(typeof(T));
+            var ret = Activator.CreateInstance<RealmList<T>>();
             ret.CompleteInit (this, listHandle);
             return ret;
         }
 
-        protected void SetListValue<T>(string propertyName, T value) where T : RealmList<RealmObject>
+        protected void SetListValue<T>(string propertyName, RealmList<T> value) where T : RealmObject
         {
             throw new NotImplementedException ("Setting a relationship list is not yet implemented");
         }

@@ -101,8 +101,8 @@ public class ModuleWeaver
                 if (prop.PropertyType.Namespace == "System" 
                     && (prop.PropertyType.IsPrimitive || prop.PropertyType.Name == "String" || prop.PropertyType.Name == "DateTimeOffset"))  // most common tested first
                 {
-                    AddGetter(prop, columnName, genericGetValueReference);
-                    AddSetter(prop, columnName, genericSetValueReference);
+                    ReplaceGetter(prop, columnName, new GenericInstanceMethod(genericGetValueReference) { GenericArguments = { prop.PropertyType } });
+                    ReplaceSetter(prop, columnName, new GenericInstanceMethod(genericSetValueReference) { GenericArguments = { prop.PropertyType } });
                 }
                 else if (prop.PropertyType.Namespace == "RealmNet" && prop.PropertyType.Name == "RealmList`1")
                 {
@@ -112,8 +112,9 @@ public class ModuleWeaver
                     }
 
                     // we may handle things differently here to handle init with a braced collection
-                    AddGetter(prop, columnName, genericGetListValueReference);
-                    AddSetter(prop, columnName, genericSetListValueReference);  
+                    var elementType = ((GenericInstanceType)prop.PropertyType).GenericArguments.Single();
+                    ReplaceGetter(prop, columnName, new GenericInstanceMethod(genericGetListValueReference) { GenericArguments = { elementType } });
+                    ReplaceSetter(prop, columnName, new GenericInstanceMethod(genericSetListValueReference) { GenericArguments = { elementType } });  
                 }
                 else if (IsRealmObject(prop.PropertyType))
                 {
@@ -122,8 +123,8 @@ public class ModuleWeaver
                         LogWarningPoint($"{type.Name}.{columnName} is not an automatic property but its type is a RealmObject which normally indicates a relationship", sequencePoint);
                     }
 
-                    AddGetter(prop, columnName, genericGetObjectValueReference);
-                    AddSetter(prop, columnName, genericSetObjectValueReference);  // with casting in the RealmObject methods, should just work
+                    ReplaceGetter(prop, columnName, new GenericInstanceMethod(genericGetObjectValueReference) { GenericArguments = { prop.PropertyType } });
+                    ReplaceSetter(prop, columnName, new GenericInstanceMethod(genericSetObjectValueReference) { GenericArguments = { prop.PropertyType } });  // with casting in the RealmObject methods, should just work
                 }
                 else {
                     LogErrorPoint($"class '{type.Name}' field '{columnName}' is a {prop.PropertyType} which is not yet supported", sequencePoint);
@@ -143,11 +144,8 @@ public class ModuleWeaver
         return;
     }
 
-    void AddGetter(PropertyDefinition prop, string columnName, MethodReference getValueReference)
+    void ReplaceGetter(PropertyDefinition prop, string columnName, MethodReference getValueReference)
     {
-        var specializedGetValue = new GenericInstanceMethod(getValueReference);
-        specializedGetValue.GenericArguments.Add(prop.PropertyType);
-
         /// A synthesized property getter looks like this:
         ///   0: ldarg.0
         ///   1: ldfld <backingField>
@@ -175,18 +173,14 @@ public class ModuleWeaver
         il.InsertBefore(start, il.Create(OpCodes.Brfalse_S, start));
         il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));
         il.InsertBefore(start, il.Create(OpCodes.Ldstr, columnName));
-        il.InsertBefore(start, il.Create(OpCodes.Call, specializedGetValue));
+        il.InsertBefore(start, il.Create(OpCodes.Call, getValueReference));
         il.InsertBefore(start, il.Create(OpCodes.Ret));
 
         Debug.Write("[get] ");
     }
 
-
-    void AddSetter(PropertyDefinition prop, string columnName, MethodReference setValueReference)
+    void ReplaceSetter(PropertyDefinition prop, string columnName, MethodReference setValueReference)
     {
-        var specializedSetValue = new GenericInstanceMethod(setValueReference);
-        specializedSetValue.GenericArguments.Add(prop.PropertyType);
-
         /// A synthesized property setter looks like this:
         ///   0: ldarg.0
         ///   1: ldarg.1
@@ -218,7 +212,7 @@ public class ModuleWeaver
         il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));
         il.InsertBefore(start, il.Create(OpCodes.Ldstr, columnName));
         il.InsertBefore(start, il.Create(OpCodes.Ldarg_1));
-        il.InsertBefore(start, il.Create(OpCodes.Call, specializedSetValue));
+        il.InsertBefore(start, il.Create(OpCodes.Call, setValueReference));
         il.InsertBefore(start, il.Create(OpCodes.Ret));
 
         Debug.Write("[set] ");
