@@ -6,7 +6,7 @@ using System;
 
 namespace RealmNet
 {
-    public class IdentifierAttribute : Attribute
+    public class ObjectIdAttribute : Attribute
     {
     }
 

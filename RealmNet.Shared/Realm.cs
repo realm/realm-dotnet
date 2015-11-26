@@ -81,8 +81,8 @@ namespace RealmNet
                 var mapToAttribute = p.GetCustomAttributes(false).FirstOrDefault(a => a is MapToAttribute) as MapToAttribute;
                 var propertyName = mapToAttribute != null ? mapToAttribute.Mapping : p.Name;
 
-                var IdentifierAttribute = p.GetCustomAttributes(false).FirstOrDefault(a => a is IdentifierAttribute);
-                var isIdentifier = IdentifierAttribute != null;
+                var objectIdAttribute = p.GetCustomAttributes(false).FirstOrDefault(a => a is ObjectIdAttribute);
+                var isObjectId = objectIdAttribute != null;
 
                 var indexedAttribute = p.GetCustomAttributes(false).FirstOrDefault(a => a is IndexedAttribute);
                 var isIndexed = indexedAttribute != null;
@@ -102,7 +102,7 @@ namespace RealmNet
                 }
                 var columnType = p.PropertyType;
                 NativeObjectSchema.add_property(objectSchemaPtr, propertyName, MarshalHelpers.RealmColType(columnType), objectType, 
-                    MarshalHelpers.BoolToIntPtr(isIdentifier), MarshalHelpers.BoolToIntPtr(isIndexed), MarshalHelpers.BoolToIntPtr(isNullable));
+                    MarshalHelpers.BoolToIntPtr(isObjectId), MarshalHelpers.BoolToIntPtr(isIndexed), MarshalHelpers.BoolToIntPtr(isNullable));
             }
 
             return objectSchemaPtr;
