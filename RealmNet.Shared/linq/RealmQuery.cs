@@ -17,7 +17,7 @@ namespace RealmNet
         public IQueryProvider Provider => _provider;
         private readonly QueryProvider _provider;
 
-        public RealmQuery(QueryProvider queryProvider, Expression expression) 
+        internal RealmQuery(QueryProvider queryProvider, Expression expression) 
         {
             this._provider = queryProvider;
             this.Expression = expression;

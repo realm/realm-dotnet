@@ -8,7 +8,7 @@ using System.Runtime.CompilerServices;
 
 namespace RealmNet
 {
-    public class TableHandle: RealmHandle
+    internal class TableHandle: RealmHandle
     {
         private TableHandle(RealmHandle root) : base(root)
         {

@@ -11,7 +11,7 @@ using System.Reflection;
 
 namespace RealmNet
 {
-    public abstract class ExpressionVisitor
+    internal abstract class ExpressionVisitor
     {
         internal virtual Expression Visit(Expression exp)
         {
