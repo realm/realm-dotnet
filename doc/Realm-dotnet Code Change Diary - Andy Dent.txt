@@ -1030,7 +1030,9 @@ RelationshipTests.cs
 
 change public to internal
 	ExpressionVisitor
+	InteropConfig (3 platform-specific copies)
 	QueryHandle
+	QueryProvider
 	RealmHandle
 	RealmQuery
 	RealmQueryProvider

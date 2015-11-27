@@ -9,7 +9,7 @@ using System.IO;
 
 namespace RealmNet
 {
-    public static class InteropConfig
+    internal static class InteropConfig
     {
         public static bool Is64Bit
         {
