@@ -299,5 +299,30 @@ namespace IntegrationTests.Shared
             Assert.That(dogAgain, Is.Not.Null);
             Assert.That(dog.IsManaged);
         }
+
+        [Test]
+        public void TestListRelationship()
+        {
+            var person = new Person
+            {
+                FullName = "Person 0",
+                Friends =
+                {
+                    new Person { FullName = "Friend A" },
+                    new Person { FullName = "Friend B" }
+                }
+            };
+
+            Assert.IsInstanceOf<List<Person>>(person.Friends);
+
+            using (var trans = realm.BeginWrite())
+            {
+                realm.Attach(person);
+                trans.Commit();
+            }
+
+            Assert.IsInstanceOf<RealmList<Person>>(person.Friends);
+            Assert.That(realm.All<Person>().ToList().Count, Is.EqualTo(3));
+        }
     }
 } 

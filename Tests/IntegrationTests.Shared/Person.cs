@@ -1,9 +1,10 @@
 ﻿/* Copyright 2015 Realm Inc - All Rights Reserved
  * Proprietary and Confidential
  */
- 
+
 using System;
 using RealmNet;
+using System.Collections.Generic;
 
 namespace IntegrationTests
 {
@@ -53,5 +54,7 @@ namespace IntegrationTests
         }
 
         public bool IsInteresting { get; set; }
+
+        public IList<Person> Friends { get; }
     }
 }

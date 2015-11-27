@@ -81,6 +81,7 @@ public class ModuleWeaver
         var wovenPropertyAttributeConstructor = ModuleDefinition.ImportReference(wovenPropertyAttributeClass.GetConstructors().First());
         var corlib = ModuleDefinition.AssemblyResolver.Resolve((AssemblyNameReference)ModuleDefinition.TypeSystem.CoreLibrary);
         var stringType = ModuleDefinition.ImportReference(corlib.MainModule.GetType("System.String"));
+        var listType = ModuleDefinition.ImportReference(corlib.MainModule.GetType("System.Collections.Generic.List`1"));
 
         foreach (var type in GetMatchingTypes())
         {
@@ -116,6 +117,22 @@ public class ModuleWeaver
                     ReplaceGetter(prop, columnName, new GenericInstanceMethod(genericGetListValueReference) { GenericArguments = { elementType } });
                     ReplaceSetter(prop, columnName, new GenericInstanceMethod(genericSetListValueReference) { GenericArguments = { elementType } });  
                 }
+                else if (prop.PropertyType.FullName.StartsWith(typeof(IList<>).FullName))
+                {
+                    // only handle `IList<T> Foo { get; }` properties
+                    if (prop.IsAutomatic() && prop.SetMethod == null)
+                    {
+                        var elementType = ((GenericInstanceType)prop.PropertyType).GenericArguments.Single();
+                        var concreteListType = new GenericInstanceType(listType) { GenericArguments = { elementType } };
+                        var listConstructor = concreteListType.Resolve().GetConstructors().Single(c => c.IsPublic && c.Parameters.Count == 0);
+                        var concreteListConstructor = listConstructor.MakeHostInstanceGeneric(elementType);
+
+                        foreach (var ctor in type.GetConstructors())
+                        {
+                            PrependListFieldInitializerToConstructor(backingField, ctor, ModuleDefinition.ImportReference(concreteListConstructor));
+                        }
+                    }
+                }
                 else if (IsRealmObject(prop.PropertyType))
                 {
                     if (!prop.IsAutomatic())
@@ -142,6 +159,15 @@ public class ModuleWeaver
         }
 
         return;
+    }
+
+    void PrependListFieldInitializerToConstructor(FieldReference field, MethodDefinition constructor, MethodReference listConstructor)
+    {
+        var start = constructor.Body.Instructions.First();
+        var il = constructor.Body.GetILProcessor();
+        il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));
+        il.InsertBefore(start, il.Create(OpCodes.Newobj, listConstructor));
+        il.InsertBefore(start, il.Create(OpCodes.Stfld, field));
     }
 
     void ReplaceGetter(PropertyDefinition prop, string columnName, MethodReference getValueReference)
