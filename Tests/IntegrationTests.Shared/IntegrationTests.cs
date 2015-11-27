@@ -351,5 +351,27 @@ namespace IntegrationTests
             Assert.That(s5[0].Latitude, Is.EqualTo(51.508530));
         }
 
+        [Test]
+        public void NonAutomaticPropertiesShouldNotBeWoven()
+        {
+            Assert.That(typeof(Person).GetProperty("Nickname").GetCustomAttributes(typeof(WovenPropertyAttribute), false), Is.Empty);
+        }
+
+        [Test]
+        public void NonAutomaticPropertiesShouldBeIgnored()
+        {
+            using (var trans = _realm.BeginWrite())
+            {
+                var p = _realm.CreateObject<Person>();
+                p.FirstName = "Vincent";
+                p.LastName = "Adultman";
+                p.Nickname = "Vinnie";
+                trans.Commit();
+            }
+
+            var vinnie = _realm.All<Person>().ToList().Single();
+            Assert.That(vinnie.FullName, Is.EqualTo("Vincent Adultman"));
+            Assert.That(string.IsNullOrEmpty(vinnie.Nickname));
+        }
     }
 }

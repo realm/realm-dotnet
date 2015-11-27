@@ -102,6 +102,9 @@ public class ModuleWeaver
                 if (prop.PropertyType.Namespace == "System" 
                     && (prop.PropertyType.IsPrimitive || prop.PropertyType.Name == "String" || prop.PropertyType.Name == "DateTimeOffset"))  // most common tested first
                 {
+                    if (!prop.IsAutomatic())
+                        continue;
+
                     ReplaceGetter(prop, columnName, new GenericInstanceMethod(genericGetValueReference) { GenericArguments = { prop.PropertyType } });
                     ReplaceSetter(prop, columnName, new GenericInstanceMethod(genericSetValueReference) { GenericArguments = { prop.PropertyType } });
                 }
@@ -110,6 +113,7 @@ public class ModuleWeaver
                     if (!prop.IsAutomatic())
                     {
                         LogWarningPoint($"{type.Name}.{columnName} is not an automatic property but its type is a RealmList which normally indicates a relationship", sequencePoint);
+                        continue;
                     }
 
                     // we may handle things differently here to handle init with a braced collection
@@ -138,6 +142,7 @@ public class ModuleWeaver
                     if (!prop.IsAutomatic())
                     {
                         LogWarningPoint($"{type.Name}.{columnName} is not an automatic property but its type is a RealmObject which normally indicates a relationship", sequencePoint);
+                        continue;
                     }
 
                     ReplaceGetter(prop, columnName, new GenericInstanceMethod(genericGetObjectValueReference) { GenericArguments = { prop.PropertyType } });

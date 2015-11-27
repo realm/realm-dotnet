@@ -1,4 +1,4 @@
-﻿/* Copyright 2015 Realm Inc - All Rights Reserved
+/* Copyright 2015 Realm Inc - All Rights Reserved
  * Proprietary and Confidential
  */
 
@@ -54,6 +54,13 @@ namespace IntegrationTests
         }
 
         public bool IsInteresting { get; set; }
+
+        private string _nickname;
+        public string Nickname
+        {
+            get { return _nickname; }
+            set { _nickname = value; }
+        }
 
         public IList<Person> Friends { get; }
     }
