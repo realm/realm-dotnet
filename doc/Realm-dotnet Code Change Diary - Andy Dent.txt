@@ -1023,3 +1023,18 @@ Win32RelationshipTests.cs
 
 RelationshipTests.cs
 - corrected namespace to IntegrationTests.Shared
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#232 Make things internal
+
+change public to internal
+	ExpressionVisitor
+	QueryHandle
+	RealmHandle
+	RealmQuery
+	RealmQueryProvider
+	RealmQueryVisitor
+	TableHandle
+	WovenAttribute
+	WovenPropertyAttribute

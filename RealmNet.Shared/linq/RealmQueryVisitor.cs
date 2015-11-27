@@ -11,7 +11,7 @@ using System.Runtime.CompilerServices;
 
 namespace RealmNet
 {
-    public class RealmQueryVisitor : RealmNet.ExpressionVisitor
+    internal class RealmQueryVisitor : RealmNet.ExpressionVisitor
     {
         private Realm _realm;
         private QueryHandle _coreQueryHandle;
