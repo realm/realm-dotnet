@@ -1030,6 +1030,7 @@ RelationshipTests.cs
 
 change public to internal
 	ExpressionVisitor
+	Handled
 	InteropConfig (3 platform-specific copies)
 	QueryHandle
 	QueryProvider
