@@ -9,7 +9,7 @@ using System.Reflection;
 
 namespace RealmNet
 {
-    public abstract class QueryProvider : IQueryProvider
+    internal abstract class QueryProvider : IQueryProvider
     {
         public IQueryable<T> CreateQuery<T>(Expression expression)
         {

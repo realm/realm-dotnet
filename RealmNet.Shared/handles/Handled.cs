@@ -11,7 +11,7 @@ namespace RealmNet
     /// <summary>
     /// This class performs housekeeping reg. wrapping c++ objects.
     /// </summary>
-    public abstract class Handled : IDisposable
+    internal abstract class Handled : IDisposable
     {
         //following the dispose pattern discussed here http://dave-black.blogspot.dk/2011/03/how-do-you-properly-implement.html
         //a good explanation can be found here http://stackoverflow.com/questions/538060/proper-use-of-the-idisposable-interface
