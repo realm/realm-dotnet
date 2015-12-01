@@ -16,7 +16,7 @@ namespace RealmNet
     /// A Realm instance (also referred to as a realm) represents a Realm database.
     /// </summary>
     /// <remarks>Warning: Realm instances are not thread safe and can not be shared across threads. 
-    /// You must call this method on each thread you want to interact with the realm on. 
+    /// You must call GenerateInstance on each thread you want to interact with the realm on. 
     /// </remarks>
     public class Realm : IDisposable
     {
@@ -227,9 +227,16 @@ namespace RealmNet
         }
 
         /// <summary>
-        /// Factory for a write Transaction.
+        /// Factory for a write Transaction. Essential object to create scope for updates.
         /// </summary>
-        /// <returns>A transaction in write mode, which is required for any creation or modiication of objects persisted in a Realm</returns>
+        /// <example>
+        /// using (var trans = myrealm.BeginWrite()) { 
+        ///     var rex = myrealm.CreateObject<Dog>();
+        ///     rex.Name = "Rex";
+        ///     trans.Commit();
+        /// }
+        /// </example>
+        /// <returns>A transaction in write mode, which is required for any creation or modification of objects persisted in a Realm</returns>
         public Transaction BeginWrite()
         {
             return new Transaction(_sharedRealmHandle);

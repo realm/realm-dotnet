@@ -17,7 +17,7 @@ namespace RealmNet
     /// indexes in calls such as Insert and RemoveAt.
     /// </remarks>
     /// 
-    /// <typeparam name="T">Type of the RealmObject which is the rarget of the relationship</typeparam>
+    /// <typeparam name="T">Type of the RealmObject which is the target of the relationship</typeparam>
     public class RealmList<T> : IList<T> where T : RealmObject
     {
         private class RealmListEnumerator : IEnumerator<T> 
@@ -163,7 +163,7 @@ namespace RealmNet
         /// <summary>
         /// Tests if an item exists in the related set
         /// </summary>
-        /// <param name="item">Object to be searced for in the realted items</param>
+        /// <param name="item">Object to be searched for in the related items</param>
         /// <typeparam name="T">Type of the RealmObject which is the rarget of the relationship</typeparam>
         /// <returns>True if found, false if not found</returns>
         public bool Contains(T item)

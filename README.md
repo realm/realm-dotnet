@@ -41,7 +41,7 @@ currently don't build (see issue 164) as they don't have a download step
 Debugging Wrappers
 ------------------
 
-Under Visual Studio, you should be able to seamlessly debug from the managed world of most of the binding down into the C++ wrappers provided you _Enable native debugging_ in the `Realmnet.Win32.csproj` options.
+Under Visual Studio, you should be able to seamlessly debug from the managed world of most of the binding down into the C++ wrappers provided you _Enable native debugging_ in the `RealmNet.Win32.csproj` options.
 
 To debug wrappers on IOS, say for the `IntegrationTests.IOS` project 
 

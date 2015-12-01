@@ -10,7 +10,7 @@ using System.Text;
 namespace RealmNet
 {
     /// <summary>
-    /// Provides a scope to safely read and write to a Realm. Must use explicitly via BeginWrite.
+    /// Provides a scope to safely read and write to a Realm. Must use explicitly via Realm.BeginWrite.
     /// </summary>
     /// <remarks>
     /// All access to a Realm occurs within a Transaction. Read transactions are created implicitly.
