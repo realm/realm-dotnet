@@ -11,30 +11,30 @@ The following instructions are valid as of 6 Nov 2015 but are **under constructi
 
 Adding Binaries
 ---------------------
-If you are building this solution from a checkout of the dotnet repo, you need to add binaries sourced separately into the following locations:
+If you are building this solution from a checkout of the dotnet repo, you need to ensure that you have binaries in the following locations, which require building separate projects that are not necessarily included in the dependencies of your platform project.
 
 ### For all builds
 
-Tools:
-  RealmNetWeaver.dll
+**Tools:**
+
+* `RealmNetWeaver.dll` is buit by the `RealmNetWeaver.Fody` project
 
 ### For Win32 builds
 
-* wrappers - Build an adjacent `realm-core\build\vs2013\realm.sln` configurations + platforms
+**wrappers** 
+
+* Build an adjacent `realm-core\build\vs2013\realm.sln` configurations + platforms
 	* Static Lib, debug **platforms** x86 and x64
 	* Static Lib, release **platforms** x86 and x64
+* Build the `Wrappers` project to build a library including the binary
 
-### iOS and OS X wrappers
+### iOS, Android and OS X wrappers
 
 Build using the `Makefile` in wrappers which downloads the _current_ static core library and builds the wrapper configurations, including running `lipo` to combine libraries.
 
 Use `make all` to build all the wrappers. If you just want to update a Debug build, use `make iosdbg`.
 
 The `RealmNet.XamarinIOS.csproj` includes Release or Debug libraries depending on configuration.
-
-### android Wrappers 
-
-currently don't build (see issue 164) as they don't have a download step
 
 
 
