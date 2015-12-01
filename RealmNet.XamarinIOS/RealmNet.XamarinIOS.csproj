@@ -76,9 +76,6 @@
       <DependentUpon>libwrappers.a</DependentUpon>
     </Compile>
   </ItemGroup>
-  <ItemGroup>
-    <ObjcBindingApiDefinition Include="ApiDefinition.cs" />
-  </ItemGroup>
   <Import Project="..\RealmNet.Shared\RealmNet.Shared.projitems" Label="Shared" Condition="Exists('..\RealmNet.Shared\RealmNet.Shared.projitems')" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.ObjCBinding.CSharp.targets" />
   <!-- Instead of including macro inline, which seems unreliably to work only on load, use a conditional so absolute paths are selected

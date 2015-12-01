@@ -229,12 +229,12 @@ namespace RealmNet
         /// <summary>
         /// Factory for a write Transaction. Essential object to create scope for updates.
         /// </summary>
-        /// <example>
+        /// <example><c>
         /// using (var trans = myrealm.BeginWrite()) { 
         ///     var rex = myrealm.CreateObject<Dog>();
         ///     rex.Name = "Rex";
         ///     trans.Commit();
-        /// }
+        /// }</c>
         /// </example>
         /// <returns>A transaction in write mode, which is required for any creation or modification of objects persisted in a Realm</returns>
         public Transaction BeginWrite()

@@ -9,8 +9,15 @@ using System.IO;
 
 namespace RealmNet
 {
+    /// <summary>
+    /// Provide per-platform configuration, IOS version documented to show typical content.
+    /// </summary>
     public static class InteropConfig
     {
+    
+        /// <summary>
+        /// Compile-time test of platform being 64bit.
+        /// </summary>
         public static bool Is64Bit
         {
 #if REALM_32       
@@ -24,14 +31,19 @@ namespace RealmNet
                 return true;
             }
 #else
-            //if this is evaluated every time, a faster way could be implemented. Size is cost when we are running though so perhaps it gets inlined by the JITter
             get { return (IntPtr.Size == 8); }
 #endif
         }
 
-        // This is always the "name" of the dll, regardless of bit-width.
+        /// <summary>
+        /// Name of the DLL used in native declarations, constant varying per-platform.
+        /// </summary>
         public const string DLL_NAME = "__Internal";
 
+        /// <summary>
+        /// Get platform-specific default path for documents with default filename attached.
+        /// </summary>
+        /// <returns>A full path</returns>
         public static string GetDefaultDatabasePath()
         {
             const string dbFilename = "db.realm";
