@@ -1,4 +1,4 @@
-# Developer Tips for realm-dotnet
+# Developer Tips for Realm-.net
 
 Main Points
 ---------------

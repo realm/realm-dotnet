@@ -1,7 +1,8 @@
 ![Realm](https://github.com/realm/realm-.net/raw/master/logo.png)
 
 Realm is a mobile database that runs directly inside phones, tablets or wearables.
-This repository holds the source code for the C# versions of Realm, for use in Xamarin and generic C#.
+
+This repository holds the source code for the C# versions of Realm (Currently only Xamarin for iOS and Android is supported.)
 
 ## Features
 
@@ -12,7 +13,7 @@ This repository holds the source code for the C# versions of Realm, for use in X
 
 ## Getting Started
 
-Please see the detailed instructions in our docs to add [Realm](https://realm.io/docs/xamarin/latest/#installation) to your Xcode project.
+Please see the detailed instructions in our [User Guide](https://realm.io/docs/xamarin/latest/#installation) to add Realm to your solution.
 
 ## Documentation
 
