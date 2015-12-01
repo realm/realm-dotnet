@@ -6,7 +6,7 @@ This repository holds the source code for the C# versions of Realm, for use in X
 ## Features
 
 * **Mobile-first:** Realm is the first database built from the ground up to run directly inside phones, tablets and wearables.
-* **Simple:** Data is directly [exposed as objects](https://realm.io/docs/xamarin/latest/#models) and [queryable by code](https://realm.io/docs/xamarin/latest/#queries), removing the need for ORM's riddled with performance & maintenance issues. Plus, we've worked hard to [keep our API down to just 4 common classes](https://realm.io/docs/xamarin/latest/api/) (Object, List, Query and Realms) and 1 utility class (Migrations): most of our users pick it up intuitively, getting simple apps up & running in minutes.
+* **Simple:** Data is directly [exposed as objects](https://realm.io/docs/xamarin/latest/#models) and [queryable by code](https://realm.io/docs/xamarin/latest/#queries), removing the need for ORM's riddled with performance & maintenance issues. Plus, we've worked hard to [keep our API down to just 4 common classes](https://realm.io/docs/xamarin/latest/api/) (Object, List, Query and Realms): most of our users pick it up intuitively, getting simple apps up & running in minutes.
 * **Modern:** Realm supports relationships, generics, vectorization and modern C# idioms.
 * **Fast:** Realm is faster than even raw SQLite on common operations, while maintaining an extremely rich feature set.
 
@@ -34,7 +34,7 @@ Prerequisites:
 
 * **Apple via Xamarin:** Xamarin IOS Indie license or above. 
 * **Android via Xamarin:** Xamarin Android Indie license or above
-* **Windows platforms** Visual Studio 2013 or higher, recommended 2015
+* **Windows platforms:** Visual Studio 2013 or higher, recommended 2015
 * Building Realm Xamarin for IOS also requires Xcode 7.1.
 * Building Realm documentation requires [Doxygen](http:/www.doxygen.org)
 
