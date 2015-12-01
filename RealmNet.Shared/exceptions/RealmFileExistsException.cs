@@ -6,12 +6,12 @@ using System;
 
 namespace RealmNet {
 
+/// <summary>
+/// Exception thrown when a file exists with the same name as you to create a new one
+/// </summary>
 public class RealmFileExistsException : RealmFileAccessErrorException {
 
-
-
-    public RealmFileExistsException(String message) : base(message)
-
+    internal RealmFileExistsException(String message) : base(message)
     {
     }
 }

@@ -10,6 +10,14 @@ using System.Diagnostics;
 
 namespace RealmNet
 {
+    /// <summary>
+    /// Used to declare ToMany relatinships and as the return type when you access such a relationship.
+    /// </summary>
+    /// <remarks>Relationships are ordered and preserve their order, hence the ability to use ordinal 
+    /// indexes in calls such as Insert and RemoveAt.
+    /// </remarks>
+    /// 
+    /// <typeparam name="T">Type of the RealmObject which is the rarget of the relationship</typeparam>
     public class RealmList<T> : IList<T> where T : RealmObject
     {
         private class RealmListEnumerator : IEnumerator<T> 
@@ -23,7 +31,10 @@ namespace RealmNet
                 enumerating = parent;
             }
 
-
+            /// <summary>
+            /// Return the current related object when iterating a related set.
+            /// </summary>
+            /// <exception cref="IndexOutOfRangeException">When we are not currently pointing at a valid item, either MoveNext has not been called for the first time or have iterated through all the items.</exception>
             public T Current
             {
                 get
@@ -41,6 +52,10 @@ namespace RealmNet
                 }
             }
 
+            /// <summary>
+            ///  Move the iterator to the next related object, starting "before" the first object.
+            /// </summary>
+            /// <returns>True only if can advance.</returns>
             public bool MoveNext()
             {
                 index++;
@@ -49,17 +64,26 @@ namespace RealmNet
                 return true;
             }
 
+            /// <summary>
+            /// Reset the iter to before the first object, so MoveNext will move to it.
+            /// </summary>
             public void Reset()
             {
                 index = -1;  // by definition BEFORE first item
             }
 
+            /// <summary>
+            /// Standard Dispose with no side-effects
+            /// </summary>
             public void Dispose() 
             {
             }
         }
 
 
+        /// <summary>
+        /// Value returned by IndexOf if an ite is not found.
+        /// </summary>
         public const int ITEM_NOT_FOUND = -1;
 
         private RealmObject _parent;  // we only make sense within an owning object
@@ -97,6 +121,13 @@ namespace RealmNet
             get { return true; }
         }
 
+        /// <summary>
+        /// Returns the item at the ordinal index
+        /// </summary>
+        /// <param name="index">Ordinal zero-based index of the related items</param>
+        /// <typeparam name="T">Type of the RealmObject which is the rarget of the relationship</typeparam>
+        /// <returns>A related item, if exception not thrown</returns>
+        /// <exception cref="IndexOutOfRangeException">When the index is out of range for the related items</exception>
         public T this[int index]
         {
             get
@@ -129,23 +160,41 @@ namespace RealmNet
             NativeLinkList.clear(_listHandle);        
         }
 
+        /// <summary>
+        /// Tests if an item exists in the related set
+        /// </summary>
+        /// <param name="item">Object to be searced for in the realted items</param>
+        /// <typeparam name="T">Type of the RealmObject which is the rarget of the relationship</typeparam>
+        /// <returns>True if found, false if not found</returns>
         public bool Contains(T item)
         {
             return IndexOf(item) != ITEM_NOT_FOUND;
         }
 
+        /// <summary>
+        /// Not yet implemented
+        /// </summary>
         public void CopyTo(T[] array, int arrayIndex)
         {
             throw new NotImplementedException();
         }
 
 
+        /// <summary>
+        /// Factory for an iterator to be called explicitly or used in a foreach loop.
+        /// </summary>
+        /// <returns></returns>
         public IEnumerator<T> GetEnumerator()
         {
             return (IEnumerator<T>)new RealmListEnumerator(this);
         }
 
-
+        /// <summary>
+        /// Finds an ordinal index for an item in a relationship
+        /// </summary>
+        /// <param name="item">RealmObject being removed from the relationship.</param>
+        /// <typeparam name="T">Type of the RealmObject which is the rarget of the relationship</typeparam>
+        /// <returns>0-based index if the item was found in the related set, or RealmList.ITEM_NOT_FOUND</returns>
         public int IndexOf(T item)
         {
             if (!item.IsManaged)
@@ -155,6 +204,14 @@ namespace RealmNet
             return (int)NativeLinkList.find(_listHandle, (IntPtr)rowIndex, (IntPtr)0);        
         }
 
+        /// <summary>
+        /// Makes a relationship to an item, inserting at a specified location ahead of whatever else was in that location
+        /// </summary>
+        /// <param name="index">Ordinal zero-based index at which to insert the related items</param>
+        /// <param name="item">RealmObject being inserted into the relationship.</param>
+        /// <typeparam name="T">Type of the RealmObject which is the rarget of the relationship</typeparam>
+        /// <returns>A related item, if exception not thrown</returns>
+        /// <exception cref="IndexOutOfRangeException">When the index is out of range for the related items</exception>
         public void Insert(int index, T item)
         {
             if (index < 0)
@@ -165,6 +222,12 @@ namespace RealmNet
             NativeLinkList.insert(_listHandle, (IntPtr)index, (IntPtr)rowIndex);        
         }
 
+        /// <summary>
+        /// Breaks the relationship to the specified item, without deleting the iem.
+        /// </summary>
+        /// <param name="item">RealmObject being removed from the relationship.</param>
+        /// <typeparam name="T">Type of the RealmObject which is the rarget of the relationship</typeparam>
+        /// <returns>True if the item was found and removed, false if it is not in the related set</returns>
         public bool Remove(T item)
         {
             int index = IndexOf (item);
@@ -174,6 +237,12 @@ namespace RealmNet
             return true;
         }
 
+        /// <summary>
+        /// Breaks the relationship to the item at the ordinal index, without deleting the iem.
+        /// </summary>
+        /// <param name="index">Ordinal zero-based index of the related items</param>
+        /// <typeparam name="T">Type of the RealmObject which is the rarget of the relationship</typeparam>
+        /// <exception cref="IndexOutOfRangeException">When the index is out of range for the related items</exception>
         public void RemoveAt(int index)
         {
             if (index < 0)

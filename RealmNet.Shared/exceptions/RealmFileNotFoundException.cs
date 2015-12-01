@@ -6,9 +6,12 @@ using System;
 
 namespace RealmNet {
 
+/// <summary>
+/// Exception thrown when a file doesn't exists when trying to open without a create option.
+/// </summary>
 public class RealmFileNotFoundException : RealmFileAccessErrorException {
 
-    public RealmFileNotFoundException(String message) : base(message)
+    internal RealmFileNotFoundException(String message) : base(message)
     {
     }
 }

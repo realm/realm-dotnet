@@ -6,12 +6,12 @@ using System;
 
 namespace RealmNet {
 
- /**
- * RealmException is Realm specific exceptions.
- */
-public class RealmException :  Exception {
+    /// <summary>
+    /// Base for Realm specific exceptions. Use only for catching.
+    /// </summary>
+    public class RealmException :  Exception {
 
-    public RealmException(String detailMessage) : base(detailMessage)
+    internal RealmException(String detailMessage) : base(detailMessage)
     {
     }
 }

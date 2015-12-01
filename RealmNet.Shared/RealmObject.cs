@@ -10,6 +10,9 @@ using System.Runtime.InteropServices;
 
 namespace RealmNet
 {
+    /// <summary>
+    /// Base for any object that can be persisted in a Realm.
+    /// </summary>
     public class RealmObject
     {
         private Realm _realm;
@@ -18,7 +21,10 @@ namespace RealmNet
         internal Realm Realm => _realm;
         internal RowHandle RowHandle => _rowHandle;
 
-        internal protected bool IsManaged => _realm != null;
+        /// <summary>
+        /// Allows you to check if the object has been associated with a Realm, either at creation or via Realm.Attach.
+        /// </summary>
+        public bool IsManaged => _realm != null;
 
         internal void _Manage(Realm realm, RowHandle rowHandle)
         {
@@ -226,29 +232,34 @@ namespace RealmNet
 
         }
 
-
-        public override bool Equals(object p)
+        /// <summary>
+        /// Compare objects with identity query for persistent objects
+        /// </summary>
+        /// <remarks>Persisted RealmObjects map their properties directly to the realm with no caching so multiple instances of a given object always refer to the same store.</remarks>
+        /// <param name="obj"></param>
+        /// <returns>True when objects are the same memory object or refer to the same persisted object</returns>
+        public override bool Equals(object obj)
         {
             // If parameter is null, return false. 
-            if (ReferenceEquals(p, null))
+            if (ReferenceEquals(obj, null))
             {
                 return false;
             }
 
             // Optimization for a common success case. 
-            if (ReferenceEquals(this, p))
+            if (ReferenceEquals(this, obj))
             {
                 return true;
             }
 
             // If run-time types are not exactly the same, return false. 
-            if (this.GetType() != p.GetType())
+            if (this.GetType() != obj.GetType())
                 return false;
 
             // Return true if the fields match. 
             // Note that the base class is not invoked because it is 
             // System.Object, which defines Equals as reference equality. 
-            return RowHandle.Equals(((RealmObject)p).RowHandle);
+            return RowHandle.Equals(((RealmObject)obj).RowHandle);
         }
     }
 }

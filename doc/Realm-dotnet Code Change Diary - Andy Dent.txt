@@ -1038,3 +1038,18 @@ change public to internal
 	TableHandle
 	WovenAttribute
 	WovenPropertyAttribute
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Minor tweaks whilst writing XML doc comments
+
+IntegrationTests.cs
+- added ReadAndWriteEqualityTest
+
+RealmObject.cs
+- IsManaged property made public
+- Equals param renamed from p to obj (for consistency)
+
+RealmQuery.s
+- RealmQuery ctor made internal
+
+All Exception constructors made internal.

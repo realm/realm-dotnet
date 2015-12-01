@@ -2,11 +2,10 @@
  * Proprietary and Confidential
  */
  
- 
-/// @warning Keep these codes aligned with ExceptionsToManaged.h in wrappers
 namespace RealmNet {
-    /**
-    */ 
+
+/// <summary>Codes used in forwarding exceptions from the native C++ core, to be regenerated in C#</summary>
+/// <remarks> <b>Warning:</b> Keep these codes aligned with ExceptionsToManaged.h in wrappers</remarks>
     public enum RealmExceptionCodes {
         RealmError = 0,
         RealmFileAccessError = 1,
