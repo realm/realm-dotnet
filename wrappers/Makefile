@@ -6,8 +6,8 @@ OBJS=$(subst .cc,.o,$(SRCS))
 SDKROOT=$(shell xcrun --sdk iphoneos --show-sdk-path)
 CXX=$(shell xcrun --sdk iphoneos --find clang++)
 FLAGS=-Icore/include -Iobject-store -Iobject-store/impl -Iobject-store/impl/apple -std=c++14 -stdlib=libc++  
-CORE_VER=0.95.0
-CORE_ANDROID_VER=0.95.0
+CORE_APPLE_VER=0.95.1
+CORE_ANDROID_VER=0.95.1
 
 help: ## Show this help.
 	@fgrep -h "##" $(MAKEFILE_LIST) | fgrep -v fgrep | sed -e 's/\\$$//' | sed -e 's/##//'
@@ -18,7 +18,7 @@ clean: ## Remove all build artefacts
 	rm -fr core
 	rm -fr core-android
  
-all: osx ios iosdbg android ## Make all the libs
+all: ios iosdbg android ## Make all the libs except osx broken - see issue 249
 
 .PHONY: all help clean
 
@@ -30,12 +30,12 @@ ios: build/Release-ios-universal/libwrappers.a
 
 iosdbg: build/Debug-ios-universal/libwrappers.a  
 
-core: realm-core-$(CORE_VER).tar.bz2
-	tar xjf realm-core-$(CORE_VER).tar.bz2
+core: realm-core-$(CORE_APPLE_VER).tar.bz2
+	tar xjf realm-core-$(CORE_APPLE_VER).tar.bz2
 	touch core
 
-realm-core-$(CORE_VER).tar.bz2:
-	curl -o realm-core-$(CORE_VER).tar.bz2 "http://static.realm.io/downloads/core/realm-core-$(CORE_VER).tar.bz2"
+realm-core-$(CORE_APPLE_VER).tar.bz2:
+	curl -o realm-core-$(CORE_APPLE_VER).tar.bz2 "http://static.realm.io/downloads/core/realm-core-$(CORE_APPLE_VER).tar.bz2"
 
 build/Release-osx:
 	mkdir -p build/Release-osx
