@@ -6,7 +6,7 @@ OBJS=$(subst .cc,.o,$(SRCS))
 SDKROOT=$(shell xcrun --sdk iphoneos --show-sdk-path)
 CXX=$(shell xcrun --sdk iphoneos --find clang++)
 FLAGS=-Icore/include -Iobject-store -Iobject-store/impl -Iobject-store/impl/apple -std=c++14 -stdlib=libc++  
-CORE_IOS_VER=0.95.1
+CORE_APPLE_VER=0.95.1
 CORE_ANDROID_VER=0.95.1
 
 help: ## Show this help.
@@ -30,12 +30,12 @@ ios: build/Release-ios-universal/libwrappers.a
 
 iosdbg: build/Debug-ios-universal/libwrappers.a  
 
-core: realm-core-$(CORE_IOS_VER).tar.bz2
-	tar xjf realm-core-$(CORE_IOS_VER).tar.bz2
+core: realm-core-$(CORE_APPLE_VER).tar.bz2
+	tar xjf realm-core-$(CORE_APPLE_VER).tar.bz2
 	touch core
 
-realm-core-$(CORE_IOS_VER).tar.bz2:
-	curl -o realm-core-$(CORE_IOS_VER).tar.bz2 "http://static.realm.io/downloads/core/realm-core-$(CORE_IOS_VER).tar.bz2"
+realm-core-$(CORE_APPLE_VER).tar.bz2:
+	curl -o realm-core-$(CORE_APPLE_VER).tar.bz2 "http://static.realm.io/downloads/core/realm-core-$(CORE_APPLE_VER).tar.bz2"
 
 build/Release-osx:
 	mkdir -p build/Release-osx
