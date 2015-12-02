@@ -1023,3 +1023,18 @@ Win32RelationshipTests.cs
 
 RelationshipTests.cs
 - corrected namespace to IntegrationTests.Shared
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Adding unit tests to finalise the IList addition
+
+RelationshipTests.cs
+- TestListRelationship 
+  - renamed TestAttachingStandaloneTwoLevelRelationship
+  - fixed asserts to be compatible with NUnitLite, for IOS testing
+- TestAttachingStandaloneThreeLevelRelationship added
+- TestCircularRelationshipsFromStandaloneTwoStage added
+
+ModuleWeaver.cs
+- reordered the test for RealmList so shortcircuit kicks out other RealmNet classes quicker
+- rewrote test for IList so is faster and more precise

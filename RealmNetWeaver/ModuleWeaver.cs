@@ -59,7 +59,7 @@ public class ModuleWeaver
     {
         // UNCOMMENT THIS DEBUGGER LAUNCH TO BE ABLE TO RUN A SEPARATE VS INSTANCE TO DEBUG WEAVING WHILST BUILDING
         // note that it may work better with a different VS version, eg: use VS2012 to debug a VS2015 build
-        // System.Diagnostics.Debugger.Launch();  
+        //System.Diagnostics.Debugger.Launch();  
 
         typeSystem = ModuleDefinition.TypeSystem;
 
@@ -108,8 +108,9 @@ public class ModuleWeaver
                     ReplaceGetter(prop, columnName, new GenericInstanceMethod(genericGetValueReference) { GenericArguments = { prop.PropertyType } });
                     ReplaceSetter(prop, columnName, new GenericInstanceMethod(genericSetValueReference) { GenericArguments = { prop.PropertyType } });
                 }
-                else if (prop.PropertyType.Namespace == "RealmNet" && prop.PropertyType.Name == "RealmList`1")
+                else if (prop.PropertyType.Name == "RealmList`1" && prop.PropertyType.Namespace == "RealmNet")
                 {
+                    // RealmList allows people to declare lists only of RealmObject due to the class definition
                     if (!prop.IsAutomatic())
                     {
                         LogWarningPoint($"{type.Name}.{columnName} is not an automatic property but its type is a RealmList which normally indicates a relationship", sequencePoint);
@@ -121,7 +122,7 @@ public class ModuleWeaver
                     ReplaceGetter(prop, columnName, new GenericInstanceMethod(genericGetListValueReference) { GenericArguments = { elementType } });
                     ReplaceSetter(prop, columnName, new GenericInstanceMethod(genericSetListValueReference) { GenericArguments = { elementType } });  
                 }
-                else if (prop.PropertyType.FullName.StartsWith(typeof(IList<>).FullName))
+                else if (prop.PropertyType.Name == "IList`1" && prop.PropertyType.Namespace == "System.Collections.Generic")
                 {
                     // only handle `IList<T> Foo { get; }` properties
                     if (prop.IsAutomatic() && prop.SetMethod == null)
