@@ -243,7 +243,7 @@ namespace RealmNet
         }
 
         /// <summary>
-        /// Only way to extract an iterable set of objects for direct use or furthr query.
+        /// Extract an iterable set of objects for direct use or further query.
         /// </summary>
         /// <typeparam name="T">The Type T must not only be a RealmObject but also have been processd by the Fody weaver, so it has persistent properties.</typeparam>
         /// <returns>A RealmQuery that without further filtering, allows iterating all objects of class T, in this realm</returns>
