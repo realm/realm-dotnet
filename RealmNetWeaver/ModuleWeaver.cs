@@ -149,8 +149,11 @@ public class ModuleWeaver
                     ReplaceGetter(prop, columnName, new GenericInstanceMethod(genericGetObjectValueReference) { GenericArguments = { prop.PropertyType } });
                     ReplaceSetter(prop, columnName, new GenericInstanceMethod(genericSetObjectValueReference) { GenericArguments = { prop.PropertyType } });  // with casting in the RealmObject methods, should just work
                 }
+                else if (prop.PropertyType.Name == "DateTime" && prop.PropertyType.Namespace == "System") {
+                    LogErrorPoint($"class '{type.Name}' field '{columnName}' is a DateTime which is not supported - use DateTimeOffset instead.", sequencePoint);
+                }
                 else {
-                    LogErrorPoint($"class '{type.Name}' field '{columnName}' is a {prop.PropertyType} which is not yet supported", sequencePoint);
+                    LogErrorPoint($"class '{type.Name}' field '{columnName}' is a '{prop.PropertyType}' which is not yet supported", sequencePoint);
                 }
 
                 var wovenPropertyAttribute = new CustomAttribute(wovenPropertyAttributeConstructor);

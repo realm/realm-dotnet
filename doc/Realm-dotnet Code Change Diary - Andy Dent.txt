@@ -1038,3 +1038,34 @@ RelationshipTests.cs
 ModuleWeaver.cs
 - reordered the test for RealmList so shortcircuit kicks out other RealmNet classes quicker
 - rewrote test for IList so is faster and more precise
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#232 Make things internal
+
+change public to internal
+	ExpressionVisitor
+	Handled
+	InteropConfig (3 platform-specific copies)
+	QueryHandle
+	QueryProvider
+	RealmHandle
+	RealmQuery
+	RealmQueryProvider
+	RealmQueryVisitor
+	TableHandle
+	WovenAttribute
+	WovenPropertyAttribute
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Better error for DateTime
+
+ModuleWeaver.cs
+- Execute - added test for System.DateTime with separate error message
+
+Added reference to the RealmNetWeaver.Fody.csproj to trigger it rebulding:
+- RealmNet.Win32.cspsproj
+- RealmNet.XamarinAndroid.csproj
+- RealmNet.XamarinIOS.csproj
+- RealmNet.XamarinMAC.csproj

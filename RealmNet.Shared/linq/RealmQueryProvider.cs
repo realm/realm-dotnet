@@ -7,7 +7,7 @@ using System.Linq.Expressions;
 
 namespace RealmNet
 {
-    public class RealmQueryProvider : QueryProvider
+    internal class RealmQueryProvider : QueryProvider
     {
         private Realm _realm;
 

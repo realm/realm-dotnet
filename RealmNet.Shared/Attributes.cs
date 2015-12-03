@@ -28,12 +28,12 @@ namespace RealmNet
         }
     }
 
-    public class WovenAttribute : Attribute
+    internal class WovenAttribute : Attribute
     {
     }
 
     [AttributeUsage(AttributeTargets.Property)]
-    public class WovenPropertyAttribute : Attribute
+    internal class WovenPropertyAttribute : Attribute
     {
         internal string BackingFieldName { get; private set; }
 
