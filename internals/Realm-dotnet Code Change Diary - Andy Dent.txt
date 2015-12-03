@@ -1026,11 +1026,29 @@ RelationshipTests.cs
 
 
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Adding unit tests to finalise the IList addition
+
+RelationshipTests.cs
+- TestListRelationship 
+  - renamed TestAttachingStandaloneTwoLevelRelationship
+  - fixed asserts to be compatible with NUnitLite, for IOS testing
+- TestAttachingStandaloneThreeLevelRelationship added
+- TestCircularRelationshipsFromStandaloneTwoStage added
+
+ModuleWeaver.cs
+- reordered the test for RealmList so shortcircuit kicks out other RealmNet classes quicker
+- rewrote test for IList so is faster and more precise
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #232 Make things internal
 
 change public to internal
 	ExpressionVisitor
+	Handled
+	InteropConfig (3 platform-specific copies)
 	QueryHandle
+	QueryProvider
 	RealmHandle
 	RealmQuery
 	RealmQueryProvider
@@ -1038,6 +1056,19 @@ change public to internal
 	TableHandle
 	WovenAttribute
 	WovenPropertyAttribute
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Better error for DateTime
+
+ModuleWeaver.cs
+- Execute - added test for System.DateTime with separate error message
+
+Added reference to the RealmNetWeaver.Fody.csproj to trigger it rebulding:
+- RealmNet.Win32.cspsproj
+- RealmNet.XamarinAndroid.csproj
+- RealmNet.XamarinIOS.csproj
+- RealmNet.XamarinMAC.csproj
 
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 Minor tweaks whilst writing XML doc comments

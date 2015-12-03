@@ -89,7 +89,7 @@ namespace RealmNet
         private RealmObject _parent;  // we only make sense within an owning object
         private LinkListHandle _listHandle;
 
-        internal void CompleteInit(RealmObject parent, LinkListHandle adoptedList)
+        internal RealmList(RealmObject parent, LinkListHandle adoptedList)
         {
             _parent = parent;
             _listHandle = adoptedList;

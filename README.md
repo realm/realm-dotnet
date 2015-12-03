@@ -1,52 +1,69 @@
-# .NET/Xamarin Language Binding for Realm
+![Realm](https://github.com/realm/realm-.net/raw/master/logo.png)
 
-Main Points
----------------
-The top solution `RealmNet.sln` allows you to build for all the platforms and different test environments. We currently support IOS and Android as our major platforms. You can also build Win32 with Visual Studio and Mac with Xamarin Studio.
+Realm is a mobile database that runs directly inside phones, tablets or wearables.
 
-See `doc/RealmDotNetProjects.md` for a description of the different solutions and projects that provides a lot more detail.
+This repository holds the source code for the C# versions of Realm (Currently only Xamarin for iOS and Android is supported.)
 
-The following instructions are valid as of 6 Nov 2015 but are **under construction** and, in particular, we are moving towards having automated download of the code needed by the Wrappers.
+## Features
+
+* **Mobile-first:** Realm is the first database built from the ground up to run directly inside phones, tablets and wearables.
+* **Simple:** Data is directly [exposed as objects](https://realm.io/docs/xamarin/latest/#models) and [queryable by code](https://realm.io/docs/xamarin/latest/#queries), removing the need for ORM's riddled with performance & maintenance issues. Plus, we've worked hard to [keep our API down to just 4 common classes](https://realm.io/docs/xamarin/latest/api/) (RealmObject, RealmList, RealmQuery and Realm): most of our users pick it up intuitively, getting simple apps up & running in minutes.
+* **Modern:** Realm supports relationships, generics, vectorization and modern C# idioms.
+* **Fast:** Realm is faster than even raw SQLite on common operations, while maintaining an extremely rich feature set.
+
+## Getting Started
+
+Please see the detailed instructions in our [User Guide](https://realm.io/docs/xamarin/latest/#installation) to add Realm to your solution.
+
+## Documentation
+
+The documentation can be found at [realm.io/docs/xamarin/latest](https://realm.io/docs/xamarin/latest).  
+The API reference is located at [realm.io/docs/xamarin/latest/api](https://realm.io/docs/xamarin/latest/api).
+
+## Getting Help
+
+- **Need help with your code?**: Look for previous questions on the  [#realm tag](https://stackoverflow.com/questions/tagged/realm?sort=newest) — or [ask a new question](https://stackoverflow.com/questions/ask?tags=realm). We activtely monitor & answer questions on SO!
+- **Have a bug to report?** [Open an issue](https://github.com/realm/realm-.net/issues/new). If possible, include the version of Realm, a full log, the Realm file, and a project that shows the issue.
+- **Have a feature request?** [Open an issue](https://github.com/realm/realm-.net/issues/new). Tell us what the feature should do, and why you want the feature.
+- Sign up for our [**Community Newsletter**](http://eepurl.com/VEKCn) to get regular tips, learn about other use-cases and get alerted of blogposts and tutorials about Realm.
+
+## Building Realm
+
+In case you don't want to use the precompiled version from NuGet, you can build Realm yourself from source.
+
+Prerequisites:
+
+* **Apple via Xamarin:** Xamarin IOS Indie license or above. 
+* **Android via Xamarin:** Xamarin Android Indie license or above
+* **Windows platforms:** Visual Studio 2013 or higher, recommended 2015
+* Building Realm Xamarin for IOS also requires Xcode 7.1.
+* Building Realm documentation requires [Doxygen](http:/www.doxygen.org)
 
 
-Adding Binaries
----------------------
-If you are building this solution from a checkout of the dotnet repo, you need to add binaries sourced separately into the following locations:
+We support the current Xamarin _Stable_ and _Beta_ update channels, at the time of release this corresponded to:
 
-### For all builds
-
-Tools:
-  RealmNetWeaver.dll
-
-### For Win32 builds
-
-* wrappers - Build an adjacent `realm-core\build\vs2013\realm.sln` configurations + platforms
-	* Static Lib, debug **platforms** x86 and x64
-	* Static Lib, release **platforms** x86 and x64
-
-### iOS and OS X wrappers
-
-Build using the `Makefile` in wrappers which downloads the _current_ static core library and builds the wrapper configurations, including running `lipo` to combine libraries.
-
-Use `make all` to build all the wrappers. If you just want to update a Debug build, use `make iosdbg`.
-
-The `RealmNet.XamarinIOS.csproj` includes Release or Debug libraries depending on configuration.
-
-### android Wrappers 
-
-currently don't build (see issue 164) as they don't have a download step
+* Xamarin iOS version 9.2.1.51
+* Xamarin Android version 6.0.0.34
+* Xamarin Studio version 5.10
 
 
+## Contributing
 
-Debugging Wrappers
-------------------
+See [CONTRIBUTING.md](CONTRIBUTING.md) for more details!
 
-Under Visual Studio, you should be able to seamlessly debug from the managed world of most of the binding down into the C++ wrappers provided you _Enable native debugging_ in the `RealmNet.Win32.csproj` options.
+## License
 
-To debug wrappers on IOS, say for the `IntegrationTests.IOS` project 
+Realm is published under the Apache 2.0 license.  
+The underlying core is available under the [Realm Core Binary License](https://github.com/realm/realm-.net/blob/master/LICENSE#L210-L243) while we [work to open-source it under the Apache 2.0 license](https://realm.io/docs/xamarin/latest/#faq).
 
-* you must first have run that project to get it onto the IOS Simulator, say from Xamarin Studio. 
-* After the test app is on the simulator, _stop running from Xamarin Studio_ - only one debugger can connect at a time.
-* Manually launch the test app on the simulator
-* open the `wrappers.xcodeproj` in XCode and manually connect to the process using the menu item Debug - Attach to Process. Scroll down through the System Processes until you find `IntegrationTestsXamarionIOS.` 
-* The debugger should show the live process and allow you to set breakpoints which will cause the app to pause when they are hit, just as if you had launched a native app from inside XCode.
+**This product is not being made available to any person located in Cuba, Iran,
+North Korea, Sudan, Syria or the Crimea region, or to any other person that is
+not eligible to receive the product under U.S. law.**
+
+## Feedback
+
+**_If you use Realm and are happy with it, all we ask is that you please consider sending out a tweet mentioning [@realm](https://twitter.com/realm), announce your app on [our mailing-list](https://groups.google.com/forum/#!forum/realm-.net), or email [help@realm.io](mailto:help@realm.io) to let us know about it!_**
+
+**_And if you don't like it, please let us know what you would like improved, so we can fix it!_**
+
+![analytics](https://ga-beacon.appspot.com/UA-50247013-2/realm-.net/README?pixel)

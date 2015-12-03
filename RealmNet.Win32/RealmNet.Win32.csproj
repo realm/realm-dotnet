@@ -89,6 +89,10 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\RealmNetWeaver\RealmNetWeaver.Fody.csproj">
+      <Project>{c3578a7b-09a6-4444-9383-0deafa4958bd}</Project>
+      <Name>RealmNetWeaver.Fody</Name>
+    </ProjectReference>
     <ProjectReference Include="..\wrappers\wrappers.vcxproj">
       <Project>{a1e763ad-24b9-4d6b-aaca-282bb33e350f}</Project>
       <Name>wrappers</Name>
