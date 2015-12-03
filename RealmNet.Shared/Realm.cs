@@ -12,6 +12,12 @@ using System.Runtime.ConstrainedExecution;
 
 namespace RealmNet
 {
+    /// <summary>
+    /// A Realm instance (also referred to as a realm) represents a Realm database.
+    /// </summary>
+    /// <remarks>Warning: Realm instances are not thread safe and can not be shared across threads. 
+    /// You must call GenerateInstance on each thread you want to interact with the realm on. 
+    /// </remarks>
     public class Realm : IDisposable
     {
         #region static
@@ -35,6 +41,11 @@ namespace RealmNet
             NativeCommon.SetupExceptionThrower();
         }
 
+        /// <summary>
+        /// Factory for a Realm instance for this thread.
+        /// </summary>
+        /// <param name="databasePath">Optional path to the realm, must be a valid full path for the current platform</param>
+        /// <returns>A realm instance</returns>
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         public static Realm GetInstance(string databasePath = null)
         {
@@ -138,12 +149,19 @@ namespace RealmNet
             return result;
         }
 
+        /// <summary>
+        /// Factory for a managed object in a realm. Only valid within a Write transaction.
+        /// </summary>
+        /// <remarks>Using CreateObject is more efficient than creating standalone objects, assigning their values, then using Attach because it avoids copying properties to the realm.</remarks>
+        /// <typeparam name="T">The Type T must not only be a RealmObject but also have been processd by the Fody weaver, so it has persistent properties.</typeparam>
+        /// <returns>An object which is already managed</returns>
+        /// <exception cref="RealmOutsideTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
         public T CreateObject<T>() where T : RealmObject
         {
             return (T)CreateObject(typeof(T));
         }
 
-        public object CreateObject(Type objectType)
+        private object CreateObject(Type objectType)
         {
             if (!IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot create Realm object outside write transactions");
@@ -160,6 +178,14 @@ namespace RealmNet
             return result;
         }
 
+        /// <summary>
+        /// Attaches a RealmObject which has been created as a standalone object, to this realm.
+        /// </summary>
+        /// <typeparam name="T">The Type T must not only be a RealmObject but also have been processd by the Fody weaver, so it has persistent properties.</typeparam>
+        /// <param name="obj">Must be a standalone object, null not allowed.</param>
+        /// <exception cref="RealmOutsideTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
+        /// <exception cref="RealmObjectAlreadyOwnedByRealmException">You can't attach the same object twice. This exception is thrown, rather than silently detecting the mistake, to help you debug your code</exception>
+        /// <exception cref="RealmObjectOwnedByAnotherRealmException">You can't attach an object to more than one realm</exception>
         public void Attach<T>(T obj) where T : RealmObject
         {
             if (obj == null)
@@ -201,25 +227,50 @@ namespace RealmNet
             return rowHandle;
         }
 
+        /// <summary>
+        /// Factory for a write Transaction. Essential object to create scope for updates.
+        /// </summary>
+        /// <example><c>
+        /// using (var trans = myrealm.BeginWrite()) { 
+        ///     var rex = myrealm.CreateObject<Dog>();
+        ///     rex.Name = "Rex";
+        ///     trans.Commit();
+        /// }</c>
+        /// </example>
+        /// <returns>A transaction in write mode, which is required for any creation or modification of objects persisted in a Realm</returns>
         public Transaction BeginWrite()
         {
             return new Transaction(_sharedRealmHandle);
         }
 
+        /// <summary>
+        /// Extract an iterable set of objects for direct use or further query.
+        /// </summary>
+        /// <typeparam name="T">The Type T must not only be a RealmObject but also have been processd by the Fody weaver, so it has persistent properties.</typeparam>
+        /// <returns>A RealmQuery that without further filtering, allows iterating all objects of class T, in this realm</returns>
         public RealmQuery<T> All<T>() where T: RealmObject
         {
             return new RealmQuery<T>(this);
         }
 
-        public void Remove(RealmObject p2)
+        /// <summary>
+        /// Removes a persistent object from this realm, effectively deleting it.
+        /// </summary>
+        /// <param name="obj">Must be an object persisted in this realm</param>
+        /// <exception cref="RealmOutsideTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
+        /// <exception cref="System.ArgumentNullException">If you invoke this with a standalone object.</exception>
+        public void Remove(RealmObject obj)
         {
             if (!IsInTransaction)
                 throw new Exception("Cannot remove Realm object outside write transactions");
 
-            var tableHandle = _tableHandles[p2.GetType()];
-            NativeTable.remove_row(tableHandle, (RowHandle)p2.RowHandle);
+            var tableHandle = _tableHandles[obj.GetType()];
+            NativeTable.remove_row(tableHandle, (RowHandle)obj.RowHandle);
         }
 
+        /// <summary>
+        /// Standard Dispose which has no action or side-effects for a Realm.
+        /// </summary>
         public void Dispose()
         {
         }

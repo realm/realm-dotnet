@@ -6,13 +6,12 @@ using System;
 
 namespace RealmNet {
 
-/**
-Class for reporting problems with Realm files.
-You can catch any of the subclasses independently but any File-level
-error which could be handled by an application descends from these.
-*/
+/// <summary>
+/// Exception when you try to Add, update or Remove a persisted object without a write transaction active.
+/// </summary>
 public class RealmOutsideTransactionException :  RealmException {
-    public RealmOutsideTransactionException(String message) : base(message)
+
+    internal RealmOutsideTransactionException(String message) : base(message)
     {
     }
 }

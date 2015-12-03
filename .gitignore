@@ -224,9 +224,7 @@ wrappers/core
 wrappers/core-android
 wrappers/realm-core*.bz2
 wrappers/realm-core-android*.gz
-doxyout
-doxyoutCS
-doxyoutCS_docOnly
+doxyout*
 RealmNetWeaver.Fody.dll
 NuGetBuild
 realm-core-android-*.tar.gz

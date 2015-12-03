@@ -1069,3 +1069,18 @@ Added reference to the RealmNetWeaver.Fody.csproj to trigger it rebulding:
 - RealmNet.XamarinAndroid.csproj
 - RealmNet.XamarinIOS.csproj
 - RealmNet.XamarinMAC.csproj
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Minor tweaks whilst writing XML doc comments
+
+IntegrationTests.cs
+- added ReadAndWriteEqualityTest
+
+RealmObject.cs
+- IsManaged property made public
+- Equals param renamed from p to obj (for consistency)
+
+RealmQuery.s
+- RealmQuery ctor made internal
+
+All Exception constructors made internal.

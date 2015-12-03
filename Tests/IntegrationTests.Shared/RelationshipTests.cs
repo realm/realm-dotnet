@@ -244,13 +244,26 @@ namespace IntegrationTests.Shared
         [Test]
         public void TestExceptionsFromEmptyListOutOfRange()
         {
-            var dani = realm.All<Owner>().Where( p => p.Name == "Dani").ToList().First();
-            Assert.Throws<IndexOutOfRangeException>( () => dani.Dogs.RemoveAt(0) );
-            var bilbo = realm.All<Dog>().Where( p => p.Name == "Bilbo Fleabaggins").ToList().First();
+            var dani = realm.All<Owner>().Where(p => p.Name == "Dani").ToList().First();
+            Assert.Throws<IndexOutOfRangeException>(() => dani.Dogs.RemoveAt(0));
+            var bilbo = realm.All<Dog>().Where(p => p.Name == "Bilbo Fleabaggins").ToList().First();
             Dog scratch;  // for assignment in following getters
-            Assert.Throws<IndexOutOfRangeException>( () => dani.Dogs.Insert(-1, bilbo) );
-            Assert.Throws<IndexOutOfRangeException>( () => dani.Dogs.Insert(0, bilbo) );
-            Assert.Throws<IndexOutOfRangeException>( () => scratch = dani.Dogs[0] );
+            Assert.Throws<IndexOutOfRangeException>(() => dani.Dogs.Insert(-1, bilbo));
+            Assert.Throws<IndexOutOfRangeException>(() => dani.Dogs.Insert(0, bilbo));
+            Assert.Throws<IndexOutOfRangeException>(() => scratch = dani.Dogs[0]);
+        }
+
+
+        [Test]
+        public void TestExceptionsFromIteratingEmptyList()
+        {
+            var dani = realm.All<Owner>().Where(p => p.Name == "Dani").ToList().First();
+            var iter =  dani.Dogs.GetEnumerator();
+            Assert.IsNotNull(iter);
+            var movedOnToFirstItem = iter.MoveNext();
+            Assert.That(movedOnToFirstItem, Is.False);
+            Dog currentDog;
+            Assert.Throws<IndexOutOfRangeException>(() => currentDog = iter.Current );
         }
 
 
