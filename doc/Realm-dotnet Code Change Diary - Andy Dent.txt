@@ -1041,3 +1041,10 @@ change public to internal
 	TableHandle
 	WovenAttribute
 	WovenPropertyAttribute
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Better error for DateTime
+
+ModuleWeaver.cs
+- Execute - added test for System.DateTime with separate error message
