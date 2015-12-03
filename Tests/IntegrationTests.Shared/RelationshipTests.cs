@@ -31,7 +31,7 @@ namespace IntegrationTests.Shared
         {
             public string Name { get; set; }
             public Dog TopDog { get; set; }
-            public RealmList<Dog> Dogs { get; set; } // TODO allow this if we can preserve init through weaving = new RealmList<Dog>();
+            public RealmList<Dog> Dogs { get; set; } 
         }
 
         protected Realm realm;
@@ -299,5 +299,95 @@ namespace IntegrationTests.Shared
             Assert.That(dogAgain, Is.Not.Null);
             Assert.That(dog.IsManaged);
         }
+
+        [Test]
+        public void TestAttachingStandaloneTwoLevelRelationship()
+        {
+            var person = new Person
+            {
+                FullName = "Person 0",
+                Friends =
+                {
+                    new Person { FullName = "Friend A" },
+                    new Person { FullName = "Friend B" }
+                }
+            };
+
+            Assert.That(person.Friends is List<Person>);
+
+            using (var trans = realm.BeginWrite())
+            {
+                realm.Attach(person);
+                trans.Commit();
+            }
+
+            Assert.That(person.Friends is RealmList<Person>);
+            Assert.That(realm.All<Person>().ToList().Count, Is.EqualTo(3));
+        }
+
+
+        [Test]
+        public void TestAttachingStandaloneThreeLevelRelationship()
+        {
+            var sally = new Person
+            {
+                FullName = "Sally",
+                Friends =
+                {
+                    new Person { FullName = "Alice" },
+                    new Person
+                    {
+                        FullName = "Joan",
+                        Friends =
+                        {
+                            new Person()
+                            {
+                                FullName = "Krystal",
+                                Friends = { new Person {  FullName = "Sally"} }  // attaches a second Sally
+                            }
+                        } 
+
+                    }
+                }
+            };
+
+            using (var trans = realm.BeginWrite()) {
+                realm.Attach(sally);  // top person attaches entire tree
+                trans.Commit();
+            }
+
+            Assert.That(realm.All<Person>().ToList().Count, Is.EqualTo(5));
+            Assert.That(realm.All<Person>().Where(p => p.FirstName=="Sally").ToList().Count, Is.EqualTo(2));
+        }
+
+
+        [Test]
+        public void TestCircularRelationshipsFromStandaloneTwoStage()
+        {
+            var sally = new Person
+            {
+                FullName = "Sally",
+                Friends =
+                {
+                    new Person { FullName = "Alice" },
+                    new Person { FullName = "Joan"  }       
+                }
+            };
+            var joanFriend = new Person()
+            {
+                FullName = "Krystal",
+                Friends = {sally} 
+            };
+
+            sally.Friends[1].Friends.Add(joanFriend);
+            using (var trans = realm.BeginWrite()) {
+                realm.Attach(sally);  // top person attaches entire tree
+                trans.Commit();
+            }
+
+            Assert.That(realm.All<Person>().ToList().Count, Is.EqualTo(4));
+            Assert.That(realm.All<Person>().Where(p => p.FirstName=="Sally").ToList().Count, Is.EqualTo(1));
+        }
+
     }
-} 
+}

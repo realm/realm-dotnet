@@ -1,8 +1,9 @@
 /* Copyright 2015 Realm Inc - All Rights Reserved
  * Proprietary and Confidential
  */
- 
+
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 namespace RealmNet
@@ -63,8 +64,12 @@ namespace RealmNet
                 return (IntPtr)1;  // type_Bool
             if (columnType.BaseType == typeof(RealmObject))
                 return (IntPtr)12;  // type_Link
-            if (columnType.IsGenericType && columnType.Name == "RealmList`1" && columnType.Namespace == "RealmNet" )
-                return (IntPtr)13;  // type_LinkList 
+            if (columnType.IsGenericType)
+            {
+                var type = columnType.GetGenericTypeDefinition();
+                if (type == typeof(RealmList<>) || type == typeof(IList<>))
+                    return (IntPtr)13;  // type_LinkList 
+            }
             /*
             TODO
                     Binary = 4,  // type_Binary

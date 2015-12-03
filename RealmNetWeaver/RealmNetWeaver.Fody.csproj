@@ -58,6 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="extensions\MethodReferenceExtensions.cs" />
     <Compile Include="extensions\PropertyDefinitionExtensions.cs" />
     <Compile Include="ModuleWeaver.cs" />
   </ItemGroup>
