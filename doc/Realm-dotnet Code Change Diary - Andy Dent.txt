@@ -1048,3 +1048,9 @@ Better error for DateTime
 
 ModuleWeaver.cs
 - Execute - added test for System.DateTime with separate error message
+
+Added reference to the RealmNetWeaver.Fody.csproj to trigger it rebulding:
+- RealmNet.Win32.cspsproj
+- RealmNet.XamarinAndroid.csproj
+- RealmNet.XamarinIOS.csproj
+- RealmNet.XamarinMAC.csproj

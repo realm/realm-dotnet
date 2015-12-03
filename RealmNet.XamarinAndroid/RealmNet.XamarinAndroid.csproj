@@ -52,6 +52,12 @@
   <ItemGroup>
     <AndroidResource Include="Resources\Values\Strings.xml" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\RealmNetWeaver\RealmNetWeaver.Fody.csproj">
+      <Project>{c3578a7b-09a6-4444-9383-0deafa4958bd}</Project>
+      <Name>RealmNetWeaver.Fody</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="..\RealmNet.Shared\RealmNet.Shared.projitems" Label="Shared" Condition="Exists('..\RealmNet.Shared\RealmNet.Shared.projitems')" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
