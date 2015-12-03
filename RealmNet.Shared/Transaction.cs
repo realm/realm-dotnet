@@ -28,7 +28,7 @@ namespace RealmNet
         }
 
         /// <summary>
-        /// Will automatically Rollback the transaction on existing scope, if not explicitly Committed.
+        /// Will automatically <c>Rollback/c> the transaction on existing scope, if not explicitly Committed.
         /// </summary>
         public void Dispose()
         {
@@ -44,7 +44,7 @@ namespace RealmNet
         }
 
         /// <summary>
-        /// Use explicitly to undo the changes in a transaction, otherwise is automatically invoked by existing the block.
+        /// Use explicitly to undo the changes in a transaction, otherwise it is automatically invoked by exiting the block.
         /// </summary>
         public void Rollback()
         {
@@ -56,7 +56,7 @@ namespace RealmNet
         }
 
         /// <summary>
-        /// Use to save the changes to the realm. Must use before exiting a using block.
+        /// Use to save the changes to the realm. If transaction is declared in a <c>using</c> block, must be used before tne end of that block.
         /// </summary>
         public void Commit()
         {

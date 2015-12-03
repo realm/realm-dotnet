@@ -11,7 +11,7 @@ using System.Diagnostics;
 namespace RealmNet
 {
     /// <summary>
-    /// Used to declare ToMany relatinships and as the return type when you access such a relationship.
+    /// Used to declare to-many relationships and as the return type when you access such a relationship.
     /// </summary>
     /// <remarks>Relationships are ordered and preserve their order, hence the ability to use ordinal 
     /// indexes in calls such as Insert and RemoveAt.
@@ -210,7 +210,6 @@ namespace RealmNet
         /// <param name="index">Ordinal zero-based index at which to insert the related items</param>
         /// <param name="item">RealmObject being inserted into the relationship.</param>
         /// <typeparam name="T">Type of the RealmObject which is the rarget of the relationship</typeparam>
-        /// <returns>A related item, if exception not thrown</returns>
         /// <exception cref="IndexOutOfRangeException">When the index is out of range for the related items</exception>
         public void Insert(int index, T item)
         {
@@ -238,10 +237,9 @@ namespace RealmNet
         }
 
         /// <summary>
-        /// Breaks the relationship to the item at the ordinal index, without deleting the iem.
+        /// Breaks the relationship to the item at the ordinal index, without deleting the item.
         /// </summary>
-        /// <param name="index">Ordinal zero-based index of the related items</param>
-        /// <typeparam name="T">Type of the RealmObject which is the rarget of the relationship</typeparam>
+        /// <param name="index">Ordinal zero-based index of the related item</param>
         /// <exception cref="IndexOutOfRangeException">When the index is out of range for the related items</exception>
         public void RemoveAt(int index)
         {

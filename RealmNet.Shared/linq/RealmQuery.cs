@@ -35,7 +35,7 @@ namespace RealmNet
         /// <summary>
         /// Standard method from interface IEnumerable allows the RealmQuery to be used in a <c>foreach</c>
         /// </summary>
-        /// <returns>An IEnumeragor which will iterate through found Realm persistent objects</returns>
+        /// <returns>An IEnumerator which will iterate through found Realm persistent objects</returns>
         public IEnumerator<T> GetEnumerator()
         {
             return (Provider.Execute<IEnumerable<T>>(Expression)).GetEnumerator();
