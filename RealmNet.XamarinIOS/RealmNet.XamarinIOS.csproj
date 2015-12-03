@@ -94,4 +94,10 @@
       <Link>libwrappers.a</Link>
     </ObjcBindingNativeLibrary>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\RealmNetWeaver\RealmNetWeaver.Fody.csproj">
+      <Project>{c3578a7b-09a6-4444-9383-0deafa4958bd}</Project>
+      <Name>RealmNetWeaver.Fody</Name>
+    </ProjectReference>
+  </ItemGroup>
 </Project>
