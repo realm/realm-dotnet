@@ -28,7 +28,7 @@ namespace RealmNet
         }
 
         /// <summary>
-        /// Will automatically <c>Rollback/c> the transaction on existing scope, if not explicitly Committed.
+        /// Will automatically <c>Rollback</c> the transaction on existing scope, if not explicitly Committed.
         /// </summary>
         public void Dispose()
         {
