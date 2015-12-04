@@ -25,6 +25,7 @@
 #include <mutex>
 
 #include "object_store.hpp"
+#include "util.hpp"
 
 namespace realm {
     class ClientHistory;
