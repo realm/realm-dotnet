@@ -280,7 +280,7 @@ namespace IntegrationTests
 
 
         [Test]
-        public void RemoveTest()
+        public void RemoveSucceedsTest()
         {
             // Arrange
             Person p1, p2, p3;
@@ -308,6 +308,22 @@ namespace IntegrationTests
             var allPeople = _realm.All<Person>().ToList();
 
             Assert.That(allPeople, Is.EquivalentTo(new List<Person> { p1, p3 }));
+        }
+
+
+        [Test]
+        public void RemoveOutsideTransactionShouldFail()
+        {
+            // Arrange
+            Person p;
+            using (var transaction = _realm.BeginWrite())
+            {
+                p = _realm.CreateObject<Person>();
+                transaction.Commit();
+            }
+
+            // Act and assert
+            Assert.Throws<RealmOutsideTransactionException>(() => _realm.Remove(p) );
         }
 
 
