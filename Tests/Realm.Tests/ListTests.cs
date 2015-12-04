@@ -3,9 +3,9 @@
  */
  
 using NUnit.Framework;
-using Realm;
+using Realma;
 using System;
-using Realm.Interop;
+using Realms.Interop;
 using System.Collections.Generic;
 using System.Linq;
 using InteropShared;

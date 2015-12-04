@@ -6,7 +6,7 @@
     <ProjectTypeGuids>{8FFB629D-F513-41CE-95D2-7ECE97B6EEEC};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <ProjectGuid>{A55BD773-5A29-4B2A-9DB7-1AB1DD38B537}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>Realm</RootNamespace>
+    <RootNamespace>Realms</RootNamespace>
     <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
     <AssemblyName>Realm</AssemblyName>
   </PropertyGroup>

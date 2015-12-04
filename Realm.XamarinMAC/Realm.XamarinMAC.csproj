@@ -6,7 +6,7 @@
     <ProjectTypeGuids>{A3F8F2AB-B479-4A4A-A458-A89E7DC349F1};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <ProjectGuid>{9F2EE4B5-CFD1-45E6-B2DB-969857FBCA2D}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>Realm</RootNamespace>
+    <RootNamespace>Realms</RootNamespace>
     <MonoMacResourcePrefix>Resources</MonoMacResourcePrefix>
     <AssemblyName>Realm</AssemblyName>
     <TargetFrameworkIdentifier>Xamarin.Mac</TargetFrameworkIdentifier>
