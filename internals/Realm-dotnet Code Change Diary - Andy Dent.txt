@@ -1098,3 +1098,15 @@ All projects with RealmNet in them renamed Realmblah including Fody
 README.md
 - changed repo name back from realm-.net to realm-dotnet
 
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#238 Removing objects should throw RealmOutsideTransactionExcepton
+
+IntegrationTests.cs
+- RemoveTest renamed RemoveSucceedsTest
+- RemoveOutsideTransactionShouldFail added
+
+Realm.cs
+- Remove change to throw RealmOutsideTransactionException
+

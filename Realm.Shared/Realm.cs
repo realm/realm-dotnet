@@ -262,7 +262,7 @@ namespace Realms
         public void Remove(RealmObject obj)
         {
             if (!IsInTransaction)
-                throw new Exception("Cannot remove Realm object outside write transactions");
+                throw new RealmOutsideTransactionException("Cannot remove Realm object outside write transactions");
 
             var tableHandle = _tableHandles[obj.GetType()];
             NativeTable.remove_row(tableHandle, (RowHandle)obj.RowHandle);
