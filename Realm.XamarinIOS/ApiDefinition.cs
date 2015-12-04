@@ -10,7 +10,7 @@ using CoreGraphics;
 // it is still needed to compile as this is an IOS Binding Project 
 // and the compilation scripts expect this file to be present
 
-namespace Realm.XamarinIOS
+namespace Realms.XamarinIOS
 {
     // The first step to creating a binding is to add your native library ("libNativeLibrary.a")
     // to the project by right-clicking (or Control-clicking) the folder containing this source

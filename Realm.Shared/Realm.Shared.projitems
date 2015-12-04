@@ -6,7 +6,7 @@
     <SharedGUID>826c8753-5c4a-4e95-b483-179b9892c008</SharedGUID>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>Realm</Import_RootNamespace>
+    <Import_RootNamespace>Realms</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Attributes.cs" />

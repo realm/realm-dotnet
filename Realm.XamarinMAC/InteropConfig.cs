@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Realm
+namespace Realms
 {
     public static class InteropConfig
     {

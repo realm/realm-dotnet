@@ -187,11 +187,11 @@ public class ModuleWeaver
         ///   2: ret
         /// We want to change it so it looks like this:
         ///   0: ldarg.0
-        ///   1: call Realm.RealmObject.get_IsManaged
+        ///   1: call Realms.RealmObject.get_IsManaged
         ///   2: brfalse.s 7
         ///   3: ldarg.0
         ///   4: ldstr <columnName>
-        ///   5: call Realm.RealmObject.GetValue<T>
+        ///   5: call Realms.RealmObject.GetValue<T>
         ///   6: ret
         ///   7: ldarg.0
         ///   8: ldfld <backingField>
