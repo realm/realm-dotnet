@@ -1110,3 +1110,22 @@ IntegrationTests.cs
 Realm.cs
 - Remove change to throw RealmOutsideTransactionException
 
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#236 Put icons on demo apps
+
+Playground.XamarinIOS
+- Launchscreen.xib replaced "Kristian" with "Realm" in copyright
+- AppIcons.appiconset - added two icons for 2x and 3x iPhone size
+
+
+IntegrationTests.XamarinIOS
+- AppIcons.appiconset - added two icons for 2x and 3x iPhone size
+- info.plist changed to use Asset Catalog for icon
+
+IntegrationTests.XamarinAndroid
+- replaced all the icon.png files with matching new icons of same name
+
+Playground.XamarinAndroid
+- added set of icons copied from IntegrationTests.XamarinAndroid
+- replaced single icon.png in project with all new icons in different sizes
+- manually set the added icons as Android Asset (IDE bug fails to set on adding)
