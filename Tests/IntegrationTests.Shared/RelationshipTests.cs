@@ -3,7 +3,7 @@
  */
  
 using NUnit.Framework;
-using RealmNet;
+using Realms;
 using System;
 using System.IO;
 using System.Collections.Generic;

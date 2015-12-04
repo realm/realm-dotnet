@@ -2,7 +2,7 @@
  * Proprietary and Confidential
  */
  
-using RealmNet;
+using Realms;
 using System;
 
 namespace AssemblyToProcess

@@ -14,7 +14,7 @@
     <AndroidResgenFile>Resources\Resource.Designer.cs</AndroidResgenFile>
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
     <AndroidUseLatestPlatformSdk>True</AndroidUseLatestPlatformSdk>
-    <TargetFrameworkVersion>v5.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.4</TargetFrameworkVersion>
     <AndroidManifest>Properties\AndroidManifest.xml</AndroidManifest>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|ARM' ">
@@ -91,9 +91,9 @@
     </AndroidNativeLibrary>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\RealmNet.XamarinAndroid\RealmNet.XamarinAndroid.csproj">
+    <ProjectReference Include="..\..\Realm.XamarinAndroid\Realm.XamarinAndroid.csproj">
       <Project>{2379D669-4F4B-4FF6-AF8A-49FEA981EFC3}</Project>
-      <Name>RealmNet.XamarinAndroid</Name>
+      <Name>Realm.XamarinAndroid</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

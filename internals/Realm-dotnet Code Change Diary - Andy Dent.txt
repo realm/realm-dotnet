@@ -1070,17 +1070,31 @@ Added reference to the RealmNetWeaver.Fody.csproj to trigger it rebulding:
 - RealmNet.XamarinIOS.csproj
 - RealmNet.XamarinMAC.csproj
 
+
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-Minor tweaks whilst writing XML doc comments
+Fixing projects to be non IOS Binding
 
-IntegrationTests.cs
-- added ReadAndWriteEqualityTest
+RealmNet.XamarinIOS.csproj
+- changed  <ProjectTypeGuids> from
+   {8FFB629D-F513-41CE-95D2-7ECE97B6EEEC};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}
+  to
+    {FEACFBD2-3405-455C-9665-78FE426C6842};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}
+- removed   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.ObjCBinding.CSharp.targets" />
 
-RealmObject.cs
-- IsManaged property made public
-- Equals param renamed from p to obj (for consistency)
 
-RealmQuery.s
-- RealmQuery ctor made internal
+Properties/AssemblyInfo.cs
+- removed using Foundation
 
-All Exception constructors made internal.
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Big rename
+
+RealmNet.sln renamed Realm.sln
+
+General refactor rename of namespace RealmNet to Realms
+
+All projects with RealmNet in them renamed Realmblah including Fody
+
+README.md
+- changed repo name back from realm-.net to realm-dotnet
+

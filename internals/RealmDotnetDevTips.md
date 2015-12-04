@@ -2,7 +2,7 @@
 
 Main Points
 ---------------
-The top solution `RealmNet.sln` allows you to build for all the platforms and different test environments. We currently support IOS and Android as our major platforms. You can also build Win32 with Visual Studio and Mac with Xamarin Studio.
+The top solution `Realm.sln` allows you to build for all the platforms and different test environments. We currently support IOS and Android as our major platforms. You can also build Win32 with Visual Studio and Mac with Xamarin Studio.
 
 See `doc/RealmDotNetProjects.md` for a description of the different solutions and projects that provides a lot more detail.
 
@@ -17,7 +17,7 @@ If you are building this solution from a checkout of the dotnet repo, you need t
 
 **Tools:**
 
-* `RealmNetWeaver.dll` is buit by the `RealmNetWeaver.Fody` project
+* `RealmWeaver.dll` is buit by the `RealmWeaver.Fody` project
 
 ### For Win32 builds
 
@@ -34,7 +34,7 @@ Build using the `Makefile` in wrappers which downloads the _current_ static core
 
 Use `make all` to build all the wrappers. If you just want to update a Debug build, use `make iosdbg`.
 
-The `RealmNet.XamarinIOS.csproj` includes Release or Debug libraries depending on configuration.
+The `Realm.XamarinIOS.csproj` includes Release or Debug libraries depending on configuration.
 
 
 
