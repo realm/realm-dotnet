@@ -1,7 +1,7 @@
 Solutions
 ==============
 
-After refactoring of the original Realm.sln - we now have RealmNet.sln as the main one.
+After refactoring of the original Realm.sln - we now have Realm.sln as the main one.
 
 
 Solutions - Platform Specific
@@ -13,12 +13,12 @@ The only platform-specific solutiion left at present is `RealmWin.sln` for easie
 
 Projects - Platform specific 
 ----------------------------
-All the **RealmNet** projects depend on RealmNet.Shared.shproj  and provide Realm for that platform.
+All the **Realm** projects depend on Realm.Shared.shproj  and provide Realm for that platform.
 
-### RealmNet.Win32 ###
+### Realm.Win32 ###
 References:
 
-* RealmNet.Shared.shproj
+* Realm.Shared.shproj
 * Mono.Android
 * mscorlib
 * System
@@ -28,10 +28,10 @@ References:
 Includes Realm core via  `wrappersx86.dll` and `wrappersx64.dll` being built alongside the wrappers.vcxproj native c++ project
 
 
-### RealmNet.XamarinAndroid  ###
+### Realm.XamarinAndroid  ###
 References:
 
-* RealmNet.Shared.shproj
+* Realm.Shared.shproj
 * Mono.Android
 * mscorlib
 * System
@@ -41,20 +41,20 @@ References:
 Includes Realm core via `libwrappers.so`
 
 
-### RealmNet.XamarinIOS ###
+### Realm.XamarinIOS ###
 References:
 
-* RealmNet.Shared.shproj
+* Realm.Shared.shproj
 * System
 * Xamarin.IOS
 
 Includes Realm core via `libwrappers.a` 
 
 
-### RealmNet.XamarinMAC  ###
+### Realm.XamarinMAC  ###
 References:
 
-* RealmNet.Shared.shproj
+* Realm.Shared.shproj
 * System
 * System.Core
 * Xamarin.Mac
@@ -69,7 +69,7 @@ These are `.shproj` projects which are a compile-time inclusion of files into th
 ### IntegrationTests.Shared.shproj ###
 Testing classes used directly in all the Integration Test projects
 
-### RealmNet.Shared.shproj ###
+### Realm.Shared.shproj ###
 The core database classes
 
 
@@ -87,8 +87,8 @@ Demo Apps
 Other
 -----
 
-### RealmNetWeaver Project ###
-Builds `RealmNetWeaver.Fody`
+### RealmWeaver Project ###
+Builds `RealmWeaver.Fody`
 
 ### NuGet Project ###
 Builds our NuGet package, not yet ready

@@ -84,9 +84,9 @@
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
   <Import Project="..\..\packages\Fody.1.29.3\build\portable-net+sl+win+wpa+wp\Fody.targets" Condition="Exists('..\..\packages\Fody.1.29.3\build\portable-net+sl+win+wpa+wp\Fody.targets')" />
   <ItemGroup>
-    <ProjectReference Include="..\..\RealmNet.XamarinIOS\RealmNet.XamarinIOS.csproj">
+    <ProjectReference Include="..\..\Realm.XamarinIOS\Realm.XamarinIOS.csproj">
       <Project>{A55BD773-5A29-4B2A-9DB7-1AB1DD38B537}</Project>
-      <Name>RealmNet.XamarinIOS</Name>
+      <Name>Realm.XamarinIOS</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

@@ -3,7 +3,7 @@
  */
 
 using System;
-using RealmNet;
+using Realms;
 using System.Collections.Generic;
 
 namespace IntegrationTests

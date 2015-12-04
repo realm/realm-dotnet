@@ -1,4 +1,4 @@
-![Realm](https://github.com/realm/realm-.net/raw/master/logo.png)
+![Realm](https://github.com/realm/realm-dotnet/raw/master/logo.png)
 
 Realm is a mobile database that runs directly inside phones, tablets or wearables.
 
@@ -23,8 +23,8 @@ The API reference is located at [realm.io/docs/xamarin/latest/api](https://realm
 ## Getting Help
 
 - **Need help with your code?**: Look for previous questions on the  [#realm tag](https://stackoverflow.com/questions/tagged/realm?sort=newest) — or [ask a new question](https://stackoverflow.com/questions/ask?tags=realm). We activtely monitor & answer questions on SO!
-- **Have a bug to report?** [Open an issue](https://github.com/realm/realm-.net/issues/new). If possible, include the version of Realm, a full log, the Realm file, and a project that shows the issue.
-- **Have a feature request?** [Open an issue](https://github.com/realm/realm-.net/issues/new). Tell us what the feature should do, and why you want the feature.
+- **Have a bug to report?** [Open an issue](https://github.com/realm/realm-dotnet/issues/new). If possible, include the version of Realm, a full log, the Realm file, and a project that shows the issue.
+- **Have a feature request?** [Open an issue](https://github.com/realm/realm-dotnet/issues/new). Tell us what the feature should do, and why you want the feature.
 - Sign up for our [**Community Newsletter**](http://eepurl.com/VEKCn) to get regular tips, learn about other use-cases and get alerted of blogposts and tutorials about Realm.
 
 ## Building Realm
@@ -54,7 +54,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for more details!
 ## License
 
 Realm is published under the Apache 2.0 license.  
-The underlying core is available under the [Realm Core Binary License](https://github.com/realm/realm-.net/blob/master/LICENSE#L210-L243) while we [work to open-source it under the Apache 2.0 license](https://realm.io/docs/xamarin/latest/#faq).
+The underlying core is available under the [Realm Core Binary License](https://github.com/realm/realm-dotnet/blob/master/LICENSE#L210-L243) while we [work to open-source it under the Apache 2.0 license](https://realm.io/docs/xamarin/latest/#faq).
 
 **This product is not being made available to any person located in Cuba, Iran,
 North Korea, Sudan, Syria or the Crimea region, or to any other person that is
@@ -62,8 +62,8 @@ not eligible to receive the product under U.S. law.**
 
 ## Feedback
 
-**_If you use Realm and are happy with it, all we ask is that you please consider sending out a tweet mentioning [@realm](https://twitter.com/realm), announce your app on [our mailing-list](https://groups.google.com/forum/#!forum/realm-.net), or email [help@realm.io](mailto:help@realm.io) to let us know about it!_**
+**_If you use Realm and are happy with it, all we ask is that you please consider sending out a tweet mentioning [@realm](https://twitter.com/realm), announce your app on [our mailing-list](https://groups.google.com/forum/#!forum/realm-dotnet), or email [help@realm.io](mailto:help@realm.io) to let us know about it!_**
 
 **_And if you don't like it, please let us know what you would like improved, so we can fix it!_**
 
-![analytics](https://ga-beacon.appspot.com/UA-50247013-2/realm-.net/README?pixel)
+![analytics](https://ga-beacon.appspot.com/UA-50247013-2/realm-dotnet/README?pixel)

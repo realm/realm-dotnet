@@ -5,7 +5,7 @@
 using System;
 using System.Diagnostics;
 using NUnit.Framework;
-using RealmNet;
+using Realms;
 
 // class to give us a point to run the tests in Windows with TestRunner.dotnet
 namespace IntegrationTests.Win32

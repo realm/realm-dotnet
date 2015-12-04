@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>826c8753-5c4a-4e95-b483-179b9892c008</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>Realms</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Attributes.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmDecryptionFailedException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmObjectAlreadyOwnedByRealmException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmObjectOwnedByAnotherRealmException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmOutsideTransactionException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmFileExistsException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmInvalidDatabaseException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmPermissionDeniedException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)extensions\DateTimeOffsetExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)GroupOpenMode.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)handles\Handled.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)handles\QueryHandle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)handles\RealmHandle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)handles\RowHandle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)handles\SchemaInitializerHandle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)handles\SchemaHandle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)handles\SharedRealmHandle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)handles\TableHandle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)linq\ExpressionVisitor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)linq\QueryProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)linq\RealmQuery.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)linq\RealmQueryProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)linq\RealmQueryVisitor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)linq\TypeSystem.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MarshalHelpers.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)native\NativeCommon.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)native\NativeObjectSchema.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)native\NativeQuery.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)native\NativeRow.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)native\NativeSchema.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)native\NativeSharedRealm.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)native\NativeTable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PreserveAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Realm.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RealmList.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RealmObject.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmExceptionCodes.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmFileAccessErrorException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmFileNotFoundException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmOutOfMemoryException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Transaction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TransactionState.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)native\NativeLinkList.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)handles\LinkListHandle.cs" />
+  </ItemGroup>
+</Project>

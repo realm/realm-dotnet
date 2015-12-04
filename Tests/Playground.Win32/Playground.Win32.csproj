@@ -54,9 +54,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\RealmNet.Win32\RealmNet.Win32.csproj">
+    <ProjectReference Include="..\..\Realm.Win32\Realm.Win32.csproj">
       <Project>{c211ede7-cc8e-4f53-a9df-0b105a350bbf}</Project>
-      <Name>RealmNet.Win32</Name>
+      <Name>Realm.Win32</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
