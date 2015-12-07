@@ -57,6 +57,8 @@ namespace Realms
         {
             if (databasePath == null)
                 databasePath = System.IO.Path.Combine(InteropConfig.GetDefaultDatabasePath(), _DefaultDatabaseName);
+            else if (!System.IO.Path.IsPathRooted(databasePath))
+                databasePath = System.IO.Path.Combine(InteropConfig.GetDefaultDatabasePath(), databasePath);
 
             var schemaInitializer = new SchemaInitializerHandle();
 

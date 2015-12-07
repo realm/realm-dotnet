@@ -1126,3 +1126,14 @@ Realm.cs
 - GetDefaultDatabasePath 
   - only return document path on all platforms, no filename inclusion
   
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#100 Cope with Simple Filename
+
+IntegrationTests.cs
+- GetInstanceTest - use default filename
+- GetInstanceWithJustFilenameTest added  
+
+Realm.cs
+- GetInstance
+  - check if full path and combine partial with InteropConfig.GetDefaultDatabasePath 
+  

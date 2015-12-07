@@ -18,8 +18,15 @@ namespace IntegrationTests
         [Test]
         public void GetInstanceTest()
         {
-            // Arrange, act and "assert" that no exception is thrown
-            Realm.GetInstance(Path.GetTempFileName());
+            // Arrange, act and "assert" that no exception is thrown, using default location
+            Realm.GetInstance();
+        }
+
+        [Test]
+        public void GetInstanceWithJustFilenameTest()
+        {
+            // Arrange, act and "assert" that no exception is thrown, using default location
+            Realm.GetInstance("EnterTheMagic.realm");
         }
 
         /*
