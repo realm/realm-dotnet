@@ -1116,10 +1116,13 @@ Realm.cs
 
 Realm.cs
 - DefaultDatabaseName added
+- GetInstance
+  - use DefaultDatabaseName
+  - use InteropConfig.GetDefaultDatabasePath for path to combine with filename
+
 
 */InteropConfig.cs
 - changed InteropConfig from internal to public
 - GetDefaultDatabasePath 
-  - refactored path out to GetDefaultDatabaseLocation
-  - use Realm.DefaultDatabaseName
+  - only return document path on all platforms, no filename inclusion
   

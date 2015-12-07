@@ -50,18 +50,9 @@ namespace Realms
         /// Get the location to be used for realms if a full path is not specified
         /// </summary>
         /// <returns>A path to the standard Documents directory for the platform</returns>
-        public static string GetDefaultDatabaseLocation()
-        {
-            return System.Environment.GetFolderPath(Environment.SpecialFolder.Personal);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns>A full filename path</returns>
         public static string GetDefaultDatabasePath()
         {
-            return System.IO.Path.Combine(GetDefaultDatabaseLocation(), Realm.DefaultDatabaseName());
+            return System.Environment.GetFolderPath(Environment.SpecialFolder.Personal);
         }
     }
 }

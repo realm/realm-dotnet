@@ -28,9 +28,7 @@ namespace Realms
         /// Standard filename to be combined with a platform-specific document directory in the per-platform InteropConfig.GetStandardDatabasePath
         /// </summary>
         /// <returns>A string representing a filename only, no path.</returns>
-        public static string DefaultDatabaseName()
-        { return "default.realm";
-        }
+        static string _DefaultDatabaseName = "default.realm";
 
         static Realm()
         {
@@ -58,7 +56,7 @@ namespace Realms
         public static Realm GetInstance(string databasePath = null)
         {
             if (databasePath == null)
-                databasePath = InteropConfig.GetDefaultDatabasePath();
+                databasePath = System.IO.Path.Combine(InteropConfig.GetDefaultDatabasePath(), _DefaultDatabaseName);
 
             var schemaInitializer = new SchemaInitializerHandle();
 
