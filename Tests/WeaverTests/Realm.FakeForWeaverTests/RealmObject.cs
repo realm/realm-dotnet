@@ -26,7 +26,7 @@ namespace Realms
             LogString(type.Name + "." + caller + "(" + parameters + ")");
         }
 
-protected T GetValue<T>(string propertyName)
+        protected T GetValue<T>(string propertyName)
         {
             LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
             return default(T);
