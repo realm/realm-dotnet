@@ -4,8 +4,7 @@
  
 using System;
 using UIKit;
-using RealmNet;
-using RealmNet;
+using Realms;
 using System.Linq;
 using System.IO;
 using System.Collections.Generic;

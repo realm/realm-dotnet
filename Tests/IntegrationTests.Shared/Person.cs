@@ -1,9 +1,10 @@
-﻿/* Copyright 2015 Realm Inc - All Rights Reserved
+/* Copyright 2015 Realm Inc - All Rights Reserved
  * Proprietary and Confidential
  */
- 
+
 using System;
-using RealmNet;
+using Realms;
+using System.Collections.Generic;
 
 namespace IntegrationTests
 {
@@ -60,5 +61,7 @@ namespace IntegrationTests
             get { return _nickname; }
             set { _nickname = value; }
         }
+
+        public IList<Person> Friends { get; }
     }
 }

@@ -8,7 +8,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.IO;
 using NUnit.Framework;
-using RealmNet;
+using Realms;
 
 namespace IntegrationTests
 {
@@ -142,6 +142,29 @@ namespace IntegrationTests
         }
 
         [Test]
+        public void ReadAndWriteEqualityTest()
+        {
+            // Arrange
+            MakeThreePeople();
+            var p1 = _realm.All<Person>().Where(p => p.Score >= 100).ToList()[0];
+            var p2 = _realm.All<Person>().Where(p => p.Score >= 100).ToList()[0];
+            Assert.That(p1.Equals(p2));
+
+            // Act
+            using (var transaction = _realm.BeginWrite())
+            {
+                p1.Score = 99.0f;
+                Assert.That(p2.Score, Is.EqualTo(99.0f));  // value propagates despite transaction not finished
+                Assert.That(p1.Equals(p2));  // identity-based comparison holds
+                transaction.Commit(); 
+            }
+
+            // Assert
+            Assert.That(p2.Score, Is.EqualTo(99.0f));  // value still holds after transaction finished
+            Assert.That(p1.Equals(p2));  // identity-based comparison holds
+        }
+
+        [Test]
         public void SetAndGetPropertyTest()
         {
             // Arrange
@@ -257,7 +280,7 @@ namespace IntegrationTests
 
 
         [Test]
-        public void RemoveTest()
+        public void RemoveSucceedsTest()
         {
             // Arrange
             Person p1, p2, p3;
@@ -285,6 +308,22 @@ namespace IntegrationTests
             var allPeople = _realm.All<Person>().ToList();
 
             Assert.That(allPeople, Is.EquivalentTo(new List<Person> { p1, p3 }));
+        }
+
+
+        [Test]
+        public void RemoveOutsideTransactionShouldFail()
+        {
+            // Arrange
+            Person p;
+            using (var transaction = _realm.BeginWrite())
+            {
+                p = _realm.CreateObject<Person>();
+                transaction.Commit();
+            }
+
+            // Act and assert
+            Assert.Throws<RealmOutsideTransactionException>(() => _realm.Remove(p) );
         }
 
 

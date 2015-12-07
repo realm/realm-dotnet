@@ -3,7 +3,7 @@
  */
  
 using System;
-using RealmNet;
+using Realms;
 
 namespace Playground.XamarinAndroid
 {
