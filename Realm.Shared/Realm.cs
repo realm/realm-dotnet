@@ -24,6 +24,14 @@ namespace Realms
 
         private static readonly IEnumerable<Type> RealmObjectClasses;
 
+        /// <summary>
+        /// Standard filename to be combined with a platform-specific document directory in the per-platform InteropConfig.GetStandardDatabasePath
+        /// </summary>
+        /// <returns>A string representing a filename only, no path.</returns>
+        public static string DefaultDatabaseName()
+        { return "default.realm";
+        }
+
         static Realm()
         {
             RealmObjectClasses =
