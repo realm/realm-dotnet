@@ -1110,3 +1110,19 @@ IntegrationTests.cs
 Realm.cs
 - Remove change to throw RealmOutsideTransactionException
 
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#223 Better Default Database Path
+
+Realm.cs
+- DefaultDatabaseName added
+- GetInstance
+  - use DefaultDatabaseName
+  - use InteropConfig.GetDefaultDatabasePath for path to combine with filename
+
+
+*/InteropConfig.cs
+- changed InteropConfig from internal to public
+- GetDefaultDatabasePath 
+  - only return document path on all platforms, no filename inclusion
+  

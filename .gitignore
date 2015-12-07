@@ -229,3 +229,4 @@ RealmNetWeaver.Fody.dll
 NuGetBuild
 realm-core-android-*.tar.gz
 *.so
+NDependOut

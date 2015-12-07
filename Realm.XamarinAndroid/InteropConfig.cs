@@ -6,7 +6,10 @@ using System;
 
 namespace Realms
 {
-    internal static class InteropConfig
+    /// <summary>
+    /// Per-platform utility functions. A copy of this file exists in each platform project such as Realm.Win32.
+    /// </summary>
+    public static class InteropConfig
     {
         public static bool Is64Bit {
 #if REALM_32       
@@ -31,11 +34,15 @@ namespace Realms
         public const string DLL_NAME = "** error see InteropConfig.cs DLL_NAME";
 #endif
 
+
+        /// <summary>
+        /// Get the location to be used for realms if a full path is not specified
+        /// </summary>
+        /// <returns>A path to the standard Documents directory for the platform</returns>
         public static string GetDefaultDatabasePath()
         {
-            const string dbFilename = "db.realm";
-            var documentsPath = System.Environment.GetFolderPath(Environment.SpecialFolder.Personal);
-            return System.IO.Path.Combine(documentsPath, dbFilename);
+            return System.Environment.GetFolderPath(Environment.SpecialFolder.Personal);
         }
+
     }
 }
