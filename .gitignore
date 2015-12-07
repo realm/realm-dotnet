@@ -104,6 +104,7 @@ _NCrunch_*
 .*crunch*.local.xml
 nCrunchTemp_*
 *.ncrunchproject
+*.ncrunchsolution
 
 # NuGet Packages
 *.nupkg
