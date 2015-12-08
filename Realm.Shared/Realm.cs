@@ -141,6 +141,40 @@ namespace Realms
             _tableHandles = RealmObjectClasses.ToDictionary(t => t, GetTable);
         }
 
+        /// <summary>
+        /// Checks if database has been closed
+        /// </summary>
+        /// <returns>True if closed</returns>
+        public bool IsClosed()
+        {
+            return _sharedRealmHandle.IsClosed;
+        }
+
+
+        /// <summary>
+        ///  Closes the Realm if not already closed. Safe to call repeatedly.
+        /// </summary>
+        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+        public void Close()
+        {
+            if (IsClosed())
+                return;
+            RuntimeHelpers.PrepareConstrainedRegions();
+            try { /* Close handle in a constrained execution region */ }
+            finally {
+                _sharedRealmHandle.Close();
+            }
+        }
+
+
+        /// <summary>
+        ///  Dispose automatically closes the Realm if not already closed.
+        /// </summary>
+        public void Dispose()
+        {
+            Close();
+        }
+
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         private TableHandle GetTable(Type realmType)
         {
@@ -274,13 +308,6 @@ namespace Realms
 
             var tableHandle = _tableHandles[obj.GetType()];
             NativeTable.remove_row(tableHandle, (RowHandle)obj.RowHandle);
-        }
-
-        /// <summary>
-        /// Standard Dispose which has no action or side-effects for a Realm.
-        /// </summary>
-        public void Dispose()
-        {
         }
     }
 }

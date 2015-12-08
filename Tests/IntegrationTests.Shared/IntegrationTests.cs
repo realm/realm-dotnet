@@ -23,6 +23,17 @@ namespace IntegrationTests
         }
 
         [Test]
+        public void InstanceIsCLosedByDispose()
+        {
+            Realm temp;
+            using (temp = Realm.GetInstance())
+            {
+                Assert.That(!temp.IsClosed());
+            }
+            Assert.That(temp.IsClosed());
+        }
+
+        [Test]
         public void GetInstanceWithJustFilenameTest()
         {
             // Arrange, act and "assert" that no exception is thrown, using default location

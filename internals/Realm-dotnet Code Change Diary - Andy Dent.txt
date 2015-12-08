@@ -1110,7 +1110,7 @@ IntegrationTests.cs
 Realm.cs
 - Remove change to throw RealmOutsideTransactionException
 
-
+InstanceIsCLosedByDispose
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #223 Better Default Database Path
 
@@ -1136,4 +1136,17 @@ IntegrationTests.cs
 Realm.cs
 - GetInstance
   - check if full path and combine partial with InteropConfig.GetDefaultDatabasePath 
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#258 Closing Files
+
+IntegrationTests
+- InstanceIsCLosedByDispose added
+
+Realm.cs
+- IsClosed added to report handle status
+- Close added
+- Dispose filled out to invoke Close
+
   
