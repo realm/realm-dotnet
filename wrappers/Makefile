@@ -1,11 +1,10 @@
-OS_SRCS=$(wildcard object-store/*.cpp)
-ECH_SRCS=object-store/impl/apple/external_commit_helper.cpp
-SRCS=$(wildcard *.cpp) $(OS_SRCS) $(ECH_SRCS)
-OBJS=$(subst .cc,.o,$(SRCS))
+OS_SRCS=$(wildcard src/object-store/*.cpp)
+ECH_SRCS=src/object-store/impl/apple/external_commit_helper.cpp
+SRCS=$(wildcard src/*.cpp) $(OS_SRCS) $(ECH_SRCS)
 
 SDKROOT=$(shell xcrun --sdk iphoneos --show-sdk-path)
 CXX=$(shell xcrun --sdk iphoneos --find clang++)
-FLAGS=-Icore/include -Iobject-store -Iobject-store/impl -Iobject-store/impl/apple -std=c++14 -stdlib=libc++  
+FLAGS=-Icore/include -Isrc/object-store -Isrc/object-store/impl -Isrc/object-store/impl/apple -std=c++14 -stdlib=libc++  
 CORE_APPLE_VER=0.95.1
 CORE_ANDROID_VER=0.95.1
 
