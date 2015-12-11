@@ -14,7 +14,8 @@ namespace Realms
     /// Used to declare to-many relationships and as the return type when you access such a relationship.
     /// </summary>
     /// <remarks>Relationships are ordered and preserve their order, hence the ability to use ordinal 
-    /// indexes in calls such as Insert and RemoveAt.
+    /// indexes in calls such as Insert and RemoveAt.<br />
+    /// When you declare a relationship you can either use IList<myClass> or RealmList<myClass> but in either case, you get a RealmList returned.
     /// </remarks>
     /// 
     /// <typeparam name="T">Type of the RealmObject which is the target of the relationship.</typeparam>
@@ -99,7 +100,7 @@ namespace Realms
         /// <summary>
         /// Returns the count of related items.
         /// </summary>
-        /// <returns>0 if there are no related items,b including a "null" relationship never established, or the count of items.</returns>
+        /// <returns>0 if there are no related items, including a "null" relationship never established, or the count of items.</returns>
         public int Count
         {
             get
