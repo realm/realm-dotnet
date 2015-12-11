@@ -18,7 +18,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmInvalidDatabaseException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmPermissionDeniedException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)extensions\DateTimeOffsetExtensions.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)GroupOpenMode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)handles\Handled.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)handles\QueryHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)handles\RealmHandle.cs" />

@@ -1168,4 +1168,18 @@ Realm.cs
 - Close added
 - Dispose filled out to invoke Close
 
-  
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#282 Minor cleanups whilst improving API docs
+GroupOpenMode.cs
+- removed unused enum
+
+Realm.Shared.csproj
+- removed GroupOpenMode.cs
+
+InteropConfig.cs (all)
+- made class internal (again)
+- removed GetDefaultDatabasePath as it returns same thing in all.
+
+Realm.cs
+- GetInstance just use the standard Xamarin call to get SpecialFolder instead of GetDefaultDatabasePath
