@@ -1168,4 +1168,11 @@ Realm.cs
 - Close added
 - Dispose filled out to invoke Close
 
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#286 Fix Makefile
+Makefile
+- revert changes that built using the core-debug target as that doesn't work
+  this means the iosdbg works but is not using a debug version of core
   
+RelationshipTests.cs
+- delete a couple of commented out lines in sample that no longer apply
