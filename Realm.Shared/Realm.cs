@@ -152,10 +152,7 @@ namespace Realms
         /// Checks if database has been closed.
         /// </summary>
         /// <returns>True if closed.</returns>
-        public bool IsClosed()
-        {
-            return _sharedRealmHandle.IsClosed;
-        }
+        public bool IsClosed => _sharedRealmHandle.IsClosed;
 
 
         /// <summary>
@@ -164,7 +161,7 @@ namespace Realms
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         public void Close()
         {
-            if (IsClosed())
+            if (IsClosed)
                 return;
             RuntimeHelpers.PrepareConstrainedRegions();
             try { /* Close handle in a constrained execution region */ }

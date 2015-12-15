@@ -1183,3 +1183,12 @@ InteropConfig.cs (all)
 
 Realm.cs
 - GetInstance just use the standard Xamarin call to get SpecialFolder instead of GetDefaultDatabasePath
+
+TransactionState.cs
+- removed
+
+RealmList.GetEnumerator
+- remove cast
+
+Realm.IsClosed
+- changed to property
