@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata minClientVersion="2.8">
-    <id>Realm</id>
-    <version>1.0</version>
+    <id>RealmBeta</id>
+    <version>0.70.0</version>
     <title>Realm</title>
     <authors>Realm</authors>
     <owners>Realm</owners>
@@ -10,12 +10,12 @@
     <licenseUrl>http://www.opensource.org/licenses/mit-license.php</licenseUrl>
     <projectUrl>http://github.com/realm/realm-dotnet</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>Realm.Net</description>
+    <description>Realm for Xamarin (private beta)</description>
     <summary />
     <language>en-US</language>
     <tags>Realm</tags>
     <dependencies>
-      <dependency id="RealmWeaver.Fody" version="1.0"/>
+      <dependency id="RealmWeaverBeta.Fody" version="0.70.0"/>
     </dependencies>
   </metadata>
   <files>
