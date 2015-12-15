@@ -20,14 +20,12 @@
     <Optimize>false</Optimize>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="FodyWeavers.xml" />
     <Content Include="readme.txt" />
     <None Include="RealmWeaver.Fody.nuspec">
       <SubType>Designer</SubType>
     </None>
-    <None Include="install.ps1" />
     <None Include="packages.config" />
-    <None Include="uninstall.ps1" />
-    <Content Include="Fody_ToBeDeleted.txt" />
   </ItemGroup>
   <Target Name="Clean">
     <RemoveDir Directories="$(SolutionDir)NuGetBuild" />
@@ -38,9 +36,7 @@
     <MakeDir Directories="$(SolutionDir)NuGetBuild" />
     <Copy SourceFiles="$(SolutionDir)NuGet\NuGet.Weaver\RealmWeaver.Fody.nuspec" DestinationFolder="$(SolutionDir)NuGetBuild" />
     <Copy SourceFiles="$(SolutionDir)RealmWeaver\bin\$(ConfigurationName)\RealmWeaver.Fody.dll" DestinationFolder="$(SolutionDir)NuGetBuild" />
-    <Copy SourceFiles="$(SolutionDir)NuGet\NuGet.Weaver\Fody_ToBeDeleted.txt" DestinationFolder="$(SolutionDir)NuGetBuild\Content" />
-    <Copy SourceFiles="$(ProjectDir)install.ps1" DestinationFolder="$(SolutionDir)NuGetBuild\Tools" />
-    <Copy SourceFiles="$(ProjectDir)uninstall.ps1" DestinationFolder="$(SolutionDir)NuGetBuild\Tools" />
+    <Copy SourceFiles="$(ProjectDir)FodyWeavers.xml" DestinationFolder="$(SolutionDir)NuGetBuild\Content" />
     <PepitaPackage.CreatePackageTask NuGetBuildDirectory="$(SolutionDir)NuGetBuild" MetadataAssembly="$(SolutionDir)RealmWeaver\bin\$(ConfigurationName)\RealmWeaver.Fody.dll" />
   </Target>
   <Import Project="..\..\packages\PepitaPackage.1.20.0.0\build\PepitaPackage.targets" Condition="Exists('..\..\packages\PepitaPackage.1.20.0.0\build\PepitaPackage.targets')" />
