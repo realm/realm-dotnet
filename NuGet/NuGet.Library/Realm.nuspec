@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata minClientVersion="2.8">
     <id>Realm</id>
-    <version>1.0</version>
+    <version>0.70</version>
     <title>Realm</title>
     <authors>Realm</authors>
     <owners>Realm</owners>
@@ -10,15 +10,23 @@
     <licenseUrl>http://www.opensource.org/licenses/mit-license.php</licenseUrl>
     <projectUrl>http://github.com/realm/realm-dotnet</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>Realm.Net</description>
+    <description>Realm for Xamarin</description>
     <summary />
     <language>en-US</language>
     <tags>Realm</tags>
     <dependencies>
-      <dependency id="RealmWeaver.Fody" version="1.0"/>
+      <dependency id="RealmWeaver.Fody" version="0.70"/>
     </dependencies>
   </metadata>
   <files>
+    <!-- iOS -->
     <file src="../../Realm.XamarinIOS/bin/iPhone/Release/Realm.dll" target="lib/Xamarin.iOS10" />
+
+    <!-- Android -->
+    <file src="../../Realm.XamarinAndroid/bin/Release/Realm.dll" target="lib/MonoAndroid44" />
+    <file src="../../wrappers/build/Release-android/armeabi/libwrappers.so" target="libs/armeabi" />
+    <file src="../../wrappers/build/Release-android/armeabi-v7a/libwrappers.so" target="libs/armeabi-v7a" />
+    <file src="../../wrappers/build/Release-android/x86/libwrappers.so" target="libs/x86" />
+    <file src="Realm.targets" target="build/MonoAndroid44" />
   </files>
 </package>
