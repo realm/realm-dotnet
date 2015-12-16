@@ -26,8 +26,8 @@ namespace Realms
         //this ensures faster garbage collection of classes derived from Handled - they do not have to go to the finalizer queue
 
         /// <summary>
-        /// True if the c++ resources have been released
-        /// True if dispose have been called one way or the other
+        /// True if the c++ resources have been released.
+        /// True if dispose have been called one way or the other.
         /// </summary>
         [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
         public bool IsDisposed
@@ -36,14 +36,14 @@ namespace Realms
         }
 
         /// <summary>
-        /// Defaults to false. If true, this query / table / tableview / subtable / group / sharedGroup is read only and it is illegal
+        /// Defaults to false. If true, this query / table / tableview / subtable / group / sharedGroup is read only and it is illegal.
         /// to call any modifying function on it.
-        /// Readonly objects are usually gotten either from a readonly transaction, or from a group opened from a file in readonly mode
+        /// Readonly objects are usually gotten either from a readonly transaction, or from a group opened from a file in readonly mode.
         /// </summary>
         public bool ReadOnly { get; internal set; }
 
         /// <summary>
-        /// The TightdbHandle that this wrapper is using to call into c++ core
+        /// The TightdbHandle that this wrapper is using to call into c++ core.
         /// </summary>
         internal RealmHandle Handle
         {
@@ -68,7 +68,7 @@ namespace Realms
         }
 
         /// <summary>
-        /// Enhance toString to also show our wrapper objects in the debugger with their address in hex
+        /// Enhance toString to also show our wrapper objects in the debugger with their address in hex.
         /// </summary>
         public override string ToString()
         {
@@ -86,7 +86,7 @@ namespace Realms
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// Calling dispose will free any c++ structures created to keep track of the handled object.
-        /// Dispose with no parametres is called by by the user indirectly via the using keyword, or directly by the user
+        /// Dispose with no parametres is called by by the user indirectly via the using keyword, or directly by the user.
         /// by him calling Displose()
         /// </summary>
         public void Dispose()
@@ -102,7 +102,7 @@ namespace Realms
         //using a very simple dispose pattern as we will just call on to Handle.Dispose in both a finalizing and in a disposing situation
         //leaving this method in here so that classes derived from this one can implement a finalizer and have that finalizer call dispose(false)
         /// <summary>
-        /// Override this if you have managed stuff that needs to be closed down when dispose is called
+        /// Override this if you have managed stuff that needs to be closed down when dispose is called.
         /// </summary>
         /// <param name="disposing"></param>
         [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]

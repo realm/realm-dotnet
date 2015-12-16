@@ -23,14 +23,14 @@ namespace IntegrationTests
         }
 
         [Test]
-        public void InstanceIsCLosedByDispose()
+        public void InstanceIsClosedByDispose()
         {
             Realm temp;
             using (temp = Realm.GetInstance())
             {
-                Assert.That(!temp.IsClosed());
+                Assert.That(!temp.IsClosed);
             }
-            Assert.That(temp.IsClosed());
+            Assert.That(temp.IsClosed);
         }
 
         [Test]

@@ -10,9 +10,9 @@ using System.IO;
 namespace Realms
 {
     /// <summary>
-    /// Per-platform utility functions. A copy of this file exists in each platform project such as Realm.XamarinIOS
+    /// Per-platform utility functions. A copy of this file exists in each platform project such as Realm.XamarinIOS.
     /// </summary>
-    public static class InteropConfig
+    internal static class InteropConfig
     {
     
         /// <summary>
@@ -39,16 +39,6 @@ namespace Realms
         /// Name of the DLL used in native declarations, constant varying per-platform.
         /// </summary>
         public const string DLL_NAME = "__Internal";
-
-
-        /// <summary>
-        /// Get the location to be used for realms if a full path is not specified
-        /// </summary>
-        /// <returns>A path to the standard Documents directory for the platform</returns>
-        public static string GetDefaultDatabasePath()
-        {
-            return System.Environment.GetFolderPath(Environment.SpecialFolder.Personal);
-        }
 
     }
 }
