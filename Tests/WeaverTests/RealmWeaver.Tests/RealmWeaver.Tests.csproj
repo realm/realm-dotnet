@@ -6,8 +6,8 @@
     <ProjectGuid>{C0DB15DA-0C51-408D-A386-A69880083B93}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Tests</RootNamespace>
-    <AssemblyName>Tests</AssemblyName>
+    <RootNamespace>RealmWeaver.Tests</RootNamespace>
+    <AssemblyName>RealmWeaver.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />

@@ -26,6 +26,17 @@ namespace Realms
             LogString(type.Name + "." + caller + "(" + parameters + ")");
         }
 
+        private bool _isManaged;
+        public bool IsManaged
+        {
+            get
+            {
+                LogString("IsManaged");
+                return _isManaged;
+            }
+            set { _isManaged = value;  }
+        }
+
         protected T GetValue<T>(string propertyName)
         {
             LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
@@ -36,5 +47,28 @@ namespace Realms
         {
             LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
         }
+
+        protected RealmList<T> GetListValue<T>(string propertyName) where T : RealmObject
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
+            return new RealmList<T>();
+        }
+
+        protected void SetListValue<T>(string propertyName, RealmList<T> value) where T : RealmObject
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
+        }
+
+        protected T GetObjectValue<T>(string propertyName) where T : RealmObject
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
+            return default(T);
+        }
+
+        protected void SetObjectValue<T>(string propertyName, T value) where T : RealmObject
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
+        }
+
     }
 }
