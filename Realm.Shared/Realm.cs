@@ -194,7 +194,7 @@ namespace Realms
         /// <summary>
         /// Factory for a managed object in a realm. Only valid within a Write transaction.
         /// </summary>
-        /// <remarks>Using CreateObject is more efficient than creating standalone objects, assigning their values, then using Attach because it avoids copying properties to the realm.</remarks>
+        /// <remarks>Using CreateObject is more efficient than creating standalone objects, assigning their values, then using Manage because it avoids copying properties to the realm.</remarks>
         /// <typeparam name="T">The Type T must not only be a RealmObject but also have been processd by the Fody weaver, so it has persistent properties.</typeparam>
         /// <returns>An object which is already managed</returns>
         /// <exception cref="RealmOutsideTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
@@ -221,14 +221,14 @@ namespace Realms
         }
 
         /// <summary>
-        /// Attaches a RealmObject which has been created as a standalone object, to this realm.
+        /// This realm will start managing a RealmObject which has been created as a standalone object.
         /// </summary>
         /// <typeparam name="T">The Type T must not only be a RealmObject but also have been processd by the Fody weaver, so it has persistent properties.</typeparam>
         /// <param name="obj">Must be a standalone object, null not allowed.</param>
         /// <exception cref="RealmOutsideTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
-        /// <exception cref="RealmObjectAlreadyOwnedByRealmException">You can't attach the same object twice. This exception is thrown, rather than silently detecting the mistake, to help you debug your code</exception>
-        /// <exception cref="RealmObjectOwnedByAnotherRealmException">You can't attach an object to more than one realm</exception>
-        public void Attach<T>(T obj) where T : RealmObject
+        /// <exception cref="RealmObjectAlreadyOwnedByRealmException">You can't manage the same object twice. This exception is thrown, rather than silently detecting the mistake, to help you debug your code</exception>
+        /// <exception cref="RealmObjectOwnedByAnotherRealmException">You can't manage an object with more than one realm</exception>
+        public void Manage<T>(T obj) where T : RealmObject
         {
             if (obj == null)
                 throw new ArgumentNullException(nameof(obj));
@@ -236,14 +236,14 @@ namespace Realms
             if (obj.IsManaged)
             {
                 if (obj.Realm._sharedRealmHandle == this._sharedRealmHandle)
-                    throw new RealmObjectAlreadyOwnedByRealmException("The object is already owned by this realm");
+                    throw new RealmObjectAlreadyOwnedByRealmException("The object is already managed by this realm");
 
-                throw new RealmObjectOwnedByAnotherRealmException("Cannot attach an object to a realm when it's already owned by another realm");
+                throw new RealmObjectOwnedByAnotherRealmException("Cannot start to manage an object with a realm when it's already managed by another realm");
             }
 
 
             if (!IsInTransaction)
-                throw new RealmOutsideTransactionException("Cannot attach a Realm object outside write transactions");
+                throw new RealmOutsideTransactionException("Cannot start managing a Realm object outside write transactions");
 
             var tableHandle = _tableHandles[typeof(T)];
 

@@ -1,4 +1,4 @@
-﻿/* Copyright 2015 Realm Inc - All Rights Reserved
+/* Copyright 2015 Realm Inc - All Rights Reserved
  * Proprietary and Confidential
  */
  
@@ -17,7 +17,7 @@ namespace Realms
     /// indexes in calls such as Insert and RemoveAt.
     /// </remarks>
     /// 
-    /// <typeparam name="T">Type of the RealmObject which is the target of the relationship</typeparam>
+    /// <typeparam name="T">Type of the RealmObject which is the target of the relationship.</typeparam>
     public class RealmList<T> : IList<T> where T : RealmObject
     {
         private class RealmListEnumerator : IEnumerator<T> 
@@ -73,7 +73,7 @@ namespace Realms
             }
 
             /// <summary>
-            /// Standard Dispose with no side-effects
+            /// Standard Dispose with no side-effects.
             /// </summary>
             public void Dispose() 
             {
@@ -82,7 +82,7 @@ namespace Realms
 
 
         /// <summary>
-        /// Value returned by IndexOf if an ite is not found.
+        /// Value returned by IndexOf if an item is not found.
         /// </summary>
         public const int ITEM_NOT_FOUND = -1;
 
@@ -96,6 +96,10 @@ namespace Realms
         }
 
         #region implementing IList properties
+        /// <summary>
+        /// Returns the count of related items.
+        /// </summary>
+        /// <returns>0 if there are no related items, including a "null" relationship never established, or the count of items.</returns>
         public int Count
         {
             get
@@ -122,12 +126,12 @@ namespace Realms
         }
 
         /// <summary>
-        /// Returns the item at the ordinal index
+        /// Returns the item at the ordinal index.
         /// </summary>
-        /// <param name="index">Ordinal zero-based index of the related items</param>
-        /// <typeparam name="T">Type of the RealmObject which is the target of the relationship</typeparam>
-        /// <returns>A related item, if exception not thrown</returns>
-        /// <exception cref="IndexOutOfRangeException">When the index is out of range for the related items</exception>
+        /// <param name="index">Ordinal zero-based index of the related items.</param>
+        /// <typeparam name="T">Type of the RealmObject which is the target of the relationship.</typeparam>
+        /// <returns>A related item, if exception not thrown.</returns>
+        /// <exception cref="IndexOutOfRangeException">When the index is out of range for the related items.</exception>
         public T this[int index]
         {
             get
@@ -148,31 +152,39 @@ namespace Realms
         #region implementing IList members
 
 
+        /// <summary>
+        /// Makes a relationship to an item, appending it at the end of the sorted relationship.
+        /// </summary>
+        /// <param name="item">RealmObject being added to the relationship.</param>
+        /// <typeparam name="T">Type of the RealmObject which is the target of the relationship.</typeparam>
         public void Add(T item)
         {
-            this.AttachObjectIfNeeded(item);
+            this.ManageObjectIfNeeded(item);
             var rowIndex = ((RealmObject)item).RowHandle.RowIndex;
             NativeLinkList.add(_listHandle, (IntPtr)rowIndex);        
         }
 
+        /// <summary>
+        /// Breaks the relationship to all related items, without deleting the items.
+        /// </summary>
         public void Clear()
         {
             NativeLinkList.clear(_listHandle);        
         }
 
         /// <summary>
-        /// Tests if an item exists in the related set
+        /// Tests if an item exists in the related set.
         /// </summary>
-        /// <param name="item">Object to be searched for in the related items</param>
-        /// <typeparam name="T">Type of the RealmObject which is the rarget of the relationship</typeparam>
-        /// <returns>True if found, false if not found</returns>
+        /// <param name="item">Object to be searched for in the related items.</param>
+        /// <typeparam name="T">Type of the RealmObject which is the target of the relationship.</typeparam>
+        /// <returns>True if found, false if not found.</returns>
         public bool Contains(T item)
         {
             return IndexOf(item) != ITEM_NOT_FOUND;
         }
 
         /// <summary>
-        /// Not yet implemented
+        /// Not yet implemented.
         /// </summary>
         public void CopyTo(T[] array, int arrayIndex)
         {
@@ -190,11 +202,11 @@ namespace Realms
         }
 
         /// <summary>
-        /// Finds an ordinal index for an item in a relationship
+        /// Finds an ordinal index for an item in a relationship.
         /// </summary>
         /// <param name="item">RealmObject being removed from the relationship.</param>
-        /// <typeparam name="T">Type of the RealmObject which is the rarget of the relationship</typeparam>
-        /// <returns>0-based index if the item was found in the related set, or RealmList.ITEM_NOT_FOUND</returns>
+        /// <typeparam name="T">Type of the RealmObject which is the target of the relationship.</typeparam>
+        /// <returns>0-based index if the item was found in the related set, or RealmList.ITEM_NOT_FOUND.</returns>
         public int IndexOf(T item)
         {
             if (!item.IsManaged)
@@ -205,28 +217,28 @@ namespace Realms
         }
 
         /// <summary>
-        /// Makes a relationship to an item, inserting at a specified location ahead of whatever else was in that location
+        /// Makes a relationship to an item, inserting at a specified location ahead of whatever else was in that location.
         /// </summary>
-        /// <param name="index">Ordinal zero-based index at which to insert the related items</param>
+        /// <param name="index">Ordinal zero-based index at which to insert the related items.</param>
         /// <param name="item">RealmObject being inserted into the relationship.</param>
-        /// <typeparam name="T">Type of the RealmObject which is the rarget of the relationship</typeparam>
-        /// <exception cref="IndexOutOfRangeException">When the index is out of range for the related items</exception>
+        /// <typeparam name="T">Type of the RealmObject which is the target of the relationship.</typeparam>
+        /// <exception cref="IndexOutOfRangeException">When the index is out of range for the related items.</exception>
         public void Insert(int index, T item)
         {
             if (index < 0)
                 throw new IndexOutOfRangeException ();
 
-            this.AttachObjectIfNeeded(item);
+            this.ManageObjectIfNeeded(item);
             var rowIndex = ((RealmObject)item).RowHandle.RowIndex;
             NativeLinkList.insert(_listHandle, (IntPtr)index, (IntPtr)rowIndex);        
         }
 
         /// <summary>
-        /// Breaks the relationship to the specified item, without deleting the iem.
+        /// Breaks the relationship to the specified item, without deleting the item.
         /// </summary>
         /// <param name="item">RealmObject being removed from the relationship.</param>
-        /// <typeparam name="T">Type of the RealmObject which is the rarget of the relationship</typeparam>
-        /// <returns>True if the item was found and removed, false if it is not in the related set</returns>
+        /// <typeparam name="T">Type of the RealmObject which is the target of the relationship.</typeparam>
+        /// <returns>True if the item was found and removed, false if it is not in the related set.</returns>
         public bool Remove(T item)
         {
             int index = IndexOf (item);
@@ -239,8 +251,8 @@ namespace Realms
         /// <summary>
         /// Breaks the relationship to the item at the ordinal index, without deleting the item.
         /// </summary>
-        /// <param name="index">Ordinal zero-based index of the related item</param>
-        /// <exception cref="IndexOutOfRangeException">When the index is out of range for the related items</exception>
+        /// <param name="index">Ordinal zero-based index of the related item.</param>
+        /// <exception cref="IndexOutOfRangeException">When the index is out of range for the related items.</exception>
         public void RemoveAt(int index)
         {
             if (index < 0)
@@ -253,10 +265,10 @@ namespace Realms
             return new RealmListEnumerator(this);
         }
 
-        private void AttachObjectIfNeeded(T obj)
+        private void ManageObjectIfNeeded(T obj)
         {
             if (!obj.IsManaged)
-                _parent.Realm.Attach(obj);
+                _parent.Realm.Manage(obj);
         }
 
         #endregion

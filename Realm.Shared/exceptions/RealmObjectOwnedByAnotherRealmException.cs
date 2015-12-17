@@ -5,7 +5,7 @@
 namespace Realms
 {
 /// <summary>
-/// Exception thrown when you're trying to use Attach to persist an object but it's in another Realm.
+/// Exception thrown when you're trying to use Manage but the object is already managed by a different Realm.
 /// </summary>
 public class RealmObjectOwnedByAnotherRealmException : RealmException
 {

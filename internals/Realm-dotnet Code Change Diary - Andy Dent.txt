@@ -1168,4 +1168,16 @@ Realm.cs
 - Close added
 - Dispose filled out to invoke Close
 
-  
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#291 Minor doc edits and rename Attach to Manage
+
+Realm.Attach
+- renamed Realm.Manage
+
+IntegrationTests.cs
+RelationshipTests.cs
+StandaloneObjectTests.cs
+- renamed all tests with Attach to Manage
+
+RealmList.cs
+- AttachObjectIfNeeded renamed ManageObjectIfNeeded

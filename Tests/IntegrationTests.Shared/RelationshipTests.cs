@@ -314,7 +314,7 @@ namespace IntegrationTests.Shared
         }
 
         [Test]
-        public void TestAttachingStandaloneTwoLevelRelationship()
+        public void TestManagingStandaloneTwoLevelRelationship()
         {
             var person = new Person
             {
@@ -330,7 +330,7 @@ namespace IntegrationTests.Shared
 
             using (var trans = realm.BeginWrite())
             {
-                realm.Attach(person);
+                realm.Manage(person);
                 trans.Commit();
             }
 
@@ -340,7 +340,7 @@ namespace IntegrationTests.Shared
 
 
         [Test]
-        public void TestAttachingStandaloneThreeLevelRelationship()
+        public void TestManagingStandaloneThreeLevelRelationship()
         {
             var sally = new Person
             {
@@ -356,7 +356,7 @@ namespace IntegrationTests.Shared
                             new Person()
                             {
                                 FullName = "Krystal",
-                                Friends = { new Person {  FullName = "Sally"} }  // attaches a second Sally
+                                Friends = { new Person {  FullName = "Sally"} }  // Managees a second Sally
                             }
                         } 
 
@@ -365,7 +365,7 @@ namespace IntegrationTests.Shared
             };
 
             using (var trans = realm.BeginWrite()) {
-                realm.Attach(sally);  // top person attaches entire tree
+                realm.Manage(sally);  // top person Managees entire tree
                 trans.Commit();
             }
 
@@ -394,7 +394,7 @@ namespace IntegrationTests.Shared
 
             sally.Friends[1].Friends.Add(joanFriend);
             using (var trans = realm.BeginWrite()) {
-                realm.Attach(sally);  // top person attaches entire tree
+                realm.Manage(sally);  // top person Managees entire tree
                 trans.Commit();
             }
 

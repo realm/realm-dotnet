@@ -240,20 +240,20 @@ namespace IntegrationTests
         }
 
         [Test]
-        public void AttachOutsideTransactionShouldFail()
+        public void ManageOutsideTransactionShouldFail()
         {
             var obj = new Person();
-            Assert.Throws<RealmOutsideTransactionException>(() => _realm.Attach(obj));
+            Assert.Throws<RealmOutsideTransactionException>(() => _realm.Manage(obj));
         }
 
         [Test]
-        public void AttachNullObjectShouldFail()
+        public void ManageNullObjectShouldFail()
         {
-            Assert.Throws<ArgumentNullException>(() => _realm.Attach(null as Person));
+            Assert.Throws<ArgumentNullException>(() => _realm.Manage(null as Person));
         }
 
         [Test]
-        public void AttachAnObjectFromAnotherRealmShouldFail()
+        public void ManageAnObjectFromAnotherRealmShouldFail()
         {
             Person p;
             using (var transaction = _realm.BeginWrite())
@@ -264,12 +264,12 @@ namespace IntegrationTests
 
             using (var otherRealm = Realm.GetInstance(Path.GetTempFileName()))
             {
-                Assert.Throws<RealmObjectOwnedByAnotherRealmException>(() => otherRealm.Attach(p));
+                Assert.Throws<RealmObjectOwnedByAnotherRealmException>(() => otherRealm.Manage(p));
             }
         }
 
         [Test]
-        public void AttachAnObjectToRealmItAlreadyBelongsToShouldFail()
+        public void ManageAnObjectToRealmItAlreadyBelongsToShouldFail()
         {
             Person p;
             using (var transaction = _realm.BeginWrite())
@@ -278,7 +278,7 @@ namespace IntegrationTests
                 transaction.Commit();
             }
 
-            Assert.Throws<RealmObjectAlreadyOwnedByRealmException>(() => _realm.Attach(p));
+            Assert.Throws<RealmObjectAlreadyOwnedByRealmException>(() => _realm.Manage(p));
         }
 
         [Test]
