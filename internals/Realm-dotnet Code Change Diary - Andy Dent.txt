@@ -1199,7 +1199,9 @@ RealmList.GetEnumerator
 - remove cast
 
 Realm.IsClosed
-- changed to property-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+- changed to property
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #291 Minor doc edits and rename Attach to Manage
 
 Realm.Attach
