@@ -1169,6 +1169,37 @@ Realm.cs
 - Dispose filled out to invoke Close
 
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#286 Fix Makefile
+Makefile
+- revert changes that built using the core-debug target as that doesn't work
+  this means the iosdbg works but is not using a debug version of core
+  
+RelationshipTests.cs
+- delete a couple of commented out lines in sample that no longer apply
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#282 Minor cleanups whilst improving API docs
+GroupOpenMode.cs
+- removed unused enum
+
+Realm.Shared.csproj
+- removed GroupOpenMode.cs
+
+InteropConfig.cs (all)
+- made class internal (again)
+- removed GetDefaultDatabasePath as it returns same thing in all.
+
+Realm.cs
+- GetInstance just use the standard Xamarin call to get SpecialFolder instead of GetDefaultDatabasePath
+
+TransactionState.cs
+- removed
+
+RealmList.GetEnumerator
+- remove cast
+
+Realm.IsClosed
+- changed to property-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #291 Minor doc edits and rename Attach to Manage
 
 Realm.Attach

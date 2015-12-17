@@ -15,8 +15,8 @@ namespace Realms
     /// <summary>
     /// A Realm instance (also referred to as a realm) represents a Realm database.
     /// </summary>
-    /// <remarks>Warning: Realm instances are not thread safe and can not be shared across threads. 
-    /// You must call GenerateInstance on each thread you want to interact with the realm on. 
+    /// <remarks>Warning: Realm instances are not thread safe and can not be shared across threads 
+    /// You must call GetInstance on each thread in which you want to interact with the realm. 
     /// </remarks>
     public class Realm : IDisposable
     {
@@ -25,7 +25,7 @@ namespace Realms
         private static readonly IEnumerable<Type> RealmObjectClasses;
 
         /// <summary>
-        /// Standard filename to be combined with a platform-specific document directory in the per-platform InteropConfig.GetStandardDatabasePath
+        /// Standard filename to be combined with the platform-specific document directory.
         /// </summary>
         /// <returns>A string representing a filename only, no path.</returns>
         static string _DefaultDatabaseName = "default.realm";
@@ -50,16 +50,23 @@ namespace Realms
         /// <summary>
         /// Factory for a Realm instance for this thread.
         /// </summary>
-        /// <param name="databasePath">Optional path to the realm, must be a valid full path for the current platform</param>
-        /// <returns>A realm instance</returns>
+        /// <param name="databasePath">Optional path to the realm, must be a valid full path for the current platform, or just filename.</param>
+        /// <remarks>Whilst some platforms may support a relative path within the databasePath, sandboxing by the OS may cause failure.</remarks>
+        /// <returns>A realm instance.</returns>
+        /// <exception cref="RealmFileAccessErrorException">Throws error if the filesystem has an error preventing file creation.</exception>
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         public static Realm GetInstance(string databasePath = null)
         {
-            if (databasePath == null)
-                databasePath = System.IO.Path.Combine(InteropConfig.GetDefaultDatabasePath(), _DefaultDatabaseName);
-            else if (!System.IO.Path.IsPathRooted(databasePath))
-                databasePath = System.IO.Path.Combine(InteropConfig.GetDefaultDatabasePath(), databasePath);
-
+            if (databasePath == null) {
+                databasePath = System.IO.Path.Combine(
+                    System.Environment.GetFolderPath(Environment.SpecialFolder.Personal), 
+                    _DefaultDatabaseName);
+            }
+            else if (!System.IO.Path.IsPathRooted(databasePath)) {
+                databasePath = System.IO.Path.Combine(
+                    System.Environment.GetFolderPath(Environment.SpecialFolder.Personal), 
+                    databasePath);
+            }
             var schemaInitializer = new SchemaInitializerHandle();
 
             foreach (var realmObjectClass in RealmObjectClasses)
@@ -142,13 +149,10 @@ namespace Realms
         }
 
         /// <summary>
-        /// Checks if database has been closed
+        /// Checks if database has been closed.
         /// </summary>
-        /// <returns>True if closed</returns>
-        public bool IsClosed()
-        {
-            return _sharedRealmHandle.IsClosed;
-        }
+        /// <returns>True if closed.</returns>
+        public bool IsClosed => _sharedRealmHandle.IsClosed;
 
 
         /// <summary>
@@ -157,7 +161,7 @@ namespace Realms
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         public void Close()
         {
-            if (IsClosed())
+            if (IsClosed)
                 return;
             RuntimeHelpers.PrepareConstrainedRegions();
             try { /* Close handle in a constrained execution region */ }
@@ -196,7 +200,7 @@ namespace Realms
         /// </summary>
         /// <remarks>Using CreateObject is more efficient than creating standalone objects, assigning their values, then using Manage because it avoids copying properties to the realm.</remarks>
         /// <typeparam name="T">The Type T must not only be a RealmObject but also have been processd by the Fody weaver, so it has persistent properties.</typeparam>
-        /// <returns>An object which is already managed</returns>
+        /// <returns>An object which is already managed.</returns>
         /// <exception cref="RealmOutsideTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
         public T CreateObject<T>() where T : RealmObject
         {
@@ -279,7 +283,7 @@ namespace Realms
         ///     trans.Commit();
         /// }</c>
         /// </example>
-        /// <returns>A transaction in write mode, which is required for any creation or modification of objects persisted in a Realm</returns>
+        /// <returns>A transaction in write mode, which is required for any creation or modification of objects persisted in a Realm.</returns>
         public Transaction BeginWrite()
         {
             return new Transaction(_sharedRealmHandle);
@@ -289,7 +293,7 @@ namespace Realms
         /// Extract an iterable set of objects for direct use or further query.
         /// </summary>
         /// <typeparam name="T">The Type T must not only be a RealmObject but also have been processd by the Fody weaver, so it has persistent properties.</typeparam>
-        /// <returns>A RealmQuery that without further filtering, allows iterating all objects of class T, in this realm</returns>
+        /// <returns>A RealmQuery that without further filtering, allows iterating all objects of class T, in this realm.</returns>
         public RealmQuery<T> All<T>() where T: RealmObject
         {
             return new RealmQuery<T>(this);
@@ -298,7 +302,7 @@ namespace Realms
         /// <summary>
         /// Removes a persistent object from this realm, effectively deleting it.
         /// </summary>
-        /// <param name="obj">Must be an object persisted in this realm</param>
+        /// <param name="obj">Must be an object persisted in this realm.</param>
         /// <exception cref="RealmOutsideTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
         /// <exception cref="System.ArgumentNullException">If you invoke this with a standalone object.</exception>
         public void Remove(RealmObject obj)

@@ -11,9 +11,9 @@ using System.Linq.Expressions;
 namespace Realms
 {
     /// <summary>
-    /// Objects resulting from Realm.All or from a LINQ query expression.
+    /// Iterable collection of one kind of RealmObject resulting from Realm.All or from a LINQ query expression.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">Type of the RealmObject which is being returned.</typeparam>
     public class RealmQuery<T> : IQueryable<T>
     {
         public Type ElementType => typeof (T);
@@ -33,9 +33,9 @@ namespace Realms
         }
 
         /// <summary>
-        /// Standard method from interface IEnumerable allows the RealmQuery to be used in a <c>foreach</c>
+        /// Standard method from interface IEnumerable allows the RealmQuery to be used in a <c>foreach</c>.
         /// </summary>
-        /// <returns>An IEnumerator which will iterate through found Realm persistent objects</returns>
+        /// <returns>An IEnumerator which will iterate through found Realm persistent objects.</returns>
         public IEnumerator<T> GetEnumerator()
         {
             return (Provider.Execute<IEnumerable<T>>(Expression)).GetEnumerator();

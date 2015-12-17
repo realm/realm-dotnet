@@ -184,18 +184,18 @@ public class ModuleWeaver
         /// A synthesized property getter looks like this:
         ///   0: ldarg.0
         ///   1: ldfld <backingField>
-        ///   2: ret
+        ///   2: ret.
         /// We want to change it so it looks like this:
         ///   0: ldarg.0
-        ///   1: call Realms.RealmObject.get_IsManaged
+        ///   1: call Realms.RealmObject.get_IsManaged.
         ///   2: brfalse.s 7
         ///   3: ldarg.0
         ///   4: ldstr <columnName>
         ///   5: call Realms.RealmObject.GetValue<T>
-        ///   6: ret
+        ///   6: ret.
         ///   7: ldarg.0
         ///   8: ldfld <backingField>
-        ///   9: ret
+        ///   9: ret.
         /// This is roughly equivalent to:
         ///   if (!base.IsManaged) return this.<backingField>;
         ///   else return base.GetValue<T>(<columnName>);
@@ -220,20 +220,20 @@ public class ModuleWeaver
         ///   0: ldarg.0
         ///   1: ldarg.1
         ///   2: stfld <backingField>
-        ///   3: ret
+        ///   3: ret.
         /// We want to change it so it looks like this:
         ///   0: ldarg.0
-        ///   1: call Realm.RealmObject.get_IsManaged
+        ///   1: call Realm.RealmObject.get_IsManaged.
         ///   2: brfalse.s 8
         ///   3: ldarg.0
         ///   4: ldstr <columnName>
         ///   5: ldarg.1
         ///   6: call Realm.RealmObject.SetValue<T>
-        ///   7: ret
+        ///   7: ret.
         ///   8: ldarg.0
         ///   9: ldarg.1
         ///   10: stfld <backingField>
-        ///   11: ret
+        ///   11: ret.
         /// This is roughly equivalent to:
         ///   if (!base.IsManaged) this.<backingField> = value;
         ///   else base.SetValue<T>(<columnName>, value);

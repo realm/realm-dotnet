@@ -11,7 +11,7 @@ namespace Realms
     /// <summary>
     /// Per-platform utility functions. A copy of this file exists in each platform project such as Realm.Win32.
     /// </summary>
-    public static class InteropConfig
+    internal static class InteropConfig
     {
         public static bool Is64Bit
         {
@@ -45,14 +45,5 @@ namespace Realms
 #else
         public const string DLL_NAME = "** error see InteropConfig.cs DLL_NAME";
 #endif
-
-        /// <summary>
-        /// Get the location to be used for realms if a full path is not specified
-        /// </summary>
-        /// <returns>A path to the standard Documents directory for the platform</returns>
-        public static string GetDefaultDatabasePath()
-        {
-            return System.Environment.GetFolderPath(Environment.SpecialFolder.Personal);
-        }
     }
 }

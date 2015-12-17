@@ -195,10 +195,10 @@ namespace Realms
         /// <summary>
         /// Factory for an iterator to be called explicitly or used in a foreach loop.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A RealmListEnumerator as the generic IEnumerator<T>.</returns>
         public IEnumerator<T> GetEnumerator()
         {
-            return (IEnumerator<T>)new RealmListEnumerator(this);
+            return new RealmListEnumerator(this);
         }
 
         /// <summary>
