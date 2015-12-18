@@ -20,8 +20,8 @@ namespace IntegrationTests.Shared
         class Dog : RealmObject
         {
             public string Name { get; set; }
-            public string Color { get; set; } = "Brown";
-            public bool Vaccinated { get; set; } = true;
+            public string Color { get; set; }
+            public bool Vaccinated { get; set; }
             //Owner Owner { get; set; }  will uncomment when verifying that we have back-links from ToMany relationships
         }
 
