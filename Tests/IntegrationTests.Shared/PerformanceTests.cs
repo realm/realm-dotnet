@@ -26,7 +26,7 @@ namespace IntegrationTests
             _realm = Realm.GetInstance(_databasePath);
         }
 
-        [TestCase(1000000)]
+        [TestCase(1000000), Explicit]
         public void BindingPerformanceTest(int count)
         {
             Console.WriteLine($"Binding-based performance check for {count:n} entries -------------");
@@ -81,7 +81,7 @@ namespace IntegrationTests
         //    }
         //}
 
-        [TestCase(1000000)]
+        [TestCase(1000000), Explicit]
         public void BindingCreateObjectPerformanceTest(int count)
         {
             Console.WriteLine($"Binding-based performance check for {count:n} entries: CreateObject -------------");
@@ -132,7 +132,7 @@ namespace IntegrationTests
         //    }
         //}
 
-        [TestCase(1000000)]
+        [TestCase(1000000), Explicit]
         public void BindingSetValuePerformanceTest(int count)
         {
             Console.WriteLine($"Binding-based performance check for {count:n} entries: Set value -------------");

@@ -6,9 +6,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using Mono.Cecil;
 using NUnit.Framework;
+using Realms;
 
 namespace Tests
 {
@@ -57,7 +59,7 @@ namespace Tests
         }
 
         [Test]
-        public void SetStringValueTest()
+        public void SetStringValueUnmanagedTest()
         {
             // Arrange
             var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.Person"));
@@ -66,7 +68,25 @@ namespace Tests
             o.FirstName = "Peter";
 
             // Assert
-            Assert.That(o.LogList, Is.EqualTo(new List<string> { "RealmObject.SetValue(propertyName = \"FirstName\", value = Peter)" }));
+            Assert.That(o.LogList, Is.EqualTo(new List<string> { "IsManaged" }));
+        }
+
+        [Test]
+        public void SetStringValueManagedTest()
+        {
+            // Arrange
+            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.Person"));
+            o.IsManaged = true;
+
+            // Act
+            o.FirstName = "Peter";
+
+            // Assert
+            Assert.That(o.LogList, Is.EqualTo(new List<string>
+            {
+                "IsManaged",
+                "RealmObject.SetValue(propertyName = \"FirstName\", value = Peter)"
+            }));
         }
 
         [Test]
@@ -87,12 +107,38 @@ namespace Tests
         {
             // Arrange
             var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.Person"));
+            o.IsManaged = true;
 
             // Act
             o.Email = "a@b.com";
 
             // Assert
-            Assert.That(o.LogList, Is.EqualTo(new List<string> { "RealmObject.SetValue(propertyName = \"Email\", value = a@b.com)" }));
+            Assert.That(o.LogList, Is.EqualTo(new List<string>
+            {
+                "IsManaged",
+                "RealmObject.SetValue(propertyName = \"Email\", value = a@b.com)"
+            }));
+        }
+
+        [Test]
+        public void ShouldAddWovenAttribute()
+        {
+            // Arrange and act
+            var personType = _assembly.GetType("AssemblyToProcess.Person");
+
+            // Assert
+            Assert.That(personType.GetCustomAttributes(typeof (WovenAttribute)).Any());
+        }
+
+        [Test]
+        public void ShouldAddPreserveAttribute()
+        {
+            // Arrange and act
+            var personType = _assembly.GetType("AssemblyToProcess.Person");
+            var ctor = personType.GetConstructor(Type.EmptyTypes);
+
+            // Assert
+            Assert.That(ctor.GetCustomAttributes(typeof (PreserveAttribute)).Any());
         }
 
 #if(DEBUG)
