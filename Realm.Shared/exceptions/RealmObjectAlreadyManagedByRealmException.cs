@@ -7,9 +7,9 @@ namespace Realms
 /// <summary>
 /// Exception thrown when you're trying to use Manage but the object has already been added to this Realm.
 /// </summary>
-public class RealmObjectAlreadyOwnedByRealmException : RealmException
+public class RealmObjectAlreadyManagedByRealmException : RealmException
 {
-    internal RealmObjectAlreadyOwnedByRealmException(string detailMessage) : base(detailMessage)
+    internal RealmObjectAlreadyManagedByRealmException(string detailMessage) : base(detailMessage)
     {
 
     }

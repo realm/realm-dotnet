@@ -1214,3 +1214,7 @@ StandaloneObjectTests.cs
 
 RealmList.cs
 - AttachObjectIfNeeded renamed ManageObjectIfNeeded
+
+RealmObjectAlreadyOwnedByRealmException renamed RealmObjectAlreadyManagedByRealmException
+
+RealmObjectOwnedByAnotherRealmException renamed RealmObjectManagedByAnotherRealmException

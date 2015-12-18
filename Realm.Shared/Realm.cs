@@ -230,8 +230,8 @@ namespace Realms
         /// <typeparam name="T">The Type T must not only be a RealmObject but also have been processd by the Fody weaver, so it has persistent properties.</typeparam>
         /// <param name="obj">Must be a standalone object, null not allowed.</param>
         /// <exception cref="RealmOutsideTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
-        /// <exception cref="RealmObjectAlreadyOwnedByRealmException">You can't manage the same object twice. This exception is thrown, rather than silently detecting the mistake, to help you debug your code</exception>
-        /// <exception cref="RealmObjectOwnedByAnotherRealmException">You can't manage an object with more than one realm</exception>
+        /// <exception cref="RealmObjectAlreadyManagedByRealmException">You can't manage the same object twice. This exception is thrown, rather than silently detecting the mistake, to help you debug your code</exception>
+        /// <exception cref="RealmObjectManagedByAnotherRealmException">You can't manage an object with more than one realm</exception>
         public void Manage<T>(T obj) where T : RealmObject
         {
             if (obj == null)
@@ -240,9 +240,9 @@ namespace Realms
             if (obj.IsManaged)
             {
                 if (obj.Realm._sharedRealmHandle == this._sharedRealmHandle)
-                    throw new RealmObjectAlreadyOwnedByRealmException("The object is already managed by this realm");
+                    throw new RealmObjectAlreadyManagedByRealmException("The object is already managed by this realm");
 
-                throw new RealmObjectOwnedByAnotherRealmException("Cannot start to manage an object with a realm when it's already managed by another realm");
+                throw new RealmObjectManagedByAnotherRealmException("Cannot start to manage an object with a realm when it's already managed by another realm");
             }
 
 

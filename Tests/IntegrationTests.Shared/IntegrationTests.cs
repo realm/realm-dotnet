@@ -264,7 +264,7 @@ namespace IntegrationTests
 
             using (var otherRealm = Realm.GetInstance(Path.GetTempFileName()))
             {
-                Assert.Throws<RealmObjectOwnedByAnotherRealmException>(() => otherRealm.Manage(p));
+                Assert.Throws<RealmObjectManagedByAnotherRealmException>(() => otherRealm.Manage(p));
             }
         }
 
@@ -278,7 +278,7 @@ namespace IntegrationTests
                 transaction.Commit();
             }
 
-            Assert.Throws<RealmObjectAlreadyOwnedByRealmException>(() => _realm.Manage(p));
+            Assert.Throws<RealmObjectAlreadyManagedByRealmException>(() => _realm.Manage(p));
         }
 
         [Test]
