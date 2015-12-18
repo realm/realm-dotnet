@@ -21,13 +21,10 @@ The `realmDoxygenLayout.xml` file was generated from doxygen with the `doxygen -
 
 Tabs were hidden which cannot be configured normall, by setting their attribute `visible=no`:
 
-* `mainpage` tab
 * `pages` tab
 * `classes` tab
 
 The nested tabs under the `classes` tab were moved out to appear directly under `navindex`.
 
-## The big first page hack
-Although the _main page_ option is suppressed in `realmDoxygenLayout.xml` there appears to be no way to get Doxygen to generate a different page as index.html.
+The Class Index is not generated, using the Doxygen configuration, because its role was adequately covered by the Class List. The index is of little use for such a simple API.
 
-So for now, after generating, the quick hack is to **copy annotated.html over index.html** which gives the impression of starting with the class list.

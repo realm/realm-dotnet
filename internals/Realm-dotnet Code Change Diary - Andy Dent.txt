@@ -1200,3 +1200,21 @@ RealmList.GetEnumerator
 
 Realm.IsClosed
 - changed to property
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#291 Minor doc edits and rename Attach to Manage
+
+Realm.Attach
+- renamed Realm.Manage
+
+IntegrationTests.cs
+RelationshipTests.cs
+StandaloneObjectTests.cs
+- renamed all tests with Attach to Manage
+
+RealmList.cs
+- AttachObjectIfNeeded renamed ManageObjectIfNeeded
+
+RealmObjectAlreadyOwnedByRealmException renamed RealmObjectAlreadyManagedByRealmException
+
+RealmObjectOwnedByAnotherRealmException renamed RealmObjectManagedByAnotherRealmException
