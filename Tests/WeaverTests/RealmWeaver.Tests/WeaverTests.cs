@@ -130,7 +130,7 @@ namespace Tests
             Assert.That(o.LogList, Is.EqualTo(new List<string>
             {
                 "IsManaged",
-                "RealmObject.SetValue(propertyName = \"Email\", value = a@b.com)"
+                "RealmObject.SetStringValue(propertyName = \"Email\", value = a@b.com)"
             }));
         }
 

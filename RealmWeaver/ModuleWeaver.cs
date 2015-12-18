@@ -108,10 +108,36 @@ public class ModuleWeaver
                     continue;
                 }
 
-                if (prop.PropertyType.Namespace == "System" && prop.PropertyType.Name == "String")
+                if (prop.PropertyType.FullName == "System.String")
                 {
                     ReplaceGetter(prop, columnName, getStringValueReference);
                     ReplaceSetter(prop, columnName, setStringValueReference);
+                }
+                else if (prop.PropertyType.Name == "IList`1" && prop.PropertyType.Namespace == "System.Collections.Generic")
+                {
+                    if (prop.SetMethod != null)
+                    {
+                        Debug.WriteLine("Skipped because it's a list that's not read-only");
+                        continue;
+                    }
+
+                    var elementType = ((GenericInstanceType)prop.PropertyType).GenericArguments.Single();
+                    var concreteListType = new GenericInstanceType(listType) { GenericArguments = { elementType } };
+                    var listConstructor = concreteListType.Resolve().GetConstructors().Single(c => c.IsPublic && c.Parameters.Count == 0);
+                    var concreteListConstructor = listConstructor.MakeHostInstanceGeneric(elementType);
+
+                    foreach (var ctor in type.GetConstructors())
+                    {
+                        PrependListFieldInitializerToConstructor(backingField, ctor, ModuleDefinition.ImportReference(concreteListConstructor));
+                    }
+                }
+                else if (prop.PropertyType.FullName == "System.DateTime")
+                {
+                    LogErrorPoint($"class '{type.Name}' field '{columnName}' is a DateTime which is not supported - use DateTimeOffset instead.", sequencePoint);
+                }
+                else
+                {
+                    LogErrorPoint($"class '{type.Name}' field '{columnName}' is a '{prop.PropertyType}' which is not yet supported", sequencePoint);
                 }
 
                 //if (prop.PropertyType.Namespace == "System" 
