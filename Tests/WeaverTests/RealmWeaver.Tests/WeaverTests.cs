@@ -85,7 +85,7 @@ namespace Tests
             Assert.That(o.LogList, Is.EqualTo(new List<string>
             {
                 "IsManaged",
-                "RealmObject.SetValue(propertyName = \"FirstName\", value = Peter)"
+                "RealmObject.SetStringValue(propertyName = \"FirstName\", value = Peter)"
             }));
         }
 
@@ -130,7 +130,7 @@ namespace Tests
             Assert.That(personType.GetCustomAttributes(typeof (WovenAttribute)).Any());
         }
 
-        [Test]
+        [Test, Ignore("Introduce once preserving default constructors is implemented")]
         public void ShouldAddPreserveAttribute()
         {
             // Arrange and act

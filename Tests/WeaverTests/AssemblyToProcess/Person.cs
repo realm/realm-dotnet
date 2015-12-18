@@ -53,11 +53,10 @@ namespace AssemblyToProcess
         }
 
         // Manually implemented property
-        [Ignored]
         public string Address
         {
-            get { return GetValue<string>("Address"); }
-            set { SetValue("Address", value); }
+            get { return GetStringValue("Address"); }
+            set { SetStringValue("Address", value); }
         }
 
         // One-to-one relationship

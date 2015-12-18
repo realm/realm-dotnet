@@ -67,8 +67,8 @@ public class ModuleWeaver
 
         var realmObjectType = assemblyToReference.MainModule.GetTypes().First(x => x.Name == "RealmObject");
         realmObjectIsManagedGetter = ModuleDefinition.ImportReference(realmObjectType.Properties.Single(x => x.Name == "IsManaged").GetMethod);
-        var genericGetValueReference = MethodNamed(realmObjectType, "GetValue");
-        var genericSetValueReference = MethodNamed(realmObjectType, "SetValue");
+        var getStringValueReference = MethodNamed(realmObjectType, "GetStringValue");
+        var setStringValueReference = MethodNamed(realmObjectType, "SetStringValue");
         var genericGetListValueReference = MethodNamed(realmObjectType, "GetListValue");
         var genericSetListValueReference = MethodNamed(realmObjectType, "SetListValue");
         var genericGetObjectValueReference = MethodNamed(realmObjectType, "GetObjectValue");
@@ -97,64 +97,76 @@ public class ModuleWeaver
 
                 var backingField = GetBackingField(prop);
 
-                Debug.Write("  -- Property: " + prop.Name + " (column: " + columnName + ".. ");
-                //TODO check if has either setter or getter and adjust accordingly - https://github.com/realm/realm-dotnet/issues/101
-                if (prop.PropertyType.Namespace == "System" 
-                    && (prop.PropertyType.IsPrimitive || prop.PropertyType.Name == "String" || prop.PropertyType.Name == "DateTimeOffset"))  // most common tested first
-                {
-                    if (!prop.IsAutomatic())
-                        continue;
+                Debug.Write("  - " + prop.PropertyType.FullName + " " + prop.Name + " (Column: " + columnName + ").. ");
 
-                    ReplaceGetter(prop, columnName, new GenericInstanceMethod(genericGetValueReference) { GenericArguments = { prop.PropertyType } });
-                    ReplaceSetter(prop, columnName, new GenericInstanceMethod(genericSetValueReference) { GenericArguments = { prop.PropertyType } });
-                }
-                else if (prop.PropertyType.Name == "RealmList`1" && prop.PropertyType.Namespace == "Realms")
+                if (!prop.IsAutomatic())
                 {
-                    // RealmList allows people to declare lists only of RealmObject due to the class definition
-                    if (!prop.IsAutomatic())
-                    {
-                        LogWarningPoint($"{type.Name}.{columnName} is not an automatic property but its type is a RealmList which normally indicates a relationship", sequencePoint);
-                        continue;
-                    }
-
-                    // we may handle things differently here to handle init with a braced collection
-                    var elementType = ((GenericInstanceType)prop.PropertyType).GenericArguments.Single();
-                    ReplaceGetter(prop, columnName, new GenericInstanceMethod(genericGetListValueReference) { GenericArguments = { elementType } });
-                    ReplaceSetter(prop, columnName, new GenericInstanceMethod(genericSetListValueReference) { GenericArguments = { elementType } });  
-                }
-                else if (prop.PropertyType.Name == "IList`1" && prop.PropertyType.Namespace == "System.Collections.Generic")
-                {
-                    // only handle `IList<T> Foo { get; }` properties
-                    if (prop.IsAutomatic() && prop.SetMethod == null)
-                    {
-                        var elementType = ((GenericInstanceType)prop.PropertyType).GenericArguments.Single();
-                        var concreteListType = new GenericInstanceType(listType) { GenericArguments = { elementType } };
-                        var listConstructor = concreteListType.Resolve().GetConstructors().Single(c => c.IsPublic && c.Parameters.Count == 0);
-                        var concreteListConstructor = listConstructor.MakeHostInstanceGeneric(elementType);
-
-                        foreach (var ctor in type.GetConstructors())
-                        {
-                            PrependListFieldInitializerToConstructor(backingField, ctor, ModuleDefinition.ImportReference(concreteListConstructor));
-                        }
-                    }
-                }
-                else if (IsRealmObject(prop.PropertyType))
-                {
-                    if (!prop.IsAutomatic())
-                    {
+                    if (IsRealmObject(prop.PropertyType))
                         LogWarningPoint($"{type.Name}.{columnName} is not an automatic property but its type is a RealmObject which normally indicates a relationship", sequencePoint);
-                        continue;
-                    }
 
-                    ReplaceGetter(prop, columnName, new GenericInstanceMethod(genericGetObjectValueReference) { GenericArguments = { prop.PropertyType } });
-                    ReplaceSetter(prop, columnName, new GenericInstanceMethod(genericSetObjectValueReference) { GenericArguments = { prop.PropertyType } });  // with casting in the RealmObject methods, should just work
+                    Debug.WriteLine("Skipped because it's not automatic.");
+                    continue;
                 }
-                else if (prop.PropertyType.Name == "DateTime" && prop.PropertyType.Namespace == "System") {
-                    LogErrorPoint($"class '{type.Name}' field '{columnName}' is a DateTime which is not supported - use DateTimeOffset instead.", sequencePoint);
+
+                if (prop.PropertyType.Namespace == "System" && prop.PropertyType.Name == "String")
+                {
+                    ReplaceGetter(prop, columnName, getStringValueReference);
+                    ReplaceSetter(prop, columnName, setStringValueReference);
                 }
-                else {
-                    LogErrorPoint($"class '{type.Name}' field '{columnName}' is a '{prop.PropertyType}' which is not yet supported", sequencePoint);
-                }
+
+                //if (prop.PropertyType.Namespace == "System" 
+                //    && (prop.PropertyType.IsPrimitive || prop.PropertyType.Name == "String" || prop.PropertyType.Name == "DateTimeOffset"))  // most common tested first
+                //{
+                //    ReplaceGetter(prop, columnName, new GenericInstanceMethod(genericGetValueReference) { GenericArguments = { prop.PropertyType } });
+                //    ReplaceSetter(prop, columnName, new GenericInstanceMethod(genericSetValueReference) { GenericArguments = { prop.PropertyType } });
+                //}
+                //else if (prop.PropertyType.Name == "RealmList`1" && prop.PropertyType.Namespace == "Realms")
+                //{
+                //    // RealmList allows people to declare lists only of RealmObject due to the class definition
+                //    if (!prop.IsAutomatic())
+                //    {
+                //        LogWarningPoint($"{type.Name}.{columnName} is not an automatic property but its type is a RealmList which normally indicates a relationship", sequencePoint);
+                //        continue;
+                //    }
+
+                //    // we may handle things differently here to handle init with a braced collection
+                //    var elementType = ((GenericInstanceType)prop.PropertyType).GenericArguments.Single();
+                //    ReplaceGetter(prop, columnName, new GenericInstanceMethod(genericGetListValueReference) { GenericArguments = { elementType } });
+                //    ReplaceSetter(prop, columnName, new GenericInstanceMethod(genericSetListValueReference) { GenericArguments = { elementType } });  
+                //}
+                //else if (prop.PropertyType.Name == "IList`1" && prop.PropertyType.Namespace == "System.Collections.Generic")
+                //{
+                //    // only handle `IList<T> Foo { get; }` properties
+                //    if (prop.IsAutomatic() && prop.SetMethod == null)
+                //    {
+                //        var elementType = ((GenericInstanceType)prop.PropertyType).GenericArguments.Single();
+                //        var concreteListType = new GenericInstanceType(listType) { GenericArguments = { elementType } };
+                //        var listConstructor = concreteListType.Resolve().GetConstructors().Single(c => c.IsPublic && c.Parameters.Count == 0);
+                //        var concreteListConstructor = listConstructor.MakeHostInstanceGeneric(elementType);
+
+                //        foreach (var ctor in type.GetConstructors())
+                //        {
+                //            PrependListFieldInitializerToConstructor(backingField, ctor, ModuleDefinition.ImportReference(concreteListConstructor));
+                //        }
+                //    }
+                //}
+                //else if (IsRealmObject(prop.PropertyType))
+                //{
+                //    if (!prop.IsAutomatic())
+                //    {
+                //        LogWarningPoint($"{type.Name}.{columnName} is not an automatic property but its type is a RealmObject which normally indicates a relationship", sequencePoint);
+                //        continue;
+                //    }
+
+                //    ReplaceGetter(prop, columnName, new GenericInstanceMethod(genericGetObjectValueReference) { GenericArguments = { prop.PropertyType } });
+                //    ReplaceSetter(prop, columnName, new GenericInstanceMethod(genericSetObjectValueReference) { GenericArguments = { prop.PropertyType } });  // with casting in the RealmObject methods, should just work
+                //}
+                //else if (prop.PropertyType.Name == "DateTime" && prop.PropertyType.Namespace == "System") {
+                //    LogErrorPoint($"class '{type.Name}' field '{columnName}' is a DateTime which is not supported - use DateTimeOffset instead.", sequencePoint);
+                //}
+                //else {
+                //    LogErrorPoint($"class '{type.Name}' field '{columnName}' is a '{prop.PropertyType}' which is not yet supported", sequencePoint);
+                //}
 
                 var wovenPropertyAttribute = new CustomAttribute(wovenPropertyAttributeConstructor);
                 wovenPropertyAttribute.ConstructorArguments.Add(new CustomAttributeArgument(stringType, backingField.Name));
@@ -251,27 +263,6 @@ public class ModuleWeaver
         il.InsertBefore(start, il.Create(OpCodes.Ret));
 
         Debug.Write("[set] ");
-    }
-
-
-    void AddConstructor(TypeDefinition newType)
-    {
-        var method = new MethodDefinition(".ctor", MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName, typeSystem.Void);
-        var objectConstructor = ModuleDefinition.Import(typeSystem.Object.Resolve().GetConstructors().First());
-        var processor = method.Body.GetILProcessor();
-        processor.Emit(OpCodes.Ldarg_0);
-        processor.Emit(OpCodes.Call, objectConstructor);
-        processor.Emit(OpCodes.Ret);
-        newType.Methods.Add(method);
-    }
-
-    void AddHelloWorld( TypeDefinition newType)
-    {
-        var method = new MethodDefinition("World", MethodAttributes.Public, typeSystem.String);
-        var processor = method.Body.GetILProcessor();
-        processor.Emit(OpCodes.Ldstr, "Hello World!!");
-        processor.Emit(OpCodes.Ret);
-        newType.Methods.Add(method);
     }
 
     private static FieldReference GetBackingField(PropertyDefinition property)

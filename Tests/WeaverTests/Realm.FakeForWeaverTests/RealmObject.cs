@@ -37,13 +37,13 @@ namespace Realms
             set { _isManaged = value;  }
         }
 
-        protected T GetValue<T>(string propertyName)
+        protected string GetStringValue(string propertyName)
         {
             LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
-            return default(T);
+            return "";
         }
 
-        protected void SetValue<T>(string propertyName, T value)
+        protected void SetStringValue(string propertyName, string value)
         {
             LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
         }
