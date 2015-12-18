@@ -17,6 +17,18 @@ namespace Tests
     [TestFixture]
     public class WeaverTests
     {
+        #region helpers
+
+        private static dynamic GetAutoPropertyBackingFieldValue(object o, string propertyName)
+        {
+            var propertyField = ((Type) o.GetType())
+                .GetField($"<{propertyName}>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance);
+            var fieldValue = propertyField.GetValue(o);
+            return fieldValue;
+        }
+
+        #endregion
+
         Assembly _assembly;
         string _newAssemblyPath;
         string _assemblyPath;
@@ -59,7 +71,7 @@ namespace Tests
         }
 
         [Test]
-        public void SetStringValueUnmanagedTest()
+        public void SetStringValueUnmanagedShouldSetBackingFieldTest()
         {
             // Arrange
             var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.Person"));
@@ -69,6 +81,7 @@ namespace Tests
 
             // Assert
             Assert.That(o.LogList, Is.EqualTo(new List<string> { "IsManaged" }));
+            Assert.That(GetAutoPropertyBackingFieldValue(o, "FirstName"), Is.EqualTo("Peter"));
         }
 
         [Test]
@@ -87,6 +100,7 @@ namespace Tests
                 "IsManaged",
                 "RealmObject.SetStringValue(propertyName = \"FirstName\", value = Peter)"
             }));
+            Assert.That(GetAutoPropertyBackingFieldValue(o, "FirstName"), Is.Null);
         }
 
         [Test]
