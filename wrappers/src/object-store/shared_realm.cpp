@@ -34,13 +34,14 @@ using namespace realm::_impl;
 RealmCache Realm::s_global_cache;
 
 Realm::Config::Config(const Config& c)
-    : path(c.path)
-    , read_only(c.read_only)
-    , in_memory(c.in_memory)
-    , cache(c.cache)
-    , encryption_key(c.encryption_key)
-    , schema_version(c.schema_version)
-    , migration_function(c.migration_function)
+: path(c.path)
+, read_only(c.read_only)
+, in_memory(c.in_memory)
+, cache(c.cache)
+, disable_format_upgrade(c.disable_format_upgrade)
+, encryption_key(c.encryption_key)
+, schema_version(c.schema_version)
+, migration_function(c.migration_function)
 {
     if (c.schema) {
         schema = std::make_unique<Schema>(*c.schema);
@@ -70,8 +71,8 @@ Realm::Realm(Config config)
         else {
             m_history = realm::make_client_history(m_config.path, m_config.encryption_key.data());
             SharedGroup::DurabilityLevel durability = m_config.in_memory ? SharedGroup::durability_MemOnly :
-                SharedGroup::durability_Full;
-            m_shared_group = std::make_unique<SharedGroup>(*m_history, durability, m_config.encryption_key.data());
+                                                                           SharedGroup::durability_Full;
+            m_shared_group = std::make_unique<SharedGroup>(*m_history, durability, m_config.encryption_key.data(), !m_config.disable_format_upgrade);
         }
     }
     catch (util::File::PermissionDenied const& ex) {
@@ -91,6 +92,11 @@ Realm::Realm(Config config)
         throw RealmFileException(RealmFileException::Kind::IncompatibleLockFile, m_config.path,
                                  "Realm file is currently open in another process "
                                  "which cannot share access with this process. All processes sharing a single file must be the same architecture.");
+    }
+    catch (FileFormatUpgradeRequired const& ex) {
+        throw RealmFileException(RealmFileException::Kind::FormatUpgradeRequired, m_config.path,
+                                 "The Realm file format must be allowed to be upgraded "
+                                 "in order to proceed.");
     }
 }
 
@@ -126,7 +132,7 @@ SharedRealm Realm::get_shared_realm(Config config)
             }
             // FIXME - enable schma comparison
             /*if (realm->config().schema != config.schema) {
-            throw MismatchedConfigException("Realm at path already opened with different schema");
+                throw MismatchedConfigException("Realm at path already opened with different schema");
             }*/
             realm->m_config.migration_function = config.migration_function;
 
@@ -170,6 +176,10 @@ SharedRealm Realm::get_shared_realm(Config config)
             }
             else {
                 realm->update_schema(std::move(target_schema), target_schema_version);
+                // End the read transaction created to validation/update the
+                // schema to avoid pinning the version even if the user never
+                // actually reads data
+                realm->invalidate();
             }
         }
     }
@@ -214,8 +224,8 @@ bool Realm::update_schema(std::unique_ptr<Schema> schema, uint64_t version)
         // update and migrate
         begin_transaction();
         bool changed = ObjectStore::update_realm_with_schema(read_group(), *old_config.schema,
-            version, *m_config.schema,
-            migration_function);
+                                                             version, *m_config.schema,
+                                                             migration_function);
         commit_transaction();
         return changed;
     }
