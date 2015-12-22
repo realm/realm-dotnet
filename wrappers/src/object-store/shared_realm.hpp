@@ -19,12 +19,12 @@
 #ifndef REALM_REALM_HPP
 #define REALM_REALM_HPP
 
+#include "object_store.hpp"
+
 #include <memory>
+#include <mutex>
 #include <thread>
 #include <vector>
-#include <mutex>
-
-#include "object_store.hpp"
 
 namespace realm {
     class ClientHistory;
@@ -49,6 +49,7 @@ namespace realm {
             bool read_only = false;
             bool in_memory = false;
             bool cache = true;
+            bool disable_format_upgrade = false;
             std::vector<char> encryption_key;
 
             std::unique_ptr<Schema> schema;
@@ -89,6 +90,7 @@ namespace realm {
         void commit_transaction();
         void cancel_transaction();
         bool is_in_transaction() const { return m_in_transaction; }
+        bool is_in_read_transaction() const { return !!m_group; }
 
         bool refresh();
         void set_auto_refresh(bool auto_refresh) { m_auto_refresh = auto_refresh; }
@@ -162,12 +164,14 @@ namespace realm {
             process which cannot share with the current process due to an
             architecture mismatch. */
             IncompatibleLockFile,
+            /** Thrown if the file needs to be upgraded to a new format, but upgrades have been explicitly disabled. */
+            FormatUpgradeRequired,
         };
         RealmFileException(Kind kind, std::string path, std::string message) :
             std::runtime_error(std::move(message)), m_kind(kind), m_path(std::move(path)) {}
         Kind kind() const { return m_kind; }
         const std::string& path() const { return m_path; }
-        
+
     private:
         Kind m_kind;
         std::string m_path;
@@ -191,21 +195,6 @@ namespace realm {
     class UnitializedRealmException : public std::runtime_error {
     public:
         UnitializedRealmException(std::string message) : std::runtime_error(message) {}
-    };
-  
-    class IndexOutOfRangeException : public std::runtime_error
-    {
-      static std::string makeMessage(std::string context, size_t bad_index, size_t count)
-      {
-        std::ostringstream ss;
-        ss << context << " index:" << bad_index << " beyond range of:" << count;
-        return ss.str();
-      }
-
-    public:
-      IndexOutOfRangeException(std::string message) : std::runtime_error(message) {}
-      IndexOutOfRangeException(std::string context, size_t bad_index, size_t count):
-        std::runtime_error(makeMessage(context, bad_index, count)) {}
     };
 }
 

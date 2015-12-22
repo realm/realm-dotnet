@@ -1218,3 +1218,29 @@ RealmList.cs
 RealmObjectAlreadyOwnedByRealmException renamed RealmObjectAlreadyManagedByRealmException
 
 RealmObjectOwnedByAnotherRealmException renamed RealmObjectManagedByAnotherRealmException
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#328 Update to Core 0.95.6
+Merged in ObjectStore commit as at 324818f
+
+Makefile
+- bump CORE_APPLE_VER and CORE_ANDROID_VER from 0.95.1 to 0.95.6
+
+wrappers/src/wrapper_exceptions.hpp
+- added to move exceptions to which are part of wrappers, not ObjectStore
+
+wrappers/src/object-store/shared_realm.hpp
+- moved IndexOutOfRangeException to wrapper_exceptions.hpp
+
+wrappers/src/linklist_cs.cpp
+- replace #include object-store/shared_realm.hp with wrapper_exceptions.hpp
+
+wrappers/src/object-store/shared_realm.cpp
+- get_shared_realm fix use of member m_config replaced with realm->m_config
+
+wrappers/src/object-store/impl/transact_log_handler.cpp
+- added set_int_unique and set_string_unique just as copies of set_int and set_string
+
+IndexOutOfRangeException
+- makeMessage renamed make_message to conform to coding standards
