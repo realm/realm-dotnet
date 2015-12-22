@@ -7,7 +7,7 @@
 #include "marshalling.hpp"
 #include "realm_export_decls.hpp"
 #include "shared_linklist.hpp"
-#include "object-store/shared_realm.hpp"
+#include "wrapper_exceptions.hpp"
 
 using namespace realm;
 using namespace realm::binding;

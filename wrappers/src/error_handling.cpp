@@ -6,13 +6,13 @@
 #include <sstream>
 #include <cassert>
 #include "object-store/shared_realm.hpp"
+#include "wrapper_exceptions.hpp"
 #include "realm_export_decls.hpp"
 #include "error_handling.hpp"
 #include "realm_error_type.hpp"
 
 // core headers for exception types
 #include "realm/util/file.hpp" 
-//#include "realm/util/encrypted_file_mapping.hpp"
 #include "realm/alloc_slab.hpp"
 
 using ManagedExceptionThrowerT = void(*)(size_t exceptionCode, void* utf8Str, size_t strLen);
