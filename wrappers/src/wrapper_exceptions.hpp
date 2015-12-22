@@ -23,7 +23,7 @@ namespace realm {
   
     class IndexOutOfRangeException : public std::runtime_error
     {
-      static std::string makeMessage(std::string context, size_t bad_index, size_t count)
+      static std::string make_message(std::string context, size_t bad_index, size_t count)
       {
         std::ostringstream ss;
         ss << context << " index:" << bad_index << " beyond range of:" << count;
@@ -33,7 +33,7 @@ namespace realm {
     public:
       IndexOutOfRangeException(std::string message) : std::runtime_error(message) {}
       IndexOutOfRangeException(std::string context, size_t bad_index, size_t count):
-        std::runtime_error(makeMessage(context, bad_index, count)) {}
+        std::runtime_error(make_message(context, bad_index, count)) {}
     };
 
 
