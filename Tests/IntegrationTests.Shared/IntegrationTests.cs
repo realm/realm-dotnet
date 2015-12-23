@@ -65,6 +65,54 @@ namespace IntegrationTests
     }
 
     [TestFixture]
+    public class RealmConfigurationTests
+    {
+
+        [Test]
+        public void DefaultConfigurationShouldHaveValidPath()
+        {
+            // Arrange
+            var config = RealmConfiguration.DefaultConfiguration;
+
+            // Assert
+            Assert.That(Path.IsPathRooted(config.DatabasePath));
+        }
+
+        [Test]
+        public void CanSetConfigurationPartialPath()
+        {
+            // Arrange
+            var config = RealmConfiguration.DefaultConfiguration.ConfigWithPath("jan/docs/");
+
+            // Assert
+            Assert.That(Path.IsPathRooted(config.DatabasePath));
+            Assert.That(config.DatabasePath, Is.StringEnding("/jan/docs/default.realm"));
+        }
+
+        [Test]
+        public void CanOverrideConfigurationFilename()
+        {
+            // Arrange
+            var config = new RealmConfiguration();
+            var config2 = config.ConfigWithPath ("fred.realm");
+
+            // Assert
+            Assert.That(config2.DatabasePath, Is.StringEnding("fred.realm"));
+        }
+
+        [Test]
+        public void CanSetDefaultConfiguration()
+        {
+            // Arrange
+            var config = new RealmConfiguration();
+            RealmConfiguration.DefaultConfiguration = config.ConfigWithPath ("fred.realm");
+
+            // Assert
+            Assert.That(RealmConfiguration.DefaultConfiguration.DatabasePath, Is.StringEnding("fred.realm"));
+        }
+    }
+
+    [TestFixture]
     public class RealmObjectIntegrationTests
     {
         protected string _databasePath;

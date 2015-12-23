@@ -1244,3 +1244,21 @@ wrappers/src/object-store/impl/transact_log_handler.cpp
 
 IndexOutOfRangeException
 - makeMessage renamed make_message to conform to coding standards
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#313 Adding Configurations
+
+RealmConfiguration.cs
+- added class
+
+IntegrationTests.cs
+- added RealmConfigurationTests
+
+Realm.cs
+- _config field added to Realm
+- moved _DefaultDatabaseName to RealmConfiguration.DEFAULT_REALM_NAME
+- GetInstance 
+  - get RealmConfiguration.DefaultConfiguration if not specified
+  - get path for database from config
+- Realm ctor take an RealmConfiguration param
+

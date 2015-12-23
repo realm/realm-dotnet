@@ -24,12 +24,6 @@ namespace Realms
 
         private static readonly IEnumerable<Type> RealmObjectClasses;
 
-        /// <summary>
-        /// Standard filename to be combined with the platform-specific document directory.
-        /// </summary>
-        /// <returns>A string representing a filename only, no path.</returns>
-        static string _DefaultDatabaseName = "default.realm";
-
         static Realm()
         {
             RealmObjectClasses =
@@ -47,26 +41,34 @@ namespace Realms
             NativeCommon.SetupExceptionThrower();
         }
 
+        RealmConfiguration _config;
+
         /// <summary>
         /// Factory for a Realm instance for this thread.
         /// </summary>
-        /// <param name="databasePath">Optional path to the realm, must be a valid full path for the current platform, or just filename.</param>
-        /// <remarks>Whilst some platforms may support a relative path within the databasePath, sandboxing by the OS may cause failure.</remarks>
+        /// <param name="databasePath">Path to the realm, must be a valid full path for the current platform, relative subdir, or just filename.</param>
+        /// <remarks>Whilst some platforms may support a relative path within the databasePath, sandboxing by the OS may cause failure if you specify anything other than a subdirectory.</remarks>
         /// <returns>A realm instance.</returns>
         /// <exception cref="RealmFileAccessErrorException">Throws error if the filesystem has an error preventing file creation.</exception>
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-        public static Realm GetInstance(string databasePath = null)
+        public static Realm GetInstance(string databasePath)
         {
-            if (databasePath == null) {
-                databasePath = System.IO.Path.Combine(
-                    System.Environment.GetFolderPath(Environment.SpecialFolder.Personal), 
-                    _DefaultDatabaseName);
-            }
-            else if (!System.IO.Path.IsPathRooted(databasePath)) {
-                databasePath = System.IO.Path.Combine(
-                    System.Environment.GetFolderPath(Environment.SpecialFolder.Personal), 
-                    databasePath);
-            }
+            var config = RealmConfiguration.DefaultConfiguration;
+            if (!string.IsNullOrEmpty(databasePath))
+                config = config.ConfigWithPath(databasePath);
+            return GetInstance(config);
+        }
+
+        /// <summary>
+        /// Factory for a Realm instance for this thread.
+        /// </summary>
+        /// <param name="config">Optional configuration.</param>
+        /// <returns>A realm instance.</returns>
+        /// <exception cref="RealmFileAccessErrorException">Throws error if the filesystem has an error preventing file creation.</exception>
+        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+        public static Realm GetInstance(RealmConfiguration config=null)
+        {
+            config = config ??  RealmConfiguration.DefaultConfiguration;
             var schemaInitializer = new SchemaInitializerHandle();
 
             foreach (var realmObjectClass in RealmObjectClasses)
@@ -85,11 +87,12 @@ namespace Realms
             {
                 var readOnly = MarshalHelpers.BoolToIntPtr(false);
                 var durability = MarshalHelpers.BoolToIntPtr(false);
+                var databasePath = config.DatabasePath;
                 var srPtr = NativeSharedRealm.open(schemaHandle, databasePath, (IntPtr)databasePath.Length, readOnly, durability, "", (IntPtr)0);
                 srHandle.SetHandle(srPtr);
             }
 
-            return new Realm(srHandle);
+            return new Realm(srHandle, config);
         }
 
         private static IntPtr GenerateObjectSchema(Type objectClass)
@@ -142,10 +145,11 @@ namespace Realms
 
         internal bool IsInTransaction => MarshalHelpers.IntPtrToBool(NativeSharedRealm.is_in_transaction(_sharedRealmHandle));
 
-        private Realm(SharedRealmHandle sharedRealmHandle)
+        private Realm(SharedRealmHandle sharedRealmHandle, RealmConfiguration config)
         {
             _sharedRealmHandle = sharedRealmHandle;
             _tableHandles = RealmObjectClasses.ToDictionary(t => t, GetTable);
+            _config = config;
         }
 
         /// <summary>
