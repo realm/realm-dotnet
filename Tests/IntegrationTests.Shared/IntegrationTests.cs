@@ -13,7 +13,7 @@ using Realms;
 namespace IntegrationTests
 {
     [TestFixture]
-    public class RealmIntegrationTests
+    public class RealmInstanceTests
     {
         [Test]
         public void GetInstanceTest()
@@ -39,6 +39,34 @@ namespace IntegrationTests
             // Arrange, act and "assert" that no exception is thrown, using default location
             Realm.GetInstance("EnterTheMagic.realm");
         }
+
+        [Test]
+        public void DeleteRealmWorksIfClosed()
+        {
+            // Arrange
+            var config = new RealmConfiguration("EnterTheMagic.realm");
+            var openRealm = Realm.GetInstance(config);
+
+            // Act
+            openRealm.Close();
+
+            // Assert no error
+            Assert.DoesNotThrow(() => Realm.DeleteRealm(config));
+        }
+
+        /*
+         * uncomment when fix https://github.com/realm/realm-dotnet/issues/308
+        [Test]
+        public void DeleteRealmFailsIfOpenSameThread()
+        {
+            // Arrange
+            var config = new RealmConfiguration("EnterTheMagic.realm");
+            var openRealm = Realm.GetInstance(config);
+
+            // Assert
+            Assert.Throws<RealmPermissionDeniedException>(() => Realm.DeleteRealm(config));
+        }
+        */
 
         /*
         Comment out until work out how to fix
@@ -87,6 +115,18 @@ namespace IntegrationTests
             // Assert
             Assert.That(Path.IsPathRooted(config.DatabasePath));
             Assert.That(config.DatabasePath, Is.StringEnding("/jan/docs/default.realm"));
+        }
+        
+        [Test]
+        public void PathIsCanonicalised()
+        {
+            // Arrange
+            var config = RealmConfiguration.DefaultConfiguration.ConfigWithPath("../Documents/fred.realm");
+
+            // Assert
+            Assert.That(Path.IsPathRooted(config.DatabasePath));
+            Assert.That(config.DatabasePath, Is.StringEnding("/Documents/fred.realm"));
+            Assert.IsFalse(config.DatabasePath.Contains(".."));  // our use of relative up and down again was normalised out
         }
 
         [Test]

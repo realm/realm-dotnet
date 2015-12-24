@@ -1262,3 +1262,19 @@ Realm.cs
   - get path for database from config
 - Realm ctor take an RealmConfiguration param
 
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#314 Delete Files for Configurations
+
+Realm.cs
+- added static DeleteFiles
+
+IntegrationTests.cs
+- renamed RealmIntegrationTests to RealmInstanceTests to accurately reflect role
+- RealmInstanceTests
+  - DeleteRealmFailsIfOpenSameThread added but commented out
+  - DeleteRealmWorksIfClosed added
+- RealmConfigurationTests.PathIsCanonicalised added
+
+RealmConfiguration.cs
+- ConfigWithPath now uses GetFullPath to get a canonical version
+  

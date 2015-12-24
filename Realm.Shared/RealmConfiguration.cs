@@ -1,4 +1,4 @@
-﻿using System;
+﻿    using System;
 using System.IO;
 
 namespace Realms
@@ -63,15 +63,17 @@ namespace Realms
         public RealmConfiguration ConfigWithPath(string newConfigPath)
         {
             RealmConfiguration ret = (RealmConfiguration)MemberwiseClone();
+            string candidatePath;  // may need canonicalising
             if (!string.IsNullOrEmpty(newConfigPath)) {
                 if (Path.IsPathRooted (newConfigPath))
-                    ret.DatabasePath = newConfigPath;
+                    candidatePath = newConfigPath;
                 else {
                     var usWithoutFile = Path.GetDirectoryName (DatabasePath);
                     if (newConfigPath[newConfigPath.Length - 1] == Path.DirectorySeparatorChar)
                         newConfigPath = Path.Combine (newConfigPath, DEFAULT_REALM_NAME);
-                    ret.DatabasePath = Path.Combine (usWithoutFile, newConfigPath);
+                    candidatePath = Path.Combine (usWithoutFile, newConfigPath);
                 }
+                ret.DatabasePath = Path.GetFullPath(candidatePath);
             }
             return ret;
         }
