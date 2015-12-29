@@ -1,5 +1,7 @@
-﻿    using System;
+﻿using System;
 using System.IO;
+
+// see internals/RealmConfigurations.md for a detailed diagram of how this interacts with the ObjectStore configuration
 
 namespace Realms
 {
