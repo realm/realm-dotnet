@@ -188,11 +188,10 @@ namespace Realms
 
 
         /// <summary>
-        /// Determines whether the specified <see cref="System.Object"/> is equal to the current <see cref="Realms.Realm"/>.
+        /// Generic override determines whether the specified <see cref="System.Object"/> is equal to the current Realm.
         /// </summary>
-        /// <param name="rhs">The <see cref="System.Object"/> to compare with the current <see cref="Realms.Realm"/>.</param>
-        /// <returns><c>true</c> if the specified <see cref="System.Object"/> is equal to the current <see cref="Realms.Realm"/>;
-        /// otherwise, <c>false</c>.</returns>
+        /// <param name="rhs">The <see cref="System.Object"/> to compare with the current Realm.</param>
+        /// <returns><c>true</c> if the Realms are functionally equal.</returns>
         public override bool Equals(Object rhs)
         {
             if (rhs == null)
@@ -202,11 +201,10 @@ namespace Realms
 
 
         /// <summary>
-        /// Determines whether the specified <see cref="System.Object"/> is equal to the current <see cref="Realms.Realm"/>.
+        /// Determines whether the specified Realm is equal to the current Realm.
         /// </summary>
-        /// <param name="rhs">The <see cref="System.Object"/> to compare with the current <see cref="Realms.Realm"/>.</param>
-        /// <returns><c>true</c> if the specified <see cref="System.Object"/> is equal to the current <see cref="Realms.Realm"/>;
-        /// otherwise, <c>false</c>.</returns>
+        /// <param name="rhs">The Realm to compare with the current Realm.</param>
+        /// <returns><c>true</c> if the Realms are functionally equal.</returns>
         public  bool Equals(Realm rhs)
         {
             if (rhs == null)
@@ -223,8 +221,8 @@ namespace Realms
         /// <remarks>
         /// You can, and should, have multiple instances open on different threads which have the same path and open the same Realm.
         /// </remarks>
-        /// <returns><c>true</c> if this instance is same instance the specified rhs; otherwise, <c>false</c>.</returns>
-        /// <param name="rhs">The <see cref="Realm"/> to compare with the current <see cref="Realms.Realm"/>.</param>
+        /// <returns><c>true</c> if this instance is the same core instance the specified rhs; otherwise, <c>false</c>.</returns>
+        /// <param name="rhs">The Realm to compare with the current Realm.</param>
         public bool IsSameInstance(Realm rhs)
         {
             return MarshalHelpers.IntPtrToBool(NativeSharedRealm.is_same_instance(_sharedRealmHandle, rhs._sharedRealmHandle));
@@ -232,7 +230,7 @@ namespace Realms
 
 
         /// <summary>
-        /// Serves as a hash function for a <see cref="Realms.RealmConfiguration"/> object.
+        /// Serves as a hash function for a Realm based on the core instance.
         /// </summary>
         /// <returns>A hash code for this instance that is suitable for use in hashing algorithms and data structures such as a
         /// hash table.</returns>

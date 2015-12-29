@@ -84,9 +84,9 @@ namespace Realms
         }
 
         /// <summary>
-        /// Determines whether the specified <see cref="System.Object"/> is equal to the current <see cref="Realms.RealmConfiguration"/>.
+        /// Generic override determines whether the specified <see cref="System.Object"/> is equal to the current RealmConfiguration.
         /// </summary>
-        /// <param name="rhs">The <see cref="System.Object"/> to compare with the current <see cref="Realms.RealmConfiguration"/>.</param>
+        /// <param name="rhs">The <see cref="System.Object"/> to compare with the current RealmConfiguration.</param>
         /// <returns><c>true</c> if the specified <see cref="System.Object"/> is equal to the current
         /// <see cref="Realms.RealmConfiguration"/>; otherwise, <c>false</c>.</returns>
         public override bool Equals(Object rhs)
@@ -97,6 +97,13 @@ namespace Realms
         }
 
 
+
+        /// <summary>
+        /// Determines whether the specified RealmConfiguration is equal to the current RealmConfiguration.
+        /// </summary>
+        /// <param name="rhs">The <see cref="System.Object"/> to compare with the current RealmConfiguration.</param>
+        /// <returns><c>true</c> if the specified <see cref="System.Object"/> is equal to the current
+        /// <see cref="Realms.RealmConfiguration"/>; otherwise, <c>false</c>.</returns>
         public bool Equals(RealmConfiguration rhs)
         {
             if (rhs == null)
@@ -109,7 +116,7 @@ namespace Realms
 
 
         /// <summary>
-        /// Serves as a hash function for a <see cref="Realms.RealmConfiguration"/> object.
+        /// Serves as a hash function for a RealmConfiguration based on its path.
         /// </summary>
         /// <returns>A hash code for this instance that is suitable for use in hashing algorithms and data structures such as a
         /// hash table.</returns>
