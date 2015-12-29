@@ -1278,3 +1278,9 @@ IntegrationTests.cs
 RealmConfiguration.cs
 - ConfigWithPath now uses GetFullPath to get a canonical version
   
+  
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#313 Adding Configurations - refactor from code review
+
+RealmConfiguration.cs
+- DEFAULT_REALM_NAME renamed DefaultRealmName

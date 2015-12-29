@@ -48,8 +48,10 @@ namespace Realms
         /// Factory for a Realm instance for this thread.
         /// </summary>
         /// <param name="databasePath">Path to the realm, must be a valid full path for the current platform, relative subdir, or just filename.</param>
-        /// <remarks>Whilst some platforms may support a relative path within the databasePath, sandboxing by the OS may cause failure if you specify anything other than a subdirectory.</remarks>
-        /// <returns>A realm instance.</returns>
+        /// <remarks>If you specify a relative path, sandboxing by the OS may cause failure if you specify anything other than a subdirectory. <br />
+        /// Instances are cached for a given absolute path and thread, so you may get back the same instance.
+        /// </remarks>
+        /// <returns>A realm instance, possibly from cache.</returns>
         /// <exception cref="RealmFileAccessErrorException">Throws error if the filesystem has an error preventing file creation.</exception>
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         public static Realm GetInstance(string databasePath)
