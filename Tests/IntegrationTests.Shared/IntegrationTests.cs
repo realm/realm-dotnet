@@ -13,7 +13,7 @@ using Realms;
 namespace IntegrationTests
 {
     [TestFixture]
-    public class RealmIntegrationTests
+    public class RealmInstanceTests
     {
         [Test]
         public void GetInstanceTest()
@@ -40,6 +40,34 @@ namespace IntegrationTests
             Realm.GetInstance("EnterTheMagic.realm");
         }
 
+        [Test]
+        public void DeleteRealmWorksIfClosed()
+        {
+            // Arrange
+            var config = new RealmConfiguration("EnterTheMagic.realm");
+            var openRealm = Realm.GetInstance(config);
+
+            // Act
+            openRealm.Close();
+
+            // Assert no error
+            Assert.DoesNotThrow(() => Realm.DeleteRealm(config));
+        }
+
+        /*
+         * uncomment when fix https://github.com/realm/realm-dotnet/issues/308
+        [Test]
+        public void DeleteRealmFailsIfOpenSameThread()
+        {
+            // Arrange
+            var config = new RealmConfiguration("EnterTheMagic.realm");
+            var openRealm = Realm.GetInstance(config);
+
+            // Assert
+            Assert.Throws<RealmPermissionDeniedException>(() => Realm.DeleteRealm(config));
+        }
+        */
+
         /*
         Comment out until work out how to fix
         see issue 199
@@ -61,6 +89,66 @@ namespace IntegrationTests
         {
             // Arrange
             Assert.Throws<RealmPermissionDeniedException>(() => Realm.GetInstance("/"));
+        }
+    }
+
+    [TestFixture]
+    public class RealmConfigurationTests
+    {
+
+        [Test]
+        public void DefaultConfigurationShouldHaveValidPath()
+        {
+            // Arrange
+            var config = RealmConfiguration.DefaultConfiguration;
+
+            // Assert
+            Assert.That(Path.IsPathRooted(config.DatabasePath));
+        }
+
+        [Test]
+        public void CanSetConfigurationPartialPath()
+        {
+            // Arrange
+            var config = RealmConfiguration.DefaultConfiguration.ConfigWithPath("jan/docs/");
+
+            // Assert
+            Assert.That(Path.IsPathRooted(config.DatabasePath));
+            Assert.That(config.DatabasePath, Is.StringEnding("/jan/docs/default.realm"));
+        }
+        
+        [Test]
+        public void PathIsCanonicalised()
+        {
+            // Arrange
+            var config = RealmConfiguration.DefaultConfiguration.ConfigWithPath("../Documents/fred.realm");
+
+            // Assert
+            Assert.That(Path.IsPathRooted(config.DatabasePath));
+            Assert.That(config.DatabasePath, Is.StringEnding("/Documents/fred.realm"));
+            Assert.IsFalse(config.DatabasePath.Contains(".."));  // our use of relative up and down again was normalised out
+        }
+
+        [Test]
+        public void CanOverrideConfigurationFilename()
+        {
+            // Arrange
+            var config = new RealmConfiguration();
+            var config2 = config.ConfigWithPath ("fred.realm");
+
+            // Assert
+            Assert.That(config2.DatabasePath, Is.StringEnding("fred.realm"));
+        }
+
+        [Test]
+        public void CanSetDefaultConfiguration()
+        {
+            // Arrange
+            var config = new RealmConfiguration();
+            RealmConfiguration.DefaultConfiguration = config.ConfigWithPath ("fred.realm");
+
+            // Assert
+            Assert.That(RealmConfiguration.DefaultConfiguration.DatabasePath, Is.StringEnding("fred.realm"));
         }
     }
 

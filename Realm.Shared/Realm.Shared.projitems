@@ -52,5 +52,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Transaction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)native\NativeLinkList.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)handles\LinkListHandle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RealmConfiguration.cs" />
   </ItemGroup>
 </Project>

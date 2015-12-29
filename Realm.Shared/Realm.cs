@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.ConstrainedExecution;
+using System.IO;
 
 namespace Realms
 {
@@ -23,12 +24,6 @@ namespace Realms
         #region static
 
         private static readonly IEnumerable<Type> RealmObjectClasses;
-
-        /// <summary>
-        /// Standard filename to be combined with the platform-specific document directory.
-        /// </summary>
-        /// <returns>A string representing a filename only, no path.</returns>
-        static string _DefaultDatabaseName = "default.realm";
 
         static Realm()
         {
@@ -47,26 +42,36 @@ namespace Realms
             NativeCommon.SetupExceptionThrower();
         }
 
+        RealmConfiguration _config;
+
         /// <summary>
         /// Factory for a Realm instance for this thread.
         /// </summary>
-        /// <param name="databasePath">Optional path to the realm, must be a valid full path for the current platform, or just filename.</param>
-        /// <remarks>Whilst some platforms may support a relative path within the databasePath, sandboxing by the OS may cause failure.</remarks>
+        /// <param name="databasePath">Path to the realm, must be a valid full path for the current platform, relative subdir, or just filename.</param>
+        /// <remarks>If you specify a relative path, sandboxing by the OS may cause failure if you specify anything other than a subdirectory. <br />
+        /// Instances are cached for a given absolute path and thread, so you may get back the same instance.
+        /// </remarks>
+        /// <returns>A realm instance, possibly from cache.</returns>
+        /// <exception cref="RealmFileAccessErrorException">Throws error if the filesystem has an error preventing file creation.</exception>
+        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+        public static Realm GetInstance(string databasePath)
+        {
+            var config = RealmConfiguration.DefaultConfiguration;
+            if (!string.IsNullOrEmpty(databasePath))
+                config = config.ConfigWithPath(databasePath);
+            return GetInstance(config);
+        }
+
+        /// <summary>
+        /// Factory for a Realm instance for this thread.
+        /// </summary>
+        /// <param name="config">Optional configuration.</param>
         /// <returns>A realm instance.</returns>
         /// <exception cref="RealmFileAccessErrorException">Throws error if the filesystem has an error preventing file creation.</exception>
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-        public static Realm GetInstance(string databasePath = null)
+        public static Realm GetInstance(RealmConfiguration config=null)
         {
-            if (databasePath == null) {
-                databasePath = System.IO.Path.Combine(
-                    System.Environment.GetFolderPath(Environment.SpecialFolder.Personal), 
-                    _DefaultDatabaseName);
-            }
-            else if (!System.IO.Path.IsPathRooted(databasePath)) {
-                databasePath = System.IO.Path.Combine(
-                    System.Environment.GetFolderPath(Environment.SpecialFolder.Personal), 
-                    databasePath);
-            }
+            config = config ??  RealmConfiguration.DefaultConfiguration;
             var schemaInitializer = new SchemaInitializerHandle();
 
             foreach (var realmObjectClass in RealmObjectClasses)
@@ -85,11 +90,12 @@ namespace Realms
             {
                 var readOnly = MarshalHelpers.BoolToIntPtr(false);
                 var durability = MarshalHelpers.BoolToIntPtr(false);
+                var databasePath = config.DatabasePath;
                 var srPtr = NativeSharedRealm.open(schemaHandle, databasePath, (IntPtr)databasePath.Length, readOnly, durability, "", (IntPtr)0);
                 srHandle.SetHandle(srPtr);
             }
 
-            return new Realm(srHandle);
+            return new Realm(srHandle, config);
         }
 
         private static IntPtr GenerateObjectSchema(Type objectClass)
@@ -142,10 +148,11 @@ namespace Realms
 
         internal bool IsInTransaction => MarshalHelpers.IntPtrToBool(NativeSharedRealm.is_in_transaction(_sharedRealmHandle));
 
-        private Realm(SharedRealmHandle sharedRealmHandle)
+        private Realm(SharedRealmHandle sharedRealmHandle, RealmConfiguration config)
         {
             _sharedRealmHandle = sharedRealmHandle;
             _tableHandles = RealmObjectClasses.ToDictionary(t => t, GetTable);
+            _config = config;
         }
 
         /// <summary>
@@ -178,6 +185,30 @@ namespace Realms
         {
             Close();
         }
+
+
+
+        /// <summary>
+        ///  Deletes all the files associated with a realm. Hides knowledge of the auxiliary filenames from the programmer.
+        /// </summary>
+        /// <param name="configuration">A configuration which supplies the realm path.</param>
+        static public void DeleteRealm(RealmConfiguration configuration)
+        {
+            //TODO add cache checking when implemented, https://github.com/realm/realm-dotnet/issues/308
+            //when cache checking, uncomment in IntegrationTests.cs RealmInstanceTests.DeleteRealmFailsIfOpenSameThread and add a variant to test open on different thread
+            var lockOnWhileDeleting = new object();
+            lock (lockOnWhileDeleting)
+            {
+                var fullpath = configuration.DatabasePath;
+                File.Delete(fullpath);
+                File.Delete(fullpath + ".log_a");  // eg: name at end of path is EnterTheMagic.realm.log_a   
+                File.Delete(fullpath + ".log_b");
+                File.Delete(fullpath + ".log");
+                File.Delete(fullpath + ".lock");
+                File.Delete(fullpath + ".note");
+            }
+        }
+
 
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         private TableHandle GetTable(Type realmType)
