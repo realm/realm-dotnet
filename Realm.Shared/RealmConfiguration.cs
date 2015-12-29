@@ -37,7 +37,7 @@ namespace Realms
 
         /// <summary>
         /// Constructor allowing path override.
-        /// </summary
+        /// </summary>
         /// <param name="optionalPath">Path to the realm, must be a valid full path for the current platform, relative subdir, or just filename.</param>
         /// <param name="shouldDeleteIfMigrationNeeded">Optional Flag mainly to help with temp databases and testing, indicates content can be abandoned when you change the schema.</param> 
         public RealmConfiguration(string optionalPath = null, bool shouldDeleteIfMigrationNeeded=false)
