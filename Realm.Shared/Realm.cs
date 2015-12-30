@@ -42,7 +42,10 @@ namespace Realms
             NativeCommon.SetupExceptionThrower();
         }
 
-        RealmConfiguration _config;
+        /// <summary>
+        /// Configuration that controls the Realm path and other settings.
+        /// </summary>
+        public RealmConfiguration Config { get; private set; }
 
         /// <summary>
         /// Factory for a Realm instance for this thread.
@@ -91,7 +94,12 @@ namespace Realms
                 var readOnly = MarshalHelpers.BoolToIntPtr(false);
                 var durability = MarshalHelpers.BoolToIntPtr(false);
                 var databasePath = config.DatabasePath;
-                var srPtr = NativeSharedRealm.open(schemaHandle, databasePath, (IntPtr)databasePath.Length, readOnly, durability, "", (IntPtr)0);
+                var srPtr = NativeSharedRealm.open(schemaHandle, 
+                    databasePath, (IntPtr)databasePath.Length, 
+                    readOnly, durability, 
+                    "", (IntPtr)0,
+                    config.SchemaVersion
+                );
                 srHandle.SetHandle(srPtr);
             }
 
@@ -152,7 +160,9 @@ namespace Realms
         {
             _sharedRealmHandle = sharedRealmHandle;
             _tableHandles = RealmObjectClasses.ToDictionary(t => t, GetTable);
-            _config = config;
+            Config = config;
+            // update OUR config version number in case loaded one from disk
+            Config.SchemaVersion = NativeSharedRealm.get_schema_version(sharedRealmHandle);
         }
 
         /// <summary>

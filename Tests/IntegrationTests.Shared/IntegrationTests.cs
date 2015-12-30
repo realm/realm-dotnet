@@ -519,4 +519,31 @@ namespace IntegrationTests
             Assert.That(string.IsNullOrEmpty(vinnie.Nickname));
         }
     }
+
+    [TestFixture]
+    public class RealmMigrationTests
+    {
+        [Test]
+        public void TriggerMigrationBySchemaVersion()
+        {
+            // Arrange, act and "assert" that no exception is thrown, using default location
+            var config1 = new RealmConfiguration("ForMigrations.realm");
+            Realm.DeleteRealm(config1);  // ensure start clean
+            var realm1 = Realm.GetInstance(config1);
+            // new database doesn't push back a version number
+            Assert.That(config1.SchemaVersion, Is.EqualTo(RealmConfiguration.NotVersioned));
+            realm1.Close();
+
+            // Act
+            var config2 = config1.ConfigWithPath("ForMigrations.realm");
+            config2.SchemaVersion = 99;
+            Realm realm2 = null;  // should be updated by DoesNotThrow
+
+            // Assert
+            Assert.DoesNotThrow( () => realm2 = Realm.GetInstance(config2) ); // same path, different version, should auto-migrate quietly
+            Assert.That(realm2.Config.SchemaVersion, Is.EqualTo(99));
+
+        }
+
+    }
 }

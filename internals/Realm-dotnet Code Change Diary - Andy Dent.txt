@@ -1284,3 +1284,27 @@ RealmConfiguration.cs
 
 RealmConfiguration.cs
 - DEFAULT_REALM_NAME renamed DefaultRealmName
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#300 Better Migration Message
+
+IntegrationTests.cs
+- RealmMigrationTests added
+
+RealmConfiguration.cs
+- NotVersioned added
+- SchemaVersion property added
+
+Realm.cs
+- in Realm ctor, update config SchemaVersion
+- Realm.GetInstance pass in SchemaVersion to NativeSharedRealm.Open
+- _config field made into public readable property Config
+
+NativeSharedRealm.cs
+- get_schema_version added
+- open added schemaVersion param
+
+shared_realm_cs.cpp
+- shared_realm_get_schema_version added
+- shared_realm_open added schemaVersion param and assign to the temp Config created
+

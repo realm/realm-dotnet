@@ -11,7 +11,7 @@ namespace Realms
     {
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_open", CallingConvention = CallingConvention.Cdecl)]
         internal static extern IntPtr open(SchemaHandle schemaHandle, [MarshalAs(UnmanagedType.LPWStr)]string path, IntPtr pathLength, IntPtr readOnly,
-            IntPtr durability, [MarshalAs(UnmanagedType.LPWStr)]string encryptionKey, IntPtr encryptionKeyLength);
+            IntPtr durability, [MarshalAs(UnmanagedType.LPWStr)]string encryptionKey, IntPtr encryptionKeyLength, UInt64 schemaVersion);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_destroy", CallingConvention = CallingConvention.Cdecl)]
         internal static extern IntPtr destroy(IntPtr sharedRealm);
@@ -43,5 +43,9 @@ namespace Realms
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_table",
             CallingConvention = CallingConvention.Cdecl)]
         internal static extern IntPtr get_table(SharedRealmHandle sharedRealm, [MarshalAs(UnmanagedType.LPWStr)]string tableName, IntPtr tableNameLength);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_schema_version",
+            CallingConvention = CallingConvention.Cdecl)]
+        internal static extern UInt64 get_schema_version(SharedRealmHandle sharedRealm);
     }
 }
