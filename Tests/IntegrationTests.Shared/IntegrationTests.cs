@@ -551,8 +551,8 @@ namespace IntegrationTests
         {
             // NOTE go edit the schema in Person.cs and comment/uncomment ExtraToTriggerMigration
             // Arrange
-            var config1 = new RealmConfiguration("ForMigrationsBySchema.realm");
-            var realm1 = Realm.GetInstance(config1);
+            Realm realm1 = null;
+            Assert.Throws<RealmFormatUpgradeRequiredException>( () => realm1 = Realm.GetInstance("ForMigrationsBySchema.realm") );
         }
     }
 }

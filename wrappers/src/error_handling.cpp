@@ -62,6 +62,9 @@ namespace realm {
                 throw_exception(RealmErrorType::RealmError, e.what());
             }
         }
+        catch (const SchemaValidationException& e) { // an ObjectStore exception mapped onto same code as older core
+            throw_exception(RealmErrorType::RealmFormatUpgradeRequired, e.what());
+        }
         catch (const MismatchedConfigException& e) {
             throw_exception(RealmErrorType::RealmMismatchedConfig, e.what());
         }
