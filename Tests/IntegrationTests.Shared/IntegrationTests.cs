@@ -526,7 +526,7 @@ namespace IntegrationTests
         [Test]
         public void TriggerMigrationBySchemaVersion()
         {
-            // Arrange, act and "assert" that no exception is thrown, using default location
+            // Arrange
             var config1 = new RealmConfiguration("ForMigrations.realm");
             Realm.DeleteRealm(config1);  // ensure start clean
             var realm1 = Realm.GetInstance(config1);
@@ -545,5 +545,14 @@ namespace IntegrationTests
 
         }
 
+
+        [Test, Explicit("Manual test after changing Person schema")]
+        public void TriggerMigrationBySchemaEditing()
+        {
+            // NOTE go edit the schema in Person.cs and comment/uncomment ExtraToTriggerMigration
+            // Arrange
+            var config1 = new RealmConfiguration("ForMigrationsBySchema.realm");
+            var realm1 = Realm.GetInstance(config1);
+        }
     }
 }

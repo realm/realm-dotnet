@@ -55,6 +55,9 @@ namespace IntegrationTests
 
         public bool IsInteresting { get; set; }
 
+        // will toggle comment/uncomment the line below for test TriggerMigrationBySchemaEditing
+        // public string ExtraToTriggerMigration { get; set; }
+
         private string _nickname;
         public string Nickname
         {

@@ -30,6 +30,7 @@ namespace realm {
 
     /**
     @note mostly copied from util.cpp in Java but has a much richer range of exceptions
+    @warning if you update these codes also update the matching RealmExceptionCodes.cs
     */
     void realm::convert_exception()
     {
@@ -42,17 +43,20 @@ namespace realm {
             case RealmFileException::Kind::AccessError:
                 throw_exception(RealmErrorType::RealmFileAccessError, e.what());
                 break;
+            case RealmFileException::Kind::PermissionDenied:
+                throw_exception(RealmErrorType::RealmPermissionDenied, e.what());
+                break;
             case RealmFileException::Kind::Exists:
                 throw_exception(RealmErrorType::RealmFileExists, e.what());
-                break;
-            case RealmFileException::Kind::IncompatibleLockFile:
-                throw_exception(RealmErrorType::RealmIncompatibleLockFile, e.what());
                 break;
             case RealmFileException::Kind::NotFound:
                 throw_exception(RealmErrorType::RealmFileNotFound, e.what());
                 break;
-            case RealmFileException::Kind::PermissionDenied:
-                throw_exception(RealmErrorType::RealmPermissionDenied, e.what());
+            case RealmFileException::Kind::IncompatibleLockFile:
+                throw_exception(RealmErrorType::RealmIncompatibleLockFile, e.what());
+                break;
+            case RealmFileException::Kind::FormatUpgradeRequired:
+                throw_exception(RealmErrorType::RealmFormatUpgradeRequired, e.what());
                 break;
             default:
                 throw_exception(RealmErrorType::RealmError, e.what());

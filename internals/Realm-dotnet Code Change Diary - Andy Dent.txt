@@ -1308,3 +1308,9 @@ shared_realm_cs.cpp
 - shared_realm_get_schema_version added
 - shared_realm_open added schemaVersion param and assign to the temp Config created
 
+wrappers/error_handling.cpp
+- realm::convert_exception added case for FormatUpgradeRequired
+
+realm_error_type.hpp
+- RealmFormatUpgradeRequired added
+  
