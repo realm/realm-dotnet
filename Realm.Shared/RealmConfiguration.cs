@@ -40,6 +40,22 @@ namespace Realms
         public string DatabasePath {get; private set;}
 
         /// <summary>
+        /// Utility to build a path in which a realm will be created so can consistently use filenames and relative paths.
+        /// </summary>
+        public static string PathToRealm(string optionalPath = null)
+        {
+            if (string.IsNullOrEmpty(optionalPath)) {
+                return Path.Combine (Environment.GetFolderPath(Environment.SpecialFolder.Personal), DefaultRealmName);
+            }
+            if (!Path.IsPathRooted (optionalPath)) {
+                optionalPath = Path.Combine (Environment.GetFolderPath(Environment.SpecialFolder.Personal), optionalPath);
+            }
+            if (optionalPath[optionalPath.Length-1] == Path.DirectorySeparatorChar)   // ends with dir sep
+                optionalPath = Path.Combine (optionalPath, DefaultRealmName);
+             return optionalPath;
+        }
+
+        /// <summary>
         /// Number indicating the version, can be used to arbitrarily distinguish between schemas even if they have the same objects and properties.
         /// </summary>
         /// <value>0-based value initially set to indicate user is not versioning.</value>
@@ -58,21 +74,7 @@ namespace Realms
         public RealmConfiguration(string optionalPath = null, bool shouldDeleteIfMigrationNeeded=false)
         {
             ShouldDeleteIfMigrationNeeded = shouldDeleteIfMigrationNeeded;
-            if (string.IsNullOrEmpty(optionalPath)) {
-                DatabasePath = Path.Combine (
-                    System.Environment.GetFolderPath(Environment.SpecialFolder.Personal), 
-                    DefaultRealmName);
-            }
-            else {
-                if (!Path.IsPathRooted (optionalPath)) {
-                    optionalPath = Path.Combine (
-                        System.Environment.GetFolderPath (Environment.SpecialFolder.Personal), 
-                        optionalPath);
-                }
-                if (optionalPath[optionalPath.Length-1] == Path.DirectorySeparatorChar)
-                    optionalPath = Path.Combine (optionalPath, DefaultRealmName);
-                DatabasePath = optionalPath;
-            }
+            DatabasePath = PathToRealm(optionalPath);
         }
 
         /// <summary>

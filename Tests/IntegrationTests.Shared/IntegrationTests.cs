@@ -527,7 +527,7 @@ namespace IntegrationTests
         public void TriggerMigrationBySchemaVersion()
         {
             // Arrange
-            var config1 = new RealmConfiguration("ForMigrations.realm");
+            var config1 = new RealmConfiguration("ChangingVersion.realm");
             Realm.DeleteRealm(config1);  // ensure start clean
             var realm1 = Realm.GetInstance(config1);
             // new database doesn't push back a version number
@@ -535,7 +535,7 @@ namespace IntegrationTests
             realm1.Close();
 
             // Act
-            var config2 = config1.ConfigWithPath("ForMigrations.realm");
+            var config2 = config1.ConfigWithPath("ChangingVersion.realm");
             config2.SchemaVersion = 99;
             Realm realm2 = null;  // should be updated by DoesNotThrow
 
@@ -545,14 +545,37 @@ namespace IntegrationTests
 
         }
 
-
-        [Test, Explicit("Manual test after changing Person schema")]
+        [Test]
         public void TriggerMigrationBySchemaEditing()
         {
-            // NOTE go edit the schema in Person.cs and comment/uncomment ExtraToTriggerMigration
-            // Arrange
+            
+            // NOTE to regnerate the bundled database go edit the schema in Person.cs and comment/uncomment ExtraToTriggerMigration
+            // running in between and saving a copy with the added field
+            // this should never be needed as this test just needs the Realm to need migrating
+            TestHelpers.CopyBundledDatabaseToDocuments(
+                "ForMigrationsToCopyAndMigrate.realm", "NeedsMigrating.realm");
+
+            // Assert
             Realm realm1 = null;
-            Assert.Throws<RealmFormatUpgradeRequiredException>( () => realm1 = Realm.GetInstance("ForMigrationsBySchema.realm") );
+            Assert.Throws<RealmFormatUpgradeRequiredException>( () => realm1 = Realm.GetInstance("NeedsMigrating.realm") );
+        }
+
+        [Test]
+        public void MigrationTriggersDelete()
+        {
+            // Arrange
+            var config = new RealmConfiguration("MigrateWWillRecreate.realm", true);
+            Realm.DeleteRealm(config);
+            Assert.False(File.Exists(config.DatabasePath));
+
+            TestHelpers.CopyBundledDatabaseToDocuments(
+                "ForMigrationsToCopyAndMigrate.realm", "MigrateWWillRecreate.realm");
+
+            // Act - should cope by deleting and silently recreating
+            var realm = Realm.GetInstance(config);
+
+            // Assert
+            Assert.That(File.Exists(config.DatabasePath));
         }
     }
 }

@@ -94,4 +94,10 @@
     <ImageAsset Include="Resources\Images.xcassets\AppIcons.appiconset\RealmGenericFilled-60%402x.png" />
     <ImageAsset Include="Resources\Images.xcassets\AppIcons.appiconset\RealmGenericFilled-60%403x.png" />
   </ItemGroup>
+  <ItemGroup>
+    <BundleResource Include="..\IntegrationTests.Shared\ForMigrationsToCopyAndMigrate.realm">
+      <Link>Resources\ForMigrationsToCopyAndMigrate.realm</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </BundleResource>
+  </ItemGroup>
 </Project>

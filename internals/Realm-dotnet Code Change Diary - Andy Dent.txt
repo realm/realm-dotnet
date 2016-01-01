@@ -1294,10 +1294,13 @@ IntegrationTests.cs
 RealmConfiguration.cs
 - NotVersioned added
 - SchemaVersion property added
+- PathToRealm added
 
 Realm.cs
 - in Realm ctor, update config SchemaVersion
-- Realm.GetInstance pass in SchemaVersion to NativeSharedRealm.Open
+- Realm.GetInstance 
+  - pass in SchemaVersion to NativeSharedRealm.Open
+  - add wrappers around open 
 - _config field made into public readable property Config
 
 NativeSharedRealm.cs
@@ -1325,3 +1328,9 @@ NativeCommon.cs
 RealmFormatUpgradeRequiredException.cs
 - added
   
+  
+ForMigrationsToCopyAndMigrate.realm
+- added file to copy  
+
+TestHelpers.cs
+- CopyBundledDatabaseToDocuments helper added

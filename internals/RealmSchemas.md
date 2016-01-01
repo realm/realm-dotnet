@@ -34,7 +34,10 @@ digraph {
     schema_initializer_add_object_schema
     schema_create
     get_shared_realm [label="Realm::get_shared_realm"]
-    update_schema
+    verify_schema [label="ObjectStore\n::verify_schema"]
+    update_schema [label="Realm::update_schema"]
+    
+    SchemaValidationException [shape=house]
 
     GetInstance -> add_object_schema [label=" loop all\l RealmObjectClasses\l"]
         add_object_schema -> schema_initializer_add_object_schema
@@ -44,7 +47,12 @@ digraph {
     GetInstance -> "NativeSharedRealm.open" [label="passing Schema"]
         "NativeSharedRealm.open" -> shared_realm_open
             shared_realm_open -> get_shared_realm -> update_schema
-
+            
+    "Schema::validate" -> SchemaValidationException [label=" throws"]
+    "ObjectStore::\nupdate_realm_with_schema" -> verify_schema
+    get_shared_realm -> verify_schema
+    update_schema -> verify_schema
+    verify_schema -> SchemaValidationException [label=" throws"]
 }
 @enddot  
 

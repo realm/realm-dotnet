@@ -3,11 +3,14 @@
  */
  
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
+using Realms;
+
+#if __IOS__
+using Foundation;
+#endif
+
 
 namespace IntegrationTests
 {
@@ -29,6 +32,18 @@ namespace IntegrationTests
         {
             var propInfo = GetPropertyInfo(obj.GetType(), propertyName);
             return (T)propInfo.GetValue(obj, null);
+        }
+
+
+        public static void CopyBundledDatabaseToDocuments(string realmName, string destPath=null, bool overwrite=true)
+        {
+            string sourceDir = "";
+            #if __IOS__
+            sourceDir = NSBundle.MainBundle.BundlePath;
+            #endif
+            //TODO add cases for Android and Windows setting sourcedir for bundled files
+            destPath = RealmConfiguration.PathToRealm(destPath);  // any relative subdir or filename works
+            File.Copy(Path.Combine(sourceDir, realmName), destPath, overwrite);
         }
 
     }
