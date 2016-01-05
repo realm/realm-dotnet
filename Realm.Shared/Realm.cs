@@ -194,8 +194,6 @@ namespace Realms
         /// <returns><c>true</c> if the Realms are functionally equal.</returns>
         public override bool Equals(Object rhs)
         {
-            if (rhs == null)
-                return false;
             return Equals(rhs as Realm);
         }
 
@@ -209,7 +207,7 @@ namespace Realms
         {
             if (rhs == null)
                 return false;
-            if (GC.ReferenceEquals(this, rhs))
+            if (ReferenceEquals(this, rhs))
                 return true;
             return _config.Equals(rhs._config) && IsClosed == rhs.IsClosed;
         }
