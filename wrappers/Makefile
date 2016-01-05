@@ -5,8 +5,8 @@ SRCS=$(wildcard src/*.cpp) $(OS_SRCS) $(ECH_SRCS)
 SDKROOT=$(shell xcrun --sdk iphoneos --show-sdk-path)
 CXX=$(shell xcrun --sdk iphoneos --find clang++)
 FLAGS=-Icore/include -Isrc/object-store -Isrc/object-store/impl -Isrc/object-store/impl/apple -std=c++14 -stdlib=libc++  
-CORE_APPLE_VER=0.95.1
-CORE_ANDROID_VER=0.95.1
+CORE_APPLE_VER=0.95.6
+CORE_ANDROID_VER=0.95.6
 
 help: ## Show this help.
 	@fgrep -h "##" $(MAKEFILE_LIST) | fgrep -v fgrep | sed -e 's/\\$$//' | sed -e 's/##//'
