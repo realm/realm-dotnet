@@ -83,6 +83,48 @@ namespace Realms
             return ret;
         }
 
+        /// <summary>
+        /// Generic override determines whether the specified <see cref="System.Object"/> is equal to the current RealmConfiguration.
+        /// </summary>
+        /// <param name="rhs">The <see cref="System.Object"/> to compare with the current RealmConfiguration.</param>
+        /// <returns><c>true</c> if the specified <see cref="System.Object"/> is equal to the current
+        /// <see cref="Realms.RealmConfiguration"/>; otherwise, <c>false</c>.</returns>
+        public override bool Equals(Object rhs)
+        {
+            if (rhs == null)
+                return false;
+            return Equals(rhs as RealmConfiguration);
+        }
+
+
+
+        /// <summary>
+        /// Determines whether the specified RealmConfiguration is equal to the current RealmConfiguration.
+        /// </summary>
+        /// <param name="rhs">The <see cref="System.Object"/> to compare with the current RealmConfiguration.</param>
+        /// <returns><c>true</c> if the specified <see cref="System.Object"/> is equal to the current
+        /// <see cref="Realms.RealmConfiguration"/>; otherwise, <c>false</c>.</returns>
+        public bool Equals(RealmConfiguration rhs)
+        {
+            if (rhs == null)
+                return false;
+            if (GC.ReferenceEquals(this, rhs))
+                return true;
+            return ShouldDeleteIfMigrationNeeded == rhs.ShouldDeleteIfMigrationNeeded &&
+                DatabasePath == rhs.DatabasePath;
+        }
+
+
+        /// <summary>
+        /// Serves as a hash function for a RealmConfiguration based on its path.
+        /// </summary>
+        /// <returns>A hash code for this instance that is suitable for use in hashing algorithms and data structures such as a
+        /// hash table.</returns>
+        public override int GetHashCode()
+        {
+            return DatabasePath.GetHashCode();
+        }
+
     }  // class RealmConfiguration
 }  // namespace Realms
 

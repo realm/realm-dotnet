@@ -187,6 +187,56 @@ namespace Realms
         }
 
 
+        /// <summary>
+        /// Generic override determines whether the specified <see cref="System.Object"/> is equal to the current Realm.
+        /// </summary>
+        /// <param name="rhs">The <see cref="System.Object"/> to compare with the current Realm.</param>
+        /// <returns><c>true</c> if the Realms are functionally equal.</returns>
+        public override bool Equals(Object rhs)
+        {
+            return Equals(rhs as Realm);
+        }
+
+
+        /// <summary>
+        /// Determines whether the specified Realm is equal to the current Realm.
+        /// </summary>
+        /// <param name="rhs">The Realm to compare with the current Realm.</param>
+        /// <returns><c>true</c> if the Realms are functionally equal.</returns>
+        public  bool Equals(Realm rhs)
+        {
+            if (rhs == null)
+                return false;
+            if (ReferenceEquals(this, rhs))
+                return true;
+            return _config.Equals(rhs._config) && IsClosed == rhs.IsClosed;
+        }
+
+
+        /// <summary>
+        /// Determines whether this instance is the same core instance as the specified rhs.
+        /// </summary>
+        /// <remarks>
+        /// You can, and should, have multiple instances open on different threads which have the same path and open the same Realm.
+        /// </remarks>
+        /// <returns><c>true</c> if this instance is the same core instance the specified rhs; otherwise, <c>false</c>.</returns>
+        /// <param name="rhs">The Realm to compare with the current Realm.</param>
+        public bool IsSameInstance(Realm rhs)
+        {
+            return MarshalHelpers.IntPtrToBool(NativeSharedRealm.is_same_instance(_sharedRealmHandle, rhs._sharedRealmHandle));
+        }
+
+
+        /// <summary>
+        /// Serves as a hash function for a Realm based on the core instance.
+        /// </summary>
+        /// <returns>A hash code for this instance that is suitable for use in hashing algorithms and data structures such as a
+        /// hash table.</returns>
+        public override int GetHashCode()
+        {
+            return (int)_sharedRealmHandle.DangerousGetHandle();
+        }
+
 
         /// <summary>
         ///  Deletes all the files associated with a realm. Hides knowledge of the auxiliary filenames from the programmer.

@@ -91,6 +91,14 @@ REALM_EXPORT size_t shared_realm_is_in_transaction(SharedRealm* realm)
     });
 }
 
+
+REALM_EXPORT size_t shared_realm_is_same_instance(SharedRealm* lhs, SharedRealm* rhs)
+{
+    return handle_errors([&]() {
+        return *lhs == *rhs;  // just compare raw pointers inside the smart pointers
+    });
+}
+
 REALM_EXPORT size_t shared_realm_refresh(SharedRealm* realm)
 {
     return handle_errors([&]() {

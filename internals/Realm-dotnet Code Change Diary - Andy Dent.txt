@@ -1284,3 +1284,30 @@ RealmConfiguration.cs
 
 RealmConfiguration.cs
 - DEFAULT_REALM_NAME renamed DefaultRealmName
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#320 adding Realm Equality
+
+IntegrationTests.cs
+- RealmInstanceTests
+  - added GetCachedInstancesSameThread 
+  - added GetUniqueInstancesDifferentThreads
+  - DeleteRealmWorksIfClosed added test to see if file exists
+  - added InstancesHaveDifferentHashes
+- RealmConfigurationTests
+  - added ConfigurationsAreSame and ConfigurationsAredDifferent
+  - added ConfigurationsHaveDifferentHashes
+  
+Realm.cs
+- added Equals(object), Equals(Realm), GetHashCode and IsSameInstance 
+    
+RealmConfiguration.cs
+- added Equals(object), Equals(Realm) and GetHashCode
+  
+NativeSharedRealm.cs
+- added is_same_instance
+
+shared_realm_cs.cpp
+- shared_realm_is_same_instance added
+

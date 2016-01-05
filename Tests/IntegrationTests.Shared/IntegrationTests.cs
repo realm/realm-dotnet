@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.IO;
 using NUnit.Framework;
+using System.Threading.Tasks;
 using Realms;
 
 namespace IntegrationTests
@@ -50,9 +51,64 @@ namespace IntegrationTests
             // Act
             openRealm.Close();
 
-            // Assert no error
+            // Assert 
+            Assert.That(File.Exists(config.DatabasePath));
             Assert.DoesNotThrow(() => Realm.DeleteRealm(config));
+            Assert.False(File.Exists(config.DatabasePath));
         }
+
+
+        [Test]
+        public void GetUniqueInstancesDifferentThreads()
+        {
+            // Arrange
+            var realm1 = Realm.GetInstance("EnterTheMagic.realm");
+            Realm realm2 = realm1;  // should be reassigned by other thread
+
+            // Act
+            var getOther = Task.Factory.StartNew(() =>
+                {
+                    realm2 = Realm.GetInstance("EnterTheMagic.realm");
+                });
+            getOther.Wait();
+
+            // Assert
+            Assert.False(GC.ReferenceEquals(realm1, realm2));
+            Assert.False(realm1.IsSameInstance(realm2));
+            Assert.That(realm1, Is.EqualTo(realm2));  // equal and same Realm but not same instance
+        }
+
+
+        [Test]
+        public void GetCachedInstancesSameThread()
+        {
+            // Arrange
+            var realm1 = Realm.GetInstance("EnterTheMagic.realm");
+            var realm2 = Realm.GetInstance("EnterTheMagic.realm");
+
+            // Assert
+            Assert.False(GC.ReferenceEquals(realm1, realm2));
+            Assert.That(realm1, Is.EqualTo(realm1));  // check equality with self
+            Assert.That(realm1.IsSameInstance(realm2));
+            Assert.That(realm1, Is.EqualTo(realm2));
+        }
+
+
+        [Test]
+        public void InstancesHaveDifferentHashes()
+        {
+            // Arrange
+            var realm1 = Realm.GetInstance("EnterTheMagic.realm");
+            var realm2 = Realm.GetInstance("EnterTheMagic.realm");
+
+            // Assert
+            Assert.False(GC.ReferenceEquals(realm1, realm2));
+            Assert.That(realm1.GetHashCode(), Is.Not.EqualTo(0));  
+            Assert.That(realm1.GetHashCode(), Is.Not.EqualTo(realm2.GetHashCode())); 
+        }
+
+
+
 
         /*
          * uncomment when fix https://github.com/realm/realm-dotnet/issues/308
@@ -149,6 +205,43 @@ namespace IntegrationTests
 
             // Assert
             Assert.That(RealmConfiguration.DefaultConfiguration.DatabasePath, Is.StringEnding("fred.realm"));
+        }
+
+        [Test]
+        public void ConfigurationsAreSame()
+        {
+            // Arrange
+            var config1 = new RealmConfiguration("fred.realm");
+            var config2 = new RealmConfiguration("fred.realm");
+
+            // Assert
+            Assert.That(config1, Is.EqualTo(config2));
+        }
+
+        [Test]
+        public void ConfigurationsAreDifferent()
+        {
+            // Arrange
+            var config1 = new RealmConfiguration("fred.realm");
+            var config2 = new RealmConfiguration("barney.realm");
+            var config1b = new RealmConfiguration("fred.realm", true);
+
+            // Assert
+            Assert.That(config1, Is.Not.EqualTo(config2));
+            Assert.That(config1, Is.Not.EqualTo(config1b));
+        }
+
+
+        [Test]
+        public void ConfigurationsHaveDifferentHashes()
+        {
+            // Arrange
+            var config1 = new RealmConfiguration("fred.realm");
+            var config2 = new RealmConfiguration("barney.realm");
+
+            // Assert
+            Assert.That(config1.GetHashCode(), Is.Not.EqualTo(0));  
+            Assert.That(config1.GetHashCode(), Is.Not.EqualTo(config2.GetHashCode())); 
         }
     }
 

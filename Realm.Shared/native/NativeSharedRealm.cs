@@ -43,5 +43,9 @@ namespace Realms
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_table",
             CallingConvention = CallingConvention.Cdecl)]
         internal static extern IntPtr get_table(SharedRealmHandle sharedRealm, [MarshalAs(UnmanagedType.LPWStr)]string tableName, IntPtr tableNameLength);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_is_same_instance",
+            CallingConvention = CallingConvention.Cdecl)]
+        internal static extern IntPtr is_same_instance(SharedRealmHandle lhs, SharedRealmHandle rhs);
     }
 }
