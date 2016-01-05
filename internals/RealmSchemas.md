@@ -34,10 +34,16 @@ digraph {
     schema_initializer_add_object_schema
     schema_create
     get_shared_realm [label="Realm::get_shared_realm"]
-    verify_schema [label="ObjectStore\n::verify_schema"]
+    verify_schema [label="ObjectStore::\nverify_schema"]
     update_schema [label="Realm::update_schema"]
+    "Schema::validate"
+    update_with_schema [label="ObjectStore::\nupdate_realm_with_schema\n(automatic migration)"]
+    verify_object_schema [label="ObjectStore::\nverify_object_schema"]
     
-    SchemaValidationException [shape=house]
+    /* Exceptions */
+    node [color=red, style=solid]
+    SchemaValidationException [label="SchemaValidationException\nindicates bad declarations"]
+    MismatchedConfigException [label="MismatchedConfigException\nindicates schemas differ"]
 
     GetInstance -> add_object_schema [label=" loop all\l RealmObjectClasses\l"]
         add_object_schema -> schema_initializer_add_object_schema
@@ -49,10 +55,15 @@ digraph {
             shared_realm_open -> get_shared_realm -> update_schema
             
     "Schema::validate" -> SchemaValidationException [label=" throws"]
-    "ObjectStore::\nupdate_realm_with_schema" -> verify_schema
+    get_shared_realm -> update_with_schema
+    update_with_schema -> verify_schema
     get_shared_realm -> verify_schema
-    update_schema -> verify_schema
+    get_shared_realm -> "Schema::validate" [label=" target"]
+    update_schema -> "Schema::validate"
+    update_schema -> verify_schema [label="same\lversion"]
+    verify_schema -> verify_object_schema [label=" per class"]
     verify_schema -> SchemaValidationException [label=" throws"]
+    get_shared_realm -> MismatchedConfigException [label=" when config cached\nthrows if version diff"]
 }
 @enddot  
 
