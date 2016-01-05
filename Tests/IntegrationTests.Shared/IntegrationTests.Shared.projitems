@@ -10,11 +10,13 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)DateTimeTests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)IntegrationTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PerformanceTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Person.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)StandAloneObjectTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RelationshipTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConfigurationTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)InstanceTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ObjectIntegrationTests.cs" />
   </ItemGroup>
 </Project>

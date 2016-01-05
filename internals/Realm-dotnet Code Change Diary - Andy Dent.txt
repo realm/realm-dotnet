@@ -1311,3 +1311,17 @@ NativeSharedRealm.cs
 shared_realm_cs.cpp
 - shared_realm_is_same_instance added
 
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Refactoring Tests
+
+IntegrationTests.cs
+- refactored out RealmInstanceTests as InstanceTests.cs
+- refactored out RealmConfigurationTests as ConfigurationTests.cs
+- renamed RealmObjectIntegrationTests ObjectIntegrationTests
+- renamed file ObjectIntegrationTests.cs
+
+Win32IntegrationTests.cs
+- renamed Win32ObjectIntegrationTests.cs
+- refactored Win32RealmIntegrationTests as Win32RealmIntegrationTests.cs
+
+Win32ConfigurationTests.cs added

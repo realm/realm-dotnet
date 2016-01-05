@@ -8,250 +8,20 @@ using System.Diagnostics;
 using System.Linq;
 using System.IO;
 using NUnit.Framework;
-using System.Threading.Tasks;
 using Realms;
 
 namespace IntegrationTests
 {
-    [TestFixture]
-    public class RealmInstanceTests
-    {
-        [Test]
-        public void GetInstanceTest()
-        {
-            // Arrange, act and "assert" that no exception is thrown, using default location
-            Realm.GetInstance();
-        }
-
-        [Test]
-        public void InstanceIsClosedByDispose()
-        {
-            Realm temp;
-            using (temp = Realm.GetInstance())
-            {
-                Assert.That(!temp.IsClosed);
-            }
-            Assert.That(temp.IsClosed);
-        }
-
-        [Test]
-        public void GetInstanceWithJustFilenameTest()
-        {
-            // Arrange, act and "assert" that no exception is thrown, using default location
-            Realm.GetInstance("EnterTheMagic.realm");
-        }
-
-        [Test]
-        public void DeleteRealmWorksIfClosed()
-        {
-            // Arrange
-            var config = new RealmConfiguration("EnterTheMagic.realm");
-            var openRealm = Realm.GetInstance(config);
-
-            // Act
-            openRealm.Close();
-
-            // Assert 
-            Assert.That(File.Exists(config.DatabasePath));
-            Assert.DoesNotThrow(() => Realm.DeleteRealm(config));
-            Assert.False(File.Exists(config.DatabasePath));
-        }
-
-
-        [Test]
-        public void GetUniqueInstancesDifferentThreads()
-        {
-            // Arrange
-            var realm1 = Realm.GetInstance("EnterTheMagic.realm");
-            Realm realm2 = realm1;  // should be reassigned by other thread
-
-            // Act
-            var getOther = Task.Factory.StartNew(() =>
-                {
-                    realm2 = Realm.GetInstance("EnterTheMagic.realm");
-                });
-            getOther.Wait();
-
-            // Assert
-            Assert.False(GC.ReferenceEquals(realm1, realm2));
-            Assert.False(realm1.IsSameInstance(realm2));
-            Assert.That(realm1, Is.EqualTo(realm2));  // equal and same Realm but not same instance
-        }
-
-
-        [Test]
-        public void GetCachedInstancesSameThread()
-        {
-            // Arrange
-            var realm1 = Realm.GetInstance("EnterTheMagic.realm");
-            var realm2 = Realm.GetInstance("EnterTheMagic.realm");
-
-            // Assert
-            Assert.False(GC.ReferenceEquals(realm1, realm2));
-            Assert.That(realm1, Is.EqualTo(realm1));  // check equality with self
-            Assert.That(realm1.IsSameInstance(realm2));
-            Assert.That(realm1, Is.EqualTo(realm2));
-        }
-
-
-        [Test]
-        public void InstancesHaveDifferentHashes()
-        {
-            // Arrange
-            var realm1 = Realm.GetInstance("EnterTheMagic.realm");
-            var realm2 = Realm.GetInstance("EnterTheMagic.realm");
-
-            // Assert
-            Assert.False(GC.ReferenceEquals(realm1, realm2));
-            Assert.That(realm1.GetHashCode(), Is.Not.EqualTo(0));  
-            Assert.That(realm1.GetHashCode(), Is.Not.EqualTo(realm2.GetHashCode())); 
-        }
-
-
-
-
-        /*
-         * uncomment when fix https://github.com/realm/realm-dotnet/issues/308
-        [Test]
-        public void DeleteRealmFailsIfOpenSameThread()
-        {
-            // Arrange
-            var config = new RealmConfiguration("EnterTheMagic.realm");
-            var openRealm = Realm.GetInstance(config);
-
-            // Assert
-            Assert.Throws<RealmPermissionDeniedException>(() => Realm.DeleteRealm(config));
-        }
-        */
-
-        /*
-        Comment out until work out how to fix
-        see issue 199
-        [Test]
-        public void GetInstanceShouldThrowIfFileIsLocked()
-        {
-            // Arrange
-            var databasePath = Path.GetTempFileName();
-            using (File.Open(databasePath, FileMode.Open, FileAccess.Read, FileShare.None))     // Lock the file
-            {
-                // Act and assert
-                Assert.Throws<RealmPermissionDeniedException>(() => Realm.GetInstance(databasePath));
-            }
-        }
-        */
-
-        [Test]
-        public void GetInstanceShouldThrowWithBadPath()
-        {
-            // Arrange
-            Assert.Throws<RealmPermissionDeniedException>(() => Realm.GetInstance("/"));
-        }
-    }
-
-    [TestFixture]
-    public class RealmConfigurationTests
-    {
-
-        [Test]
-        public void DefaultConfigurationShouldHaveValidPath()
-        {
-            // Arrange
-            var config = RealmConfiguration.DefaultConfiguration;
-
-            // Assert
-            Assert.That(Path.IsPathRooted(config.DatabasePath));
-        }
-
-        [Test]
-        public void CanSetConfigurationPartialPath()
-        {
-            // Arrange
-            var config = RealmConfiguration.DefaultConfiguration.ConfigWithPath("jan/docs/");
-
-            // Assert
-            Assert.That(Path.IsPathRooted(config.DatabasePath));
-            Assert.That(config.DatabasePath, Is.StringEnding("/jan/docs/default.realm"));
-        }
-        
-        [Test]
-        public void PathIsCanonicalised()
-        {
-            // Arrange
-            var config = RealmConfiguration.DefaultConfiguration.ConfigWithPath("../Documents/fred.realm");
-
-            // Assert
-            Assert.That(Path.IsPathRooted(config.DatabasePath));
-            Assert.That(config.DatabasePath, Is.StringEnding("/Documents/fred.realm"));
-            Assert.IsFalse(config.DatabasePath.Contains(".."));  // our use of relative up and down again was normalised out
-        }
-
-        [Test]
-        public void CanOverrideConfigurationFilename()
-        {
-            // Arrange
-            var config = new RealmConfiguration();
-            var config2 = config.ConfigWithPath ("fred.realm");
-
-            // Assert
-            Assert.That(config2.DatabasePath, Is.StringEnding("fred.realm"));
-        }
-
-        [Test]
-        public void CanSetDefaultConfiguration()
-        {
-            // Arrange
-            var config = new RealmConfiguration();
-            RealmConfiguration.DefaultConfiguration = config.ConfigWithPath ("fred.realm");
-
-            // Assert
-            Assert.That(RealmConfiguration.DefaultConfiguration.DatabasePath, Is.StringEnding("fred.realm"));
-        }
-
-        [Test]
-        public void ConfigurationsAreSame()
-        {
-            // Arrange
-            var config1 = new RealmConfiguration("fred.realm");
-            var config2 = new RealmConfiguration("fred.realm");
-
-            // Assert
-            Assert.That(config1, Is.EqualTo(config2));
-        }
-
-        [Test]
-        public void ConfigurationsAreDifferent()
-        {
-            // Arrange
-            var config1 = new RealmConfiguration("fred.realm");
-            var config2 = new RealmConfiguration("barney.realm");
-            var config1b = new RealmConfiguration("fred.realm", true);
-
-            // Assert
-            Assert.That(config1, Is.Not.EqualTo(config2));
-            Assert.That(config1, Is.Not.EqualTo(config1b));
-        }
-
-
-        [Test]
-        public void ConfigurationsHaveDifferentHashes()
-        {
-            // Arrange
-            var config1 = new RealmConfiguration("fred.realm");
-            var config2 = new RealmConfiguration("barney.realm");
-
-            // Assert
-            Assert.That(config1.GetHashCode(), Is.Not.EqualTo(0));  
-            Assert.That(config1.GetHashCode(), Is.Not.EqualTo(config2.GetHashCode())); 
-        }
-    }
-
-    [TestFixture]
-    public class RealmObjectIntegrationTests
+     [TestFixture]
+    public class ObjectIntegrationTests
     {
         protected string _databasePath;
         protected Realm _realm;
 
         [SetUp]
+        /// <summary>
+        /// Setup this instance.
+        /// </summary>
         public void Setup()
         {
             _databasePath = Path.GetTempFileName();
@@ -259,6 +29,9 @@ namespace IntegrationTests
         }
 
         [TearDown]
+        /// <summary>
+        /// Tears down.
+        /// </summary>
         public void TearDown()
         {
             _realm.Dispose();
@@ -307,6 +80,9 @@ namespace IntegrationTests
         }
 
         [Test, Explicit("Manual test for debugging")]
+        /// <summary>
+        /// Simples the test.
+        /// </summary>
         public void SimpleTest()
         {
             MakeThreePeople ();
@@ -326,6 +102,9 @@ namespace IntegrationTests
         }
 
         [Test]
+        /// <summary>
+        /// Creates the object test.
+        /// </summary>
         public void CreateObjectTest()
         {
             // Arrange and act
@@ -341,6 +120,9 @@ namespace IntegrationTests
         }
 
         [Test]
+        /// <summary>
+        /// Reads the and write equality test.
+        /// </summary>
         public void ReadAndWriteEqualityTest()
         {
             // Arrange
@@ -364,6 +146,9 @@ namespace IntegrationTests
         }
 
         [Test]
+        /// <summary>
+        /// Sets the and get property test.
+        /// </summary>
         public void SetAndGetPropertyTest()
         {
             // Arrange
@@ -394,6 +179,9 @@ namespace IntegrationTests
         }
 
         [Test]
+        /// <summary>
+        /// Sets the remapped property test.
+        /// </summary>
         public void SetRemappedPropertyTest()
         {
             // Arrange
@@ -414,6 +202,9 @@ namespace IntegrationTests
         }
 
         [Test]
+        /// <summary>
+        /// Creates the object outside transaction should fail.
+        /// </summary>
         public void CreateObjectOutsideTransactionShouldFail()
         {
             // Arrange, act and assert
@@ -421,6 +212,9 @@ namespace IntegrationTests
         }
 
         [Test]
+        /// <summary>
+        /// Manages the outside transaction should fail.
+        /// </summary>
         public void ManageOutsideTransactionShouldFail()
         {
             var obj = new Person();
@@ -428,12 +222,18 @@ namespace IntegrationTests
         }
 
         [Test]
+        /// <summary>
+        /// Manages the null object should fail.
+        /// </summary>
         public void ManageNullObjectShouldFail()
         {
             Assert.Throws<ArgumentNullException>(() => _realm.Manage(null as Person));
         }
 
         [Test]
+        /// <summary>
+        /// Manages an object from another realm should fail.
+        /// </summary>
         public void ManageAnObjectFromAnotherRealmShouldFail()
         {
             Person p;
@@ -450,6 +250,9 @@ namespace IntegrationTests
         }
 
         [Test]
+        /// <summary>
+        /// Manages an object to realm it already belongs to should fail.
+        /// </summary>
         public void ManageAnObjectToRealmItAlreadyBelongsToShouldFail()
         {
             Person p;
@@ -463,6 +266,9 @@ namespace IntegrationTests
         }
 
         [Test]
+        /// <summary>
+        /// Sets the property outside transaction should fail.
+        /// </summary>
         public void SetPropertyOutsideTransactionShouldFail()
         {
             // Arrange
@@ -479,6 +285,9 @@ namespace IntegrationTests
 
 
         [Test]
+        /// <summary>
+        /// Removes the succeeds test.
+        /// </summary>
         public void RemoveSucceedsTest()
         {
             // Arrange
@@ -511,6 +320,9 @@ namespace IntegrationTests
 
 
         [Test]
+        /// <summary>
+        /// Removes the outside transaction should fail.
+        /// </summary>
         public void RemoveOutsideTransactionShouldFail()
         {
             // Arrange
@@ -528,6 +340,9 @@ namespace IntegrationTests
 
         // Extension method rather than SQL-style LINQ
         [Test]
+        /// <summary>
+        /// Searchs the comparing float.
+        /// </summary>
         public void SearchComparingFloat()
         {
             MakeThreePeople (); 
@@ -559,6 +374,9 @@ namespace IntegrationTests
         }
 
         [Test]
+        /// <summary>
+        /// Searchs the comparing double.
+        /// </summary>
         public void SearchComparingDouble()
         {
             MakeThreePeople (); 
@@ -590,12 +408,18 @@ namespace IntegrationTests
         }
 
         [Test]
+        /// <summary>
+        /// Nons the automatic properties should not be woven.
+        /// </summary>
         public void NonAutomaticPropertiesShouldNotBeWoven()
         {
             Assert.That(typeof(Person).GetProperty("Nickname").GetCustomAttributes(typeof(WovenPropertyAttribute), false), Is.Empty);
         }
 
         [Test]
+        /// <summary>
+        /// Nons the automatic properties should be ignored.
+        /// </summary>
         public void NonAutomaticPropertiesShouldBeIgnored()
         {
             using (var trans = _realm.BeginWrite())
