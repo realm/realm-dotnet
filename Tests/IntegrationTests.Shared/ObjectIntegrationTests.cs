@@ -1,7 +1,7 @@
 ﻿/* Copyright 2015 Realm Inc - All Rights Reserved
  * Proprietary and Confidential
  */
- 
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,16 +12,13 @@ using Realms;
 
 namespace IntegrationTests
 {
-     [TestFixture]
+    [TestFixture]
     public class ObjectIntegrationTests
     {
         protected string _databasePath;
         protected Realm _realm;
 
         [SetUp]
-        /// <summary>
-        /// Setup this instance.
-        /// </summary>
         public void Setup()
         {
             _databasePath = Path.GetTempFileName();
@@ -29,9 +26,6 @@ namespace IntegrationTests
         }
 
         [TearDown]
-        /// <summary>
-        /// Tears down.
-        /// </summary>
         public void TearDown()
         {
             _realm.Dispose();
@@ -80,9 +74,6 @@ namespace IntegrationTests
         }
 
         [Test, Explicit("Manual test for debugging")]
-        /// <summary>
-        /// Simples the test.
-        /// </summary>
         public void SimpleTest()
         {
             MakeThreePeople ();
@@ -102,9 +93,6 @@ namespace IntegrationTests
         }
 
         [Test]
-        /// <summary>
-        /// Creates the object test.
-        /// </summary>
         public void CreateObjectTest()
         {
             // Arrange and act
@@ -120,9 +108,6 @@ namespace IntegrationTests
         }
 
         [Test]
-        /// <summary>
-        /// Reads the and write equality test.
-        /// </summary>
         public void ReadAndWriteEqualityTest()
         {
             // Arrange
@@ -146,9 +131,6 @@ namespace IntegrationTests
         }
 
         [Test]
-        /// <summary>
-        /// Sets the and get property test.
-        /// </summary>
         public void SetAndGetPropertyTest()
         {
             // Arrange
@@ -179,9 +161,6 @@ namespace IntegrationTests
         }
 
         [Test]
-        /// <summary>
-        /// Sets the remapped property test.
-        /// </summary>
         public void SetRemappedPropertyTest()
         {
             // Arrange
@@ -202,9 +181,6 @@ namespace IntegrationTests
         }
 
         [Test]
-        /// <summary>
-        /// Creates the object outside transaction should fail.
-        /// </summary>
         public void CreateObjectOutsideTransactionShouldFail()
         {
             // Arrange, act and assert
@@ -212,9 +188,6 @@ namespace IntegrationTests
         }
 
         [Test]
-        /// <summary>
-        /// Manages the outside transaction should fail.
-        /// </summary>
         public void ManageOutsideTransactionShouldFail()
         {
             var obj = new Person();
@@ -222,18 +195,12 @@ namespace IntegrationTests
         }
 
         [Test]
-        /// <summary>
-        /// Manages the null object should fail.
-        /// </summary>
         public void ManageNullObjectShouldFail()
         {
             Assert.Throws<ArgumentNullException>(() => _realm.Manage(null as Person));
         }
 
         [Test]
-        /// <summary>
-        /// Manages an object from another realm should fail.
-        /// </summary>
         public void ManageAnObjectFromAnotherRealmShouldFail()
         {
             Person p;
@@ -250,9 +217,6 @@ namespace IntegrationTests
         }
 
         [Test]
-        /// <summary>
-        /// Manages an object to realm it already belongs to should fail.
-        /// </summary>
         public void ManageAnObjectToRealmItAlreadyBelongsToShouldFail()
         {
             Person p;
@@ -266,9 +230,6 @@ namespace IntegrationTests
         }
 
         [Test]
-        /// <summary>
-        /// Sets the property outside transaction should fail.
-        /// </summary>
         public void SetPropertyOutsideTransactionShouldFail()
         {
             // Arrange
@@ -285,9 +246,6 @@ namespace IntegrationTests
 
 
         [Test]
-        /// <summary>
-        /// Removes the succeeds test.
-        /// </summary>
         public void RemoveSucceedsTest()
         {
             // Arrange
@@ -320,9 +278,6 @@ namespace IntegrationTests
 
 
         [Test]
-        /// <summary>
-        /// Removes the outside transaction should fail.
-        /// </summary>
         public void RemoveOutsideTransactionShouldFail()
         {
             // Arrange
@@ -340,9 +295,6 @@ namespace IntegrationTests
 
         // Extension method rather than SQL-style LINQ
         [Test]
-        /// <summary>
-        /// Searchs the comparing float.
-        /// </summary>
         public void SearchComparingFloat()
         {
             MakeThreePeople (); 
@@ -374,9 +326,6 @@ namespace IntegrationTests
         }
 
         [Test]
-        /// <summary>
-        /// Searchs the comparing double.
-        /// </summary>
         public void SearchComparingDouble()
         {
             MakeThreePeople (); 
@@ -408,18 +357,12 @@ namespace IntegrationTests
         }
 
         [Test]
-        /// <summary>
-        /// Nons the automatic properties should not be woven.
-        /// </summary>
         public void NonAutomaticPropertiesShouldNotBeWoven()
         {
             Assert.That(typeof(Person).GetProperty("Nickname").GetCustomAttributes(typeof(WovenPropertyAttribute), false), Is.Empty);
         }
 
         [Test]
-        /// <summary>
-        /// Nons the automatic properties should be ignored.
-        /// </summary>
         public void NonAutomaticPropertiesShouldBeIgnored()
         {
             using (var trans = _realm.BeginWrite())
