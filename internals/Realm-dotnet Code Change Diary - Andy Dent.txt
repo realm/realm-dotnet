@@ -1311,3 +1311,9 @@ NativeSharedRealm.cs
 shared_realm_cs.cpp
 - shared_realm_is_same_instance added
 
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#297 Adding Count to All
+
+ObjectIntegrationTests.cs
+- CanSimplyCountAll added
+

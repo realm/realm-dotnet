@@ -611,5 +611,14 @@ namespace IntegrationTests
             Assert.That(vinnie.FullName, Is.EqualTo("Vincent Adultman"));
             Assert.That(string.IsNullOrEmpty(vinnie.Nickname));
         }
+
+
+        [Test]
+        public void CanSimplyCountAll()
+        {
+            MakeThreePeople();
+            Assert.That(_realm.All<Person>().ToList().Count(), Is.EqualTo(3));
+        }
+
     }
 }
