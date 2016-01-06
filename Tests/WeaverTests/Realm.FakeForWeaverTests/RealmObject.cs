@@ -48,6 +48,61 @@ namespace Realms
             LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
         }
 
+        protected int GetInt32Value(string propertyName)
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
+            return 0;
+        }
+
+        protected void SetInt32Value(string propertyName, int value)
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
+        }
+
+        protected long GetInt64Value(string propertyName)
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
+            return 0;
+        }
+
+        protected void SetInt64Value(string propertyName, long value)
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
+        }
+
+        protected float GetSingleValue(string propertyName)
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
+            return 0;
+        }
+
+        protected void SetSingleValue(string propertyName, float value)
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
+        }
+
+        protected double GetDoubleValue(string propertyName)
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
+            return 0;
+        }
+
+        protected void SetDoubleValue(string propertyName, double value)
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
+        }
+
+        protected bool GetBooleanValue(string propertyName)
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
+            return false;
+        }
+
+        protected void SetBooleanValue(string propertyName, bool value)
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
+        }
+
         protected RealmList<T> GetListValue<T>(string propertyName) where T : RealmObject
         {
             LogCall($"{nameof(propertyName)} = \"{propertyName}\"");

@@ -4,6 +4,8 @@
  
 using Realms;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace AssemblyToProcess
 {
@@ -18,6 +20,18 @@ namespace AssemblyToProcess
         // Automatically implemented (overridden) properties
         public string FirstName { get; set; }
         public string LastName { get; set; }
+
+        public float Score { get; set; }
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
+
+        public DateTimeOffset Birthday { get; set; }
+
+        public int Age { get; set; }
+
+        public IList<string> Children { get; }
+
+        public bool IsInteresting { get; set; }
 
         // Ignored property
         [Ignored]

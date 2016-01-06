@@ -139,6 +139,114 @@ namespace Realms
                 throw new Exception ("Unsupported type " + typeof(T).Name);
         }
 
+        protected string GetStringValue(string propertyName)
+        {
+            if (_realm == null)
+                throw new Exception("This object is not managed. Create through CreateObject");
+
+            var tableHandle = _realm._tableHandles[GetType()];
+            var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
+            var rowIndex = _rowHandle.RowIndex;
+
+            long bufferSizeNeededChars = 16;
+            IntPtr buffer;
+            long currentBufferSizeChars;
+
+            do
+            {
+                buffer = MarshalHelpers.StrAllocateBuffer(out currentBufferSizeChars, bufferSizeNeededChars);
+                bufferSizeNeededChars = (long)NativeTable.get_string(tableHandle, columnIndex, (IntPtr)rowIndex, buffer,
+                        (IntPtr)currentBufferSizeChars);
+
+            } while (MarshalHelpers.StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
+            return MarshalHelpers.StrBufToStr(buffer, (int) bufferSizeNeededChars);
+        }
+
+        protected int GetInt32Value(string propertyName)
+        {
+            if (_realm == null)
+                throw new Exception("This object is not managed. Create through CreateObject");
+
+            var tableHandle = _realm._tableHandles[GetType()];
+            var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
+            var rowIndex = _rowHandle.RowIndex;
+
+            var value = NativeTable.get_int64(tableHandle, columnIndex, (IntPtr)rowIndex);
+            return (int) value;
+        }
+
+        protected long GetInt64Value(string propertyName)
+        {
+            if (_realm == null)
+                throw new Exception("This object is not managed. Create through CreateObject");
+
+            var tableHandle = _realm._tableHandles[GetType()];
+            var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
+            var rowIndex = _rowHandle.RowIndex;
+
+            return NativeTable.get_int64(tableHandle, columnIndex, (IntPtr)rowIndex);
+        }
+
+        protected float GetSingleValue(string propertyName)
+        {
+            if (_realm == null)
+                throw new Exception("This object is not managed. Create through CreateObject");
+
+            var tableHandle = _realm._tableHandles[GetType()];
+            var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
+            var rowIndex = _rowHandle.RowIndex;
+
+            return NativeTable.get_float(tableHandle, columnIndex, (IntPtr)rowIndex);
+        }
+
+        protected double GetDoubleValue(string propertyName)
+        {
+            if (_realm == null)
+                throw new Exception("This object is not managed. Create through CreateObject");
+
+            var tableHandle = _realm._tableHandles[GetType()];
+            var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
+            var rowIndex = _rowHandle.RowIndex;
+
+            return NativeTable.get_double(tableHandle, columnIndex, (IntPtr)rowIndex);
+        }
+
+        protected bool GetBooleanValue(string propertyName)
+        {
+            if (_realm == null)
+                throw new Exception("This object is not managed. Create through CreateObject");
+
+            var tableHandle = _realm._tableHandles[GetType()];
+            var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
+            var rowIndex = _rowHandle.RowIndex;
+
+            return MarshalHelpers.IntPtrToBool(NativeTable.get_bool(tableHandle, columnIndex, (IntPtr)rowIndex));
+        }
+
+        protected DateTimeOffset GetDateTimeOffsetValue(string propertyName)
+        {
+            if (_realm == null)
+                throw new Exception("This object is not managed. Create through CreateObject");
+
+            var tableHandle = _realm._tableHandles[GetType()];
+            var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
+            var rowIndex = _rowHandle.RowIndex;
+
+            var unixTimeSeconds = NativeTable.get_datetime_seconds(tableHandle, columnIndex, (IntPtr)rowIndex);
+            return DateTimeOffsetExtensions.FromUnixTimeSeconds(unixTimeSeconds);
+        }
+
+        protected RealmList<T> GetListValue<T>(string propertyName) where T : RealmObject
+        {
+            if (_realm == null)
+                throw new Exception("This object is not managed. Create through CreateObject");
+
+            var tableHandle = _realm._tableHandles[GetType()];
+            var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
+            var listHandle = tableHandle.TableLinkList (columnIndex, _rowHandle);
+            return new RealmList<T>(this, listHandle);
+        }
+
         protected void SetValue<T>(string propertyName, T value)
         {
             if (_realm == null)
@@ -190,16 +298,111 @@ namespace Realms
                 throw new Exception ("Unsupported type " + typeof(T).Name);
         }
 
-
-        protected RealmList<T> GetListValue<T>(string propertyName) where T : RealmObject
+        protected void SetStringValue(string propertyName, string value)
         {
             if (_realm == null)
                 throw new Exception("This object is not managed. Create through CreateObject");
 
+            if (!_realm.IsInTransaction)
+                throw new RealmOutsideTransactionException("Cannot set values outside transaction");
+
             var tableHandle = _realm._tableHandles[GetType()];
             var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
-            var listHandle = tableHandle.TableLinkList (columnIndex, _rowHandle);
-            return new RealmList<T>(this, listHandle);
+            var rowIndex = _rowHandle.RowIndex;
+
+            NativeTable.set_string(tableHandle, columnIndex, (IntPtr)rowIndex, value, (IntPtr)(value?.Length ?? 0));
+        }
+
+        protected void SetInt32Value(string propertyName, int value)
+        {
+            if (_realm == null)
+                throw new Exception("This object is not managed. Create through CreateObject");
+
+            if (!_realm.IsInTransaction)
+                throw new RealmOutsideTransactionException("Cannot set values outside transaction");
+
+            var tableHandle = _realm._tableHandles[GetType()];
+            var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
+            var rowIndex = _rowHandle.RowIndex;
+
+            NativeTable.set_int64(tableHandle, columnIndex, (IntPtr)rowIndex, value);
+        }
+
+        protected void SetInt64Value(string propertyName, long value)
+        {
+            if (_realm == null)
+                throw new Exception("This object is not managed. Create through CreateObject");
+
+            if (!_realm.IsInTransaction)
+                throw new RealmOutsideTransactionException("Cannot set values outside transaction");
+
+            var tableHandle = _realm._tableHandles[GetType()];
+            var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
+            var rowIndex = _rowHandle.RowIndex;
+
+            NativeTable.set_int64(tableHandle, columnIndex, (IntPtr)rowIndex, value);
+        }
+
+        protected void SetSingleValue(string propertyName, float value)
+        {
+            if (_realm == null)
+                throw new Exception("This object is not managed. Create through CreateObject");
+
+            if (!_realm.IsInTransaction)
+                throw new RealmOutsideTransactionException("Cannot set values outside transaction");
+
+            var tableHandle = _realm._tableHandles[GetType()];
+            var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
+            var rowIndex = _rowHandle.RowIndex;
+
+            NativeTable.set_float(tableHandle, columnIndex, (IntPtr)rowIndex, value);
+        }
+
+        protected void SetDoubleValue(string propertyName, double value)
+        {
+            if (_realm == null)
+                throw new Exception("This object is not managed. Create through CreateObject");
+
+            if (!_realm.IsInTransaction)
+                throw new RealmOutsideTransactionException("Cannot set values outside transaction");
+
+            var tableHandle = _realm._tableHandles[GetType()];
+            var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
+            var rowIndex = _rowHandle.RowIndex;
+
+            NativeTable.set_double(tableHandle, columnIndex, (IntPtr)rowIndex, value);
+        }
+
+        protected void SetBooleanValue(string propertyName, bool value)
+        {
+            if (_realm == null)
+                throw new Exception("This object is not managed. Create through CreateObject");
+
+            if (!_realm.IsInTransaction)
+                throw new RealmOutsideTransactionException("Cannot set values outside transaction");
+
+            var tableHandle = _realm._tableHandles[GetType()];
+            var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
+            var rowIndex = _rowHandle.RowIndex;
+
+            var marshalledValue = MarshalHelpers.BoolToIntPtr((bool)Convert.ChangeType(value, typeof(bool)));
+            NativeTable.set_bool(tableHandle, columnIndex, (IntPtr)rowIndex, marshalledValue);
+        }
+
+        protected void SetDateTimeOffsetValue(string propertyName, DateTimeOffset value)
+        {
+            if (_realm == null)
+                throw new Exception("This object is not managed. Create through CreateObject");
+
+            if (!_realm.IsInTransaction)
+                throw new RealmOutsideTransactionException("Cannot set values outside transaction");
+
+            var tableHandle = _realm._tableHandles[GetType()];
+            var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
+            var rowIndex = _rowHandle.RowIndex;
+
+            var marshalledValue = value.ToUnixTimeSeconds();
+            NativeTable.set_datetime_seconds(tableHandle, columnIndex, (IntPtr)rowIndex, marshalledValue);
         }
 
         protected void SetListValue<T>(string propertyName, RealmList<T> value) where T : RealmObject
