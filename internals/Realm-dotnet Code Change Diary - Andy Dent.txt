@@ -1340,11 +1340,15 @@ wrappers/table_cs.cpp
 - add table_count_all
 
 Realm.cs
-- All return a RealmAll instead of RealmQuery 
-
-RealmAll.cs
-- added subclas of RealmQuery
+- All pass true into RealmQuery ctor
 
 RealmQuery.cs
+- _AllObjects flag added
 - Expression - added protected set to property
 - _provider changed readonly to internal so can lazily set in subclass RealmAll
+- Count added 
+- ctor(Realm) added bool param to set _allRecords
+
+RealmQueryProvider
+- _realm changed from private to internal so can pull back out in RealmQuery
+
