@@ -20,7 +20,7 @@ namespace Realms
         public Type ElementType => typeof (T);
         public Expression Expression { get; }
         public IQueryProvider Provider => _provider;
-        readonly QueryProvider _provider;
+        private readonly QueryProvider _provider;
         private bool _allRecords = false;
 
         internal RealmQuery(QueryProvider queryProvider, Expression expression) 
