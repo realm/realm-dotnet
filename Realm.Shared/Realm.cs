@@ -377,7 +377,7 @@ namespace Realms
         /// <returns>A RealmQuery that without further filtering, allows iterating all objects of class T, in this realm.</returns>
         public RealmQuery<T> All<T>() where T: RealmObject
         {
-            return new RealmQuery<T>(this);
+            return new RealmQuery<T>(this, true);
         }
 
         /// <summary>

@@ -298,7 +298,9 @@ namespace IntegrationTests
         public void SearchComparingFloat()
         {
             MakeThreePeople (); 
-            var s0 = _realm.All<Person>().Where(p => p.Score == 42.42f).ToList();
+            var s0a = _realm.All<Person>();
+            var s0b = s0a.Where(p => p.Score == 42.42f);
+            var s0 =s0b.ToList();
             Assert.That(s0.Count, Is.EqualTo(1));
             Assert.That(s0[0].Score, Is.EqualTo(42.42f));
 
@@ -378,5 +380,17 @@ namespace IntegrationTests
             Assert.That(vinnie.FullName, Is.EqualTo("Vincent Adultman"));
             Assert.That(string.IsNullOrEmpty(vinnie.Nickname));
         }
+
+
+        [Test]
+        public void CanSimplyCountAll()
+        {
+            MakeThreePeople();
+            // note older samples will often use ToList just to get a count, with expressions such as
+            // Assert.That(_realm.All<Person>().ToList().Count(), Is.EqualTo(3));
+            //var folks = _realm.All<Person>().ToList();
+            Assert.That(_realm.All<Person>().Count(), Is.EqualTo(3));
+        }
+
     }
 }
