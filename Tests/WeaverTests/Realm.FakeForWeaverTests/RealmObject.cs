@@ -103,6 +103,72 @@ namespace Realms
             LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
         }
 
+        protected DateTimeOffset GetDateTimeOffsetValue(string propertyName)
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
+            return DateTimeOffset.MinValue;
+        }
+
+        protected void SetDateTimeOffsetValue(string propertyName, DateTimeOffset value)
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
+        }
+
+        protected int? GetNullableInt32Value(string propertyName)
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
+            return 0;
+        }
+
+        protected void SetNullableInt32Value(string propertyName, int? value)
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
+        }
+
+        protected long? GetNullableInt64Value(string propertyName)
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
+            return 0;
+        }
+
+        protected void SetNullableInt64Value(string propertyName, long? value)
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
+        }
+
+        protected float? GetNullableSingleValue(string propertyName)
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
+            return 0;
+        }
+
+        protected void SetNullableSingleValue(string propertyName, float? value)
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
+        }
+
+        protected double? GetNullableDoubleValue(string propertyName)
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
+            return 0;
+        }
+
+        protected void SetNullableDoubleValue(string propertyName, double? value)
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
+        }
+
+        protected bool? GetNullableBooleanValue(string propertyName)
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
+            return false;
+        }
+
+        protected void SetNullableBooleanValue(string propertyName, bool? value)
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
+        }
+
         protected RealmList<T> GetListValue<T>(string propertyName) where T : RealmObject
         {
             LogCall($"{nameof(propertyName)} = \"{propertyName}\"");

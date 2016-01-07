@@ -46,9 +46,9 @@ namespace Tests
 
         #endregion
 
-        Assembly _assembly;
-        string _newAssemblyPath;
-        string _assemblyPath;
+        private Assembly _assembly;
+        private string _newAssemblyPath;
+        private string _assemblyPath;
 
         [TestFixtureSetUp]
         public void FixtureSetup()
@@ -87,15 +87,21 @@ namespace Tests
             }
         }
 
-        [TestCase("FirstName", "Peter")]
-        [TestCase("Age", 14)]
-        [TestCase("Score", 10.1f)]
-        [TestCase("Longitude", 123.123)]
-        [TestCase("IsInteresting", true)]
+        [TestCase("Int32Property", 100)]
+        [TestCase("Int64Property", 100)]
+        [TestCase("SingleProperty", 123.123f)]
+        [TestCase("DoubleProperty", 123.123)]
+        [TestCase("BooleanProperty", true)]
+        [TestCase("StringProperty", "str")] 
+        [TestCase("NullableInt32Property", 100)]
+        [TestCase("NullableInt64Property", 100L)]
+        [TestCase("NullableSingleProperty", 123.123f)] 
+        [TestCase("NullableDoubleProperty", 123.123)] 
+        [TestCase("NullableBooleanProperty", true)]
         public void GetValueUnmanagedShouldGetBackindField(string propertyName, object propertyValue)
         {
             // Arrange
-            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.Person"));
+            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.AllTypesObject"));
             SetAutoPropertyBackingFieldValue(o, propertyName, propertyValue);
 
             // Act
@@ -106,15 +112,22 @@ namespace Tests
             Assert.That(returnedValue, Is.EqualTo(propertyValue));
         }
 
-        [TestCase("FirstName", "Peter")]
-        [TestCase("Age", 14)]
-        [TestCase("Score", 10.1f)]
-        [TestCase("Longitude", 123.123)]
-        [TestCase("IsInteresting", true)]
-        public void SetValueUnmanagedShouldSetBackingField(string propertyName, object propertyValue)
+        [TestCase("Int32", 100)]
+        [TestCase("Int64", 100)]
+        [TestCase("Single", 123.123f)]
+        [TestCase("Double", 123.123)]
+        [TestCase("Boolean", true)]
+        [TestCase("String", "str")] 
+        [TestCase("NullableInt32", 100)]
+        [TestCase("NullableInt64", 100L)]
+        [TestCase("NullableSingle", 123.123f)] 
+        [TestCase("NullableDouble", 123.123)] 
+        [TestCase("NullableBoolean", true)]
+        public void SetValueUnmanagedShouldSetBackingField(string typeName, object propertyValue)
         {
             // Arrange
-            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.Person"));
+            var propertyName = typeName + "Property";
+            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.AllTypesObject"));
 
             // Act
             SetPropertyValue(o, propertyName, propertyValue);
@@ -124,15 +137,22 @@ namespace Tests
             Assert.That(GetAutoPropertyBackingFieldValue(o, propertyName), Is.EqualTo(propertyValue));
         }
 
-        [TestCase("FirstName", "Peter")]
-        [TestCase("Age", 14)]
-        [TestCase("Score", 10.1f)]
-        [TestCase("Longitude", 123.123)]
-        [TestCase("IsInteresting", true)]
-        public void GetValueManagedShouldGetQueryDatabase(string propertyName, object propertyValue)
+        [TestCase("Int32", 100)]
+        [TestCase("Int64", 100L)]
+        [TestCase("Single", 123.123f)]
+        [TestCase("Double", 123,123)]
+        [TestCase("Boolean", true)]
+        [TestCase("String", "str")] 
+        [TestCase("NullableInt32", 100)]
+        [TestCase("NullableInt64", 100L)]
+        [TestCase("NullableSingle", 123.123f)] 
+        [TestCase("NullableDouble", 123.123)] 
+        [TestCase("NullableBoolean", true)]
+        public void GetValueManagedShouldGetQueryDatabase(string typeName, object propertyValue)
         {
             // Arrange
-            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.Person"));
+            var propertyName = typeName + "Property";
+            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.AllTypesObject"));
             o.IsManaged = true;
 
             // Act
@@ -142,19 +162,26 @@ namespace Tests
             Assert.That(o.LogList, Is.EqualTo(new List<string>
             {
                 "IsManaged",
-                "RealmObject.Get" + propertyValue.GetType().Name + "Value(propertyName = \"" + propertyName + "\")"
+                "RealmObject.Get" + typeName + "Value(propertyName = \"" + propertyName + "\")"
             }));
         }
 
-        [TestCase("FirstName", "Peter")]
-        [TestCase("Age", 14, 0)]
-        [TestCase("Score", 10.1f, 0)]
-        [TestCase("Longitude", 123.123, 0)]
-        [TestCase("IsInteresting", true, false)]
-        public void SetValueManagedShouldUpdateDatabase(string propertyName, object propertyValue, object defaultPropertyValue = null)
+        [TestCase("Int32", 100)]
+        [TestCase("Int64", 100L)]
+        [TestCase("Single", 123.123f)]
+        [TestCase("Double", 123.123)]
+        [TestCase("Boolean", true)]
+        [TestCase("String", "str")] 
+        [TestCase("NullableInt32", 100)]
+        [TestCase("NullableInt64", 100L)]
+        [TestCase("NullableSingle", 123.123f)] 
+        [TestCase("NullableDouble", 123.123)] 
+        [TestCase("NullableBoolean", true)]
+        public void SetValueManagedShouldUpdateDatabase(string typeName, object propertyValue, object defaultPropertyValue = null)
         {
             // Arrange
-            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.Person"));
+            var propertyName = typeName + "Property";
+            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.AllTypesObject"));
             o.IsManaged = true;
 
             // Act
@@ -164,7 +191,7 @@ namespace Tests
             Assert.That(o.LogList, Is.EqualTo(new List<string>
             {
                 "IsManaged",
-                "RealmObject.Set" + propertyValue.GetType().Name + "Value(propertyName = \"" + propertyName + "\", value = " + propertyValue + ")"
+                "RealmObject.Set" + typeName + "Value(propertyName = \"" + propertyName + "\", value = " + propertyValue + ")"
             }));
             Assert.That(GetAutoPropertyBackingFieldValue(o, propertyName), Is.EqualTo(defaultPropertyValue));
         }

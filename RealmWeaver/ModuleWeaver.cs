@@ -67,24 +67,25 @@ public class ModuleWeaver
 
         var realmObjectType = assemblyToReference.MainModule.GetTypes().First(x => x.Name == "RealmObject");
         realmObjectIsManagedGetter = ModuleDefinition.ImportReference(realmObjectType.Properties.Single(x => x.Name == "IsManaged").GetMethod);
-        var getStringValueReference = MethodNamed(realmObjectType, "GetStringValue");
-        var setStringValueReference = MethodNamed(realmObjectType, "SetStringValue");
-        var getInt32ValueReference = MethodNamed(realmObjectType, "GetInt32Value");
-        var setInt32ValueReference = MethodNamed(realmObjectType, "SetInt32Value");
-        var getInt64ValueReference = MethodNamed(realmObjectType, "GetInt64Value");
-        var setInt64ValueReference = MethodNamed(realmObjectType, "SetInt64Value");
-        var getSingleValueReference = MethodNamed(realmObjectType, "GetSingleValue");
-        var setSingleValueReference = MethodNamed(realmObjectType, "SetSingleValue");
-        var getDoubleValueReference = MethodNamed(realmObjectType, "GetDoubleValue");
-        var setDoubleValueReference = MethodNamed(realmObjectType, "SetDoubleValue");
-        var getBooleanValueReference = MethodNamed(realmObjectType, "GetBooleanValue");
-        var setBooleanValueReference = MethodNamed(realmObjectType, "SetBooleanValue");
-        var getDateTimeOffsetValueReference = MethodNamed(realmObjectType, "GetDateTimeOffsetValue");
-        var setDateTimeOffsetValueReference = MethodNamed(realmObjectType, "SetDateTimeOffsetValue");
-        var genericGetListValueReference = MethodNamed(realmObjectType, "GetListValue");
-        var genericSetListValueReference = MethodNamed(realmObjectType, "SetListValue");
-        var genericGetObjectValueReference = MethodNamed(realmObjectType, "GetObjectValue");
-        var genericSetObjectValueReference = MethodNamed(realmObjectType, "SetObjectValue");
+
+        var typeTable = new Dictionary<string, string>()
+        {
+            {"System.String", "String"},
+            {"System.Int32", "Int32"},
+            {"System.Int64", "Int64"},
+            {"System.Single", "Single"},
+            {"System.Double", "Double"},
+            {"System.Boolean", "Boolean"},
+            {"System.DateTimeOffset", "DateTimeOffset"},
+            {"System.Nullable`1<System.Int32>", "NullableInt32"},
+            {"System.Nullable`1<System.Int64>", "NullableInt64"},
+            {"System.Nullable`1<System.Single>", "NullableSingle"},
+            {"System.Nullable`1<System.Double>", "NullableDouble"},
+            {"System.Nullable`1<System.Boolean>", "NullableBoolean"},
+        };
+
+        // Cache of getter and setter methods for the various types.
+        var methodTable = new Dictionary<string, Tuple<MethodReference, MethodReference>>();
 
         var wovenAttributeClass = assemblyToReference.MainModule.GetTypes().First(x => x.Name == "WovenAttribute");
         var wovenAttributeConstructor = ModuleDefinition.Import(wovenAttributeClass.GetConstructors().First());
@@ -119,41 +120,17 @@ public class ModuleWeaver
                     Debug.WriteLine("Skipped because it's not automatic.");
                     continue;
                 }
+                if (typeTable.ContainsKey(prop.PropertyType.FullName))
+                {
+                    if (!methodTable.ContainsKey(prop.PropertyType.FullName))
+                    {
+                        var getter = MethodNamed(realmObjectType, "Get" + typeTable[prop.PropertyType.FullName] + "Value");
+                        var setter = MethodNamed(realmObjectType, "Set" + typeTable[prop.PropertyType.FullName] + "Value");
+                        methodTable[prop.PropertyType.FullName] = Tuple.Create(getter, setter);
+                    }
 
-                if (prop.PropertyType.FullName == "System.String")
-                {
-                    ReplaceGetter(prop, columnName, getStringValueReference);
-                    ReplaceSetter(prop, columnName, setStringValueReference);
-                }
-                else if (prop.PropertyType.FullName == "System.Int32")
-                {
-                    ReplaceGetter(prop, columnName, getInt32ValueReference);
-                    ReplaceSetter(prop, columnName, setInt32ValueReference);
-                }
-                else if (prop.PropertyType.FullName == "System.Int64")
-                {
-                    ReplaceGetter(prop, columnName, getInt64ValueReference);
-                    ReplaceSetter(prop, columnName, setInt64ValueReference);
-                }
-                else if (prop.PropertyType.FullName == "System.Single")
-                {
-                    ReplaceGetter(prop, columnName, getSingleValueReference);
-                    ReplaceSetter(prop, columnName, setSingleValueReference);
-                }
-                else if (prop.PropertyType.FullName == "System.Double")
-                {
-                    ReplaceGetter(prop, columnName, getDoubleValueReference);
-                    ReplaceSetter(prop, columnName, setDoubleValueReference);
-                }
-                else if (prop.PropertyType.FullName == "System.Boolean")
-                {
-                    ReplaceGetter(prop, columnName, getBooleanValueReference);
-                    ReplaceSetter(prop, columnName, setBooleanValueReference);
-                }
-                else if (prop.PropertyType.FullName == "System.DateTimeOffset")
-                {
-                    ReplaceGetter(prop, columnName, getDateTimeOffsetValueReference);
-                    ReplaceSetter(prop, columnName, setDateTimeOffsetValueReference);
+                    ReplaceGetter(prop, columnName, methodTable[prop.PropertyType.FullName].Item1);
+                    ReplaceSetter(prop, columnName, methodTable[prop.PropertyType.FullName].Item2);
                 }
                 else if (prop.PropertyType.Name == "IList`1" && prop.PropertyType.Namespace == "System.Collections.Generic")
                 {

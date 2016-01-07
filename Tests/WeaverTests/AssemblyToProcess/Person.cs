@@ -4,7 +4,6 @@
  
 using Realms;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace AssemblyToProcess
@@ -38,7 +37,6 @@ namespace AssemblyToProcess
         public bool IsOnline { get; set; }
 
         // Composite property
-        [Ignored]
         public string FullName
         {
             get { return FirstName + " " + LastName; }
