@@ -1325,9 +1325,26 @@ Win32IntegrationTests.cs
 - refactored Win32RealmIntegrationTests as Win32RealmIntegrationTests.cs
 
 Win32ConfigurationTests.cs added
+
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #297 Adding Count to All
 
 ObjectIntegrationTests.cs
 - CanSimplyCountAll added
+- CreateObjectTest use Count directly instead of using ToList
 
+NativeTable.cs
+- add table_count_all as count_all
+
+wrappers/table_cs.cpp
+- add table_count_all
+
+Realm.cs
+- All return a RealmAll instead of RealmQuery 
+
+RealmAll.cs
+- added subclas of RealmQuery
+
+RealmQuery.cs
+- Expression - added protected set to property
+- _provider changed readonly to internal so can lazily set in subclass RealmAll

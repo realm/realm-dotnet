@@ -17,9 +17,9 @@ namespace Realms
     public class RealmQuery<T> : IQueryable<T>
     {
         public Type ElementType => typeof (T);
-        public Expression Expression { get; }
+        public Expression Expression { get; protected set; }
         public IQueryProvider Provider => _provider;
-        private readonly QueryProvider _provider;
+        internal QueryProvider _provider;
 
         internal RealmQuery(QueryProvider queryProvider, Expression expression) 
         {

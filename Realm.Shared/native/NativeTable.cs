@@ -69,6 +69,9 @@ namespace Realms
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_where", CallingConvention = CallingConvention.Cdecl)]
         internal static extern IntPtr where(TableHandle handle);
 
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_count_all", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern Int64 count_all(TableHandle handle);
+
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_unbind", CallingConvention = CallingConvention.Cdecl)]
         internal static extern void unbind(IntPtr tableHandle);
 

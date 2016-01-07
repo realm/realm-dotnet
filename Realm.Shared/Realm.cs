@@ -375,11 +375,17 @@ namespace Realms
         /// </summary>
         /// <typeparam name="T">The Type T must not only be a RealmObject but also have been processd by the Fody weaver, so it has persistent properties.</typeparam>
         /// <returns>A RealmQuery that without further filtering, allows iterating all objects of class T, in this realm.</returns>
+        public RealmAll<T> All<T>() where T: RealmObject
+        {
+            return new RealmAll<T>(this);
+        }
+
+/*
         public RealmQuery<T> All<T>() where T: RealmObject
         {
             return new RealmQuery<T>(this);
         }
-
+*/
         /// <summary>
         /// Removes a persistent object from this realm, effectively deleting it.
         /// </summary>
