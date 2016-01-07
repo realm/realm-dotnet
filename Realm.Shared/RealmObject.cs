@@ -148,7 +148,7 @@ namespace Realms
             var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
             var rowIndex = _rowHandle.RowIndex;
 
-            long bufferSizeNeededChars = 16;
+            long bufferSizeNeededChars = 128;
             IntPtr buffer;
             long currentBufferSizeChars;
 
