@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net.Mime;
 using System.Reflection;
 using Mono.Cecil;
 using NUnit.Framework;
@@ -166,18 +167,18 @@ namespace Tests
             }));
         }
 
-        [TestCase("Int32", 100)]
-        [TestCase("Int64", 100L)]
-        [TestCase("Single", 123.123f)]
-        [TestCase("Double", 123.123)]
-        [TestCase("Boolean", true)]
-        [TestCase("String", "str")] 
-        [TestCase("NullableInt32", 100)]
-        [TestCase("NullableInt64", 100L)]
-        [TestCase("NullableSingle", 123.123f)] 
-        [TestCase("NullableDouble", 123.123)] 
-        [TestCase("NullableBoolean", true)]
-        public void SetValueManagedShouldUpdateDatabase(string typeName, object propertyValue, object defaultPropertyValue = null)
+        [TestCase("Int32", 100, 0)]
+        [TestCase("Int64", 100L, 0L)]
+        [TestCase("Single", 123.123f, 0.0f)]
+        [TestCase("Double", 123.123, 0.0)]
+        [TestCase("Boolean", true, false)]
+        [TestCase("String", "str", null)] 
+        [TestCase("NullableInt32", 100, null)]
+        [TestCase("NullableInt64", 100L, null)]
+        [TestCase("NullableSingle", 123.123f, null)] 
+        [TestCase("NullableDouble", 123.123, null)] 
+        [TestCase("NullableBoolean", true, null)]
+        public void SetValueManagedShouldUpdateDatabase(string typeName, object propertyValue, object defaultPropertyValue)
         {
             // Arrange
             var propertyName = typeName + "Property";
@@ -191,9 +192,36 @@ namespace Tests
             Assert.That(o.LogList, Is.EqualTo(new List<string>
             {
                 "IsManaged",
-                "RealmObject.Set" + typeName + "Value(propertyName = \"" + propertyName + "\", value = " + propertyValue + ")"
+                "RealmObject.Set" + typeName + "Value(propertyName = \"" + propertyName + "\", value = " + propertyValue + ", setUnique = False)"
             }));
             Assert.That(GetAutoPropertyBackingFieldValue(o, propertyName), Is.EqualTo(defaultPropertyValue));
+        }
+
+
+        [TestCase("Int32", 100, 0)]
+        [TestCase("Int64", 100L, 0L)]
+        [TestCase("Single", 123.123f, 0.0f)]
+        [TestCase("Double", 123.123, 0.0)]
+        [TestCase("Boolean", true, false)]
+        [TestCase("String", "str", null)] 
+        public void SettingIndexedPropertyShouldCallSetUnique(string typeName, object propertyValue, object defaultPropertyValue)
+        {
+            // Arrange
+            var propertyName = typeName + "Property";
+            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.Indexed" + typeName + "Object"));
+            o.IsManaged = true;
+
+            // Act
+            SetPropertyValue(o, propertyName, propertyValue);
+
+            // Assert
+            Assert.That(o.LogList, Is.EqualTo(new List<string>
+            {
+                "IsManaged",
+                "RealmObject.Set" + typeName + "Value(propertyName = \"" + propertyName + "\", value = " + propertyValue + ", setUnique = True)"
+            }));
+            Assert.That(GetAutoPropertyBackingFieldValue(o, propertyName), Is.EqualTo(defaultPropertyValue));
+            
         }
 
         [Test]
@@ -223,7 +251,7 @@ namespace Tests
             Assert.That(o.LogList, Is.EqualTo(new List<string>
             {
                 "IsManaged",
-                "RealmObject.SetStringValue(propertyName = \"Email\", value = a@b.com)"
+                "RealmObject.SetStringValue(propertyName = \"Email\", value = a@b.com, setUnique = False)"
             }));
         }
 
@@ -234,7 +262,7 @@ namespace Tests
             var personType = _assembly.GetType("AssemblyToProcess.Person");
 
             // Assert
-            Assert.That(personType.GetCustomAttributes(typeof (WovenAttribute)).Any());
+            Assert.That(personType.CustomAttributes.Any(a => a.AttributeType.Name == "WovenAttribute"));
         }
 
         [Test, Ignore("Introduce once preserving default constructors is implemented")]

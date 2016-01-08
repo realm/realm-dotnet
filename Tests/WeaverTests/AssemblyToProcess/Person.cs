@@ -68,7 +68,7 @@ namespace AssemblyToProcess
         public string Address
         {
             get { return GetStringValue("Address"); }
-            set { SetStringValue("Address", value); }
+            set { SetStringValue("Address", value, true); }
         }
 
         // One-to-one relationship

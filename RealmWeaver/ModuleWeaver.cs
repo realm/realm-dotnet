@@ -112,6 +112,8 @@ public class ModuleWeaver
 
                 Debug.Write("  - " + prop.PropertyType.FullName + " " + prop.Name + " (Column: " + columnName + ").. ");
 
+                var setUnique = prop.CustomAttributes.Any(a => a.AttributeType.Name == "IndexedAttribute");
+
                 if (!prop.IsAutomatic())
                 {
                     if (IsRealmObject(prop.PropertyType))
@@ -130,7 +132,7 @@ public class ModuleWeaver
                     }
 
                     ReplaceGetter(prop, columnName, methodTable[prop.PropertyType.FullName].Item1);
-                    ReplaceSetter(prop, columnName, methodTable[prop.PropertyType.FullName].Item2);
+                    ReplaceSetter(prop, columnName, methodTable[prop.PropertyType.FullName].Item2, setUnique);
                 }
                 else if (prop.PropertyType.Name == "IList`1" && prop.PropertyType.Namespace == "System.Collections.Generic")
                 {
@@ -217,7 +219,7 @@ public class ModuleWeaver
         Debug.Write("[get] ");
     }
 
-    void ReplaceSetter(PropertyDefinition prop, string columnName, MethodReference setValueReference)
+    void ReplaceSetter(PropertyDefinition prop, string columnName, MethodReference setValueReference, bool setUnique)
     {
         /// A synthesized property setter looks like this:
         ///   0: ldarg.0
@@ -227,19 +229,20 @@ public class ModuleWeaver
         /// We want to change it so it looks like this:
         ///   0: ldarg.0
         ///   1: call Realm.RealmObject.get_IsManaged.
-        ///   2: brfalse.s 8
+        ///   2: brfalse.s 9
         ///   3: ldarg.0
         ///   4: ldstr <columnName>
         ///   5: ldarg.1
-        ///   6: call Realm.RealmObject.SetValue<T>
-        ///   7: ret.
-        ///   8: ldarg.0
-        ///   9: ldarg.1
-        ///   10: stfld <backingField>
-        ///   11: ret.
+        ///   6: ldc.i4.<0 or 1 from setUnique>
+        ///   7: call Realm.RealmObject.SetValue<T>
+        ///   8: ret.
+        ///   9: ldarg.0
+        ///   10: ldarg.1
+        ///   11: stfld <backingField>
+        ///   12: ret.
         /// This is roughly equivalent to:
         ///   if (!base.IsManaged) this.<backingField> = value;
-        ///   else base.SetValue<T>(<columnName>, value);
+        ///   else base.SetValue<T>(<columnName>, value, setUnique);
 
         var start = prop.SetMethod.Body.Instructions.First();
         var il = prop.SetMethod.Body.GetILProcessor();
@@ -250,6 +253,7 @@ public class ModuleWeaver
         il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));
         il.InsertBefore(start, il.Create(OpCodes.Ldstr, columnName));
         il.InsertBefore(start, il.Create(OpCodes.Ldarg_1));
+        il.InsertBefore(start, il.Create(setUnique ? OpCodes.Ldc_I4_1 : OpCodes.Ldc_I4_0));
         il.InsertBefore(start, il.Create(OpCodes.Call, setValueReference));
         il.InsertBefore(start, il.Create(OpCodes.Ret));
 

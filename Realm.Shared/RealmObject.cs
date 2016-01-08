@@ -298,7 +298,7 @@ namespace Realms
                 throw new Exception ("Unsupported type " + typeof(T).Name);
         }
 
-        protected void SetStringValue(string propertyName, string value)
+        protected void SetStringValue(string propertyName, string value, bool setUnique)
         {
             if (_realm == null)
                 throw new Exception("This object is not managed. Create through CreateObject");
@@ -313,7 +313,7 @@ namespace Realms
             NativeTable.set_string(tableHandle, columnIndex, (IntPtr)rowIndex, value, (IntPtr)(value?.Length ?? 0));
         }
 
-        protected void SetInt32Value(string propertyName, int value)
+        protected void SetInt32Value(string propertyName, int value, bool setUnique)
         {
             if (_realm == null)
                 throw new Exception("This object is not managed. Create through CreateObject");
@@ -328,7 +328,7 @@ namespace Realms
             NativeTable.set_int64(tableHandle, columnIndex, (IntPtr)rowIndex, value);
         }
 
-        protected void SetInt64Value(string propertyName, long value)
+        protected void SetInt64Value(string propertyName, long value, bool setUnique)
         {
             if (_realm == null)
                 throw new Exception("This object is not managed. Create through CreateObject");
@@ -343,7 +343,7 @@ namespace Realms
             NativeTable.set_int64(tableHandle, columnIndex, (IntPtr)rowIndex, value);
         }
 
-        protected void SetSingleValue(string propertyName, float value)
+        protected void SetSingleValue(string propertyName, float value, bool setUnique)
         {
             if (_realm == null)
                 throw new Exception("This object is not managed. Create through CreateObject");
@@ -358,7 +358,7 @@ namespace Realms
             NativeTable.set_float(tableHandle, columnIndex, (IntPtr)rowIndex, value);
         }
 
-        protected void SetDoubleValue(string propertyName, double value)
+        protected void SetDoubleValue(string propertyName, double value, bool setUnique)
         {
             if (_realm == null)
                 throw new Exception("This object is not managed. Create through CreateObject");
@@ -373,7 +373,7 @@ namespace Realms
             NativeTable.set_double(tableHandle, columnIndex, (IntPtr)rowIndex, value);
         }
 
-        protected void SetBooleanValue(string propertyName, bool value)
+        protected void SetBooleanValue(string propertyName, bool value, bool setUnique)
         {
             if (_realm == null)
                 throw new Exception("This object is not managed. Create through CreateObject");
