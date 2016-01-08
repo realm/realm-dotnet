@@ -80,6 +80,7 @@
     <Compile Include="Win32InstanceTests.cs" />
     <Compile Include="Win32ObjectIntegrationTests.cs" />
     <Compile Include="Win32PerformanceTests.cs" />
+    <Compile Include="Win32SimpleLINQtests.cs" />
     <Compile Include="Win32StandAloneObjectTests.cs" />
     <Compile Include="Win32RelationshipTests.cs" />
   </ItemGroup>

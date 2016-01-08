@@ -1352,3 +1352,20 @@ RealmQuery.cs
 RealmQueryProvider
 - _realm changed from private to internal so can pull back out in RealmQuery
 
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#298 Adding Count, Single, First to standard LINQ results
+
+SimpleLINQtests.cs
+- added
+
+PeopleTestsBase.cs
+- added 
+
+Win32SimpleLINQtests.cs added
+
+ObjectIntegrationTests.cs
+- SearchComparingDouble, SearchComparingFloat all moved to SimpleLINQtests
+- refactored _realm and _databasePath, plus methods Setup, TearDown and
+  MakeThreePeople to PeopleTestsBase
+- made subclass of PeopleTestsBase
