@@ -310,7 +310,7 @@ namespace Realms
             var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
             var rowIndex = _rowHandle.RowIndex;
 
-            NativeTable.set_string(tableHandle, columnIndex, (IntPtr)rowIndex, value, (IntPtr)(value?.Length ?? 0));
+            NativeTable.set_string(tableHandle, columnIndex, (IntPtr)rowIndex, value, (IntPtr)(value?.Length ?? 0), MarshalHelpers.BoolToIntPtr(setUnique));
         }
 
         protected void SetInt32Value(string propertyName, int value, bool setUnique)
@@ -343,7 +343,7 @@ namespace Realms
             NativeTable.set_int64(tableHandle, columnIndex, (IntPtr)rowIndex, value);
         }
 
-        protected void SetSingleValue(string propertyName, float value, bool setUnique)
+        protected void SetSingleValue(string propertyName, float value)
         {
             if (_realm == null)
                 throw new Exception("This object is not managed. Create through CreateObject");
@@ -358,7 +358,7 @@ namespace Realms
             NativeTable.set_float(tableHandle, columnIndex, (IntPtr)rowIndex, value);
         }
 
-        protected void SetDoubleValue(string propertyName, double value, bool setUnique)
+        protected void SetDoubleValue(string propertyName, double value)
         {
             if (_realm == null)
                 throw new Exception("This object is not managed. Create through CreateObject");
@@ -373,7 +373,7 @@ namespace Realms
             NativeTable.set_double(tableHandle, columnIndex, (IntPtr)rowIndex, value);
         }
 
-        protected void SetBooleanValue(string propertyName, bool value, bool setUnique)
+        protected void SetBooleanValue(string propertyName, bool value)
         {
             if (_realm == null)
                 throw new Exception("This object is not managed. Create through CreateObject");

@@ -3,12 +3,14 @@
  */
  
 using System;
+using System.Collections;
 using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Rocks;
 using Mono.Cecil.Cil;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Security.Cryptography.X509Certificates;
 
 public class ModuleWeaver
 {
@@ -67,7 +69,7 @@ public class ModuleWeaver
 
         var realmObjectType = assemblyToReference.MainModule.GetTypes().First(x => x.Name == "RealmObject");
         realmObjectIsManagedGetter = ModuleDefinition.ImportReference(realmObjectType.Properties.Single(x => x.Name == "IsManaged").GetMethod);
-
+        
         var typeTable = new Dictionary<string, string>()
         {
             {"System.String", "String"},
@@ -86,6 +88,13 @@ public class ModuleWeaver
 
         // Cache of getter and setter methods for the various types.
         var methodTable = new Dictionary<string, Tuple<MethodReference, MethodReference>>();
+
+        var indexableTypes = new List<string>
+        {
+            "System.String",
+            "System.Int32",
+            "System.Int64",
+        };
 
         var wovenAttributeClass = assemblyToReference.MainModule.GetTypes().First(x => x.Name == "WovenAttribute");
         var wovenAttributeConstructor = ModuleDefinition.Import(wovenAttributeClass.GetConstructors().First());
@@ -112,7 +121,12 @@ public class ModuleWeaver
 
                 Debug.Write("  - " + prop.PropertyType.FullName + " " + prop.Name + " (Column: " + columnName + ").. ");
 
-                var setUnique = prop.CustomAttributes.Any(a => a.AttributeType.Name == "IndexedAttribute");
+                var indexed = prop.CustomAttributes.Any(a => a.AttributeType.Name == "IndexedAttribute");
+                if (indexed && (!indexableTypes.Contains(prop.PropertyType.FullName)))
+                {
+                    LogErrorPoint( $"{type.Name}.{prop.Name} is marked as [indexed] which is only allowed on integer and string types.", sequencePoint);
+                    continue;
+                }
 
                 if (!prop.IsAutomatic())
                 {
@@ -131,6 +145,7 @@ public class ModuleWeaver
                         methodTable[prop.PropertyType.FullName] = Tuple.Create(getter, setter);
                     }
 
+                    //TODO: Hvis typen er i indexableTypes, så skal setUnique  sættes til indexed. Ellers skal den være null.
                     ReplaceGetter(prop, columnName, methodTable[prop.PropertyType.FullName].Item1);
                     ReplaceSetter(prop, columnName, methodTable[prop.PropertyType.FullName].Item2, setUnique);
                 }
@@ -154,7 +169,7 @@ public class ModuleWeaver
                 }
                 else if (prop.PropertyType.FullName == "System.DateTime")
                 {
-                    LogErrorPoint($"class '{type.Name}' field '{columnName}' is a DateTime which is not supported - use DateTimeOffset instead.", sequencePoint);
+                    LogErrorPoint($"class '{type.Name}' field '{prop.Name}' is a DateTime which is not supported - use DateTimeOffset instead.", sequencePoint);
                 }
                 else
                 {
@@ -219,7 +234,7 @@ public class ModuleWeaver
         Debug.Write("[get] ");
     }
 
-    void ReplaceSetter(PropertyDefinition prop, string columnName, MethodReference setValueReference, bool setUnique)
+    void ReplaceSetter(PropertyDefinition prop, string columnName, MethodReference setValueReference, bool? setUnique)
     {
         /// A synthesized property setter looks like this:
         ///   0: ldarg.0
@@ -253,7 +268,8 @@ public class ModuleWeaver
         il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));
         il.InsertBefore(start, il.Create(OpCodes.Ldstr, columnName));
         il.InsertBefore(start, il.Create(OpCodes.Ldarg_1));
-        il.InsertBefore(start, il.Create(setUnique ? OpCodes.Ldc_I4_1 : OpCodes.Ldc_I4_0));
+        if (setUnique != null)
+            il.InsertBefore(start, il.Create(setUnique.Value ? OpCodes.Ldc_I4_1 : OpCodes.Ldc_I4_0));
         il.InsertBefore(start, il.Create(OpCodes.Call, setValueReference));
         il.InsertBefore(start, il.Create(OpCodes.Ret));
 

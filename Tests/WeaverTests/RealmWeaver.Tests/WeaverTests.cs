@@ -66,7 +66,8 @@ namespace Tests
             var moduleDefinition = ModuleDefinition.ReadModule(_newAssemblyPath);
             var weavingTask = new ModuleWeaver
             {
-                ModuleDefinition = moduleDefinition
+                ModuleDefinition = moduleDefinition,
+                LogErrorPoint = (s, point) => { throw new Exception(s); }
             };
 
             weavingTask.Execute();
@@ -167,18 +168,18 @@ namespace Tests
             }));
         }
 
-        [TestCase("Int32", 100, 0)]
-        [TestCase("Int64", 100L, 0L)]
-        [TestCase("Single", 123.123f, 0.0f)]
-        [TestCase("Double", 123.123, 0.0)]
+        [TestCase("Int32", 100, 0, false)]
+        [TestCase("Int64", 100L, 0L, false)]
+        [TestCase("Single", 123.123f, 0.0f, null)]
+        [TestCase("Double", 123.123, 0.0, null)]
         [TestCase("Boolean", true, false)]
-        [TestCase("String", "str", null)] 
-        [TestCase("NullableInt32", 100, null)]
-        [TestCase("NullableInt64", 100L, null)]
-        [TestCase("NullableSingle", 123.123f, null)] 
-        [TestCase("NullableDouble", 123.123, null)] 
-        [TestCase("NullableBoolean", true, null)]
-        public void SetValueManagedShouldUpdateDatabase(string typeName, object propertyValue, object defaultPropertyValue)
+        [TestCase("String", "str", null, false)] 
+        [TestCase("NullableInt32", 100, null, false)]
+        [TestCase("NullableInt64", 100L, null, false)]
+        [TestCase("NullableSingle", 123.123f, null, null)] 
+        [TestCase("NullableDouble", 123.123, null, null)] 
+        [TestCase("NullableBoolean", true, null, null)]
+        public void SetValueManagedShouldUpdateDatabase(string typeName, object propertyValue, object defaultPropertyValue, bool? setUnique)
         {
             // Arrange
             var propertyName = typeName + "Property";
@@ -192,7 +193,7 @@ namespace Tests
             Assert.That(o.LogList, Is.EqualTo(new List<string>
             {
                 "IsManaged",
-                "RealmObject.Set" + typeName + "Value(propertyName = \"" + propertyName + "\", value = " + propertyValue + ", setUnique = False)"
+                "RealmObject.Set" + typeName + "Value(propertyName = \"" + propertyName + "\", value = " + propertyValue + (setUnique != null ? $", setUnique = {setUnique.Value})" : ")")
             }));
             Assert.That(GetAutoPropertyBackingFieldValue(o, propertyName), Is.EqualTo(defaultPropertyValue));
         }
@@ -200,9 +201,6 @@ namespace Tests
 
         [TestCase("Int32", 100, 0)]
         [TestCase("Int64", 100L, 0L)]
-        [TestCase("Single", 123.123f, 0.0f)]
-        [TestCase("Double", 123.123, 0.0)]
-        [TestCase("Boolean", true, false)]
         [TestCase("String", "str", null)] 
         public void SettingIndexedPropertyShouldCallSetUnique(string typeName, object propertyValue, object defaultPropertyValue)
         {

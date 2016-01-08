@@ -76,9 +76,9 @@ namespace Realms
             return 0;
         }
 
-        protected void SetSingleValue(string propertyName, float value, bool setUnique)
+        protected void SetSingleValue(string propertyName, float value)
         {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}, {nameof(setUnique)} = {setUnique}");
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
         }
 
         protected double GetDoubleValue(string propertyName)
@@ -87,9 +87,9 @@ namespace Realms
             return 0;
         }
 
-        protected void SetDoubleValue(string propertyName, double value, bool setUnique)
+        protected void SetDoubleValue(string propertyName, double value)
         {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}, {nameof(setUnique)} = {setUnique}");
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
         }
 
         protected bool GetBooleanValue(string propertyName)
@@ -98,9 +98,9 @@ namespace Realms
             return false;
         }
 
-        protected void SetBooleanValue(string propertyName, bool value, bool setUnique)
+        protected void SetBooleanValue(string propertyName, bool value)
         {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}, {nameof(setUnique)} = {setUnique}");
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
         }
 
         protected DateTimeOffset GetDateTimeOffsetValue(string propertyName)
@@ -109,9 +109,9 @@ namespace Realms
             return DateTimeOffset.MinValue;
         }
 
-        protected void SetDateTimeOffsetValue(string propertyName, DateTimeOffset value, bool setUnique)
+        protected void SetDateTimeOffsetValue(string propertyName, DateTimeOffset value)
         {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}, {nameof(setUnique)} = {setUnique}");
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
         }
 
         protected int? GetNullableInt32Value(string propertyName)
@@ -142,9 +142,9 @@ namespace Realms
             return 0;
         }
 
-        protected void SetNullableSingleValue(string propertyName, float? value, bool setUnique)
+        protected void SetNullableSingleValue(string propertyName, float? value)
         {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}, {nameof(setUnique)} = {setUnique}");
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
         }
 
         protected double? GetNullableDoubleValue(string propertyName)
@@ -153,9 +153,9 @@ namespace Realms
             return 0;
         }
 
-        protected void SetNullableDoubleValue(string propertyName, double? value, bool setUnique)
+        protected void SetNullableDoubleValue(string propertyName, double? value)
         {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}, {nameof(setUnique)} = {setUnique}");
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
         }
 
         protected bool? GetNullableBooleanValue(string propertyName)
@@ -164,9 +164,9 @@ namespace Realms
             return false;
         }
 
-        protected void SetNullableBooleanValue(string propertyName, bool? value, bool setUnique)
+        protected void SetNullableBooleanValue(string propertyName, bool? value)
         {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}, {nameof(setUnique)} = {setUnique}");
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
         }
 
         protected RealmList<T> GetListValue<T>(string propertyName) where T : RealmObject
