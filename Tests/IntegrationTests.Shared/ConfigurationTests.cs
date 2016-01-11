@@ -31,22 +31,22 @@ namespace IntegrationTests
         public void CanSetConfigurationPartialPath()
         {
             // Arrange
-            var config = RealmConfiguration.DefaultConfiguration.ConfigWithPath("jan/docs/");
+            var config = RealmConfiguration.DefaultConfiguration.ConfigWithPath("jan" + Path.DirectorySeparatorChar + "docs" + Path.DirectorySeparatorChar);
 
             // Assert
             Assert.That(Path.IsPathRooted(config.DatabasePath));
-            Assert.That(config.DatabasePath, Is.StringEnding("/jan/docs/default.realm"));
+            Assert.That(config.DatabasePath, Is.StringEnding(Path.Combine("jan", "docs", "default.realm")));
         }
         
         [Test]
         public void PathIsCanonicalised()
         {
             // Arrange
-            var config = RealmConfiguration.DefaultConfiguration.ConfigWithPath("../Documents/fred.realm");
+            var config = RealmConfiguration.DefaultConfiguration.ConfigWithPath(Path.Combine("..", "Documents", "fred.realm"));
 
             // Assert
             Assert.That(Path.IsPathRooted(config.DatabasePath));
-            Assert.That(config.DatabasePath, Is.StringEnding("/Documents/fred.realm"));
+            Assert.That(config.DatabasePath, Is.StringEnding(Path.Combine("Documents", "fred.realm")));
             Assert.IsFalse(config.DatabasePath.Contains(".."));  // our use of relative up and down again was normalised out
         }
 
