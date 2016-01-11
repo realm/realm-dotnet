@@ -1,6 +1,8 @@
 Architecture
 ==============
 
+**This is way out of date and needs cleaning up when we have finished some of the current ObjectStore-based changes**
+
 ## ObjectStore-based Architecture
 @dot
 digraph { 

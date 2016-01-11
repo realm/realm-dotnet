@@ -74,9 +74,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Win32ConfigurationTests.cs" />
     <Compile Include="Win32DateTimeTests.cs" />
-    <Compile Include="Win32IntegrationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Win32InstanceTests.cs" />
+    <Compile Include="Win32ObjectIntegrationTests.cs" />
     <Compile Include="Win32PerformanceTests.cs" />
     <Compile Include="Win32StandAloneObjectTests.cs" />
     <Compile Include="Win32RelationshipTests.cs" />

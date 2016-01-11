@@ -1,7 +1,7 @@
 ﻿/* Copyright 2015 Realm Inc - All Rights Reserved
  * Proprietary and Confidential
  */
- 
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -13,59 +13,7 @@ using Realms;
 namespace IntegrationTests
 {
     [TestFixture]
-    public class RealmIntegrationTests
-    {
-        [Test]
-        public void GetInstanceTest()
-        {
-            // Arrange, act and "assert" that no exception is thrown, using default location
-            Realm.GetInstance();
-        }
-
-        [Test]
-        public void InstanceIsClosedByDispose()
-        {
-            Realm temp;
-            using (temp = Realm.GetInstance())
-            {
-                Assert.That(!temp.IsClosed);
-            }
-            Assert.That(temp.IsClosed);
-        }
-
-        [Test]
-        public void GetInstanceWithJustFilenameTest()
-        {
-            // Arrange, act and "assert" that no exception is thrown, using default location
-            Realm.GetInstance("EnterTheMagic.realm");
-        }
-
-        /*
-        Comment out until work out how to fix
-        see issue 199
-        [Test]
-        public void GetInstanceShouldThrowIfFileIsLocked()
-        {
-            // Arrange
-            var databasePath = Path.GetTempFileName();
-            using (File.Open(databasePath, FileMode.Open, FileAccess.Read, FileShare.None))     // Lock the file
-            {
-                // Act and assert
-                Assert.Throws<RealmPermissionDeniedException>(() => Realm.GetInstance(databasePath));
-            }
-        }
-        */
-
-        [Test]
-        public void GetInstanceShouldThrowWithBadPath()
-        {
-            // Arrange
-            Assert.Throws<RealmPermissionDeniedException>(() => Realm.GetInstance("/"));
-        }
-    }
-
-    [TestFixture]
-    public class RealmObjectIntegrationTests
+    public class ObjectIntegrationTests
     {
         protected string _databasePath;
         protected Realm _realm;
@@ -240,20 +188,20 @@ namespace IntegrationTests
         }
 
         [Test]
-        public void AttachOutsideTransactionShouldFail()
+        public void ManageOutsideTransactionShouldFail()
         {
             var obj = new Person();
-            Assert.Throws<RealmOutsideTransactionException>(() => _realm.Attach(obj));
+            Assert.Throws<RealmOutsideTransactionException>(() => _realm.Manage(obj));
         }
 
         [Test]
-        public void AttachNullObjectShouldFail()
+        public void ManageNullObjectShouldFail()
         {
-            Assert.Throws<ArgumentNullException>(() => _realm.Attach(null as Person));
+            Assert.Throws<ArgumentNullException>(() => _realm.Manage(null as Person));
         }
 
         [Test]
-        public void AttachAnObjectFromAnotherRealmShouldFail()
+        public void ManageAnObjectFromAnotherRealmShouldFail()
         {
             Person p;
             using (var transaction = _realm.BeginWrite())
@@ -264,12 +212,12 @@ namespace IntegrationTests
 
             using (var otherRealm = Realm.GetInstance(Path.GetTempFileName()))
             {
-                Assert.Throws<RealmObjectOwnedByAnotherRealmException>(() => otherRealm.Attach(p));
+                Assert.Throws<RealmObjectManagedByAnotherRealmException>(() => otherRealm.Manage(p));
             }
         }
 
         [Test]
-        public void AttachAnObjectToRealmItAlreadyBelongsToShouldFail()
+        public void ManageAnObjectToRealmItAlreadyBelongsToShouldFail()
         {
             Person p;
             using (var transaction = _realm.BeginWrite())
@@ -278,7 +226,7 @@ namespace IntegrationTests
                 transaction.Commit();
             }
 
-            Assert.Throws<RealmObjectAlreadyOwnedByRealmException>(() => _realm.Attach(p));
+            Assert.Throws<RealmObjectAlreadyManagedByRealmException>(() => _realm.Manage(p));
         }
 
         [Test]
@@ -350,7 +298,9 @@ namespace IntegrationTests
         public void SearchComparingFloat()
         {
             MakeThreePeople (); 
-            var s0 = _realm.All<Person>().Where(p => p.Score == 42.42f).ToList();
+            var s0a = _realm.All<Person>();
+            var s0b = s0a.Where(p => p.Score == 42.42f);
+            var s0 =s0b.ToList();
             Assert.That(s0.Count, Is.EqualTo(1));
             Assert.That(s0[0].Score, Is.EqualTo(42.42f));
 
@@ -429,6 +379,77 @@ namespace IntegrationTests
             var vinnie = _realm.All<Person>().ToList().Single();
             Assert.That(vinnie.FullName, Is.EqualTo("Vincent Adultman"));
             Assert.That(string.IsNullOrEmpty(vinnie.Nickname));
+        }
+
+
+        [Test]
+        public void CanSimplyCountAll()
+        {
+            MakeThreePeople();
+            // note older samples will often use ToList just to get a count, with expressions such as
+            // Assert.That(_realm.All<Person>().ToList().Count(), Is.EqualTo(3));
+            //var folks = _realm.All<Person>().ToList();
+            Assert.That(_realm.All<Person>().Count(), Is.EqualTo(3));
+        }
+
+    }
+
+    [TestFixture]
+    public class RealmMigrationTests
+    {
+        [Test]
+        public void TriggerMigrationBySchemaVersion()
+        {
+            // Arrange
+            var config1 = new RealmConfiguration("ChangingVersion.realm");
+            Realm.DeleteRealm(config1);  // ensure start clean
+            var realm1 = Realm.GetInstance(config1);
+            // new database doesn't push back a version number
+            Assert.That(config1.SchemaVersion, Is.EqualTo(RealmConfiguration.NotVersioned));
+            realm1.Close();
+
+            // Act
+            var config2 = config1.ConfigWithPath("ChangingVersion.realm");
+            config2.SchemaVersion = 99;
+            Realm realm2 = null;  // should be updated by DoesNotThrow
+
+            // Assert
+            Assert.DoesNotThrow( () => realm2 = Realm.GetInstance(config2) ); // same path, different version, should auto-migrate quietly
+            Assert.That(realm2.Config.SchemaVersion, Is.EqualTo(99));
+
+        }
+
+        [Test]
+        public void TriggerMigrationBySchemaEditing()
+        {
+            
+            // NOTE to regnerate the bundled database go edit the schema in Person.cs and comment/uncomment ExtraToTriggerMigration
+            // running in between and saving a copy with the added field
+            // this should never be needed as this test just needs the Realm to need migrating
+            TestHelpers.CopyBundledDatabaseToDocuments(
+                "ForMigrationsToCopyAndMigrate.realm", "NeedsMigrating.realm");
+
+            // Assert
+            Realm realm1 = null;
+            Assert.Throws<RealmMigrationNeededException>( () => realm1 = Realm.GetInstance("NeedsMigrating.realm") );
+        }
+
+        [Test]
+        public void MigrationTriggersDelete()
+        {
+            // Arrange
+            var config = new RealmConfiguration("MigrateWWillRecreate.realm", true);
+            Realm.DeleteRealm(config);
+            Assert.False(File.Exists(config.DatabasePath));
+
+            TestHelpers.CopyBundledDatabaseToDocuments(
+                "ForMigrationsToCopyAndMigrate.realm", "MigrateWWillRecreate.realm");
+
+            // Act - should cope by deleting and silently recreating
+            var realm = Realm.GetInstance(config);
+
+            // Assert
+            Assert.That(File.Exists(config.DatabasePath));
         }
     }
 }

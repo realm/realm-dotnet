@@ -1200,3 +1200,206 @@ RealmList.GetEnumerator
 
 Realm.IsClosed
 - changed to property
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#291 Minor doc edits and rename Attach to Manage
+
+Realm.Attach
+- renamed Realm.Manage
+
+IntegrationTests.cs
+RelationshipTests.cs
+StandaloneObjectTests.cs
+- renamed all tests with Attach to Manage
+
+RealmList.cs
+- AttachObjectIfNeeded renamed ManageObjectIfNeeded
+
+RealmObjectAlreadyOwnedByRealmException renamed RealmObjectAlreadyManagedByRealmException
+
+RealmObjectOwnedByAnotherRealmException renamed RealmObjectManagedByAnotherRealmException
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#328 Update to Core 0.95.6
+Merged in ObjectStore commit as at 324818f
+
+Makefile
+- bump CORE_APPLE_VER and CORE_ANDROID_VER from 0.95.1 to 0.95.6
+
+wrappers/src/wrapper_exceptions.hpp
+- added to move exceptions to which are part of wrappers, not ObjectStore
+
+wrappers/src/object-store/shared_realm.hpp
+- moved IndexOutOfRangeException to wrapper_exceptions.hpp
+
+wrappers/src/linklist_cs.cpp
+- replace #include object-store/shared_realm.hp with wrapper_exceptions.hpp
+
+wrappers/src/object-store/shared_realm.cpp
+- get_shared_realm fix use of member m_config replaced with realm->m_config
+
+wrappers/src/object-store/impl/transact_log_handler.cpp
+- added set_int_unique and set_string_unique just as copies of set_int and set_string
+
+IndexOutOfRangeException
+- makeMessage renamed make_message to conform to coding standards
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#313 Adding Configurations
+
+RealmConfiguration.cs
+- added class
+
+IntegrationTests.cs
+- added RealmConfigurationTests
+
+Realm.cs
+- _config field added to Realm
+- moved _DefaultDatabaseName to RealmConfiguration.DEFAULT_REALM_NAME
+- GetInstance 
+  - get RealmConfiguration.DefaultConfiguration if not specified
+  - get path for database from config
+- Realm ctor take an RealmConfiguration param
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#314 Delete Files for Configurations
+
+Realm.cs
+- added static DeleteFiles
+
+IntegrationTests.cs
+- renamed RealmIntegrationTests to RealmInstanceTests to accurately reflect role
+- RealmInstanceTests
+  - DeleteRealmFailsIfOpenSameThread added but commented out
+  - DeleteRealmWorksIfClosed added
+- RealmConfigurationTests.PathIsCanonicalised added
+
+RealmConfiguration.cs
+- ConfigWithPath now uses GetFullPath to get a canonical version
+  
+  
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#313 Adding Configurations - refactor from code review
+
+RealmConfiguration.cs
+- DEFAULT_REALM_NAME renamed DefaultRealmName
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#320 adding Realm Equality
+
+IntegrationTests.cs
+- RealmInstanceTests
+  - added GetCachedInstancesSameThread 
+  - added GetUniqueInstancesDifferentThreads
+  - DeleteRealmWorksIfClosed added test to see if file exists
+  - added InstancesHaveDifferentHashes
+- RealmConfigurationTests
+  - added ConfigurationsAreSame and ConfigurationsAredDifferent
+  - added ConfigurationsHaveDifferentHashes
+  
+Realm.cs
+- added Equals(object), Equals(Realm), GetHashCode and IsSameInstance 
+    
+RealmConfiguration.cs
+- added Equals(object), Equals(Realm) and GetHashCode
+  
+NativeSharedRealm.cs
+- added is_same_instance
+
+shared_realm_cs.cpp
+- shared_realm_is_same_instance added
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Refactoring Tests
+
+IntegrationTests.cs
+- refactored out RealmInstanceTests as InstanceTests.cs
+- refactored out RealmConfigurationTests as ConfigurationTests.cs
+- renamed RealmObjectIntegrationTests ObjectIntegrationTests
+- renamed file ObjectIntegrationTests.cs
+
+Win32IntegrationTests.cs
+- renamed Win32ObjectIntegrationTests.cs
+- refactored Win32RealmIntegrationTests as Win32RealmIntegrationTests.cs
+
+Win32ConfigurationTests.cs added
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#297 Adding Count to All
+
+ObjectIntegrationTests.cs
+- CanSimplyCountAll added
+- CreateObjectTest use Count directly instead of using ToList
+
+NativeTable.cs
+- add table_count_all as count_all
+
+wrappers/table_cs.cpp
+- add table_count_all
+
+Realm.cs
+- All pass true into RealmQuery ctor
+
+RealmQuery.cs
+- _AllObjects flag added
+- Expression - added protected set to property
+- _provider changed readonly to internal so can lazily set in subclass RealmAll
+- Count added 
+- ctor(Realm) added bool param to set _allRecords
+
+RealmQueryProvider
+- _realm changed from private to internal so can pull back out in RealmQuery
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#300 Better Migration Message
+
+IntegrationTests.cs
+- RealmMigrationTests added
+
+RealmConfiguration.cs
+- NotVersioned added
+- SchemaVersion property added
+- PathToRealm added
+
+Realm.cs
+- in Realm ctor, update config SchemaVersion
+- Realm.GetInstance 
+  - pass in SchemaVersion to NativeSharedRealm.Open
+  - add wrappers around open 
+- _config field made into public readable property Config
+
+NativeSharedRealm.cs
+- get_schema_version added
+- open added schemaVersion param
+
+shared_realm_cs.cpp
+- shared_realm_get_schema_version added
+- shared_realm_open added schemaVersion param and assign to the temp Config created
+
+wrappers/error_handling.cpp
+- realm::convert_exception 
+  - added case for FormatUpgradeRequired
+  - added case for SchemaValidationException treating the same
+  
+realm_error_type.hpp
+- RealmFormatUpgradeRequired added
+  
+RealmExceptionCodes.cs
+- RealmFormatUpgradeRequired added
+
+NativeCommon.cs
+- ExceptionThrower - added case for RealmFormatUpgradeRequired
+
+RealmFormatUpgradeRequiredException.cs
+- added
+- renamed RealmMigrationNeededException
+  
+  
+ForMigrationsToCopyAndMigrate.realm
+- added file to copy  
+
+TestHelpers.cs
+- CopyBundledDatabaseToDocuments helper added

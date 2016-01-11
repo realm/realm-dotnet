@@ -3,6 +3,7 @@
  */
  
 using System;
+using System.Diagnostics;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,6 +21,7 @@ namespace Realms
         public Expression Expression { get; }
         public IQueryProvider Provider => _provider;
         private readonly QueryProvider _provider;
+        private bool _allRecords = false;
 
         internal RealmQuery(QueryProvider queryProvider, Expression expression) 
         {
@@ -27,8 +29,9 @@ namespace Realms
             this.Expression = expression;
         }
 
-        internal RealmQuery(Realm realm) : this(new RealmQueryProvider(realm), null)
+        internal RealmQuery(Realm realm, bool createdByAll=false) : this(new RealmQueryProvider(realm), null)
         {
+            _allRecords = createdByAll;
             this.Expression = Expression.Constant(this);
         }
 
@@ -45,5 +48,25 @@ namespace Realms
         {
             return (Provider.Execute<IEnumerable>(Expression)).GetEnumerator();
         }
+
+
+        /// <summary>
+        /// Count all objects of query or if created by <see cref="Realm.All"/> of the parameterised type, faster than a search.
+        /// </summary>
+        /// <remarks>
+        /// Resolves to this method instead of the static extension <c>Count&lt;T&gt;(this IEnumerable&lt;T&gt;)</c>.
+        /// </remarks>
+        public int Count()
+        {
+            if (_allRecords)
+            {
+                var prov = _provider as RealmQueryProvider;
+                Debug.Assert(prov != null, "RealmQuery cannot have _allRecords state and not have  RealmQueryProvider");
+                // use the type captured at build based on generic T
+                var tableHandle = prov._realm._tableHandles[ElementType];
+                return (int)NativeTable.count_all(tableHandle);
+            }
+            return 0;  // TODO Count for query, result of TableView
+        }    
     }
 }

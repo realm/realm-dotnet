@@ -5,7 +5,7 @@
 namespace Realms {
 
 /// <summary>Codes used in forwarding exceptions from the native C++ core, to be regenerated in C#.</summary>
-/// <remarks> <b>Warning:</b> Keep these codes aligned with ExceptionsToManaged.h in wrappers.</remarks>
+/// <remarks> <b>Warning:</b> Keep these codes aligned with realm_error_type.hpp in wrappers.</remarks>
     public enum RealmExceptionCodes {
         RealmError = 0,
         RealmFileAccessError = 1,
@@ -15,6 +15,7 @@ namespace Realms {
         RealmInvalidDatabase = 5,
         RealmOutOfMemory = 6,
         RealmPermissionDenied = 7,
+        RealmFormatUpgradeRequired = 13,
 
         StdArgumentOutOfRange = 100,
         StdIndexOutOfRange = 101,

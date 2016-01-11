@@ -24,7 +24,7 @@ namespace Realms
         internal RowHandle RowHandle => _rowHandle;
 
         /// <summary>
-        /// Allows you to check if the object has been associated with a Realm, either at creation or via Realm.Attach.
+        /// Allows you to check if the object has been associated with a Realm, either at creation or via Realm.Manage.
         /// </summary>
         public bool IsManaged => _realm != null;
 
@@ -455,7 +455,7 @@ namespace Realms
             else
             {
                 if (!value.IsManaged)
-                    _realm.Attach(value);
+                    _realm.Manage(value);
                 NativeTable.set_link(tableHandle, columnIndex, (IntPtr)rowIndex, (IntPtr)value.RowHandle.RowIndex);
             }
 

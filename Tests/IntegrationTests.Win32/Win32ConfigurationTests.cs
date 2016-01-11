@@ -11,12 +11,7 @@ using Realms;
 namespace IntegrationTests.Win32
 {
     [TestFixture]
-    public class Win32RealmIntegrationTests : RealmIntegrationTests
-    {
-    }
-
-    [TestFixture]
-    public class Win32RealmObjectIntegrationTests : RealmObjectIntegrationTests
+    public class Win32ConfigurationTests : ConfigurationTests
     {
     }
 }

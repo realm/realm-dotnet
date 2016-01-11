@@ -7,13 +7,18 @@ namespace Realms
 /**
 @mainpage %Realm for Xamarin
 
-The main API of %Realm is incredibly simple.
+The C# API of %Realm is incredibly simple.
 
 The main classes you will use are:
 
 - @ref Realm
 - @ref RealmObject
 - @ref RealmList
+
+Helper classes you may use are:
+
+- @ref RealmConfiguration
+- @ref Transaction
 
 */
 }

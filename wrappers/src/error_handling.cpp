@@ -6,13 +6,13 @@
 #include <sstream>
 #include <cassert>
 #include "object-store/shared_realm.hpp"
+#include "wrapper_exceptions.hpp"
 #include "realm_export_decls.hpp"
 #include "error_handling.hpp"
 #include "realm_error_type.hpp"
 
 // core headers for exception types
 #include "realm/util/file.hpp" 
-//#include "realm/util/encrypted_file_mapping.hpp"
 #include "realm/alloc_slab.hpp"
 
 using ManagedExceptionThrowerT = void(*)(size_t exceptionCode, void* utf8Str, size_t strLen);
@@ -30,6 +30,7 @@ namespace realm {
 
     /**
     @note mostly copied from util.cpp in Java but has a much richer range of exceptions
+    @warning if you update these codes also update the matching RealmExceptionCodes.cs
     */
     void realm::convert_exception()
     {
@@ -42,21 +43,27 @@ namespace realm {
             case RealmFileException::Kind::AccessError:
                 throw_exception(RealmErrorType::RealmFileAccessError, e.what());
                 break;
+            case RealmFileException::Kind::PermissionDenied:
+                throw_exception(RealmErrorType::RealmPermissionDenied, e.what());
+                break;
             case RealmFileException::Kind::Exists:
                 throw_exception(RealmErrorType::RealmFileExists, e.what());
-                break;
-            case RealmFileException::Kind::IncompatibleLockFile:
-                throw_exception(RealmErrorType::RealmIncompatibleLockFile, e.what());
                 break;
             case RealmFileException::Kind::NotFound:
                 throw_exception(RealmErrorType::RealmFileNotFound, e.what());
                 break;
-            case RealmFileException::Kind::PermissionDenied:
-                throw_exception(RealmErrorType::RealmPermissionDenied, e.what());
+            case RealmFileException::Kind::IncompatibleLockFile:
+                throw_exception(RealmErrorType::RealmIncompatibleLockFile, e.what());
+                break;
+            case RealmFileException::Kind::FormatUpgradeRequired:
+                throw_exception(RealmErrorType::RealmFormatUpgradeRequired, e.what());
                 break;
             default:
                 throw_exception(RealmErrorType::RealmError, e.what());
             }
+        }
+        catch (const SchemaValidationException& e) { // an ObjectStore exception mapped onto same code as older core
+            throw_exception(RealmErrorType::RealmFormatUpgradeRequired, e.what());
         }
         catch (const MismatchedConfigException& e) {
             throw_exception(RealmErrorType::RealmMismatchedConfig, e.what());

@@ -1,4 +1,4 @@
-﻿/* Copyright 2015 Realm Inc - All Rights Reserved
+/* Copyright 2015 Realm Inc - All Rights Reserved
  * Proprietary and Confidential
  */
  
@@ -14,8 +14,7 @@ namespace Realms
     /// Used to declare to-many relationships and as the return type when you access such a relationship.
     /// </summary>
     /// <remarks>Relationships are ordered and preserve their order, hence the ability to use ordinal 
-    /// indexes in calls such as Insert and RemoveAt.<br />
-    /// When you declare a relationship you can either use IList<myClass> or RealmList<myClass> but in either case, you get a RealmList returned.
+    /// indexes in calls such as Insert and RemoveAt.
     /// </remarks>
     /// 
     /// <typeparam name="T">Type of the RealmObject which is the target of the relationship.</typeparam>
@@ -160,7 +159,7 @@ namespace Realms
         /// <typeparam name="T">Type of the RealmObject which is the target of the relationship.</typeparam>
         public void Add(T item)
         {
-            this.AttachObjectIfNeeded(item);
+            this.ManageObjectIfNeeded(item);
             var rowIndex = ((RealmObject)item).RowHandle.RowIndex;
             NativeLinkList.add(_listHandle, (IntPtr)rowIndex);        
         }
@@ -177,7 +176,7 @@ namespace Realms
         /// Tests if an item exists in the related set.
         /// </summary>
         /// <param name="item">Object to be searched for in the related items.</param>
-        /// <typeparam name="T">Type of the RealmObject which is the rarget of the relationship.</typeparam>
+        /// <typeparam name="T">Type of the RealmObject which is the target of the relationship.</typeparam>
         /// <returns>True if found, false if not found.</returns>
         public bool Contains(T item)
         {
@@ -229,7 +228,7 @@ namespace Realms
             if (index < 0)
                 throw new IndexOutOfRangeException ();
 
-            this.AttachObjectIfNeeded(item);
+            this.ManageObjectIfNeeded(item);
             var rowIndex = ((RealmObject)item).RowHandle.RowIndex;
             NativeLinkList.insert(_listHandle, (IntPtr)index, (IntPtr)rowIndex);        
         }
@@ -266,10 +265,10 @@ namespace Realms
             return new RealmListEnumerator(this);
         }
 
-        private void AttachObjectIfNeeded(T obj)
+        private void ManageObjectIfNeeded(T obj)
         {
             if (!obj.IsManaged)
-                _parent.Realm.Attach(obj);
+                _parent.Realm.Manage(obj);
         }
 
         #endregion

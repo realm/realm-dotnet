@@ -57,6 +57,9 @@ namespace Realms {
             case RealmExceptionCodes.RealmPermissionDenied :
                 throw new RealmPermissionDeniedException(message);
 
+            case RealmExceptionCodes.RealmFormatUpgradeRequired :
+                throw new RealmMigrationNeededException(message);
+
             case RealmExceptionCodes.StdArgumentOutOfRange :
                 throw new ArgumentOutOfRangeException(message);
 

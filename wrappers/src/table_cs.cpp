@@ -170,7 +170,14 @@ REALM_EXPORT void table_set_datetime_seconds(Table* table_ptr, size_t column_ndx
 REALM_EXPORT Query* table_where(Table* table_ptr)
 {
     return handle_errors([&]() {
-        return new Query(table_ptr->where());
+      return new Query(table_ptr->where());
+    });
+}
+
+REALM_EXPORT int64_t table_count_all(Table* table_ptr)
+{
+    return handle_errors([&]() {
+      return table_ptr->size();
     });
 }
 

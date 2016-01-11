@@ -408,6 +408,7 @@
 					"./src/object-store/impl",
 					"./src/object-store/impl/apple",
 				);
+				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -450,6 +451,7 @@
 					"./src/object-store/impl",
 					"./src/object-store/impl/apple",
 				);
+				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
