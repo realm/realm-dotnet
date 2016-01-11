@@ -21,19 +21,19 @@ namespace AssemblyToProcess
         public bool? NullableBooleanProperty { get; set; }
     }
 
-    public class IndexedInt32Object : RealmObject
+    public class ObjectIdInt32Object : RealmObject
     {
-        [Indexed] public int Int32Property { get; set; }
+        [ObjectId] public int Int32Property { get; set; }
     }
 
-    public class IndexedInt64Object : RealmObject
+    public class ObjectIdInt64Object : RealmObject
     {
-        [Indexed] public long Int64Property { get; set; }
+        [ObjectId] public long Int64Property { get; set; }
     }
 
-    public class IndexedStringObject : RealmObject
+    public class ObjectIdStringObject : RealmObject
     {
-        [Indexed] public string StringProperty { get; set; }
+        [ObjectId] public string StringProperty { get; set; }
     }
 
     //public class IndexedNullableInt32Object : RealmObject

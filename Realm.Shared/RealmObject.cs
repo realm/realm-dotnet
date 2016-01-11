@@ -325,7 +325,7 @@ namespace Realms
             var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
             var rowIndex = _rowHandle.RowIndex;
 
-            NativeTable.set_int64(tableHandle, columnIndex, (IntPtr)rowIndex, value);
+            NativeTable.set_int64(tableHandle, columnIndex, (IntPtr)rowIndex, value, MarshalHelpers.BoolToIntPtr(setUnique));
         }
 
         protected void SetInt64Value(string propertyName, long value, bool setUnique)
@@ -340,7 +340,7 @@ namespace Realms
             var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
             var rowIndex = _rowHandle.RowIndex;
 
-            NativeTable.set_int64(tableHandle, columnIndex, (IntPtr)rowIndex, value);
+            NativeTable.set_int64(tableHandle, columnIndex, (IntPtr)rowIndex, value, MarshalHelpers.BoolToIntPtr(setUnique));
         }
 
         protected void SetSingleValue(string propertyName, float value)

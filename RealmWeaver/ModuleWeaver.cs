@@ -89,11 +89,13 @@ public class ModuleWeaver
         // Cache of getter and setter methods for the various types.
         var methodTable = new Dictionary<string, Tuple<MethodReference, MethodReference>>();
 
-        var indexableTypes = new List<string>
+        var objectIdTypes = new List<string>
         {
             "System.String",
             "System.Int32",
             "System.Int64",
+            "System.Nullable`1<System.Int32>",
+            "System.Nullable`1<System.Int64>"
         };
 
         var wovenAttributeClass = assemblyToReference.MainModule.GetTypes().First(x => x.Name == "WovenAttribute");
@@ -108,6 +110,8 @@ public class ModuleWeaver
         foreach (var type in GetMatchingTypes())
         {
             Debug.WriteLine("Weaving " + type.Name);
+            var typeHasObjectId = false;
+
             foreach (var prop in type.Properties.Where(x => !x.CustomAttributes.Any(a => a.AttributeType.Name == "IgnoredAttribute")))
             {
                 var sequencePoint = prop.GetMethod.Body.Instructions.First().SequencePoint;
@@ -121,10 +125,10 @@ public class ModuleWeaver
 
                 Debug.Write("  - " + prop.PropertyType.FullName + " " + prop.Name + " (Column: " + columnName + ").. ");
 
-                var indexed = prop.CustomAttributes.Any(a => a.AttributeType.Name == "IndexedAttribute");
-                if (indexed && (!indexableTypes.Contains(prop.PropertyType.FullName)))
+                var objectId = prop.CustomAttributes.Any(a => a.AttributeType.Name == "ObjectIdAttribute");
+                if (objectId && (!objectIdTypes.Contains(prop.PropertyType.FullName)))
                 {
-                    LogErrorPoint( $"{type.Name}.{prop.Name} is marked as [indexed] which is only allowed on integer and string types.", sequencePoint);
+                    LogErrorPoint($"{type.Name}.{prop.Name} is marked as [ObjectId] which is only allowed on integer and string types.", sequencePoint);
                     continue;
                 }
 
@@ -145,8 +149,9 @@ public class ModuleWeaver
                         methodTable[prop.PropertyType.FullName] = Tuple.Create(getter, setter);
                     }
 
-                    //TODO: Hvis typen er i indexableTypes, så skal setUnique  sættes til indexed. Ellers skal den være null.
                     ReplaceGetter(prop, columnName, methodTable[prop.PropertyType.FullName].Item1);
+
+                    var setUnique = objectIdTypes.Contains(prop.PropertyType.FullName) ? objectId : (bool?)null;
                     ReplaceSetter(prop, columnName, methodTable[prop.PropertyType.FullName].Item2, setUnique);
                 }
                 else if (prop.PropertyType.Name == "IList`1" && prop.PropertyType.Namespace == "System.Collections.Generic")

@@ -202,11 +202,11 @@ namespace Tests
         [TestCase("Int32", 100, 0)]
         [TestCase("Int64", 100L, 0L)]
         [TestCase("String", "str", null)] 
-        public void SettingIndexedPropertyShouldCallSetUnique(string typeName, object propertyValue, object defaultPropertyValue)
+        public void SettingObjectIdPropertyShouldCallSetUnique(string typeName, object propertyValue, object defaultPropertyValue)
         {
             // Arrange
             var propertyName = typeName + "Property";
-            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.Indexed" + typeName + "Object"));
+            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.ObjectId" + typeName + "Object"));
             o.IsManaged = true;
 
             // Act
