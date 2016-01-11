@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 using NUnit.Framework;
+using Realms;
+
 namespace IntegrationTests
 {
     class SimpleLINQtests : PeopleTestsBase
@@ -14,15 +16,15 @@ namespace IntegrationTests
 
 
         // Extension method rather than SQL-style LINQ
+        // Also tests the Count on results, ElementOf, First and Single methods
         [Test]
         public void SearchComparingFloat()
         {
             MakeThreePeople();
-            var s0a = _realm.All<Person>();
-            var s0b = s0a.Where(p => p.Score == 42.42f);
-            var s0 = s0b.ToList();
+            var s0 = _realm.All<Person>().Where(p => p.Score == 42.42f);
+            var s0l = s0.ToList();
             Assert.That(s0.Count, Is.EqualTo(1));
-            Assert.That(s0[0].Score, Is.EqualTo(42.42f));
+            Assert.That(s0.ToList()[0].Score, Is.EqualTo(42.42f));
 
             var s1 = _realm.All<Person>().Where(p => p.Score != 100.0f).ToList();
             Assert.That(s1.Count, Is.EqualTo(2));

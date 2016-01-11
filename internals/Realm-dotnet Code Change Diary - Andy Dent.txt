@@ -1369,3 +1369,7 @@ ObjectIntegrationTests.cs
 - refactored _realm and _databasePath, plus methods Setup, TearDown and
   MakeThreePeople to PeopleTestsBase
 - made subclass of PeopleTestsBase
+
+RealmQueryVisitor.cs
+- VisitMethodCall
+  - refactored to handle Count

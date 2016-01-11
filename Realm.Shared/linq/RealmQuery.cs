@@ -51,7 +51,7 @@ namespace Realms
 
 
         /// <summary>
-        /// Count all objects of query or if created by <see cref="Realm.All"/> of the parameterised type, faster than a search.
+        /// Count all objects if created by <see cref="Realm.All"/> of the parameterised type, faster than a search.
         /// </summary>
         /// <remarks>
         /// Resolves to this method instead of the static extension <c>Count&lt;T&gt;(this IEnumerable&lt;T&gt;)</c>.
@@ -66,7 +66,8 @@ namespace Realms
                 var tableHandle = prov._realm._tableHandles[ElementType];
                 return (int)NativeTable.count_all(tableHandle);
             }
-            return 0;  // TODO Count for query, result of TableView
+            // we should be in RealmQueryVisitor.VisitMethodCall, not here, ever, seriously!
+            throw new NotImplementedException("Count should not be invoked directly on a RealmQuery unless created by All. LINQ will not invoke this."); 
         }    
     }
 }

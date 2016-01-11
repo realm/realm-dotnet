@@ -63,15 +63,25 @@ namespace Realms
             return e;
         }
 
+
         internal override Expression VisitMethodCall(MethodCallExpression m)
         {
-            if (m.Method.DeclaringType == typeof(Queryable) && m.Method.Name == "Where")
-            {
-                this.Visit(m.Arguments[0]);
+            if (m.Method.DeclaringType == typeof(Queryable)) { 
+                if (m.Method.Name == "Where")
+                {
+                    this.Visit(m.Arguments[0]);
 
-                LambdaExpression lambda = (LambdaExpression)StripQuotes(m.Arguments[1]);
-                this.Visit(lambda.Body);
-                return m;
+                    LambdaExpression lambda = (LambdaExpression)StripQuotes(m.Arguments[1]);
+                    this.Visit(lambda.Body);
+                    return m;
+                }
+                else if (m.Method.Name == "Count")
+                {
+                    this.Visit(m.Arguments[0]);
+                    //TODO count on the query lhs if count(lambda) or return count of tableview
+                    //return m;
+                }
+
             }
             throw new NotSupportedException($"The method '{m.Method.Name}' is not supported");
         }
