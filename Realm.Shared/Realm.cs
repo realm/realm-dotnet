@@ -239,7 +239,7 @@ namespace Realms
                 return false;
             if (ReferenceEquals(this, rhs))
                 return true;
-            return _config.Equals(rhs._config) && IsClosed == rhs.IsClosed;
+            return Config.Equals(rhs.Config) && IsClosed == rhs.IsClosed;
         }
 
 
