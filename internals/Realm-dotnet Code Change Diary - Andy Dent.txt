@@ -1354,6 +1354,57 @@ RealmQueryProvider
 
 
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#300 Better Migration Message
+
+IntegrationTests.cs
+- RealmMigrationTests added
+
+RealmConfiguration.cs
+- NotVersioned added
+- SchemaVersion property added
+- PathToRealm added
+
+Realm.cs
+- in Realm ctor, update config SchemaVersion
+- Realm.GetInstance 
+  - pass in SchemaVersion to NativeSharedRealm.Open
+  - add wrappers around open 
+- _config field made into public readable property Config
+
+NativeSharedRealm.cs
+- get_schema_version added
+- open added schemaVersion param
+
+shared_realm_cs.cpp
+- shared_realm_get_schema_version added
+- shared_realm_open added schemaVersion param and assign to the temp Config created
+
+wrappers/error_handling.cpp
+- realm::convert_exception 
+  - added case for FormatUpgradeRequired
+  - added case for SchemaValidationException treating the same
+  
+realm_error_type.hpp
+- RealmFormatUpgradeRequired added
+  
+RealmExceptionCodes.cs
+- RealmFormatUpgradeRequired added
+
+NativeCommon.cs
+- ExceptionThrower - added case for RealmFormatUpgradeRequired
+
+RealmFormatUpgradeRequiredException.cs
+- added
+- renamed RealmMigrationNeededException
+  
+  
+ForMigrationsToCopyAndMigrate.realm
+- added file to copy  
+
+TestHelpers.cs
+- CopyBundledDatabaseToDocuments helper added
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #298 Adding Count, Single, First to standard LINQ results
 
 SimpleLINQtests.cs

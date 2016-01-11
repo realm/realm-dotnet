@@ -55,8 +55,9 @@ namespace realm {
 
         RealmIncorrectThread = 11,
 
-        RealmUnitializedRealm = 12, 
+        RealmUnitializedRealm = 12,
 
+        RealmFormatUpgradeRequired = 13,
 
         StdArgumentOutOfRange = 100,
 

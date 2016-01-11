@@ -17,8 +17,17 @@ namespace Realms
         /// <summary>
         /// Standard filename to be combined with the platform-specific document directory.
         /// </summary>
-        /// <returns>A string representing a filename only, no path.</returns>      
+        /// <value>A string representing a filename only, no path.</value>      
         public static string DefaultRealmName  => "default.realm";
+
+        /// <summary>
+        /// Constant used for SchemaVersion to indicate is not versioned.
+        /// </summary>
+        /// <remarks>
+        /// Must be maintained to match an internal ObjectStore::NotVersioned.
+        /// </remarks>
+        /// <value>Maximum value of UInt64.</value>
+        public static UInt64 NotVersioned => UInt64.MaxValue;
 
         /// <summary>
         /// Flag mainly to help with temp databases and testing, indicates content can be abandoned when you change the schema.
@@ -29,6 +38,28 @@ namespace Realms
         /// The full path of any realms opened with this configuration, may be overriden by passing in a separate name.
         /// </summary>
         public string DatabasePath {get; private set;}
+
+        /// <summary>
+        /// Utility to build a path in which a realm will be created so can consistently use filenames and relative paths.
+        /// </summary>
+        public static string PathToRealm(string optionalPath = null)
+        {
+            if (string.IsNullOrEmpty(optionalPath)) {
+                return Path.Combine (Environment.GetFolderPath(Environment.SpecialFolder.Personal), DefaultRealmName);
+            }
+            if (!Path.IsPathRooted (optionalPath)) {
+                optionalPath = Path.Combine (Environment.GetFolderPath(Environment.SpecialFolder.Personal), optionalPath);
+            }
+            if (optionalPath[optionalPath.Length-1] == Path.DirectorySeparatorChar)   // ends with dir sep
+                optionalPath = Path.Combine (optionalPath, DefaultRealmName);
+             return optionalPath;
+        }
+
+        /// <summary>
+        /// Number indicating the version, can be used to arbitrarily distinguish between schemas even if they have the same objects and properties.
+        /// </summary>
+        /// <value>0-based value initially set to indicate user is not versioning.</value>
+        public UInt64 SchemaVersion { get; set;} = RealmConfiguration.NotVersioned;
 
         /// <summary>
         /// Configuration you can override which is used when you create a new Realm without specifying a configuration.
@@ -43,21 +74,7 @@ namespace Realms
         public RealmConfiguration(string optionalPath = null, bool shouldDeleteIfMigrationNeeded=false)
         {
             ShouldDeleteIfMigrationNeeded = shouldDeleteIfMigrationNeeded;
-            if (string.IsNullOrEmpty(optionalPath)) {
-                DatabasePath = Path.Combine (
-                    System.Environment.GetFolderPath(Environment.SpecialFolder.Personal), 
-                    DefaultRealmName);
-            }
-            else {
-                if (!Path.IsPathRooted (optionalPath)) {
-                    optionalPath = Path.Combine (
-                        System.Environment.GetFolderPath (Environment.SpecialFolder.Personal), 
-                        optionalPath);
-                }
-                if (optionalPath[optionalPath.Length-1] == Path.DirectorySeparatorChar)
-                    optionalPath = Path.Combine (optionalPath, DefaultRealmName);
-                DatabasePath = optionalPath;
-            }
+            DatabasePath = PathToRealm(optionalPath);
         }
 
         /// <summary>

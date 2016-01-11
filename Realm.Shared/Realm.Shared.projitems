@@ -53,5 +53,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)native\NativeLinkList.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)handles\LinkListHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RealmConfiguration.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmMigrationNeededException.cs" />
   </ItemGroup>
 </Project>

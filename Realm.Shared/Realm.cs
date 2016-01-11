@@ -42,7 +42,10 @@ namespace Realms
             NativeCommon.SetupExceptionThrower();
         }
 
-        RealmConfiguration _config;
+        /// <summary>
+        /// Configuration that controls the Realm path and other settings.
+        /// </summary>
+        public RealmConfiguration Config { get; private set; }
 
         /// <summary>
         /// Factory for a Realm instance for this thread.
@@ -53,7 +56,6 @@ namespace Realms
         /// </remarks>
         /// <returns>A realm instance, possibly from cache.</returns>
         /// <exception cref="RealmFileAccessErrorException">Throws error if the filesystem has an error preventing file creation.</exception>
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         public static Realm GetInstance(string databasePath)
         {
             var config = RealmConfiguration.DefaultConfiguration;
@@ -84,19 +86,45 @@ namespace Realms
 
             var srHandle = new SharedRealmHandle();
 
+            var readOnly = MarshalHelpers.BoolToIntPtr(false);
+            var durability = MarshalHelpers.BoolToIntPtr(false);
+            var databasePath = config.DatabasePath;
+            IntPtr srPtr = IntPtr.Zero;
+            try {
+                srPtr = NativeSharedRealm.open(schemaHandle, 
+                    databasePath, (IntPtr)databasePath.Length, 
+                    readOnly, durability, 
+                    "", IntPtr.Zero,
+                    config.SchemaVersion);
+            } catch (RealmMigrationNeededException) {
+                if (config.ShouldDeleteIfMigrationNeeded)
+                {
+                    DeleteRealm(config);
+                }
+                else
+                {
+                    throw; // rethrow te exception
+                    //TODO when have Migration but also consider programmer control over auto migration
+                    //MigrateRealm(configuration);
+                }
+                // create after deleting old reopen after migrating 
+                srPtr = NativeSharedRealm.open(schemaHandle, 
+                    databasePath, (IntPtr)databasePath.Length, 
+                    readOnly, durability, 
+                    "", IntPtr.Zero,
+                    config.SchemaVersion);
+            }
+
             RuntimeHelpers.PrepareConstrainedRegions();
             try { /* Retain handle in a constrained execution region */ }
             finally
             {
-                var readOnly = MarshalHelpers.BoolToIntPtr(false);
-                var durability = MarshalHelpers.BoolToIntPtr(false);
-                var databasePath = config.DatabasePath;
-                var srPtr = NativeSharedRealm.open(schemaHandle, databasePath, (IntPtr)databasePath.Length, readOnly, durability, "", (IntPtr)0);
                 srHandle.SetHandle(srPtr);
             }
 
-            return new Realm(srHandle, config);
-        }
+            return new Realm(srHandle, config);  // try creating again
+        }  // GetInstance
+
 
         private static IntPtr GenerateObjectSchema(Type objectClass)
         {
@@ -152,7 +180,9 @@ namespace Realms
         {
             _sharedRealmHandle = sharedRealmHandle;
             _tableHandles = RealmObjectClasses.ToDictionary(t => t, GetTable);
-            _config = config;
+            Config = config;
+            // update OUR config version number in case loaded one from disk
+            Config.SchemaVersion = NativeSharedRealm.get_schema_version(sharedRealmHandle);
         }
 
         /// <summary>
