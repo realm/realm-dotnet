@@ -46,6 +46,7 @@
     <Compile Include="IPersonTest.cs" />
     <Compile Include="RemappedClass.cs" />
     <Compile Include="Sandbox.cs" />
+    <Compile Include="TestObjects.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Realm.FakeForWeaverTests\Realm.FakeForWeaverTests.csproj">
