@@ -1327,6 +1327,7 @@ NativeCommon.cs
 
 RealmFormatUpgradeRequiredException.cs
 - added
+- renamed RealmMigrationNeededException
   
   
 ForMigrationsToCopyAndMigrate.realm

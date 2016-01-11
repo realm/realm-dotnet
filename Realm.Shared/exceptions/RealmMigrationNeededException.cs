@@ -13,9 +13,9 @@ namespace Realms {
 /// Typically triggered when you open the same Realm name, or use GetInstance() with no name, 
     /// and don't delete old files. <seealso href="https://realm.io/docs/xamarin/latest/#migrations">Read more at Migrations.</seealso>
 /// </remarks>
-public class RealmFormatUpgradeRequiredException : RealmFileAccessErrorException {
+public class RealmMigrationNeededException : RealmFileAccessErrorException {
 
-    internal RealmFormatUpgradeRequiredException(String message) : base(message)
+    internal RealmMigrationNeededException(String message) : base(message)
     {
     }
 }

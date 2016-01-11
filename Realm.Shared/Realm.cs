@@ -89,14 +89,14 @@ namespace Realms
             var readOnly = MarshalHelpers.BoolToIntPtr(false);
             var durability = MarshalHelpers.BoolToIntPtr(false);
             var databasePath = config.DatabasePath;
-            IntPtr srPtr = (IntPtr)0;
+            IntPtr srPtr = IntPtr.Zero;
             try {
                 srPtr = NativeSharedRealm.open(schemaHandle, 
                     databasePath, (IntPtr)databasePath.Length, 
                     readOnly, durability, 
-                    "", (IntPtr)0,
+                    "", IntPtr.Zero,
                     config.SchemaVersion);
-            } catch (RealmFormatUpgradeRequiredException e) {
+            } catch (RealmMigrationNeededException) {
                 if (config.ShouldDeleteIfMigrationNeeded)
                 {
                     DeleteRealm(config);
@@ -111,7 +111,7 @@ namespace Realms
                 srPtr = NativeSharedRealm.open(schemaHandle, 
                     databasePath, (IntPtr)databasePath.Length, 
                     readOnly, durability, 
-                    "", (IntPtr)0,
+                    "", IntPtr.Zero,
                     config.SchemaVersion);
             }
 

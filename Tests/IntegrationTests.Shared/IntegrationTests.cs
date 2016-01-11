@@ -557,7 +557,7 @@ namespace IntegrationTests
 
             // Assert
             Realm realm1 = null;
-            Assert.Throws<RealmFormatUpgradeRequiredException>( () => realm1 = Realm.GetInstance("NeedsMigrating.realm") );
+            Assert.Throws<RealmMigrationNeededException>( () => realm1 = Realm.GetInstance("NeedsMigrating.realm") );
         }
 
         [Test]
