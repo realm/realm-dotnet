@@ -89,12 +89,18 @@ namespace Tests
             }
         }
 
+        [TestCase("CharProperty", '0')]
+        [TestCase("ByteProperty", (byte)100)]
+        [TestCase("Int16Property", (short)100)]
         [TestCase("Int32Property", 100)]
-        [TestCase("Int64Property", 100)]
+        [TestCase("Int64Property", 100L)]
         [TestCase("SingleProperty", 123.123f)]
         [TestCase("DoubleProperty", 123.123)]
         [TestCase("BooleanProperty", true)]
         [TestCase("StringProperty", "str")] 
+        [TestCase("NullableCharProperty", '0')]
+        [TestCase("NullableByteProperty", (byte)100)]
+        [TestCase("NullableInt16Property", (short)100)]
         [TestCase("NullableInt32Property", 100)]
         [TestCase("NullableInt64Property", 100L)]
         [TestCase("NullableSingleProperty", 123.123f)] 
@@ -114,12 +120,18 @@ namespace Tests
             Assert.That(returnedValue, Is.EqualTo(propertyValue));
         }
 
+        [TestCase("Char", '0')]
+        [TestCase("Byte", (byte)100)]
+        [TestCase("Int16", (short)100)]
         [TestCase("Int32", 100)]
-        [TestCase("Int64", 100)]
+        [TestCase("Int64", 100L)]
         [TestCase("Single", 123.123f)]
         [TestCase("Double", 123.123)]
         [TestCase("Boolean", true)]
         [TestCase("String", "str")] 
+        [TestCase("NullableChar", '0')]
+        [TestCase("NullableByte", (byte)100)]
+        [TestCase("NullableInt16", (short)100)]
         [TestCase("NullableInt32", 100)]
         [TestCase("NullableInt64", 100L)]
         [TestCase("NullableSingle", 123.123f)] 
@@ -139,12 +151,18 @@ namespace Tests
             Assert.That(GetAutoPropertyBackingFieldValue(o, propertyName), Is.EqualTo(propertyValue));
         }
 
+        [TestCase("Char", '0')]
+        [TestCase("Byte", (byte)100)]
+        [TestCase("Int16", (short)100)]
         [TestCase("Int32", 100)]
         [TestCase("Int64", 100L)]
         [TestCase("Single", 123.123f)]
         [TestCase("Double", 123,123)]
         [TestCase("Boolean", true)]
         [TestCase("String", "str")] 
+        [TestCase("NullableChar", '0')]
+        [TestCase("NullableByte", (byte)100)]
+        [TestCase("NullableInt16", (short)100)]
         [TestCase("NullableInt32", 100)]
         [TestCase("NullableInt64", 100L)]
         [TestCase("NullableSingle", 123.123f)] 
@@ -168,12 +186,18 @@ namespace Tests
             }));
         }
 
+        [TestCase("Char", '0', char.MinValue)]
+        [TestCase("Byte", (byte)100, (byte)0)]
+        [TestCase("Int16", (short)100, (short)0)]
         [TestCase("Int32", 100, 0)]
         [TestCase("Int64", 100L, 0L)]
         [TestCase("Single", 123.123f, 0.0f)]
         [TestCase("Double", 123.123, 0.0)]
         [TestCase("Boolean", true)]
         [TestCase("String", "str", null)] 
+        [TestCase("NullableChar", '0', null)]
+        [TestCase("NullableByte", (byte)100, null)]
+        [TestCase("NullableInt16", (short)100, null)]
         [TestCase("NullableInt32", 100, null)]
         [TestCase("NullableInt64", 100L, null)]
         [TestCase("NullableSingle", 123.123f, null)] 
@@ -199,6 +223,9 @@ namespace Tests
         }
 
 
+        [TestCase("Char", '0', char.MinValue)]
+        [TestCase("Byte", (byte)100, (byte)0)]
+        [TestCase("Int16", (short)100, (short)0)]
         [TestCase("Int32", 100, 0)]
         [TestCase("Int64", 100L, 0L)]
         [TestCase("String", "str", null)] 

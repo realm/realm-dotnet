@@ -73,12 +73,18 @@ public class ModuleWeaver
         var typeTable = new Dictionary<string, string>()
         {
             {"System.String", "String"},
+            {"System.Char", "Char"},
+            {"System.Byte", "Byte"},
+            {"System.Int16", "Int16"},
             {"System.Int32", "Int32"},
             {"System.Int64", "Int64"},
             {"System.Single", "Single"},
             {"System.Double", "Double"},
             {"System.Boolean", "Boolean"},
             {"System.DateTimeOffset", "DateTimeOffset"},
+            {"System.Nullable`1<System.Char>", "NullableChar"},
+            {"System.Nullable`1<System.Byte>", "NullableByte"},
+            {"System.Nullable`1<System.Int16>", "NullableInt16"},
             {"System.Nullable`1<System.Int32>", "NullableInt32"},
             {"System.Nullable`1<System.Int64>", "NullableInt64"},
             {"System.Nullable`1<System.Single>", "NullableSingle"},
@@ -92,6 +98,9 @@ public class ModuleWeaver
         var objectIdTypes = new List<string>
         {
             "System.String",
+            "System.Char",
+            "System.Byte",
+            "System.Int16",
             "System.Int32",
             "System.Int64",
         };

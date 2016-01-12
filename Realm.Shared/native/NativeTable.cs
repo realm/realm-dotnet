@@ -22,6 +22,9 @@ namespace Realms
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_datetime_seconds", CallingConvention = CallingConvention.Cdecl)]
         internal static extern Int64 get_datetime_seconds(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex);
 
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_nullable_datetime_seconds", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern IntPtr get_nullable_datetime_seconds(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex, ref long retVal);
+
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_string", CallingConvention = CallingConvention.Cdecl)]
         internal static extern void set_string(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx,
             [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
@@ -46,11 +49,17 @@ namespace Realms
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_linklist", CallingConvention = CallingConvention.Cdecl)]
         internal static extern IntPtr get_linklist(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex);
 
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_null", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void set_null(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx);
+
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_bool", CallingConvention = CallingConvention.Cdecl)]
         internal static extern void set_bool(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, IntPtr value);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_bool", CallingConvention = CallingConvention.Cdecl)]
         internal static extern IntPtr get_bool(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_nullable_bool", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern IntPtr get_nullable_bool(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex, ref IntPtr retVal);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_int64", CallingConvention = CallingConvention.Cdecl)]
         internal static extern void set_int64(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, Int64 value);
@@ -61,17 +70,26 @@ namespace Realms
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_int64", CallingConvention = CallingConvention.Cdecl)]
         internal static extern Int64 get_int64(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex);
 
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_nullable_int64", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern IntPtr get_nullable_int64(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex, ref Int64 retVal);
+
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_float", CallingConvention = CallingConvention.Cdecl)]
         internal static extern void set_float(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, float value);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_float", CallingConvention = CallingConvention.Cdecl)]
         internal static extern float get_float(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex);
 
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_nullable_float", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern IntPtr get_nullable_float(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex, ref float retVal);
+
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_double", CallingConvention = CallingConvention.Cdecl)]
         internal static extern void set_double(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, double value);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_double", CallingConvention = CallingConvention.Cdecl)]
         internal static extern double get_double(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_nullable_double", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern IntPtr get_nullable_double(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex, ref double retVal);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_where", CallingConvention = CallingConvention.Cdecl)]
         internal static extern IntPtr where(TableHandle handle);
