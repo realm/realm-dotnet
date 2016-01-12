@@ -100,7 +100,7 @@ namespace Tests
         [TestCase("NullableSingleProperty", 123.123f)] 
         [TestCase("NullableDoubleProperty", 123.123)] 
         [TestCase("NullableBooleanProperty", true)]
-        public void GetValueUnmanagedShouldGetBackindField(string propertyName, object propertyValue)
+        public void GetValueUnmanagedShouldGetBackingField(string propertyName, object propertyValue)
         {
             // Arrange
             var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.AllTypesObject"));
@@ -168,18 +168,18 @@ namespace Tests
             }));
         }
 
-        [TestCase("Int32", 100, 0, false)]
-        [TestCase("Int64", 100L, 0L, false)]
-        [TestCase("Single", 123.123f, 0.0f, null)]
-        [TestCase("Double", 123.123, 0.0, null)]
-        [TestCase("Boolean", true, false)]
-        [TestCase("String", "str", null, false)] 
-        [TestCase("NullableInt32", 100, null, false)]
-        [TestCase("NullableInt64", 100L, null, false)]
-        [TestCase("NullableSingle", 123.123f, null, null)] 
-        [TestCase("NullableDouble", 123.123, null, null)] 
-        [TestCase("NullableBoolean", true, null, null)]
-        public void SetValueManagedShouldUpdateDatabase(string typeName, object propertyValue, object defaultPropertyValue, bool? setUnique)
+        [TestCase("Int32", 100, 0)]
+        [TestCase("Int64", 100L, 0L)]
+        [TestCase("Single", 123.123f, 0.0f)]
+        [TestCase("Double", 123.123, 0.0)]
+        [TestCase("Boolean", true)]
+        [TestCase("String", "str", null)] 
+        [TestCase("NullableInt32", 100, null)]
+        [TestCase("NullableInt64", 100L, null)]
+        [TestCase("NullableSingle", 123.123f, null)] 
+        [TestCase("NullableDouble", 123.123, null)] 
+        [TestCase("NullableBoolean", true, null)]
+        public void SetValueManagedShouldUpdateDatabase(string typeName, object propertyValue, object defaultPropertyValue)
         {
             // Arrange
             var propertyName = typeName + "Property";
@@ -193,7 +193,7 @@ namespace Tests
             Assert.That(o.LogList, Is.EqualTo(new List<string>
             {
                 "IsManaged",
-                "RealmObject.Set" + typeName + "Value(propertyName = \"" + propertyName + "\", value = " + propertyValue + (setUnique != null ? $", setUnique = {setUnique.Value})" : ")")
+                "RealmObject.Set" + typeName + "Value(propertyName = \"" + propertyName + "\", value = " + propertyValue + ")"
             }));
             Assert.That(GetAutoPropertyBackingFieldValue(o, propertyName), Is.EqualTo(defaultPropertyValue));
         }
@@ -216,7 +216,7 @@ namespace Tests
             Assert.That(o.LogList, Is.EqualTo(new List<string>
             {
                 "IsManaged",
-                "RealmObject.Set" + typeName + "Value(propertyName = \"" + propertyName + "\", value = " + propertyValue + ", setUnique = True)"
+                "RealmObject.Set" + typeName + "ValueUnique(propertyName = \"" + propertyName + "\", value = " + propertyValue + ")"
             }));
             Assert.That(GetAutoPropertyBackingFieldValue(o, propertyName), Is.EqualTo(defaultPropertyValue));
             
@@ -249,7 +249,7 @@ namespace Tests
             Assert.That(o.LogList, Is.EqualTo(new List<string>
             {
                 "IsManaged",
-                "RealmObject.SetStringValue(propertyName = \"Email\", value = a@b.com, setUnique = False)"
+                "RealmObject.SetStringValue(propertyName = \"Email\", value = a@b.com)"
             }));
         }
 

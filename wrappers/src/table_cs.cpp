@@ -124,13 +124,17 @@ REALM_EXPORT void table_set_bool(Table* table_ptr, size_t column_ndx, size_t row
     });
 }
 
-REALM_EXPORT void table_set_int64(Table* table_ptr, size_t column_ndx, size_t row_ndx, int64_t value, size_t set_unique)
+REALM_EXPORT void table_set_int64(Table* table_ptr, size_t column_ndx, size_t row_ndx, int64_t value)
 {
     return handle_errors([&]() {
-        if (set_unique == 1)
-            table_ptr->set_int_unique(column_ndx, row_ndx, value);
-        else
-            table_ptr->set_int(column_ndx, row_ndx, value);
+        table_ptr->set_int(column_ndx, row_ndx, value);
+    });
+}
+
+REALM_EXPORT void table_set_int64_unique(Table* table_ptr, size_t column_ndx, size_t row_ndx, int64_t value)
+{
+    return handle_errors([&]() {
+        table_ptr->set_int_unique(column_ndx, row_ndx, value);
     });
 }
 
@@ -148,14 +152,19 @@ REALM_EXPORT void table_set_double(Table* table_ptr, size_t column_ndx, size_t r
     });
 }
 
-REALM_EXPORT void table_set_string(Table* table_ptr, size_t column_ndx, size_t row_ndx, uint16_t* value, size_t value_len, size_t set_unique)
+REALM_EXPORT void table_set_string(Table* table_ptr, size_t column_ndx, size_t row_ndx, uint16_t* value, size_t value_len)
 {
     return handle_errors([&]() {
         Utf16StringAccessor str(value, value_len);
-        if (set_unique == 1)
-            table_ptr->set_string_unique(column_ndx, row_ndx, str);
-        else
-            table_ptr->set_string(column_ndx, row_ndx, str);
+        table_ptr->set_string(column_ndx, row_ndx, str);
+    });
+}
+
+REALM_EXPORT void table_set_string_unique(Table* table_ptr, size_t column_ndx, size_t row_ndx, uint16_t* value, size_t value_len)
+{
+    return handle_errors([&]() {
+        Utf16StringAccessor str(value, value_len);
+        table_ptr->set_string_unique(column_ndx, row_ndx, str);
     });
 }
 

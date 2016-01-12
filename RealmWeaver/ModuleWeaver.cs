@@ -94,8 +94,6 @@ public class ModuleWeaver
             "System.String",
             "System.Int32",
             "System.Int64",
-            "System.Nullable`1<System.Int32>",
-            "System.Nullable`1<System.Int64>"
         };
 
         var wovenAttributeClass = assemblyToReference.MainModule.GetTypes().First(x => x.Name == "WovenAttribute");
@@ -142,17 +140,16 @@ public class ModuleWeaver
                 }
                 if (typeTable.ContainsKey(prop.PropertyType.FullName))
                 {
-                    if (!methodTable.ContainsKey(prop.PropertyType.FullName))
+                    var typeId = prop.PropertyType.FullName + (objectId ? " unique" : "");
+                    if (!methodTable.ContainsKey(typeId))
                     {
                         var getter = MethodNamed(realmObjectType, "Get" + typeTable[prop.PropertyType.FullName] + "Value");
-                        var setter = MethodNamed(realmObjectType, "Set" + typeTable[prop.PropertyType.FullName] + "Value");
-                        methodTable[prop.PropertyType.FullName] = Tuple.Create(getter, setter);
+                        var setter = MethodNamed(realmObjectType, "Set" + typeTable[prop.PropertyType.FullName] + "Value" + (objectId ? "Unique": ""));
+                        methodTable[typeId] = Tuple.Create(getter, setter);
                     }
 
-                    ReplaceGetter(prop, columnName, methodTable[prop.PropertyType.FullName].Item1);
-
-                    var setUnique = objectIdTypes.Contains(prop.PropertyType.FullName) ? objectId : (bool?)null;
-                    ReplaceSetter(prop, columnName, methodTable[prop.PropertyType.FullName].Item2, setUnique);
+                    ReplaceGetter(prop, columnName, methodTable[typeId].Item1);
+                    ReplaceSetter(prop, columnName, methodTable[typeId].Item2);
                 }
                 else if (prop.PropertyType.Name == "IList`1" && prop.PropertyType.Namespace == "System.Collections.Generic")
                 {
@@ -239,7 +236,7 @@ public class ModuleWeaver
         Debug.Write("[get] ");
     }
 
-    void ReplaceSetter(PropertyDefinition prop, string columnName, MethodReference setValueReference, bool? setUnique)
+    void ReplaceSetter(PropertyDefinition prop, string columnName, MethodReference setValueReference)
     {
         /// A synthesized property setter looks like this:
         ///   0: ldarg.0
@@ -253,13 +250,12 @@ public class ModuleWeaver
         ///   3: ldarg.0
         ///   4: ldstr <columnName>
         ///   5: ldarg.1
-        ///   6: ldc.i4.<0 or 1 from setUnique>
-        ///   7: call Realm.RealmObject.SetValue<T>
-        ///   8: ret.
-        ///   9: ldarg.0
-        ///   10: ldarg.1
-        ///   11: stfld <backingField>
-        ///   12: ret.
+        ///   6: call Realm.RealmObject.SetValue<T>
+        ///   7: ret.
+        ///   8: ldarg.0
+        ///   9: ldarg.1
+        ///   10: stfld <backingField>
+        ///   11: ret.
         /// This is roughly equivalent to:
         ///   if (!base.IsManaged) this.<backingField> = value;
         ///   else base.SetValue<T>(<columnName>, value, setUnique);
@@ -273,8 +269,6 @@ public class ModuleWeaver
         il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));
         il.InsertBefore(start, il.Create(OpCodes.Ldstr, columnName));
         il.InsertBefore(start, il.Create(OpCodes.Ldarg_1));
-        if (setUnique != null)
-            il.InsertBefore(start, il.Create(setUnique.Value ? OpCodes.Ldc_I4_1 : OpCodes.Ldc_I4_0));
         il.InsertBefore(start, il.Create(OpCodes.Call, setValueReference));
         il.InsertBefore(start, il.Create(OpCodes.Ret));
 

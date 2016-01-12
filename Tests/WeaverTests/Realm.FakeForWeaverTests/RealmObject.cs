@@ -43,9 +43,14 @@ namespace Realms
             return "";
         }
 
-        protected void SetStringValue(string propertyName, string value, bool setUnique)
+        protected void SetStringValue(string propertyName, string value)
         {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}, {nameof(setUnique)} = {setUnique}");
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
+        }
+
+        protected void SetStringValueUnique(string propertyName, string value)
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
         }
 
         protected int GetInt32Value(string propertyName)
@@ -54,9 +59,14 @@ namespace Realms
             return 0;
         }
 
-        protected void SetInt32Value(string propertyName, int value, bool setUnique)
+        protected void SetInt32Value(string propertyName, int value)
         {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}, {nameof(setUnique)} = {setUnique}");
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
+        }
+
+        protected void SetInt32ValueUnique(string propertyName, int value)
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
         }
 
         protected long GetInt64Value(string propertyName)
@@ -65,9 +75,14 @@ namespace Realms
             return 0;
         }
 
-        protected void SetInt64Value(string propertyName, long value, bool setUnique)
+        protected void SetInt64Value(string propertyName, long value)
         {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}, {nameof(setUnique)} = {setUnique}");
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
+        }
+
+        protected void SetInt64ValueUnique(string propertyName, long value)
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
         }
 
         protected float GetSingleValue(string propertyName)
@@ -120,9 +135,9 @@ namespace Realms
             return 0;
         }
 
-        protected void SetNullableInt32Value(string propertyName, int? value, bool setUnique)
+        protected void SetNullableInt32Value(string propertyName, int? value)
         {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}, {nameof(setUnique)} = {setUnique}");
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
         }
 
         protected long? GetNullableInt64Value(string propertyName)
@@ -131,9 +146,9 @@ namespace Realms
             return 0;
         }
 
-        protected void SetNullableInt64Value(string propertyName, long? value, bool setUnique)
+        protected void SetNullableInt64Value(string propertyName, long? value)
         {
-            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}, {nameof(setUnique)} = {setUnique}");
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
         }
 
         protected float? GetNullableSingleValue(string propertyName)
@@ -190,6 +205,5 @@ namespace Realms
         {
             LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
         }
-
     }
 }

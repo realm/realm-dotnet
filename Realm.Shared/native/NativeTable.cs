@@ -24,7 +24,11 @@ namespace Realms
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_string", CallingConvention = CallingConvention.Cdecl)]
         internal static extern void set_string(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx,
-            [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen, IntPtr setUnique);
+            [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_string_unique", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void set_string_unique(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx,
+            [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_string", CallingConvention = CallingConvention.Cdecl)]
         internal static extern IntPtr get_string(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex,
@@ -49,7 +53,10 @@ namespace Realms
         internal static extern IntPtr get_bool(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_int64", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern void set_int64(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, Int64 value, IntPtr setUnique);
+        internal static extern void set_int64(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, Int64 value);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_int64_unique", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void set_int64_unique(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, Int64 value);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_int64", CallingConvention = CallingConvention.Cdecl)]
         internal static extern Int64 get_int64(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex);
