@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net.Mime;
 using System.Reflection;
 using Mono.Cecil;
 using NUnit.Framework;
@@ -17,9 +18,38 @@ namespace Tests
     [TestFixture]
     public class WeaverTests
     {
-        Assembly _assembly;
-        string _newAssemblyPath;
-        string _assemblyPath;
+        #region helpers
+
+        private static dynamic GetAutoPropertyBackingFieldValue(object o, string propertyName)
+        {
+            var propertyField = ((Type) o.GetType())
+                .GetField($"<{propertyName}>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance);
+            var fieldValue = propertyField.GetValue(o);
+            return fieldValue;
+        }
+
+        private static void SetAutoPropertyBackingFieldValue(object o, string propertyName, object propertyValue)
+        {
+            var propertyField = ((Type) o.GetType())
+                .GetField($"<{propertyName}>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance);
+            propertyField.SetValue(o, propertyValue);
+        }
+
+        public static object GetPropertyValue(object o, string propName)
+        {
+            return o.GetType().GetProperty(propName).GetValue(o, null);
+        }
+
+        public static void SetPropertyValue(object o, string propName, object propertyValue)
+        {
+            o.GetType().GetProperty(propName).SetValue(o, propertyValue);
+        }
+
+        #endregion
+
+        private Assembly _assembly;
+        private string _newAssemblyPath;
+        private string _assemblyPath;
 
         [TestFixtureSetUp]
         public void FixtureSetup()
@@ -36,7 +66,8 @@ namespace Tests
             var moduleDefinition = ModuleDefinition.ReadModule(_newAssemblyPath);
             var weavingTask = new ModuleWeaver
             {
-                ModuleDefinition = moduleDefinition
+                ModuleDefinition = moduleDefinition,
+                LogErrorPoint = (s, point) => { throw new Exception(s); }
             };
 
             weavingTask.Execute();
@@ -58,35 +89,164 @@ namespace Tests
             }
         }
 
-        [Test]
-        public void SetStringValueUnmanagedTest()
+        [TestCase("CharProperty", '0')]
+        [TestCase("ByteProperty", (byte)100)]
+        [TestCase("Int16Property", (short)100)]
+        [TestCase("Int32Property", 100)]
+        [TestCase("Int64Property", 100L)]
+        [TestCase("SingleProperty", 123.123f)]
+        [TestCase("DoubleProperty", 123.123)]
+        [TestCase("BooleanProperty", true)]
+        [TestCase("StringProperty", "str")] 
+        [TestCase("NullableCharProperty", '0')]
+        [TestCase("NullableByteProperty", (byte)100)]
+        [TestCase("NullableInt16Property", (short)100)]
+        [TestCase("NullableInt32Property", 100)]
+        [TestCase("NullableInt64Property", 100L)]
+        [TestCase("NullableSingleProperty", 123.123f)] 
+        [TestCase("NullableDoubleProperty", 123.123)] 
+        [TestCase("NullableBooleanProperty", true)]
+        public void GetValueUnmanagedShouldGetBackingField(string propertyName, object propertyValue)
         {
             // Arrange
-            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.Person"));
+            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.AllTypesObject"));
+            SetAutoPropertyBackingFieldValue(o, propertyName, propertyValue);
 
             // Act
-            o.FirstName = "Peter";
+            var returnedValue = GetPropertyValue(o, propertyName);
 
             // Assert
             Assert.That(o.LogList, Is.EqualTo(new List<string> { "IsManaged" }));
+            Assert.That(returnedValue, Is.EqualTo(propertyValue));
         }
 
-        [Test]
-        public void SetStringValueManagedTest()
+        [TestCase("Char", '0')]
+        [TestCase("Byte", (byte)100)]
+        [TestCase("Int16", (short)100)]
+        [TestCase("Int32", 100)]
+        [TestCase("Int64", 100L)]
+        [TestCase("Single", 123.123f)]
+        [TestCase("Double", 123.123)]
+        [TestCase("Boolean", true)]
+        [TestCase("String", "str")] 
+        [TestCase("NullableChar", '0')]
+        [TestCase("NullableByte", (byte)100)]
+        [TestCase("NullableInt16", (short)100)]
+        [TestCase("NullableInt32", 100)]
+        [TestCase("NullableInt64", 100L)]
+        [TestCase("NullableSingle", 123.123f)] 
+        [TestCase("NullableDouble", 123.123)] 
+        [TestCase("NullableBoolean", true)]
+        public void SetValueUnmanagedShouldSetBackingField(string typeName, object propertyValue)
         {
             // Arrange
-            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.Person"));
+            var propertyName = typeName + "Property";
+            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.AllTypesObject"));
+
+            // Act
+            SetPropertyValue(o, propertyName, propertyValue);
+
+            // Assert
+            Assert.That(o.LogList, Is.EqualTo(new List<string> { "IsManaged" }));
+            Assert.That(GetAutoPropertyBackingFieldValue(o, propertyName), Is.EqualTo(propertyValue));
+        }
+
+        [TestCase("Char", '0')]
+        [TestCase("Byte", (byte)100)]
+        [TestCase("Int16", (short)100)]
+        [TestCase("Int32", 100)]
+        [TestCase("Int64", 100L)]
+        [TestCase("Single", 123.123f)]
+        [TestCase("Double", 123,123)]
+        [TestCase("Boolean", true)]
+        [TestCase("String", "str")] 
+        [TestCase("NullableChar", '0')]
+        [TestCase("NullableByte", (byte)100)]
+        [TestCase("NullableInt16", (short)100)]
+        [TestCase("NullableInt32", 100)]
+        [TestCase("NullableInt64", 100L)]
+        [TestCase("NullableSingle", 123.123f)] 
+        [TestCase("NullableDouble", 123.123)] 
+        [TestCase("NullableBoolean", true)]
+        public void GetValueManagedShouldGetQueryDatabase(string typeName, object propertyValue)
+        {
+            // Arrange
+            var propertyName = typeName + "Property";
+            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.AllTypesObject"));
             o.IsManaged = true;
 
             // Act
-            o.FirstName = "Peter";
+            GetPropertyValue(o, propertyName);
 
             // Assert
             Assert.That(o.LogList, Is.EqualTo(new List<string>
             {
                 "IsManaged",
-                "RealmObject.SetValue(propertyName = \"FirstName\", value = Peter)"
+                "RealmObject.Get" + typeName + "Value(propertyName = \"" + propertyName + "\")"
             }));
+        }
+
+        [TestCase("Char", '0', char.MinValue)]
+        [TestCase("Byte", (byte)100, (byte)0)]
+        [TestCase("Int16", (short)100, (short)0)]
+        [TestCase("Int32", 100, 0)]
+        [TestCase("Int64", 100L, 0L)]
+        [TestCase("Single", 123.123f, 0.0f)]
+        [TestCase("Double", 123.123, 0.0)]
+        [TestCase("Boolean", true)]
+        [TestCase("String", "str", null)] 
+        [TestCase("NullableChar", '0', null)]
+        [TestCase("NullableByte", (byte)100, null)]
+        [TestCase("NullableInt16", (short)100, null)]
+        [TestCase("NullableInt32", 100, null)]
+        [TestCase("NullableInt64", 100L, null)]
+        [TestCase("NullableSingle", 123.123f, null)] 
+        [TestCase("NullableDouble", 123.123, null)] 
+        [TestCase("NullableBoolean", true, null)]
+        public void SetValueManagedShouldUpdateDatabase(string typeName, object propertyValue, object defaultPropertyValue)
+        {
+            // Arrange
+            var propertyName = typeName + "Property";
+            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.AllTypesObject"));
+            o.IsManaged = true;
+
+            // Act
+            SetPropertyValue(o, propertyName, propertyValue);
+
+            // Assert
+            Assert.That(o.LogList, Is.EqualTo(new List<string>
+            {
+                "IsManaged",
+                "RealmObject.Set" + typeName + "Value(propertyName = \"" + propertyName + "\", value = " + propertyValue + ")"
+            }));
+            Assert.That(GetAutoPropertyBackingFieldValue(o, propertyName), Is.EqualTo(defaultPropertyValue));
+        }
+
+
+        [TestCase("Char", '0', char.MinValue)]
+        [TestCase("Byte", (byte)100, (byte)0)]
+        [TestCase("Int16", (short)100, (short)0)]
+        [TestCase("Int32", 100, 0)]
+        [TestCase("Int64", 100L, 0L)]
+        [TestCase("String", "str", null)] 
+        public void SettingObjectIdPropertyShouldCallSetUnique(string typeName, object propertyValue, object defaultPropertyValue)
+        {
+            // Arrange
+            var propertyName = typeName + "Property";
+            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.ObjectId" + typeName + "Object"));
+            o.IsManaged = true;
+
+            // Act
+            SetPropertyValue(o, propertyName, propertyValue);
+
+            // Assert
+            Assert.That(o.LogList, Is.EqualTo(new List<string>
+            {
+                "IsManaged",
+                "RealmObject.Set" + typeName + "ValueUnique(propertyName = \"" + propertyName + "\", value = " + propertyValue + ")"
+            }));
+            Assert.That(GetAutoPropertyBackingFieldValue(o, propertyName), Is.EqualTo(defaultPropertyValue));
+            
         }
 
         [Test]
@@ -116,7 +276,7 @@ namespace Tests
             Assert.That(o.LogList, Is.EqualTo(new List<string>
             {
                 "IsManaged",
-                "RealmObject.SetValue(propertyName = \"Email\", value = a@b.com)"
+                "RealmObject.SetStringValue(propertyName = \"Email\", value = a@b.com)"
             }));
         }
 
@@ -127,10 +287,10 @@ namespace Tests
             var personType = _assembly.GetType("AssemblyToProcess.Person");
 
             // Assert
-            Assert.That(personType.GetCustomAttributes(typeof (WovenAttribute)).Any());
+            Assert.That(personType.CustomAttributes.Any(a => a.AttributeType.Name == "WovenAttribute"));
         }
 
-        [Test]
+        [Test, Ignore("Introduce once preserving default constructors is implemented")]
         public void ShouldAddPreserveAttribute()
         {
             // Arrange and act

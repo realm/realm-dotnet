@@ -74,6 +74,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Win32AccessTests.cs" />
     <Compile Include="Win32ConfigurationTests.cs" />
     <Compile Include="Win32DateTimeTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -97,6 +98,10 @@
     <Content Include="FodyWeavers.xml" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\IntegrationTests.Shared\ForMigrationsToCopyAndMigrate.realm">
+      <Link>ForMigrationsToCopyAndMigrate.realm</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

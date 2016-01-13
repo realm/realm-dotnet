@@ -67,10 +67,33 @@ REALM_EXPORT size_t table_get_bool(const Table* table_ptr, size_t column_ndx, si
     });
 }
 
+// Return value is a boolean indicating whether result has a value (i.e. is not null). If true (1), ret_value will contain the actual value.
+REALM_EXPORT size_t table_get_nullable_bool(const Table* table_ptr, size_t column_ndx, size_t row_ndx, size_t& ret_value)
+{
+    return handle_errors([&]() {
+        if (table_ptr->is_null(column_ndx, row_ndx))
+            return 0;
+
+        ret_value = bool_to_size_t(table_ptr->get_bool(column_ndx, row_ndx));
+        return 1;
+    });
+}
+
 REALM_EXPORT int64_t table_get_int64(const Table* table_ptr, size_t column_ndx, size_t row_ndx)
 {
     return handle_errors([&]() {
         return table_ptr->get_int(column_ndx, row_ndx);
+    });
+}
+
+REALM_EXPORT size_t table_get_nullable_int64(const Table* table_ptr, size_t column_ndx, size_t row_ndx, int64_t& ret_value)
+{
+    return handle_errors([&]() {
+        if (table_ptr->is_null(column_ndx, row_ndx))
+            return 0;
+
+        ret_value = table_ptr->get_int(column_ndx, row_ndx);
+        return 1;
     });
 }
 
@@ -81,10 +104,32 @@ REALM_EXPORT float table_get_float(const Table* table_ptr, size_t column_ndx, si
     });
 }
 
+REALM_EXPORT size_t table_get_nullable_float(const Table* table_ptr, size_t column_ndx, size_t row_ndx, float& ret_value)
+{
+    return handle_errors([&]() {
+        if (table_ptr->is_null(column_ndx, row_ndx))
+            return 0;
+
+        ret_value = table_ptr->get_float(column_ndx, row_ndx);
+        return 1;
+    });
+}
+
 REALM_EXPORT double table_get_double(const Table* table_ptr, size_t column_ndx, size_t row_ndx)
 {
     return handle_errors([&]() {
         return table_ptr->get_double(column_ndx, row_ndx);
+    });
+}
+
+REALM_EXPORT size_t table_get_nullable_double(const Table* table_ptr, size_t column_ndx, size_t row_ndx, double& ret_value)
+{
+    return handle_errors([&]() {
+        if (table_ptr->is_null(column_ndx, row_ndx))
+            return 0;
+
+        ret_value = table_ptr->get_double(column_ndx, row_ndx);
+        return 1;
     });
 }
 
@@ -98,9 +143,20 @@ REALM_EXPORT size_t table_get_string(const Table* table_ptr, size_t column_ndx, 
 
 REALM_EXPORT int64_t table_get_datetime_seconds(const Table* table_ptr, size_t column_ndx, size_t row_ndx)
 {
-	return handle_errors([&]() {
-		return table_ptr->get_datetime(column_ndx, row_ndx).get_datetime();
-	});
+    return handle_errors([&]() {
+        return table_ptr->get_datetime(column_ndx, row_ndx).get_datetime();
+    });
+}
+
+REALM_EXPORT size_t table_get_nullable_datetime_seconds(const Table* table_ptr, size_t column_ndx, size_t row_ndx, int64_t& ret_value)
+{
+    return handle_errors([&]() {
+        if (table_ptr->is_null(column_ndx, row_ndx))
+            return 0;
+
+        ret_value = table_ptr->get_datetime(column_ndx, row_ndx).get_datetime();
+        return 1;
+    });
 }
 
 REALM_EXPORT void table_set_link(Table* table_ptr, size_t column_ndx, size_t row_ndx, size_t target_row_ndx)
@@ -117,6 +173,16 @@ REALM_EXPORT void table_clear_link(Table* table_ptr, size_t column_ndx, size_t r
     });
 }
 
+REALM_EXPORT void table_set_null(Table* table_ptr, size_t column_ndx, size_t row_ndx)
+{
+    return handle_errors([&]() {
+        if (!table_ptr->is_nullable(column_ndx))
+            throw new std::invalid_argument("Column is not nullable");
+
+        table_ptr->set_null(column_ndx, row_ndx);
+    });
+}
+
 REALM_EXPORT void table_set_bool(Table* table_ptr, size_t column_ndx, size_t row_ndx, size_t value)
 {
     return handle_errors([&]() {
@@ -128,6 +194,13 @@ REALM_EXPORT void table_set_int64(Table* table_ptr, size_t column_ndx, size_t ro
 {
     return handle_errors([&]() {
         table_ptr->set_int(column_ndx, row_ndx, value);
+    });
+}
+
+REALM_EXPORT void table_set_int64_unique(Table* table_ptr, size_t column_ndx, size_t row_ndx, int64_t value)
+{
+    return handle_errors([&]() {
+        table_ptr->set_int_unique(column_ndx, row_ndx, value);
     });
 }
 
@@ -153,12 +226,20 @@ REALM_EXPORT void table_set_string(Table* table_ptr, size_t column_ndx, size_t r
     });
 }
 
+REALM_EXPORT void table_set_string_unique(Table* table_ptr, size_t column_ndx, size_t row_ndx, uint16_t* value, size_t value_len)
+{
+    return handle_errors([&]() {
+        Utf16StringAccessor str(value, value_len);
+        table_ptr->set_string_unique(column_ndx, row_ndx, str);
+    });
+}
+
 REALM_EXPORT void table_set_datetime_seconds(Table* table_ptr, size_t column_ndx, size_t row_ndx, int64_t value)
 {
-	return handle_errors([&]() {
-		DateTime dt(value);
-		table_ptr->set_datetime(column_ndx, row_ndx, dt);
-	});
+    return handle_errors([&]() {
+        DateTime dt(value);
+        table_ptr->set_datetime(column_ndx, row_ndx, dt);
+    });
 }
 
 REALM_EXPORT Query* table_where(Table* table_ptr)

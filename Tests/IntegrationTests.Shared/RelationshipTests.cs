@@ -17,6 +17,7 @@ namespace IntegrationTests.Shared
     [TestFixture]
     public class RelationshipTests
     {
+#if RELATIONSHIPS_ENABLED
         class Dog : RealmObject
         {
             public string Name { get; set; }
@@ -29,7 +30,7 @@ namespace IntegrationTests.Shared
         {
             public string Name { get; set; }
             public Dog TopDog { get; set; }
-            public RealmList<Dog> Dogs { get; set; } 
+            public IList<Dog> Dogs { get; set; } 
         }
 
         protected Realm realm;
@@ -399,6 +400,6 @@ namespace IntegrationTests.Shared
             Assert.That(realm.All<Person>().ToList().Count, Is.EqualTo(4));
             Assert.That(realm.All<Person>().Where(p => p.FirstName=="Sally").ToList().Count, Is.EqualTo(1));
         }
-
+#endif
     }
 }
