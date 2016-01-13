@@ -82,8 +82,7 @@ namespace Realms
 
         protected string GetStringValue(string propertyName)
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             var tableHandle = _realm._tableHandles[GetType()];
             var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
@@ -105,8 +104,7 @@ namespace Realms
 
         protected char GetCharValue(string propertyName)
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             var tableHandle = _realm._tableHandles[GetType()];
             var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
@@ -118,8 +116,7 @@ namespace Realms
 
         protected char? GetNullableCharValue(string propertyName)
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             var tableHandle = _realm._tableHandles[GetType()];
             var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
@@ -132,8 +129,7 @@ namespace Realms
 
         protected byte GetByteValue(string propertyName)
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             var tableHandle = _realm._tableHandles[GetType()];
             var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
@@ -145,8 +141,7 @@ namespace Realms
 
         protected byte? GetNullableByteValue(string propertyName)
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             var tableHandle = _realm._tableHandles[GetType()];
             var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
@@ -159,8 +154,7 @@ namespace Realms
 
         protected short GetInt16Value(string propertyName)
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             var tableHandle = _realm._tableHandles[GetType()];
             var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
@@ -172,8 +166,7 @@ namespace Realms
 
         protected short? GetNullableInt16Value(string propertyName)
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             var tableHandle = _realm._tableHandles[GetType()];
             var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
@@ -186,8 +179,7 @@ namespace Realms
 
         protected int GetInt32Value(string propertyName)
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             var tableHandle = _realm._tableHandles[GetType()];
             var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
@@ -199,8 +191,7 @@ namespace Realms
 
         protected int? GetNullableInt32Value(string propertyName)
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             var tableHandle = _realm._tableHandles[GetType()];
             var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
@@ -213,8 +204,7 @@ namespace Realms
 
         protected long GetInt64Value(string propertyName)
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             var tableHandle = _realm._tableHandles[GetType()];
             var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
@@ -225,8 +215,7 @@ namespace Realms
 
         protected long? GetNullableInt64Value(string propertyName)
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             var tableHandle = _realm._tableHandles[GetType()];
             var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
@@ -239,8 +228,7 @@ namespace Realms
 
         protected float GetSingleValue(string propertyName)
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             var tableHandle = _realm._tableHandles[GetType()];
             var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
@@ -251,8 +239,7 @@ namespace Realms
 
         protected float? GetNullableSingleValue(string propertyName)
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             var tableHandle = _realm._tableHandles[GetType()];
             var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
@@ -265,8 +252,7 @@ namespace Realms
 
         protected double GetDoubleValue(string propertyName)
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             var tableHandle = _realm._tableHandles[GetType()];
             var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
@@ -277,8 +263,7 @@ namespace Realms
 
         protected double? GetNullableDoubleValue(string propertyName)
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             var tableHandle = _realm._tableHandles[GetType()];
             var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
@@ -291,8 +276,7 @@ namespace Realms
 
         protected bool GetBooleanValue(string propertyName)
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             var tableHandle = _realm._tableHandles[GetType()];
             var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
@@ -303,8 +287,7 @@ namespace Realms
 
         protected bool? GetNullableBooleanValue(string propertyName)
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             var tableHandle = _realm._tableHandles[GetType()];
             var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
@@ -317,8 +300,7 @@ namespace Realms
 
         protected DateTimeOffset GetDateTimeOffsetValue(string propertyName)
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             var tableHandle = _realm._tableHandles[GetType()];
             var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
@@ -330,8 +312,7 @@ namespace Realms
 
         protected DateTimeOffset? GetNullableDateTimeOffsetValue(string propertyName)
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             var tableHandle = _realm._tableHandles[GetType()];
             var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
@@ -344,8 +325,7 @@ namespace Realms
 
         protected RealmList<T> GetListValue<T>(string propertyName) where T : RealmObject
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             var tableHandle = _realm._tableHandles[GetType()];
             var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
@@ -355,8 +335,7 @@ namespace Realms
 
         protected void SetStringValue(string propertyName, string value)
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
@@ -373,8 +352,7 @@ namespace Realms
 
         protected void SetStringValueUnique(string propertyName, string value)
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
@@ -391,8 +369,7 @@ namespace Realms
 
         protected void SetCharValue(string propertyName, char value)
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
@@ -406,8 +383,7 @@ namespace Realms
 
         protected void SetCharValueUnique(string propertyName, char value)
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
@@ -421,8 +397,7 @@ namespace Realms
 
         protected void SetNullableCharValue(string propertyName, char? value)
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
@@ -439,8 +414,7 @@ namespace Realms
 
         protected void SetByteValue(string propertyName, byte value)
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
@@ -454,8 +428,7 @@ namespace Realms
 
         protected void SetByteValueUnique(string propertyName, byte value)
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
@@ -469,8 +442,7 @@ namespace Realms
 
         protected void SetNullableByteValue(string propertyName, byte? value)
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
@@ -487,8 +459,7 @@ namespace Realms
 
         protected void SetInt16Value(string propertyName, short value)
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
@@ -502,8 +473,7 @@ namespace Realms
 
         protected void SetInt16ValueUnique(string propertyName, short value)
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
@@ -517,8 +487,7 @@ namespace Realms
 
         protected void SetNullableInt16Value(string propertyName, short? value)
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
@@ -535,8 +504,7 @@ namespace Realms
 
         protected void SetInt32Value(string propertyName, int value)
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
@@ -550,8 +518,7 @@ namespace Realms
 
         protected void SetInt32ValueUnique(string propertyName, int value)
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
@@ -565,8 +532,7 @@ namespace Realms
 
         protected void SetNullableInt32Value(string propertyName, int? value)
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
@@ -583,8 +549,7 @@ namespace Realms
 
         protected void SetInt64Value(string propertyName, long value)
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
@@ -598,8 +563,7 @@ namespace Realms
 
         protected void SetInt64ValueUnique(string propertyName, long value)
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
@@ -613,8 +577,7 @@ namespace Realms
 
         protected void SetNullableInt64Value(string propertyName, long? value)
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
@@ -631,8 +594,7 @@ namespace Realms
 
         protected void SetSingleValue(string propertyName, float value)
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
@@ -646,8 +608,7 @@ namespace Realms
 
         protected void SetNullableSingleValue(string propertyName, float? value)
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
@@ -664,8 +625,7 @@ namespace Realms
 
         protected void SetDoubleValue(string propertyName, double value)
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
@@ -679,8 +639,7 @@ namespace Realms
 
         protected void SetNullableDoubleValue(string propertyName, double? value)
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
@@ -697,8 +656,7 @@ namespace Realms
 
         protected void SetBooleanValue(string propertyName, bool value)
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
@@ -712,8 +670,7 @@ namespace Realms
 
         protected void SetNullableBooleanValue(string propertyName, bool? value)
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
@@ -730,8 +687,7 @@ namespace Realms
 
         protected void SetDateTimeOffsetValue(string propertyName, DateTimeOffset value)
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
@@ -746,8 +702,7 @@ namespace Realms
 
         protected void SetNullableDateTimeOffsetValue(string propertyName, DateTimeOffset? value)
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
@@ -786,8 +741,7 @@ namespace Realms
 
         protected T GetObjectValue<T>(string propertyName) where T : RealmObject
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             var tableHandle = _realm._tableHandles[GetType()];
             var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
@@ -799,8 +753,7 @@ namespace Realms
         // TODO make not generic
         protected void SetObjectValue<T>(string propertyName, T value) where T : RealmObject
         {
-            if (_realm == null)
-                throw new Exception("This object is not managed. Create through CreateObject");
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
