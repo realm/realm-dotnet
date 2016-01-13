@@ -1,9 +1,7 @@
 ﻿/* Copyright 2015 Realm Inc - All Rights Reserved
  * Proprietary and Confidential
  */
- 
-using System;
-using System.Reflection;
+
 using System.IO;
 using Realms;
 
@@ -16,24 +14,20 @@ namespace IntegrationTests
 {
     public static class TestHelpers
     {
-        private static PropertyInfo GetPropertyInfo(Type type, string propertyName)
+        public static object GetPropertyValue(object o, string propName)
         {
-            PropertyInfo propInfo = null;
-            do
-            {
-                propInfo = type.GetTypeInfo().GetDeclaredProperty(propertyName);
-                type = type.GetTypeInfo().BaseType;
-            }
-            while (propInfo == null && type != null);
-            return propInfo;
+            return o.GetType().GetProperty(propName).GetValue(o, null);
+        }
+
+        public static void SetPropertyValue(object o, string propName, object propertyValue)
+        {
+            o.GetType().GetProperty(propName).SetValue(o, propertyValue);
         }
 
         public static T GetPropertyValue<T>(this object obj, string propertyName)
         {
-            var propInfo = GetPropertyInfo(obj.GetType(), propertyName);
-            return (T)propInfo.GetValue(obj, null);
+            return (T) GetPropertyValue(obj, propertyName); 
         }
-
 
         public static void CopyBundledDatabaseToDocuments(string realmName, string destPath=null, bool overwrite=true)
         {
