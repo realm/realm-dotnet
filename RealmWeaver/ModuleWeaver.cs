@@ -53,7 +53,14 @@ public class ModuleWeaver
 
     internal MethodReference MethodNamed(TypeDefinition assemblyType, string name)
     {
-        return ModuleDefinition.Import(assemblyType.Methods.First(x => x.Name == name));
+        try
+        {
+            return ModuleDefinition.Import(assemblyType.Methods.First(x => x.Name == name));
+        }
+        catch (InvalidOperationException e)
+        {
+            throw new InvalidOperationException("Trying to find method '" + name + "' failed.", e);
+        }
     }
 
 
