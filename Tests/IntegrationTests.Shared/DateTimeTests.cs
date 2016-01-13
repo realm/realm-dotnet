@@ -27,7 +27,8 @@ namespace IntegrationTests.Shared
         [TearDown]
         public void TearDown()
         {
-            _realm.Dispose();
+            _realm.Close();
+            Realm.DeleteRealm(_realm.Config);
         }
 
         [Test]

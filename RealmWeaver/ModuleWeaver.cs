@@ -142,7 +142,7 @@ public class ModuleWeaver
                 var objectId = prop.CustomAttributes.Any(a => a.AttributeType.Name == "ObjectIdAttribute");
                 if (objectId && (!objectIdTypes.Contains(prop.PropertyType.FullName)))
                 {
-                    LogErrorPoint($"{type.Name}.{prop.Name} is marked as [ObjectId] which is only allowed on integer and string types.", sequencePoint);
+                    LogErrorPoint($"{type.Name}.{prop.Name} is marked as [ObjectId] which is only allowed on integral and string types, not on {prop.PropertyType.FullName}", sequencePoint);
                     continue;
                 }
 
@@ -262,7 +262,7 @@ public class ModuleWeaver
         /// We want to change it so it looks like this:
         ///   0: ldarg.0
         ///   1: call Realm.RealmObject.get_IsManaged.
-        ///   2: brfalse.s 9
+        ///   2: brfalse.s 8
         ///   3: ldarg.0
         ///   4: ldstr <columnName>
         ///   5: ldarg.1
@@ -274,7 +274,7 @@ public class ModuleWeaver
         ///   11: ret.
         /// This is roughly equivalent to:
         ///   if (!base.IsManaged) this.<backingField> = value;
-        ///   else base.SetValue<T>(<columnName>, value, setUnique);
+        ///   else base.SetValue<T>(<columnName>, value);
 
         var start = prop.SetMethod.Body.Instructions.First();
         var il = prop.SetMethod.Body.GetILProcessor();
