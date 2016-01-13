@@ -52,15 +52,16 @@ namespace Realms
             // ordered in decreasing likelihood of type
             if (columnType == typeof(string))
                 return (IntPtr)2;  // type_String
-            if (columnType == typeof(int))
+            if (columnType == typeof(char) || columnType == typeof(byte) || columnType == typeof(short) || columnType == typeof(int) || columnType == typeof(long) ||
+                columnType == typeof(char?) || columnType == typeof(byte?) || columnType == typeof(short?) || columnType == typeof(int?) || columnType == typeof(long?))
                 return (IntPtr)0;  // type_Int
-            if (columnType == typeof(float))
+            if (columnType == typeof(float) || columnType == typeof(float?))
                 return (IntPtr)9;  // type_Float
-            if (columnType == typeof(double))
+            if (columnType == typeof(double) || columnType == typeof(double?))
                 return (IntPtr)10; // type_Double
-            if (columnType == typeof(DateTimeOffset))
+            if (columnType == typeof(DateTimeOffset) || columnType == typeof(DateTimeOffset?))
                 return (IntPtr)7;  // type_DateTime
-            if (columnType == typeof(bool))
+            if (columnType == typeof(bool) || columnType == typeof(bool?))
                 return (IntPtr)1;  // type_Bool
             if (columnType.BaseType == typeof(RealmObject))
                 return (IntPtr)12;  // type_Link
@@ -77,7 +78,7 @@ namespace Realms
                     Mixed = 6, // type_Mixed
 
             */
-            throw new NotImplementedException();
+            throw new NotImplementedException("Type " + columnType.FullName + " not supported");
         }
     }
 }
