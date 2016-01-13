@@ -56,14 +56,4 @@ namespace AssemblyToProcess
     {
         [ObjectId] public string StringProperty { get; set; }
     }
-
-    //public class IndexedNullableInt32Object : RealmObject
-    //{
-    //    [Indexed] public int? Int32Property { get; set; }
-    //}
-
-    //public class IndexedNullableInt64Object : RealmObject
-    //{
-    //    [Indexed] public long? Int64Property { get; set; }
-    //}
 }
