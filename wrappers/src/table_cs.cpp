@@ -75,7 +75,7 @@ REALM_EXPORT size_t table_get_nullable_bool(const Table* table_ptr, size_t colum
             return 0;
 
         ret_value = bool_to_size_t(table_ptr->get_bool(column_ndx, row_ndx));
-        return 0;
+        return 1;
     });
 }
 
@@ -90,10 +90,10 @@ REALM_EXPORT size_t table_get_nullable_int64(const Table* table_ptr, size_t colu
 {
     return handle_errors([&]() {
         if (table_ptr->is_null(column_ndx, row_ndx))
-            return 1;
+            return 0;
 
         ret_value = table_ptr->get_int(column_ndx, row_ndx);
-        return 0;
+        return 1;
     });
 }
 
@@ -108,10 +108,10 @@ REALM_EXPORT size_t table_get_nullable_float(const Table* table_ptr, size_t colu
 {
     return handle_errors([&]() {
         if (table_ptr->is_null(column_ndx, row_ndx))
-            return 1;
+            return 0;
 
         ret_value = table_ptr->get_float(column_ndx, row_ndx);
-        return 0;
+        return 1;
     });
 }
 
@@ -126,10 +126,10 @@ REALM_EXPORT size_t table_get_nullable_double(const Table* table_ptr, size_t col
 {
     return handle_errors([&]() {
         if (table_ptr->is_null(column_ndx, row_ndx))
-            return 1;
+            return 0;
 
         ret_value = table_ptr->get_double(column_ndx, row_ndx);
-        return 0;
+        return 1;
     });
 }
 
@@ -152,10 +152,10 @@ REALM_EXPORT size_t table_get_nullable_datetime_seconds(const Table* table_ptr, 
 {
     return handle_errors([&]() {
         if (table_ptr->is_null(column_ndx, row_ndx))
-            return 1;
+            return 0;
 
         ret_value = table_ptr->get_datetime(column_ndx, row_ndx).get_datetime();
-        return 0;
+        return 1;
     });
 }
 
