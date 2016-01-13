@@ -27,23 +27,30 @@ namespace IntegrationTests.Shared
             _realm.Dispose();
         }
 
-        [Test]
-        public void SetValueAndReplaceWithNull()
+        [TestCase("NullableCharProperty", '0')]
+        [TestCase("NullableByteProperty", (byte)100)]
+        [TestCase("NullableInt16Property", (short)100)]
+        [TestCase("NullableInt32Property", 100)]
+        [TestCase("NullableInt64Property", 100L)]
+        [TestCase("NullableSingleProperty", 123.123f)] 
+        [TestCase("NullableDoubleProperty", 123.123)] 
+        [TestCase("NullableBooleanProperty", true)]
+        public void SetValueAndReplaceWithNull(string propertyName, object propertyValue)
         {
             AllTypesObject ato;
             using (var transaction = _realm.BeginWrite())
             {
                 ato = _realm.CreateObject<AllTypesObject>();
 
-                TestHelpers.SetPropertyValue(ato, "NullableBooleanProperty", true);
+                TestHelpers.SetPropertyValue(ato, propertyName, propertyValue);
                 transaction.Commit();
             }
 
-            Assert.That(ato.NullableBooleanProperty, Is.EqualTo(true));
+            Assert.That(TestHelpers.GetPropertyValue(ato, propertyName), Is.EqualTo(propertyValue));
 
             using (var transaction = _realm.BeginWrite())
             {
-                TestHelpers.SetPropertyValue(ato, "NullableBooleanProperty", null);
+                TestHelpers.SetPropertyValue(ato, propertyName, null);
                 transaction.Commit();
             }
 
