@@ -3,11 +3,13 @@
  */
  
 using System;
+using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Realms
 {
-    internal class RealmQueryProvider : QueryProvider
+    internal class RealmQueryProvider : IQueryProvider
     {
         internal Realm _realm;
 
@@ -21,9 +23,33 @@ namespace Realms
             return new RealmQueryVisitor(_realm);
         }
 
-        public override object Execute(Expression expression, Type returnType)
+        public IQueryable<T> CreateQuery<T>(Expression expression)
         {
-            return null; // new RealmQueryVisitor().Process(_realm, expression, returnType);
+            return new RealmQuery<T>(this, expression);
         }
+
+        public IQueryable CreateQuery(Expression expression)
+        {
+            Type elementType = TypeSystem.GetElementType(expression.Type);
+            try
+            {
+                return (IQueryable)Activator.CreateInstance(typeof(RealmQuery<>).MakeGenericType(elementType), new object[] { this, expression });
+            }
+            catch (TargetInvocationException tie)
+            {
+                throw tie.InnerException;
+            }
+        }
+
+        public T Execute<T>(Expression expression)
+        {
+            return default(T);  // TODO get a visitor result
+        }
+
+        public object Execute(Expression expression)
+        {
+            throw new Exception("Non-generic Execute() called...");
+        }
+
     }
 }

@@ -1440,4 +1440,19 @@ PeopleTestsBase.cs
 
 RealmQueryEnumerator.cs
 - added
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#298 LINQ Refactoring - combine QueryProvider classes
+
+RealmQueryProvider.cs
+- changed base from QueryProvider to IQueryProvider
+
+RealmQuery.cs
+- _provider type changed to RealmQueryProvider
+- ctor take RealmQueryProvider param
+
+QueryProvider.cs
+- removed
+  
   

@@ -28,7 +28,7 @@ namespace Realms
         /// Return the current related object when iterating a related set.
         /// </summary>
         /// <exception cref="IndexOutOfRangeException">When we are not currently pointing at a valid item, either MoveNext has not been called for the first time or have iterated through all the items.</exception>
-        public T Current { get; set; }
+        public T Current { get; private set; }
 
         // also needed - https://msdn.microsoft.com/en-us/library/s793z9y2.aspx
         object IEnumerator.Current

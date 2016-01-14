@@ -20,10 +20,10 @@ namespace Realms
         public Type ElementType => typeof (T);
         public Expression Expression { get; }
         public IQueryProvider Provider => _provider;
-        private readonly QueryProvider _provider;
+        private readonly RealmQueryProvider _provider;
         private bool _allRecords = false;
 
-        internal RealmQuery(QueryProvider queryProvider, Expression expression) 
+        internal RealmQuery(RealmQueryProvider queryProvider, Expression expression) 
         {
             this._provider = queryProvider;
             this.Expression = expression;
@@ -41,8 +41,7 @@ namespace Realms
         /// <returns>An IEnumerator which will iterate through found Realm persistent objects.</returns>
         public IEnumerator<T> GetEnumerator()
         {
-            var prov = _provider as RealmQueryProvider;
-            return new RealmQueryEnumerator<T>(prov._realm, prov.MakeVisitor(), Expression);
+            return new RealmQueryEnumerator<T>(_provider._realm, _provider.MakeVisitor(), Expression);
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -62,10 +61,8 @@ namespace Realms
         {
             if (_allRecords)
             {
-                var prov = _provider as RealmQueryProvider;
-                Debug.Assert(prov != null, "RealmQuery cannot have _allRecords state and not have  RealmQueryProvider");
                 // use the type captured at build based on generic T
-                var tableHandle = prov._realm._tableHandles[ElementType];
+                var tableHandle = _provider._realm._tableHandles[ElementType];
                 return (int)NativeTable.count_all(tableHandle);
             }
             // we should be in RealmQueryVisitor.VisitMethodCall, not here, ever, seriously!
