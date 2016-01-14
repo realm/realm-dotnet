@@ -41,12 +41,14 @@ namespace Realms
         /// <returns>An IEnumerator which will iterate through found Realm persistent objects.</returns>
         public IEnumerator<T> GetEnumerator()
         {
-            return (Provider.Execute<IEnumerable<T>>(Expression)).GetEnumerator();
+            var prov = _provider as RealmQueryProvider;
+            return new RealmQueryEnumerator<T>(prov._realm, prov.MakeVisitor(), Expression);
         }
 
         IEnumerator IEnumerable.GetEnumerator()
+
         {
-            return (Provider.Execute<IEnumerable>(Expression)).GetEnumerator();
+            return (IEnumerator)GetEnumerator();  // using our class generic type, just redirect the legacy get
         }
 
 
