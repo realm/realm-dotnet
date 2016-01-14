@@ -1409,6 +1409,8 @@ TestHelpers.cs
 
 SimpleLINQtests.cs
 - added
+- AnyFails and AnySucceeds tests added
+- CreateList test added
 
 PeopleTestsBase.cs
 - added 
@@ -1423,4 +1425,19 @@ ObjectIntegrationTests.cs
 
 RealmQueryVisitor.cs
 - VisitMethodCall
-  - refactored to handle Count
+  - refactored to handle Count and Any
+- added ctor to directly pass in Realm
+
+RealmQueryProvider.cs
+- added MakeVisitor
+
+RealmQuery.cs
+- IEnumerable.GetEnumerator() rewrote to just invoke GetEnumerator<T>
+- GetEnumerator<T>() return RealmQueryEnumerator
+
+PeopleTestsBase.cs
+- TearDown now delete the temp realm
+
+RealmQueryEnumerator.cs
+- added
+  

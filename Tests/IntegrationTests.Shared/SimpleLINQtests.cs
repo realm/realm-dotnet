@@ -14,6 +14,15 @@ namespace IntegrationTests
     class SimpleLINQtests : PeopleTestsBase
     {
 
+        [Test]
+        public void CreateList()
+        {
+            MakeThreePeople();
+            var s0 = _realm.All<Person>().Where(p => p.Score == 42.42f).ToList();
+            Assert.That(s0.Count(), Is.EqualTo(1));
+            Assert.That(s0[0].Score, Is.EqualTo(42.42f));
+        }
+
 
         // Extension method rather than SQL-style LINQ
         // Also tests the Count on results, ElementOf, First and Single methods
@@ -23,8 +32,8 @@ namespace IntegrationTests
             MakeThreePeople();
             var s0 = _realm.All<Person>().Where(p => p.Score == 42.42f);
             var s0l = s0.ToList();
-            Assert.That(s0.Count, Is.EqualTo(1));
-            Assert.That(s0.ToList()[0].Score, Is.EqualTo(42.42f));
+            Assert.That(s0.Count(), Is.EqualTo(1));
+            Assert.That(s0l[0].Score, Is.EqualTo(42.42f));
 
             var s1 = _realm.All<Person>().Where(p => p.Score != 100.0f).ToList();
             Assert.That(s1.Count, Is.EqualTo(2));
@@ -53,9 +62,9 @@ namespace IntegrationTests
         public void SearchComparingDouble()
         {
             MakeThreePeople();
-            var s0 = _realm.All<Person>().Where(p => p.Latitude == 40.7637286).ToList();
+            var s0 = _realm.All<Person>().Where(p => p.Latitude == 40.7637286);
             Assert.That(s0.Count, Is.EqualTo(1));
-            Assert.That(s0[0].Latitude, Is.EqualTo(40.7637286));
+            Assert.That(s0.ToList()[0].Latitude, Is.EqualTo(40.7637286));
 
             var s1 = _realm.All<Person>().Where(p => p.Latitude != 40.7637286).ToList();
             Assert.That(s1.Count, Is.EqualTo(2));
@@ -79,5 +88,27 @@ namespace IntegrationTests
             Assert.That(s5.Count, Is.EqualTo(1));
             Assert.That(s5[0].Latitude, Is.EqualTo(51.508530));
         }
-    }
+
+
+        [Test]
+        public void AnySucceeds()
+        {
+            MakeThreePeople();
+            Assert.That( _realm.All<Person>().Where(p => p.Latitude > 50).Any());
+            Assert.That( _realm.All<Person>().Where(p => p.Score > 0).Any());
+            Assert.That( _realm.All<Person>().Where(p => p.IsInteresting == false).Any());
+            Assert.That( _realm.All<Person>().Where(p => p.FirstName == "John").Any());
+        }
+
+
+        [Test]
+        public void AnyFails()
+        {
+            MakeThreePeople();
+            Assert.That( _realm.All<Person>().Where(p => p.Latitude > 100).Any());
+            Assert.That( _realm.All<Person>().Where(p => p.Score > 50000).Any());
+            Assert.That( _realm.All<Person>().Where(p => p.FirstName == "Samantha").Any());
+        }
+
+    } // SimpleLINQtests
 }

@@ -11,14 +11,19 @@ namespace Realms
     {
         internal Realm _realm;
 
-        public RealmQueryProvider(Realm realm)
+        internal RealmQueryProvider(Realm realm)
         {
             _realm = realm;
         }
 
+        internal RealmQueryVisitor MakeVisitor()
+        {
+            return new RealmQueryVisitor(_realm);
+        }
+
         public override object Execute(Expression expression, Type returnType)
         {
-            return new RealmQueryVisitor().Process(_realm, expression, returnType);
+            return null; // new RealmQueryVisitor().Process(_realm, expression, returnType);
         }
     }
 }

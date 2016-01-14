@@ -14,8 +14,14 @@ namespace Realms
     internal class RealmQueryVisitor : ExpressionVisitor
     {
         private Realm _realm;
-        private QueryHandle _coreQueryHandle;
+        private QueryHandle _coreQueryHandle;  // set when recurse down to VisitConstant
 
+        internal RealmQueryVisitor(Realm realm)
+        {
+            _realm = realm;
+        }
+
+        /*
         public IEnumerable Process(Realm realm, Expression expression, Type returnType)
         {
             _realm = realm;
@@ -53,6 +59,11 @@ namespace Realms
                 }
             }
         }
+*/
+        internal RowHandle FindNextRowHandle(long nextRowIndex)
+        {
+            return NativeQuery.find(_coreQueryHandle, (IntPtr)nextRowIndex);
+        }
 
         private static Expression StripQuotes(Expression e)
         {
@@ -79,7 +90,13 @@ namespace Realms
                 {
                     this.Visit(m.Arguments[0]);
                     //TODO count on the query lhs if count(lambda) or return count of tableview
-                    //return m;
+                    return m;
+                }
+                else if (m.Method.Name == "Any")
+                {
+                    this.Visit(m.Arguments[0]);
+                    //TODO count on the query lhs if count(lambda) or return count of tableview
+                    return m;
                 }
 
             }
@@ -168,7 +185,7 @@ namespace Realms
 #pragma warning disable 0642    // Disable warning about empty statements (See issue #68)
 
         private void AddQueryEqual(QueryHandle queryHandle, string columnName, object value)
-        {
+            {
             var columnIndex = NativeQuery.get_column_index((QueryHandle)queryHandle, columnName, (IntPtr)columnName.Length);
 
             var valueType = value.GetType();
