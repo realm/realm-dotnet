@@ -3,12 +3,14 @@
  */
  
 using System;
+using System.Collections;
 using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Rocks;
 using Mono.Cecil.Cil;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Security.Cryptography.X509Certificates;
 
 public class ModuleWeaver
 {
@@ -51,7 +53,14 @@ public class ModuleWeaver
 
     internal MethodReference MethodNamed(TypeDefinition assemblyType, string name)
     {
-        return ModuleDefinition.Import(assemblyType.Methods.First(x => x.Name == name));
+        try
+        {
+            return ModuleDefinition.Import(assemblyType.Methods.First(x => x.Name == name));
+        }
+        catch (InvalidOperationException e)
+        {
+            throw new InvalidOperationException("Trying to find method '" + name + "' failed.", e);
+        }
     }
 
 
@@ -67,12 +76,41 @@ public class ModuleWeaver
 
         var realmObjectType = assemblyToReference.MainModule.GetTypes().First(x => x.Name == "RealmObject");
         realmObjectIsManagedGetter = ModuleDefinition.ImportReference(realmObjectType.Properties.Single(x => x.Name == "IsManaged").GetMethod);
-        var genericGetValueReference = MethodNamed(realmObjectType, "GetValue");
-        var genericSetValueReference = MethodNamed(realmObjectType, "SetValue");
-        var genericGetListValueReference = MethodNamed(realmObjectType, "GetListValue");
-        var genericSetListValueReference = MethodNamed(realmObjectType, "SetListValue");
-        var genericGetObjectValueReference = MethodNamed(realmObjectType, "GetObjectValue");
-        var genericSetObjectValueReference = MethodNamed(realmObjectType, "SetObjectValue");
+        
+        var typeTable = new Dictionary<string, string>()
+        {
+            {"System.String", "String"},
+            {"System.Char", "Char"},
+            {"System.Byte", "Byte"},
+            {"System.Int16", "Int16"},
+            {"System.Int32", "Int32"},
+            {"System.Int64", "Int64"},
+            {"System.Single", "Single"},
+            {"System.Double", "Double"},
+            {"System.Boolean", "Boolean"},
+            {"System.DateTimeOffset", "DateTimeOffset"},
+            {"System.Nullable`1<System.Char>", "NullableChar"},
+            {"System.Nullable`1<System.Byte>", "NullableByte"},
+            {"System.Nullable`1<System.Int16>", "NullableInt16"},
+            {"System.Nullable`1<System.Int32>", "NullableInt32"},
+            {"System.Nullable`1<System.Int64>", "NullableInt64"},
+            {"System.Nullable`1<System.Single>", "NullableSingle"},
+            {"System.Nullable`1<System.Double>", "NullableDouble"},
+            {"System.Nullable`1<System.Boolean>", "NullableBoolean"},
+        };
+
+        // Cache of getter and setter methods for the various types.
+        var methodTable = new Dictionary<string, Tuple<MethodReference, MethodReference>>();
+
+        var objectIdTypes = new List<string>
+        {
+            "System.String",
+            "System.Char",
+            "System.Byte",
+            "System.Int16",
+            "System.Int32",
+            "System.Int64",
+        };
 
         var wovenAttributeClass = assemblyToReference.MainModule.GetTypes().First(x => x.Name == "WovenAttribute");
         var wovenAttributeConstructor = ModuleDefinition.Import(wovenAttributeClass.GetConstructors().First());
@@ -86,6 +124,8 @@ public class ModuleWeaver
         foreach (var type in GetMatchingTypes())
         {
             Debug.WriteLine("Weaving " + type.Name);
+            var typeHasObjectId = false;
+
             foreach (var prop in type.Properties.Where(x => !x.CustomAttributes.Any(a => a.AttributeType.Name == "IgnoredAttribute")))
             {
                 var sequencePoint = prop.GetMethod.Body.Instructions.First().SequencePoint;
@@ -97,62 +137,60 @@ public class ModuleWeaver
 
                 var backingField = GetBackingField(prop);
 
-                Debug.Write("  -- Property: " + prop.Name + " (column: " + columnName + ".. ");
-                //TODO check if has either setter or getter and adjust accordingly - https://github.com/realm/realm-dotnet/issues/101
-                if (prop.PropertyType.Namespace == "System" 
-                    && (prop.PropertyType.IsPrimitive || prop.PropertyType.Name == "String" || prop.PropertyType.Name == "DateTimeOffset"))  // most common tested first
-                {
-                    if (!prop.IsAutomatic())
-                        continue;
+                Debug.Write("  - " + prop.PropertyType.FullName + " " + prop.Name + " (Column: " + columnName + ").. ");
 
-                    ReplaceGetter(prop, columnName, new GenericInstanceMethod(genericGetValueReference) { GenericArguments = { prop.PropertyType } });
-                    ReplaceSetter(prop, columnName, new GenericInstanceMethod(genericSetValueReference) { GenericArguments = { prop.PropertyType } });
-                }
-                else if (prop.PropertyType.Name == "RealmList`1" && prop.PropertyType.Namespace == "Realms")
+                var objectId = prop.CustomAttributes.Any(a => a.AttributeType.Name == "ObjectIdAttribute");
+                if (objectId && (!objectIdTypes.Contains(prop.PropertyType.FullName)))
                 {
-                    // RealmList allows people to declare lists only of RealmObject due to the class definition
-                    if (!prop.IsAutomatic())
+                    LogErrorPoint($"{type.Name}.{prop.Name} is marked as [ObjectId] which is only allowed on integral and string types, not on {prop.PropertyType.FullName}", sequencePoint);
+                    continue;
+                }
+
+                if (!prop.IsAutomatic())
+                {
+                    if (IsRealmObject(prop.PropertyType))
+                        LogWarningPoint($"{type.Name}.{columnName} is not an automatic property but its type is a RealmObject which normally indicates a relationship", sequencePoint);
+
+                    Debug.WriteLine("Skipped because it's not automatic.");
+                    continue;
+                }
+                if (typeTable.ContainsKey(prop.PropertyType.FullName))
+                {
+                    var typeId = prop.PropertyType.FullName + (objectId ? " unique" : "");
+                    if (!methodTable.ContainsKey(typeId))
                     {
-                        LogWarningPoint($"{type.Name}.{columnName} is not an automatic property but its type is a RealmList which normally indicates a relationship", sequencePoint);
-                        continue;
+                        var getter = MethodNamed(realmObjectType, "Get" + typeTable[prop.PropertyType.FullName] + "Value");
+                        var setter = MethodNamed(realmObjectType, "Set" + typeTable[prop.PropertyType.FullName] + "Value" + (objectId ? "Unique": ""));
+                        methodTable[typeId] = Tuple.Create(getter, setter);
                     }
 
-                    // we may handle things differently here to handle init with a braced collection
-                    var elementType = ((GenericInstanceType)prop.PropertyType).GenericArguments.Single();
-                    ReplaceGetter(prop, columnName, new GenericInstanceMethod(genericGetListValueReference) { GenericArguments = { elementType } });
-                    ReplaceSetter(prop, columnName, new GenericInstanceMethod(genericSetListValueReference) { GenericArguments = { elementType } });  
+                    ReplaceGetter(prop, columnName, methodTable[typeId].Item1);
+                    ReplaceSetter(prop, columnName, methodTable[typeId].Item2);
                 }
                 else if (prop.PropertyType.Name == "IList`1" && prop.PropertyType.Namespace == "System.Collections.Generic")
                 {
-                    // only handle `IList<T> Foo { get; }` properties
-                    if (prop.IsAutomatic() && prop.SetMethod == null)
+                    if (prop.SetMethod != null)
                     {
-                        var elementType = ((GenericInstanceType)prop.PropertyType).GenericArguments.Single();
-                        var concreteListType = new GenericInstanceType(listType) { GenericArguments = { elementType } };
-                        var listConstructor = concreteListType.Resolve().GetConstructors().Single(c => c.IsPublic && c.Parameters.Count == 0);
-                        var concreteListConstructor = listConstructor.MakeHostInstanceGeneric(elementType);
-
-                        foreach (var ctor in type.GetConstructors())
-                        {
-                            PrependListFieldInitializerToConstructor(backingField, ctor, ModuleDefinition.ImportReference(concreteListConstructor));
-                        }
-                    }
-                }
-                else if (IsRealmObject(prop.PropertyType))
-                {
-                    if (!prop.IsAutomatic())
-                    {
-                        LogWarningPoint($"{type.Name}.{columnName} is not an automatic property but its type is a RealmObject which normally indicates a relationship", sequencePoint);
+                        Debug.WriteLine("Skipped because it's a list that's not read-only");
                         continue;
                     }
 
-                    ReplaceGetter(prop, columnName, new GenericInstanceMethod(genericGetObjectValueReference) { GenericArguments = { prop.PropertyType } });
-                    ReplaceSetter(prop, columnName, new GenericInstanceMethod(genericSetObjectValueReference) { GenericArguments = { prop.PropertyType } });  // with casting in the RealmObject methods, should just work
+                    var elementType = ((GenericInstanceType)prop.PropertyType).GenericArguments.Single();
+                    var concreteListType = new GenericInstanceType(listType) { GenericArguments = { elementType } };
+                    var listConstructor = concreteListType.Resolve().GetConstructors().Single(c => c.IsPublic && c.Parameters.Count == 0);
+                    var concreteListConstructor = listConstructor.MakeHostInstanceGeneric(elementType);
+
+                    foreach (var ctor in type.GetConstructors())
+                    {
+                        PrependListFieldInitializerToConstructor(backingField, ctor, ModuleDefinition.ImportReference(concreteListConstructor));
+                    }
                 }
-                else if (prop.PropertyType.Name == "DateTime" && prop.PropertyType.Namespace == "System") {
-                    LogErrorPoint($"class '{type.Name}' field '{columnName}' is a DateTime which is not supported - use DateTimeOffset instead.", sequencePoint);
+                else if (prop.PropertyType.FullName == "System.DateTime")
+                {
+                    LogErrorPoint($"class '{type.Name}' field '{prop.Name}' is a DateTime which is not supported - use DateTimeOffset instead.", sequencePoint);
                 }
-                else {
+                else
+                {
                     LogErrorPoint($"class '{type.Name}' field '{columnName}' is a '{prop.PropertyType}' which is not yet supported", sequencePoint);
                 }
 
@@ -184,18 +222,18 @@ public class ModuleWeaver
         /// A synthesized property getter looks like this:
         ///   0: ldarg.0
         ///   1: ldfld <backingField>
-        ///   2: ret
+        ///   2: ret.
         /// We want to change it so it looks like this:
         ///   0: ldarg.0
-        ///   1: call Realms.RealmObject.get_IsManaged
+        ///   1: call Realms.RealmObject.get_IsManaged.
         ///   2: brfalse.s 7
         ///   3: ldarg.0
         ///   4: ldstr <columnName>
         ///   5: call Realms.RealmObject.GetValue<T>
-        ///   6: ret
+        ///   6: ret.
         ///   7: ldarg.0
         ///   8: ldfld <backingField>
-        ///   9: ret
+        ///   9: ret.
         /// This is roughly equivalent to:
         ///   if (!base.IsManaged) return this.<backingField>;
         ///   else return base.GetValue<T>(<columnName>);
@@ -220,20 +258,20 @@ public class ModuleWeaver
         ///   0: ldarg.0
         ///   1: ldarg.1
         ///   2: stfld <backingField>
-        ///   3: ret
+        ///   3: ret.
         /// We want to change it so it looks like this:
         ///   0: ldarg.0
-        ///   1: call Realm.RealmObject.get_IsManaged
+        ///   1: call Realm.RealmObject.get_IsManaged.
         ///   2: brfalse.s 8
         ///   3: ldarg.0
         ///   4: ldstr <columnName>
         ///   5: ldarg.1
         ///   6: call Realm.RealmObject.SetValue<T>
-        ///   7: ret
+        ///   7: ret.
         ///   8: ldarg.0
         ///   9: ldarg.1
         ///   10: stfld <backingField>
-        ///   11: ret
+        ///   11: ret.
         /// This is roughly equivalent to:
         ///   if (!base.IsManaged) this.<backingField> = value;
         ///   else base.SetValue<T>(<columnName>, value);
@@ -251,27 +289,6 @@ public class ModuleWeaver
         il.InsertBefore(start, il.Create(OpCodes.Ret));
 
         Debug.Write("[set] ");
-    }
-
-
-    void AddConstructor(TypeDefinition newType)
-    {
-        var method = new MethodDefinition(".ctor", MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName, typeSystem.Void);
-        var objectConstructor = ModuleDefinition.Import(typeSystem.Object.Resolve().GetConstructors().First());
-        var processor = method.Body.GetILProcessor();
-        processor.Emit(OpCodes.Ldarg_0);
-        processor.Emit(OpCodes.Call, objectConstructor);
-        processor.Emit(OpCodes.Ret);
-        newType.Methods.Add(method);
-    }
-
-    void AddHelloWorld( TypeDefinition newType)
-    {
-        var method = new MethodDefinition("World", MethodAttributes.Public, typeSystem.String);
-        var processor = method.Body.GetILProcessor();
-        processor.Emit(OpCodes.Ldstr, "Hello World!!");
-        processor.Emit(OpCodes.Ret);
-        newType.Methods.Add(method);
     }
 
     private static FieldReference GetBackingField(PropertyDefinition property)

@@ -1,0 +1,61 @@
+﻿/* Copyright 2015 Realm Inc - All Rights Reserved
+ * Proprietary and Confidential
+ */
+
+using System.IO;
+using NUnit.Framework;
+using Realms;
+
+namespace IntegrationTests.Shared
+{
+    [TestFixture]
+    public class AccessTests
+    {
+        protected string _databasePath;
+        protected Realm _realm;
+
+        [SetUp]
+        public void Setup()
+        {
+            _databasePath = Path.GetTempFileName();
+            _realm = Realm.GetInstance(_databasePath);
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            _realm.Close();
+            Realm.DeleteRealm(_realm.Config);
+        }
+
+        [TestCase("NullableCharProperty", '0')]
+        [TestCase("NullableByteProperty", (byte)100)]
+        [TestCase("NullableInt16Property", (short)100)]
+        [TestCase("NullableInt32Property", 100)]
+        [TestCase("NullableInt64Property", 100L)]
+        [TestCase("NullableSingleProperty", 123.123f)] 
+        [TestCase("NullableDoubleProperty", 123.123)] 
+        [TestCase("NullableBooleanProperty", true)]
+        public void SetValueAndReplaceWithNull(string propertyName, object propertyValue)
+        {
+            AllTypesObject ato;
+            using (var transaction = _realm.BeginWrite())
+            {
+                ato = _realm.CreateObject<AllTypesObject>();
+
+                TestHelpers.SetPropertyValue(ato, propertyName, propertyValue);
+                transaction.Commit();
+            }
+
+            Assert.That(TestHelpers.GetPropertyValue(ato, propertyName), Is.EqualTo(propertyValue));
+
+            using (var transaction = _realm.BeginWrite())
+            {
+                TestHelpers.SetPropertyValue(ato, propertyName, null);
+                transaction.Commit();
+            }
+
+            Assert.That(ato.NullableBooleanProperty, Is.EqualTo(null));
+        }
+    }
+}

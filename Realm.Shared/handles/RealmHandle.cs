@@ -84,8 +84,8 @@ namespace Realms
 
 
         /// <summary>
-        /// override Unbind and put in code that actually calls core and unbinds whatever this handle is about
-        /// when this is called, it has alreadyt been verified that it is safe to call core - so just put in code that does the job
+        /// override Unbind and put in code that actually calls core and unbinds whatever this handle is about.
+        /// when this is called, it has alreadyt been verified that it is safe to call core - so just put in code that does the job.
         /// </summary>
         protected abstract void Unbind();
 
@@ -307,13 +307,13 @@ namespace Realms
 
         /// <summary>
         /// Debug mode only.
-        /// This method will report on console any RealmHandles that have not yet been unbound
+        /// This method will report on console any RealmHandles that have not yet been unbound.
         /// If there are any objects reported, it is an indication that some handles have been leaked,
         /// and that our cleanup has not yet unbound them.
-        /// It could also be an indication of a bug in the implementation of RealmHandle or one of its descendants
-        /// The unit Test ToolBoxTests.TestSizeCalls calls this method in debug mode, as it is usually the last unit test
+        /// It could also be an indication of a bug in the implementation of RealmHandle or one of its descendants.
+        /// The unit Test ToolBoxTests.TestSizeCalls calls this method in debug mode, as it is usually the last unit test.
         /// to run. It then forces a GC and waits for the finalizers trigged by the GC to finish, then it calls again.
-        /// The second call ought to report no notfinalized objects
+        /// The second call ought to report no notfinalized objects.
         /// </summary>
         public static void ReportUnbindListStatus()
         {
@@ -337,10 +337,10 @@ namespace Realms
 
         /// <summary>
         /// Called by children to this root, when they would like to 
-        /// be unbound, but are (possibly) running in a finalizer thread
-        /// so it is (possibly) not safe to unbind then directly
+        /// be unbound, but are (possibly) running in a finalizer thread 
+        /// so it is (possibly) not safe to unbind then directly.
         /// </summary>
-        /// <param name="handleToUnbind">The core handle that is not needed anymore and should be unbound</param>
+        /// <param name="handleToUnbind">The core handle that is not needed anymore and should be unbound.</param>
         private void RequestUnbind(RealmHandle handleToUnbind)
         {
             lock (_unbindListLock)//You can lock a lock several times inside the same thread. The top-level-lock is the one that counts

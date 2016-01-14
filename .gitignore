@@ -104,6 +104,7 @@ _NCrunch_*
 .*crunch*.local.xml
 nCrunchTemp_*
 *.ncrunchproject
+*.ncrunchsolution
 
 # NuGet Packages
 *.nupkg
@@ -229,3 +230,4 @@ RealmNetWeaver.Fody.dll
 NuGetBuild
 realm-core-android-*.tar.gz
 *.so
+NDependOut

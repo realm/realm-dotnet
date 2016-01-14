@@ -11,14 +11,13 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Attributes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmDecryptionFailedException.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmObjectAlreadyOwnedByRealmException.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmObjectOwnedByAnotherRealmException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmObjectAlreadyManagedByRealmException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmObjectManagedByAnotherRealmException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmOutsideTransactionException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmFileExistsException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmInvalidDatabaseException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmPermissionDeniedException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)extensions\DateTimeOffsetExtensions.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)GroupOpenMode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)handles\Handled.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)handles\QueryHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)handles\RealmHandle.cs" />
@@ -51,8 +50,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmFileNotFoundException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmOutOfMemoryException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transaction.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)TransactionState.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)native\NativeLinkList.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)handles\LinkListHandle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RealmConfiguration.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmMigrationNeededException.cs" />
   </ItemGroup>
 </Project>

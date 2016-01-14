@@ -1,13 +1,12 @@
-OS_SRCS=$(wildcard object-store/*.cpp)
-ECH_SRCS=object-store/impl/apple/external_commit_helper.cpp
-SRCS=$(wildcard *.cpp) $(OS_SRCS) $(ECH_SRCS)
-OBJS=$(subst .cc,.o,$(SRCS))
+OS_SRCS=$(wildcard src/object-store/*.cpp)
+ECH_SRCS=src/object-store/impl/apple/external_commit_helper.cpp
+SRCS=$(wildcard src/*.cpp) $(OS_SRCS) $(ECH_SRCS)
 
 SDKROOT=$(shell xcrun --sdk iphoneos --show-sdk-path)
 CXX=$(shell xcrun --sdk iphoneos --find clang++)
-FLAGS=-Icore/include -Iobject-store -Iobject-store/impl -Iobject-store/impl/apple -std=c++14 -stdlib=libc++  
-CORE_APPLE_VER=0.95.1
-CORE_ANDROID_VER=0.95.1
+FLAGS=-Icore/include -Isrc/object-store -Isrc/object-store/impl -Isrc/object-store/impl/apple -std=c++14 -stdlib=libc++  
+CORE_APPLE_VER=0.95.6
+CORE_ANDROID_VER=0.95.6
 
 help: ## Show this help.
 	@fgrep -h "##" $(MAKEFILE_LIST) | fgrep -v fgrep | sed -e 's/\\$$//' | sed -e 's/##//'
@@ -49,6 +48,9 @@ build/Release-iphoneos/libwrappers.a: core $(SRCS)
 build/Release-iphonesimulator/libwrappers.a: core $(SRCS)
 	xcodebuild -sdk iphonesimulator -configuration Release -target "wrappers"
 
+build:
+	mkdir build
+
 build/Release-ios-universal: | build
 	mkdir -p build/Release-ios-universal
 
@@ -56,16 +58,16 @@ build/Release-ios-universal/libwrappers.a: build/Release-iphoneos/libwrappers.a 
 	lipo -create -output "build/Release-ios-universal/libwrappers.a" "build/Release-iphoneos/libwrappers.a" "build/Release-iphonesimulator/libwrappers.a"
 
 build/Debug-iphoneos/libwrappers.a: core $(SRCS)
-	xcodebuild -sdk iphoneos -configuration Debug -target "wrappers-core-debug"
+	xcodebuild -sdk iphoneos -configuration Debug -target "wrappers"
 
 build/Debug-iphonesimulator/libwrappers.a: core $(SRCS)
-	xcodebuild -sdk iphonesimulator -configuration Debug -target "wrappers-core-debug"
+	xcodebuild -sdk iphonesimulator -configuration Debug -target "wrappers"
 
 build/Debug-ios-universal: | build
 	mkdir -p build/Debug-ios-universal
 
 build/Debug-ios-universal/libwrappers.a: build/Debug-iphoneos/libwrappers.a build/Debug-iphonesimulator/libwrappers.a | build/Debug-ios-universal
-	lipo -create -output "build/Debug-ios-universal/libwrappers.a" "build/Debug-iphoneos/libwrappers-core-debug.a" "build/Debug-iphonesimulator/libwrappers-core-debug.a"
+	lipo -create -output "build/Debug-ios-universal/libwrappers.a" "build/Debug-iphoneos/libwrappers.a" "build/Debug-iphonesimulator/libwrappers.a"
 
 .PHONY: osx ios iosdbg
 

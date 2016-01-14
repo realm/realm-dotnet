@@ -4,6 +4,7 @@
  
 using Realms;
 using System;
+using System.Collections.Generic;
 
 namespace AssemblyToProcess
 {
@@ -19,12 +20,23 @@ namespace AssemblyToProcess
         public string FirstName { get; set; }
         public string LastName { get; set; }
 
+        public float Score { get; set; }
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
+
+        public DateTimeOffset Birthday { get; set; }
+
+        public int Age { get; set; }
+
+        public IList<string> Children { get; }
+
+        public bool IsInteresting { get; set; }
+
         // Ignored property
         [Ignored]
         public bool IsOnline { get; set; }
 
         // Composite property
-        [Ignored]
         public string FullName
         {
             get { return FirstName + " " + LastName; }
@@ -53,11 +65,10 @@ namespace AssemblyToProcess
         }
 
         // Manually implemented property
-        [Ignored]
         public string Address
         {
-            get { return GetValue<string>("Address"); }
-            set { SetValue("Address", value); }
+            get { return GetStringValue("Address"); }
+            set { SetStringValue("Address", value); }
         }
 
         // One-to-one relationship

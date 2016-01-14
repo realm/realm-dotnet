@@ -9,7 +9,7 @@ namespace Realms
 {
     internal class RealmQueryProvider : QueryProvider
     {
-        private Realm _realm;
+        internal Realm _realm;
 
         public RealmQueryProvider(Realm realm)
         {

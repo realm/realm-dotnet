@@ -17,13 +17,12 @@ namespace IntegrationTests.Shared
     [TestFixture]
     public class RelationshipTests
     {
+#if RELATIONSHIPS_ENABLED
         class Dog : RealmObject
         {
             public string Name { get; set; }
-            public string Color { get; set; } = "Brown";
-            public bool Vaccinated { get; set; } = true;
-            // here to create Fody error feedback until we support in https://github.com/realm/realm-dotnet/issues/36
-            // public DateTime born { get; set; }
+            public string Color { get; set; }
+            public bool Vaccinated { get; set; }
             //Owner Owner { get; set; }  will uncomment when verifying that we have back-links from ToMany relationships
         }
 
@@ -31,7 +30,7 @@ namespace IntegrationTests.Shared
         {
             public string Name { get; set; }
             public Dog TopDog { get; set; }
-            public RealmList<Dog> Dogs { get; set; } 
+            public IList<Dog> Dogs { get; set; } 
         }
 
         protected Realm realm;
@@ -314,7 +313,7 @@ namespace IntegrationTests.Shared
         }
 
         [Test]
-        public void TestAttachingStandaloneTwoLevelRelationship()
+        public void TestManagingStandaloneTwoLevelRelationship()
         {
             var person = new Person
             {
@@ -330,7 +329,7 @@ namespace IntegrationTests.Shared
 
             using (var trans = realm.BeginWrite())
             {
-                realm.Attach(person);
+                realm.Manage(person);
                 trans.Commit();
             }
 
@@ -340,7 +339,7 @@ namespace IntegrationTests.Shared
 
 
         [Test]
-        public void TestAttachingStandaloneThreeLevelRelationship()
+        public void TestManagingStandaloneThreeLevelRelationship()
         {
             var sally = new Person
             {
@@ -356,7 +355,7 @@ namespace IntegrationTests.Shared
                             new Person()
                             {
                                 FullName = "Krystal",
-                                Friends = { new Person {  FullName = "Sally"} }  // attaches a second Sally
+                                Friends = { new Person {  FullName = "Sally"} }  // Managees a second Sally
                             }
                         } 
 
@@ -365,7 +364,7 @@ namespace IntegrationTests.Shared
             };
 
             using (var trans = realm.BeginWrite()) {
-                realm.Attach(sally);  // top person attaches entire tree
+                realm.Manage(sally);  // top person Managees entire tree
                 trans.Commit();
             }
 
@@ -394,13 +393,13 @@ namespace IntegrationTests.Shared
 
             sally.Friends[1].Friends.Add(joanFriend);
             using (var trans = realm.BeginWrite()) {
-                realm.Attach(sally);  // top person attaches entire tree
+                realm.Manage(sally);  // top person Managees entire tree
                 trans.Commit();
             }
 
             Assert.That(realm.All<Person>().ToList().Count, Is.EqualTo(4));
             Assert.That(realm.All<Person>().Where(p => p.FirstName=="Sally").ToList().Count, Is.EqualTo(1));
         }
-
+#endif
     }
 }
