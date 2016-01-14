@@ -26,6 +26,7 @@
 #include <realm/table_view.hpp>
 #include <realm/util/assert.hpp>
 
+#include "util.hpp"
 
 using namespace realm;
 

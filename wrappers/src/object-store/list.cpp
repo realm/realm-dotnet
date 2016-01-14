@@ -19,6 +19,8 @@
 #include "list.hpp"
 #include <stdexcept>
 
+#include "util.hpp"
+
 using namespace realm;
 
 size_t List::size() {
