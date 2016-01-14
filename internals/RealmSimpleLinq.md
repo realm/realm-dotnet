@@ -128,12 +128,13 @@ digraph {
     node [fontcolor="orange", color="orange"]
     
     test [label="Test code\nor application code"]
+    LinqWhere [label="System.Linq.\nQueryable.Where<Person>"]
+    QPCreateQuery [label="QueryProvider.\nCreateQuery<Person>"]
+    RealmQuery [shape=box3d, label="RealmQuery<Person>"]
     LinqCount [label="System.Linq.\nQueryable.Count"]
-    QPE [label="QueryProvider.\nExecute"]
-    elide1 [label="...", shape=none]
+    RQPEint [label="RealmQueryProvider<int>.\nExecute"]
     elide2 [label="...", shape=none]
     elide3 [label="...", shape=none]
-    QVProcess [label="RealmQueryVisitor.\nProcess"]
     QVMethod0 [label="RealmQueryVisitor.\nVisitMethodCall"]
     QVMethod [label="RealmQueryVisitor.\nVisitMethodCall"]
     QVBinary [label="RealmQueryVisitor.\nVisitBinary"] 
@@ -142,22 +143,19 @@ digraph {
     EVVisit2 [label="ExpressionVisitor.\nVisit"]
     EVVisit3 [label="ExpressionVisitor.\nVisit"]
     QVConstant [label="RealmQueryVisitor.\nVisitConstant"]
-    ExecuteQuery [label="RealmQueryVisitor.\nExecuteQuery"]
-    NativeFindInterface [label="NativeQuery.\nfind"]
-    listMakerLoop  [label=" loop creating object\nfor each row found", style=dotted, color=red, fontcolor=red]
-    findYieldLoop  [label=" loop with yield\n each row found", style=dotted]
+    NativeCountInterface [label="NativeQuery.\ncount"]
 
     /* c++ */
     node [fontcolor="blue", color="blue"] 
-    query_find
-    NativeFind [label="Query.\nfind"]
+    query_count
+    queryCount [label="Query.\ncount"] 
     
     
+    test -> LinqWhere -> QPCreateQuery
+    QPCreateQuery -> RealmQuery [label=" creates as\n IQueryable<Person>"]
     test -> LinqCount
-    LinqCount -> QPE
-    QPE -> elide1  [style=dotted]
-    elide1 -> QVProcess  [style=dotted]
-    QVProcess -> EVVisit0
+    LinqCount -> RQPEint
+    RQPEint -> EVVisit0 [label=" Extract count\n from returned\n ConstantExpression"]
     EVVisit0 -> QVMethod0 [label=" Count"]
     QVMethod0 -> EVVisit [label=" value(RealmQuery`1[Person])\l.Where(p => p.Latitude < 40)"]
     EVVisit -> QVMethod [label=" Where"]
@@ -169,12 +167,7 @@ digraph {
     EVVisit3 -> QVBinary
     QVBinary -> elide3 [style=dotted]
 
-    QVProcess -> ExecuteQuery [label=" (_coreQueryHandle)"]
-    ExecuteQuery -> findYieldLoop [label=" 'creates'\nIEnumerable\nyielder"]
-    findYieldLoop -> NativeFindInterface [label=" one native call\nper row found", fontcolor=red]
-    NativeFindInterface -> query_find -> NativeFind
-    QVProcess -> listMakerLoop
-    listMakerLoop -> findYieldLoop [color=red, fontcolor=red, label=" invokes" ]
-    
+    QVMethod0 -> NativeCountInterface [label=" (_coreQueryHandle)"]
+    NativeCountInterface -> query_count -> queryCount
 }
 @enddot  
