@@ -1403,3 +1403,76 @@ ForMigrationsToCopyAndMigrate.realm
 
 TestHelpers.cs
 - CopyBundledDatabaseToDocuments helper added
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#298 Adding Count, Single, First to standard LINQ results
+
+SimpleLINQtests.cs
+- added
+- AnyFails and AnySucceeds tests added
+- CreateList test added
+
+PeopleTestsBase.cs
+- added 
+
+Win32SimpleLINQtests.cs added
+
+ObjectIntegrationTests.cs
+- SearchComparingDouble, SearchComparingFloat all moved to SimpleLINQtests
+- refactored _realm and _databasePath, plus methods Setup, TearDown and
+  MakeThreePeople to PeopleTestsBase
+- made subclass of PeopleTestsBase
+
+RealmQueryVisitor.cs
+- VisitMethodCall
+  - refactored to handle Count and Any
+- added ctor to directly pass in Realm
+
+RealmQueryProvider.cs
+- added MakeVisitor
+
+RealmQuery.cs
+- IEnumerable.GetEnumerator() rewrote to just invoke GetEnumerator<T>
+- GetEnumerator<T>() return RealmQueryEnumerator
+
+PeopleTestsBase.cs
+- TearDown now delete the temp realm
+
+RealmQueryEnumerator.cs
+- added
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#298 LINQ Refactoring - combine QueryProvider classes
+
+RealmQueryProvider.cs
+- changed base from QueryProvider to IQueryProvider
+
+RealmQuery.cs
+- _provider type changed to RealmQueryProvider
+- ctor take RealmQueryProvider param
+
+QueryProvider.cs
+- removed
+  
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#298 Adding Count and Any to standard LINQ results
+
+SimpleLINQtests.cs
+- CountFoundItems added
+
+RealmQueryVisitor.cs
+- VisitMethodCall
+  - implemented Count and Any as returning a ConstantExpression
+
+RealmQueryProvider.cs
+- invoke a RealmQueryVisitor.Visit and 
+  extract a ConstantExpression from Visit's result, to get an unboxed return value
+  
+NativeQuery.Count
+- changed stub to DLLImport call with no limiting params
+  
+wrappers/query_cs.cpp
+- query_count added
+
+  

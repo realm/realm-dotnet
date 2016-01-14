@@ -27,7 +27,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)handles\SharedRealmHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)handles\TableHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)linq\ExpressionVisitor.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)linq\QueryProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)linq\RealmQuery.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)linq\RealmQueryProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)linq\RealmQueryVisitor.cs" />
@@ -54,5 +53,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)handles\LinkListHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RealmConfiguration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmMigrationNeededException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)linq\RealmQueryEnumerator.cs" />
   </ItemGroup>
 </Project>

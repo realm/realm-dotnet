@@ -1,4 +1,8 @@
-﻿using IntegrationTests.Shared;
+﻿/* Copyright 2015 Realm Inc - All Rights Reserved
+ * Proprietary and Confidential
+ */
+
+using IntegrationTests.Shared;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;

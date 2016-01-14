@@ -20,10 +20,10 @@ namespace Realms
         public Type ElementType => typeof (T);
         public Expression Expression { get; }
         public IQueryProvider Provider => _provider;
-        private readonly QueryProvider _provider;
+        private readonly RealmQueryProvider _provider;
         private bool _allRecords = false;
 
-        internal RealmQuery(QueryProvider queryProvider, Expression expression) 
+        internal RealmQuery(RealmQueryProvider queryProvider, Expression expression) 
         {
             this._provider = queryProvider;
             this.Expression = expression;
@@ -41,17 +41,18 @@ namespace Realms
         /// <returns>An IEnumerator which will iterate through found Realm persistent objects.</returns>
         public IEnumerator<T> GetEnumerator()
         {
-            return (Provider.Execute<IEnumerable<T>>(Expression)).GetEnumerator();
+            return new RealmQueryEnumerator<T>(_provider._realm, _provider.MakeVisitor(), Expression);
         }
 
         IEnumerator IEnumerable.GetEnumerator()
+
         {
-            return (Provider.Execute<IEnumerable>(Expression)).GetEnumerator();
+            return (IEnumerator)GetEnumerator();  // using our class generic type, just redirect the legacy get
         }
 
 
         /// <summary>
-        /// Count all objects of query or if created by <see cref="Realm.All"/> of the parameterised type, faster than a search.
+        /// Count all objects if created by <see cref="Realm.All"/> of the parameterised type, faster than a search.
         /// </summary>
         /// <remarks>
         /// Resolves to this method instead of the static extension <c>Count&lt;T&gt;(this IEnumerable&lt;T&gt;)</c>.
@@ -60,13 +61,12 @@ namespace Realms
         {
             if (_allRecords)
             {
-                var prov = _provider as RealmQueryProvider;
-                Debug.Assert(prov != null, "RealmQuery cannot have _allRecords state and not have  RealmQueryProvider");
                 // use the type captured at build based on generic T
-                var tableHandle = prov._realm._tableHandles[ElementType];
+                var tableHandle = _provider._realm._tableHandles[ElementType];
                 return (int)NativeTable.count_all(tableHandle);
             }
-            return 0;  // TODO Count for query, result of TableView
+            // we should be in RealmQueryVisitor.VisitMethodCall, not here, ever, seriously!
+            throw new NotImplementedException("Count should not be invoked directly on a RealmQuery unless created by All. LINQ will not invoke this."); 
         }    
     }
 }

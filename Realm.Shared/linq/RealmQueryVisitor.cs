@@ -14,44 +14,17 @@ namespace Realms
     internal class RealmQueryVisitor : ExpressionVisitor
     {
         private Realm _realm;
-        private QueryHandle _coreQueryHandle;
+        private QueryHandle _coreQueryHandle;  // set when recurse down to VisitConstant
 
-        public IEnumerable Process(Realm realm, Expression expression, Type returnType)
+        internal RealmQueryVisitor(Realm realm)
         {
             _realm = realm;
-
-            Visit(expression);
-
-            var innerType = returnType.GetGenericArguments()[0];
-            var list = Activator.CreateInstance(typeof(List<>).MakeGenericType(innerType));
-            var add = list.GetType().GetMethod("Add");
-
-            var handles = ExecuteQuery(_coreQueryHandle, innerType);
-            foreach (var rowHandle in handles)
-            {
-                var o = Activator.CreateInstance(innerType);
-                ((RealmObject)o)._Manage(_realm, rowHandle);
-                add.Invoke(list, new[] { o });
-            }
-            return (IEnumerable)list;
         }
 
-        private IEnumerable<RowHandle> ExecuteQuery(QueryHandle queryHandle, Type objectType)
+
+        internal RowHandle FindNextRowHandle(long nextRowIndex)
         {
-            long nextRowIndex = 0;
-            while (nextRowIndex != -1)
-            {
-                var rowHandle = NativeQuery.find(queryHandle, (IntPtr)nextRowIndex);
-                if (!rowHandle.IsInvalid)
-                {
-                    nextRowIndex = rowHandle.RowIndex + 1;
-                    yield return rowHandle;
-                }
-                else
-                {
-                    yield break;
-                }
-            }
+            return NativeQuery.find(_coreQueryHandle, (IntPtr)nextRowIndex);
         }
 
         private static Expression StripQuotes(Expression e)
@@ -63,15 +36,32 @@ namespace Realms
             return e;
         }
 
+
         internal override Expression VisitMethodCall(MethodCallExpression m)
         {
-            if (m.Method.DeclaringType == typeof(Queryable) && m.Method.Name == "Where")
-            {
-                this.Visit(m.Arguments[0]);
+            if (m.Method.DeclaringType == typeof(Queryable)) { 
+                if (m.Method.Name == "Where")
+                {
+                    this.Visit(m.Arguments[0]);
 
-                LambdaExpression lambda = (LambdaExpression)StripQuotes(m.Arguments[1]);
-                this.Visit(lambda.Body);
-                return m;
+                    LambdaExpression lambda = (LambdaExpression)StripQuotes(m.Arguments[1]);
+                    this.Visit(lambda.Body);
+                    return m;
+                }
+                if (m.Method.Name == "Count")
+                {
+                    this.Visit(m.Arguments[0]);  // typically recurse down to a "Where"
+                    int foundCount = (int)NativeQuery.count(_coreQueryHandle);
+                    return Expression.Constant(foundCount);
+                }
+                if (m.Method.Name == "Any")
+                {
+                    this.Visit(m.Arguments[0]);   // typically recurse down to a "Where"
+                    RowHandle firstRow = NativeQuery.find(_coreQueryHandle, IntPtr.Zero);
+                    bool foundAny = !firstRow.IsInvalid;
+                    return Expression.Constant(foundAny);
+                }
+
             }
             throw new NotSupportedException($"The method '{m.Method.Name}' is not supported");
         }
@@ -158,7 +148,7 @@ namespace Realms
 #pragma warning disable 0642    // Disable warning about empty statements (See issue #68)
 
         private void AddQueryEqual(QueryHandle queryHandle, string columnName, object value)
-        {
+            {
             var columnIndex = NativeQuery.get_column_index((QueryHandle)queryHandle, columnName, (IntPtr)columnName.Length);
 
             var valueType = value.GetType();
