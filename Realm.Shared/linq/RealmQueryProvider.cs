@@ -43,7 +43,11 @@ namespace Realms
 
         public T Execute<T>(Expression expression)
         {
-            return default(T);  // TODO get a visitor result
+            var v = MakeVisitor();
+            Expression visitResult = v.Visit(expression);
+            var constExp = visitResult as ConstantExpression;
+            T ret = (T)constExp?.Value;
+            return ret;
         }
 
         public object Execute(Expression expression)

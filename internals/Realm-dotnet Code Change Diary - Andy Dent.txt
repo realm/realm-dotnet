@@ -1455,4 +1455,24 @@ RealmQuery.cs
 QueryProvider.cs
 - removed
   
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#298 Adding Count and Any to standard LINQ results
+
+SimpleLINQtests.cs
+- CountFoundItems added
+
+RealmQueryVisitor.cs
+- VisitMethodCall
+  - implemented Count and Any as returning a ConstantExpression
+
+RealmQueryProvider.cs
+- invoke a RealmQueryVisitor.Visit and 
+  extract a ConstantExpression from Visit's result, to get an unboxed return value
+  
+NativeQuery.Count
+- changed stub to DLLImport call with no limiting params
+  
+wrappers/query_cs.cpp
+- query_count added
+
   

@@ -21,45 +21,7 @@ namespace Realms
             _realm = realm;
         }
 
-        /*
-        public IEnumerable Process(Realm realm, Expression expression, Type returnType)
-        {
-            _realm = realm;
 
-            Visit(expression);
-
-            var innerType = returnType.GetGenericArguments()[0];
-            var list = Activator.CreateInstance(typeof(List<>).MakeGenericType(innerType));
-            var add = list.GetType().GetMethod("Add");
-
-            var handles = ExecuteQuery(_coreQueryHandle, innerType);
-            foreach (var rowHandle in handles)
-            {
-                var o = Activator.CreateInstance(innerType);
-                ((RealmObject)o)._Manage(_realm, rowHandle);
-                add.Invoke(list, new[] { o });
-            }
-            return (IEnumerable)list;
-        }
-
-        private IEnumerable<RowHandle> ExecuteQuery(QueryHandle queryHandle, Type objectType)
-        {
-            long nextRowIndex = 0;
-            while (nextRowIndex != -1)
-            {
-                var rowHandle = NativeQuery.find(queryHandle, (IntPtr)nextRowIndex);
-                if (!rowHandle.IsInvalid)
-                {
-                    nextRowIndex = rowHandle.RowIndex + 1;
-                    yield return rowHandle;
-                }
-                else
-                {
-                    yield break;
-                }
-            }
-        }
-*/
         internal RowHandle FindNextRowHandle(long nextRowIndex)
         {
             return NativeQuery.find(_coreQueryHandle, (IntPtr)nextRowIndex);
@@ -86,17 +48,18 @@ namespace Realms
                     this.Visit(lambda.Body);
                     return m;
                 }
-                else if (m.Method.Name == "Count")
+                if (m.Method.Name == "Count")
                 {
-                    this.Visit(m.Arguments[0]);
-                    //TODO count on the query lhs if count(lambda) or return count of tableview
-                    return m;
+                    this.Visit(m.Arguments[0]);  // typically recurse down to a "Where"
+                    int foundCount = (int)NativeQuery.count(_coreQueryHandle);
+                    return Expression.Constant(foundCount);
                 }
-                else if (m.Method.Name == "Any")
+                if (m.Method.Name == "Any")
                 {
-                    this.Visit(m.Arguments[0]);
-                    //TODO count on the query lhs if count(lambda) or return count of tableview
-                    return m;
+                    this.Visit(m.Arguments[0]);   // typically recurse down to a "Where"
+                    RowHandle firstRow = NativeQuery.find(_coreQueryHandle, IntPtr.Zero);
+                    bool foundAny = !firstRow.IsInvalid;
+                    return Expression.Constant(foundAny);
                 }
 
             }

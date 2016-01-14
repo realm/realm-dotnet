@@ -24,6 +24,39 @@ namespace IntegrationTests
         }
 
 
+        [Test]
+        public void CountFoundItems()
+        {
+            MakeThreePeople();
+            var c0 = _realm.All<Person>().Where(p => p.Score == 42.42f).Count();
+            Assert.That(c0, Is.EqualTo(1));
+
+            var c1 = _realm.All<Person>().Where(p => p.Latitude <= 50).Count();
+            Assert.That(c1, Is.EqualTo(2));
+
+            var c2 = _realm.All<Person>().Where(p => p.IsInteresting ==  true).Count();
+            Assert.That(c2, Is.EqualTo(2));
+
+            var c3 = _realm.All<Person>().Where(p => p.FirstName=="John").Count();
+            Assert.That(c3, Is.EqualTo(2));
+        }
+
+
+        [Test]
+        public void CountFails()
+        {
+            MakeThreePeople();
+            var c0 = _realm.All<Person>().Where(p => p.Score == 3.14159f).Count();
+            Assert.That(c0, Is.EqualTo(0));
+
+            var c1 = _realm.All<Person>().Where(p => p.Latitude > 88).Count();
+            Assert.That(c1, Is.EqualTo(0));
+
+            var c3 = _realm.All<Person>().Where(p => p.FirstName == "Samantha").Count();
+            Assert.That(c3, Is.EqualTo(0));
+        }
+
+
         // Extension method rather than SQL-style LINQ
         // Also tests the Count on results, ElementOf, First and Single methods
         [Test]
@@ -105,9 +138,9 @@ namespace IntegrationTests
         public void AnyFails()
         {
             MakeThreePeople();
-            Assert.That( _realm.All<Person>().Where(p => p.Latitude > 100).Any());
-            Assert.That( _realm.All<Person>().Where(p => p.Score > 50000).Any());
-            Assert.That( _realm.All<Person>().Where(p => p.FirstName == "Samantha").Any());
+            Assert.False( _realm.All<Person>().Where(p => p.Latitude > 100).Any());
+            Assert.False( _realm.All<Person>().Where(p => p.Score > 50000).Any());
+            Assert.False( _realm.All<Person>().Where(p => p.FirstName == "Samantha").Any());
         }
 
     } // SimpleLINQtests

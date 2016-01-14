@@ -101,10 +101,9 @@ namespace Realms
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_destroy", CallingConvention = CallingConvention.Cdecl)]
         internal static extern void destroy(IntPtr queryHandle);
 
-        public static long count(QueryHandle QueryHandle, long start, long end, long limit)
-        {
-            throw new NotImplementedException();
-        }
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_count", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern IntPtr count(QueryHandle QueryHandle);
+
         public static double average(QueryHandle QueryHandle, long columnIndex)
         {
             throw new NotImplementedException();
