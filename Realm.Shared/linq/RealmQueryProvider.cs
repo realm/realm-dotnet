@@ -18,9 +18,9 @@ namespace Realms
             _realm = realm;
         }
 
-        internal RealmQueryVisitor MakeVisitor()
+        internal RealmQueryVisitor<T> MakeVisitor<T>()
         {
-            return new RealmQueryVisitor(_realm);
+            return new RealmQueryVisitor<T>(_realm);
         }
 
         public IQueryable<T> CreateQuery<T>(Expression expression)
@@ -41,12 +41,12 @@ namespace Realms
             }
         }
 
-        public T Execute<T>(Expression expression)
+        public TRes Execute<TRes>(Expression expression)
         {
-            var v = MakeVisitor();
+            var v = MakeVisitor<T>();
             Expression visitResult = v.Visit(expression);
             var constExp = visitResult as ConstantExpression;
-            T ret = (T)constExp?.Value;
+            TRes ret = (TRes)constExp?.Value;
             return ret;
         }
 

@@ -41,7 +41,7 @@ namespace Realms
         /// <returns>An IEnumerator which will iterate through found Realm persistent objects.</returns>
         public IEnumerator<T> GetEnumerator()
         {
-            return new RealmQueryEnumerator<T>(_provider._realm, _provider.MakeVisitor(), Expression);
+            return new RealmQueryEnumerator<T>(_provider._realm, _provider.MakeVisitor<T>(), Expression);
         }
 
         IEnumerator IEnumerable.GetEnumerator()

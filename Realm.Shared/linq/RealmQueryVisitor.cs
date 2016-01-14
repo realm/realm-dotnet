@@ -11,10 +11,12 @@ using System.Runtime.CompilerServices;
 
 namespace Realms
 {
-    internal class RealmQueryVisitor : ExpressionVisitor
+    internal class RealmQueryVisitor<T> : ExpressionVisitor
     {
         private Realm _realm;
         private QueryHandle _coreQueryHandle;  // set when recurse down to VisitConstant
+        private Type _retType = typeof(T);
+
 
         internal RealmQueryVisitor(Realm realm)
         {
@@ -22,9 +24,20 @@ namespace Realms
         }
 
 
-        internal RowHandle FindNextRowHandle(long nextRowIndex)
+        internal T FindNextObject(ref long nextRowIndex)
         {
-            return NativeQuery.find(_coreQueryHandle, (IntPtr)nextRowIndex);
+            var rowHandle = NativeQuery.find(_coreQueryHandle, (IntPtr)nextRowIndex);
+            if (rowHandle.IsInvalid)
+                return null;
+            _rowIndex = rowHandle.RowIndex + 1;  // bump caller index
+            return MakeObject(rowHandle);
+        }
+
+        private T MakeObject(RowHandle rowHandle)
+        {
+            var o = Activator.CreateInstance(_retType);
+            ((RealmObject)o)._Manage(_realm, rowHandle);
+            return (T)o;
         }
 
         private static Expression StripQuotes(Expression e)
@@ -60,6 +73,25 @@ namespace Realms
                     RowHandle firstRow = NativeQuery.find(_coreQueryHandle, IntPtr.Zero);
                     bool foundAny = !firstRow.IsInvalid;
                     return Expression.Constant(foundAny);
+                }
+                if (m.Method.Name == "First")
+                {
+                    this.Visit(m.Arguments[0]);   // typically recurse down to a "Where"
+                    RowHandle firstRow = NativeQuery.find(_coreQueryHandle, IntPtr.Zero);
+                    if (firstRow.IsInvalid)
+                        throw new InvalidOperationException("Sequence contains no matching element");
+                    return MakeObject(firstRow);
+                }
+                if (m.Method.Name == "Single")
+                {
+                    this.Visit(m.Arguments[0]);   // typically recurse down to a "Where"
+                    RowHandle firstRow = NativeQuery.find(_coreQueryHandle, IntPtr.Zero);
+                    if (firstRow.IsInvalid)
+                        throw new InvalidOperationException("Sequence contains no matching element");
+                    RowHandle nextRow = NativeQuery.find(_coreQueryHandle, (IntPtr)(firstRow.RowIndex+1));
+                    if (!nextRow.IsInvalid)
+                        throw new InvalidOperationException("Sequence contains more than one matching element");
+                    return MakeObject(firstRow);
                 }
 
             }

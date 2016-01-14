@@ -1475,4 +1475,26 @@ NativeQuery.Count
 wrappers/query_cs.cpp
 - query_count added
 
-  
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#351 Add LINQ Single and First
+
+SimpleLINQtests.cs
+- SingleFailsToFind, SingleFindsTooMany, SingleWorks added  
+
+
+RealmQueryProvider
+- MakeVisitor made generic so can pass to RealmQueryVisitor
+
+RealmQueryVisitor.cs
+- made generic
+- added _retType
+- FindNextRowHandle 
+  - renamed FindNextObject
+  - now includes making object, returns null when fails
+- VisitMethodCall - handle First and Single
+
+RealmQueryEnumerator.cs
+- _retType removed
+- MoveNext simplified, moved object creation to RealmQueryVisitor
+
+
