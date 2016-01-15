@@ -7,7 +7,6 @@ LOCAL_SRC_FILES := core-android/$(TARGET_ARCH_ABI)/librealm-android.a
 include $(PREBUILT_STATIC_LIBRARY)
 
 #include $(CLEAR_VARS)
-NDK_TOOLCHAIN_VERSION := 4.8
 
 LOCAL_MODULE := wrappers
 LOCAL_CFLAGS := 
@@ -36,7 +35,7 @@ LOCAL_LDLIBS := -llog
 LOCAL_LDLIBS += -lstdc++
 LOCAL_CPPFLAGS := -DHAVE_PTHREADS
 LOCAL_CPPFLAGS += -DREALM_HAVE_CONFIG=1
-LOCAL_CPPFLAGS += -std=c++1y
+LOCAL_CPPFLAGS += -std=c++14
 LOCAL_C_INCLUDES += core-android/include
 LOCAL_C_INCLUDES += src/object-store/impl/
 LOCAL_C_INCLUDES += src/object-store/impl/android
