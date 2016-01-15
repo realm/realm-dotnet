@@ -13,6 +13,13 @@ namespace IntegrationTests
     [TestFixture]
     public class InstanceTests
     {
+        [TestFixtureSetUp]
+        public void Setup()
+        {
+            File.Delete(RealmConfiguration.PathToRealm());
+            File.Delete(RealmConfiguration.PathToRealm("EnterTheMagic.realm"));
+        }
+
         [Test]
         public void GetInstanceTest()
         {

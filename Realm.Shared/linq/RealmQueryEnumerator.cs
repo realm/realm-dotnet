@@ -51,6 +51,7 @@ namespace Realms
             _rowIndex = rowHandle.RowIndex + 1;
             var o = Activator.CreateInstance(_retType);
             ((RealmObject)o)._Manage(_realm, rowHandle);
+            ((RealmObject)o)._TurnListsIntoRealmLists();
             Current = (T)o;
             return true;
         }
