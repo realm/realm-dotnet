@@ -112,6 +112,9 @@ public class ModuleWeaver
             "System.Int64",
         };
 
+        var genericGetObjectValueReference = MethodNamed(realmObjectType, "GetObjectValue");
+        var genericSetObjectValueReference = MethodNamed(realmObjectType, "SetObjectValue");
+
         var wovenAttributeClass = assemblyToReference.MainModule.GetTypes().First(x => x.Name == "WovenAttribute");
         var wovenAttributeConstructor = ModuleDefinition.Import(wovenAttributeClass.GetConstructors().First());
 
@@ -184,6 +187,17 @@ public class ModuleWeaver
                     {
                         PrependListFieldInitializerToConstructor(backingField, ctor, ModuleDefinition.ImportReference(concreteListConstructor));
                     }
+                }
+                else if (IsRealmObject(prop.PropertyType))
+                {
+                    if (!prop.IsAutomatic())
+                    {
+                        LogWarningPoint($"{type.Name}.{columnName} is not an automatic property but its type is a RealmObject which normally indicates a relationship", sequencePoint);
+                        continue;
+                    }
+
+                    ReplaceGetter(prop, columnName, new GenericInstanceMethod(genericGetObjectValueReference) { GenericArguments = { prop.PropertyType } });
+                    ReplaceSetter(prop, columnName, new GenericInstanceMethod(genericSetObjectValueReference) { GenericArguments = { prop.PropertyType } });  // with casting in the RealmObject methods, should just work
                 }
                 else if (prop.PropertyType.FullName == "System.DateTime")
                 {
