@@ -51,7 +51,7 @@ namespace IntegrationTests
                 p2 = _realm.CreateObject<Person>();
                 p2.FullName = "John Doe"; // uses our setter whcih splits and maps to First/Lastname
                 p2.IsInteresting = false;
-                p2.Email = "john@deo.com";
+                p2.Email = "john@doe.com";
                 p2.Score = 100;
                 p2.Latitude = 40.7637286;
                 p2.Longitude = -73.9748113;

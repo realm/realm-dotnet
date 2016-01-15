@@ -42,17 +42,9 @@ namespace Realms
         /// <returns>True only if can advance.</returns>
         public bool MoveNext()
         {
-            var rowHandle = _enumerating.FindNextRowHandle(_rowIndex);
-            if (rowHandle.IsInvalid)
-            {
-                Current = default(T);  // not sure about this
-                return false;
-            }
-            _rowIndex = rowHandle.RowIndex + 1;
-            var o = Activator.CreateInstance(_retType);
-            ((RealmObject)o)._Manage(_realm, rowHandle);
-            Current = (T)o;
-            return true;
+            var nextObj = _enumerating.FindNextObject(ref _rowIndex);
+            Current = (T)((object)nextObj);
+            return nextObj != null;
         }
 
         /// <summary>
