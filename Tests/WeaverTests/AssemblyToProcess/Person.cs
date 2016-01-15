@@ -72,7 +72,7 @@ namespace AssemblyToProcess
         }
 
         // One-to-one relationship
-        //public PhoneNumber PrimaryNumber { get; set; }
+        public PhoneNumber PrimaryNumber { get; set; }
 
         // One-to-many relationship
         //public RealmList<PhoneNumber> PhoneNumbers { get; set; }
