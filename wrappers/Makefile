@@ -108,7 +108,7 @@ build/Release-android/x86/libwrappers.so: | build/Release-android/x86 libs
 	cp ./libs/x86/librealm-android.so ./build/Release-android/x86/libwrappers.so
 
 libs: | core-android
-	$(NDK_ROOT)/ndk-build APP_PLATFORM=android-9
+	$(NDK_ROOT)/ndk-build APP_PLATFORM=android-9 V=1
 	
 
 .PHONY: android

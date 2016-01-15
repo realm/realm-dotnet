@@ -1,9 +1,9 @@
 #NDK_TOOLCHAIN_VERSION := clang
-NDK_TOOLCHAIN_VERSION := 4.8
+NDK_TOOLCHAIN_VERSION := 4.9
 APP_ABI := armeabi armeabi-v7a x86
 
-#  Enable C++11
-APP_CPPFLAGS += -std=c++11
+#  Enable C++14
+APP_CPPFLAGS += -std=c++14
 APP_CPPFLAGS += -frtti
 APP_CPPFLAGS += -fexceptions
 APP_CPPFLAGS += -pthread
@@ -12,4 +12,4 @@ APP_CPPFLAGS += -DREALM_HAVE_CONFIG=1
 # Instruct to use the static GNU STL implementation
 APP_STL := gnustl_static
 
-LOCAL_C_INCLUDES += ${ANDROID_NDK}/sources/cxx-stl/gnu-libstdc++/4.8/include
+LOCAL_C_INCLUDES += ${ANDROID_NDK}/sources/cxx-stl/gnu-libstdc++/4.9/include
