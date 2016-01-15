@@ -35,7 +35,6 @@ LOCAL_LDLIBS := -llog
 LOCAL_LDLIBS += -lstdc++
 LOCAL_CPPFLAGS := -DHAVE_PTHREADS
 LOCAL_CPPFLAGS += -DREALM_HAVE_CONFIG=1
-LOCAL_CPPFLAGS += -std=c++14
 LOCAL_C_INCLUDES += core-android/include
 LOCAL_C_INCLUDES += src/object-store/impl/
 LOCAL_C_INCLUDES += src/object-store/impl/android
