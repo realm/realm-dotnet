@@ -13,10 +13,11 @@ namespace Realms
     internal class RealmQueryEnumerator<T> : IEnumerator<T> 
     {
         private long _rowIndex = 0;
-        private RealmQueryVisitor<T> _enumerating;
+        private RealmQueryVisitor _enumerating;
         private Realm _realm;
+        private Type _retType = typeof(T);
 
-        internal RealmQueryEnumerator(Realm realm, RealmQueryVisitor<T> qv, Expression expression)
+        internal RealmQueryEnumerator(Realm realm, RealmQueryVisitor qv, Expression expression)
         {
             _realm = realm;
             _enumerating = qv;
@@ -41,8 +42,8 @@ namespace Realms
         /// <returns>True only if can advance.</returns>
         public bool MoveNext()
         {
-            var nextObj = _enumerating.FindNextRowHandle(_rowIndex);
-            Current = nextObj;
+            var nextObj = _enumerating.FindNextObject(ref _rowIndex);
+            Current = (T)((object)nextObj);
             return nextObj != null;
         }
 

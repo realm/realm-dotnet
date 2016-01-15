@@ -14,8 +14,9 @@ namespace IntegrationTests
     class SimpleLINQtests : PeopleTestsBase
     {
 
+
         [SetUp]
-        public void Setup()
+        public new void Setup()
         {
             base.Setup();
             MakeThreePeople();
@@ -27,6 +28,18 @@ namespace IntegrationTests
             var s0 = _realm.All<Person>().Where(p => p.Score == 42.42f).ToList();
             Assert.That(s0.Count(), Is.EqualTo(1));
             Assert.That(s0[0].Score, Is.EqualTo(42.42f));
+
+
+            var s1 = _realm.All<Person>().Where(p => p.Longitude < -70.0 && p.Longitude > -90.0).ToList();
+            Assert.That(s1[0].Email, Is.EqualTo("john@doe.com"));
+
+            var s2 = _realm.All<Person>().Where(p => p.Longitude < 0).ToList();
+            Assert.That(s2.Count(), Is.EqualTo(2));
+            Assert.That(s2[0].Email, Is.EqualTo("john@doe.com"));
+            Assert.That(s2[1].Email, Is.EqualTo("peter@jameson.com"));
+
+            var s3 = _realm.All<Person>().Where(p => p.Email != "").ToList();
+            Assert.That(s3.Count(), Is.EqualTo(3));
         }
 
 
@@ -157,7 +170,7 @@ namespace IntegrationTests
         [Test]
         public void SingleFindsTooMany()
         {
-            Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().Single(p => p.Latitude M= 50) );
+            Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().Single(p => p.Latitude == 50) );
             Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().Single(p => p.Score != 100.0f) );
             Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().Single(p => p.FirstName == "John") );
         }
@@ -166,14 +179,37 @@ namespace IntegrationTests
         [Test]
         public void SingleWorks()
         {
-            var s0 = _realm.All<Person>().Single(p => p.Latitude >= 50);
-            Assert.That(s0.FirstName, Is.EqualTo("Peter"));
+            var s0 = _realm.All<Person>().Single(p => p.Longitude < -70.0 && p.Longitude > -90.0);
+            Assert.That(s0.Email, Is.EqualTo("john@doe.com"));
 
             var s1 = _realm.All<Person>().Single(p => p.Score == 100.0f);
-            Assert.That(s1.FirstName, Is.EqualTo("Peter"));
+            Assert.That(s1.Email, Is.EqualTo("john@doe.com"));
 
             var s2 = _realm.All<Person>().Single(p => p.FirstName == "Peter");
             Assert.That(s2.FirstName, Is.EqualTo("Peter"));
+        }
+
+
+        [Test]
+        public void FirstFailsToFind()
+        {
+            Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().First(p => p.Latitude > 100) );
+            Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().First(p => p.Latitude > 100) );
+            Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().First(p => p.Score > 50000) );
+            Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().First(p => p.FirstName == "Samantha") );
+        }
+
+        [Test]
+        public void FirstWorks()
+        {
+            var s0 = _realm.All<Person>().First(p => p.Longitude < -70.0 && p.Longitude > -90.0);
+            Assert.That(s0.Email, Is.EqualTo("john@doe.com"));
+
+            var s1 = _realm.All<Person>().First(p => p.Score == 100.0f);
+            Assert.That(s1.Email, Is.EqualTo("john@doe.com"));
+
+            var s2 = _realm.All<Person>().First(p => p.FirstName == "John");
+            Assert.That(s2.FirstName, Is.EqualTo("John"));
         }
 
     } // SimpleLINQtests

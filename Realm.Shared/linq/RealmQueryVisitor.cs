@@ -11,33 +11,34 @@ using System.Runtime.CompilerServices;
 
 namespace Realms
 {
-    internal class RealmQueryVisitor<T> : ExpressionVisitor
+    internal class RealmQueryVisitor : ExpressionVisitor
     {
         private Realm _realm;
         private QueryHandle _coreQueryHandle;  // set when recurse down to VisitConstant
-        private Type _retType = typeof(T);
+        private Type _retType;
 
 
-        internal RealmQueryVisitor(Realm realm)
+        internal RealmQueryVisitor(Realm realm, Type retType)
         {
             _realm = realm;
+            _retType = retType;
         }
 
 
-        internal T FindNextObject(ref long nextRowIndex)
+        internal RealmObject FindNextObject(ref long nextRowIndex)
         {
             var rowHandle = NativeQuery.find(_coreQueryHandle, (IntPtr)nextRowIndex);
             if (rowHandle.IsInvalid)
                 return null;
-            _rowIndex = rowHandle.RowIndex + 1;  // bump caller index
+            nextRowIndex = rowHandle.RowIndex + 1;  // bump caller index
             return MakeObject(rowHandle);
         }
 
-        private T MakeObject(RowHandle rowHandle)
+        private RealmObject MakeObject(RowHandle rowHandle)
         {
             var o = Activator.CreateInstance(_retType);
             ((RealmObject)o)._Manage(_realm, rowHandle);
-            return (T)o;
+            return (RealmObject)o;
         }
 
         private static Expression StripQuotes(Expression e)
@@ -76,22 +77,30 @@ namespace Realms
                 }
                 if (m.Method.Name == "First")
                 {
-                    this.Visit(m.Arguments[0]);   // typically recurse down to a "Where"
+                    // unlike Any, has embedded lambda
+                    this.Visit(m.Arguments[0]);  // creates the query
+                    LambdaExpression lambda = (LambdaExpression)StripQuotes(m.Arguments[1]);
+                    this.Visit(lambda.Body);
                     RowHandle firstRow = NativeQuery.find(_coreQueryHandle, IntPtr.Zero);
                     if (firstRow.IsInvalid)
                         throw new InvalidOperationException("Sequence contains no matching element");
-                    return MakeObject(firstRow);
+                    return Expression.Constant(MakeObject(firstRow));
                 }
                 if (m.Method.Name == "Single")
                 {
-                    this.Visit(m.Arguments[0]);   // typically recurse down to a "Where"
+                    // unlike Any, has embedded lambda, so treat it more like a Where
+                    // eg: m    {value(Realms.RealmQuery`1[IntegrationTests.Person]).Single(p => (p.Latitude > 100))}
+                    this.Visit(m.Arguments[0]);  // creates the query
+                    LambdaExpression lambda = (LambdaExpression)StripQuotes(m.Arguments[1]);
+                    this.Visit(lambda.Body);
                     RowHandle firstRow = NativeQuery.find(_coreQueryHandle, IntPtr.Zero);
                     if (firstRow.IsInvalid)
                         throw new InvalidOperationException("Sequence contains no matching element");
-                    RowHandle nextRow = NativeQuery.find(_coreQueryHandle, (IntPtr)(firstRow.RowIndex+1));
+                    IntPtr nextIndex = (IntPtr)(firstRow.RowIndex+1);
+                    RowHandle nextRow = NativeQuery.find(_coreQueryHandle, nextIndex);
                     if (!nextRow.IsInvalid)
                         throw new InvalidOperationException("Sequence contains more than one matching element");
-                    return MakeObject(firstRow);
+                    return Expression.Constant(MakeObject(firstRow));
                 }
 
             }
