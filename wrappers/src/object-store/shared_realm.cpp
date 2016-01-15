@@ -28,8 +28,6 @@
 
 #include <mutex>
 
-#include "util.hpp"
-
 using namespace realm;
 using namespace realm::_impl;
 

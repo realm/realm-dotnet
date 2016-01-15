@@ -32,7 +32,7 @@ namespace realm {
     @note mostly copied from util.cpp in Java but has a much richer range of exceptions
     @warning if you update these codes also update the matching RealmExceptionCodes.cs
     */
-    void realm::convert_exception()
+    void convert_exception()
     {
         try {
             throw;  // rethrow so we can add typing information by different catches
