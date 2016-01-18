@@ -80,35 +80,37 @@ namespace Realms
             }
         }
 
+        // When we want to manage an object (possibly outside write transactions), this
+        // method will transform all IList<> instances into RealmList<>'s. No data is set,
+        // so this should only be used when the object was just constructed.
         internal void _TurnListsIntoRealmLists()
         {
             Debug.Assert(this.IsManaged);
 
             var thisType = this.GetType();
-            var wovenProperties = from prop in thisType.GetProperties()
+            var wovenIListProperties = from prop in thisType.GetProperties()
+                                  where prop.PropertyType.IsGenericType && 
+                                    prop.PropertyType.GetGenericTypeDefinition() == typeof(IList<>)
                                   let backingField = prop.GetCustomAttributes(false)
                                                          .OfType<WovenPropertyAttribute>()
                                                          .Select(a => a.BackingFieldName)
                                                          .SingleOrDefault()
                                   where backingField != null
-                                  select new { Info = prop, Field = thisType.GetField(backingField, BindingFlags.Instance | BindingFlags.NonPublic) };
+                                  select new 
+                                  { 
+                                    Name = prop.Name,
+                                    ElementType = prop.PropertyType.GetGenericArguments().Single(),
+                                    Field = thisType.GetField(backingField, BindingFlags.Instance | BindingFlags.NonPublic) 
+                                  };
 
-            foreach (var prop in wovenProperties)
+            foreach (var prop in wovenIListProperties)
             {
-                if (prop.Info.PropertyType.IsGenericType)
-                {
-                    var genericType = prop.Info.PropertyType.GetGenericTypeDefinition();
-                    if (genericType == typeof(IList<>))
-                    {
-                        var elementType = prop.Info.PropertyType.GetGenericArguments().Single();
-                        var getListValue = typeof(RealmObject).GetMethod("GetListValue", BindingFlags.Instance | BindingFlags.NonPublic)
-                                                                     .MakeGenericMethod(elementType);
+              var getListValue = typeof(RealmObject).GetMethod("GetListValue", BindingFlags.Instance | BindingFlags.NonPublic)
+                .MakeGenericMethod(prop.ElementType);
 
-                        // TODO: get rid of all this reflection. Handle the [MapTo] attribute
-                        var realmList = getListValue.Invoke(this, new object[] { prop.Info.Name });
-                        prop.Field.SetValue(this, realmList);
-                    }
-                }
+              // TODO: get rid of all this reflection. Handle the [MapTo] attribute
+              var realmList = getListValue.Invoke(this, new object[] { prop.Name });
+              prop.Field.SetValue(this, realmList);
             }
         }
 
