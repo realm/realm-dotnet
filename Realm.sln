@@ -18,6 +18,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WeaverTests", "WeaverTests", "{64B2E00E-D5D7-474B-9947-6ABC51070E7B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RealmWeaver.Tests", "Tests\WeaverTests\RealmWeaver.Tests\RealmWeaver.Tests.csproj", "{C0DB15DA-0C51-408D-A386-A69880083B93}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E97E649F-B703-47E3-B18A-0871D3498742} = {E97E649F-B703-47E3-B18A-0871D3498742}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssemblyToProcess", "Tests\WeaverTests\AssemblyToProcess\AssemblyToProcess.csproj", "{E97E649F-B703-47E3-B18A-0871D3498742}"
 EndProject

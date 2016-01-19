@@ -80,6 +80,42 @@ namespace Realms
             }
         }
 
+        // When we want to manage an object (possibly outside write transactions), this
+        // method will transform all IList<> instances into RealmList<>'s. No data is set,
+        // so this should only be used when the object was just constructed.
+        internal void _TurnListsIntoRealmLists()
+        {
+            Debug.Assert(this.IsManaged);
+
+            var thisType = this.GetType();
+            var wovenIListProperties = from prop in thisType.GetProperties()
+                                  where prop.PropertyType.IsGenericType && 
+                                    prop.PropertyType.GetGenericTypeDefinition() == typeof(IList<>)
+                                  let backingField = prop.GetCustomAttributes(false)
+                                                         .OfType<WovenPropertyAttribute>()
+                                                         .Select(a => a.BackingFieldName)
+                                                         .SingleOrDefault()
+                                  where backingField != null
+                                  select new 
+                                  { 
+                                    Name = prop.Name,
+                                    ElementType = prop.PropertyType.GetGenericArguments().Single(),
+                                    Field = thisType.GetField(backingField, BindingFlags.Instance | BindingFlags.NonPublic) 
+                                  };
+
+            foreach (var prop in wovenIListProperties)
+            {
+              var getListValue = typeof(RealmObject).GetMethod("GetListValue", BindingFlags.Instance | BindingFlags.NonPublic)
+                .MakeGenericMethod(prop.ElementType);
+
+              // TODO: get rid of all this reflection. Handle the [MapTo] attribute
+              var realmList = getListValue.Invoke(this, new object[] { prop.Name });
+              prop.Field.SetValue(this, realmList);
+            }
+        }
+
+        #region Getters
+
         protected string GetStringValue(string propertyName)
         {
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
@@ -332,6 +368,21 @@ namespace Realms
             var listHandle = tableHandle.TableLinkList (columnIndex, _rowHandle);
             return new RealmList<T>(this, listHandle);
         }
+
+        protected T GetObjectValue<T>(string propertyName) where T : RealmObject
+        {
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
+
+            var tableHandle = _realm._tableHandles[GetType()];
+            var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
+            var rowIndex = _rowHandle.RowIndex;
+            var linkedRowPtr = NativeTable.get_link (tableHandle, columnIndex, (IntPtr)rowIndex);
+            return (T)MakeRealmObject(typeof(T), linkedRowPtr);
+        }
+
+        #endregion
+
+        #region Setters
 
         protected void SetStringValue(string propertyName, string value)
         {
@@ -720,36 +771,6 @@ namespace Realms
                 NativeTable.set_null(tableHandle, columnIndex, (IntPtr)rowIndex);
         }
 
-        protected void SetListValue<T>(string propertyName, RealmList<T> value) where T : RealmObject
-        {
-            throw new NotImplementedException ("Setting a relationship list is not yet implemented");
-        }
-
-
-        /**
-         * Shared factory to make an object in the realm from a known row
-         * @param rowPtr may be null if a relationship lookup has failed.
-        */ 
-        internal RealmObject MakeRealmObject(System.Type objectType, IntPtr rowPtr) {
-            if (rowPtr == (IntPtr)0)
-                return null;  // typically no related object
-            RealmObject ret = (RealmObject)Activator.CreateInstance(objectType);
-            var relatedHandle = Realm.CreateRowHandle (rowPtr);
-            ret._Manage(_realm, relatedHandle);
-            return ret;
-        }
-
-        protected T GetObjectValue<T>(string propertyName) where T : RealmObject
-        {
-            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
-
-            var tableHandle = _realm._tableHandles[GetType()];
-            var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
-            var rowIndex = _rowHandle.RowIndex;
-            var linkedRowPtr = NativeTable.get_link (tableHandle, columnIndex, (IntPtr)rowIndex);
-            return (T)MakeRealmObject(typeof(T), linkedRowPtr);
-        }
-
         // TODO make not generic
         protected void SetObjectValue<T>(string propertyName, T value) where T : RealmObject
         {
@@ -771,8 +792,23 @@ namespace Realms
                     _realm.Manage(value);
                 NativeTable.set_link(tableHandle, columnIndex, (IntPtr)rowIndex, (IntPtr)value.RowHandle.RowIndex);
             }
-
         }
+
+        #endregion
+
+        /**
+         * Shared factory to make an object in the realm from a known row
+         * @param rowPtr may be null if a relationship lookup has failed.
+        */
+        internal RealmObject MakeRealmObject(Type objectType, IntPtr rowPtr) {
+            if (rowPtr == IntPtr.Zero)
+                return null;  // typically no related object
+            var ret = (RealmObject)Activator.CreateInstance(objectType);
+            var relatedHandle = Realm.CreateRowHandle (rowPtr);
+            ret._Manage(_realm, relatedHandle);
+            return ret;
+        }
+
 
         /// <summary>
         /// Compare objects with identity query for persistent objects.
@@ -803,5 +839,6 @@ namespace Realms
             // System.Object, which defines Equals as reference equality. 
             return RowHandle.Equals(((RealmObject)obj).RowHandle);
         }
+
     }
 }

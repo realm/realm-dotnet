@@ -331,6 +331,7 @@ namespace Realms
             var rowHandle = CreateRowHandle	(rowPtr);
 
             result._Manage(this, rowHandle);
+            result._TurnListsIntoRealmLists();
 
             return result;
         }

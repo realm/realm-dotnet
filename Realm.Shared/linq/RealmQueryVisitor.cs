@@ -38,6 +38,7 @@ namespace Realms
         {
             var o = Activator.CreateInstance(_retType);
             ((RealmObject)o)._Manage(_realm, rowHandle);
+            ((RealmObject)o)._TurnListsIntoRealmLists();
             return (RealmObject)o;
         }
 
