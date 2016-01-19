@@ -83,7 +83,7 @@ namespace Realms
         internal static extern void double_greater_equal(QueryHandle queryPtr, IntPtr columnIndex, double value);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_find", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern RowHandle find(QueryHandle queryHandle, IntPtr lastMatch);
+        internal static extern RowHandle find(QueryHandle queryHandle, IntPtr beginAtRow);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_get_column_index", CallingConvention = CallingConvention.Cdecl)]
         internal static extern IntPtr get_column_index(QueryHandle queryPtr,

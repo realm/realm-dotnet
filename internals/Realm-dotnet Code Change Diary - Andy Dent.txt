@@ -1475,4 +1475,27 @@ NativeQuery.Count
 wrappers/query_cs.cpp
 - query_count added
 
-  
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#351 Add LINQ Single and First
+
+SimpleLINQtests.cs
+- SingleFailsToFind, SingleFindsTooMany, SingleWorks added  
+- FirstFailsToFind and FirstWorks added
+
+RealmQueryProvider
+- MakeVisitor added Type param RealmQueryVisitor
+
+RealmQueryVisitor.cs
+- added _retType
+- ctor now takes Type param
+- FindNextRowHandle 
+  - renamed FindNextObject
+  - now includes making object, returns null when fails
+- VisitMethodCall - handle First and Single
+- MakeObject added
+
+RealmQueryEnumerator.cs
+- MoveNext simplified, moved object creation to RealmQueryVisitor
+
+NativeQuery.cs
+- find renamed 2nd param from lastMatch to beginAtRow so name is same as core
