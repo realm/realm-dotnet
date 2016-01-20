@@ -1499,3 +1499,16 @@ RealmQueryEnumerator.cs
 
 NativeQuery.cs
 - find renamed 2nd param from lastMatch to beginAtRow so name is same as core
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#368 Require IList
+
+RealmList.cs
+- changed from public to internal
+
+Realm.cs
+- reordered evaluations to check IList ahead of RealmList
+
+RealmObject
+- GetListValue had to become internal, was protected, to match RealmList access level

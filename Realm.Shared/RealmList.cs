@@ -18,7 +18,7 @@ namespace Realms
     /// </remarks>
     /// 
     /// <typeparam name="T">Type of the RealmObject which is the target of the relationship.</typeparam>
-    public class RealmList<T> : IList<T> where T : RealmObject
+    internal class RealmList<T> : IList<T> where T : RealmObject
     {
         private class RealmListEnumerator : IEnumerator<T> 
         {

@@ -147,14 +147,15 @@ namespace Realms
                 var indexedAttribute = p.GetCustomAttributes(false).FirstOrDefault(a => a is IndexedAttribute);
                 var isIndexed = indexedAttribute != null;
 
+                // still check RealmList as there may be internal stuff where we declare it, but user code will be IList so check first
                 var isNullable = !(p.PropertyType.IsValueType || 
-                    p.PropertyType.Name == "RealmList`1" ||
                     p.PropertyType.Name == "IList`1") ||
+                    p.PropertyType.Name == "RealmList`1" ||
                     Nullable.GetUnderlyingType(p.PropertyType) != null;
 
                 var objectType = "";
                 if (!p.PropertyType.IsValueType && p.PropertyType.Name!="String") {
-                    if (p.PropertyType.Name == "RealmList`1" || p.PropertyType.Name == "IList`1")
+                    if (p.PropertyType.Name == "IList`1" || p.PropertyType.Name == "RealmList`1")
                         objectType = p.PropertyType.GetGenericArguments()[0].Name;
                     else {
                         if (p.PropertyType.BaseType.Name == "RealmObject")
