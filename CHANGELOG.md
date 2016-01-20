@@ -2,6 +2,8 @@
 -------------------
 Still requires installation from private copy of NuGet download.
 
+Uses Realm core 0.95.6.
+
 ### Platform Changes
 Now supporting:
 
@@ -14,12 +16,11 @@ Now supporting:
 
 * Added Android support as listed above.
 * Added `RealmConfiguration` to provide reusable way to specify path and other settings.
-* Added `Realm.Equals`, `Realm.GetHashCode` and `Realm.IsSameInstance` to provide equality checking so we can cache realms for re-opening.
+* Added `Realm.Equals`, `Realm.GetHashCode` and `Realm.IsSameInstance` to provide equality checking so you can confirm realms opened in the same thread are equal (shared internal instance).
 * Added `Realm.DeleteFiles(RealmConfiguration)` to aid in cleaning up related files.
 * Added nullable basic types such as `int?`.
 * Optimised `Realm.All<userclass>().Count()` to get rapid count of all objects of given class.
 * Related lists are now supported in standalone objects.
-* You can delare related lists as `IList` eg: `public IList<Dog> Dogs { get; }` (and **must** use `IList` if you will be using that class for standalone objects).
 
 #### LINQ 
 * `Count()` on `Where()` implemented.
@@ -27,16 +28,12 @@ Now supporting:
 * `First( lambda )` and `Single( lambda )` implemented.
 * Significant optimisation of `Where()` to be properly lazy, was instantiating all objects internally.
 
-### Internal Major Changes
-* Property access to core optimised to avoid using generic Get/SetValue calls.
-* Large string data optimised to reduce calls to core.
-* Moved to Realm core 0.95.6.
-* Android C++ code now compiled with gcc 4.9 r10e using C++ 14.
 
 ### API-Breaking Changes
 
-* `[PrimaryKey]` attribute renamed `[ObjectId]`
-* `Realm.Attach(object)` renamed `Manage(object)`
+* `[PrimaryKey]` attribute renamed `[ObjectId]`.
+* `Realm.Attach(object)` renamed `Manage(object)`.
+* Lists of related objects are now declared with `IList<otherClass>` instead of `RealmList`.
 
 
 
