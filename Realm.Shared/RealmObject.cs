@@ -359,7 +359,7 @@ namespace Realms
             return hasValue ? DateTimeOffsetExtensions.FromUnixTimeSeconds(unixTimeSeconds) : (DateTimeOffset?)null;
         }
 
-        protected RealmList<T> GetListValue<T>(string propertyName) where T : RealmObject
+        internal RealmList<T> GetListValue<T>(string propertyName) where T : RealmObject
         {
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
