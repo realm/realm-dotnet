@@ -80,39 +80,6 @@ namespace Realms
             }
         }
 
-        // When we want to manage an object (possibly outside write transactions), this
-        // method will transform all IList<> instances into RealmList<>'s. No data is set,
-        // so this should only be used when the object was just constructed.
-        internal void _TurnListsIntoRealmLists()
-        {
-            Debug.Assert(this.IsManaged);
-
-            var thisType = this.GetType();
-            var wovenIListProperties = from prop in thisType.GetProperties()
-                                  where prop.PropertyType.IsGenericType && 
-                                    prop.PropertyType.GetGenericTypeDefinition() == typeof(IList<>)
-                                  let backingField = prop.GetCustomAttributes(false)
-                                                         .OfType<WovenPropertyAttribute>()
-                                                         .Select(a => a.BackingFieldName)
-                                                         .SingleOrDefault()
-                                  where backingField != null
-                                  select new 
-                                  { 
-                                    Name = prop.Name,
-                                    ElementType = prop.PropertyType.GetGenericArguments().Single(),
-                                    Field = thisType.GetField(backingField, BindingFlags.Instance | BindingFlags.NonPublic) 
-                                  };
-
-            foreach (var prop in wovenIListProperties)
-            {
-              var getListValue = typeof(RealmObject).GetMethod("GetListValue", BindingFlags.Instance | BindingFlags.NonPublic)
-                .MakeGenericMethod(prop.ElementType);
-
-              // TODO: get rid of all this reflection. Handle the [MapTo] attribute
-              var realmList = getListValue.Invoke(this, new object[] { prop.Name });
-              prop.Field.SetValue(this, realmList);
-            }
-        }
 
         #region Getters
 
@@ -359,7 +326,7 @@ namespace Realms
             return hasValue ? DateTimeOffsetExtensions.FromUnixTimeSeconds(unixTimeSeconds) : (DateTimeOffset?)null;
         }
 
-        internal RealmList<T> GetListValue<T>(string propertyName) where T : RealmObject
+        protected RealmList<T> GetListValue<T>(string propertyName) where T : RealmObject
         {
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 

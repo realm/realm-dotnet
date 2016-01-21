@@ -13,6 +13,7 @@ The main classes you will use are:
 
 - @ref Realm
 - @ref RealmObject
+- @ref RealmList
 - @ref Transaction
 
 Helper classes you may use are:
