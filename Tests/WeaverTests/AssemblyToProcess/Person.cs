@@ -28,8 +28,6 @@ namespace AssemblyToProcess
 
         public int Age { get; set; }
 
-        public RealmList<string> Children { get; }
-
         public bool IsInteresting { get; set; }
 
         // Ignored property
