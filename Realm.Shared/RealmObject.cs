@@ -53,24 +53,7 @@ namespace Realms
                 if (prop.Info.PropertyType.IsGenericType)
                 {
                     var genericType = prop.Info.PropertyType.GetGenericTypeDefinition();
-                    if (genericType == typeof(IList<>))
-                    {
-                        var elementType = prop.Info.PropertyType.GetGenericArguments().Single();
-                        var getListValue = typeof(RealmObject).GetMethod("GetListValue", BindingFlags.Instance | BindingFlags.NonPublic)
-                                                                     .MakeGenericMethod(elementType);
-                        var add = getListValue.ReturnType.GetMethod("Add");
-
-                        // TODO: get rid of all this reflection. Handle the [MapTo] attribute
-                        var realmList = getListValue.Invoke(this, new object[] { prop.Info.Name });
-                        prop.Field.SetValue(this, realmList);
-                        foreach (var item in value as IEnumerable)
-                        {
-                            add.Invoke(realmList, new[] { item });
-                        }
-
-                        continue;
-                    }
-                    else if (genericType == typeof(RealmList<>))
+                    if (genericType == typeof(RealmList<>))
                     {
                         continue;
                     }

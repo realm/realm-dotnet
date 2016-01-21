@@ -1529,6 +1529,7 @@ RealmObject
 - GetListValue set back to protected access
 - _TurnListsIntoRealmLists removed mainly because unusable in IOS
 - MakeObject not invoke _TurnListsIntoRealmLists
+-_CopyDataFromBackingFieldsToRow removed code to copy from IList
 
 
 ModuleWeaver.cs
