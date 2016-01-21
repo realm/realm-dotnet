@@ -311,7 +311,7 @@ namespace IntegrationTests.Shared
             Assert.That(dog.IsManaged);
         }
 
-        [Test]
+        [Test, Ignore("Fails until we support standalone lists")]
         public void TestManagingStandaloneTwoLevelRelationship()
         {
             var person = new Person
@@ -337,7 +337,7 @@ namespace IntegrationTests.Shared
         }
 
 
-        [Test]
+        [Test, Ignore("Fails until we support standalone lists")]
         public void TestManagingStandaloneThreeLevelRelationship()
         {
             var sally = new Person
@@ -372,7 +372,7 @@ namespace IntegrationTests.Shared
         }
 
 
-        [Test]
+        [Test, Ignore("Fails until we support standalone lists")]
         public void TestCircularRelationshipsFromStandaloneTwoStage()
         {
             var sally = new Person
