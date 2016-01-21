@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata minClientVersion="2.8">
     <id>RealmWeaverBeta.Fody</id>
-    <version>0.70.0</version>
+    <version>0.71.0</version>
     <title>RealmWeaver.Fody</title>
     <authors>Realm</authors>
     <owners>Realm</owners>
@@ -10,12 +10,15 @@
     <licenseUrl>http://www.opensource.org/licenses/mit-license.php</licenseUrl>
     <projectUrl>http://github.com/realm/realm-dotnet</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>Realm for Xamarin: make descendants of RealmObject automaticallyu persistent (private beta)</description>
+    <description>Realm for Xamarin: make descendants of RealmObject automatically persistent (private beta)</description>
     <summary />
     <language>en-US</language>
     <tags>Realm</tags>
     <dependencies>
-      <dependency id="Fody" version="1.29.3"/>
+      <dependency id="Fody" version="1.29.4"/>
     </dependencies>
   </metadata>
+    <files>
+        <file src="../..RealmWeaver/bin/Release/RealmWeaver.Fody.dll" target=""/>
+    </files>
 </package>
