@@ -62,6 +62,6 @@ namespace IntegrationTests
             set { _nickname = value; }
         }
 
-        public IList<Person> Friends { get; }  // Declarations with IList and no setter only work for Standalone objects at present
+        public RealmList<Person> Friends { get; }  
     }
 }

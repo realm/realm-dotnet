@@ -231,6 +231,6 @@ NuGetBuild
 realm-core-android-*.tar.gz
 *.so
 NDependOut
-Tests/IntegrationTests.Shared/ForMigrationsToCopyAndMigrate.realm.lock
-Tests/IntegrationTests.Shared/ForMigrationsToCopyAndMigrate.realm.log_a
-Tests/IntegrationTests.Shared/ForMigrationsToCopyAndMigrate.realm.log_b
+*.realm.lock
+*.realm.log_a
+*.realm.log_b

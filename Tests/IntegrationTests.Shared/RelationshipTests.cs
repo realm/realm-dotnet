@@ -29,7 +29,7 @@ namespace IntegrationTests.Shared
         {
             public string Name { get; set; }
             public Dog TopDog { get; set; }
-            public IList<Dog> Dogs { get; } 
+            public RealmList<Dog> Dogs { get; } 
         }
 
         protected Realm realm;

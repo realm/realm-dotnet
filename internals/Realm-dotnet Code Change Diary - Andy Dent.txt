@@ -1512,3 +1512,35 @@ Realm.cs
 
 RealmObject
 - GetListValue had to become internal, was protected, to match RealmList access level
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+BACKING OUT IList
+
+RealmList.cs
+- changed back to public from internal
+
+Realm.cs
+- CreateObject - don't call _TurnListsIntoRealmLists
+- GenerateObjectSchema 
+  - don't allow IList
+
+RealmObject
+- GetListValue set back to protected access
+- _TurnListsIntoRealmLists removed mainly because unusable in IOS
+- MakeObject not invoke _TurnListsIntoRealmLists
+-_CopyDataFromBackingFieldsToRow removed code to copy from IList
+
+
+ModuleWeaver.cs
+- Execute 
+  - look for RealmList instead of IList
+  - generate error if has setter as well (new behaviour, was only console message)
+  - removed all trace of handling IList for now
+- genericGetListValueReference member restored
+
+
+Use RealmList instead of IList in sample code:
+- WeaverTests/AssemblyToProcess/Person.cs
+- IntegrationTests.Shared/Person.cs
+- RelationshipTests.cs

@@ -18,7 +18,7 @@ namespace Realms
     /// </remarks>
     /// 
     /// <typeparam name="T">Type of the RealmObject which is the target of the relationship.</typeparam>
-    internal class RealmList<T> : IList<T> where T : RealmObject
+    public class RealmList<T> : IList<T> where T : RealmObject
     {
         private class RealmListEnumerator : IEnumerator<T> 
         {
@@ -188,7 +188,7 @@ namespace Realms
         /// </summary>
         public void CopyTo(T[] array, int arrayIndex)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException("RealmList.CopyTo is not yet implemented");
         }
 
 

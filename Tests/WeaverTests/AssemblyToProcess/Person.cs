@@ -28,7 +28,7 @@ namespace AssemblyToProcess
 
         public int Age { get; set; }
 
-        public IList<string> Children { get; }
+        public RealmList<string> Children { get; }
 
         public bool IsInteresting { get; set; }
 
