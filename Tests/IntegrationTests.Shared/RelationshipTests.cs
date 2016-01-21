@@ -311,6 +311,14 @@ namespace IntegrationTests.Shared
             Assert.That(dog.IsManaged);
         }
 
+        [Test, Description("This is the case until we support standalone lists")]
+        public void StandaloneListsShouldBeNull()
+        {
+            var person = new Person();
+
+            Assert.That(person.Friends, Is.Null);
+        }
+
         [Test, Ignore("Fails until we support standalone lists")]
         public void TestManagingStandaloneTwoLevelRelationship()
         {
