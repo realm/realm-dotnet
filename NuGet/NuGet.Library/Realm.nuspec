@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata minClientVersion="2.8">
     <id>RealmBeta</id>
-    <version>0.71.0</version>
+    <version>$version$</version>
     <title>Realm</title>
     <authors>Realm</authors>
     <owners>Realm</owners>
@@ -20,12 +20,14 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="../../Realm.XamarinIOS/bin/iPhoneSimulator/Release/RealmSimulator.dll" target="lib/Xamarin.iOS10" /> 
-    <file src="../../Realm.XamarinIOS/bin/iPhone/Release/Realm.dll" target="lib/Xamarin.iOS10" />
-    <file src="../../Realm.XamarinAndroid/bin/Release/Realm.dll" target="lib/MonoAndroid44" />
-    <file src="../../wrappers/build/Release-android/armeabi/libwrappers.so" target="libs/armeabi" />
-    <file src="../../wrappers/build/Release-android/armeabi-v7a/libwrappers.so" target="libs/armeabi-v7a" />
-    <file src="../../wrappers/build/Release-android/x86/libwrappers.so" target="libs/x86" />
-    <file src="Realm.targets" target="build/MonoAndroid44" />
+<!-- IOS files -->
+    <file src="../../Realm.XamarinIOS/bin/iPhoneSimulator/Release/RealmSimulator.dll" target="lib\Xamarin.iOS10" /> 
+    <file src="../../Realm.XamarinIOS/bin/iPhone/Release/Realm.dll" target="lib\Xamarin.iOS10" />
+<!-- Android files -->
+    <file src="RealmBeta.targets" target="build\MonoAndroid44" />
+    <file src="../../Realm.XamarinAndroid/bin/Release/Realm.dll" target="lib\MonoAndroid44" />
+    <file src="../../wrappers/build/Release-android/armeabi/libwrappers.so" target="lib\MonoAndroid44\armeabi" />
+    <file src="../../wrappers/build/Release-android/armeabi-v7a/libwrappers.so" target="lib\MonoAndroid44\armeabi-v7a" />
+    <file src="../../wrappers/build/Release-android/x86/libwrappers.so" target="lib\MonoAndroid44\x86" />
   </files>
 </package>
