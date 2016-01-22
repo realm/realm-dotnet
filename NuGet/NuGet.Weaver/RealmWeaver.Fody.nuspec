@@ -9,6 +9,7 @@
     <developmentDependency>true</developmentDependency>
     <licenseUrl>http://www.opensource.org/licenses/mit-license.php</licenseUrl>
     <projectUrl>http://github.com/realm/realm-dotnet</projectUrl>
+    <iconUrl>http://realm.io/img/favicon-32x32.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Realm for Xamarin: make descendants of RealmObject automatically persistent (private beta)</description>
     <summary />
