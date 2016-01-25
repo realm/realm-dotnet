@@ -37,7 +37,7 @@ Now supporting:
 
 ### Bug fixes
 
-* Bug that caused a linker error for iPhone simulator fixed.
+* Bug that caused a linker error for iPhone simulator fixed (#375)
 
 
 0.70.0 First Private Beta
