@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata minClientVersion="2.8">
-    <id>RealmWeaverBeta.Fody</id>
+    <id>RealmWeaver.Fody</id>
     <version>0.71.0</version>
     <title>RealmWeaver.Fody</title>
     <authors>Realm</authors>
