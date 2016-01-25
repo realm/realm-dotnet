@@ -8,9 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		424267211C070BE500670B1C /* librealm-ios-no-bitcode-dbg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 424267201C070BE500670B1C /* librealm-ios-no-bitcode-dbg.a */; };
-		424267231C070BEA00670B1C /* librealm-dbg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 424267221C070BEA00670B1C /* librealm-dbg.a */; };
 		48D101451B3991B6004A4B2C /* librealm-ios-no-bitcode.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 48D101431B3991B6004A4B2C /* librealm-ios-no-bitcode.a */; };
-		48D101461B3991B6004A4B2C /* librealm.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 48D101441B3991B6004A4B2C /* librealm.a */; };
 		48ED7C651C16F9C200AF23A4 /* error_handling.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48ED7C561C16F9C200AF23A4 /* error_handling.cpp */; };
 		48ED7C661C16F9C200AF23A4 /* error_handling.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48ED7C571C16F9C200AF23A4 /* error_handling.hpp */; };
 		48ED7C671C16F9C200AF23A4 /* linklist_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48ED7C581C16F9C200AF23A4 /* linklist_cs.cpp */; };
@@ -52,10 +50,8 @@
 /* Begin PBXFileReference section */
 		4242671F1C070B9500670B1C /* libwrappers-core-debug.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libwrappers-core-debug.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		424267201C070BE500670B1C /* librealm-ios-no-bitcode-dbg.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "librealm-ios-no-bitcode-dbg.a"; path = "core/librealm-ios-no-bitcode-dbg.a"; sourceTree = "<group>"; };
-		424267221C070BEA00670B1C /* librealm-dbg.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "librealm-dbg.a"; path = "core/librealm-dbg.a"; sourceTree = "<group>"; };
 		48D101381B39902E004A4B2C /* libwrappers.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libwrappers.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		48D101431B3991B6004A4B2C /* librealm-ios-no-bitcode.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "librealm-ios-no-bitcode.a"; path = "core/librealm-ios-no-bitcode.a"; sourceTree = "<group>"; };
-		48D101441B3991B6004A4B2C /* librealm.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = librealm.a; path = core/librealm.a; sourceTree = "<group>"; };
 		48ED7C561C16F9C200AF23A4 /* error_handling.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = error_handling.cpp; path = src/error_handling.cpp; sourceTree = "<group>"; };
 		48ED7C571C16F9C200AF23A4 /* error_handling.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = error_handling.hpp; path = src/error_handling.hpp; sourceTree = "<group>"; };
 		48ED7C581C16F9C200AF23A4 /* linklist_cs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = linklist_cs.cpp; path = src/linklist_cs.cpp; sourceTree = "<group>"; };
@@ -99,7 +95,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				424267231C070BEA00670B1C /* librealm-dbg.a in Frameworks */,
 				424267211C070BE500670B1C /* librealm-ios-no-bitcode-dbg.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -109,7 +104,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				48D101451B3991B6004A4B2C /* librealm-ios-no-bitcode.a in Frameworks */,
-				48D101461B3991B6004A4B2C /* librealm.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -155,10 +149,8 @@
 				48ED7C621C16F9C200AF23A4 /* shared_linklist.hpp */,
 				48ED7C631C16F9C200AF23A4 /* shared_realm_cs.cpp */,
 				48ED7C641C16F9C200AF23A4 /* table_cs.cpp */,
-				424267221C070BEA00670B1C /* librealm-dbg.a */,
 				424267201C070BE500670B1C /* librealm-ios-no-bitcode-dbg.a */,
 				48D101431B3991B6004A4B2C /* librealm-ios-no-bitcode.a */,
-				48D101441B3991B6004A4B2C /* librealm.a */,
 				48D101391B39902E004A4B2C /* Products */,
 			);
 			sourceTree = "<group>";

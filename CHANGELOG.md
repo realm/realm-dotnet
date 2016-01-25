@@ -35,6 +35,9 @@ Now supporting:
 * `Realm.Attach(object)` renamed `Manage(object)`.
 * Lists of related objects are now declared with `IList<otherClass>` instead of `RealmList`.
 
+### Bug fixes
+
+* Bug that caused a linker error for iPhone simulator fixed (#375)
 
 
 0.70.0 First Private Beta
