@@ -40,16 +40,18 @@ Building Fody NuGet
 -------------------
 You **have** to build this using Visual Studio. Open the normal Realm solution and force a rebuild of the `Nuget.Weaver` project. The `NuGetBuild` folder is created by this build.
 
-Copy the `RealmWeaver.Fody.nuspec` generated in `NuGetBuild` to your **local test folder**.
+Copy the `RealmWeaver.Fody.0.71.0.nupkg` generated in `NuGetBuild` to your **local test folder**.
 
 Building Realm NuGet
 --------------------
 This step is performed from a Windows commandline using the NuGet tool.
 
-Easiest is to run in a VM or have the realm-dotnet folder mounted as a shared folder, eg:
-`Z:\andydent_Mac\dev\Realm\realm-dotnet`.
+You can have a full realm-dotnet tree over on a Windows machine, and copy over the built binaries from an OS X machine. (see below)
 
-Change to that directory and run the command:
+Easier is to run in a VM or have the realm-dotnet folder mounted as a shared folder, eg:
+`Z:\andydent_Mac\dev\Realm\realm-dotnet` accessible from your Windows environment.
+
+In either case, change to the `NuGet/NuGet.Library` directory containing `Realm.nuspec` and run the command:
 
 `c:\tools\nuget pack -version 0.71.0 -NoDefaultExcludes Realm.nuspec`
 
@@ -58,6 +60,13 @@ The above assumes that the NuGet.exe tool was unpacked into `C:\tools` and you a
 Done correctly, this creates a package `/Users/andydent/dev/Realm/realm-dotnet/NuGet/NuGet.Library/Realm.0.71.0.nupkg` which you should copy to your **local test folder**.
 
 
+### Binaries on OS X
+If you are copying binaries from an OS X machine to a separate Windows tree, you will need to get:
+
+* `Realm.XamarinAndroid/bin/Release`
+* `Realm.XamarinIOS/bin/iPhone/Release`
+* `Realm.XamarinIOS/bin/iPhoneSimulator/Release`
+* `wrappers/build/Release-*` multiple directories
 Testing the packages
 --------------------
 Set your Xamarin or Visual Studio to use your **local test folder** as a NuGet source.
