@@ -28,7 +28,7 @@ namespace Realms
         }
 
         /// <summary>
-        /// Will automatically <c>Rollback.</c> the transaction on existing scope, if not explicitly Committed.
+        /// Will automatically <c>Rollback</c> the transaction on existing scope, if not explicitly Committed.
         /// </summary>
         public void Dispose()
         {
@@ -56,7 +56,7 @@ namespace Realms
         }
 
         /// <summary>
-        /// Use to save the changes to the realm. If transaction is declared in a <c>using.</c> block, must be used before tne end of that block.
+        /// Use to save the changes to the realm. If transaction is declared in a <c>using</c> block, must be used before the end of that block.
         /// </summary>
         public void Commit()
         {
