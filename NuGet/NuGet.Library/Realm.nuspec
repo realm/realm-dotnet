@@ -21,7 +21,6 @@
   </metadata>
   <files>
 <!-- IOS files -->
-    <file src="../../Realm.XamarinIOS/bin/iPhoneSimulator/Release/RealmSimulator.dll" target="lib\Xamarin.iOS10" /> 
     <file src="../../Realm.XamarinIOS/bin/iPhone/Release/Realm.dll" target="lib\Xamarin.iOS10" />
 <!-- Android files -->
     <file src="Realm.targets" target="build\MonoAndroid44" />
