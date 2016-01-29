@@ -1,3 +1,14 @@
+0.71.1 Private Beta
+-------------------
+### Minor Fixes
+
+Building IOS apps targeting the simulator sometimes got an error like:
+
+    Error MT5209: Native linking error...building for iOS simulator, 
+    but linking in object file built for OSX, for architecture i386 (MT5209) 
+
+This was fixed by removing a redundant simulator library included in NuGet
+
 0.71.0 Private Beta
 -------------------
 Still requires installation from private copy of NuGet download.

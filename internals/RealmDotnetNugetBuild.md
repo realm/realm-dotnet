@@ -18,20 +18,17 @@ Building the DLLS
 * In Xamarin Studio, open`Realm.sln`
 * select Release ARM
 * select Realm.XamarinAndroid project and Rebuild
-* select Release iPhoneSimulator
-* select Realm.XamarinIOS project and Rebuild
-* rename `/Users/andydent/dev/Realm/realm-dotnet/Realm.XamarinIOS/bin/iPhoneSimulator/Release/Realm.dll` to `RealmSimulator.dll` so you have a uniquely named DLL for the simulator
 * select Release iPhone with a device attached
 * select Realm.XamarinIOS project and Rebuild
 
-
-
-Once you have your DLLS,
+Once you have your DLLS, follow these next steps to set version numbers and build NuGet.
 
 
 Setting Version Numbers
 -----------------------
 Edit `NuGet/NuGet.Library/Realm.targets` and update version numbers in the paths.
+
+You will also have to change the version number you use in the `nuget` command line.
 
 If the Fody Weaver version number is also changing, edit it in `NuGet/NuGet.Weaver/RealmWeaver.Fody.nuspec`
 
@@ -59,14 +56,13 @@ The above assumes that the NuGet.exe tool was unpacked into `C:\tools` and you a
 
 Done correctly, this creates a package `/Users/andydent/dev/Realm/realm-dotnet/NuGet/NuGet.Library/Realm.0.71.0.nupkg` which you should copy to your **local test folder**.
 
-
 ### Binaries on OS X
 If you are copying binaries from an OS X machine to a separate Windows tree, you will need to get:
 
 * `Realm.XamarinAndroid/bin/Release`
 * `Realm.XamarinIOS/bin/iPhone/Release`
-* `Realm.XamarinIOS/bin/iPhoneSimulator/Release`
 * `wrappers/build/Release-*` multiple directories
+
 Testing the packages
 --------------------
 Set your Xamarin or Visual Studio to use your **local test folder** as a NuGet source.
