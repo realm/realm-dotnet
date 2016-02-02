@@ -399,6 +399,11 @@ namespace Realms
             return new Transaction(_sharedRealmHandle);
         }
 
+        public void Refresh()
+        {
+            NativeSharedRealm.refresh(_sharedRealmHandle);
+        }
+
         /// <summary>
         /// Extract an iterable set of objects for direct use or further query.
         /// </summary>
