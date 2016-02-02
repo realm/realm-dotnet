@@ -31,20 +31,30 @@ namespace IntegrationTests.Shared
             Realm.DeleteRealm(_realm.Config);
         }
 
+        private void WriteOnDifferentThread(Action<Realm> action)
+        {
+            var thread = new Thread(() => 
+            {
+                var r = Realm.GetInstance(_databasePath);
+                r.Write(() => action(r));
+            });
+            thread.Start();
+            thread.Join();
+        }
+
         [Test]
         public void SimpleTest()
         {
-            Person p1, p2, p3;
+            Person p1 = null, p2, p3;
 
-            using (var t = _realm.BeginWrite())
+            _realm.Write(() =>
             {
                 p1 = _realm.CreateObject<Person>();
                 p1.FullName = "Person 1";
 
                 p2 = _realm.CreateObject<Person>();
                 p2.FullName = "Person 2";
-                t.Commit();
-            }
+            });
 
             var q = _realm.All<Person>();
             Assert.That(q.Count, Is.EqualTo(2));
@@ -52,15 +62,13 @@ namespace IntegrationTests.Shared
             var ql1 = q.ToList();
             Assert.That(ql1.Select(p => p.FullName), Is.EquivalentTo(new string[] { "Person 1", "Person 2" }));
 
-            using (var t = _realm.BeginWrite())
+            _realm.Write(() =>
             {
                 p1.FullName = "Modified Person";
 
                 p3 = _realm.CreateObject<Person>();
                 p3.FullName = "Person 3";
-
-                t.Commit();
-            }
+            });
 
             Assert.That(q.Count, Is.EqualTo(3));
             var ql2 = q.ToList();
@@ -72,31 +80,20 @@ namespace IntegrationTests.Shared
         {
             Person p1, p2;
 
-            using (var t = _realm.BeginWrite())
+            _realm.Write(() =>
             {
                 p1 = _realm.CreateObject<Person>();
                 p1.FullName = "Person 1";
-
-                t.Commit();
-            }
+            });
 
             var q = _realm.All<Person>();
             Assert.That(q.Count, Is.EqualTo(1));
 
-            var thread = new Thread(() =>
+            WriteOnDifferentThread((Realm newRealm) =>
             {
-                var newRealm = Realm.GetInstance(_databasePath);
-
-                using (var t = newRealm.BeginWrite())
-                {
-                    p2 = newRealm.CreateObject<Person>();
-                    p2.FullName = "Person 2";
-
-                    t.Commit();
-                }
+                p2 = newRealm.CreateObject<Person>();
+                p2.FullName = "Person 2";
             });
-            thread.Start();
-            thread.Join();
 
             _realm.Refresh();
 
