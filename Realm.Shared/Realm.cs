@@ -399,9 +399,32 @@ namespace Realms
             return new Transaction(_sharedRealmHandle);
         }
 
-        public void Refresh()
+        /// <summary>
+        /// Execute an action inside a transaction. If no exception is thrown, the transaction will automatically
+        /// be committed.
+        /// </summary>
+        /// <example>
+        /// realm.Write(() => person.Score++);
+        /// </example>
+        /// <param name="action">Action to perform inside transaction</param>
+        public void Write(Action action)
         {
-            NativeSharedRealm.refresh(_sharedRealmHandle);
+            using (var transaction = BeginWrite())
+            {
+                action();
+                transaction.Commit();
+            }
+        }
+
+        /// <summary>
+        /// Update a Realm and outstanding objects to point to the most recent data for this Realm.
+        /// </summary>
+        /// <returns>
+        /// Whether the realm had any updates. Note that this may return true even if no data has actually changed.
+        /// </returns>
+        public bool Refresh()
+        {
+            return MarshalHelpers.IntPtrToBool(NativeSharedRealm.refresh(_sharedRealmHandle));
         }
 
         /// <summary>
