@@ -83,5 +83,10 @@ namespace Realms {
             set_exception_thrower (ExceptionThrower);
         }
 
+
+        
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "fake_a_native_exception", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void fake_a_native_exception(IntPtr errorCode);
+
     }
 }  // namespace Realms
