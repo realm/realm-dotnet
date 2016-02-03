@@ -37,6 +37,7 @@ namespace IntegrationTests.Shared
             {
                 var r = Realm.GetInstance(_databasePath);
                 r.Write(() => action(r));
+                r.Close();
             });
             thread.Start();
             thread.Join();
