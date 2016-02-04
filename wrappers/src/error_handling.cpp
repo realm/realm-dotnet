@@ -106,4 +106,10 @@ REALM_EXPORT void set_exception_thrower(ManagedExceptionThrowerT userThrower)
     ManagedExceptionThrower = userThrower;
 }
 
+// allow C# test code to generate an exception being thrown back
+REALM_EXPORT void fake_a_native_exception(int errorType)
+{
+    realm::throw_exception(realm::RealmErrorType(errorType), "this is fake_exception");
+}
+
 }   // extern "C"

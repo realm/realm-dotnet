@@ -1544,3 +1544,22 @@ Use RealmList instead of IList in sample code:
 - WeaverTests/AssemblyToProcess/Person.cs
 - IntegrationTests.Shared/Person.cs
 - RelationshipTests.cs
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+INVESTIGATING/FIXING WINDOWS CRASHES
+
+eror_handling.cpp
+- fake_a_native_exception added
+
+NativeCommon.cs
+- fake_a_native_exception added
+
+InstanceTests.cs
+- FakeExceptionThrowTest added
+- FakeExceptionThrowLoopingTest added
+
+
+
+
+
