@@ -5,7 +5,7 @@
 #include <stdexcept>
 #include <sstream>
 #include <cassert>
-#include "object-store/shared_realm.hpp"
+#include "object-store/src/shared_realm.hpp"
 #include "wrapper_exceptions.hpp"
 #include "realm_export_decls.hpp"
 #include "error_handling.hpp"
