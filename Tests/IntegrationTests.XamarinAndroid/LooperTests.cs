@@ -32,7 +32,7 @@ namespace IntegrationTests.XamarinAndroid
         }
 
         [Test]
-        public void AutoRefreshTest()
+        public void QueriesShouldAutomaticallyRefreshInRunLoop()
         {
             Person p1, p2;
 
@@ -52,7 +52,7 @@ namespace IntegrationTests.XamarinAndroid
 
                 // Once the looper is started, we want to first update the database on a different thread.
                 handler.PostDelayed(() => {
-                    WriteOnDifferentThread((Realm newRealm) =>
+                    WriteOnDifferentThread((newRealm) =>
                     {
                         p2 = newRealm.CreateObject<Person>();
                         p2.FullName = "Person 2";
@@ -67,7 +67,7 @@ namespace IntegrationTests.XamarinAndroid
                 Looper.Loop();
 
                 var ql2 = q.ToList();
-                Assert.That(ql2.Select(p => p.FullName), Is.EquivalentTo(new string[] { "Person 1", "Person 2" }));
+                Assert.That(ql2.Select(p => p.FullName), Is.EquivalentTo(new [] { "Person 1", "Person 2" }));
 
                 r.Close();
                 Realm.DeleteRealm(r.Config);

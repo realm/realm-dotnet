@@ -32,7 +32,7 @@ namespace IntegrationTests.XamarinIOS
         }
 
         [Test]
-        public void AutoRefreshTest()
+        public void QueriesShouldAutomaticallyRefreshInRunLoop()
         {
             Person p1, p2;
 
@@ -48,7 +48,7 @@ namespace IntegrationTests.XamarinIOS
                 var q = r.All<Person>();
                 Assert.That(q.Count, Is.EqualTo(1));
 
-                WriteOnDifferentThread((Realm newRealm) =>
+                WriteOnDifferentThread(newRealm =>
                 {
                     p2 = newRealm.CreateObject<Person>();
                     p2.FullName = "Person 2";
@@ -58,7 +58,7 @@ namespace IntegrationTests.XamarinIOS
                 NSRunLoop.Current.RunUntil((NSDate)DateTime.Now.AddMilliseconds(1));
 
                 var ql2 = q.ToList();
-                Assert.That(ql2.Select(p => p.FullName), Is.EquivalentTo(new string[] { "Person 1", "Person 2" }));
+                Assert.That(ql2.Select(p => p.FullName), Is.EquivalentTo(new[] { "Person 1", "Person 2" }));
 
                 r.Close();
                 Realm.DeleteRealm(r.Config);
