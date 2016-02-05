@@ -141,6 +141,7 @@ Backup*/
 UpgradeLog*.XML
 UpgradeLog*.htm
 
+*.opendb
 
 
 ### Xcode ###
