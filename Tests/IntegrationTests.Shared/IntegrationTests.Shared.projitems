@@ -22,6 +22,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)InstanceTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ObjectIntegrationTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestObjects.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ConcurrencyTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RefreshTests.cs" />
   </ItemGroup>
 </Project>

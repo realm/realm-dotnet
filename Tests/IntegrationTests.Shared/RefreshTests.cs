@@ -12,10 +12,10 @@ using System.Threading;
 namespace IntegrationTests.Shared
 {
     [TestFixture]
-    public class ConcurrencyTests
+    public class RefreshTests
     {
-        protected string _databasePath;
-        protected Realm _realm;
+        private string _databasePath;
+        private Realm _realm;
 
         [SetUp]
         public void Setup()
@@ -44,7 +44,7 @@ namespace IntegrationTests.Shared
         }
 
         [Test]
-        public void SimpleTest()
+        public void CommittingAWriteTransactionShouldRefreshQueries()
         {
             Person p1 = null, p2, p3;
 
@@ -61,7 +61,7 @@ namespace IntegrationTests.Shared
             Assert.That(q.Count, Is.EqualTo(2));
 
             var ql1 = q.ToList();
-            Assert.That(ql1.Select(p => p.FullName), Is.EquivalentTo(new string[] { "Person 1", "Person 2" }));
+            Assert.That(ql1.Select(p => p.FullName), Is.EquivalentTo(new[] { "Person 1", "Person 2" }));
 
             _realm.Write(() =>
             {
@@ -73,11 +73,11 @@ namespace IntegrationTests.Shared
 
             Assert.That(q.Count, Is.EqualTo(3));
             var ql2 = q.ToList();
-            Assert.That(ql2.Select(p => p.FullName), Is.EquivalentTo(new string[] { "Modified Person", "Person 2", "Person 3" }));
+            Assert.That(ql2.Select(p => p.FullName), Is.EquivalentTo(new[] { "Modified Person", "Person 2", "Person 3" }));
         }
 
         [Test]
-        public void ConcurrentTest()
+        public void CallingRefreshShouldRefreshQueriesAfterModificationsOnDifferentThreads()
         {
             Person p1, p2;
 
@@ -90,7 +90,7 @@ namespace IntegrationTests.Shared
             var q = _realm.All<Person>();
             Assert.That(q.Count, Is.EqualTo(1));
 
-            WriteOnDifferentThread((Realm newRealm) =>
+            WriteOnDifferentThread(newRealm =>
             {
                 p2 = newRealm.CreateObject<Person>();
                 p2.FullName = "Person 2";
@@ -99,7 +99,7 @@ namespace IntegrationTests.Shared
             _realm.Refresh();
 
             var ql2 = q.ToList();
-            Assert.That(ql2.Select(p => p.FullName), Is.EquivalentTo(new string[] { "Person 1", "Person 2" }));
+            Assert.That(ql2.Select(p => p.FullName), Is.EquivalentTo(new[] { "Person 1", "Person 2" }));
         }
     }
 }
