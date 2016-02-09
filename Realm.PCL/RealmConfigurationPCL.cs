@@ -1,7 +1,9 @@
 ﻿/* Copyright 2015 Realm Inc - All Rights Reserved
  * Proprietary and Confidential
  */
- 
+
+/// PROXY VERSION OF CLASS USED IN PCL FOR BAIT AND SWITCH PATTERN 
+
 using System;
 using System.IO;
 
@@ -48,15 +50,8 @@ namespace Realms
         /// </summary>
         public static string PathToRealm(string optionalPath = null)
         {
-            if (string.IsNullOrEmpty(optionalPath)) {
-                return Path.Combine (Environment.GetFolderPath(Environment.SpecialFolder.Personal), DefaultRealmName);
-            }
-            if (!Path.IsPathRooted (optionalPath)) {
-                optionalPath = Path.Combine (Environment.GetFolderPath(Environment.SpecialFolder.Personal), optionalPath);
-            }
-            if (optionalPath[optionalPath.Length-1] == Path.DirectorySeparatorChar)   // ends with dir sep
-                optionalPath = Path.Combine (optionalPath, DefaultRealmName);
-             return optionalPath;
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return "";
         }
 
         /// <summary>
@@ -77,8 +72,7 @@ namespace Realms
         /// <param name="shouldDeleteIfMigrationNeeded">Optional Flag mainly to help with temp databases and testing, indicates content can be abandoned when you change the schema.</param> 
         public RealmConfiguration(string optionalPath = null, bool shouldDeleteIfMigrationNeeded=false)
         {
-            ShouldDeleteIfMigrationNeeded = shouldDeleteIfMigrationNeeded;
-            DatabasePath = PathToRealm(optionalPath);
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }
 
         /// <summary>
@@ -88,20 +82,8 @@ namespace Realms
         /// <param name="newConfigPath">Path to the realm, must be a valid full path for the current platform, relative subdir, or just filename.</param>
         public RealmConfiguration ConfigWithPath(string newConfigPath)
         {
-            RealmConfiguration ret = (RealmConfiguration)MemberwiseClone();
-            string candidatePath;  // may need canonicalising
-            if (!string.IsNullOrEmpty(newConfigPath)) {
-                if (Path.IsPathRooted (newConfigPath))
-                    candidatePath = newConfigPath;
-                else {  // append a relative path, maybe just a relative subdir needing filename
-                    var usWithoutFile = Path.GetDirectoryName (DatabasePath);
-                    if (newConfigPath[newConfigPath.Length - 1] == Path.DirectorySeparatorChar) // ends with separator
-                        newConfigPath = Path.Combine (newConfigPath, DefaultRealmName);  // add filename to relative subdir
-                    candidatePath = Path.Combine (usWithoutFile, newConfigPath);
-                }
-                ret.DatabasePath = Path.GetFullPath(candidatePath);  // canonical version, removing embedded ../ and other relative artifacts
-            }
-            return ret;
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
         }
 
         /// <summary>
@@ -112,9 +94,8 @@ namespace Realms
         /// <see cref="Realms.RealmConfiguration"/>; otherwise, <c>false</c>.</returns>
         public override bool Equals(Object rhs)
         {
-            if (rhs == null)
-                return false;
-            return Equals(rhs as RealmConfiguration);
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return false;
         }
 
 
@@ -127,12 +108,8 @@ namespace Realms
         /// <see cref="Realms.RealmConfiguration"/>; otherwise, <c>false</c>.</returns>
         public bool Equals(RealmConfiguration rhs)
         {
-            if (rhs == null)
-                return false;
-            if (GC.ReferenceEquals(this, rhs))
-                return true;
-            return ShouldDeleteIfMigrationNeeded == rhs.ShouldDeleteIfMigrationNeeded &&
-                DatabasePath == rhs.DatabasePath;
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return false;
         }
 
 
@@ -143,7 +120,8 @@ namespace Realms
         /// hash table.</returns>
         public override int GetHashCode()
         {
-            return DatabasePath.GetHashCode();
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return 0;
         }
 
     }  // class RealmConfiguration
