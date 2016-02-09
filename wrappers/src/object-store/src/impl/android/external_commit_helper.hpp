@@ -31,18 +31,47 @@ public:
     ExternalCommitHelper(RealmCoordinator& parent);
     ~ExternalCommitHelper();
 
-    // A no-op in this version, but needed for the Apple version
-    void notify_others() { }
+    void notify_others();
 
 private:
-    RealmCoordinator& m_parent;
+    // A RAII holder for a file descriptor which automatically closes the wrapped
+    // fd when it's deallocated
+    class FdHolder {
+    public:
+        FdHolder() = default;
+        ~FdHolder() { close(); }
+        operator int() const { return m_fd; }
 
-    // A shared group used to listen for changes
-    std::unique_ptr<ClientHistory> m_history;
-    SharedGroup m_sg;
+        FdHolder& operator=(int newFd) {
+            close();
+            m_fd = newFd;
+            return *this;
+        }
+
+    private:
+        int m_fd = -1;
+        void close();
+
+        FdHolder& operator=(FdHolder const&) = delete;
+        FdHolder(FdHolder const&) = delete;
+    };
+
+    void listen();
+
+    RealmCoordinator& m_parent;
 
     // The listener thread
     std::thread m_thread;
+
+    // Read-write file descriptor for the named pipe which is waited on for
+    // changes and written to when a commit is made
+    FdHolder m_notify_fd;
+    // File descriptor for the kqueue
+    FdHolder m_kq;
+    // The two ends of an anonymous pipe used to notify the kqueue() thread that
+    // it should be shut down.
+    FdHolder m_shutdown_read_fd;
+    FdHolder m_shutdown_write_fd;
 };
 
 } // namespace _impl
