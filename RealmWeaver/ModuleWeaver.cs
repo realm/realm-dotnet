@@ -67,8 +67,7 @@ public class ModuleWeaver
     public void Execute()
     {
         // UNCOMMENT THIS DEBUGGER LAUNCH TO BE ABLE TO RUN A SEPARATE VS INSTANCE TO DEBUG WEAVING WHILST BUILDING
-        // note that it may work better with a different VS version, eg: use VS2012 to debug a VS2015 build
-        //System.Diagnostics.Debugger.Launch();  
+        // Debugger.Launch();  
 
         typeSystem = ModuleDefinition.TypeSystem;
 
@@ -123,10 +122,15 @@ public class ModuleWeaver
         var wovenPropertyAttributeConstructor = ModuleDefinition.ImportReference(wovenPropertyAttributeClass.GetConstructors().First());
         var corlib = ModuleDefinition.AssemblyResolver.Resolve((AssemblyNameReference)ModuleDefinition.TypeSystem.CoreLibrary);
         var stringType = ModuleDefinition.ImportReference(corlib.MainModule.GetType("System.String"));
-        var listType = ModuleDefinition.ImportReference(corlib.MainModule.GetType("System.Collections.Generic.List`1"));
+        // WARNING the GetType("System.Collections.Generic.List`1") below RETURNS NULL WHEN COMPILING A PCL
+        // UNUSED SO COMMENT OUT var listType = ModuleDefinition.ImportReference(corlib.MainModule.GetType("System.Collections.Generic.List`1"));
 
         foreach (var type in GetMatchingTypes())
         {
+            if (type == null) {
+                Debug.WriteLine("Weaving skipping null type from GetMatchingTypes");
+                continue;
+            }
             Debug.WriteLine("Weaving " + type.Name);
             var typeHasObjectId = false;
 

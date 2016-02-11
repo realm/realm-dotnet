@@ -1564,3 +1564,11 @@ InstanceTests.cs
 #335 ADDING PCL LIBRARY
 
 Realm.PCL created
+
+ThreeLayerRealmXF solution created
+
+ModuleWeaver.cs
+- comment out (unused) listType var as the getting of type   
+  System.Collections.Generic.List`1 returned null
+  
+

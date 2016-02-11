@@ -19,11 +19,12 @@ namespace Realms
     /// </summary>
     public class RealmObject
     {
+        private Realm _realm;  // may not be used but wanted it included in definition of IsManaged below.
 
         /// <summary>
         /// Allows you to check if the object has been associated with a Realm, either at creation or via Realm.Manage.
         /// </summary>
-        public bool IsManaged => false;
+        public bool IsManaged => _realm != null;
 
 
 
