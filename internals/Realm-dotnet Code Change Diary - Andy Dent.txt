@@ -1561,7 +1561,7 @@ InstanceTests.cs
 
 
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-#335 ADDING PCL LIBRARY
+#335 ADDING PCL LIBRARY IN RELEASE V0.72.0
 
 Realm.PCL created
 
@@ -1572,3 +1572,14 @@ ModuleWeaver.cs
   System.Collections.Generic.List`1 returned null
   
 
+wrappers/Makefile
+- bumped versions from 0.95.6 TO 0.96.0
+
+Realm.targets
+- set version number in paths as 0.72.0
+
+Realm.nuspec
+- added the PCL build of the DLL
+
+RealmWeaverFody.nuspec
+- set version number as 0.72.0

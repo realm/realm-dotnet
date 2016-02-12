@@ -20,7 +20,9 @@
     </dependencies>
   </metadata>
   <files>
-<!-- IOS files -->
+<!-- PCL file -->
+    <file src="../../Realm.PCL/bin/Release/Realm.dll" target="lib\portable-net45+sl5+wp8+wpa81+win8+monoandroid+Xamarin.iOS10+monotouch+Xamarin.Mac" />
+<!-- IOS file -->
     <file src="../../Realm.XamarinIOS/bin/iPhone/Release/Realm.dll" target="lib\Xamarin.iOS10" />
 <!-- Android files -->
     <file src="Realm.targets" target="build\MonoAndroid44" />

@@ -6,7 +6,7 @@ namespace Realms
     {
         internal static void ThrowProxyShouldNeverBeUsed()
         {
-            throw new PlatformNotSupportedException("The PCL project is being linked which probably means you need to use NuGet or otherwise link a platform-specific project to your main application");
+            throw new PlatformNotSupportedException("The PCL build of Realm is being linked which probably means you need to use NuGet or otherwise link a platform-specific Realm.dll to your main application.");
         }
     }
 }
