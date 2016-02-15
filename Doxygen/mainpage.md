@@ -1,7 +1,7 @@
 Realm for Xamarin
 =================
 
-The C# API of %Realm is incredibly simple.
+The C# API of %Realm is incredibly simple because it leverages the power of LINQ for querying and the [Fody](https://github.com/Fody/Fody) weaver to transform plain C# class declarations into persistent objects.
 
 The main classes you will use are:
 
@@ -21,10 +21,11 @@ The documentation can be found at [realm.io/docs/xamarin/latest](https://realm.i
 
 The API reference is located at [realm.io/docs/xamarin/latest/api](https://realm.io/docs/xamarin/latest/api/).
 
-
 Source
 ------
 Source is available [on github](https://github.com/realm/realm-dotnet).
+
+Instructions on how to build from source are included in that repository's `README.md`. 
 
 
 Minimal Sample
