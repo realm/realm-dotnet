@@ -29,6 +29,8 @@
     <file src="../../Realm.XamarinAndroid/bin/Release/Realm.dll" target="lib\MonoAndroid44" />
     <file src="../../wrappers/build/Release-android/armeabi/libwrappers.so" target="lib\MonoAndroid44\armeabi" />
     <file src="../../wrappers/build/Release-android/armeabi-v7a/libwrappers.so" target="lib\MonoAndroid44\armeabi-v7a" />
+    <file src="../../wrappers/build/Release-android/arm64-v8a/libwrappers.so" target="lib\MonoAndroid44\arm64-v8a" />
     <file src="../../wrappers/build/Release-android/x86/libwrappers.so" target="lib\MonoAndroid44\x86" />
+    <file src="../../wrappers/build/Release-android/x86_64/libwrappers.so" target="lib\MonoAndroid44\x86_64" />
   </files>
 </package>

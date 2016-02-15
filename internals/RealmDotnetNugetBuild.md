@@ -12,17 +12,7 @@ Paths below assume you're starting in the root dir `realm-dotnet` checked out fr
 Building the DLLS
 -----------------
 
-* go into the Wrappers dir in terminal
-* `make clean`
-* `make all`
-* In Xamarin Studio, open`Realm.sln`
-* select platform popup **Release | ARM**
-* select Realm.XamarinAndroid project and Rebuild
-* ensure you have an iOS device attached
-* select platform popup **Release | iPhone**
-* select Realm.XamarinIOS project and Rebuild
-* platform popup **Release | AnyCPU**
-* select Realm.PCL project and Rebuild
+Follow the _Building Realm Steps_ section in `README.md` if you haven't built them already.
 
 Once you have your DLLS, follow these next steps to set version numbers and build NuGet.
 
