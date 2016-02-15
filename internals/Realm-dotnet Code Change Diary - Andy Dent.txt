@@ -1589,11 +1589,10 @@ RealmWeaverFody.nuspec
 #394 BUILD FOR ARM64, x86_64 and MIPS with some Android cleanup
 
 wrappers/Makefile
-- bumped versions from 0.95.6 TO 0.96.0
 - incremented NDK command min API from 9 to 10 to match Xamarin
 
 Realm.targets
-- set version number in paths as 0.72.0
+- set version number in paths as 0.72.1
 - added arm64-v8a,  x86_64 and mips lib build instructions and dependencies
 
 Realm.nuspec
