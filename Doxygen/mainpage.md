@@ -19,12 +19,12 @@ Documentation
 -------------
 The documentation can be found at [realm.io/docs/xamarin/latest](https://realm.io/docs/xamarin/latest/).
 
-The API reference is located at[realm.io/docs/xamarin/latest/api](https://realm.io/docs/xamarin/latest/api/).
+The API reference is located at [realm.io/docs/xamarin/latest/api](https://realm.io/docs/xamarin/latest/api/).
 
 
 Source
 ------
-Source is available [on github](https://github.com/realm/realm-dotnet) along with the [issue tracker](https://github.com/realm/realm-dotnet/issues) you can use to report problems.
+Source is available [on github](https://github.com/realm/realm-dotnet).
 
 
 Minimal Sample
@@ -45,7 +45,7 @@ class MePersist : RealmObject
     public int MyAwesomeness { get; set; }
 }
 
-/// put this code in an OnLoad or simple buttno press handler
+/// put this code in an OnLoad or simple button-press handler
 
     var _realm = Realm.GetInstance();
     using (var trans = _realm.BeginWrite())
@@ -59,3 +59,8 @@ class MePersist : RealmObject
     System.Diagnostics.Debug.WriteLine($"Created {numAwe} realm objects");
     _realm.Close();
 ```
+
+
+Problem reports and Feature requests
+------
+The [github issue tracker](https://github.com/realm/realm-dotnet/issues) can be used to report problems or make feature requests.
