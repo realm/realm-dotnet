@@ -9,11 +9,11 @@ namespace ThreeLayerRealmXF {
     public class App : Application
     {
 
-        private readonly PurePCLViewModel.Model _model;
+        private readonly PurePCLViewModel.ViewModel _model;
 
         public App()
         {
-            _model = new PurePCLViewModel.Model();
+            _model = new PurePCLViewModel.ViewModel();
 
             BindingContext = _model;
             var boundLabel = new Label

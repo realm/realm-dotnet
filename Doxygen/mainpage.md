@@ -37,13 +37,15 @@ This trivial sample shows the use of most of the classes mentioned above:
 - declaring a simple model with a single [RealmObject](@ref Realms.RealmObject) class - notice how it uses standard types for properties
 - using a [Transaction](@ref Realms.Transaction) to create an object in the realm
 
+Note that in most debugging situations the default Realm will be retained so if you run this sample fragment multiple times you should see the number created increase. This is on purpose so you are assured the database is being persisted between runs.
+
 ```
 using Realms;
 
-class MePersist : RealmObject
+class HeroPersist : RealmObject
 {
-    public string MyName { get; set; }
-    public int MyAwesomeness { get; set; }
+    public string SuperName { get; set; }
+    public int SuperScore { get; set; }
 }
 
 /// put this code in an OnLoad or simple button-press handler
@@ -51,13 +53,13 @@ class MePersist : RealmObject
     var _realm = Realm.GetInstance();
     using (var trans = _realm.BeginWrite())
     {
-        var MeNess = _realm.CreateObject<MePersist>();
-        MeNess.MyName = "Thor";
-        MeNess.MyAwesomeness = 100;
+        var pclPerson = _realm.CreateObject<HeroPersist>();
+        pclPerson.SuperName = "Thor";
+        pclPerson.SuperScore = 100;
         trans.Commit();
     }
-    var numAwe = _realm.All<MePersist>().Count();
-    System.Diagnostics.Debug.WriteLine($"Created {numAwe} realm objects");
+    var numAwe = _realm.All<HeroPersist>().Count();
+    System.Diagnostics.Debug.WriteLine($"Created {numAwe} heroes");
     _realm.Close();
 ```
 
