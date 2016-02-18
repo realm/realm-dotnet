@@ -6,12 +6,12 @@ Still requires installation from private copy of NuGet download.
 For PCL users, if you use `RealmConfiguration.DefaultConfiguration` without having linked a platform-specific dll, you will now get the warning message with a `PlatformNotSupportedException`. Previously threw a `TypeInitExepction`.
 
 
-0.72.1 Private Beta
+0.72.1 Private Beta (2016-02-15) 
 -------------------
 No functional changes. Just added library builds for Android 64bit targets `x86_64` and `arm64-v8a`.
 
 
-0.72.0 Private Beta
+0.72.0 Private Beta (2016-02-13)
 -------------------
 
 Uses Realm core 0.96.0
@@ -20,7 +20,7 @@ Uses Realm core 0.96.0
 
 * Added support for PCL so you can now use the NuGet in your PCL GUI or viewmodel libraries.
 
-0.71.1 Private Beta
+0.71.1 Private Beta (2016-01-29)
 -------------------
 ### Minor Fixes
 
@@ -32,7 +32,7 @@ Building IOS apps targeting the simulator sometimes got an error like:
 This was fixed by removing a redundant simulator library included in NuGet
 
 
-0.71.0 Private Beta
+0.71.0 Private Beta (2016-01-25)
 -------------------
 
 Uses Realm core 0.95.6.
@@ -73,7 +73,7 @@ Now supporting:
 * Bug that caused a linker error for iPhone simulator fixed (#375)
 
 
-0.70.0 First Private Beta
+0.70.0 First Private Beta (2015-12-08)
 --------------------------
 Requires installation from private copy of NuGet download.
 
