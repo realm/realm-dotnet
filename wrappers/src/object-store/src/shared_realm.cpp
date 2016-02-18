@@ -62,6 +62,7 @@ Realm::Config& Realm::Config::operator=(realm::Realm::Config const& c)
 
 Realm::Realm(Config config, bool auto_refresh)
 : m_config(std::move(config))
+, m_auto_refresh(auto_refresh)
 {
     try {
         if (m_config.read_only) {
@@ -103,8 +104,6 @@ Realm::Realm(Config config, bool auto_refresh)
                                  "in order to proceed.");
     }
 
-    if (auto_refresh)
-      set_auto_refresh(true);
 }
 
 void Realm::init(std::shared_ptr<RealmCoordinator> coordinator)
@@ -153,6 +152,10 @@ void Realm::init(std::shared_ptr<RealmCoordinator> coordinator)
         m_coordinator = nullptr;
         throw;
     }
+
+    // Set up the run loop etc. if auto refresh is enabled
+    if (m_auto_refresh)
+      set_auto_refresh(true);
 }
 
 Realm::~Realm()
