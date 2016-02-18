@@ -31,9 +31,9 @@ namespace PurePCLViewModel
             using (var trans = _realm.BeginWrite()) {
                 for (int i = 0; i < 10; ++i)  // quick loop to add a few objects
                 {
-                    var pclPerson = _realm.CreateObject<Hero>();
-                    pclPerson.SuperName = $"Thor {i}";
-                    pclPerson.SuperScore = 10 * i;
+                    var hero = _realm.CreateObject<Hero>();
+                    hero.SuperName = $"Thor {i}";
+                    hero.SuperScore = 10 * i;
                 }
                 trans.Commit();
             }  // transaction wrapping add loop
