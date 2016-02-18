@@ -1,6 +1,18 @@
-0.72.0 Private Beta
+0.72.2 Private Beta IN PROGRESS
 -------------------
 Still requires installation from private copy of NuGet download.
+
+### Minor Fixes
+For PCL users, if you use `RealmConfiguration.DefaultConfiguration` without having linked a platform-specific dll, you will now get the warning message with a `PlatformNotSupportedException`. Previously threw a `TypeInitExepction`.
+
+
+0.72.1 Private Beta
+-------------------
+No functional changes. Just added library builds for Android 64bit targets `x86_64` and `arm64-v8a`.
+
+
+0.72.0 Private Beta
+-------------------
 
 Uses Realm core 0.96.0
 
@@ -22,7 +34,6 @@ This was fixed by removing a redundant simulator library included in NuGet
 
 0.71.0 Private Beta
 -------------------
-Still requires installation from private copy of NuGet download.
 
 Uses Realm core 0.95.6.
 
@@ -64,6 +75,7 @@ Now supporting:
 
 0.70.0 First Private Beta
 --------------------------
+Requires installation from private copy of NuGet download.
 
 ### State
 
