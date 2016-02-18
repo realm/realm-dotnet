@@ -25,10 +25,23 @@ namespace _impl {
 
 class CachedRealm : public CachedRealmBase {
 public:
-    using CachedRealmBase::CachedRealmBase;
+    CachedRealm(const std::shared_ptr<Realm>& realm, bool cache);
+    ~CachedRealm();
 
-    // Do nothing, as this can't be implemented portably
-    void notify() { }
+    CachedRealm(CachedRealm&&);
+    CachedRealm& operator=(CachedRealm&&);
+
+    CachedRealm(const CachedRealm&) = delete;
+    CachedRealm& operator=(const CachedRealm&) = delete;
+
+    // Register the handler on the looper so we will react to refresh notifications
+    void enable_auto_refresh();
+
+    // Asyncronously call notify() on the Realm on the appropriate thread
+    void notify();
+
+private:
+
 };
 
 } // namespace _impl

@@ -60,7 +60,7 @@ Realm::Config& Realm::Config::operator=(realm::Realm::Config const& c)
     return *this;
 }
 
-Realm::Realm(Config config)
+Realm::Realm(Config config, bool auto_refresh)
 : m_config(std::move(config))
 {
     try {
@@ -102,6 +102,9 @@ Realm::Realm(Config config)
                                  "The Realm file format must be allowed to be upgraded "
                                  "in order to proceed.");
     }
+
+    if (auto_refresh)
+      set_auto_refresh(true);
 }
 
 void Realm::init(std::shared_ptr<RealmCoordinator> coordinator)
@@ -390,6 +393,14 @@ bool Realm::refresh()
     }
 
     return true;
+}
+
+void Realm::set_auto_refresh(bool auto_refresh)
+{
+    m_auto_refresh = auto_refresh; 
+
+    if(auto_refresh)
+        m_coordinator->enable_auto_refresh_for(this);
 }
 
 uint64_t Realm::get_schema_version(const realm::Realm::Config &config)

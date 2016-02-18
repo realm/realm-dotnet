@@ -180,6 +180,18 @@ void RealmCoordinator::clear_cache()
     }
 }
 
+void RealmCoordinator::enable_auto_refresh_for(Realm* realm)
+{
+    for (size_t i = 0; i < m_cached_realms.size(); ++i) {
+        auto& cached_realm = m_cached_realms[i];
+        if (!cached_realm.expired() && !cached_realm.is_for_realm(realm)) {
+            continue;
+        }
+
+        cached_realm.enable_auto_refresh();
+    }
+}
+
 void RealmCoordinator::send_commit_notifications()
 {
     REALM_ASSERT(!m_config.read_only);
