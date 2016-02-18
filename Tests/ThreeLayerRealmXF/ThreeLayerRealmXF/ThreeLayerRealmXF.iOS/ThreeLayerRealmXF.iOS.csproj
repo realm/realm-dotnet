@@ -91,13 +91,11 @@
     <None Include="Entitlements.plist" />
     <None Include="Info.plist" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <ITunesArtwork Include="iTunesArtwork" />
     <None Include="packages.config" />
-    <ITunesArtwork Include="iTunesArtwork%402x" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\RealmWeaver\RealmWeaver.Fody.csproj">
-      <Project>{c3578a7b-09a6-4444-9383-0deafa4958bd}</Project>
+      <Project>{C3578A7B-09A6-4444-9383-0DEAFA4958BD}</Project>
       <Name>RealmWeaver.Fody</Name>
     </ProjectReference>
     <ProjectReference Include="..\ThreeLayerRealmXF\ThreeLayerRealmXF.csproj">
@@ -128,12 +126,6 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Core" />
     <Reference Include="Xamarin.iOS" />
-    <Reference Include="Realm" Condition=" '$(Platform)' == 'iPhone' ">
-      <HintPath>..\..\..\..\Realm.XamarinIOS\bin\iPhone\Release\Realm.dll</HintPath>
-    </Reference>
-    <Reference Include="Realm" Condition=" '$(Platform)' == 'iPhoneSimulator' ">
-      <HintPath>..\..\..\..\Realm.XamarinIOS\bin\iPhoneSimulator\Release\Realm.dll</HintPath>
-    </Reference>
     <Reference Include="Xamarin.Forms.Platform.iOS">
       <HintPath>..\..\packages\Xamarin.Forms.2.0.1.6505\lib\Xamarin.iOS10\Xamarin.Forms.Platform.iOS.dll</HintPath>
     </Reference>
@@ -145,6 +137,17 @@
     </Reference>
     <Reference Include="Xamarin.Forms.Platform">
       <HintPath>..\..\packages\Xamarin.Forms.2.0.1.6505\lib\Xamarin.iOS10\Xamarin.Forms.Platform.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup Condition=" '$(Platform)' == 'iPhone' ">
+    <Reference Include="Realm">
+      <HintPath>..\..\..\..\Realm.XamarinIOS\bin\iPhone\Release\Realm.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup Condition=" '$(Platform)' == 'iPhoneSimulator' ">
+    <Reference Include="Realm">
+      <HintPath>..\..\..\..\Realm.XamarinIOS\bin\iPhone\Release\Realm.dll</HintPath>
     </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />

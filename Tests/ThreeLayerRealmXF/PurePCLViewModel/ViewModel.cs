@@ -7,7 +7,7 @@ using Realms;
 namespace PurePCLViewModel
 {
 
-    class HeroPersist : RealmObject
+    class Hero : RealmObject
     {
         public string SuperName { get; set; }
         public int SuperScore { get; set; }
@@ -31,17 +31,17 @@ namespace PurePCLViewModel
             using (var trans = _realm.BeginWrite()) {
                 for (int i = 0; i < 10; ++i)  // quick loop to add a few objects
                 {
-                    var pclPerson = _realm.CreateObject<HeroPersist>();
+                    var pclPerson = _realm.CreateObject<Hero>();
                     pclPerson.SuperName = $"Thor {i}";
                     pclPerson.SuperScore = 10 * i;
                 }
                 trans.Commit();
             }  // transaction wrapping add loop
-            var numAwe = _realm.All<HeroPersist>().Count();
+            var numAwe = _realm.All<Hero>().Count();
 
             var timeStamp = DateTimeOffset.Now.ToString();
             var sb = new StringBuilder();
-            foreach (var aThor in _realm.All<HeroPersist>())
+            foreach (var aThor in _realm.All<Hero>())
                 sb.AppendLine(aThor.SuperName);  // get the names back out to prove that data saved
 
             // finished with Realm now

@@ -63,7 +63,15 @@ namespace Realms
         /// <summary>
         /// Configuration you can override which is used when you create a new Realm without specifying a configuration.
         /// </summary>
-        public static RealmConfiguration DefaultConfiguration { set; get;} = new RealmConfiguration();
+        public static RealmConfiguration DefaultConfiguration
+        {
+            set {} 
+            get
+            {
+                RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();  // if attempt to use DefaultConfiguration as first line of their code with just PCL linked, want exception!
+                return null;
+            } 
+        }
 
         /// <summary>
         /// Constructor allowing path override.

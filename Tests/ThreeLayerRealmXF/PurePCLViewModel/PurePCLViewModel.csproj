@@ -49,6 +49,7 @@
   <ItemGroup>
     <Reference Include="Realm">
       <HintPath>..\..\..\Realm.PCL\bin\Release\Realm.dll</HintPath>
+      <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
