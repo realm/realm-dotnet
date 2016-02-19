@@ -24,7 +24,7 @@ We start with a simple search with one clause doing a comparison on a double fie
 
 `var aQuery = _realm.All<Person>().Where(p => p.Latitude < 40);`
 
-The type of `aQuery` is `Realms.RealmQuery<IntegrationTests.Person>` and it requires further evaluation to trigger actually doing the search.
+The type of `aQuery` is `Realms.RealmResults<IntegrationTests.Person>` and it requires further evaluation to trigger actually doing the search.
 
 A common way is to call the standard Linq to Objects call `var newList = aQuery.ToList()` which triggers the search and enumerates the result to copy objects to a list. 
 
@@ -39,27 +39,27 @@ digraph {
     test [label="Test code\nor application code"]
     LinqWhere [label="System.Linq.\nQueryable.Where<Person>"]
     QPCreateQuery [label="QueryProvider.\nCreateQuery<Person>"]
-    RealmQuery [shape=box3d, label="RealmQuery<Person>"]
-    RealmQueryEnumerator [shape=box3d, label="RealmQueryEnumerator<Person>"]
+    RealmResults [shape=box3d, label="RealmResults<Person>"]
+    RealmResultsEnumerator [shape=box3d, label="RealmResultsEnumerator<Person>"]
 
     ToList [label="System.Linq.\nEnumerable.ToList"]
     Listctor[label="System.Collections.Generic.List.ctor"]
-    GetEnum [label="RealmQuery<Person>\n.GetEnumerator"]
-    EnumMove [label="RealmQueryEnumerator.\nMoveNext"]
-    EnumCurrent [label="RealmQueryEnumerator.\nCurrent"]
-    RealmQueryVisitor [shape=box3d]
+    GetEnum [label="RealmResults<Person>\n.GetEnumerator"]
+    EnumMove [label="RealmResultsEnumerator.\nMoveNext"]
+    EnumCurrent [label="RealmResultsEnumerator.\nCurrent"]
+    RealmResultsVisitor [shape=box3d]
     QueryHandle [shape=box3d]
-    QVMethod [label="RealmQueryVisitor.\nVisitMethodCall"]
-    QVBinary [label="RealmQueryVisitor.\nVisitBinary"] 
+    QVMethod [label="RealmResultsVisitor.\nVisitMethodCall"]
+    QVBinary [label="RealmResultsVisitor.\nVisitBinary"] 
     EVVisit [label="ExpressionVisitor.\nVisit"]
     EVVisit2 [label="ExpressionVisitor.\nVisit"]
     EVVisit3 [label="ExpressionVisitor.\nVisit"]
-    QVConstant [label="RealmQueryVisitor.\nVisitConstant"]
-    CreateQuery [label="RealmQueryVisitor.\nCreateQuery"]
-    cqHandle [label="RealmQueryVisitor.\n_coreQueryHandle", shape=none]
+    QVConstant [label="RealmResultsVisitor.\nVisitConstant"]
+    CreateQuery [label="RealmResultsVisitor.\nCreateQuery"]
+    cqHandle [label="RealmResultsVisitor.\n_coreQueryHandle", shape=none]
     TableWhere [label="TableHandle.\nTableWhere"]
     NativeWhereInterface [label="NativeTable.\nwhere"]
-    AddQueryEqual [label="RealmQueryVisitor.\nAddQueryEqual"]
+    AddQueryEqual [label="RealmResultsVisitor.\nAddQueryEqual"]
     getCol [label="NativeQuery.\nget_column_index"]
     queryDoubleEqual [label="NativeQuery.\ndouble_equal"]
     NativeFindInterface [label="NativeQuery.\nfind"]
@@ -76,16 +76,16 @@ digraph {
     
     
     test -> LinqWhere -> QPCreateQuery
-    QPCreateQuery -> RealmQuery [label=" creates as\n IQueryable<Person>"]
+    QPCreateQuery -> RealmResults [label=" creates as\n IQueryable<Person>"]
     test -> ToList
     ToList -> Listctor -> GetEnum
-    GetEnum -> RealmQueryVisitor [label="creates"]
-    GetEnum -> RealmQueryEnumerator [label=" creates"]
+    GetEnum -> RealmResultsVisitor [label="creates"]
+    GetEnum -> RealmResultsEnumerator [label=" creates"]
     Listctor -> EnumMove
     Listctor -> EnumCurrent
-    RealmQueryVisitor -> EVVisit
+    RealmResultsVisitor -> EVVisit
     EVVisit -> QVMethod [label=" Where"]
-    QVMethod -> EVVisit2 [label=" value(RealmQuery`1[Person])"]
+    QVMethod -> EVVisit2 [label=" value(RealmResults`1[Person])"]
     EVVisit2 -> QVConstant
     QVConstant -> CreateQuery -> TableWhere
     CreateQuery -> cqHandle [label=" set"]
@@ -130,19 +130,19 @@ digraph {
     test [label="Test code\nor application code"]
     LinqWhere [label="System.Linq.\nQueryable.Where<Person>"]
     QPCreateQuery [label="QueryProvider.\nCreateQuery<Person>"]
-    RealmQuery [shape=box3d, label="RealmQuery<Person>"]
+    RealmResults [shape=box3d, label="RealmResults<Person>"]
     LinqCount [label="System.Linq.\nQueryable.Count"]
-    RQPEint [label="RealmQueryProvider<int>.\nExecute"]
+    RQPEint [label="RealmResultsProvider<int>.\nExecute"]
     elide2 [label="...", shape=none]
     elide3 [label="...", shape=none]
-    QVMethod0 [label="RealmQueryVisitor.\nVisitMethodCall"]
-    QVMethod [label="RealmQueryVisitor.\nVisitMethodCall"]
-    QVBinary [label="RealmQueryVisitor.\nVisitBinary"] 
+    QVMethod0 [label="RealmResultsVisitor.\nVisitMethodCall"]
+    QVMethod [label="RealmResultsVisitor.\nVisitMethodCall"]
+    QVBinary [label="RealmResultsVisitor.\nVisitBinary"] 
     EVVisit0 [label="ExpressionVisitor.\nVisit"]
     EVVisit [label="ExpressionVisitor.\nVisit"]
     EVVisit2 [label="ExpressionVisitor.\nVisit"]
     EVVisit3 [label="ExpressionVisitor.\nVisit"]
-    QVConstant [label="RealmQueryVisitor.\nVisitConstant"]
+    QVConstant [label="RealmResultsVisitor.\nVisitConstant"]
     NativeCountInterface [label="NativeQuery.\ncount"]
 
     /* c++ */
@@ -152,14 +152,14 @@ digraph {
     
     
     test -> LinqWhere -> QPCreateQuery
-    QPCreateQuery -> RealmQuery [label=" creates as\n IQueryable<Person>"]
+    QPCreateQuery -> RealmResults [label=" creates as\n IQueryable<Person>"]
     test -> LinqCount
     LinqCount -> RQPEint
     RQPEint -> EVVisit0 [label=" Extract count\n from returned\n ConstantExpression"]
     EVVisit0 -> QVMethod0 [label=" Count"]
-    QVMethod0 -> EVVisit [label=" value(RealmQuery`1[Person])\l.Where(p => p.Latitude < 40)"]
+    QVMethod0 -> EVVisit [label=" value(RealmResults`1[Person])\l.Where(p => p.Latitude < 40)"]
     EVVisit -> QVMethod [label=" Where"]
-    QVMethod -> EVVisit2 [label=" value(RealmQuery`1[Person])"]
+    QVMethod -> EVVisit2 [label=" value(RealmResults`1[Person])"]
     EVVisit2 -> QVConstant
     QVConstant -> elide2  [style=dotted]
 

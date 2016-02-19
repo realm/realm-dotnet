@@ -75,10 +75,10 @@
     <Compile Include="..\Realm.Shared\exceptions\RealmPermissionDeniedException.cs">
       <Link>Exceptions\RealmPermissionDeniedException.cs</Link>
     </Compile>
-    <Compile Include="RealmQueryPCL.cs" />
     <Compile Include="..\Realm.Shared\Attributes.cs">
       <Link>Attributes.cs</Link>
     </Compile>
+    <Compile Include="RealmResultsPCL.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <ItemGroup>
