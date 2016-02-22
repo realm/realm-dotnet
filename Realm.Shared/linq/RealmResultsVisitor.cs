@@ -11,14 +11,14 @@ using System.Runtime.CompilerServices;
 
 namespace Realms
 {
-    internal class RealmQueryVisitor : ExpressionVisitor
+    internal class RealmResultsVisitor : ExpressionVisitor
     {
         private Realm _realm;
         private QueryHandle _coreQueryHandle;  // set when recurse down to VisitConstant
         private Type _retType;
 
 
-        internal RealmQueryVisitor(Realm realm, Type retType)
+        internal RealmResultsVisitor(Realm realm, Type retType)
         {
             _realm = realm;
             _retType = retType;
@@ -89,7 +89,7 @@ namespace Realms
                 if (m.Method.Name == "Single")
                 {
                     // unlike Any, has embedded lambda, so treat it more like a Where
-                    // eg: m    {value(Realms.RealmQuery`1[IntegrationTests.Person]).Single(p => (p.Latitude > 100))}
+                    // eg: m    {value(Realms.RealmResults`1[IntegrationTests.Person]).Single(p => (p.Latitude > 100))}
                     this.Visit(m.Arguments[0]);  // creates the query
                     LambdaExpression lambda = (LambdaExpression)StripQuotes(m.Arguments[1]);
                     this.Visit(lambda.Body);

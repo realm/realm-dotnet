@@ -9,23 +9,23 @@ using System.Reflection;
 
 namespace Realms
 {
-    internal class RealmQueryProvider : IQueryProvider
+    internal class RealmResultsProvider : IQueryProvider
     {
         internal Realm _realm;
 
-        internal RealmQueryProvider(Realm realm)
+        internal RealmResultsProvider(Realm realm)
         {
             _realm = realm;
         }
 
-        internal RealmQueryVisitor MakeVisitor(Type retType)
+        internal RealmResultsVisitor MakeVisitor(Type retType)
         {
-            return new RealmQueryVisitor(_realm, retType);
+            return new RealmResultsVisitor(_realm, retType);
         }
 
         public IQueryable<T> CreateQuery<T>(Expression expression)
         {
-            return new RealmQuery<T>(this, expression);
+            return new RealmResults<T>(this, expression);
         }
 
         public IQueryable CreateQuery(Expression expression)
@@ -33,7 +33,7 @@ namespace Realms
             Type elementType = TypeSystem.GetElementType(expression.Type);
             try
             {
-                return (IQueryable)Activator.CreateInstance(typeof(RealmQuery<>).MakeGenericType(elementType), new object[] { this, expression });
+                return (IQueryable)Activator.CreateInstance(typeof(RealmResults<>).MakeGenericType(elementType), new object[] { this, expression });
             }
             catch (TargetInvocationException tie)
             {
