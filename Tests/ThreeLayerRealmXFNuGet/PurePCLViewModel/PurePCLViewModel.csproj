@@ -47,13 +47,12 @@
   </Target>
   -->
   <ItemGroup>
-    <Reference Include="Realm">
-      <HintPath>..\..\..\Realm.PCL\bin\Release\Realm.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="FodyWeavers.xml" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Realm">
+      <HintPath>..\packages\Realm.0.72.1\lib\portable-net45+sl5+wp8+wpa81+win8+monoandroid+Xamarin.iOS10+monotouch+Xamarin.Mac\Realm.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>

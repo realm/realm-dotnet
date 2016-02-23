@@ -6,9 +6,9 @@
     <ProjectGuid>{F377984A-36A2-454B-AAAB-6E385048D5AB}</ProjectGuid>
     <ProjectTypeGuids>{FEACFBD2-3405-455C-9665-78FE426C6842};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <OutputType>Exe</OutputType>
-    <RootNamespace>ThreeLayerRealmXF.iOS</RootNamespace>
+    <RootNamespace>ThreeLayerRealmXFNuGet.iOS</RootNamespace>
     <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
-    <AssemblyName>ThreeLayerRealmXFiOS</AssemblyName>
+    <AssemblyName>ThreeLayerRealmXFNuGetiOS</AssemblyName>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
   </PropertyGroup>
@@ -92,14 +92,11 @@
     <None Include="Info.plist" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <None Include="packages.config" />
+    <None Include="FodyWeavers.xml" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\RealmWeaver\RealmWeaver.Fody.csproj">
-      <Project>{C3578A7B-09A6-4444-9383-0DEAFA4958BD}</Project>
-      <Name>RealmWeaver.Fody</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ThreeLayerRealmXF\ThreeLayerRealmXF.csproj">
-      <Name>ThreeLayerRealmXF</Name>
+    <ProjectReference Include="..\ThreeLayerRealmXFNuGet\ThreeLayerRealmXFNuGet.csproj">
+      <Name>ThreeLayerRealmXFNuGet</Name>
       <Project>{4115119F-5DDD-4CCA-8A2F-5E9DFC906F35}</Project>
     </ProjectReference>
   </ItemGroup>
@@ -138,18 +135,11 @@
     <Reference Include="Xamarin.Forms.Platform">
       <HintPath>..\..\packages\Xamarin.Forms.2.0.1.6505\lib\Xamarin.iOS10\Xamarin.Forms.Platform.dll</HintPath>
     </Reference>
-  </ItemGroup>
-  <ItemGroup Condition=" '$(Platform)' == 'iPhone' ">
     <Reference Include="Realm">
-      <HintPath>..\..\..\..\Realm.XamarinIOS\bin\iPhone\Release\Realm.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup Condition=" '$(Platform)' == 'iPhoneSimulator' ">
-    <Reference Include="Realm">
-      <HintPath>..\..\..\..\Realm.XamarinIOS\bin\iPhone\Release\Realm.dll</HintPath>
+      <HintPath>..\..\packages\Realm.0.72.1\lib\Xamarin.iOS10\Realm.dll</HintPath>
     </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
   <Import Project="..\..\packages\Xamarin.Forms.2.0.1.6505\build\portable-win+net45+wp80+win81+wpa81+MonoAndroid10+MonoTouch10+Xamarin.iOS10\Xamarin.Forms.targets" Condition="Exists('..\..\packages\Xamarin.Forms.2.0.1.6505\build\portable-win+net45+wp80+win81+wpa81+MonoAndroid10+MonoTouch10+Xamarin.iOS10\Xamarin.Forms.targets')" />
+  <Import Project="..\..\packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets" Condition="Exists('..\..\packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets')" />
 </Project>
