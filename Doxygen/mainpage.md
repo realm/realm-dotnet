@@ -42,7 +42,7 @@ Note that in most debugging situations the default Realm will be retained so if 
 ```
 using Realms;
 
-class HeroPersist : RealmObject
+class Hero : RealmObject
 {
     public string SuperName { get; set; }
     public int SuperScore { get; set; }
@@ -53,12 +53,12 @@ class HeroPersist : RealmObject
     var _realm = Realm.GetInstance();
     using (var trans = _realm.BeginWrite())
     {
-        var pclPerson = _realm.CreateObject<HeroPersist>();
-        pclPerson.SuperName = "Thor";
-        pclPerson.SuperScore = 100;
+        var hero = _realm.CreateObject<Hero>();
+        hero.SuperName = "Thor";
+        hero.SuperScore = 100;
         trans.Commit();
     }
-    var numAwe = _realm.All<HeroPersist>().Count();
+    var numAwe = _realm.All<Hero>().Count();
     System.Diagnostics.Debug.WriteLine($"Created {numAwe} heroes");
     _realm.Close();
 ```
