@@ -1608,4 +1608,21 @@ IntegrationTests.XamarinAndroid
   set Target Framework to API 22
 - Project Options - Build - Android Application
   set Minimum Android Version to 2.3 (API 10)
-  
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Renaming RealmQuery
+
+RealmQuery.cs
+- rename RealmQuery to RealmResults
+
+RealmQueryPCL.cs
+- rename RealmQuery to RealmResults
+
+RealmQueryEnumerator.cs
+- rename RealmQueryEnumerator to RealmResultsEnumerator
+
+RealmQueryVisitor.cs
+- rename RealmQueryVisitor to RealmResultsVisitor
+
+RealmQueryProvider.cs
+- rename RealmQueryProvider to RealmResultsProvider
