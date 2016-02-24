@@ -1626,3 +1626,10 @@ RealmQueryVisitor.cs
 
 RealmQueryProvider.cs
 - rename RealmQueryProvider to RealmResultsProvider
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#393 Update to Core 0.96.1 breaking changes
+
+Makefile
+- bumped core version to 0.96.2
