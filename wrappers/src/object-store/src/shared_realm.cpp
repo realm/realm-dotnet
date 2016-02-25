@@ -28,6 +28,8 @@
 #include <realm/commit_log.hpp>
 #include <realm/group_shared.hpp>
 
+#include "../../debug.hpp"
+
 #include <mutex>
 
 using namespace realm;
@@ -152,10 +154,6 @@ void Realm::init(std::shared_ptr<RealmCoordinator> coordinator)
         m_coordinator = nullptr;
         throw;
     }
-
-    // Set up the run loop etc. if auto refresh is enabled
-    if (m_auto_refresh)
-      set_auto_refresh(true);
 }
 
 Realm::~Realm()
@@ -400,6 +398,7 @@ bool Realm::refresh()
 
 void Realm::set_auto_refresh(bool auto_refresh)
 {
+  debug_log("Setting auto refresh..");
     m_auto_refresh = auto_refresh; 
 
     if(auto_refresh)

@@ -25,6 +25,9 @@
 
 #include <unordered_map>
 
+#include <sstream>
+#include "../../../debug.hpp"
+
 using namespace realm;
 using namespace realm::_impl;
 
@@ -100,6 +103,12 @@ std::shared_ptr<Realm> RealmCoordinator::get_realm(Realm::Config config)
     auto realm = std::make_shared<Realm>(std::move(config));
     realm->init(shared_from_this());
     m_cached_realms.emplace_back(realm, m_config.cache);
+
+    // As the realm has just been initialized, auto_refresh() only tells us that it *should* be set, but
+    // we haven't actually enabled it yet. Do that now.
+    if (realm->auto_refresh())
+      enable_auto_refresh_for(realm.get());
+
     return realm;
 }
 
@@ -182,12 +191,20 @@ void RealmCoordinator::clear_cache()
 
 void RealmCoordinator::enable_auto_refresh_for(Realm* realm)
 {
+
+  std::stringstream ss;
+  ss << "Setting auto refresh. Cache size: " << m_cached_realms.size() << ".";
+
+  debug_log(ss.str());
+
     for (size_t i = 0; i < m_cached_realms.size(); ++i) {
         auto& cached_realm = m_cached_realms[i];
         if (!cached_realm.expired() && !cached_realm.is_for_realm(realm)) {
+          debug_log(":-(");
             continue;
         }
 
+        debug_log("Found one!");
         cached_realm.enable_auto_refresh();
     }
 }
