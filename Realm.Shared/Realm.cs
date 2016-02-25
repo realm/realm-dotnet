@@ -40,6 +40,8 @@ namespace Realms
             }
 
             NativeCommon.SetupExceptionThrower();
+            Platform.Initialize();
+            NativeDebug.Initialize();
         }
 
         /// <summary>
