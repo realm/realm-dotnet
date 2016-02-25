@@ -46,6 +46,29 @@ We support the current Xamarin _Stable_ and _Beta_ update channels, at the time 
 * Xamarin Android version 6.0.0.34
 * Xamarin Studio version 5.10
 
+Building Realm dotnet is not yet automated.
+
+### Building Realm Steps
+
+**Note for Debugging** that the following steps mention building for **Release.** If you are debugging, just substitute **Debug** and you probably also want to choose **Debug | iPhoneSimulator** as a platform.
+
+1. Open a terminal window in the `wrappers` directory
+1. `make clean`
+1. `make all` - this will probably download a current version of core binaries, unless you have built recently. The download and subsequent builds will take some time, depending on your system, as it builds a binary wrapper library for each platform including all Android CPU variations.
+1. Open the `Realm.sln` in `Xamarin Studio` on OS X 
+    1. Choose the Solution `Realm` in the Solution navigator and context menu to `Clean Realm`
+    1. platform popup **Release | Default**
+    1. select `Realm.PCL` project and Build
+    1. select `RealmWeaver.Fody` project and Build
+    1. select platform popup **Release | ARM**
+    1. select `Realm.XamarinAndroid` project and Build
+    1. ensure you have an iOS device attached
+    1. select platform popup **Release | iPhone**
+    1. select `Realm.XamarinIOS` project and Build
+    
+1. If you want to build the NuGet packages, go on from this point and follow the steps in  `internals/RealmDotnetNugetBuild.md`
+
+If you are actively testing code against the Realm source, see also the unit test projects and other tests under the Tests folder.
 
 ## Contributing
 

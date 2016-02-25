@@ -96,7 +96,7 @@ namespace Realms
                 srPtr = NativeSharedRealm.open(schemaHandle, 
                     databasePath, (IntPtr)databasePath.Length, 
                     readOnly, durability, 
-                    "", IntPtr.Zero,
+                    config.EncryptionKey,
                     config.SchemaVersion);
             } catch (RealmMigrationNeededException) {
                 if (config.ShouldDeleteIfMigrationNeeded)
@@ -113,7 +113,7 @@ namespace Realms
                 srPtr = NativeSharedRealm.open(schemaHandle, 
                     databasePath, (IntPtr)databasePath.Length, 
                     readOnly, durability, 
-                    "", IntPtr.Zero,
+                    config.EncryptionKey,
                     config.SchemaVersion);
             }
 
@@ -433,10 +433,10 @@ namespace Realms
         /// Extract an iterable set of objects for direct use or further query.
         /// </summary>
         /// <typeparam name="T">The Type T must not only be a RealmObject but also have been processd by the Fody weaver, so it has persistent properties.</typeparam>
-        /// <returns>A RealmQuery that without further filtering, allows iterating all objects of class T, in this realm.</returns>
-        public RealmQuery<T> All<T>() where T: RealmObject
+        /// <returns>A RealmResults that without further filtering, allows iterating all objects of class T, in this realm.</returns>
+        public RealmResults<T> All<T>() where T: RealmObject
         {
-            return new RealmQuery<T>(this, true);
+            return new RealmResults<T>(this, true);
         }
 
         /// <summary>

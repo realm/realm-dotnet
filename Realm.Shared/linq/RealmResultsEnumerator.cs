@@ -10,14 +10,14 @@ using System.Linq.Expressions;
 
 namespace Realms
 {
-    internal class RealmQueryEnumerator<T> : IEnumerator<T> 
+    internal class RealmResultsEnumerator<T> : IEnumerator<T> 
     {
         private long _rowIndex = 0;
-        private RealmQueryVisitor _enumerating;
+        private RealmResultsVisitor _enumerating;
         private Realm _realm;
         private Type _retType = typeof(T);
 
-        internal RealmQueryEnumerator(Realm realm, RealmQueryVisitor qv, Expression expression)
+        internal RealmResultsEnumerator(Realm realm, RealmResultsVisitor qv, Expression expression)
         {
             _realm = realm;
             _enumerating = qv;

@@ -11,7 +11,7 @@ namespace Realms
     {
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_open", CallingConvention = CallingConvention.Cdecl)]
         internal static extern IntPtr open(SchemaHandle schemaHandle, [MarshalAs(UnmanagedType.LPWStr)]string path, IntPtr pathLength, IntPtr readOnly,
-            IntPtr durability, [MarshalAs(UnmanagedType.LPWStr)]string encryptionKey, IntPtr encryptionKeyLength, UInt64 schemaVersion);
+            IntPtr durability, byte[] encryptionKey, UInt64 schemaVersion);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_destroy", CallingConvention = CallingConvention.Cdecl)]
         internal static extern IntPtr destroy(IntPtr sharedRealm);

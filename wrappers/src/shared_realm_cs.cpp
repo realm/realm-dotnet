@@ -21,19 +21,21 @@ using namespace realm::binding;
 extern "C" {
 
 REALM_EXPORT SharedRealm* shared_realm_open(Schema* schema, uint16_t* path, size_t path_len, bool read_only, SharedGroup::DurabilityLevel durability,
-                        uint16_t* encryption_key, size_t encryption_key_len, uint64_t schemaVersion)
+                        uint8_t* encryption_key, uint64_t schemaVersion)
 {
     return handle_errors([&]() {
         Utf16StringAccessor pathStr(path, path_len);
-        Utf16StringAccessor encryptionStr(encryption_key, encryption_key_len);
-
 
         Realm::Config config;
         config.path = pathStr.to_string();
         config.read_only = read_only;
         config.in_memory = durability != SharedGroup::durability_Full;
 
-        config.encryption_key = std::vector<char>(&encryptionStr.data()[0], &encryptionStr.data()[encryptionStr.size()]);
+        // by definition the key is only allowwed to be 64 bytes long, enforced by C# code
+        if (encryption_key == nullptr)
+          config.encryption_key = std::vector<char>();
+        else
+          config.encryption_key = std::vector<char>(encryption_key, encryption_key+64);
 
         config.schema.reset(schema);
         config.schema_version = schemaVersion;

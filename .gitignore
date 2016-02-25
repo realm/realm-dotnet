@@ -235,3 +235,4 @@ NDependOut
 *.realm.lock
 *.realm.log_a
 *.realm.log_b
+RealmWeaver.Fody.dll

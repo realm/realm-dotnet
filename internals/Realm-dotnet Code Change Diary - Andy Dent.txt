@@ -1544,3 +1544,110 @@ Use RealmList instead of IList in sample code:
 - WeaverTests/AssemblyToProcess/Person.cs
 - IntegrationTests.Shared/Person.cs
 - RelationshipTests.cs
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+INVESTIGATING/FIXING WINDOWS CRASHES
+
+eror_handling.cpp
+- fake_a_native_exception added
+
+NativeCommon.cs
+- fake_a_native_exception added
+
+InstanceTests.cs
+- FakeExceptionThrowTest added
+- FakeExceptionThrowLoopingTest added
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#335 ADDING PCL LIBRARY IN RELEASE V0.72.0
+
+Realm.PCL created
+
+ThreeLayerRealmXF solution created
+
+ModuleWeaver.cs
+- comment out (unused) listType var as the getting of type   
+  System.Collections.Generic.List`1 returned null
+  
+
+wrappers/Makefile
+- bumped versions from 0.95.6 TO 0.96.0
+
+Realm.targets
+- set version number in paths as 0.72.0
+
+Realm.nuspec
+- added the PCL build of the DLL
+
+RealmWeaverFody.nuspec
+- set version number as 0.72.0
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#394 BUILD FOR ARM64, x86_64  with some Android cleanup
+
+wrappers/Makefile
+- incremented NDK command min API from 9 to 10 to match Xamarin
+
+Realm.targets
+- set version number in paths as 0.72.1
+- added arm64-v8a and x86_64 lib build instructions and dependencies
+
+Realm.nuspec
+- added arm64-v8a and x86_64 <file> elements
+  (skipping mips for now until clarify if shipping)
+
+wrappers/jni/Application.mk
+- added x86_64 arm64-v8a to APP_ABI
+  (so they are built into the libs dir)
+
+IntegrationTests.XamarinAndroid
+- Project Options - Build - General
+  set Target Framework to API 22
+- Project Options - Build - Android Application
+  set Minimum Android Version to 2.3 (API 10)
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Renaming RealmQuery
+
+RealmQuery.cs
+- rename RealmQuery to RealmResults
+
+RealmQueryPCL.cs
+- rename RealmQuery to RealmResults
+
+RealmQueryEnumerator.cs
+- rename RealmQueryEnumerator to RealmResultsEnumerator
+
+RealmQueryVisitor.cs
+- rename RealmQueryVisitor to RealmResultsVisitor
+
+RealmQueryProvider.cs
+- rename RealmQueryProvider to RealmResultsProvider
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#404 Add way to specify encryption key
+
+RealmConfiguration.cs
+- add EncryptionKey property
+- Equals(RealmConfiguration rhs) enhanced to check EncryptionKey
+
+
+wrappers/shared_realm_cs.cpp
+shared_realm_open
+- change signature to take just byte array of fixed length, dropping the 
+  encryption_key_len param
+
+Realm.GetInstance
+- pass EncryptionKey to NaiveSharedRealm.open
+
+ConfigurationTests.cs
+- EncryptionKeyMustBe64Bytes added
+- ValidEncryptionKeyAcceoted added
+- UnableToOpenWithNoKey added
+- UnableToOpenWithKeyIfNotEncrypted added
+- UnableToOpenWithDifferentKey added
+- AbleToReopenEncryptedWithSameKey added

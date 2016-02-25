@@ -30,8 +30,8 @@ digraph {
   RealmObject -> ICoreProvider
   
   Realm -> ICoreProvider [label=" owns injected\l platform instance"]
-  Realm -> RealmQuery [label=" create with All"]
-  RealmQuery -> ICoreProvider [label=" querying"]
+  Realm -> RealmResults [label=" create with All"]
+  RealmResults -> ICoreProvider [label=" querying"]
   
   /* subclasses */
   RealmObject -> "User Code" [arrowtail=empty, arrowhead=none, dir=both]
@@ -48,7 +48,7 @@ digraph {
 
   RealmObject -> Realm [label=" Add"]
   
-  {rank=same; Realm; RealmQuery}
+  {rank=same; Realm; RealmResults}
   {rank=same; RealmObject; ICoreProvider}
 }
 @enddot
@@ -69,8 +69,8 @@ digraph {
   RealmObject -> ICoreProvider
   
   Realm -> ICoreProvider [label=" owns injected\l platform instance"]
-  Realm -> RealmQuery [label=" create with All"]
-  RealmQuery -> IQueryCoreProvider [label=" querying"]
+  Realm -> RealmResults [label=" create with All"]
+  RealmResults -> IQueryCoreProvider [label=" querying"]
   
   /* subclasses */
   RealmObject -> "User Code" [arrowtail=empty, arrowhead=none, dir=both]
@@ -99,7 +99,7 @@ digraph {
 
   RealmObject -> Realm [label=" Add"]
   
-  {rank=same; Realm; RealmQuery}
+  {rank=same; Realm; RealmResults}
   {rank=same; RealmObject; ICoreProvider}
 }
 @enddot
