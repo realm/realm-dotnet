@@ -4,6 +4,8 @@
  
 using System;
 using System.IO;
+using System.Linq;
+using System.Collections.Generic;
 
 // see internals/RealmConfigurations.md for a detailed diagram of how this interacts with the ObjectStore configuration
 
@@ -64,6 +66,23 @@ namespace Realms
         /// </summary>
         /// <value>0-based value initially set to indicate user is not versioning.</value>
         public UInt64 SchemaVersion { get; set;} = RealmConfiguration.NotVersioned;
+
+
+        private byte[] _EncryptionKey;
+
+        /// <summary>
+        /// Specify the key used to encrypt the entire Realm. Once set, must be specified each time file is used.
+        /// </summary>
+        /// <value>Full 64byte (512bit) key for AES-256 encryption.</value>
+        public byte[] EncryptionKey { 
+            get { return _EncryptionKey; }
+            set 
+            {
+                if (value != null && value.Length != 64)
+                    throw new FormatException("EncryptionKey must be 64 bytes");
+                _EncryptionKey = value;
+            }
+        }
 
         /// <summary>
         /// Configuration you can override which is used when you create a new Realm without specifying a configuration.
@@ -132,7 +151,8 @@ namespace Realms
             if (GC.ReferenceEquals(this, rhs))
                 return true;
             return ShouldDeleteIfMigrationNeeded == rhs.ShouldDeleteIfMigrationNeeded &&
-                DatabasePath == rhs.DatabasePath;
+                DatabasePath == rhs.DatabasePath && 
+                ( (EncryptionKey == null && rhs.EncryptionKey == null) || EncryptionKey.SequenceEqual(rhs.EncryptionKey));
         }
 
 

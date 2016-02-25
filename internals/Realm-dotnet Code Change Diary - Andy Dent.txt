@@ -1626,3 +1626,28 @@ RealmQueryVisitor.cs
 
 RealmQueryProvider.cs
 - rename RealmQueryProvider to RealmResultsProvider
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#404 Add way to specify encryption key
+
+RealmConfiguration.cs
+- add EncryptionKey property
+- Equals(RealmConfiguration rhs) enhanced to check EncryptionKey
+
+
+wrappers/shared_realm_cs.cpp
+shared_realm_open
+- change signature to take just byte array of fixed length, dropping the 
+  encryption_key_len param
+
+Realm.GetInstance
+- pass EncryptionKey to NaiveSharedRealm.open
+
+ConfigurationTests.cs
+- EncryptionKeyMustBe64Bytes added
+- ValidEncryptionKeyAcceoted added
+- UnableToOpenWithNoKey added
+- UnableToOpenWithKeyIfNotEncrypted added
+- UnableToOpenWithDifferentKey added
+- AbleToReopenEncryptedWithSameKey added
