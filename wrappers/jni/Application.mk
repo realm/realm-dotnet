@@ -1,6 +1,6 @@
 #NDK_TOOLCHAIN_VERSION := clang
 NDK_TOOLCHAIN_VERSION := 4.9
-APP_ABI := armeabi armeabi-v7a x86 x86_64 arm64-v8a
+APP_ABI := armeabi armeabi-v7a x86
 
 #  Enable C++14
 APP_CPPFLAGS += -std=c++14
