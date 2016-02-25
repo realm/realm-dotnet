@@ -1658,3 +1658,6 @@ ConfigurationTests.cs
 
 Makefile
 - bumped core version to 0.96.2
+
+Merged Object Store master up to 6f20757b3baa8faf620037a269dbbc7873f1a01f
+
