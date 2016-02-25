@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -22,15 +22,40 @@
     <ClCompile Include="src\error_handling.cpp" />
     <ClCompile Include="src\linklist_cs.cpp" />
     <ClCompile Include="src\marshalling.cpp" />
-    <ClCompile Include="src\object-store\impl\transact_log_handler.cpp" />
-    <ClCompile Include="src\object-store\impl\windows\external_commit_helper.cpp" />
-    <ClCompile Include="src\object-store\index_set.cpp" />
-    <ClCompile Include="src\object-store\list.cpp" />
-    <ClCompile Include="src\object-store\object_schema.cpp" />
-    <ClCompile Include="src\object-store\object_store.cpp" />
-    <ClCompile Include="src\object-store\results.cpp" />
-    <ClCompile Include="src\object-store\schema.cpp" />
-    <ClCompile Include="src\object-store\shared_realm.cpp" />
+    <ClCompile Include="src\object-store\src\impl\android\cached_realm.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\object-store\src\impl\android\external_commit_helper.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\object-store\src\impl\apple\cached_realm.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\object-store\src\impl\apple\external_commit_helper.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\object-store\src\impl\generic\external_commit_helper.cpp" />
+    <ClCompile Include="src\object-store\src\impl\realm_coordinator.cpp" />
+    <ClCompile Include="src\object-store\src\impl\transact_log_handler.cpp" />
+    <ClCompile Include="src\object-store\src\index_set.cpp" />
+    <ClCompile Include="src\object-store\src\list.cpp" />
+    <ClCompile Include="src\object-store\src\object_schema.cpp" />
+    <ClCompile Include="src\object-store\src\object_store.cpp" />
+    <ClCompile Include="src\object-store\src\results.cpp" />
+    <ClCompile Include="src\object-store\src\schema.cpp" />
+    <ClCompile Include="src\object-store\src\shared_realm.cpp" />
     <ClCompile Include="src\object_schema_cs.cpp" />
     <ClCompile Include="src\query_cs.cpp" />
     <ClCompile Include="src\realm-csharp.cpp" />
@@ -42,18 +67,28 @@
   <ItemGroup>
     <ClInclude Include="src\error_handling.hpp" />
     <ClInclude Include="src\marshalling.hpp" />
-    <ClInclude Include="src\object-store\binding_context.hpp" />
-    <ClInclude Include="src\object-store\impl\transact_log_handler.hpp" />
-    <ClInclude Include="src\object-store\impl\windows\external_commit_helper.hpp" />
-    <ClInclude Include="src\object-store\index_set.hpp" />
-    <ClInclude Include="src\object-store\list.hpp" />
-    <ClInclude Include="src\object-store\object_accessor.hpp" />
-    <ClInclude Include="src\object-store\object_schema.hpp" />
-    <ClInclude Include="src\object-store\object_store.hpp" />
-    <ClInclude Include="src\object-store\property.hpp" />
-    <ClInclude Include="src\object-store\results.hpp" />
-    <ClInclude Include="src\object-store\schema.hpp" />
-    <ClInclude Include="src\object-store\shared_realm.hpp" />
+    <ClInclude Include="src\object-store\src\binding_context.hpp" />
+    <ClInclude Include="src\object-store\src\impl\android\cached_realm.hpp" />
+    <ClInclude Include="src\object-store\src\impl\android\external_commit_helper.hpp" />
+    <ClInclude Include="src\object-store\src\impl\apple\cached_realm.hpp" />
+    <ClInclude Include="src\object-store\src\impl\apple\external_commit_helper.hpp" />
+    <ClInclude Include="src\object-store\src\impl\cached_realm.hpp" />
+    <ClInclude Include="src\object-store\src\impl\cached_realm_base.hpp" />
+    <ClInclude Include="src\object-store\src\impl\external_commit_helper.hpp" />
+    <ClInclude Include="src\object-store\src\impl\generic\cached_realm.hpp" />
+    <ClInclude Include="src\object-store\src\impl\generic\external_commit_helper.hpp" />
+    <ClInclude Include="src\object-store\src\impl\realm_coordinator.hpp" />
+    <ClInclude Include="src\object-store\src\impl\transact_log_handler.hpp" />
+    <ClInclude Include="src\object-store\src\index_set.hpp" />
+    <ClInclude Include="src\object-store\src\list.hpp" />
+    <ClInclude Include="src\object-store\src\object_accessor.hpp" />
+    <ClInclude Include="src\object-store\src\object_schema.hpp" />
+    <ClInclude Include="src\object-store\src\object_store.hpp" />
+    <ClInclude Include="src\object-store\src\property.hpp" />
+    <ClInclude Include="src\object-store\src\results.hpp" />
+    <ClInclude Include="src\object-store\src\schema.hpp" />
+    <ClInclude Include="src\object-store\src\shared_realm.hpp" />
+    <ClInclude Include="src\object-store\src\util.hpp" />
     <ClInclude Include="src\realm_error_type.hpp" />
     <ClInclude Include="src\realm_export_decls.hpp" />
     <ClInclude Include="src\shared_linklist.hpp" />
@@ -63,8 +98,6 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>wrappers</RootNamespace>
     <TargetPlatformVersion>8.1</TargetPlatformVersion>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">Win32</Platform>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -72,22 +105,12 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
-    <OutputPath>.\</OutputPath>
-    <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(VC_IncludePath);$(UniversalCRT_IncludePath);$(WindowsSDK_IncludePath);$(IncludePath)</IncludePath>
-    <LibraryPath>$(VC_LibraryPath_x86);$(UniversalCRT_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86;$(LibraryPath)</LibraryPath>
-    <OutDir>$(ProjectDir)build</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
-    <OutputPath>.\</OutputPath>
-    <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(VC_IncludePath);$(UniversalCRT_IncludePath);$(WindowsSDK_IncludePath);$(IncludePath)</IncludePath>
-    <LibraryPath>$(VC_LibraryPath_x64);$(UniversalCRT_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64;$(LibraryPath)</LibraryPath>
-    <OutDir>$(ProjectDir)build</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -95,9 +118,6 @@
     <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
-    <OutputPath>.\</OutputPath>
-    <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(ProjectDir)build</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -105,9 +125,6 @@
     <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
-    <OutputPath>.\</OutputPath>
-    <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(ProjectDir)build</OutDir>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -127,13 +144,33 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(VC_IncludePath);$(UniversalCRT_IncludePath);$(WindowsSDK_IncludePath);$(IncludePath)</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x86);$(UniversalCRT_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86;$(LibraryPath)</LibraryPath>
+    <OutDir>$(ProjectDir)build</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <IncludePath>$(VC_IncludePath);$(UniversalCRT_IncludePath);$(WindowsSDK_IncludePath);$(IncludePath)</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x64);$(UniversalCRT_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64;$(LibraryPath)</LibraryPath>
+    <OutDir>$(ProjectDir)build</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(ProjectDir)build</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(ProjectDir)build</OutDir>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;WRAPPERS_EXPORTS;HAVE_STRUCT_TIMESPEC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\realm-core\src;..\..\realm-core\src\win32\pthread;src\object-store\;src\object-store\impl;src\object-store\impl\windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\realm-core\src;..\..\realm-core\src\win32\pthread;src\object-store\src;src\object-store\src\impl;src\object-store\src\impl\generic;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/DPTW32_STATIC_LIB /DREALM_DEBUG /DREALM_ENABLE_REPLICATION %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -149,7 +186,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;WRAPPERS_EXPORTS;HAVE_STRUCT_TIMESPEC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\realm-core\src;..\..\realm-core\src\win32\pthread;src\object-store\;src\object-store\impl;src\object-store\impl\windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\realm-core\src;..\..\realm-core\src\win32\pthread;src\object-store\src;src\object-store\src\impl;src\object-store\src\impl\generic;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/DPTW32_STATIC_LIB /DREALM_DEBUG /DREALM_ENABLE_REPLICATION %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -167,7 +204,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;WRAPPERS_EXPORTS;HAVE_STRUCT_TIMESPEC;REALM_ENABLE_REPLICATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\realm-core\src;..\..\realm-core\src\win32\pthread;src\object-store\;src\object-store\impl;src\object-store\impl\windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\realm-core\src;..\..\realm-core\src\win32\pthread;src\object-store\src;src\object-store\src\impl;src\object-store\src\impl\generic;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -186,7 +223,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;WRAPPERS_EXPORTS;HAVE_STRUCT_TIMESPEC;REALM_ENABLE_REPLICATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\realm-core\src;..\..\realm-core\src\win32\pthread;src\object-store\;src\object-store\impl;src\object-store\impl\windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\realm-core\src;..\..\realm-core\src\win32\pthread;src\object-store\src;src\object-store\src\impl;src\object-store\src\impl\generic;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
