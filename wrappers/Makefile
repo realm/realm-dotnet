@@ -1,6 +1,7 @@
 OS_SRCS=$(wildcard src/object-store/src/*.cpp) $(wildcard src/object-store/src/impl/*.cpp)
-ECH_SRCS=$(wildcard src/object-store/src/impl/apple/*.cpp)
-SRCS=$(wildcard src/*.cpp) $(OS_SRCS) $(ECH_SRCS)
+APPLE_SRCS=$(wildcard src/object-store/src/impl/apple/*.cpp)
+ANDROID_SRCS=$(wildcard src/object-store/src/impl/android/*.cpp)
+SRCS=$(wildcard src/*.cpp) $(OS_SRCS)
 
 SDKROOT=$(shell xcrun --sdk iphoneos --show-sdk-path)
 CXX=$(shell xcrun --sdk iphoneos --find clang++)
@@ -39,13 +40,13 @@ realm-core-$(CORE_APPLE_VER).tar.bz2:
 build/Release-osx:
 	mkdir -p build/Release-osx
 
-build/Release-osx/libwrappers.dylib: core $(SRCS) | build/Release-osx
-	$(CXX) $(FLAGS) -DDYNAMIC -Lcore -lc++ -lrealm $(SRCS) -dynamiclib -arch i386 -o build/Release-osx/libwrappers.dylib -framework CoreFoundation
+build/Release-osx/libwrappers.dylib: core $(SRCS) $(APPLE_SRCS) | build/Release-osx
+	$(CXX) $(FLAGS) -DDYNAMIC -Lcore -lc++ -lrealm $(SRCS) $(APPLE_SRCS) -dynamiclib -arch i386 -o build/Release-osx/libwrappers.dylib -framework CoreFoundation
 
-build/Release-iphoneos/libwrappers.a: core $(SRCS)
+build/Release-iphoneos/libwrappers.a: core $(SRCS) $(APPLE_SRCS)
 	xcodebuild -sdk iphoneos -configuration Release -target "wrappers"
 
-build/Release-iphonesimulator/libwrappers.a: core $(SRCS)
+build/Release-iphonesimulator/libwrappers.a: core $(SRCS) $(APPLE_SRCS)
 	xcodebuild -sdk iphonesimulator -configuration Release -target "wrappers"
 
 build:
@@ -57,10 +58,10 @@ build/Release-ios-universal: | build
 build/Release-ios-universal/libwrappers.a: build/Release-iphoneos/libwrappers.a build/Release-iphonesimulator/libwrappers.a | build/Release-ios-universal
 	lipo -create -output "build/Release-ios-universal/libwrappers.a" "build/Release-iphoneos/libwrappers.a" "build/Release-iphonesimulator/libwrappers.a"
 
-build/Debug-iphoneos/libwrappers.a: core $(SRCS)
+build/Debug-iphoneos/libwrappers.a: core $(SRCS) $(APPLE_SRCS)
 	xcodebuild -sdk iphoneos -configuration Debug -target "wrappers"
 
-build/Debug-iphonesimulator/libwrappers.a: core $(SRCS)
+build/Debug-iphonesimulator/libwrappers.a: core $(SRCS) $(APPLE_SRCS)
 	xcodebuild -sdk iphonesimulator -configuration Debug -target "wrappers"
 
 build/Debug-ios-universal: | build
@@ -107,7 +108,7 @@ build/Release-android/x86:
 build/Release-android/x86/libwrappers.so: | build/Release-android/x86 libs
 	cp ./libs/x86/librealm-android.so ./build/Release-android/x86/libwrappers.so
 
-libs: | core-android
+libs: | core-android $(SRCS) $(ANDROID_SRCS)
 	$(NDK_ROOT)/ndk-build APP_PLATFORM=android-9 V=1
 	
 
