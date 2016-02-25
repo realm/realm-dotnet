@@ -50,14 +50,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)handles\LinkListHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RealmConfiguration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmMigrationNeededException.cs" />
-<<<<<<< HEAD
-    <Compile Include="$(MSBuildThisFileDirectory)linq\RealmQueryEnumerator.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)native\NativeDebug.cs" />
-=======
     <Compile Include="$(MSBuildThisFileDirectory)linq\RealmResults.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)linq\RealmResultsEnumerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)linq\RealmResultsVisitor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)linq\RealmResultsProvider.cs" />
->>>>>>> master
+    <Compile Include="$(MSBuildThisFileDirectory)native\NativeDebug.cs" />
   </ItemGroup>
 </Project>
