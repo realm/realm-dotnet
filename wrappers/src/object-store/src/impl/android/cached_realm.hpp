@@ -28,12 +28,6 @@ public:
     CachedRealm(const std::shared_ptr<Realm>& realm, bool cache);
     ~CachedRealm();
 
-    CachedRealm(CachedRealm&&);
-    CachedRealm& operator=(CachedRealm&&);
-
-    CachedRealm(const CachedRealm&) = delete;
-    CachedRealm& operator=(const CachedRealm&) = delete;
-
     // Register the handler on the looper so we will react to refresh notifications
     void enable_auto_refresh();
 
@@ -41,8 +35,15 @@ public:
     void notify();
 
 private:
-
+    // Pointer to the handler, created by Java.
+    void* m_handler;
 };
+
+using create_handler_function = void*(*)();
+extern create_handler_function create_handler_for_current_thread;
+
+using notify_handler_function = void(*)(void* handler);
+extern notify_handler_function notify_handler;
 
 } // namespace _impl
 } // namespace realm

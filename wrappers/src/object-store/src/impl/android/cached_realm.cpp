@@ -20,58 +20,14 @@
 
 #include <atomic>
 
-using namespace realm;
-using namespace realm::_impl;
+namespace realm
+{
+namespace _impl
+{
 
 CachedRealm::CachedRealm(const std::shared_ptr<Realm>& realm, bool cache)
 : CachedRealmBase(realm, cache)
 {
-    struct RefCountedWeakPointer {
-        std::weak_ptr<Realm> realm;
-        std::atomic<size_t> ref_count = {1};
-    };
-
-//    CFRunLoopSourceContext ctx{};
-//    ctx.info = new RefCountedWeakPointer{realm};
-//    ctx.perform = [](void* info) {
-//        if (auto realm = static_cast<RefCountedWeakPointer*>(info)->realm.lock()) {
-//            realm->notify();
-//        }
-//    };
-//    ctx.retain = [](const void* info) {
-//        static_cast<RefCountedWeakPointer*>(const_cast<void*>(info))->ref_count.fetch_add(1, std::memory_order_relaxed);
-//        return info;
-//    };
-//    ctx.release = [](const void* info) {
-//        auto ptr = static_cast<RefCountedWeakPointer*>(const_cast<void*>(info));
-//        if (ptr->ref_count.fetch_add(-1, std::memory_order_acq_rel) == 1) {
-//            delete ptr;
-//        }
-//    };
-//
-//    m_runloop = CFRunLoopGetCurrent();
-//    CFRetain(m_runloop);
-//    m_signal = CFRunLoopSourceCreate(kCFAllocatorDefault, 0, &ctx);
-//    CFRunLoopAddSource(m_runloop, m_signal, kCFRunLoopDefaultMode);
-
-    
-}
-
-CachedRealm::CachedRealm(CachedRealm&& rgt)
-: CachedRealmBase(std::move(rgt))
-{
-  // TODO: Move _handler
-}
-
-CachedRealm& CachedRealm::operator=(CachedRealm&& rgt)
-{
-    CachedRealmBase::operator=(std::move(rgt));
-//    m_runloop = rgt.m_runloop;
-//    m_signal = rgt.m_signal;
-//    rgt.m_runloop = nullptr;
-//    rgt.m_signal = nullptr;
-
-    return *this;
 }
 
 CachedRealm::~CachedRealm()
@@ -80,13 +36,17 @@ CachedRealm::~CachedRealm()
 
 void CachedRealm::enable_auto_refresh()
 {
+    m_handler = create_handler_for_current_thread();
 }
 
 void CachedRealm::notify()
 {
-//    CFRunLoopSourceSignal(m_signal);
-//    // Signalling the source makes it run the next time the runloop gets
-//    // to it, but doesn't make the runloop start if it's currently idle
-//    // waiting for events
-//    CFRunLoopWakeUp(m_runloop);
+    notify_handler(m_handler);
+}
+
+
+create_handler_function create_handler_for_current_thread = nullptr;
+notify_handler_function notify_handler = nullptr;
+
+}
 }
