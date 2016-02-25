@@ -1659,5 +1659,8 @@ ConfigurationTests.cs
 Makefile
 - bumped core version to 0.96.2
 
-Merged Object Store master up to 6f20757b3baa8faf620037a269dbbc7873f1a01f
+Merged Object Store master up to 2016-02-25
+"merge pull request #47 from realm/tg/core-0.96.2"
+SHA 565e39a287bc625fd27e724c28e999e891ca8df6
+
 
