@@ -74,7 +74,7 @@ build/Debug-ios-universal/libwrappers.a: build/Debug-iphoneos/libwrappers.a buil
 
 # Android ====================
 
-android: build/Release-android/armeabi/libwrappers.so build/Release-android/armeabi-v7a/libwrappers.so build/Release-android/x86/libwrappers.so build/Release-android/x86_64/libwrappers.so build/Release-android/arm64-v8a/libwrappers.so build/Release-android/mips/libwrappers.so
+android: build/Release-android/armeabi/libwrappers.so build/Release-android/armeabi-v7a/libwrappers.so build/Release-android/x86/libwrappers.so build/Release-android/x86_64/libwrappers.so build/Release-android/arm64-v8a/libwrappers.so 
 
 core-android: realm-core-android-$(CORE_ANDROID_VER).tar.gz
 	mkdir -p core-android
@@ -89,8 +89,8 @@ core-android: realm-core-android-$(CORE_ANDROID_VER).tar.gz
 	mv core-android/librealm-android-arm64.a core-android/arm64-v8a/librealm-android.a
 	mkdir -p core-android/x86_64
 	mv core-android/librealm-android-x86_64.a core-android/x86_64/librealm-android.a
-	mkdir -p core-android/mips
-	mv core-android/librealm-android-mips.a core-android/mips/librealm-android.a
+	#mkdir -p core-android/mips
+	#mv core-android/librealm-android-mips.a core-android/mips/librealm-android.a
 	touch core-android
 
 realm-core-android-$(CORE_ANDROID_VER).tar.gz:
@@ -126,11 +126,11 @@ build/Release-android/arm64-v8a:
 build/Release-android/arm64-v8a/libwrappers.so: | build/Release-android/arm64-v8a libs
 	cp ./libs/arm64-v8a/librealm-android.so ./build/Release-android/arm64-v8a/libwrappers.so
 
-build/Release-android/mips:
-	mkdir -p build/Release-android/mips
+#build/Release-android/mips:
+#	mkdir -p build/Release-android/mips
 
-build/Release-android/mips/libwrappers.so: | build/Release-android/mips libs
-	cp ./libs/mips/librealm-android.so ./build/Release-android/mips/libwrappers.so
+#build/Release-android/mips/libwrappers.so: | build/Release-android/mips libs
+#	cp ./libs/mips/librealm-android.so ./build/Release-android/mips/libwrappers.so
 
 libs: | core-android $(SRCS) $(ANDROID_SRCS)
 	$(NDK_ROOT)/ndk-build APP_PLATFORM=android-10 V=1
