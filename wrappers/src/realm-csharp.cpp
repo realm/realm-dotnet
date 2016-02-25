@@ -5,7 +5,7 @@
 #include <iostream>
 #include <functional>
 #include <list>
-#include "object-store/binding_context.hpp"
+#include "object-store/src/binding_context.hpp"
 #include "error_handling.hpp"
 
 using namespace realm;

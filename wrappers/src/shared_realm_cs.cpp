@@ -7,8 +7,8 @@
 #include "error_handling.hpp"
 #include "realm_export_decls.hpp"
 #include "marshalling.hpp"
-#include "object-store/shared_realm.hpp"
-#include "object-store/schema.hpp"
+#include "object-store/src/shared_realm.hpp"
+#include "object-store/src/schema.hpp"
 
 using namespace realm;
 using namespace realm::binding;
