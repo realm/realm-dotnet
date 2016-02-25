@@ -14,7 +14,6 @@ namespace Realms
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "bind_handler_functions", CallingConvention = CallingConvention.Cdecl)]
         internal static extern void bind_handler_functions(CreateHandlerFunction createHandlerFunction, NotifyHandlerFunction notifyHandlerFunction);
-        
     }
 
     internal static class Platform
@@ -28,7 +27,7 @@ namespace Realms
 
         private static IntPtr CreateHandler() 
         {
-            if (Looper.MainLooper == null)
+            if (Looper.MyLooper() == null)
             {
                 Console.WriteLine("No looper exists. Cannot create handler");
                 return IntPtr.Zero;
@@ -39,15 +38,22 @@ namespace Realms
             var h = new Handler();
             handlers[h.Handle] = h;
 
+            Console.WriteLine("Handle: " + h.Handle);
+
             return h.Handle;
         }
 
         private static void NotifyHandler(IntPtr handlerHandle)
         {
-            Console.WriteLine("Notifying handler... Thread ID: " + System.Threading.Thread.CurrentThread.ManagedThreadId);
+            //Console.WriteLine("Notifying handler... Thread ID: " + System.Threading.Thread.CurrentThread.ManagedThreadId);
+
+            Console.WriteLine("Reading handle: " + handlerHandle);
+
             var h = handlers[handlerHandle];
 
-            h.Post(() => Console.WriteLine("Notified. Thread ID: " + System.Threading.Thread.CurrentThread.ManagedThreadId));
+            h.Post(() => {
+                Console.WriteLine("Notified. Thread ID: " + System.Threading.Thread.CurrentThread.ManagedThreadId);
+            });
 
             //Console.WriteLine("Notify hander... Thread ID: " + System.Threading.Thread.CurrentThread.ManagedThreadId + " -- handler: " + handler.ToInt32());
         }
