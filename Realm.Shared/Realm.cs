@@ -94,7 +94,7 @@ namespace Realms
                 srPtr = NativeSharedRealm.open(schemaHandle, 
                     databasePath, (IntPtr)databasePath.Length, 
                     readOnly, durability, 
-                    "", IntPtr.Zero,
+                    config.EncryptionKey,
                     config.SchemaVersion);
             } catch (RealmMigrationNeededException) {
                 if (config.ShouldDeleteIfMigrationNeeded)
@@ -111,7 +111,7 @@ namespace Realms
                 srPtr = NativeSharedRealm.open(schemaHandle, 
                     databasePath, (IntPtr)databasePath.Length, 
                     readOnly, durability, 
-                    "", IntPtr.Zero,
+                    config.EncryptionKey,
                     config.SchemaVersion);
             }
 

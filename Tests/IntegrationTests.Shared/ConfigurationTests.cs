@@ -108,5 +108,104 @@ namespace IntegrationTests
             Assert.That(config1.GetHashCode(), Is.Not.EqualTo(0));  
             Assert.That(config1.GetHashCode(), Is.Not.EqualTo(config2.GetHashCode())); 
         }
+
+
+        [Test]
+        public void EncryptionKeyMustBe64Bytes()
+        {
+            // Arrange
+            var config = new RealmConfiguration("fred.realm");
+            var smallKey = new byte[] { 1, 2, 3 };
+            var bigKey = new byte[656];
+
+            // Assert
+            Assert.Throws<FormatException>( () => config.EncryptionKey = smallKey);  
+            Assert.Throws<FormatException>( () => config.EncryptionKey = bigKey);  
+        }
+
+
+        [Test]
+        public void ValidEncryptionKeyAcceoted()
+        {
+            // Arrange
+            var config = new RealmConfiguration("fred.realm");
+            var goldilocksKey = new byte[64];
+
+            // Assert
+            Assert.DoesNotThrow( () => config.EncryptionKey = goldilocksKey);  
+            Assert.DoesNotThrow( () => config.EncryptionKey = null);  
+        }
+
+
+        [Test]
+        public void UnableToOpenWithNoKey()
+        {
+            // Arrange
+            var config = new RealmConfiguration("encryptionTest.realm");
+            Realm.DeleteRealm(config);  // ensure guarded from prev tests
+            var emptyKey = new byte[64]; 
+            config.EncryptionKey = emptyKey;  
+            var openedWithKey = Realm.GetInstance(config);
+            openedWithKey.Close();
+            config.EncryptionKey = null;
+
+            // Assert
+            Assert.Throws<RealmFileAccessErrorException>( () => Realm.GetInstance(config));  
+        }
+
+
+        [Test]
+        public void UnableToOpenWithKeyIfNotEncrypted()
+        {
+            // Arrange
+            var config = new RealmConfiguration("encryptionTest.realm");
+            Realm.DeleteRealm(config);  // ensure guarded from prev tests
+            var openedWithoutKey = Realm.GetInstance(config);
+            openedWithoutKey.Close();
+            var emptyKey = new byte[64]; 
+            config.EncryptionKey = emptyKey;  
+
+            // Assert
+            Assert.Throws<RealmFileAccessErrorException>( () => Realm.GetInstance(config));  
+        }
+
+
+        [Test]
+        public void UnableToOpenWithDifferentKey()
+        {
+            // Arrange
+            var config = new RealmConfiguration("encryptionTest.realm");
+            Realm.DeleteRealm(config);  // ensure guarded from prev tests
+            var emptyKey = new byte[64]; 
+            config.EncryptionKey = emptyKey;  
+            var openedWithKey = Realm.GetInstance(config);
+            openedWithKey.Close();
+            config.EncryptionKey[0] = 42;
+
+            // Assert
+            Assert.Throws<RealmFileAccessErrorException>( () => Realm.GetInstance(config));  
+        }
+
+
+        [Test]
+        public void AbleToReopenEncryptedWithSameKey()
+        {
+            // Arrange
+            var config = new RealmConfiguration("encryptionTest.realm");
+            Realm.DeleteRealm(config);  // ensure guarded from prev tests
+            var answerKey = new byte[64]; 
+            answerKey[0] = 42;
+            config.EncryptionKey = answerKey;  
+            var openedWithKey = Realm.GetInstance(config);
+            openedWithKey.Close();
+
+            var config2 = new RealmConfiguration("encryptionTest.realm");
+            var answerKey2 = new byte[64]; 
+            answerKey2[0] = 42;
+            config2.EncryptionKey = answerKey2;
+
+            // Assert
+            Assert.DoesNotThrow( () => Realm.GetInstance(config2));  
+        }
     }
 }
