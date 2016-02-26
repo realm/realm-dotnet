@@ -1651,3 +1651,16 @@ ConfigurationTests.cs
 - UnableToOpenWithKeyIfNotEncrypted added
 - UnableToOpenWithDifferentKey added
 - AbleToReopenEncryptedWithSameKey added
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#393 Update to Core 0.96.1 breaking changes
+
+Makefile
+- bumped core version to 0.96.2
+
+Merged Object Store master up to 2016-02-25
+"merge pull request #47 from realm/tg/core-0.96.2"
+SHA 565e39a287bc625fd27e724c28e999e891ca8df6
+
+

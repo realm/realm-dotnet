@@ -2,8 +2,13 @@
 -------------------
 Still requires installation from private copy of NuGet download.
 
+### Major Changes
+* `RealmConfiguration.EncryptionKey` added so files can be encrypted and existing encrypted files from other Realm sources opened (assuming you have the key)
+
+
 ### Minor Fixes
-For PCL users, if you use `RealmConfiguration.DefaultConfiguration` without having linked a platform-specific dll, you will now get the warning message with a `PlatformNotSupportedException`. Previously threw a `TypeInitExepction`.
+* For PCL users, if you use `RealmConfiguration.DefaultConfiguration` without having linked a platform-specific dll, you will now get the warning message with a `PlatformNotSupportedException`. Previously threw a `TypeInitExepction`.
+* Update to Core v0.96.2 and matching ObjectStore (issue #393)
 
 
 0.72.1 Private Beta (2016-02-15) 
