@@ -37,6 +37,7 @@ public:
 private:
     // Pointer to the handler, created by Java.
     void* m_handler;
+    std::shared_ptr<Realm>* m_locked_ptr;
 };
 
 using create_handler_function = void*(*)(void* realm_ref);

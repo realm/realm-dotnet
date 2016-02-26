@@ -133,13 +133,20 @@ REALM_EXPORT void bind_handler_functions(realm::_impl::create_handler_function c
     });
 }
 
-REALM_EXPORT void notify_realm(std::weak_ptr<Realm>* realm)
+REALM_EXPORT void notify_realm(std::shared_ptr<Realm>* realm)
 {
   handle_errors([&]() {
     debug_log("Notify init");
-    auto lock = realm->lock();
-    debug_log("Post locking");
-    lock->notify();
+    
+    //if (realm->expired()) {
+    //  debug_log("pointer was expired. Skipping.");
+    //  return;
+    //}
+    //auto lock = realm->lock();
+    //debug_log("Post locking");
+    
+    //lock->notify();
+    (*realm)->notify();
     debug_log("Post notification");
   });
 }

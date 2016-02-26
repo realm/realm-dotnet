@@ -19,6 +19,9 @@
 #include "cached_realm.hpp"
 
 #include <atomic>
+#include <sstream>
+
+#include "../../debug.hpp"
 
 namespace realm
 {
@@ -28,15 +31,22 @@ namespace _impl
 CachedRealm::CachedRealm(const std::shared_ptr<Realm>& realm, bool cache)
 : CachedRealmBase(realm, cache)
 {
+  m_locked_ptr = new std::shared_ptr<Realm> { realm };
+  std::stringstream ss;
+  ss << "Constructing CachedRealm. This: " << this;
+  debug_log(ss.str());
 }
 
 CachedRealm::~CachedRealm()
 {
+  std::stringstream ss;
+  ss << "Destructing CachedRealm. This: " << this;
+  debug_log(ss.str());
 }
 
 void CachedRealm::enable_auto_refresh()
 {
-    m_handler = create_handler_for_current_thread(&m_realm);
+    m_handler = create_handler_for_current_thread(m_locked_ptr);
 }
 
 void CachedRealm::notify()
