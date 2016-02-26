@@ -39,7 +39,7 @@ private:
     void* m_handler;
 };
 
-using create_handler_function = void*(*)();
+using create_handler_function = void*(*)(void* realm_ref);
 extern create_handler_function create_handler_for_current_thread;
 
 using notify_handler_function = void(*)(void* handler);

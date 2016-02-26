@@ -36,7 +36,7 @@ CachedRealm::~CachedRealm()
 
 void CachedRealm::enable_auto_refresh()
 {
-    m_handler = create_handler_for_current_thread();
+    m_handler = create_handler_for_current_thread(&m_realm);
 }
 
 void CachedRealm::notify()

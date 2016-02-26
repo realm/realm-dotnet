@@ -10,6 +10,8 @@
 #include "object-store/src/shared_realm.hpp"
 #include "object-store/src/schema.hpp"
 
+#include "debug.hpp"
+
 #ifdef REALM_PLATFORM_ANDROID
 #include "object-store/src/impl/android/cached_realm.hpp"
 #endif
@@ -129,6 +131,17 @@ REALM_EXPORT void bind_handler_functions(realm::_impl::create_handler_function c
         realm::_impl::create_handler_for_current_thread = create_function;
         realm::_impl::notify_handler = notify_function;
     });
+}
+
+REALM_EXPORT void notify_realm(std::weak_ptr<Realm>* realm)
+{
+  handle_errors([&]() {
+    debug_log("Notify init");
+    auto lock = realm->lock();
+    debug_log("Post locking");
+    lock->notify();
+    debug_log("Post notification");
+  });
 }
 
 #endif

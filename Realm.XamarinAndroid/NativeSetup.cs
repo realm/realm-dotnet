@@ -3,17 +3,43 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Android.OS;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace Realms
 {
     internal static class NativeSetup
     {
         // declare the type for the MonoPInvokeCallback
-        public delegate IntPtr CreateHandlerFunction ();
+        public delegate IntPtr CreateHandlerFunction (IntPtr realmPtr);
         public delegate void NotifyHandlerFunction (IntPtr handler);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "bind_handler_functions", CallingConvention = CallingConvention.Cdecl)]
         internal static extern void bind_handler_functions(CreateHandlerFunction createHandlerFunction, NotifyHandlerFunction notifyHandlerFunction);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "notify_realm", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void notify_realm(IntPtr realmPtr);
+
+    }
+
+    public class MyHandler : Handler
+    {
+        static int Id = 0;
+        IntPtr _realmPtr;
+        int id;
+
+        public MyHandler(IntPtr realmPtr)
+        {
+            id = Id++;
+            _realmPtr = realmPtr;
+
+            Console.WriteLine("[" + id + "] realmPtr=" + _realmPtr + ", thread id: " + Thread.CurrentThread.ManagedThreadId + " -- Handle constructed");
+        }
+
+        public override void HandleMessage(Message msg)
+        {
+            Console.WriteLine("[" + id + "] realmPtr=" + _realmPtr + ", thread id: " + Thread.CurrentThread.ManagedThreadId + " -- Notified");
+            NativeSetup.notify_realm(_realmPtr);
+        }
     }
 
     internal static class Platform
@@ -25,7 +51,7 @@ namespace Realms
 
         private static Dictionary<IntPtr, Handler> handlers = new Dictionary<IntPtr, Handler>();
 
-        private static IntPtr CreateHandler() 
+        private static IntPtr CreateHandler(IntPtr realmPtr) 
         {
             if (Looper.MyLooper() == null)
             {
@@ -33,29 +59,20 @@ namespace Realms
                 return IntPtr.Zero;
             }
 
-            Console.WriteLine("Create handler... Thread ID: " + System.Threading.Thread.CurrentThread.ManagedThreadId);
-
-            var h = new Handler();
+            var h = new MyHandler(realmPtr);
             handlers[h.Handle] = h;
-
-            Console.WriteLine("Handle: " + h.Handle);
 
             return h.Handle;
         }
 
         private static void NotifyHandler(IntPtr handlerHandle)
         {
-            //Console.WriteLine("Notifying handler... Thread ID: " + System.Threading.Thread.CurrentThread.ManagedThreadId);
-
-            Console.WriteLine("Reading handle: " + handlerHandle);
+            if (handlerHandle == IntPtr.Zero)
+                return;
 
             var h = handlers[handlerHandle];
 
-            h.Post(() => {
-                Console.WriteLine("Notified. Thread ID: " + System.Threading.Thread.CurrentThread.ManagedThreadId);
-            });
-
-            //Console.WriteLine("Notify hander... Thread ID: " + System.Threading.Thread.CurrentThread.ManagedThreadId + " -- handler: " + handler.ToInt32());
+            h.SendEmptyMessage(13);
         }
     }
 }
