@@ -28,6 +28,8 @@ If the Fody Weaver version number is also changing, edit it in `NuGet/NuGet.Weav
 
 Building Fody NuGet
 -------------------
+You often will **not** be building a new Fody in which case you can copy a previous version. Ensure that the version number being copied matches the dependency in  `NuGet/NuGet.Library/Realm.nuspec`. Otherwise, follow these instructions:
+
 You **have** to build this using Visual Studio. Open the normal Realm solution and force a rebuild of the `Nuget.Weaver` project. The `NuGetBuild` folder is created by this build.
 
 Copy the `RealmWeaver.Fody.0.72.0.nupkg` generated in `NuGetBuild` to your **local test folder**.
@@ -66,6 +68,11 @@ Create new projects and use the NuGet Package manager to _add_ just the `Realm.0
 You should then be able to build and run code using Realm.
 
 Once you are happy with this, compress your **local test folder** and upload as a Git new release or to NuGet (instructions to be added when we go public).
+
+Private Upload Note
+-------------------
+Whilst we are zipping private builds, the naming convention is, eg: `realm-dotnet-0.73.0.zip` for the version number `0.73.0`.
+
 
 Useful Stuff
 -------------
