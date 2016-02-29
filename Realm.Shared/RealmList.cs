@@ -184,11 +184,23 @@ namespace Realms
         }
 
         /// <summary>
-        /// Not yet implemented.
+        /// Copies all the elements to a portion of an array.
         /// </summary>
+        /// <param name="index">Ordinal zero-based starting index of the <b>destination</b> of thef related items being copied.</param>
+        /// <exception cref="ArgumentNullException">Thrown if array is null.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if arrayIndex is less than 0.</exception>
+        /// <exception cref="ArgumentException">Thrown if there is not enough room in array from arrayIndex onward.</exception>
         public void CopyTo(T[] array, int arrayIndex)
         {
-            throw new NotImplementedException("RealmList.CopyTo is not yet implemented");
+            if (array == null)
+                throw new ArgumentNullException();
+            if (arrayIndex < 0)
+                throw new ArgumentOutOfRangeException();
+            if ((arrayIndex + Count) > array.Length)
+                throw new ArgumentException();            
+            foreach (var obj in this) {
+                array[arrayIndex++] = obj;
+            }
         }
 
 

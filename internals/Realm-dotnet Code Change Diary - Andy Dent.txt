@@ -1664,3 +1664,14 @@ Merged Object Store master up to 2016-02-25
 SHA 565e39a287bc625fd27e724c28e999e891ca8df6
 
 
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#299 Fix crash on related RealmList using ToList 
+
+RelationshipTests.cs
+- TimHasTwoIterableDogsListed added
+- TimsIterableDogsThrowExceptions added
+
+RealmList.cs
+- CopyTo implemented stubbed method
+ 
+ 

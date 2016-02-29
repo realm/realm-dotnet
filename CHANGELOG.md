@@ -1,7 +1,12 @@
-0.72.2 Private Beta IN PROGRESS
+0.73.1 Private Beta IN PROGRESS
 -------------------
 Still requires installation from private copy of NuGet download.
 
+### Minor Fixes
+* Finish `RealmList.CopyTo` so you can apply `ToList` to related lists (issue #299)
+
+0.73.0 Privat Beta (2016-02-26)
+-------------------
 ### Major Changes
 * `RealmConfiguration.EncryptionKey` added so files can be encrypted and existing encrypted files from other Realm sources opened (assuming you have the key)
 
