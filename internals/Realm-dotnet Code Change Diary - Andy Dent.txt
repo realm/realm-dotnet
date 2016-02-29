@@ -1664,3 +1664,15 @@ Merged Object Store master up to 2016-02-25
 SHA 565e39a287bc625fd27e724c28e999e891ca8df6
 
 
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#183 BindingPerformanceTest crashes
+
+RealmHandle.cs
+- removed ALL the debug code as testing in HandleDebugging showed it was a source
+  of crashes on disposal (as well as other crashes in core)
+  
+PerformanceTests.cs
+- remove commented-out tests
+- all tests do commits
+- BindingCreateObjectPeformanceTest and BindingPerformanceTest
+  - add inner loops with N operations per transaction, parameterised
