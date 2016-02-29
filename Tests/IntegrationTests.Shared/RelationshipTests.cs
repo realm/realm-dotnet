@@ -119,6 +119,36 @@ namespace IntegrationTests.Shared
         }
 
 
+        /// <summary>
+        /// Check if ToList can be invoked on a related RealmResults
+        /// </summary>
+        [Test]
+        public void TimHasTwoIterableDogsListed()
+        {
+            var tim = realm.All<Owner>().Where( p => p.Name == "Tim").ToList().First();
+            var dogNames = new List<string>();
+            var dogList = tim.Dogs.ToList();  // this used to crash - issue 299
+            foreach (var dog in dogList)
+            {
+                dogNames.Add(dog.Name);
+            }
+            Assert.That(dogNames, Is.EquivalentTo( new List<String> {"Bilbo Fleabaggins", "Earl Yippington III"}));
+        }
+
+
+        [Test]
+        public void TimsIterableDogsThrowExceptions()
+        {
+            var tim = realm.All<Owner>().Where( p => p.Name == "Tim").ToList().First();
+            Assert.Throws<ArgumentNullException> (() => tim.Dogs.CopyTo (null, 0));
+            Dog[] copiedDogs = new Dog[2];
+            Assert.Throws<ArgumentOutOfRangeException> (() => tim.Dogs.CopyTo (copiedDogs, -1));
+            Assert.Throws<ArgumentException> (() => tim.Dogs.CopyTo (copiedDogs, 1));  // insuffiient room
+        }
+
+
+
+
         [Test]
         public void TimRetiredHisTopDog()
         {
