@@ -1675,3 +1675,10 @@ RealmList.cs
 - CopyTo implemented stubbed method
  
  
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#401 Fix Nuget Android relative lib paths
+
+realm.targets
+- instead of ../packages use $(SolutionDir)packages
+  because need it to be solution-relative in MSBuild terms (not at NuGet time)
+  
