@@ -28,25 +28,42 @@ namespace realm
 namespace _impl
 {
 
+
 CachedRealm::CachedRealm(const std::shared_ptr<Realm>& realm, bool cache)
 : CachedRealmBase(realm, cache)
 {
-  m_locked_ptr = new std::shared_ptr<Realm> { realm };
-  std::stringstream ss;
-  ss << "Constructing CachedRealm. This: " << this;
-  debug_log(ss.str());
+}
+
+CachedRealm::CachedRealm(CachedRealm&& rgt)
+: CachedRealmBase(std::move(rgt))
+, m_handler(rgt.m_handler)
+{
+    rgt.m_handler = nullptr;
+}
+
+CachedRealm& CachedRealm::operator=(CachedRealm&& rgt)
+{
+    CachedRealmBase::operator=(std::move(rgt));
+    m_handler = rgt.m_handler;
+    rgt.m_handler = nullptr;
+
+    return *this;
 }
 
 CachedRealm::~CachedRealm()
 {
-  std::stringstream ss;
-  ss << "Destructing CachedRealm. This: " << this;
-  debug_log(ss.str());
+    if (m_handler) {
+        destroy_handler(m_handler);
+        m_handler = nullptr;
+    }
 }
 
-void CachedRealm::enable_auto_refresh()
+void CachedRealm::set_auto_refresh(bool auto_refresh)
 {
-    m_handler = create_handler_for_current_thread(m_locked_ptr);
+    if (auto_refresh) {
+        auto locked_ptr = new std::shared_ptr<Realm> { m_realm };
+        m_handler = create_handler_for_current_thread(locked_ptr);
+    }
 }
 
 void CachedRealm::notify()
@@ -57,6 +74,7 @@ void CachedRealm::notify()
 
 create_handler_function create_handler_for_current_thread = nullptr;
 notify_handler_function notify_handler = nullptr;
+destroy_handler_function destroy_handler = nullptr;
 
 }
 }

@@ -85,7 +85,7 @@ CachedRealm::~CachedRealm()
     }
 }
 
-void CachedRealm::enable_auto_refresh() { /* noop for now */}
+void CachedRealm::set_auto_refresh(bool auto_refresh) { /* noop for now */}
 
 void CachedRealm::notify()
 {

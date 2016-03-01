@@ -125,30 +125,22 @@ REALM_EXPORT size_t shared_realm_refresh(SharedRealm* realm)
 
 #ifdef REALM_PLATFORM_ANDROID
 
-REALM_EXPORT void bind_handler_functions(realm::_impl::create_handler_function create_function, realm::_impl::notify_handler_function notify_function) 
+REALM_EXPORT void bind_handler_functions(realm::_impl::create_handler_function create_function, 
+    realm::_impl::notify_handler_function notify_function,
+    realm::_impl::destroy_handler_function destroy_function) 
 {
     handle_errors([&]() {
         realm::_impl::create_handler_for_current_thread = create_function;
         realm::_impl::notify_handler = notify_function;
+        realm::_impl::destroy_handler = destroy_function;
     });
 }
 
 REALM_EXPORT void notify_realm(std::shared_ptr<Realm>* realm)
 {
-  handle_errors([&]() {
-    debug_log("Notify init");
-    
-    //if (realm->expired()) {
-    //  debug_log("pointer was expired. Skipping.");
-    //  return;
-    //}
-    //auto lock = realm->lock();
-    //debug_log("Post locking");
-    
-    //lock->notify();
-    (*realm)->notify();
-    debug_log("Post notification");
-  });
+    handle_errors([&]() {
+        (*realm)->notify();
+    });
 }
 
 #endif

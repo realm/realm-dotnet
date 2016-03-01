@@ -353,6 +353,11 @@ bool Realm::compact()
 
 void Realm::notify()
 {
+  debug_log("Realm::notify() called");
+    std::stringstream ss;
+    ss << "this: " << this;
+    debug_log(ss.str());
+
     verify_thread();
 
     if (m_shared_group->has_changed()) { // Throws
@@ -398,11 +403,8 @@ bool Realm::refresh()
 
 void Realm::set_auto_refresh(bool auto_refresh)
 {
-  debug_log("Setting auto refresh..");
     m_auto_refresh = auto_refresh; 
-
-    if(auto_refresh)
-        m_coordinator->enable_auto_refresh_for(this);
+    m_coordinator->set_auto_refresh_for(this, auto_refresh);
 }
 
 uint64_t Realm::get_schema_version(const realm::Realm::Config &config)

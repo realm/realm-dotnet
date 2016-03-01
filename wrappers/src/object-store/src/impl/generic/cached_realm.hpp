@@ -28,7 +28,7 @@ public:
     using CachedRealmBase::CachedRealmBase;
 
     // Do nothing, as these can't be implemented portably
-    void enable_auto_refresh() { }
+    void set_auto_refresh(bool auto_refresh) { }
     void notify() { }
 };
 

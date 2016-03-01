@@ -107,7 +107,7 @@ std::shared_ptr<Realm> RealmCoordinator::get_realm(Realm::Config config)
     // As the realm has just been initialized, auto_refresh() only tells us that it *should* be set, but
     // we haven't actually enabled it yet. Do that now.
     if (realm->auto_refresh())
-      enable_auto_refresh_for(realm.get());
+      set_auto_refresh_for(realm.get(), true);
 
     return realm;
 }
@@ -189,23 +189,15 @@ void RealmCoordinator::clear_cache()
     }
 }
 
-void RealmCoordinator::enable_auto_refresh_for(Realm* realm)
+void RealmCoordinator::set_auto_refresh_for(Realm* realm, bool auto_refresh)
 {
-
-  std::stringstream ss;
-  ss << "Setting auto refresh. Cache size: " << m_cached_realms.size() << ".";
-
-  debug_log(ss.str());
-
     for (size_t i = 0; i < m_cached_realms.size(); ++i) {
         auto& cached_realm = m_cached_realms[i];
         if (!cached_realm.expired() && !cached_realm.is_for_realm(realm)) {
-          debug_log(":-(");
             continue;
         }
 
-        debug_log("Found one!");
-        cached_realm.enable_auto_refresh();
+        cached_realm.set_auto_refresh(auto_refresh);
     }
 }
 
