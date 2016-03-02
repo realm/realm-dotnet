@@ -357,6 +357,11 @@ namespace Realms
         {
             if (m.Expression != null && m.Expression.NodeType == ExpressionType.Parameter)
             {
+                if (m.Type == typeof(Boolean)) {
+                    object rhs = true;  // box value
+                    var leftName = m.Member.Name;
+                    AddQueryEqual(_coreQueryHandle, leftName, rhs);
+                }
                 return m;
             }
             throw new NotSupportedException(string.Format("The member '{0}' is not supported", m.Member.Name));

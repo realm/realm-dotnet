@@ -52,7 +52,7 @@ namespace IntegrationTests
             var c1 = _realm.All<Person>().Where(p => p.Latitude <= 50).Count();
             Assert.That(c1, Is.EqualTo(2));
 
-            var c2 = _realm.All<Person>().Where(p => p.IsInteresting ==  true).Count();
+            var c2 = _realm.All<Person>().Where(p => p.IsInteresting).Count();
             Assert.That(c2, Is.EqualTo(2));
 
             var c3 = _realm.All<Person>().Where(p => p.FirstName=="John").Count();
