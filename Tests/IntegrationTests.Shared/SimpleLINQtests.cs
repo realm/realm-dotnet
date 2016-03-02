@@ -44,6 +44,20 @@ namespace IntegrationTests
 
 
         [Test]
+        public void CountWithNot()
+        {
+            var countSimpleNot = _realm.All<Person>().Where(p => !p.IsInteresting).Count();
+            Assert.That(countSimpleNot, Is.EqualTo(1));
+
+            var countNotEqual = _realm.All<Person>().Where(p => !(p.Score == 42.42f)).Count();
+            Assert.That(countNotEqual, Is.EqualTo(2));
+/*
+            var countNotComplex = _realm.All<Person>().Where( p => !(p.Longitude < -70.0 && p.Longitude > -90.0)).Count();
+            Assert.That(countNotComplex, Is.EqualTo(2));*/
+        }
+
+
+        [Test]
         public void CountFoundItems()
         {
             var c0 = _realm.All<Person>().Where(p => p.Score == 42.42f).Count();

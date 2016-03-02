@@ -1683,3 +1683,18 @@ SimpleLINQtests.cs
 
 RealmResultsVisitor.cs
 - VisitMemberAccess add check for Booleans by themselfs and treat as == true
+ 
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#77 Boolean ! operator
+
+SimpleLINQtests.cs
+- CountWithNot added
+
+RealmResultsVisitor.cs
+- VisitUnary add call to query_not before recursing into nested expression
+
+NativeQuery.cs
+- query_not interface added
+
+query_cs.cpp
+- query_not added

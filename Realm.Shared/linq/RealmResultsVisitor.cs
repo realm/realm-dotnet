@@ -111,8 +111,11 @@ namespace Realms
         {
             switch (u.NodeType)
             {
-                case ExpressionType.Not:
-                    this.Visit(u.Operand);
+            case ExpressionType.Not:
+                {
+                    NativeQuery.not(_coreQueryHandle);                        
+                    this.Visit (u.Operand);  // recurse into richer expression, expect to VisitCombination
+                }
                     break;
                 default:
                     throw new NotSupportedException($"The unary operator '{u.NodeType}' is not supported");
