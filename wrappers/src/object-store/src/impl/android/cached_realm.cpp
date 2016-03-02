@@ -23,10 +23,8 @@
 
 #include "../../debug.hpp"
 
-namespace realm
-{
-namespace _impl
-{
+namespace realm {
+namespace _impl {
 
 
 CachedRealm::CachedRealm(const std::shared_ptr<Realm>& realm, bool cache)
@@ -61,7 +59,7 @@ CachedRealm::~CachedRealm()
 void CachedRealm::set_auto_refresh(bool auto_refresh)
 {
     if (auto_refresh) {
-        auto locked_ptr = new std::shared_ptr<Realm> { m_realm };
+        auto locked_ptr = new std::shared_ptr<Realm> {realm()};
         m_handler = create_handler_for_current_thread(locked_ptr);
     }
 }
