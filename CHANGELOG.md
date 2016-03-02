@@ -4,6 +4,7 @@ Still requires installation from private copy of NuGet download.
 
 ### Minor Fixes
 * Finish `RealmList.CopyTo` so you can apply `ToList` to related lists (issue #299)
+* NuGet now inserts `libwrappers.so` for Android targets using `$(SolutionDir)packages` so it copes with the different relative paths in cross-platform (Xamarin Forms) app templates vs pure Android templates.  
 
 0.73.0 Privat Beta (2016-02-26)
 -------------------

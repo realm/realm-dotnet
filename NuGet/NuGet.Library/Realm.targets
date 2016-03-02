@@ -1,26 +1,26 @@
 <?xml version="1.0"  encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <ItemGroup>
-        <AndroidNativeLibrary Include="../packages/Realm.0.73.0/lib/MonoAndroid44/armeabi/libwrappers.so">
-            <Link>../packages/Realm.0.73.0/lib/MonoAndroid44/armeabi/libwrappers.so</Link>
+        <AndroidNativeLibrary Include="$(SolutionDir)packages/Realm.0.73.1/lib/MonoAndroid44/armeabi/libwrappers.so">
+            <Link>$(SolutionDir)packages/Realm.0.73.1/lib/MonoAndroid44/armeabi/libwrappers.so</Link>
         </AndroidNativeLibrary>
-        <AndroidNativeLibrary Include="../packages/Realm.0.73.0/lib/MonoAndroid44/armeabi-v7a/libwrappers.so">
-            <Link>../packages/Realm.0.73.0/lib/MonoAndroid44/armeabi-v7a/libwrappers.so</Link>
+        <AndroidNativeLibrary Include="$(SolutionDir)packages/Realm.0.73.1/lib/MonoAndroid44/armeabi-v7a/libwrappers.so">
+            <Link>$(SolutionDir)packages/Realm.0.73.1/lib/MonoAndroid44/armeabi-v7a/libwrappers.so</Link>
         </AndroidNativeLibrary>
-        <AndroidNativeLibrary Include="../packages/Realm.0.73.0/lib/MonoAndroid44/x86/libwrappers.so">
-            <Link>../packages/Realm.0.73.0/lib/MonoAndroid44/x86/libwrappers.so</Link>
+        <AndroidNativeLibrary Include="$(SolutionDir)packages/Realm.0.73.1/lib/MonoAndroid44/x86/libwrappers.so">
+            <Link>$(SolutionDir)packages/Realm.0.73.1/lib/MonoAndroid44/x86/libwrappers.so</Link>
         </AndroidNativeLibrary>
 <!-- disabled until clarify need and Xamarin support
-        <AndroidNativeLibrary Include="../packages/Realm.0.73.0/lib/MonoAndroid44/mips/libwrappers.so">
-            <Link>../packages/Realm.0.73.0/lib/MonoAndroid44/mips/libwrappers.so</Link>
+        <AndroidNativeLibrary Include="$(SolutionDir)packages/Realm.0.73.1/lib/MonoAndroid44/mips/libwrappers.so">
+            <Link>$(SolutionDir)packages/Realm.0.73.1/lib/MonoAndroid44/mips/libwrappers.so</Link>
         </AndroidNativeLibrary>
 -->        
 <!-- 64bit -->
-        <AndroidNativeLibrary Include="../packages/Realm.0.73.0/lib/MonoAndroid44/arm64-v8a/libwrappers.so">
-            <Link>../packages/Realm.0.73.0/lib/MonoAndroid44/arm64-v8a/libwrappers.so</Link>
+        <AndroidNativeLibrary Include="$(SolutionDir)packages/Realm.0.73.1/lib/MonoAndroid44/arm64-v8a/libwrappers.so">
+            <Link>$(SolutionDir)packages/Realm.0.73.1/lib/MonoAndroid44/arm64-v8a/libwrappers.so</Link>
         </AndroidNativeLibrary>
-        <AndroidNativeLibrary Include="../packages/Realm.0.73.0/lib/MonoAndroid44/x86_64/libwrappers.so">
-            <Link>../packages/Realm.0.73.0/lib/MonoAndroid44/x86_64/libwrappers.so</Link>
+        <AndroidNativeLibrary Include="$(SolutionDir)packages/Realm.0.73.1/lib/MonoAndroid44/x86_64/libwrappers.so">
+            <Link>$(SolutionDir)packages/Realm.0.73.1/lib/MonoAndroid44/x86_64/libwrappers.so</Link>
         </AndroidNativeLibrary>
     </ItemGroup>
 </Project>
