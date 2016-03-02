@@ -51,9 +51,9 @@ namespace IntegrationTests
 
             var countNotEqual = _realm.All<Person>().Where(p => !(p.Score == 42.42f)).Count();
             Assert.That(countNotEqual, Is.EqualTo(2));
-/*
+
             var countNotComplex = _realm.All<Person>().Where( p => !(p.Longitude < -70.0 && p.Longitude > -90.0)).Count();
-            Assert.That(countNotComplex, Is.EqualTo(2));*/
+            Assert.That(countNotComplex, Is.EqualTo(2));
         }
 
 
