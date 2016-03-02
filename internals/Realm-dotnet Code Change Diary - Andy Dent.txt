@@ -1675,3 +1675,11 @@ RealmList.cs
 - CopyTo implemented stubbed method
  
  
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#362 Simple Bool queries
+
+SimpleLINQtests.cs
+- CountFoundItems change isInteresting == true to just test isInteresting
+
+RealmResultsVisitor.cs
+- VisitMemberAccess add check for Booleans by themselfs and treat as == true
