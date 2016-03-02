@@ -4,9 +4,11 @@ Still requires installation from private copy of NuGet download.
 
 ### Minor Fixes
 * Finish `RealmList.CopyTo` so you can apply `ToList` to related lists (issue #299)
+* LINQ simple bool searches work without having to use `== true` (issue #362)
+* LINQ ! operator works to negate either simple bool properties or complex expressions (issue #77)
 * NuGet now inserts `libwrappers.so` for Android targets using `$(SolutionDir)packages` so it copes with the different relative paths in cross-platform (Xamarin Forms) app templates vs pure Android templates.  
 
-0.73.0 Privat Beta (2016-02-26)
+0.73.0 Private Beta (2016-02-26)
 -------------------
 ### Major Changes
 * `RealmConfiguration.EncryptionKey` added so files can be encrypted and existing encrypted files from other Realm sources opened (assuming you have the key)
