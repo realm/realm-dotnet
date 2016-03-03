@@ -145,12 +145,11 @@ namespace IntegrationTests
             Realm.DeleteRealm(config);  // ensure guarded from prev tests
             var emptyKey = new byte[64]; 
             config.EncryptionKey = emptyKey;  
-            var openedWithKey = Realm.GetInstance(config);
-            openedWithKey.Close();
+            using (Realm.GetInstance(config)) { }
             config.EncryptionKey = null;
 
             // Assert
-            Assert.Throws<RealmFileAccessErrorException>( () => Realm.GetInstance(config));  
+            Assert.Throws<RealmFileAccessErrorException>( () => { using (Realm.GetInstance(config)) {} });  
         }
 
 
@@ -166,7 +165,7 @@ namespace IntegrationTests
             config.EncryptionKey = emptyKey;  
 
             // Assert
-            Assert.Throws<RealmFileAccessErrorException>( () => Realm.GetInstance(config));  
+            Assert.Throws<RealmMismatchedConfigException>( () => { using (Realm.GetInstance(config)) {} });  
         }
 
 
@@ -183,7 +182,7 @@ namespace IntegrationTests
             config.EncryptionKey[0] = 42;
 
             // Assert
-            Assert.Throws<RealmFileAccessErrorException>( () => Realm.GetInstance(config));  
+            Assert.Throws<RealmMismatchedConfigException>( () => { using (Realm.GetInstance(config)) {} });  
         }
 
 
@@ -205,7 +204,7 @@ namespace IntegrationTests
             config2.EncryptionKey = answerKey2;
 
             // Assert
-            Assert.DoesNotThrow( () => Realm.GetInstance(config2));  
+            Assert.DoesNotThrow( () => { using (Realm.GetInstance(config2)) {} });  
         }
     }
 }
