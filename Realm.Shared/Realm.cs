@@ -186,6 +186,28 @@ namespace Realms
         }
 
         /// <summary>
+        /// Handler type used by <see cref="RealmChanging"/> 
+        /// </summary>
+        public delegate void RealmChangingEventHandler(object sender, EventArgs e);
+
+        /// <summary>
+        /// Triggered when a realm is about to change (i.e. a transaction is being committed)
+        /// </summary>
+        public event RealmChangingEventHandler RealmChanging;
+
+
+        /// <summary>
+        /// Handler type used by <see cref="RealmChanged"/> 
+        /// </summary>
+        public delegate void RealmChangedEventHandler(object sender, EventArgs e);
+
+        /// <summary>
+        /// Triggered when a realm has changed (i.e. a transaction was committed)
+        /// </summary>
+        public event RealmChangedEventHandler RealmChanged;
+
+
+        /// <summary>
         /// Checks if database has been closed.
         /// </summary>
         /// <returns>True if closed.</returns>
