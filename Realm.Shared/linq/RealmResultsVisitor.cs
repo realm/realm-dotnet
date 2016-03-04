@@ -51,6 +51,15 @@ namespace Realms
         }
 
 
+        /**
+        Expressions will typically be in a form:
+        - with embedded Lambda `Count(p => !p.IsInteresting)`
+        - at the end of a Where `Where(p => !p.IsInteresting).Where()`
+
+        The latter form is handled by recursion where evaluation of Visit will 
+        take us back into VisitMethodCall to evaluate the Where call.
+
+        */
         private void RecurseToWhereOrRunLambda(MethodCallExpression m)
         {
             this.Visit(m.Arguments[0]);  // creates the query or recurse to "Where"

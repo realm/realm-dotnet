@@ -45,8 +45,12 @@ Under Visual Studio, you should be able to seamlessly debug from the managed wor
 
 To debug wrappers on IOS, say for the `IntegrationTests.IOS` project 
 
-* you must first have run that project to get it onto the IOS Simulator, say from Xamarin Studio. 
+* you must first have run that project to get it onto the IOS Simulator, say from Xamarin Studio. Note the configuration in the Xamarin debug popup, eg: **iPhone 5s iOS 9.2**
 * After the test app is on the simulator, _stop running from Xamarin Studio_ - only one debugger can connect at a time.
 * Manually launch the test app on the simulator
-* open the `wrappers.xcodeproj` in XCode and manually connect to the process using the menu item Debug - Attach to Process. Scroll down through the System Processes until you find `IntegrationTestsXamarionIOS.` 
+* open the `wrappers.xcodeproj` in XCode 
+* **Confirm XCode is configured to run the same configuration as Xamarin** eg: **iPhone 5s iOS 9.2** because otherwise it will re-launch the simulator with a different configuration. If this is a configuration you have run before you may end up running an old copy of your Xamarin test app.
+* manually connect to the process 
+  * using the menu item Debug - Attach to Process. Scroll down through the System Processes until you find `IntegrationTestsXamarinIOS` 
+  * or if you use Debug - Attach to Process by PID or Name… it remembers the last name so you only have to enter `IntegrationTestsXamarinIOS` once
 * The debugger should show the live process and allow you to set breakpoints which will cause the app to pause when they are hit, just as if you had launched a native app from inside XCode.
