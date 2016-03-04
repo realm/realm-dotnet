@@ -165,7 +165,7 @@ namespace IntegrationTests
             config.EncryptionKey = emptyKey;  
 
             // Assert
-            Assert.Throws<RealmMismatchedConfigException>( () => { using (Realm.GetInstance(config)) {} });  
+            Assert.Throws<RealmFileAccessErrorException>( () => { using (Realm.GetInstance(config)) {} });  
         }
 
 
@@ -182,7 +182,7 @@ namespace IntegrationTests
             config.EncryptionKey[0] = 42;
 
             // Assert
-            Assert.Throws<RealmMismatchedConfigException>( () => { using (Realm.GetInstance(config)) {} });  
+            Assert.Throws<RealmFileAccessErrorException>( () => { using (Realm.GetInstance(config)) {} });  
         }
 
 
