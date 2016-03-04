@@ -19,8 +19,8 @@ namespace IntegrationTests
         public void SimpleTest()
         {
             MakeThreePeople ();
-            var allPeople = _realm.All<Person>().ToList();
-            Debug.WriteLine("There are " + allPeople.Count() + " in total");
+            var allPeople = _realm.All<Person>().Count();
+            Debug.WriteLine($"There are {allPeople} in total");
 
             var interestingPeople = from p in _realm.All<Person>() where p.IsInteresting == true select p;
 
@@ -45,8 +45,7 @@ namespace IntegrationTests
             }
 
             // Assert
-            var allPeople = _realm.All<Person>().ToList();
-            Assert.That(allPeople.Count, Is.EqualTo(1));
+            Assert.That(_realm.All<Person>().Count(), Is.EqualTo(1));
         }
 
         [Test]
@@ -54,8 +53,8 @@ namespace IntegrationTests
         {
             // Arrange
             MakeThreePeople();
-            var p1 = _realm.All<Person>().Where(p => p.Score >= 100).ToList()[0];
-            var p2 = _realm.All<Person>().Where(p => p.Score >= 100).ToList()[0];
+            var p1 = _realm.All<Person>().First(p => p.Score >= 100);
+            var p2 = _realm.All<Person>().First(p => p.Score >= 100);
             Assert.That(p1.Equals(p2));
 
             // Act
