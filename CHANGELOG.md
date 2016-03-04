@@ -8,6 +8,7 @@ Still requires installation from private copy of NuGet download.
 * LINQ ! operator works to negate either simple bool properties or complex expressions (issue #77)
 * LINQ Count, Single and First can now be used after a Where expression, eg `realm.All<Owner>().Where(p => p.Name == "Dani").First();` as well as with a lambda expression `realm.All<Owner>().Single( p => p.Name == "Tim");`  (#369)
 * NuGet now inserts `libwrappers.so` for Android targets using `$(SolutionDir)packages` so it copes with the different relative paths in cross-platform (Xamarin Forms) app templates vs pure Android templates.  
+* Realm.Write() method added for executing code within an implicitly committed transaction
 
 0.73.0 Private Beta (2016-02-26)
 -------------------
