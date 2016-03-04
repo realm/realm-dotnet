@@ -422,6 +422,28 @@ namespace Realms
         }
 
         /// <summary>
+        /// Execute an action inside a transaction. If no exception is thrown, the transaction will automatically
+        /// be committed.
+        /// </summary>
+        /// <example>
+        /// realm.Write(() => 
+        /// {
+        ///     d = myrealm.CreateObject<Dog>();
+        ///     d.Name = "Eddie";
+        ///     d.Age = 5;
+        /// });
+        /// </example>
+        /// <param name="action">Action to perform inside transaction</param>
+        public void Write(Action action)
+        {
+            using (var transaction = BeginWrite())
+            {
+                action();
+                transaction.Commit();
+            }
+        }
+
+        /// <summary>
         /// Extract an iterable set of objects for direct use or further query.
         /// </summary>
         /// <typeparam name="T">The Type T must not only be a RealmObject but also have been processd by the Fody weaver, so it has persistent properties.</typeparam>

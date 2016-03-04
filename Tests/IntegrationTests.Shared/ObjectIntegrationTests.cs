@@ -38,11 +38,7 @@ namespace IntegrationTests
         public void CreateObjectTest()
         {
             // Arrange and act
-            using (var transaction = _realm.BeginWrite())
-            {
-                _realm.CreateObject<Person>();
-                transaction.Commit(); 
-            }
+            _realm.Write(() => _realm.CreateObject<Person>());
 
             // Assert
             Assert.That(_realm.All<Person>().Count(), Is.EqualTo(1));
