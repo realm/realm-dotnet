@@ -51,6 +51,25 @@ namespace Realms
         }
 
 
+        /**
+        Expressions will typically be in a form:
+        - with embedded Lambda `Count(p => !p.IsInteresting)`
+        - at the end of a Where `Where(p => !p.IsInteresting).Where()`
+
+        The latter form is handled by recursion where evaluation of Visit will 
+        take us back into VisitMethodCall to evaluate the Where call.
+
+        */
+        private void RecurseToWhereOrRunLambda(MethodCallExpression m)
+        {
+            this.Visit(m.Arguments[0]);  // creates the query or recurse to "Where"
+            if (m.Arguments.Count > 1) {
+                LambdaExpression lambda = (LambdaExpression)StripQuotes (m.Arguments[1]);
+                this.Visit (lambda.Body);
+            }
+        }
+
+
         internal override Expression VisitMethodCall(MethodCallExpression m)
         {
             if (m.Method.DeclaringType == typeof(Queryable)) { 
@@ -64,35 +83,28 @@ namespace Realms
                 }
                 if (m.Method.Name == "Count")
                 {
-                    this.Visit(m.Arguments[0]);  // typically recurse down to a "Where"
+                    RecurseToWhereOrRunLambda(m);  
                     int foundCount = (int)NativeQuery.count(_coreQueryHandle);
                     return Expression.Constant(foundCount);
                 }
                 if (m.Method.Name == "Any")
                 {
-                    this.Visit(m.Arguments[0]);   // typically recurse down to a "Where"
+                    RecurseToWhereOrRunLambda(m);  
                     RowHandle firstRow = NativeQuery.find(_coreQueryHandle, IntPtr.Zero);
                     bool foundAny = !firstRow.IsInvalid;
                     return Expression.Constant(foundAny);
                 }
                 if (m.Method.Name == "First")
                 {
-                    // unlike Any, has embedded lambda
-                    this.Visit(m.Arguments[0]);  // creates the query
-                    LambdaExpression lambda = (LambdaExpression)StripQuotes(m.Arguments[1]);
-                    this.Visit(lambda.Body);
+                    RecurseToWhereOrRunLambda(m);  
                     RowHandle firstRow = NativeQuery.find(_coreQueryHandle, IntPtr.Zero);
                     if (firstRow.IsInvalid)
                         throw new InvalidOperationException("Sequence contains no matching element");
                     return Expression.Constant(MakeObject(firstRow));
                 }
-                if (m.Method.Name == "Single")
+                if (m.Method.Name == "Single")  // same as First with extra checks
                 {
-                    // unlike Any, has embedded lambda, so treat it more like a Where
-                    // eg: m    {value(Realms.RealmResults`1[IntegrationTests.Person]).Single(p => (p.Latitude > 100))}
-                    this.Visit(m.Arguments[0]);  // creates the query
-                    LambdaExpression lambda = (LambdaExpression)StripQuotes(m.Arguments[1]);
-                    this.Visit(lambda.Body);
+                    RecurseToWhereOrRunLambda(m);  
                     RowHandle firstRow = NativeQuery.find(_coreQueryHandle, IntPtr.Zero);
                     if (firstRow.IsInvalid)
                         throw new InvalidOperationException("Sequence contains no matching element");
