@@ -2,6 +2,7 @@
 using NUnit.Framework;
 using Realms;
 using System.Threading;
+using System.IO;
 
 namespace IntegrationTests.Shared
 {
@@ -23,14 +24,28 @@ namespace IntegrationTests.Shared
             thread.Join();
         }
 
+        [SetUp]
+        private void Setup()
+        {
+            _databasePath = Path.GetTempFileName();
+            _realm = Realm.GetInstance(_databasePath);
+        }
+
         [Test]
-        public void SimpleTest() 
+        public void ShouldTriggerRealmChangedEvent() 
         {
             // Arrange
-
+            var wasNotified = false;
+            _realm.RealmChanged += (sender, e) => { wasNotified = true; };
 
             // Act
+            WriteOnDifferentThread((realm) =>
+            {
+                realm.CreateObject<Person>();
+            });
 
+            // Assert
+            Assert.That(wasNotified, "RealmChanged notification was not triggered");
         }
     }
 }
