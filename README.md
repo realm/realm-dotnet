@@ -37,7 +37,7 @@ Prerequisites:
 * **Android via Xamarin:** Xamarin Android Indie license or above
 * **Windows platforms:** Visual Studio 2013 or higher, recommended 2015
 * Building Realm Xamarin for IOS also requires Xcode 7.1.
-* Building Realm documentation requires [Doxygen](http:/www.doxygen.org)
+* Building Realm documentation requires [Doxygen](http:/www.doxygen.org) and [Graphviz](http://www.graphviz.org)
 
 
 We support the current Xamarin _Stable_ and _Beta_ update channels, at the time of release this corresponded to:
