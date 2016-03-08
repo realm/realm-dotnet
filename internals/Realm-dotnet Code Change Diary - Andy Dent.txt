@@ -1706,3 +1706,15 @@ NativeQuery.cs
 
 query_cs.cpp
 - query_not added
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#183 BindingPerformanceTest crashes
+
+RealmHandle.cs
+- removed ALL the debug code as testing in HandleDebugging showed it was a source
+  of crashes on disposal (as well as other crashes in core)
+  
+PerformanceTests.cs
+- remove commented-out tests
+- all tests do commits
+- BindingCreateObjectPeformanceTest and BindingPerformanceTest
+  - add inner loops with N operations per transaction, parameterised

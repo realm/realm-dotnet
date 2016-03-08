@@ -26,111 +26,65 @@ namespace IntegrationTests
             _realm = Realm.GetInstance(_databasePath);
         }
 
-        [TestCase(1000000), Explicit]
-        public void BindingPerformanceTest(int count)
+        [TestCase(1000000, 100), Explicit]
+        public void BindingPerformanceTest(int totalRecs, int recsPerTrans)
         {
-            Console.WriteLine($"Binding-based performance check for {count:n} entries -------------");
+            Console.WriteLine($"Binding-based performance check for {totalRecs:n} entries at {recsPerTrans} ops per transaction -------------");
 
             var s = "String value";
 
-            using (_realm.BeginWrite())
+            var sw = Stopwatch.StartNew();
+            var numRecs = totalRecs / recsPerTrans;
+            for (var rowIndex = 0; rowIndex < numRecs; rowIndex++)
             {
-                var sw = Stopwatch.StartNew();
-
-                for (var rowIndex = 0; rowIndex < count; rowIndex++)
-                {
-                    var p = _realm.CreateObject<Person>();
-                    p.FirstName = s;
-                    p.IsInteresting = true;
+                using (var trans = _realm.BeginWrite())
+                {         
+                    var hangOntoObjectsUntilCommit = new List<RealmObject>();
+                    for (var iTrans = 0; iTrans < recsPerTrans; ++iTrans)
+                    {
+                        var p = _realm.CreateObject<Person>();
+                        p.FirstName = s;
+                        p.IsInteresting = true;
+                        hangOntoObjectsUntilCommit.Add(p);
+                    }
+                    trans.Commit();
                 }
-
-                sw.Stop();
-
-                Console.WriteLine("Time spent: " + sw.Elapsed);
-                Console.WriteLine("Kilo-iterations per second: {0:0.00}", ((count/1000) / sw.Elapsed.TotalSeconds));
             }
+            sw.Stop();
+
+            Console.WriteLine("Time spent: " + sw.Elapsed);
+            Console.WriteLine("Kilo-iterations per second: {0:0.00}", ((numRecs/1000) / sw.Elapsed.TotalSeconds));
         }
+            
 
-        //[TestCase(1000000)]
-        //public void RawPerformanceTest(int count)
-        //{
-        //    Console.WriteLine($"Raw performance check for {count:n} entries -------------");
-
-        //    var s = "String value";
-
-        //    using (_realm.BeginWrite())
-        //    {
-        //        _realm.CreateObject<Person>();
-
-        //        var gh = _realm.GetPropertyValue<GroupHandle>("TransactionGroupHandle");
-        //        var tablePtr = gh.GetTable("Person");
-
-        //        var sw = Stopwatch.StartNew();
-
-        //        for (var rowIndex = 0; rowIndex < count; rowIndex++)
-        //        {
-        //            NativeTable.add_empty_row(tablePtr);
-        //            NativeTable.set_string(tablePtr, (IntPtr)0, (IntPtr)rowIndex, s, (IntPtr)s.Length);
-        //            NativeTable.set_bool(tablePtr, (IntPtr)3, (IntPtr)rowIndex, (IntPtr)1);
-        //        }
-
-        //        sw.Stop();
-
-        //        Console.WriteLine("Time spent: " + sw.Elapsed);
-        //        Console.WriteLine("Kilo-iterations per second: {0:0.00}", ((count/1000) / sw.Elapsed.TotalSeconds));
-        //    }
-        //}
-
-        [TestCase(1000000), Explicit]
-        public void BindingCreateObjectPerformanceTest(int count)
+        [TestCase(1000000, 1000), Explicit]
+        public void BindingCreateObjectPerformanceTest(int totalRecs, int recsPerTrans)
         {
-            Console.WriteLine($"Binding-based performance check for {count:n} entries: CreateObject -------------");
+            Console.WriteLine($"Binding-based performance check for {totalRecs:n} entries at {recsPerTrans} ops per transaction: CreateObject -------------");
 
             var s = "String value";
 
-            using (_realm.BeginWrite())
+            var sw = Stopwatch.StartNew();
+            var numRecs = totalRecs / recsPerTrans;
+            for (var rowIndex = 0; rowIndex < numRecs; rowIndex++)
             {
-                var sw = Stopwatch.StartNew();
-
-                for (var rowIndex = 0; rowIndex < count; rowIndex++)
+                using (var trans = _realm.BeginWrite())
                 {
-                    var p = _realm.CreateObject<Person>();
+                    var hangOntoObjectsUntilCommit = new List<RealmObject>();
+                    for (var iTrans = 0; iTrans < recsPerTrans; ++iTrans)
+                    {
+                        var p = _realm.CreateObject<Person>();
+                        hangOntoObjectsUntilCommit.Add(p);
+                    }
+                    trans.Commit();
                 }
-
-                sw.Stop();
-
-                Console.WriteLine("Time spent: " + sw.Elapsed);
-                Console.WriteLine("Kilo-iterations per second: {0:0.00}", ((count/1000) / sw.Elapsed.TotalSeconds));
             }
+            sw.Stop();
+
+            Console.WriteLine("Time spent: " + sw.Elapsed);
+            Console.WriteLine("Kilo-iterations per second: {0:0.00}", ((numRecs/1000) / sw.Elapsed.TotalSeconds));
         }
-
-        //[TestCase(1000000)]
-        //public void RawCreateObjectPerformanceTest(int count)
-        //{
-        //    Console.WriteLine($"Raw performance check for {count:n} entries: add_empty_row -------------");
-
-        //    var s = "String value";
-
-        //    using (_realm.BeginWrite())
-        //    {
-        //        _realm.CreateObject<Person>();
-
-        //        var gh = _realm.GetPropertyValue<GroupHandle>("TransactionGroupHandle");
-        //        var tablePtr = gh.GetTable("Person");
-
-        //        var sw = Stopwatch.StartNew();
-
-        //        for (var rowIndex = 0; rowIndex < count; rowIndex++)
-        //        {
-        //            NativeTable.add_empty_row(tablePtr);
-        //        }
-
-        //        sw.Stop();
-
-        //        Console.WriteLine("Time spent: " + sw.Elapsed);
-        //        Console.WriteLine("Kilo-iterations per second: {0:0.00}", ((count/1000) / sw.Elapsed.TotalSeconds));
-        //    }
-        //}
+            
 
         [TestCase(1000000), Explicit]
         public void BindingSetValuePerformanceTest(int count)
@@ -139,53 +93,23 @@ namespace IntegrationTests
 
             var s = "String value";
 
-            using (_realm.BeginWrite())
+            var sw = Stopwatch.StartNew();
+            using (var trans = _realm.BeginWrite())
             {
-                var sw = Stopwatch.StartNew();
-
                 var p = _realm.CreateObject<Person>();
+                // inner loop this time to rewrite the value many times without committing
                 for (var rowIndex = 0; rowIndex < count; rowIndex++)
                 {
                     p.FirstName = s;
                     p.IsInteresting = true;
                 }
-
-                sw.Stop();
-
-                Console.WriteLine("Time spent: " + sw.Elapsed);
-                Console.WriteLine("Kilo-iterations per second: {0:0.00}", ((count/1000) / sw.Elapsed.TotalSeconds));
+                trans.Commit();
             }
+            sw.Stop();
+
+            Console.WriteLine("Time spent: " + sw.Elapsed);
+            Console.WriteLine("Kilo-iterations per second: {0:0.00}", ((count/1000) / sw.Elapsed.TotalSeconds));
         }
-
-        //[TestCase(1000000)]
-        //public void RawSetValuePerformanceTest(int count)
-        //{
-        //    Console.WriteLine($"Raw performance check for {count:n} entries: set_string/set_bool -------------");
-
-        //    var s = "String value";
-
-        //    using (_realm.BeginWrite())
-        //    {
-        //        _realm.CreateObject<Person>();
-
-        //        var gh = _realm.GetPropertyValue<GroupHandle>("TransactionGroupHandle");
-        //        var tablePtr = gh.GetTable("Person");
-
-        //        var sw = Stopwatch.StartNew();
-
-        //        NativeTable.add_empty_row(tablePtr);
-        //        for (var rowIndex = 0; rowIndex < count; rowIndex++)
-        //        {
-        //            NativeTable.set_string(tablePtr, (IntPtr)0, (IntPtr)0, s, (IntPtr)s.Length);
-        //            NativeTable.set_bool(tablePtr, (IntPtr)3, (IntPtr)0, (IntPtr)1);
-        //        }
-
-        //        sw.Stop();
-
-        //        Console.WriteLine("Time spent: " + sw.Elapsed);
-        //        Console.WriteLine("Kilo-iterations per second: {0:0.00}", ((count/1000) / sw.Elapsed.TotalSeconds));
-        //    }
-        //}
 
     }
 }
