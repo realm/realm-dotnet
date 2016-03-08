@@ -13,8 +13,11 @@ namespace Realms
         internal static extern IntPtr open(SchemaHandle schemaHandle, [MarshalAs(UnmanagedType.LPWStr)]string path, IntPtr pathLength, IntPtr readOnly,
             IntPtr durability, byte[] encryptionKey, UInt64 schemaVersion);
 
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_bind_to_realm_handle", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void bind_to_realm_handle(SharedRealmHandle sharedRealm, IntPtr realmHandle);
+
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_destroy", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern IntPtr destroy(IntPtr sharedRealm);
+        internal static extern void destroy(IntPtr sharedRealm);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_has_table",
             CallingConvention = CallingConvention.Cdecl)]

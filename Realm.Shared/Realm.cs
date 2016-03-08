@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.ConstrainedExecution;
 using System.IO;
+using System.Runtime.InteropServices;
 
 namespace Realms
 {
@@ -40,6 +41,13 @@ namespace Realms
             }
 
             NativeCommon.SetupExceptionThrower();
+            NativeCommon.register_notify_realm_changed(NotifyRealmChanged);
+        }
+
+        private static void NotifyRealmChanged(IntPtr realmHandle)
+        {
+            var gch = GCHandle.FromIntPtr(realmHandle);
+            ((Realm)gch.Target).NotifyChanged(new EventArgs());
         }
 
         /// <summary>
@@ -82,6 +90,7 @@ namespace Realms
                 NativeSchema.initializer_add_object_schema(schemaInitializer, objectSchemaHandle);
             }
 
+
             var schemaHandle = new SchemaHandle(schemaInitializer);
 
             var srHandle = new SharedRealmHandle();
@@ -122,8 +131,12 @@ namespace Realms
                 srHandle.SetHandle(srPtr);
             }
 
-            return new Realm(srHandle, config);  // try creating again
-        }  // GetInstance
+            var result = new Realm(srHandle, config);
+            var realmHandle = GCHandle.Alloc(result);
+            NativeSharedRealm.bind_to_realm_handle(srHandle, GCHandle.ToIntPtr(realmHandle));
+
+            return result;
+        } 
 
 
         private static IntPtr GenerateObjectSchema(Type objectClass)
@@ -195,6 +208,12 @@ namespace Realms
         /// </summary>
         public event RealmChangedEventHandler RealmChanged;
 
+
+        private void NotifyChanged(EventArgs e)
+        {
+            if (RealmChanged != null)
+                RealmChanged(this, e);
+        }
 
         /// <summary>
         /// Checks if database has been closed.

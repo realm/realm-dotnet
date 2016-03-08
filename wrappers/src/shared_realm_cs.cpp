@@ -9,11 +9,41 @@
 #include "marshalling.hpp"
 #include "object-store/src/shared_realm.hpp"
 #include "object-store/src/schema.hpp"
+#include "object-store/src/binding_context.hpp"
+#include <list>
+
 
 using namespace realm;
 using namespace realm::binding;
 
+using NotifyRealmChangedT = void(*)(void* realm_handle);
+NotifyRealmChangedT notify_realm_changed = nullptr;
+
+namespace realm {
+namespace binding {
+
+class CSharpBindingContext: public BindingContext {
+public:
+    CSharpBindingContext(void* realm_handle) : m_realm_handle(realm_handle) {}
+
+    void did_change(std::vector<ObserverState> const&, std::vector<void*> const&) override
+    {
+        notify_realm_changed(m_realm_handle);
+    }
+
+private:
+    void* m_realm_handle;
+};
+
+}
+}
+
 extern "C" {
+
+REALM_EXPORT void register_notify_realm_changed(NotifyRealmChangedT notifier)
+{
+    notify_realm_changed = notifier;
+}
 
 REALM_EXPORT SharedRealm* shared_realm_open(Schema* schema, uint16_t* path, size_t path_len, bool read_only, SharedGroup::DurabilityLevel durability,
                         uint8_t* encryption_key, uint64_t schemaVersion)
@@ -34,7 +64,15 @@ REALM_EXPORT SharedRealm* shared_realm_open(Schema* schema, uint16_t* path, size
 
         config.schema.reset(schema);
         config.schema_version = schemaVersion;
+
         return new SharedRealm{Realm::get_shared_realm(config)};
+    });
+}
+
+REALM_EXPORT void shared_realm_bind_to_realm_handle(SharedRealm* realm, void* realm_handle)
+{
+    handle_errors([&]() {
+        (*realm)->m_binding_context = std::unique_ptr<realm::BindingContext>(new CSharpBindingContext(realm_handle));
     });
 }
 
