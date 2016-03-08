@@ -71,6 +71,16 @@ namespace Realms
         #endregion
 
         /// <summary>
+        /// Handler type used by <see cref="RealmChanged"/> 
+        /// </summary>
+        public delegate void RealmChangedEventHandler(object sender, EventArgs e);
+
+        /// <summary>
+        /// Triggered when a realm has changed (i.e. a transaction was committed)
+        /// </summary>
+        public event RealmChangedEventHandler RealmChanged;
+
+        /// <summary>
         /// Checks if database has been closed.
         /// </summary>
         /// <returns>True if closed.</returns>

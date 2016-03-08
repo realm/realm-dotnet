@@ -9,7 +9,6 @@ using System;
 using System.Runtime.InteropServices;
 using System.Text;
 
-
 #if __IOS__
 using ObjCRuntime;
 #endif
@@ -21,6 +20,7 @@ namespace Realms {
         // declare the type for the MonoPInvokeCallback
         public delegate void ExceptionThrowerCallback (IntPtr exceptionCode, IntPtr utf8String, IntPtr stringLen);
 
+        public delegate void NotifyRealmCallback (IntPtr realmHandle);
 
         #if __IOS__
         [MonoPInvokeCallback (typeof (ExceptionThrowerCallback))]
@@ -86,6 +86,8 @@ namespace Realms {
             set_exception_thrower (ExceptionThrower);
         }
 
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "register_notify_realm_changed", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void register_notify_realm_changed(NotifyRealmCallback callback);
 
         
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "fake_a_native_exception", CallingConvention = CallingConvention.Cdecl)]
