@@ -47,7 +47,7 @@ namespace Realms
         private static void NotifyRealmChanged(IntPtr realmHandle)
         {
             var gch = GCHandle.FromIntPtr(realmHandle);
-            ((Realm)gch.Target).NotifyChanged(new EventArgs());
+            ((Realm)gch.Target).NotifyChanged(EventArgs.Empty);
         }
 
         /// <summary>
@@ -131,11 +131,7 @@ namespace Realms
                 srHandle.SetHandle(srPtr);
             }
 
-            var result = new Realm(srHandle, config);
-            var realmHandle = GCHandle.Alloc(result);
-            NativeSharedRealm.bind_to_realm_handle(srHandle, GCHandle.ToIntPtr(realmHandle));
-
-            return result;
+            return new Realm(srHandle, config);
         } 
 
 
@@ -203,16 +199,34 @@ namespace Realms
         /// </summary>
         public delegate void RealmChangedEventHandler(object sender, EventArgs e);
 
+        private event RealmChangedEventHandler _realmChanged;
+
         /// <summary>
         /// Triggered when a realm has changed (i.e. a transaction was committed)
         /// </summary>
-        public event RealmChangedEventHandler RealmChanged;
+        public event RealmChangedEventHandler RealmChanged
+        {
+            add
+            {
+                if (_realmChanged == null)
+                {
+                    var realmHandle = GCHandle.Alloc(this, GCHandleType.Weak);
+                    NativeSharedRealm.bind_to_realm_handle(_sharedRealmHandle, GCHandle.ToIntPtr(realmHandle));
+                }
+                    
+                _realmChanged += value;
+            }
 
+            remove
+            {
+                _realmChanged -= value;
+            }
+        }
 
         private void NotifyChanged(EventArgs e)
         {
-            if (RealmChanged != null)
-                RealmChanged(this, e);
+            if (_realmChanged != null)
+                _realmChanged(this, e);
         }
 
         /// <summary>
