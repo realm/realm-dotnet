@@ -12,6 +12,10 @@ using System.Runtime.ConstrainedExecution;
 using System.IO;
 using System.Runtime.InteropServices;
 
+#if __IOS__
+using ObjCRuntime;
+#endif
+
 namespace Realms
 {
     /// <summary>
@@ -44,6 +48,9 @@ namespace Realms
             NativeCommon.register_notify_realm_changed(NotifyRealmChanged);
         }
 
+        #if __IOS__
+        [MonoPInvokeCallback (typeof (NativeCommon.NotifyRealmCallback))]
+        #endif
         private static void NotifyRealmChanged(IntPtr realmHandle)
         {
             var gch = GCHandle.FromIntPtr(realmHandle);

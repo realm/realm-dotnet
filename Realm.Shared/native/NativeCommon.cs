@@ -9,7 +9,6 @@ using System;
 using System.Runtime.InteropServices;
 using System.Text;
 
-
 #if __IOS__
 using ObjCRuntime;
 #endif
@@ -22,7 +21,6 @@ namespace Realms {
         public delegate void ExceptionThrowerCallback (IntPtr exceptionCode, IntPtr utf8String, IntPtr stringLen);
 
         public delegate void NotifyRealmCallback (IntPtr realmHandle);
-
 
         #if __IOS__
         [MonoPInvokeCallback (typeof (ExceptionThrowerCallback))]
