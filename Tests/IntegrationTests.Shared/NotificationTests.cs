@@ -12,20 +12,8 @@ namespace IntegrationTests.Shared
         private string _databasePath;
         private Realm _realm;
 
-        private void WriteOnDifferentThread(Action<Realm> action)
-        {
-            var thread = new Thread(() =>
-            {
-                var r = Realm.GetInstance(_databasePath);
-                r.Write(() => action(r));
-                r.Close();
-            });
-            thread.Start();
-            thread.Join();
-        }
-
         [SetUp]
-        private void Setup()
+        public void Setup()
         {
             _databasePath = Path.GetTempFileName();
             _realm = Realm.GetInstance(_databasePath);
@@ -39,10 +27,7 @@ namespace IntegrationTests.Shared
             _realm.RealmChanged += (sender, e) => { wasNotified = true; };
 
             // Act
-            WriteOnDifferentThread((realm) =>
-            {
-                realm.CreateObject<Person>();
-            });
+            _realm.Write(() => _realm.CreateObject<Person>());
 
             // Assert
             Assert.That(wasNotified, "RealmChanged notification was not triggered");
