@@ -14,7 +14,8 @@ This is a generic method which is sometimes invoked directly from Linq code.
 
 * `System.Linq.Queryable.Any()` calls `Execute<bool>`
 * `System.Linq.Queryable.Count()` calls `Execute<int>`
-* `ToList()` calls **our** `GetEnumerator()` which (in our original POCO) calls `Execute< IEnumerable<Person> >`
+* `ToList()` (or `foreach`) calls **our** `GetEnumerator()` 
+* Under the hood, searches are mapped to the ObjectStore `Resuls` type which provides an abstraction for Query-based access as well as entire Tables.
 
 
 
@@ -119,6 +120,8 @@ This expression will recurse down from the Count through a Where
 
 The diagram here is elided to shortcut details shown in the detailed initial diagram above.
 
+Note that because we're not doing anything with the results, we use the simple `query_count` call rather than needing to create an internal `Results`.
+
 @dot
 digraph { 
     node[shape = box, style=rounded]
@@ -169,5 +172,71 @@ digraph {
 
     QVMethod0 -> NativeCountInterface [label=" (_coreQueryHandle)"]
     NativeCountInterface -> query_count -> queryCount
+}
+@enddot  
+
+
+
+Iterating All Objects of a Given Architecture
+---------------------------------------------
+This is to show what's happening behind the scenes in a simple iteration of all objects.
+
+`foreach (var p in _realm.All<Person>()) {...}`
+
+The type of `aQuery` is `Realms.RealmResults<IntegrationTests.Person>` and it requires further evaluation to trigger actually doing the search.
+
+A common way is to call the standard Linq to Objects call `var newList = aQuery.ToList()` which triggers the search and enumerates the result to copy objects to a list. 
+
+@dot
+digraph { 
+    node[shape = box, style=rounded]
+    edge[arrowhead=vee]
+
+    /*  C# */
+    node [fontcolor="orange", color="orange"]
+    
+    test [label="foreach"]
+    All [label="Realm.All<Person>()"]
+    GetEnum [label="RealmResults<Person>\n.GetEnumerator"]
+    EVVisit [label="ExpressionVisitor.\nVisit"]
+    RealmResults [shape=box3d, label="RealmResults<Person>"]
+    RealmResultsVisitor [shape=box3d]
+    RealmResultsEnumerator [shape=box3d, label="RealmResultsEnumerator<Person>"]
+    QVConstant [label="RealmResultsVisitor.\nVisitConstant"]
+    CreateQuery [label="RealmResultsVisitor.\nCreateQuery"]
+    TableWhere [label="TableHandle.\nTableWhere"]
+    cqHandle [label="RealmResultsVisitor.\n_coreQueryHandle", shape=none]
+    EnumMove [label="RealmResultsEnumerator.\nMoveNext"]
+    EnumCurrent [label="RealmResultsEnumerator.\nCurrent"]
+    QueryHandle [shape=box3d]
+    NativeWhereInterface [label="NativeTable.\nwhere"]
+    NativeFindInterface [label="NativeQuery.\nfind"]
+
+    /* c++ */
+    node [fontcolor="blue", color="blue"] 
+    table_where
+    Query [label="Query", shape=box3d]
+    NativeWhere[label="Table.\nwhere"]
+    query_find
+    NativeFind [label="Query.\nfind"]
+    
+    
+    test -> All
+    All -> RealmResults [label="creates"]
+    test -> GetEnum
+    test -> EnumMove
+    test -> EnumCurrent
+    GetEnum -> RealmResultsVisitor [label="creates"]
+    GetEnum -> RealmResultsEnumerator [label=" creates"]
+    RealmResultsEnumerator -> EVVisit
+    EVVisit -> QVConstant
+    QVConstant -> CreateQuery -> TableWhere
+    CreateQuery -> cqHandle [label=" set"]
+    TableWhere -> QueryHandle [label=" creates"]
+    TableWhere -> NativeWhereInterface -> table_where
+    table_where -> NativeWhere
+    NativeWhere -> Query [label=" creates"]
+    EnumMove -> NativeFindInterface [label=" one native call\nper row found\nas needed"]
+    NativeFindInterface -> query_find -> NativeFind   
 }
 @enddot  

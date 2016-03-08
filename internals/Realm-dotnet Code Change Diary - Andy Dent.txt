@@ -1768,8 +1768,34 @@ RealmResultsVisitor.cs
 - VisitMethodCall
   - handle Count, Single and First with no lambda argument, using RecurseToWhereOrRunLambda
   
-TODO
-NonAutomaticPropertiesShouldBeIgnored
-_realm.All<Person>().ToList().Single() to straight
-_realm.All<Person>().Single()
 
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#352 Using Results in LINQ
+
+ObjectIntegrationTests.cs
+ObjectIntegrationTests.IteratePeople
+- added
+
+
+NativeQuery.cs
+- renamed "find" to findDirect to trigger compiler errors, discourage use and make it clear being used for (rare) specifics
+
+RealmResults.cs
+- FindNextObject 
+  - param renamed nextOrdinalIndex because not based on row indexes any more
+- VisitMethodCall 
+  - use renamed findDirect for "Any" and "Single"
+  
+
+RealmResultsEnumerator.cs
+- _rowIndex renamed _ordinalIndex because it's not just rows
+
+
+ResultsHandle.cs
+- added
+
+NativeResults.cs
+- added
+
+results_cs.cpp
+- added

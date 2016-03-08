@@ -12,7 +12,7 @@ namespace Realms
 {
     internal class RealmResultsEnumerator<T> : IEnumerator<T> 
     {
-        private long _rowIndex = 0;
+        private long _ordinalIndex = 0;
         private RealmResultsVisitor _enumerating;
         private Realm _realm;
         private Type _retType = typeof(T);
@@ -42,7 +42,7 @@ namespace Realms
         /// <returns>True only if can advance.</returns>
         public bool MoveNext()
         {
-            var nextObj = _enumerating.FindNextObject(ref _rowIndex);
+            var nextObj = _enumerating.FindNextObject(ref _ordinalIndex);
             Current = (T)((object)nextObj);
             return nextObj != null;
         }
@@ -52,7 +52,7 @@ namespace Realms
         /// </summary>
         public void Reset()
         {
-            _rowIndex = 0;  // by definition BEFORE first item
+            _ordinalIndex = 0;  // by definition BEFORE first item
         }
 
         /// <summary>
