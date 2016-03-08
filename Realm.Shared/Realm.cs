@@ -210,8 +210,8 @@ namespace Realms
             {
                 if (_realmChanged == null)
                 {
-                    var realmHandle = GCHandle.Alloc(this, GCHandleType.Weak);
-                    NativeSharedRealm.bind_to_realm_handle(_sharedRealmHandle, GCHandle.ToIntPtr(realmHandle));
+                    var managedRealmHandle = GCHandle.Alloc(this, GCHandleType.Weak);
+                    NativeSharedRealm.bind_to_managed_realm_handle(_sharedRealmHandle, GCHandle.ToIntPtr(managedRealmHandle));
                 }
                     
                 _realmChanged += value;

@@ -16,7 +16,7 @@
 using namespace realm;
 using namespace realm::binding;
 
-using NotifyRealmChangedT = void(*)(void* realm_handle);
+using NotifyRealmChangedT = void(*)(void* managed_realm_handle);
 NotifyRealmChangedT notify_realm_changed = nullptr;
 
 namespace realm {
@@ -24,15 +24,15 @@ namespace binding {
 
 class CSharpBindingContext: public BindingContext {
 public:
-    CSharpBindingContext(void* realm_handle) : m_realm_handle(realm_handle) {}
+    CSharpBindingContext(void* managed_realm_handle) : m_managed_realm_handle(managed_realm_handle) {}
 
     void did_change(std::vector<ObserverState> const&, std::vector<void*> const&) override
     {
-        notify_realm_changed(m_realm_handle);
+        notify_realm_changed(m_managed_realm_handle);
     }
 
 private:
-    void* m_realm_handle;
+    void* m_managed_realm_handle;
 };
 
 }
@@ -69,10 +69,10 @@ REALM_EXPORT SharedRealm* shared_realm_open(Schema* schema, uint16_t* path, size
     });
 }
 
-REALM_EXPORT void shared_realm_bind_to_realm_handle(SharedRealm* realm, void* realm_handle)
+REALM_EXPORT void shared_realm_bind_to_managed_realm_handle(SharedRealm* realm, void* managed_realm_handle)
 {
     handle_errors([&]() {
-        (*realm)->m_binding_context = std::unique_ptr<realm::BindingContext>(new CSharpBindingContext(realm_handle));
+        (*realm)->m_binding_context = std::unique_ptr<realm::BindingContext>(new CSharpBindingContext(managed_realm_handle));
     });
 }
 
