@@ -24,13 +24,15 @@ namespace Realms
         #region static
 
         private static readonly IEnumerable<Type> RealmObjectClasses;
+        private static readonly Dictionary<Type, IntPtr> ObjectSchemaCache;
 
         static Realm()
         {
             RealmObjectClasses =
                 from a in AppDomain.CurrentDomain.GetAssemblies()
                 from t in a.GetTypes()
-                    .Where(t => t != typeof (RealmObject) && typeof (RealmObject).IsAssignableFrom(t))
+//                    .Where(t => t != typeof (RealmObject) && typeof (RealmObject).IsAssignableFrom(t))
+                    .Where(t => t.IsSubclassOf(typeof (RealmObject)))  // we just have simple subclasses, no interfaces
                 select t;
 
             foreach(var realmType in RealmObjectClasses)
@@ -38,7 +40,7 @@ namespace Realms
                 if (!realmType.GetCustomAttributes(typeof(WovenAttribute), true).Any())
                     Debug.WriteLine("WARNING! The type " + realmType.Name + " is a RealmObject but it has not been woven.");
             }
-
+            ObjectSchemaCache = new Dictionary<Type, IntPtr>();
             NativeCommon.SetupExceptionThrower();
         }
 
@@ -74,6 +76,8 @@ namespace Realms
         public static Realm GetInstance(RealmConfiguration config=null)
         {
             config = config ??  RealmConfiguration.DefaultConfiguration;
+
+            // TODO cache these initializers but note we have plans eg issue
             var schemaInitializer = new SchemaInitializerHandle();
 
             foreach (var realmObjectClass in RealmObjectClasses)
@@ -127,9 +131,14 @@ namespace Realms
 
 
         private static IntPtr GenerateObjectSchema(Type objectClass)
-        {
-            var objectSchemaPtr = NativeObjectSchema.create(objectClass.Name);
+        {           
+            IntPtr objectSchemaPtr = IntPtr.Zero;
+            if (ObjectSchemaCache.TryGetValue(objectClass, out objectSchemaPtr)) {
+               return objectSchemaPtr;  // use cached schema                
+            }
 
+            objectSchemaPtr = NativeObjectSchema.create(objectClass.Name);
+            ObjectSchemaCache[objectClass] = objectSchemaPtr;  // save for later lookup
             var propertiesToMap = objectClass.GetProperties(BindingFlags.Instance | BindingFlags.DeclaredOnly | BindingFlags.NonPublic | BindingFlags.Public)
                 .Where(p =>
                 {
@@ -165,7 +174,6 @@ namespace Realms
                 NativeObjectSchema.add_property(objectSchemaPtr, propertyName, MarshalHelpers.RealmColType(columnType), objectType, 
                     MarshalHelpers.BoolToIntPtr(isObjectId), MarshalHelpers.BoolToIntPtr(isIndexed), MarshalHelpers.BoolToIntPtr(isNullable));
             }
-
             return objectSchemaPtr;
         }
 

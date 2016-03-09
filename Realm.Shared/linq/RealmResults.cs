@@ -22,24 +22,26 @@ namespace Realms
         private readonly RealmResultsProvider _provider = null;  // null if _allRecords
         private bool _allRecords = false;
         private readonly Realm _realm;
+        private ResultsHandle _resultsHandle = null;
 
         public IQueryProvider Provider => _provider;
 
         internal RealmResults(RealmResultsProvider queryProvider, Expression expression) 
         {
             this._provider = queryProvider;
-            _realm = _provider._realm;
+            _realm = _provider?._realm ?? null;
             this.Expression = expression;
         }
 
         internal RealmResults(Realm realm, bool createdByAll=false)
         {
-            _realm = Realm;
+            _realm = realm;
             _allRecords = createdByAll;
-            if (!createdByAll) {
+            this.Expression = Expression.Constant(this);//TODO take this temp out
+            //if (!createdByAll) {
                 _provider = new RealmResultsProvider(realm);
-                Expression = Expression.Constant (this);
-            }
+                //Expression = Expression.Constant (this);
+            //}
         }
 
         /// <summary>
@@ -49,7 +51,10 @@ namespace Realms
         public IEnumerator<T> GetEnumerator()
         {
             var retType = typeof(T);
-            if (_allRecords)
+            if (_resultsHandle == null) {
+                //if (_allRecords)
+                    //_resultsHandle = NativeResults.MakeTableResults();
+                }
             return new RealmResultsEnumerator<T>(_provider._realm, _provider.MakeVisitor(retType), Expression);
         }
 
