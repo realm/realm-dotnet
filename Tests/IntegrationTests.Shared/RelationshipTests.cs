@@ -97,6 +97,12 @@ namespace IntegrationTests.Shared
             }
         }
 
+        [TearDown]
+        public void TearDown()
+        {
+            realm.Close();
+            Realm.DeleteRealm(realm.Config);
+        }
 
         [Test]
         public void TimHasATopDog()
