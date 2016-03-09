@@ -85,4 +85,9 @@
       <Name>Realm.XamarinAndroid</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="..\IntegrationTests.Shared\ForMigrationsToCopyAndMigrate.realm">
+      <Link>Assets\ForMigrationsToCopyAndMigrate.realm</Link>
+    </AndroidAsset>
+  </ItemGroup>
 </Project>
