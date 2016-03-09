@@ -8,14 +8,14 @@
 
 /* Begin PBXBuildFile section */
 		424267211C070BE500670B1C /* librealm-ios-no-bitcode-dbg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 424267201C070BE500670B1C /* librealm-ios-no-bitcode-dbg.a */; };
+		4830D9531C90667F00D34855 /* weak_realm_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4830D94F1C90667F00D34855 /* weak_realm_notifier.cpp */; };
+		4830D9541C90667F00D34855 /* weak_realm_notifier.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 4830D9501C90667F00D34855 /* weak_realm_notifier.hpp */; };
+		4830D9551C90667F00D34855 /* weak_realm_notifier_base.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 4830D9511C90667F00D34855 /* weak_realm_notifier_base.hpp */; };
+		4830D9561C90667F00D34855 /* weak_realm_notifier.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 4830D9521C90667F00D34855 /* weak_realm_notifier.hpp */; };
 		48D101451B3991B6004A4B2C /* librealm-ios-no-bitcode.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 48D101431B3991B6004A4B2C /* librealm-ios-no-bitcode.a */; };
 		48D3474F1C74861900CD0E02 /* binding_context.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48D347321C74861900CD0E02 /* binding_context.hpp */; };
-		48D347501C74861900CD0E02 /* cached_realm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48D347331C74861900CD0E02 /* cached_realm.cpp */; };
-		48D347511C74861900CD0E02 /* cached_realm.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48D347341C74861900CD0E02 /* cached_realm.hpp */; };
 		48D347521C74861900CD0E02 /* external_commit_helper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48D347351C74861900CD0E02 /* external_commit_helper.cpp */; };
 		48D347531C74861900CD0E02 /* external_commit_helper.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48D347361C74861900CD0E02 /* external_commit_helper.hpp */; };
-		48D347541C74861900CD0E02 /* cached_realm_base.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48D347371C74861900CD0E02 /* cached_realm_base.hpp */; };
-		48D347551C74861900CD0E02 /* cached_realm.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48D347381C74861900CD0E02 /* cached_realm.hpp */; };
 		48D347561C74861900CD0E02 /* external_commit_helper.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48D347391C74861900CD0E02 /* external_commit_helper.hpp */; };
 		48D347571C74861900CD0E02 /* realm_coordinator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48D3473A1C74861900CD0E02 /* realm_coordinator.cpp */; };
 		48D347581C74861900CD0E02 /* realm_coordinator.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48D3473B1C74861900CD0E02 /* realm_coordinator.hpp */; };
@@ -37,7 +37,6 @@
 		48D347681C74861900CD0E02 /* schema.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48D3474B1C74861900CD0E02 /* schema.hpp */; };
 		48D347691C74861900CD0E02 /* shared_realm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48D3474C1C74861900CD0E02 /* shared_realm.cpp */; };
 		48D3476A1C74861900CD0E02 /* shared_realm.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48D3474D1C74861900CD0E02 /* shared_realm.hpp */; };
-		48D3476B1C74861900CD0E02 /* util.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48D3474E1C74861900CD0E02 /* util.hpp */; };
 		48ED7C651C16F9C200AF23A4 /* error_handling.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48ED7C561C16F9C200AF23A4 /* error_handling.cpp */; };
 		48ED7C661C16F9C200AF23A4 /* error_handling.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48ED7C571C16F9C200AF23A4 /* error_handling.hpp */; };
 		48ED7C671C16F9C200AF23A4 /* linklist_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48ED7C581C16F9C200AF23A4 /* linklist_cs.cpp */; };
@@ -58,15 +57,15 @@
 /* Begin PBXFileReference section */
 		4242671F1C070B9500670B1C /* libwrappers-core-debug.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libwrappers-core-debug.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		424267201C070BE500670B1C /* librealm-ios-no-bitcode-dbg.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "librealm-ios-no-bitcode-dbg.a"; path = "core/librealm-ios-no-bitcode-dbg.a"; sourceTree = "<group>"; };
+		4830D94F1C90667F00D34855 /* weak_realm_notifier.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = weak_realm_notifier.cpp; path = "src/object-store/src/impl/apple/weak_realm_notifier.cpp"; sourceTree = "<group>"; };
+		4830D9501C90667F00D34855 /* weak_realm_notifier.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = weak_realm_notifier.hpp; path = "src/object-store/src/impl/apple/weak_realm_notifier.hpp"; sourceTree = "<group>"; };
+		4830D9511C90667F00D34855 /* weak_realm_notifier_base.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = weak_realm_notifier_base.hpp; path = "src/object-store/src/impl/weak_realm_notifier_base.hpp"; sourceTree = "<group>"; };
+		4830D9521C90667F00D34855 /* weak_realm_notifier.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = weak_realm_notifier.hpp; path = "src/object-store/src/impl/weak_realm_notifier.hpp"; sourceTree = "<group>"; };
 		48D101381B39902E004A4B2C /* libwrappers.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libwrappers.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		48D101431B3991B6004A4B2C /* librealm-ios-no-bitcode.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "librealm-ios-no-bitcode.a"; path = "core/librealm-ios-no-bitcode.a"; sourceTree = "<group>"; };
 		48D347321C74861900CD0E02 /* binding_context.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = binding_context.hpp; path = "src/object-store/src/binding_context.hpp"; sourceTree = "<group>"; };
-		48D347331C74861900CD0E02 /* cached_realm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = cached_realm.cpp; path = "src/object-store/src/impl/apple/cached_realm.cpp"; sourceTree = "<group>"; };
-		48D347341C74861900CD0E02 /* cached_realm.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = cached_realm.hpp; path = "src/object-store/src/impl/apple/cached_realm.hpp"; sourceTree = "<group>"; };
 		48D347351C74861900CD0E02 /* external_commit_helper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = external_commit_helper.cpp; path = "src/object-store/src/impl/apple/external_commit_helper.cpp"; sourceTree = "<group>"; };
 		48D347361C74861900CD0E02 /* external_commit_helper.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = external_commit_helper.hpp; path = "src/object-store/src/impl/apple/external_commit_helper.hpp"; sourceTree = "<group>"; };
-		48D347371C74861900CD0E02 /* cached_realm_base.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = cached_realm_base.hpp; path = "src/object-store/src/impl/cached_realm_base.hpp"; sourceTree = "<group>"; };
-		48D347381C74861900CD0E02 /* cached_realm.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = cached_realm.hpp; path = "src/object-store/src/impl/cached_realm.hpp"; sourceTree = "<group>"; };
 		48D347391C74861900CD0E02 /* external_commit_helper.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = external_commit_helper.hpp; path = "src/object-store/src/impl/external_commit_helper.hpp"; sourceTree = "<group>"; };
 		48D3473A1C74861900CD0E02 /* realm_coordinator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = realm_coordinator.cpp; path = "src/object-store/src/impl/realm_coordinator.cpp"; sourceTree = "<group>"; };
 		48D3473B1C74861900CD0E02 /* realm_coordinator.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = realm_coordinator.hpp; path = "src/object-store/src/impl/realm_coordinator.hpp"; sourceTree = "<group>"; };
@@ -88,7 +87,6 @@
 		48D3474B1C74861900CD0E02 /* schema.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = schema.hpp; path = "src/object-store/src/schema.hpp"; sourceTree = "<group>"; };
 		48D3474C1C74861900CD0E02 /* shared_realm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = shared_realm.cpp; path = "src/object-store/src/shared_realm.cpp"; sourceTree = "<group>"; };
 		48D3474D1C74861900CD0E02 /* shared_realm.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = shared_realm.hpp; path = "src/object-store/src/shared_realm.hpp"; sourceTree = "<group>"; };
-		48D3474E1C74861900CD0E02 /* util.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = util.hpp; path = "src/object-store/src/util.hpp"; sourceTree = "<group>"; };
 		48ED7C561C16F9C200AF23A4 /* error_handling.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = error_handling.cpp; path = src/error_handling.cpp; sourceTree = "<group>"; };
 		48ED7C571C16F9C200AF23A4 /* error_handling.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = error_handling.hpp; path = src/error_handling.hpp; sourceTree = "<group>"; };
 		48ED7C581C16F9C200AF23A4 /* linklist_cs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = linklist_cs.cpp; path = src/linklist_cs.cpp; sourceTree = "<group>"; };
@@ -130,12 +128,8 @@
 			isa = PBXGroup;
 			children = (
 				48D347321C74861900CD0E02 /* binding_context.hpp */,
-				48D347331C74861900CD0E02 /* cached_realm.cpp */,
-				48D347341C74861900CD0E02 /* cached_realm.hpp */,
 				48D347351C74861900CD0E02 /* external_commit_helper.cpp */,
 				48D347361C74861900CD0E02 /* external_commit_helper.hpp */,
-				48D347371C74861900CD0E02 /* cached_realm_base.hpp */,
-				48D347381C74861900CD0E02 /* cached_realm.hpp */,
 				48D347391C74861900CD0E02 /* external_commit_helper.hpp */,
 				48D3473A1C74861900CD0E02 /* realm_coordinator.cpp */,
 				48D3473B1C74861900CD0E02 /* realm_coordinator.hpp */,
@@ -150,6 +144,10 @@
 				48D347441C74861900CD0E02 /* object_schema.hpp */,
 				48D347451C74861900CD0E02 /* object_store.cpp */,
 				48D347461C74861900CD0E02 /* object_store.hpp */,
+				4830D94F1C90667F00D34855 /* weak_realm_notifier.cpp */,
+				4830D9501C90667F00D34855 /* weak_realm_notifier.hpp */,
+				4830D9511C90667F00D34855 /* weak_realm_notifier_base.hpp */,
+				4830D9521C90667F00D34855 /* weak_realm_notifier.hpp */,
 				48D347471C74861900CD0E02 /* property.hpp */,
 				48D347481C74861900CD0E02 /* results.cpp */,
 				48D347491C74861900CD0E02 /* results.hpp */,
@@ -157,7 +155,6 @@
 				48D3474B1C74861900CD0E02 /* schema.hpp */,
 				48D3474C1C74861900CD0E02 /* shared_realm.cpp */,
 				48D3474D1C74861900CD0E02 /* shared_realm.hpp */,
-				48D3474E1C74861900CD0E02 /* util.hpp */,
 				48ED7C561C16F9C200AF23A4 /* error_handling.cpp */,
 				48ED7C571C16F9C200AF23A4 /* error_handling.hpp */,
 				48ED7C581C16F9C200AF23A4 /* linklist_cs.cpp */,
@@ -205,7 +202,6 @@
 				48ED7C6D1C16F9C200AF23A4 /* realm_export_decls.hpp in Headers */,
 				48ED7C661C16F9C200AF23A4 /* error_handling.hpp in Headers */,
 				48D3475F1C74861900CD0E02 /* object_accessor.hpp in Headers */,
-				48D3476B1C74861900CD0E02 /* util.hpp in Headers */,
 				48D3475C1C74861900CD0E02 /* index_set.hpp in Headers */,
 				48D3475E1C74861900CD0E02 /* list.hpp in Headers */,
 				48D347561C74861900CD0E02 /* external_commit_helper.hpp in Headers */,
@@ -214,17 +210,17 @@
 				48D347581C74861900CD0E02 /* realm_coordinator.hpp in Headers */,
 				48D347531C74861900CD0E02 /* external_commit_helper.hpp in Headers */,
 				48D3474F1C74861900CD0E02 /* binding_context.hpp in Headers */,
-				48D347551C74861900CD0E02 /* cached_realm.hpp in Headers */,
 				48D347661C74861900CD0E02 /* results.hpp in Headers */,
+				4830D9551C90667F00D34855 /* weak_realm_notifier_base.hpp in Headers */,
+				4830D9541C90667F00D34855 /* weak_realm_notifier.hpp in Headers */,
+				4830D9561C90667F00D34855 /* weak_realm_notifier.hpp in Headers */,
 				48D3476A1C74861900CD0E02 /* shared_realm.hpp in Headers */,
 				48ED7C6C1C16F9C200AF23A4 /* realm_error_type.hpp in Headers */,
 				48D347631C74861900CD0E02 /* object_store.hpp in Headers */,
 				48ED7C711C16F9C200AF23A4 /* shared_linklist.hpp in Headers */,
-				48D347541C74861900CD0E02 /* cached_realm_base.hpp in Headers */,
 				48D3475A1C74861900CD0E02 /* transact_log_handler.hpp in Headers */,
 				48D347611C74861900CD0E02 /* object_schema.hpp in Headers */,
 				48ED7C691C16F9C200AF23A4 /* marshalling.hpp in Headers */,
-				48D347511C74861900CD0E02 /* cached_realm.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -313,7 +309,6 @@
 				48ED7C721C16F9C200AF23A4 /* shared_realm_cs.cpp in Sources */,
 				48ED7C6E1C16F9C200AF23A4 /* realm-csharp.cpp in Sources */,
 				48D347591C74861900CD0E02 /* transact_log_handler.cpp in Sources */,
-				48D347501C74861900CD0E02 /* cached_realm.cpp in Sources */,
 				48D347601C74861900CD0E02 /* object_schema.cpp in Sources */,
 				48D3475D1C74861900CD0E02 /* list.cpp in Sources */,
 				48ED7C731C16F9C200AF23A4 /* table_cs.cpp in Sources */,
@@ -328,6 +323,7 @@
 				48ED7C6F1C16F9C200AF23A4 /* row_cs.cpp in Sources */,
 				48ED7C701C16F9C200AF23A4 /* schema_cs.cpp in Sources */,
 				48ED7C6B1C16F9C200AF23A4 /* query_cs.cpp in Sources */,
+				4830D9531C90667F00D34855 /* weak_realm_notifier.cpp in Sources */,
 				48ED7C671C16F9C200AF23A4 /* linklist_cs.cpp in Sources */,
 				48ED7C681C16F9C200AF23A4 /* marshalling.cpp in Sources */,
 			);
