@@ -287,6 +287,7 @@ namespace IntegrationTests
             // Assert
             Assert.DoesNotThrow( () => realm2 = Realm.GetInstance(config2) ); // same path, different version, should auto-migrate quietly
             Assert.That(realm2.Config.SchemaVersion, Is.EqualTo(99));
+            realm2.Close();
 
         }
 

@@ -13,10 +13,8 @@ namespace IntegrationTests
 {
     class SimpleLINQtests : PeopleTestsBase
     {
-
-
-        [SetUp]
-        public new void Setup()
+        // see comment on base method why this isn't decorated with [SetUp]
+        public override void Setup()
         {
             base.Setup();
             MakeThreePeople();

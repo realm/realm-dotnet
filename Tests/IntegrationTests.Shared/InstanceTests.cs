@@ -25,7 +25,7 @@ namespace IntegrationTests
         public void GetInstanceTest()
         {
             // Arrange, act and "assert" that no exception is thrown, using default location
-            Realm.GetInstance();
+            Realm.GetInstance().Close();
         }
 
         // This is a test of the Exception throwing mechanism but is included in the Instance tests
@@ -33,33 +33,37 @@ namespace IntegrationTests
         [Test]
         public void FakeExceptionThrowTest()
         {
-            Realm.GetInstance();
-            Assert.Throws<RealmPermissionDeniedException>(() => NativeCommon.fake_a_native_exception((IntPtr)RealmExceptionCodes.RealmPermissionDenied));
+            using (Realm.GetInstance())
+            {
+                Assert.Throws<RealmPermissionDeniedException>(() => NativeCommon.fake_a_native_exception((IntPtr)RealmExceptionCodes.RealmPermissionDenied));
+            }
 
         }
 
         [Test]
         public void FakeExceptionThrowLoopingTest()
         {
-            Realm.GetInstance();
-            for (int i = 0; i < 10000; ++i)
+            using (Realm.GetInstance())
             {
+                for (int i = 0; i < 10000; ++i)
+                {
 #if DEBUG
-                bool caughtIt = false;
-                // Assert.Throws doesn't work with the VS debugger which thinks the exception is uncaught
-                try
-                {
-                    NativeCommon.fake_a_native_exception((IntPtr)RealmExceptionCodes.RealmPermissionDenied);
-                }
-                catch (RealmPermissionDeniedException)
-                {
-                    caughtIt = true;
-                }
-                Assert.That(caughtIt, "Should have caught the expected exception");
+                    bool caughtIt = false;
+                    // Assert.Throws doesn't work with the VS debugger which thinks the exception is uncaught
+                    try
+                    {
+                        NativeCommon.fake_a_native_exception((IntPtr)RealmExceptionCodes.RealmPermissionDenied);
+                    }
+                    catch (RealmPermissionDeniedException)
+                    {
+                        caughtIt = true;
+                    }
+                    Assert.That(caughtIt, "Should have caught the expected exception");
 #else
                 Assert.Throws<RealmPermissionDeniedException>(
                     () => NativeCommon.fake_a_native_exception((IntPtr) RealmExceptionCodes.RealmPermissionDenied));
 #endif
+                }
             }
 
         }
@@ -78,7 +82,7 @@ namespace IntegrationTests
         public void GetInstanceWithJustFilenameTest()
         {
             // Arrange, act and "assert" that no exception is thrown, using default location
-            Realm.GetInstance("EnterTheMagic.realm");
+            Realm.GetInstance("EnterTheMagic.realm").Close();
         }
 
         [Test]
@@ -117,6 +121,9 @@ namespace IntegrationTests
             Assert.False(GC.ReferenceEquals(realm1, realm2));
             Assert.False(realm1.IsSameInstance(realm2));
             Assert.That(realm1, Is.EqualTo(realm2));  // equal and same Realm but not same instance
+
+            realm1.Close();
+            realm2.Close();
         }
 
 
@@ -124,14 +131,15 @@ namespace IntegrationTests
         public void GetCachedInstancesSameThread()
         {
             // Arrange
-            var realm1 = Realm.GetInstance("EnterTheMagic.realm");
-            var realm2 = Realm.GetInstance("EnterTheMagic.realm");
-
-            // Assert
-            Assert.False(GC.ReferenceEquals(realm1, realm2));
-            Assert.That(realm1, Is.EqualTo(realm1));  // check equality with self
-            Assert.That(realm1.IsSameInstance(realm2));
-            Assert.That(realm1, Is.EqualTo(realm2));
+            using (var realm1 = Realm.GetInstance("EnterTheMagic.realm"))
+            using (var realm2 = Realm.GetInstance("EnterTheMagic.realm"))
+            {
+                // Assert
+                Assert.False(GC.ReferenceEquals(realm1, realm2));
+                Assert.That(realm1, Is.EqualTo(realm1));  // check equality with self
+                Assert.That(realm1.IsSameInstance(realm2));
+                Assert.That(realm1, Is.EqualTo(realm2));
+            }
         }
 
 
@@ -139,13 +147,14 @@ namespace IntegrationTests
         public void InstancesHaveDifferentHashes()
         {
             // Arrange
-            var realm1 = Realm.GetInstance("EnterTheMagic.realm");
-            var realm2 = Realm.GetInstance("EnterTheMagic.realm");
-
-            // Assert
-            Assert.False(GC.ReferenceEquals(realm1, realm2));
-            Assert.That(realm1.GetHashCode(), Is.Not.EqualTo(0));  
-            Assert.That(realm1.GetHashCode(), Is.Not.EqualTo(realm2.GetHashCode())); 
+            using (var realm1 = Realm.GetInstance("EnterTheMagic.realm"))
+            using (var realm2 = Realm.GetInstance("EnterTheMagic.realm"))
+            {
+                // Assert
+                Assert.False(GC.ReferenceEquals(realm1, realm2));
+                Assert.That(realm1.GetHashCode(), Is.Not.EqualTo(0));  
+                Assert.That(realm1.GetHashCode(), Is.Not.EqualTo(realm2.GetHashCode())); 
+            }
         }
 
 
