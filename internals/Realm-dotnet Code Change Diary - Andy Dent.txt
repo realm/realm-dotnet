@@ -1776,6 +1776,13 @@ ObjectIntegrationTests.cs
 ObjectIntegrationTests.IteratePeople
 - added
 
+Realm.cs
+- added static ObjectSchemaCache
+- Realm static ctor - init ObjectSchemaCache
+- GenerateObjectSchema
+  - use and update ObjectSchemaCache
+- MakeResultsForTable added
+- CreateResultsHandle added
 
 NativeQuery.cs
 - renamed "find" to findDirect to trigger compiler errors, discourage use and make it clear being used for (rare) specifics
@@ -1785,12 +1792,18 @@ RealmResults.cs
   - param renamed nextOrdinalIndex because not based on row indexes any more
 - VisitMethodCall 
   - use renamed findDirect for "Any" and "Single"
-  
+- GetEnumerator  
+  - use _resultsHandle (cached)
+  - update _resultsHandle for All using MakeReultsForTable
 
 RealmResultsEnumerator.cs
 - _rowIndex renamed _ordinalIndex because it's not just rows
-
-
+- _enumerating renamed _enumeratingOld (not sure if need to keep visitor-based enumeration)
+- ResultsHandle _enumeratingResults added
+- GetEnumerator
+  - init _resultsHandle for AllRecords case
+  
+  
 ResultsHandle.cs
 - added
 
@@ -1799,3 +1812,10 @@ NativeResults.cs
 
 results_cs.cpp
 - added
+
+
+Wrappers.xcodeproj
+- added results_cs.cpp
+
+Realm.Shared.csproj
+- added NativeResults.cs, ResultsHandle.cs

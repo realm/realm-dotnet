@@ -51,10 +51,13 @@ namespace Realms
         public IEnumerator<T> GetEnumerator()
         {
             var retType = typeof(T);
-            if (_resultsHandle == null) {
-                //if (_allRecords)
-                    //_resultsHandle = NativeResults.MakeTableResults();
+            if (_resultsHandle == null)
+            {
+                if (_allRecords)
+                {
+                    _resultsHandle = _realm.MakeResultsForTable(retType);
                 }
+            }
             return new RealmResultsEnumerator<T>(_provider._realm, _provider.MakeVisitor(retType), Expression);
         }
 

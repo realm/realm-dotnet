@@ -6,36 +6,47 @@
 #include "error_handling.hpp"
 #include "marshalling.hpp"
 #include "realm_export_decls.hpp"
+#include "results.hpp"
 
 using namespace realm;
 using namespace realm::binding;
 
 extern "C" {
 
-REALM_EXPORT void results_destroy(Row* results_ptr)
+REALM_EXPORT void results_destroy(Results* results_ptr)
 {
     handle_errors([&]() {
         delete results_ptr;
     });
 }
 
-        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_where", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern IntPtr where(TableHandle handle);
 
-
-
-REALM_EXPORT size_t results_get_results_index(const Row* results_ptr)
+REALM_EXPORT size_t results_is_same_internal_results(Results* lhs, Results* rhs)
 {
     return handle_errors([&]() {
-        return results_ptr->get_index();
+        return (lhs == rhs || false /* *lhs == *rhs */);
     });
 }
 
-REALM_EXPORT size_t results_get_is_attached(const Row* results_ptr)
+REALM_EXPORT Results* results_create_for_table(SharedRealm* realm, Table* table_ptr, ObjectSchema* object_schema)
 {
     return handle_errors([&]() {
-        return bool_to_size_t(results_ptr->is_attached());
+        return new Results(*realm, *object_schema, *table_ptr);
     });
+}
+
+REALM_EXPORT Results* results_create_for_query(SharedRealm* realm, Query * query_ptr, ObjectSchema* object_schema)
+{
+  return handle_errors([&]() {
+    return new Results(*realm, *object_schema, *query_ptr/* TODO pass sort order in */);
+  });
+}
+
+REALM_EXPORT Row* results_get_row(Results* results_ptr, size_t ndx)
+{
+  return handle_errors([&]() {
+    return new Row(results_ptr->get(ndx));
+  });
 }
 
 }   // extern "C"

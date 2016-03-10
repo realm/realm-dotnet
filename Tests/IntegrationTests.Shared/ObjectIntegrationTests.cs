@@ -274,9 +274,9 @@ namespace IntegrationTests
 
             // primarily just testing we iterate through all the people in the realm
             int iterCount = 0;
-            Debug.WriteLine ("ObjectIntegrationTests.IteratePeople:");
+            string[] emails = {"john@smith.com", "john@doe.com", "peter@jameson.com"};
             foreach (var p in _realm.All<Person>()) {
-                Debug.WriteLine (" - " + p.FullName + " (" + p.Email + ")");
+                Assert.That(p.Email, Is.EqualTo(emails[iterCount]));
                 iterCount++;
             }
             Assert.That (iterCount, Is.EqualTo (3));

@@ -9,7 +9,7 @@ namespace Realms
     internal class ResultsHandle: RealmHandle
     {
         //keep this one even though warned that it is not used. It is in fact used by marshalling
-        //used by P/Invoke to automatically construct a TableHandle when returning a size_t as a TableHandle
+        //used by P/Invoke to automatically construct a ResultsHandle when returning a size_t as a ResultsHandle
         [Preserve]
         public ResultsHandle()
         {
@@ -34,7 +34,7 @@ namespace Realms
                 return true;
             }
 
-            return NativeResults.isSameInternalResults(this, (ResultsHandle) p);
+            return NativeResults.is_same_internal_results(this, (ResultsHandle) p) != IntPtr.Zero;
         }
     }
 }

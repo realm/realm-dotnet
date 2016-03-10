@@ -32,7 +32,7 @@ namespace Realms
                 from a in AppDomain.CurrentDomain.GetAssemblies()
                 from t in a.GetTypes()
 //                    .Where(t => t != typeof (RealmObject) && typeof (RealmObject).IsAssignableFrom(t))
-                    .Where(t => t.IsSubclassOf(typeof (RealmObject)))  // we just have simple subclasses, no interfaces
+                    .Where(t => t.IsSubclassOf(typeof(RealmObject)))  // we just have simple subclasses, no interfaces
                 select t;
 
             foreach(var realmType in RealmObjectClasses)
@@ -342,6 +342,16 @@ namespace Realms
             return result;
         }
 
+
+        internal ResultsHandle MakeResultsForTable(Type tableType)
+        {
+            var tableHandle = _tableHandles[tableType];
+            var objSchema = Realm.ObjectSchemaCache[tableType];
+            IntPtr resultsPtr = NativeResults.create_for_table(_sharedRealmHandle, tableHandle, objSchema);
+            return CreateResultsHandle(resultsPtr);
+        }
+
+
         /// <summary>
         /// This realm will start managing a RealmObject which has been created as a standalone object.
         /// </summary>
@@ -377,6 +387,20 @@ namespace Realms
         }
 
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+        internal static ResultsHandle CreateResultsHandle(IntPtr resultsPtr)
+        {
+            var resultsHandle = new ResultsHandle();
+
+            RuntimeHelpers.PrepareConstrainedRegions();
+            try { /* Retain handle in a constrained execution region */ }
+            finally
+            {
+                resultsHandle.SetHandle(resultsPtr);
+            }
+            return resultsHandle;
+        }
+
+        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         internal static RowHandle CreateRowHandle(IntPtr rowPtr)
         {
             var rowHandle = new RowHandle();
@@ -387,7 +411,6 @@ namespace Realms
             {
                 rowHandle.SetHandle(rowPtr);
             }
-
             return rowHandle;
         }
 
