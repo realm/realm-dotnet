@@ -16,16 +16,16 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#include "impl/cached_realm_base.hpp"
+#include "impl/weak_realm_notifier_base.hpp"
 
 namespace realm {
 class Realm;
 
 namespace _impl {
 
-class CachedRealm : public CachedRealmBase {
+class WeakRealmNotifier : public WeakRealmNotifierBase {
 public:
-    using CachedRealmBase::CachedRealmBase;
+    using WeakRealmNotifierBase::WeakRealmNotifierBase;
 
     // Do nothing, as this can't be implemented portably
     void notify() { }

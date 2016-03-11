@@ -7,6 +7,7 @@ using System.IO;
 using NUnit.Framework;
 using System.Threading.Tasks;
 using Realms;
+using System.Threading;
 
 namespace IntegrationTests
 {
@@ -109,11 +110,12 @@ namespace IntegrationTests
             Realm realm2 = realm1;  // should be reassigned by other thread
 
             // Act
-            var getOther = Task.Factory.StartNew(() =>
+            var t = new Thread(() =>
                 {
                     realm2 = Realm.GetInstance("EnterTheMagic.realm");
                 });
-            getOther.Wait();
+            t.Start();
+            t.Join();
 
             // Assert
             Assert.False(GC.ReferenceEquals(realm1, realm2));

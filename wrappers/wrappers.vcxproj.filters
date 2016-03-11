@@ -102,20 +102,23 @@
     <ClCompile Include="src\object-store\src\impl\transact_log_handler.cpp">
       <Filter>Source Files\object-store\impl</Filter>
     </ClCompile>
-    <ClCompile Include="src\object-store\src\impl\apple\cached_realm.cpp">
-      <Filter>Source Files\object-store\impl\apple</Filter>
-    </ClCompile>
     <ClCompile Include="src\object-store\src\impl\apple\external_commit_helper.cpp">
       <Filter>Source Files\object-store\impl\apple</Filter>
-    </ClCompile>
-    <ClCompile Include="src\object-store\src\impl\android\cached_realm.cpp">
-      <Filter>Source Files\object-store\impl\android</Filter>
     </ClCompile>
     <ClCompile Include="src\object-store\src\impl\android\external_commit_helper.cpp">
       <Filter>Source Files\object-store\impl\android</Filter>
     </ClCompile>
     <ClCompile Include="src\object-store\src\impl\generic\external_commit_helper.cpp">
       <Filter>Source Files\object-store\impl\generic</Filter>
+    </ClCompile>
+    <ClCompile Include="src\object-store\src\impl\android\weak_realm_notifier.cpp">
+      <Filter>Source Files\object-store\impl\android</Filter>
+    </ClCompile>
+    <ClCompile Include="src\object-store\src\impl\apple\weak_realm_notifier.cpp">
+      <Filter>Source Files\object-store\impl\apple</Filter>
+    </ClCompile>
+    <ClCompile Include="src\object-store\src\impl\async_query.cpp">
+      <Filter>Source Files\object-store\impl</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -167,12 +170,6 @@
     <ClInclude Include="src\object-store\src\util.hpp">
       <Filter>Header Files\object-store</Filter>
     </ClInclude>
-    <ClInclude Include="src\object-store\src\impl\cached_realm.hpp">
-      <Filter>Header Files\object-store\impl</Filter>
-    </ClInclude>
-    <ClInclude Include="src\object-store\src\impl\cached_realm_base.hpp">
-      <Filter>Header Files\object-store\impl</Filter>
-    </ClInclude>
     <ClInclude Include="src\object-store\src\impl\external_commit_helper.hpp">
       <Filter>Header Files\object-store\impl</Filter>
     </ClInclude>
@@ -182,23 +179,32 @@
     <ClInclude Include="src\object-store\src\impl\transact_log_handler.hpp">
       <Filter>Header Files\object-store\impl</Filter>
     </ClInclude>
-    <ClInclude Include="src\object-store\src\impl\apple\cached_realm.hpp">
-      <Filter>Header Files\object-store\impl\apple</Filter>
-    </ClInclude>
     <ClInclude Include="src\object-store\src\impl\apple\external_commit_helper.hpp">
       <Filter>Header Files\object-store\impl\apple</Filter>
-    </ClInclude>
-    <ClInclude Include="src\object-store\src\impl\android\cached_realm.hpp">
-      <Filter>Header Files\object-store\impl\android</Filter>
     </ClInclude>
     <ClInclude Include="src\object-store\src\impl\android\external_commit_helper.hpp">
       <Filter>Header Files\object-store\impl\android</Filter>
     </ClInclude>
-    <ClInclude Include="src\object-store\src\impl\generic\cached_realm.hpp">
-      <Filter>Header Files\object-store\impl\generic</Filter>
-    </ClInclude>
     <ClInclude Include="src\object-store\src\impl\generic\external_commit_helper.hpp">
       <Filter>Header Files\object-store\impl\generic</Filter>
+    </ClInclude>
+    <ClInclude Include="src\object-store\src\impl\android\weak_realm_notifier.hpp">
+      <Filter>Header Files\object-store\impl\android</Filter>
+    </ClInclude>
+    <ClInclude Include="src\object-store\src\impl\apple\weak_realm_notifier.hpp">
+      <Filter>Header Files\object-store\impl\apple</Filter>
+    </ClInclude>
+    <ClInclude Include="src\object-store\src\impl\generic\weak_realm_notifier.hpp">
+      <Filter>Header Files\object-store\impl\generic</Filter>
+    </ClInclude>
+    <ClInclude Include="src\object-store\src\impl\async_query.hpp">
+      <Filter>Header Files\object-store</Filter>
+    </ClInclude>
+    <ClInclude Include="src\object-store\src\impl\weak_realm_notifier.hpp">
+      <Filter>Header Files\object-store\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\object-store\src\impl\weak_realm_notifier_base.hpp">
+      <Filter>Header Files\object-store\impl</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
