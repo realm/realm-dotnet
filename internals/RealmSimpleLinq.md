@@ -42,6 +42,8 @@ digraph {
     QPCreateQuery [label="QueryProvider.\nCreateQuery<Person>"]
     RealmResults [shape=box3d, label="RealmResults<Person>"]
     RealmResultsEnumerator [shape=box3d, label="RealmResultsEnumerator<Person>"]
+    MakeResultsForQuery [label="Realm.\nMakeResultsForQuery"]
+    ResultsHandle [shape=box3d]
 
     ToList [label="System.Linq.\nEnumerable.ToList"]
     Listctor[label="System.Collections.Generic.List.ctor"]
@@ -63,7 +65,7 @@ digraph {
     AddQueryEqual [label="RealmResultsVisitor.\nAddQueryEqual"]
     getCol [label="NativeQuery.\nget_column_index"]
     queryDoubleEqual [label="NativeQuery.\ndouble_equal"]
-    NativeFindInterface [label="NativeQuery.\nfind"]
+    NativeResultsGet [label="NativeResults.\nget_row"]
 
     /* c++ */
     node [fontcolor="blue", color="blue"] 
@@ -72,8 +74,8 @@ digraph {
     NativeWhere[label="Table.\nwhere"]
     query_get_column_index
     query_double_equal
-    query_find
-    NativeFind [label="Query.\nfind"]
+    results_get_row
+    ResultsGet [label="Results.\nget"]
     
     
     test -> LinqWhere -> QPCreateQuery
@@ -82,6 +84,8 @@ digraph {
     ToList -> Listctor -> GetEnum
     GetEnum -> RealmResultsVisitor [label="creates"]
     GetEnum -> RealmResultsEnumerator [label=" creates"]
+    GetEnum -> MakeResultsForQuery
+    MakeResultsForQuery -> ResultsHandle [label=" creates"]
     Listctor -> EnumMove
     Listctor -> EnumCurrent
     RealmResultsVisitor -> EVVisit
@@ -103,12 +107,10 @@ digraph {
     AddQueryEqual -> queryDoubleEqual
     queryDoubleEqual -> query_double_equal  [label=" (_coreQueryHandle)"]
     query_double_equal -> "Query.equal(col, double)"
-    EnumMove -> NativeFindInterface [label=" one native call\nper row found\nas needed"]
-    NativeFindInterface -> query_find -> NativeFind   
+    EnumMove -> NativeResultsGet [label=" get row handle\nfrom ResultsHandle"]
+    NativeResultsGet -> results_get_row -> ResultsGet   
 }
 @enddot  
-
-
 
 
 Simplified LINQ Expression Evaluation with a simple search and Count
@@ -177,6 +179,158 @@ digraph {
 
 
 
+Simplified LINQ Expression Evaluation with Single
+-------------------------------------------------
+
+This expression uses a Single with an embedded lambda search expression.
+
+`var aPersonHere = _realm.All<Person>().Single(p => p.Latitude < 40);`
+
+The important difference between this and earlier diagrams is that it has **no iteration,** directly returning the object.
+
+@dot
+digraph { 
+    node[shape = box, style=rounded]
+    edge[arrowhead=vee]
+
+    /*  C# */
+    node [fontcolor="orange", color="orange"]
+    
+    test [label="_realm.All<Person>().\nSingle(p => p.Latitude < 40)"]
+    LinqSingle [label="System.Linq.\nQueryable.Single<Person>"]
+    RRPExecute [label="RealmResultsProvider.\nExecute"]
+    EVVisit [label="ExpressionVisitor.\nVisit"]
+    EVVisit2 [label="ExpressionVisitor.\nVisit"]
+    QVMethod [label="RealmResultsVisitor.\nVisitMethodCall"]
+    EVVisit3 [label="ExpressionVisitor.\nVisit"]
+    QVConstant [label="RealmResultsVisitor.\nVisitConstant"]
+    QVBinary [label="RealmResultsVisitor.\nVisitBinary"] 
+    RecurseToWhereOrRunLambda
+    CreateQuery [label="RealmResultsVisitor.\nCreateQuery"]
+    cqHandle [label="RealmResultsVisitor.\n_coreQueryHandle", shape=none]
+    TableWhere [label="TableHandle.\nTableWhere"]
+    NativeWhereInterface [label="NativeTable.\nwhere"]
+    AddQueryEqual [label="RealmResultsVisitor.\nAddQueryEqual"]
+    NativeFindInterface [label="NativeQuery.\nfind"]
+    RealmObject [shape=box3d]
+    MakeObj [label="Realm.\nMakeObjectForRow"]
+    Decode [label="Decode object\nfrom ConstantExpression"]
+    elide1 [label="...", shape=none]
+    elide2 [label="...", shape=none]
+
+    /* c++ */
+    node [fontcolor="blue", color="blue"] 
+    table_where
+    NativeWhere[label="Table.\nwhere"]
+    Query [label="Query", shape=box3d]
+    
+    
+    test -> LinqSingle -> RRPExecute
+    RRPExecute -> EVVisit
+    EVVisit -> QVMethod [label=" Single"]
+    QVMethod -> RecurseToWhereOrRunLambda 
+    RecurseToWhereOrRunLambda -> EVVisit2
+    EVVisit2 -> QVConstant
+    QVConstant -> CreateQuery -> TableWhere
+    CreateQuery -> cqHandle [label=" set"]
+    TableWhere -> QueryHandle [label=" creates"]
+    TableWhere -> NativeWhereInterface -> table_where
+    table_where -> NativeWhere
+    NativeWhere -> Query [label=" creates"]
+
+    EVVisit2 -> EVVisit3 [label=" p => p.Latitude < 40)"]
+    EVVisit3 -> QVBinary
+    QVBinary -> AddQueryEqual
+    AddQueryEqual -> elide1 [style=dotted]
+
+    QVMethod -> NativeFindInterface [label=" call twice\n expect 2nd\n to fail"]
+    NativeFindInterface -> elide2  [style=dotted]
+    QVMethod -> MakeObj
+    MakeObj -> RealmObject  [label=" creates"]
+    
+    RRPExecute -> Decode
+}
+@enddot  
+
+
+
+Simplified LINQ Expression Evaluation with First
+-------------------------------------------------
+
+This expression uses a First with an embedded lambda search expression. It is almost identical to the Single case just shown but because the results may be sorted needs to use a ResultsHandle
+
+`var aPersonHere = _realm.All<Person>().First(p => p.Latitude < 40);`
+
+The important difference between this and earlier diagrams is that it has **no iteration,** directly returning the object.
+
+**THIS IS NOT YET COMPLETE - NEEDS TO BE FINISHED IN ISSUE 360**
+
+@dot
+digraph { 
+    node[shape = box, style=rounded]
+    edge[arrowhead=vee]
+
+    /*  C# */
+    node [fontcolor="orange", color="orange"]
+    
+    test [label="_realm.All<Person>().\nFirst(p => p.Latitude < 40)"]
+    LinqFirst [label="System.Linq.\nQueryable.First<Person>"]
+    RRPExecute [label="RealmResultsProvider.\nExecute"]
+    EVVisit [label="ExpressionVisitor.\nVisit"]
+    EVVisit2 [label="ExpressionVisitor.\nVisit"]
+    QVMethod [label="RealmResultsVisitor.\nVisitMethodCall"]
+    EVVisit3 [label="ExpressionVisitor.\nVisit"]
+    QVConstant [label="RealmResultsVisitor.\nVisitConstant"]
+    QVBinary [label="RealmResultsVisitor.\nVisitBinary"] 
+    RecurseToWhereOrRunLambda
+    CreateQuery [label="RealmResultsVisitor.\nCreateQuery"]
+    cqHandle [label="RealmResultsVisitor.\n_coreQueryHandle", shape=none]
+    TableWhere [label="TableHandle.\nTableWhere"]
+    NativeWhereInterface [label="NativeTable.\nwhere"]
+    AddQueryEqual [label="RealmResultsVisitor.\nAddQueryEqual"]
+    NativeFindInterface [label="NativeQuery.\nfind"]
+    RealmObject [shape=box3d]
+    MakeObj [label="Realm.\nMakeObjectForRow"]
+    Decode [label="Decode object\nfrom ConstantExpression"]
+    elide1 [label="...", shape=none]
+    elide2 [label="...", shape=none]
+
+    /* c++ */
+    node [fontcolor="blue", color="blue"] 
+    table_where
+    NativeWhere[label="Table.\nwhere"]
+    Query [label="Query", shape=box3d]
+    
+    
+    test -> LinqFirst -> RRPExecute
+    RRPExecute -> EVVisit
+    EVVisit -> QVMethod [label=" First"]
+    QVMethod -> RecurseToWhereOrRunLambda 
+    RecurseToWhereOrRunLambda -> EVVisit2
+    EVVisit2 -> QVConstant
+    QVConstant -> CreateQuery -> TableWhere
+    CreateQuery -> cqHandle [label=" set"]
+    TableWhere -> QueryHandle [label=" creates"]
+    TableWhere -> NativeWhereInterface -> table_where
+    table_where -> NativeWhere
+    NativeWhere -> Query [label=" creates"]
+
+    EVVisit2 -> EVVisit3 [label=" p => p.Latitude < 40)"]
+    EVVisit3 -> QVBinary
+    QVBinary -> AddQueryEqual
+    AddQueryEqual -> elide1 [style=dotted]
+
+    QVMethod -> NativeFindInterface
+    NativeFindInterface -> elide2  [style=dotted]
+    QVMethod -> MakeObj
+    MakeObj -> RealmObject  [label=" creates"]
+    
+    RRPExecute -> Decode
+}
+@enddot  
+
+
+
 Iterating All Objects of a Given Architecture
 ---------------------------------------------
 This is to show what's happening behind the scenes in a simple iteration of all objects.
@@ -198,45 +352,29 @@ digraph {
     test [label="foreach"]
     All [label="Realm.All<Person>()"]
     GetEnum [label="RealmResults<Person>\n.GetEnumerator"]
-    EVVisit [label="ExpressionVisitor.\nVisit"]
     RealmResults [shape=box3d, label="RealmResults<Person>"]
-    RealmResultsVisitor [shape=box3d]
+    MakeResultsForTable [label="Realm.\nMakeResultsForTable"]
+    ResultsHandle [shape=box3d]
     RealmResultsEnumerator [shape=box3d, label="RealmResultsEnumerator<Person>"]
-    QVConstant [label="RealmResultsVisitor.\nVisitConstant"]
-    CreateQuery [label="RealmResultsVisitor.\nCreateQuery"]
-    TableWhere [label="TableHandle.\nTableWhere"]
-    cqHandle [label="RealmResultsVisitor.\n_coreQueryHandle", shape=none]
     EnumMove [label="RealmResultsEnumerator.\nMoveNext"]
     EnumCurrent [label="RealmResultsEnumerator.\nCurrent"]
-    QueryHandle [shape=box3d]
-    NativeWhereInterface [label="NativeTable.\nwhere"]
-    NativeFindInterface [label="NativeQuery.\nfind"]
+    NativeResultsGet [label="NativeResults.\nget_row"]
 
     /* c++ */
     node [fontcolor="blue", color="blue"] 
-    table_where
-    Query [label="Query", shape=box3d]
-    NativeWhere[label="Table.\nwhere"]
-    query_find
-    NativeFind [label="Query.\nfind"]
+    results_get_row
+    ResultsGet [label="Results.\nget"]
     
     
     test -> All
-    All -> RealmResults [label="creates"]
+    All -> RealmResults [label=" creates"]
     test -> GetEnum
     test -> EnumMove
     test -> EnumCurrent
-    GetEnum -> RealmResultsVisitor [label="creates"]
+    GetEnum -> MakeResultsForTable
+    MakeResultsForTable -> ResultsHandle [label=" creates"]
     GetEnum -> RealmResultsEnumerator [label=" creates"]
-    RealmResultsEnumerator -> EVVisit
-    EVVisit -> QVConstant
-    QVConstant -> CreateQuery -> TableWhere
-    CreateQuery -> cqHandle [label=" set"]
-    TableWhere -> QueryHandle [label=" creates"]
-    TableWhere -> NativeWhereInterface -> table_where
-    table_where -> NativeWhere
-    NativeWhere -> Query [label=" creates"]
-    EnumMove -> NativeFindInterface [label=" one native call\nper row found\nas needed"]
-    NativeFindInterface -> query_find -> NativeFind   
+    EnumMove -> NativeResultsGet [label=" get row handle\nfrom ResultsHandle"]
+    NativeResultsGet -> results_get_row -> ResultsGet   
 }
 @enddot  
