@@ -37,11 +37,9 @@ namespace Realms
         {
             _realm = realm;
             _allRecords = createdByAll;
-            this.Expression = Expression.Constant(this);//TODO take this temp out
-            //if (!createdByAll) {
-                _provider = new RealmResultsProvider(realm);
-                //Expression = Expression.Constant (this);
-            //}
+            _provider = new RealmResultsProvider(realm);
+            this.Expression = Expression.Constant (this);
+
         }
 
         /// <summary>
@@ -51,14 +49,22 @@ namespace Realms
         public IEnumerator<T> GetEnumerator()
         {
             var retType = typeof(T);
-            if (_resultsHandle == null)
+            if (_resultsHandle == null)  // first call
             {
                 if (_allRecords)
                 {
                     _resultsHandle = _realm.MakeResultsForTable(retType);
                 }
+                else
+                {
+                    // do all the LINQ expression evaluation to build a query
+                    var qv = _provider.MakeVisitor(retType);
+                    qv.Visit(this.Expression);
+                    var queryHandle = qv._coreQueryHandle;  // grab out the built query definition
+                    _resultsHandle = _realm.MakeResultsForQuery(retType, queryHandle);
+                }
             }
-            return new RealmResultsEnumerator<T>(_provider._realm, _provider.MakeVisitor(retType), Expression);
+            return new RealmResultsEnumerator<T>(_realm, _resultsHandle);
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -85,5 +91,6 @@ namespace Realms
             // we should be in RealmQRealmResultsr.VisitMethodCall, not here, ever, seriously!
             throw new NotImplementedException("Count should not be invoked directly on a RealmResults created by All. LINQ will not invoke this."); 
         }    
-    }
+
+    }  // RealmResults
 }

@@ -15,37 +15,46 @@ extern "C" {
 
 REALM_EXPORT void results_destroy(Results* results_ptr)
 {
-    handle_errors([&]() {
-        delete results_ptr;
-    });
+  handle_errors([&]() {
+      delete results_ptr;
+  });
 }
 
 
 REALM_EXPORT size_t results_is_same_internal_results(Results* lhs, Results* rhs)
 {
-    return handle_errors([&]() {
-        return (lhs == rhs || false /* *lhs == *rhs */);
-    });
+  return handle_errors([&]() {
+      return (lhs == rhs || false /* *lhs == *rhs */);
+  });
 }
 
 REALM_EXPORT Results* results_create_for_table(SharedRealm* realm, Table* table_ptr, ObjectSchema* object_schema)
 {
-    return handle_errors([&]() {
-        return new Results(*realm, *object_schema, *table_ptr);
-    });
+  return handle_errors([&]() {
+      auto ret = new Results(*realm, *object_schema, *table_ptr);
+      ret->set_live(true);
+      return ret;
+  });
 }
 
 REALM_EXPORT Results* results_create_for_query(SharedRealm* realm, Query * query_ptr, ObjectSchema* object_schema)
 {
   return handle_errors([&]() {
-    return new Results(*realm, *object_schema, *query_ptr/* TODO pass sort order in */);
+    auto ret = new Results(*realm, *object_schema, *query_ptr/* TODO pass sort order in */);
+    ret->set_live(true);
+    return ret;
   });
 }
 
 REALM_EXPORT Row* results_get_row(Results* results_ptr, size_t ndx)
 {
   return handle_errors([&]() {
-    return new Row(results_ptr->get(ndx));
+    try {
+      return new Row(results_ptr->get(ndx));
+    }
+    catch (std::out_of_range &exp) {
+      return (Row*)nullptr;
+    }
   });
 }
 

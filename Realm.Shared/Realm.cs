@@ -31,7 +31,7 @@ namespace Realms
             RealmObjectClasses =
                 from a in AppDomain.CurrentDomain.GetAssemblies()
                 from t in a.GetTypes()
-//                    .Where(t => t != typeof (RealmObject) && typeof (RealmObject).IsAssignableFrom(t))
+//  typical interface test        .Where(t => t != typeof (RealmObject) && typeof (RealmObject).IsAssignableFrom(t))
                     .Where(t => t.IsSubclassOf(typeof(RealmObject)))  // we just have simple subclasses, no interfaces
                 select t;
 
@@ -343,11 +343,29 @@ namespace Realms
         }
 
 
+        internal RealmObject MakeObjectForRow(Type objectType, RowHandle rowHandle)
+        {
+            RealmObject ret = (RealmObject) Activator.CreateInstance(objectType);
+            ret._Manage(this, rowHandle);
+            return ret;
+        }
+
+
+
         internal ResultsHandle MakeResultsForTable(Type tableType)
         {
             var tableHandle = _tableHandles[tableType];
             var objSchema = Realm.ObjectSchemaCache[tableType];
             IntPtr resultsPtr = NativeResults.create_for_table(_sharedRealmHandle, tableHandle, objSchema);
+            return CreateResultsHandle(resultsPtr);
+        }
+
+
+
+        internal ResultsHandle MakeResultsForQuery(Type tableType, QueryHandle builtQuery)
+        {
+            var objSchema = Realm.ObjectSchemaCache[tableType];
+            IntPtr resultsPtr = NativeResults.create_for_query(_sharedRealmHandle, builtQuery, objSchema);
             return CreateResultsHandle(resultsPtr);
         }
 

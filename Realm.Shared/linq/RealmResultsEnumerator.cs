@@ -15,23 +15,15 @@ namespace Realms
     /// </summary>
     internal class RealmResultsEnumerator<T> : IEnumerator<T> 
     {
-        private long _ordinalIndex = 0;
-        private RealmResultsVisitor _enumeratingOld;
+        private long _ordinalIndex = -1;  // must match Reset()
         private ResultsHandle _enumeratingResults = null;
         private Realm _realm;
         private Type _retType = typeof(T);
 
-        internal RealmResultsEnumerator(Realm realm, RealmResultsVisitor qv, Expression expression)
-        {
-            _realm = realm;
-            _enumeratingOld = qv;
-            _enumeratingOld.Visit(expression);
-        }
 
         internal RealmResultsEnumerator(Realm realm, ResultsHandle rh)
         {
             _realm = realm;
-            _enumeratingOld = null;
             _enumeratingResults = rh;
         }
 
@@ -53,25 +45,16 @@ namespace Realms
         /// <returns>True only if can advance.</returns>
         public bool MoveNext()
         {
-            if (_enumeratingResults != null)
-            {
-                
-                var rowHandle = NativeResults.get_row(_enumeratingResults, (IntPtr)_ordinalIndex++);
-                var nextObj = MakeObject(rowHandle);
-                Current = (T)((object)nextObj);
-                return nextObj != null;
-            }
-            var nextObj2 = _enumeratingOld.FindNextObject(ref _ordinalIndex);
-            Current = (T)((object)nextObj2);
-            return nextObj2 != null;
-        }
-
-
-        private RealmObject MakeObject(RowHandle rowHandle)
-        {
-            var o = Activator.CreateInstance(_retType);
-            ((RealmObject)o)._Manage(_realm, rowHandle);
-            return (RealmObject)o;
+            if (_enumeratingResults == null)
+                return false;
+            
+            ++_ordinalIndex;
+            var rowHandle = NativeResults.get_row(_enumeratingResults, (IntPtr)_ordinalIndex);
+            object nextObj = null;
+            if (!rowHandle.IsInvalid)                 
+                nextObj = _realm.MakeObjectForRow(_retType, rowHandle);
+            Current = (T)nextObj;
+            return nextObj != null;
         }
 
 
@@ -80,7 +63,7 @@ namespace Realms
         /// </summary>
         public void Reset()
         {
-            _ordinalIndex = 0;  // by definition BEFORE first item
+            _ordinalIndex = -1;  // by definition BEFORE first item
         }
 
         /// <summary>
