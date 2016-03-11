@@ -6,8 +6,8 @@ SRCS=$(wildcard src/*.cpp) $(OS_SRCS)
 SDKROOT=$(shell xcrun --sdk iphoneos --show-sdk-path)
 CXX=$(shell xcrun --sdk iphoneos --find clang++)
 FLAGS=-Icore/include -Isrc/object-store/src -Isrc/object-store/src/impl -Isrc/object-store/src/impl/apple -std=c++14 -stdlib=libc++  
-CORE_APPLE_VER=0.96.0
-CORE_ANDROID_VER=0.96.0
+CORE_APPLE_VER=0.97.0
+CORE_ANDROID_VER=0.97.0
 
 help: ## Show this help.
 	@fgrep -h "##" $(MAKEFILE_LIST) | fgrep -v fgrep | sed -e 's/\\$$//' | sed -e 's/##//'
@@ -74,7 +74,7 @@ build/Debug-ios-universal/libwrappers.a: build/Debug-iphoneos/libwrappers.a buil
 
 # Android ====================
 
-android: build/Release-android/armeabi/libwrappers.so build/Release-android/armeabi-v7a/libwrappers.so build/Release-android/x86/libwrappers.so build/Release-android/x86_64/libwrappers.so build/Release-android/arm64-v8a/libwrappers.so 
+android: build/Release-android/armeabi-v7a/libwrappers.so build/Release-android/x86/libwrappers.so build/Release-android/x86_64/libwrappers.so build/Release-android/arm64-v8a/libwrappers.so 
 
 core-android: realm-core-android-$(CORE_ANDROID_VER).tar.gz
 	mkdir -p core-android

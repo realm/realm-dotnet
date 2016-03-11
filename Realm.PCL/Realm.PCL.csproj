@@ -79,6 +79,9 @@
       <Link>Attributes.cs</Link>
     </Compile>
     <Compile Include="RealmResultsPCL.cs" />
+    <Compile Include="..\Realm.Shared\exceptions\RealmMismatchedConfigException.cs">
+      <Link>Exceptions\RealmMismatchedConfigException.cs</Link>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <ItemGroup>

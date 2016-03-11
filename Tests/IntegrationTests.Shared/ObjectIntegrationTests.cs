@@ -19,8 +19,8 @@ namespace IntegrationTests
         public void SimpleTest()
         {
             MakeThreePeople ();
-            var allPeople = _realm.All<Person>().ToList();
-            Debug.WriteLine("There are " + allPeople.Count() + " in total");
+            var allPeople = _realm.All<Person>().Count();
+            Debug.WriteLine($"There are {allPeople} in total");
 
             var interestingPeople = from p in _realm.All<Person>() where p.IsInteresting == true select p;
 
@@ -38,15 +38,10 @@ namespace IntegrationTests
         public void CreateObjectTest()
         {
             // Arrange and act
-            using (var transaction = _realm.BeginWrite())
-            {
-                _realm.CreateObject<Person>();
-                transaction.Commit(); 
-            }
+            _realm.Write(() => _realm.CreateObject<Person>());
 
             // Assert
-            var allPeople = _realm.All<Person>().ToList();
-            Assert.That(allPeople.Count, Is.EqualTo(1));
+            Assert.That(_realm.All<Person>().Count(), Is.EqualTo(1));
         }
 
         [Test]
@@ -54,8 +49,8 @@ namespace IntegrationTests
         {
             // Arrange
             MakeThreePeople();
-            var p1 = _realm.All<Person>().Where(p => p.Score >= 100).ToList()[0];
-            var p2 = _realm.All<Person>().Where(p => p.Score >= 100).ToList()[0];
+            var p1 = _realm.All<Person>().First(p => p.Score >= 100);
+            var p2 = _realm.All<Person>().First(p => p.Score >= 100);
             Assert.That(p1.Equals(p2));
 
             // Act
@@ -292,10 +287,12 @@ namespace IntegrationTests
             // Assert
             Assert.DoesNotThrow( () => realm2 = Realm.GetInstance(config2) ); // same path, different version, should auto-migrate quietly
             Assert.That(realm2.Config.SchemaVersion, Is.EqualTo(99));
+            realm2.Close();
 
         }
 
         [Test]
+        [Ignore("this tests for a condition thst's only available under manual migrations, which we lack")]
         public void TriggerMigrationBySchemaEditing()
         {
             

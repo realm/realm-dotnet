@@ -16,36 +16,43 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#include "impl/cached_realm_base.hpp"
-
-#include <CoreFoundation/CFRunLoop.h>
+#include "impl/weak_realm_notifier_base.hpp"
 
 namespace realm {
 class Realm;
 
 namespace _impl {
 
-class CachedRealm : public CachedRealmBase {
+class WeakRealmNotifier : public WeakRealmNotifierBase {
 public:
-    CachedRealm(const std::shared_ptr<Realm>& realm, bool cache);
-    ~CachedRealm();
+    using WeakRealmNotifierBase::WeakRealmNotifierBase;
 
-    CachedRealm(CachedRealm&&);
-    CachedRealm& operator=(CachedRealm&&);
+    WeakRealmNotifier(WeakRealmNotifier&&);
+    WeakRealmNotifier& operator=(WeakRealmNotifier&&);
 
-    CachedRealm(const CachedRealm&) = delete;
-    CachedRealm& operator=(const CachedRealm&) = delete;
+    WeakRealmNotifier(const WeakRealmNotifier&) = delete;
+    WeakRealmNotifier& operator=(const WeakRealmNotifier&) = delete;
 
-    // Noop for this implementation
-    void set_auto_refresh(bool auto_refresh) { }
+    // Register  or unregister the handler on the looper so we will react to refresh notifications
+    void set_auto_refresh(bool auto_refresh);
 
     // Asyncronously call notify() on the Realm on the appropriate thread
     void notify();
 
 private:
-    CFRunLoopRef m_runloop;
-    CFRunLoopSourceRef m_signal;
+    // Pointer to the handler, created by Java/C#.
+    void* m_handler;
 };
+
+using create_handler_function = void*(*)(void* realm_ref);
+extern create_handler_function create_handler_for_current_thread;
+
+using notify_handler_function = void(*)(void* handler);
+extern notify_handler_function notify_handler;
+
+using destroy_handler_function = void(*)(void* handler);
+extern destroy_handler_function destroy_handler;
 
 } // namespace _impl
 } // namespace realm
+

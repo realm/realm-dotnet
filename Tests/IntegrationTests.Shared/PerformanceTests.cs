@@ -26,6 +26,13 @@ namespace IntegrationTests
             _realm = Realm.GetInstance(_databasePath);
         }
 
+        [TearDown]
+        public void TearDown() 
+        {
+            _realm.Close();
+            Realm.DeleteRealm(_realm.Config);
+        }
+
         [TestCase(1000000), Explicit]
         public void BindingPerformanceTest(int count)
         {

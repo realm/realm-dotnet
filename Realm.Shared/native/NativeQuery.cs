@@ -89,6 +89,9 @@ namespace Realms
         internal static extern IntPtr get_column_index(QueryHandle queryPtr,
         [MarshalAs(UnmanagedType.LPWStr)] String columnName, IntPtr columnNameLen);
 
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_not", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void not(QueryHandle queryHandle);
+
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_group_begin", CallingConvention = CallingConvention.Cdecl)]
         internal static extern void group_begin(QueryHandle queryHandle);
 

@@ -56,6 +56,13 @@ REALM_EXPORT size_t query_get_column_index(Query* query_ptr, uint16_t *  column_
     });
 }
 
+REALM_EXPORT void query_not(Query * query_ptr)
+{
+    handle_errors([&]() {
+        query_ptr->Not();
+    });
+}
+
 REALM_EXPORT void query_group_begin(Query * query_ptr)
 {
     handle_errors([&]() {

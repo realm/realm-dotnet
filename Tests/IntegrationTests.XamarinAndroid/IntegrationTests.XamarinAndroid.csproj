@@ -28,6 +28,7 @@
     <AndroidLinkMode>None</AndroidLinkMode>
     <ConsolePause>false</ConsolePause>
     <RunCodeAnalysis>false</RunCodeAnalysis>
+    <AndroidSupportedAbis>armeabi-v7a;x86;arm64-v8a;x86_64</AndroidSupportedAbis>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>full</DebugType>
@@ -85,5 +86,10 @@
       <Project>{2379D669-4F4B-4FF6-AF8A-49FEA981EFC3}</Project>
       <Name>Realm.XamarinAndroid</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidAsset Include="..\IntegrationTests.Shared\ForMigrationsToCopyAndMigrate.realm">
+      <Link>Assets\ForMigrationsToCopyAndMigrate.realm</Link>
+    </AndroidAsset>
   </ItemGroup>
 </Project>

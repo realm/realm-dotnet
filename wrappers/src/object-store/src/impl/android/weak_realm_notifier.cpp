@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#include "cached_realm.hpp"
+#include "impl/weak_realm_notifier.hpp"
 
 #include <atomic>
 #include <sstream>

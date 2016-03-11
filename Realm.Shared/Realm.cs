@@ -10,6 +10,11 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.ConstrainedExecution;
 using System.IO;
+using System.Runtime.InteropServices;
+
+#if __IOS__
+using ObjCRuntime;
+#endif
 
 namespace Realms
 {
@@ -40,8 +45,18 @@ namespace Realms
             }
 
             NativeCommon.SetupExceptionThrower();
+            NativeCommon.register_notify_realm_changed(NotifyRealmChanged);
             Platform.Initialize();
             NativeDebug.Initialize();
+        }
+
+        #if __IOS__
+        [MonoPInvokeCallback (typeof (NativeCommon.NotifyRealmCallback))]
+        #endif
+        private static void NotifyRealmChanged(IntPtr realmHandle)
+        {
+            var gch = GCHandle.FromIntPtr(realmHandle);
+            ((Realm)gch.Target).NotifyChanged(EventArgs.Empty);
         }
 
         /// <summary>
@@ -84,6 +99,7 @@ namespace Realms
                 NativeSchema.initializer_add_object_schema(schemaInitializer, objectSchemaHandle);
             }
 
+
             var schemaHandle = new SchemaHandle(schemaInitializer);
 
             var srHandle = new SharedRealmHandle();
@@ -124,8 +140,8 @@ namespace Realms
                 srHandle.SetHandle(srPtr);
             }
 
-            return new Realm(srHandle, config);  // try creating again
-        }  // GetInstance
+            return new Realm(srHandle, config);
+        } 
 
 
         private static IntPtr GenerateObjectSchema(Type objectClass)
@@ -185,6 +201,41 @@ namespace Realms
             Config = config;
             // update OUR config version number in case loaded one from disk
             Config.SchemaVersion = NativeSharedRealm.get_schema_version(sharedRealmHandle);
+        }
+
+        /// <summary>
+        /// Handler type used by <see cref="RealmChanged"/> 
+        /// </summary>
+        public delegate void RealmChangedEventHandler(object sender, EventArgs e);
+
+        private event RealmChangedEventHandler _realmChanged;
+
+        /// <summary>
+        /// Triggered when a realm has changed (i.e. a transaction was committed)
+        /// </summary>
+        public event RealmChangedEventHandler RealmChanged
+        {
+            add
+            {
+                if (_realmChanged == null)
+                {
+                    var managedRealmHandle = GCHandle.Alloc(this, GCHandleType.Weak);
+                    NativeSharedRealm.bind_to_managed_realm_handle(_sharedRealmHandle, GCHandle.ToIntPtr(managedRealmHandle));
+                }
+                    
+                _realmChanged += value;
+            }
+
+            remove
+            {
+                _realmChanged -= value;
+            }
+        }
+
+        private void NotifyChanged(EventArgs e)
+        {
+            if (_realmChanged != null)
+                _realmChanged(this, e);
         }
 
         /// <summary>
@@ -406,7 +457,12 @@ namespace Realms
         /// be committed.
         /// </summary>
         /// <example>
-        /// realm.Write(() => person.Score++);
+        /// realm.Write(() => 
+        /// {
+        ///     d = myrealm.CreateObject<Dog>();
+        ///     d.Name = "Eddie";
+        ///     d.Age = 5;
+        /// });
         /// </example>
         /// <param name="action">Action to perform inside transaction</param>
         public void Write(Action action)

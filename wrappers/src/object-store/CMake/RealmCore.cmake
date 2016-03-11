@@ -1,5 +1,25 @@
 include(ExternalProject)
 
+if(${CMAKE_GENERATOR} STREQUAL "Unix Makefiles")
+    set(MAKE_EQUAL_MAKE "MAKE=$(MAKE)")
+endif()
+
+if (${CMAKE_VERSION} VERSION_GREATER "3.4.0")
+    set(USES_TERMINAL_BUILD USES_TERMINAL_BUILD 1)
+endif()
+
+function(use_realm_core version_or_path_to_source)
+    if("${version_or_path_to_source}" MATCHES "^[0-9]+(\\.[0-9])+")
+        if(APPLE)
+            download_realm_core(${version_or_path_to_source})
+        else()
+            clone_and_build_realm_core("v${version_or_path_to_source}")
+        endif()
+    else()
+        build_existing_realm_core(${version_or_path_to_source})
+    endif()
+    set(REALM_CORE_INCLUDE_DIR ${REALM_CORE_INCLUDE_DIR} PARENT_SCOPE)
+endfunction()
 function(download_realm_core core_version)
     set(core_url "https://static.realm.io/downloads/core/realm-core-${core_version}.tar.bz2")
     set(core_tarball_name "realm-core-${core_version}.tar.bz2")
@@ -24,8 +44,7 @@ function(download_realm_core core_version)
     add_custom_command(
         COMMENT "Extracting ${core_tarball_name}"
         OUTPUT ${core_libraries}
-        DEPENDS ${core_temp_tarball}
-        COMMAND ${CMAKE_COMMAND} -E copy ${core_temp_tarball} ${core_directory_parent}
+        DEPENDS ${core_tarball}
         COMMAND ${CMAKE_COMMAND} -E tar xf ${core_tarball}
         COMMAND ${CMAKE_COMMAND} -E remove_directory ${core_directory}
         COMMAND ${CMAKE_COMMAND} -E rename core ${core_directory}

@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2015 Realm Inc.
+// Copyright 2016 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,35 +16,17 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#include <realm/group_shared.hpp>
+#ifndef REALM_WEAK_REALM_NOTIFIER_HPP
+#define REALM_WEAK_REALM_NOTIFIER_HPP
 
-#include <future>
+#include <realm/util/features.h>
 
-namespace realm {
-class Replication;
+#if REALM_PLATFORM_APPLE
+#include "impl/apple/weak_realm_notifier.hpp"
+#elif REALM_PLATFORM_ANDROID
+#include "impl/android/weak_realm_notifier.hpp"
+#else
+#include "impl/generic/weak_realm_notifier.hpp"
+#endif
 
-namespace _impl {
-class RealmCoordinator;
-
-class ExternalCommitHelper {
-public:
-    ExternalCommitHelper(RealmCoordinator& parent);
-    ~ExternalCommitHelper();
-
-    // A no-op in this version, but needed for the Apple version
-    void notify_others() { }
-
-private:
-    RealmCoordinator& m_parent;
-
-    // A shared group used to listen for changes
-    std::unique_ptr<Replication> m_history;
-    SharedGroup m_sg;
-
-    // The listener thread
-    std::future<void> m_thread;
-};
-
-} // namespace _impl
-} // namespace realm
-
+#endif // REALM_WEAK_REALM_NOTIFIER_HPP

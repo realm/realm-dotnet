@@ -97,11 +97,17 @@ namespace IntegrationTests.Shared
             }
         }
 
+        [TearDown]
+        public void TearDown()
+        {
+            realm.Close();
+            Realm.DeleteRealm(realm.Config);
+        }
 
         [Test]
         public void TimHasATopDog()
         {
-            var tim = realm.All<Owner>().Where( p => p.Name == "Tim").ToList().First();
+            var tim = realm.All<Owner>().First( p => p.Name == "Tim");
             Assert.That(tim.TopDog.Name, Is.EqualTo( "Bilbo Fleabaggins"));
         }
 
@@ -109,9 +115,26 @@ namespace IntegrationTests.Shared
         [Test]
         public void TimHasTwoIterableDogs()
         {
-            var tim = realm.All<Owner>().Where( p => p.Name == "Tim").ToList().First();
+            var tim = realm.All<Owner>().First( p => p.Name == "Tim");
             var dogNames = new List<string>();
-            foreach (var dog in tim.Dogs)
+            foreach (var dog in tim.Dogs)  // using foreach here is deliberately testing that syntax
+            {
+                dogNames.Add(dog.Name);
+            }
+            Assert.That(dogNames, Is.EquivalentTo( new List<String> {"Bilbo Fleabaggins", "Earl Yippington III"}));
+        }
+
+
+        /// <summary>
+        /// Check if ToList can be invoked on a related RealmResults
+        /// </summary>
+        [Test]
+        public void TimHasTwoIterableDogsListed()
+        {
+            var tim = realm.All<Owner>().First( p => p.Name == "Tim");
+            var dogNames = new List<string>();
+            var dogList = tim.Dogs.ToList();  // this used to crash - issue 299
+            foreach (var dog in dogList)
             {
                 dogNames.Add(dog.Name);
             }
@@ -120,14 +143,27 @@ namespace IntegrationTests.Shared
 
 
         [Test]
+        public void TimsIterableDogsThrowExceptions()
+        {
+            var tim = realm.All<Owner>().First( p => p.Name == "Tim");
+            Assert.Throws<ArgumentNullException> (() => tim.Dogs.CopyTo (null, 0));
+            Dog[] copiedDogs = new Dog[2];
+            Assert.Throws<ArgumentOutOfRangeException> (() => tim.Dogs.CopyTo (copiedDogs, -1));
+            Assert.Throws<ArgumentException> (() => tim.Dogs.CopyTo (copiedDogs, 1));  // insuffiient room
+        }
+
+
+
+
+        [Test]
         public void TimRetiredHisTopDog()
         {
-            var tim = realm.All<Owner>().Where( p => p.Name == "Tim").ToList().First();
+            var tim = realm.All<Owner>().First( p => p.Name == "Tim");
             using (var trans = realm.BeginWrite()) {
                 tim.TopDog = null;
                 trans.Commit ();
             }                
-            var tim2 = realm.All<Owner>().Where( p => p.Name == "Tim").ToList().First();
+            var tim2 = realm.All<Owner>().First( p => p.Name == "Tim");
             Assert.That(tim2.TopDog, Is.Null);  // the dog departure was saved
         }
 
@@ -135,14 +171,14 @@ namespace IntegrationTests.Shared
         [Test]
         public void TimAddsADogLater()
         {
-            var tim = realm.All<Owner>().Where( p => p.Name == "Tim").ToList().First();
+            var tim = realm.All<Owner>().First( p => p.Name == "Tim");
             Assert.That(tim.Dogs.Count(), Is.EqualTo(2));  
             using (var trans = realm.BeginWrite()) {
                 var dog3 = realm.All<Dog>().Where( p => p.Name == "Maggie Mongrel").ToList().First();
                 tim.Dogs.Add (dog3);
                 trans.Commit ();
             }
-            var tim2 = realm.All<Owner>().Where( p => p.Name == "Tim").ToList().First();
+            var tim2 = realm.All<Owner>().First( p => p.Name == "Tim");
             Assert.That(tim2.Dogs.Count(), Is.EqualTo(3));  
             Assert.That(tim2.Dogs[2].Name, Is.EqualTo("Maggie Mongrel")); 
         }
@@ -151,14 +187,14 @@ namespace IntegrationTests.Shared
         [Test]
         public void TimAddsADogByInsert()
         {
-            var tim = realm.All<Owner>().Where( p => p.Name == "Tim").ToList().First();
+            var tim = realm.All<Owner>().Single( p => p.Name == "Tim");  // use Single for a change
             Assert.That(tim.Dogs.Count(), Is.EqualTo(2));  
             using (var trans = realm.BeginWrite()) {
                 var dog3 = realm.All<Dog>().Where( p => p.Name == "Maggie Mongrel").ToList().First();
                 tim.Dogs.Insert (1, dog3);
                 trans.Commit ();
             }
-            var tim2 = realm.All<Owner>().Where( p => p.Name == "Tim").ToList().First();
+            var tim2 = realm.All<Owner>().Single( p => p.Name == "Tim");
             Assert.That(tim2.Dogs.Count(), Is.EqualTo(3));  
             Assert.That(tim2.Dogs[1].Name, Is.EqualTo("Maggie Mongrel")); 
             Assert.That(tim2.Dogs[2].Name, Is.EqualTo("Earl Yippington III")); 
@@ -168,20 +204,20 @@ namespace IntegrationTests.Shared
         [Test]
         public void TimLosesHisDogsByOrder()
         {
-            var tim = realm.All<Owner>().Where( p => p.Name == "Tim").ToList().First();
+            var tim = realm.All<Owner>().Single( p => p.Name == "Tim");
             Assert.That(tim.Dogs.Count(), Is.EqualTo(2));  
             using (var trans = realm.BeginWrite()) {
                 tim.Dogs.RemoveAt(0);
                 trans.Commit ();
             }                
-            var tim2 = realm.All<Owner>().Where( p => p.Name == "Tim").ToList().First();
+            var tim2 = realm.All<Owner>().Single( p => p.Name == "Tim");
             Assert.That(tim2.Dogs.Count(), Is.EqualTo(1)); 
             Assert.That(tim2.Dogs[0].Name, Is.EqualTo("Earl Yippington III")); 
             using (var trans = realm.BeginWrite()) {
                 tim.Dogs.RemoveAt(0);
                 trans.Commit ();
             }                
-            var tim3 = realm.All<Owner>().Where( p => p.Name == "Tim").ToList().First();
+            var tim3 = realm.All<Owner>().Single( p => p.Name == "Tim");
             Assert.That(tim2.Dogs.Count(), Is.EqualTo(0)); 
             Assert.That(tim3.Dogs.Count(), Is.EqualTo(0)); // reloaded object has same empty related set
         }
@@ -190,13 +226,13 @@ namespace IntegrationTests.Shared
         [Test]
         public void TimLosesHisDogsInOneClear()
         {
-            var tim = realm.All<Owner>().Where( p => p.Name == "Tim").ToList().First();
+            var tim = realm.All<Owner>().Single( p => p.Name == "Tim");
             Assert.That(tim.Dogs.Count(), Is.EqualTo(2));  
             using (var trans = realm.BeginWrite()) {
                 tim.Dogs.Clear();
                 trans.Commit ();
             }                
-            var tim2 = realm.All<Owner>().Where( p => p.Name == "Tim").ToList().First();
+            var tim2 = realm.All<Owner>().Single( p => p.Name == "Tim");
             Assert.That(tim2.Dogs.Count(), Is.EqualTo(0)); 
         }
 
@@ -204,14 +240,14 @@ namespace IntegrationTests.Shared
         [Test]
         public void TimLosesBilbo()
         {
-            var bilbo = realm.All<Dog>().Where( p => p.Name == "Bilbo Fleabaggins").ToList().First();
-            var tim = realm.All<Owner>().Where( p => p.Name == "Tim").ToList().First();
+            var bilbo = realm.All<Dog> ().First (p => p.Name == "Bilbo Fleabaggins");
+            var tim = realm.All<Owner>().Single( p => p.Name == "Tim");
             Assert.That(tim.Dogs.Count(), Is.EqualTo(2));  
             using (var trans = realm.BeginWrite()) {
                 tim.Dogs.Remove(bilbo);
                 trans.Commit ();
             }                
-            var tim2 = realm.All<Owner>().Where( p => p.Name == "Tim").ToList().First();
+            var tim2 = realm.All<Owner>().Single( p => p.Name == "Tim");
             Assert.That(tim2.Dogs.Count(), Is.EqualTo(1)); 
             Assert.That(tim2.Dogs[0].Name, Is.EqualTo("Earl Yippington III")); 
         }
@@ -220,7 +256,7 @@ namespace IntegrationTests.Shared
         [Test]
         public void DaniHasNoTopDog()
         {
-            var dani = realm.All<Owner>().Where( p => p.Name == "Dani").ToList().First();
+            var dani = realm.All<Owner>().Where( p => p.Name == "Dani").First();
             Assert.That(dani.TopDog, Is.Null);
         }
 
@@ -228,7 +264,7 @@ namespace IntegrationTests.Shared
         [Test]
         public void DaniHasNoDogs()
         {
-            var dani = realm.All<Owner>().Where( p => p.Name == "Dani").ToList().First();
+            var dani = realm.All<Owner>().Where( p => p.Name == "Dani").Single();
             Assert.That(dani.Dogs.Count(), Is.EqualTo(0));  // ToMany relationships always return a RealmList
             int dogsIterated = 0; 
             foreach (var d in dani.Dogs)
@@ -242,9 +278,9 @@ namespace IntegrationTests.Shared
         [Test]
         public void TestExceptionsFromEmptyListOutOfRange()
         {
-            var dani = realm.All<Owner>().Where(p => p.Name == "Dani").ToList().First();
+            var dani = realm.All<Owner>().Where(p => p.Name == "Dani").First();
             Assert.Throws<IndexOutOfRangeException>(() => dani.Dogs.RemoveAt(0));
-            var bilbo = realm.All<Dog>().Where(p => p.Name == "Bilbo Fleabaggins").ToList().First();
+            var bilbo = realm.All<Dog>().Single(p => p.Name == "Bilbo Fleabaggins");
             Dog scratch;  // for assignment in following getters
             Assert.Throws<IndexOutOfRangeException>(() => dani.Dogs.Insert(-1, bilbo));
             Assert.Throws<IndexOutOfRangeException>(() => dani.Dogs.Insert(0, bilbo));
@@ -255,7 +291,7 @@ namespace IntegrationTests.Shared
         [Test]
         public void TestExceptionsFromIteratingEmptyList()
         {
-            var dani = realm.All<Owner>().Where(p => p.Name == "Dani").ToList().First();
+            var dani = realm.All<Owner>().Where(p => p.Name == "Dani").Single();
             var iter =  dani.Dogs.GetEnumerator();
             Assert.IsNotNull(iter);
             var movedOnToFirstItem = iter.MoveNext();
@@ -268,9 +304,9 @@ namespace IntegrationTests.Shared
         [Test]
         public void TestExceptionsFromTimsDogsOutOfRange()
         {
-            var tim = realm.All<Owner>().Where( p => p.Name == "Tim").ToList().First();
+            var tim = realm.All<Owner>().Single( p => p.Name == "Tim");
             Assert.Throws<IndexOutOfRangeException>( () => tim.Dogs.RemoveAt(4) );
-            var bilbo = realm.All<Dog>().Where( p => p.Name == "Bilbo Fleabaggins").ToList().First();
+            var bilbo = realm.All<Dog>().Single( p => p.Name == "Bilbo Fleabaggins");
             Dog scratch;  // for assignment in following getters
             Assert.Throws<IndexOutOfRangeException>( () => tim.Dogs.Insert(-1, bilbo) );
             Assert.Throws<IndexOutOfRangeException>( () => tim.Dogs.Insert(3, bilbo) );
@@ -376,7 +412,7 @@ namespace IntegrationTests.Shared
             }
 
             Assert.That(realm.All<Person>().ToList().Count, Is.EqualTo(5));
-            Assert.That(realm.All<Person>().Where(p => p.FirstName=="Sally").ToList().Count, Is.EqualTo(2));
+            Assert.That(realm.All<Person>().Count(p => p.FirstName=="Sally"), Is.EqualTo(2));
         }
 
 
@@ -405,7 +441,7 @@ namespace IntegrationTests.Shared
             }
 
             Assert.That(realm.All<Person>().ToList().Count, Is.EqualTo(4));
-            Assert.That(realm.All<Person>().Where(p => p.FirstName=="Sally").ToList().Count, Is.EqualTo(1));
+            Assert.That(realm.All<Person>().Count(p => p.FirstName=="Sally"), Is.EqualTo(1));
         }
     }
 }

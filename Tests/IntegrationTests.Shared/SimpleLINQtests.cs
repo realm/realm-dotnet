@@ -13,10 +13,8 @@ namespace IntegrationTests
 {
     class SimpleLINQtests : PeopleTestsBase
     {
-
-
-        [SetUp]
-        public new void Setup()
+        // see comment on base method why this isn't decorated with [SetUp]
+        public override void Setup()
         {
             base.Setup();
             MakeThreePeople();
@@ -38,8 +36,25 @@ namespace IntegrationTests
             Assert.That(s2[0].Email, Is.EqualTo("john@doe.com"));
             Assert.That(s2[1].Email, Is.EqualTo("peter@jameson.com"));
 
-            var s3 = _realm.All<Person>().Where(p => p.Email != "").ToList();
+            var s3 = _realm.All<Person>().Where(p => p.Email != "");
             Assert.That(s3.Count(), Is.EqualTo(3));
+        }
+
+
+        [Test]
+        public void CountWithNot()
+        {
+            var countSimpleNot = _realm.All<Person>().Where(p => !p.IsInteresting).Count();
+            Assert.That(countSimpleNot, Is.EqualTo(1));
+
+            var countSimpleNot2 = _realm.All<Person>().Count(p => !p.IsInteresting);
+            Assert.That(countSimpleNot2, Is.EqualTo(1));
+
+            var countNotEqual = _realm.All<Person>().Where(p => !(p.Score == 42.42f)).Count();
+            Assert.That(countNotEqual, Is.EqualTo(2));
+
+            var countNotComplex = _realm.All<Person>().Where( p => !(p.Longitude < -70.0 && p.Longitude > -90.0)).Count();
+            Assert.That(countNotComplex, Is.EqualTo(2));
         }
 
 
@@ -52,11 +67,14 @@ namespace IntegrationTests
             var c1 = _realm.All<Person>().Where(p => p.Latitude <= 50).Count();
             Assert.That(c1, Is.EqualTo(2));
 
-            var c2 = _realm.All<Person>().Where(p => p.IsInteresting ==  true).Count();
+            var c2 = _realm.All<Person>().Where(p => p.IsInteresting).Count();
             Assert.That(c2, Is.EqualTo(2));
 
             var c3 = _realm.All<Person>().Where(p => p.FirstName=="John").Count();
             Assert.That(c3, Is.EqualTo(2));
+
+            var c4 = _realm.All<Person>().Count(p => p.FirstName=="John");
+            Assert.That(c4, Is.EqualTo(2));
         }
 
 
