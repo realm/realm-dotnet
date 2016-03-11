@@ -36,6 +36,9 @@ public:
     WeakRealmNotifier(const WeakRealmNotifier&) = delete;
     WeakRealmNotifier& operator=(const WeakRealmNotifier&) = delete;
 
+    // Noop for this implementation
+    void set_auto_refresh(bool auto_refresh) { }
+
     // Asynchronously call notify() on the Realm on the appropriate thread
     void notify();
 

@@ -46,6 +46,8 @@ namespace Realms
 
             NativeCommon.SetupExceptionThrower();
             NativeCommon.register_notify_realm_changed(NotifyRealmChanged);
+            Platform.Initialize();
+            NativeDebug.Initialize();
         }
 
         #if __IOS__
@@ -470,6 +472,17 @@ namespace Realms
                 action();
                 transaction.Commit();
             }
+        }
+
+        /// <summary>
+        /// Update a Realm and outstanding objects to point to the most recent data for this Realm.
+        /// </summary>
+        /// <returns>
+        /// Whether the realm had any updates. Note that this may return true even if no data has actually changed.
+        /// </returns>
+        public bool Refresh()
+        {
+            return MarshalHelpers.IntPtrToBool(NativeSharedRealm.refresh(_sharedRealmHandle));
         }
 
         /// <summary>

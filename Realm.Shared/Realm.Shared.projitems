@@ -54,6 +54,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)linq\RealmResultsEnumerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)linq\RealmResultsVisitor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)linq\RealmResultsProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)native\NativeDebug.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmMismatchedConfigException.cs" />
   </ItemGroup>
 </Project>

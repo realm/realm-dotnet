@@ -134,7 +134,6 @@ build/Release-android/arm64-v8a/libwrappers.so: | build/Release-android/arm64-v8
 
 libs: | core-android $(SRCS) $(ANDROID_SRCS)
 	$(NDK_ROOT)/ndk-build APP_PLATFORM=android-10 V=1
-	
 
 .PHONY: android
 

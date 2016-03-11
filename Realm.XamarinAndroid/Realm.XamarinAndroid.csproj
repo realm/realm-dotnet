@@ -13,6 +13,7 @@
     <AndroidResgenFile>Resources\Resource.Designer.cs</AndroidResgenFile>
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
     <AndroidUseLatestPlatformSdk>True</AndroidUseLatestPlatformSdk>
+    <TargetFrameworkVersion>v6.0</TargetFrameworkVersion>
     <TargetFrameworkVersion>v5.1</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|ARM' ">
@@ -46,6 +47,7 @@
   <ItemGroup>
     <Compile Include="InteropConfig.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="NativeSetup.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\RealmWeaver\RealmWeaver.Fody.csproj">

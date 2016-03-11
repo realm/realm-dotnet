@@ -34,7 +34,7 @@ LOCAL_SRC_FILES += src/row_cs.cpp
 LOCAL_SRC_FILES += src/schema_cs.cpp
 LOCAL_SRC_FILES += src/shared_realm_cs.cpp
 LOCAL_SRC_FILES += src/table_cs.cpp
-#LOCAL_SRC_FILES += src/debug.cpp
+LOCAL_SRC_FILES += src/debug.cpp
 
 
 LOCAL_LDLIBS := -llog

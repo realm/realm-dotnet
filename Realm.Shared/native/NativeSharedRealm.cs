@@ -41,7 +41,7 @@ namespace Realms
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_refresh",
             CallingConvention = CallingConvention.Cdecl)]
-        internal static extern void refresh(SharedRealmHandle sharedRealm);
+        internal static extern IntPtr refresh(SharedRealmHandle sharedRealm);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_table",
             CallingConvention = CallingConvention.Cdecl)]

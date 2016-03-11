@@ -34,6 +34,9 @@
 #include <cassert>
 #include <unordered_map>
 
+#include <sstream>
+#include "../../../debug.hpp"
+
 using namespace realm;
 using namespace realm::_impl;
 
@@ -114,6 +117,12 @@ std::shared_ptr<Realm> RealmCoordinator::get_realm(Realm::Config config)
     auto realm = std::make_shared<Realm>(std::move(config));
     realm->init(shared_from_this());
     m_weak_realm_notifiers.emplace_back(realm, m_config.cache);
+
+    // As the realm has just been initialized, auto_refresh() only tells us that it *should* be set, but
+    // we haven't actually enabled it yet. Do that now.
+    if (realm->auto_refresh())
+        set_auto_refresh_for(realm.get(), true);
+
     return realm;
 }
 
@@ -196,6 +205,17 @@ void RealmCoordinator::clear_cache()
         if (auto realm = weak_realm.lock()) {
             realm->close();
         }
+    }
+}
+
+void RealmCoordinator::set_auto_refresh_for(Realm* realm, bool auto_refresh)
+{
+    for (auto& cached_realm : m_cached_realms) {
+        if (!cached_realm.expired() && !cached_realm.is_for_realm(realm)) {
+            continue;
+        }
+
+        cached_realm.set_auto_refresh(auto_refresh);
     }
 }
 

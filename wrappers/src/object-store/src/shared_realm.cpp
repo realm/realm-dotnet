@@ -28,6 +28,8 @@
 #include <realm/commit_log.hpp>
 #include <realm/group_shared.hpp>
 
+#include "../../debug.hpp"
+
 #include <mutex>
 
 using namespace realm;
@@ -61,8 +63,9 @@ Realm::Config& Realm::Config::operator=(realm::Realm::Config const& c)
     return *this;
 }
 
-Realm::Realm(Config config)
+Realm::Realm(Config config, bool auto_refresh)
 : m_config(std::move(config))
+, m_auto_refresh(auto_refresh)
 {
     open_with_config(m_config, m_history, m_shared_group, m_read_only_group);
 
@@ -117,6 +120,7 @@ void Realm::open_with_config(const Config& config,
                                  "The Realm file format must be allowed to be upgraded "
                                  "in order to proceed.");
     }
+
 }
 
 void Realm::init(std::shared_ptr<RealmCoordinator> coordinator)
@@ -374,6 +378,11 @@ bool Realm::compact()
 
 void Realm::notify()
 {
+  debug_log("Realm::notify() called");
+    std::stringstream ss;
+    ss << "this: " << this;
+    debug_log(ss.str());
+
     verify_thread();
 
     if (m_shared_group->has_changed()) { // Throws
@@ -419,6 +428,12 @@ bool Realm::refresh()
     }
 
     return true;
+}
+
+void Realm::set_auto_refresh(bool auto_refresh)
+{
+    m_auto_refresh = auto_refresh; 
+    m_coordinator->set_auto_refresh_for(this, auto_refresh);
 }
 
 bool Realm::can_deliver_notifications() const noexcept
