@@ -181,7 +181,7 @@ namespace IntegrationTests
         public void SingleFailsToFind()
         {
             Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().Single(p => p.Latitude > 100) );
-            Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().Single(p => p.Latitude > 100) );
+            Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().Where(p => p.Latitude > 100).Single() );
             Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().Single(p => p.Score > 50000) );
             Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().Single(p => p.FirstName == "Samantha") );
         }
@@ -190,7 +190,7 @@ namespace IntegrationTests
         [Test]
         public void SingleFindsTooMany()
         {
-            Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().Single(p => p.Latitude == 50) );
+            Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().Where(p => p.Latitude == 50).Single() );
             Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().Single(p => p.Score != 100.0f) );
             Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().Single(p => p.FirstName == "John") );
         }
@@ -202,7 +202,7 @@ namespace IntegrationTests
             var s0 = _realm.All<Person>().Single(p => p.Longitude < -70.0 && p.Longitude > -90.0);
             Assert.That(s0.Email, Is.EqualTo("john@doe.com"));
 
-            var s1 = _realm.All<Person>().Single(p => p.Score == 100.0f);
+            var s1 = _realm.All<Person>().Where(p => p.Score == 100.0f).Single();
             Assert.That(s1.Email, Is.EqualTo("john@doe.com"));
 
             var s2 = _realm.All<Person>().Single(p => p.FirstName == "Peter");
@@ -214,7 +214,7 @@ namespace IntegrationTests
         public void FirstFailsToFind()
         {
             Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().First(p => p.Latitude > 100) );
-            Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().First(p => p.Latitude > 100) );
+            Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().Where(p => p.Latitude > 100).First() );
             Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().First(p => p.Score > 50000) );
             Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().First(p => p.FirstName == "Samantha") );
         }
@@ -225,7 +225,7 @@ namespace IntegrationTests
             var s0 = _realm.All<Person>().First(p => p.Longitude < -70.0 && p.Longitude > -90.0);
             Assert.That(s0.Email, Is.EqualTo("john@doe.com"));
 
-            var s1 = _realm.All<Person>().First(p => p.Score == 100.0f);
+            var s1 = _realm.All<Person>().Where(p => p.Score == 100.0f).First();
             Assert.That(s1.Email, Is.EqualTo("john@doe.com"));
 
             var s2 = _realm.All<Person>().First(p => p.FirstName == "John");

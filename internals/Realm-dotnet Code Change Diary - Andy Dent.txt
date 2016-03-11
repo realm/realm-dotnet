@@ -1776,6 +1776,15 @@ ObjectIntegrationTests.cs
 ObjectIntegrationTests.IteratePeople
 - added
 
+Realm.cs
+- added static ObjectSchemaCache
+- Realm static ctor - init ObjectSchemaCache
+- GenerateObjectSchema
+  - use and update ObjectSchemaCache
+- MakeResultsForTable added
+- MakeResultsForQuery added
+- CreateResultsHandle added
+- MakeObjectForRow added (moved from RealmResultsVisitor.MakeObject)
 
 NativeQuery.cs
 - renamed "find" to findDirect to trigger compiler errors, discourage use and make it clear being used for (rare) specifics
@@ -1785,12 +1794,22 @@ RealmResults.cs
   - param renamed nextOrdinalIndex because not based on row indexes any more
 - VisitMethodCall 
   - use renamed findDirect for "Any" and "Single"
-  
+- GetEnumerator  
+  - use _resultsHandle (cached)
+  - update _resultsHandle for All using MakeResultsForTable
+  - update _resultsHandle using MakeResultsForQuery  
 
 RealmResultsEnumerator.cs
 - _rowIndex renamed _ordinalIndex because it's not just rows
+- _enumerating removed
+- ResultsHandle _enumeratingResults added
 
-
+RealmResultsVisitor.cs
+- FindNextObject removed (was used only by RealmResultsEnumerator)
+- MakeObject moved to Realm.MakeObjectForRow  
+- _coreQueryHandle made internal so it can be grabbed 
+- made methods static that just build the query parameter
+  
 ResultsHandle.cs
 - added
 
@@ -1799,3 +1818,18 @@ NativeResults.cs
 
 results_cs.cpp
 - added
+
+
+Wrappers.xcodeproj
+- added results_cs.cpp
+
+Realm.Shared.csproj
+- added NativeResults.cs, ResultsHandle.cs
+
+SimpleLINQTests.cs
+Changed tests to also include using Where(...).Blah() not just Blah(....)
+- SingleFindsTooMany
+- SingleFailsToFind
+- SingleWorks
+- FirstFailsToFind
+- FirstWorks

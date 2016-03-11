@@ -24,13 +24,15 @@ namespace Realms
         #region static
 
         private static readonly IEnumerable<Type> RealmObjectClasses;
+        private static readonly Dictionary<Type, IntPtr> ObjectSchemaCache;
 
         static Realm()
         {
             RealmObjectClasses =
                 from a in AppDomain.CurrentDomain.GetAssemblies()
                 from t in a.GetTypes()
-                    .Where(t => t != typeof (RealmObject) && typeof (RealmObject).IsAssignableFrom(t))
+//  typical interface test        .Where(t => t != typeof (RealmObject) && typeof (RealmObject).IsAssignableFrom(t))
+                    .Where(t => t.IsSubclassOf(typeof(RealmObject)))  // we just have simple subclasses, no interfaces
                 select t;
 
             foreach(var realmType in RealmObjectClasses)
@@ -38,7 +40,7 @@ namespace Realms
                 if (!realmType.GetCustomAttributes(typeof(WovenAttribute), true).Any())
                     Debug.WriteLine("WARNING! The type " + realmType.Name + " is a RealmObject but it has not been woven.");
             }
-
+            ObjectSchemaCache = new Dictionary<Type, IntPtr>();
             NativeCommon.SetupExceptionThrower();
         }
 
@@ -74,6 +76,8 @@ namespace Realms
         public static Realm GetInstance(RealmConfiguration config=null)
         {
             config = config ??  RealmConfiguration.DefaultConfiguration;
+
+            // TODO cache these initializers but note we have plans eg issue
             var schemaInitializer = new SchemaInitializerHandle();
 
             foreach (var realmObjectClass in RealmObjectClasses)
@@ -127,9 +131,14 @@ namespace Realms
 
 
         private static IntPtr GenerateObjectSchema(Type objectClass)
-        {
-            var objectSchemaPtr = NativeObjectSchema.create(objectClass.Name);
+        {           
+            IntPtr objectSchemaPtr = IntPtr.Zero;
+            if (ObjectSchemaCache.TryGetValue(objectClass, out objectSchemaPtr)) {
+               return objectSchemaPtr;  // use cached schema                
+            }
 
+            objectSchemaPtr = NativeObjectSchema.create(objectClass.Name);
+            ObjectSchemaCache[objectClass] = objectSchemaPtr;  // save for later lookup
             var propertiesToMap = objectClass.GetProperties(BindingFlags.Instance | BindingFlags.DeclaredOnly | BindingFlags.NonPublic | BindingFlags.Public)
                 .Where(p =>
                 {
@@ -165,7 +174,6 @@ namespace Realms
                 NativeObjectSchema.add_property(objectSchemaPtr, propertyName, MarshalHelpers.RealmColType(columnType), objectType, 
                     MarshalHelpers.BoolToIntPtr(isObjectId), MarshalHelpers.BoolToIntPtr(isIndexed), MarshalHelpers.BoolToIntPtr(isNullable));
             }
-
             return objectSchemaPtr;
         }
 
@@ -334,6 +342,34 @@ namespace Realms
             return result;
         }
 
+
+        internal RealmObject MakeObjectForRow(Type objectType, RowHandle rowHandle)
+        {
+            RealmObject ret = (RealmObject) Activator.CreateInstance(objectType);
+            ret._Manage(this, rowHandle);
+            return ret;
+        }
+
+
+
+        internal ResultsHandle MakeResultsForTable(Type tableType)
+        {
+            var tableHandle = _tableHandles[tableType];
+            var objSchema = Realm.ObjectSchemaCache[tableType];
+            IntPtr resultsPtr = NativeResults.create_for_table(_sharedRealmHandle, tableHandle, objSchema);
+            return CreateResultsHandle(resultsPtr);
+        }
+
+
+
+        internal ResultsHandle MakeResultsForQuery(Type tableType, QueryHandle builtQuery)
+        {
+            var objSchema = Realm.ObjectSchemaCache[tableType];
+            IntPtr resultsPtr = NativeResults.create_for_query(_sharedRealmHandle, builtQuery, objSchema);
+            return CreateResultsHandle(resultsPtr);
+        }
+
+
         /// <summary>
         /// This realm will start managing a RealmObject which has been created as a standalone object.
         /// </summary>
@@ -369,6 +405,20 @@ namespace Realms
         }
 
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+        internal static ResultsHandle CreateResultsHandle(IntPtr resultsPtr)
+        {
+            var resultsHandle = new ResultsHandle();
+
+            RuntimeHelpers.PrepareConstrainedRegions();
+            try { /* Retain handle in a constrained execution region */ }
+            finally
+            {
+                resultsHandle.SetHandle(resultsPtr);
+            }
+            return resultsHandle;
+        }
+
+        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         internal static RowHandle CreateRowHandle(IntPtr rowPtr)
         {
             var rowHandle = new RowHandle();
@@ -379,7 +429,6 @@ namespace Realms
             {
                 rowHandle.SetHandle(rowPtr);
             }
-
             return rowHandle;
         }
 

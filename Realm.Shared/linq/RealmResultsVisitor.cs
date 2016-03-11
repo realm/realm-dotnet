@@ -14,7 +14,7 @@ namespace Realms
     internal class RealmResultsVisitor : ExpressionVisitor
     {
         private Realm _realm;
-        private QueryHandle _coreQueryHandle;  // set when recurse down to VisitConstant
+        internal QueryHandle _coreQueryHandle;  // set when recurse down to VisitConstant
         private Type _retType;
 
 
@@ -22,23 +22,6 @@ namespace Realms
         {
             _realm = realm;
             _retType = retType;
-        }
-
-
-        internal RealmObject FindNextObject(ref long nextOrdinalIndex)
-        {
-            var rowHandle = NativeQuery.findDirect(_coreQueryHandle, (IntPtr)nextOrdinalIndex);
-            if (rowHandle.IsInvalid)
-                return null;
-            nextOrdinalIndex = rowHandle.RowIndex + 1;  // bump caller index
-            return MakeObject(rowHandle);
-        }
-
-        private RealmObject MakeObject(RowHandle rowHandle)
-        {
-            var o = Activator.CreateInstance(_retType);
-            ((RealmObject)o)._Manage(_realm, rowHandle);
-            return (RealmObject)o;
         }
 
         private static Expression StripQuotes(Expression e)
@@ -102,7 +85,7 @@ namespace Realms
                     RowHandle firstRow = NativeQuery.findDirect(_coreQueryHandle, IntPtr.Zero);
                     if (firstRow.IsInvalid)
                         throw new InvalidOperationException("Sequence contains no matching element");
-                    return Expression.Constant(MakeObject(firstRow));
+                    return Expression.Constant(_realm.MakeObjectForRow(_retType, firstRow));
                 }
                 if (m.Method.Name == "Single")  // same as First with extra checks
                 {
@@ -114,7 +97,7 @@ namespace Realms
                     RowHandle nextRow = NativeQuery.findDirect(_coreQueryHandle, nextIndex);
                     if (!nextRow.IsInvalid)
                         throw new InvalidOperationException("Sequence contains more than one matching element");
-                    return Expression.Constant(MakeObject(firstRow));
+                    return Expression.Constant(_realm.MakeObjectForRow(_retType, firstRow));
                 }
 
             }
@@ -205,7 +188,7 @@ namespace Realms
 
 #pragma warning disable 0642    // Disable warning about empty statements (See issue #68)
 
-        private void AddQueryEqual(QueryHandle queryHandle, string columnName, object value)
+        private static void AddQueryEqual(QueryHandle queryHandle, string columnName, object value)
             {
             var columnIndex = NativeQuery.get_column_index((QueryHandle)queryHandle, columnName, (IntPtr)columnName.Length);
 
@@ -227,7 +210,7 @@ namespace Realms
                 throw new NotImplementedException();
         }
 
-        private void AddQueryNotEqual(QueryHandle queryHandle, string columnName, object value)
+        private static void AddQueryNotEqual(QueryHandle queryHandle, string columnName, object value)
         {
             var columnIndex = NativeQuery.get_column_index((QueryHandle)queryHandle, columnName, (IntPtr)columnName.Length);
 
@@ -249,7 +232,7 @@ namespace Realms
                 throw new NotImplementedException();
         }
 
-        private void AddQueryLessThan(QueryHandle queryHandle, string columnName, object value)
+        private static void AddQueryLessThan(QueryHandle queryHandle, string columnName, object value)
         {
             var columnIndex = NativeQuery.get_column_index((QueryHandle)queryHandle, columnName, (IntPtr)columnName.Length);
 
@@ -266,7 +249,7 @@ namespace Realms
                 throw new NotImplementedException();
         }
 
-        private void AddQueryLessThanOrEqual(QueryHandle queryHandle, string columnName, object value)
+        private static void AddQueryLessThanOrEqual(QueryHandle queryHandle, string columnName, object value)
         {
             var columnIndex = NativeQuery.get_column_index((QueryHandle)queryHandle, columnName, (IntPtr)columnName.Length);
 
@@ -283,7 +266,7 @@ namespace Realms
                 throw new NotImplementedException();
         }
 
-        private void AddQueryGreaterThan(QueryHandle queryHandle, string columnName, object value)
+        private static void AddQueryGreaterThan(QueryHandle queryHandle, string columnName, object value)
         {
             var columnIndex = NativeQuery.get_column_index((QueryHandle)queryHandle, columnName, (IntPtr)columnName.Length);
 
@@ -300,7 +283,7 @@ namespace Realms
                 throw new NotImplementedException();
         }
 
-        private void AddQueryGreaterThanOrEqual(QueryHandle queryHandle, string columnName, object value)
+        private static void AddQueryGreaterThanOrEqual(QueryHandle queryHandle, string columnName, object value)
         {
             var columnIndex = NativeQuery.get_column_index((QueryHandle)queryHandle, columnName, (IntPtr)columnName.Length);
 
