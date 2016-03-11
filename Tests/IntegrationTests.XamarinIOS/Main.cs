@@ -16,6 +16,14 @@ namespace IntegrationTests.XamarinIOS
         // This is the main entry point of the application.
         static void Main (string[] args)
         {
+			// run unit tests in a headless mode when we're in Jenkins CI
+			var ci = Environment.GetEnvironmentVariable("WORKSPACE");
+			if (!string.IsNullOrEmpty (ci)) {
+				IntegrationTests.Shared.TestRunner.Run ("Xamarin.iOS Tests", System.IO.Path.Combine (ci, "TestResults.iOS.xml"));
+
+				return;
+			}
+
             // if you want to use a different Application Delegate class from "UnitTestAppDelegate"
             // you can specify it here.
             UIApplication.Main (args, null, "UnitTestAppDelegate");
