@@ -19,7 +19,10 @@ namespace IntegrationTests.XamarinIOS
 			// run unit tests in a headless mode when we're in Jenkins CI
 			var ci = Environment.GetEnvironmentVariable("WORKSPACE");
 			if (!string.IsNullOrEmpty (ci)) {
-				IntegrationTests.Shared.TestRunner.Run ("Xamarin.iOS Tests", System.IO.Path.Combine (ci, "TestResults.iOS.xml"));
+				using (var output = System.IO.File.OpenWrite (System.IO.Path.Combine (ci, "TestResults.iOS.xml"))) 
+				{
+					IntegrationTests.Shared.TestRunner.Run ("Xamarin.iOS", output);
+				}
 
 				return;
 			}
