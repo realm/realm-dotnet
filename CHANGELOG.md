@@ -14,9 +14,6 @@ Still requires installation from private copy of NuGet download.
 * Finish `RealmList.CopyTo` so you can apply `ToList` to related lists (issue #299)
 * NuGet now inserts `libwrappers.so` for Android targets using `$(SolutionDir)packages` so it copes with the different relative paths in cross-platform (Xamarin Forms) app templates vs pure Android templates.  
 
-### Internal Changes
-* Searches and iteration of `RealmResults` backed by our ObjectStore `Results` class instead of incremental calls to `Table::Find`. No functional changes visible.
-
 
 0.73.0 Private Beta (2016-02-26)
 -------------------
