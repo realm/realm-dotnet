@@ -15,6 +15,7 @@ namespace Realms {
         RealmInvalidDatabase = 5,
         RealmOutOfMemory = 6,
         RealmPermissionDenied = 7,
+        RealmMismatchedConfig = 9,
         RealmFormatUpgradeRequired = 13,
 
         StdArgumentOutOfRange = 100,

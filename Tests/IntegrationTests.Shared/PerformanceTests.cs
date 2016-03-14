@@ -1,4 +1,4 @@
-﻿/* Copyright 2015 Realm Inc - All Rights Reserved
+/* Copyright 2015 Realm Inc - All Rights Reserved
  * Proprietary and Confidential
  */
  
@@ -25,6 +25,14 @@ namespace IntegrationTests
             _databasePath = Path.GetTempFileName();
             _realm = Realm.GetInstance(_databasePath);
         }
+
+        [TearDown]
+        public void TearDown() 
+        {
+            _realm.Close();
+            Realm.DeleteRealm(_realm.Config);
+        }
+
 
         [TestCase(1000000, 100), Explicit]
         public void BindingPerformanceTest(int totalRecs, int recsPerTrans)

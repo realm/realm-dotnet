@@ -16,33 +16,5 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#include "impl/cached_realm_base.hpp"
+#include "impl/weak_realm_notifier.hpp"
 
-#include <CoreFoundation/CFRunLoop.h>
-
-namespace realm {
-class Realm;
-
-namespace _impl {
-
-class CachedRealm : public CachedRealmBase {
-public:
-    CachedRealm(const std::shared_ptr<Realm>& realm, bool cache);
-    ~CachedRealm();
-
-    CachedRealm(CachedRealm&&);
-    CachedRealm& operator=(CachedRealm&&);
-
-    CachedRealm(const CachedRealm&) = delete;
-    CachedRealm& operator=(const CachedRealm&) = delete;
-
-    // Asyncronously call notify() on the Realm on the appropriate thread
-    void notify();
-
-private:
-    CFRunLoopRef m_runloop;
-    CFRunLoopSourceRef m_signal;
-};
-
-} // namespace _impl
-} // namespace realm

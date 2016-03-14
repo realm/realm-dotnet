@@ -1706,6 +1706,73 @@ NativeQuery.cs
 
 query_cs.cpp
 - query_not added
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#369 Cleanup ToList in tests
+#361 Add LINQ Count(Expression)
+
+remove ToList and use straight All<...>()>Count()
+- ObjectIntegrationTests.cs
+  - SimpleTest 
+  - CreateObjectTest
+  
+remove ToList and use All<...>.Where(...).Count()
+SimpelLINQtests.cs
+- CreateList
+
+replace  All<...>.Where(...).Count() with All<...>.Count(...)
+SimpleLINQtests.cs
+- CountFoundItems
+- CountWithNot
+
+replace realm.All<...>().Where( ...).ToList().First() with .All<...>().First(...)
+- RelationshipTests.cs
+  - TimHasATopDog
+  - TimHasTwoIterableDogs
+  - TimHasTwoIterableDogsListed
+  - TimsIterableDogsThrowExceptions
+  - TimRetiredHisTopDog
+  - TimAddsADogLater
+  - DaniHasNoTopDog
+
+replace realm.All<...>().Where( ...).ToList().First() with .All<...>().Single(...)
+- RelationshipTests.cs
+  - TimAddsADogByInsert  
+  - TimLosesHisDogsByOrder
+  - TimLosesHisDogsInOneClear
+  - TimLosesBilbo
+  - TestExceptionsFromTimsDogsOutOfRange
+
+replace realm.All<...>().Where( ...).ToList()[0] with .All<...>().First(...)
+- ObjectIntegrationTests.cs
+  - ReadAndWriteEqualityTest
+
+replace realm.All<...>().Where( ...).ToList().First() with .All<...>().Where(...).First()
+- RelationshipTests.cs
+  - DaniHasNoTopDog
+  - TestExceptionsFromEmptyListOutOfRange
+  
+replace realm.All<...>().Where( ...).ToList().First() with .All<...>().Where(...).First()
+- RelationshipTests.cs
+  - DaniHasNoDogs  
+  - TestExceptionsFromIteratingEmptyList
+
+
+replace realm.All<...>().Where( ...).ToList().Count with .All<...>().Count(...)
+- TestManagingStandaloneThreeLevelRelationship
+- TestCircularRelationshipsFromStandaloneTwoStage
+
+
+RealmResultsVisitor.cs
+- RecurseToWhereOrRunLambda added
+- VisitMethodCall
+  - handle Count, Single and First with no lambda argument, using RecurseToWhereOrRunLambda
+  
+TODO
+NonAutomaticPropertiesShouldBeIgnored
+_realm.All<Person>().ToList().Single() to straight
+_realm.All<Person>().Single()
+
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #183 BindingPerformanceTest crashes
 

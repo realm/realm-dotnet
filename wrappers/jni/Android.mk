@@ -20,8 +20,8 @@ LOCAL_SRC_FILES += src/object-store/src/shared_realm.cpp
 #LOCAL_SRC_FILES += src/object-store/src/parser/parser.cpp
 #LOCAL_SRC_FILES += src/object-store/src/parser/query_builder.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/realm_coordinator.cpp
+LOCAL_SRC_FILES += src/object-store/src/impl/async_query.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/transact_log_handler.cpp
-LOCAL_SRC_FILES += src/object-store/src/impl/android/cached_realm.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/android/external_commit_helper.cpp
 
 LOCAL_SRC_FILES += src/error_handling.cpp
