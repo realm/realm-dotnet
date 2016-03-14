@@ -57,10 +57,10 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		4242671F1C070B9500670B1C /* libwrappers-core-debug.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libwrappers-core-debug.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		4242671F1C070B9500670B1C /* libwrappers-core-debug.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; name = "libwrappers-core-debug.a"; path = "/Users/andydent/dev/Realm/realm-dotnet/wrappers/build/Products/Debug-iphoneos/libwrappers-core-debug.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		424267201C070BE500670B1C /* librealm-ios-no-bitcode-dbg.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "librealm-ios-no-bitcode-dbg.a"; path = "core/librealm-ios-no-bitcode-dbg.a"; sourceTree = "<group>"; };
 		42F739D01C8EFBD00033F0B7 /* results_cs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = results_cs.cpp; path = src/results_cs.cpp; sourceTree = "<group>"; };
-		48D101381B39902E004A4B2C /* libwrappers.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libwrappers.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		48D101381B39902E004A4B2C /* libwrappers.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; name = libwrappers.a; path = "/Users/andydent/dev/Realm/realm-dotnet/wrappers/build/Products/Debug-iphoneos/libwrappers.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		48D101431B3991B6004A4B2C /* librealm-ios-no-bitcode.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "librealm-ios-no-bitcode.a"; path = "core/librealm-ios-no-bitcode.a"; sourceTree = "<group>"; };
 		48D347321C74861900CD0E02 /* binding_context.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = binding_context.hpp; path = "src/object-store/src/binding_context.hpp"; sourceTree = "<group>"; };
 		48D347331C74861900CD0E02 /* cached_realm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = cached_realm.cpp; path = "src/object-store/src/impl/apple/cached_realm.cpp"; sourceTree = "<group>"; };

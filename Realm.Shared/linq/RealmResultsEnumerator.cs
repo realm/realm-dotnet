@@ -15,7 +15,7 @@ namespace Realms
     /// </summary>
     internal class RealmResultsEnumerator<T> : IEnumerator<T> 
     {
-        private long _ordinalIndex = -1;  // must match Reset()
+        private long _index = -1;  // must match Reset(), zero-based with no gaps indexing an ObjectStore Results
         private ResultsHandle _enumeratingResults = null;
         private Realm _realm;
         private Type _retType = typeof(T);
@@ -48,8 +48,8 @@ namespace Realms
             if (_enumeratingResults == null)
                 return false;
             
-            ++_ordinalIndex;
-            var rowHandle = NativeResults.get_row(_enumeratingResults, (IntPtr)_ordinalIndex);
+            ++_index;
+            var rowHandle = NativeResults.get_row(_enumeratingResults, (IntPtr)_index);
             object nextObj = null;
             if (!rowHandle.IsInvalid)                 
                 nextObj = _realm.MakeObjectForRow(_retType, rowHandle);
@@ -63,7 +63,7 @@ namespace Realms
         /// </summary>
         public void Reset()
         {
-            _ordinalIndex = -1;  // by definition BEFORE first item
+            _index = -1;  // by definition BEFORE first item
         }
 
         /// <summary>

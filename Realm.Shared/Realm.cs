@@ -31,8 +31,7 @@ namespace Realms
             RealmObjectClasses =
                 from a in AppDomain.CurrentDomain.GetAssemblies()
                 from t in a.GetTypes()
-//  typical interface test        .Where(t => t != typeof (RealmObject) && typeof (RealmObject).IsAssignableFrom(t))
-                    .Where(t => t.IsSubclassOf(typeof(RealmObject)))  // we just have simple subclasses, no interfaces
+                    .Where(t => t.IsSubclassOf(typeof(RealmObject)))  
                 select t;
 
             foreach(var realmType in RealmObjectClasses)
