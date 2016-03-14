@@ -1768,10 +1768,6 @@ RealmResultsVisitor.cs
 - VisitMethodCall
   - handle Count, Single and First with no lambda argument, using RecurseToWhereOrRunLambda
   
-TODO
-NonAutomaticPropertiesShouldBeIgnored
-_realm.All<Person>().ToList().Single() to straight
-_realm.All<Person>().Single()
 
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #183 BindingPerformanceTest crashes
@@ -1785,3 +1781,70 @@ PerformanceTests.cs
 - all tests do commits
 - BindingCreateObjectPeformanceTest and BindingPerformanceTest
   - add inner loops with N operations per transaction, parameterised
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#352 Using Results in LINQ
+
+ObjectIntegrationTests.cs
+ObjectIntegrationTests.IteratePeople
+- added
+
+Realm.cs
+- added static ObjectSchemaCache
+- Realm static ctor - init ObjectSchemaCache
+- GenerateObjectSchema
+  - use and update ObjectSchemaCache
+- MakeResultsForTable added
+- MakeResultsForQuery added
+- CreateResultsHandle added
+- MakeObjectForRow added (moved from RealmResultsVisitor.MakeObject)
+
+NativeQuery.cs
+- renamed "find" to findDirect to trigger compiler errors, discourage use and make it clear being used for (rare) specifics
+
+RealmResults.cs
+- FindNextObject 
+  - param renamed nextOrdinalIndex because not based on row indexes any more
+- VisitMethodCall 
+  - use renamed findDirect for "Any" and "Single"
+- GetEnumerator  
+  - use _resultsHandle (cached)
+  - update _resultsHandle for All using MakeResultsForTable
+  - update _resultsHandle using MakeResultsForQuery  
+
+RealmResultsEnumerator.cs
+- _rowIndex renamed _ordinalIndex because it's not just rows
+- _enumerating removed
+- ResultsHandle _enumeratingResults added
+
+RealmResultsVisitor.cs
+- FindNextObject removed (was used only by RealmResultsEnumerator)
+- MakeObject moved to Realm.MakeObjectForRow  
+- _coreQueryHandle made internal so it can be grabbed 
+- made methods static that just build the query parameter
+  
+ResultsHandle.cs
+- added
+
+NativeResults.cs
+- added
+
+results_cs.cpp
+- added
+
+wrappers/jni/Android.mk
+- added entry LOCAL_SRC_FILES += src/results_cs.cpp
+
+Wrappers.xcodeproj
+- added results_cs.cpp
+
+Realm.Shared.csproj
+- added NativeResults.cs, ResultsHandle.cs
+
+SimpleLINQTests.cs
+Changed tests to also include using Where(...).Blah() not just Blah(....)
+- SingleFindsTooMany
+- SingleFailsToFind
+- SingleWorks
+- FirstFailsToFind
+- FirstWorks

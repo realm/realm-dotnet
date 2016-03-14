@@ -263,7 +263,22 @@ namespace IntegrationTests
             Assert.That(_realm.All<Person>().Count(), Is.EqualTo(3));
         }
 
-    }
+        [Test]
+        public void IteratePeople()
+        {
+            MakeThreePeople ();
+
+            // primarily just testing we iterate through all the people in the realm
+            int iterCount = 0;
+            string[] emails = {"john@smith.com", "john@doe.com", "peter@jameson.com"};
+            foreach (var p in _realm.All<Person>()) {
+                Assert.That(p.Email, Is.EqualTo(emails[iterCount]));
+                iterCount++;
+            }
+            Assert.That (iterCount, Is.EqualTo (3));
+        }
+
+    }  // ObjectIntegrationTests
 
     [TestFixture]
     public class RealmMigrationTests

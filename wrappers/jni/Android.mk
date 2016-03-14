@@ -29,6 +29,7 @@ LOCAL_SRC_FILES += src/linklist_cs.cpp
 LOCAL_SRC_FILES += src/marshalling.cpp
 LOCAL_SRC_FILES += src/object_schema_cs.cpp
 LOCAL_SRC_FILES += src/query_cs.cpp
+LOCAL_SRC_FILES += src/results_cs.cpp
 LOCAL_SRC_FILES += src/realm-csharp.cpp
 LOCAL_SRC_FILES += src/row_cs.cpp
 LOCAL_SRC_FILES += src/schema_cs.cpp
