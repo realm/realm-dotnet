@@ -15,6 +15,7 @@ Still requires installation from private copy of NuGet download.
 * NuGet now inserts `libwrappers.so` for Android targets using `$(SolutionDir)packages` so it copes with the different relative paths in cross-platform (Xamarin Forms) app templates vs pure Android templates.  
 * Realm.Write() method added for executing code within an implicitly committed transaction
 * Realm.RealmChanged event notifies you of changes made to the realm
+* The Realm assembly weaver now submits anonymous usage data during each build (issue #182)
 
 
 0.73.0 Private Beta (2016-02-26)
