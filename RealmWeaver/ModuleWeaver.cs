@@ -14,6 +14,8 @@ using System.Security.Cryptography.X509Certificates;
 
 public class ModuleWeaver
 {
+    public Action<string> LogDebug { get; set; }
+
     // Will log an informational message to MSBuild
     public Action<string> LogInfo { get; set; }
 
@@ -31,6 +33,7 @@ public class ModuleWeaver
     // Init logging delegates to make testing easier
     public ModuleWeaver()
     {
+        LogDebug = m => { };
         LogInfo = m => { };
         LogWarningPoint = (m, p) => { };
         LogErrorPoint = (m, p) => { };
@@ -68,6 +71,15 @@ public class ModuleWeaver
     {
         // UNCOMMENT THIS DEBUGGER LAUNCH TO BE ABLE TO RUN A SEPARATE VS INSTANCE TO DEBUG WEAVING WHILST BUILDING
         // Debugger.Launch();  
+
+        var submitAnalytics = System.Threading.Tasks.Task.Factory.StartNew (() => {
+            var analytics = new RealmWeaver.Analytics(ModuleDefinition);
+            try {
+                analytics.SubmitAnalytics();
+            } catch(Exception e) {
+                LogDebug("Error submitting analytics: " + e.Message);
+            }
+        });
 
         typeSystem = ModuleDefinition.TypeSystem;
 
@@ -224,6 +236,7 @@ public class ModuleWeaver
             Debug.WriteLine("");
         }
 
+        submitAnalytics.Wait();
         return;
     }
 

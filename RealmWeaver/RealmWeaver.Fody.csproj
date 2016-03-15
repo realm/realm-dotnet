@@ -57,6 +57,7 @@
     <Compile Include="extensions\MethodReferenceExtensions.cs" />
     <Compile Include="extensions\PropertyDefinitionExtensions.cs" />
     <Compile Include="ModuleWeaver.cs" />
+    <Compile Include="Analytics.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="AfterBuild">
