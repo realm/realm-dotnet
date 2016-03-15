@@ -83,7 +83,15 @@ std::shared_ptr<Realm> RealmCoordinator::get_realm(Realm::Config config)
             throw MismatchedConfigException("Realm at path already opened with different inMemory settings.");
         }
         if (m_config.encryption_key != config.encryption_key) {
-            throw MismatchedConfigException("Realm at path already opened with a different encryption key.");
+            std::stringstream msg;
+            msg << "Realm at path " << config.path << " already opened with a different encryption key." << std::hex;
+            for (char c : m_config.encryption_key)
+                msg << c << ' ';
+            msg << "\n---\n";
+            for (char c : config.encryption_key)
+                msg << c << ' ';
+            throw MismatchedConfigException(msg.str());
+//            throw MismatchedConfigException("Realm at path already opened with a different encryption key.");
         }
         if (m_config.schema_version != config.schema_version && config.schema_version != ObjectStore::NotVersioned) {
             throw MismatchedConfigException("Realm at path already opened with different schema version.");
