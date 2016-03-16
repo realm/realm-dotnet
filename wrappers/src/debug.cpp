@@ -19,7 +19,7 @@ void debug_log(std::string message)
 
 extern "C" {
 
-REALM_EXPORT void bind_debug_logger(realm::DebugLoggerT debug_logger)
+REALM_EXPORT void set_debug_logger(realm::DebugLoggerT debug_logger)
 {
   realm::debug_log_function = debug_logger;
 }
