@@ -7,62 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		424267211C070BE500670B1C /* librealm-ios-no-bitcode-dbg.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 424267201C070BE500670B1C /* librealm-ios-no-bitcode-dbg.a */; };
 		42F739D11C8EFBD00033F0B7 /* results_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42F739D01C8EFBD00033F0B7 /* results_cs.cpp */; };
 		4830D9531C90667F00D34855 /* weak_realm_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4830D94F1C90667F00D34855 /* weak_realm_notifier.cpp */; };
 		4830D9541C90667F00D34855 /* weak_realm_notifier.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 4830D9501C90667F00D34855 /* weak_realm_notifier.hpp */; };
 		4830D9551C90667F00D34855 /* weak_realm_notifier_base.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 4830D9511C90667F00D34855 /* weak_realm_notifier_base.hpp */; };
 		4830D9561C90667F00D34855 /* weak_realm_notifier.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 4830D9521C90667F00D34855 /* weak_realm_notifier.hpp */; };
-		488FF1FA1C99817900172055 /* results_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 42F739D01C8EFBD00033F0B7 /* results_cs.cpp */; };
-		488FF1FB1C99817900172055 /* binding_context.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48D347321C74861900CD0E02 /* binding_context.hpp */; };
-		488FF1FC1C99817900172055 /* external_commit_helper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48D347351C74861900CD0E02 /* external_commit_helper.cpp */; };
-		488FF1FD1C99817900172055 /* external_commit_helper.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48D347361C74861900CD0E02 /* external_commit_helper.hpp */; };
-		488FF1FE1C99817900172055 /* external_commit_helper.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48D347391C74861900CD0E02 /* external_commit_helper.hpp */; };
-		488FF1FF1C99817900172055 /* realm_coordinator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48D3473A1C74861900CD0E02 /* realm_coordinator.cpp */; };
-		488FF2001C99817900172055 /* realm_coordinator.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48D3473B1C74861900CD0E02 /* realm_coordinator.hpp */; };
-		488FF2011C99817900172055 /* transact_log_handler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48D3473C1C74861900CD0E02 /* transact_log_handler.cpp */; };
-		488FF2021C99817900172055 /* transact_log_handler.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48D3473D1C74861900CD0E02 /* transact_log_handler.hpp */; };
-		488FF2031C99817900172055 /* index_set.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48D3473E1C74861900CD0E02 /* index_set.cpp */; };
-		488FF2041C99817900172055 /* index_set.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48D3473F1C74861900CD0E02 /* index_set.hpp */; };
-		488FF2051C99817900172055 /* list.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48D347401C74861900CD0E02 /* list.cpp */; };
-		488FF2061C99817900172055 /* list.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48D347411C74861900CD0E02 /* list.hpp */; };
-		488FF2071C99817900172055 /* object_accessor.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48D347421C74861900CD0E02 /* object_accessor.hpp */; };
-		488FF2081C99817900172055 /* object_schema.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48D347431C74861900CD0E02 /* object_schema.cpp */; };
-		488FF2091C99817900172055 /* object_schema.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48D347441C74861900CD0E02 /* object_schema.hpp */; };
-		488FF20A1C99817900172055 /* async_query.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48B91A5E1C91C15700DD60F6 /* async_query.cpp */; };
-		488FF20B1C99817900172055 /* async_query.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48B91A5F1C91C15700DD60F6 /* async_query.hpp */; };
-		488FF20C1C99817900172055 /* object_store.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48D347451C74861900CD0E02 /* object_store.cpp */; };
-		488FF20D1C99817900172055 /* object_store.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48D347461C74861900CD0E02 /* object_store.hpp */; };
-		488FF20E1C99817900172055 /* weak_realm_notifier.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4830D94F1C90667F00D34855 /* weak_realm_notifier.cpp */; };
-		488FF20F1C99817900172055 /* weak_realm_notifier.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 4830D9501C90667F00D34855 /* weak_realm_notifier.hpp */; };
-		488FF2101C99817900172055 /* weak_realm_notifier_base.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 4830D9511C90667F00D34855 /* weak_realm_notifier_base.hpp */; };
-		488FF2111C99817900172055 /* weak_realm_notifier.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 4830D9521C90667F00D34855 /* weak_realm_notifier.hpp */; };
-		488FF2121C99817900172055 /* property.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48D347471C74861900CD0E02 /* property.hpp */; };
-		488FF2131C99817900172055 /* results.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48D347481C74861900CD0E02 /* results.cpp */; };
-		488FF2141C99817900172055 /* results.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48D347491C74861900CD0E02 /* results.hpp */; };
-		488FF2151C99817900172055 /* schema.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48D3474A1C74861900CD0E02 /* schema.cpp */; };
-		488FF2161C99817900172055 /* schema.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48D3474B1C74861900CD0E02 /* schema.hpp */; };
-		488FF2171C99817900172055 /* shared_realm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48D3474C1C74861900CD0E02 /* shared_realm.cpp */; };
-		488FF2181C99817900172055 /* shared_realm.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48D3474D1C74861900CD0E02 /* shared_realm.hpp */; };
-		488FF2191C99817900172055 /* error_handling.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48ED7C561C16F9C200AF23A4 /* error_handling.cpp */; };
-		488FF21A1C99817900172055 /* error_handling.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48ED7C571C16F9C200AF23A4 /* error_handling.hpp */; };
-		488FF21B1C99817900172055 /* linklist_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48ED7C581C16F9C200AF23A4 /* linklist_cs.cpp */; };
-		488FF21C1C99817900172055 /* marshalling.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48ED7C591C16F9C200AF23A4 /* marshalling.cpp */; };
-		488FF21D1C99817900172055 /* marshalling.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48ED7C5A1C16F9C200AF23A4 /* marshalling.hpp */; };
-		488FF21E1C99817900172055 /* object_schema_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48ED7C5B1C16F9C200AF23A4 /* object_schema_cs.cpp */; };
-		488FF21F1C99817900172055 /* query_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48ED7C5C1C16F9C200AF23A4 /* query_cs.cpp */; };
-		488FF2201C99817900172055 /* realm_error_type.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48ED7C5D1C16F9C200AF23A4 /* realm_error_type.hpp */; };
-		488FF2211C99817900172055 /* realm_export_decls.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48ED7C5E1C16F9C200AF23A4 /* realm_export_decls.hpp */; };
-		488FF2221C99817900172055 /* realm-csharp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48ED7C5F1C16F9C200AF23A4 /* realm-csharp.cpp */; };
-		488FF2231C99817900172055 /* row_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48ED7C601C16F9C200AF23A4 /* row_cs.cpp */; };
-		488FF2241C99817900172055 /* schema_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48ED7C611C16F9C200AF23A4 /* schema_cs.cpp */; };
-		488FF2251C99817900172055 /* shared_linklist.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48ED7C621C16F9C200AF23A4 /* shared_linklist.hpp */; };
-		488FF2261C99817900172055 /* shared_realm_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48ED7C631C16F9C200AF23A4 /* shared_realm_cs.cpp */; };
-		488FF2271C99817900172055 /* table_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48ED7C641C16F9C200AF23A4 /* table_cs.cpp */; };
 		488FF2281C99845100172055 /* debug.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 488FF1F31C997EC600172055 /* debug.cpp */; };
 		488FF2291C99845500172055 /* debug.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 488FF1F41C997EC600172055 /* debug.hpp */; };
-		488FF22A1C99845A00172055 /* debug.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 488FF1F31C997EC600172055 /* debug.cpp */; };
-		488FF22B1C99845A00172055 /* debug.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 488FF1F41C997EC600172055 /* debug.hpp */; };
 		48B91A601C91C15700DD60F6 /* async_query.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48B91A5E1C91C15700DD60F6 /* async_query.cpp */; };
 		48B91A611C91C15700DD60F6 /* async_query.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48B91A5F1C91C15700DD60F6 /* async_query.hpp */; };
 		48D101451B3991B6004A4B2C /* librealm-ios-no-bitcode.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 48D101431B3991B6004A4B2C /* librealm-ios-no-bitcode.a */; };
@@ -108,7 +59,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		4242671F1C070B9500670B1C /* libwrappers-core-debug.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libwrappers-core-debug.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		424267201C070BE500670B1C /* librealm-ios-no-bitcode-dbg.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "librealm-ios-no-bitcode-dbg.a"; path = "core/librealm-ios-no-bitcode-dbg.a"; sourceTree = "<group>"; };
 		42F739D01C8EFBD00033F0B7 /* results_cs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = results_cs.cpp; path = src/results_cs.cpp; sourceTree = "<group>"; };
 		4830D94F1C90667F00D34855 /* weak_realm_notifier.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = weak_realm_notifier.cpp; path = "src/object-store/src/impl/apple/weak_realm_notifier.cpp"; sourceTree = "<group>"; };
@@ -163,14 +113,6 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		4242670D1C070B9500670B1C /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				424267211C070BE500670B1C /* librealm-ios-no-bitcode-dbg.a in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		48D101351B39902E004A4B2C /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -243,7 +185,6 @@
 			isa = PBXGroup;
 			children = (
 				48D101381B39902E004A4B2C /* libwrappers.a */,
-				4242671F1C070B9500670B1C /* libwrappers-core-debug.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -251,37 +192,6 @@
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
-		424267101C070B9500670B1C /* Headers */ = {
-			isa = PBXHeadersBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				488FF2021C99817900172055 /* transact_log_handler.hpp in Headers */,
-				488FF2251C99817900172055 /* shared_linklist.hpp in Headers */,
-				488FF2181C99817900172055 /* shared_realm.hpp in Headers */,
-				488FF21A1C99817900172055 /* error_handling.hpp in Headers */,
-				488FF2201C99817900172055 /* realm_error_type.hpp in Headers */,
-				488FF1FD1C99817900172055 /* external_commit_helper.hpp in Headers */,
-				488FF2091C99817900172055 /* object_schema.hpp in Headers */,
-				488FF2141C99817900172055 /* results.hpp in Headers */,
-				488FF2061C99817900172055 /* list.hpp in Headers */,
-				488FF2211C99817900172055 /* realm_export_decls.hpp in Headers */,
-				488FF2041C99817900172055 /* index_set.hpp in Headers */,
-				488FF21D1C99817900172055 /* marshalling.hpp in Headers */,
-				488FF2101C99817900172055 /* weak_realm_notifier_base.hpp in Headers */,
-				488FF20D1C99817900172055 /* object_store.hpp in Headers */,
-				488FF2121C99817900172055 /* property.hpp in Headers */,
-				488FF2161C99817900172055 /* schema.hpp in Headers */,
-				488FF1FB1C99817900172055 /* binding_context.hpp in Headers */,
-				488FF1FE1C99817900172055 /* external_commit_helper.hpp in Headers */,
-				488FF2071C99817900172055 /* object_accessor.hpp in Headers */,
-				488FF2001C99817900172055 /* realm_coordinator.hpp in Headers */,
-				488FF2111C99817900172055 /* weak_realm_notifier.hpp in Headers */,
-				488FF20F1C99817900172055 /* weak_realm_notifier.hpp in Headers */,
-				488FF22B1C99845A00172055 /* debug.hpp in Headers */,
-				488FF20B1C99817900172055 /* async_query.hpp in Headers */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		48D101361B39902E004A4B2C /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
@@ -316,23 +226,6 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		424266FB1C070B9500670B1C /* wrappers-core-debug */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 4242671C1C070B9500670B1C /* Build configuration list for PBXNativeTarget "wrappers-core-debug" */;
-			buildPhases = (
-				424266FC1C070B9500670B1C /* Sources */,
-				4242670D1C070B9500670B1C /* Frameworks */,
-				424267101C070B9500670B1C /* Headers */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = "wrappers-core-debug";
-			productName = wrappers;
-			productReference = 4242671F1C070B9500670B1C /* libwrappers-core-debug.a */;
-			productType = "com.apple.product-type.library.static";
-		};
 		48D101371B39902E004A4B2C /* wrappers */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 48D1013C1B39902E004A4B2C /* Build configuration list for PBXNativeTarget "wrappers" */;
@@ -377,43 +270,11 @@
 			projectRoot = "";
 			targets = (
 				48D101371B39902E004A4B2C /* wrappers */,
-				424266FB1C070B9500670B1C /* wrappers-core-debug */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
-		424266FC1C070B9500670B1C /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				488FF21F1C99817900172055 /* query_cs.cpp in Sources */,
-				488FF22A1C99845A00172055 /* debug.cpp in Sources */,
-				488FF2171C99817900172055 /* shared_realm.cpp in Sources */,
-				488FF2011C99817900172055 /* transact_log_handler.cpp in Sources */,
-				488FF2191C99817900172055 /* error_handling.cpp in Sources */,
-				488FF2221C99817900172055 /* realm-csharp.cpp in Sources */,
-				488FF2081C99817900172055 /* object_schema.cpp in Sources */,
-				488FF21C1C99817900172055 /* marshalling.cpp in Sources */,
-				488FF1FA1C99817900172055 /* results_cs.cpp in Sources */,
-				488FF2051C99817900172055 /* list.cpp in Sources */,
-				488FF2231C99817900172055 /* row_cs.cpp in Sources */,
-				488FF20A1C99817900172055 /* async_query.cpp in Sources */,
-				488FF20C1C99817900172055 /* object_store.cpp in Sources */,
-				488FF2031C99817900172055 /* index_set.cpp in Sources */,
-				488FF2241C99817900172055 /* schema_cs.cpp in Sources */,
-				488FF2151C99817900172055 /* schema.cpp in Sources */,
-				488FF1FF1C99817900172055 /* realm_coordinator.cpp in Sources */,
-				488FF20E1C99817900172055 /* weak_realm_notifier.cpp in Sources */,
-				488FF2271C99817900172055 /* table_cs.cpp in Sources */,
-				488FF2131C99817900172055 /* results.cpp in Sources */,
-				488FF1FC1C99817900172055 /* external_commit_helper.cpp in Sources */,
-				488FF21B1C99817900172055 /* linklist_cs.cpp in Sources */,
-				488FF21E1C99817900172055 /* object_schema_cs.cpp in Sources */,
-				488FF2261C99817900172055 /* shared_realm_cs.cpp in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		48D101341B39902E004A4B2C /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -448,60 +309,6 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		4242671D1C070B9500670B1C /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				ENABLE_BITCODE = NO;
-				EXECUTABLE_PREFIX = lib;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					REALM_DEBUG,
-					"$(inherited)",
-				);
-				HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
-					./core/include,
-					"./object-store",
-					"./object-store/impl",
-					"./object-store/impl/apple",
-				);
-				LIBRARY_SEARCH_PATHS = (
-					./core,
-					"$(PROJECT_DIR)/core",
-				);
-				ONLY_ACTIVE_ARCH = NO;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = iphoneos;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Debug;
-		};
-		4242671E1C070B9500670B1C /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				ENABLE_BITCODE = NO;
-				EXECUTABLE_PREFIX = lib;
-				HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
-					./core/include,
-					"./object-store",
-					"./object-store/impl",
-					"./object-store/impl/apple",
-				);
-				LIBRARY_SEARCH_PATHS = (
-					./core,
-					"$(PROJECT_DIR)/core",
-				);
-				ONLY_ACTIVE_ARCH = NO;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = iphoneos;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Release;
-		};
 		48D1013A1B39902E004A4B2C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -643,15 +450,6 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		4242671C1C070B9500670B1C /* Build configuration list for PBXNativeTarget "wrappers-core-debug" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				4242671D1C070B9500670B1C /* Debug */,
-				4242671E1C070B9500670B1C /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		48D101331B39902E004A4B2C /* Build configuration list for PBXProject "wrappers" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
