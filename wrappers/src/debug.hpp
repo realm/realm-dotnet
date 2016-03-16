@@ -9,7 +9,7 @@
 
 namespace realm {
 
-#ifndef NDEBUG
+#if defined(DEBUG) || !defined(NDEBUG)
 void debug_log(std::string message);
 #endif
 

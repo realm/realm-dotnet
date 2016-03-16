@@ -43,6 +43,7 @@ namespace Realms {
         public static extern void set_exception_thrower(ExceptionThrowerCallback callback);
 
         #if DEBUG
+
         #if __IOS__
         [MonoPInvokeCallback (typeof (DebugLoggerCallback))]
         #endif
