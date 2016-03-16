@@ -21,7 +21,7 @@ clean: ## Remove all build artefacts
 	rm -fr core
 	rm -fr core-android
  
-all: ios iosdbg android ## Make all the libs except osx broken - see issue 249
+all: ios iosdbg android androiddbg ## Make all the libs except osx broken - see issue 249
 
 .PHONY: all help clean
 
