@@ -28,16 +28,15 @@ namespace Realms
     {
         #region static
 
-        private static readonly IEnumerable<Type> RealmObjectClasses;
+        private static readonly Type[] RealmObjectClasses;
         private static readonly Dictionary<Type, IntPtr> ObjectSchemaCache;
 
         static Realm()
         {
-            RealmObjectClasses =
-                from a in AppDomain.CurrentDomain.GetAssemblies()
-                from t in a.GetTypes()
-                    .Where(t => t.IsSubclassOf(typeof(RealmObject)))  
-                select t;
+            RealmObjectClasses = AppDomain.CurrentDomain.GetAssemblies()
+                                          .SelectMany(a => a.GetTypes())
+                                          .Where(t => t.IsSubclassOf(typeof(RealmObject)))
+                                          .ToArray();
 
             foreach(var realmType in RealmObjectClasses)
             {
