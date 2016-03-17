@@ -45,7 +45,7 @@ namespace Realms
                     Debug.WriteLine("WARNING! The type " + realmType.Name + " is a RealmObject but it has not been woven.");
             }
             ObjectSchemaCache = new Dictionary<Type, IntPtr>();
-            NativeCommon.SetupExceptionThrower();
+            NativeCommon.Initialize();
             NativeCommon.register_notify_realm_changed(NotifyRealmChanged);
         }
 

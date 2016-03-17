@@ -2,8 +2,15 @@ LOCAL_PATH := $(call my-dir)/..
 
 # prepare librealm-android
 include $(CLEAR_VARS)
+
+ifdef NDK_DEBUG
+LOCAL_MODULE    := librealm-android-dbg
+LOCAL_SRC_FILES := core-android/$(TARGET_ARCH_ABI)/librealm-android-dbg.a
+else
 LOCAL_MODULE    := librealm-android
 LOCAL_SRC_FILES := core-android/$(TARGET_ARCH_ABI)/librealm-android.a
+endif
+
 include $(PREBUILT_STATIC_LIBRARY)
 
 #include $(CLEAR_VARS)
@@ -35,7 +42,9 @@ LOCAL_SRC_FILES += src/row_cs.cpp
 LOCAL_SRC_FILES += src/schema_cs.cpp
 LOCAL_SRC_FILES += src/shared_realm_cs.cpp
 LOCAL_SRC_FILES += src/table_cs.cpp
-#LOCAL_SRC_FILES += src/debug.cpp
+ifdef NDK_DEBUG
+LOCAL_SRC_FILES += src/debug.cpp
+endif
 
 
 LOCAL_LDLIBS := -llog
@@ -45,6 +54,12 @@ LOCAL_CPPFLAGS += -DREALM_HAVE_CONFIG=1
 LOCAL_CPPFLAGS += -DREALM_PLATFORM_ANDROID
 LOCAL_C_INCLUDES += core-android/include
 LOCAL_C_INCLUDES += src/object-store/src/
+
+ifdef NDK_DEBUG
+LOCAL_STATIC_LIBRARIES := realm-android-dbg
+else
 LOCAL_STATIC_LIBRARIES := realm-android
+endif
+
 include $(BUILD_SHARED_LIBRARY)
 

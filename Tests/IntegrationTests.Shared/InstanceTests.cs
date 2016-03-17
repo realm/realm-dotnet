@@ -157,12 +157,7 @@ namespace IntegrationTests
             }
         }
 
-
-
-
-        /*
-         * uncomment when fix https://github.com/realm/realm-dotnet/issues/308
-        [Test]
+        [Test, Ignore("Currently doesn't work. Ref #308")]
         public void DeleteRealmFailsIfOpenSameThread()
         {
             // Arrange
@@ -172,12 +167,8 @@ namespace IntegrationTests
             // Assert
             Assert.Throws<RealmPermissionDeniedException>(() => Realm.DeleteRealm(config));
         }
-        */
 
-        /*
-        Comment out until work out how to fix
-        see issue 199
-        [Test]
+        [Test, Ignore("Currently doesn't work. Ref #199")]
         public void GetInstanceShouldThrowIfFileIsLocked()
         {
             // Arrange
@@ -188,9 +179,8 @@ namespace IntegrationTests
                 Assert.Throws<RealmPermissionDeniedException>(() => Realm.GetInstance(databasePath));
             }
         }
-        */
 
-        [Test]
+        [Test, Ignore("Currently doesn't work. Ref #338")]
         public void GetInstanceShouldThrowWithBadPath()
         {
             // Arrange
