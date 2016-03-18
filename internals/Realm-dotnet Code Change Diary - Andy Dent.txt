@@ -1848,3 +1848,45 @@ Changed tests to also include using Where(...).Blah() not just Blah(....)
 - SingleWorks
 - FirstFailsToFind
 - FirstWorks
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+private#47 Fix Tests to use default.realm and cleanup
+
+PerformanceTests.cs
+PeopleTestsBase.cs
+DateTimeTests.cs
+RelationshipTests.cs
+AccessTests.cs
+- _databasePath removed
+- Setup 
+  - use standard config instead of GetTempFilename
+  - delete prior GetInstance
+
+
+StandaloneObjectTests.cs
+- Setup just delete standard Realm
+- AddToRealm use default realm not temp
+
+
+ObjectIntegrationTests.cs
+- ManageAnObjectFromAnotherRealmShouldFail
+  - use fixed realm name for secondary realm
+  - delete secondary realm
+
+
+InstanceTests.cs
+- added const specialRealmName 
+- general search and replace "EnterTheMagic.realm" with specialRealmName
+- use default configuration in most tests
+
+- Setup
+  - delete standard realm
+  - delete   
+  
+
+ConfigurationTests.cs
+- use unique strings for paths all tests
+
+wrappers/debug.cpp
+- added check to ensure doesn't invoke invalid callback
+    

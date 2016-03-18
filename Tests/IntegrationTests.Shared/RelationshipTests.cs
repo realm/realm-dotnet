@@ -37,8 +37,8 @@ namespace IntegrationTests.Shared
         [SetUp]
         public void Setup()
         {
-
-            realm = Realm.GetInstance(Path.GetTempFileName());
+            Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
+            realm = Realm.GetInstance();
 
             // we don't keep any variables pointing to these as they are all added to Realm
             using (var trans = realm.BeginWrite())

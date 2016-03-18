@@ -11,15 +11,14 @@ namespace IntegrationTests
 {
     public class PeopleTestsBase
     {
-        protected string _databasePath;
         protected Realm _realm;
 
         // Override this method in your test class instead of adding another <code>[SetUp]</code> because then NUnit will invoke both.
         [SetUp]
         public virtual void Setup()
         {
-            _databasePath = Path.GetTempFileName();
-            _realm = Realm.GetInstance(_databasePath);
+            Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
+            _realm = Realm.GetInstance();
         }
 
         // Override this method in your test class instead of adding another <code>[TearDown]</code> because then NUnit will invoke both.

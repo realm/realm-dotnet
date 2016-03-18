@@ -101,8 +101,8 @@ namespace IntegrationTests
         public void ConfigurationsHaveDifferentHashes()
         {
             // Arrange
-            var config1 = new RealmConfiguration("fred.realm");
-            var config2 = new RealmConfiguration("barney.realm");
+            var config1 = new RealmConfiguration("ConfigurationsHaveDifferentHashes1.realm");
+            var config2 = new RealmConfiguration("ConfigurationsHaveDifferentHashes2.realm");
 
             // Assert
             Assert.That(config1.GetHashCode(), Is.Not.EqualTo(0));  
@@ -114,7 +114,7 @@ namespace IntegrationTests
         public void EncryptionKeyMustBe64Bytes()
         {
             // Arrange
-            var config = new RealmConfiguration("fred.realm");
+            var config = new RealmConfiguration("EncryptionKeyMustBe64Bytes.realm");
             var smallKey = new byte[] { 1, 2, 3 };
             var bigKey = new byte[656];
 
@@ -128,7 +128,7 @@ namespace IntegrationTests
         public void ValidEncryptionKeyAcceoted()
         {
             // Arrange
-            var config = new RealmConfiguration("fred.realm");
+            var config = new RealmConfiguration("ValidEncryptionKeyAcceoted.realm");
             var goldilocksKey = new byte[64];
 
             // Assert
@@ -141,7 +141,7 @@ namespace IntegrationTests
         public void UnableToOpenWithNoKey()
         {
             // Arrange
-            var config = new RealmConfiguration("encryptionTest.realm");
+            var config = new RealmConfiguration("UnableToOpenWithNoKey.realm");
             Realm.DeleteRealm(config);  // ensure guarded from prev tests
             var emptyKey = new byte[64]; 
             config.EncryptionKey = emptyKey;  
@@ -157,7 +157,7 @@ namespace IntegrationTests
         public void UnableToOpenWithKeyIfNotEncrypted()
         {
             // Arrange
-            var config = new RealmConfiguration("encryptionTest.realm");
+            var config = new RealmConfiguration("UnableToOpenWithKeyIfNotEncrypted.realm");
             Realm.DeleteRealm(config);  // ensure guarded from prev tests
             var openedWithoutKey = Realm.GetInstance(config);
             openedWithoutKey.Close();
@@ -173,7 +173,7 @@ namespace IntegrationTests
         public void UnableToOpenWithDifferentKey()
         {
             // Arrange
-            var config = new RealmConfiguration("encryptionTest.realm");
+            var config = new RealmConfiguration("UnableToOpenWithDifferentKey.realm");
             Realm.DeleteRealm(config);  // ensure guarded from prev tests
             var emptyKey = new byte[64]; 
             config.EncryptionKey = emptyKey;  
@@ -190,7 +190,7 @@ namespace IntegrationTests
         public void AbleToReopenEncryptedWithSameKey()
         {
             // Arrange
-            var config = new RealmConfiguration("encryptionTest.realm");
+            var config = new RealmConfiguration("AbleToReopenEncryptedWithSameKey.realm");
             Realm.DeleteRealm(config);  // ensure guarded from prev tests
             var answerKey = new byte[64]; 
             answerKey[0] = 42;
@@ -198,7 +198,7 @@ namespace IntegrationTests
             var openedWithKey = Realm.GetInstance(config);
             openedWithKey.Close();
 
-            var config2 = new RealmConfiguration("encryptionTest.realm");
+            var config2 = new RealmConfiguration("AbleToReopenEncryptedWithSameKey.realm");
             var answerKey2 = new byte[64]; 
             answerKey2[0] = 42;
             config2.EncryptionKey = answerKey2;

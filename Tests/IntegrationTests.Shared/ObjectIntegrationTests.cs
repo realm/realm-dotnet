@@ -147,7 +147,9 @@ namespace IntegrationTests
                 transaction.Commit();
             }
 
-            using (var otherRealm = Realm.GetInstance(Path.GetTempFileName()))
+            var secondaryConfig = new RealmConfiguration("ManageAnObjectFromAnotherRealmShouldFail");
+            Realm.DeleteRealm(secondaryConfig);
+            using (var otherRealm = Realm.GetInstance(secondaryConfig))
             {
                 Assert.Throws<RealmObjectManagedByAnotherRealmException>(() => otherRealm.Manage(p));
             }
