@@ -33,16 +33,6 @@ public:
 
     // A no-op in this version, but needed for the Apple version
     void notify_others() { }
-
-private:
-    RealmCoordinator& m_parent;
-
-    // A shared group used to listen for changes
-    std::unique_ptr<Replication> m_history;
-    SharedGroup m_sg;
-
-    // The listener thread
-    std::future<void> m_thread;
 };
 
 } // namespace _impl
