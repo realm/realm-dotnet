@@ -42,9 +42,7 @@ LOCAL_SRC_FILES += src/row_cs.cpp
 LOCAL_SRC_FILES += src/schema_cs.cpp
 LOCAL_SRC_FILES += src/shared_realm_cs.cpp
 LOCAL_SRC_FILES += src/table_cs.cpp
-ifdef NDK_DEBUG
 LOCAL_SRC_FILES += src/debug.cpp
-endif
 
 
 LOCAL_LDLIBS := -llog
