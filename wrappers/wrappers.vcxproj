@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\debug.cpp" />
     <ClCompile Include="src\error_handling.cpp" />
     <ClCompile Include="src\linklist_cs.cpp" />
     <ClCompile Include="src\marshalling.cpp" />
@@ -56,12 +57,14 @@
     <ClCompile Include="src\object_schema_cs.cpp" />
     <ClCompile Include="src\query_cs.cpp" />
     <ClCompile Include="src\realm-csharp.cpp" />
+    <ClCompile Include="src\results_cs.cpp" />
     <ClCompile Include="src\row_cs.cpp" />
     <ClCompile Include="src\schema_cs.cpp" />
     <ClCompile Include="src\shared_realm_cs.cpp" />
     <ClCompile Include="src\table_cs.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\debug.hpp" />
     <ClInclude Include="src\error_handling.hpp" />
     <ClInclude Include="src\marshalling.hpp" />
     <ClInclude Include="src\object-store\src\binding_context.hpp" />
