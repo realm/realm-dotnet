@@ -17,6 +17,7 @@ namespace IntegrationTests.Shared
         public void SetUp()
         {
             _person = new Person();
+            Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
         }
 
         [Test]
@@ -42,7 +43,7 @@ namespace IntegrationTests.Shared
             _person.LastName = "Dent";
             _person.IsInteresting = true;
 
-            using (var realm = Realm.GetInstance(Path.GetTempFileName()))
+            using (var realm = Realm.GetInstance())
             {
                 using (var transaction = realm.BeginWrite())
                 {

@@ -14,11 +14,14 @@ namespace IntegrationTests
     [TestFixture]
     public class InstanceTests
     {
+        const string specialRealmName = "EnterTheMagic.realm";
+
         [TestFixtureSetUp]
         public void Setup()
         {
-            File.Delete(RealmConfiguration.PathToRealm());
-            File.Delete(RealmConfiguration.PathToRealm("EnterTheMagic.realm"));
+            Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
+            var uniqueConfig = new RealmConfiguration(specialRealmName);
+            Realm.DeleteRealm(uniqueConfig);
         }
 
         [Test]
@@ -82,14 +85,14 @@ namespace IntegrationTests
         public void GetInstanceWithJustFilenameTest()
         {
             // Arrange, act and "assert" that no exception is thrown, using default location
-            Realm.GetInstance("EnterTheMagic.realm").Close();
+            Realm.GetInstance(specialRealmName).Close();
         }
 
         [Test]
         public void DeleteRealmWorksIfClosed()
         {
             // Arrange
-            var config = new RealmConfiguration("EnterTheMagic.realm");
+            var config = new RealmConfiguration(specialRealmName);
             var openRealm = Realm.GetInstance(config);
 
             // Act
@@ -106,13 +109,13 @@ namespace IntegrationTests
         public void GetUniqueInstancesDifferentThreads()
         {
             // Arrange
-            var realm1 = Realm.GetInstance("EnterTheMagic.realm");
+            var realm1 = Realm.GetInstance(specialRealmName);
             Realm realm2 = realm1;  // should be reassigned by other thread
 
             // Act
             var t = new Thread(() =>
                 {
-                    realm2 = Realm.GetInstance("EnterTheMagic.realm");
+                    realm2 = Realm.GetInstance(specialRealmName);
                 });
             t.Start();
             t.Join();
@@ -131,8 +134,8 @@ namespace IntegrationTests
         public void GetCachedInstancesSameThread()
         {
             // Arrange
-            using (var realm1 = Realm.GetInstance("EnterTheMagic.realm"))
-            using (var realm2 = Realm.GetInstance("EnterTheMagic.realm"))
+            using (var realm1 = Realm.GetInstance(specialRealmName))
+            using (var realm2 = Realm.GetInstance(specialRealmName))
             {
                 // Assert
                 Assert.False(GC.ReferenceEquals(realm1, realm2));
@@ -147,8 +150,8 @@ namespace IntegrationTests
         public void InstancesHaveDifferentHashes()
         {
             // Arrange
-            using (var realm1 = Realm.GetInstance("EnterTheMagic.realm"))
-            using (var realm2 = Realm.GetInstance("EnterTheMagic.realm"))
+            using (var realm1 = Realm.GetInstance(specialRealmName))
+            using (var realm2 = Realm.GetInstance(specialRealmName))
             {
                 // Assert
                 Assert.False(GC.ReferenceEquals(realm1, realm2));
@@ -161,7 +164,7 @@ namespace IntegrationTests
         public void DeleteRealmFailsIfOpenSameThread()
         {
             // Arrange
-            var config = new RealmConfiguration("EnterTheMagic.realm");
+            var config = new RealmConfiguration(specialRealmName);
             var openRealm = Realm.GetInstance(config);
 
             // Assert

@@ -14,7 +14,8 @@ static DebugLoggerT debug_log_function = nullptr;
 
 void debug_log(const std::string message)
 {
-  debug_log_function((void*)message.data(), message.size());
+  if (debug_log_function != nullptr && debug_log_function != (DebugLoggerT)-1)
+    debug_log_function((void*)message.data(), message.size());
 }
 
 #endif
