@@ -120,6 +120,12 @@
     <ClCompile Include="src\object-store\src\impl\async_query.cpp">
       <Filter>Source Files\object-store\impl</Filter>
     </ClCompile>
+    <ClCompile Include="src\debug.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\results_cs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\error_handling.hpp">
@@ -205,6 +211,9 @@
     </ClInclude>
     <ClInclude Include="src\object-store\src\impl\weak_realm_notifier_base.hpp">
       <Filter>Header Files\object-store\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\debug.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

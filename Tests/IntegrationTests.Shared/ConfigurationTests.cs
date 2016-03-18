@@ -16,6 +16,12 @@ namespace IntegrationTests
     [TestFixture]
     public class ConfigurationTests
     {
+        private void ReliesOnEncryption()
+        {
+#if ENCRYPTION_DISABLED
+            Assert.Ignore("This test relies on encryption which is not enabled in this build");
+#endif
+        }
 
         [Test]
         public void DefaultConfigurationShouldHaveValidPath()
@@ -113,6 +119,8 @@ namespace IntegrationTests
         [Test]
         public void EncryptionKeyMustBe64Bytes()
         {
+            ReliesOnEncryption();
+
             // Arrange
             var config = new RealmConfiguration("EncryptionKeyMustBe64Bytes.realm");
             var smallKey = new byte[] { 1, 2, 3 };
@@ -127,6 +135,8 @@ namespace IntegrationTests
         [Test]
         public void ValidEncryptionKeyAcceoted()
         {
+            ReliesOnEncryption();
+
             // Arrange
             var config = new RealmConfiguration("ValidEncryptionKeyAcceoted.realm");
             var goldilocksKey = new byte[64];
@@ -140,6 +150,8 @@ namespace IntegrationTests
         [Test]
         public void UnableToOpenWithNoKey()
         {
+            ReliesOnEncryption();
+
             // Arrange
             var config = new RealmConfiguration("UnableToOpenWithNoKey.realm");
             Realm.DeleteRealm(config);  // ensure guarded from prev tests
@@ -156,6 +168,8 @@ namespace IntegrationTests
         [Test]
         public void UnableToOpenWithKeyIfNotEncrypted()
         {
+            ReliesOnEncryption();
+
             // Arrange
             var config = new RealmConfiguration("UnableToOpenWithKeyIfNotEncrypted.realm");
             Realm.DeleteRealm(config);  // ensure guarded from prev tests
@@ -172,6 +186,8 @@ namespace IntegrationTests
         [Test]
         public void UnableToOpenWithDifferentKey()
         {
+            ReliesOnEncryption();
+
             // Arrange
             var config = new RealmConfiguration("UnableToOpenWithDifferentKey.realm");
             Realm.DeleteRealm(config);  // ensure guarded from prev tests
@@ -189,6 +205,8 @@ namespace IntegrationTests
         [Test]
         public void AbleToReopenEncryptedWithSameKey()
         {
+            ReliesOnEncryption();
+
             // Arrange
             var config = new RealmConfiguration("AbleToReopenEncryptedWithSameKey.realm");
             Realm.DeleteRealm(config);  // ensure guarded from prev tests
