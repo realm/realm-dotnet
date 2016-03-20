@@ -45,6 +45,15 @@ namespace Realms
         /// </summary>
         public string DatabasePath {get; private set;}
 
+
+        /// <summary>
+        /// The list of classes persisted in a Realm opened with this configuration.
+        /// </summary>
+        /// <remarks>Specify classes by type. Searched linearly so order in decreasing frequency of creating objects.</remarks>
+        /// <example>eg: `config.ObjectClasses = new Type[] { typeof(CommonClass), typeof(RareClass) };`</example>
+        /// <value>Typically left null so by default all RealmObjects will be able to be stored in all realms.</value>
+        public Type[] ObjectClasses {get; set;} 
+
         /// <summary>
         /// Utility to build a path in which a realm will be created so can consistently use filenames and relative paths.
         /// </summary>

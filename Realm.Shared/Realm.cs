@@ -90,15 +90,25 @@ namespace Realms
         {
             config = config ??  RealmConfiguration.DefaultConfiguration;
 
-            // TODO cache these initializers but note we have plans eg issue
+            // TODO cache these initializers but note complications with ObjectClasses
             var schemaInitializer = new SchemaInitializerHandle();
 
-            foreach (var realmObjectClass in RealmObjectClasses)
+            if (config.ObjectClasses == null)
             {
-                var objectSchemaHandle = GenerateObjectSchema(realmObjectClass);
-                NativeSchema.initializer_add_object_schema(schemaInitializer, objectSchemaHandle);
+                foreach (var realmObjectClass in RealmObjectClasses)
+                {
+                    var objectSchemaHandle = GenerateObjectSchema(realmObjectClass);
+                    NativeSchema.initializer_add_object_schema(schemaInitializer, objectSchemaHandle);
+                }
             }
-
+            else
+            {
+                foreach (var selectedRealmObjectClass in config.ObjectClasses) {
+                    Debug.Assert(RealmObjectClasses.Contains(selectedRealmObjectClass));
+                    var objectSchemaHandle = GenerateObjectSchema(selectedRealmObjectClass);
+                    NativeSchema.initializer_add_object_schema(schemaInitializer, objectSchemaHandle);
+                }
+            }
 
             var schemaHandle = new SchemaHandle(schemaInitializer);
 
@@ -380,6 +390,9 @@ namespace Realms
             if (!IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot create Realm object outside write transactions");
 
+            if (Config.ObjectClasses != null && !Config.ObjectClasses.Contains(objectType))
+                throw new ArgumentException($"The class {objectType.Name} is not in the limited set of classes for this realm");
+            
             var result = (RealmObject)Activator.CreateInstance(objectType);
 
             var tableHandle = _tableHandles[objectType];
