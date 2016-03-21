@@ -273,6 +273,9 @@ namespace Realms
             RuntimeHelpers.PrepareConstrainedRegions();
             try { /* Close handle in a constrained execution region */ }
             finally {
+                // do explicit native close first rather than relying on destruction
+                // in case other handles preserve pointers - they will no longer work but don't stop closing
+                NativeSharedRealm.close(_sharedRealmHandle);
                 _sharedRealmHandle.Close();
             }
         }

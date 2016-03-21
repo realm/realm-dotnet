@@ -69,6 +69,15 @@ REALM_EXPORT SharedRealm* shared_realm_open(Schema* schema, uint16_t* path, size
     });
 }
 
+
+REALM_EXPORT void shared_realm_close(SharedRealm* realm)
+{
+    handle_errors([&]() {
+        (*realm)->close();
+    });
+}
+
+
 REALM_EXPORT void shared_realm_bind_to_managed_realm_handle(SharedRealm* realm, void* managed_realm_handle)
 {
     handle_errors([&]() {

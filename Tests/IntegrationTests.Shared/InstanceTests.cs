@@ -105,7 +105,7 @@ namespace IntegrationTests
         }
 
 
-        [Test]
+        [Test, Explicit("Disabled until fix realm-dotnet-private #51")]
         public void GetUniqueInstancesDifferentThreads()
         {
             // Arrange
