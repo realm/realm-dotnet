@@ -228,13 +228,30 @@ namespace IntegrationTests
             using (var lonelyRealm = Realm.GetInstance(config)) {
                 using (var trans = lonelyRealm.BeginWrite())
                 {
-                    Assert.Throws<System.ArgumentException>(() =>
+                    Assert.Throws<ArgumentException>(() =>
                         {
                             lonelyRealm.CreateObject<Person>(); 
                         }, 
                         "Can't create an object with a class not included in this Realm"); 
                 } // transaction
             }  // realm
+        }
+
+
+        [Test]
+        public void RealmObjectClassesOnlyAllowRealmObjects()
+        {
+            // Arrange
+            var config = new RealmConfiguration("RealmWithOneClass.realm");
+            Realm.DeleteRealm(config);
+            config.ObjectClasses = new Type[] {typeof(LoneClass), typeof(object)};
+
+            // Act and assert
+            Assert.Throws<ArgumentException>(() =>
+                {
+                    Realm.GetInstance(config); 
+                }, 
+                "Can't have classes in the list which are not RealmObjects"); 
         }
 
     }

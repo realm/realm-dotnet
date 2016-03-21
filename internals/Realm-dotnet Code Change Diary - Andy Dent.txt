@@ -1901,10 +1901,12 @@ RealmConfiguration.cs
 InstanceTests.cs
 - RealmWithOneClassThrowsIfUseOther added
 - RealmWithOneClassWritesDesiredClass added
-
+- RealmObjectClassesOnlyAllowRealmObjects added
 
 Realm.cs
 - CreateObject(Type)
   - check for ObjectClasses on the config and throw an exception if class doesn't match.
-- GetInstance - check for ObjectClasses on the config and limit schema init to that list 
+- GetInstance 
+  - check for ObjectClasses on the config and limit schema init to that list 
+  - check that objectClasses are all RealmObject types
     

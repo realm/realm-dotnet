@@ -104,6 +104,9 @@ namespace Realms
             else
             {
                 foreach (var selectedRealmObjectClass in config.ObjectClasses) {
+                    if (selectedRealmObjectClass.BaseType != typeof(RealmObject))
+                        throw new ArgumentException($"The class {selectedRealmObjectClass.Name} must descend from RealmObject");
+                    
                     Debug.Assert(RealmObjectClasses.Contains(selectedRealmObjectClass));
                     var objectSchemaHandle = GenerateObjectSchema(selectedRealmObjectClass);
                     NativeSchema.initializer_add_object_schema(schemaInitializer, objectSchemaHandle);
