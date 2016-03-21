@@ -1889,4 +1889,24 @@ ConfigurationTests.cs
 
 wrappers/debug.cpp
 - added check to ensure doesn't invoke invalid callback
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#346 Limit Classes by Realm
+
+RealmConfiguration.cs
+- added ObjectClasses member (named to match Cocoa)
+    
+    
+InstanceTests.cs
+- RealmWithOneClassThrowsIfUseOther added
+- RealmWithOneClassWritesDesiredClass added
+- RealmObjectClassesOnlyAllowRealmObjects added
+
+Realm.cs
+- CreateObject(Type)
+  - check for ObjectClasses on the config and throw an exception if class doesn't match.
+- GetInstance 
+  - check for ObjectClasses on the config and limit schema init to that list 
+  - check that objectClasses are all RealmObject types
     

@@ -3,6 +3,7 @@
 Still requires installation from private copy of NuGet download.
 
 ### Major Fixes
+* You can now restrict the classes allowed in a given Realm using `RealmConfiguration.ObjectClasses`.
 * LINQ improvements:
   * Simple bool searches work without having to use `== true` (issue #362)
   * ! operator works to negate either simple bool properties or complex expressions (issue #77)
