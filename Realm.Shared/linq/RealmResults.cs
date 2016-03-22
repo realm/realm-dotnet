@@ -52,7 +52,7 @@ namespace Realms
         }
 
         internal RealmResults(Realm realm, bool createdByAll)
-            : this( realm, new RealmResultsProvider(realm), null, createdByAll)
+            : this(realm, new RealmResultsProvider(realm), null, createdByAll)
         {
         }
 
