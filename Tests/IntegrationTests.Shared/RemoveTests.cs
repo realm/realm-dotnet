@@ -6,6 +6,8 @@ using System;
 using NUnit.Framework;
 using Realms;
 using System.IO;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace IntegrationTests.Shared
 {
@@ -33,7 +35,7 @@ namespace IntegrationTests.Shared
         public void RemoveSucceedsTest()
         {
             // Arrange
-            Person p1, p2, p3;
+            Person p1 = null, p2 = null, p3 = null;
             _realm.Write(() =>
             {
                 p1 = _realm.CreateObject<Person>(); p1.FirstName = "A";
@@ -56,7 +58,7 @@ namespace IntegrationTests.Shared
         public void RemoveOutsideTransactionShouldFail()
         {
             // Arrange
-            Person p;
+            Person p = null;
             _realm.Write(() => p = _realm.CreateObject<Person>());
 
             // Act and assert
