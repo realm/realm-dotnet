@@ -22,9 +22,9 @@ namespace Realms
         private readonly RealmResultsProvider _provider = null;  // null if _allRecords
         private readonly bool _allRecords = false;
         private readonly Realm _realm;
-        private ResultsHandle _resultsHandle = null;
 
-        internal ResultsHandle ResultsHandle => _resultsHandle;
+        internal ResultsHandle ResultsHandle => _resultsHandle ?? (_resultsHandle = CreateResultsHandle()); 
+        private ResultsHandle _resultsHandle = null;
 
         public IQueryProvider Provider => _provider;
 
@@ -36,24 +36,28 @@ namespace Realms
             Expression = expression ?? Expression.Constant(this);
             _allRecords = createdByAll;
 
-            var retType = typeof(T);
+        }
+
+        internal RealmResults(Realm realm, bool createdByAll)
+            : this(realm, new RealmResultsProvider(realm), null, createdByAll)
+        {
+        }
+
+        private ResultsHandle CreateResultsHandle()
+        {
+            var retType = typeof (T);
             if (_allRecords)
             {
-                _resultsHandle = _realm.MakeResultsForTable(retType);
+                return _realm.MakeResultsForTable(retType);
             }
             else
             {
                 // do all the LINQ expression evaluation to build a query
                 var qv = _provider.MakeVisitor(retType);
                 qv.Visit(Expression);
-                var queryHandle = qv._coreQueryHandle;  // grab out the built query definition
-                _resultsHandle = _realm.MakeResultsForQuery(retType, queryHandle);
+                var queryHandle = qv._coreQueryHandle; // grab out the built query definition
+                return _realm.MakeResultsForQuery(retType, queryHandle);
             }
-        }
-
-        internal RealmResults(Realm realm, bool createdByAll)
-            : this(realm, new RealmResultsProvider(realm), null, createdByAll)
-        {
         }
 
         /// <summary>
@@ -62,7 +66,7 @@ namespace Realms
         /// <returns>An IEnumerator which will iterate through found Realm persistent objects.</returns>
         public IEnumerator<T> GetEnumerator()
         {
-            return new RealmResultsEnumerator<T>(_realm, _resultsHandle);
+            return new RealmResultsEnumerator<T>(_realm, ResultsHandle);
         }
 
         IEnumerator IEnumerable.GetEnumerator()
