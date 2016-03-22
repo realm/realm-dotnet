@@ -565,13 +565,16 @@ namespace Realms
         public void RemoveRange<T>(RealmResults<T> range) where T: RealmObject
         {
             if (!IsInTransaction)
-                throw new RealmOutsideTransactionException("Cannot remove Realm object outside write transactions");
+                throw new RealmOutsideTransactionException("Cannot remove Realm objects outside write transactions");
 
             NativeResults.clear(range.ResultsHandle);
         }
 
         public void RemoveAll<T>() where T: RealmObject
         {
+            if (!IsInTransaction)
+                throw new RealmOutsideTransactionException("Cannot remove all Realm objects outside write transactions");
+
             RemoveRange(All<T>());
         }
     }
