@@ -1921,4 +1921,17 @@ shared_realm_cs.cpp
 InstanceTests.cs
 - GetUniqueInstancesDifferentThreads made explicit until fixed
   to separate effect of its failure from running other tests.
-  
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#444 Fix Analytics to match Cocoa
+
+RealmWeaver/Analytics.cs
+- TargetOS changed case and content to match 
+- Analytics.JsonTemplate
+  - Binding changed to "dotnet"
+  - "Langauge" : "c#" added
+- ComputeHostOSNameAndVersion 
+  - report standard lowercase ids
+  - report windows instead of Generic .net
+- TargetOS      
+  - report standard lowercase ids
