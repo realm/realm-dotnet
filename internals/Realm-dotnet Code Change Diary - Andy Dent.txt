@@ -1914,16 +1914,8 @@ Realm.cs
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 Private #50 - Fix Failure to Close
 
-NativeSharedRealm.cs
-- close added invoking shared_realm_close
-
-
-Realm.cs
-- Close call NativeSharedRealm.close() prior to closing handle
-
-
 shared_realm_cs.cpp
-- added shared_realm_close
+- shared_realm_destroy - close the Realm as well as deleting shared handle
 
 
 InstanceTests.cs
