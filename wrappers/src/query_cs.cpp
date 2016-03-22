@@ -22,7 +22,7 @@ REALM_EXPORT void query_destroy(Query* query_ptr)
     });
 }
 
-// TODO: Replace this with TableView.
+
 REALM_EXPORT Row* query_find(Query * query_ptr, size_t begin_at_table_row)
 {
     return handle_errors([&]() {

@@ -124,10 +124,6 @@ namespace Realms
             if (root == null)//if we are a root object, we need a list for our children and Root is already null
             {
                 _unbindList = GetUnbindList();
-#if DEBUG
-                AddToDebugLists();
-//                ThisRootID = RootsInExistance++;//unbindlist is called exactly once per root so use this as a way to set an unique id
-#endif
             }
             else{
               Root = root;
@@ -200,26 +196,9 @@ namespace Realms
         protected  RealmHandle() : base(true)
         {
             _unbindList = GetUnbindList();//we are a root object, we need a list for our children
-#if DEBUG
-            AddToDebugLists();
-#endif
+
         }
 
-       
-        //in Debug mode, the individual handles keep track on what handles they get into their lists, and can answer how the list load
-        //has been, and what the status is. This is used in some unit tests to report how the unbind lists are doing, and to ensure
-        //that we end up having totally empty unbound lists after we have run.
-        //all the code doing this, is guarded by #if DEBUG and not running when we are in release mode
-        //the debug code is fairly expensive timewise, we might consider putting it into its own define        
-#if DEBUG 
-        private void AddToDebugLists()
-        {
-            _thisRootId = _rootsInExistance++;//unbindlist is called exactly once per root so use this as a way to set an unique id
-            LastForListType.Add(0);
-            MaxForListType.Add(0);
-            TypeForListType.Add(GetType());            
-        }
-#endif
 
         //called automatically but only once from criticalhandle when this handle is disposing or finalizing
         //see http://reflector.webtropy.com/default.aspx/4@0/4@0/DEVDIV_TFS/Dev10/Releases/RTMRel/ndp/clr/src/BCL/System/Runtime/InteropServices/CriticalHandle@cs/1305376/CriticalHandle@cs
@@ -233,10 +212,10 @@ namespace Realms
             if (IsInvalid)
                 return true;
 
-#if !DEBUG
+
             try
             {
-#endif
+
                 //if we are a root object then we can safely assume that no more user threads are going this way:                    
                 //if we are a root object and in a finalizer thread , then we know that no more user threads will hit us
                 //if we are a root object and being called via dispose, then we know that the Table(or whatever) wrapper will block any further calls
@@ -257,14 +236,12 @@ namespace Realms
                     //note that the this instance cannot and will never be aroot itself bc root != null
                 }
                 return true;
-#if !DEBUG
             }
             catch (Exception)//okay to catch general exception here, we do really not wish to leak any exceptions right now
             {
                 return false;
                 //it would be really bad if we got an exception in here. We must not pass it on, but have to return false
             }
-#endif
         }
 
 
@@ -296,44 +273,6 @@ namespace Realms
             return base.ToString() + String.Format(CultureInfo.InvariantCulture, ": {0:X8}", (long) handle);
         }
 
-//these are for debugging purposes, not lock protected while they certanly should be
-#if DEBUG
-
-        private static int _rootsInExistance;//increased every time we create a new root
-        private int _thisRootId ;//the ID of this root, index into the lists below
-        private static readonly List<long> MaxForListType = new List<long>();//max for this root, indexed by rootid
-        private static readonly List<long> LastForListType = new List<long>();//last for this root
-        private static readonly List<Type> TypeForListType = new List<Type>();//type for this root
-
-        /// <summary>
-        /// Debug mode only.
-        /// This method will report on console any RealmHandles that have not yet been unbound.
-        /// If there are any objects reported, it is an indication that some handles have been leaked,
-        /// and that our cleanup has not yet unbound them.
-        /// It could also be an indication of a bug in the implementation of RealmHandle or one of its descendants.
-        /// The unit Test ToolBoxTests.TestSizeCalls calls this method in debug mode, as it is usually the last unit test.
-        /// to run. It then forces a GC and waits for the finalizers trigged by the GC to finish, then it calls again.
-        /// The second call ought to report no notfinalized objects.
-        /// </summary>
-        public static void ReportUnbindListStatus()
-        {
-            var notFinalizedObjects=false;//goes true if we find unfinalized objects
-            for (var n=0; n<MaxForListType.Count;++n)
-            {
-                if (MaxForListType[n] > 0 && LastForListType[n] > 0)//just list the interesting ones
-                {
-                    Console.WriteLine("ID:{0,5}type:{1,30} Max:{2,8} Last:{3,8}", n, TypeForListType[n], MaxForListType[n], LastForListType[n]);
-                    notFinalizedObjects = true;//there are still unfinalized objects
-                }
-            }
-            if (!notFinalizedObjects)
-            {
-                Console.WriteLine("No Not-Finalized objects, all is good");
-            }
-        }
-#endif
-
-
 
         /// <summary>
         /// Called by children to this root, when they would like to 
@@ -350,20 +289,10 @@ namespace Realms
                 {
                     UnbindLockedList();
                     handleToUnbind.Unbind();
-#if DEBUG
-                    LastForListType[_thisRootId] = _unbindList.Count;
-                    MaxForListType[_thisRootId] = Math.Max(MaxForListType[_thisRootId], _unbindList.Count);
-                    TypeForListType[_thisRootId] = GetType();
-#endif
                 }
                 else
                 {
                     _unbindList.Add(handleToUnbind);//resurrects handleToUnbind - but it is never a root object bc RequestUnbind is always called above with root.
-#if DEBUG
-                        LastForListType[_thisRootId] = _unbindList.Count;
-                        MaxForListType[_thisRootId] = Math.Max(MaxForListType[_thisRootId], _unbindList.Count);
-                        TypeForListType[_thisRootId] = GetType();
-#endif
                 }
             }
         }

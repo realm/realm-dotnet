@@ -14,14 +14,13 @@ namespace IntegrationTests.Shared
     {
         //TODO: this is ripe for refactoring across test fixture classes
 
-        protected string _databasePath;
         protected Realm _realm;
 
         [SetUp]
         public void Setup()
         {
-            _databasePath = Path.GetTempFileName();
-            _realm = Realm.GetInstance(_databasePath);
+            Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
+            _realm = Realm.GetInstance();
         }
 
         [TearDown]

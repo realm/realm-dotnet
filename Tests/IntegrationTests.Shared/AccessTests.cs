@@ -11,14 +11,13 @@ namespace IntegrationTests.Shared
     [TestFixture]
     public class AccessTests
     {
-        protected string _databasePath;
         protected Realm _realm;
 
         [SetUp]
         public void Setup()
         {
-            _databasePath = Path.GetTempFileName();
-            _realm = Realm.GetInstance(_databasePath);
+            Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
+            _realm = Realm.GetInstance();
         }
 
         [TearDown]

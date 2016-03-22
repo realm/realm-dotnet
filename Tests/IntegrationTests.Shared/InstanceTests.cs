@@ -7,17 +7,21 @@ using System.IO;
 using NUnit.Framework;
 using System.Threading.Tasks;
 using Realms;
+using System.Threading;
 
 namespace IntegrationTests
 {
     [TestFixture]
     public class InstanceTests
     {
+        const string specialRealmName = "EnterTheMagic.realm";
+
         [TestFixtureSetUp]
         public void Setup()
         {
-            File.Delete(RealmConfiguration.PathToRealm());
-            File.Delete(RealmConfiguration.PathToRealm("EnterTheMagic.realm"));
+            Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
+            var uniqueConfig = new RealmConfiguration(specialRealmName);  // for when need 2 realms or want to not use default
+            Realm.DeleteRealm(uniqueConfig);
         }
 
         [Test]
@@ -80,15 +84,15 @@ namespace IntegrationTests
         [Test]
         public void GetInstanceWithJustFilenameTest()
         {
-            // Arrange, act and "assert" that no exception is thrown, using default location
-            Realm.GetInstance("EnterTheMagic.realm").Close();
+            // Arrange, act and "assert" that no exception is thrown, using default location + unique name
+            Realm.GetInstance(specialRealmName).Close();
         }
 
         [Test]
         public void DeleteRealmWorksIfClosed()
         {
             // Arrange
-            var config = new RealmConfiguration("EnterTheMagic.realm");
+            var config = RealmConfiguration.DefaultConfiguration;
             var openRealm = Realm.GetInstance(config);
 
             // Act
@@ -101,19 +105,20 @@ namespace IntegrationTests
         }
 
 
-        [Test]
+        [Test, Explicit("Disabled until fix realm-dotnet-private #51")]
         public void GetUniqueInstancesDifferentThreads()
         {
             // Arrange
-            var realm1 = Realm.GetInstance("EnterTheMagic.realm");
+            var realm1 = Realm.GetInstance();
             Realm realm2 = realm1;  // should be reassigned by other thread
 
             // Act
-            var getOther = Task.Factory.StartNew(() =>
+            var t = new Thread(() =>
                 {
-                    realm2 = Realm.GetInstance("EnterTheMagic.realm");
+                    realm2 = Realm.GetInstance();
                 });
-            getOther.Wait();
+            t.Start();
+            t.Join();
 
             // Assert
             Assert.False(GC.ReferenceEquals(realm1, realm2));
@@ -129,8 +134,8 @@ namespace IntegrationTests
         public void GetCachedInstancesSameThread()
         {
             // Arrange
-            using (var realm1 = Realm.GetInstance("EnterTheMagic.realm"))
-            using (var realm2 = Realm.GetInstance("EnterTheMagic.realm"))
+            using (var realm1 = Realm.GetInstance())
+            using (var realm2 = Realm.GetInstance())
             {
                 // Assert
                 Assert.False(GC.ReferenceEquals(realm1, realm2));
@@ -145,8 +150,8 @@ namespace IntegrationTests
         public void InstancesHaveDifferentHashes()
         {
             // Arrange
-            using (var realm1 = Realm.GetInstance("EnterTheMagic.realm"))
-            using (var realm2 = Realm.GetInstance("EnterTheMagic.realm"))
+            using (var realm1 = Realm.GetInstance())
+            using (var realm2 = Realm.GetInstance())
             {
                 // Assert
                 Assert.False(GC.ReferenceEquals(realm1, realm2));
@@ -155,27 +160,18 @@ namespace IntegrationTests
             }
         }
 
-
-
-
-        /*
-         * uncomment when fix https://github.com/realm/realm-dotnet/issues/308
-        [Test]
+        [Test, Ignore("Currently doesn't work. Ref #308")]
         public void DeleteRealmFailsIfOpenSameThread()
         {
             // Arrange
-            var config = new RealmConfiguration("EnterTheMagic.realm");
+            var config = new RealmConfiguration();
             var openRealm = Realm.GetInstance(config);
 
             // Assert
             Assert.Throws<RealmPermissionDeniedException>(() => Realm.DeleteRealm(config));
         }
-        */
 
-        /*
-        Comment out until work out how to fix
-        see issue 199
-        [Test]
+        [Test, Ignore("Currently doesn't work. Ref #199")]
         public void GetInstanceShouldThrowIfFileIsLocked()
         {
             // Arrange
@@ -186,13 +182,77 @@ namespace IntegrationTests
                 Assert.Throws<RealmPermissionDeniedException>(() => Realm.GetInstance(databasePath));
             }
         }
-        */
 
-        [Test]
+        [Test, Ignore("Currently doesn't work. Ref #338")]
         public void GetInstanceShouldThrowWithBadPath()
         {
             // Arrange
             Assert.Throws<RealmPermissionDeniedException>(() => Realm.GetInstance("/"));
         }
+
+
+        class LoneClass : RealmObject
+        {
+            public string Name { get; set;}
+        }
+
+        [Test]
+        public void RealmWithOneClassWritesDesiredClass()
+        {
+            // Arrange
+            var config = new RealmConfiguration("RealmWithOneClass.realm");
+            Realm.DeleteRealm(config);
+            config.ObjectClasses = new Type[] {typeof(LoneClass)};
+
+            // Act
+            using (var lonelyRealm = Realm.GetInstance(config)) {
+                lonelyRealm.Write( () => {
+                    var p = lonelyRealm.CreateObject<LoneClass>();
+                    p.Name = "The Singular";
+                }); 
+
+                // Assert
+                Assert.That(lonelyRealm.All<LoneClass>().Count(), Is.EqualTo(1));
+            }
+        }
+
+        [Test]
+        public void RealmWithOneClassThrowsIfUseOther()
+        {
+            // Arrange
+            var config = new RealmConfiguration("RealmWithOneClass.realm");
+            Realm.DeleteRealm(config);
+            config.ObjectClasses = new Type[] {typeof(LoneClass)};
+
+            // Act and assert
+            using (var lonelyRealm = Realm.GetInstance(config)) {
+                using (var trans = lonelyRealm.BeginWrite())
+                {
+                    Assert.Throws<ArgumentException>(() =>
+                        {
+                            lonelyRealm.CreateObject<Person>(); 
+                        }, 
+                        "Can't create an object with a class not included in this Realm"); 
+                } // transaction
+            }  // realm
+        }
+
+
+        [Test]
+        public void RealmObjectClassesOnlyAllowRealmObjects()
+        {
+            // Arrange
+            var config = new RealmConfiguration("RealmWithOneClass.realm");
+            Realm.DeleteRealm(config);
+            config.ObjectClasses = new Type[] {typeof(LoneClass), typeof(object)};
+
+            // Act and assert
+            Assert.Throws<ArgumentException>(() =>
+                {
+                    Realm.GetInstance(config); 
+                }, 
+                "Can't have classes in the list which are not RealmObjects"); 
+        }
+
     }
 }

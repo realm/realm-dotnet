@@ -18,21 +18,28 @@ namespace Realms
     public class RealmResults<T> : IQueryable<T>
     {
         public Type ElementType => typeof (T);
-        public Expression Expression { get; }
-        public IQueryProvider Provider => _provider;
-        private readonly RealmResultsProvider _provider;
+        public Expression Expression { get; } = null; // null if _allRecords
+        private readonly RealmResultsProvider _provider = null;  // null if _allRecords
         private bool _allRecords = false;
+        private readonly Realm _realm;
+        private ResultsHandle _resultsHandle = null;
+
+        public IQueryProvider Provider => _provider;
 
         internal RealmResults(RealmResultsProvider queryProvider, Expression expression) 
         {
             this._provider = queryProvider;
+            _realm = _provider?._realm ?? null;
             this.Expression = expression;
         }
 
-        internal RealmResults(Realm realm, bool createdByAll=false) : this(new RealmResultsProvider(realm), null)
+        internal RealmResults(Realm realm, bool createdByAll=false)
         {
+            _realm = realm;
             _allRecords = createdByAll;
-            this.Expression = Expression.Constant(this);
+            _provider = new RealmResultsProvider(realm);
+            this.Expression = Expression.Constant (this);
+
         }
 
         /// <summary>
@@ -42,7 +49,22 @@ namespace Realms
         public IEnumerator<T> GetEnumerator()
         {
             var retType = typeof(T);
-            return new RealmResultsEnumerator<T>(_provider._realm, _provider.MakeVisitor(retType), Expression);
+            if (_resultsHandle == null)  // first call
+            {
+                if (_allRecords)
+                {
+                    _resultsHandle = _realm.MakeResultsForTable(retType);
+                }
+                else
+                {
+                    // do all the LINQ expression evaluation to build a query
+                    var qv = _provider.MakeVisitor(retType);
+                    qv.Visit(this.Expression);
+                    var queryHandle = qv._coreQueryHandle;  // grab out the built query definition
+                    _resultsHandle = _realm.MakeResultsForQuery(retType, queryHandle);
+                }
+            }
+            return new RealmResultsEnumerator<T>(_realm, _resultsHandle);
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -63,11 +85,12 @@ namespace Realms
             if (_allRecords)
             {
                 // use the type captured at build based on generic T
-                var tableHandle = _provider._realm._tableHandles[ElementType];
+                var tableHandle = _realm._tableHandles[ElementType];
                 return (int)NativeTable.count_all(tableHandle);
             }
             // we should be in RealmQRealmResultsr.VisitMethodCall, not here, ever, seriously!
-            throw new NotImplementedException("Count should not be invoked directly on a RealmQRealmResultss created by All. LINQ will not invoke this."); 
+            throw new NotImplementedException("Count should not be invoked directly on a RealmResults created by All. LINQ will not invoke this."); 
         }    
-    }
+
+    }  // RealmResults
 }

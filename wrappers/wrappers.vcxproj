@@ -19,26 +19,19 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\debug.cpp" />
     <ClCompile Include="src\error_handling.cpp" />
     <ClCompile Include="src\linklist_cs.cpp" />
     <ClCompile Include="src\marshalling.cpp" />
-    <ClCompile Include="src\object-store\src\impl\android\cached_realm.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="src\object-store\src\impl\android\external_commit_helper.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="src\object-store\src\impl\apple\cached_realm.cpp">
+    <ClCompile Include="src\object-store\src\impl\android\weak_realm_notifier.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="src\object-store\src\impl\apple\external_commit_helper.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -46,6 +39,11 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="src\object-store\src\impl\apple\weak_realm_notifier.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="src\object-store\src\impl\async_query.cpp" />
     <ClCompile Include="src\object-store\src\impl\generic\external_commit_helper.cpp" />
     <ClCompile Include="src\object-store\src\impl\realm_coordinator.cpp" />
     <ClCompile Include="src\object-store\src\impl\transact_log_handler.cpp" />
@@ -59,26 +57,29 @@
     <ClCompile Include="src\object_schema_cs.cpp" />
     <ClCompile Include="src\query_cs.cpp" />
     <ClCompile Include="src\realm-csharp.cpp" />
+    <ClCompile Include="src\results_cs.cpp" />
     <ClCompile Include="src\row_cs.cpp" />
     <ClCompile Include="src\schema_cs.cpp" />
     <ClCompile Include="src\shared_realm_cs.cpp" />
     <ClCompile Include="src\table_cs.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\debug.hpp" />
     <ClInclude Include="src\error_handling.hpp" />
     <ClInclude Include="src\marshalling.hpp" />
     <ClInclude Include="src\object-store\src\binding_context.hpp" />
-    <ClInclude Include="src\object-store\src\impl\android\cached_realm.hpp" />
     <ClInclude Include="src\object-store\src\impl\android\external_commit_helper.hpp" />
-    <ClInclude Include="src\object-store\src\impl\apple\cached_realm.hpp" />
+    <ClInclude Include="src\object-store\src\impl\android\weak_realm_notifier.hpp" />
     <ClInclude Include="src\object-store\src\impl\apple\external_commit_helper.hpp" />
-    <ClInclude Include="src\object-store\src\impl\cached_realm.hpp" />
-    <ClInclude Include="src\object-store\src\impl\cached_realm_base.hpp" />
+    <ClInclude Include="src\object-store\src\impl\apple\weak_realm_notifier.hpp" />
+    <ClInclude Include="src\object-store\src\impl\async_query.hpp" />
     <ClInclude Include="src\object-store\src\impl\external_commit_helper.hpp" />
-    <ClInclude Include="src\object-store\src\impl\generic\cached_realm.hpp" />
     <ClInclude Include="src\object-store\src\impl\generic\external_commit_helper.hpp" />
+    <ClInclude Include="src\object-store\src\impl\generic\weak_realm_notifier.hpp" />
     <ClInclude Include="src\object-store\src\impl\realm_coordinator.hpp" />
     <ClInclude Include="src\object-store\src\impl\transact_log_handler.hpp" />
+    <ClInclude Include="src\object-store\src\impl\weak_realm_notifier.hpp" />
+    <ClInclude Include="src\object-store\src\impl\weak_realm_notifier_base.hpp" />
     <ClInclude Include="src\object-store\src\index_set.hpp" />
     <ClInclude Include="src\object-store\src\list.hpp" />
     <ClInclude Include="src\object-store\src\object_accessor.hpp" />
