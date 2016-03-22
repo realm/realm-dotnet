@@ -232,5 +232,15 @@ namespace Realms
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }
+
+        public void RemoveRange<T>(RealmResults<T> range) where T: RealmObject
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+        }
+
+        public void RemoveAll<T>() where T: RealmObject
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+        }
     }
 }
