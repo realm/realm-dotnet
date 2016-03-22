@@ -24,6 +24,8 @@ namespace Realms
         private readonly Realm _realm;
         private ResultsHandle _resultsHandle = null;
 
+        internal ResultsHandle ResultsHandle => _resultsHandle;
+
         public IQueryProvider Provider => _provider;
 
         internal RealmResults(RealmResultsProvider queryProvider, Expression expression) 

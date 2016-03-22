@@ -562,7 +562,7 @@ namespace Realms
             NativeTable.remove_row(tableHandle, (RowHandle)obj.RowHandle);
         }
 
-        public void RemoveRange(RealmResults range)
+        public void RemoveRange<T>(RealmResults<T> range)
         {
             if (!IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot remove Realm object outside write transactions");
