@@ -25,5 +25,8 @@ namespace Realms
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_row", CallingConvention = CallingConvention.Cdecl)]
         internal static extern RowHandle get_row(ResultsHandle results, IntPtr index);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_clear", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void clear(ResultsHandle results);
     }
 }

@@ -55,4 +55,11 @@ REALM_EXPORT Row* results_get_row(Results* results_ptr, size_t ndx)
   });
 }
 
+REALM_EXPORT void results_clear(Results* results_ptr)
+{
+    handle_errors([&]() {
+        results_ptr->clear();
+    });
+}
+
 }   // extern "C"

@@ -11,7 +11,7 @@ namespace Realms
 {
     internal class RealmResultsProvider : IQueryProvider
     {
-        internal Realm _realm;
+        private Realm _realm;
 
         internal RealmResultsProvider(Realm realm)
         {
@@ -25,7 +25,7 @@ namespace Realms
 
         public IQueryable<T> CreateQuery<T>(Expression expression)
         {
-            return new RealmResults<T>(this, expression);
+            return new RealmResults<T>(_realm, this, expression, false);
         }
 
         public IQueryable CreateQuery(Expression expression)
