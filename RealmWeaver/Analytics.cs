@@ -48,7 +48,9 @@ namespace RealmWeaver
       ""distinct_id"": ""%USER_ID%"",
       ""Anonymized MAC Address"": ""%USER_ID%"",
       ""Anonymized Bundle ID"": ""%APP_ID%"",
-      ""Binding"": ""c#"",
+      ""Binding"": ""dotnet"",
+      ""Language"": ""c#"",
+      ""Framework"": ""xamarin"",
       ""Realm Version"": ""%REALM_VERSION%"",
       ""Host OS Type"": ""%OS_TYPE%"",
       ""Host OS Version"": ""%OS_VERSION%"",
@@ -88,13 +90,13 @@ namespace RealmWeaver
             get
             {
                 if (_moduleDefinition.AssemblyReferences.Any(r => r.Name == "Xamarin.iOS"))
-                    return "iOS";
+                    return "ios";
                 else if (_moduleDefinition.AssemblyReferences.Any(r => r.Name == "Xamarin.Mac"))
-                    return "Mac OS X";
+                    return "osx";
                 else if (_moduleDefinition.AssemblyReferences.Any(r => r.Name == "Mono.Android"))
-                    return "Android";
+                    return "android";
                 else
-                    return "Generic .net";
+                    return "windows";  // in theory is generic .Net but Tim requested we use windows for now
                 // TODO: figure out a way to tell whether we're building for Windows, UWP, PCL, Unity(?), etc. if we wanted to
             }
         }
@@ -126,6 +128,10 @@ namespace RealmWeaver
 
         internal void SubmitAnalytics()
         {
+        // uncomment next two lines to inspect the payload under Windows VS build
+        //    var load = JsonPayload;
+        //    Debugger.Launch();  
+
             var base64Payload = Convert.ToBase64String(Encoding.UTF8.GetBytes(JsonPayload));
             var request = HttpWebRequest.CreateHttp(new Uri("https://api.mixpanel.com/track/?data=" + base64Payload + "&ip=1"));
             request.Method = "GET";
@@ -149,16 +155,20 @@ namespace RealmWeaver
             {
             // Mono completely messes up reporting the OS name and version for OS X, so...
                 case PlatformID.MacOSX:
+                    name = "osx";
+                    break;
                 case PlatformID.Unix:
-                    if (MacOSXVersion.ComputeSwVersionOSNameAndVersion(out name, out version))
-                        return;
-                // in case the above fails, falback to the generic method below
-                    goto default;
+                    name = "linux";
+                    break;
+                case PlatformID.Win32Windows:
+                case PlatformID.Win32NT:
+                    name = "windows";
+                    break;
                 default:
                     name = Environment.OSVersion.Platform.ToString();
-                    version = Environment.OSVersion.Version.ToString();
                     break;
             }
+            version = Environment.OSVersion.Version.ToString();
         }
 
         private static class MacOSXVersion
