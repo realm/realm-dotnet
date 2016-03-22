@@ -273,6 +273,8 @@ namespace Realms
             RuntimeHelpers.PrepareConstrainedRegions();
             try { /* Close handle in a constrained execution region */ }
             finally {
+                // Note we expect this call to also do explicit native close first rather than relying on destruction
+                // in case other handles preserve pointers - they will no longer work but don't stop closing
                 _sharedRealmHandle.Close();
             }
         }

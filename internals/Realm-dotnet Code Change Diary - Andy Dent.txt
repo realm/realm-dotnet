@@ -1909,4 +1909,16 @@ Realm.cs
 - GetInstance 
   - check for ObjectClasses on the config and limit schema init to that list 
   - check that objectClasses are all RealmObject types
-    
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Private #50 - Fix Failure to Close
+
+shared_realm_cs.cpp
+- shared_realm_destroy - close the Realm as well as deleting shared handle
+
+
+InstanceTests.cs
+- GetUniqueInstancesDifferentThreads made explicit until fixed
+  to separate effect of its failure from running other tests.
+  
