@@ -65,9 +65,35 @@ namespace IntegrationTests.Shared
             Assert.Throws<RealmOutsideTransactionException>(() => _realm.Remove(p) );
         }
 
+        [Test]
+        public void RemoveRangeCanRemoveSpecificObjects()
+        {
+            // Arrange
+            _realm.Write(() =>
+            {
+                var p1 = _realm.CreateObject<Person>();
+                p1.FirstName = "deletable person #1";
+                p1.IsInteresting = false;
+
+                var p2 = _realm.CreateObject<Person>();
+                p2.FirstName = "person to keep";
+                p2.IsInteresting = true;
+
+                var p3 = _realm.CreateObject<Person>();
+                p3.FirstName = "deletable person #2";
+                p3.IsInteresting = false;
+            });
+
+            // Act
+            _realm.Write(() => _realm.RemoveRange<Person>(((RealmResults<Person>)_realm.All<Person>().Where(p => !p.IsInteresting))));
+
+            // Assert
+            Assert.That(_realm.All<Person>().ToList().Select(p => p.FirstName).ToArray(),
+                Is.EqualTo(new[] { "person to keep" }));
+        }
 
         [Test]
-        public void RemoveRangeCanRemoveAllObjectsOfAGivenType() 
+        public void RemoveAllRemoveAllObjectsOfAGivenType() 
         {
             // Arrange
             _realm.Write(() =>
@@ -80,10 +106,11 @@ namespace IntegrationTests.Shared
             });
 
             // Act
-            _realm.Write(() => _realm.RemoveRange(_realm.All<Person>()));
+            _realm.Write(() => _realm.RemoveAll<Person>());
 
             // Assert
             Assert.That(_realm.All<Person>().Count(), Is.EqualTo(0));
         }
+
     }
 }
