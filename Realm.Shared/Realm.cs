@@ -597,9 +597,7 @@ namespace Realms
 
             foreach (var objectClass in objectClasses)
             {
-                var parameterizedType = realmResultsType.MakeGenericType(objectClass);
-                var all = Activator.CreateInstance(parameterizedType, this, true);
-                var resultsHandle = (ResultsHandle)objectClass.GetProperty("ResultsHandle").GetValue(all);
+                var resultsHandle = MakeResultsForTable(objectClass);
                 NativeResults.clear(resultsHandle);
             }
         }
