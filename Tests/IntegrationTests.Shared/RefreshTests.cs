@@ -14,14 +14,12 @@ namespace IntegrationTests.Shared
     [TestFixture]
     public class RefreshTests
     {
-        private string _databasePath;
         private Realm _realm;
 
         [SetUp]
         public void SetUp()
         {
-            _databasePath = Path.GetTempFileName();
-            _realm = Realm.GetInstance(_databasePath);
+            _realm = Realm.GetInstance();
         }
 
         [TearDown]
@@ -35,7 +33,7 @@ namespace IntegrationTests.Shared
         {
             var thread = new Thread(() => 
             {
-                var r = Realm.GetInstance(_databasePath);
+                var r = Realm.GetInstance();
                 r.Write(() => action(r));
                 r.Close();
             });
@@ -58,10 +56,8 @@ namespace IntegrationTests.Shared
             });
 
             var q = _realm.All<Person>();
-            Assert.That(q.Count, Is.EqualTo(2));
-
-            var ql1 = q.ToList();
-            Assert.That(ql1.Select(p => p.FullName), Is.EquivalentTo(new[] { "Person 1", "Person 2" }));
+            var ql1 = q.ToList().Select(p => p.FullName);
+            Assert.That(ql1, Is.EquivalentTo(new[] { "Person 1", "Person 2" }));
 
             _realm.Write(() =>
             {
@@ -71,9 +67,8 @@ namespace IntegrationTests.Shared
                 p3.FullName = "Person 3";
             });
 
-            Assert.That(q.Count, Is.EqualTo(3));
-            var ql2 = q.ToList();
-            Assert.That(ql2.Select(p => p.FullName), Is.EquivalentTo(new[] { "Modified Person", "Person 2", "Person 3" }));
+            var ql2 = q.ToList().Select(p => p.FullName);
+            Assert.That(ql2, Is.EquivalentTo(new[] { "Modified Person", "Person 2", "Person 3" }));
         }
 
         [Test]
@@ -98,8 +93,8 @@ namespace IntegrationTests.Shared
 
             _realm.Refresh();
 
-            var ql2 = q.ToList();
-            Assert.That(ql2.Select(p => p.FullName), Is.EquivalentTo(new[] { "Person 1", "Person 2" }));
+            var ql2 = q.ToList().Select(p => p.FullName);
+            Assert.That(ql2, Is.EquivalentTo(new[] { "Person 1", "Person 2" }));
         }
     }
 }
