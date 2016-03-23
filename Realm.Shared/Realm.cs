@@ -592,7 +592,6 @@ namespace Realms
         /// </summary>
         public void RemoveAll()
         {
-            var realmResultsType = typeof (RealmResults<>);
             var objectClasses = Config.ObjectClasses ?? RealmObjectClasses;
 
             foreach (var objectClass in objectClasses)
