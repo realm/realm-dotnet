@@ -586,5 +586,19 @@ namespace Realms
 
             RemoveRange(All<T>());
         }
+
+        public void RemoveAll()
+        {
+            var realmResultsType = typeof (RealmResults<>);
+            var objectClasses = Config.ObjectClasses ?? RealmObjectClasses;
+
+            foreach (var objectClass in objectClasses)
+            {
+                var parameterizedType = realmResultsType.MakeGenericType(objectClass);
+                var all = Activator.CreateInstance(parameterizedType, this, true);
+                var resultsHandle = (ResultsHandle)objectClass.GetProperty("ResultsHandle").GetValue(all);
+                NativeResults.clear(resultsHandle);
+            }
+        }
     }
 }

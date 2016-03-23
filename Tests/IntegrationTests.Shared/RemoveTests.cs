@@ -93,7 +93,7 @@ namespace IntegrationTests.Shared
         }
 
         [Test]
-        public void RemoveAllRemoveAllObjectsOfAGivenType() 
+        public void RemoveAllRemovesAllObjectsOfAGivenType() 
         {
             // Arrange
             _realm.Write(() =>
@@ -112,5 +112,27 @@ namespace IntegrationTests.Shared
             Assert.That(_realm.All<Person>().Count(), Is.EqualTo(0));
         }
 
+        [Test]
+        public void RemoveAllObjectsShouldClearTheDatabase()
+        {
+            // Arrange
+            _realm.Write(() =>
+            {
+                _realm.CreateObject<Person>();
+                _realm.CreateObject<Person>();
+                _realm.CreateObject<AllTypesObject>();
+
+                Assert.That(_realm.All<Person>().Count(), Is.EqualTo(2));
+                Assert.That(_realm.All<AllTypesObject>().Count(), Is.EqualTo(1));
+            });
+
+            // Act
+            _realm.Write(() => _realm.RemoveAll());
+
+            // Assert
+            Assert.That(_realm.All<Person>().Count(), Is.EqualTo(0));
+            Assert.That(_realm.All<AllTypesObject>().Count(), Is.EqualTo(0));
+
+        }
     }
 }
