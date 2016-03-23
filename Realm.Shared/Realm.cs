@@ -592,14 +592,14 @@ namespace Realms
         /// </summary>
         public void RemoveAll()
         {
-            var realmResultsType = typeof (RealmResults<>);
+            if (!IsInTransaction)
+                throw new RealmOutsideTransactionException("Cannot remove all Realm objects outside write transactions");
+
             var objectClasses = Config.ObjectClasses ?? RealmObjectClasses;
 
             foreach (var objectClass in objectClasses)
             {
-                var parameterizedType = realmResultsType.MakeGenericType(objectClass);
-                var all = Activator.CreateInstance(parameterizedType, this, true);
-                var resultsHandle = (ResultsHandle)objectClass.GetProperty("ResultsHandle").GetValue(all);
+                var resultsHandle = MakeResultsForTable(objectClass);
                 NativeResults.clear(resultsHandle);
             }
         }
