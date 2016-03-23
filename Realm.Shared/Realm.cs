@@ -538,6 +538,17 @@ namespace Realms
         }
 
         /// <summary>
+        /// Update a Realm and outstanding objects to point to the most recent data for this Realm.
+        /// </summary>
+        /// <returns>
+        /// Whether the realm had any updates. Note that this may return true even if no data has actually changed.
+        /// </returns>
+        public bool Refresh()
+        {
+            return MarshalHelpers.IntPtrToBool(NativeSharedRealm.refresh(_sharedRealmHandle));
+        }
+
+        /// <summary>
         /// Extract an iterable set of objects for direct use or further query.
         /// </summary>
         /// <typeparam name="T">The Type T must not only be a RealmObject but also have been processd by the Fody weaver, so it has persistent properties.</typeparam>
