@@ -73,16 +73,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Win32AccessTests.cs" />
-    <Compile Include="Win32ConfigurationTests.cs" />
-    <Compile Include="Win32DateTimeTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Win32InstanceTests.cs" />
-    <Compile Include="Win32ObjectIntegrationTests.cs" />
-    <Compile Include="Win32PerformanceTests.cs" />
-    <Compile Include="Win32SimpleLINQtests.cs" />
-    <Compile Include="Win32StandAloneObjectTests.cs" />
-    <Compile Include="Win32RelationshipTests.cs" />
+    <Compile Include="RunSpecificTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Realm.Win32\Realm.Win32.csproj">
