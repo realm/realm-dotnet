@@ -233,14 +233,30 @@ namespace Realms
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }
 
+        /// <summary>
+        /// Remove objects matcing a query from the realm
+        /// </summary>
+        /// <typeparam name="T">Type of the objects to remove</typeparam>
+        /// <param name="range">The query to match for</param>
         public void RemoveRange<T>(RealmResults<T> range) where T: RealmObject
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }
 
+        /// <summary>
+        /// Remove all objects of a type from the realm
+        /// </summary>
+        /// <typeparam name="T">Type of the objects to remove</typeparam>
         public void RemoveAll<T>() where T: RealmObject
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+        }
+
+        /// <summary>
+        /// Remove all objects of all types managed by this realm.
+        /// </summary>
+        public void RemoveAll()
+        {
         }
     }
 }

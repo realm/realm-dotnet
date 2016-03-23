@@ -587,6 +587,9 @@ namespace Realms
             RemoveRange(All<T>());
         }
 
+        /// <summary>
+        /// Remove all objects of all types managed by this realm.
+        /// </summary>
         public void RemoveAll()
         {
             var realmResultsType = typeof (RealmResults<>);
