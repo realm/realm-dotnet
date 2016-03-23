@@ -154,18 +154,19 @@ namespace RealmWeaver
             switch (Environment.OSVersion.Platform)
             {
             // Mono completely messes up reporting the OS name and version for OS X, so...
-                case PlatformID.MacOSX:
+             /*   case PlatformID.MacOSX:
                     name = "osx";
                     break;
                 case PlatformID.Unix:
                     name = "linux";
-                    break;
+                    break; */
                 case PlatformID.Win32Windows:
                 case PlatformID.Win32NT:
                     name = "windows";
                     break;
                 default:
-                    name = Environment.OSVersion.Platform.ToString();
+                    name = "osx";  // proved "windows" detected so default to "osx" for now
+//                    name = Environment.OSVersion.Platform.ToString();
                     break;
             }
             version = Environment.OSVersion.Version.ToString();
