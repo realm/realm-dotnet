@@ -563,10 +563,10 @@ namespace Realms
         }
 
         /// <summary>
-        /// Remove objects matcing a query from the realm
+        /// Remove objects matcing a query from the realm.
         /// </summary>
-        /// <typeparam name="T">Type of the objects to remove</typeparam>
-        /// <param name="range">The query to match for</param>
+        /// <typeparam name="T">Type of the objects to remove.</typeparam>
+        /// <param name="range">The query to match for.</param>
         public void RemoveRange<T>(RealmResults<T> range) where T: RealmObject
         {
             if (!IsInTransaction)
@@ -576,15 +576,32 @@ namespace Realms
         }
 
         /// <summary>
-        /// Remove all objects of a type from the realm
+        /// Remove all objects of a type from the realm.
         /// </summary>
-        /// <typeparam name="T">Type of the objects to remove</typeparam>
+        /// <typeparam name="T">Type of the objects to remove.</typeparam>
         public void RemoveAll<T>() where T: RealmObject
         {
             if (!IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot remove all Realm objects outside write transactions");
 
             RemoveRange(All<T>());
+        }
+
+        /// <summary>
+        /// Remove all objects of all types managed by this realm.
+        /// </summary>
+        public void RemoveAll()
+        {
+            if (!IsInTransaction)
+                throw new RealmOutsideTransactionException("Cannot remove all Realm objects outside write transactions");
+
+            var objectClasses = Config.ObjectClasses ?? RealmObjectClasses;
+
+            foreach (var objectClass in objectClasses)
+            {
+                var resultsHandle = MakeResultsForTable(objectClass);
+                NativeResults.clear(resultsHandle);
+            }
         }
     }
 }
