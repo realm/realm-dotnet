@@ -18,7 +18,7 @@ namespace IntegrationTests.Shared
         private Realm _realm;
 
         [SetUp]
-        public void Setup()
+        public void SetUp()
         {
             _databasePath = Path.GetTempFileName();
             _realm = Realm.GetInstance(_databasePath);
