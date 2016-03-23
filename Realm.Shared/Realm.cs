@@ -527,7 +527,7 @@ namespace Realms
         ///     d.Age = 5;
         /// });
         /// </example>
-        /// <param name="action">Action to perform inside transaction</param>
+        /// <param name="action">Action to perform inside transaction.</param>
         public void Write(Action action)
         {
             using (var transaction = BeginWrite())
@@ -539,6 +539,7 @@ namespace Realms
 
         /// <summary>
         /// Update a Realm and outstanding objects to point to the most recent data for this Realm.
+        /// This is only necessary when you have a Realm on a non-runloop thread that needs manual refreshing.
         /// </summary>
         /// <returns>
         /// Whether the realm had any updates. Note that this may return true even if no data has actually changed.

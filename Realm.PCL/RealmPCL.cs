@@ -223,7 +223,7 @@ namespace Realms
         ///     d.Age = 5;
         /// });
         /// </example>
-        /// <param name="action">Action to perform inside transaction</param>
+        /// <param name="action">Action to perform inside transaction.</param>
         public void Write(Action action)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
