@@ -23,6 +23,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)ObjectIntegrationTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestObjects.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RemoveTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RefreshTests.cs" />
   </ItemGroup>
   <ItemGroup Condition=" '$(ProjectName)' != 'IntegrationTests.Win32' ">
     <Compile Include="$(MSBuildThisFileDirectory)TestRunner.cs" />
