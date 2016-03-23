@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("Realm.Win32")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Realm is a mobile database: a replacement for SQLite")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Realm.Win32")]
-[assembly: AssemblyCopyright("Copyright ©  2015")]
+[assembly: AssemblyCopyright("Copyright © 2016 Realm")]
+[assembly: AssemblyCompany("Realm Inc.")]
+[assembly: AssemblyProduct("Realm C#")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -22,6 +22,11 @@ using System.Runtime.InteropServices;
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("c211ede7-cc8e-4f53-a9df-0b105a350bbf")]
 
+
+
+[assembly: InternalsVisibleTo("IntegrationTests.Win32")]
+[assembly: InternalsVisibleTo("Playground.Win32")]
+
 // Version information for an assembly consists of the following four values:
 //
 //      Major Version
@@ -32,9 +37,5 @@ using System.Runtime.InteropServices;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
-
-
-[assembly: InternalsVisibleTo("IntegrationTests.Win32")]
-[assembly: InternalsVisibleTo("Playground.Win32")]
+[assembly: AssemblyVersion("0.74.0.0")]
+[assembly: AssemblyFileVersion("0.74.0.0")]

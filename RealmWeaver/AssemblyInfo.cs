@@ -5,6 +5,10 @@
 using System.Reflection;
 
 [assembly: AssemblyTitle("RealmWeaver")]
-[assembly: AssemblyProduct("RealmWeaver")]
-[assembly: AssemblyVersion("0.0.1")]
-[assembly: AssemblyFileVersion("0.0.1")]
+[assembly: AssemblyProduct("Realm C#")]
+
+[assembly: AssemblyCopyright("Copyright © 2016 Realm")]
+[assembly: AssemblyCompany("Realm Inc.")]
+
+[assembly: AssemblyVersion("0.74.0.0")]
+[assembly: AssemblyFileVersion("0.74.0.0")]

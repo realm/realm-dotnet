@@ -3,7 +3,7 @@ Realm for Xamarin Nuget Build
 
 These are steps for our internal manual process to build.
 
-The process has not been automated yet as the tools need running on both OS X and Windows to complete the build.
+The process has not been automated yet as the tools need running on both OS X and Windows to complete the build. 
 
 We currently produce two NuGet packages. You will usually build them and test using them from a local folder such as `~/LocalRealm`. We will refer to this as the **local test folder**.
 
@@ -19,11 +19,18 @@ Once you have your DLLS, follow these next steps to set version numbers and buil
 
 Setting Version Numbers
 -----------------------
-Edit `NuGet/NuGet.Library/Realm.targets` and update version numbers in the paths.
+The Fody Weaver version number **must** follow the main Realm.dll even if there were no changes to Fody code.
 
-You will also have to change the version number you use in the `nuget` command line.
+* Update the `AssemblyVersion` and `AssemblyFileVersion` version in `AssemblyInfo.cs` in five locations (platforms + PCL + RealmWeaver):
+  * `RealmWeaver/AssemblyInfo.cs`
+  * `Realm.PCL/Properties/AssemblyInfo.cs`
+  * `Realm.Win32/Properties/AssemblyInfo.cs`
+  * `Realm.XamarinAndroid/Properties/AssemblyInfo.cs`
+  * `Realm.XamarinIOS/Properties/AssemblyInfo.cs`
+* Update `NuGet/NuGet.Weaver/RealmWeaver.Fody.nuspec`
+* Edit `NuGet/NuGet.Library/Realm.targets` and update version numbers in **all** the paths.
 
-If the Fody Weaver version number is also changing, edit it in `NuGet/NuGet.Weaver/RealmWeaver.Fody.nuspec`
+**At NuGet build time,** you will also have to change the version number you use in the `nuget` command line.
 
 
 Building Fody NuGet

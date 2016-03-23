@@ -7,14 +7,16 @@ using Android.App;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("Realm.XamarinAndroid")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Realm is a mobile database: a replacement for SQLite & ORMs")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Realm.XamarinAndroid")]
-[assembly: AssemblyCopyright("Copyright ©  2015")]
+[assembly: AssemblyCopyright("Copyright © 2016 Realm")]
+[assembly: AssemblyCompany("Realm Inc.")]
+[assembly: AssemblyProduct("Realm C#")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 [assembly: ComVisible(false)]
+
+[assembly: InternalsVisibleTo("IntegrationTests.XamarinAndroid")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -26,7 +28,5 @@ using Android.App;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
-[assembly: InternalsVisibleTo("IntegrationTests.XamarinAndroid")]
-
+[assembly: AssemblyVersion("0.74.0.0")]
+[assembly: AssemblyFileVersion("0.74.0.0")]
