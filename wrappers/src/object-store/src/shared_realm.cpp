@@ -61,8 +61,9 @@ Realm::Config& Realm::Config::operator=(realm::Realm::Config const& c)
     return *this;
 }
 
-Realm::Realm(Config config)
+Realm::Realm(Config config, bool auto_refresh)
 : m_config(std::move(config))
+, m_auto_refresh(auto_refresh)
 {
     open_with_config(m_config, m_history, m_shared_group, m_read_only_group);
 
@@ -184,7 +185,8 @@ Group *Realm::read_group()
 
 SharedRealm Realm::get_shared_realm(Config config)
 {
-    return RealmCoordinator::get_coordinator(config.path)->get_realm(std::move(config));
+    auto coordinator = RealmCoordinator::get_coordinator(config.path);
+    return coordinator->get_realm(std::move(config));
 }
 
 void Realm::update_schema(std::unique_ptr<Schema> schema, uint64_t version)
@@ -421,6 +423,12 @@ bool Realm::refresh()
     return true;
 }
 
+void Realm::set_auto_refresh(bool auto_refresh)
+{
+    m_auto_refresh = auto_refresh; 
+    m_coordinator->set_auto_refresh_for(this, auto_refresh);
+}
+
 bool Realm::can_deliver_notifications() const noexcept
 {
     if (m_config.read_only) {
@@ -446,8 +454,6 @@ uint64_t Realm::get_schema_version(const realm::Realm::Config &config)
 
 void Realm::close()
 {
-    invalidate();
-
     if (m_coordinator) {
         m_coordinator->unregister_realm(this);
     }

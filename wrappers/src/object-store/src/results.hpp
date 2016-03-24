@@ -20,13 +20,13 @@
 #define REALM_RESULTS_HPP
 
 #include "shared_realm.hpp"
+#include "realm/util/to_string.hpp"
 #include <exception>
 #include "util/atomic_shared_ptr.hpp"
 
 #include <realm/table_view.hpp>
 #include <realm/table.hpp>
 #include <realm/util/optional.hpp>
-#include <realm/util/to_string.hpp>
 
 namespace realm {
 template<typename T> class BasicRowExpr;

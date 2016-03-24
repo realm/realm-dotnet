@@ -173,9 +173,6 @@
     <ClInclude Include="src\object-store\src\shared_realm.hpp">
       <Filter>Header Files\object-store</Filter>
     </ClInclude>
-    <ClInclude Include="src\object-store\src\util.hpp">
-      <Filter>Header Files\object-store</Filter>
-    </ClInclude>
     <ClInclude Include="src\object-store\src\impl\external_commit_helper.hpp">
       <Filter>Header Files\object-store\impl</Filter>
     </ClInclude>

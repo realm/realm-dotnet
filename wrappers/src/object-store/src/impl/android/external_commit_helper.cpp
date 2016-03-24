@@ -20,21 +20,20 @@
 
 #include "impl/realm_coordinator.hpp"
 
-//#include <realm/commit_log.hpp>
-//#include <realm/replication.hpp>
 
 #include <assert.h>
 #include <fcntl.h>
 #include <sstream>
 #include <sys/epoll.h>
-//#include <sys/stat.h>
 #include <sys/time.h>
 #include <system_error>
 #include <unistd.h>
+#include <android/log.h>
 
 using namespace realm;
 using namespace realm::_impl;
 
+const char* log_tag = "REALM";
 namespace {
 // Write a byte to a pipe to notify anyone waiting for data on the pipe
 void notify_fd(int fd)
@@ -65,29 +64,6 @@ void ExternalCommitHelper::FdHolder::close()
     m_fd = -1;
 }
 
-// Inter-thread and inter-process notifications of changes are done using a
-// named pipe in the filesystem next to the Realm file. Everyone who wants to be
-// notified of commits waits for data to become available on the pipe, and anyone
-// who commits a write transaction writes data to the pipe after releasing the
-// write lock. Note that no one ever actually *reads* from the pipe: the data
-// actually written is meaningless, and trying to read from a pipe from multiple
-// processes at once is fraught with race conditions.
-
-// When a RLMRealm instance is created, we add a CFRunLoopSource to the current
-// thread's runloop. On each cycle of the run loop, the run loop checks each of
-// its sources for work to do, which in the case of CFRunLoopSource is just
-// checking if CFRunLoopSourceSignal has been called since the last time it ran,
-// and if so invokes the function pointer supplied when the source is created,
-// which in our case just invokes `[realm handleExternalChange]`.
-
-// Listening for external changes is done using kqueue() on a background thread.
-// kqueue() lets us efficiently wait until the amount of data which can be read
-// from one or more file descriptors has changed, and tells us which of the file
-// descriptors it was that changed. We use this to wait on both the shared named
-// pipe, and a local anonymous pipe. When data is written to the named pipe, we
-// signal the runloop source and wake up the target runloop, and when data is
-// written to the anonymous pipe the background thread removes the runloop
-// source from the runloop and and shuts down.
 ExternalCommitHelper::ExternalCommitHelper(RealmCoordinator& parent)
 : m_parent(parent)
 {
@@ -147,12 +123,12 @@ ExternalCommitHelper::ExternalCommitHelper(RealmCoordinator& parent)
         }
         catch (std::exception const& e) {
             fprintf(stderr, "uncaught exception in notifier thread: %s: %s\n", typeid(e).name(), e.what());
-            //asl_log(nullptr, nullptr, ASL_LEVEL_ERR, "uncaught exception in notifier thread: %s: %s", typeid(e).name(), e.what());
+            __android_log_print(ANDROID_LOG_ERROR, log_tag, "uncaught exception in notifier thread: %s: %s", typeid(e).name(), e.what());
             throw;
         }
         catch (...) {
             fprintf(stderr,  "uncaught exception in notifier thread\n");
-            //asl_log(nullptr, nullptr, ASL_LEVEL_ERR, "uncaught exception in notifier thread");
+            __android_log_print(ANDROID_LOG_ERROR, log_tag, "uncaught exception in notifier thread");
             throw;
         }
     });
@@ -172,7 +148,7 @@ void ExternalCommitHelper::listen()
 
     struct epoll_event event[2];
 
-    event[0].events = EPOLLIN;
+    event[0].events = EPOLLIN | EPOLLET;
     event[0].data.fd = m_notify_fd;
     ret = epoll_ctl(m_kq, EPOLL_CTL_ADD, m_notify_fd, &event[0]);
     assert(ret == 0);
@@ -185,7 +161,6 @@ void ExternalCommitHelper::listen()
     while (true) {
       struct epoll_event ev;
       ret = epoll_wait(m_kq, &ev, 1, -1);
-      assert(ret >= 0);
       assert(ret >= 0);
       if (ret == 0) {
         // Spurious wakeup; just wait again
