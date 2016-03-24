@@ -1921,12 +1921,3 @@ shared_realm_cs.cpp
 InstanceTests.cs
 - GetUniqueInstancesDifferentThreads made explicit until fixed
   to separate effect of its failure from running other tests.
-
-
--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-#353 Specifying Sort
-
-SortingTests.cs 
-- added
-
-  

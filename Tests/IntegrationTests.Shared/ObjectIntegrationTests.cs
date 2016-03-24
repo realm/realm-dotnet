@@ -184,52 +184,6 @@ namespace IntegrationTests
         }
 
 
-        [Test]
-        public void RemoveSucceedsTest()
-        {
-            // Arrange
-            Person p1, p2, p3;
-            using (var transaction = _realm.BeginWrite())
-            {
-                //p1 = new Person { FirstName = "A" };
-                //p2 = new Person { FirstName = "B" };
-                //p3 = new Person { FirstName = "C" };
-                p1 = _realm.CreateObject<Person>(); p1.FirstName = "A";
-                p2 = _realm.CreateObject<Person>(); p2.FirstName = "B";
-                p3 = _realm.CreateObject<Person>(); p3.FirstName = "C";
-                transaction.Commit();
-            }
-
-            // Act
-            using (var transaction = _realm.BeginWrite())
-            {
-                _realm.Remove(p2);
-                transaction.Commit();
-            }
-
-            // Assert
-            //Assert.That(!p2.InRealm);
-
-            var allPeople = _realm.All<Person>().ToList();
-
-            Assert.That(allPeople, Is.EquivalentTo(new List<Person> { p1, p3 }));
-        }
-
-
-        [Test]
-        public void RemoveOutsideTransactionShouldFail()
-        {
-            // Arrange
-            Person p;
-            using (var transaction = _realm.BeginWrite())
-            {
-                p = _realm.CreateObject<Person>();
-                transaction.Commit();
-            }
-
-            // Act and assert
-            Assert.Throws<RealmOutsideTransactionException>(() => _realm.Remove(p) );
-        }
 
         [Test]
         public void NonAutomaticPropertiesShouldNotBeWoven()

@@ -527,7 +527,7 @@ namespace Realms
         ///     d.Age = 5;
         /// });
         /// </example>
-        /// <param name="action">Action to perform inside transaction</param>
+        /// <param name="action">Action to perform inside transaction.</param>
         public void Write(Action action)
         {
             using (var transaction = BeginWrite())
@@ -535,6 +535,18 @@ namespace Realms
                 action();
                 transaction.Commit();
             }
+        }
+
+        /// <summary>
+        /// Update a Realm and outstanding objects to point to the most recent data for this Realm.
+        /// This is only necessary when you have a Realm on a non-runloop thread that needs manual refreshing.
+        /// </summary>
+        /// <returns>
+        /// Whether the realm had any updates. Note that this may return true even if no data has actually changed.
+        /// </returns>
+        public bool Refresh()
+        {
+            return MarshalHelpers.IntPtrToBool(NativeSharedRealm.refresh(_sharedRealmHandle));
         }
 
         /// <summary>
@@ -560,6 +572,48 @@ namespace Realms
 
             var tableHandle = _tableHandles[obj.GetType()];
             NativeTable.remove_row(tableHandle, (RowHandle)obj.RowHandle);
+        }
+
+        /// <summary>
+        /// Remove objects matcing a query from the realm.
+        /// </summary>
+        /// <typeparam name="T">Type of the objects to remove.</typeparam>
+        /// <param name="range">The query to match for.</param>
+        public void RemoveRange<T>(RealmResults<T> range) where T: RealmObject
+        {
+            if (!IsInTransaction)
+                throw new RealmOutsideTransactionException("Cannot remove Realm objects outside write transactions");
+
+            NativeResults.clear(range.ResultsHandle);
+        }
+
+        /// <summary>
+        /// Remove all objects of a type from the realm.
+        /// </summary>
+        /// <typeparam name="T">Type of the objects to remove.</typeparam>
+        public void RemoveAll<T>() where T: RealmObject
+        {
+            if (!IsInTransaction)
+                throw new RealmOutsideTransactionException("Cannot remove all Realm objects outside write transactions");
+
+            RemoveRange(All<T>());
+        }
+
+        /// <summary>
+        /// Remove all objects of all types managed by this realm.
+        /// </summary>
+        public void RemoveAll()
+        {
+            if (!IsInTransaction)
+                throw new RealmOutsideTransactionException("Cannot remove all Realm objects outside write transactions");
+
+            var objectClasses = Config.ObjectClasses ?? RealmObjectClasses;
+
+            foreach (var objectClass in objectClasses)
+            {
+                var resultsHandle = MakeResultsForTable(objectClass);
+                NativeResults.clear(resultsHandle);
+            }
         }
     }
 }

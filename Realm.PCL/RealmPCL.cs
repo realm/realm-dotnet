@@ -212,6 +212,37 @@ namespace Realms
         }
 
         /// <summary>
+        /// Execute an action inside a transaction. If no exception is thrown, the transaction will automatically
+        /// be committed.
+        /// </summary>
+        /// <example>
+        /// realm.Write(() => 
+        /// {
+        ///     d = myrealm.CreateObject<Dog>();
+        ///     d.Name = "Eddie";
+        ///     d.Age = 5;
+        /// });
+        /// </example>
+        /// <param name="action">Action to perform inside transaction.</param>
+        public void Write(Action action)
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+        }
+
+        /// <summary>
+        /// Update a Realm and outstanding objects to point to the most recent data for this Realm.
+        /// </summary>
+        /// <returns>
+        /// Whether the realm had any updates. Note that this may return true even if no data has actually changed.
+        /// </returns>
+        public bool Refresh()
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return false;
+        }
+
+
+        /// <summary>
         /// Extract an iterable set of objects for direct use or further query.
         /// </summary>
         /// <typeparam name="T">The Type T must not only be a RealmObject but also have been processd by the Fody weaver, so it has persistent properties.</typeparam>
@@ -231,6 +262,32 @@ namespace Realms
         public void Remove(RealmObject obj)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+        }
+
+        /// <summary>
+        /// Remove objects matcing a query from the realm.
+        /// </summary>
+        /// <typeparam name="T">Type of the objects to remove.</typeparam>
+        /// <param name="range">The query to match for.</param>
+        public void RemoveRange<T>(RealmResults<T> range) where T: RealmObject
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+        }
+
+        /// <summary>
+        /// Remove all objects of a type from the realm.
+        /// </summary>
+        /// <typeparam name="T">Type of the objects to remove.</typeparam>
+        public void RemoveAll<T>() where T: RealmObject
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+        }
+
+        /// <summary>
+        /// Remove all objects of all types managed by this realm.
+        /// </summary>
+        public void RemoveAll()
+        {
         }
     }
 }

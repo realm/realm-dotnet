@@ -17,6 +17,8 @@ Still requires installation from private copy of NuGet download.
 * Realm.Write() method added for executing code within an implicitly committed transaction
 * Realm.RealmChanged event notifies you of changes made to the realm
 * The Realm assembly weaver now submits anonymous usage data during each build (issue #182)
+* Realm.RemoveRange<>() and Realm.RemoveAll<>() methods added to allow you to delete objects from a realm.
+* Realm.Refresh() makes sure the realm is updated with changes from other threads.
 
 
 0.73.0 Private Beta (2016-02-26)
