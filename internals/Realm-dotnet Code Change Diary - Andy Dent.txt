@@ -1921,3 +1921,42 @@ shared_realm_cs.cpp
 InstanceTests.cs
 - GetUniqueInstancesDifferentThreads made explicit until fixed
   to separate effect of its failure from running other tests.
+
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#353 Specifying Sort
+
+SortingTests.cs 
+- added
+
+SortOrderHandle.cs
+- added
+
+  
+RealmResults.cs
+- RealmResults changed from IQueryable<T> to IOrderedQueryable<T>
+- CreateResultsHandle get sort handle and pass to MakeResultsForQuery
+
+Realm.cs
+- MakeResultsForQuery add optionalSortOrder param
+- MakeSortOrderForTable added
+- CreateSortOrderHandle added
+
+RealmResultsVisitor.cs
+- VisitMethodCall - added:
+  - OrderBy   
+  - OrderByDescending
+  - ThenBy
+  - ThenByDescending  
+ 
+NativeSortOrder.cs
+- added
+
+NativeResults.cs
+- added create_for_query_sorted decl
+  
+results_cs.cpp
+- SortOrderWrapper added
+- added create_for_query_sorted  
+- added sortorder_create_for_table, sortorder_destroy & sortorder_add_clause

@@ -11,6 +11,20 @@
 using namespace realm;
 using namespace realm::binding;
 
+/// Simple wrapper to keep the Table* we need to lookup column indices when we add clauses to a SortOrder.
+struct SortOrderWrapper {
+    SortOrder sort_order;
+    Table* table;
+
+    SortOrderWrapper(Table* in_table) : table(in_table) {}
+
+    void AddSort(size_t col, bool ascendingCol)
+    {
+      sort_order.columnIndices.push_back(col);
+      sort_order.ascending.push_back(ascendingCol);
+    }
+};
+
 extern "C" {
 
 REALM_EXPORT void results_destroy(Results* results_ptr)
@@ -39,7 +53,14 @@ REALM_EXPORT Results* results_create_for_table(SharedRealm* realm, Table* table_
 REALM_EXPORT Results* results_create_for_query(SharedRealm* realm, Query * query_ptr, ObjectSchema* object_schema)
 {
   return handle_errors([&]() {
-    return new Results(*realm, *object_schema, *query_ptr/* TODO pass sort order in */);
+      return new Results(*realm, *object_schema, *query_ptr/* TODO pass sort order in */);
+  });
+}
+
+REALM_EXPORT Results* results_create_for_query_sorted(SharedRealm* realm, Query * query_ptr, ObjectSchema* object_schema, SortOrderWrapper* sortorder_ptr)
+{
+  return handle_errors([&]() {
+      return new Results(*realm, *object_schema, *query_ptr, sortorder_ptr->sort_order);
   });
 }
 
@@ -57,9 +78,34 @@ REALM_EXPORT Row* results_get_row(Results* results_ptr, size_t ndx)
 
 REALM_EXPORT void results_clear(Results* results_ptr)
 {
-    handle_errors([&]() {
-        results_ptr->clear();
-    });
+  handle_errors([&]() {
+      results_ptr->clear();
+  });
 }
+
+REALM_EXPORT SortOrderWrapper* sortorder_create_for_table(Table* table_ptr)
+{
+  return handle_errors([&]() {
+      return new SortOrderWrapper(table_ptr);
+  });
+}
+
+REALM_EXPORT void sortorder_destroy(SortOrderWrapper* sortorder_ptr)
+{
+  handle_errors([&]() {
+      delete sortorder_ptr;
+  });
+}
+
+
+REALM_EXPORT void sortorder_add_clause(SortOrderWrapper* sortorder_ptr, uint16_t *  column_name, size_t column_name_len, size_t ascending)
+{
+  return handle_errors([&]() {
+      Utf16StringAccessor str(column_name, column_name_len);
+      auto colIndex = sortorder_ptr->table->get_column_index(str);
+      sortorder_ptr->AddSort(colIndex, ascending==1);
+  });
+}
+
 
 }   // extern "C"

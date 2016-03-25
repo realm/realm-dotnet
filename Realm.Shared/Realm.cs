@@ -418,7 +418,6 @@ namespace Realms
         }
 
 
-
         internal ResultsHandle MakeResultsForTable(Type tableType)
         {
             var tableHandle = _tableHandles[tableType];
@@ -428,12 +427,23 @@ namespace Realms
         }
 
 
-
-        internal ResultsHandle MakeResultsForQuery(Type tableType, QueryHandle builtQuery)
+        internal ResultsHandle MakeResultsForQuery(Type tableType, QueryHandle builtQuery, SortOrderHandle optionalSortOrder)
         {
             var objSchema = Realm.ObjectSchemaCache[tableType];
-            IntPtr resultsPtr = NativeResults.create_for_query(_sharedRealmHandle, builtQuery, objSchema);
+            IntPtr resultsPtr = IntPtr.Zero;               
+            if (optionalSortOrder == null)
+                resultsPtr = NativeResults.create_for_query(_sharedRealmHandle, builtQuery, objSchema);
+            else
+                resultsPtr = NativeResults.create_for_query_sorted(_sharedRealmHandle, builtQuery, objSchema, optionalSortOrder);
             return CreateResultsHandle(resultsPtr);
+        }
+
+
+        internal SortOrderHandle MakeSortOrderForTable(Type tableType)
+        {
+            var tableHandle = _tableHandles[tableType];
+            IntPtr sortOrderPtr = NativeSortOrder.create_for_table(tableHandle);
+            return CreateSortOrderHandle(sortOrderPtr);
         }
 
 
@@ -485,6 +495,7 @@ namespace Realms
             return resultsHandle;
         }
 
+
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         internal static RowHandle CreateRowHandle(IntPtr rowPtr)
         {
@@ -497,6 +508,20 @@ namespace Realms
                 rowHandle.SetHandle(rowPtr);
             }
             return rowHandle;
+        }
+
+        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+        internal static SortOrderHandle CreateSortOrderHandle(IntPtr sortOrderPtr)
+        {
+            var sortOrderHandle = new SortOrderHandle();
+
+            RuntimeHelpers.PrepareConstrainedRegions();
+            try { /* Retain handle in a constrained execution region */ }
+            finally
+            {
+                sortOrderHandle.SetHandle(sortOrderPtr);
+            }
+            return sortOrderHandle;
         }
 
         /// <summary>

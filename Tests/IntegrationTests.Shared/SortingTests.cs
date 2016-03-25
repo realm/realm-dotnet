@@ -13,22 +13,100 @@ namespace IntegrationTests
 {
     class SortingTests : PeopleTestsBase
     {
-        
-    // see comment on base method why this isn't decorated with [SetUp]
-    public override void Setup()
-    {
-        base.Setup();
-        MakeThreePeople();
-    }
+            
+        // see comment on base method why this isn't decorated with [SetUp]
+        public override void Setup()
+        {
+            base.Setup();
+            MakeThreePeople();
+            _realm.Write(() =>
+            {
+                // add an entry like John Doe but interesting
+                var jd = _realm.CreateObject<Person>();
+                jd.FullName = "John Doesmore"; 
+                jd.IsInteresting = true;
+                jd.Email = "john@doe.com";
+                jd.Score = 100;
+                jd.Latitude = 40.7637286;
+                jd.Longitude = -73.9748113;
+            });
+        }
+
+
+        [Test, Explicit("disable until work out how to do Results with sort")]
+        public void AllSortOneLevel()
+        {
+            var s0 = _realm.All<Person>().OrderBy(p => p.Score).ToList().Select(p => p.Score);
+            Assert.That(s0, Is.EqualTo( new float[] {-0.9907f, 42.42f, 100}) );
+        }
+
+
+        [Test, Explicit("disable until work out how to do Results with sort")]
+        public void AllSortTwoLevel()
+        {
+            var sortAA = _realm.All<Person>().OrderBy(p => p.FirstName).ThenBy(p => p.Latitude).ToList().Select(p => p.Latitude);
+            Assert.That(sortAA, Is.EqualTo( new double[] {40.7637286, 51.508530, 37.7798657}) );
+
+            var sortDA = _realm.All<Person>().OrderByDescending(p => p.FirstName).ThenBy(p => p.Latitude).ToList().Select(p => p.Latitude);
+            Assert.That(sortDA, Is.EqualTo( new double[] {37.7798657, 40.7637286, 51.508530}) );
+
+            var sortAD = _realm.All<Person>().OrderByDescending(p => p.FirstName).ThenBy(p => p.Latitude).ToList().Select(p => p.Latitude);
+            Assert.That(sortAD, Is.EqualTo( new double[] {51.508530, 40.7637286, 37.7798657}) );
+
+            var sortDD = _realm.All<Person>().OrderByDescending(p => p.FirstName).ThenByDescending(p => p.Latitude).ToList().Select(p => p.Latitude);
+            Assert.That(sortDD, Is.EqualTo( new double[] {37.7798657, 51.508530, 40.7637286}) );
+        }
+
 
 
         [Test]
-        public void AllSortNumerically()
+        public void QuerySortOneLevel()
         {
-            var s0 = _realm.All<Person>().ToList().Select(p => p.Score);
-//            var s0 = _realm.All<Person>().OrderBy(p => p.Score).Select(p => p.Score).ToList();
-            Assert.That(s0, Is.EquivalentTo( new float[] {-0.9907f, 42.42f, 100}) );
+            var s0 = _realm.All<Person>().Where(p => p.IsInteresting).OrderBy(p => p.Score).ToList().Select(p => p.Score);
+            Assert.That(s0, Is.EqualTo( new float[] {-0.9907f, 42.42f, 100}) );
         }
+
+
+        [Test]
+        public void QuerySortUpUp()
+        {
+            var sortAA = _realm.All<Person>().Where(p => p.IsInteresting).
+                OrderBy(p => p.FirstName).
+                ThenBy(p => p.Latitude).ToList().Select(p => p.Latitude);
+            Assert.That(sortAA, Is.EqualTo( new double[] {40.7637286, 51.508530, 37.7798657}) );
+        }
+
+
+        [Test]
+        public void QuerySortDownUp()
+        {
+            var sortDA = _realm.All<Person>().Where(p => p.IsInteresting).
+                OrderByDescending(p => p.FirstName).
+                ThenBy(p => p.Latitude).ToList().Select(p => p.Latitude);
+            Assert.That(sortDA, Is.EqualTo( new double[] {37.7798657, 40.7637286, 51.508530}) );
+        }
+
+
+        [Test]
+        public void QuerySortUpDown()
+        {
+            var sortAD = _realm.All<Person>().Where(p => p.IsInteresting).
+                OrderBy(p => p.FirstName).
+                ThenByDescending(p => p.Latitude).ToList().Select(p => p.Latitude);
+            Assert.That(sortAD, Is.EqualTo( new double[] {51.508530, 40.7637286, 37.7798657}) );
+        }
+
+
+        [Test]
+        public void QuerySortDownDown()
+        {
+            var sortDD = _realm.All<Person>().Where(p => p.IsInteresting).
+                OrderByDescending(p => p.FirstName).
+                ThenByDescending(p => p.Latitude).ToList().Select(p => p.Latitude);
+            Assert.That(sortDD, Is.EqualTo( new double[] {37.7798657, 51.508530, 40.7637286}) );
+        }
+
+        //TODO some exception tests for misuse of clauses
 
     } // SortingTests
 }

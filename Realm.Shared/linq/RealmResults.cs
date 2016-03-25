@@ -15,7 +15,7 @@ namespace Realms
     /// Iterable collection of one kind of RealmObject resulting from Realm.All or from a LINQ query expression.
     /// </summary>
     /// <typeparam name="T">Type of the RealmObject which is being returned.</typeparam>
-    public class RealmResults<T> : IQueryable<T>
+    public class RealmResults<T> : IOrderedQueryable<T>
     {
         public Type ElementType => typeof (T);
         public Expression Expression { get; } = null; // null if _allRecords
@@ -56,7 +56,8 @@ namespace Realms
                 var qv = _provider.MakeVisitor(retType);
                 qv.Visit(Expression);
                 var queryHandle = qv._coreQueryHandle; // grab out the built query definition
-                return _realm.MakeResultsForQuery(retType, queryHandle);
+                var sortHandle = qv._optionalSortOrderHandle;
+                return _realm.MakeResultsForQuery(retType, queryHandle, sortHandle);
             }
         }
 
