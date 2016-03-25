@@ -62,7 +62,8 @@ void WeakRealmNotifier::set_auto_refresh(bool auto_refresh)
 
 void WeakRealmNotifier::notify()
 {
-    notify_handler(m_handler);
+    if (m_handler)
+        notify_handler(m_handler);
 }
 
 create_handler_function create_handler_for_current_thread = nullptr;
