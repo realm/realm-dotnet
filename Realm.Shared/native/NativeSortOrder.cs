@@ -12,7 +12,7 @@ namespace Realms
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "sortorder_create_for_table", CallingConvention = CallingConvention.Cdecl)]
         internal static extern IntPtr create_for_table(TableHandle handle);
-        
+
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "sortorder_destroy", CallingConvention = CallingConvention.Cdecl)]
         public static extern void destroy(IntPtr sortHandle);
 

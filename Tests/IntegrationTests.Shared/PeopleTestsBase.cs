@@ -36,7 +36,7 @@ namespace IntegrationTests
             using (var transaction = _realm.BeginWrite())
             {
                 p1 = _realm.CreateObject<Person>();
-                p1.FirstName = "John"; // uses our setter whcih splits and maps to First/Lastname
+                p1.FirstName = "John"; // uses our setter which splits and maps to First/Lastname
                 p1.LastName = "Smith";
                 p1.IsInteresting = true;
                 p1.Email = "john@smith.com";
