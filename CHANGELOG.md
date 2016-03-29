@@ -3,6 +3,9 @@
 Still requires installation from private copy of NuGet download.
 
 ### Major Fixes
+* The Realm assembly weaver now submits anonymous usage data during each build (issue #182)
+* Realm.RemoveRange<>() and Realm.RemoveAll<>() methods added to allow you to delete objects from a realm.
+* Realm.Write() method added for executing code within an implicitly committed transaction
 * You can now restrict the classes allowed in a given Realm using `RealmConfiguration.ObjectClasses`.
 * LINQ improvements:
   * Simple bool searches work without having to use `== true` (issue #362)
@@ -10,14 +13,12 @@ Still requires installation from private copy of NuGet download.
   * Count, Single and First can now be used after a Where expression,  (#369) eg <br /> 
     `realm.All<Owner>().Where(p => p.Name == "Dani").First();` as well as with a lambda expression <br />
     `realm.All<Owner>().Single( p => p.Name == "Tim");` 
+  * Sorting is now provided using the `OrderBy`, `OrderByDescending`, `ThenBy` and `ThenByDescending` clauses. Sorts can be applied to results of a query from a `Where` clause or sorting the entire class by applying after `All<>`.
 
 ### Minor Fixes
 * Finish `RealmList.CopyTo` so you can apply `ToList` to related lists (issue #299)
 * NuGet now inserts `libwrappers.so` for Android targets using `$(SolutionDir)packages` so it copes with the different relative paths in cross-platform (Xamarin Forms) app templates vs pure Android templates.  
-* Realm.Write() method added for executing code within an implicitly committed transaction
 * Realm.RealmChanged event notifies you of changes made to the realm
-* The Realm assembly weaver now submits anonymous usage data during each build (issue #182)
-* Realm.RemoveRange<>() and Realm.RemoveAll<>() methods added to allow you to delete objects from a realm.
 * Realm.Refresh() makes sure the realm is updated with changes from other threads.
 
 
