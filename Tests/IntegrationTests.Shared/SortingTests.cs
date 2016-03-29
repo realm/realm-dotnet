@@ -70,8 +70,8 @@ namespace IntegrationTests
             var s0 = s0gen.Select(p => p.Score);
             Assert.That(s0, Is.EqualTo( new [] {100.0f, 42.42f, -0.9907f}) );
 
-            var s1 = _realm.All<Person>().Where(p => p.IsInteresting).OrderBy(p => p.Latitude).ToList().Select(p => p.Latitude);
-            Assert.That(s1, Is.EqualTo( new [] {37.7798657, 40.7637286, 51.508530}) );
+           // var s1 = _realm.All<Person>().Where(p => p.IsInteresting).OrderBy(p => p.Latitude).ToList().Select(p => p.Latitude);
+           // Assert.That(s1, Is.EqualTo( new [] {37.7798657, 40.7637286, 51.508530}) );
         }
 
 
@@ -105,7 +105,7 @@ namespace IntegrationTests
             var sortDAname = sortDA.Select(p => p.FirstName);
             Assert.That(sortDAname, Is.EqualTo( new [] {"Peter", "John", "John"}) );
             var sortDAlat = sortDA.Select(p => p.Latitude);
-            Assert.That(sortDA, Is.EqualTo( new [] {37.7798657, 40.7637286, 51.508530}) );
+            Assert.That(sortDAlat, Is.EqualTo( new [] {37.7798657, 40.7637286, 51.508530}) );
         }
 
 
