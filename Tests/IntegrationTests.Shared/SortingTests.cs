@@ -186,5 +186,22 @@ namespace IntegrationTests
                 "Should catch using both OrderBy and OrderByDescending" );
         }
 
+
+        [Test]
+        public void FirstIsDifferentSorted()
+        {
+            var unsortedAllFirst = _realm.All<Person>().First(p => p.IsInteresting);
+            Assert.That(unsortedAllFirst.Email, Is.EqualTo("john@smith.com"));
+
+            var sortedAllFirst = _realm.All<Person>().OrderByDescending(p => p.FirstName).First(p => p.IsInteresting);
+            Assert.That(sortedAllFirst.Email, Is.EqualTo("peter@jameson.com"));
+
+            var sortedFirst = _realm.All<Person>().
+                Where(p => p.FirstName=="John").
+                OrderBy(p => p.Latitude).
+                First();
+            Assert.That(sortedFirst.Email, Is.EqualTo("john@doe.com"));
+        }
+
     } // SortingTests
 }
