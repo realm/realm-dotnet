@@ -193,8 +193,11 @@ namespace IntegrationTests
             var unsortedAllFirst = _realm.All<Person>().First(p => p.IsInteresting);
             Assert.That(unsortedAllFirst.Email, Is.EqualTo("john@smith.com"));
 
-            var sortedAllFirst = _realm.All<Person>().OrderByDescending(p => p.FirstName).First(p => p.IsInteresting);
-            Assert.That(sortedAllFirst.Email, Is.EqualTo("peter@jameson.com"));
+            var highestScore = _realm.All<Person>().OrderByDescending(p => p.Score).First();
+            Assert.That(highestScore.Email, Is.EqualTo("john@doe.com"));
+
+            var sortedFirstInteresting = _realm.All<Person>().OrderByDescending(p => p.FirstName).First(p => p.IsInteresting);
+            Assert.That(sortedFirstInteresting.Email, Is.EqualTo("peter@jameson.com"));
 
             var sortedFirst = _realm.All<Person>().
                 Where(p => p.FirstName=="John").
