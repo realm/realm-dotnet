@@ -170,7 +170,21 @@ namespace IntegrationTests
             Assert.That(sortDDlat, Is.EqualTo( new [] {37.7798657, 51.508530, 40.7637286}) );
         }
 
-        //TODO some exception tests for misuse of clauses
+
+        [Test]
+        public void SortExceptionsForInvalidSortCode()
+        {
+            Assert.Throws<NotSupportedException>(() => _realm.All<Person>().OrderBy(p => p.Latitude > 100).ToList(), 
+                "If you use an expression other than simple property specifier it throws." );
+
+            Assert.Throws<NotSupportedException>(() => _realm.All<Person>().Where(p => p.IsInteresting).
+                OrderBy(p => p.FirstName).OrderBy(p => p.Latitude).ToList(), 
+                "Should catch using more than one OrderBy" );
+
+            Assert.Throws<NotSupportedException>(() => _realm.All<Person>().Where(p => p.IsInteresting).
+                OrderByDescending(p => p.FirstName).OrderBy(p => p.Latitude).ToList(), 
+                "Should catch using both OrderBy and OrderByDescending" );
+        }
 
     } // SortingTests
 }
