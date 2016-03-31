@@ -57,5 +57,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmMismatchedConfigException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)handles\ResultsHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)native\NativeResults.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)handles\SortOrderHandle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)native\NativeSortOrder.cs" />
   </ItemGroup>
 </Project>

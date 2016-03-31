@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
@@ -24,6 +24,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)TestObjects.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RemoveTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RefreshTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SortingTests.cs" />
   </ItemGroup>
   <ItemGroup Condition=" '$(ProjectName)' != 'IntegrationTests.Win32' ">
     <Compile Include="$(MSBuildThisFileDirectory)TestRunner.cs" />

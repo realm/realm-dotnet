@@ -46,7 +46,7 @@ namespace IntegrationTests.Shared
             }
 
             // perform a db fetch
-            var turingAgain = _realm.All<Person>().ToList()[0];
+            var turingAgain = _realm.All<Person>().First();
 
             Assert.That(turingAgain.Birthday, Is.EqualTo(turingsBirthday));
         }
