@@ -9,7 +9,8 @@ namespace Realms
 {
     internal static class NativeQuery
     {
-        internal delegate void Operator<T>(QueryHandle queryPtr, IntPtr columnIndex, T value);
+        // This is a delegate type meant to represent one of the "query operator" methods such as float_less and bool_equal
+        internal delegate void Operation<T>(QueryHandle queryPtr, IntPtr columnIndex, T value);
 
         //c++ each of the operator functions such as string_equal
         //returns q again, the QueryHandle object is re-used and keeps its pointer.

@@ -176,7 +176,7 @@ namespace Realms
 
             if (m.Method.DeclaringType == typeof(string))
             {
-                NativeQuery.Operator<string> queryMethod = null;
+                NativeQuery.Operation<string> queryMethod = null;
 
                 if (m.Method == Methods.String.Contains.Value)
                 {
