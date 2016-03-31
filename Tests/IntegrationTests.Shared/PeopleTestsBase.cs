@@ -36,7 +36,7 @@ namespace IntegrationTests
             using (var transaction = _realm.BeginWrite())
             {
                 p1 = _realm.CreateObject<Person>();
-                p1.FirstName = "John";
+                p1.FirstName = "John"; // uses our setter which splits and maps to First/Lastname
                 p1.LastName = "Smith";
                 p1.IsInteresting = true;
                 p1.Email = "john@smith.com";
@@ -50,7 +50,7 @@ namespace IntegrationTests
             using (var transaction = _realm.BeginWrite())
             {
                 p2 = _realm.CreateObject<Person>();
-                p2.FullName = "John Doe"; // uses our setter whcih splits and maps to First/Lastname
+                p2.FullName = "John Doe"; 
                 p2.IsInteresting = false;
                 p2.Email = "john@doe.com";
                 p2.Score = 100;

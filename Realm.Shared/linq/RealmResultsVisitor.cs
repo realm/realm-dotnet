@@ -15,6 +15,7 @@ namespace Realms
     {
         private Realm _realm;
         internal QueryHandle _coreQueryHandle;  // set when recurse down to VisitConstant
+        internal SortOrderHandle _optionalSortOrderHandle;  // set only when get OrderBy*
         private Type _retType;
 
 
@@ -53,15 +54,60 @@ namespace Realms
         }
 
 
+        private void AddSort(LambdaExpression lambda, bool isStarting, bool ascending)
+        {
+            var body = lambda.Body as MemberExpression;
+            if (body == null)
+                throw new NotSupportedException($"The expression {lambda} cannot be used in an Order clause");
+
+            if (isStarting)
+            {
+                if (_optionalSortOrderHandle == null)
+                    _optionalSortOrderHandle = _realm.MakeSortOrderForTable(_retType);
+                else
+                {
+                    var badCall = ascending ? "By" : "ByDescending";
+                    throw new NotSupportedException($"You can only use one OrderBy or OrderByDescending clause, subsequent sort conditions should be Then{badCall}");
+                }
+            }
+
+            var sortColName = body.Member.Name;
+            NativeSortOrder.add_sort_clause(_optionalSortOrderHandle, sortColName, (IntPtr)sortColName.Length, ascending ? (IntPtr)1 : IntPtr.Zero);
+        }
+
+
         internal override Expression VisitMethodCall(MethodCallExpression m)
         {
             if (m.Method.DeclaringType == typeof(Queryable)) { 
                 if (m.Method.Name == "Where")
                 {
                     this.Visit(m.Arguments[0]);
-
                     LambdaExpression lambda = (LambdaExpression)StripQuotes(m.Arguments[1]);
                     this.Visit(lambda.Body);
+                    return m;
+                }
+                if (m.Method.Name == "OrderBy")
+                {
+                    this.Visit(m.Arguments[0]);
+                    AddSort((LambdaExpression)StripQuotes(m.Arguments[1]), true, true);
+                    return m;
+                }
+                if (m.Method.Name == "OrderByDescending")
+                {
+                    this.Visit(m.Arguments[0]);
+                    AddSort((LambdaExpression)StripQuotes(m.Arguments[1]), true, false);
+                    return m;
+                }
+                if (m.Method.Name == "ThenBy")
+                {
+                    this.Visit(m.Arguments[0]);
+                    AddSort((LambdaExpression)StripQuotes(m.Arguments[1]), false, true);
+                    return m;
+                }
+                if (m.Method.Name == "ThenByDescending")
+                {
+                    this.Visit(m.Arguments[0]);
+                    AddSort((LambdaExpression)StripQuotes(m.Arguments[1]), false, false);
                     return m;
                 }
                 if (m.Method.Name == "Count")
