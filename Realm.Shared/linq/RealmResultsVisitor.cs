@@ -9,6 +9,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 
+using LazyMethod = System.Lazy<System.Reflection.MethodInfo>;
+
 namespace Realms
 {
     internal class RealmResultsVisitor : ExpressionVisitor
@@ -18,6 +20,30 @@ namespace Realms
         internal SortOrderHandle _optionalSortOrderHandle;  // set only when get OrderBy*
         private Type _retType;
 
+        private static class Methods 
+        {
+            internal static LazyMethod Capture<T>(Expression<Action<T>> lambda)
+            {
+                return new LazyMethod(() => {
+                    var method = (lambda.Body as MethodCallExpression).Method;
+                    if (method.IsGenericMethod)
+                    {
+                        method = method.GetGenericMethodDefinition();
+                    }
+
+                    return method;
+                });
+            }
+
+            internal static class String
+            {
+                internal static readonly LazyMethod Contains = Methods.Capture<string>(s => s.Contains(""));
+
+                internal static readonly LazyMethod StartsWith = Methods.Capture<string>(s => s.StartsWith(""));
+
+                internal static readonly LazyMethod EndsWith = Methods.Capture<string>(s => s.EndsWith(""));
+            }
+        }
 
         internal RealmResultsVisitor(Realm realm, Type retType)
         {
@@ -147,6 +173,44 @@ namespace Realms
                 }
 
             }
+
+            if (m.Method.DeclaringType == typeof(string))
+            {
+                NativeQuery.Operation<string> queryMethod = null;
+
+                if (m.Method == Methods.String.Contains.Value)
+                {
+                    queryMethod = (q, c, v) => NativeQuery.string_contains(q, c, v, (IntPtr)v.Length);
+                }
+                else if (m.Method == Methods.String.StartsWith.Value)
+                {
+                    queryMethod = (q, c, v) => NativeQuery.string_starts_with(q, c, v, (IntPtr)v.Length);
+                }
+                else if (m.Method == Methods.String.EndsWith.Value)
+                {
+                    queryMethod = (q, c, v) => NativeQuery.string_ends_with(q, c, v, (IntPtr)v.Length);
+                }
+
+                if (queryMethod != null)
+                {
+                    var member = m.Object as MemberExpression;
+                    if (member == null)
+                    {
+                        throw new NotSupportedException($"The method '{m.Method}' has to be invoked on a RealmObject member");
+                    }
+                    var columnIndex = NativeQuery.get_column_index(_coreQueryHandle, member.Member.Name, (IntPtr)member.Member.Name.Length);
+
+                    var argument = m.Arguments.SingleOrDefault() as ConstantExpression;
+                    if (argument == null || argument.Type != typeof(string))
+                    {
+                        throw new NotSupportedException($"The method '{m.Method}' has to be invoked with a single string constant argument");
+                    }
+
+                    queryMethod(_coreQueryHandle, columnIndex, (string)argument.Value);
+                    return m;
+                }
+            }
+
             throw new NotSupportedException($"The method '{m.Method.Name}' is not supported");
         }
 
