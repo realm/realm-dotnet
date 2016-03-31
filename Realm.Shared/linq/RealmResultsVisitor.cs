@@ -244,6 +244,23 @@ namespace Realms
             NativeQuery.group_end(_coreQueryHandle);
         }
 
+        internal static object ExtractConstantValue(Expression expr)
+        {
+            var constant = expr as ConstantExpression;
+            if (constant != null)
+            {
+                return constant.Value;
+            }
+
+            var memberAccess = expr as MemberExpression;
+            if (memberAccess != null && memberAccess.Expression is ConstantExpression && memberAccess.Member is System.Reflection.FieldInfo)
+            {
+                // handle closure variables
+                return ((System.Reflection.FieldInfo)memberAccess.Member).GetValue(((ConstantExpression)memberAccess.Expression).Value);
+            }
+                
+            return null;
+        }
 
         internal override Expression VisitBinary(BinaryExpression b)
         {
@@ -262,12 +279,13 @@ namespace Realms
                     throw new NotSupportedException(
                         $"The lhs of the binary operator '{b.NodeType}' should be a member expression");
                 var leftName = leftMember.Member.Name;
-                var rightConst = b.Right as ConstantExpression;
-                if (rightConst == null)
-                    throw new NotSupportedException(
-                        $"The rhs of the binary operator '{b.NodeType}' should be a constant expression");
 
-                var rightValue = rightConst.Value;
+                var rightValue = ExtractConstantValue(b.Right);
+                if (rightValue == null)
+                {
+                    throw new NotSupportedException($"The rhs of the binary operator '{b.NodeType}' should be a constant or closure variable expression");
+                }
+
                 switch (b.NodeType)
                 {
                     case ExpressionType.Equal:
@@ -321,6 +339,8 @@ namespace Realms
                 NativeQuery.float_equal((QueryHandle)queryHandle, columnIndex, (float)value);
             else if (valueType == typeof(double))
                 NativeQuery.double_equal((QueryHandle)queryHandle, columnIndex, (double)value);
+            else if (valueType == typeof(DateTimeOffset))
+                NativeQuery.datetime_seconds_equal(queryHandle, columnIndex, ((DateTimeOffset)value).ToUnixTimeSeconds());
             else
                 throw new NotImplementedException();
         }
@@ -343,6 +363,8 @@ namespace Realms
                 NativeQuery.float_not_equal((QueryHandle)queryHandle, columnIndex, (float)value);
             else if (valueType == typeof(double))
                 NativeQuery.double_not_equal((QueryHandle)queryHandle, columnIndex, (double)value);
+            else if (valueType == typeof(DateTimeOffset))
+                NativeQuery.datetime_seconds_not_equal(queryHandle, columnIndex, ((DateTimeOffset)value).ToUnixTimeSeconds());
             else
                 throw new NotImplementedException();
         }
@@ -358,6 +380,8 @@ namespace Realms
                 NativeQuery.float_less((QueryHandle)queryHandle, columnIndex, (float)value);
             else if (valueType == typeof(double))
                 NativeQuery.double_less((QueryHandle)queryHandle, columnIndex, (double)value);
+            else if (valueType == typeof(DateTimeOffset))
+                NativeQuery.datetime_seconds_less(queryHandle, columnIndex, ((DateTimeOffset)value).ToUnixTimeSeconds());
             else if (valueType == typeof(string) || valueType == typeof(bool))
                 throw new Exception("Unsupported type " + valueType.Name);
             else
@@ -375,6 +399,8 @@ namespace Realms
                 NativeQuery.float_less_equal((QueryHandle)queryHandle, columnIndex, (float)value);
             else if (valueType == typeof(double))
                 NativeQuery.double_less_equal((QueryHandle)queryHandle, columnIndex, (double)value);
+            else if (valueType == typeof(DateTimeOffset))
+                NativeQuery.datetime_seconds_less_equal(queryHandle, columnIndex, ((DateTimeOffset)value).ToUnixTimeSeconds());
             else if (valueType == typeof(string) || valueType == typeof(bool))
                 throw new Exception("Unsupported type " + valueType.Name);
             else
@@ -392,6 +418,8 @@ namespace Realms
                 NativeQuery.float_greater((QueryHandle)queryHandle, columnIndex, (float)value);
             else if (valueType == typeof(double))
                 NativeQuery.double_greater((QueryHandle)queryHandle, columnIndex, (double)value);
+            else if (valueType == typeof(DateTimeOffset))
+                NativeQuery.datetime_seconds_greater(queryHandle, columnIndex, ((DateTimeOffset)value).ToUnixTimeSeconds());
             else if (valueType == typeof(string) || valueType == typeof(bool))
                 throw new Exception("Unsupported type " + valueType.Name);
             else
@@ -409,6 +437,8 @@ namespace Realms
                 NativeQuery.float_greater_equal((QueryHandle)queryHandle, columnIndex, (float)value);
             else if (valueType == typeof(double))
                 NativeQuery.double_greater_equal((QueryHandle)queryHandle, columnIndex, (double)value);
+            else if (valueType == typeof(DateTimeOffset))
+                NativeQuery.datetime_seconds_greater_equal(queryHandle, columnIndex, ((DateTimeOffset)value).ToUnixTimeSeconds());
             else if (valueType == typeof(string) || valueType == typeof(bool))
                 throw new Exception("Unsupported type " + valueType.Name);
             else

@@ -176,6 +176,39 @@ namespace IntegrationTests
         }
 
         [Test]
+        public void SearchComparingDateTimeOffset()
+        {
+            var d1960 = new DateTimeOffset(1960, 1, 1, 0, 0, 0, TimeSpan.Zero);
+            var d1970 = new DateTimeOffset(1970, 1, 1, 0, 0, 0, TimeSpan.Zero);
+            var bdayJohnDoe = new DateTimeOffset(1963, 4, 14, 0, 0, 0, TimeSpan.Zero);
+            var bdayPeterJameson = new DateTimeOffset(1989, 2, 25, 0, 0, 0, TimeSpan.Zero);
+
+            var equality = _realm.All<Person>().Where(p => p.Birthday == bdayPeterJameson).ToArray();
+            Assert.That(equality.Length, Is.EqualTo(1));
+            Assert.That(equality[0].FullName, Is.EqualTo("Peter Jameson"));
+
+            var lessThan = _realm.All<Person>().Where(p => p.Birthday < d1960).ToArray();
+            Assert.That(lessThan.Length, Is.EqualTo(1));
+            Assert.That(lessThan[0].FullName, Is.EqualTo("John Smith"));
+
+            var lessOrEqualThan = _realm.All<Person>().Where(p => p.Birthday <= bdayJohnDoe).ToArray();
+            Assert.That(lessOrEqualThan.Length, Is.EqualTo(2));
+            Assert.That(lessOrEqualThan.All(p => p.FirstName == "John"), Is.True);
+
+            var greaterThan = _realm.All<Person>().Where(p => p.Birthday > d1970).ToArray();
+            Assert.That(greaterThan.Length, Is.EqualTo(1));
+            Assert.That(greaterThan[0].FullName, Is.EqualTo("Peter Jameson"));
+
+            var greaterOrEqualThan = _realm.All<Person>().Where(p => p.Birthday >= bdayJohnDoe).ToArray();
+            Assert.That(greaterOrEqualThan.Length, Is.EqualTo(2));
+            Assert.That(greaterOrEqualThan.Any(p => p.FullName == "John Doe") && greaterOrEqualThan.Any(p => p.FullName == "Peter Jameson"), Is.True);
+
+            var between = _realm.All<Person>().Where(p => p.Birthday > d1960 && p.Birthday < d1970).ToArray();
+            Assert.That(between.Length, Is.EqualTo(1));
+            Assert.That(between[0].FullName, Is.EqualTo("John Doe"));
+        }
+
+        [Test]
         public void AnySucceeds()
         {
             Assert.That( _realm.All<Person>().Where(p => p.Latitude > 50).Any());
