@@ -149,17 +149,22 @@ namespace Realms
                     bool foundAny = !firstRow.IsInvalid;
                     return Expression.Constant(foundAny);
                 }
-
-                //TODO as per issue #360 fix this to use Results so get sorted First.
                 if (m.Method.Name == "First")
                 {
                     RecurseToWhereOrRunLambda(m);  
-                    RowHandle firstRow = NativeQuery.findDirect(_coreQueryHandle, IntPtr.Zero);
-                    if (firstRow.IsInvalid)
+                    RowHandle firstRow = null;
+                    if (_optionalSortOrderHandle == null)
+                        firstRow = NativeQuery.findDirect(_coreQueryHandle, IntPtr.Zero);
+                    else {
+                        using (ResultsHandle rh = _realm.MakeResultsForQuery(_retType, _coreQueryHandle, _optionalSortOrderHandle)) {
+                            firstRow = NativeResults.get_row(rh, IntPtr.Zero);
+                        }
+                    }
+                    if (firstRow == null || firstRow.IsInvalid)
                         throw new InvalidOperationException("Sequence contains no matching element");
                     return Expression.Constant(_realm.MakeObjectForRow(_retType, firstRow));
                 }
-                if (m.Method.Name == "Single")  // same as First with extra checks
+                if (m.Method.Name == "Single")  // same as unsorted First with extra checks
                 {
                     RecurseToWhereOrRunLambda(m);  
                     RowHandle firstRow = NativeQuery.findDirect(_coreQueryHandle, IntPtr.Zero);
