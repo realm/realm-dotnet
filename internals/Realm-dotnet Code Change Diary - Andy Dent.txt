@@ -1935,3 +1935,16 @@ RealmWeaver/Analytics.cs
   - report windows instead of Generic .net
 - TargetOS      
   - report standard lowercase ids
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Private #49 Fix Android Debug Libs + #46 Cleanup Android targets
+
+IntegrationTests.XamarinAndroid.csproj
+- uncomment the Debug conditional section
+- put the Release condition back on the Release ItemGroup
+- Add the 64bit libs back into BOTH groups.
+
+NuGet/NuGet.Library/Realm.targets
+- removed armeabi entry for libwrappers.so
+
