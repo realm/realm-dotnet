@@ -64,7 +64,7 @@ namespace IntegrationTests
             {
                 p3 = _realm.CreateObject<Person>();
                 p3.FullName = "Peter Jameson";
-                p3.Email = "peter@jameson.com";
+                p3.Email = "peter@jameson.net";
                 p3.IsInteresting = true;
                 p3.Score = 42.42f;
                 p3.Latitude = 37.7798657;

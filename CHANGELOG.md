@@ -14,6 +14,7 @@ Still requires installation from private copy of NuGet download.
     `realm.All<Owner>().Where(p => p.Name == "Dani").First();` as well as with a lambda expression <br />
     `realm.All<Owner>().Single( p => p.Name == "Tim");` 
   * Sorting is now provided using the `OrderBy`, `OrderByDescending`, `ThenBy` and `ThenByDescending` clauses. Sorts can be applied to results of a query from a `Where` clause or sorting the entire class by applying after `All<>`.
+  * The `String.Contains(String)`, `String.StartsWith(String)`, and `String.EndsWith(String)` methods can now be used in Where clauses.
 
 ### Minor Fixes
 * Finish `RealmList.CopyTo` so you can apply `ToList` to related lists (issue #299)

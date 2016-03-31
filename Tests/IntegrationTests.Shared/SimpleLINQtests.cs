@@ -34,7 +34,7 @@ namespace IntegrationTests
             var s2 = _realm.All<Person>().Where(p => p.Longitude < 0).ToList();
             Assert.That(s2.Count(), Is.EqualTo(2));
             Assert.That(s2[0].Email, Is.EqualTo("john@doe.com"));
-            Assert.That(s2[1].Email, Is.EqualTo("peter@jameson.com"));
+            Assert.That(s2[1].Email, Is.EqualTo("peter@jameson.net"));
 
             var s3 = _realm.All<Person>().Where(p => p.Email != "");
             Assert.That(s3.Count(), Is.EqualTo(3));
@@ -155,6 +155,25 @@ namespace IntegrationTests
             Assert.That(s5[0].Latitude, Is.EqualTo(51.508530));
         }
 
+        [Test]
+        public void SearchComparingString()
+        {
+            var equality = _realm.All<Person>().Where(p => p.LastName == "Smith").ToArray();
+            Assert.That(equality.Length, Is.EqualTo(1));
+            Assert.That(equality[0].FullName, Is.EqualTo("John Smith"));
+
+            var contains = _realm.All<Person>().Where(p => p.FirstName.Contains("et")).ToArray();
+            Assert.That(contains.Length, Is.EqualTo(1));
+            Assert.That(contains[0].FullName, Is.EqualTo("Peter Jameson"));
+
+            var startsWith = _realm.All<Person>().Where(p => p.Email.StartsWith("john@")).ToArray();
+            Assert.That(startsWith.Length, Is.EqualTo(2));
+            Assert.That(startsWith.All(p => p.FirstName == "John"), Is.True);
+
+            var endsWith = _realm.All<Person>().Where(p => p.Email.EndsWith(".net")).ToArray();
+            Assert.That(endsWith.Length, Is.EqualTo(1));
+            Assert.That(endsWith[0].FullName, Is.EqualTo("Peter Jameson"));
+        }
 
         [Test]
         public void AnySucceeds()

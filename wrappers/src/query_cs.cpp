@@ -84,6 +84,30 @@ REALM_EXPORT void query_or(Query * query_ptr)
     });
 }
 
+REALM_EXPORT void query_string_contains(Query* query_ptr, size_t columnIndex, uint16_t* value, size_t value_len)
+{
+    handle_errors([&]() {
+        Utf16StringAccessor str(value, value_len);
+        query_ptr->contains(columnIndex, str);
+    });
+}
+
+REALM_EXPORT void query_string_starts_with(Query* query_ptr, size_t columnIndex, uint16_t* value, size_t value_len)
+{
+    handle_errors([&]() {
+        Utf16StringAccessor str(value, value_len);
+        query_ptr->begins_with(columnIndex, str);
+    });
+}
+
+REALM_EXPORT void query_string_ends_with(Query* query_ptr, size_t columnIndex, uint16_t* value, size_t value_len)
+{
+    handle_errors([&]() {
+        Utf16StringAccessor str(value, value_len);
+        query_ptr->ends_with(columnIndex, str);
+    });
+}
+    
 REALM_EXPORT void query_string_equal(Query * query_ptr, size_t columnIndex, uint16_t* value, size_t value_len)
 {
     handle_errors([&]() {

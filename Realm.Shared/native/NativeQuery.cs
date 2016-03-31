@@ -9,10 +9,23 @@ namespace Realms
 {
     internal static class NativeQuery
     {
+        internal delegate void Operator<T>(QueryHandle queryPtr, IntPtr columnIndex, T value);
 
         //c++ each of the operator functions such as string_equal
         //returns q again, the QueryHandle object is re-used and keeps its pointer.
         //so high-level stuff should also return self, to enable stacking of operations QueryHandle.dothis().dothat()
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_string_contains", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void string_contains(QueryHandle queryPtr, IntPtr columnIndex,
+            [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_string_starts_with", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void string_starts_with(QueryHandle queryPtr, IntPtr columnIndex,
+            [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_string_ends_with", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void string_ends_with(QueryHandle queryPtr, IntPtr columnIndex,
+            [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_string_equal", CallingConvention = CallingConvention.Cdecl)]
         internal static extern void string_equal(QueryHandle queryPtr, IntPtr columnIndex,
