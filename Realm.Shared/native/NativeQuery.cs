@@ -96,6 +96,24 @@ namespace Realms
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_double_greater_equal", CallingConvention = CallingConvention.Cdecl)]
         internal static extern void double_greater_equal(QueryHandle queryPtr, IntPtr columnIndex, double value);
 
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_datetime_seconds_equal", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void datetime_seconds_equal(QueryHandle queryPtr, IntPtr columnIndex, Int64 value);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_datetime_seconds_not_equal", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void datetime_seconds_not_equal(QueryHandle queryPtr, IntPtr columnIndex, Int64 value);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_datetime_seconds_less", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void datetime_seconds_less(QueryHandle queryPtr, IntPtr columnIndex, Int64 value);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_datetime_seconds_less_equal", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void datetime_seconds_less_equal(QueryHandle queryPtr, IntPtr columnIndex, Int64 value);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_datetime_seconds_greater", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void datetime_seconds_greater(QueryHandle queryPtr, IntPtr columnIndex, Int64 value);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_datetime_seconds_greater_equal", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void datetime_seconds_greater_equal(QueryHandle queryPtr, IntPtr columnIndex, Int64 value);
+
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_find", CallingConvention = CallingConvention.Cdecl)]
         internal static extern RowHandle findDirect(QueryHandle queryHandle, IntPtr beginAtRow);
 

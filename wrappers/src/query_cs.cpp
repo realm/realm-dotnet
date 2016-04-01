@@ -264,4 +264,46 @@ REALM_EXPORT void query_double_greater_equal(Query * query_ptr, size_t columnInd
     });
 }
 
+REALM_EXPORT void query_datetime_seconds_equal(Query* query_ptr, size_t columnIndex, int64_t value)
+{
+    handle_errors([&]() {
+        query_ptr->equal(columnIndex, DateTime(value));
+    });
+}
+
+REALM_EXPORT void query_datetime_seconds_not_equal(Query* query_ptr, size_t columnIndex, int64_t value)
+{
+    handle_errors([&]() {
+        query_ptr->not_equal(columnIndex, DateTime(value));
+    });
+}
+
+REALM_EXPORT void query_datetime_seconds_less(Query* query_ptr, size_t columnIndex, int64_t value)
+{
+    handle_errors([&]() {
+        query_ptr->less(columnIndex, DateTime(value));
+    });
+}
+
+REALM_EXPORT void query_datetime_seconds_less_equal(Query* query_ptr, size_t columnIndex, int64_t value)
+{
+    handle_errors([&]() {
+        query_ptr->less_equal(columnIndex, DateTime(value));
+    });
+}
+
+REALM_EXPORT void query_datetime_seconds_greater(Query* query_ptr, size_t columnIndex, int64_t value)
+{
+    handle_errors([&]() {
+        query_ptr->greater(columnIndex, DateTime(value));
+    });
+}
+
+REALM_EXPORT void query_datetime_seconds_greater_equal(Query* query_ptr, size_t columnIndex, int64_t value)
+{
+    handle_errors([&]() {
+        query_ptr->greater_equal(columnIndex, DateTime(value));
+    });
+}
+
 }   // extern "C"
