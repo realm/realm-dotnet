@@ -1,11 +1,11 @@
-0.74.0 Private Beta IN PROGRESS
+0.74.0 Private Beta (2016-04-02)
 -------------------
 Still requires installation from private copy of NuGet download.
 
-### Major Fixes
-* The Realm assembly weaver now submits anonymous usage data during each build (issue #182)
-* Realm.RemoveRange<>() and Realm.RemoveAll<>() methods added to allow you to delete objects from a realm.
-* Realm.Write() method added for executing code within an implicitly committed transaction
+### Major Changes
+* The Realm assembly weaver now submits anonymous usage data during each build, so we can track statistics for unique builders, as done with the Java, Swift and Objective-C products (issue #182)
+* `Realm.RemoveRange<>()` and `Realm.RemoveAll<>()` methods added to allow you to delete objects from a realm.
+* `Realm.Write()` method added for executing code within an implicitly committed transaction
 * You can now restrict the classes allowed in a given Realm using `RealmConfiguration.ObjectClasses`.
 * LINQ improvements:
   * Simple bool searches work without having to use `== true` (issue #362)
@@ -16,12 +16,13 @@ Still requires installation from private copy of NuGet download.
   * Sorting is now provided using the `OrderBy`, `OrderByDescending`, `ThenBy` and `ThenByDescending` clauses. Sorts can be applied to results of a query from a `Where` clause or sorting the entire class by applying after `All<>`.
   * The `String.Contains(String)`, `String.StartsWith(String)`, and `String.EndsWith(String)` methods can now be used in Where clauses.  
   * DateTimeOffset properties can be compared in queries.
+* Support for `armeabi` builds on old ARM V5 and V6 devices has been removed.  
 
-### Minor Fixes
+### Minor Changes
 * Finish `RealmList.CopyTo` so you can apply `ToList` to related lists (issue #299)
 * NuGet now inserts `libwrappers.so` for Android targets using `$(SolutionDir)packages` so it copes with the different relative paths in cross-platform (Xamarin Forms) app templates vs pure Android templates.  
-* Realm.RealmChanged event notifies you of changes made to the realm
-* Realm.Refresh() makes sure the realm is updated with changes from other threads.
+* `Realm.RealmChanged` event notifies you of changes made to the realm
+* `Realm.Refresh()` makes sure the realm is updated with changes from other threads.
 
 
 0.73.0 Private Beta (2016-02-26)

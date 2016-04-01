@@ -16,7 +16,7 @@
     <language>en-US</language>
     <tags>Realm</tags>
     <dependencies>
-      <dependency id="RealmWeaver.Fody" version="0.72.0"/>
+      <dependency id="RealmWeaver.Fody" version="0.74.0"/>
     </dependencies>
   </metadata>
   <files>
@@ -27,7 +27,6 @@
 <!-- Android files -->
     <file src="Realm.targets" target="build\MonoAndroid44" />
     <file src="../../Realm.XamarinAndroid/bin/Release/Realm.dll" target="lib\MonoAndroid44" />
-    <file src="../../wrappers/build/Release-android/armeabi/libwrappers.so" target="lib\MonoAndroid44\armeabi" />
     <file src="../../wrappers/build/Release-android/armeabi-v7a/libwrappers.so" target="lib\MonoAndroid44\armeabi-v7a" />
     <file src="../../wrappers/build/Release-android/arm64-v8a/libwrappers.so" target="lib\MonoAndroid44\arm64-v8a" />
     <file src="../../wrappers/build/Release-android/x86/libwrappers.so" target="lib\MonoAndroid44\x86" />
