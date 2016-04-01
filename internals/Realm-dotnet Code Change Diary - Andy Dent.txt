@@ -1988,3 +1988,5 @@ IntegrationTests.XamarinAndroid.csproj
 NuGet/NuGet.Library/Realm.targets
 - removed armeabi entry for libwrappers.so
 
+wrappers/jni/Application.mk
+- conditionally add REALM_DEBUG to APP_CPPFLAGS
