@@ -1962,3 +1962,12 @@ results_cs.cpp
 - added create_for_query_sorted 
 - added results_create_for_table_sorted 
 - added sortorder_create_for_table, sortorder_destroy & sortorder_add_clause
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#360 First with Sort
+
+SortingTests.cs 
+- added FirstIsDifferentSorted
+
+RealmResultsVisitor.cs
+- VisitMethodCall - add logic to get First from Results if sorted
