@@ -55,8 +55,8 @@ WeakRealmNotifier::~WeakRealmNotifier()
 void WeakRealmNotifier::set_auto_refresh(bool auto_refresh)
 {
     if (auto_refresh) {
-        auto locked_ptr = new std::shared_ptr<Realm> {realm()};
-        m_handler = create_handler_for_current_thread(locked_ptr);
+        auto ptr = new std::weak_ptr<Realm>(realm());
+        m_handler = create_handler_for_current_thread(ptr);
     }
 }
 
@@ -65,6 +65,7 @@ void WeakRealmNotifier::notify()
     if (m_handler)
         notify_handler(m_handler);
 }
+
 
 create_handler_function create_handler_for_current_thread = nullptr;
 notify_handler_function notify_handler = nullptr;

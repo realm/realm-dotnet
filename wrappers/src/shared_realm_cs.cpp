@@ -173,14 +173,14 @@ REALM_EXPORT void bind_handler_functions(realm::_impl::create_handler_function c
     });
 }
 
-REALM_EXPORT void notify_realm(std::shared_ptr<Realm>* realm)
+REALM_EXPORT void notify_realm(std::weak_ptr<Realm>* realm)
 {
     handle_errors([&]() {
-        (*realm)->notify();
+        (*realm).lock()->notify();
     });
 }
 
-REALM_EXPORT void shared_realm_delete(SharedRealm* realm)
+REALM_EXPORT void shared_realm_delete(std::weak_ptr<Realm>* realm)
 {
     handle_errors([&]() {
         delete realm;
