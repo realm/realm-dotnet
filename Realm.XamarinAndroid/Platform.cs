@@ -49,6 +49,7 @@ namespace Realms
 
         protected override void Dispose(bool disposing)
         {
+            Console.WriteLine("[" + id + "] realmPtr=" + _realmPtr + ", thread id: " + Thread.CurrentThread.ManagedThreadId + " -- Destroyed");
             if (disposing)
                 NativeSetup.shared_realm_delete(_realmPtr);
 
@@ -63,8 +64,6 @@ namespace Realms
             NativeSetup.bind_handler_functions(CreateHandler, NotifyHandler, DestroyHandler);
         }
 
-        private static Dictionary<IntPtr, Handler> handlers = new Dictionary<IntPtr, Handler>();
-
         private static IntPtr CreateHandler(IntPtr realmPtr) 
         {
             if (Looper.MyLooper() == null)
@@ -74,29 +73,36 @@ namespace Realms
             }
 
             var h = new MyHandler(realmPtr);
-            handlers[h.Handle] = h;
+            var gch = GCHandle.ToIntPtr(GCHandle.Alloc(h));
 
-            return h.Handle;
+            Console.WriteLine("CreateHandler(" + gch + ")");
+
+            return gch;
         }
 
         private static void NotifyHandler(IntPtr handlerHandle)
         {
+            Console.WriteLine("NotifyHandler(" + handlerHandle + ")");
+
             if (handlerHandle == IntPtr.Zero)
                 return;
 
             Console.WriteLine("Notify handler..");
 
-            var h = handlers[handlerHandle];
+            var h = (MyHandler)GCHandle.FromIntPtr(handlerHandle).Target;
 
             h.SendEmptyMessage(13);
         }
 
         private static void DestroyHandler(IntPtr handlerHandle)
         {
+            Console.WriteLine("DestroyHandler(" + handlerHandle + ")");
+
             if (handlerHandle == IntPtr.Zero)
                 return;
 
-            var h = handlers[handlerHandle];
+            var h = (MyHandler)GCHandle.FromIntPtr(handlerHandle).Target;
+
             h.Dispose();
         }
     }
