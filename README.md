@@ -42,9 +42,9 @@ Prerequisites:
 
 We support the current Xamarin _Stable_ and _Beta_ update channels, at the time of release this corresponded to:
 
-* Xamarin iOS version 9.2.1.51
-* Xamarin Android version 6.0.0.34
-* Xamarin Studio version 5.10
+* Xamarin iOS version 9.6.1.9
+* Xamarin Android version 6.0.3.5
+* Xamarin Studio version 5.10.3
 
 Building Realm dotnet is not yet automated.
 

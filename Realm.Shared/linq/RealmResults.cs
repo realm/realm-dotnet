@@ -12,10 +12,13 @@ using System.Linq.Expressions;
 namespace Realms
 {
     /// <summary>
-    /// Iterable collection of one kind of RealmObject resulting from Realm.All or from a LINQ query expression.
+    /// Iterable, sortable collection of one kind of RealmObject resulting from <see cref="Realm.All()"/> or from a LINQ query expression.
     /// </summary>
+    /// <remarks>Implements <a hlink="https://msdn.microsoft.com/en-us/library/system.linq.iorderedqueryable">IOrderedQueryable</a>.  <br />
+    /// You can sort efficiently using the standard LINQ operators <c>OrderBy</c> or <c>OrderByDescending</c> followed by any number of
+    /// <c>ThenBy</c> or <c>ThenByDescending</c>.</remarks>
     /// <typeparam name="T">Type of the RealmObject which is being returned.</typeparam>
-    public class RealmResults<T> : IQueryable<T>
+    public class RealmResults<T> : IOrderedQueryable<T>
     {
         public Type ElementType => typeof (T);
         public Expression Expression { get; } = null; // null if _allRecords
@@ -56,12 +59,13 @@ namespace Realms
                 var qv = _provider.MakeVisitor(retType);
                 qv.Visit(Expression);
                 var queryHandle = qv._coreQueryHandle; // grab out the built query definition
-                return _realm.MakeResultsForQuery(retType, queryHandle);
+                var sortHandle = qv._optionalSortOrderHandle;
+                return _realm.MakeResultsForQuery(retType, queryHandle, sortHandle);
             }
         }
 
         /// <summary>
-        /// Standard method from interface IEnumerable allows the RealmResults to be used in a <c>foreach</c>.
+        /// Standard method from interface IEnumerable allows the RealmResults to be used in a <c>foreach</c> or <c>ToList()</c>.
         /// </summary>
         /// <returns>An IEnumerator which will iterate through found Realm persistent objects.</returns>
         public IEnumerator<T> GetEnumerator()
@@ -76,10 +80,10 @@ namespace Realms
 
 
         /// <summary>
-        /// Count all objects if created by <see cref="Realm.All"/> of the parameterised type, faster than a search.
+        /// Fast count all objects of a given class.
         /// </summary>
         /// <remarks>
-        /// Resolves to this method instead of the static extension <c>Count&lt;T&gt;(this IEnumerable&lt;T&gt;)</c>.
+        /// Resolves to this method instead of the LINQ static extension <c>Count&lt;T&gt;(this IEnumerable&lt;T&gt;)</c>, when used directly on Realm.All.
         /// </remarks>
         public int Count()
         {

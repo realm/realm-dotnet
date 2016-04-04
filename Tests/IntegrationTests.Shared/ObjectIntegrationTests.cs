@@ -213,9 +213,6 @@ namespace IntegrationTests
         public void CanSimplyCountAll()
         {
             MakeThreePeople();
-            // note older samples will often use ToList just to get a count, with expressions such as
-            // Assert.That(_realm.All<Person>().ToList().Count(), Is.EqualTo(3));
-            //var folks = _realm.All<Person>().ToList();
             Assert.That(_realm.All<Person>().Count(), Is.EqualTo(3));
         }
 
@@ -226,7 +223,7 @@ namespace IntegrationTests
 
             // primarily just testing we iterate through all the people in the realm
             int iterCount = 0;
-            string[] emails = {"john@smith.com", "john@doe.com", "peter@jameson.com"};
+            string[] emails = {"john@smith.com", "john@doe.com", "peter@jameson.net"};
             foreach (var p in _realm.All<Person>()) {
                 Assert.That(p.Email, Is.EqualTo(emails[iterCount]));
                 iterCount++;

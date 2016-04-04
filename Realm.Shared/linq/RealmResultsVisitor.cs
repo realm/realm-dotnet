@@ -9,14 +9,41 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 
+using LazyMethod = System.Lazy<System.Reflection.MethodInfo>;
+
 namespace Realms
 {
     internal class RealmResultsVisitor : ExpressionVisitor
     {
         private Realm _realm;
         internal QueryHandle _coreQueryHandle;  // set when recurse down to VisitConstant
+        internal SortOrderHandle _optionalSortOrderHandle;  // set only when get OrderBy*
         private Type _retType;
 
+        private static class Methods 
+        {
+            internal static LazyMethod Capture<T>(Expression<Action<T>> lambda)
+            {
+                return new LazyMethod(() => {
+                    var method = (lambda.Body as MethodCallExpression).Method;
+                    if (method.IsGenericMethod)
+                    {
+                        method = method.GetGenericMethodDefinition();
+                    }
+
+                    return method;
+                });
+            }
+
+            internal static class String
+            {
+                internal static readonly LazyMethod Contains = Methods.Capture<string>(s => s.Contains(""));
+
+                internal static readonly LazyMethod StartsWith = Methods.Capture<string>(s => s.StartsWith(""));
+
+                internal static readonly LazyMethod EndsWith = Methods.Capture<string>(s => s.EndsWith(""));
+            }
+        }
 
         internal RealmResultsVisitor(Realm realm, Type retType)
         {
@@ -53,15 +80,60 @@ namespace Realms
         }
 
 
+        private void AddSort(LambdaExpression lambda, bool isStarting, bool ascending)
+        {
+            var body = lambda.Body as MemberExpression;
+            if (body == null)
+                throw new NotSupportedException($"The expression {lambda} cannot be used in an Order clause");
+
+            if (isStarting)
+            {
+                if (_optionalSortOrderHandle == null)
+                    _optionalSortOrderHandle = _realm.MakeSortOrderForTable(_retType);
+                else
+                {
+                    var badCall = ascending ? "By" : "ByDescending";
+                    throw new NotSupportedException($"You can only use one OrderBy or OrderByDescending clause, subsequent sort conditions should be Then{badCall}");
+                }
+            }
+
+            var sortColName = body.Member.Name;
+            NativeSortOrder.add_sort_clause(_optionalSortOrderHandle, sortColName, (IntPtr)sortColName.Length, ascending ? (IntPtr)1 : IntPtr.Zero);
+        }
+
+
         internal override Expression VisitMethodCall(MethodCallExpression m)
         {
             if (m.Method.DeclaringType == typeof(Queryable)) { 
                 if (m.Method.Name == "Where")
                 {
                     this.Visit(m.Arguments[0]);
-
                     LambdaExpression lambda = (LambdaExpression)StripQuotes(m.Arguments[1]);
                     this.Visit(lambda.Body);
+                    return m;
+                }
+                if (m.Method.Name == "OrderBy")
+                {
+                    this.Visit(m.Arguments[0]);
+                    AddSort((LambdaExpression)StripQuotes(m.Arguments[1]), true, true);
+                    return m;
+                }
+                if (m.Method.Name == "OrderByDescending")
+                {
+                    this.Visit(m.Arguments[0]);
+                    AddSort((LambdaExpression)StripQuotes(m.Arguments[1]), true, false);
+                    return m;
+                }
+                if (m.Method.Name == "ThenBy")
+                {
+                    this.Visit(m.Arguments[0]);
+                    AddSort((LambdaExpression)StripQuotes(m.Arguments[1]), false, true);
+                    return m;
+                }
+                if (m.Method.Name == "ThenByDescending")
+                {
+                    this.Visit(m.Arguments[0]);
+                    AddSort((LambdaExpression)StripQuotes(m.Arguments[1]), false, false);
                     return m;
                 }
                 if (m.Method.Name == "Count")
@@ -77,17 +149,22 @@ namespace Realms
                     bool foundAny = !firstRow.IsInvalid;
                     return Expression.Constant(foundAny);
                 }
-
-                //TODO as per issue #360 fix this to use Results so get sorted First.
                 if (m.Method.Name == "First")
                 {
                     RecurseToWhereOrRunLambda(m);  
-                    RowHandle firstRow = NativeQuery.findDirect(_coreQueryHandle, IntPtr.Zero);
-                    if (firstRow.IsInvalid)
+                    RowHandle firstRow = null;
+                    if (_optionalSortOrderHandle == null)
+                        firstRow = NativeQuery.findDirect(_coreQueryHandle, IntPtr.Zero);
+                    else {
+                        using (ResultsHandle rh = _realm.MakeResultsForQuery(_retType, _coreQueryHandle, _optionalSortOrderHandle)) {
+                            firstRow = NativeResults.get_row(rh, IntPtr.Zero);
+                        }
+                    }
+                    if (firstRow == null || firstRow.IsInvalid)
                         throw new InvalidOperationException("Sequence contains no matching element");
                     return Expression.Constant(_realm.MakeObjectForRow(_retType, firstRow));
                 }
-                if (m.Method.Name == "Single")  // same as First with extra checks
+                if (m.Method.Name == "Single")  // same as unsorted First with extra checks
                 {
                     RecurseToWhereOrRunLambda(m);  
                     RowHandle firstRow = NativeQuery.findDirect(_coreQueryHandle, IntPtr.Zero);
@@ -101,6 +178,44 @@ namespace Realms
                 }
 
             }
+
+            if (m.Method.DeclaringType == typeof(string))
+            {
+                NativeQuery.Operation<string> queryMethod = null;
+
+                if (m.Method == Methods.String.Contains.Value)
+                {
+                    queryMethod = (q, c, v) => NativeQuery.string_contains(q, c, v, (IntPtr)v.Length);
+                }
+                else if (m.Method == Methods.String.StartsWith.Value)
+                {
+                    queryMethod = (q, c, v) => NativeQuery.string_starts_with(q, c, v, (IntPtr)v.Length);
+                }
+                else if (m.Method == Methods.String.EndsWith.Value)
+                {
+                    queryMethod = (q, c, v) => NativeQuery.string_ends_with(q, c, v, (IntPtr)v.Length);
+                }
+
+                if (queryMethod != null)
+                {
+                    var member = m.Object as MemberExpression;
+                    if (member == null)
+                    {
+                        throw new NotSupportedException($"The method '{m.Method}' has to be invoked on a RealmObject member");
+                    }
+                    var columnIndex = NativeQuery.get_column_index(_coreQueryHandle, member.Member.Name, (IntPtr)member.Member.Name.Length);
+
+                    var argument = m.Arguments.SingleOrDefault() as ConstantExpression;
+                    if (argument == null || argument.Type != typeof(string))
+                    {
+                        throw new NotSupportedException($"The method '{m.Method}' has to be invoked with a single string constant argument");
+                    }
+
+                    queryMethod(_coreQueryHandle, columnIndex, (string)argument.Value);
+                    return m;
+                }
+            }
+
             throw new NotSupportedException($"The method '{m.Method.Name}' is not supported");
         }
 
@@ -129,6 +244,23 @@ namespace Realms
             NativeQuery.group_end(_coreQueryHandle);
         }
 
+        internal static object ExtractConstantValue(Expression expr)
+        {
+            var constant = expr as ConstantExpression;
+            if (constant != null)
+            {
+                return constant.Value;
+            }
+
+            var memberAccess = expr as MemberExpression;
+            if (memberAccess != null && memberAccess.Expression is ConstantExpression && memberAccess.Member is System.Reflection.FieldInfo)
+            {
+                // handle closure variables
+                return ((System.Reflection.FieldInfo)memberAccess.Member).GetValue(((ConstantExpression)memberAccess.Expression).Value);
+            }
+                
+            return null;
+        }
 
         internal override Expression VisitBinary(BinaryExpression b)
         {
@@ -147,12 +279,13 @@ namespace Realms
                     throw new NotSupportedException(
                         $"The lhs of the binary operator '{b.NodeType}' should be a member expression");
                 var leftName = leftMember.Member.Name;
-                var rightConst = b.Right as ConstantExpression;
-                if (rightConst == null)
-                    throw new NotSupportedException(
-                        $"The rhs of the binary operator '{b.NodeType}' should be a constant expression");
 
-                var rightValue = rightConst.Value;
+                var rightValue = ExtractConstantValue(b.Right);
+                if (rightValue == null)
+                {
+                    throw new NotSupportedException($"The rhs of the binary operator '{b.NodeType}' should be a constant or closure variable expression");
+                }
+
                 switch (b.NodeType)
                 {
                     case ExpressionType.Equal:
@@ -206,6 +339,8 @@ namespace Realms
                 NativeQuery.float_equal((QueryHandle)queryHandle, columnIndex, (float)value);
             else if (valueType == typeof(double))
                 NativeQuery.double_equal((QueryHandle)queryHandle, columnIndex, (double)value);
+            else if (valueType == typeof(DateTimeOffset))
+                NativeQuery.datetime_seconds_equal(queryHandle, columnIndex, ((DateTimeOffset)value).ToUnixTimeSeconds());
             else
                 throw new NotImplementedException();
         }
@@ -228,6 +363,8 @@ namespace Realms
                 NativeQuery.float_not_equal((QueryHandle)queryHandle, columnIndex, (float)value);
             else if (valueType == typeof(double))
                 NativeQuery.double_not_equal((QueryHandle)queryHandle, columnIndex, (double)value);
+            else if (valueType == typeof(DateTimeOffset))
+                NativeQuery.datetime_seconds_not_equal(queryHandle, columnIndex, ((DateTimeOffset)value).ToUnixTimeSeconds());
             else
                 throw new NotImplementedException();
         }
@@ -243,6 +380,8 @@ namespace Realms
                 NativeQuery.float_less((QueryHandle)queryHandle, columnIndex, (float)value);
             else if (valueType == typeof(double))
                 NativeQuery.double_less((QueryHandle)queryHandle, columnIndex, (double)value);
+            else if (valueType == typeof(DateTimeOffset))
+                NativeQuery.datetime_seconds_less(queryHandle, columnIndex, ((DateTimeOffset)value).ToUnixTimeSeconds());
             else if (valueType == typeof(string) || valueType == typeof(bool))
                 throw new Exception("Unsupported type " + valueType.Name);
             else
@@ -260,6 +399,8 @@ namespace Realms
                 NativeQuery.float_less_equal((QueryHandle)queryHandle, columnIndex, (float)value);
             else if (valueType == typeof(double))
                 NativeQuery.double_less_equal((QueryHandle)queryHandle, columnIndex, (double)value);
+            else if (valueType == typeof(DateTimeOffset))
+                NativeQuery.datetime_seconds_less_equal(queryHandle, columnIndex, ((DateTimeOffset)value).ToUnixTimeSeconds());
             else if (valueType == typeof(string) || valueType == typeof(bool))
                 throw new Exception("Unsupported type " + valueType.Name);
             else
@@ -277,6 +418,8 @@ namespace Realms
                 NativeQuery.float_greater((QueryHandle)queryHandle, columnIndex, (float)value);
             else if (valueType == typeof(double))
                 NativeQuery.double_greater((QueryHandle)queryHandle, columnIndex, (double)value);
+            else if (valueType == typeof(DateTimeOffset))
+                NativeQuery.datetime_seconds_greater(queryHandle, columnIndex, ((DateTimeOffset)value).ToUnixTimeSeconds());
             else if (valueType == typeof(string) || valueType == typeof(bool))
                 throw new Exception("Unsupported type " + valueType.Name);
             else
@@ -294,6 +437,8 @@ namespace Realms
                 NativeQuery.float_greater_equal((QueryHandle)queryHandle, columnIndex, (float)value);
             else if (valueType == typeof(double))
                 NativeQuery.double_greater_equal((QueryHandle)queryHandle, columnIndex, (double)value);
+            else if (valueType == typeof(DateTimeOffset))
+                NativeQuery.datetime_seconds_greater_equal(queryHandle, columnIndex, ((DateTimeOffset)value).ToUnixTimeSeconds());
             else if (valueType == typeof(string) || valueType == typeof(bool))
                 throw new Exception("Unsupported type " + valueType.Name);
             else

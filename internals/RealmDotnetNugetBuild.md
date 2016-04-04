@@ -9,17 +9,11 @@ We currently produce two NuGet packages. You will usually build them and test us
 
 Paths below assume you're starting in the root dir `realm-dotnet` checked out from GitHub.
 
-Building the DLLS
------------------
-
-Follow the _Building Realm Steps_ section in `README.md` if you haven't built them already.
-
-Once you have your DLLS, follow these next steps to set version numbers and build NuGet.
-
-
 Setting Version Numbers
 -----------------------
 The Fody Weaver version number **must** follow the main Realm.dll even if there were no changes to Fody code.
+
+**Note** You need to change version numbers below before building DLLs!
 
 * Update the `AssemblyVersion` and `AssemblyFileVersion` version in `AssemblyInfo.cs` in five locations (platforms + PCL + RealmWeaver):
   * `RealmWeaver/AssemblyInfo.cs`
@@ -28,6 +22,7 @@ The Fody Weaver version number **must** follow the main Realm.dll even if there 
   * `Realm.XamarinAndroid/Properties/AssemblyInfo.cs`
   * `Realm.XamarinIOS/Properties/AssemblyInfo.cs`
 * Update `NuGet/NuGet.Weaver/RealmWeaver.Fody.nuspec`
+* Edit `NuGet/NuGet.Library/Realm.nuspec` and update the `RealmWeaver.Fody` version number (as noted above these are now kept in synch)
 * Edit `NuGet/NuGet.Library/Realm.targets` and update version numbers in **all** the paths.
 
 **At NuGet build time,** you will also have to change the version number you use in the `nuget` command line.
@@ -35,11 +30,17 @@ The Fody Weaver version number **must** follow the main Realm.dll even if there 
 
 Building Fody NuGet
 -------------------
-You often will **not** be building a new Fody in which case you can copy a previous version. Ensure that the version number being copied matches the dependency in  `NuGet/NuGet.Library/Realm.nuspec`. Otherwise, follow these instructions:
-
 You **have** to build this using Visual Studio. Open the normal Realm solution and force a rebuild of the `Nuget.Weaver` project. The `NuGetBuild` folder is created by this build.
 
 Copy the `RealmWeaver.Fody.0.72.0.nupkg` generated in `NuGetBuild` to your **local test folder**.
+
+
+Building the DLLS
+-----------------
+
+Follow the _Building Realm Steps_ section in `README.md` if you haven't built them already.
+
+
 
 Building Realm NuGet
 --------------------

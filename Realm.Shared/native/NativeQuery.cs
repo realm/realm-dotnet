@@ -9,10 +9,24 @@ namespace Realms
 {
     internal static class NativeQuery
     {
+        // This is a delegate type meant to represent one of the "query operator" methods such as float_less and bool_equal
+        internal delegate void Operation<T>(QueryHandle queryPtr, IntPtr columnIndex, T value);
 
         //c++ each of the operator functions such as string_equal
         //returns q again, the QueryHandle object is re-used and keeps its pointer.
         //so high-level stuff should also return self, to enable stacking of operations QueryHandle.dothis().dothat()
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_string_contains", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void string_contains(QueryHandle queryPtr, IntPtr columnIndex,
+            [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_string_starts_with", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void string_starts_with(QueryHandle queryPtr, IntPtr columnIndex,
+            [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_string_ends_with", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void string_ends_with(QueryHandle queryPtr, IntPtr columnIndex,
+            [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_string_equal", CallingConvention = CallingConvention.Cdecl)]
         internal static extern void string_equal(QueryHandle queryPtr, IntPtr columnIndex,
@@ -81,6 +95,24 @@ namespace Realms
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_double_greater_equal", CallingConvention = CallingConvention.Cdecl)]
         internal static extern void double_greater_equal(QueryHandle queryPtr, IntPtr columnIndex, double value);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_datetime_seconds_equal", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void datetime_seconds_equal(QueryHandle queryPtr, IntPtr columnIndex, Int64 value);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_datetime_seconds_not_equal", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void datetime_seconds_not_equal(QueryHandle queryPtr, IntPtr columnIndex, Int64 value);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_datetime_seconds_less", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void datetime_seconds_less(QueryHandle queryPtr, IntPtr columnIndex, Int64 value);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_datetime_seconds_less_equal", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void datetime_seconds_less_equal(QueryHandle queryPtr, IntPtr columnIndex, Int64 value);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_datetime_seconds_greater", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void datetime_seconds_greater(QueryHandle queryPtr, IntPtr columnIndex, Int64 value);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_datetime_seconds_greater_equal", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void datetime_seconds_greater_equal(QueryHandle queryPtr, IntPtr columnIndex, Int64 value);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_find", CallingConvention = CallingConvention.Cdecl)]
         internal static extern RowHandle findDirect(QueryHandle queryHandle, IntPtr beginAtRow);

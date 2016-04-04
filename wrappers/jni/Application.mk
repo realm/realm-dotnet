@@ -8,6 +8,9 @@ APP_CPPFLAGS += -frtti
 APP_CPPFLAGS += -fexceptions
 APP_CPPFLAGS += -pthread
 APP_CPPFLAGS += -DREALM_HAVE_CONFIG=1
+ifdef NDK_DEBUG
+APP_CPPFLAGS += -DREALM_DEBUG=1
+endif
 
 # Instruct to use the static GNU STL implementation
 APP_STL := gnustl_static

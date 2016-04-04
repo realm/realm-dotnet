@@ -1922,6 +1922,8 @@ InstanceTests.cs
 - GetUniqueInstancesDifferentThreads made explicit until fixed
   to separate effect of its failure from running other tests.
 
+
+
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #444 Fix Analytics to match Cocoa
 
@@ -1935,3 +1937,65 @@ RealmWeaver/Analytics.cs
   - report windows instead of Generic .net
 - TargetOS      
   - report standard lowercase ids
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#353 Specifying Sort
+
+SortingTests.cs 
+- added
+
+SortOrderHandle.cs
+- added
+  
+RealmResults.cs
+- RealmResults changed from IQueryable<T> to IOrderedQueryable<T>
+- CreateResultsHandle get sort handle and pass to MakeResultsForQuery
+
+Realm.cs
+- MakeResultsForQuery add optionalSortOrder param
+- MakeSortOrderForTable added
+- CreateSortOrderHandle added
+
+RealmResultsVisitor.cs
+- VisitMethodCall - added:
+  - OrderBy   
+  - OrderByDescending
+  - ThenBy
+  - ThenByDescending  
+ 
+NativeSortOrder.cs
+- added
+
+NativeResults.cs
+- added create_for_query_sorted decl
+- added create_for_table_sorted decl
+  
+results_cs.cpp
+- SortOrderWrapper added
+- added create_for_query_sorted 
+- added results_create_for_table_sorted 
+- added sortorder_create_for_table, sortorder_destroy & sortorder_add_clause
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#360 First with Sort
+
+SortingTests.cs 
+- added FirstIsDifferentSorted
+
+RealmResultsVisitor.cs
+- VisitMethodCall - add logic to get First from Results if sorted
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Private #49 Fix Android Debug Libs + #46 Cleanup Android targets
+
+IntegrationTests.XamarinAndroid.csproj
+- uncomment the Debug conditional section
+- put the Release condition back on the Release ItemGroup
+- Add the 64bit libs back into BOTH groups.
+
+NuGet/NuGet.Library/Realm.targets
+- removed armeabi entry for libwrappers.so
+
+wrappers/jni/Application.mk
+- conditionally add REALM_DEBUG to APP_CPPFLAGS

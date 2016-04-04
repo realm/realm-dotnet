@@ -419,7 +419,6 @@ namespace Realms
         }
 
 
-
         internal ResultsHandle MakeResultsForTable(Type tableType)
         {
             var tableHandle = _tableHandles[tableType];
@@ -429,12 +428,23 @@ namespace Realms
         }
 
 
-
-        internal ResultsHandle MakeResultsForQuery(Type tableType, QueryHandle builtQuery)
+        internal ResultsHandle MakeResultsForQuery(Type tableType, QueryHandle builtQuery, SortOrderHandle optionalSortOrder)
         {
             var objSchema = Realm.ObjectSchemaCache[tableType];
-            IntPtr resultsPtr = NativeResults.create_for_query(_sharedRealmHandle, builtQuery, objSchema);
+            IntPtr resultsPtr = IntPtr.Zero;               
+            if (optionalSortOrder == null)
+                resultsPtr = NativeResults.create_for_query(_sharedRealmHandle, builtQuery, objSchema);
+            else
+                resultsPtr = NativeResults.create_for_query_sorted(_sharedRealmHandle, builtQuery, objSchema, optionalSortOrder);
             return CreateResultsHandle(resultsPtr);
+        }
+
+
+        internal SortOrderHandle MakeSortOrderForTable(Type tableType)
+        {
+            var tableHandle = _tableHandles[tableType];
+            IntPtr sortOrderPtr = NativeSortOrder.create_for_table(tableHandle);
+            return CreateSortOrderHandle(sortOrderPtr);
         }
 
 
@@ -486,6 +496,7 @@ namespace Realms
             return resultsHandle;
         }
 
+
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         internal static RowHandle CreateRowHandle(IntPtr rowPtr)
         {
@@ -500,15 +511,29 @@ namespace Realms
             return rowHandle;
         }
 
+        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+        internal static SortOrderHandle CreateSortOrderHandle(IntPtr sortOrderPtr)
+        {
+            var sortOrderHandle = new SortOrderHandle();
+
+            RuntimeHelpers.PrepareConstrainedRegions();
+            try { /* Retain handle in a constrained execution region */ }
+            finally
+            {
+                sortOrderHandle.SetHandle(sortOrderPtr);
+            }
+            return sortOrderHandle;
+        }
+
         /// <summary>
         /// Factory for a write Transaction. Essential object to create scope for updates.
         /// </summary>
-        /// <example><c>
+        /// <example>
         /// using (var trans = myrealm.BeginWrite()) { 
         ///     var rex = myrealm.CreateObject<Dog>();
         ///     rex.Name = "Rex";
         ///     trans.Commit();
-        /// }</c>
+        /// }
         /// </example>
         /// <returns>A transaction in write mode, which is required for any creation or modification of objects persisted in a Realm.</returns>
         public Transaction BeginWrite()
@@ -517,9 +542,14 @@ namespace Realms
         }
 
         /// <summary>
-        /// Execute an action inside a transaction. If no exception is thrown, the transaction will automatically
+        /// Execute an action inside a temporary transaction. If no exception is thrown, the transaction will automatically
         /// be committed.
         /// </summary>
+        /// <remarks>
+        /// Creates its own temporary transaction and commits it after running the lambda passed to `action`. 
+        /// Be careful of wrapping multiple single property updates in multiple `Write` calls. It is more efficient to update several properties 
+        /// or even create multiple objects in a single Write, unless you need to guarantee finer-grained updates.
+        /// </remarks>
         /// <example>
         /// realm.Write(() => 
         /// {
@@ -528,7 +558,7 @@ namespace Realms
         ///     d.Age = 5;
         /// });
         /// </example>
-        /// <param name="action">Action to perform inside transaction.</param>
+        /// <param name="action">Action to perform inside a transaction, creating, updating or removing objects.</param>
         public void Write(Action action)
         {
             using (var transaction = BeginWrite())

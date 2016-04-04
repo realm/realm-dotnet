@@ -3,6 +3,7 @@
  */
 
 using NUnit.Framework;
+using System;
 using System.Diagnostics;
 using System.IO;
 using Realms;
@@ -43,6 +44,7 @@ namespace IntegrationTests
                 p1.Score = -0.9907f;
                 p1.Latitude = 51.508530;
                 p1.Longitude = 0.076132;
+                p1.Birthday = new DateTimeOffset(1959, 3, 13, 0, 0, 0, TimeSpan.Zero);
                 transaction.Commit();
             }
             Debug.WriteLine("p1 is named " + p1.FullName);
@@ -56,6 +58,7 @@ namespace IntegrationTests
                 p2.Score = 100;
                 p2.Latitude = 40.7637286;
                 p2.Longitude = -73.9748113;
+                p2.Birthday = new DateTimeOffset(1963, 4, 14, 0, 0, 0, TimeSpan.Zero);
                 transaction.Commit();
             }
             Debug.WriteLine("p2 is named " + p2.FullName);
@@ -64,11 +67,12 @@ namespace IntegrationTests
             {
                 p3 = _realm.CreateObject<Person>();
                 p3.FullName = "Peter Jameson";
-                p3.Email = "peter@jameson.com";
+                p3.Email = "peter@jameson.net";
                 p3.IsInteresting = true;
                 p3.Score = 42.42f;
                 p3.Latitude = 37.7798657;
                 p3.Longitude = -122.394179;
+                p3.Birthday = new DateTimeOffset(1989, 2, 25, 0, 0, 0, TimeSpan.Zero);
                 transaction.Commit();
             }
             Debug.WriteLine("p3 is named " + p3.FullName);
