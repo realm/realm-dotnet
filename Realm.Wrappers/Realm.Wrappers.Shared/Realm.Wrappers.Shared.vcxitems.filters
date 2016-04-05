@@ -1,0 +1,119 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="object-store">
+      <UniqueIdentifier>{1d7fa05b-fb53-48b8-91fa-5f9d5e1d1f76}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="object-store\impl">
+      <UniqueIdentifier>{2be06259-35fb-4df1-a619-7b8c4bf902fc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="object-store\util">
+      <UniqueIdentifier>{179c08e7-4692-48c2-9935-6036c465df56}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\binding_context.hpp">
+      <Filter>object-store</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\index_set.hpp">
+      <Filter>object-store</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\list.hpp">
+      <Filter>object-store</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\object_accessor.hpp">
+      <Filter>object-store</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\object_schema.hpp">
+      <Filter>object-store</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\object_store.hpp">
+      <Filter>object-store</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\property.hpp">
+      <Filter>object-store</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\results.hpp">
+      <Filter>object-store</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\schema.hpp">
+      <Filter>object-store</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\shared_realm.hpp">
+      <Filter>object-store</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\impl\async_query.hpp">
+      <Filter>object-store\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\impl\external_commit_helper.hpp">
+      <Filter>object-store\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\impl\realm_coordinator.hpp">
+      <Filter>object-store\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\impl\transact_log_handler.hpp">
+      <Filter>object-store\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\impl\weak_realm_notifier.hpp">
+      <Filter>object-store\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\impl\weak_realm_notifier_base.hpp">
+      <Filter>object-store\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\util\atomic_shared_ptr.hpp">
+      <Filter>object-store\util</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\debug.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\error_handling.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\marshalling.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\realm_error_type.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\realm_export_decls.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\shared_linklist.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\wrapper_exceptions.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\timestamp_helpers.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\index_set.cpp">
+      <Filter>object-store</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\list.cpp">
+      <Filter>object-store</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\object_schema.cpp">
+      <Filter>object-store</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\object_store.cpp">
+      <Filter>object-store</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\results.cpp">
+      <Filter>object-store</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\schema.cpp">
+      <Filter>object-store</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\shared_realm.cpp">
+      <Filter>object-store</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\impl\async_query.cpp">
+      <Filter>object-store\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\impl\realm_coordinator.cpp">
+      <Filter>object-store\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\impl\transact_log_handler.cpp">
+      <Filter>object-store\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\debug.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\error_handling.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\linklist_cs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\marshalling.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object_schema_cs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\query_cs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\realm-csharp.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\results_cs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\row_cs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\schema_cs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\shared_realm_cs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\table_cs.cpp" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,88 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="14.0">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{cf5a37a7-2ed2-4764-8b1e-23618cedaea0}</ItemsProjectGuid>
+    <OutDir>$(SolutionDir)\Realm.Wrappers\$(Configuration)\$(Platform)\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <UseDebugLibraries>true</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(SolutionDir)\wrappers\src\object-store\src;%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>REALM_HAVE_CONFIG=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ExceptionHandling>Enabled</ExceptionHandling>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <CppLanguageStandard>c++1y</CppLanguageStandard>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
+    <ClCompile>
+      <PreprocessorDefinitions>REALM_DEBUG=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
+    <ClCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\debug.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\error_handling.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\linklist_cs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\marshalling.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\impl\async_query.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\impl\realm_coordinator.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\impl\transact_log_handler.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\index_set.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\list.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\object_schema.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\object_store.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\results.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\schema.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\shared_realm.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object_schema_cs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\query_cs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\realm-csharp.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\results_cs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\row_cs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\schema_cs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\shared_realm_cs.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\table_cs.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\debug.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\error_handling.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\marshalling.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\binding_context.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\impl\async_query.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\impl\external_commit_helper.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\impl\realm_coordinator.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\impl\transact_log_handler.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\impl\weak_realm_notifier.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\impl\weak_realm_notifier_base.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\index_set.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\list.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\object_accessor.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\object_schema.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\object_store.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\property.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\results.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\schema.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\shared_realm.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\object-store\src\util\atomic_shared_ptr.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\realm_error_type.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\realm_export_decls.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\shared_linklist.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\timestamp_helpers.hpp" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\wrappers\src\wrapper_exceptions.hpp" />
+  </ItemGroup>
+</Project>

@@ -41,7 +41,7 @@ namespace Realms
         }
 
 #if REALM_32
-        public const string DLL_NAME = "wrappers";
+        public const string DLL_NAME = "realm";
 #elif REALM_64
         public const string DLL_NAME = "UNIMPLEMENTED 64BIT";
 #else

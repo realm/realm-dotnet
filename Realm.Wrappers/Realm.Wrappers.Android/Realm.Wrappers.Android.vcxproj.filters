@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="..\..\wrappers\src\object-store\src\impl\android\external_commit_helper.hpp">
+      <Filter>object-store\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\wrappers\src\object-store\src\impl\android\weak_realm_notifier.hpp">
+      <Filter>object-store\impl</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="object-store">
+      <UniqueIdentifier>{efb64935-4789-4e9b-a697-93d4cc50b717}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="object-store\impl">
+      <UniqueIdentifier>{7dc8c18f-e9b9-4f8e-aefa-b1c1eb60125b}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\wrappers\src\object-store\src\impl\android\external_commit_helper.cpp">
+      <Filter>object-store\impl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\wrappers\src\object-store\src\impl\android\weak_realm_notifier.cpp">
+      <Filter>object-store\impl</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
