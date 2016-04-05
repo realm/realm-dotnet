@@ -9,12 +9,23 @@ using System.Linq;
 using System.IO;
 using NUnit.Framework;
 using Realms;
+using System.Threading.Tasks;
 
 namespace IntegrationTests
 {
     [TestFixture]
     public class ObjectIntegrationTests : PeopleTestsBase
     {
+        [TestFixtureTearDown]
+        public async void TFTD()
+        {
+            await Task.Delay(TimeSpan.FromSeconds(10));
+
+            Console.WriteLine("GC'ing #2 -------------------------------------------");
+            Java.Lang.JavaSystem.Gc();
+            System.GC.Collect();
+        }
+
         [Test, Explicit("Manual test for debugging")]
         public void SimpleTest()
         {
@@ -32,6 +43,14 @@ namespace IntegrationTests
             Debug.WriteLine("People named John:");
             foreach (var p in johns)
                 Debug.WriteLine(" - " + p.FullName + " (" + p.Email + ")");
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            Console.WriteLine("GC'ing -------------------------------------------");
+            Java.Lang.JavaSystem.Gc();
+            System.GC.Collect();
         }
 
         [Test]

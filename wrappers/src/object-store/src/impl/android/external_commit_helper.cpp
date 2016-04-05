@@ -30,6 +30,10 @@
 #include <unistd.h>
 #include <android/log.h>
 
+#include "../../../../debug.hpp"
+#include <errno.h>
+#include <sstream>
+
 using namespace realm;
 using namespace realm::_impl;
 
@@ -161,6 +165,12 @@ void ExternalCommitHelper::listen()
     while (true) {
       struct epoll_event ev;
       ret = epoll_wait(m_kq, &ev, 1, -1);
+
+      if (ret == -1 && errno == EINTR) {
+          // Interrupted system call, try again.
+          continue;
+      }
+
       assert(ret >= 0);
       if (ret == 0) {
         // Spurious wakeup; just wait again

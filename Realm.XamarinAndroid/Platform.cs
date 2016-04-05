@@ -10,8 +10,8 @@ namespace Realms
     internal static class NativeSetup
     {
         // declare the type for the MonoPInvokeCallback
-        public delegate IntPtr CreateHandlerFunction (IntPtr realmPtr);
-        public delegate void NotifyHandlerFunction (IntPtr handler);
+        public delegate IntPtr CreateHandlerFunction ();
+        public delegate void NotifyHandlerFunction (IntPtr handler, IntPtr realm);
         public delegate void DestroyHandlerFunction (IntPtr handler);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "bind_handler_functions", CallingConvention = CallingConvention.Cdecl)]
@@ -29,31 +29,28 @@ namespace Realms
 
     public class MyHandler : Handler
     {
-        static int Id = 0;
-        IntPtr _realmPtr;
-        int id;
+        [ThreadStatic]
+        private static MyHandler currentHandler;
 
-        public MyHandler(IntPtr realmPtr)
+        internal static Handler Current
         {
-            id = Id++;
-            _realmPtr = realmPtr;
+            get
+            {
+                if (currentHandler == null) {
+                    currentHandler = new MyHandler();
+                }
 
-            Console.WriteLine("[" + id + "] realmPtr=" + _realmPtr + ", thread id: " + Thread.CurrentThread.ManagedThreadId + " -- Handle constructed");
+                return currentHandler;
+            }
         }
 
         public override void HandleMessage(Message msg)
         {
-            Console.WriteLine("[" + id + "] realmPtr=" + _realmPtr + ", thread id: " + Thread.CurrentThread.ManagedThreadId + " -- Notified");
-            NativeSetup.notify_realm(_realmPtr);
-        }
+            var realmHandle = (IntPtr)(Int64)(Java.Lang.Long)msg.Obj;
 
-        protected override void Dispose(bool disposing)
-        {
-            Console.WriteLine("[" + id + "] realmPtr=" + _realmPtr + ", thread id: " + Thread.CurrentThread.ManagedThreadId + " -- Destroyed");
-            if (disposing)
-                NativeSetup.shared_realm_delete(_realmPtr);
+            Console.WriteLine("realmPtr=" + realmHandle + ", thread id: " + Thread.CurrentThread.ManagedThreadId + " -- Notified");
 
-            base.Dispose(disposing);
+            NativeSetup.notify_realm(realmHandle);
         }
     }
 
@@ -64,34 +61,27 @@ namespace Realms
             NativeSetup.bind_handler_functions(CreateHandler, NotifyHandler, DestroyHandler);
         }
 
-        private static IntPtr CreateHandler(IntPtr realmPtr) 
+        private static IntPtr CreateHandler() 
         {
             if (Looper.MyLooper() == null)
             {
                 Console.WriteLine("No looper exists. Cannot create handler");
                 return IntPtr.Zero;
             }
-
-            var h = new MyHandler(realmPtr);
-            var gch = GCHandle.ToIntPtr(GCHandle.Alloc(h));
+            var gch = GCHandle.ToIntPtr(GCHandle.Alloc(MyHandler.Current));
 
             Console.WriteLine("CreateHandler(" + gch + ")");
 
             return gch;
         }
 
-        private static void NotifyHandler(IntPtr handlerHandle)
+        private static void NotifyHandler(IntPtr handlerHandle, IntPtr realmHandle)
         {
-            Console.WriteLine("NotifyHandler(" + handlerHandle + ")");
+            Console.WriteLine("NotifyHandler({0:X}, {1:X})", handlerHandle, realmHandle);
 
-            if (handlerHandle == IntPtr.Zero)
-                return;
+            var handler = (MyHandler)GCHandle.FromIntPtr(handlerHandle).Target;
 
-            Console.WriteLine("Notify handler..");
-
-            var h = (MyHandler)GCHandle.FromIntPtr(handlerHandle).Target;
-
-            h.SendEmptyMessage(13);
+            handler.SendMessage(new Message { Obj = new Java.Lang.Long(realmHandle.ToInt64()) });
         }
 
         private static void DestroyHandler(IntPtr handlerHandle)
@@ -101,9 +91,7 @@ namespace Realms
             if (handlerHandle == IntPtr.Zero)
                 return;
 
-            var h = (MyHandler)GCHandle.FromIntPtr(handlerHandle).Target;
-
-            h.Dispose();
+            GCHandle.FromIntPtr(handlerHandle).Free();
         }
     }
 }
