@@ -1999,3 +1999,15 @@ NuGet/NuGet.Library/Realm.targets
 
 wrappers/jni/Application.mk
 - conditionally add REALM_DEBUG to APP_CPPFLAGS
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Fix Windows wrappers builds for other than x86 Debug and improve reuse
+
+Wrappers.vcxproj
+- android\weak_realm_notifier.cpp excluded from all configs and platforms
+- apple\weak_realm_notifier.cpp excluded from all configs and platforms
+- directory path to adjacent core libs changed from
+  $(SolutionDir)..\realm-core
+  to
+  $(ProjectDir)..\..\realm-core
+  
