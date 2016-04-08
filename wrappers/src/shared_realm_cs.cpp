@@ -173,10 +173,15 @@ REALM_EXPORT void bind_handler_functions(realm::_impl::create_handler_function c
     });
 }
 
-REALM_EXPORT void notify_realm(Realm* realm)
+REALM_EXPORT void notify_realm(std::weak_ptr<Realm>* realm)
 {
     handle_errors([&]() {
-        realm->notify();
+        if (auto realm_ptr = realm->lock()) {
+            if (!realm_ptr->is_closed())
+                realm_ptr->notify();
+        }
+
+        delete realm;
     });
 }
 
