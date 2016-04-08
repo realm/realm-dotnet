@@ -20,9 +20,6 @@
 
 #include <atomic>
 
-#include "../../../../debug.hpp"
-#include <sstream>
-
 namespace realm {
 namespace _impl {
 
@@ -35,18 +32,11 @@ WeakRealmNotifier::WeakRealmNotifier(WeakRealmNotifier&& rgt)
 : WeakRealmNotifierBase(std::move(rgt))
 , m_handler(rgt.m_handler)
 {
-    std::stringstream ss;
-    ss << "Copy constructor engaged. Handler: " << reinterpret_cast<long>(rgt.m_handler);
-    debug_log(ss.str());
     rgt.m_handler = nullptr;
 }
 
 WeakRealmNotifier& WeakRealmNotifier::operator=(WeakRealmNotifier&& rgt)
 {
-    std::stringstream ss;
-    ss << "Operator= engaged. Handler: " << rgt.m_handler;
-    debug_log(ss.str());
-
     WeakRealmNotifierBase::operator=(std::move(rgt));
     m_handler = rgt.m_handler;
     rgt.m_handler = nullptr;
@@ -71,11 +61,10 @@ void WeakRealmNotifier::set_auto_refresh(bool auto_refresh)
 
 void WeakRealmNotifier::notify()
 {
-    std::stringstream ss;
-    ss << "WeakRealmNotifier::notify(" << m_handler << ", " << realm().get() << ")";
-    debug_log(ss.str());
-    if (m_handler && realm().get())
-        notify_handler(m_handler, realm().get());
+    if (m_handler && realm().get()) {
+        auto realmPtr = new std::weak_ptr<Realm>(realm());
+        notify_handler(m_handler, realmPtr);
+    }
 }
 
 
