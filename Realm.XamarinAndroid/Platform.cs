@@ -21,10 +21,6 @@ namespace Realms
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "notify_realm", CallingConvention = CallingConvention.Cdecl)]
         internal static extern void notify_realm(IntPtr realmPtr);
-
-        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_delete", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern void shared_realm_delete(IntPtr realmPtr);
-
     }
 
     public class MyHandler : Handler
@@ -47,8 +43,8 @@ namespace Realms
         public override void HandleMessage(Message msg)
         {
             var realmHandle = (IntPtr)(Int64)(Java.Lang.Long)msg.Obj;
-
-            Console.WriteLine("realmPtr=" + realmHandle + ", thread id: " + Thread.CurrentThread.ManagedThreadId + " -- Notified");
+            if (realmHandle == IntPtr.Zero)
+                return;
 
             NativeSetup.notify_realm(realmHandle);
         }
@@ -68,29 +64,26 @@ namespace Realms
                 Console.WriteLine("No looper exists. Cannot create handler");
                 return IntPtr.Zero;
             }
+
             var gch = GCHandle.ToIntPtr(GCHandle.Alloc(MyHandler.Current));
-
-            Console.WriteLine("CreateHandler(" + gch + ")");
-
             return gch;
         }
 
         private static void NotifyHandler(IntPtr handlerHandle, IntPtr realmHandle)
         {
-            Console.WriteLine("NotifyHandler({0:X}, {1:X})", handlerHandle, realmHandle);
+            if (realmHandle == IntPtr.Zero)
+                return;
 
             var handler = (MyHandler)GCHandle.FromIntPtr(handlerHandle).Target;
-
             handler.SendMessage(new Message { Obj = new Java.Lang.Long(realmHandle.ToInt64()) });
         }
 
         private static void DestroyHandler(IntPtr handlerHandle)
         {
-            Console.WriteLine("DestroyHandler(" + handlerHandle + ")");
-
             if (handlerHandle == IntPtr.Zero)
                 return;
 
+            var handler = (MyHandler)GCHandle.FromIntPtr(handlerHandle).Target;
             GCHandle.FromIntPtr(handlerHandle).Free();
         }
     }
