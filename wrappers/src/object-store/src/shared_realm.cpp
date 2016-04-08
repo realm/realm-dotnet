@@ -464,4 +464,6 @@ void Realm::close()
     m_read_only_group = nullptr;
     m_binding_context = nullptr;
     m_coordinator = nullptr;
+
+    m_is_closed = true;
 }

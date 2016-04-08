@@ -135,6 +135,8 @@ namespace realm {
         // Realm after closing it will produce undefined behavior.
         void close();
 
+        bool is_closed() { return m_is_closed; }
+
         ~Realm();
 
         void init(std::shared_ptr<_impl::RealmCoordinator> coordinator);
@@ -166,6 +168,7 @@ namespace realm {
         std::thread::id m_thread_id = std::this_thread::get_id();
         bool m_in_transaction = false;
         bool m_auto_refresh = true;
+        bool m_is_closed = false;
 
         std::unique_ptr<Replication> m_history;
         std::unique_ptr<SharedGroup> m_shared_group;
