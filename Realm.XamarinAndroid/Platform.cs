@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using System.Text;
 using Android.OS;
-using System.Collections.Generic;
-using System.Threading;
 
 namespace Realms
 {
@@ -23,26 +20,16 @@ namespace Realms
         internal static extern void notify_realm(IntPtr realmPtr);
     }
 
-    public class MyHandler : Handler
+    public class RealmNotificationHandler : Handler
     {
         [ThreadStatic]
-        private static MyHandler currentHandler;
+        private static RealmNotificationHandler _currentHandler;
 
-        internal static Handler Current
-        {
-            get
-            {
-                if (currentHandler == null) {
-                    currentHandler = new MyHandler();
-                }
-
-                return currentHandler;
-            }
-        }
+        internal static Handler Current => _currentHandler ?? (_currentHandler = new RealmNotificationHandler());
 
         public override void HandleMessage(Message msg)
         {
-            var realmHandle = (IntPtr)(Int64)(Java.Lang.Long)msg.Obj;
+            var realmHandle = (IntPtr)(long)(Java.Lang.Long)msg.Obj;
             if (realmHandle == IntPtr.Zero)
                 return;
 
@@ -65,7 +52,7 @@ namespace Realms
                 return IntPtr.Zero;
             }
 
-            var gch = GCHandle.ToIntPtr(GCHandle.Alloc(MyHandler.Current));
+            var gch = GCHandle.ToIntPtr(GCHandle.Alloc(RealmNotificationHandler.Current));
             return gch;
         }
 
@@ -74,7 +61,7 @@ namespace Realms
             if (realmHandle == IntPtr.Zero)
                 return;
 
-            var handler = (MyHandler)GCHandle.FromIntPtr(handlerHandle).Target;
+            var handler = (RealmNotificationHandler)GCHandle.FromIntPtr(handlerHandle).Target;
             handler.SendMessage(new Message { Obj = new Java.Lang.Long(realmHandle.ToInt64()) });
         }
 
@@ -83,7 +70,6 @@ namespace Realms
             if (handlerHandle == IntPtr.Zero)
                 return;
 
-            var handler = (MyHandler)GCHandle.FromIntPtr(handlerHandle).Target;
             GCHandle.FromIntPtr(handlerHandle).Free();
         }
     }
