@@ -454,6 +454,8 @@ uint64_t Realm::get_schema_version(const realm::Realm::Config &config)
 
 void Realm::close()
 {
+    verify_thread();
+
     if (m_coordinator) {
         m_coordinator->unregister_realm(this);
     }
@@ -464,6 +466,4 @@ void Realm::close()
     m_read_only_group = nullptr;
     m_binding_context = nullptr;
     m_coordinator = nullptr;
-
-    m_is_closed = true;
 }
