@@ -65,7 +65,6 @@ namespace Realms
 
 
         #region Getters
-
         protected string GetStringValue(string propertyName)
         {
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
@@ -73,20 +72,41 @@ namespace Realms
             var tableHandle = _realm._tableHandles[GetType()];
             var columnIndex = NativeTable.get_column_index(tableHandle, propertyName, (IntPtr)propertyName.Length);
             var rowIndex = _rowHandle.RowIndex;
+            var badUTF8msg = $"Corrupted string UTF8 in {propertyName}";
 
-            long bufferSizeNeededChars = 128;
-            IntPtr buffer;
-            long currentBufferSizeChars;
+            int bufferSizeNeededChars = 128;
+            // First alloc this thread
+            if (_realm.stringGetBuffer==IntPtr.Zero) {  // first get of a string in this Realm
+                _realm.stringGetBuffer = Marshal.AllocHGlobal((IntPtr)(bufferSizeNeededChars * sizeof(char)));
+                _realm.stringGetBufferLen = bufferSizeNeededChars;
+            }    
 
-            do
+            // try to read
+            int bytesRead = (int)NativeTable.get_string(tableHandle, columnIndex, (IntPtr)rowIndex, _realm.stringGetBuffer,
+                (IntPtr)_realm.stringGetBufferLen);
+            if (bytesRead == -1)
             {
-                buffer = MarshalHelpers.StrAllocateBuffer(out currentBufferSizeChars, bufferSizeNeededChars);
-                bufferSizeNeededChars = (long)NativeTable.get_string(tableHandle, columnIndex, (IntPtr)rowIndex, buffer,
-                        (IntPtr)currentBufferSizeChars);
+                // bad UTF-8 data unable to transcode, vastly unlikely error but could be corrupt file
+                throw new RealmInvalidDatabaseException(badUTF8msg);
+            }
+            if (bytesRead > _realm.stringGetBufferLen)  // need a bigger buffer
+            {
+                Marshal.FreeHGlobal(_realm.stringGetBuffer);
+                _realm.stringGetBuffer = Marshal.AllocHGlobal((IntPtr)(bytesRead * sizeof(char)));
+                _realm.stringGetBufferLen = bytesRead;
+                // try to read with big buffer
+                bytesRead = (int)NativeTable.get_string(tableHandle, columnIndex, (IntPtr)rowIndex, _realm.stringGetBuffer,
+                    (IntPtr)_realm.stringGetBufferLen);
+                if (bytesRead == -1)  // bad UTF-8 in full string
+                    throw new RealmInvalidDatabaseException(badUTF8msg);
+                Debug.Assert(bytesRead <= _realm.stringGetBufferLen);
+            }  // needed re-read with expanded buffer
 
-            } while (MarshalHelpers.StrBufferOverflow(buffer, currentBufferSizeChars, bufferSizeNeededChars));
-            return MarshalHelpers.StrBufToStr(buffer, (int) bufferSizeNeededChars);
-        }
+            if (bytesRead == 0)
+                return "";
+            return Marshal.PtrToStringUni(_realm.stringGetBuffer, bytesRead);
+            // leaving buffer sitting allocated for quick reuse next time we read a string                
+        } // GetStringValue
 
         protected char GetCharValue(string propertyName)
         {

@@ -2011,3 +2011,19 @@ Wrappers.vcxproj
   to
   $(ProjectDir)..\..\realm-core
   
+  
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Refactoring String Getter to share buffer and avoid reallocations and more native trips
+
+RealmObject.cs
+- GetStringValue rewritten pulling in the logic previously in the MarshalHelpers
+  and simply doing two passes rather than looking like it loops longer  
+ 
+Realm.cs
+- stringGetBuffer, stringGetBufferLen added
+- Dispose - cleanup stringGetBuffer
+
+MarshalHelpers.cs
+- removed unused StrAllocateBuffer, StrBufToStr and StrBufferOverflow
+
+  
