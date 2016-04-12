@@ -31,6 +31,12 @@ namespace Realms
         private static readonly Type[] RealmObjectClasses;
         private static readonly Dictionary<Type, IntPtr> ObjectSchemaCache;
 
+        // shared string buffer for getter because can only be getting on this one thread per Realm
+        internal IntPtr stringGetBuffer = IntPtr.Zero;
+        internal int stringGetBufferLen;
+
+
+
         static Realm()
         {
             RealmObjectClasses = AppDomain.CurrentDomain.GetAssemblies()
@@ -286,6 +292,13 @@ namespace Realms
         public void Dispose()
         {
             Close();
+            if (stringGetBuffer != IntPtr.Zero)
+            {
+                Marshal.FreeHGlobal(stringGetBuffer);
+                stringGetBuffer = IntPtr.Zero;
+                stringGetBufferLen = 0;
+            }
+                
         }
 
 
