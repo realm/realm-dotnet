@@ -213,17 +213,44 @@ namespace Realms
         #endregion
 
         private SharedRealmHandle _sharedRealmHandle;
-        internal Dictionary<Type, TableHandle> _tableHandles;
+        internal readonly Dictionary<Type, RealmObject.Metadata> Metadata;
 
         internal bool IsInTransaction => MarshalHelpers.IntPtrToBool(NativeSharedRealm.is_in_transaction(_sharedRealmHandle));
 
         private Realm(SharedRealmHandle sharedRealmHandle, RealmConfiguration config)
         {
             _sharedRealmHandle = sharedRealmHandle;
-            _tableHandles = RealmObjectClasses.ToDictionary(t => t, GetTable);
             Config = config;
             // update OUR config version number in case loaded one from disk
             Config.SchemaVersion = NativeSharedRealm.get_schema_version(sharedRealmHandle);
+
+            Metadata = (config.ObjectClasses ?? RealmObjectClasses).ToDictionary(t => t, CreateRealmObjectMetadata);
+        }
+
+        private RealmObject.Metadata CreateRealmObjectMetadata(Type realmObjectType)
+        {
+            var table = this.GetTable(realmObjectType);
+            var helper = (Weaving.IRealmObjectHelper)Activator.CreateInstance(realmObjectType.GetCustomAttribute<WovenAttribute>().HelperType);
+            var properties = realmObjectType.GetProperties(BindingFlags.Instance | BindingFlags.DeclaredOnly | BindingFlags.NonPublic | BindingFlags.Public)
+                                            .Where(p => p.GetCustomAttributes(false).OfType<WovenPropertyAttribute>().Any())
+                                            .Select(p =>
+                                            {
+                                                var mapTo = p.GetCustomAttributes(false).OfType<MapToAttribute>().SingleOrDefault();
+                                                if (mapTo != null)
+                                                {
+                                                    return mapTo.Mapping;
+                                                }
+
+                                                return p.Name;
+                                            })
+                                            .ToDictionary(name => name, name => NativeTable.get_column_index(table, name, (IntPtr)name.Length));
+
+            return new RealmObject.Metadata
+            {
+                Table = table,
+                Helper = helper,
+                ColumnIndices = properties
+            };
         }
 
         /// <summary>
@@ -398,34 +425,29 @@ namespace Realms
         /// <typeparam name="T">The Type T must not only be a RealmObject but also have been processd by the Fody weaver, so it has persistent properties.</typeparam>
         /// <returns>An object which is already managed.</returns>
         /// <exception cref="RealmOutsideTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
-        public T CreateObject<T>() where T : RealmObject
-        {
-            return (T)CreateObject(typeof(T));
-        }
-
-        private object CreateObject(Type objectType)
+        public T CreateObject<T>() where T : RealmObject, new()
         {
             if (!IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot create Realm object outside write transactions");
 
+            var objectType = typeof(T);
             if (Config.ObjectClasses != null && !Config.ObjectClasses.Contains(objectType))
                 throw new ArgumentException($"The class {objectType.Name} is not in the limited set of classes for this realm");
-            
-            var result = (RealmObject)Activator.CreateInstance(objectType);
 
-            var tableHandle = _tableHandles[objectType];
-            
-            var rowPtr = NativeTable.add_empty_row(tableHandle);
-            var rowHandle = CreateRowHandle	(rowPtr);
+            var metadata = Metadata[typeof(T)];
+
+            var result = (T)metadata.Helper.CreateInstance();
+
+            var rowPtr = NativeTable.add_empty_row(metadata.Table);
+            var rowHandle = CreateRowHandle (rowPtr);
 
             result._Manage(this, rowHandle);
             return result;
         }
 
-
         internal RealmObject MakeObjectForRow(Type objectType, RowHandle rowHandle)
         {
-            RealmObject ret = (RealmObject) Activator.CreateInstance(objectType);
+            RealmObject ret = Metadata[objectType].Helper.CreateInstance();
             ret._Manage(this, rowHandle);
             return ret;
         }
@@ -433,7 +455,7 @@ namespace Realms
 
         internal ResultsHandle MakeResultsForTable(Type tableType)
         {
-            var tableHandle = _tableHandles[tableType];
+            var tableHandle = Metadata[tableType].Table;
             var objSchema = Realm.ObjectSchemaCache[tableType];
             IntPtr resultsPtr = NativeResults.create_for_table(_sharedRealmHandle, tableHandle, objSchema);
             return CreateResultsHandle(resultsPtr);
@@ -454,7 +476,7 @@ namespace Realms
 
         internal SortOrderHandle MakeSortOrderForTable(Type tableType)
         {
-            var tableHandle = _tableHandles[tableType];
+            var tableHandle = Metadata[tableType].Table;
             IntPtr sortOrderPtr = NativeSortOrder.create_for_table(tableHandle);
             return CreateSortOrderHandle(sortOrderPtr);
         }
@@ -485,7 +507,7 @@ namespace Realms
             if (!IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot start managing a Realm object outside write transactions");
 
-            var tableHandle = _tableHandles[typeof(T)];
+            var tableHandle = Metadata[typeof(T)].Table;
 
             var rowPtr = NativeTable.add_empty_row(tableHandle);
             var rowHandle = CreateRowHandle(rowPtr);
@@ -613,7 +635,7 @@ namespace Realms
             if (!IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot remove Realm object outside write transactions");
 
-            var tableHandle = _tableHandles[obj.GetType()];
+            var tableHandle = Metadata[obj.GetType()].Table;
             NativeTable.remove_row(tableHandle, (RowHandle)obj.RowHandle);
         }
 

@@ -59,5 +59,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)native\NativeResults.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)handles\SortOrderHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)native\NativeSortOrder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)weaving\IRealmObjectHelper.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)weaving\" />
   </ItemGroup>
 </Project>

@@ -30,6 +30,12 @@ namespace Realms
 
     internal class WovenAttribute : Attribute
     {
+        public Type HelperType { get; private set; }
+
+        public WovenAttribute(Type helperType)
+        {
+            this.HelperType = helperType;
+        }
     }
 
     [AttributeUsage(AttributeTargets.Property)]

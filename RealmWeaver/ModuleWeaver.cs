@@ -28,7 +28,14 @@ public class ModuleWeaver
 
     TypeSystem typeSystem;
 
+    AssemblyDefinition RealmAssembly;
+    TypeDefinition RealmObject;
     MethodReference realmObjectIsManagedGetter;
+
+    AssemblyDefinition CorLib;
+    TypeDefinition System_Object;
+    TypeReference System_String;
+    TypeReference System_Type;
 
     // Init logging delegates to make testing easier
     public ModuleWeaver()
@@ -83,10 +90,10 @@ public class ModuleWeaver
 
         typeSystem = ModuleDefinition.TypeSystem;
 
-        var assemblyToReference = ModuleDefinition.AssemblyResolver.Resolve("Realm");  // Note that the assembly is Realm but the namespace Realms with the s
+        RealmAssembly = ModuleDefinition.AssemblyResolver.Resolve("Realm");  // Note that the assembly is Realm but the namespace Realms with the s
 
-        var realmObjectType = assemblyToReference.MainModule.GetTypes().First(x => x.Name == "RealmObject");
-        realmObjectIsManagedGetter = ModuleDefinition.ImportReference(realmObjectType.Properties.Single(x => x.Name == "IsManaged").GetMethod);
+        RealmObject = RealmAssembly.MainModule.GetTypes().First(x => x.Name == "RealmObject");
+        realmObjectIsManagedGetter = ModuleDefinition.ImportReference(RealmObject.Properties.Single(x => x.Name == "IsManaged").GetMethod);
         
         var typeTable = new Dictionary<string, string>()
         {
@@ -123,19 +130,22 @@ public class ModuleWeaver
             "System.Int64",
         };
 
-        var genericGetObjectValueReference = MethodNamed(realmObjectType, "GetObjectValue");
-        var genericSetObjectValueReference = MethodNamed(realmObjectType, "SetObjectValue");
-        var genericGetListValueReference = MethodNamed(realmObjectType, "GetListValue");
+        var genericGetObjectValueReference = MethodNamed(RealmObject, "GetObjectValue");
+        var genericSetObjectValueReference = MethodNamed(RealmObject, "SetObjectValue");
+        var genericGetListValueReference = MethodNamed(RealmObject, "GetListValue");
 
-        var wovenAttributeClass = assemblyToReference.MainModule.GetTypes().First(x => x.Name == "WovenAttribute");
+        var wovenAttributeClass = RealmAssembly.MainModule.GetTypes().First(x => x.Name == "WovenAttribute");
         var wovenAttributeConstructor = ModuleDefinition.Import(wovenAttributeClass.GetConstructors().First());
 
-        var wovenPropertyAttributeClass = assemblyToReference.MainModule.GetTypes().First(x => x.Name == "WovenPropertyAttribute");
+        var wovenPropertyAttributeClass = RealmAssembly.MainModule.GetTypes().First(x => x.Name == "WovenPropertyAttribute");
         var wovenPropertyAttributeConstructor = ModuleDefinition.ImportReference(wovenPropertyAttributeClass.GetConstructors().First());
-        var corlib = ModuleDefinition.AssemblyResolver.Resolve((AssemblyNameReference)ModuleDefinition.TypeSystem.CoreLibrary);
-        var stringType = ModuleDefinition.ImportReference(corlib.MainModule.GetType("System.String"));
+
+        CorLib = ModuleDefinition.AssemblyResolver.Resolve((AssemblyNameReference)ModuleDefinition.TypeSystem.CoreLibrary);
+        System_Object = CorLib.MainModule.GetType("System.Object");
+        System_String = ModuleDefinition.ImportReference(CorLib.MainModule.GetType("System.String"));
+        System_Type = ModuleDefinition.ImportReference(CorLib.MainModule.GetType("System.Type"));
         // WARNING the GetType("System.Collections.Generic.List`1") below RETURNS NULL WHEN COMPILING A PCL
-        // UNUSED SO COMMENT OUT var listType = ModuleDefinition.ImportReference(corlib.MainModule.GetType("System.Collections.Generic.List`1"));
+        // UNUSED SO COMMENT OUT var listType = ModuleDefinition.ImportReference(CorLib.MainModule.GetType("System.Collections.Generic.List`1"));
 
         foreach (var type in GetMatchingTypes())
         {
@@ -179,8 +189,8 @@ public class ModuleWeaver
                     var typeId = prop.PropertyType.FullName + (objectId ? " unique" : "");
                     if (!methodTable.ContainsKey(typeId))
                     {
-                        var getter = MethodNamed(realmObjectType, "Get" + typeTable[prop.PropertyType.FullName] + "Value");
-                        var setter = MethodNamed(realmObjectType, "Set" + typeTable[prop.PropertyType.FullName] + "Value" + (objectId ? "Unique": ""));
+                        var getter = MethodNamed(RealmObject, "Get" + typeTable[prop.PropertyType.FullName] + "Value");
+                        var setter = MethodNamed(RealmObject, "Set" + typeTable[prop.PropertyType.FullName] + "Value" + (objectId ? "Unique": ""));
                         methodTable[typeId] = Tuple.Create(getter, setter);
                     }
 
@@ -226,13 +236,16 @@ public class ModuleWeaver
                 }
 
                 var wovenPropertyAttribute = new CustomAttribute(wovenPropertyAttributeConstructor);
-                wovenPropertyAttribute.ConstructorArguments.Add(new CustomAttributeArgument(stringType, backingField.Name));
+                wovenPropertyAttribute.ConstructorArguments.Add(new CustomAttributeArgument(System_String, backingField.Name));
                 prop.CustomAttributes.Add(wovenPropertyAttribute);
 
                 Debug.WriteLine("");
             }
 
-            type.CustomAttributes.Add(new CustomAttribute(wovenAttributeConstructor));
+            var wovenAttribute = new CustomAttribute(wovenAttributeConstructor);
+            TypeReference helperType = WeaveRealmObjectHelper(type);
+            wovenAttribute.ConstructorArguments.Add(new CustomAttributeArgument(System_Type, helperType));
+            type.CustomAttributes.Add(wovenAttribute);
             Debug.WriteLine("");
         }
 
@@ -330,5 +343,35 @@ public class ModuleWeaver
             .Select(o => o.Operand)
             .OfType<FieldReference>()
             .SingleOrDefault();
+    }
+
+    private TypeDefinition WeaveRealmObjectHelper(TypeDefinition realmObjectType)
+    {
+        var helperType = new TypeDefinition(realmObjectType.Namespace, "RealmHelper",
+            TypeAttributes.Class | TypeAttributes.NestedPrivate, ModuleDefinition.ImportReference(System_Object));
+
+        helperType.Interfaces.Add(ModuleDefinition.ImportReference(RealmAssembly.MainModule.GetType("Realms.Weaving.IRealmObjectHelper")));
+
+        var createInstance = new MethodDefinition("CreateInstance", MethodAttributes.Public | MethodAttributes.Virtual, ModuleDefinition.ImportReference(RealmObject));
+        {
+            var il = createInstance.Body.GetILProcessor();
+            il.Emit(OpCodes.Newobj, realmObjectType.GetConstructors().Single(c => c.Parameters.Count == 0));
+            il.Emit(OpCodes.Ret);
+        }
+        helperType.Methods.Add(createInstance);
+
+        const MethodAttributes ctorAttributes = MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName;
+        var ctor = new MethodDefinition(".ctor", ctorAttributes, ModuleDefinition.TypeSystem.Void);
+        {
+            var il = ctor.Body.GetILProcessor();
+            il.Emit(OpCodes.Ldarg_0);
+            il.Emit(OpCodes.Call, ModuleDefinition.ImportReference(System_Object.GetConstructors().Single()));
+            il.Emit(OpCodes.Ret);
+        }
+        helperType.Methods.Add(ctor);
+
+        realmObjectType.NestedTypes.Add(helperType);
+
+        return helperType;
     }
 }
