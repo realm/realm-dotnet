@@ -90,7 +90,7 @@ namespace Realms
             if (_allRecords)
             {
                 // use the type captured at build based on generic T
-                var tableHandle = _realm._tableHandles[ElementType];
+                var tableHandle = _realm.Metadata[ElementType].Table;
                 return (int)NativeTable.count_all(tableHandle);
             }
             // we should be in RealmQRealmResultsr.VisitMethodCall, not here, ever, seriously!

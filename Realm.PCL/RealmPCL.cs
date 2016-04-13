@@ -174,7 +174,7 @@ namespace Realms
         /// <typeparam name="T">The Type T must not only be a RealmObject but also have been processd by the Fody weaver, so it has persistent properties.</typeparam>
         /// <returns>An object which is already managed.</returns>
         /// <exception cref="RealmOutsideTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
-        public T CreateObject<T>() where T : RealmObject
+        public T CreateObject<T>() where T : RealmObject, new()
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return null;

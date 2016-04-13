@@ -483,7 +483,7 @@ namespace Realms
 
         private QueryHandle CreateQuery(Type elementType)
         {
-            var tableHandle = _realm._tableHandles[elementType];
+            var tableHandle = _realm.Metadata[elementType].Table;
             var queryHandle = tableHandle.TableWhere();
 
             //At this point sh is invalid due to its handle being uninitialized, but the root is set correctly
