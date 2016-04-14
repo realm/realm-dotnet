@@ -9,12 +9,14 @@ using System.Linq;
 using System.IO;
 using NUnit.Framework;
 using Realms;
+using System.Threading.Tasks;
 
 namespace IntegrationTests
 {
     [TestFixture]
     public class ObjectIntegrationTests : PeopleTestsBase
     {
+
         [Test, Explicit("Manual test for debugging")]
         public void SimpleTest()
         {

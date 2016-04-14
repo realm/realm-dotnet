@@ -12,6 +12,10 @@
 #include "object-store/src/binding_context.hpp"
 #include <list>
 
+#ifdef REALM_PLATFORM_ANDROID
+#include "object-store/src/impl/android/weak_realm_notifier.hpp"
+#endif
+
 
 using namespace realm;
 using namespace realm::binding;
@@ -155,5 +159,32 @@ REALM_EXPORT size_t shared_realm_refresh(SharedRealm* realm)
         return bool_to_size_t((*realm)->refresh());
     });
 }
+
+#ifdef REALM_PLATFORM_ANDROID
+
+REALM_EXPORT void bind_handler_functions(realm::_impl::create_handler_function create_function, 
+    realm::_impl::notify_handler_function notify_function,
+    realm::_impl::destroy_handler_function destroy_function) 
+{
+    handle_errors([&]() {
+        realm::_impl::create_handler_for_current_thread = create_function;
+        realm::_impl::notify_handler = notify_function;
+        realm::_impl::destroy_handler = destroy_function;
+    });
+}
+
+REALM_EXPORT void notify_realm(std::weak_ptr<Realm>* realm)
+{
+    handle_errors([&]() {
+        if (auto realm_ptr = realm->lock()) {
+            if (!realm_ptr->is_closed())
+                realm_ptr->notify();
+        }
+
+        delete realm;
+    });
+}
+
+#endif
 
 }

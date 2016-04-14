@@ -28,6 +28,7 @@
 #include <realm/util/to_string.hpp>
 
 #include <string.h>
+#include "realm/util/to_string.hpp"
 
 using namespace realm;
 

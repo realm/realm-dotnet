@@ -93,7 +93,6 @@
     <ClInclude Include="src\object-store\src\results.hpp" />
     <ClInclude Include="src\object-store\src\schema.hpp" />
     <ClInclude Include="src\object-store\src\shared_realm.hpp" />
-    <ClInclude Include="src\object-store\src\util.hpp" />
     <ClInclude Include="src\realm_error_type.hpp" />
     <ClInclude Include="src\realm_export_decls.hpp" />
     <ClInclude Include="src\shared_linklist.hpp" />

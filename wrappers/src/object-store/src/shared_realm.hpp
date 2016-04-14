@@ -118,7 +118,7 @@ namespace realm {
         bool is_in_read_transaction() const { return !!m_group; }
 
         bool refresh();
-        void set_auto_refresh(bool auto_refresh) { m_auto_refresh = auto_refresh; }
+        void set_auto_refresh(bool auto_refresh);
         bool auto_refresh() const { return m_auto_refresh; }
         void notify();
 
@@ -135,10 +135,12 @@ namespace realm {
         // Realm after closing it will produce undefined behavior.
         void close();
 
+        bool is_closed() { return m_shared_group == nullptr; }
+
         ~Realm();
 
         void init(std::shared_ptr<_impl::RealmCoordinator> coordinator);
-        Realm(Config config);
+        Realm(Config config, bool auto_refresh = true);
 
         // Expose some internal functionality to other parts of the ObjectStore
         // without making it public to everyone
@@ -164,6 +166,7 @@ namespace realm {
       private:
         Config m_config;
         std::thread::id m_thread_id = std::this_thread::get_id();
+        bool m_in_transaction = false;
         bool m_auto_refresh = true;
 
         std::unique_ptr<Replication> m_history;
