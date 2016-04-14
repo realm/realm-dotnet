@@ -31,6 +31,7 @@ namespace IntegrationTests
             Realm.GetInstance().Close();
         }
 
+#if ENABLE_INTERNAL_NON_PCL_TESTS
         // This is a test of the Exception throwing mechanism but is included in the Instance tests
         // because getting an instance initialises the delegate for exceptions back to C#
         [Test]
@@ -68,8 +69,9 @@ namespace IntegrationTests
 #endif
                 }
             }
-
         }
+#endif  // ENABLE_INTERNAL_NON_PCL_TESTS
+
         [Test]
         public void InstanceIsClosedByDispose()
         {

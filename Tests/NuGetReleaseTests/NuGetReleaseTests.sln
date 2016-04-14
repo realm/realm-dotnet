@@ -1,0 +1,33 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGetReleaseTests.XamarinIOS", "NuGetReleaseTests.XamarinIOS\NuGetReleaseTests.XamarinIOS.csproj", "{DAC2B878-8F61-4EF1-A040-1FE7291F2CE1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGetReleaseTests.XamarinAndroid", "NuGetReleaseTests.XamarinAndroid\NuGetReleaseTests.XamarinAndroid.csproj", "{72BA4D29-0AAE-4A52-94D9-2E13E6427BDC}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "IntegrationTests.Shared", "..\IntegrationTests.Shared\IntegrationTests.Shared.shproj", "{06146619-D21C-414C-BFE3-2F59ACBA412E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|iPhoneSimulator = Debug|iPhoneSimulator
+		Release|iPhone = Release|iPhone
+		Release|iPhoneSimulator = Release|iPhoneSimulator
+		Debug|iPhone = Debug|iPhone
+		Debug|ARM = Debug|ARM
+		Release|ARM = Release|ARM
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DAC2B878-8F61-4EF1-A040-1FE7291F2CE1}.Debug|iPhoneSimulator.ActiveCfg = Debug|iPhoneSimulator
+		{DAC2B878-8F61-4EF1-A040-1FE7291F2CE1}.Debug|iPhoneSimulator.Build.0 = Debug|iPhoneSimulator
+		{DAC2B878-8F61-4EF1-A040-1FE7291F2CE1}.Release|iPhone.ActiveCfg = Release|iPhone
+		{DAC2B878-8F61-4EF1-A040-1FE7291F2CE1}.Release|iPhone.Build.0 = Release|iPhone
+		{DAC2B878-8F61-4EF1-A040-1FE7291F2CE1}.Release|iPhoneSimulator.ActiveCfg = Release|iPhoneSimulator
+		{DAC2B878-8F61-4EF1-A040-1FE7291F2CE1}.Release|iPhoneSimulator.Build.0 = Release|iPhoneSimulator
+		{DAC2B878-8F61-4EF1-A040-1FE7291F2CE1}.Debug|iPhone.ActiveCfg = Debug|iPhone
+		{DAC2B878-8F61-4EF1-A040-1FE7291F2CE1}.Debug|iPhone.Build.0 = Debug|iPhone
+		{72BA4D29-0AAE-4A52-94D9-2E13E6427BDC}.Debug|ARM.ActiveCfg = Debug|ARM
+		{72BA4D29-0AAE-4A52-94D9-2E13E6427BDC}.Debug|ARM.Build.0 = Debug|ARM
+		{72BA4D29-0AAE-4A52-94D9-2E13E6427BDC}.Release|ARM.ActiveCfg = Release|ARM
+		{72BA4D29-0AAE-4A52-94D9-2E13E6427BDC}.Release|ARM.Build.0 = Release|ARM
+	EndGlobalSection
+EndGlobal
