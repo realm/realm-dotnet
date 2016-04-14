@@ -61,7 +61,8 @@ namespace IntegrationTests
         [Test]
         public void CountFoundItems()
         {
-            var c0 = _realm.All<Person>().Where(p => p.Score == 42.42f).Count();
+            var r0 = _realm.All<Person> ().Where (p => p.Score == 42.42f);
+            var c0 = r0.Count();  // defer so can check in debugger if RealmResults.Count() evaluated correctly
             Assert.That(c0, Is.EqualTo(1));
 
             var c1 = _realm.All<Person>().Where(p => p.Latitude <= 50).Count();
@@ -75,6 +76,17 @@ namespace IntegrationTests
 
             var c4 = _realm.All<Person>().Count(p => p.FirstName=="John");
             Assert.That(c4, Is.EqualTo(2));
+        }
+
+
+        // added to pick up a nasty side-effect from casting
+        [Test]
+        public void CountFoundWithCasting ()
+        {
+            var r0 = _realm.All<Person> ().Where (p => p.Score == 42.42f);
+            var r1 = r0 as RealmResults<Person>;  // this is its runtime type but r0's Compile Time type is IQueryable<Person>
+            var c0 = r1.Count ();  // invokes RealmResults<T>.Count() shortcut method
+            Assert.That (c0, Is.EqualTo (1));
         }
 
 

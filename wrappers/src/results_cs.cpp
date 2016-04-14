@@ -91,6 +91,13 @@ REALM_EXPORT void results_clear(Results* results_ptr)
   });
 }
 
+REALM_EXPORT size_t results_count(Results* results_ptr)
+{
+  return handle_errors([&]() {
+      return results_ptr->size();
+  });
+}
+
 REALM_EXPORT SortOrderWrapper* sortorder_create_for_table(Table* table_ptr)
 {
   return handle_errors([&]() {

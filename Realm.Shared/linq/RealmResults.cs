@@ -93,8 +93,13 @@ namespace Realms
                 var tableHandle = _realm.Metadata[ElementType].Table;
                 return (int)NativeTable.count_all(tableHandle);
             }
-            // we should be in RealmQRealmResultsr.VisitMethodCall, not here, ever, seriously!
-            throw new NotImplementedException("Count should not be invoked directly on a RealmResults created by All. LINQ will not invoke this."); 
+
+            // normally we would  be in RealmQRealmResultsr.VisitMethodCall, not here
+            // however, if someone CASTS a RealmResults<blah> variable from a Where call to 
+            // a RealmResults<blah> they change its compile-time type from IQueryable<blah> (which invokes LINQ)
+            // to RealmResults<blah> and thus ends up here.
+            // as in the unit test CountFoundWithCasting
+            return (int)NativeResults.count(ResultsHandle);
         }    
 
     }  // RealmResults

@@ -2043,3 +2043,20 @@ InstanceTests.cs
 IntegrationTests.XamarinAndroid.csproj
 IntegrationTests.XamarinIOS.csproj
 - define ENABLE_INTERNAL_NON_PCL_TESTS
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#462 Ensuring Count uses direct code
+
+SimpleLINQtests.cs
+- CountFoundItems rearranged slightly
+- CountFoundWithCasting added
+
+RealmResults.Count
+- added case for not all records, using Results to get query count
+
+NativeResults.cs
+- count added
+
+results_cs.cpp
+- results_count added
