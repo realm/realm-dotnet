@@ -2060,3 +2060,6 @@ NativeResults.cs
 
 results_cs.cpp
 - results_count added
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#464 Query with Variables
