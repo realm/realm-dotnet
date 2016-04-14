@@ -61,7 +61,8 @@ namespace IntegrationTests
         [Test]
         public void CountFoundItems()
         {
-            var c0 = _realm.All<Person>().Where(p => p.Score == 42.42f).Count();
+            var r0 = _realm.All<Person> ().Where (p => p.Score == 42.42f);
+            var c0 = r0.Count();  // defer so can check in debugger if RealmResults.Count() evaluated correctly
             Assert.That(c0, Is.EqualTo(1));
 
             var c1 = _realm.All<Person>().Where(p => p.Latitude <= 50).Count();
