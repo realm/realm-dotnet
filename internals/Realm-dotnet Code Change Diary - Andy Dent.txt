@@ -2050,3 +2050,13 @@ IntegrationTests.XamarinIOS.csproj
 
 SimpleLINQtests.cs
 - CountFoundItems rearranged slightly
+- CountFoundWithCasting added
+
+RealmResults.Count
+- added case for not all records, using Results to get query count
+
+NativeResults.cs
+- count added
+
+results_cs.cpp
+- results_count added
