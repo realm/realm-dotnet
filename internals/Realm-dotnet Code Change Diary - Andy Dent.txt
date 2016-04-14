@@ -2063,3 +2063,9 @@ results_cs.cpp
 
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #464 Query with Variables
+
+LINQvariableTests.cs
+- added
+
+RealmResultsVisitor.cs
+- VisitMethodCall handle other string args
