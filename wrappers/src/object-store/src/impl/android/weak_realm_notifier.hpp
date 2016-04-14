@@ -17,10 +17,9 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "impl/weak_realm_notifier_base.hpp"
-#include "shared_realm.hpp"
 
 namespace realm {
-//class Realm;
+class Realm;
 
 namespace _impl {
 
@@ -40,8 +39,6 @@ public:
 
     // Asyncronously call notify() on the Realm on the appropriate thread
     void notify();
-
-    void perform_notify();
 
 private:
     // Pointer to the handler, created by Java/C#.

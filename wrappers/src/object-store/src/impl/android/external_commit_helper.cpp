@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 #include "impl/external_commit_helper.hpp"
-
 #include "impl/realm_coordinator.hpp"
 
 
@@ -37,7 +36,11 @@
 using namespace realm;
 using namespace realm::_impl;
 
-const char* log_tag = "REALM";
+#define LOG(fmt...) do { \
+    fprintf(stderr, fmt); \
+    __android_log_print(ANDROID_LOG_ERROR, "REALM", fmt); \
+} while (0)
+
 namespace {
 // Write a byte to a pipe to notify anyone waiting for data on the pipe
 void notify_fd(int fd)
@@ -71,8 +74,8 @@ void ExternalCommitHelper::FdHolder::close()
 ExternalCommitHelper::ExternalCommitHelper(RealmCoordinator& parent)
 : m_parent(parent)
 {
-    m_kq = epoll_create(1);
-    if (m_kq == -1) {
+    m_epfd = epoll_create(1);
+    if (m_epfd == -1) {
         throw std::system_error(errno, std::system_category());
     }
 
@@ -87,7 +90,11 @@ ExternalCommitHelper::ExternalCommitHelper(RealmCoordinator& parent)
             // Hash collisions are okay here because they just result in doing
             // extra work, as opposed to correctness problems
             std::ostringstream ss;
-            ss << getenv("TMPDIR");
+
+            std::string tmp_dir(getenv("TMPDIR"));
+            ss << tmp_dir;
+            if (tmp_dir.back() != '/')
+              ss << '/';
             ss << "realm_" << std::hash<std::string>()(path) << ".note";
             path = ss.str();
             ret = mkfifo(path.c_str(), 0600);
@@ -112,27 +119,25 @@ ExternalCommitHelper::ExternalCommitHelper(RealmCoordinator& parent)
     }
 
     // Create the anonymous pipe
-    int pipeFd[2];
-    ret = pipe(pipeFd);
+    int pipe_fd[2];
+    ret = pipe(pipe_fd);
     if (ret == -1) {
         throw std::system_error(errno, std::system_category());
     }
 
-    m_shutdown_read_fd = pipeFd[0];
-    m_shutdown_write_fd = pipeFd[1];
+    m_shutdown_read_fd = pipe_fd[0];
+    m_shutdown_write_fd = pipe_fd[1];
 
     m_thread = std::thread([=] {
         try {
             listen();
         }
         catch (std::exception const& e) {
-            fprintf(stderr, "uncaught exception in notifier thread: %s: %s\n", typeid(e).name(), e.what());
-            __android_log_print(ANDROID_LOG_ERROR, log_tag, "uncaught exception in notifier thread: %s: %s", typeid(e).name(), e.what());
+            LOG("uncaught exception in notifier thread: %s: %s\n", typeid(e).name(), e.what());
             throw;
         }
         catch (...) {
-            fprintf(stderr,  "uncaught exception in notifier thread\n");
-            __android_log_print(ANDROID_LOG_ERROR, log_tag, "uncaught exception in notifier thread");
+            LOG("uncaught exception in notifier thread\n");
             throw;
         }
     });
@@ -146,7 +151,7 @@ ExternalCommitHelper::~ExternalCommitHelper()
 
 void ExternalCommitHelper::listen()
 {
-    pthread_setname_np(pthread_self(), "RLMRealm notification listener");
+    pthread_setname_np(pthread_self(), "Realm notification listener");
 
     int ret;
 
@@ -154,35 +159,35 @@ void ExternalCommitHelper::listen()
 
     event[0].events = EPOLLIN | EPOLLET;
     event[0].data.fd = m_notify_fd;
-    ret = epoll_ctl(m_kq, EPOLL_CTL_ADD, m_notify_fd, &event[0]);
+    ret = epoll_ctl(m_epfd, EPOLL_CTL_ADD, m_notify_fd, &event[0]);
     assert(ret == 0);
 
     event[1].events = EPOLLIN;
     event[1].data.fd = m_shutdown_read_fd;
-    ret = epoll_ctl(m_kq, EPOLL_CTL_ADD, m_shutdown_read_fd, &event[1]);
+    ret = epoll_ctl(m_epfd, EPOLL_CTL_ADD, m_shutdown_read_fd, &event[1]);
     assert(ret == 0);
 
     while (true) {
-      struct epoll_event ev;
-      ret = epoll_wait(m_kq, &ev, 1, -1);
+        struct epoll_event ev;
+        ret = epoll_wait(m_epfd, &ev, 1, -1);
 
-      if (ret == -1 && errno == EINTR) {
-          // Interrupted system call, try again.
-          continue;
-      }
+        if (ret == -1 && errno == EINTR) {
+            // Interrupted system call, try again.
+            continue;
+        }
 
-      assert(ret >= 0);
-      if (ret == 0) {
-        // Spurious wakeup; just wait again
-        continue;
-      }
+        assert(ret >= 0);
+        if (ret == 0) {
+            // Spurious wakeup; just wait again
+            continue;
+        }
 
-      if (ev.data.u32 == (uint32_t)m_shutdown_read_fd) {
-        return;
-      }
-      assert(ev.data.u32 == (uint32_t)m_notify_fd);
+        if (ev.data.u32 == (uint32_t)m_shutdown_read_fd) {
+            return;
+        }
+        assert(ev.data.u32 == (uint32_t)m_notify_fd);
 
-      m_parent.on_change();
+        m_parent.on_change();
     }
 }
 

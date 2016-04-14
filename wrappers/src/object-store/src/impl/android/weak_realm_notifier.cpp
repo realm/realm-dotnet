@@ -19,6 +19,7 @@
 #include "impl/weak_realm_notifier.hpp"
 
 #include <atomic>
+#include <assert.h>
 
 namespace realm {
 namespace _impl {
@@ -57,6 +58,10 @@ void WeakRealmNotifier::set_auto_refresh(bool auto_refresh)
     if (auto_refresh) {
         m_handler = create_handler_for_current_thread();
     }
+    else {
+        destroy_handler(m_handler);
+        m_handler = nullptr;
+    }
 }
 
 void WeakRealmNotifier::notify()
@@ -66,7 +71,6 @@ void WeakRealmNotifier::notify()
         notify_handler(m_handler, realmPtr);
     }
 }
-
 
 create_handler_function create_handler_for_current_thread = nullptr;
 notify_handler_function notify_handler = nullptr;
