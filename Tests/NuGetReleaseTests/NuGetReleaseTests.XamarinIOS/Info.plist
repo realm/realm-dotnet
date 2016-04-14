@@ -3,9 +3,9 @@
 <plist version="1.0">
     <dict>
         <key>CFBundleName</key>
-        <string>PCLbasedTests</string>
+        <string>NuGetReleaseTests</string>
         <key>CFBundleIdentifier</key>
-        <string>io.realm.pclbasedtests</string>
+        <string>io.realm.NuGetReleaseTests</string>
         <key>CFBundleShortVersionString</key>
         <string>1.0</string>
         <key>CFBundleVersion</key>

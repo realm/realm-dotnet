@@ -6,8 +6,8 @@
     <ProjectGuid>{72BA4D29-0AAE-4A52-94D9-2E13E6427BDC}</ProjectGuid>
     <ProjectTypeGuids>{EFBA0AD7-5A72-4C68-AF49-83D382785DCF};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
-    <RootNamespace>PCLbasedTests.XamarinAndroid</RootNamespace>
-    <AssemblyName>PCLbasedTests.XamarinAndroid</AssemblyName>
+    <RootNamespace>NuGetReleaseTests.XamarinAndroid</RootNamespace>
+    <AssemblyName>NuGetReleaseTests.XamarinAndroid</AssemblyName>
     <TargetFrameworkVersion>v6.0</TargetFrameworkVersion>
     <AndroidApplication>True</AndroidApplication>
     <AndroidResgenFile>Resources\Resource.designer.cs</AndroidResgenFile>
@@ -50,7 +50,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MainActivity.cs" />
-    <Compile Include="TestsSample.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

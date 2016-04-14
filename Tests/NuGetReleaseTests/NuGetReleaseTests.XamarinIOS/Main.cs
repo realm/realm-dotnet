@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using Foundation;
 using UIKit;
 
-namespace PCLbasedTests
+namespace NuGetReleaseTests
 {
     public class Application
     {

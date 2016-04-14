@@ -4,9 +4,9 @@ using Android.App;
 using Android.OS;
 using Xamarin.Android.NUnitLite;
 
-namespace PCLbasedTests.XamarinAndroid
+namespace NuGetReleaseTests.XamarinAndroid
 {
-    [Activity (Label = "PCLbasedTests.XamarinAndroid", MainLauncher = true)]
+    [Activity (Label = "NuGetReleaseTests.XamarinAndroid", MainLauncher = true)]
     public class MainActivity : TestSuiteActivity
     {
         protected override void OnCreate (Bundle bundle)

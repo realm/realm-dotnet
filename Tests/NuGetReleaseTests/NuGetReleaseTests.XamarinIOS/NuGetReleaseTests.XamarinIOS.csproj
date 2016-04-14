@@ -6,8 +6,8 @@
     <ProjectGuid>{DAC2B878-8F61-4EF1-A040-1FE7291F2CE1}</ProjectGuid>
     <ProjectTypeGuids>{FEACFBD2-3405-455C-9665-78FE426C6842};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <OutputType>Exe</OutputType>
-    <RootNamespace>PCLbasedTests</RootNamespace>
-    <AssemblyName>PCLbasedTests</AssemblyName>
+    <RootNamespace>NuGetReleaseTests</RootNamespace>
+    <AssemblyName>NuGetReleaseTests</AssemblyName>
     <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhoneSimulator' ">

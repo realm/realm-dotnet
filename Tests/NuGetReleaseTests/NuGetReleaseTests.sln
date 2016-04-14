@@ -1,9 +1,9 @@
 
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PCLbasedTests.XamarinIOS", "PCLbasedTests.XamarinIOS\PCLbasedTests.XamarinIOS.csproj", "{DAC2B878-8F61-4EF1-A040-1FE7291F2CE1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGetReleaseTests.XamarinIOS", "NuGetReleaseTests.XamarinIOS\NuGetReleaseTests.XamarinIOS.csproj", "{DAC2B878-8F61-4EF1-A040-1FE7291F2CE1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PCLbasedTests.XamarinAndroid", "PCLbasedTests.XamarinAndroid\PCLbasedTests.XamarinAndroid.csproj", "{72BA4D29-0AAE-4A52-94D9-2E13E6427BDC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGetReleaseTests.XamarinAndroid", "NuGetReleaseTests.XamarinAndroid\NuGetReleaseTests.XamarinAndroid.csproj", "{72BA4D29-0AAE-4A52-94D9-2E13E6427BDC}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "IntegrationTests.Shared", "..\IntegrationTests.Shared\IntegrationTests.Shared.shproj", "{06146619-D21C-414C-BFE3-2F59ACBA412E}"
 EndProject
