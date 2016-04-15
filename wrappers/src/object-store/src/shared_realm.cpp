@@ -460,10 +460,10 @@ void Realm::close()
         m_coordinator->unregister_realm(this);
     }
 
+    m_coordinator = nullptr;
     m_group = nullptr;
     m_shared_group = nullptr;
     m_history = nullptr;
     m_read_only_group = nullptr;
     m_binding_context = nullptr;
-    m_coordinator = nullptr;
 }
