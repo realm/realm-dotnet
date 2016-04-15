@@ -213,14 +213,14 @@ namespace Realms
 
         #endregion
 
-        private SharedRealmHandle _sharedRealmHandle;
+        internal readonly SharedRealmHandle SharedRealmHandle;
         internal readonly Dictionary<Type, RealmObject.Metadata> Metadata;
 
-        internal bool IsInTransaction => MarshalHelpers.IntPtrToBool(NativeSharedRealm.is_in_transaction(_sharedRealmHandle));
+        internal bool IsInTransaction => MarshalHelpers.IntPtrToBool(NativeSharedRealm.is_in_transaction(SharedRealmHandle));
 
         private Realm(SharedRealmHandle sharedRealmHandle, RealmConfiguration config)
         {
-            _sharedRealmHandle = sharedRealmHandle;
+            SharedRealmHandle = sharedRealmHandle;
             Config = config;
             // update OUR config version number in case loaded one from disk
             Config.SchemaVersion = NativeSharedRealm.get_schema_version(sharedRealmHandle);
@@ -271,7 +271,7 @@ namespace Realms
                 if (_realmChanged == null)
                 {
                     var managedRealmHandle = GCHandle.Alloc(this, GCHandleType.Weak);
-                    NativeSharedRealm.bind_to_managed_realm_handle(_sharedRealmHandle, GCHandle.ToIntPtr(managedRealmHandle));
+                    NativeSharedRealm.bind_to_managed_realm_handle(SharedRealmHandle, GCHandle.ToIntPtr(managedRealmHandle));
                 }
                     
                 _realmChanged += value;
@@ -293,7 +293,7 @@ namespace Realms
         /// Checks if database has been closed.
         /// </summary>
         /// <returns>True if closed.</returns>
-        public bool IsClosed => _sharedRealmHandle.IsClosed;
+        public bool IsClosed => SharedRealmHandle.IsClosed;
 
 
         /// <summary>
@@ -309,7 +309,7 @@ namespace Realms
             finally {
                 // Note we expect this call to also do explicit native close first rather than relying on destruction
                 // in case other handles preserve pointers - they will no longer work but don't stop closing
-                _sharedRealmHandle.Close();
+                SharedRealmHandle.Close();
             }
         }
 
@@ -366,7 +366,7 @@ namespace Realms
         /// <param name="rhs">The Realm to compare with the current Realm.</param>
         public bool IsSameInstance(Realm rhs)
         {
-            return MarshalHelpers.IntPtrToBool(NativeSharedRealm.is_same_instance(_sharedRealmHandle, rhs._sharedRealmHandle));
+            return MarshalHelpers.IntPtrToBool(NativeSharedRealm.is_same_instance(SharedRealmHandle, rhs.SharedRealmHandle));
         }
 
 
@@ -377,7 +377,7 @@ namespace Realms
         /// hash table.</returns>
         public override int GetHashCode()
         {
-            return (int)_sharedRealmHandle.DangerousGetHandle();
+            return (int)SharedRealmHandle.DangerousGetHandle();
         }
 
 
@@ -413,7 +413,7 @@ namespace Realms
             try { /* Retain handle in a constrained execution region */ }
             finally
             {
-                var tablePtr = NativeSharedRealm.get_table(_sharedRealmHandle, tableName, (IntPtr)tableName.Length);
+                var tablePtr = NativeSharedRealm.get_table(SharedRealmHandle, tableName, (IntPtr)tableName.Length);
                 result.SetHandle(tablePtr);
             }
             return result;
@@ -440,7 +440,7 @@ namespace Realms
             var result = (T)metadata.Helper.CreateInstance();
 
             var rowPtr = NativeTable.add_empty_row(metadata.Table);
-            var rowHandle = CreateRowHandle (rowPtr);
+            var rowHandle = CreateRowHandle (rowPtr, SharedRealmHandle);
 
             result._Manage(this, rowHandle);
             return result;
@@ -458,7 +458,7 @@ namespace Realms
         {
             var tableHandle = Metadata[tableType].Table;
             var objSchema = Realm.ObjectSchemaCache[tableType];
-            IntPtr resultsPtr = NativeResults.create_for_table(_sharedRealmHandle, tableHandle, objSchema);
+            IntPtr resultsPtr = NativeResults.create_for_table(SharedRealmHandle, tableHandle, objSchema);
             return CreateResultsHandle(resultsPtr);
         }
 
@@ -468,9 +468,9 @@ namespace Realms
             var objSchema = Realm.ObjectSchemaCache[tableType];
             IntPtr resultsPtr = IntPtr.Zero;               
             if (optionalSortOrder == null)
-                resultsPtr = NativeResults.create_for_query(_sharedRealmHandle, builtQuery, objSchema);
+                resultsPtr = NativeResults.create_for_query(SharedRealmHandle, builtQuery, objSchema);
             else
-                resultsPtr = NativeResults.create_for_query_sorted(_sharedRealmHandle, builtQuery, objSchema, optionalSortOrder);
+                resultsPtr = NativeResults.create_for_query_sorted(SharedRealmHandle, builtQuery, objSchema, optionalSortOrder);
             return CreateResultsHandle(resultsPtr);
         }
 
@@ -498,7 +498,7 @@ namespace Realms
 
             if (obj.IsManaged)
             {
-                if (obj.Realm._sharedRealmHandle == this._sharedRealmHandle)
+                if (obj.Realm.SharedRealmHandle == this.SharedRealmHandle)
                     throw new RealmObjectAlreadyManagedByRealmException("The object is already managed by this realm");
 
                 throw new RealmObjectManagedByAnotherRealmException("Cannot start to manage an object with a realm when it's already managed by another realm");
@@ -511,7 +511,7 @@ namespace Realms
             var tableHandle = Metadata[typeof(T)].Table;
 
             var rowPtr = NativeTable.add_empty_row(tableHandle);
-            var rowHandle = CreateRowHandle(rowPtr);
+            var rowHandle = CreateRowHandle(rowPtr, SharedRealmHandle);
 
             obj._Manage(this, rowHandle);
             obj._CopyDataFromBackingFieldsToRow();
@@ -533,9 +533,9 @@ namespace Realms
 
 
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-        internal static RowHandle CreateRowHandle(IntPtr rowPtr)
+        internal static RowHandle CreateRowHandle(IntPtr rowPtr, SharedRealmHandle sharedRealmHandle)
         {
-            var rowHandle = new RowHandle();
+            var rowHandle = new RowHandle(sharedRealmHandle);
 
             RuntimeHelpers.PrepareConstrainedRegions();
             try { /* Retain handle in a constrained execution region */ }
@@ -573,7 +573,7 @@ namespace Realms
         /// <returns>A transaction in write mode, which is required for any creation or modification of objects persisted in a Realm.</returns>
         public Transaction BeginWrite()
         {
-            return new Transaction(_sharedRealmHandle);
+            return new Transaction(SharedRealmHandle);
         }
 
         /// <summary>
@@ -612,7 +612,7 @@ namespace Realms
         /// </returns>
         public bool Refresh()
         {
-            return MarshalHelpers.IntPtrToBool(NativeSharedRealm.refresh(_sharedRealmHandle));
+            return MarshalHelpers.IntPtrToBool(NativeSharedRealm.refresh(SharedRealmHandle));
         }
 
         /// <summary>

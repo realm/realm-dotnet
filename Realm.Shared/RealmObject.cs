@@ -691,7 +691,7 @@ namespace Realms
             if (rowPtr == IntPtr.Zero)
                 return null;  // typically no related object
             var ret = _realm.Metadata[objectType].Helper.CreateInstance();
-            var relatedHandle = Realm.CreateRowHandle (rowPtr);
+            var relatedHandle = Realm.CreateRowHandle (rowPtr, _realm.SharedRealmHandle);
             ret._Manage(_realm, relatedHandle);
             return ret;
         }
