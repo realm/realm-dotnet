@@ -49,7 +49,8 @@ namespace Realms
                 return false;
             
             ++_index;
-            var rowHandle = NativeResults.get_row(_enumeratingResults, (IntPtr)_index);
+            var rowPtr = NativeResults.get_row(_enumeratingResults, (IntPtr)_index);
+            var rowHandle = Realm.CreateRowHandle(rowPtr, _realm.SharedRealmHandle);
             object nextObj = null;
             if (!rowHandle.IsInvalid)                 
                 nextObj = _realm.MakeObjectForRow(_retType, rowHandle);

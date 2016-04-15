@@ -115,7 +115,7 @@ namespace Realms
         internal static extern void datetime_seconds_greater_equal(QueryHandle queryPtr, IntPtr columnIndex, Int64 value);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_find", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern RowHandle findDirect(QueryHandle queryHandle, IntPtr beginAtRow);
+        internal static extern IntPtr findDirect(QueryHandle queryHandle, IntPtr beginAtRow);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_get_column_index", CallingConvention = CallingConvention.Cdecl)]
         internal static extern IntPtr get_column_index(QueryHandle queryPtr,
