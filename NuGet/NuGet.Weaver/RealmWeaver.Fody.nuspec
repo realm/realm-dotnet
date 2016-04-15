@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata minClientVersion="2.8">
     <id>RealmWeaver.Fody</id>
-    <version>0.74.0</version>
+    <version>0.74.1</version>
     <title>RealmWeaver.Fody</title>
     <authors>Realm</authors>
     <owners>Realm</owners>

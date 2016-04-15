@@ -40,7 +40,7 @@ Prerequisites:
 * Building Realm documentation requires [Doxygen](http:/www.doxygen.org) and [Graphviz](http://www.graphviz.org)
 
 
-We support the current Xamarin _Stable_ and _Beta_ update channels, at the time of release this corresponded to:
+We support the current Xamarin _Stable_ update channel, at the time of release this corresponded to:
 
 * Xamarin iOS version 9.6.1.9
 * Xamarin Android version 6.0.3.5
