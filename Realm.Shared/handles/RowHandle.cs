@@ -11,7 +11,7 @@ namespace Realms
         //keep this one even though warned that it is not used. It is in fact used by marshalling
         //used by P/Invoke to automatically construct a TableHandle when returning a size_t as a TableHandle
         [Preserve]
-        public RowHandle()
+        public RowHandle(SharedRealmHandle sharedRealmHandle) : base(sharedRealmHandle)
         {
         }
 

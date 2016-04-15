@@ -213,7 +213,7 @@ namespace Realms
 
         #endregion
 
-        private SharedRealmHandle _sharedRealmHandle;
+        internal SharedRealmHandle _sharedRealmHandle;
         internal readonly Dictionary<Type, RealmObject.Metadata> Metadata;
 
         internal bool IsInTransaction => MarshalHelpers.IntPtrToBool(NativeSharedRealm.is_in_transaction(_sharedRealmHandle));
@@ -440,7 +440,7 @@ namespace Realms
             var result = (T)metadata.Helper.CreateInstance();
 
             var rowPtr = NativeTable.add_empty_row(metadata.Table);
-            var rowHandle = CreateRowHandle (rowPtr);
+            var rowHandle = CreateRowHandle (rowPtr, _sharedRealmHandle);
 
             result._Manage(this, rowHandle);
             return result;
@@ -511,7 +511,7 @@ namespace Realms
             var tableHandle = Metadata[typeof(T)].Table;
 
             var rowPtr = NativeTable.add_empty_row(tableHandle);
-            var rowHandle = CreateRowHandle(rowPtr);
+            var rowHandle = CreateRowHandle(rowPtr, _sharedRealmHandle);
 
             obj._Manage(this, rowHandle);
             obj._CopyDataFromBackingFieldsToRow();
@@ -533,9 +533,9 @@ namespace Realms
 
 
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-        internal static RowHandle CreateRowHandle(IntPtr rowPtr)
+        internal static RowHandle CreateRowHandle(IntPtr rowPtr, SharedRealmHandle sharedRealmHandle)
         {
-            var rowHandle = new RowHandle();
+            var rowHandle = new RowHandle(sharedRealmHandle);
 
             RuntimeHelpers.PrepareConstrainedRegions();
             try { /* Retain handle in a constrained execution region */ }
