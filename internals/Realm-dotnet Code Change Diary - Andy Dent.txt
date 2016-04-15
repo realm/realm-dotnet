@@ -2069,3 +2069,10 @@ LINQvariableTests.cs
 
 RealmResultsVisitor.cs
 - VisitMethodCall handle other string args
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Chained Queries
+
+SimpleLINQtests.cs
+- ChainedSearch added to confirm syntax

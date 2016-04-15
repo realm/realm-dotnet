@@ -460,7 +460,7 @@ void Realm::close()
         m_coordinator->unregister_realm(this);
     }
 
-    m_coordinator = nullptr;
+    m_coordinator = nullptr;  // delete first, to prevent occasional Destruction of mutex in use error. If delete later, the external commit helper thread was active while m_shared_group was being destroyed. 
     m_group = nullptr;
     m_shared_group = nullptr;
     m_history = nullptr;
