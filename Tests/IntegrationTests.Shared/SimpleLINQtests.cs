@@ -282,5 +282,15 @@ namespace IntegrationTests
             Assert.That(s2.FirstName, Is.EqualTo("John"));
         }
 
+
+        [Test]
+        public void ChainedSearch()
+        {
+            var moderateScorers = _realm.All<Person>().Where(p => p.Score >= 20.0f && p.Score <= 100.0f);
+            var johnScorer = moderateScorers.Where(p => p.FirstName == "John").First();
+            Assert.That(johnScorer, Is.Not.Null);
+            Assert.That(johnScorer.Score, Is.EqualTo (100.0f));
+            Assert.That(johnScorer.FullName, Is.EqualTo ("John Doe"));
+        }
     } // SimpleLINQtests
 }
