@@ -205,13 +205,12 @@ namespace Realms
                     }
                     var columnIndex = NativeQuery.get_column_index(_coreQueryHandle, member.Member.Name, (IntPtr)member.Member.Name.Length);
 
-                    var argument = m.Arguments.SingleOrDefault() as ConstantExpression;
-                    if (argument == null || argument.Type != typeof(string))
+                    var argument = ExtractConstantValue (m.Arguments.SingleOrDefault());
+                    if (argument == null || argument.GetType() != typeof(string))
                     {
-                        throw new NotSupportedException($"The method '{m.Method}' has to be invoked with a single string constant argument");
+                        throw new NotSupportedException($"The method '{m.Method}' has to be invoked with a single string constant argument or closure variable");
                     }
-
-                    queryMethod(_coreQueryHandle, columnIndex, (string)argument.Value);
+                    queryMethod(_coreQueryHandle, columnIndex, (string)argument);
                     return m;
                 }
             }

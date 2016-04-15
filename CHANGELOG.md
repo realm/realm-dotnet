@@ -1,6 +1,13 @@
-0.74.0 Private Beta (2016-04-02)
+0.74.1 Private Beta IN PROGRESS
 -------------------
 Still requires installation from private copy of NuGet download.
+
+### Minor Changes
+* Realms now refresh properly on Android when modified in other threads/processes.
+* The `String.Contains(String)`, `String.StartsWith(String)`, and `String.EndsWith(String)` methods now support variable expressions. Previously they only worked with literal strings.  
+
+0.74.0 Private Beta (2016-04-02)
+-------------------
 
 ### Major Changes
 * The Realm assembly weaver now submits anonymous usage data during each build, so we can track statistics for unique builders, as done with the Java, Swift and Objective-C products (issue #182)
