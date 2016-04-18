@@ -1,0 +1,21 @@
+%YAML 1.2
+---
+summary: Mobile Database
+getting-started: GettingStarted.md
+details: Details.md
+screenshots: 
+  - screenshots/screenshot1.png
+license: License.md
+icons: 
+  - realm_128x128.png
+  - realm_512x512.png
+publisher: Realm
+name: Realm
+id: realm
+samples: 
+  iOS Sample: ../samples/AwesomeSample/AwesomeSample.sln
+publisher-url: www.realm.io
+libraries: 
+  ios: ../lib/ios/Awesome.dll
+version: 0.74.1
+...
