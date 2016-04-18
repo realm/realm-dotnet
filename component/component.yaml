@@ -3,8 +3,6 @@
 summary: Mobile Database
 getting-started: GettingStarted.md
 details: Details.md
-screenshots: 
-  - screenshots/screenshot1.png
 license: License.md
 icons: 
   - realm_128x128.png
@@ -15,7 +13,7 @@ id: realm
 samples: 
   iOS Sample: ../samples/AwesomeSample/AwesomeSample.sln
 publisher-url: www.realm.io
-libraries: 
-  ios: ../lib/ios/Awesome.dll
+packages: 
+  - Realm, Version=0.74.1
 version: 0.74.1
 ...
