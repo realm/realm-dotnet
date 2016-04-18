@@ -11,7 +11,7 @@ publisher: Realm
 name: Realm
 id: realm
 samples: 
-  iOS Sample: ../samples/AwesomeSample/AwesomeSample.sln
+  Simple: ./samples/Simple/Simple.sln
 publisher-url: www.realm.io
 packages: 
   - Realm, Version=0.74.1
