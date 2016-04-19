@@ -3,11 +3,14 @@
  */
  
 using System;
-using System.Diagnostics;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 
 namespace Realms
 {
@@ -18,7 +21,7 @@ namespace Realms
     /// You can sort efficiently using the standard LINQ operators <c>OrderBy</c> or <c>OrderByDescending</c> followed by any number of
     /// <c>ThenBy</c> or <c>ThenByDescending</c>.</remarks>
     /// <typeparam name="T">Type of the RealmObject which is being returned.</typeparam>
-    public class RealmResults<T> : IOrderedQueryable<T>
+    public class RealmResults<T> : IOrderedQueryable<T>, INotifyCollectionChanged, RealmResultsNativeHelper.Interface
     {
         public Type ElementType => typeof (T);
         public Expression Expression { get; } = null; // null if _allRecords
@@ -30,6 +33,27 @@ namespace Realms
         private ResultsHandle _resultsHandle = null;
 
         public IQueryProvider Provider => _provider;
+
+        NotifyCollectionChangedEventHandler _collectionChangedHandlers = null;
+        AsyncQueryCancellationTokenHandle _asyncQueryCancellationToken = null;
+        event NotifyCollectionChangedEventHandler INotifyCollectionChanged.CollectionChanged
+        {
+            add 
+            {
+                _collectionChangedHandlers += value;
+                if (_asyncQueryCancellationToken == null)
+                {
+                    SubscribeForAsyncQuery();
+                }
+            }
+            remove
+            {
+                if ((_collectionChangedHandlers -= value) == null && _asyncQueryCancellationToken != null)
+                {
+                    UnsubscribeFromAsyncQuery();
+                }
+            }
+        }
 
         internal RealmResults(Realm realm, RealmResultsProvider realmResultsProvider, Expression expression,
             bool createdByAll)
@@ -100,7 +124,56 @@ namespace Realms
             // to RealmResults<blah> and thus ends up here.
             // as in the unit test CountFoundWithCasting
             return (int)NativeResults.count(ResultsHandle);
-        }    
+        }
+
+        private void SubscribeForAsyncQuery()
+        {
+            Debug.Assert(_asyncQueryCancellationToken == null);
+
+            var managedResultsHandle = GCHandle.Alloc(this);
+            var token = new AsyncQueryCancellationTokenHandle(ResultsHandle);
+            var tokenHandle = NativeResults.async(ResultsHandle, RealmResultsNativeHelper.AsyncQueryCallback, GCHandle.ToIntPtr(managedResultsHandle));
+
+            RuntimeHelpers.PrepareConstrainedRegions();
+            try
+            { }
+            finally
+            {
+                token.SetHandle(tokenHandle);
+            }
+
+            _asyncQueryCancellationToken = token;
+        }
+
+        private void UnsubscribeFromAsyncQuery()
+        {
+            Debug.Assert(_asyncQueryCancellationToken != null);
+
+            _asyncQueryCancellationToken.Dispose();
+            _asyncQueryCancellationToken = null;
+        }
+                    
+        void RealmResultsNativeHelper.Interface.RaiseCollectionChanged()
+        {
+            _collectionChangedHandlers(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+        }
 
     }  // RealmResults
+
+    internal static class RealmResultsNativeHelper
+    {
+        internal interface Interface
+        {
+            void RaiseCollectionChanged();
+        }
+
+        #if __IOS__
+        [ObjCRuntime.MonoPInvokeCallback(typeof(NativeResults.AsyncQueryCallback))]
+        #endif
+        internal static void AsyncQueryCallback(IntPtr managedResultsHandle)
+        {
+            var results = (Interface)GCHandle.FromIntPtr(managedResultsHandle).Target;
+            results.RaiseCollectionChanged();
+        }
+    }
 }
