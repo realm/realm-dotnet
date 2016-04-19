@@ -1,6 +1,6 @@
 %YAML 1.2
 ---
-summary: Mobile Database
+summary: Realm is a mobile database, an alternative to SQLite and key-value stores
 getting-started: GettingStarted.md
 details: Details.md
 license: License.md
@@ -10,10 +10,14 @@ icons:
 publisher: Realm
 name: Realm
 id: realm
+no_build: true
 samples: 
   Simple: ./samples/Simple/Simple.sln
-publisher-url: www.realm.io
+publisher-url: https://www.realm.io
 packages: 
-  - Realm, Version=0.74.1
+  android:
+    - Realm, Version=0.74.1
+  ios:
+    - Realm, Version=0.74.1
 version: 0.74.1
 ...
