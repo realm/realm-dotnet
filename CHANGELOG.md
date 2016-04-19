@@ -7,6 +7,9 @@ Still requires installation from private copy of NuGet download.
 * The `String.Contains(String)`, `String.StartsWith(String)`, and `String.EndsWith(String)` methods now support variable expressions. Previously they only worked with literal strings.  
 * Fixes to crashes under heavy combinations of threaded reads and writes.
 
+### Minor Changes
+* NuGet packages have been combined into a single Realm package.
+
 0.74.0 Private Beta (2016-04-02)
 -------------------
 

@@ -5,9 +5,20 @@ These are steps for our internal manual process to build.
 
 The process has not been automated yet as the tools need running on both OS X and Windows to complete the build. 
 
-We currently produce two NuGet packages. You will usually build them and test using them from a local folder such as `~/LocalRealm`. We will refer to this as the **local test folder**.
+We currently produce Realm as a single NuGet package. You will usually build it and test using it from a local folder such as `~/LocalRealm`. We will refer to this as the **local test folder**.
 
 Paths below assume you're starting in the root dir `realm-dotnet` checked out from GitHub.
+
+NuGet Features used
+-------------------
+
+We update the Fody standard file `FodyWeavers.xml` automatically using the XDT engine as described in [Configuration File and Source Code Transformations][ConfigsAndTransforms].
+
+There's a pair of files in `NuGet.Library/content`:
+
+* `FodyWeavers.xml.install.xdt`
+* `FodyWeavers.xml.uninstall.xdt`
+
 
 Setting Version Numbers
 -----------------------
@@ -21,18 +32,9 @@ The Fody Weaver version number **must** follow the main Realm.dll even if there 
   * `Realm.Win32/Properties/AssemblyInfo.cs`
   * `Realm.XamarinAndroid/Properties/AssemblyInfo.cs`
   * `Realm.XamarinIOS/Properties/AssemblyInfo.cs`
-* Update `NuGet/NuGet.Weaver/RealmWeaver.Fody.nuspec`
-* Edit `NuGet/NuGet.Library/Realm.nuspec` and update the `RealmWeaver.Fody` version number (as noted above these are now kept in synch)
 * Edit `NuGet/NuGet.Library/Realm.targets` and update version numbers in **all** the paths.
 
 **At NuGet build time,** you will also have to change the version number you use in the `nuget` command line.
-
-
-Building Fody NuGet
--------------------
-You **have** to build this using Visual Studio. Open the normal Realm solution and force a rebuild of the `Nuget.Weaver` project. The `NuGetBuild` folder is created by this build.
-
-Copy the `RealmWeaver.Fody.0.72.0.nupkg` generated in `NuGetBuild` to your **local test folder**.
 
 
 Building the DLLS
@@ -62,16 +64,18 @@ Done correctly, this creates a package `/Users/andydent/dev/Realm/realm-dotnet/N
 ### Binaries on OS X
 If you are copying binaries from an OS X machine to a separate Windows tree, you will need to get:
 
+* `NuGet/NuGet.Library` to do the building of the NuGet
+* `Realm.PCL/bin/Release`
 * `Realm.XamarinAndroid/bin/Release`
 * `Realm.XamarinIOS/bin/iPhone/Release`
-* `Realm.PCL/bin/Release`
-* `wrappers/build/Release-*` multiple directories
+* `RealmWeaver/bin/Release`
+* `wrappers/build/Release-android` to get the multiple `libwrappers.so` in subdirs
 
 Testing the packages
 --------------------
 Set your Xamarin or Visual Studio to use your **local test folder** as a NuGet source.
 
-Create new projects and use the NuGet Package manager to _add_ just the `Realm.0.72.0.nupkg`. It should automatically also add the Fody weaver and Fody in its turn. They will in ask you to overwrite `FodyWeavers.xml` which you normally allow.
+Create new projects and use the NuGet Package manager to _add_ just the `Realm.0.72.0.nupkg`. It should automatically also add Fody in its turn. They will in ask you to overwrite `FodyWeavers.xml` which you normally allow.
 
 You should then be able to build and run code using Realm.
 
@@ -87,8 +91,14 @@ Useful Stuff
 Some aspects of NuGet builds suffer from the combination of being both **by convention** and **optional** which means you have very little chance of being told **if** or **what** you are doing wrong.
 
 
-[Xamarin Advanced NuGet](https://developer.xamarin.com/guides/cross-platform/advanced/nuget/) is a key page because it describes the platform tags specific to Xamarin.
+[Xamarin Advanced NuGet][XamNNG] is a key page because it describes the platform tags specific to Xamarin.
 
 We need to use other tags for non-Xamarin .NET use.
 
-[NuGet Targets and Props](https://docs.nuget.org/release-notes/nuget-2.5#automatic-import-of-msbuild-targets-and-props-files) explains the build folder has to be at the top and can then have framework-specific folders. It covers the conventions in detail.
+[NuGet Targets and Props][NGTargetsNProps] explains the build folder has to be at the top and can then have framework-specific folders. It covers the conventions in detail.
+
+
+[ConfigsAndTransforms]: 
+http://docs.nuget.org/create/configuration-file-and-source-code-transformations
+[XamNNG]: https://developer.xamarin.com/guides/cross-platform/advanced/nuget/
+[NGTargetsNProps]: https://docs.nuget.org/release-notes/nuget-2.5#automatic-import-of-msbuild-targets-and-props-files

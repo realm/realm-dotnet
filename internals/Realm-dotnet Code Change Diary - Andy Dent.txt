@@ -2076,3 +2076,23 @@ Chained Queries
 
 SimpleLINQtests.cs
 - ChainedSearch added to confirm syntax
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Combining Packages with 0.74.1 Release
+
+Realm.sln
+- removed Nuget.Weaver
+
+Nuget.Weaver
+- deleted and rolled into Realm.targets and Realm.nuspec
+
+NuGet.Weaver files moved to NuGet.Library
+- readme.txt
+- FodyWeavers.xml
+
+Realm.nuspec
+- dependency changed from RealmWeaver to Fody
+- file entry added for RealmWeaver.Fody.dll
+
+Realm.targets
+- added FodyWeavers.xml
