@@ -29,3 +29,6 @@ realm.Write(() =>
 var r = realm.All<Dog>().Where(d => d.Age > 8);
 var r2 = from d in realm.All<Dog>() where  d.Age > 8 select d;
 ```
+
+Look into the documentation on [realm.io/docs/xamarin/latest/](https://realm.io/docs/xamarin/latest/).
+
