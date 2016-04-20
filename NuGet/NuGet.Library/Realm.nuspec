@@ -20,6 +20,11 @@
     </dependencies>
   </metadata>
   <files>
+<!-- Built weaver needed by all targets -->  
+<!--     <file src="../../RealmWeaver/bin/Release/RealmWeaver.Fody.dll" target="tools\portable-net45+sl5+wp8+wpa81+win8+monoandroid+Xamarin.iOS10+monotouch+Xamarin.Mac"/>  -->
+     <file src="../../RealmWeaver/bin/Release/RealmWeaver.Fody.dll" target="tools"/>
+<!-- Our XML config file for Fody -->     
+     <file src="FodyWeavers.xml.transform" target="content"/>
 <!-- PCL file -->
     <file src="../../Realm.PCL/bin/Release/Realm.dll" target="lib\portable-net45+sl5+wp8+wpa81+win8+monoandroid+Xamarin.iOS10+monotouch+Xamarin.Mac" />
 <!-- IOS file -->
