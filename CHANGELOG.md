@@ -4,7 +4,8 @@ Still requires installation from private copy of NuGet download.
 
 ### Minor Changes
 * Realms now refresh properly on Android when modified in other threads/processes.
-* The `String.Contains(String)`, `String.StartsWith(String)`, and `String.EndsWith(String)` methods now support variable expressions. Previously they only worked with literal strings.  
+* The `String.Contains(String)`, `String.StartsWith(String)`, and `String.EndsWith(String)` methods now support variable expressions. Previously they only worked with literal strings.
+* `RealmResults<T>` now implements `INotifyCollectionChanged` by raising the `CollectionChanged` event with `NotifyCollectionChangedAction.Reset` when its underlying table or query result is changed by a write transaction.
 
 0.74.0 Private Beta (2016-04-02)
 -------------------
