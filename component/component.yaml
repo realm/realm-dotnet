@@ -12,7 +12,10 @@ name: Realm
 id: realm
 no_build: true
 samples: 
-  Simple: ./samples/Simple/Simple.sln
+  - name: "Simple"
+    path: samples/Simple/Simple.sln
+  - name: "Xamarin.Forms ListView"
+    path: samples/ListView/ListView.sln
 publisher-url: https://www.realm.io
 packages: 
   android:
