@@ -9,7 +9,8 @@ namespace Realms
 {
     internal static class NativeResults
     {
-        
+        internal delegate void AsyncQueryCallback(IntPtr managedResultsHandle);
+
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_is_same_internal_results",
             CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr is_same_internal_results(ResultsHandle lhs, ResultsHandle rhs);
@@ -37,5 +38,11 @@ namespace Realms
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_clear", CallingConvention = CallingConvention.Cdecl)]
         internal static extern void clear(ResultsHandle results);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_async", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern IntPtr async(ResultsHandle results, AsyncQueryCallback callback, IntPtr managedResultsHandle);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "asyncquerycancellationtoken_destroy", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern IntPtr destroy_async_query_cancellation_token(IntPtr token);
     }
 }

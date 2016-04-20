@@ -122,5 +122,42 @@ REALM_EXPORT void sortorder_add_clause(SortOrderWrapper* sortorder_ptr, uint16_t
   });
 }
 
+struct ManagedAsyncQueryCancellationContext {
+  AsyncQueryCancelationToken token;
+  void* managed_results;
+  void(*callback)(void*);
+};
+
+REALM_EXPORT ManagedAsyncQueryCancellationContext* results_async(Results* results_ptr, void(*callback)(void*), void* managed_results)
+{
+  return handle_errors([=]() {
+    auto context = new ManagedAsyncQueryCancellationContext();
+    context->managed_results = managed_results;
+    context->callback = callback;
+    context->token = std::move(results_ptr->async([context](std::exception_ptr e) {
+      if (e) {
+        try {
+          std::rethrow_exception(e);
+        } catch (const std::exception& ex) {
+          std::cerr << "received exception in results change callback: " << ex.what();
+          return;
+        }
+      }
+      
+      context->callback(context->managed_results);
+    }));
+
+    return context;
+  });
+}
+
+REALM_EXPORT void* asyncquerycancellationtoken_destroy(ManagedAsyncQueryCancellationContext* token_ptr)
+{
+  return handle_errors([&]() {
+    void* managed_results = token_ptr->managed_results;
+    delete token_ptr;
+    return managed_results;
+  });
+}
 
 }   // extern "C"
