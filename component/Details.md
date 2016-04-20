@@ -1,7 +1,5 @@
 Realm is a mobile database that runs directly inside phones, tablets or wearables.
 
-This repository holds the source code for the C# versions of Realm (Currently only Xamarin for iOS and Android is supported.)
-
 ## Features
 
 * **Mobile-first:** Realm is the first database built from the ground up to run directly inside phones, tablets and wearables.
