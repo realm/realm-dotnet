@@ -32,7 +32,7 @@ The Fody Weaver version number **must** follow the main Realm.dll even if there 
   * `Realm.Win32/Properties/AssemblyInfo.cs`
   * `Realm.XamarinAndroid/Properties/AssemblyInfo.cs`
   * `Realm.XamarinIOS/Properties/AssemblyInfo.cs`
-
+* Edit `NuGet/NuGet.Library/Realm.targets` and update version numbers in **all** the paths.
 
 **At NuGet build time,** you will also have to change the version number you use in the `nuget` command line.
 
