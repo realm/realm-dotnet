@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if ENABLE_INTERNAL_NON_PCL_TESTS
+using System;
 using System.Linq;
 using NUnit.Framework;
 using Realms;
@@ -44,6 +45,7 @@ namespace IntegrationTests.Shared
             Assert.That(wasNotified, "RealmChanged notification was not triggered");
         }
 
+
         [Test]
         public async void ResultsShouldRaiseCollectionChangedReset()
         {
@@ -74,3 +76,4 @@ namespace IntegrationTests.Shared
     }
 }
 
+#endif  // #if ENABLE_INTERNAL_NON_PCL_TESTS
