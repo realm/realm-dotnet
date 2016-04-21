@@ -2092,7 +2092,17 @@ NuGet.Weaver files moved to NuGet.Library
 
 Realm.nuspec
 - dependency changed from RealmWeaver to Fody
-- file entry added for RealmWeaver.Fody.dll
+- file entries added for 
+    RealmWeaver.Fody.dll
+    FodyWeavers.xml.install.xdt
+    FodyWeavers.xml.uninstall.xdt
+- Realm.targets now targeting build, was previously build/MonoAndroid44, so get CopyRealmWeaver target in all projects    
 
 Realm.targets
 - added FodyWeavers.xml
+- added the target CopyRealmWeaver 
+
+FodyWeavers.xml.install.xdt
+FodyWeavers.xml.uninstall.xdt
+- added
+
