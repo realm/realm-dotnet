@@ -2076,3 +2076,33 @@ Chained Queries
 
 SimpleLINQtests.cs
 - ChainedSearch added to confirm syntax
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Combining Packages with 0.74.1 Release
+
+Realm.sln
+- removed Nuget.Weaver
+
+Nuget.Weaver
+- deleted and rolled into Realm.targets and Realm.nuspec
+
+NuGet.Weaver files moved to NuGet.Library
+- readme.txt
+- FodyWeavers.xml
+
+Realm.nuspec
+- dependency changed from RealmWeaver to Fody
+- file entries added for 
+    RealmWeaver.Fody.dll
+    FodyWeavers.xml.install.xdt
+    FodyWeavers.xml.uninstall.xdt
+- Realm.targets now targeting build, was previously build/MonoAndroid44, so get CopyRealmWeaver target in all projects    
+
+Realm.targets
+- added FodyWeavers.xml
+- added the target CopyRealmWeaver 
+
+FodyWeavers.xml.install.xdt
+FodyWeavers.xml.uninstall.xdt
+- added
+

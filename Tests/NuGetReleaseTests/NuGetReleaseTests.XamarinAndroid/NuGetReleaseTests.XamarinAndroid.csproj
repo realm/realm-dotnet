@@ -44,9 +44,6 @@
     <Reference Include="System.Core" />
     <Reference Include="Mono.Android" />
     <Reference Include="Xamarin.Android.NUnitLite" />
-    <Reference Include="Realm">
-      <HintPath>..\packages\Realm.0.74.0\lib\MonoAndroid44\Realm.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MainActivity.cs" />
@@ -56,8 +53,6 @@
   <ItemGroup>
     <None Include="Resources\AboutResources.txt" />
     <None Include="Assets\AboutAssets.txt" />
-    <None Include="FodyWeavers.xml" />
-    <None Include="packages.config" />
     <None Include="Properties\AndroidManifest.xml" />
   </ItemGroup>
   <ItemGroup>
@@ -69,8 +64,6 @@
   </ItemGroup>
   <Import Project="..\..\IntegrationTests.Shared\IntegrationTests.Shared.projitems" Label="Shared" Condition="Exists('..\..\IntegrationTests.Shared\IntegrationTests.Shared.projitems')" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
-  <Import Project="..\packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets" Condition="Exists('..\packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets')" />
-  <Import Project="..\packages\Realm.0.74.0\build\MonoAndroid44\Realm.targets" Condition="Exists('..\packages\Realm.0.74.0\build\MonoAndroid44\Realm.targets')" />
   <ItemGroup>
     <AndroidAsset Include="..\..\IntegrationTests.Shared\ForMigrationsToCopyAndMigrate.realm">
       <Link>Assets\ForMigrationsToCopyAndMigrate.realm</Link>

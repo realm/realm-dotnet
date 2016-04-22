@@ -91,9 +91,6 @@ Other
 ### RealmWeaver Project ###
 Builds `RealmWeaver.Fody` weaving tool. Only needed when building and running tests from this project. Users of our NuGet distribution get it included.
 
-### NuGet Project ###
-The project `Nuget.Weaver` builds our NuGet project for `RealmWeaver.Fody` as documented in detail in RealmDotnetNugetBuild.md.
-
 ### PCL Distribution Project ###
 The `Realm.PCL` project builds our PCL variant which is used in the _bait-and-switch_ pattern to allow PCL libraries to use Realm whilst platform-specific libraries are linked to the final app projects. See `RealmDotNetPCL.md` for more details.
 
