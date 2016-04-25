@@ -6,7 +6,7 @@ The solution ThreeLayerRealmXFNuGet was created in VS2015 using _Xamarin Forms P
 
 Diving into giving PCL layering a full workout, it represents the typical approach of a user who uses Xamarin Forms in a PCL for their portable GUI as well having a separate ViewModel class in another PCL assembly.
 
-It is based on the adjacent `ThreeLayerRealmXF` but uses NuGet to get the Realm libraries rather than linking to local copies. As such, it allows for quick testing of our NuGet releases in a full application context.
+It is based on the adjacent `tests/ThreeLayerRealmXF` but uses NuGet to get the Realm libraries rather than linking to local copies. As such, it allows for quick testing of our NuGet releases in a full application context.
 
 ## The Layers
 

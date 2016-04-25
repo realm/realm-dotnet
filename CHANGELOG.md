@@ -1,7 +1,14 @@
-0.74.1 Private Beta (2016-04-16)
+0.74.2 Private Beta (in progress)
 -------------------
+Focusing on documentation and sample code improvements.
+
 Still requires installation from private copy of NuGet download.
 
+### Minor Changes
+* `examples` directory created as a home for growing number of examples
+
+0.74.1 Private Beta (2016-04-16)
+-------------------
 ### Minor Fixes
 * Realms now refresh properly on Android when modified in other threads/processes.
 * Fixes crashes under heavy combinations of threaded reads and writes.
