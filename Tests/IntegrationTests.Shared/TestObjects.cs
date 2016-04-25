@@ -16,6 +16,7 @@ namespace IntegrationTests.Shared
 
         public string StringProperty { get; set; }
         public DateTimeOffset DateTimeOffsetProperty { get; set; }
+        public Guid GuidProperty { get; set; }
 
         public char? NullableCharProperty { get; set; }
         public byte? NullableByteProperty { get; set; }
@@ -25,6 +26,8 @@ namespace IntegrationTests.Shared
         public float? NullableSingleProperty { get; set; }
         public double? NullableDoubleProperty { get; set; }
         public bool? NullableBooleanProperty { get; set; }
+
+        public Guid? NullableGuidProperty { get; set; }
     }
 
     public class ObjectIdCharObject : RealmObject
@@ -56,4 +59,9 @@ namespace IntegrationTests.Shared
     {
         [ObjectId] public string StringProperty { get; set; }
     }
+
+    //public class ObjectIdGuidObject : RealmObject
+    //{
+    //    [ObjectId] public Guid GuidProperty { get; set; }
+    //}
 }

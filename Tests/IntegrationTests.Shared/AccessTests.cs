@@ -2,6 +2,7 @@
  * Proprietary and Confidential
  */
 
+using System;
 using System.IO;
 using NUnit.Framework;
 using Realms;
@@ -25,6 +26,45 @@ namespace IntegrationTests.Shared
         {
             _realm.Close();
             Realm.DeleteRealm(_realm.Config);
+        }
+
+        [TestCase("StringProperty", "hello")]
+        [TestCase("CharProperty", '0')]
+        [TestCase("ByteProperty", (byte)100)]
+        [TestCase("Int16Property", (short)100)]
+        [TestCase("Int32Property", 100)]
+        [TestCase("Int64Property", 100L)]
+        [TestCase("SingleProperty", 123.123f)] 
+        [TestCase("DoubleProperty", 123.123)] 
+        [TestCase("BooleanProperty", true)]
+        public void SetAndGetValue(string propertyName, object propertyValue)
+        {
+            AllTypesObject ato;
+            using (var transaction = _realm.BeginWrite())
+            {
+                ato = _realm.CreateObject<AllTypesObject>();
+
+                TestHelpers.SetPropertyValue(ato, propertyName, propertyValue);
+                transaction.Commit();
+            }
+
+            Assert.That(TestHelpers.GetPropertyValue(ato, propertyName), Is.EqualTo(propertyValue));
+        }
+
+        [Test]
+        public void SetAndGetGuidValue()
+        {
+            var guid = Guid.NewGuid();
+            AllTypesObject ato;
+            using (var transaction = _realm.BeginWrite())
+            {
+                ato = _realm.CreateObject<AllTypesObject>();
+
+                ato.GuidProperty = guid;
+                transaction.Commit();
+            }
+
+            Assert.That(ato.GuidProperty, Is.EqualTo(guid));
         }
 
         [TestCase("NullableCharProperty", '0')]
@@ -55,6 +95,30 @@ namespace IntegrationTests.Shared
             }
 
             Assert.That(ato.NullableBooleanProperty, Is.EqualTo(null));
+        }
+
+        [Test]
+        public void SetAndGetNullableGuidValue()
+        {
+            var guid = Guid.NewGuid();
+            AllTypesObject ato;
+            using (var transaction = _realm.BeginWrite())
+            {
+                ato = _realm.CreateObject<AllTypesObject>();
+
+                ato.NullableGuidProperty = guid;
+                transaction.Commit();
+            }
+
+            Assert.That(ato.NullableGuidProperty, Is.EqualTo(guid));
+
+            using (var transaction = _realm.BeginWrite())
+            {
+                ato.NullableGuidProperty = null;
+                transaction.Commit();
+            }
+
+            Assert.That(ato.NullableGuidProperty, Is.EqualTo(null));
         }
     }
 }

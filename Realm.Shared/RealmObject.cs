@@ -117,6 +117,46 @@ namespace Realms
             // leaving buffer sitting allocated for quick reuse next time we read a string                
         } // GetStringValue
 
+        protected Guid GetGuidValue(string propertyName)
+        {
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
+
+            var rowIndex = _rowHandle.RowIndex;
+
+            IntPtr bufferPtr;
+            int bufferLength;
+            NativeTable.get_binary(_metadata.Table, _metadata.ColumnIndices[propertyName], (IntPtr) rowIndex,
+                out bufferPtr,
+                out bufferLength);
+
+            var buffer = new byte[bufferLength];
+            Marshal.Copy(bufferPtr, buffer,0,  bufferLength);
+
+            return new Guid(buffer);
+        }
+
+        protected Guid? GetNullableGuidValue(string propertyName)
+        {
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
+
+            var rowIndex = _rowHandle.RowIndex;
+
+            IntPtr bufferPtr;
+            int bufferLength;
+            var hasValue = MarshalHelpers.IntPtrToBool(NativeTable.get_binary(_metadata.Table, _metadata.ColumnIndices[propertyName], (IntPtr) rowIndex,
+                out bufferPtr,
+                out bufferLength));
+
+            if (hasValue)
+            {
+                var buffer = new byte[bufferLength];
+                Marshal.Copy(bufferPtr, buffer, 0, bufferLength);
+                return new Guid(buffer);
+            }
+            else
+                return null;
+        }
+
         protected char GetCharValue(string propertyName)
         {
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
@@ -351,6 +391,50 @@ namespace Realms
             var rowIndex = _rowHandle.RowIndex;
 
             NativeTable.set_string_unique(_metadata.Table, _metadata.ColumnIndices[propertyName], (IntPtr)rowIndex, value, (IntPtr)value.Length);
+        }
+
+        protected void SetGuidValue(string propertyName, Guid value)
+        {
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
+
+            if (!_realm.IsInTransaction)
+                throw new RealmOutsideTransactionException("Cannot set values outside transaction");
+            
+            var rowIndex = _rowHandle.RowIndex;
+
+            unsafe
+            {
+                fixed (byte* bufferPtr = value.ToByteArray())
+                {
+                    NativeTable.set_binary(_metadata.Table, _metadata.ColumnIndices[propertyName], (IntPtr)rowIndex, (IntPtr)bufferPtr,
+                        (IntPtr)16);
+                }
+            }
+        }
+
+        protected void SetNullableGuidValue(string propertyName, Guid? value)
+        {
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
+
+            if (!_realm.IsInTransaction)
+                throw new RealmOutsideTransactionException("Cannot set values outside transaction");
+            
+            var rowIndex = _rowHandle.RowIndex;
+
+            if (value.HasValue)
+            {
+                unsafe
+                {
+                    fixed (byte* bufferPtr = value.Value.ToByteArray())
+                    {
+                        NativeTable.set_binary(_metadata.Table, _metadata.ColumnIndices[propertyName], (IntPtr) rowIndex,
+                            (IntPtr) bufferPtr,
+                            (IntPtr) 16);
+                    }
+                }
+            }
+            else
+                NativeTable.set_null(_metadata.Table, _metadata.ColumnIndices[propertyName], (IntPtr)rowIndex);
         }
 
         protected void SetCharValue(string propertyName, char value)
