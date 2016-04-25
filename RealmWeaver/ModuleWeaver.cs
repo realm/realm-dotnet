@@ -107,6 +107,7 @@ public class ModuleWeaver
             {"System.Double", "Double"},
             {"System.Boolean", "Boolean"},
             {"System.DateTimeOffset", "DateTimeOffset"},
+            {"System.Guid", "Guid"},
             {"System.Nullable`1<System.Char>", "NullableChar"},
             {"System.Nullable`1<System.Byte>", "NullableByte"},
             {"System.Nullable`1<System.Int16>", "NullableInt16"},
@@ -115,6 +116,7 @@ public class ModuleWeaver
             {"System.Nullable`1<System.Single>", "NullableSingle"},
             {"System.Nullable`1<System.Double>", "NullableDouble"},
             {"System.Nullable`1<System.Boolean>", "NullableBoolean"},
+            {"System.Nullable`1<System.Guid>", "NullableGuid"},
         };
 
         // Cache of getter and setter methods for the various types.
@@ -128,6 +130,7 @@ public class ModuleWeaver
             "System.Int16",
             "System.Int32",
             "System.Int64",
+            "System.Guid",
         };
 
         var genericGetObjectValueReference = MethodNamed(RealmObject, "GetObjectValue");
