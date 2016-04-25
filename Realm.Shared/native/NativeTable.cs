@@ -91,6 +91,14 @@ namespace Realms
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_nullable_double", CallingConvention = CallingConvention.Cdecl)]
         internal static extern IntPtr get_nullable_double(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex, ref double retVal);
 
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_binary", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern IntPtr set_binary(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex,
+            IntPtr buffer, IntPtr bufferLength);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_binary", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern IntPtr get_binary(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex,
+            out IntPtr retBuffer, out int retBufferLength);
+
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_where", CallingConvention = CallingConvention.Cdecl)]
         internal static extern IntPtr where(TableHandle handle);
 
@@ -107,6 +115,5 @@ namespace Realms
          //returns -1 if the column string does not match a column index
        internal static extern IntPtr get_column_index(TableHandle tablehandle,
             [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen);
-
     }
 }

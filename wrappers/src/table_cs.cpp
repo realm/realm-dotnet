@@ -141,6 +141,20 @@ REALM_EXPORT size_t table_get_string(const Table* table_ptr, size_t column_ndx, 
     });
 }
 
+REALM_EXPORT size_t table_get_binary(const Table* table_ptr, size_t column_ndx, size_t row_ndx, const char*& return_buffer, size_t& return_size)
+{
+    return handle_errors([&]() {
+        auto fielddata = table_ptr->get_binary(column_ndx, row_ndx);
+
+        if (fielddata.is_null())
+            return 0;
+
+        return_buffer = fielddata.data();
+        return_size = fielddata.size();
+        return 1;
+    });
+}
+
 REALM_EXPORT int64_t table_get_datetime_seconds(const Table* table_ptr, size_t column_ndx, size_t row_ndx)
 {
     return handle_errors([&]() {
@@ -231,6 +245,13 @@ REALM_EXPORT void table_set_string_unique(Table* table_ptr, size_t column_ndx, s
     return handle_errors([&]() {
         Utf16StringAccessor str(value, value_len);
         table_ptr->set_string_unique(column_ndx, row_ndx, str);
+    });
+}
+
+REALM_EXPORT void table_set_binary(Table* table_ptr, size_t column_ndx, size_t row_ndx, char* value, size_t value_len)
+{
+    return handle_errors([&]() {
+        table_ptr->set_binary(column_ndx, row_ndx, BinaryData(value, value_len));
     });
 }
 
