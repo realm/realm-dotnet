@@ -50,6 +50,9 @@ namespace Tests
         private string _newAssemblyPath;
         private string _assemblyPath;
 
+        private readonly List<string> _warnings = new List<string>();
+        private readonly List<string> _errors = new List<string>();
+
         [TestFixtureSetUp]
         public void FixtureSetup()
         {
@@ -66,7 +69,8 @@ namespace Tests
             var weavingTask = new ModuleWeaver
             {
                 ModuleDefinition = moduleDefinition,
-                LogErrorPoint = (s, point) => { throw new Exception(s); }
+                LogErrorPoint = (s, point) => _errors.Add(s),
+                LogWarningPoint = (s, point) => _warnings.Add(s)
             };
 
             weavingTask.Execute();
@@ -335,6 +339,26 @@ namespace Tests
 
             // Assert
             Assert.That(ctor.GetCustomAttributes(typeof (PreserveAttribute)).Any());
+        }
+
+        [Test]
+        public void MatchErrorsAndWarnings()
+        {
+            // All warnings and errors are gathered once, so in order to ensure only the correct ones
+            // were produced, we make one assertion on all of them here.
+
+            var expectedWarnings = new List<string>()
+            {
+            };
+
+            var expectedErrors = new List<string>()
+            {
+                "IllegalObjectId.FloatObjectId is marked as [ObjectId] which is only allowed on integral and string types, not on System.Single",
+                "RealmListWithSetter.People has a setter but its type is a RealmList which only supports getters"
+            };
+
+            Assert.That(_errors, Is.EquivalentTo(expectedErrors));
+            Assert.That(_warnings, Is.EquivalentTo(expectedWarnings));
         }
 
 #if(DEBUG)
