@@ -203,12 +203,12 @@ public class ModuleWeaver
                     // RealmList allows people to declare lists only of RealmObject due to the class definition
                     if (!prop.IsAutomatic())
                     {
-                        LogWarningPoint($"{type.Name}.{columnName} is not an automatic property but its type is a RealmList which normally indicates a relationship", sequencePoint);
+                        LogErrorPoint($"{type.Name}.{columnName} is not an automatic property but its type is a RealmList which normally indicates a relationship", sequencePoint);
                         continue;
                     }
                     if (prop.SetMethod != null)
                     {
-                        LogWarningPoint($"{type.Name}.{columnName} has a setter but its type is a RealmList which only supports getters", sequencePoint);
+                        LogErrorPoint($"{type.Name}.{columnName} has a setter but its type is a RealmList which only supports getters", sequencePoint);
                         continue;
                     }
 
