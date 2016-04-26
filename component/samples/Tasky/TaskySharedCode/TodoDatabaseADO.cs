@@ -7,37 +7,49 @@ using System.IO;
 
 namespace Tasky.Shared
 {
-	/// <summary>
-	/// TaskDatabase uses ADO.NET to create the [Items] table and create,read,update,delete data
-	/// </summary>
-	public class TodoDatabase 
-	{
-        public Realm Realm;
+    /// <summary>
+    /// TaskDatabase uses ADO.NET to create the [Items] table and create,read,update,delete data
+    /// </summary>
+    public class TodoDatabase 
+    {
+        private Realm realm;
 
         public TodoDatabase () 
-		{
-            Realm = Realm.GetInstance();
-		}
+        {
+            realm = Realm.GetInstance();
+        }
 
-		public IEnumerable<TodoItem> GetItems ()
-		{
-            return Realm.All<TodoItem>().ToList();
-		}
+        public TodoItem CreateTodoItem()
+        {
+            var result = realm.CreateObject<TodoItem>();
+            result.ID = Guid.NewGuid().ToString();
+            return result;
+        }
 
-		public TodoItem GetItem (string id) 
-		{
-            return Realm.All<TodoItem>().First(i => i.ID == id);
-		}
+        public Transaction BeginTransaction()
+        {
+            return realm.BeginWrite();
+        }
 
-		public void SaveItem (TodoItem item) 
-		{
+        public IEnumerable<TodoItem> GetItems ()
+        {
+            return realm.All<TodoItem>().ToList();
+        }
+
+        public TodoItem GetItem (string id) 
+        {
+            return realm.All<TodoItem>().single(i => i.ID == id);
+        }
+
+        public void SaveItem (TodoItem item) 
+        {
             // Nothing to see here...
-		}
+        }
 
-		public string DeleteItem(string id) 
-		{
-            Realm.Remove(GetItem(id));
+        public string DeleteItem(string id) 
+        {
+            realm.Remove(GetItem(id));
             return id;
-		}
-	}
+        }
+    }
 }
