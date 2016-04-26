@@ -35,6 +35,7 @@ namespace IntegrationTests.Shared
         [TestCase("NullableSingleProperty", 123.123f)] 
         [TestCase("NullableDoubleProperty", 123.123)] 
         [TestCase("NullableBooleanProperty", true)]
+        [TestCase("StringProperty", "foo")]
         public void SetValueAndReplaceWithNull(string propertyName, object propertyValue)
         {
             AllTypesObject ato;
@@ -54,7 +55,7 @@ namespace IntegrationTests.Shared
                 transaction.Commit();
             }
 
-            Assert.That(ato.NullableBooleanProperty, Is.EqualTo(null));
+            Assert.That(TestHelpers.GetPropertyValue(ato, propertyName), Is.EqualTo(null));
         }
     }
 }

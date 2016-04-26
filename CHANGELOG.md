@@ -1,3 +1,10 @@
+0.74.2 Private Beta (in progress)
+-------------------
+Still requires installation from private copy of NuGet download.
+
+### Minor Fixes
+* Setting `null` to a string property will now correctly return `null`
+
 0.74.1 Private Beta (2016-04-16)
 -------------------
 Still requires installation from private copy of NuGet download.
