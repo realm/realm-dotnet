@@ -90,9 +90,11 @@ namespace Realms
                 _realm.stringGetBufferLen = bufferSizeNeededChars;
             }    
 
+            bool isNull = false;
+
             // try to read
             int bytesRead = (int)NativeTable.get_string(_metadata.Table, _metadata.ColumnIndices[propertyName], (IntPtr)rowIndex, _realm.stringGetBuffer,
-                (IntPtr)_realm.stringGetBufferLen);
+                (IntPtr)_realm.stringGetBufferLen, out isNull);
             if (bytesRead == -1)
             {
                 // bad UTF-8 data unable to transcode, vastly unlikely error but could be corrupt file
@@ -105,14 +107,20 @@ namespace Realms
                 _realm.stringGetBufferLen = bytesRead;
                 // try to read with big buffer
                 bytesRead = (int)NativeTable.get_string(_metadata.Table, _metadata.ColumnIndices[propertyName], (IntPtr)rowIndex, _realm.stringGetBuffer,
-                    (IntPtr)_realm.stringGetBufferLen);
+                    (IntPtr)_realm.stringGetBufferLen, out isNull);
                 if (bytesRead == -1)  // bad UTF-8 in full string
                     throw new RealmInvalidDatabaseException(badUTF8msg);
                 Debug.Assert(bytesRead <= _realm.stringGetBufferLen);
             }  // needed re-read with expanded buffer
 
             if (bytesRead == 0)
+            {
+                if (isNull)
+                    return null;
+                
                 return "";
+            }
+
             return Marshal.PtrToStringUni(_realm.stringGetBuffer, bytesRead);
             // leaving buffer sitting allocated for quick reuse next time we read a string                
         } // GetStringValue

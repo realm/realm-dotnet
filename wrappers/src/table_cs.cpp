@@ -133,10 +133,13 @@ REALM_EXPORT size_t table_get_nullable_double(const Table* table_ptr, size_t col
     });
 }
 
-REALM_EXPORT size_t table_get_string(const Table* table_ptr, size_t column_ndx, size_t row_ndx, uint16_t * datatochsarp, size_t bufsize)
+REALM_EXPORT size_t table_get_string(const Table* table_ptr, size_t column_ndx, size_t row_ndx, uint16_t * datatochsarp, size_t bufsize, bool* is_null)
 {
-    return handle_errors([&]() {
+    return handle_errors([&]() -> size_t {
         StringData fielddata = table_ptr->get_string(column_ndx, row_ndx);
+        if ((*is_null = fielddata.is_null()))
+            return 0;
+        
         return stringdata_to_csharpstringbuffer(fielddata, datatochsarp, bufsize);
     });
 }
