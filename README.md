@@ -2,7 +2,7 @@
 
 Realm is a mobile database that runs directly inside phones, tablets or wearables.
 
-This repository holds the source code for the C# versions of Realm (Currently only Xamarin for iOS and Android is supported.)
+This repository holds the source code for the .NET / C# versions of Realm. Currently, we only support Xamarin, specifically Xamarin.iOS, and Xamarin.Android. We do plan to support Xamarin.Mac, UWP, and Unity in the future.
 
 ## Features
 
@@ -29,16 +29,14 @@ The API reference is located at [realm.io/docs/xamarin/latest/api](https://realm
 
 ## Building Realm
 
-In case you don't want to use the precompiled version from NuGet, you can build Realm yourself from source.
+We highly recommend [using our pre-build binaries via NuGet](https://realm.io/docs/xamarin/latest/#installation) but you can also build from source.
 
 Prerequisites:
 
-* **Apple via Xamarin:** Xamarin IOS Indie license or above. 
-* **Android via Xamarin:** Xamarin Android Indie license or above
-* **Windows platforms:** Visual Studio 2013 or higher, recommended 2015
-* Building Realm Xamarin for IOS also requires Xcode 7.1.
+* **If you target Android/iOS via Xamarin:** Xamarin Community or above. 
+* **Windows platforms:** Visual Studio 2015.
+* Building Xamarin iOS apps also requires Xcode 7.1.
 * Building Realm documentation requires [Doxygen](http:/www.doxygen.org) and [Graphviz](http://www.graphviz.org)
-
 
 We support the current Xamarin _Stable_ update channel, at the time of release this corresponded to:
 
@@ -46,27 +44,22 @@ We support the current Xamarin _Stable_ update channel, at the time of release t
 * Xamarin Android version 6.0.3.5
 * Xamarin Studio version 5.10.3
 
-Building Realm dotnet is not yet automated.
-
-### Building Realm Steps
-
 **Note for Debugging** that the following steps mention building for **Release.** If you are debugging, just substitute **Debug** and you probably also want to choose **Debug | iPhoneSimulator** as a platform.
 
 1. Open a terminal window in the `wrappers` directory
-1. `make clean`
-1. `make all` - this will probably download a current version of core binaries, unless you have built recently. The download and subsequent builds will take some time, depending on your system, as it builds a binary wrapper library for each platform including all Android CPU variations.
-1. Open the `Realm.sln` in `Xamarin Studio` on OS X 
+2. `make clean`
+3. `make all` - this will probably download a current version of core binaries, unless you have built recently. The download and subsequent builds will take some time, depending on your system, as it builds a binary wrapper library for each platform including all Android CPU variations.
+4. Open the `Realm.sln` in `Xamarin Studio` on OS X 
     1. Choose the Solution `Realm` in the Solution navigator and context menu to `Clean Realm`
-    1. platform popup **Release | Default**
-    1. select `Realm.PCL` project and Build
-    1. select `RealmWeaver.Fody` project and Build
-    1. select platform popup **Release | ARM**
-    1. select `Realm.XamarinAndroid` project and Build
-    1. ensure you have an iOS device attached
-    1. select platform popup **Release | iPhone**
-    1. select `Realm.XamarinIOS` project and Build
-    
-1. If you want to build the NuGet packages, go on from this point and follow the steps in  `internals/RealmDotnetNugetBuild.md`
+    2. platform popup **Release | Default**
+    3. select `Realm.PCL` project and Build
+    4. select `RealmWeaver.Fody` project and Build
+    5. select platform popup **Release | ARM**
+    6. select `Realm.XamarinAndroid` project and Build
+    7. ensure you have an iOS device attached
+    8. select platform popup **Release | iPhone**
+    9. select `Realm.XamarinIOS` project and Build
+5. If you want to build the NuGet packages, go on from this point and follow the steps in  `internals/RealmDotnetNugetBuild.md`
 
 If you are actively testing code against the Realm source, see also the unit test projects and other tests under the Tests folder.
 
@@ -85,7 +78,7 @@ not eligible to receive the product under U.S. law.**
 
 ## Feedback
 
-**_If you use Realm and are happy with it, all we ask is that you please consider sending out a tweet mentioning [@realm](https://twitter.com/realm), announce your app on [our mailing-list](https://groups.google.com/forum/#!forum/realm-dotnet), or email [help@realm.io](mailto:help@realm.io) to let us know about it!_**
+**_If you use Realm and are happy with it, all we ask is that you please consider sending out a tweet mentioning [@realm](https://twitter.com/realm), or email [help@realm.io](mailto:help@realm.io) to let us know about it!_**
 
 **_And if you don't like it, please let us know what you would like improved, so we can fix it!_**
 
