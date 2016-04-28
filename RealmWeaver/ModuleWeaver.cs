@@ -120,7 +120,7 @@ public class ModuleWeaver
         // Cache of getter and setter methods for the various types.
         var methodTable = new Dictionary<string, Tuple<MethodReference, MethodReference>>();
 
-        var indexableTypes = new List<string>
+        var objectIdTypes = new List<string>
         {
             "System.String",
             "System.Char",
@@ -129,6 +129,10 @@ public class ModuleWeaver
             "System.Int32",
             "System.Int64",
         };
+
+        var indexableTypes = new List<string>(objectIdTypes);
+        indexableTypes.Add("System.Boolean");
+        indexableTypes.Add("System.DateTimeOffset");
 
         var genericGetObjectValueReference = MethodNamed(RealmObject, "GetObjectValue");
         var genericSetObjectValueReference = MethodNamed(RealmObject, "SetObjectValue");
@@ -177,7 +181,7 @@ public class ModuleWeaver
                 }
 
                 var isObjectId = prop.CustomAttributes.Any(a => a.AttributeType.Name == "ObjectIdAttribute");
-                if (isObjectId && (!indexableTypes.Contains(prop.PropertyType.FullName)))
+                if (isObjectId && (!objectIdTypes.Contains(prop.PropertyType.FullName)))
                 {
                     LogErrorPoint($"{type.Name}.{prop.Name} is marked as [ObjectId] which is only allowed on integral and string types, not on {prop.PropertyType.FullName}", sequencePoint);
                     continue;
