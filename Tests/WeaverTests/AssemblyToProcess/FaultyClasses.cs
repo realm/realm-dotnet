@@ -17,4 +17,21 @@ namespace AssemblyToProcess
     {
         public RealmList<Person> People { get; set; } 
     }
+
+    public class IndexedProperties : RealmObject
+    {
+        // These should be allowed:
+
+        [Indexed]
+        public int IntProperty { get; set; }
+
+        [Indexed]
+        public string SingleString { get; set; }
+
+
+        // These should cause errors:
+
+        [Indexed]
+        public float SingleProperty { get; set; }
+    }
 }
