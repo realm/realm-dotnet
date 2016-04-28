@@ -176,7 +176,7 @@ public class ModuleWeaver
                 var isIndexed = prop.CustomAttributes.Any(a => a.AttributeType.Name == "IndexedAttribute");
                 if (isIndexed && (!indexableTypes.Contains(prop.PropertyType.FullName)))
                 {
-                    LogErrorPoint($"{type.Name}.{prop.Name} is marked as [Indexed] which is only allowed on integral and string types, not on {prop.PropertyType.FullName}", sequencePoint);
+                    LogErrorPoint($"{type.Name}.{prop.Name} is marked as [Indexed] which is only allowed on integral types as well as string, bool and DateTimeOffset, not on {prop.PropertyType.FullName}", sequencePoint);
                     continue;
                 }
 

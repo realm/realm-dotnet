@@ -354,7 +354,7 @@ namespace Tests
             var expectedErrors = new List<string>()
             {
                 "RealmListWithSetter.People has a setter but its type is a RealmList which only supports getters",
-                "IndexedProperties.SingleProperty is marked as [Indexed] which is only allowed on integral and string types, not on System.Single",
+                "IndexedProperties.SingleProperty is marked as [Indexed] which is only allowed on integral types as well as string, bool and DateTimeOffset, not on System.Single",
                 "ObjectIdProperties.BooleanProperty is marked as [ObjectId] which is only allowed on integral and string types, not on System.Boolean",
                 "ObjectIdProperties.DateTimeOffsetProperty is marked as [ObjectId] which is only allowed on integral and string types, not on System.DateTimeOffset",
                 "ObjectIdProperties.SingleProperty is marked as [ObjectId] which is only allowed on integral and string types, not on System.Single"
