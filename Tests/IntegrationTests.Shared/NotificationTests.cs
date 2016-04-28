@@ -47,6 +47,9 @@ namespace IntegrationTests.Shared
 
 
         [Test]
+        #if __ANDROID__
+        [Ignore("We cannot assert this without polling the Looper for now")]
+        #endif
         public async void ResultsShouldRaiseCollectionChangedReset()
         {
             var query = _realm.All<Person>();
@@ -67,7 +70,7 @@ namespace IntegrationTests.Shared
             #elif __ANDROID__
                 // we can't easily yield to the looper, so let's just wait an arbitrary amount of time and notify manually
                 await Task.Delay(TimeSpan.FromMilliseconds(100));
-                NativeSetup.notify_realm(realm.SharedRealmHandle.DangerousGetHandle());
+                realm.Refresh();
             #else
                 throw new NotImplementedException();
             #endif

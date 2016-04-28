@@ -34,25 +34,24 @@ public:
     WeakRealmNotifier(const WeakRealmNotifier&) = delete;
     WeakRealmNotifier& operator=(const WeakRealmNotifier&) = delete;
 
-    // Register  or unregister the handler on the looper so we will react to refresh notifications
-    void set_auto_refresh(bool auto_refresh);
+    // Noop for this implementation
+    void set_auto_refresh(bool auto_refresh) { }
 
     // Asyncronously call notify() on the Realm on the appropriate thread
     void notify();
 
 private:
-    // Pointer to the handler, created by Java/C#.
-    void* m_handler;
+    static int looper_callback(int fd, int events, void* data); 
+
+    bool m_thread_has_looper = false;
+
+    // pipe file descriptor pair we use to signal ALooper
+    struct {
+      int read = -1;
+      int write = -1;
+    } m_message_pipe;
 };
 
-using create_handler_function = void*(*)();
-extern create_handler_function create_handler_for_current_thread;
-
-using notify_handler_function = void(*)(void* handler, void* realm);
-extern notify_handler_function notify_handler;
-
-using destroy_handler_function = void(*)(void* handler);
-extern destroy_handler_function destroy_handler;
 } // namespace _impl
 } // namespace realm
 
