@@ -120,7 +120,7 @@ public class ModuleWeaver
         // Cache of getter and setter methods for the various types.
         var methodTable = new Dictionary<string, Tuple<MethodReference, MethodReference>>();
 
-        var objectIdTypes = new List<string>
+        var indexableTypes = new List<string>
         {
             "System.String",
             "System.Char",
@@ -169,8 +169,15 @@ public class ModuleWeaver
 
                 Debug.Write("  - " + prop.PropertyType.FullName + " " + prop.Name + " (Column: " + columnName + ").. ");
 
-                var objectId = prop.CustomAttributes.Any(a => a.AttributeType.Name == "ObjectIdAttribute");
-                if (objectId && (!objectIdTypes.Contains(prop.PropertyType.FullName)))
+                var isIndexed = prop.CustomAttributes.Any(a => a.AttributeType.Name == "IndexedAttribute");
+                if (isIndexed && (!indexableTypes.Contains(prop.PropertyType.FullName)))
+                {
+                    LogErrorPoint($"{type.Name}.{prop.Name} is marked as [Indexed] which is only allowed on integral and string types, not on {prop.PropertyType.FullName}", sequencePoint);
+                    continue;
+                }
+
+                var isObjectId = prop.CustomAttributes.Any(a => a.AttributeType.Name == "ObjectIdAttribute");
+                if (isObjectId && (!indexableTypes.Contains(prop.PropertyType.FullName)))
                 {
                     LogErrorPoint($"{type.Name}.{prop.Name} is marked as [ObjectId] which is only allowed on integral and string types, not on {prop.PropertyType.FullName}", sequencePoint);
                     continue;
@@ -186,11 +193,11 @@ public class ModuleWeaver
                 }
                 if (typeTable.ContainsKey(prop.PropertyType.FullName))
                 {
-                    var typeId = prop.PropertyType.FullName + (objectId ? " unique" : "");
+                    var typeId = prop.PropertyType.FullName + (isObjectId ? " unique" : "");
                     if (!methodTable.ContainsKey(typeId))
                     {
                         var getter = MethodNamed(RealmObject, "Get" + typeTable[prop.PropertyType.FullName] + "Value");
-                        var setter = MethodNamed(RealmObject, "Set" + typeTable[prop.PropertyType.FullName] + "Value" + (objectId ? "Unique": ""));
+                        var setter = MethodNamed(RealmObject, "Set" + typeTable[prop.PropertyType.FullName] + "Value" + (isObjectId ? "Unique": ""));
                         methodTable[typeId] = Tuple.Create(getter, setter);
                     }
 
