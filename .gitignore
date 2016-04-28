@@ -237,3 +237,5 @@ NDependOut
 *.realm.log_b
 RealmWeaver.Fody.dll
 wrappers/libs-dbg
+
+*.xam

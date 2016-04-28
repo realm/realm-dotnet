@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+			 x:Class="Realms.XamarinForms.Examples.ListView.MainPage"
+			 Title="Realm ListView example">
+	<ContentPage.ToolbarItems>
+		<ToolbarItem Text="Add" Icon="ic_add.png" Activated="add_activated" />
+		<ToolbarItem Text="BG Add" Icon="ic_add_bg.png" Activated="background_add_activated" />
+	</ContentPage.ToolbarItems>
+	<ListView x:Name="listView">
+		<ListView.ItemTemplate>
+			<DataTemplate>
+				<TextCell Text="{Binding Title}" Detail="{Binding Date, StringFormat='{0:T}'}" />
+			</DataTemplate>
+		</ListView.ItemTemplate>
+	</ListView>
+</ContentPage>

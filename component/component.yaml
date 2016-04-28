@@ -1,0 +1,26 @@
+%YAML 1.2
+---
+summary: Realm is a mobile database, an alternative to SQLite and key-value stores
+getting-started: GettingStarted.md
+details: Details.md
+license: License.md
+icons: 
+  - realm_128x128.png
+  - realm_512x512.png
+publisher: Realm
+name: Realm
+id: realm
+no_build: true
+samples: 
+  - name: "Simple"
+    path: samples/Simple/Simple.sln
+  - name: "Xamarin.Forms ListView"
+    path: samples/ListView/ListView.sln
+publisher-url: https://www.realm.io
+packages: 
+  android:
+    - Realm, Version=0.74.1
+  ios:
+    - Realm, Version=0.74.1
+version: 0.74.1
+...
