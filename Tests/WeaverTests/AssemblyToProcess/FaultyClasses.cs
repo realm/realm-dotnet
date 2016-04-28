@@ -26,10 +26,10 @@ namespace AssemblyToProcess
         public int IntProperty { get; set; }
 
         [Indexed]
-        public string SingleString { get; set; }
+        public string StringProperty { get; set; }
 
 
-        // These should cause errors:
+        // This should cause errors:
 
         [Indexed]
         public float SingleProperty { get; set; }
