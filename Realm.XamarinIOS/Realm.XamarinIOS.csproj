@@ -72,7 +72,6 @@
     <Compile Include="libwrappers.linkwith.cs">
       <DependentUpon>libwrappers.a</DependentUpon>
     </Compile>
-    <Compile Include="Platform.cs" />
   </ItemGroup>
   <ItemGroup>
     <ObjcBindingApiDefinition Include="ApiDefinition.cs" />

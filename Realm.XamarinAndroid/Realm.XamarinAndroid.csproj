@@ -46,7 +46,6 @@
   <ItemGroup>
     <Compile Include="InteropConfig.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Platform.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\RealmWeaver\RealmWeaver.Fody.csproj">

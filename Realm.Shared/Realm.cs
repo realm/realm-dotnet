@@ -52,7 +52,6 @@ namespace Realms
             ObjectSchemaCache = new Dictionary<Type, IntPtr>();
             NativeCommon.Initialize();
             NativeCommon.register_notify_realm_changed(NotifyRealmChanged);
-            Platform.Initialize();
         }
 
         #if __IOS__

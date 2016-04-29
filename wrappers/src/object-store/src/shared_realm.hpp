@@ -118,7 +118,7 @@ namespace realm {
         bool is_in_read_transaction() const { return !!m_group; }
 
         bool refresh();
-        void set_auto_refresh(bool auto_refresh);
+        void set_auto_refresh(bool auto_refresh) { m_auto_refresh = auto_refresh; }
         bool auto_refresh() const { return m_auto_refresh; }
         void notify();
 

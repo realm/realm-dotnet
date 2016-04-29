@@ -27,8 +27,6 @@ class WeakRealmNotifier : public WeakRealmNotifierBase {
 public:
     using WeakRealmNotifierBase::WeakRealmNotifierBase;
 
-    // Do nothing, as these can't be implemented portably
-    void set_auto_refresh(bool auto_refresh) { }
     void notify() { }
 };
 
