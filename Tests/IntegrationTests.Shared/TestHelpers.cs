@@ -2,13 +2,14 @@
  * Proprietary and Confidential
  */
 
+using System;
 using System.IO;
 using Realms;
 
 #if __IOS__
 using Foundation;
+using CoreFoundation;
 #endif
-
 
 namespace IntegrationTests
 {
@@ -52,5 +53,23 @@ namespace IntegrationTests
             File.Copy(Path.Combine(sourceDir, realmName), destPath, overwrite);
         }
 
+
+        public static void RunEventLoop(TimeSpan duration)
+        {
+#if __IOS__
+            CFRunLoop.Current.RunInMode(CFRunLoop.ModeDefault, duration.TotalSeconds, false);
+#elif __ANDROID__
+            int fd, events;
+            IntPtr data;
+            ALooper_pollAll((int)duration.TotalMilliseconds, out fd, out events, out data);
+#else
+            throw new NotImplementedException();
+#endif
+        }
+
+#if __ANDROID__
+        [System.Runtime.InteropServices.DllImport("android")]
+        private static extern int ALooper_pollAll(int timeoutMillis, out int fd, out int events, out IntPtr data);
+#endif
     }
 }
