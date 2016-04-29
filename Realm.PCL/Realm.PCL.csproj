@@ -85,6 +85,9 @@
     <Compile Include="..\Realm.Shared\weaving\IRealmObjectHelper.cs">
       <Link>IRealmObjectHelper.cs</Link>
     </Compile>
+    <Compile Include="..\Realm.Shared\exceptions\RealmInvalidTransactionException.cs">
+      <Link>Exceptions\RealmInvalidTransactionException.cs</Link>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <ItemGroup>

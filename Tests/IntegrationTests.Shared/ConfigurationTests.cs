@@ -224,5 +224,63 @@ namespace IntegrationTests
             // Assert
             Assert.DoesNotThrow( () => { using (Realm.GetInstance(config2)) {} });  
         }
+
+
+        [Test]
+        public void ReadOnlyFilesMustExist()
+        {
+            // Arrange
+            var config = new RealmConfiguration("FileNotThere.realm");
+            config.ReadOnly = true;
+
+            // Assert
+            Assert.Throws<RealmFileNotFoundException>(() => {
+                Realm.GetInstance(config);
+            });
+        }
+
+
+        [Test]
+        public void ReadOnlyRealmsWillNotAutoMigrate()
+        {
+            // Arrange
+            var config = new RealmConfiguration("WillBeReadonly.realm");
+            Realm.DeleteRealm(config);  // ensure start clean
+            config.ReadOnly = true;
+            config.SchemaVersion = 42;
+            TestHelpers.CopyBundledDatabaseToDocuments(
+                "ForMigrationsToCopyAndMigrate.realm", "WillBeReadonly.realm");
+
+            // Assert
+            Assert.Throws<RealmMigrationNeededException>(() => {
+                Realm.GetInstance(config);
+            });
+        }
+
+
+        [Test]
+        public void ReadOnlyRealmsArentWritable()
+        {
+            // Arrange
+            var config = new RealmConfiguration("WillBeReadonly.realm");
+            Realm.DeleteRealm(config);  // ensure start clean
+            config.SchemaVersion = 0;  // must set version before file can be opened readOnly
+            using (var openToCreate = Realm.GetInstance(config)) {
+                openToCreate.Write(() => {
+                    var anObject = openToCreate.CreateObject<Person>();
+                });
+            }
+
+            config.ReadOnly = true;
+
+            using (var openedReadonly = Realm.GetInstance(config)) {
+                // Assert
+                Assert.Throws<RealmInvalidTransactionException>(() => {
+                    openedReadonly.Write(() => {
+                        var neverMade = openedReadonly.CreateObject<Person>();
+                    });
+                });
+            }  // auto-closing realm
+        }
     }
 }

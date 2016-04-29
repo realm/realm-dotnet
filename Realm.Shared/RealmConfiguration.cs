@@ -41,6 +41,11 @@ namespace Realms
         public readonly bool ShouldDeleteIfMigrationNeeded;
 
         /// <summary>
+        /// Flag to indicate Realm is opened readonly so can open from locked locations such as bundled with an application.
+        /// </summary>
+        public bool ReadOnly;
+
+        /// <summary>
         /// The full path of any realms opened with this configuration, may be overriden by passing in a separate name.
         /// </summary>
         public string DatabasePath {get; private set;}

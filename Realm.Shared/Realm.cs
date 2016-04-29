@@ -123,7 +123,7 @@ namespace Realms
 
             var srHandle = new SharedRealmHandle();
 
-            var readOnly = MarshalHelpers.BoolToIntPtr(false);
+            var readOnly = MarshalHelpers.BoolToIntPtr(config.ReadOnly);
             var durability = MarshalHelpers.BoolToIntPtr(false);
             var databasePath = config.DatabasePath;
             IntPtr srPtr = IntPtr.Zero;
