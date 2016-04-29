@@ -19,7 +19,6 @@
 #include "shared_realm.hpp"
 
 #include "binding_context.hpp"
-#include "impl/external_commit_helper.hpp"
 #include "impl/realm_coordinator.hpp"
 #include "impl/transact_log_handler.hpp"
 #include "object_store.hpp"
@@ -27,8 +26,6 @@
 
 #include <realm/commit_log.hpp>
 #include <realm/group_shared.hpp>
-
-#include <mutex>
 
 using namespace realm;
 using namespace realm::_impl;
@@ -61,9 +58,8 @@ Realm::Config& Realm::Config::operator=(realm::Realm::Config const& c)
     return *this;
 }
 
-Realm::Realm(Config config, bool auto_refresh)
+Realm::Realm(Config config)
 : m_config(std::move(config))
-, m_auto_refresh(auto_refresh)
 {
     open_with_config(m_config, m_history, m_shared_group, m_read_only_group);
 

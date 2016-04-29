@@ -17,7 +17,8 @@ include $(PREBUILT_STATIC_LIBRARY)
 
 LOCAL_MODULE := wrappers
 LOCAL_CFLAGS := 
-LOCAL_SRC_FILES := src/object-store/src/index_set.cpp
+LOCAL_SRC_FILES := src/object-store/src/collection_notifications.cpp
+LOCAL_SRC_FILES += src/object-store/src/index_set.cpp
 LOCAL_SRC_FILES += src/object-store/src/list.cpp
 LOCAL_SRC_FILES += src/object-store/src/object_schema.cpp
 LOCAL_SRC_FILES += src/object-store/src/object_store.cpp
@@ -27,7 +28,10 @@ LOCAL_SRC_FILES += src/object-store/src/shared_realm.cpp
 #LOCAL_SRC_FILES += src/object-store/src/parser/parser.cpp
 #LOCAL_SRC_FILES += src/object-store/src/parser/query_builder.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/realm_coordinator.cpp
-LOCAL_SRC_FILES += src/object-store/src/impl/async_query.cpp
+LOCAL_SRC_FILES += src/object-store/src/impl/collection_change_builder.cpp
+LOCAL_SRC_FILES += src/object-store/src/impl/collection_notifier.cpp
+LOCAL_SRC_FILES += src/object-store/src/impl/list_notifier.cpp
+LOCAL_SRC_FILES += src/object-store/src/impl/results_notifier.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/transact_log_handler.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/android/external_commit_helper.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/android/weak_realm_notifier.cpp
