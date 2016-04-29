@@ -423,12 +423,6 @@ bool Realm::refresh()
     return true;
 }
 
-void Realm::set_auto_refresh(bool auto_refresh)
-{
-    m_auto_refresh = auto_refresh; 
-    m_coordinator->set_auto_refresh_for(this, auto_refresh);
-}
-
 bool Realm::can_deliver_notifications() const noexcept
 {
     if (m_config.read_only) {

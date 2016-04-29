@@ -47,7 +47,7 @@ namespace IntegrationTests.Shared
 
 
         [Test]
-        public async void ResultsShouldRaiseCollectionChangedReset()
+        public void ResultsShouldRaiseCollectionChangedReset()
         {
             var query = _realm.All<Person>();
             var list = new List<NotifyCollectionChangedAction>();
@@ -55,23 +55,8 @@ namespace IntegrationTests.Shared
 
             _realm.Write(() => _realm.CreateObject<Person>());
 
-            await NotifyRealm(_realm);
+            TestHelpers.RunEventLoop(TimeSpan.FromMilliseconds(100));
             Assert.That(list, Is.EquivalentTo(new[] { NotifyCollectionChangedAction.Reset} ));
-        }
-
-        private static async Task NotifyRealm(Realm realm)
-        {
-            #if __IOS__
-                // spinning the runloop gives the WeakRealmNotifier the chance to do its job
-                CoreFoundation.CFRunLoop.Current.RunInMode(CoreFoundation.CFRunLoop.ModeDefault, TimeSpan.FromMilliseconds(100).TotalSeconds, false);
-            #elif __ANDROID__
-                // we can't easily yield to the looper, so let's just wait an arbitrary amount of time and notify manually
-                await Task.Delay(TimeSpan.FromMilliseconds(100));
-                NativeSetup.notify_realm(realm.SharedRealmHandle.DangerousGetHandle());
-            #else
-                throw new NotImplementedException();
-            #endif
-
         }
     }
 }

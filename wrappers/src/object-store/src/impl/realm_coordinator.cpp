@@ -123,11 +123,6 @@ std::shared_ptr<Realm> RealmCoordinator::get_realm(Realm::Config config)
     realm->init(shared_from_this());
     m_weak_realm_notifiers.emplace_back(realm, m_config.cache);
 
-    // As the realm has just been initialized, auto_refresh() only tells us that it *should* be set, but
-    // we haven't actually enabled it yet. Do that now.
-    if (realm->auto_refresh())
-        set_auto_refresh_for(realm.get(), true);
-
     return realm;
 }
 
@@ -213,16 +208,6 @@ void RealmCoordinator::clear_cache()
     }
 }
 
-void RealmCoordinator::set_auto_refresh_for(Realm* realm, bool auto_refresh)
-{
-    for (auto& weak_realm_notifier : m_weak_realm_notifiers) {
-        if (!weak_realm_notifier.expired() && !weak_realm_notifier.is_for_realm(realm)) {
-            continue;
-        }
-
-        weak_realm_notifier.set_auto_refresh(auto_refresh);
-    }
-}
 void RealmCoordinator::clear_all_caches()
 {
     std::vector<std::weak_ptr<RealmCoordinator>> to_clear;
