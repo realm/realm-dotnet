@@ -7,14 +7,14 @@
     <authors>Realm</authors>
     <owners>Realm</owners>
     <developmentDependency>true</developmentDependency>
-    <licenseUrl>http://www.opensource.org/licenses/mit-license.php</licenseUrl>
+    <licenseUrl>https://opensource.org/licenses/Apache-2.0</licenseUrl>
     <projectUrl>http://github.com/realm/realm-dotnet</projectUrl>
     <iconUrl>http://realm.io/img/favicon-32x32.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>Realm for Xamarin: make descendants of RealmObject automatically persistent (private beta)</description>
+    <description>Realm is a mobile database: a replacement for SQLite & ORMs</description>
     <summary />
     <language>en-US</language>
-    <tags>Realm</tags>
+    <tags>Realm database db persistence sqlite</tags>
     <dependencies>
       <dependency id="Fody" version="1.29.4"/>
     </dependencies>
