@@ -29,10 +29,27 @@ using ObjCRuntime;
 
 namespace Realms {
 
+    [StructLayout(LayoutKind.Sequential)]
+    unsafe struct NativeException
+    {
+        IntPtr type;
+        sbyte* messageBytes;
+        IntPtr messageLength;
+
+        unsafe internal Exception Convert()
+        {
+            var message = (messageLength != IntPtr.Zero) ?
+                new string(messageBytes, 0 /* start offset */, (int)messageLength, Encoding.UTF8)
+                : "no detail on exception";
+
+            return RealmException.Create((RealmExceptionCodes)type, message);
+        }
+    }
+
     internal static class NativeCommon
     {
         // declare the type for the MonoPInvokeCallback
-        public delegate void ExceptionThrowerCallback (IntPtr exceptionCode, IntPtr utf8String, IntPtr stringLen);
+        public delegate void ExceptionThrowerCallback (NativeException exception);
 
         public delegate void NotifyRealmCallback (IntPtr realmHandle);
 
@@ -43,13 +60,9 @@ namespace Realms {
         #if __IOS__
         [MonoPInvokeCallback (typeof (ExceptionThrowerCallback))]
         #endif
-        unsafe public static void ExceptionThrower(IntPtr exceptionCode, IntPtr utf8String, IntPtr stringLen)
+        public static void ExceptionThrower(NativeException exception)
         {
-            var message = ((Int64)stringLen > 0) ?
-                new String((sbyte*)utf8String, 0 /* start offset */, (int)stringLen, Encoding.UTF8)
-                : "no detail on exception";
-
-            throw RealmException.Create((RealmExceptionCodes)exceptionCode, message);
+            throw exception.Convert();
         }
 
         // once-off setup of a function pointer in the DLL which will be used later to throw managed exceptions       
