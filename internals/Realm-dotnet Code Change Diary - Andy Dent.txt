@@ -2106,3 +2106,31 @@ FodyWeavers.xml.install.xdt
 FodyWeavers.xml.uninstall.xdt
 - added
 
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#499 Add Readonly
+
+RealmConfiguration.cs
+- ReadOnly added
+
+Realm.cs
+- GetInstance - pass in readOnly flag from RealmConfifuraion
+
+RealmExceptionCodes.cs
+- RealmExceptionCodes - added RealmInvalidTransaction
+
+RealmException.cs
+- Create add case for RealmInvalidTransaction
+
+RealmInvalidTransactionException.cs
+- added
+
+Realm.Shared.csproj
+- added RealmInvalidTransactionException
+
+Realm.PCL.csproj
+- added link to RealmInvalidTransactionException
+ConfigurationTests.cs
+- ReadOnlyRealmsArentWritable added
+- ReadOnlyFilesMustExist added
+- ReadOnlyRealmsWillNotAutoMigrate added
+

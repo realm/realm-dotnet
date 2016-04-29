@@ -46,6 +46,9 @@ namespace Realms {
                 case RealmExceptionCodes.RealmMismatchedConfig:
                     return new RealmMismatchedConfigException(message);
 
+                case RealmExceptionCodes.RealmInvalidTransaction:
+                    return new RealmInvalidTransactionException(message);
+
                 case RealmExceptionCodes.RealmFormatUpgradeRequired :
                     return new RealmMigrationNeededException(message);
 

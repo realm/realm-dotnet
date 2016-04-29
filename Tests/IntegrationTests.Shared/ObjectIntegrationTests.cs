@@ -262,7 +262,7 @@ namespace IntegrationTests
         }
 
         [Test]
-        [Ignore("this tests for a condition thst's only available under manual migrations, which we lack")]
+        [Ignore("this tests for a condition that's only available under manual migrations, which we lack")]
         public void TriggerMigrationBySchemaEditing()
         {
             
