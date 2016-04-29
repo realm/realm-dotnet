@@ -16,6 +16,8 @@ samples:
     path: samples/Simple/Simple.sln
   - name: "Xamarin.Forms ListView"
     path: samples/ListView/ListView.sln
+  - name: "Tasky"
+    path: samples/Tasky/Tasky.sln
 publisher-url: https://www.realm.io
 packages: 
   android:
