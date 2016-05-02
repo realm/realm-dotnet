@@ -122,7 +122,6 @@ std::shared_ptr<Realm> RealmCoordinator::get_realm(Realm::Config config)
     auto realm = std::make_shared<Realm>(std::move(config));
     realm->init(shared_from_this());
     m_weak_realm_notifiers.emplace_back(realm, m_config.cache);
-
     return realm;
 }
 
