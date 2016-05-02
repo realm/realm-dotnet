@@ -135,7 +135,10 @@ namespace RealmWeaver
                     .Replace("%TOKEN%", MixPanelToken)
                     .Replace("%USER_ID%", AnonymizedUserID)
                     .Replace("%APP_ID%", AnonymizedAppID)
+
+                    // Version of weaver is expected to match that of the library.
                     .Replace("%REALM_VERSION%", System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString())
+
                     .Replace("%OS_TYPE%", osName)
                     .Replace("%OS_VERSION%", osVersion)
                     .Replace("%TARGET_OS%", TargetOS);
