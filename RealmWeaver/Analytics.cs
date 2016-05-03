@@ -5,6 +5,7 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Management;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Text;
@@ -64,16 +65,37 @@ namespace RealmWeaver
         {
             get
             {
-                var macs = from nic in NetworkInterface.GetAllNetworkInterfaces()
-                           where nic.NetworkInterfaceType != NetworkInterfaceType.Loopback && nic.OperationalStatus == OperationalStatus.Up
-                           select nic.GetPhysicalAddress().GetAddressBytes();
-                var mac = macs.FirstOrDefault();
-                if (mac == null)
+                try
                 {
-                    throw new Exception("No network interface detected.");
+                    var id = GenerateComputerIdentifier();
+                    return id != null ? SHA256Hash(id) : "UNKNOWN";
                 }
+                catch
+                {
+                    return "UNKNOWN";
+                }
+            }
+        }
 
-                return SHA256Hash(mac);
+        private static byte[] GenerateComputerIdentifier()
+        {
+            if (Environment.OSVersion.Platform == PlatformID.Win32Windows ||
+                Environment.OSVersion.Platform == PlatformID.Win32NT)
+            {
+                var scope = new ManagementScope("\\\\localhost\\root\\CIMV2", null);
+                scope.Connect();
+                var query = new ObjectQuery("SELECT UUID FROM Win32_ComputerSystemProduct");
+                var searcher = new ManagementObjectSearcher(scope, query);
+
+                var uuid = searcher.Get().Cast<ManagementObject>().FirstOrDefault()?["UUID"] as string;
+                return string.IsNullOrEmpty(uuid) ? null : Encoding.UTF8.GetBytes(uuid);
+            }
+            else  // Assume OS X if not Windows.
+            {
+                var macs = from nic in NetworkInterface.GetAllNetworkInterfaces()
+                           where nic.Name == "en0"
+                           select nic.GetPhysicalAddress().GetAddressBytes();
+                return macs.FirstOrDefault();
             }
         }
 
@@ -113,8 +135,10 @@ namespace RealmWeaver
                     .Replace("%TOKEN%", MixPanelToken)
                     .Replace("%USER_ID%", AnonymizedUserID)
                     .Replace("%APP_ID%", AnonymizedAppID)
-                // TODO: figure out a better way to get the Realm version, cause this ain't it right now
+
+                    // Version of weaver is expected to match that of the library.
                     .Replace("%REALM_VERSION%", System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString())
+
                     .Replace("%OS_TYPE%", osName)
                     .Replace("%OS_VERSION%", osVersion)
                     .Replace("%TARGET_OS%", TargetOS);
@@ -146,7 +170,6 @@ namespace RealmWeaver
             {
                 return BitConverter.ToString(sha256.ComputeHash(bytes));
             }
-
         }
 
         private static void ComputeHostOSNameAndVersion(out string name, out string version)
