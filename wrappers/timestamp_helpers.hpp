@@ -4,8 +4,7 @@
 
 // copied from realm-java realm/realm-jni/src/util.hpp
 
-#include <sys/_types/_int64_t.h>
-#include <sys/_types/_int32_t.h>
+#include <cstdint>
 #include <realm/timestamp.hpp>
 
 inline int64_t to_milliseconds(const realm::Timestamp& ts)
