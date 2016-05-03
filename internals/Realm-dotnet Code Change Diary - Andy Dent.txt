@@ -2134,7 +2134,6 @@ ConfigurationTests.cs
 - ReadOnlyFilesMustExist added
 - ReadOnlyRealmsWillNotAutoMigrate added
 
-
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #461 New DateTime
 
@@ -2190,4 +2189,7 @@ wrappers/object_store.cpp
   ObjectStore::table_for_object_type
   ObjectStore::table_for_object_type_create_if_needed
   use wrapper code with temp std::string
+
+MarshalHelpers.cs
+- RealmColType - map DateTimeOffset to 8 (type_Timestamp) instead of 7
   
