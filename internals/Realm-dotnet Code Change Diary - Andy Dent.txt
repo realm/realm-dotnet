@@ -2134,3 +2134,62 @@ ConfigurationTests.cs
 - ReadOnlyFilesMustExist added
 - ReadOnlyRealmsWillNotAutoMigrate added
 
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#461 New DateTime
+
+RealmResultsVisitor.cs
+- replace all datetime_seconds with timestamp_milliseconds
+- replace all ToUnixTimeMSeconds with ToUnixTimeMilliseconds  
+
+
+RealmObject.cs
+- SetNullableDateTimeOffsetValue 
+  SetDateTimeOffsetValue
+  - use ToUnixTimeMilliseconds and set_timestamp_milliseconds
+- GetDateTimeOffsetValue
+  - use DateTimeOffset.FromUnixTimeMilliseconds and get_timestamp_milliseconds
+- GetNullableDateTimeOffsetValue  
+  - use DateTimeOffset.FromUnixTimeMilliseconds and get_nullable_timestamp_milliseconds
+
+
+NativeTable.cs
+- set_datetime_seconds renamed set_timestamp_milliseconds
+- get_datetime_seconds renamed get_timestamp_milliseconds
+- get_nullable_datetime_seconds renamed get_nullable_timestamp_milliseconds
+
+
+NativeQuery.cs
+- replace all datetime_seconds with timestamp_milliseconds
+
+DateTimeOffsetExtensions.cs
+- ToUnixTimeSeconds replaced by ToRealmUnixTimeMilliseconds
+- FromUnixTimeSeconds replaced by FromRealmUnixTimeMilliseconds
+
+wrappers/timestamp_helpers.hpp  
+- added with to_milliseconds and from_milliseconds
+
+wrappers/table_cs.cpp
+table_set_datetime_seconds
+- renamed table_set_timestamp_milliseconds
+- use from_milliseconds
+- table_get_datetime_seconds 
+  - renamed table_get_timestamp_milliseconds
+  - use to_milliseconds
+- table_get_nullable_datetime_seconds 
+  - renamed table_get_nullable_timestamp_milliseconds
+  - use to_milliseconds
+  
+wrappers/query_cs.cpp
+- replace all datetime_seconds with timestamp_milliseconds
+- replace all DateTime(value) with from_milliseconds(value)
+
+
+wrappers/object_store.cpp
+- ObjectStore::table_for_object_type
+  ObjectStore::table_for_object_type
+  ObjectStore::table_for_object_type_create_if_needed
+  use wrapper code with temp std::string
+
+MarshalHelpers.cs
+- RealmColType - map DateTimeOffset to 8 (type_Timestamp) instead of 7
+  
