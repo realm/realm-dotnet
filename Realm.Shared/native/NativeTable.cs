@@ -16,14 +16,14 @@ namespace Realms
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_add_empty_row", CallingConvention = CallingConvention.Cdecl)]
         internal static extern IntPtr add_empty_row(TableHandle tableHandle);
 
-        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_datetime_seconds", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern void set_datetime_seconds(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, Int64 value);
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_timestamp_milliseconds", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void set_timestamp_milliseconds(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, Int64 value);
 
-        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_datetime_seconds", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern Int64 get_datetime_seconds(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex);
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_timestamp_milliseconds", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern Int64 get_timestamp_milliseconds(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex);
 
-        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_nullable_datetime_seconds", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern IntPtr get_nullable_datetime_seconds(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex, ref long retVal);
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_nullable_timestamp_milliseconds", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern IntPtr get_nullable_timestamp_milliseconds(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex, ref long retVal);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_string", CallingConvention = CallingConvention.Cdecl)]
         internal static extern void set_string(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx,

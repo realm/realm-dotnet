@@ -9,6 +9,8 @@
 #include "realm_export_decls.hpp"
 #include "object-store/src/shared_realm.hpp"
 #include "object-store/src/schema.hpp"
+#include "timestamp_helpers.hpp"
+
 
 using namespace realm;
 using namespace realm::binding;
@@ -264,45 +266,45 @@ REALM_EXPORT void query_double_greater_equal(Query * query_ptr, size_t columnInd
     });
 }
 
-REALM_EXPORT void query_datetime_seconds_equal(Query* query_ptr, size_t columnIndex, int64_t value)
+REALM_EXPORT void query_timestamp_milliseconds_equal(Query* query_ptr, size_t columnIndex, int64_t value)
 {
     handle_errors([&]() {
-        query_ptr->equal(columnIndex, DateTime(value));
+        query_ptr->equal(columnIndex, from_milliseconds(value));
     });
 }
 
-REALM_EXPORT void query_datetime_seconds_not_equal(Query* query_ptr, size_t columnIndex, int64_t value)
+REALM_EXPORT void query_timestamp_milliseconds_not_equal(Query* query_ptr, size_t columnIndex, int64_t value)
 {
     handle_errors([&]() {
-        query_ptr->not_equal(columnIndex, DateTime(value));
+        query_ptr->not_equal(columnIndex, from_milliseconds(value));
     });
 }
 
-REALM_EXPORT void query_datetime_seconds_less(Query* query_ptr, size_t columnIndex, int64_t value)
+REALM_EXPORT void query_timestamp_milliseconds_less(Query* query_ptr, size_t columnIndex, int64_t value)
 {
     handle_errors([&]() {
-        query_ptr->less(columnIndex, DateTime(value));
+        query_ptr->less(columnIndex, from_milliseconds(value));
     });
 }
 
-REALM_EXPORT void query_datetime_seconds_less_equal(Query* query_ptr, size_t columnIndex, int64_t value)
+REALM_EXPORT void query_timestamp_milliseconds_less_equal(Query* query_ptr, size_t columnIndex, int64_t value)
 {
     handle_errors([&]() {
-        query_ptr->less_equal(columnIndex, DateTime(value));
+        query_ptr->less_equal(columnIndex, from_milliseconds(value));
     });
 }
 
-REALM_EXPORT void query_datetime_seconds_greater(Query* query_ptr, size_t columnIndex, int64_t value)
+REALM_EXPORT void query_timestamp_milliseconds_greater(Query* query_ptr, size_t columnIndex, int64_t value)
 {
     handle_errors([&]() {
-        query_ptr->greater(columnIndex, DateTime(value));
+        query_ptr->greater(columnIndex, from_milliseconds(value));
     });
 }
 
-REALM_EXPORT void query_datetime_seconds_greater_equal(Query* query_ptr, size_t columnIndex, int64_t value)
+REALM_EXPORT void query_timestamp_milliseconds_greater_equal(Query* query_ptr, size_t columnIndex, int64_t value)
 {
     handle_errors([&]() {
-        query_ptr->greater_equal(columnIndex, DateTime(value));
+        query_ptr->greater_equal(columnIndex, from_milliseconds(value));
     });
 }
 

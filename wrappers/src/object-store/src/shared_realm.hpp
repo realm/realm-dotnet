@@ -163,27 +163,6 @@ namespace realm {
                                      std::unique_ptr<SharedGroup>& shared_group,
                                      std::unique_ptr<Group>& read_only_group);
 
-        // Expose some internal functionality to other parts of the ObjectStore
-        // without making it public to everyone
-        class Internal {
-            friend class _impl::AsyncQuery;
-            friend class _impl::RealmCoordinator;
-
-            // AsyncQuery needs access to the SharedGroup to be able to call the
-            // handover functions, which are not very wrappable
-            static SharedGroup& get_shared_group(Realm& realm) { return *realm.m_shared_group; }
-
-            // AsyncQuery needs to be able to access the owning coordinator to
-            // wake up the worker thread when a callback is added, and
-            // coordinators need to be able to get themselves from a Realm
-            static _impl::RealmCoordinator& get_coordinator(Realm& realm) { return *realm.m_coordinator; }
-        };
-
-        static void open_with_config(const Config& config,
-                                     std::unique_ptr<Replication>& history,
-                                     std::unique_ptr<SharedGroup>& shared_group,
-                                     std::unique_ptr<Group>& read_only_group);
-
       private:
         Config m_config;
         std::thread::id m_thread_id = std::this_thread::get_id();

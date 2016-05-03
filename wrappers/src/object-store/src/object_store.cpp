@@ -129,15 +129,18 @@ std::string ObjectStore::table_name_for_object_type(StringData object_type) {
 }
 
 TableRef ObjectStore::table_for_object_type(Group *group, StringData object_type) {
-    return group->get_table(table_name_for_object_type(object_type));
+    const std::string name = table_name_for_object_type(object_type);  // temp store for StringData to refer to
+    return group->get_table(StringData(name.data(), name.length()));
 }
 
 ConstTableRef ObjectStore::table_for_object_type(const Group *group, StringData object_type) {
-    return group->get_table(table_name_for_object_type(object_type));
+    const std::string name = table_name_for_object_type(object_type);  // temp store for StringData to refer to
+    return group->get_table(StringData(name.data(), name.length()));
 }
 
 TableRef ObjectStore::table_for_object_type_create_if_needed(Group *group, StringData object_type, bool &created) {
-    return group->get_or_add_table(table_name_for_object_type(object_type), &created);
+    const std::string name = table_name_for_object_type(object_type);  // temp store for StringData to refer to
+    return group->get_or_add_table(StringData(name.data(), name.length()), &created);
 }
 
 static inline bool property_has_changed(Property const& p1, Property const& p2) {
