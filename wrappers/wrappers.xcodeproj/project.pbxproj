@@ -56,6 +56,7 @@
 		48ED7C711C16F9C200AF23A4 /* shared_linklist.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48ED7C621C16F9C200AF23A4 /* shared_linklist.hpp */; };
 		48ED7C721C16F9C200AF23A4 /* shared_realm_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48ED7C631C16F9C200AF23A4 /* shared_realm_cs.cpp */; };
 		48ED7C731C16F9C200AF23A4 /* table_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48ED7C641C16F9C200AF23A4 /* table_cs.cpp */; };
+		C8BC278110F296C400E1A80F /* timestamp_helpers.hpp in Headers */ = {isa = PBXBuildFile; fileRef = C8BC2237F469B46200CF699D /* timestamp_helpers.hpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -110,6 +111,7 @@
 		48ED7C621C16F9C200AF23A4 /* shared_linklist.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = shared_linklist.hpp; path = src/shared_linklist.hpp; sourceTree = "<group>"; };
 		48ED7C631C16F9C200AF23A4 /* shared_realm_cs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = shared_realm_cs.cpp; path = src/shared_realm_cs.cpp; sourceTree = "<group>"; };
 		48ED7C641C16F9C200AF23A4 /* table_cs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = table_cs.cpp; path = src/table_cs.cpp; sourceTree = "<group>"; };
+		C8BC2237F469B46200CF699D /* timestamp_helpers.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = timestamp_helpers.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -178,6 +180,7 @@
 				424267201C070BE500670B1C /* librealm-ios-no-bitcode-dbg.a */,
 				48D101431B3991B6004A4B2C /* librealm-ios-no-bitcode.a */,
 				48D101391B39902E004A4B2C /* Products */,
+				C8BC2237F469B46200CF699D /* timestamp_helpers.hpp */,
 			);
 			sourceTree = "<group>";
 		};
@@ -220,6 +223,7 @@
 				48D347611C74861900CD0E02 /* object_schema.hpp in Headers */,
 				488FF2291C99845500172055 /* debug.hpp in Headers */,
 				48ED7C691C16F9C200AF23A4 /* marshalling.hpp in Headers */,
+				C8BC278110F296C400E1A80F /* timestamp_helpers.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

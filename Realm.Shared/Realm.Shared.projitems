@@ -17,7 +17,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmFileExistsException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmInvalidDatabaseException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmPermissionDeniedException.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)extensions\DateTimeOffsetExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)handles\Handled.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)handles\QueryHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)handles\RealmHandle.cs" />
@@ -62,8 +61,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)weaving\IRealmObjectHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)handles\AsyncQueryCancellationTokenHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmInvalidTransactionException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DateTimeOffsetExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)weaving\" />
+    <Folder Include="$(MSBuildThisFileDirectory)extensions\" />
   </ItemGroup>
 </Project>

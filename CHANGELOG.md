@@ -1,9 +1,17 @@
-0.74.2 Private Beta (in progress)
+0.75.0 Private Beta (in progress)
 -------------------
 Still requires installation from private copy of NuGet download.
 
+
+### Breaking Changes
+* File format of Realm files is changed. Files will be automatically upgraded but opening a Realm file with older versions of Realm is not possible.
+
 ### Minor Fixes
 * Setting `null` to a string property will now correctly return `null`
+
+### Minor Changes
+* new internal format used for `DateTimeOffset` will no longer truncate to seconds resolution
+
 
 0.74.1 Private Beta (2016-04-16)
 -------------------
