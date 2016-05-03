@@ -2162,8 +2162,8 @@ NativeQuery.cs
 - replace all datetime_seconds with timestamp_milliseconds
 
 DateTimeOffsetExtensions.cs
-- removed
-
+- ToUnixTimeSeconds replaced by ToRealmUnixTimeMilliseconds
+- FromUnixTimeSeconds replaced by FromRealmUnixTimeMilliseconds
 
 wrappers/timestamp_helpers.hpp  
 - added with to_milliseconds and from_milliseconds

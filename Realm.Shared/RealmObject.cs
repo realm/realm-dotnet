@@ -296,7 +296,7 @@ namespace Realms
             var rowIndex = _rowHandle.RowIndex;
 
             var unixTimeMS = NativeTable.get_timestamp_milliseconds(_metadata.Table, _metadata.ColumnIndices[propertyName], (IntPtr)rowIndex);
-            return DateTimeOffset.FromUnixTimeMilliseconds(unixTimeMS);
+            return DateTimeOffsetExtensions.FromRealmUnixTimeMilliseconds(unixTimeMS);
         }
 
         protected DateTimeOffset? GetNullableDateTimeOffsetValue(string propertyName)
@@ -307,7 +307,7 @@ namespace Realms
 
             long unixTimeMS = 0;
             var hasValue = MarshalHelpers.IntPtrToBool(NativeTable.get_nullable_timestamp_milliseconds(_metadata.Table, _metadata.ColumnIndices[propertyName], (IntPtr)rowIndex, ref unixTimeMS));
-            return hasValue ? DateTimeOffset.FromUnixTimeMilliseconds(unixTimeMS) : (DateTimeOffset?)null;
+            return hasValue ? DateTimeOffsetExtensions.FromRealmUnixTimeMilliseconds(unixTimeMS) : (DateTimeOffset?)null;
         }
 
         protected RealmList<T> GetListValue<T>(string propertyName) where T : RealmObject
@@ -646,7 +646,7 @@ namespace Realms
 
             var rowIndex = _rowHandle.RowIndex;
 
-            var marshalledValue = value.ToUnixTimeMilliseconds();
+            var marshalledValue = value.ToRealmUnixTimeMilliseconds();
             NativeTable.set_timestamp_milliseconds(_metadata.Table, _metadata.ColumnIndices[propertyName], (IntPtr)rowIndex, marshalledValue);
         }
 
@@ -661,7 +661,7 @@ namespace Realms
 
             if (value.HasValue)
             {
-                var marshalledValue = value.Value.ToUnixTimeMilliseconds();
+                var marshalledValue = value.Value.ToRealmUnixTimeMilliseconds();
                 NativeTable.set_timestamp_milliseconds(_metadata.Table, _metadata.ColumnIndices[propertyName], (IntPtr) rowIndex, marshalledValue);
             }
             else
