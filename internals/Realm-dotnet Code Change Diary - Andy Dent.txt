@@ -2193,3 +2193,9 @@ wrappers/object_store.cpp
 MarshalHelpers.cs
 - RealmColType - map DateTimeOffset to 8 (type_Timestamp) instead of 7
   
+DateTimeTests.cs
+- SetAndGetPropertyTest parameterised to test a range
+- SortingFinelyDifferentDateTimes added
+- FindingByMilliseconds added
+  
+  
