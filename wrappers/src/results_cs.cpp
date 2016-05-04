@@ -136,36 +136,67 @@ REALM_EXPORT void sortorder_add_clause(SortOrderWrapper* sortorder_ptr, uint16_t
   });
 }
 
-struct ManagedAsyncQueryCancellationContext {
-  NotificationToken token;
-  void* managed_results;
-  void(*callback)(void*);
+struct MarshallableCollectionChangeSet {
+    struct MarshallableIndexSet {
+        size_t* indices;
+        size_t count;
+    };
+    
+    MarshallableIndexSet deletions;
+    MarshallableIndexSet insertions;
+    MarshallableIndexSet modifications;
+    
+    struct {
+        CollectionChangeSet::Move* moves;
+        size_t count;
+    } moves;
 };
 
-REALM_EXPORT ManagedAsyncQueryCancellationContext* results_async(Results* results_ptr, void(*callback)(void*), void* managed_results)
+typedef void (*ManagedNotificationCallback)(void* managed_results, MarshallableCollectionChangeSet*, NativeException::Marshallable*);
+
+struct ManagedNotificationTokenContext {
+  NotificationToken token;
+  void* managed_results;
+  ManagedNotificationCallback callback;
+};
+    
+REALM_EXPORT ManagedNotificationTokenContext* results_add_notification_callback(Results* results_ptr, void* managed_results, ManagedNotificationCallback callback)
 {
   return handle_errors([=]() {
-    auto context = new ManagedAsyncQueryCancellationContext();
+    auto context = new ManagedNotificationTokenContext();
     context->managed_results = managed_results;
     context->callback = callback;
-    context->token = std::move(results_ptr->async([context](std::exception_ptr e) {
+    context->token = std::move(results_ptr->add_notification_callback([context](CollectionChangeSet changes, std::exception_ptr e) {
       if (e) {
         try {
           std::rethrow_exception(e);
-        } catch (const std::exception& ex) {
-          std::cerr << "received exception in results change callback: " << ex.what();
-          return;
+        } catch (...) {
+          auto exception = convert_exception();
+          auto marshallable_exception = exception.for_marshalling();
+          context->callback(context->managed_results, nullptr, &marshallable_exception);
         }
+      } else if (changes.empty()) {
+        context->callback(context->managed_results, nullptr, nullptr);
+      } else {
+        std::vector<size_t> deletions(changes.deletions.as_indexes().begin(), changes.deletions.as_indexes().end());
+        std::vector<size_t> insertions(changes.insertions.as_indexes().begin(), changes.insertions.as_indexes().end());
+        std::vector<size_t> modifications(changes.modifications.as_indexes().begin(), changes.modifications.as_indexes().end());
+        
+        MarshallableCollectionChangeSet marshallable_changes {
+          { deletions.data(), deletions.size() },
+          { insertions.data(), insertions.size() },
+          { modifications.data(), modifications.size() },
+          { changes.moves.data(), changes.moves.size() }
+        };
+        context->callback(context->managed_results, &marshallable_changes, nullptr);
       }
-      
-      context->callback(context->managed_results);
     }));
 
     return context;
   });
 }
 
-REALM_EXPORT void* asyncquerycancellationtoken_destroy(ManagedAsyncQueryCancellationContext* token_ptr)
+REALM_EXPORT void* results_destroy_notificationtoken(ManagedNotificationTokenContext* token_ptr)
 {
   return handle_errors([&]() {
     void* managed_results = token_ptr->managed_results;

@@ -20,6 +20,8 @@
 @file NativeCommon.cs provides mappings to common functions that don't fit the Table classes etc.
 */
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -28,6 +30,39 @@ using ObjCRuntime;
 #endif
 
 namespace Realms {
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct MarshalledVector<T> where T : struct
+    {
+        IntPtr items;
+        IntPtr count;
+
+        internal IEnumerable<T> AsEnumerable()
+        {
+            var itemsPtr = items;
+            var size = (int)count;
+            return Enumerable.Range(0, size).Select(i => Marshal.PtrToStructure<T>(IntPtr.Add(itemsPtr, IntPtr.Size * i)));
+        }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct PtrTo<T> where T : struct
+    {
+        IntPtr ptr;
+
+        internal T? Value
+        {
+            get
+            {
+                if (ptr == IntPtr.Zero)
+                {
+                    return null;
+                }
+
+                return Marshal.PtrToStructure<T>(ptr);
+            }
+        }
+    }
 
     [StructLayout(LayoutKind.Sequential)]
     unsafe struct NativeException

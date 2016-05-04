@@ -23,8 +23,6 @@ namespace Realms
 {
     internal static class NativeResults
     {
-        internal delegate void AsyncQueryCallback(IntPtr managedResultsHandle);
-
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_is_same_internal_results",
             CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr is_same_internal_results(ResultsHandle lhs, ResultsHandle rhs);
@@ -53,10 +51,28 @@ namespace Realms
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_clear", CallingConvention = CallingConvention.Cdecl)]
         internal static extern void clear(ResultsHandle results);
 
-        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_async", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern IntPtr async(ResultsHandle results, AsyncQueryCallback callback, IntPtr managedResultsHandle);
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct CollectionChangeSet
+        {
+            public MarshalledVector<IntPtr> Deletions;
+            public MarshalledVector<IntPtr> Insertions;
+            public MarshalledVector<IntPtr> Modifications;
 
-        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "asyncquerycancellationtoken_destroy", CallingConvention = CallingConvention.Cdecl)]
-        internal static extern IntPtr destroy_async_query_cancellation_token(IntPtr token);
+            [StructLayout(LayoutKind.Sequential)]
+            public struct Move
+            {
+                public IntPtr From;
+                public IntPtr To;
+            }
+            public MarshalledVector<Move> Moves;
+        }
+
+        internal delegate void NotificationCallback(IntPtr managedResultsHandle, PtrTo<CollectionChangeSet> collectionChanges, PtrTo<NativeException> notficiationException);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_add_notification_callback", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern IntPtr add_notification_callback(ResultsHandle results, IntPtr managedResultsHandle, NotificationCallback callback);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_destroy_notificationtoken", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern IntPtr destroy_notificationtoken(IntPtr token);
     }
 }

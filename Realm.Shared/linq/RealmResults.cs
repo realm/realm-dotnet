@@ -35,39 +35,44 @@ namespace Realms
     /// You can sort efficiently using the standard LINQ operators <c>OrderBy</c> or <c>OrderByDescending</c> followed by any number of
     /// <c>ThenBy</c> or <c>ThenByDescending</c>.</remarks>
     /// <typeparam name="T">Type of the RealmObject which is being returned.</typeparam>
-    public class RealmResults<T> : IOrderedQueryable<T>, INotifyCollectionChanged, RealmResultsNativeHelper.Interface
+    public class RealmResults<T> : IOrderedQueryable<T>, RealmResultsNativeHelper.Interface
     {
         public Type ElementType => typeof (T);
         public Expression Expression { get; } = null; // null if _allRecords
         private readonly RealmResultsProvider _provider = null;  // null if _allRecords
         private readonly bool _allRecords = false;
         private readonly Realm _realm;
+        private readonly List<NotificationCallback> _callbacks = new List<NotificationCallback>();
+        private NotificationTokenHandle _notificationToken;
 
         internal ResultsHandle ResultsHandle => _resultsHandle ?? (_resultsHandle = CreateResultsHandle()); 
         private ResultsHandle _resultsHandle = null;
 
         public IQueryProvider Provider => _provider;
 
-        NotifyCollectionChangedEventHandler _collectionChangedHandlers = null;
-        AsyncQueryCancellationTokenHandle _asyncQueryCancellationToken = null;
-        event NotifyCollectionChangedEventHandler INotifyCollectionChanged.CollectionChanged
+        public class ChangeSet
         {
-            add 
+            public readonly int[] InsertedIndices;
+            public readonly int[] ModifiedIndices;
+            public readonly int[] DeletedIndices;
+
+            public struct Move
             {
-                _collectionChangedHandlers += value;
-                if (_asyncQueryCancellationToken == null)
-                {
-                    SubscribeForAsyncQuery();
-                }
+                public int From;
+                public int To;
             }
-            remove
+            public readonly Move[] MovedIndices;
+
+            internal ChangeSet(int[] insertedIndices, int[] modifiedIndices, int[] deletedIndices, Move[] movedIndices)
             {
-                if ((_collectionChangedHandlers -= value) == null && _asyncQueryCancellationToken != null)
-                {
-                    UnsubscribeFromAsyncQuery();
-                }
+                InsertedIndices = insertedIndices;
+                ModifiedIndices = modifiedIndices;
+                DeletedIndices = deletedIndices;
+                MovedIndices = movedIndices;
             }
         }
+
+        public delegate void NotificationCallback(RealmResults<T> sender, ChangeSet changes, Exception error);
 
         internal RealmResults(Realm realm, RealmResultsProvider realmResultsProvider, Expression expression,
             bool createdByAll)
@@ -140,13 +145,53 @@ namespace Realms
             return (int)NativeResults.count(ResultsHandle);
         }
 
-        private void SubscribeForAsyncQuery()
+        class NotificationToken : IDisposable
         {
-            Debug.Assert(_asyncQueryCancellationToken == null);
+            RealmResults<T> _results;
+            NotificationCallback _callback;
+
+            internal NotificationToken(RealmResults<T> results, NotificationCallback callback)
+            {
+                _results = results;
+                _callback = callback;
+            }
+
+            public void Dispose()
+            {
+                _results.RemoveCallback(_callback);
+                _results = null;
+            }
+        }
+
+        public IDisposable SubscribeForNotifications(NotificationCallback callback)
+        {
+            if (_callbacks.Count == 0)
+            {
+                SubscribeForNotifications();
+            }
+
+            _callbacks.Add(callback);
+
+            return new NotificationToken(this, callback);
+        }
+
+        internal void RemoveCallback(NotificationCallback callback)
+        {
+            _callbacks.Remove(callback);
+
+            if (_callbacks.Count == 0)
+            {
+                UnsubscribeFromNotifications();
+            }
+        }
+
+        private void SubscribeForNotifications()
+        {
+            Debug.Assert(_notificationToken == null);
 
             var managedResultsHandle = GCHandle.Alloc(this);
-            var token = new AsyncQueryCancellationTokenHandle(ResultsHandle);
-            var tokenHandle = NativeResults.async(ResultsHandle, RealmResultsNativeHelper.AsyncQueryCallback, GCHandle.ToIntPtr(managedResultsHandle));
+            var token = new NotificationTokenHandle(ResultsHandle);
+            var tokenHandle = NativeResults.add_notification_callback(ResultsHandle, GCHandle.ToIntPtr(managedResultsHandle), RealmResultsNativeHelper.NotificationCallback);;
 
             RuntimeHelpers.PrepareConstrainedRegions();
             try
@@ -156,20 +201,36 @@ namespace Realms
                 token.SetHandle(tokenHandle);
             }
 
-            _asyncQueryCancellationToken = token;
+            _notificationToken = token;
         }
 
-        private void UnsubscribeFromAsyncQuery()
+        private void UnsubscribeFromNotifications()
         {
-            Debug.Assert(_asyncQueryCancellationToken != null);
+            Debug.Assert(_notificationToken != null);
 
-            _asyncQueryCancellationToken.Dispose();
-            _asyncQueryCancellationToken = null;
+            _notificationToken.Dispose();
+            _notificationToken = null;
         }
                     
-        void RealmResultsNativeHelper.Interface.RaiseCollectionChanged()
+        void RealmResultsNativeHelper.Interface.NotifyCallbacks(NativeResults.CollectionChangeSet? changes, NativeException? exception)
         {
-            _collectionChangedHandlers(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+            var managedException = exception?.Convert();
+            ChangeSet changeset = null;
+            if (changes != null)
+            {
+                NativeResults.CollectionChangeSet actualChanges = changes.Value;
+                changeset = new ChangeSet(
+                    insertedIndices: actualChanges.Insertions.AsEnumerable().Select(i => (int)i).ToArray(),
+                    modifiedIndices: actualChanges.Modifications.AsEnumerable().Select(i => (int)i).ToArray(),
+                    deletedIndices: actualChanges.Deletions.AsEnumerable().Select(i => (int)i).ToArray(),
+                    movedIndices: actualChanges.Moves.AsEnumerable().Select(m => new ChangeSet.Move { From = (int)m.From, To = (int)m.To }).ToArray()
+                );
+            }
+
+            foreach (var callback in _callbacks)
+            {
+                callback(this, changeset, managedException);
+            }
         }
 
     }  // RealmResults
@@ -178,16 +239,16 @@ namespace Realms
     {
         internal interface Interface
         {
-            void RaiseCollectionChanged();
+            void NotifyCallbacks(NativeResults.CollectionChangeSet? changes, NativeException? exception);
         }
 
         #if __IOS__
-        [ObjCRuntime.MonoPInvokeCallback(typeof(NativeResults.AsyncQueryCallback))]
+        [ObjCRuntime.MonoPInvokeCallback(typeof(NativeResults.NotificationCallback))]
         #endif
-        internal static void AsyncQueryCallback(IntPtr managedResultsHandle)
+        internal static void NotificationCallback(IntPtr managedResultsHandle, PtrTo<NativeResults.CollectionChangeSet> changes, PtrTo<NativeException> exception)
         {
             var results = (Interface)GCHandle.FromIntPtr(managedResultsHandle).Target;
-            results.RaiseCollectionChanged();
+            results.NotifyCallbacks(changes.Value, exception.Value);
         }
     }
 }

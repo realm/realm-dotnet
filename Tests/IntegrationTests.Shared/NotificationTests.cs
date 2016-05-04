@@ -23,7 +23,6 @@ using NUnit.Framework;
 using Realms;
 using System.Threading;
 using System.IO;
-using System.Collections.Specialized;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
@@ -65,16 +64,19 @@ namespace IntegrationTests.Shared
 
 
         [Test]
-        public void ResultsShouldRaiseCollectionChangedReset()
+        public void ResultsShouldSendNotifications()
         {
             var query = _realm.All<Person>();
-            var list = new List<NotifyCollectionChangedAction>();
-            (query as INotifyCollectionChanged).CollectionChanged += (o, e) => list.Add(e.Action);
+            RealmResults<Person>.ChangeSet changes = null;
+            RealmResults<Person>.NotificationCallback cb = (s, c, e) => changes = c;
 
-            _realm.Write(() => _realm.CreateObject<Person>());
+            using (query.SubscribeForNotifications(cb))
+            {
+                _realm.Write(() => _realm.CreateObject<Person>());
 
-            TestHelpers.RunEventLoop(TimeSpan.FromMilliseconds(100));
-            Assert.That(list, Is.EquivalentTo(new[] { NotifyCollectionChangedAction.Reset} ));
+                TestHelpers.RunEventLoop(TimeSpan.FromMilliseconds(100));
+                Assert.That(changes?.InsertedIndices, Is.EquivalentTo(new int[] { 0 }));
+            }
         }
     }
 }
