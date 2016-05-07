@@ -170,7 +170,7 @@ namespace Realms
                     }
                     if (firstRow != null && !firstRow.IsInvalid)
                         return Expression.Constant(_realm.MakeObjectForRow(_retType, firstRow));
-                    if (m.Method.Name == "SingleOrDefault")
+                    if (m.Method.Name == "FirstOrDefault")
                         return null;
                     
                     throw new InvalidOperationException("Sequence contains no matching element");
