@@ -16,24 +16,21 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using Xamarin.Forms;
+using System;
+using SQLite;
 
-namespace Realms.XamarinForms.Examples.ListView
+namespace Benchmarkr.SQLite
 {
-    public class App : Application
+    public class Employee : IEmployee
     {
-        public App()
-        {
-            // The root page of your application
-            MainPage = new NavigationPage(new MainPage());
-        }
+        [PrimaryKey, AutoIncrement]
+        public int Id { get; set; }
 
-        protected override void OnStart()
-        {
-            base.OnStart();
+        public string Name { get; set; }
 
-            // delete any stale data
-            Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
-        }
+        public int Age { get; set; }
+
+        public bool IsHired { get; set; }  
     }
 }
+

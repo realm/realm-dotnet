@@ -16,24 +16,26 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using Xamarin.Forms;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
-namespace Realms.XamarinForms.Examples.ListView
+using Foundation;
+using UIKit;
+
+namespace Benchmarkr.iOS
 {
-    public class App : Application
+    [Register("AppDelegate")]
+    public partial class AppDelegate : global::Xamarin.Forms.Platform.iOS.FormsApplicationDelegate
     {
-        public App()
+        public override bool FinishedLaunching(UIApplication app, NSDictionary options)
         {
-            // The root page of your application
-            MainPage = new NavigationPage(new MainPage());
-        }
+            global::Xamarin.Forms.Forms.Init();
 
-        protected override void OnStart()
-        {
-            base.OnStart();
+            LoadApplication(new App());
 
-            // delete any stale data
-            Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
+            return base.FinishedLaunching(app, options);
         }
     }
 }
+

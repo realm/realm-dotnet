@@ -16,24 +16,24 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using Xamarin.Forms;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
-namespace Realms.XamarinForms.Examples.ListView
+using Foundation;
+using UIKit;
+
+namespace Benchmarkr.iOS
 {
-    public class App : Application
+    public class Application
     {
-        public App()
+        // This is the main entry point of the application.
+        static void Main(string[] args)
         {
-            // The root page of your application
-            MainPage = new NavigationPage(new MainPage());
-        }
-
-        protected override void OnStart()
-        {
-            base.OnStart();
-
-            // delete any stale data
-            Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
+            // if you want to use a different Application Delegate class from "AppDelegate"
+            // you can specify it here.
+            UIApplication.Main(args, null, "AppDelegate");
         }
     }
 }
+

@@ -16,24 +16,29 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using Xamarin.Forms;
+using System;
 
-namespace Realms.XamarinForms.Examples.ListView
+using Android.App;
+using Android.Content;
+using Android.Content.PM;
+using Android.Runtime;
+using Android.Views;
+using Android.Widget;
+using Android.OS;
+
+namespace Benchmarkr.Droid
 {
-    public class App : Application
+    [Activity(Label = "Benchmarkr.Droid", Icon = "@drawable/icon", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
+    public class MainActivity : global::Xamarin.Forms.Platform.Android.FormsApplicationActivity
     {
-        public App()
+        protected override void OnCreate(Bundle bundle)
         {
-            // The root page of your application
-            MainPage = new NavigationPage(new MainPage());
-        }
+            base.OnCreate(bundle);
 
-        protected override void OnStart()
-        {
-            base.OnStart();
+            global::Xamarin.Forms.Forms.Init(this, bundle);
 
-            // delete any stale data
-            Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
+            LoadApplication(new App());
         }
     }
 }
+

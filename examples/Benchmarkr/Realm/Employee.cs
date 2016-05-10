@@ -16,24 +16,18 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using Xamarin.Forms;
+using System;
+using Realms;
 
-namespace Realms.XamarinForms.Examples.ListView
+namespace Benchmarkr.Realm
 {
-    public class App : Application
+    public class Employee : RealmObject, IEmployee
     {
-        public App()
-        {
-            // The root page of your application
-            MainPage = new NavigationPage(new MainPage());
-        }
+        public string Name { get; set; }
 
-        protected override void OnStart()
-        {
-            base.OnStart();
+        public int Age { get; set; }
 
-            // delete any stale data
-            Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
-        }
+        public bool IsHired { get; set; }      
     }
 }
+
