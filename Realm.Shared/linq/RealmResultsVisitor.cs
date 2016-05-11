@@ -21,6 +21,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 
 using LazyMethod = System.Lazy<System.Reflection.MethodInfo>;
@@ -164,7 +165,7 @@ namespace Realms
                     bool foundAny = !firstRow.IsInvalid;
                     return Expression.Constant(foundAny);
                 }
-                if (m.Method.Name == "First")
+                if ((m.Method.Name == "First") || (m.Method.Name == "FirstOrDefault"))
                 {
                     RecurseToWhereOrRunLambda(m);  
                     RowHandle firstRow = null;
@@ -181,17 +182,23 @@ namespace Realms
                             firstRow = Realm.CreateRowHandle(rowPtr, _realm.SharedRealmHandle);
                         }
                     }
-                    if (firstRow == null || firstRow.IsInvalid)
-                        throw new InvalidOperationException("Sequence contains no matching element");
-                    return Expression.Constant(_realm.MakeObjectForRow(_retType, firstRow));
+                    if (firstRow != null && !firstRow.IsInvalid)
+                        return Expression.Constant(_realm.MakeObjectForRow(_retType, firstRow));
+                    if (m.Method.Name == "FirstOrDefault")
+                        return null;
+                    
+                    throw new InvalidOperationException("Sequence contains no matching element");
                 }
-                if (m.Method.Name == "Single")  // same as unsorted First with extra checks
+                if ((m.Method.Name == "Single") || (m.Method.Name == "SingleOrDefault"))  // same as unsorted First with extra checks
                 {
                     RecurseToWhereOrRunLambda(m);  
                     var rowPtr = NativeQuery.findDirect(_coreQueryHandle, IntPtr.Zero);
                     var firstRow = Realm.CreateRowHandle(rowPtr, _realm.SharedRealmHandle);
                     if (firstRow.IsInvalid)
-                        throw new InvalidOperationException("Sequence contains no matching element");
+                        if (m.Method.Name == "SingleOrDefault")
+                            return null;
+                        else
+                            throw new InvalidOperationException("Sequence contains no matching element");
                     IntPtr nextIndex = (IntPtr)(firstRow.RowIndex+1);
                     var nextRowPtr = NativeQuery.findDirect(_coreQueryHandle, nextIndex);
                     var nextRow = Realm.CreateRowHandle(nextRowPtr, _realm.SharedRealmHandle);
@@ -268,20 +275,13 @@ namespace Realms
 
         internal static object ExtractConstantValue(Expression expr)
         {
-            var constant = expr as ConstantExpression;
-            if (constant != null)
-            {
-                return constant.Value;
-            }
+            var objectMember = Expression.Convert(expr, typeof(object));
 
-            var memberAccess = expr as MemberExpression;
-            if (memberAccess != null && memberAccess.Expression is ConstantExpression && memberAccess.Member is System.Reflection.FieldInfo)
-            {
-                // handle closure variables
-                return ((System.Reflection.FieldInfo)memberAccess.Member).GetValue(((ConstantExpression)memberAccess.Expression).Value);
-            }
-                
-            return null;
+            var getterLambda = Expression.Lambda<Func<object>>(objectMember);
+
+            var getter = getterLambda.Compile();
+
+            return getter();
         }
 
         internal override Expression VisitBinary(BinaryExpression b)
@@ -302,11 +302,7 @@ namespace Realms
                         $"The lhs of the binary operator '{b.NodeType}' should be a member expression");
                 var leftName = leftMember.Member.Name;
 
-                var rightValue = ExtractConstantValue(b.Right);
-                if (rightValue == null)
-                {
-                    throw new NotSupportedException($"The rhs of the binary operator '{b.NodeType}' should be a constant or closure variable expression");
-                }
+                var rightValue = ExtractConstantValue(b.Right);                
 
                 switch (b.NodeType)
                 {
