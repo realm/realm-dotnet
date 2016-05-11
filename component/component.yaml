@@ -22,7 +22,7 @@ publisher-url: https://www.realm.io
 packages: 
   android:
     - Realm, Version=0.74.1
-  ios:
+  ios-unified:
     - Realm, Version=0.74.1
 version: 0.74.1
 ...
