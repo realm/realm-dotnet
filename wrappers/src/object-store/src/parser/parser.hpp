@@ -57,17 +57,10 @@ struct Predicate
         EndsWith,
         Contains
     };
-    
-    enum class OperatorOption
-    {
-        None,
-        CaseInsensitive,
-    };
 
     struct Comparison
     {
         Operator op = Operator::None;
-        OperatorOption option = OperatorOption::None;
         Expression expr[2] = {{Expression::Type::None, ""}, {Expression::Type::None, ""}};
     };
 

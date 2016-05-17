@@ -129,18 +129,15 @@ std::string ObjectStore::table_name_for_object_type(StringData object_type) {
 }
 
 TableRef ObjectStore::table_for_object_type(Group *group, StringData object_type) {
-    const std::string name = table_name_for_object_type(object_type);  // temp store for StringData to refer to
-    return group->get_table(StringData(name.data(), name.length()));
+    return group->get_table(table_name_for_object_type(object_type));
 }
 
 ConstTableRef ObjectStore::table_for_object_type(const Group *group, StringData object_type) {
-    const std::string name = table_name_for_object_type(object_type);  // temp store for StringData to refer to
-    return group->get_table(StringData(name.data(), name.length()));
+    return group->get_table(table_name_for_object_type(object_type));
 }
 
 TableRef ObjectStore::table_for_object_type_create_if_needed(Group *group, StringData object_type, bool &created) {
-    const std::string name = table_name_for_object_type(object_type);  // temp store for StringData to refer to
-    return group->get_or_add_table(StringData(name.data(), name.length()), &created);
+    return group->get_or_add_table(table_name_for_object_type(object_type), &created);
 }
 
 static inline bool property_has_changed(Property const& p1, Property const& p2) {
@@ -245,7 +242,7 @@ static void copy_property_values(const Property& source, const Property& destina
             copy_property_values(source, destination, table, &Table::get_binary, &Table::set_binary);
             break;
         case PropertyTypeDate:
-            copy_property_values(source, destination, table, &Table::get_timestamp, &Table::set_timestamp);
+            copy_property_values(source, destination, table, &Table::get_datetime, &Table::set_datetime);
             break;
         default:
             break;
