@@ -1,6 +1,12 @@
-0.74.2 Private Beta (in progress)
+0.75.0 (in progress)
 -------------------
-Still requires installation from private copy of NuGet download.
+
+### Major Changes
+* `RealmResults<T>` can be observed for granular changes via the new `SubscribeForNotifications` method.
+
+### Breaking Changes
+* File format of Realm files is changed. Files will be automatically upgraded but opening a Realm file with older versions of Realm is not possible.
+* `RealmResults<T>` no longer implicitly implements `INotifyCollectionChanged`.
 
 ### Minor Fixes
 * Setting `null` to a string property will now correctly return `null`

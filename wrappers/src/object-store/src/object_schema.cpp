@@ -20,11 +20,11 @@
 #include "object_store.hpp"
 #include "property.hpp"
 
-#include <realm/group_shared.hpp>
-#include <realm/link_view.hpp>
+#include <realm/table.hpp>
 
 using namespace realm;
 
+ObjectSchema::ObjectSchema() = default;
 ObjectSchema::~ObjectSchema() = default;
 
 ObjectSchema::ObjectSchema(std::string name, std::string primary_key, std::initializer_list<Property> properties)

@@ -22,14 +22,14 @@
 #include "schema.hpp"
 #include "property.hpp"
 
-#include <functional>
+#include <realm/table_ref.hpp>
 
-#include <realm/group.hpp>
-#include <realm/link_view.hpp>
+#include <functional>
 
 #include <sstream>
 
 namespace realm {
+    class Group;
     class ObjectSchemaValidationException;
     class Schema;
 

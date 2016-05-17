@@ -21,11 +21,35 @@
 
 #include <string>
 #include <realm.hpp>
+#include "realm_error_type.hpp"
 
 namespace realm {
+struct NativeException {
+    RealmErrorType type;
+    std::string message;
+    
+    struct Marshallable {
+        RealmErrorType type;
+        const char* messagesBytes;
+        size_t messageLength;
+    };
+    
+    // the return value of this method is tied to the lifetime of this
+    // it's ususally fine to pass it as a parameter to a .net callback,
+    // but take care of object lifetime when *returning* this value to .net
+    Marshallable for_marshalling() const {
+        return {
+            type,
+            message.data(),
+            message.size()
+        };
+    }
+};
+    
+NativeException convert_exception();
 
-void convert_exception();
-
+void throw_managed_exception(const NativeException& exception);
+    
 template <class T>
 struct Default {
     static T default_value() {
@@ -45,7 +69,7 @@ auto handle_errors(F&& func) -> decltype(func())
         return func();
     }
     catch (...) {
-        convert_exception();
+        throw_managed_exception(convert_exception());
         return Default<RetVal>::default_value();
     }
 }

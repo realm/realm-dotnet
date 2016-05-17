@@ -35,39 +35,57 @@ namespace Realms
     /// You can sort efficiently using the standard LINQ operators <c>OrderBy</c> or <c>OrderByDescending</c> followed by any number of
     /// <c>ThenBy</c> or <c>ThenByDescending</c>.</remarks>
     /// <typeparam name="T">Type of the RealmObject which is being returned.</typeparam>
-    public class RealmResults<T> : IOrderedQueryable<T>, INotifyCollectionChanged, RealmResultsNativeHelper.Interface
+    public class RealmResults<T> : IOrderedQueryable<T>, RealmResultsNativeHelper.Interface
     {
         public Type ElementType => typeof (T);
         public Expression Expression { get; } = null; // null if _allRecords
         private readonly RealmResultsProvider _provider = null;  // null if _allRecords
         private readonly bool _allRecords = false;
         private readonly Realm _realm;
+        private readonly List<NotificationCallback> _callbacks = new List<NotificationCallback>();
+        private NotificationTokenHandle _notificationToken;
 
         internal ResultsHandle ResultsHandle => _resultsHandle ?? (_resultsHandle = CreateResultsHandle()); 
         private ResultsHandle _resultsHandle = null;
 
         public IQueryProvider Provider => _provider;
 
-        NotifyCollectionChangedEventHandler _collectionChangedHandlers = null;
-        AsyncQueryCancellationTokenHandle _asyncQueryCancellationToken = null;
-        event NotifyCollectionChangedEventHandler INotifyCollectionChanged.CollectionChanged
+        /// <summary>
+        /// A <see cref="ChangeSet" /> describes the changes inside a <see cref="RealmResults{T}" /> since the last time the notification callback was invoked.
+        /// </summary>
+        public class ChangeSet
         {
-            add 
+            /// <summary>
+            /// The indices in the new version of the <see cref="RealmResults{T}" /> which were newly inserted.
+            /// </summary>
+            public readonly int[] InsertedIndices;
+
+            /// <summary>
+            /// The indices in the new version of the <see cref="RealmResults{T}"/> which were modified. This means that the property of an object at that index was modified
+            /// or the property of another object it's related to.
+            /// </summary>
+            public readonly int[] ModifiedIndices;
+
+            /// <summary>
+            /// The indices of objects in the previous version of the <see cref="RealmResults{T}"/> which have been removed from this one.
+            /// </summary>
+            public readonly int[] DeletedIndices;
+
+            internal ChangeSet(int[] insertedIndices, int[] modifiedIndices, int[] deletedIndices)
             {
-                _collectionChangedHandlers += value;
-                if (_asyncQueryCancellationToken == null)
-                {
-                    SubscribeForAsyncQuery();
-                }
-            }
-            remove
-            {
-                if ((_collectionChangedHandlers -= value) == null && _asyncQueryCancellationToken != null)
-                {
-                    UnsubscribeFromAsyncQuery();
-                }
+                InsertedIndices = insertedIndices;
+                ModifiedIndices = modifiedIndices;
+                DeletedIndices = deletedIndices;
             }
         }
+
+        /// <summary>
+        /// A callback that will be invoked each time the contents of a <see cref="RealmResults{T}"/> have changed.
+        /// </summary>
+        /// <param name="sender">The <see cref="RealmResults{T}"/> being monitored for changes.</param>
+        /// <param name="changes">The <see cref="ChangeSet"/> describing the changes to a <see cref="RealmResults{T}"/>, or <c>null</c> if an error occured.</param>
+        /// <param name="error">An exception that might have occured while asynchronously monitoring a <see cref="RealmResults{T}"/> for changes, or <c>null</c> if no errors occured.</param>
+        public delegate void NotificationCallback(RealmResults<T> sender, ChangeSet changes, Exception error);
 
         internal RealmResults(Realm realm, RealmResultsProvider realmResultsProvider, Expression expression,
             bool createdByAll)
@@ -140,13 +158,83 @@ namespace Realms
             return (int)NativeResults.count(ResultsHandle);
         }
 
-        private void SubscribeForAsyncQuery()
+        class NotificationToken : IDisposable
         {
-            Debug.Assert(_asyncQueryCancellationToken == null);
+            RealmResults<T> _results;
+            NotificationCallback _callback;
+
+            internal NotificationToken(RealmResults<T> results, NotificationCallback callback)
+            {
+                _results = results;
+                _callback = callback;
+            }
+
+            public void Dispose()
+            {
+                _results.RemoveCallback(_callback);
+                _results = null;
+            }
+        }
+
+        /// <summary>
+        /// Register a callback to be invoked each time this <see cref="RealmResults{T}"/> changes.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The callback will be asynchronously invoked with the initial <see cref="RealmResults{T}" />, and then called again after each write transaction 
+        /// which changes either any of the objects in the collection, or which objects are in the collection.
+        /// The <c>changes</c> parameter will be <c>null</c> the first time the callback is invoked with the initial results.
+        /// For each call after that, it will contain information about which rows in the results were added, removed or modified.
+        /// </para>
+        /// <para>
+        /// If a write transaction did not modify any objects in this <see cref="RealmResults{T}" />, the callback is not invoked at all.
+        /// If an error occurs the callback will be invoked with <c>null</c> for the <c>sender</c> parameter and a non-<c>null</c> <c>error</c>.
+        /// Currently the only errors that can occur are when opening the <see cref="Realm" /> on the background worker thread.
+        /// </para>
+        /// <para>
+        /// At the time when the block is called, the <see cref="RealmResults{T}" /> object will be fully evaluated and up-to-date, and as long as you do not perform a write transaction on the same thread
+        /// or explicitly call <see cref="Realm.Refresh" />, accessing it will never perform blocking work.
+        /// </para>
+        /// <para>
+        /// Notifications are delivered via the standard event loop, and so can't be delivered while the event loop is blocked by other activity.
+        /// When notifications can't be delivered instantly, multiple notifications may be coalesced into a single notification.
+        /// This can include the notification with the initial collection.
+        /// </para>
+        /// </remarks>
+        /// <param name="callback">The callback to be invoked with the updated <see cref="RealmResults{T}" />.</param>
+        /// <returns>
+        /// A subscription token. It must be kept alive for as long as you want to receive change notifications.
+        /// To stop receiving notifications, call <see cref="IDisposable.Dispose" />.
+        /// </returns>
+        public IDisposable SubscribeForNotifications(NotificationCallback callback)
+        {
+            if (_callbacks.Count == 0)
+            {
+                SubscribeForNotifications();
+            }
+
+            _callbacks.Add(callback);
+
+            return new NotificationToken(this, callback);
+        }
+
+        internal void RemoveCallback(NotificationCallback callback)
+        {
+            _callbacks.Remove(callback);
+
+            if (_callbacks.Count == 0)
+            {
+                UnsubscribeFromNotifications();
+            }
+        }
+
+        private void SubscribeForNotifications()
+        {
+            Debug.Assert(_notificationToken == null);
 
             var managedResultsHandle = GCHandle.Alloc(this);
-            var token = new AsyncQueryCancellationTokenHandle(ResultsHandle);
-            var tokenHandle = NativeResults.async(ResultsHandle, RealmResultsNativeHelper.AsyncQueryCallback, GCHandle.ToIntPtr(managedResultsHandle));
+            var token = new NotificationTokenHandle(ResultsHandle);
+            var tokenHandle = NativeResults.add_notification_callback(ResultsHandle, GCHandle.ToIntPtr(managedResultsHandle), RealmResultsNativeHelper.NotificationCallback);;
 
             RuntimeHelpers.PrepareConstrainedRegions();
             try
@@ -156,20 +244,35 @@ namespace Realms
                 token.SetHandle(tokenHandle);
             }
 
-            _asyncQueryCancellationToken = token;
+            _notificationToken = token;
         }
 
-        private void UnsubscribeFromAsyncQuery()
+        private void UnsubscribeFromNotifications()
         {
-            Debug.Assert(_asyncQueryCancellationToken != null);
+            Debug.Assert(_notificationToken != null);
 
-            _asyncQueryCancellationToken.Dispose();
-            _asyncQueryCancellationToken = null;
+            _notificationToken.Dispose();
+            _notificationToken = null;
         }
                     
-        void RealmResultsNativeHelper.Interface.RaiseCollectionChanged()
+        void RealmResultsNativeHelper.Interface.NotifyCallbacks(NativeResults.CollectionChangeSet? changes, NativeException? exception)
         {
-            _collectionChangedHandlers(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+            var managedException = exception?.Convert();
+            ChangeSet changeset = null;
+            if (changes != null)
+            {
+                NativeResults.CollectionChangeSet actualChanges = changes.Value;
+                changeset = new ChangeSet(
+                    insertedIndices: actualChanges.Insertions.AsEnumerable().Select(i => (int)i).ToArray(),
+                    modifiedIndices: actualChanges.Modifications.AsEnumerable().Select(i => (int)i).ToArray(),
+                    deletedIndices: actualChanges.Deletions.AsEnumerable().Select(i => (int)i).ToArray()
+                );
+            }
+
+            foreach (var callback in _callbacks)
+            {
+                callback(this, changeset, managedException);
+            }
         }
 
     }  // RealmResults
@@ -178,16 +281,16 @@ namespace Realms
     {
         internal interface Interface
         {
-            void RaiseCollectionChanged();
+            void NotifyCallbacks(NativeResults.CollectionChangeSet? changes, NativeException? exception);
         }
 
         #if __IOS__
-        [ObjCRuntime.MonoPInvokeCallback(typeof(NativeResults.AsyncQueryCallback))]
+        [ObjCRuntime.MonoPInvokeCallback(typeof(NativeResults.NotificationCallback))]
         #endif
-        internal static void AsyncQueryCallback(IntPtr managedResultsHandle)
+        internal static void NotificationCallback(IntPtr managedResultsHandle, PtrTo<NativeResults.CollectionChangeSet> changes, PtrTo<NativeException> exception)
         {
             var results = (Interface)GCHandle.FromIntPtr(managedResultsHandle).Target;
-            results.RaiseCollectionChanged();
+            results.NotifyCallbacks(changes.Value, exception.Value);
         }
     }
 }

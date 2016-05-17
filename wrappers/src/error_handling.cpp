@@ -29,24 +29,24 @@
 #include "realm/util/file.hpp" 
 #include "realm/alloc_slab.hpp"
 
-using ManagedExceptionThrowerT = void(*)(size_t exceptionCode, void* utf8Str, size_t strLen);
+using ManagedExceptionThrowerT = void(*)(realm::NativeException::Marshallable);
 
 // CALLBACK TO THROW IN MANAGED SPACE
 static ManagedExceptionThrowerT ManagedExceptionThrower = nullptr;
 
 namespace realm {
 
-    void throw_exception(RealmErrorType error_type, const std::string message)
+    void throw_managed_exception(const NativeException& exception)
     {
         assert(ManagedExceptionThrower != nullptr);
-        ManagedExceptionThrower((size_t)error_type, (void*)message.data(), message.size());
+        ManagedExceptionThrower(exception.for_marshalling());
     }
 
     /**
     @note mostly copied from util.cpp in Java but has a much richer range of exceptions
     @warning if you update these codes also update the matching RealmExceptionCodes.cs
     */
-    void convert_exception()
+    NativeException convert_exception()
     {
         try {
             throw;  // rethrow so we can add typing information by different catches
@@ -55,59 +55,53 @@ namespace realm {
 
             switch (e.kind()) {
             case RealmFileException::Kind::AccessError:
-                throw_exception(RealmErrorType::RealmFileAccessError, e.what());
-                break;
+                return { RealmErrorType::RealmFileAccessError, e.what() };
             case RealmFileException::Kind::PermissionDenied:
-                throw_exception(RealmErrorType::RealmPermissionDenied, e.what());
-                break;
+                return { RealmErrorType::RealmPermissionDenied, e.what() };
             case RealmFileException::Kind::Exists:
-                throw_exception(RealmErrorType::RealmFileExists, e.what());
-                break;
+                return { RealmErrorType::RealmFileExists, e.what() };
             case RealmFileException::Kind::NotFound:
-                throw_exception(RealmErrorType::RealmFileNotFound, e.what());
-                break;
+                return { RealmErrorType::RealmFileNotFound, e.what() };
             case RealmFileException::Kind::IncompatibleLockFile:
-                throw_exception(RealmErrorType::RealmIncompatibleLockFile, e.what());
-                break;
+                return { RealmErrorType::RealmIncompatibleLockFile, e.what() };
             case RealmFileException::Kind::FormatUpgradeRequired:
-                throw_exception(RealmErrorType::RealmFormatUpgradeRequired, e.what());
-                break;
+                return { RealmErrorType::RealmFormatUpgradeRequired, e.what() };
             default:
-                throw_exception(RealmErrorType::RealmError, e.what());
+                return { RealmErrorType::RealmError, e.what() };
             }
         }
         catch (const SchemaValidationException& e) { // an ObjectStore exception mapped onto same code as older core
-            throw_exception(RealmErrorType::RealmFormatUpgradeRequired, e.what());
+            return { RealmErrorType::RealmFormatUpgradeRequired, e.what() };
         }
         catch (const MismatchedConfigException& e) {
-            throw_exception(RealmErrorType::RealmMismatchedConfig, e.what());
+            return { RealmErrorType::RealmMismatchedConfig, e.what() };
         }
         catch (const InvalidTransactionException& e) {
-            throw_exception(RealmErrorType::RealmInvalidTransaction, e.what());
+            return { RealmErrorType::RealmInvalidTransaction, e.what() };
         }
         catch (const IncorrectThreadException& e) {
-            throw_exception(RealmErrorType::RealmIncorrectThread, e.what());
+            return { RealmErrorType::RealmIncorrectThread, e.what() };
         }
         catch (const UnitializedRealmException& e) {
-            throw_exception(RealmErrorType::RealmUnitializedRealm, e.what());
+            return { RealmErrorType::RealmUnitializedRealm, e.what() };
         }
         //catch (const util::DecryptionFailed& e) {
-        //    throw_exception(RealmExceptionCodes::RealmDecryptionFailed, e.what(), nullptr);
+        //    return { RealmExceptionCodes::RealmDecryptionFailed, e.what(), nullptr);
         //}
         catch (const InvalidDatabase& e) {
-            throw_exception(RealmErrorType::RealmInvalidDatabase, e.what());
+            return { RealmErrorType::RealmInvalidDatabase, e.what() };
         }
         catch (const IndexOutOfRangeException& e) {
-            throw_exception(RealmErrorType::StdIndexOutOfRange, e.what());
+            return { RealmErrorType::StdIndexOutOfRange, e.what() };
         }
         catch (const std::bad_alloc& e) {
-            throw_exception(RealmErrorType::RealmOutOfMemory, e.what());
+            return { RealmErrorType::RealmOutOfMemory, e.what() };
         }
         catch (const std::exception& e) {
-            throw_exception(RealmErrorType::RealmError, e.what());
+            return { RealmErrorType::RealmError, e.what() };
         }
         catch (...) {
-            throw_exception(RealmErrorType::RealmError, "Unknown exception caught which doesn't descend from std::exception");
+            return { RealmErrorType::RealmError, "Unknown exception caught which doesn't descend from std::exception" };
         }
     }
 
@@ -123,7 +117,7 @@ REALM_EXPORT void set_exception_thrower(ManagedExceptionThrowerT userThrower)
 // allow C# test code to generate an exception being thrown back
 REALM_EXPORT void fake_a_native_exception(int errorType)
 {
-    realm::throw_exception(realm::RealmErrorType(errorType), "this is fake_exception");
+    realm::throw_managed_exception({ realm::RealmErrorType(errorType), "this is fake_exception" });
 }
 
 }   // extern "C"
