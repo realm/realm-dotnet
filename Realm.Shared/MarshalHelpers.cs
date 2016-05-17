@@ -48,7 +48,7 @@ namespace Realms
             if (columnType == typeof(double) || columnType == typeof(double?))
                 return (IntPtr)10; // type_Double
             if (columnType == typeof(DateTimeOffset) || columnType == typeof(DateTimeOffset?))
-                return (IntPtr)8;  // type_Timestamp
+                return (IntPtr)7;  // type_DateTime
             if (columnType == typeof(bool) || columnType == typeof(bool?))
                 return (IntPtr)1;  // type_Bool
             if (columnType.BaseType == typeof(RealmObject))

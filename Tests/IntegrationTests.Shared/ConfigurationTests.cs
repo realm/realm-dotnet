@@ -254,7 +254,7 @@ namespace IntegrationTests
         }
 
 
-        [Test, Explicit("Core change being argued changed type of exception")]
+        [Test]
         public void ReadOnlyRealmsWillNotAutoMigrate()
         {
             // Arrange

@@ -362,7 +362,7 @@ namespace Realms
             else if (valueType == typeof(double))
                 NativeQuery.double_equal((QueryHandle)queryHandle, columnIndex, (double)value);
             else if (valueType == typeof(DateTimeOffset))
-                NativeQuery.timestamp_milliseconds_equal(queryHandle, columnIndex, ((DateTimeOffset)value).ToRealmUnixTimeMilliseconds());
+                NativeQuery.datetime_seconds_equal(queryHandle, columnIndex, ((DateTimeOffset)value).ToUnixTimeSeconds());
             else
                 throw new NotImplementedException();
         }
@@ -386,7 +386,7 @@ namespace Realms
             else if (valueType == typeof(double))
                 NativeQuery.double_not_equal((QueryHandle)queryHandle, columnIndex, (double)value);
             else if (valueType == typeof(DateTimeOffset))
-                NativeQuery.timestamp_milliseconds_not_equal(queryHandle, columnIndex, ((DateTimeOffset)value).ToRealmUnixTimeMilliseconds());
+                NativeQuery.datetime_seconds_not_equal(queryHandle, columnIndex, ((DateTimeOffset)value).ToUnixTimeSeconds());
             else
                 throw new NotImplementedException();
         }
@@ -403,7 +403,7 @@ namespace Realms
             else if (valueType == typeof(double))
                 NativeQuery.double_less((QueryHandle)queryHandle, columnIndex, (double)value);
             else if (valueType == typeof(DateTimeOffset))
-                NativeQuery.timestamp_milliseconds_less(queryHandle, columnIndex, ((DateTimeOffset)value).ToRealmUnixTimeMilliseconds());
+                NativeQuery.datetime_seconds_less(queryHandle, columnIndex, ((DateTimeOffset)value).ToUnixTimeSeconds());
             else if (valueType == typeof(string) || valueType == typeof(bool))
                 throw new Exception("Unsupported type " + valueType.Name);
             else
@@ -422,7 +422,7 @@ namespace Realms
             else if (valueType == typeof(double))
                 NativeQuery.double_less_equal((QueryHandle)queryHandle, columnIndex, (double)value);
             else if (valueType == typeof(DateTimeOffset))
-                NativeQuery.timestamp_milliseconds_less_equal(queryHandle, columnIndex, ((DateTimeOffset)value).ToRealmUnixTimeMilliseconds());
+                NativeQuery.datetime_seconds_less_equal(queryHandle, columnIndex, ((DateTimeOffset)value).ToUnixTimeSeconds());
             else if (valueType == typeof(string) || valueType == typeof(bool))
                 throw new Exception("Unsupported type " + valueType.Name);
             else
@@ -441,7 +441,7 @@ namespace Realms
             else if (valueType == typeof(double))
                 NativeQuery.double_greater((QueryHandle)queryHandle, columnIndex, (double)value);
             else if (valueType == typeof(DateTimeOffset))
-                NativeQuery.timestamp_milliseconds_greater(queryHandle, columnIndex, ((DateTimeOffset)value).ToRealmUnixTimeMilliseconds());
+                NativeQuery.datetime_seconds_greater(queryHandle, columnIndex, ((DateTimeOffset)value).ToUnixTimeSeconds());
             else if (valueType == typeof(string) || valueType == typeof(bool))
                 throw new Exception("Unsupported type " + valueType.Name);
             else
@@ -460,7 +460,7 @@ namespace Realms
             else if (valueType == typeof(double))
                 NativeQuery.double_greater_equal((QueryHandle)queryHandle, columnIndex, (double)value);
             else if (valueType == typeof(DateTimeOffset))
-                NativeQuery.timestamp_milliseconds_greater_equal(queryHandle, columnIndex, ((DateTimeOffset)value).ToRealmUnixTimeMilliseconds());
+                NativeQuery.datetime_seconds_greater_equal(queryHandle, columnIndex, ((DateTimeOffset)value).ToUnixTimeSeconds());
             else if (valueType == typeof(string) || valueType == typeof(bool))
                 throw new Exception("Unsupported type " + valueType.Name);
             else
