@@ -51,6 +51,16 @@ namespace Realms
         /// <seealso cref="RealmResults{T}.SubscribeForNotifications(RealmResults{T}.NotificationCallback)"/>
         public static INotifyCollectionChanged ToNotifyCollectionChanged<T>(this RealmResults<T> results, Action<Exception> errorCallback, bool coalesceMultipleChangesIntoReset) where T : RealmObject
         {
+            if (results == null)
+            {
+                throw new ArgumentNullException(nameof(results));
+            }
+
+            if (errorCallback == null)
+            {
+                throw new ArgumentNullException(nameof(errorCallback));
+            }
+
             return new ReadOnlyObservableCollection<T>(new Adapter<T>(results, errorCallback, coalesceMultipleChangesIntoReset));
         }
 
