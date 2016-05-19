@@ -33,9 +33,14 @@
     <Compile Include="QuickJournal.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="JournalEntry.cs" />
-    <Compile Include="JournalEntriesPage.xaml.cs">
+    <Compile Include="Views\JournalEntriesPage.xaml.cs">
       <DependentUpon>JournalEntriesPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ViewModels\JournalEntriesViewModel.cs" />
+    <Compile Include="Views\JournalEntryDetailsPage.xaml.cs">
+      <DependentUpon>JournalEntryDetailsPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ViewModels\JournalEntryDetailsViewModel.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <Import Project="..\packages\Xamarin.Forms.1.3.5.6335\build\portable-win+net45+wp80+MonoAndroid10+MonoTouch10+Xamarin.iOS10\Xamarin.Forms.targets" Condition="Exists('..\packages\Xamarin.Forms.1.3.5.6335\build\portable-win+net45+wp80+MonoAndroid10+MonoTouch10+Xamarin.iOS10\Xamarin.Forms.targets')" />
@@ -61,8 +66,15 @@
     <None Include="FodyWeavers.xml" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="JournalEntriesPage.xaml">
+    <EmbeddedResource Include="Views\JournalEntriesPage.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
+    <EmbeddedResource Include="Views\JournalEntryDetailsPage.xaml">
+      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Views\" />
+    <Folder Include="ViewModels\" />
   </ItemGroup>
 </Project>
