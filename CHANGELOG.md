@@ -1,7 +1,11 @@
-0.74.1 Private Beta (2016-04-16)
--------------------
-Still requires installation from private copy of NuGet download.
+Work in progress
+----------------
 
+### Minor Fixes
+* Failure to install Fody will now cause an exception like "Realms.RealmException: Fody not properly installed. RDB2_with_full_Realm.Dog is a RealmObject but has not been woven." instead of a `NullReferenceException`
+
+0.74.1 Released (2016-05-10)
+-------------------
 ### Minor Fixes
 * Realms now refresh properly on Android when modified in other threads/processes.
 * Fixes crashes under heavy combinations of threaded reads and writes.

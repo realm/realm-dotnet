@@ -2111,6 +2111,10 @@ FodyWeavers.xml.uninstall.xdt
 
 Realm.cs
 - Realm static ctor
-  - change error reporting of missing WovenAttribute to throw rather than just Debug.Writeline
+  - remove Debug.Writeline check loop as it does nothing. Throwing an exception here ended up buried as inner exception so no good for user reporting.
+  - CreateRealmObjectMetadata
+    - added check for no woven attributes throw exception
+    
+
   
   
