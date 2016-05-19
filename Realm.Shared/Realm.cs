@@ -47,7 +47,7 @@ namespace Realms
             foreach(var realmType in RealmObjectClasses)
             {
                 if (!realmType.GetCustomAttributes(typeof(WovenAttribute), true).Any())
-                    Debug.WriteLine("WARNING! The type " + realmType.Name + " is a RealmObject but it has not been woven.");
+                    throw new RealmException($"Fody not properly installed. {realmType.FullName} is a RealmObject but has not been woven.");
             }
             ObjectSchemaCache = new Dictionary<Type, IntPtr>();
             NativeCommon.Initialize();
@@ -112,7 +112,7 @@ namespace Realms
             {
                 foreach (var selectedRealmObjectClass in config.ObjectClasses) {
                     if (selectedRealmObjectClass.BaseType != typeof(RealmObject))
-                        throw new ArgumentException($"The class {selectedRealmObjectClass.Name} must descend from RealmObject");
+                        throw new ArgumentException($"The class {selectedRealmObjectClass.FullName} must descend directly from RealmObject");
                     
                     Debug.Assert(RealmObjectClasses.Contains(selectedRealmObjectClass));
                     var objectSchemaHandle = GenerateObjectSchema(selectedRealmObjectClass);

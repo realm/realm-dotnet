@@ -2106,3 +2106,11 @@ FodyWeavers.xml.install.xdt
 FodyWeavers.xml.uninstall.xdt
 - added
 
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#541 Android crash in GetInstance
+
+Realm.cs
+- Realm static ctor
+  - change error reporting of missing WovenAttribute to throw rather than just Debug.Writeline
+  
+  
