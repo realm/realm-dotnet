@@ -58,11 +58,6 @@ namespace Realms
                                           .Where(t => t.IsSubclassOf(typeof(RealmObject)))
                                           .ToArray();
 
-            foreach(var realmType in RealmObjectClasses)
-            {
-                if (!realmType.GetCustomAttributes(typeof(WovenAttribute), true).Any())
-                    Debug.WriteLine("WARNING! The type " + realmType.Name + " is a RealmObject but it has not been woven.");
-            }
             ObjectSchemaCache = new Dictionary<Type, IntPtr>();
             NativeCommon.Initialize();
             NativeCommon.register_notify_realm_changed(NotifyRealmChanged);
@@ -125,9 +120,9 @@ namespace Realms
             {
                 foreach (var selectedRealmObjectClass in config.ObjectClasses) {
                     if (selectedRealmObjectClass.BaseType != typeof(RealmObject))
-                        throw new ArgumentException($"The class {selectedRealmObjectClass.Name} must descend from RealmObject");
+                        throw new ArgumentException($"The class {selectedRealmObjectClass.FullName} must descend directly from RealmObject");
                     
-                    Debug.Assert(RealmObjectClasses.Contains(selectedRealmObjectClass));
+                    Debug.Assert(RealmObjectClasses.Contains(selectedRealmObjectClass));  // user-specified class must have been picked up by our static ctor
                     var objectSchemaHandle = GenerateObjectSchema(selectedRealmObjectClass);
                     NativeSchema.initializer_add_object_schema(schemaInitializer, objectSchemaHandle);
                 }
@@ -244,7 +239,10 @@ namespace Realms
         private RealmObject.Metadata CreateRealmObjectMetadata(Type realmObjectType)
         {
             var table = this.GetTable(realmObjectType);
-            var helper = (Weaving.IRealmObjectHelper)Activator.CreateInstance(realmObjectType.GetCustomAttribute<WovenAttribute>().HelperType);
+            var wovenAtt = realmObjectType.GetCustomAttribute<WovenAttribute>();
+            if (wovenAtt == null)
+                throw new RealmException($"Fody not properly installed. {realmObjectType.FullName} is a RealmObject but has not been woven.");
+            var helper = (Weaving.IRealmObjectHelper)Activator.CreateInstance(wovenAtt.HelperType);
             var properties = realmObjectType.GetProperties(BindingFlags.Instance | BindingFlags.DeclaredOnly | BindingFlags.NonPublic | BindingFlags.Public)
                                             .Where(p => p.GetCustomAttributes(false).OfType<WovenPropertyAttribute>().Any())
                                             .Select(p =>

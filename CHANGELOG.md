@@ -1,4 +1,4 @@
-0.75.0 (in progress)
+0.75.0 (pending fix of issue 516 - core 0.99 onwards freeze)
 -------------------
 
 ### Major Changes
@@ -8,13 +8,16 @@
 * File format of Realm files is changed. Files will be automatically upgraded but opening a Realm file with older versions of Realm is not possible.
 * `RealmResults<T>` no longer implicitly implements `INotifyCollectionChanged`.
 
+Work in progress
+----------------
+
 ### Minor Fixes
 * Setting `null` to a string property will now correctly return `null`
+* Failure to install Fody will now cause an exception like "Realms.RealmException: Fody not properly installed. RDB2_with_full_Realm.Dog is a RealmObject but has not been woven." instead of a `NullReferenceException`
 
-0.74.1 Private Beta (2016-04-16)
+
+0.74.1 Released (2016-05-10)
 -------------------
-Still requires installation from private copy of NuGet download.
-
 ### Minor Fixes
 * Realms now refresh properly on Android when modified in other threads/processes.
 * Fixes crashes under heavy combinations of threaded reads and writes.

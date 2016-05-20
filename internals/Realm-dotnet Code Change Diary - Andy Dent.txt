@@ -2134,3 +2134,15 @@ ConfigurationTests.cs
 - ReadOnlyFilesMustExist added
 - ReadOnlyRealmsWillNotAutoMigrate added
 
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#541 Android crash in GetInstance
+
+Realm.cs
+- Realm static ctor
+  - remove Debug.Writeline check loop as it does nothing. Throwing an exception here ended up buried as inner exception so no good for user reporting.
+  - CreateRealmObjectMetadata
+    - added check for no woven attributes throw exception
+    
+
+  
+  
