@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms" 
+		xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+		x:Class="QuickJournal.JournalEntriesPage"
+		Title="Journal">
+	<ContentPage.ToolbarItems>
+		<ToolbarItem Text="Add" Command="{Binding AddEntryCommand}" />
+	</ContentPage.ToolbarItems>
+	<ContentPage.Content>
+		<ListView ItemsSource="{Binding Entries}" x:Name="EntriesListView" ItemTapped="OnItemTapped" ItemSelected="OnItemSelected">
+			<ListView.ItemTemplate>
+				<DataTemplate>
+					<TextCell Text="{Binding Date, StringFormat='{0:dddd, MMMM d yyyy}'}" Detail="{Binding Date, StringFormat='{0:hh:mm tt}'}">
+						<TextCell.ContextActions>
+							<MenuItem Text="Delete" IsDestructive="true" 
+									  Command="{Binding BindingContext.DeleteEntryCommand, Source={x:Reference EntriesListView}" 
+								      CommandParameter="{Binding .}" />
+						</TextCell.ContextActions>
+					</TextCell>
+				</DataTemplate>
+			</ListView.ItemTemplate>
+		</ListView>
+	</ContentPage.Content>
+</ContentPage>
