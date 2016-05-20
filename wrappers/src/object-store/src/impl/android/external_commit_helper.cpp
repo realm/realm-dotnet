@@ -27,18 +27,23 @@
 #include <sys/time.h>
 #include <system_error>
 #include <unistd.h>
-#include <android/log.h>
 
-#include "../../../../debug.hpp"
+#ifdef __ANDROID__
+#include <android/log.h>
+#define ANDROID_LOG __android_log_print
+#else
+#define ANDROID_LOG(...)
+#endif
+
 #include <errno.h>
 #include <sstream>
 
 using namespace realm;
 using namespace realm::_impl;
 
-#define LOG(fmt...) do { \
+#define LOGE(fmt...) do { \
     fprintf(stderr, fmt); \
-    __android_log_print(ANDROID_LOG_ERROR, "REALM", fmt); \
+    ANDROID_LOG(ANDROID_LOG_ERROR, "REALM", fmt); \
 } while (0)
 
 namespace {
@@ -133,11 +138,11 @@ ExternalCommitHelper::ExternalCommitHelper(RealmCoordinator& parent)
             listen();
         }
         catch (std::exception const& e) {
-            LOG("uncaught exception in notifier thread: %s: %s\n", typeid(e).name(), e.what());
+            LOGE("uncaught exception in notifier thread: %s: %s\n", typeid(e).name(), e.what());
             throw;
         }
         catch (...) {
-            LOG("uncaught exception in notifier thread\n");
+            LOGE("uncaught exception in notifier thread\n");
             throw;
         }
     });
