@@ -2135,7 +2135,7 @@ ConfigurationTests.cs
 - ReadOnlyRealmsWillNotAutoMigrate added
 
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-#541 Android crash in GetInstance
+#541 Android crash in GetInstance - Better notification of failed weave
 
 Realm.cs
 - Realm static ctor
@@ -2145,4 +2145,15 @@ Realm.cs
     
 
   
-  
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#553 IOS Build for Armv7s
+
+IntegrationTests.XamarinIOS
+- Build - IOS Build - Supported Architextures changed from ARMV7+ARM64 to   ARMv7+ARMv7s+ARM64
+
+
+libwrappers.linkwith.cs
+- added LinkTarget.ArmV7s
+
+wrappers.xcodeproj
+- extended ARCHS_STANDARD with armv7s (no longer included in "standard" as of XCode 6)
