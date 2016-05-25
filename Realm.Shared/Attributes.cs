@@ -46,6 +46,7 @@ namespace Realms
     {
         public Type HelperType { get; private set; }
 
+        [Preserve]
         public WovenAttribute(Type helperType)
         {
             this.HelperType = helperType;
@@ -57,6 +58,7 @@ namespace Realms
     {
         internal string BackingFieldName { get; private set; }
 
+        [Preserve]
         public WovenPropertyAttribute(string backingFieldName)
         {
             this.BackingFieldName = backingFieldName;
