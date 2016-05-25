@@ -344,15 +344,28 @@ namespace Tests
             Assert.That(personType.CustomAttributes.Any(a => a.AttributeType.Name == "WovenAttribute"));
         }
 
-        [Test, Ignore("Introduce once preserving default constructors is implemented")]
-        public void ShouldAddPreserveAttribute()
+        [Test]
+        public void ShouldAddPreserveAttributeToConstructor()
         {
             // Arrange and act
             var personType = _assembly.GetType("AssemblyToProcess.Person");
             var ctor = personType.GetConstructor(Type.EmptyTypes);
 
             // Assert
-            Assert.That(ctor.GetCustomAttributes(typeof (PreserveAttribute)).Any());
+            Assert.That(ctor.CustomAttributes.Any(a => a.AttributeType.Name == "PreserveAttribute"));
+        }
+
+        [Test]
+        public void ShouldAddPreserveAttributeToHelperConstructor()
+        {
+            // Arrange and act
+            var personType = _assembly.GetType("AssemblyToProcess.Person");
+            var wovenAttribute = personType.CustomAttributes.Single(a => a.AttributeType.Name == "WovenAttribute");
+            var helperType = (Type)wovenAttribute.ConstructorArguments[0].Value;
+            var helperConstructor = helperType.GetConstructor(Type.EmptyTypes);
+
+            // Assert
+            Assert.That(helperConstructor.CustomAttributes.Any(a => a.AttributeType.Name == "PreserveAttribute"));
         }
 
         [Test]
