@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Linq;
 using System.Threading;
 using NUnit.Framework;
 using Realms;
@@ -54,11 +55,42 @@ namespace IntegrationTests.Shared
                 realm.CreateObject<Person>();
             });
 
-            // need to run 
+            // see #564
             TestHelpers.RunEventLoop(TimeSpan.FromMilliseconds(100));
 
             Assert.That(_realm.All<Person>().Count(), Is.EqualTo(1));
             Assert.That(otherThreadId, Is.Not.EqualTo(currentThreadId));
+        }
+
+        class MyDataObject : RealmObject
+        {
+            [ObjectId]
+            public string Path { get; set; }
+
+            public int? ExpensiveToComputeValue { get; set; }
+        }
+
+        [Test]
+        public async void AsyncWrite_UpdateViaObjectId()
+        {
+            var path = "/path/to/some/item";
+            MyDataObject obj = null;
+            _realm.Write(() =>
+            {
+                obj = _realm.CreateObject<MyDataObject>();
+                obj.Path = path;
+            });
+
+            await _realm.WriteAsync(realm =>
+            {
+                var dataObj = realm.All<MyDataObject>().Single(d => d.Path == path);
+                dataObj.ExpensiveToComputeValue = 123; // imagine this was a very CPU-intensive operation
+            });
+
+            // see #564
+            TestHelpers.RunEventLoop(TimeSpan.FromMilliseconds(100));
+
+            Assert.That(obj.ExpensiveToComputeValue, Is.Not.Null);
         }
     }
 }
