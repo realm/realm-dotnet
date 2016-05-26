@@ -1,0 +1,65 @@
+﻿////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2016 Realm Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+////////////////////////////////////////////////////////////////////////////
+
+using System;
+using System.Threading;
+using NUnit.Framework;
+using Realms;
+
+namespace IntegrationTests.Shared
+{
+    [TestFixture]
+    public class AsyncTests
+    {
+        private Realm _realm;
+
+        [SetUp]
+        public void SetUp()
+        {
+            _realm = Realm.GetInstance();
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            _realm.Close();
+            Realm.DeleteRealm(_realm.Config);
+        }
+
+        [Test]
+        public async void AsyncWrite_ShouldExecuteOnWorkerThread()
+        {
+            var currentThreadId = Thread.CurrentThread.ManagedThreadId;
+            var otherThreadId = currentThreadId;
+
+            Assert.That(_realm.All<Person>().Count(), Is.EqualTo(0));
+            await _realm.WriteAsync(realm =>
+            {
+                otherThreadId = Thread.CurrentThread.ManagedThreadId;
+                realm.CreateObject<Person>();
+            });
+
+            // need to run 
+            TestHelpers.RunEventLoop(TimeSpan.FromMilliseconds(100));
+
+            Assert.That(_realm.All<Person>().Count(), Is.EqualTo(1));
+            Assert.That(otherThreadId, Is.Not.EqualTo(currentThreadId));
+        }
+    }
+}
+
