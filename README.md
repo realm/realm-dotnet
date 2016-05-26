@@ -67,6 +67,10 @@ If you are actively testing code against the Realm source, see also the unit tes
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for more details!
 
+This project adheres to the [Contributor Covenant Code of Conduct](https://realm.io/conduct).
+By participating, you are expected to uphold this code. Please report
+unacceptable behavior to [info@realm.io](mailto:info@realm.io).
+
 ## License
 
 Realm is published under the Apache 2.0 license.  
