@@ -25,6 +25,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.ConstrainedExecution;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 #if __IOS__
 using ObjCRuntime;
@@ -612,6 +613,50 @@ namespace Realms
                 action();
                 transaction.Commit();
             }
+        }
+
+        /// <summary>
+        /// Execute an action inside a temporary transaction on a worker thread. If no exception is thrown, the transaction will automatically
+        /// be committed.
+        /// </summary>
+        /// <remarks>
+        /// Opens a new instance of this realm on a worker thread and executes <c>action</c> inside a write transaction.
+        /// Realms and realm objects are thread-affine, so capturing any such objects in the <c>action</c> delegate will lead to errors
+        /// if they're used on the worker thread.
+        /// </remarks>
+        /// <example>
+        /// await realm.WriteAsync(tempRealm =&gt; 
+        /// {
+        ///     var pongo = tempRealm.All&lt;Dog&gt;().Single(d =&gt; d.Name == "Pongo");
+        ///     var missis = tempRealm.All&lt;Dog&gt;().Single(d =&gt; d.Name == "Missis");
+        ///     for (var i = 0; i &lt; 15; i++)
+        ///     {
+        ///         var pup = tempRealm.CreateObject&lt;Dog&gt;();
+        ///         pup.Breed = "Dalmatian";
+        ///         pup.Mum = missis;
+        ///         pup.Dad = pongo;
+        ///     }
+        /// });
+        /// </example>
+        /// <param name="action">Action to perform inside a transaction, creating, updating or removing objects.</param>
+        public Task WriteAsync(Action<Realm> action)
+        {
+            if (action == null)
+            {
+                throw new ArgumentNullException(nameof(action));
+            }
+
+            // avoid capturing `this` in the lambda
+            var configuration = Config;
+            return Task.Run(() =>
+            {
+                using (var realm = GetInstance(configuration))
+                using (var transaction = realm.BeginWrite())
+                {
+                    action(realm);
+                    transaction.Commit();
+                }
+            });
         }
 
         /// <summary>

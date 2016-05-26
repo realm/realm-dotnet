@@ -41,6 +41,8 @@ namespace IntegrationTests.XamarinAndroid
 
 		public override void OnStart ()
 		{
+            NativeMethods.ALooper_prepare(0);
+
 			using (var output = Context.OpenFileOutput ("TestResults.Android.xml", FileCreationMode.WorldReadable)) 
 			{
 				IntegrationTests.Shared.TestRunner.Run ("Xamarin.Android", output);
@@ -48,6 +50,12 @@ namespace IntegrationTests.XamarinAndroid
 
 			this.Finish (Result.Ok, null);
 		}
+
+        private static class NativeMethods
+        {
+            [System.Runtime.InteropServices.DllImport("android")]
+            internal static extern IntPtr ALooper_prepare(int opts);
+        }
 	}
 }
 
