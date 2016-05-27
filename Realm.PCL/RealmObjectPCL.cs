@@ -170,6 +170,12 @@ namespace Realms
             return null;
         }
 
+        protected byte[] GetByteArrayValue(string propertyName)
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
+        }
+
         #endregion
 
         #region Setters
@@ -300,6 +306,11 @@ namespace Realms
         }
 
         protected void SetObjectValue<T>(string propertyName, T value) where T : RealmObject
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+        }
+
+        protected byte[] SetByteArrayValue(string propertyName, byte[] value)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }

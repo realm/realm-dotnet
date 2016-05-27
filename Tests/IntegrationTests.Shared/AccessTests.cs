@@ -16,8 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
+using System.Collections.Generic;
 using System.IO;
 using NUnit.Framework;
+using NUnit.Framework.Constraints;
 using Realms;
 
 namespace IntegrationTests.Shared
@@ -41,15 +44,36 @@ namespace IntegrationTests.Shared
             Realm.DeleteRealm(_realm.Config);
         }
 
-        [TestCase("NullableCharProperty", '0')]
-        [TestCase("NullableByteProperty", (byte)100)]
-        [TestCase("NullableInt16Property", (short)100)]
-        [TestCase("NullableInt32Property", 100)]
-        [TestCase("NullableInt64Property", 100L)]
-        [TestCase("NullableSingleProperty", 123.123f)] 
-        [TestCase("NullableDoubleProperty", 123.123)] 
-        [TestCase("NullableBooleanProperty", true)]
-        [TestCase("StringProperty", "foo")]
+        [TestCaseSource(nameof(SetAndGetValueCases))]
+        public void SetAndGetValue(string propertyName, object propertyValue)
+        {
+            AllTypesObject ato;
+            using (var transaction = _realm.BeginWrite())
+            {
+                ato = _realm.CreateObject<AllTypesObject>();
+
+                TestHelpers.SetPropertyValue(ato, propertyName, propertyValue);
+                transaction.Commit();
+            }
+
+            Assert.That(TestHelpers.GetPropertyValue(ato, propertyName), Is.EqualTo(propertyValue));
+        }
+
+        public IEnumerable<object[]> SetAndGetValueCases()
+        {
+            yield return new object[] { "CharProperty", '0' };
+            yield return new object[] { "ByteProperty", (byte)100 };
+            yield return new object[] { "Int16Property", (short)100 };
+            yield return new object[] { "Int32Property", 100 };
+            yield return new object[] { "Int64Property", 100L };
+            yield return new object[] { "SingleProperty", 123.123f };
+            yield return new object[] { "DoubleProperty", 123.123 };
+            yield return new object[] { "BooleanProperty", true };
+            yield return new object[] { "ByteArrayProperty", new byte[] { 0xde, 0xad, 0xbe, 0xef } };
+            yield return new object[] { "StringProperty", "hello" };
+        }
+
+        [TestCaseSource(nameof(SetAndReplaceWithNullCases))]
         public void SetValueAndReplaceWithNull(string propertyName, object propertyValue)
         {
             AllTypesObject ato;
@@ -70,6 +94,20 @@ namespace IntegrationTests.Shared
             }
 
             Assert.That(TestHelpers.GetPropertyValue(ato, propertyName), Is.EqualTo(null));
+        }
+
+        public IEnumerable<object[]> SetAndReplaceWithNullCases()
+        {
+            yield return new object[] { "NullableCharProperty", '0' };
+            yield return new object[] { "NullableByteProperty", (byte)100 };
+            yield return new object[] { "NullableInt16Property", (short)100 };
+            yield return new object[] { "NullableInt32Property", 100 };
+            yield return new object[] { "NullableInt64Property", 100L };
+            yield return new object[] { "NullableSingleProperty", 123.123f };
+            yield return new object[] { "NullableDoubleProperty", 123.123 };
+            yield return new object[] { "NullableBooleanProperty", true };
+            yield return new object[] { "ByteArrayProperty", new byte[] { 0xde, 0xad, 0xbe, 0xef } };
+            yield return new object[] { "StringProperty", "hello" };
         }
     }
 }

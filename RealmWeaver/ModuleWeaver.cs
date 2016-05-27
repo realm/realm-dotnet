@@ -121,6 +121,7 @@ public class ModuleWeaver
             {"System.Double", "Double"},
             {"System.Boolean", "Boolean"},
             {"System.DateTimeOffset", "DateTimeOffset"},
+            {"System.Byte[]", "ByteArray"},
             {"System.Nullable`1<System.Char>", "NullableChar"},
             {"System.Nullable`1<System.Byte>", "NullableByte"},
             {"System.Nullable`1<System.Int16>", "NullableInt16"},
