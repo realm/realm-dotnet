@@ -33,6 +33,8 @@ namespace IntegrationTests
 
         public DateTimeOffset Birthday { get; set; }
 
+        public byte[] PublicCertificateBytes { get; set; }
+
         // Property that's not persisted in Realm
         [Ignored]
         public bool IsOnline { get; set; }

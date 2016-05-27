@@ -235,6 +235,19 @@ namespace IntegrationTests
         }
 
         [Test]
+        public void SearchComparingByteArrays()
+        {
+            var DEADBEEF = new byte[] { 0xde, 0xad, 0xbe, 0xef };
+            var CAFEBABE = new byte[] { 0xca, 0xfe, 0xba, 0xbe };
+
+            var equality = _realm.All<Person>().Where(p => p.PublicCertificateBytes == CAFEBABE);
+            Assert.That(equality.Single().PublicCertificateBytes, Is.EqualTo(CAFEBABE));
+
+            var unequality = _realm.All<Person>().Where(p => p.PublicCertificateBytes != DEADBEEF);
+            Assert.That(unequality.Count(), Is.EqualTo(2));
+        }
+
+        [Test]
         public void AnySucceeds()
         {
             Assert.That( _realm.All<Person>().Where(p => p.Latitude > 50).Any());

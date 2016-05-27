@@ -30,6 +30,12 @@ namespace Realms
         //returns q again, the QueryHandle object is re-used and keeps its pointer.
         //so high-level stuff should also return self, to enable stacking of operations QueryHandle.dothis().dothat()
 
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_binary_equal", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void binary_equal(QueryHandle queryPtr, IntPtr columnIndex, IntPtr buffer, IntPtr bufferLength);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_binary_not_equal", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void binary_not_equal(QueryHandle queryPtr, IntPtr columnIndex, IntPtr buffer, IntPtr bufferLength);
+
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_string_contains", CallingConvention = CallingConvention.Cdecl)]
         internal static extern void string_contains(QueryHandle queryPtr, IntPtr columnIndex,
             [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen);
