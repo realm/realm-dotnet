@@ -38,7 +38,7 @@ namespace Realms
         /// Standard filename to be combined with the platform-specific document directory.
         /// </summary>
         /// <value>A string representing a filename only, no path.</value>      
-        public static string DefaultRealmName  => "default.realm";
+        public static string DefaultRealmName { get; }
 
         /// <summary>
         /// Constant used for SchemaVersion to indicate is not versioned.
@@ -47,7 +47,7 @@ namespace Realms
         /// Must be maintained to match an internal ObjectStore::NotVersioned.
         /// </remarks>
         /// <value>Maximum value of UInt64.</value>
-        public static UInt64 NotVersioned => UInt64.MaxValue;
+        public static UInt64 NotVersioned { get; }
 
         /// <summary>
         /// Flag mainly to help with temp databases and testing, indicates content can be abandoned when you change the schema.
@@ -55,9 +55,35 @@ namespace Realms
         public readonly bool ShouldDeleteIfMigrationNeeded;
 
         /// <summary>
+        /// Flag to indicate Realm is opened readonly so can open from locked locations such as bundled with an application.
+        /// </summary>
+        public bool ReadOnly;
+
+        /// <summary>
         /// The full path of any realms opened with this configuration, may be overriden by passing in a separate name.
         /// </summary>
         public string DatabasePath {get; private set;}
+
+        /// <summary>
+        /// The list of classes persisted in a Realm opened with this configuration.
+        /// </summary>
+        /// <remarks>Specify classes by type. Searched linearly so order in decreasing frequency of creating objects.</remarks>
+        /// <example>eg: `config.ObjectClasses = new Type[] { typeof(CommonClass), typeof(RareClass) };`</example>
+        /// <value>Typically left null so by default all RealmObjects will be able to be stored in all realms.</value>
+        public Type[] ObjectClasses { get; set; }
+
+        /// <summary>
+        /// Specify the key used to encrypt the entire Realm. Once set, must be specified each time file is used.
+        /// </summary>
+        /// <value>Full 64byte (512bit) key for AES-256 encryption.</value>
+        public byte[] EncryptionKey { get; set; }
+
+        /// <summary>
+        /// Configuration you can override which is used when you create a new Realm without specifying a configuration.
+        /// </summary>
+        /// Number indicating the version, can be used to arbitrarily distinguish between schemas even if they have the same objects and properties.
+        /// <value>0-based value initially set to indicate user is not versioning.</value>
+        public UInt64 SchemaVersion { get; set; }
 
         /// <summary>
         /// Utility to build a path in which a realm will be created so can consistently use filenames and relative paths.
@@ -69,14 +95,6 @@ namespace Realms
         }
 
         /// <summary>
-        /// Number indicating the version, can be used to arbitrarily distinguish between schemas even if they have the same objects and properties.
-        /// </summary>
-        /// <value>0-based value initially set to indicate user is not versioning.</value>
-        public UInt64 SchemaVersion { get; set;} = RealmConfiguration.NotVersioned;
-
-        /// <summary>
-        /// Configuration you can override which is used when you create a new Realm without specifying a configuration.
-        /// </summary>
         public static RealmConfiguration DefaultConfiguration
         {
             set {} 
