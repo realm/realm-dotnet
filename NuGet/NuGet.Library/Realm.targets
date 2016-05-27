@@ -3,24 +3,24 @@
 <!-- Puts a copy of RealmWeaver.Fody.dll where it will be found by Fody -->
   <Target Name="CopyRealmWeaver" BeforeTargets="FodyTarget">
     <Message Text="CopyRealmWeaver" />
-    <Copy SourceFiles="$(SolutionDir)packages/Realm.0.74.1/tools/RealmWeaver.Fody.dll" DestinationFolder="$(SolutionDir)/Tools" />
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)../tools/RealmWeaver.Fody.dll" DestinationFolder="$(SolutionDir)/Tools" />
   </Target>
   <ItemGroup>
     <None Include="FodyWeavers.xml" />
 	</ItemGroup>
 	<ItemGroup>
-	    <AndroidNativeLibrary Include="$(SolutionDir)packages/Realm.0.74.1/lib/MonoAndroid44/armeabi-v7a/libwrappers.so">
-	        <Link>$(SolutionDir)packages/Realm.0.74.1/lib/MonoAndroid44/armeabi-v7a/libwrappers.so</Link>
+	    <AndroidNativeLibrary Include="$(MSBuildThisFileDirectory)../lib/MonoAndroid44/armeabi-v7a/libwrappers.so">
+	        <Link>$(MSBuildThisFileDirectory)../lib/MonoAndroid44/armeabi-v7a/libwrappers.so</Link>
 	    </AndroidNativeLibrary>
-	    <AndroidNativeLibrary Include="$(SolutionDir)packages/Realm.0.74.1/lib/MonoAndroid44/x86/libwrappers.so">
-	        <Link>$(SolutionDir)packages/Realm.0.74.1/lib/MonoAndroid44/x86/libwrappers.so</Link>
+	    <AndroidNativeLibrary Include="$(MSBuildThisFileDirectory)../lib/MonoAndroid44/x86/libwrappers.so">
+	        <Link>$(MSBuildThisFileDirectory)../lib/MonoAndroid44/x86/libwrappers.so</Link>
 	    </AndroidNativeLibrary>
 	<!-- 64bit -->
-	    <AndroidNativeLibrary Include="$(SolutionDir)packages/Realm.0.74.1/lib/MonoAndroid44/arm64-v8a/libwrappers.so">
-	        <Link>$(SolutionDir)packages/Realm.0.74.1/lib/MonoAndroid44/arm64-v8a/libwrappers.so</Link>
+	    <AndroidNativeLibrary Include="$(MSBuildThisFileDirectory)../lib/MonoAndroid44/arm64-v8a/libwrappers.so">
+	        <Link>$(MSBuildThisFileDirectory)../lib/MonoAndroid44/arm64-v8a/libwrappers.so</Link>
 	    </AndroidNativeLibrary>
-	    <AndroidNativeLibrary Include="$(SolutionDir)packages/Realm.0.74.1/lib/MonoAndroid44/x86_64/libwrappers.so">
-	        <Link>$(SolutionDir)packages/Realm.0.74.1/lib/MonoAndroid44/x86_64/libwrappers.so</Link>
+	    <AndroidNativeLibrary Include="$(MSBuildThisFileDirectory)../lib/MonoAndroid44/x86_64/libwrappers.so">
+	        <Link>$(MSBuildThisFileDirectory)../lib/MonoAndroid44/x86_64/libwrappers.so</Link>
     </AndroidNativeLibrary>
     </ItemGroup>
 </Project>
