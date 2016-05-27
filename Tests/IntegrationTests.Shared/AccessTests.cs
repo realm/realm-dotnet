@@ -70,6 +70,7 @@ namespace IntegrationTests.Shared
             yield return new object[] { "DoubleProperty", 123.123 };
             yield return new object[] { "BooleanProperty", true };
             yield return new object[] { "ByteArrayProperty", new byte[] { 0xde, 0xad, 0xbe, 0xef } };
+            yield return new object[] { "ByteArrayProperty", new byte[0] };
             yield return new object[] { "StringProperty", "hello" };
         }
 
@@ -107,6 +108,7 @@ namespace IntegrationTests.Shared
             yield return new object[] { "NullableDoubleProperty", 123.123 };
             yield return new object[] { "NullableBooleanProperty", true };
             yield return new object[] { "ByteArrayProperty", new byte[] { 0xde, 0xad, 0xbe, 0xef } };
+            yield return new object[] { "ByteArrayProperty", new byte[0] };
             yield return new object[] { "StringProperty", "hello" };
         }
     }

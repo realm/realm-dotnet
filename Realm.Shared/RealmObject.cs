@@ -729,12 +729,19 @@ namespace Realms
             if (value == null)
             {
                 NativeTable.set_null(_metadata.Table, _metadata.ColumnIndices[propertyName], (IntPtr)_rowHandle.RowIndex);
-                return;
             }
-
-            fixed (byte* buffer = value)
+            else if (value.Length == 0)
             {
-                NativeTable.set_binary(_metadata.Table, _metadata.ColumnIndices[propertyName], (IntPtr)_rowHandle.RowIndex, (IntPtr)buffer, (IntPtr)value.LongLength);
+                // empty byte arrays are expressed in terms of a BinaryData object with a dummy pointer and zero size
+                // that's how core differentiates between empty and null buffers
+                NativeTable.set_binary(_metadata.Table, _metadata.ColumnIndices[propertyName], (IntPtr)_rowHandle.RowIndex, (IntPtr)0x1, IntPtr.Zero);
+            }
+            else
+            {
+                fixed (byte* buffer = value)
+                {
+                    NativeTable.set_binary(_metadata.Table, _metadata.ColumnIndices[propertyName], (IntPtr)_rowHandle.RowIndex, (IntPtr)buffer, (IntPtr)value.LongLength);
+                }
             }
         }
 

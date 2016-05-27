@@ -366,6 +366,13 @@ namespace Realms
             else if (valueType == typeof(byte[]))
             {
                 var buffer = (byte[])value;
+                if (buffer.Length == 0)
+                {
+                    // see RealmObject.SetByteArrayValue
+                    NativeQuery.binary_equal(queryHandle, columnIndex, (IntPtr)0x1, IntPtr.Zero);
+                    return;
+                }
+
                 unsafe
                 {
                     fixed (byte* bufferPtr = (byte[])value)
@@ -401,6 +408,13 @@ namespace Realms
             else if (valueType == typeof(byte[]))
             {
                 var buffer = (byte[])value;
+                if (buffer.Length == 0)
+                {
+                    // see RealmObject.SetByteArrayValue
+                    NativeQuery.binary_not_equal(queryHandle, columnIndex, (IntPtr)0x1, IntPtr.Zero);
+                    return;
+                }
+
                 unsafe
                 {
                     fixed (byte* bufferPtr = (byte[])value)
