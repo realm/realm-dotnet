@@ -4,6 +4,7 @@
 ### Major Changes
 * `RealmResults<T>` can be observed for granular changes via the new `SubscribeForNotifications` method.
 * `Realm` gained the `WriteAsync` method which allows a write transaction to be executed on a background thread.
+* Realm models can now use `byte[]` properties to store binary data.
 
 ### Breaking Changes
 * File format of Realm files is changed. Files will be automatically upgraded but opening a Realm file with older versions of Realm is not possible.
