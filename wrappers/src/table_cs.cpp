@@ -24,6 +24,7 @@
 #include "shared_linklist.hpp"
 
 #include <memory>
+#include "timestamp_helpers.hpp"
 
 using namespace realm;
 using namespace realm::binding;
@@ -158,20 +159,20 @@ REALM_EXPORT size_t table_get_string(const Table* table_ptr, size_t column_ndx, 
     });
 }
 
-REALM_EXPORT int64_t table_get_datetime_seconds(const Table* table_ptr, size_t column_ndx, size_t row_ndx)
+REALM_EXPORT int64_t table_get_timestamp_milliseconds(const Table* table_ptr, size_t column_ndx, size_t row_ndx)
 {
     return handle_errors([&]() {
-        return table_ptr->get_datetime(column_ndx, row_ndx).get_datetime();
+        return to_milliseconds(table_ptr->get_timestamp(column_ndx, row_ndx));
     });
 }
 
-REALM_EXPORT size_t table_get_nullable_datetime_seconds(const Table* table_ptr, size_t column_ndx, size_t row_ndx, int64_t& ret_value)
+REALM_EXPORT size_t table_get_nullable_timestamp_milliseconds(const Table* table_ptr, size_t column_ndx, size_t row_ndx, int64_t& ret_value)
 {
     return handle_errors([&]() {
         if (table_ptr->is_null(column_ndx, row_ndx))
             return 0;
 
-        ret_value = table_ptr->get_datetime(column_ndx, row_ndx).get_datetime();
+        ret_value = to_milliseconds(table_ptr->get_timestamp(column_ndx, row_ndx));
         return 1;
     });
 }
@@ -251,11 +252,10 @@ REALM_EXPORT void table_set_string_unique(Table* table_ptr, size_t column_ndx, s
     });
 }
 
-REALM_EXPORT void table_set_datetime_seconds(Table* table_ptr, size_t column_ndx, size_t row_ndx, int64_t value)
+REALM_EXPORT void table_set_timestamp_milliseconds(Table* table_ptr, size_t column_ndx, size_t row_ndx, int64_t value)
 {
     return handle_errors([&]() {
-        DateTime dt(value);
-        table_ptr->set_datetime(column_ndx, row_ndx, dt);
+        table_ptr->set_timestamp(column_ndx, row_ndx, from_milliseconds(value));
     });
 }
 

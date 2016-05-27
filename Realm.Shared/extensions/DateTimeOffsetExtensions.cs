@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -24,14 +24,14 @@ internal static class DateTimeOffsetExtensions
 {
     private static readonly DateTimeOffset UnixEpoch = new DateTimeOffset(1970, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
-    internal static long ToUnixTimeSeconds(this DateTimeOffset @this)
+    internal static long ToRealmUnixTimeMilliseconds(this DateTimeOffset @this)
     {
-        return Convert.ToInt64((@this.ToUniversalTime() - UnixEpoch).TotalSeconds);
+        return Convert.ToInt64((@this.ToUniversalTime() - UnixEpoch).TotalMilliseconds);
     }
 
-    internal static DateTimeOffset FromUnixTimeSeconds(long seconds)
+    internal static DateTimeOffset FromRealmUnixTimeMilliseconds( Int64 ms)
     {
-        return UnixEpoch.AddSeconds(seconds);
+        return UnixEpoch.AddMilliseconds(ms);
     }
 }
 

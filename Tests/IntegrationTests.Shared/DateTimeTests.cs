@@ -48,10 +48,15 @@ namespace IntegrationTests.Shared
             Realm.DeleteRealm(_realm.Config);
         }
 
+
         [Test]
-        public void SetAndGetPropertyTest()
+        public void SetAndGetPropertyTest(
+            [Values(0, 11, 23)] Int32 hour,
+            [Values(0, 6, 30, 59)] Int32 mins,
+            [Values(0, 6, 30, 59)] Int32 secs,
+            [Values(0, 1, 999)] Int32 ms)
         {
-            var turingsBirthday = new DateTimeOffset(1912, 6, 23, 0, 0, 0, TimeSpan.Zero);
+            var turingsBirthday = new DateTimeOffset(1912, 6, 23, hour, mins, secs, ms, TimeSpan.Zero);
 
             Person turing;
             using (var transaction = _realm.BeginWrite())
@@ -68,5 +73,50 @@ namespace IntegrationTests.Shared
 
             Assert.That(turingAgain.Birthday, Is.EqualTo(turingsBirthday));
         }
+
+
+        [Test]
+        public void SortingFinelyDifferentDateTimes()
+        {
+            using (var transaction = _realm.BeginWrite()) {
+                foreach (var ms in new List<Int32> { 10, 999, 998, 42 }) {
+                    var birthday = new DateTimeOffset(1912, 6, 23, 23, 59, 59, ms, TimeSpan.Zero);
+                    foreach (var addMs in new List<double> { -2000.0, 1.0, -1.0, 1000.0, 100.0 }) {
+                        Person turing = _realm.CreateObject<Person>();
+                        turing.Birthday = birthday.AddMilliseconds(addMs);
+                    }
+                }
+                transaction.Commit();
+            }
+
+            // Assert
+            var sortedTurings = _realm.All<Person>().OrderBy(p => p.Birthday);
+            DateTimeOffset prevB = new DateTimeOffset();
+            foreach (var t in sortedTurings) {
+                Assert.That(t.Birthday.ToRealmUnixTimeMilliseconds(), Is.GreaterThan(prevB.ToRealmUnixTimeMilliseconds()));
+                prevB = t.Birthday;
+            }
+        }
+
+
+        [Test]
+        public void FindingByMilliseconds()
+        {
+            var birthday = new DateTimeOffset(1912, 6, 23, 23, 59, 59, 0, TimeSpan.Zero);
+            using (var transaction = _realm.BeginWrite()) {
+                foreach (var addMs in new List<double> { 0.0, 1.0, -1.0 }) {
+                    Person turing = _realm.CreateObject<Person>();
+                    turing.Birthday = birthday.AddMilliseconds(addMs);
+                }
+                transaction.Commit();
+            }
+
+            // Assert
+            Assert.That(_realm.All<Person>().Count(p => p.Birthday < birthday), Is.EqualTo(1));
+            Assert.That(_realm.All<Person>().Count(p => p.Birthday == birthday), Is.EqualTo(1));
+            Assert.That(_realm.All<Person>().Count(p => p.Birthday >= birthday), Is.EqualTo(2));
+            Assert.That(_realm.All<Person>().Count(p => p.Birthday > birthday), Is.EqualTo(1));
+        }
+
     }
 }
