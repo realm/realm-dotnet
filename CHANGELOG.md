@@ -1,4 +1,4 @@
-0.75.0 (pending fix of issue 516 - core 0.99 onwards freeze)
+0.75.0 (work in progress)
 -------------------
 
 ### Major Changes
@@ -6,11 +6,8 @@
 * `Realm` gained the `WriteAsync` method which allows a write transaction to be executed on a background thread.
 
 ### Breaking Changes
-* File format of Realm files is changed. Files will be automatically upgraded but opening a Realm file with older versions of Realm is not possible.
+* File format of Realm files is changed. Files will be automatically upgraded but opening a Realm file with older versions of Realm is not possible. (This brings Xamarin up to compatibility with the current 1.0 release and OS X Realm Browser available from Mac App Store).
 * `RealmResults<T>` no longer implicitly implements `INotifyCollectionChanged`.
-
-Work in progress
-----------------
 
 ### Minor Fixes
 * Setting `null` to a string property will now correctly return `null`
