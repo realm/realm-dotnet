@@ -31,9 +31,10 @@ namespace IntegrationTests.Shared
         public float SingleProperty { get; set; }
         public double DoubleProperty { get; set; }
         public bool BooleanProperty { get; set; }
+        public DateTimeOffset DateTimeOffsetProperty { get; set; }
 
         public string StringProperty { get; set; }
-        public DateTimeOffset DateTimeOffsetProperty { get; set; }
+        public byte[] ByteArrayProperty { get; set; }
 
         public char? NullableCharProperty { get; set; }
         public byte? NullableByteProperty { get; set; }

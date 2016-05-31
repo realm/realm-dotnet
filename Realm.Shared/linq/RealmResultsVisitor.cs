@@ -363,6 +363,24 @@ namespace Realms
                 NativeQuery.double_equal((QueryHandle)queryHandle, columnIndex, (double)value);
             else if (valueType == typeof(DateTimeOffset))
                 NativeQuery.datetime_seconds_equal(queryHandle, columnIndex, ((DateTimeOffset)value).ToUnixTimeSeconds());
+            else if (valueType == typeof(byte[]))
+            {
+                var buffer = (byte[])value;
+                if (buffer.Length == 0)
+                {
+                    // see RealmObject.SetByteArrayValue
+                    NativeQuery.binary_equal(queryHandle, columnIndex, (IntPtr)0x1, IntPtr.Zero);
+                    return;
+                }
+
+                unsafe
+                {
+                    fixed (byte* bufferPtr = (byte[])value)
+                    {
+                        NativeQuery.binary_equal(queryHandle, columnIndex, (IntPtr)bufferPtr, (IntPtr)buffer.LongLength);
+                    }
+                }
+            }
             else
                 throw new NotImplementedException();
         }
@@ -387,6 +405,24 @@ namespace Realms
                 NativeQuery.double_not_equal((QueryHandle)queryHandle, columnIndex, (double)value);
             else if (valueType == typeof(DateTimeOffset))
                 NativeQuery.datetime_seconds_not_equal(queryHandle, columnIndex, ((DateTimeOffset)value).ToUnixTimeSeconds());
+            else if (valueType == typeof(byte[]))
+            {
+                var buffer = (byte[])value;
+                if (buffer.Length == 0)
+                {
+                    // see RealmObject.SetByteArrayValue
+                    NativeQuery.binary_not_equal(queryHandle, columnIndex, (IntPtr)0x1, IntPtr.Zero);
+                    return;
+                }
+
+                unsafe
+                {
+                    fixed (byte* bufferPtr = (byte[])value)
+                    {
+                        NativeQuery.binary_not_equal(queryHandle, columnIndex, (IntPtr)bufferPtr, (IntPtr)buffer.LongLength);
+                    }
+                }
+            }
             else
                 throw new NotImplementedException();
         }

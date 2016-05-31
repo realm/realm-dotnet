@@ -59,6 +59,7 @@ namespace IntegrationTests
                 p1.Latitude = 51.508530;
                 p1.Longitude = 0.076132;
                 p1.Birthday = new DateTimeOffset(1959, 3, 13, 0, 0, 0, TimeSpan.Zero);
+                p1.PublicCertificateBytes = new byte[] { 0xca, 0xfe, 0xba, 0xbe };
                 transaction.Commit();
             }
             Debug.WriteLine("p1 is named " + p1.FullName);
@@ -73,6 +74,7 @@ namespace IntegrationTests
                 p2.Latitude = 40.7637286;
                 p2.Longitude = -73.9748113;
                 p2.Birthday = new DateTimeOffset(1963, 4, 14, 0, 0, 0, TimeSpan.Zero);
+                p2.PublicCertificateBytes = new byte[] { 0xde, 0xad, 0xbe, 0xef };
                 transaction.Commit();
             }
             Debug.WriteLine("p2 is named " + p2.FullName);

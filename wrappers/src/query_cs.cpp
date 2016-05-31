@@ -320,4 +320,18 @@ REALM_EXPORT void query_datetime_seconds_greater_equal(Query* query_ptr, size_t 
     });
 }
 
+REALM_EXPORT void query_binary_equal(Query* query_ptr, size_t columnIndex, char* buffer, size_t buffer_length)
+{
+    handle_errors([&]() {
+        query_ptr->equal(columnIndex, BinaryData(buffer, buffer_length));
+    });
+}
+
+REALM_EXPORT void query_binary_not_equal(Query* query_ptr, size_t columnIndex, char* buffer, size_t buffer_length)
+{
+    handle_errors([&]() {
+        query_ptr->not_equal(columnIndex, BinaryData(buffer, buffer_length));
+    });
+}
+
 }   // extern "C"

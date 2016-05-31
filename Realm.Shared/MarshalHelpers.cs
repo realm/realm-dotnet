@@ -51,6 +51,8 @@ namespace Realms
                 return (IntPtr)7;  // type_DateTime
             if (columnType == typeof(bool) || columnType == typeof(bool?))
                 return (IntPtr)1;  // type_Bool
+            if (columnType == typeof (byte[]))
+                return (IntPtr) 4; // type_Data
             if (columnType.BaseType == typeof(RealmObject))
                 return (IntPtr)12;  // type_Link
             if (columnType.IsGenericType)
@@ -61,7 +63,6 @@ namespace Realms
             }
             /*
             TODO
-                    Binary = 4,  // type_Binary
                     Table = 5, // type_Table for sub-tables, not relatinoships????
                     Mixed = 6, // type_Mixed
 

@@ -341,6 +341,22 @@ namespace Realms
             return (T)MakeRealmObject(typeof(T), linkedRowPtr);
         }
 
+        protected byte[] GetByteArrayValue(string propertyName)
+        {
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
+
+            int bufferSize;
+            IntPtr buffer;
+            if (NativeTable.get_binary(_metadata.Table, _metadata.ColumnIndices[propertyName], (IntPtr)_rowHandle.RowIndex, out buffer, out bufferSize) != IntPtr.Zero)
+            {
+                var bytes = new byte[bufferSize];
+                Marshal.Copy(buffer, bytes, 0, bufferSize);
+                return bytes;
+            }
+
+            return null;
+        }
+
         #endregion
 
         #region Setters
@@ -700,6 +716,32 @@ namespace Realms
                 if (!value.IsManaged)
                     _realm.Manage(value);
                 NativeTable.set_link(_metadata.Table, _metadata.ColumnIndices[propertyName], (IntPtr)rowIndex, (IntPtr)value.RowHandle.RowIndex);
+            }
+        }
+
+        protected unsafe void SetByteArrayValue(string propertyName, byte[] value)
+        {
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
+
+            if (!_realm.IsInTransaction)
+                throw new RealmOutsideTransactionException("Cannot set values outside transaction");
+
+            if (value == null)
+            {
+                NativeTable.set_null(_metadata.Table, _metadata.ColumnIndices[propertyName], (IntPtr)_rowHandle.RowIndex);
+            }
+            else if (value.Length == 0)
+            {
+                // empty byte arrays are expressed in terms of a BinaryData object with a dummy pointer and zero size
+                // that's how core differentiates between empty and null buffers
+                NativeTable.set_binary(_metadata.Table, _metadata.ColumnIndices[propertyName], (IntPtr)_rowHandle.RowIndex, (IntPtr)0x1, IntPtr.Zero);
+            }
+            else
+            {
+                fixed (byte* buffer = value)
+                {
+                    NativeTable.set_binary(_metadata.Table, _metadata.ColumnIndices[propertyName], (IntPtr)_rowHandle.RowIndex, (IntPtr)buffer, (IntPtr)value.LongLength);
+                }
             }
         }
 
