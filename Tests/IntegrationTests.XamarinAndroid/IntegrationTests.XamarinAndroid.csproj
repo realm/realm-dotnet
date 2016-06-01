@@ -69,7 +69,7 @@
   </ItemGroup>
   <Import Project="..\IntegrationTests.Shared\IntegrationTests.Shared.projitems" Label="Shared" Condition="Exists('..\IntegrationTests.Shared\IntegrationTests.Shared.projitems')" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
-  <Import Project="..\..\packages\Fody.1.29.3\build\portable-net+sl+win+wpa+wp\Fody.targets" Condition="Exists('..\..\packages\Fody.1.29.3\build\portable-net+sl+win+wpa+wp\Fody.targets')" />
+  <Import Project="..\..\packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets" Condition="Exists('..\..\packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets')" />
   <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
     <AndroidNativeLibrary Include="..\..\wrappers\build\Debug-android\armeabi-v7a\libwrappers.so">
       <Link>wrappers\armeabi-v7\libwrappers.so</Link>
