@@ -10,6 +10,9 @@
 * File format of Realm files is changed. Files will be automatically upgraded but opening a Realm file with older versions of Realm is not possible.
 * `RealmResults<T>` no longer implicitly implements `INotifyCollectionChanged`.
 
+### Minor Fixes
+* Nullable `DateTimeOffset` properties are supported now.
+
 Work in progress
 ----------------
 

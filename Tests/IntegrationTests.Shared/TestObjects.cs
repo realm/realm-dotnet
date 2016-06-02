@@ -44,6 +44,7 @@ namespace IntegrationTests.Shared
         public float? NullableSingleProperty { get; set; }
         public double? NullableDoubleProperty { get; set; }
         public bool? NullableBooleanProperty { get; set; }
+        public DateTimeOffset? NullableDateTimeOffsetProperty { get; set; }
     }
 
     public class ObjectIdCharObject : RealmObject

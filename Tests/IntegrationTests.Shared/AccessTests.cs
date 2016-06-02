@@ -72,6 +72,7 @@ namespace IntegrationTests.Shared
             yield return new object[] { "ByteArrayProperty", new byte[] { 0xde, 0xad, 0xbe, 0xef } };
             yield return new object[] { "ByteArrayProperty", new byte[0] };
             yield return new object[] { "StringProperty", "hello" };
+            yield return new object[] { "DateTimeOffsetProperty", new DateTimeOffset(1956, 6, 1, 0, 0, 0, TimeSpan.Zero) };
         }
 
         [TestCaseSource(nameof(SetAndReplaceWithNullCases))]
@@ -110,6 +111,7 @@ namespace IntegrationTests.Shared
             yield return new object[] { "ByteArrayProperty", new byte[] { 0xde, 0xad, 0xbe, 0xef } };
             yield return new object[] { "ByteArrayProperty", new byte[0] };
             yield return new object[] { "StringProperty", "hello" };
+            yield return new object[] { "NullableDateTimeOffsetProperty", new DateTimeOffset(1956, 6, 1, 0, 0, 0, TimeSpan.Zero) };
         }
     }
 }

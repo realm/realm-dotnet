@@ -130,6 +130,7 @@ public class ModuleWeaver
             {"System.Nullable`1<System.Single>", "NullableSingle"},
             {"System.Nullable`1<System.Double>", "NullableDouble"},
             {"System.Nullable`1<System.Boolean>", "NullableBoolean"},
+            {"System.Nullable`1<System.DateTimeOffset>", "NullableDateTimeOffset"}
         };
 
         // Cache of getter and setter methods for the various types.
