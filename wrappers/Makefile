@@ -8,8 +8,8 @@ SRCS=$(wildcard src/*.cpp) $(OS_SRCS)
 SDKROOT=$(shell xcrun --sdk iphoneos --show-sdk-path)
 CXX=$(shell xcrun --sdk iphoneos --find clang++)
 FLAGS=-Icore/include -Isrc/object-store/src -Isrc/object-store/src/impl -Isrc/object-store/src/impl/apple -std=c++14 -stdlib=libc++  
-CORE_APPLE_VER=1.0.1
-CORE_ANDROID_VER=1.0.1
+CORE_APPLE_VER=1.0.2
+CORE_ANDROID_VER=1.0.2
 
 help: ## Show this help.
 	@fgrep -h "##" $(MAKEFILE_LIST) | fgrep -v fgrep | sed -e 's/\\$$//' | sed -e 's/##//'
@@ -33,12 +33,12 @@ ios: build/Release-ios-universal/libwrappers.a
 
 iosdbg: build/Debug-ios-universal/libwrappers.a  
 
-core: realm-core-$(CORE_APPLE_VER).tar.bz2
-	tar xjf realm-core-$(CORE_APPLE_VER).tar.bz2
+core: realm-core-dotnet-cocoa-$(CORE_APPLE_VER).tar.bz2
+	tar xjf realm-core-dotnet-cocoa-$(CORE_APPLE_VER).tar.bz2
 	touch core
 
-realm-core-$(CORE_APPLE_VER).tar.bz2:
-	curl -o realm-core-$(CORE_APPLE_VER).tar.bz2 "http://static.realm.io/downloads/core/realm-core-$(CORE_APPLE_VER).tar.bz2"
+realm-core-dotnet-cocoa-$(CORE_APPLE_VER).tar.bz2:
+	curl -o realm-core-dotnet-cocoa-$(CORE_APPLE_VER).tar.bz2 "http://static.realm.io/downloads/core/realm-core-dotnet-cocoa-$(CORE_APPLE_VER).tar.bz2"
 
 build/Release-osx:
 	mkdir -p build/Release-osx

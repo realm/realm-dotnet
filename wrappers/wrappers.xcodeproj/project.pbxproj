@@ -14,7 +14,7 @@
 		4830D9561C90667F00D34855 /* weak_realm_notifier.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 4830D9521C90667F00D34855 /* weak_realm_notifier.hpp */; };
 		488FF2281C99845100172055 /* debug.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 488FF1F31C997EC600172055 /* debug.cpp */; };
 		488FF2291C99845500172055 /* debug.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 488FF1F41C997EC600172055 /* debug.hpp */; };
-		48D101451B3991B6004A4B2C /* librealm-ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 48D101431B3991B6004A4B2C /* librealm-ios.a */; };
+		48D101451B3991B6004A4B2C /* librealm-ios-no-bitcode.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 48D101431B3991B6004A4B2C /* librealm-ios-no-bitcode.a */; };
 		48D3474F1C74861900CD0E02 /* binding_context.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48D347321C74861900CD0E02 /* binding_context.hpp */; };
 		48D347521C74861900CD0E02 /* external_commit_helper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48D347351C74861900CD0E02 /* external_commit_helper.cpp */; };
 		48D347531C74861900CD0E02 /* external_commit_helper.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48D347361C74861900CD0E02 /* external_commit_helper.hpp */; };
@@ -67,7 +67,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		424267201C070BE500670B1C /* librealm-ios-dbg.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "librealm-ios-dbg.a"; path = "core/librealm-ios-dbg.a"; sourceTree = "<group>"; };
+		424267201C070BE500670B1C /* librealm-ios-no-bitcode-dbg.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "librealm-ios-no-bitcode-dbg.a"; path = "core/librealm-ios-no-bitcode-dbg.a"; sourceTree = "<group>"; };
 		42F739D01C8EFBD00033F0B7 /* results_cs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = results_cs.cpp; path = src/results_cs.cpp; sourceTree = "<group>"; };
 		4830D94F1C90667F00D34855 /* weak_realm_notifier.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = weak_realm_notifier.cpp; path = "src/object-store/src/impl/apple/weak_realm_notifier.cpp"; sourceTree = "<group>"; };
 		4830D9501C90667F00D34855 /* weak_realm_notifier.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = weak_realm_notifier.hpp; path = "src/object-store/src/impl/apple/weak_realm_notifier.hpp"; sourceTree = "<group>"; };
@@ -76,7 +76,7 @@
 		488FF1F31C997EC600172055 /* debug.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = debug.cpp; path = src/debug.cpp; sourceTree = "<group>"; };
 		488FF1F41C997EC600172055 /* debug.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = debug.hpp; path = src/debug.hpp; sourceTree = "<group>"; };
 		48D101381B39902E004A4B2C /* libwrappers.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libwrappers.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		48D101431B3991B6004A4B2C /* librealm-ios.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "librealm-ios.a"; path = "core/librealm-ios.a"; sourceTree = "<group>"; };
+		48D101431B3991B6004A4B2C /* librealm-ios-no-bitcode.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "librealm-ios-no-bitcode.a"; path = "core/librealm-ios-no-bitcode.a"; sourceTree = "<group>"; };
 		48D347321C74861900CD0E02 /* binding_context.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = binding_context.hpp; path = "src/object-store/src/binding_context.hpp"; sourceTree = "<group>"; };
 		48D347351C74861900CD0E02 /* external_commit_helper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = external_commit_helper.cpp; path = "src/object-store/src/impl/apple/external_commit_helper.cpp"; sourceTree = "<group>"; };
 		48D347361C74861900CD0E02 /* external_commit_helper.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = external_commit_helper.hpp; path = "src/object-store/src/impl/apple/external_commit_helper.hpp"; sourceTree = "<group>"; };
@@ -133,7 +133,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				48D101451B3991B6004A4B2C /* librealm-ios.a in Frameworks */,
+				48D101451B3991B6004A4B2C /* librealm-ios-no-bitcode.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -162,8 +162,8 @@
 				48ED7C621C16F9C200AF23A4 /* shared_linklist.hpp */,
 				48ED7C631C16F9C200AF23A4 /* shared_realm_cs.cpp */,
 				48ED7C641C16F9C200AF23A4 /* table_cs.cpp */,
-				424267201C070BE500670B1C /* librealm-ios-dbg.a */,
-				48D101431B3991B6004A4B2C /* librealm-ios.a */,
+				424267201C070BE500670B1C /* librealm-ios-no-bitcode-dbg.a */,
+				48D101431B3991B6004A4B2C /* librealm-ios-no-bitcode.a */,
 				48D101391B39902E004A4B2C /* Products */,
 			);
 			sourceTree = "<group>";
@@ -461,6 +461,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				ENABLE_BITCODE = NO;
 				EXECUTABLE_PREFIX = lib;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -483,6 +484,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				ENABLE_BITCODE = NO;
 				EXECUTABLE_PREFIX = lib;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
