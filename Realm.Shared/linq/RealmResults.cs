@@ -19,7 +19,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
@@ -49,6 +48,16 @@ namespace Realms
         private ResultsHandle _resultsHandle = null;
 
         public IQueryProvider Provider => _provider;
+
+        internal T this[int index]
+        {
+            get
+            {
+                var row = NativeResults.get_row(ResultsHandle, (IntPtr)index);
+                var rowHandle = Realm.CreateRowHandle(row, _realm.SharedRealmHandle);
+                return (T)(object)_realm.MakeObjectForRow(typeof(T), rowHandle);
+            }
+        }
 
         /// <summary>
         /// A <see cref="ChangeSet" /> describes the changes inside a <see cref="RealmResults{T}" /> since the last time the notification callback was invoked.
@@ -172,6 +181,7 @@ namespace Realms
             public void Dispose()
             {
                 _results.RemoveCallback(_callback);
+                _callback = null;
                 _results = null;
             }
         }
@@ -189,7 +199,7 @@ namespace Realms
         /// <para>
         /// If a write transaction did not modify any objects in this <see cref="RealmResults{T}" />, the callback is not invoked at all.
         /// If an error occurs the callback will be invoked with <c>null</c> for the <c>sender</c> parameter and a non-<c>null</c> <c>error</c>.
-        /// Currently the only errors that can occur are when opening the <see cref="Realm" /> on the background worker thread.
+        /// Currently the only errors that can occur are when opening the <see cref="Realms.Realm" /> on the background worker thread.
         /// </para>
         /// <para>
         /// At the time when the block is called, the <see cref="RealmResults{T}" /> object will be fully evaluated and up-to-date, and as long as you do not perform a write transaction on the same thread
