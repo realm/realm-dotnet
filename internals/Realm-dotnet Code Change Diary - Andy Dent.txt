@@ -2222,8 +2222,16 @@ DateTimeTests.cs
 - SortingFinelyDifferentDateTimes added
 - FindingByMilliseconds added
   
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#461 New DateTime With Core 1.0 .2
 
-wrappers.xcproj
-- enable bitcode
-- change libs to the bitcode versions as core no longer shipping no-bitcode builds
+wrappers/Makefile
+- use core 1.0.2
+- migrate to new realm-core-dotnet-cocoa builds with just no-bitcode libs
+
+IntegrationTests.XamarinIOS.csproj
+- make sure builds include Armv7s as now using that also after user support request
+
+wrappers.xcodeproj
+- revert to no bitcode
     
