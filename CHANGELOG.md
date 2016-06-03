@@ -1,4 +1,4 @@
-0.75.0 (pending fix of issue 516 - core 0.99 onwards freeze)
+0.75.0 (2016-06-02)
 -------------------
 
 ### Major Changes
@@ -13,11 +13,6 @@
 
 ### Minor Fixes
 * Nullable `DateTimeOffset` properties are supported now.
-
-Work in progress
-----------------
-
-### Minor Fixes
 * Setting `null` to a string property will now correctly return `null`
 * Failure to install Fody will now cause an exception like "Realms.RealmException: Fody not properly installed. RDB2_with_full_Realm.Dog is a RealmObject but has not been woven." instead of a `NullReferenceException`
 
