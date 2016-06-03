@@ -22,7 +22,12 @@ namespace QuickJournal
         {
             _realm = Realm.GetInstance();
 
-            Entries = _realm.All<JournalEntry>();
+            Entries = _realm.All<JournalEntry>()
+                            .ToNotifyCollectionChanged(e =>
+                            {
+                                // recover from the error - recreate the query or show message to the user
+                                System.Diagnostics.Debug.WriteLine(e);
+                            }) as IEnumerable<JournalEntry>;
 
             AddEntryCommand = new Command(AddEntry);
             DeleteEntryCommand = new Command<JournalEntry>(DeleteEntry);
