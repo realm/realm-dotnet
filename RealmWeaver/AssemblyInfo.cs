@@ -24,5 +24,5 @@ using System.Reflection;
 [assembly: AssemblyCopyright("Copyright © 2016 Realm")]
 [assembly: AssemblyCompany("Realm Inc.")]
 
-[assembly: AssemblyVersion("0.74.1.0")]
-[assembly: AssemblyFileVersion("0.74.1.0")]
+[assembly: AssemblyVersion("0.75.0.0")]
+[assembly: AssemblyFileVersion("0.75.0.0")]
