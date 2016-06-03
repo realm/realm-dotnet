@@ -38,7 +38,7 @@ namespace Tasky.Shared
 
         public TodoItem GetItem (string id) 
         {
-            return realm.All<TodoItem>().single(i => i.ID == id);
+            return realm.All<TodoItem>().Single(i => i.ID == id);
         }
 
         public void SaveItem (TodoItem item) 
