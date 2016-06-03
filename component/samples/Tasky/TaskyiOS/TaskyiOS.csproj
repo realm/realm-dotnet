@@ -77,7 +77,7 @@
     <Reference Include="System.Data" />
     <Reference Include="Xamarin.iOS" />
     <Reference Include="Realm">
-      <HintPath>..\packages\Realm.0.74.1\lib\Xamarin.iOS10\Realm.dll</HintPath>
+      <HintPath>..\packages\Realm.0.75.0\lib\Xamarin.iOS10\Realm.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -112,7 +112,7 @@
   <Import Project="..\TaskySharedCode\TaskySharedCode.projitems" Label="Shared" Condition="Exists('..\TaskySharedCode\TaskySharedCode.projitems')" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
   <Import Project="..\packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets" Condition="Exists('..\packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets')" />
-  <Import Project="..\packages\Realm.0.74.1\build\Realm.targets" Condition="Exists('..\packages\Realm.0.74.1\build\Realm.targets')" />
+  <Import Project="..\packages\Realm.0.75.0\build\Realm.targets" Condition="Exists('..\packages\Realm.0.75.0\build\Realm.targets')" />
   <ItemGroup>
     <InterfaceDefinition Include="Resources\LaunchScreen.storyboard" />
   </ItemGroup>

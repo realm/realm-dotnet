@@ -83,9 +83,6 @@
     <Reference Include="ICSharpCode.SharpZipLib.Portable">
       <HintPath>..\packages\SharpZipLib.Portable.0.86.0.0003\lib\portable-net45+netcore45+wp8+win8+wpa81+MonoTouch+MonoAndroid+Xamarin.iOS10\ICSharpCode.SharpZipLib.Portable.dll</HintPath>
     </Reference>
-    <Reference Include="Realm">
-      <HintPath>..\packages\Realm.0.74.1\lib\Xamarin.iOS10\Realm.dll</HintPath>
-    </Reference>
     <Reference Include="SQLitePCL.ugly">
       <HintPath>..\packages\SQLitePCL.ugly.0.8.6\lib\portable-net45+netcore45+wp8+MonoAndroid10+MonoTouch10+Xamarin.iOS10\SQLitePCL.ugly.dll</HintPath>
     </Reference>
@@ -119,6 +116,9 @@
     <Reference Include="Couchbase.Lite.Storage.SQLCipher">
       <HintPath>..\packages\Couchbase.Lite.Storage.SQLCipher.1.2.1.1\lib\Xamarin.iOS10\Couchbase.Lite.Storage.SQLCipher.dll</HintPath>
     </Reference>
+    <Reference Include="Realm">
+      <HintPath>..\packages\Realm.0.75.0\lib\Xamarin.iOS10\Realm.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ImageAsset Include="Resources\Images.xcassets\AppIcons.appiconset\Contents.json" />
@@ -141,7 +141,7 @@
   <Import Project="..\Benchmarkr.projitems" Label="Shared" Condition="Exists('..\Benchmarkr.projitems')" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
   <Import Project="..\packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets" Condition="Exists('..\packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets')" />
-  <Import Project="..\packages\Realm.0.74.1\build\Realm.targets" Condition="Exists('..\packages\Realm.0.74.1\build\Realm.targets')" />
   <Import Project="..\packages\SQLitePCL.raw.0.8.6\build\Xamarin.iOS10\SQLitePCL.raw.targets" Condition="Exists('..\packages\SQLitePCL.raw.0.8.6\build\Xamarin.iOS10\SQLitePCL.raw.targets')" />
   <Import Project="..\packages\Xamarin.Forms.2.2.0.31\build\portable-win+net45+wp80+win81+wpa81+MonoAndroid10+MonoTouch10+Xamarin.iOS10\Xamarin.Forms.targets" Condition="Exists('..\packages\Xamarin.Forms.2.2.0.31\build\portable-win+net45+wp80+win81+wpa81+MonoAndroid10+MonoTouch10+Xamarin.iOS10\Xamarin.Forms.targets')" />
+  <Import Project="..\packages\Realm.0.75.0\build\Realm.targets" Condition="Exists('..\packages\Realm.0.75.0\build\Realm.targets')" />
 </Project>
