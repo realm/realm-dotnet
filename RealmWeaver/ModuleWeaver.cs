@@ -154,9 +154,6 @@ public class ModuleWeaver
         var genericSetObjectValueReference = MethodNamed(RealmObject, "SetObjectValue");
         var genericGetListValueReference = MethodNamed(RealmObject, "GetListValue");
 
-        var preserveAttributeClass = RealmAssembly.MainModule.GetTypes().First(x => x.Name == "PreserveAttribute");
-        var preserveAttributeConstructor = ModuleDefinition.Import(preserveAttributeClass.GetConstructors().First());
-
         var wovenAttributeClass = RealmAssembly.MainModule.GetTypes().First(x => x.Name == "WovenAttribute");
         var wovenAttributeConstructor = ModuleDefinition.Import(wovenAttributeClass.GetConstructors().First());
 
@@ -274,12 +271,8 @@ public class ModuleWeaver
                 Debug.WriteLine("");
             }
 
-            var preserveAttribute = new CustomAttribute(preserveAttributeConstructor);
-            var ctor = type.GetConstructors().Single(c => c.Parameters.Count == 0);
-            ctor.CustomAttributes.Add(preserveAttribute);
-
             var wovenAttribute = new CustomAttribute(wovenAttributeConstructor);
-            TypeReference helperType = WeaveRealmObjectHelper(type, preserveAttributeConstructor);
+            TypeReference helperType = WeaveRealmObjectHelper(type);
             wovenAttribute.ConstructorArguments.Add(new CustomAttributeArgument(System_Type, helperType));
             type.CustomAttributes.Add(wovenAttribute);
             Debug.WriteLine("");
@@ -381,7 +374,7 @@ public class ModuleWeaver
             .SingleOrDefault();
     }
 
-    private TypeDefinition WeaveRealmObjectHelper(TypeDefinition realmObjectType, MethodReference preserveAttributeConstructor)
+    private TypeDefinition WeaveRealmObjectHelper(TypeDefinition realmObjectType)
     {
         var helperType = new TypeDefinition(realmObjectType.Namespace, "RealmHelper",
             TypeAttributes.Class | TypeAttributes.NestedPrivate, ModuleDefinition.ImportReference(System_Object));
@@ -404,9 +397,6 @@ public class ModuleWeaver
             il.Emit(OpCodes.Call, ModuleDefinition.ImportReference(System_Object.GetConstructors().Single()));
             il.Emit(OpCodes.Ret);
         }
-
-        var preserveAttribute = new CustomAttribute(preserveAttributeConstructor);
-        ctor.CustomAttributes.Add(preserveAttribute);
 
         helperType.Methods.Add(ctor);
 
