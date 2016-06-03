@@ -1,20 +1,22 @@
 0.75.0 (2016-06-02)
 -------------------
 
+### Breaking Changes
+* File format of Realm files is changed. Files will be automatically upgraded but opening a Realm file with older versions of Realm is not possible.
+* `RealmResults<T>` no longer implicitly implements `INotifyCollectionChanged`. Use the new `ToNotifyCollectionChanged` method instead.
+
 ### Major Changes
 * `RealmResults<T>` can be observed for granular changes via the new `SubscribeForNotifications` method.
 * `Realm` gained the `WriteAsync` method which allows a write transaction to be executed on a background thread.
 * Realm models can now use `byte[]` properties to store binary data.
 * `RealmResults<T>` received a new `ToNotifyCollectionChanged` extension method which produces an `ObservableCollection<T>`-like wrapper suitable for MVVM data binding.
 
-### Breaking Changes
-* File format of Realm files is changed. Files will be automatically upgraded but opening a Realm file with older versions of Realm is not possible.
-* `RealmResults<T>` no longer implicitly implements `INotifyCollectionChanged`. Use the new `ToNotifyCollectionChanged` method instead.
-
 ### Minor Fixes
 * Nullable `DateTimeOffset` properties are supported now.
 * Setting `null` to a string property will now correctly return `null`
 * Failure to install Fody will now cause an exception like "Realms.RealmException: Fody not properly installed. RDB2_with_full_Realm.Dog is a RealmObject but has not been woven." instead of a `NullReferenceException`
+* The PCL `RealmConfiguration` was missing some members.
+* The Fody weaver is now discoverable at non-default nuget repository paths.
 
 
 0.74.1 Released (2016-05-10)
