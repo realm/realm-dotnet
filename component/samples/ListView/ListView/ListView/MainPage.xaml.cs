@@ -40,7 +40,13 @@ namespace Realms.XamarinForms.Examples.ListView
         {
             base.OnAppearing();
             _realm = Realm.GetInstance();
-            listView.ItemsSource = _realm.All<DemoObject>().OrderByDescending(o => o.Date);
+
+            var query = _realm.All<DemoObject>().OrderByDescending(o => o.Date) as RealmResults<DemoObject>;
+            listView.ItemsSource = query.ToNotifyCollectionChanged(e =>
+            {
+                // recover from the error - recreate the query or show message to the user
+                System.Diagnostics.Debug.WriteLine(e);
+            }) as IEnumerable<DemoObject>;
         }
 
         protected override void OnDisappearing()
@@ -62,25 +68,18 @@ namespace Realms.XamarinForms.Examples.ListView
             }
         }
 
-        void background_add_activated(object sender, EventArgs args)
+        async void background_add_activated(object sender, EventArgs args)
         {
-            Task.Run(() =>
+            await _realm.WriteAsync(realm =>
+            {
+                // add many items - that's why we're using a background thread
+                for (var i = 0; i < 5; i++)
                 {
-                    // get a new realm since we're on a different thread
-                    using (var realm = Realm.GetInstance())
-                    using (var transaction = realm.BeginWrite())
-                    {
-                        // add many items - that's why we're using a background thread
-                        for (var i = 0; i < 5; i++)
-                        {
-                            var obj = realm.CreateObject<DemoObject>();
-                            obj.Title = $"Title {new Random().Next(1000)}";
-                            obj.Date = DateTimeOffset.UtcNow;
-                        }
-
-                        transaction.Commit();
-                    }
-                });
+                    var obj = realm.CreateObject<DemoObject>();
+                    obj.Title = $"Title {new Random().Next(1000)}";
+                    obj.Date = DateTimeOffset.UtcNow;
+                }
+            });
         }
 
         class DemoObject : RealmObject
