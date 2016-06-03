@@ -310,7 +310,7 @@ namespace Realms
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }
 
-        protected byte[] SetByteArrayValue(string propertyName, byte[] value)
+        protected void SetByteArrayValue(string propertyName, byte[] value)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }
