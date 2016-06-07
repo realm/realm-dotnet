@@ -284,7 +284,7 @@ namespace Realms
 
         public override string ToString()
         {
-            return base.ToString() + String.Format(CultureInfo.InvariantCulture, ": {0:X8}", (long) handle);
+            return base.ToString() + handle.ToInt64().ToString("x8", CultureInfo.InvariantCulture);
         }
 
 
