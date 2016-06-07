@@ -27,18 +27,18 @@ using namespace realm;
 using namespace realm::_impl;
 
 ExternalCommitHelper::ExternalCommitHelper(RealmCoordinator& parent)
-//: m_parent(parent)
-//, m_history(realm::make_client_history(parent.get_path(), parent.get_encryption_key().data()))
-//, m_sg(*m_history, parent.is_in_memory() ? SharedGroup::durability_MemOnly : SharedGroup::durability_Full,
-//       parent.get_encryption_key().data())
-//, m_thread(std::async(std::launch::async, [=] {
-//    m_sg.begin_read();
-//    while (m_sg.wait_for_change()) {
-//        m_sg.end_read();
-//        m_sg.begin_read();
-//        m_parent.on_change();
-//    }
-//}))
+: m_parent(parent)
+, m_history(realm::make_client_history(parent.get_path(), parent.get_encryption_key().data()))
+, m_sg(*m_history, parent.is_in_memory() ? SharedGroup::durability_MemOnly : SharedGroup::durability_Full,
+       parent.get_encryption_key().data())
+, m_thread(std::async(std::launch::async, [=] {
+    m_sg.begin_read();
+    //while (m_sg.wait_for_change()) {
+    //    m_sg.end_read();
+    //    m_sg.begin_read();
+    //    m_parent.on_change();
+    //}
+}))
 {
 }
 
