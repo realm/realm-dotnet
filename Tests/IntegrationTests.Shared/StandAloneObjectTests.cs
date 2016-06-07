@@ -77,5 +77,13 @@ namespace IntegrationTests.Shared
                 Assert.That(p.IsInteresting);
             }
         }
+
+        [Test]
+        public void RealmObject_WhenStandalone_ShouldHaveDefaultEqualsImplementation()
+        {
+            var otherPerson = new Person();
+
+            Assert.DoesNotThrow(() => _person.Equals(otherPerson));
+        }
     }
 }
