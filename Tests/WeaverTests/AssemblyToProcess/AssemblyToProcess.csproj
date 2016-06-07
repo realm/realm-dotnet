@@ -42,6 +42,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ClassWithStaticProperty.cs" />
     <Compile Include="FaultyClasses.cs" />
     <Compile Include="Person.cs" />
     <Compile Include="IPersonTest.cs" />

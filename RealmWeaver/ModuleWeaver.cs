@@ -178,7 +178,7 @@ public class ModuleWeaver
             Debug.WriteLine("Weaving " + type.Name);
             var typeHasObjectId = false;
 
-            foreach (var prop in type.Properties.Where(x => !x.CustomAttributes.Any(a => a.AttributeType.Name == "IgnoredAttribute")))
+            foreach (var prop in type.Properties.Where(x => x.HasThis && !x.CustomAttributes.Any(a => a.AttributeType.Name == "IgnoredAttribute")))
             {
                 var sequencePoint = prop.GetMethod.Body.Instructions.First().SequencePoint;
 
@@ -384,7 +384,7 @@ public class ModuleWeaver
         var createInstance = new MethodDefinition("CreateInstance", MethodAttributes.Public | MethodAttributes.Virtual, ModuleDefinition.ImportReference(RealmObject));
         {
             var il = createInstance.Body.GetILProcessor();
-            il.Emit(OpCodes.Newobj, realmObjectType.GetConstructors().Single(c => c.Parameters.Count == 0));
+            il.Emit(OpCodes.Newobj, realmObjectType.GetConstructors().Single(c => c.Parameters.Count == 0 && !c.IsStatic));
             il.Emit(OpCodes.Ret);
         }
         helperType.Methods.Add(createInstance);
