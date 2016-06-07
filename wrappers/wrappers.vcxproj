@@ -23,6 +23,7 @@
     <ClCompile Include="src\error_handling.cpp" />
     <ClCompile Include="src\linklist_cs.cpp" />
     <ClCompile Include="src\marshalling.cpp" />
+    <ClCompile Include="src\object-store\src\collection_notifications.cpp" />
     <ClCompile Include="src\object-store\src\impl\android\external_commit_helper.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -47,9 +48,12 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="src\object-store\src\impl\async_query.cpp" />
+    <ClCompile Include="src\object-store\src\impl\collection_change_builder.cpp" />
+    <ClCompile Include="src\object-store\src\impl\collection_notifier.cpp" />
     <ClCompile Include="src\object-store\src\impl\generic\external_commit_helper.cpp" />
+    <ClCompile Include="src\object-store\src\impl\list_notifier.cpp" />
     <ClCompile Include="src\object-store\src\impl\realm_coordinator.cpp" />
+    <ClCompile Include="src\object-store\src\impl\results_notifier.cpp" />
     <ClCompile Include="src\object-store\src\impl\transact_log_handler.cpp" />
     <ClCompile Include="src\object-store\src\index_set.cpp" />
     <ClCompile Include="src\object-store\src\list.cpp" />
@@ -72,15 +76,19 @@
     <ClInclude Include="src\error_handling.hpp" />
     <ClInclude Include="src\marshalling.hpp" />
     <ClInclude Include="src\object-store\src\binding_context.hpp" />
+    <ClInclude Include="src\object-store\src\collection_notifications.hpp" />
     <ClInclude Include="src\object-store\src\impl\android\external_commit_helper.hpp" />
     <ClInclude Include="src\object-store\src\impl\android\weak_realm_notifier.hpp" />
     <ClInclude Include="src\object-store\src\impl\apple\external_commit_helper.hpp" />
     <ClInclude Include="src\object-store\src\impl\apple\weak_realm_notifier.hpp" />
-    <ClInclude Include="src\object-store\src\impl\async_query.hpp" />
+    <ClInclude Include="src\object-store\src\impl\collection_change_builder.hpp" />
+    <ClInclude Include="src\object-store\src\impl\collection_notifier.hpp" />
     <ClInclude Include="src\object-store\src\impl\external_commit_helper.hpp" />
     <ClInclude Include="src\object-store\src\impl\generic\external_commit_helper.hpp" />
     <ClInclude Include="src\object-store\src\impl\generic\weak_realm_notifier.hpp" />
+    <ClInclude Include="src\object-store\src\impl\list_notifier.hpp" />
     <ClInclude Include="src\object-store\src\impl\realm_coordinator.hpp" />
+    <ClInclude Include="src\object-store\src\impl\results_notifier.hpp" />
     <ClInclude Include="src\object-store\src\impl\transact_log_handler.hpp" />
     <ClInclude Include="src\object-store\src\impl\weak_realm_notifier.hpp" />
     <ClInclude Include="src\object-store\src\impl\weak_realm_notifier_base.hpp" />
@@ -173,7 +181,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;WRAPPERS_EXPORTS;HAVE_STRUCT_TIMESPEC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;WRAPPERS_EXPORTS;HAVE_STRUCT_TIMESPEC;__unused=;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\..\realm-core\src;..\..\realm-core\src\win32\pthread;src\object-store\src;src\object-store\src\impl;src\object-store\src\impl\generic;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/DPTW32_STATIC_LIB /DREALM_DEBUG /DREALM_ENABLE_REPLICATION %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
@@ -189,7 +197,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;WRAPPERS_EXPORTS;HAVE_STRUCT_TIMESPEC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;WRAPPERS_EXPORTS;HAVE_STRUCT_TIMESPEC;__unused=;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\..\realm-core\src;..\..\realm-core\src\win32\pthread;src\object-store\src;src\object-store\src\impl;src\object-store\src\impl\generic;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/DPTW32_STATIC_LIB /DREALM_DEBUG /DREALM_ENABLE_REPLICATION %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
