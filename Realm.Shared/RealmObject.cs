@@ -785,6 +785,10 @@ namespace Realms
             if (this.GetType() != obj.GetType())
                 return false;
 
+            // standalone objects cannot participate in the same store check
+            if (!IsManaged)
+                return false;
+
             // Return true if the fields match. 
             // Note that the base class is not invoked because it is 
             // System.Object, which defines Equals as reference equality. 
