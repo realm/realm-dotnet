@@ -182,6 +182,34 @@ namespace IntegrationTests
         }
 
         [Test]
+        public void SearchComparingLong()
+        {
+            var equality = _realm.All<Person>().Where(p => p.Salary == 60000).ToArray();
+            Assert.That(equality.Length, Is.EqualTo(1));
+            Assert.That(equality[0].FullName, Is.EqualTo("John Doe"));
+
+            var lessThan = _realm.All<Person>().Where(p => p.Salary < 50000).ToArray();
+            Assert.That(lessThan.Length, Is.EqualTo(1));
+            Assert.That(lessThan[0].FullName, Is.EqualTo("John Smith"));
+
+            var lessOrEqualThan = _realm.All<Person>().Where(p => p.Salary <= 60000).ToArray();
+            Assert.That(lessOrEqualThan.Length, Is.EqualTo(2));
+            Assert.That(lessOrEqualThan.All(p => p.FirstName == "John"), Is.True);
+
+            var greaterThan = _realm.All<Person>().Where(p => p.Salary > 80000).ToArray();
+            Assert.That(greaterThan.Length, Is.EqualTo(1));
+            Assert.That(greaterThan[0].FullName, Is.EqualTo("Peter Jameson"));
+
+            var greaterOrEqualThan = _realm.All<Person>().Where(p => p.Salary >= 60000).ToArray();
+            Assert.That(greaterOrEqualThan.Length, Is.EqualTo(2));
+            Assert.That(greaterOrEqualThan.Any(p => p.FullName == "John Doe") && greaterOrEqualThan.Any(p => p.FullName == "Peter Jameson"), Is.True);
+
+            var between = _realm.All<Person>().Where(p => p.Salary > 30000 && p.Salary < 87000).ToArray();
+            Assert.That(between.Length, Is.EqualTo(1));
+            Assert.That(between[0].FullName, Is.EqualTo("John Doe"));
+        }
+
+        [Test]
         public void SearchComparingString()
         {
             var equality = _realm.All<Person>().Where(p => p.LastName == "Smith").ToArray();

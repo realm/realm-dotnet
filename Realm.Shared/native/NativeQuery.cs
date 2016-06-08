@@ -80,6 +80,24 @@ namespace Realms
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_int_greater_equal", CallingConvention = CallingConvention.Cdecl)]
         internal static extern void int_greater_equal(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value);
 
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_long_equal", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void long_equal(QueryHandle queryPtr, IntPtr columnIndex, Int64 value);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_long_not_equal", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void long_not_equal(QueryHandle queryPtr, IntPtr columnIndex, Int64 value);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_long_less", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void long_less(QueryHandle queryPtr, IntPtr columnIndex, Int64 value);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_long_less_equal", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void long_less_equal(QueryHandle queryPtr, IntPtr columnIndex, Int64 value);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_long_greater", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void long_greater(QueryHandle queryPtr, IntPtr columnIndex, Int64 value);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_long_greater_equal", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern void long_greater_equal(QueryHandle queryPtr, IntPtr columnIndex, Int64 value);
+
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_float_equal", CallingConvention = CallingConvention.Cdecl)]
         internal static extern void float_equal(QueryHandle queryPtr, IntPtr columnIndex, float value);
 

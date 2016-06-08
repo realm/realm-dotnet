@@ -357,6 +357,8 @@ namespace Realms
                 NativeQuery.bool_equal((QueryHandle)queryHandle, columnIndex, MarshalHelpers.BoolToIntPtr((bool)value));
             else if (valueType == typeof(int))
                 NativeQuery.int_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((int)value));
+            else if (valueType == typeof(long))
+                NativeQuery.long_equal((QueryHandle)queryHandle, columnIndex, (long)value);
             else if (valueType == typeof(float))
                 NativeQuery.float_equal((QueryHandle)queryHandle, columnIndex, (float)value);
             else if (valueType == typeof(double))
@@ -399,6 +401,8 @@ namespace Realms
                 NativeQuery.bool_not_equal((QueryHandle)queryHandle, columnIndex, MarshalHelpers.BoolToIntPtr((bool)value));
             else if (valueType == typeof(int))
                 NativeQuery.int_not_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((int)value));
+            else if (valueType == typeof(long))
+                NativeQuery.long_not_equal((QueryHandle)queryHandle, columnIndex, (long)value);
             else if (valueType == typeof(float))
                 NativeQuery.float_not_equal((QueryHandle)queryHandle, columnIndex, (float)value);
             else if (valueType == typeof(double))
@@ -434,6 +438,8 @@ namespace Realms
             var valueType = value.GetType();
             if (valueType == typeof(int))
                 NativeQuery.int_less((QueryHandle)queryHandle, columnIndex, (IntPtr)((int)value));
+            else if (valueType == typeof(long))
+                NativeQuery.long_less((QueryHandle)queryHandle, columnIndex, (long)value);
             else if (valueType == typeof(float))
                 NativeQuery.float_less((QueryHandle)queryHandle, columnIndex, (float)value);
             else if (valueType == typeof(double))
@@ -453,6 +459,8 @@ namespace Realms
             var valueType = value.GetType();
             if (valueType == typeof(int))
                 NativeQuery.int_less_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((int)value));
+            else if (valueType == typeof(long))
+                NativeQuery.long_less_equal((QueryHandle)queryHandle, columnIndex, (long)value);
             else if (valueType == typeof(float))
                 NativeQuery.float_less_equal((QueryHandle)queryHandle, columnIndex, (float)value);
             else if (valueType == typeof(double))
@@ -472,6 +480,8 @@ namespace Realms
             var valueType = value.GetType();
             if (valueType == typeof(int))
                 NativeQuery.int_greater((QueryHandle)queryHandle, columnIndex, (IntPtr)((int)value));
+            else if (valueType == typeof(long))
+                NativeQuery.long_greater((QueryHandle)queryHandle, columnIndex, (long)value);
             else if (valueType == typeof(float))
                 NativeQuery.float_greater((QueryHandle)queryHandle, columnIndex, (float)value);
             else if (valueType == typeof(double))
@@ -491,6 +501,8 @@ namespace Realms
             var valueType = value.GetType();
             if (valueType == typeof(int))
                 NativeQuery.int_greater_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((int)value));
+            else if (valueType == typeof(long))
+                NativeQuery.long_greater_equal((QueryHandle)queryHandle, columnIndex, (long)value);
             else if (valueType == typeof(float))
                 NativeQuery.float_greater_equal((QueryHandle)queryHandle, columnIndex, (float)value);
             else if (valueType == typeof(double))
