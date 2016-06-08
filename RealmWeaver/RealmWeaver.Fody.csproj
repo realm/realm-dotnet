@@ -57,6 +57,7 @@
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="extensions\MethodReferenceExtensions.cs" />
     <Compile Include="extensions\PropertyDefinitionExtensions.cs" />
+    <Compile Include="extensions\TypeReferenceExtensions.cs" />
     <Compile Include="ModuleWeaver.cs" />
     <Compile Include="Analytics.cs" />
   </ItemGroup>

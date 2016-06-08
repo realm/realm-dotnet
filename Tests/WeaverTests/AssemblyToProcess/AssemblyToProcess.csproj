@@ -44,6 +44,7 @@
   <ItemGroup>
     <Compile Include="ClassWithStaticProperty.cs" />
     <Compile Include="FaultyClasses.cs" />
+    <Compile Include="Inheritance.cs" />
     <Compile Include="Person.cs" />
     <Compile Include="IPersonTest.cs" />
     <Compile Include="RemappedClass.cs" />
