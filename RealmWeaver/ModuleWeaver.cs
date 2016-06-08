@@ -376,12 +376,13 @@ public class ModuleWeaver
 
     private TypeDefinition WeaveRealmObjectHelper(TypeDefinition realmObjectType)
     {
-        var helperType = new TypeDefinition(realmObjectType.Namespace, "RealmHelper",
-            TypeAttributes.Class | TypeAttributes.NestedPrivate, ModuleDefinition.ImportReference(System_Object));
+        var helperType = new TypeDefinition(null, "RealmHelper",
+                                            TypeAttributes.Class | TypeAttributes.NestedPrivate | TypeAttributes.BeforeFieldInit,
+                                            ModuleDefinition.ImportReference(System_Object));
 
         helperType.Interfaces.Add(ModuleDefinition.ImportReference(RealmAssembly.MainModule.GetType("Realms.Weaving.IRealmObjectHelper")));
 
-        var createInstance = new MethodDefinition("CreateInstance", MethodAttributes.Public | MethodAttributes.Virtual, ModuleDefinition.ImportReference(RealmObject));
+        var createInstance = new MethodDefinition("CreateInstance", MethodAttributes.Public | MethodAttributes.Final | MethodAttributes.HideBySig | MethodAttributes.Virtual | MethodAttributes.NewSlot, ModuleDefinition.ImportReference(RealmObject));
         {
             var il = createInstance.Body.GetILProcessor();
             il.Emit(OpCodes.Newobj, realmObjectType.GetConstructors().Single(c => c.Parameters.Count == 0 && !c.IsStatic));

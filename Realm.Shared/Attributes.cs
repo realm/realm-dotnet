@@ -42,9 +42,9 @@ namespace Realms
         }
     }
 
-    internal class WovenAttribute : Attribute
+    public class WovenAttribute : Attribute
     {
-        public Type HelperType { get; private set; }
+        internal Type HelperType { get; private set; }
 
         public WovenAttribute(Type helperType)
         {
@@ -53,7 +53,7 @@ namespace Realms
     }
 
     [AttributeUsage(AttributeTargets.Property)]
-    internal class WovenPropertyAttribute : Attribute
+    public class WovenPropertyAttribute : Attribute
     {
         internal string BackingFieldName { get; private set; }
 
