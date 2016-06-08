@@ -55,6 +55,7 @@ namespace IntegrationTests
                 p1.LastName = "Smith";
                 p1.IsInteresting = true;
                 p1.Email = "john@smith.com";
+                p1.Salary = 30000;
                 p1.Score = -0.9907f;
                 p1.Latitude = 51.508530;
                 p1.Longitude = 0.076132;
@@ -70,6 +71,7 @@ namespace IntegrationTests
                 p2.FullName = "John Doe"; // uses our setter whcih splits and maps to First/Lastname
                 p2.IsInteresting = false;
                 p2.Email = "john@doe.com";
+                p2.Salary = 60000;
                 p2.Score = 100;
                 p2.Latitude = 40.7637286;
                 p2.Longitude = -73.9748113;
@@ -84,6 +86,7 @@ namespace IntegrationTests
                 p3 = _realm.CreateObject<Person>();
                 p3.FullName = "Peter Jameson";
                 p3.Email = "peter@jameson.net";
+                p3.Salary = 87000;
                 p3.IsInteresting = true;
                 p3.Score = 42.42f;
                 p3.Latitude = 37.7798657;

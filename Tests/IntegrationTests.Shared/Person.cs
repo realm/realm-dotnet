@@ -31,6 +31,8 @@ namespace IntegrationTests
         public double Latitude { get; set; }
         public double Longitude { get; set; }
 
+        public long Salary { get; set; }
+
         public DateTimeOffset Birthday { get; set; }
 
         public byte[] PublicCertificateBytes { get; set; }

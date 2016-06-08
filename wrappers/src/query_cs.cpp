@@ -196,7 +196,49 @@ REALM_EXPORT void query_int_greater_equal(Query * query_ptr, size_t columnIndex,
     });
 }
 
-REALM_EXPORT void query_float_equal(Query * query_ptr, size_t columnIndex, float value)
+REALM_EXPORT void query_long_equal(Query * query_ptr, size_t columnIndex, int64_t value)
+{
+    handle_errors([&]() {
+        query_ptr->equal(columnIndex, value);
+    });
+}
+
+REALM_EXPORT void query_long_not_equal(Query * query_ptr, size_t columnIndex, int64_t value)
+{
+    handle_errors([&]() {
+        query_ptr->not_equal(columnIndex, value);
+    });
+}
+
+REALM_EXPORT void query_long_less(Query * query_ptr, size_t columnIndex, int64_t value)
+{
+    handle_errors([&]() {
+        query_ptr->less(columnIndex, value);
+    });
+}
+
+REALM_EXPORT void query_long_less_equal(Query * query_ptr, size_t columnIndex, int64_t value)
+{
+    handle_errors([&]() {
+        query_ptr->less_equal(columnIndex, value);
+    });
+}
+
+REALM_EXPORT void query_long_greater(Query * query_ptr, size_t columnIndex, int64_t value)
+{
+    handle_errors([&]() {
+        query_ptr->greater(columnIndex, value);
+    });
+}
+
+REALM_EXPORT void query_long_greater_equal(Query * query_ptr, size_t columnIndex, int64_t value)
+{
+    handle_errors([&]() {
+        query_ptr->greater_equal(columnIndex, value);
+    });
+}
+    
+    REALM_EXPORT void query_float_equal(Query * query_ptr, size_t columnIndex, float value)
 {
     handle_errors([&]() {
         query_ptr->equal(columnIndex, static_cast<float>(value));
