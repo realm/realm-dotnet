@@ -70,16 +70,12 @@ namespace Tests
         [TestFixtureSetUp]
         public void FixtureSetup()
         {
-            var projectPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, @"..\..\..\AssemblyToProcess\AssemblyToProcess.csproj"));
-            _assemblyPath = Path.Combine(Path.GetDirectoryName(projectPath), @"bin\Debug\AssemblyToProcess.dll");
-#if (!DEBUG)
-            _assemblyPath = _assemblyPath.Replace("Debug", "Release");
-#endif
-
+            _assemblyPath = typeof(AssemblyToProcess.AllTypesObject).Assembly.Location;
             _newAssemblyPath = _assemblyPath.Replace(".dll", ".processed.dll");
             File.Copy(_assemblyPath, _newAssemblyPath, true);
 
             var moduleDefinition = ModuleDefinition.ReadModule(_newAssemblyPath);
+            (moduleDefinition.AssemblyResolver as DefaultAssemblyResolver).AddSearchDirectory(Path.GetDirectoryName(_assemblyPath));
             var weavingTask = new ModuleWeaver
             {
                 ModuleDefinition = moduleDefinition,
