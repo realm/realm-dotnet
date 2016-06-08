@@ -70,16 +70,12 @@ namespace Tests
         [TestFixtureSetUp]
         public void FixtureSetup()
         {
-            var projectPath = Path.GetFullPath(Path.Combine(Environment.CurrentDirectory, @"..\..\..\AssemblyToProcess\AssemblyToProcess.csproj"));
-            _assemblyPath = Path.Combine(Path.GetDirectoryName(projectPath), @"bin\Debug\AssemblyToProcess.dll");
-#if (!DEBUG)
-            _assemblyPath = _assemblyPath.Replace("Debug", "Release");
-#endif
-
+            _assemblyPath = typeof(AssemblyToProcess.AllTypesObject).Assembly.Location;
             _newAssemblyPath = _assemblyPath.Replace(".dll", ".processed.dll");
             File.Copy(_assemblyPath, _newAssemblyPath, true);
 
             var moduleDefinition = ModuleDefinition.ReadModule(_newAssemblyPath);
+            (moduleDefinition.AssemblyResolver as DefaultAssemblyResolver).AddSearchDirectory(Path.GetDirectoryName(_assemblyPath));
             var weavingTask = new ModuleWeaver
             {
                 ModuleDefinition = moduleDefinition,
@@ -174,7 +170,7 @@ namespace Tests
         [TestCase("Int32", 100)]
         [TestCase("Int64", 100L)]
         [TestCase("Single", 123.123f)]
-        [TestCase("Double", 123,123)]
+        [TestCase("Double", 123.123)]
         [TestCase("Boolean", true)]
         [TestCase("String", "str")] 
         [TestCase("NullableChar", '0')]
@@ -210,7 +206,7 @@ namespace Tests
         [TestCase("Int64", 100L, 0L)]
         [TestCase("Single", 123.123f, 0.0f)]
         [TestCase("Double", 123.123, 0.0)]
-        [TestCase("Boolean", true)]
+        [TestCase("Boolean", true, false)]
         [TestCase("String", "str", null)] 
         [TestCase("NullableChar", '0', null)]
         [TestCase("NullableByte", (byte)100, null)]
@@ -384,7 +380,8 @@ namespace Tests
                 "IndexedProperties.SingleProperty is marked as [Indexed] which is only allowed on integral types as well as string, bool and DateTimeOffset, not on System.Single",
                 "ObjectIdProperties.BooleanProperty is marked as [ObjectId] which is only allowed on integral and string types, not on System.Boolean",
                 "ObjectIdProperties.DateTimeOffsetProperty is marked as [ObjectId] which is only allowed on integral and string types, not on System.DateTimeOffset",
-                "ObjectIdProperties.SingleProperty is marked as [ObjectId] which is only allowed on integral and string types, not on System.Single"
+                "ObjectIdProperties.SingleProperty is marked as [ObjectId] which is only allowed on integral and string types, not on System.Single",
+                "The type AssemblyToProcess.Employee indirectly inherits from RealmObject which is not supported"
             };
 
             Assert.That(_errors, Is.EquivalentTo(expectedErrors));

@@ -62,7 +62,17 @@ public class ModuleWeaver
 
     IEnumerable<TypeDefinition> GetMatchingTypes()
     {
-        return ModuleDefinition.GetTypes().Where(x => (x.BaseType != null && x.BaseType.Name == "RealmObject"));
+        foreach (var type in ModuleDefinition.GetTypes().Where(t => t.IsDescendedFrom(RealmObject)))
+        {
+            if (type.BaseType.IsSameAs(RealmObject))
+            {
+                yield return type;
+            }
+            else
+            {
+                LogErrorPoint($"The type {type.FullName} indirectly inherits from RealmObject which is not supported", type.GetConstructors().FirstOrDefault()?.Body?.Instructions?.First()?.SequencePoint);
+            }
+        }
     }
 
     bool IsRealmObject(TypeReference prop)
@@ -79,7 +89,7 @@ public class ModuleWeaver
     {
         try
         {
-            return ModuleDefinition.Import(assemblyType.Methods.First(x => x.Name == name));
+            return ModuleDefinition.ImportReference(assemblyType.Methods.First(x => x.Name == name));
         }
         catch (InvalidOperationException e)
         {

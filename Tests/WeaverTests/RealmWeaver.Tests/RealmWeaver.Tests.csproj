@@ -33,27 +33,32 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Mono.Cecil, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\FodyCecil.1.29.4\lib\net40\Mono.Cecil.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Mono.Cecil.Mdb, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\FodyCecil.1.29.4\lib\net40\Mono.Cecil.Mdb.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Mono.Cecil.Pdb, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\FodyCecil.1.29.4\lib\net40\Mono.Cecil.Pdb.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Mono.Cecil.Rocks, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\FodyCecil.1.29.4\lib\net40\Mono.Cecil.Rocks.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="nunit.framework, Version=3.2.1.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\NUnit.3.2.1\lib\net45\nunit.framework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="Mono.Cecil, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756">
-      <HintPath>..\..\..\packages\FodyCecil.1.29.2\lib\net40\Mono.Cecil.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Mdb, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756">
-      <HintPath>..\..\..\packages\FodyCecil.1.29.2\lib\net40\Mono.Cecil.Mdb.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Pdb, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756">
-      <HintPath>..\..\..\packages\FodyCecil.1.29.2\lib\net40\Mono.Cecil.Pdb.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Rocks, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756">
-      <HintPath>..\..\..\packages\FodyCecil.1.29.2\lib\net40\Mono.Cecil.Rocks.dll</HintPath>
-    </Reference>
-    <Reference Include="nunit.framework, Version=2.6.4.14350, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77">
-      <HintPath>..\..\..\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="WeaverTests.cs" />
@@ -64,6 +69,10 @@
     <ProjectReference Include="..\..\..\RealmWeaver\RealmWeaver.Fody.csproj">
       <Project>{C3578A7B-09A6-4444-9383-0DEAFA4958BD}</Project>
       <Name>RealmWeaver.Fody</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\AssemblyToProcess\AssemblyToProcess.csproj">
+      <Project>{e97e649f-b703-47e3-b18a-0871d3498742}</Project>
+      <Name>AssemblyToProcess</Name>
     </ProjectReference>
     <ProjectReference Include="..\Realm.FakeForWeaverTests\Realm.FakeForWeaverTests.csproj">
       <Project>{E6D5D6D7-4AF6-46E0-9C6A-EFB120D7F01D}</Project>
