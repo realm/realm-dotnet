@@ -15,7 +15,7 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -25,10 +25,14 @@ using System.Reflection;
 using Mono.Cecil;
 using NUnit.Framework;
 using Realms;
+using System.ComponentModel;
+using Mono.Cecil.Cil;
 
 namespace Tests
 {
-    [TestFixture]
+    [TestFixture(WeaverOptions.RealmOnlyNoPropertyChanged)]
+    [TestFixture(WeaverOptions.RealmAfterPropertyChanged)]
+    [TestFixture(WeaverOptions.RealmBeforePropertyChanged)]
     public class WeaverTests
     {
         #region helpers
@@ -58,35 +62,115 @@ namespace Tests
             o.GetType().GetProperty(propName).SetValue(o, propertyValue);
         }
 
+        private void TryCleanupOldAssemblies(string dir)
+        {
+            try
+            {
+                // Tidy up old processed assemblies.
+                foreach (var filePath in Directory.EnumerateFiles(dir, "*.processed.dll"))
+                    File.Delete(filePath);
+            }
+            catch { }
+        }
+
+        private string CopyAssemblyToNextUniquePath(string originalPath, string overrideSourcePath = null)
+        {
+            int stage = 1;
+            string newPath;
+
+            // Calculate the next unique assembly path.
+            do
+            {
+                newPath = originalPath.Replace(".dll", $".stage{stage++}.processed.dll");
+            }
+            while (File.Exists(newPath));
+
+            // Copy the source assembly to the calculated path.
+            File.Copy(overrideSourcePath ?? originalPath, newPath);
+
+            // Return the copied assembly path.
+            return newPath;
+        }
+
+        private void WeaveRealm(string targetAssemblyPath)
+        {
+            var moduleDefinition = ModuleDefinition.ReadModule(targetAssemblyPath);
+            (moduleDefinition.AssemblyResolver as DefaultAssemblyResolver).AddSearchDirectory(GetAssemblyDir());
+
+            var weaverPath = Path.Combine(GetAssemblyDir(), "RealmWeaver.Fody.dll");
+
+            dynamic realmWeavingTask = System.Activator.CreateInstanceFrom(weaverPath, "ModuleWeaver").Unwrap();
+
+            realmWeavingTask.ModuleDefinition = moduleDefinition;
+            realmWeavingTask.LogErrorPoint = new Action<string, SequencePoint>((s, point) => _errors.Add(s));
+            realmWeavingTask.LogWarningPoint = new Action<string, SequencePoint>((s, point) => _warnings.Add(s));
+
+            realmWeavingTask.Execute();
+            moduleDefinition.Write(targetAssemblyPath);
+        }
+
+        private void WeavePropertyChanged(string targetAssemblyPath)
+        {
+            var moduleDefinition = ModuleDefinition.ReadModule(targetAssemblyPath);
+            (moduleDefinition.AssemblyResolver as DefaultAssemblyResolver).AddSearchDirectory(GetAssemblyDir());
+
+            var weaverPath = Path.Combine(GetAssemblyDir(), "PropertyChanged.Fody.dll");
+
+            dynamic realmWeavingTask = System.Activator.CreateInstanceFrom(weaverPath, "ModuleWeaver").Unwrap();
+
+            realmWeavingTask.ModuleDefinition = moduleDefinition;
+            // NB. PropertyChanged.Fody doesn't expose an error logging property - it throws exceptions instead.
+            realmWeavingTask.LogWarning = new Action<string>(s => _warnings.Add(s));
+
+            realmWeavingTask.Execute();
+            moduleDefinition.Write(targetAssemblyPath);
+        }
+
         #endregion
 
         private Assembly _assembly;
-        private string _newAssemblyPath;
-        private string _assemblyPath;
+        private string _sourceAssemblyPath;
+        private string _targetAssemblyPath;
 
         private readonly List<string> _warnings = new List<string>();
         private readonly List<string> _errors = new List<string>();
 
-        [TestFixtureSetUp]
+        private readonly WeaverOptions _weaverOptions;
+
+        public WeaverTests(WeaverOptions weaverOptions)
+        {
+            _weaverOptions = weaverOptions;
+        }
+
+        [OneTimeSetUp]
         public void FixtureSetup()
         {
-            _assemblyPath = typeof(AssemblyToProcess.AllTypesObject).Assembly.Location;
-            _newAssemblyPath = _assemblyPath.Replace(".dll", ".processed.dll");
-            File.Copy(_assemblyPath, _newAssemblyPath, true);
+            var assemblyDir = GetAssemblyDir();
+            TryCleanupOldAssemblies(assemblyDir);
 
-            var moduleDefinition = ModuleDefinition.ReadModule(_newAssemblyPath);
-            (moduleDefinition.AssemblyResolver as DefaultAssemblyResolver).AddSearchDirectory(Path.GetDirectoryName(_assemblyPath));
-            var weavingTask = new ModuleWeaver
+            _sourceAssemblyPath = GetSourceAssemblyPath();
+            _targetAssemblyPath = CopyAssemblyToNextUniquePath(_sourceAssemblyPath);
+
+            switch (_weaverOptions)
             {
-                ModuleDefinition = moduleDefinition,
-                LogErrorPoint = (s, point) => _errors.Add(s),
-                LogWarningPoint = (s, point) => _warnings.Add(s)
-            };
+                case WeaverOptions.RealmOnlyNoPropertyChanged:
+                    WeaveRealm(_targetAssemblyPath);
+                    break;
+                
+                case WeaverOptions.RealmAfterPropertyChanged:
+                    WeavePropertyChanged(_targetAssemblyPath);
+                    _targetAssemblyPath = CopyAssemblyToNextUniquePath(_sourceAssemblyPath, _targetAssemblyPath);
+                    WeaveRealm(_targetAssemblyPath);
+                    break;
 
-            weavingTask.Execute();
-            moduleDefinition.Write(_newAssemblyPath);
+                case WeaverOptions.RealmBeforePropertyChanged:
+                    WeaveRealm(_targetAssemblyPath);
+                    _targetAssemblyPath = CopyAssemblyToNextUniquePath(_sourceAssemblyPath, _targetAssemblyPath);
+                    WeavePropertyChanged(_targetAssemblyPath);
+                    break;
+            }
 
-            _assembly = Assembly.LoadFile(_newAssemblyPath);
+            _assembly = Assembly.LoadFile(_targetAssemblyPath);
 
             // Try accessing assembly to ensure that the assembly is still valid.
             try
@@ -100,6 +184,23 @@ namespace Tests
 
                 Assert.Fail("Load failure");
             }
+        }
+
+        [OneTimeTearDown]
+        public void Dispose()
+        {
+            var assemblyDir = GetAssemblyDir();
+            TryCleanupOldAssemblies(assemblyDir);
+        }
+
+        private string GetSourceAssemblyPath()
+        {
+            return typeof(AssemblyToProcess.AllTypesObject).Assembly.Location;
+        }
+
+        private string GetAssemblyDir()
+        {
+            return Path.GetDirectoryName(GetSourceAssemblyPath());
         }
 
         [TestCase("CharProperty", '0')]
@@ -235,6 +336,49 @@ namespace Tests
             Assert.That(GetAutoPropertyBackingFieldValue(o, propertyName), Is.EqualTo(defaultPropertyValue));
         }
 
+        [TestCase("Char", '0', char.MinValue)]
+        [TestCase("Byte", (byte)100, (byte)0)]
+        [TestCase("Int16", (short)100, (short)0)]
+        [TestCase("Int32", 100, 0)]
+        [TestCase("Int64", 100L, 0L)]
+        [TestCase("Single", 123.123f, 0.0f)]
+        [TestCase("Double", 123.123, 0.0)]
+        [TestCase("Boolean", true, false)]
+        [TestCase("String", "str", null)]
+        [TestCase("NullableChar", '0', null)]
+        [TestCase("NullableByte", (byte)100, null)]
+        [TestCase("NullableInt16", (short)100, null)]
+        [TestCase("NullableInt32", 100, null)]
+        [TestCase("NullableInt64", 100L, null)]
+        [TestCase("NullableSingle", 123.123f, null)]
+        [TestCase("NullableDouble", 123.123, null)]
+        [TestCase("NullableBoolean", true, null)]
+        public void SetValueManagedShouldRaisePropertyChanged(string typeName, object propertyValue, object defaultPropertyValue)
+        {
+            // Arrange
+            var propertyName = typeName + "Property";
+            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.AllTypesObjectPropertyChanged"));
+            o.IsManaged = true;
+
+            var eventRaised = false;
+            o.PropertyChanged += new PropertyChangedEventHandler((s, e) =>
+            {
+                if (e.PropertyName == propertyName)
+                    eventRaised = true;
+            });
+
+            // Act
+            SetPropertyValue(o, propertyName, propertyValue);
+
+            // Assert
+            Assert.That(o.LogList, Is.EqualTo(new List<string>
+            {
+                "IsManaged",
+                "RealmObject.Set" + typeName + "Value(propertyName = \"" + propertyName + "\", value = " + propertyValue + ")"
+            }));
+            Assert.That(GetAutoPropertyBackingFieldValue(o, propertyName), Is.EqualTo(defaultPropertyValue));
+            Assert.That(eventRaised, Is.True);
+        }
 
         [TestCase("Char", '0', char.MinValue)]
         [TestCase("Byte", (byte)100, (byte)0)]
@@ -392,7 +536,7 @@ namespace Tests
         [Test]
         public void PeVerify()
         {
-            Verifier.Verify(_assemblyPath,_newAssemblyPath);
+            Verifier.Verify(_sourceAssemblyPath,_targetAssemblyPath);
         }
 #endif
     }

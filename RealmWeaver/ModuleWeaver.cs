@@ -40,16 +40,21 @@ public class ModuleWeaver
     // An instance of Mono.Cecil.ModuleDefinition for processing
     public ModuleDefinition ModuleDefinition { get; set; }
 
-    TypeSystem typeSystem;
+    private AssemblyDefinition RealmAssembly;
+    private TypeDefinition RealmObject;
+    private MethodReference RealmObjectIsManagedGetter;
 
-    AssemblyDefinition RealmAssembly;
-    TypeDefinition RealmObject;
-    MethodReference realmObjectIsManagedGetter;
+    private AssemblyDefinition CorLib;
+    private TypeDefinition System_Object;
+    private TypeDefinition System_Boolean;
+    private TypeReference System_String;
+    private TypeReference System_Type;
 
-    AssemblyDefinition CorLib;
-    TypeDefinition System_Object;
-    TypeReference System_String;
-    TypeReference System_Type;
+    private MethodReference PropChangedEventArgsConstructor;
+    private MethodReference PropChangedEventHandlerInvokeReference;
+    private TypeReference PropChangedEventHandlerReference;
+
+    private MethodReference PropChangedDoNotNotifyAttributeConstructorDefinition;
 
     // Init logging delegates to make testing easier
     public ModuleWeaver()
@@ -84,20 +89,6 @@ public class ModuleWeaver
         return matches.Count() == 1;
     }
 
-
-    internal MethodReference MethodNamed(TypeDefinition assemblyType, string name)
-    {
-        try
-        {
-            return ModuleDefinition.ImportReference(assemblyType.Methods.First(x => x.Name == name));
-        }
-        catch (InvalidOperationException e)
-        {
-            throw new InvalidOperationException("Trying to find method '" + name + "' failed.", e);
-        }
-    }
-
-
     public void Execute()
     {
         // UNCOMMENT THIS DEBUGGER LAUNCH TO BE ABLE TO RUN A SEPARATE VS INSTANCE TO DEBUG WEAVING WHILST BUILDING
@@ -112,12 +103,10 @@ public class ModuleWeaver
             }
         });
 
-        typeSystem = ModuleDefinition.TypeSystem;
-
         RealmAssembly = ModuleDefinition.AssemblyResolver.Resolve("Realm");  // Note that the assembly is Realm but the namespace Realms with the s
 
         RealmObject = RealmAssembly.MainModule.GetTypes().First(x => x.Name == "RealmObject");
-        realmObjectIsManagedGetter = ModuleDefinition.ImportReference(RealmObject.Properties.Single(x => x.Name == "IsManaged").GetMethod);
+        RealmObjectIsManagedGetter = ModuleDefinition.ImportReference(RealmObject.Properties.Single(x => x.Name == "IsManaged").GetMethod);
         
         var typeTable = new Dictionary<string, string>()
         {
@@ -160,22 +149,42 @@ public class ModuleWeaver
         indexableTypes.Add("System.Boolean");
         indexableTypes.Add("System.DateTimeOffset");
 
-        var genericGetObjectValueReference = MethodNamed(RealmObject, "GetObjectValue");
-        var genericSetObjectValueReference = MethodNamed(RealmObject, "SetObjectValue");
-        var genericGetListValueReference = MethodNamed(RealmObject, "GetListValue");
+        var genericGetObjectValueReference = LookupMethodAndImport(RealmObject, "GetObjectValue");
+        var genericSetObjectValueReference = LookupMethodAndImport(RealmObject, "SetObjectValue");
+        var genericGetListValueReference = LookupMethodAndImport(RealmObject, "GetListValue");
 
         var wovenAttributeClass = RealmAssembly.MainModule.GetTypes().First(x => x.Name == "WovenAttribute");
-        var wovenAttributeConstructor = ModuleDefinition.Import(wovenAttributeClass.GetConstructors().First());
+        var wovenAttributeConstructor = ModuleDefinition.ImportReference(wovenAttributeClass.GetConstructors().First());
 
         var wovenPropertyAttributeClass = RealmAssembly.MainModule.GetTypes().First(x => x.Name == "WovenPropertyAttribute");
         var wovenPropertyAttributeConstructor = ModuleDefinition.ImportReference(wovenPropertyAttributeClass.GetConstructors().First());
 
         CorLib = ModuleDefinition.AssemblyResolver.Resolve((AssemblyNameReference)ModuleDefinition.TypeSystem.CoreLibrary);
         System_Object = CorLib.MainModule.GetType("System.Object");
+        System_Boolean = CorLib.MainModule.GetType("System.Boolean");
         System_String = ModuleDefinition.ImportReference(CorLib.MainModule.GetType("System.String"));
         System_Type = ModuleDefinition.ImportReference(CorLib.MainModule.GetType("System.Type"));
         // WARNING the GetType("System.Collections.Generic.List`1") below RETURNS NULL WHEN COMPILING A PCL
         // UNUSED SO COMMENT OUT var listType = ModuleDefinition.ImportReference(CorLib.MainModule.GetType("System.Collections.Generic.List`1"));
+
+        var systemAssembly = ModuleDefinition.AssemblyResolver.Resolve("System");
+        var systemObjectModelAssembly = TryResolveAssembly("System.ObjectModel");
+
+        var propertyChangedEventArgs = LookupType("PropertyChangedEventArgs", systemObjectModelAssembly, systemAssembly);
+        PropChangedEventArgsConstructor = ModuleDefinition.ImportReference(propertyChangedEventArgs.GetConstructors().First());
+
+        var propChangedEventHandlerDefinition = LookupType("PropertyChangedEventHandler", systemObjectModelAssembly, systemAssembly);
+        PropChangedEventHandlerReference = ModuleDefinition.ImportReference(propChangedEventHandlerDefinition);
+        PropChangedEventHandlerInvokeReference = ModuleDefinition.ImportReference(propChangedEventHandlerDefinition.Methods.First(x => x.Name == "Invoke"));
+
+        // If the solution has a reference to PropertyChanged.Fody, let's look up the DoNotNotifyAttribute for use later.
+        var usesPropertyChangedFody = ModuleDefinition.AssemblyReferences.Any(X => X.Name == "PropertyChanged");
+        if (usesPropertyChangedFody)
+        {
+            var propChangedAssembly = ModuleDefinition.AssemblyResolver.Resolve("PropertyChanged");
+            var doNotNotifyAttributeDefinition = propChangedAssembly.MainModule.GetTypes().First(X => X.Name == "DoNotNotifyAttribute");
+            PropChangedDoNotNotifyAttributeConstructorDefinition = ModuleDefinition.ImportReference(doNotNotifyAttributeDefinition.GetConstructors().First());
+        }
 
         Debug.WriteLine("Weaving file: " + ModuleDefinition.FullyQualifiedName);
 
@@ -186,7 +195,17 @@ public class ModuleWeaver
                 continue;
             }
             Debug.WriteLine("Weaving " + type.Name);
-            var typeHasObjectId = false;
+
+            var typeImplementsPropertyChanged = type.Interfaces.Any(t => t.FullName == "System.ComponentModel.INotifyPropertyChanged");
+
+            EventDefinition propChangedEventDefinition = null;
+            FieldDefinition propChangedFieldDefinition = null;
+
+            if (typeImplementsPropertyChanged)
+            {
+                propChangedEventDefinition = type.Events.First(X => X.FullName.EndsWith("::PropertyChanged"));
+                propChangedFieldDefinition = type.Fields.First(X => X.FullName.EndsWith("::PropertyChanged"));
+            }
 
             foreach (var prop in type.Properties.Where(x => x.HasThis && !x.CustomAttributes.Any(a => a.AttributeType.Name == "IgnoredAttribute")))
             {
@@ -228,13 +247,13 @@ public class ModuleWeaver
                     var typeId = prop.PropertyType.FullName + (isObjectId ? " unique" : "");
                     if (!methodTable.ContainsKey(typeId))
                     {
-                        var getter = MethodNamed(RealmObject, "Get" + typeTable[prop.PropertyType.FullName] + "Value");
-                        var setter = MethodNamed(RealmObject, "Set" + typeTable[prop.PropertyType.FullName] + "Value" + (isObjectId ? "Unique": ""));
+                        var getter = LookupMethodAndImport(RealmObject, "Get" + typeTable[prop.PropertyType.FullName] + "Value");
+                        var setter = LookupMethodAndImport(RealmObject, "Set" + typeTable[prop.PropertyType.FullName] + "Value" + (isObjectId ? "Unique": ""));
                         methodTable[typeId] = Tuple.Create(getter, setter);
                     }
 
                     ReplaceGetter(prop, columnName, methodTable[typeId].Item1);
-                    ReplaceSetter(prop, columnName, methodTable[typeId].Item2);
+                    ReplaceSetter(prop, backingField, columnName, methodTable[typeId].Item2, typeImplementsPropertyChanged, propChangedEventDefinition, propChangedFieldDefinition);
                 }
 //                else if (prop.PropertyType.Name == "IList`1" && prop.PropertyType.Namespace == "System.Collections.Generic")
                 else if (prop.PropertyType.Name == "RealmList`1" && prop.PropertyType.Namespace == "Realms")
@@ -263,7 +282,7 @@ public class ModuleWeaver
                     }
 
                     ReplaceGetter(prop, columnName, new GenericInstanceMethod(genericGetObjectValueReference) { GenericArguments = { prop.PropertyType } });
-                    ReplaceSetter(prop, columnName, new GenericInstanceMethod(genericSetObjectValueReference) { GenericArguments = { prop.PropertyType } });  // with casting in the RealmObject methods, should just work
+                    ReplaceSetter(prop, backingField, columnName, new GenericInstanceMethod(genericSetObjectValueReference) { GenericArguments = { prop.PropertyType } }, typeImplementsPropertyChanged, propChangedEventDefinition, propChangedFieldDefinition);  // with casting in the RealmObject methods, should just work
                 }
                 else if (prop.PropertyType.FullName == "System.DateTime")
                 {
@@ -290,6 +309,56 @@ public class ModuleWeaver
 
         submitAnalytics.Wait();
         return;
+    }
+
+    private TypeDefinition LookupType(string typeName, params AssemblyDefinition[] assemblies)
+    {
+        if (typeName == null)
+            throw new ArgumentNullException(nameof(typeName));
+
+        if (assemblies.Length == 0)
+            throw new ArgumentException("One or more assemblies must be specified to look up type: " + typeName, nameof(assemblies));
+
+        foreach (var assembly in assemblies)
+        {
+            if (assembly == null)
+                continue;
+
+            var type = assembly.MainModule.Types.FirstOrDefault(X => X.Name == typeName);
+
+            if (type != null)
+                return type;
+        }
+
+        throw new ApplicationException("Unable to find type: " + typeName);
+    }
+
+    private MethodDefinition LookupMethod(TypeDefinition typeDefinition, string methodName)
+    {
+        var method = typeDefinition.Methods.FirstOrDefault(x => x.Name == methodName);
+
+        if (method == null)
+            throw new ApplicationException("Unable to find method: " + methodName);
+
+        return method;
+    }
+
+    private MethodReference LookupMethodAndImport(TypeDefinition typeDefinition, string methodName)
+    {
+        return ModuleDefinition.ImportReference(LookupMethod(typeDefinition, methodName));
+    }
+
+    private AssemblyDefinition TryResolveAssembly(string assemblyName)
+    {
+        try
+        {
+            return ModuleDefinition.AssemblyResolver.Resolve(assemblyName);
+        }
+        catch
+        {
+            LogInfo("Failed to resolve assembly: " + assemblyName);
+            return null;
+        }
     }
 
     void PrependListFieldInitializerToConstructor(FieldReference field, MethodDefinition constructor, MethodReference listConstructor)
@@ -326,7 +395,7 @@ public class ModuleWeaver
         var il = prop.GetMethod.Body.GetILProcessor();
 
         il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));
-        il.InsertBefore(start, il.Create(OpCodes.Call, realmObjectIsManagedGetter));
+        il.InsertBefore(start, il.Create(OpCodes.Call, RealmObjectIsManagedGetter));
         il.InsertBefore(start, il.Create(OpCodes.Brfalse_S, start));
         il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));
         il.InsertBefore(start, il.Create(OpCodes.Ldstr, columnName));
@@ -336,14 +405,55 @@ public class ModuleWeaver
         Debug.Write("[get] ");
     }
 
-    void ReplaceSetter(PropertyDefinition prop, string columnName, MethodReference setValueReference)
+    void ReplaceSetter(PropertyDefinition prop, FieldReference backingField, string columnName, MethodReference setValueReference, bool weavePropertyChanged, EventDefinition propChangedEventDefinition, FieldDefinition propChangedFieldDefinition)
     {
         /// A synthesized property setter looks like this:
         ///   0: ldarg.0
         ///   1: ldarg.1
         ///   2: stfld <backingField>
         ///   3: ret
-        /// We want to change it so it looks like this:
+        ///   
+        /// If we want to weave support for INotifyPropertyChanged as well, we want to change it so it looks like this:
+        ///   0. ldarg.0
+        ///   1. call Realm.RealmObject.get_IsManaged
+        ///   2. ldc.i4.0
+        ///   3. ceq
+        ///   4. stloc.1
+        ///   5. ldloc.1
+        ///   6. brfalse.s 11
+        ///   7. ldarg.0
+        ///   8. ldarg.1
+        ///   9. stfld <backingField>
+        ///   10. br.s 15
+        ///   11. ldarg.0
+        ///   12. ldstr <columnName>
+        ///   13. ldarg.1
+        ///   14. call Realm.RealmObject.SetValue<T>
+        ///   15. ldarg.0
+        ///   16. ldfld PropertyChanged
+        ///   17. stloc.0
+        ///   18. ldloc.0
+        ///   19. ldnull
+        ///   20. cgt.un
+        ///   21. stloc.2
+        ///   22. ldloc.2
+        ///   23. brfalse.s 30
+        ///   24. ldarg.0
+        ///   25. ldfld PropertyChanged
+        ///   26. ldarg.0
+        ///   27. ldstr <columnName>
+        ///   28. newobj PropertyChangedEventArgs
+        ///   29. callvirt PropertyChangedEventHandler.Invoke
+        ///   30. ret
+        ///   
+        /// This is roughly equivalent to:
+        ///   if (!base.IsManaged) this.<backingField> = value;
+        ///   else base.SetValue<T>(<columnName>, value);
+        ///     
+        ///   if (PropertyChanged != null)
+        ///     PropertyChanged(this, new PropertyChangedEventArgs(<columnName>);
+        ///  
+        /// If we want to only weave support for Realm (without INotifyPropertyChanged), we want to change it so it looks like this:
         ///   0: ldarg.0
         ///   1: call Realm.RealmObject.get_IsManaged
         ///   2: brfalse.s 8
@@ -356,21 +466,156 @@ public class ModuleWeaver
         ///   9: ldarg.1
         ///   10: stfld <backingField>
         ///   11: ret
+        ///   
         /// This is roughly equivalent to:
         ///   if (!base.IsManaged) this.<backingField> = value;
         ///   else base.SetValue<T>(<columnName>, value);
 
-        var start = prop.SetMethod.Body.Instructions.First();
-        var il = prop.SetMethod.Body.GetILProcessor();
+        if (setValueReference == null)
+            throw new ArgumentNullException(nameof(setValueReference));
 
-        il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));
-        il.InsertBefore(start, il.Create(OpCodes.Call, realmObjectIsManagedGetter));
-        il.InsertBefore(start, il.Create(OpCodes.Brfalse_S, start));
-        il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));
-        il.InsertBefore(start, il.Create(OpCodes.Ldstr, columnName));
-        il.InsertBefore(start, il.Create(OpCodes.Ldarg_1));
-        il.InsertBefore(start, il.Create(OpCodes.Call, setValueReference));
-        il.InsertBefore(start, il.Create(OpCodes.Ret));
+        if (!weavePropertyChanged)
+        {
+            var start = prop.SetMethod.Body.Instructions.First();
+            var il = prop.SetMethod.Body.GetILProcessor();
+
+            il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));
+            il.InsertBefore(start, il.Create(OpCodes.Call, RealmObjectIsManagedGetter));
+            il.InsertBefore(start, il.Create(OpCodes.Brfalse_S, start));
+            il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));
+            il.InsertBefore(start, il.Create(OpCodes.Ldstr, columnName));
+            il.InsertBefore(start, il.Create(OpCodes.Ldarg_1));
+            il.InsertBefore(start, il.Create(OpCodes.Call, setValueReference));
+            il.InsertBefore(start, il.Create(OpCodes.Ret));
+        }
+        else
+        {
+            if (propChangedEventDefinition == null)
+                throw new ArgumentNullException(nameof(propChangedEventDefinition));
+
+            if (propChangedFieldDefinition == null)
+                throw new ArgumentNullException(nameof(propChangedFieldDefinition));
+
+            if (RealmObjectIsManagedGetter == null)
+                throw new ArgumentNullException(nameof(RealmObjectIsManagedGetter));
+
+            if (setValueReference == null)
+                throw new ArgumentNullException(nameof(setValueReference));
+
+            if (PropChangedEventArgsConstructor == null)
+                throw new ArgumentNullException(nameof(PropChangedEventArgsConstructor));
+
+            // Whilst we're only targetting auto-properties here, someone like PropertyChanged.Fody
+            // may have already come in and rewritten our IL. Lets clear everything and start from scratch.
+            var il = prop.SetMethod.Body.GetILProcessor();
+            prop.SetMethod.Body.Instructions.Clear();
+            prop.SetMethod.Body.Variables.Clear();
+
+            // While we can tidy up PropertyChanged.Fody IL if we're ran after it, we can't do a heck of a lot
+            // if they're the last one in.
+            // To combat this, we'll check if the PropertyChanged assembly is available, and if so, attribute
+            // the property such that PropertyChanged.Fody won't touch it.
+            if (PropChangedDoNotNotifyAttributeConstructorDefinition != null)
+                prop.CustomAttributes.Add(new CustomAttribute(PropChangedDoNotNotifyAttributeConstructorDefinition));
+
+            if (System_Boolean == null)
+                throw new ApplicationException("System_Boolean is null");
+
+            prop.SetMethod.Body.Variables.Add(new VariableDefinition("handler", PropChangedEventHandlerReference));
+            prop.SetMethod.Body.Variables.Add(new VariableDefinition(System_Boolean));
+            prop.SetMethod.Body.Variables.Add(new VariableDefinition(System_Boolean));
+
+            var ret = il.Create(OpCodes.Ret);
+
+            /*
+                ldarg.0
+                call instance bool TestingILGeneration.RealmObject::get_IsManaged()
+                ldc.i4.0
+                ceq
+                stloc.1
+                ldloc.1
+                brfalse.s IL_0017
+            */
+            il.Append(il.Create(OpCodes.Ldarg_0));                         
+            il.Append(il.Create(OpCodes.Call, RealmObjectIsManagedGetter));
+            il.Append(il.Create(OpCodes.Ldc_I4_0));                        
+            il.Append(il.Create(OpCodes.Ceq));                             
+            il.Append(il.Create(OpCodes.Stloc_1));                         
+            il.Append(il.Create(OpCodes.Ldloc_1));                         
+            var jumpToLabelA = il.Create(OpCodes.Nop);
+            il.Append(jumpToLabelA); // Jump to A
+
+            /*
+                ldarg.0
+                ldarg.1
+                stfld int32 TestingILGeneration.TestClass1::_myProperty
+                br.s IL_0024
+            */
+            il.Append(il.Create(OpCodes.Ldarg_0));
+            il.Append(il.Create(OpCodes.Ldarg_1));
+            il.Append(il.Create(OpCodes.Stfld, backingField));
+            var jumpToLabelB = il.Create(OpCodes.Nop);
+            il.Append(jumpToLabelB);
+
+            /*
+                ldarg.0
+                ldstr "MyProperty"
+                ldarg.1
+                call instance void TestingILGeneration.RealmObject::SetValue<int32>(string, !!0)
+            */
+            var labelA = il.Create(OpCodes.Ldarg_0);
+            il.Append(labelA); /* A */
+            il.Append(il.Create(OpCodes.Ldstr, columnName));
+            il.Append(il.Create(OpCodes.Ldarg_1));
+            il.Append(il.Create(OpCodes.Call, setValueReference));
+
+            /*
+                ldarg.0
+                ldfld class [mscorlib]System.EventHandler`1<class [System]System.ComponentModel.PropertyChangedEventArgs> TestingILGeneration.TestClass1::PropertyChanged
+                stloc.0
+                ldloc.0
+                ldnull
+                cgt.un
+                stloc.2
+                ldloc.2
+                brfalse.s IL_004a
+            */
+            var labelB = il.Create(OpCodes.Ldarg_0);
+            il.Append(labelB); /* B */
+            il.Append(il.Create(OpCodes.Ldfld, propChangedFieldDefinition));
+            il.Append(il.Create(OpCodes.Stloc_0));
+            il.Append(il.Create(OpCodes.Ldloc_0));
+            il.Append(il.Create(OpCodes.Ldnull));
+            il.Append(il.Create(OpCodes.Cgt_Un));
+            il.Append(il.Create(OpCodes.Stloc_2));
+            il.Append(il.Create(OpCodes.Ldloc_2));
+            il.Append(il.Create(OpCodes.Brfalse, ret)); /* JUMP TO RET */
+
+            /*
+                ldarg.0
+                ldfld class [mscorlib]System.EventHandler`1<class [System]System.ComponentModel.PropertyChangedEventArgs> TestingILGeneration.TestClass1::PropertyChanged
+                ldarg.0
+                ldstr "MyProperty"
+                newobj instance void [System]System.ComponentModel.PropertyChangedEventArgs::.ctor(string)
+                callvirt instance void class [mscorlib]System.EventHandler`1<class [System]System.ComponentModel.PropertyChangedEventArgs>::Invoke(object, !0)
+            */
+            il.Append(il.Create(OpCodes.Ldarg_0));
+            il.Append(il.Create(OpCodes.Ldfld, propChangedFieldDefinition));
+            il.Append(il.Create(OpCodes.Ldarg_0));
+            il.Append(il.Create(OpCodes.Ldstr, columnName));
+            il.Append(il.Create(OpCodes.Newobj, PropChangedEventArgsConstructor));
+            il.Append(il.Create(OpCodes.Callvirt, PropChangedEventHandlerInvokeReference));
+
+            // Replace jumps above now that we've injected everything.
+            il.Replace(jumpToLabelA, il.Create(OpCodes.Brfalse, labelA));
+            il.Replace(jumpToLabelB, il.Create(OpCodes.Br, labelB));
+
+            // Finish with a return.
+            il.Append(ret);
+
+            // Let Cecil optimize things for us. 
+            prop.SetMethod.Body.OptimizeMacros();
+        }
 
         Debug.Write("[set] ");
     }
