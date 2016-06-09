@@ -21,8 +21,8 @@ samples:
 publisher-url: https://www.realm.io
 packages: 
   android:
-    - Realm, Version=0.74.1
+    - Realm, Version=0.76.0
   ios-unified:
-    - Realm, Version=0.74.1
-version: 0.74.1
+    - Realm, Version=0.76.0
+version: 0.76.0
 ...
