@@ -1,3 +1,16 @@
+0.76.0 (2016-06-09)
+-------------------
+
+### Major Changes
+* `RealmObject` classes will now implicitly implement `INotifyPropertyChanged` if you specify the interface on your class. Thanks to [Joe Brock](https://github.com/jdbrock) for this contribution!
+
+### Minor Changes
+* `long` is supported in queries
+* Linker error looking for `System.String System.String::Format(System.IFormatProvider,System.String,System.Object)` fixed
+* Second-level descendants of `RealmObject` and static properties in `RealmObject` classes now cause the weaver to properly report errors as we don't (yet) support those.
+* Calling `.Equals()` on standalone objects no longer throws.
+
+
 0.75.0 (2016-06-02)
 -------------------
 
