@@ -106,8 +106,6 @@ namespace Tests
             _sourceAssemblyPath = typeof(AssemblyToProcess.AllTypesObject).Assembly.Location;
             _targetAssemblyPath = _sourceAssemblyPath.Replace(".dll", $".{_weaverOptions}.dll");
 
-            Console.WriteLine($"{_sourceAssemblyPath} {_targetAssemblyPath}");
-
             if (File.Exists(_targetAssemblyPath))
             {
                 File.Delete(_targetAssemblyPath);
