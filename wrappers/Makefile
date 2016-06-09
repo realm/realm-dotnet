@@ -166,10 +166,10 @@ build/Debug-android/mips/libwrappers.so: | libs-dbg
 	cp ./libs-dbg/mips/librealm-android-dbg.so ./build/Debug-android/mips/libwrappers.so
 
 libs: | core-android $(SRCS) $(ANDROID_SRCS)
-	$(NDK_ROOT)/ndk-build APP_PLATFORM=android-10 V=1
+	$(NDK_ROOT)/ndk-build APP_PLATFORM=android-10 V=1 -j$(shell sysctl -n hw.ncpu)
 	
 libs-dbg: | core-android $(SRCS) $(ANDROID_SRCS)
-	$(NDK_ROOT)/ndk-build APP_PLATFORM=android-10 V=1 NDK_DEBUG=1 NDK_LIBS_OUT=libs-dbg
+	$(NDK_ROOT)/ndk-build APP_PLATFORM=android-10 V=1 NDK_DEBUG=1 NDK_LIBS_OUT=libs-dbg -j$(shell sysctl -n hw.ncpu)
 	
 
 .PHONY: android androiddbg
