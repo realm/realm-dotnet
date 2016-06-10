@@ -95,7 +95,7 @@ namespace Tests
 
         private readonly WeaverOptions? _weaverOptions;
 
-        public WeaverTests(WeaverOptions weaverOptions)
+        public Tests(WeaverOptions weaverOptions)
         {
             _weaverOptions = weaverOptions;
         }
