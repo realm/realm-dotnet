@@ -22,7 +22,10 @@ using System.Reflection;
 [assembly: AssemblyCopyright("Copyright © 2016 Realm")]
 [assembly: AssemblyCompany("Realm Inc.")]
 [assembly: AssemblyProduct("Realm C#")]
-    
+
+[assembly: AssemblyVersion("0.76.0.0")]
+[assembly: AssemblyFileVersion("0.76.0.0")]
+
 #if DEBUG
 [assembly: AssemblyConfiguration("Debug")]
 #else
