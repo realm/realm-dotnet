@@ -24,6 +24,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using DotNetCross.Memory;
 
 #if __IOS__
 using ObjCRuntime;
@@ -39,27 +40,34 @@ namespace Realms {
 
         internal IEnumerable<T> AsEnumerable()
         {
-            var itemsPtr = items;
-            var size = (int)count;
-            return Enumerable.Range(0, size).Select(i => Marshal.PtrToStructure<T>(IntPtr.Add(itemsPtr, IntPtr.Size * i)));
+            return Enumerable.Range(0, (int)count).Select(MarshalElement);
+        }
+
+        unsafe T MarshalElement(int elementIndex)
+        {
+            var @struct = default(T);
+            Unsafe.CopyBlock(Unsafe.AsPointer(ref @struct), IntPtr.Add(items, elementIndex * Unsafe.SizeOf<T>()).ToPointer(), (uint)Unsafe.SizeOf<T>());
+            return @struct;
         }
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    struct PtrTo<T> where T : struct
+    unsafe struct PtrTo<T> where T : struct
     {
-        IntPtr ptr;
+        void* ptr;
 
         internal T? Value
         {
             get
             {
-                if (ptr == IntPtr.Zero)
+                if (ptr == null)
                 {
                     return null;
                 }
 
-                return Marshal.PtrToStructure<T>(ptr);
+                var @struct = default(T);
+                Unsafe.CopyBlock(Unsafe.AsPointer(ref @struct), ptr, (uint)Unsafe.SizeOf<T>());
+                return @struct;
             }
         }
     }

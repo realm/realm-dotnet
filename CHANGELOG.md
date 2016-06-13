@@ -3,6 +3,7 @@
 
 ### Minor Changes
 * The `Realm` static constructor will no longer throw a `TypeLoadException` when there is an active `System.Reflection.Emit.AssemblyBuilder` in the current `AppDomain`.
+* Fixed `Attempting to JIT compile` exception when using the Notifications API on iOS devices.
 
 0.76.0 (2016-06-09)
 -------------------
