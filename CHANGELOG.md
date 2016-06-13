@@ -1,3 +1,9 @@
+0.76.1 (TBD)
+-------------------
+
+### Minor Changes
+* The `Realm` static constructor will no longer throw a `TypeLoadException` when there is an active `System.Reflection.Emit.AssemblyBuilder` in the current `AppDomain`.
+
 0.76.0 (2016-06-09)
 -------------------
 

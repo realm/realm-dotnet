@@ -55,6 +55,10 @@ namespace Realms
         static Realm()
         {
             RealmObjectClasses = AppDomain.CurrentDomain.GetAssemblies()
+                                          #if !__IOS__
+                                          // we need to exclude dynamic assemblies. see https://bugzilla.xamarin.com/show_bug.cgi?id=39679
+                                          .Where(a => !(a is System.Reflection.Emit.AssemblyBuilder))
+                                          #endif
                                           .SelectMany(a => a.GetTypes())
                                           .Where(t => t.IsSubclassOf(typeof(RealmObject)))
                                           .ToArray();
