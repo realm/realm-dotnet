@@ -4,8 +4,6 @@
 <dict>
 	<key>CFBundleDisplayName</key>
 	<string>IntegrationTests.XamarinIOS</string>
-	<key>CFBundleIdentifier</key>
-	<string>com.companyname.IntegrationTests.XamarinIOS</string>
 	<key>CFBundleShortVersionString</key>
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
@@ -21,5 +19,9 @@
 	</array>
 	<key>XSAppIconAssets</key>
 	<string>Resources/Images.xcassets/AppIcons.appiconset</string>
+	<key>CFBundleName</key>
+	<string>IntegrationTests.XamarinIOS</string>
+	<key>CFBundleIdentifier</key>
+	<string>io.realm.xamarintests</string>
 </dict>
 </plist>
