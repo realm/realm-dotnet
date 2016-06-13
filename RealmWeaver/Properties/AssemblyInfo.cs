@@ -19,10 +19,3 @@
 using System.Reflection;
 
 [assembly: AssemblyTitle("RealmWeaver")]
-[assembly: AssemblyProduct("Realm C#")]
-
-[assembly: AssemblyCopyright("Copyright © 2016 Realm")]
-[assembly: AssemblyCompany("Realm Inc.")]
-
-[assembly: AssemblyVersion("0.76.0.0")]
-[assembly: AssemblyFileVersion("0.76.0.0")]
