@@ -17,6 +17,7 @@
     <tags>Realm database db persistence sqlite</tags>
     <dependencies>
       <dependency id="Fody" version="1.29.4"/>
+      <dependency id="DotNetCross.Memory.Unsafe" version="0.2.2"/>
     </dependencies>
   </metadata>
   <files>
