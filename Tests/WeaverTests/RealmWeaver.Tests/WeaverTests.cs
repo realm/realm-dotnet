@@ -31,12 +31,12 @@ using Realms;
 using System.ComponentModel;
 using Mono.Cecil.Cil;
 
-namespace RealmWeaver
+namespace Tests
 {
     [TestFixture(WeaverOptions.RealmOnlyNoPropertyChanged)]
     [TestFixture(WeaverOptions.RealmAfterPropertyChanged)]
     [TestFixture(WeaverOptions.RealmBeforePropertyChanged)]
-    public class Tests
+    public class WeaverTests
     {
         #region helpers
 
