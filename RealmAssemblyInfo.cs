@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -17,7 +17,17 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System.Reflection;
-using System.Runtime.CompilerServices;
 
-[assembly: AssemblyTitle("Realm.XamarinAndroid")]
-[assembly: InternalsVisibleTo("IntegrationTests.XamarinAndroid")]
+[assembly: AssemblyDescription("Realm is a mobile database: a replacement for SQLite")]
+[assembly: AssemblyCopyright("Copyright © 2016 Realm")]
+[assembly: AssemblyCompany("Realm Inc.")]
+[assembly: AssemblyProduct("Realm C#")]
+
+[assembly: AssemblyVersion("0.76.0.0")]
+[assembly: AssemblyFileVersion("0.76.0.0")]
+
+#if DEBUG
+[assembly: AssemblyConfiguration("Debug")]
+#else
+[assembly: AssemblyConfiguration("Release")]
+#endif
