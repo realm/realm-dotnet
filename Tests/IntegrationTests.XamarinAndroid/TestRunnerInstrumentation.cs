@@ -25,37 +25,37 @@ using Android.Runtime;
 
 namespace IntegrationTests.XamarinAndroid
 {
-	[Instrumentation(Name = "io.realm.xamarintests.TestRunner")]
-	public class TestRunnerInstrumentation : Instrumentation
-	{
-		public TestRunnerInstrumentation (IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
-		{
-		}
+    [Instrumentation(Name = "io.realm.xamarintests.TestRunner")]
+    public class TestRunnerInstrumentation : Instrumentation
+    {
+        public TestRunnerInstrumentation(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
+        {
+        }
 
-		public override void OnCreate (Bundle arguments)
-		{
-			base.OnCreate (arguments);
+        public override void OnCreate(Bundle arguments)
+        {
+            base.OnCreate(arguments);
 
-			this.Start ();
-		}
+            this.Start();
+        }
 
-		public override void OnStart ()
-		{
+        public override void OnStart()
+        {
             NativeMethods.ALooper_prepare(0);
 
-			using (var output = Context.OpenFileOutput ("TestResults.Android.xml", FileCreationMode.WorldReadable)) 
-			{
-				IntegrationTests.Shared.TestRunner.Run ("Xamarin.Android", output);
-			}
+            using (var output = Context.OpenFileOutput("TestResults.Android.xml", FileCreationMode.WorldReadable))
+            {
+                IntegrationTests.Shared.TestRunner.Run("Android", output);
+            }
 
-			this.Finish (Result.Ok, null);
-		}
+            this.Finish(Result.Ok, null);
+        }
 
         private static class NativeMethods
         {
             [System.Runtime.InteropServices.DllImport("android")]
             internal static extern IntPtr ALooper_prepare(int opts);
         }
-	}
+    }
 }
 
