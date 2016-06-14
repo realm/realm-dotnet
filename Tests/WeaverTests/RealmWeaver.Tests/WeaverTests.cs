@@ -16,6 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+extern alias realm;
+extern alias propertychanged;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -62,68 +65,23 @@ namespace Tests
             o.GetType().GetProperty(propName).SetValue(o, propertyValue);
         }
 
-        private void TryCleanupOldAssemblies(string dir)
+        private void WeaveRealm(ModuleDefinition moduleDefinition)
         {
-            try
+            new realm::ModuleWeaver
             {
-                // Tidy up old processed assemblies.
-                foreach (var filePath in Directory.EnumerateFiles(dir, "*.processed.dll"))
-                    File.Delete(filePath);
-            }
-            catch { }
+                ModuleDefinition = moduleDefinition,
+                LogErrorPoint = (s, point) => _errors.Add(s),
+                LogWarningPoint = (s, point) => _warnings.Add(s)
+            }.Execute();
         }
 
-        private string CopyAssemblyToNextUniquePath(string originalPath, string overrideSourcePath = null)
+        private void WeavePropertyChanged(ModuleDefinition moduleDefinition)
         {
-            int stage = 1;
-            string newPath;
-
-            // Calculate the next unique assembly path.
-            do
+            new propertychanged::ModuleWeaver
             {
-                newPath = originalPath.Replace(".dll", $".stage{stage++}.processed.dll");
-            }
-            while (File.Exists(newPath));
-
-            // Copy the source assembly to the calculated path.
-            File.Copy(overrideSourcePath ?? originalPath, newPath);
-
-            // Return the copied assembly path.
-            return newPath;
-        }
-
-        private void WeaveRealm(string targetAssemblyPath)
-        {
-            var moduleDefinition = ModuleDefinition.ReadModule(targetAssemblyPath);
-            (moduleDefinition.AssemblyResolver as DefaultAssemblyResolver).AddSearchDirectory(GetAssemblyDir());
-
-            var weaverPath = Path.Combine(GetAssemblyDir(), "RealmWeaver.Fody.dll");
-
-            dynamic realmWeavingTask = System.Activator.CreateInstanceFrom(weaverPath, "ModuleWeaver").Unwrap();
-
-            realmWeavingTask.ModuleDefinition = moduleDefinition;
-            realmWeavingTask.LogErrorPoint = new Action<string, SequencePoint>((s, point) => _errors.Add(s));
-            realmWeavingTask.LogWarningPoint = new Action<string, SequencePoint>((s, point) => _warnings.Add(s));
-
-            realmWeavingTask.Execute();
-            moduleDefinition.Write(targetAssemblyPath);
-        }
-
-        private void WeavePropertyChanged(string targetAssemblyPath)
-        {
-            var moduleDefinition = ModuleDefinition.ReadModule(targetAssemblyPath);
-            (moduleDefinition.AssemblyResolver as DefaultAssemblyResolver).AddSearchDirectory(GetAssemblyDir());
-
-            var weaverPath = Path.Combine(GetAssemblyDir(), "PropertyChanged.Fody.dll");
-
-            dynamic realmWeavingTask = System.Activator.CreateInstanceFrom(weaverPath, "ModuleWeaver").Unwrap();
-
-            realmWeavingTask.ModuleDefinition = moduleDefinition;
-            // NB. PropertyChanged.Fody doesn't expose an error logging property - it throws exceptions instead.
-            realmWeavingTask.LogWarning = new Action<string>(s => _warnings.Add(s));
-
-            realmWeavingTask.Execute();
-            moduleDefinition.Write(targetAssemblyPath);
+                ModuleDefinition = moduleDefinition,
+                LogWarning = s => _warnings.Add(s)
+            }.Execute();
         }
 
         #endregion
@@ -135,9 +93,9 @@ namespace Tests
         private readonly List<string> _warnings = new List<string>();
         private readonly List<string> _errors = new List<string>();
 
-        private readonly WeaverOptions _weaverOptions;
+        private readonly WeaverOptions? _weaverOptions;
 
-        public WeaverTests(WeaverOptions weaverOptions)
+        public Tests(WeaverOptions weaverOptions)
         {
             _weaverOptions = weaverOptions;
         }
@@ -145,32 +103,35 @@ namespace Tests
         [OneTimeSetUp]
         public void FixtureSetup()
         {
-            var assemblyDir = GetAssemblyDir();
-            TryCleanupOldAssemblies(assemblyDir);
+            _sourceAssemblyPath = typeof(AssemblyToProcess.AllTypesObject).Assembly.Location;
+            _targetAssemblyPath = _sourceAssemblyPath.Replace(".dll", $".{_weaverOptions}.dll");
 
-            _sourceAssemblyPath = GetSourceAssemblyPath();
-            _targetAssemblyPath = CopyAssemblyToNextUniquePath(_sourceAssemblyPath);
+            var moduleDefinition = ModuleDefinition.ReadModule(_sourceAssemblyPath);
+            (moduleDefinition.AssemblyResolver as DefaultAssemblyResolver).AddSearchDirectory(Path.GetDirectoryName(_sourceAssemblyPath));
 
             switch (_weaverOptions)
             {
                 case WeaverOptions.RealmOnlyNoPropertyChanged:
-                    WeaveRealm(_targetAssemblyPath);
+                    WeaveRealm(moduleDefinition);
                     break;
                 
                 case WeaverOptions.RealmAfterPropertyChanged:
-                    WeavePropertyChanged(_targetAssemblyPath);
-                    _targetAssemblyPath = CopyAssemblyToNextUniquePath(_sourceAssemblyPath, _targetAssemblyPath);
-                    WeaveRealm(_targetAssemblyPath);
+                    WeavePropertyChanged(moduleDefinition);
+                    WeaveRealm(moduleDefinition);
                     break;
 
                 case WeaverOptions.RealmBeforePropertyChanged:
-                    WeaveRealm(_targetAssemblyPath);
-                    _targetAssemblyPath = CopyAssemblyToNextUniquePath(_sourceAssemblyPath, _targetAssemblyPath);
-                    WeavePropertyChanged(_targetAssemblyPath);
+                    WeaveRealm(moduleDefinition);
+                    WeavePropertyChanged(moduleDefinition);
                     break;
             }
 
+            // we need to change the assembly name because otherwise Mono loads the original assembly
+            moduleDefinition.Assembly.Name.Name += $".{_weaverOptions}";
+
+            moduleDefinition.Write(_targetAssemblyPath);
             _assembly = Assembly.LoadFile(_targetAssemblyPath);
+            Console.WriteLine(_assembly.Location);
 
             // Try accessing assembly to ensure that the assembly is still valid.
             try
@@ -184,23 +145,6 @@ namespace Tests
 
                 Assert.Fail("Load failure");
             }
-        }
-
-        [OneTimeTearDown]
-        public void Dispose()
-        {
-            var assemblyDir = GetAssemblyDir();
-            TryCleanupOldAssemblies(assemblyDir);
-        }
-
-        private string GetSourceAssemblyPath()
-        {
-            return typeof(AssemblyToProcess.AllTypesObject).Assembly.Location;
-        }
-
-        private string GetAssemblyDir()
-        {
-            return Path.GetDirectoryName(GetSourceAssemblyPath());
         }
 
         [TestCase("CharProperty", '0')]
