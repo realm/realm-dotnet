@@ -102,7 +102,11 @@ namespace Tasky.Screens {
         }
         public void DeleteTaskRow(int rowId)
         {
-            TodoItemManager.DeleteTask(tasks[rowId].ID);
+            using (var transaction = TodoItemManager.BeginTransaction ()) 
+            {
+                TodoItemManager.DeleteTask (tasks [rowId].ID);
+                transaction.Commit();
+            }
         }
     }
 }
