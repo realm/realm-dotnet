@@ -2244,3 +2244,10 @@ Makefile
 
 SortingTests.cs
 - added SortsAccentedAndSpecialCorrectly (will fail on previous builds)
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#639 Sample code to verify approach for cascading delete workaround
+
+RelationshipTests.cs
+- TestDeleteChildren added with Product and Report class definitions
