@@ -230,8 +230,18 @@ public class ModuleWeaver
             }
         }
 
+        var objectConstructor = type.GetConstructors()
+            .SingleOrDefault(c => c.Parameters.Count == 0 && c.IsPublic && !c.IsStatic);
+        if (objectConstructor == null)
+        {
+            var nonDefaultConstructor = type.GetConstructors().First();
+            var sequencePoint = nonDefaultConstructor.Body.Instructions.First().SequencePoint;
+            LogErrorPoint($"class {type.Name} must have a public constructor that takes no parameters", sequencePoint);
+            return;
+        }
+
         var wovenAttribute = new CustomAttribute(_wovenAttributeConstructor);
-        TypeReference helperType = WeaveRealmObjectHelper(type);
+        TypeReference helperType = WeaveRealmObjectHelper(type, objectConstructor);
         wovenAttribute.ConstructorArguments.Add(new CustomAttributeArgument(System_Type, helperType));
         type.CustomAttributes.Add(wovenAttribute);
         Debug.WriteLine("");
@@ -669,7 +679,7 @@ public class ModuleWeaver
             .SingleOrDefault();
     }
 
-    private TypeDefinition WeaveRealmObjectHelper(TypeDefinition realmObjectType)
+    private TypeDefinition WeaveRealmObjectHelper(TypeDefinition realmObjectType, MethodDefinition objectConstructor)
     {
         var helperType = new TypeDefinition(null, "RealmHelper",
                                             TypeAttributes.Class | TypeAttributes.NestedPrivate | TypeAttributes.BeforeFieldInit,
@@ -680,7 +690,7 @@ public class ModuleWeaver
         var createInstance = new MethodDefinition("CreateInstance", MethodAttributes.Public | MethodAttributes.Final | MethodAttributes.HideBySig | MethodAttributes.Virtual | MethodAttributes.NewSlot, ModuleDefinition.ImportReference(_realmObject));
         {
             var il = createInstance.Body.GetILProcessor();
-            il.Emit(OpCodes.Newobj, realmObjectType.GetConstructors().Single(c => c.Parameters.Count == 0 && !c.IsStatic));
+            il.Emit(OpCodes.Newobj, objectConstructor);
             il.Emit(OpCodes.Ret);
         }
         helperType.Methods.Add(createInstance);

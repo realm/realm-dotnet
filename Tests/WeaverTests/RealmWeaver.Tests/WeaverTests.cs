@@ -525,7 +525,8 @@ namespace Tests
                 "ObjectIdProperties.BooleanProperty is marked as [ObjectId] which is only allowed on integral and string types, not on System.Boolean",
                 "ObjectIdProperties.DateTimeOffsetProperty is marked as [ObjectId] which is only allowed on integral and string types, not on System.DateTimeOffset",
                 "ObjectIdProperties.SingleProperty is marked as [ObjectId] which is only allowed on integral and string types, not on System.Single",
-                "The type AssemblyToProcess.Employee indirectly inherits from RealmObject which is not supported"
+                "The type AssemblyToProcess.Employee indirectly inherits from RealmObject which is not supported",
+                "class DefaultConstructorMissing must have a public constructor that takes no parameters"
             };
 
             Assert.That(_errors, Is.EquivalentTo(expectedErrors));

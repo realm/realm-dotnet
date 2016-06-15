@@ -69,4 +69,10 @@ namespace AssemblyToProcess
         [ObjectId]
         public float SingleProperty { get; set; }
     }
+
+    // This class has no default constructor which is necessary for Realm.CreateObject<>()
+    public class DefaultConstructorMissing : RealmObject
+    {
+        public DefaultConstructorMissing(int parameter) { }
+    }
 }
