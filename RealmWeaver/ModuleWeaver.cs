@@ -30,6 +30,7 @@ public class ModuleWeaver
     public Action<string> LogDebug { get; set; } = m => { };
     public Action<string> LogInfo { get; set; } = m => { };
     public Action<string, SequencePoint> LogWarningPoint { get; set; } = (m, p) => { };
+    public Action<string> LogError { get; set; } = m => { };
     public Action<string, SequencePoint> LogErrorPoint { get; set; } = (m, p) => { };
 
     // An instance of Mono.Cecil.ModuleDefinition for processing
@@ -185,7 +186,14 @@ public class ModuleWeaver
 
         foreach (var type in GetMatchingTypes())
         {
-            WeaveType(type, methodTable);
+            try
+            {
+                WeaveType(type, methodTable);
+            }
+            catch (Exception e)
+            {
+                LogError( $"Unexpected error caught weaving type '{type.Name}': {e.Message}.\r\nCallstack:\r\n{e.StackTrace}");
+            }
         }
 
         submitAnalytics.Wait();
@@ -217,7 +225,7 @@ public class ModuleWeaver
             {
                 var sequencePoint = prop.GetMethod.Body.Instructions.First().SequencePoint;
                 LogErrorPoint(
-                    $"Unexpected error caught weaving {type.Name}.{prop.Name}: {e.Message}.\r\nCallstack: {e.StackTrace}",
+                    $"Unexpected error caught weaving property '{type.Name}.{prop.Name}': {e.Message}.\r\nCallstack:\r\n{e.StackTrace}",
                     sequencePoint);
             }
         }
