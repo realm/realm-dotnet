@@ -25,6 +25,13 @@ using Realms;
 
 namespace IntegrationTests
 {
+
+    class Cities : RealmObject
+    {
+        public string Name { set; get; }
+    }
+
+
     class SortingTests : PeopleTestsBase
     {
             
@@ -215,6 +222,19 @@ namespace IntegrationTests
                 OrderBy(p => p.Latitude).
                 First();
             Assert.That(sortedFirst.Email, Is.EqualTo("john@doe.com"));
+        }
+
+        [Test]
+        public void SortsAccentedAndSpecialCorrectly ()
+        {
+            _realm.Write (() => {
+                foreach (var city in new [] { "Santo Domingo", "Sydney", "São Paulo", "Shanghai", "A-Place" , "A Place" } ) {
+                    var co = _realm.CreateObject<Cities> ();
+                    co.Name = city;
+                }
+            });
+            var sortedCities = _realm.All<Cities>().OrderBy(c => c.Name).ToList().Select(c => c.Name);
+            Assert.That(sortedCities, Is.EqualTo( new [] { "A Place", "A-Place", "Santo Domingo", "São Paulo", "Shanghai", "Sydney" }) );
         }
 
 
