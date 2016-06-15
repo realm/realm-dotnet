@@ -5,6 +5,15 @@
 * The `Realm` static constructor will no longer throw a `TypeLoadException` when there is an active `System.Reflection.Emit.AssemblyBuilder` in the current `AppDomain`.
 * Fixed `Attempting to JIT compile` exception when using the Notifications API on iOS devices.
 
+### Breaking Changes
+No API change but sort order changes slightly with accented characters grouped together and some special characters sorting differently. "One third" now sorts ahead of "one-third".
+
+It uses the table at ftp://ftp.unicode.org/Public/UCA/latest/allkeys.txt
+
+It groups all characters that look visually identical, that is, it puts a, à, å together and before ø, o, ö even. This is a flaw because, for example, å should come last in Denmark. But it's the best we can do now, until we get more locale aware.
+
+Uses core 1.1.2
+
 0.76.0 (2016-06-09)
 -------------------
 
