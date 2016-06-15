@@ -2234,4 +2234,10 @@ IntegrationTests.XamarinIOS.csproj
 
 wrappers.xcodeproj
 - revert to no bitcode
-    
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#562 Move to core 1.1.0
+
+Makefile
+- bump CORE_APPLE_VER and CORE_ANDROID_VER    

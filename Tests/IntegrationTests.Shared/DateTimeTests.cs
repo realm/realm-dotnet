@@ -93,7 +93,7 @@ namespace IntegrationTests.Shared
             var sortedTurings = _realm.All<Person>().OrderBy(p => p.Birthday);
             DateTimeOffset prevB = new DateTimeOffset();
             foreach (var t in sortedTurings) {
-                Assert.That(t.Birthday.ToRealmUnixTimeMilliseconds(), Is.GreaterThan(prevB.ToRealmUnixTimeMilliseconds()));
+                Assert.That(t.Birthday.ToUnixTimeMilliseconds(), Is.GreaterThan(prevB.ToUnixTimeMilliseconds()));
                 prevB = t.Birthday;
             }
         }
