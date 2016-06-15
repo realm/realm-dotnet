@@ -494,7 +494,7 @@ namespace IntegrationTests.Shared
             });
 
             var delId = 1;
-            var delP = realm.All<Product>().First(p => p.Id == delId);  // use Single if sure exists
+            var delP = realm.All<Product>().First(p => p.Id == delId);
             Assert.IsNotNull(delP);
             Assert.That(delP.Reports.Count, Is.EqualTo(5));
 
