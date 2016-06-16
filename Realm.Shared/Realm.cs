@@ -43,27 +43,12 @@ namespace Realms
     {
         #region static
 
-        private static readonly Type[] RealmObjectClasses;
-        private static readonly Dictionary<Type, IntPtr> ObjectSchemaCache;
-
         // shared string buffer for getter because can only be getting on this one thread per Realm
         internal IntPtr stringGetBuffer = IntPtr.Zero;
         internal int stringGetBufferLen;
 
-
-
         static Realm()
         {
-            RealmObjectClasses = AppDomain.CurrentDomain.GetAssemblies()
-                                          #if !__IOS__
-                                          // we need to exclude dynamic assemblies. see https://bugzilla.xamarin.com/show_bug.cgi?id=39679
-                                          .Where(a => !(a is System.Reflection.Emit.AssemblyBuilder))
-                                          #endif
-                                          .SelectMany(a => a.GetTypes())
-                                          .Where(t => t.IsSubclassOf(typeof(RealmObject)))
-                                          .ToArray();
-
-            ObjectSchemaCache = new Dictionary<Type, IntPtr>();
             NativeCommon.Initialize();
             NativeCommon.register_notify_realm_changed(NotifyRealmChanged);
         }
@@ -108,41 +93,26 @@ namespace Realms
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         public static Realm GetInstance(RealmConfiguration config=null)
         {
-            config = config ??  RealmConfiguration.DefaultConfiguration;
+            config = config ?? RealmConfiguration.DefaultConfiguration;
 
-            // TODO cache these initializers but note complications with ObjectClasses
-            var schemaInitializer = new SchemaInitializerHandle();
+            var srHandle = new SharedRealmHandle();
 
+            RealmSchema schema;
             if (config.ObjectClasses == null)
             {
-                foreach (var realmObjectClass in RealmObjectClasses)
-                {
-                    var objectSchemaHandle = GenerateObjectSchema(realmObjectClass);
-                    NativeSchema.initializer_add_object_schema(schemaInitializer, objectSchemaHandle);
-                }
+                schema = RealmSchema.Default.CloneForAdoption(srHandle);
             }
             else
             {
-                foreach (var selectedRealmObjectClass in config.ObjectClasses) {
-                    if (selectedRealmObjectClass.BaseType != typeof(RealmObject))
-                        throw new ArgumentException($"The class {selectedRealmObjectClass.FullName} must descend directly from RealmObject");
-                    
-                    Debug.Assert(RealmObjectClasses.Contains(selectedRealmObjectClass));  // user-specified class must have been picked up by our static ctor
-                    var objectSchemaHandle = GenerateObjectSchema(selectedRealmObjectClass);
-                    NativeSchema.initializer_add_object_schema(schemaInitializer, objectSchemaHandle);
-                }
+                schema = RealmSchema.CreateSchemaForClasses(config.ObjectClasses, new SchemaHandle(srHandle));
             }
-
-            var schemaHandle = new SchemaHandle(schemaInitializer);
-
-            var srHandle = new SharedRealmHandle();
 
             var readOnly = MarshalHelpers.BoolToIntPtr(config.ReadOnly);
             var durability = MarshalHelpers.BoolToIntPtr(false);
             var databasePath = config.DatabasePath;
             IntPtr srPtr = IntPtr.Zero;
             try {
-                srPtr = NativeSharedRealm.open(schemaHandle, 
+                srPtr = NativeSharedRealm.open(schema.Handle, 
                     databasePath, (IntPtr)databasePath.Length, 
                     readOnly, durability, 
                     config.EncryptionKey,
@@ -159,7 +129,7 @@ namespace Realms
                     //MigrateRealm(configuration);
                 }
                 // create after deleting old reopen after migrating 
-                srPtr = NativeSharedRealm.open(schemaHandle, 
+                srPtr = NativeSharedRealm.open(schema.Handle, 
                     databasePath, (IntPtr)databasePath.Length, 
                     readOnly, durability, 
                     config.EncryptionKey,
@@ -173,100 +143,43 @@ namespace Realms
                 srHandle.SetHandle(srPtr);
             }
 
-            return new Realm(srHandle, config);
+            return new Realm(srHandle, config, schema);
         } 
-
-
-        private static IntPtr GenerateObjectSchema(Type objectClass)
-        {           
-            IntPtr objectSchemaPtr = IntPtr.Zero;
-            if (ObjectSchemaCache.TryGetValue(objectClass, out objectSchemaPtr)) {
-               return objectSchemaPtr;  // use cached schema                
-            }
-
-            objectSchemaPtr = NativeObjectSchema.create(objectClass.Name);
-            ObjectSchemaCache[objectClass] = objectSchemaPtr;  // save for later lookup
-            var propertiesToMap = objectClass.GetProperties(BindingFlags.Instance | BindingFlags.DeclaredOnly | BindingFlags.NonPublic | BindingFlags.Public)
-                .Where(p =>
-                {
-                    return p.GetCustomAttributes(false).OfType<WovenPropertyAttribute>().Any();
-                });
-
-            foreach (var p in propertiesToMap)
-            {
-                var mapToAttribute = p.GetCustomAttributes(false).FirstOrDefault(a => a is MapToAttribute) as MapToAttribute;
-                var propertyName = mapToAttribute != null ? mapToAttribute.Mapping : p.Name;
-
-                var objectIdAttribute = p.GetCustomAttributes(false).FirstOrDefault(a => a is ObjectIdAttribute);
-                var isObjectId = objectIdAttribute != null;
-
-                var indexedAttribute = p.GetCustomAttributes(false).FirstOrDefault(a => a is IndexedAttribute);
-                var isIndexed = indexedAttribute != null;
-
-                var isNullable = !(p.PropertyType.IsValueType || 
-                    p.PropertyType.Name == "RealmList`1") ||
-                    // IGNORING IList FOR NOW  p.PropertyType.Name == "IList`1") ||
-                    Nullable.GetUnderlyingType(p.PropertyType) != null;
-
-                var objectType = "";
-                if (!p.PropertyType.IsValueType && p.PropertyType.Name!="String") {
-                    if (p.PropertyType.Name == "RealmList`1")  // IGNORING IList FOR NOW   || p.PropertyType.Name == "IList`1")
-                        objectType = p.PropertyType.GetGenericArguments()[0].Name;
-                    else {
-                        if (p.PropertyType.BaseType.Name == "RealmObject")
-                            objectType = p.PropertyType.Name;
-                    }
-                }
-                var columnType = p.PropertyType;
-                NativeObjectSchema.add_property(objectSchemaPtr, propertyName, MarshalHelpers.RealmColType(columnType), objectType, 
-                    MarshalHelpers.BoolToIntPtr(isObjectId), MarshalHelpers.BoolToIntPtr(isIndexed), MarshalHelpers.BoolToIntPtr(isNullable));
-            }
-            return objectSchemaPtr;
-        }
 
         #endregion
 
         internal readonly SharedRealmHandle SharedRealmHandle;
         internal readonly Dictionary<Type, RealmObject.Metadata> Metadata;
+        internal readonly RealmSchema Schema;
 
         internal bool IsInTransaction => MarshalHelpers.IntPtrToBool(NativeSharedRealm.is_in_transaction(SharedRealmHandle));
 
-        private Realm(SharedRealmHandle sharedRealmHandle, RealmConfiguration config)
+        private Realm(SharedRealmHandle sharedRealmHandle, RealmConfiguration config, RealmSchema schema)
         {
             SharedRealmHandle = sharedRealmHandle;
             Config = config;
             // update OUR config version number in case loaded one from disk
             Config.SchemaVersion = NativeSharedRealm.get_schema_version(sharedRealmHandle);
 
-            Metadata = (config.ObjectClasses ?? RealmObjectClasses).ToDictionary(t => t, CreateRealmObjectMetadata);
+            Metadata = schema.ToDictionary(t => t.Type, CreateRealmObjectMetadata);
+            Schema = schema;
         }
 
-        private RealmObject.Metadata CreateRealmObjectMetadata(Type realmObjectType)
+        private RealmObject.Metadata CreateRealmObjectMetadata(Schema.Object schema)
         {
-            var table = this.GetTable(realmObjectType);
-            var wovenAtt = realmObjectType.GetCustomAttribute<WovenAttribute>();
+            var table = this.GetTable(schema);
+            var wovenAtt = schema.Type.GetCustomAttribute<WovenAttribute>();
             if (wovenAtt == null)
-                throw new RealmException($"Fody not properly installed. {realmObjectType.FullName} is a RealmObject but has not been woven.");
+                throw new RealmException($"Fody not properly installed. {schema.Type.FullName} is a RealmObject but has not been woven.");
             var helper = (Weaving.IRealmObjectHelper)Activator.CreateInstance(wovenAtt.HelperType);
-            var properties = realmObjectType.GetProperties(BindingFlags.Instance | BindingFlags.DeclaredOnly | BindingFlags.NonPublic | BindingFlags.Public)
-                                            .Where(p => p.GetCustomAttributes(false).OfType<WovenPropertyAttribute>().Any())
-                                            .Select(p =>
-                                            {
-                                                var mapTo = p.GetCustomAttributes(false).OfType<MapToAttribute>().SingleOrDefault();
-                                                if (mapTo != null)
-                                                {
-                                                    return mapTo.Mapping;
-                                                }
-
-                                                return p.Name;
-                                            })
-                                            .ToDictionary(name => name, name => NativeTable.get_column_index(table, name, (IntPtr)name.Length));
+            var properties = schema.ToDictionary(p => p.Name, p => NativeTable.get_column_index(table, p.Name, (IntPtr)p.Name.Length));
 
             return new RealmObject.Metadata
             {
                 Table = table,
                 Helper = helper,
-                ColumnIndices = properties
+                ColumnIndices = properties,
+                Schema = schema
             };
         }
 
@@ -420,10 +333,10 @@ namespace Realms
 
 
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-        private TableHandle GetTable(Type realmType)
+        private TableHandle GetTable(Schema.Object schema)
         {
             var result = new TableHandle();
-            var tableName = "class_" + realmType.Name;
+            var tableName = "class_" + schema.Name;
 
             RuntimeHelpers.PrepareConstrainedRegions();
             try { /* Retain handle in a constrained execution region */ }
@@ -472,16 +385,15 @@ namespace Realms
 
         internal ResultsHandle MakeResultsForTable(Type tableType)
         {
-            var tableHandle = Metadata[tableType].Table;
-            var objSchema = Realm.ObjectSchemaCache[tableType];
-            IntPtr resultsPtr = NativeResults.create_for_table(SharedRealmHandle, tableHandle, objSchema);
+            var metadata = Metadata[tableType];
+            IntPtr resultsPtr = NativeResults.create_for_table(SharedRealmHandle, metadata.Table, metadata.Schema.Handle);
             return CreateResultsHandle(resultsPtr);
         }
 
 
         internal ResultsHandle MakeResultsForQuery(Type tableType, QueryHandle builtQuery, SortOrderHandle optionalSortOrder)
         {
-            var objSchema = Realm.ObjectSchemaCache[tableType];
+            var objSchema = Metadata[tableType].Schema.Handle;
             IntPtr resultsPtr = IntPtr.Zero;               
             if (optionalSortOrder == null)
                 resultsPtr = NativeResults.create_for_query(SharedRealmHandle, builtQuery, objSchema);
@@ -733,11 +645,9 @@ namespace Realms
             if (!IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot remove all Realm objects outside write transactions");
 
-            var objectClasses = Config.ObjectClasses ?? RealmObjectClasses;
-
-            foreach (var objectClass in objectClasses)
+            foreach (var @object in Schema)
             {
-                var resultsHandle = MakeResultsForTable(objectClass);
+                var resultsHandle = MakeResultsForTable(@object.Type);
                 NativeResults.clear(resultsHandle);
             }
         }

@@ -21,7 +21,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)handles\QueryHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)handles\RealmHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)handles\RowHandle.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)handles\SchemaInitializerHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)handles\SchemaHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)handles\SharedRealmHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)handles\TableHandle.cs" />
@@ -29,7 +28,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)linq\TypeSystem.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MarshalHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)native\NativeCommon.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)native\NativeObjectSchema.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)native\NativeQuery.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)native\NativeRow.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)native\NativeSchema.cs" />
@@ -62,10 +60,15 @@
     <Compile Include="$(MSBuildThisFileDirectory)handles\NotificationTokenHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmInvalidTransactionException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)extensions\RealmResultsCollectionChanged.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schema\RealmSchema.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schema\PropertyType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schema\Property.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schema\Object.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmInvalidObjectException.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)weaving\" />
     <Folder Include="$(MSBuildThisFileDirectory)extensions\" />
+    <Folder Include="$(MSBuildThisFileDirectory)Schema\" />
   </ItemGroup>
 </Project>

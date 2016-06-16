@@ -65,37 +65,24 @@ namespace Realms
             internal Weaving.IRealmObjectHelper Helper;
 
             internal Dictionary<string, IntPtr> ColumnIndices;
+
+            internal Schema.Object Schema;
         }
 
         internal void _CopyDataFromBackingFieldsToRow()
         {
             Debug.Assert(this.IsManaged);
 
-            var thisType = this.GetType();
-            var wovenProperties = from prop in thisType.GetProperties()
-                                  let backingField = prop.GetCustomAttributes(false)
-                                                         .OfType<WovenPropertyAttribute>()
-                                                         .Select(a => a.BackingFieldName)
-                                                         .SingleOrDefault()
-                                  where backingField != null
-                                  select new { Info = prop, Field = thisType.GetField(backingField, BindingFlags.Instance | BindingFlags.NonPublic) };
-
-            foreach (var prop in wovenProperties)
+            foreach (var property in _metadata.Schema)
             {
-                var value = prop.Field.GetValue(this);
-                if (prop.Info.PropertyType.IsGenericType)
-                {
-                    var genericType = prop.Info.PropertyType.GetGenericTypeDefinition();
-                    if (genericType == typeof(RealmList<>))
-                    {
-                        continue;
-                    }
-                }
+                if (property.Type == Schema.PropertyType.Array)
+                    continue;
 
-                prop.Info.SetValue(this, value, null);
+                var field = property.PropertyInfo.DeclaringType.GetField(property.PropertyInfo.GetCustomAttribute<WovenPropertyAttribute>().BackingFieldName, BindingFlags.Instance | BindingFlags.NonPublic);
+                var value = field.GetValue(this);
+                property.PropertyInfo.SetValue(this, value, null);;
             }
         }
-
 
         #region Getters
         protected string GetStringValue(string propertyName)

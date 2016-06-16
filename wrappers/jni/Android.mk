@@ -40,7 +40,6 @@ LOCAL_SRC_FILES += src/object-store/src/impl/android/weak_realm_notifier.cpp
 LOCAL_SRC_FILES += src/error_handling.cpp
 LOCAL_SRC_FILES += src/linklist_cs.cpp
 LOCAL_SRC_FILES += src/marshalling.cpp
-LOCAL_SRC_FILES += src/object_schema_cs.cpp
 LOCAL_SRC_FILES += src/query_cs.cpp
 LOCAL_SRC_FILES += src/results_cs.cpp
 LOCAL_SRC_FILES += src/realm-csharp.cpp

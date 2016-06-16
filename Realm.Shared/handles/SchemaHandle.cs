@@ -15,29 +15,29 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
-using System.Runtime.CompilerServices;
-using System.Runtime.ConstrainedExecution;
 
 namespace Realms
 {
     internal class SchemaHandle : RealmHandle
     {
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-        public SchemaHandle(SchemaInitializerHandle schemaInitializerHandle)
+        [Preserve]
+        public SchemaHandle()
         {
-            RuntimeHelpers.PrepareConstrainedRegions();
-            try { /* Retain handle in a constrained execution region */ }
-            finally
-            {
-                SetHandle(NativeSchema.create(schemaInitializerHandle));
-            }
+
+        }
+
+        public SchemaHandle(SharedRealmHandle parent) : base(parent)
+        {
         }
 
         protected override void Unbind()
         {
-            // Intentionally left blank -- the config object inside c++ has taken ownership and will 
-            // delete this when necessary.
+            // only destroy this instance if it isn't owned by a Realm
+            // Object Store's Realm class owns the Schema object
+            if (Root == null)
+            {
+                NativeSchema.destroy(handle);
+            }
         }
     }
 }
