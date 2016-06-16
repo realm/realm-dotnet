@@ -457,5 +457,53 @@ namespace IntegrationTests.Shared
             Assert.That(realm.All<Person>().ToList().Count, Is.EqualTo(4));
             Assert.That(realm.All<Person>().Count(p => p.FirstName=="Sally"), Is.EqualTo(1));
         }
+
+        #region DeleteRelated
+        // from http://stackoverflow.com/questions/37819634/best-method-to-remove-managed-child-lists-one-to-many-parent-child-relationsh
+        // shows a workaround for our lack of cascading delete
+        public class Product : RealmObject
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
+            public string Date { get; set; }
+            public RealmList<Report> Reports { get; } // child objects
+        }
+
+        public class Report : RealmObject
+        {
+            public int Id { get; set; }
+            public string Ref { get; set; }
+            public string Date { get; set; }
+            public Product Parent { get; set; } // Parent object reference
+        }
+
+        [Test]
+        public void TestDeleteChildren ()
+        {
+            // Arrange - setup some hierarchies
+            realm.Write (() => {
+                for (var pid = 1; pid <= 4; ++pid) {
+                    var p = realm.CreateObject<Product>();
+                    p.Id = pid; p.Name = $"Product {pid}";
+                    for (var rid = 1; rid <= 5; ++rid) {
+                        var r = realm.CreateObject<Report>();
+                        r.Id = rid+pid*1000; r.Ref = $"Report {pid}:{rid}";
+                        p.Reports.Add(r);
+                    }
+                }
+            });
+
+            var delId = 1;
+            var delP = realm.All<Product>().First(p => p.Id == delId);
+            Assert.IsNotNull(delP);
+            Assert.That(delP.Reports.Count, Is.EqualTo(5));
+
+            realm.Write(() => {
+                foreach (var r in delP.Reports.ToList())  // use ToList to get static list so can remove items
+                    realm.Remove(r);  // removes from the realm, and updates delP.Reports so can't just iterate that
+            });
+            Assert.That(delP.Reports.Count, Is.EqualTo(0));
+        }
+        #endregion
     }
 }
