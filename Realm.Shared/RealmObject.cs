@@ -324,7 +324,7 @@ namespace Realms
             return hasValue ? DateTimeOffsetExtensions.FromRealmUnixTimeMilliseconds(unixTimeMS) : (DateTimeOffset?)null;
         }
 
-        protected RealmList<T> GetListValue<T>(string propertyName) where T : RealmObject
+        protected IList<T> GetListValue<T>(string propertyName) where T : RealmObject
         {
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 

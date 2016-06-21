@@ -290,11 +290,9 @@ public class ModuleWeaver
             Debug.WriteLine("Skipped because it's not automatic.");
             return;
         }
-        if (_typeTable.ContainsKey(prop.PropertyType.FullName))
-        {
+        if (_typeTable.ContainsKey(prop.PropertyType.FullName)) {
             var typeId = prop.PropertyType.FullName + (isObjectId ? " unique" : "");
-            if (!methodTable.ContainsKey(typeId))
-            {
+            if (!methodTable.ContainsKey(typeId)) {
                 var getter = LookupMethodAndImport(_realmObject, "Get" + _typeTable[prop.PropertyType.FullName] + "Value");
                 var setter = LookupMethodAndImport(_realmObject,
                     "Set" + _typeTable[prop.PropertyType.FullName] + "Value" + (isObjectId ? "Unique" : ""));
@@ -303,8 +301,23 @@ public class ModuleWeaver
 
             ReplaceGetter(prop, columnName, methodTable[typeId].Item1);
             ReplaceSetter(prop, backingField, columnName, methodTable[typeId].Item2, typeImplementsPropertyChanged, propChangedEventDefinition, propChangedFieldDefinition);
+        } 
+
+        else if (prop.PropertyType.Name == "IList`1" && prop.PropertyType.Namespace == "System.Collections.Generic") {
+            var elementType = ((GenericInstanceType)prop.PropertyType).GenericArguments.Single();
+            if (elementType.Resolve().BaseType.IsSameAs(_realmObject)) {
+                ReplaceGetter(prop, columnName,
+                    new GenericInstanceMethod(_genericGetListValueReference) { GenericArguments = { elementType } });
+            } else {
+                LogWarningPoint(
+  $"SKIPPING {type.Name}.{columnName} because it is an IList but its generic type is not a RealmObject subclass, so will not persist",
+  sequencePoint);
+                return;
+            }
+
         }
-//                else if (prop.PropertyType.Name == "IList`1" && prop.PropertyType.Namespace == "System.Collections.Generic")
+
+        // still allow older lists to be declared and woven
         else if (prop.PropertyType.Name == "RealmList`1" && prop.PropertyType.Namespace == "Realms")
         {
             // RealmList allows people to declare lists only of _realmObject due to the class definition

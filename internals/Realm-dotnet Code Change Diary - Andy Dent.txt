@@ -2251,3 +2251,37 @@ SortingTests.cs
 
 RelationshipTests.cs
 - TestDeleteChildren added with Product and Report class definitions
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#287 IList Declarations
+
+RealmObjectPCL.cs
+- GetListValue return IList
+
+RealmList.cs
+- RealmListEnumerator 
+  - enumerating changed from RealmList to IList
+  - ctor param changed to IList
+
+
+RealmObject.cs
+- GetListValue return type IList but still create RealmList
+
+Use IList instead of RealmList in tests:
+- IntegrationTests.Shared
+  - Person.cs
+  - RelationshipTests.cs
+
+- WeaverTests
+  - AssemblyToProcess
+    - Person.cs
+    - FaultyClasses.cs
+  - Realm.FakeForWeaverTests/RealmObject.cs
+    - GetListValue return IList
+    - SetListValue take IList
+        
+ModuleWeaver.cs
+- WeaveProperty
+  - allow Ilist<RealmObject subclass> as well as RealmList
+  - remove test banning setters on lists
+  

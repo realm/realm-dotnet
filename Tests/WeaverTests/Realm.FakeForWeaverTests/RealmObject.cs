@@ -279,13 +279,13 @@ namespace Realms
             LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
         }
 
-        protected RealmList<T> GetListValue<T>(string propertyName) where T : RealmObject
+        protected IList<T> GetListValue<T>(string propertyName) where T : RealmObject
         {
             LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
             return new RealmList<T>();
         }
 
-        protected void SetListValue<T>(string propertyName, RealmList<T> value) where T : RealmObject
+        protected void SetListValue<T>(string propertyName, IList<T> value) where T : RealmObject
         {
             LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
         }

@@ -43,7 +43,7 @@ namespace IntegrationTests.Shared
         {
             public string Name { get; set; }
             public Dog TopDog { get; set; }
-            public RealmList<Dog> Dogs { get; } 
+            public IList<Dog> Dogs { get; } 
         }
 
         protected Realm realm;
@@ -58,7 +58,7 @@ namespace IntegrationTests.Shared
             using (var trans = realm.BeginWrite())
             {
                 /* syntax we want back needs ability for constructor to auto-bind to active write transaction
-                new Owner {Name = "Tim", Dogs = new RealmList<Dog> {
+                new Owner {Name = "Tim", Dogs = new IList<Dog> {
                     new Dog {Name = "Bilbo Fleabaggins"},
                     new Dog {Name = "Earl Yippington III" }
                     } };
@@ -87,7 +87,7 @@ namespace IntegrationTests.Shared
 
                 /*
                 These would work if we can preserve init through weaving, like:
-                public RealmList<Dog> Dogs { get; set; } = new RealmList<Dog>();
+                public IList<Dog> Dogs { get; set; } = new IList<Dog>();
 
                 new Owner {Name = "JP", Dogs = { new Dog { Name = "Deputy Dawg", Vaccinated=false } } };
                 new Owner {Name = "Arwa", Dogs = { new Dog { Name = "Hairy Pawter", Color = "Black" } } };
@@ -105,7 +105,7 @@ namespace IntegrationTests.Shared
 
                     /* syntax for later
                 var b = new Owner {Name = "Bjarne"};  
-                b.Dogs = new RealmList<Dog> { new Dog { Name = "Madame Barklouder", Vaccinated = false, Color = "White" }};
+                b.Dogs = new IList<Dog> { new Dog { Name = "Madame Barklouder", Vaccinated = false, Color = "White" }};
                 */
                 trans.Commit ();
             }
@@ -466,7 +466,7 @@ namespace IntegrationTests.Shared
             public int Id { get; set; }
             public string Name { get; set; }
             public string Date { get; set; }
-            public RealmList<Report> Reports { get; } // child objects
+            public IList<Report> Reports { get; } // child objects
         }
 
         public class Report : RealmObject
