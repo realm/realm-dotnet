@@ -78,7 +78,7 @@ namespace Realms
                 if (prop.Info.PropertyType.IsGenericType)
                 {
                     var genericType = prop.Info.PropertyType.GetGenericTypeDefinition();
-                    if (genericType == typeof(RealmList<>))
+                    if (genericType == typeof(IList<>) || genericType == typeof(RealmList<>))
                     {
                         continue;
                     }

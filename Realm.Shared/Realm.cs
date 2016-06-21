@@ -203,14 +203,14 @@ namespace Realms
                 var indexedAttribute = p.GetCustomAttributes(false).FirstOrDefault(a => a is IndexedAttribute);
                 var isIndexed = indexedAttribute != null;
 
-                var isNullable = !(p.PropertyType.IsValueType || 
+                var isNullable = !(p.PropertyType.IsValueType ||
+                    p.PropertyType.Name == "IList`1" ||
                     p.PropertyType.Name == "RealmList`1") ||
-                    // IGNORING IList FOR NOW  p.PropertyType.Name == "IList`1") ||
                     Nullable.GetUnderlyingType(p.PropertyType) != null;
 
                 var objectType = "";
                 if (!p.PropertyType.IsValueType && p.PropertyType.Name!="String") {
-                    if (p.PropertyType.Name == "RealmList`1")  // IGNORING IList FOR NOW   || p.PropertyType.Name == "IList`1")
+                    if (p.PropertyType.Name == "IList`1" || p.PropertyType.Name == "RealmList`1") 
                         objectType = p.PropertyType.GetGenericArguments()[0].Name;
                     else {
                         if (p.PropertyType.BaseType.Name == "RealmObject")

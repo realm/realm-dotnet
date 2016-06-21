@@ -2257,13 +2257,17 @@ RelationshipTests.cs
 
 RealmObjectPCL.cs
 - GetListValue return IList
+- _CopyDataFromBackingFieldsToRow - also skip over IList<>
 
 RealmList.cs
 - RealmListEnumerator 
   - enumerating changed from RealmList to IList
   - ctor param changed to IList
 
-
+Realm.cs
+- GenerateObjectSchema
+  - allow IList types in nullability checks
+  
 RealmObject.cs
 - GetListValue return type IList but still create RealmList
 
