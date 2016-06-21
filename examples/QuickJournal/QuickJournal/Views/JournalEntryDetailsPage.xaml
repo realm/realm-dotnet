@@ -6,7 +6,12 @@
 	<ContentPage.ToolbarItems>
 		<ToolbarItem Text="Save" Command="{Binding SaveCommand}" />
 	</ContentPage.ToolbarItems>
-	<ContentPage.Content>
-		<Editor Text="{Binding Entry.BodyText}" />
-	</ContentPage.Content>
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="35" />
+			<RowDefinition Height="*" />
+		</Grid.RowDefinitions>
+		<Entry Text="{Binding Entry.Title}" Placeholder="Title" Grid.Row="0" />
+		<Editor Text="{Binding Entry.BodyText}" Grid.Row="1" />
+	</Grid>
 </ContentPage>
