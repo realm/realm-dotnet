@@ -2251,3 +2251,14 @@ SortingTests.cs
 
 RelationshipTests.cs
 - TestDeleteChildren added with Product and Report class definitions
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#655 ObjectId confirmation
+
+TestObjects.cs
+- added Created property to ObjectId*Object Classes
+
+ObjectIdAndUniqueTests.cs
+- added
+

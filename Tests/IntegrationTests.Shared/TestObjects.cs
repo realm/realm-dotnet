@@ -49,31 +49,37 @@ namespace IntegrationTests.Shared
 
     public class ObjectIdCharObject : RealmObject
     {
-        [ObjectId] public char CharProperty { get; set; }
+        [ObjectId] public char CharProperty { get; set; } 
+        public DateTimeOffset Created { get; set; }
     }
 
     public class ObjectIdByteObject : RealmObject
     {
         [ObjectId] public byte ByteProperty { get; set; }
+        public DateTimeOffset Created { get; set; }
     }
 
     public class ObjectIdInt16Object : RealmObject
     {
         [ObjectId] public short Int16Property { get; set; }
+        public DateTimeOffset Created { get; set; }
     }
 
     public class ObjectIdInt32Object : RealmObject
     {
         [ObjectId] public int Int32Property { get; set; }
+        public DateTimeOffset Created { get; set; }
     }
 
     public class ObjectIdInt64Object : RealmObject
     {
         [ObjectId] public long Int64Property { get; set; }
+        public DateTimeOffset Created { get; set; }
     }
 
     public class ObjectIdStringObject : RealmObject
     {
         [ObjectId] public string StringProperty { get; set; }
+        public DateTimeOffset Created { get; set; }
     }
 }
