@@ -34,7 +34,7 @@ namespace IntegrationTests
         public void SetUp()
         {
             var conf = new RealmConfiguration("ObjectIdandUnique.realm");
-            Realm.DeleteRealm(conf);
+            // Realm.DeleteRealm(conf);  // uncomment to leave all the records created by these tests
             _realm = Realm.GetInstance(conf);
         }
 
@@ -48,15 +48,114 @@ namespace IntegrationTests
         [Test]
         public void ObjectIdCharObjectIsUnique()
         {
-            _realm.Write(() =>
-            {
+            _realm.Write(() => {
                 var o1 = _realm.CreateObject<ObjectIdCharObject>();
                 o1.CharProperty = 'a';
                 o1.Created = DateTimeOffset.Now;
-                var o2 = _realm.CreateObject<ObjectIdCharObject>();
-                o2.CharProperty = 'a';
-                o2.Created = DateTimeOffset.Now;
+                o1.CountCreated = 1;
             });
+            _realm.Write(() => {
+                var o2 = _realm.CreateObject<ObjectIdCharObject>();
+                o2.CharProperty = 'a'; // deliberately reuse id
+                o2.Created = DateTimeOffset.Now;
+                o2.CountCreated = 2;
+            });
+            Assert.That(_realm.All<ObjectIdCharObject>().Count(), Is.EqualTo(1));
         }
+
+
+        [Test]
+        public void ObjectIdByteObjectIsUnique()
+        {
+            _realm.Write(() => {
+                var o1 = _realm.CreateObject<ObjectIdByteObject>();
+                o1.ByteProperty = 42;
+                o1.Created = DateTimeOffset.Now;
+                o1.CountCreated = 1;
+                });
+            _realm.Write(() => {
+                var o2 = _realm.CreateObject<ObjectIdByteObject>();
+                o2.ByteProperty = 42; // deliberately reuse id
+                o2.Created = DateTimeOffset.Now;
+                o2.CountCreated = 2;
+            });
+            Assert.That(_realm.All<ObjectIdByteObject>().Count(), Is.EqualTo(1));
+        }
+
+
+        [Test]
+        public void ObjectIdInt16ObjectIsUnique()
+        {
+            _realm.Write(() => {
+                var o1 = _realm.CreateObject<ObjectIdInt16Object>();
+                o1.Int16Property = 4242;
+                o1.Created = DateTimeOffset.Now;
+                o1.CountCreated = 1;
+            });
+            _realm.Write(() => {
+                var o2 = _realm.CreateObject<ObjectIdInt16Object>();
+                o2.Int16Property = 4242; // deliberately reuse id
+                o2.Created = DateTimeOffset.Now;
+                o2.CountCreated = 2;
+            });
+            Assert.That(_realm.All<ObjectIdInt16Object>().Count(), Is.EqualTo(1));
+        }
+
+
+        [Test]
+        public void ObjectIdInt32ObjectIsUnique()
+        {
+            _realm.Write(() => {
+                var o1 = _realm.CreateObject<ObjectIdInt32Object>();
+                o1.Int32Property = 42042;
+                o1.Created = DateTimeOffset.Now;
+                o1.CountCreated = 1;
+            });
+            _realm.Write(() => {
+                var o2 = _realm.CreateObject<ObjectIdInt32Object>();
+                o2.Int32Property = 42042; // deliberately reuse id
+                o2.Created = DateTimeOffset.Now;
+                o2.CountCreated = 2;
+            });
+            Assert.That(_realm.All<ObjectIdInt32Object>().Count(), Is.EqualTo(1));
+        }
+
+
+        [Test]
+        public void ObjectIdInt64ObjectIsUnique()
+        {
+            _realm.Write(() => {
+                var o1 = _realm.CreateObject<ObjectIdInt64Object>();
+                o1.Int64Property = 424242;
+                o1.Created = DateTimeOffset.Now;
+                o1.CountCreated = 1;
+            });
+            _realm.Write(() => {
+                var o2 = _realm.CreateObject<ObjectIdInt64Object>();
+                o2.Int64Property = 424242; // deliberately reuse id
+                o2.Created = DateTimeOffset.Now;
+                o2.CountCreated = 2;
+            });
+            Assert.That(_realm.All<ObjectIdInt64Object>().Count(), Is.EqualTo(1));
+        }
+
+        [Test]
+        public void ObjectIdStringObjectIsUnique()
+        {
+            _realm.Write(() => {
+                var o1 = _realm.CreateObject<ObjectIdStringObject>();
+                o1.StringProperty = "Zaphod";
+                o1.Created = DateTimeOffset.Now;
+                o1.CountCreated = 1;
+            });
+            _realm.Write(() => {
+                var o2 = _realm.CreateObject<ObjectIdStringObject>();
+                o2.StringProperty = "Zaphod"; // deliberately reuse id
+                o2.Created = DateTimeOffset.Now;
+                o2.CountCreated = 2;
+            });
+            Assert.That(_realm.All<ObjectIdStringObject>().Count(), Is.EqualTo(1));
+        }
+
     }
 }
