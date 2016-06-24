@@ -2306,6 +2306,7 @@ RelationshipTests.cs
 - TestManagingStandaloneTwoLevelRelationship enabled & added check for full list added
 - TestManagingStandaloneThreeLevelRelationship enabled & added check for full list added
 - TestCircularRelationshipsFromStandaloneTwoStage enabled & added check for full list added
+- TestAddingRelationshipsToExistingViaAssignment added
 
 
 IntegrationTests.Shared/Person.cs

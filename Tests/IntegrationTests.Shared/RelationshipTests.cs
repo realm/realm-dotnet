@@ -375,7 +375,25 @@ namespace IntegrationTests.Shared
             Assert.That(dog.IsManaged);
         }
 
-        [Test, Description("This is the case until we support standalone lists")]
+        [Test]
+        public void TestAddingRelationhipsToExistingViaAssignment()
+        {
+            Assert.That(realm.All<Dog>().Count(d => d.Name == "Bilbo Fleabaggins"), Is.EqualTo(1));  // starting with one
+            var dani = realm.All<Owner>().Where(p => p.Name == "Dani").Single();
+
+            realm.Write( () => {
+                var bilbo = realm.All<Dog>().Single(p => p.Name == "Bilbo Fleabaggins");
+                var maggie = realm.All<Dog>().Single(p => p.Name == "Maggie Mongrel");
+                dani.Dogs = new[] { bilbo, maggie };
+            });
+
+            var dani2 = realm.All<Owner>().Where(p => p.Name == "Dani").Single();
+            var daniDogNames = dani2.Dogs.Select(d => d.Name);
+            Assert.That(daniDogNames, Is.EquivalentTo(new[] { "Bilbo Fleabaggins", "Maggie Mongrel"}));
+            Assert.That(realm.All<Dog>().Count(d => d.Name == "Bilbo Fleabaggins"), Is.EqualTo(1));  // no Bilbo added, just linked
+        }
+
+        [Test, Description("This is the default C# behaviour for a list property")]
         public void StandaloneListsShouldBeNull()
         {
             var person = new Person();
