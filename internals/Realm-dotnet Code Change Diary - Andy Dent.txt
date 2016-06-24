@@ -2310,3 +2310,13 @@ RelationshipTests.cs
 
 IntegrationTests.Shared/Person.cs
 - Friends added automatic set to property
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#287 IList Declarations - cope with adding hierarchies
+
+RealmObject.cs
+- _CopyDataFromBackingFieldsToRow remove continue for lists - they just work
+
+RelationshipTests.cs
+- TestManagingStandaloneTwoLevelRelationship - fix bad test values now it is being run

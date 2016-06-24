@@ -388,11 +388,11 @@ namespace IntegrationTests.Shared
         {
             var person = new Person
             {
-                FullName = "Person 0",
+                FullName = "Jack Thorne",
                 Friends = new List<Person>
                 {
-                    new Person { FullName = "Friend A" },
-                    new Person { FullName = "Friend B" }
+                    new Person { FullName = "Christian Molehound" },
+                    new Person { FullName = "Frederick Van Whatnot" }
                 }
             };
 
@@ -406,7 +406,7 @@ namespace IntegrationTests.Shared
 
             Assert.That(person.Friends is RealmList<Person>);
             Assert.That(realm.All<Person>().ToList().Select(p => p.FirstName),
-                        Is.EquivalentTo(new[] { "Person", "Friend A", "Friend B" })
+                        Is.EquivalentTo(new[] { "Jack", "Christian", "Frederick" })
                        );
         }
 

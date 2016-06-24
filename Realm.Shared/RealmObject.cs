@@ -75,15 +75,7 @@ namespace Realms
             foreach (var prop in wovenProperties)
             {
                 var value = prop.Field.GetValue(this);
-                if (prop.Info.PropertyType.IsGenericType)
-                {
-                    var genericType = prop.Info.PropertyType.GetGenericTypeDefinition();
-                    if (genericType == typeof(IList<>) || genericType == typeof(RealmList<>))
-                    {
-                        continue;
-                    }
-                }
-
+                // list values will assign and may recurse back into here if lists contain standalones
                 prop.Info.SetValue(this, value, null);
             }
         }
