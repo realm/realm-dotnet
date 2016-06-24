@@ -698,6 +698,37 @@ namespace Realms
                 NativeTable.set_null(_metadata.Table, _metadata.ColumnIndices[propertyName], (IntPtr)rowIndex);
         }
 
+
+        protected void SetListValue<T>(string propertyName, IList<T> value) where T : RealmObject
+        {
+            Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
+
+            if (!_realm.IsInTransaction)
+                throw new RealmOutsideTransactionException("Cannot set values outside transaction");
+
+            var rowIndex = _rowHandle.RowIndex;
+            var colIndex = _metadata.ColumnIndices[propertyName];
+
+            bool listIsNull = (NativeTable.linklist_is_empty(_metadata.Table, colIndex, (IntPtr)rowIndex) != IntPtr.Zero);
+
+            if (listIsNull && value == null)
+                return;  // assigning null to clear already null relationship
+
+            var listHandle = _metadata.Table.TableLinkList(colIndex, _rowHandle);
+            NativeLinkList.clear(listHandle);  // either clearing or assigning anew
+
+            if (value == null)
+                return;  // equivalent to RealmList.Clear so we're finished
+
+            // TODO use backing field
+            var theList = new RealmList<T>(this, listHandle);
+            foreach (T maybeRelObj in value) {
+                theList.Add(maybeRelObj);
+            }
+        }
+
+
+
         // TODO make not generic
         protected void SetObjectValue<T>(string propertyName, T value) where T : RealmObject
         {

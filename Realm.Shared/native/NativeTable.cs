@@ -63,6 +63,9 @@ namespace Realms
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_linklist", CallingConvention = CallingConvention.Cdecl)]
         internal static extern IntPtr get_linklist(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex);
 
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_linklist_is_empty", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern IntPtr linklist_is_empty(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex);
+
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_null", CallingConvention = CallingConvention.Cdecl)]
         internal static extern void set_null(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx);
 

@@ -101,6 +101,7 @@ public class ModuleWeaver
     private MethodReference _genericGetObjectValueReference;
     private MethodReference _genericSetObjectValueReference;
     private MethodReference _genericGetListValueReference;
+    private MethodReference _genericSetListValueReference;
     private MethodReference _wovenAttributeConstructor;
     private MethodReference _wovenPropertyAttributeConstructor;
 
@@ -150,6 +151,7 @@ public class ModuleWeaver
         _genericGetObjectValueReference = LookupMethodAndImport(_realmObject, "GetObjectValue");
         _genericSetObjectValueReference = LookupMethodAndImport(_realmObject, "SetObjectValue");
         _genericGetListValueReference = LookupMethodAndImport(_realmObject, "GetListValue");
+        _genericSetListValueReference = LookupMethodAndImport(_realmObject, "SetListValue");
 
         var wovenAttributeClass = _realmAssembly.MainModule.GetTypes().First(x => x.Name == "WovenAttribute");
         _wovenAttributeConstructor = ModuleDefinition.ImportReference(wovenAttributeClass.GetConstructors().First());
@@ -303,42 +305,26 @@ public class ModuleWeaver
             ReplaceSetter(prop, backingField, columnName, methodTable[typeId].Item2, typeImplementsPropertyChanged, propChangedEventDefinition, propChangedFieldDefinition);
         } 
 
-        else if (prop.PropertyType.Name == "IList`1" && prop.PropertyType.Namespace == "System.Collections.Generic") {
+        // treat IList and RealmList identically
+        else if ((prop.PropertyType.Name == "IList`1" && prop.PropertyType.Namespace == "System.Collections.Generic")  ||
+            (prop.PropertyType.Name == "RealmList`1" && prop.PropertyType.Namespace == "Realms"))
+        {
             var elementType = ((GenericInstanceType)prop.PropertyType).GenericArguments.Single();
-            if (elementType.Resolve().BaseType.IsSameAs(_realmObject)) {
-                ReplaceGetter(prop, columnName,
-                    new GenericInstanceMethod(_genericGetListValueReference) { GenericArguments = { elementType } });
-            } else {
+            // IList or RealmList allows people to declare lists only of _realmObject due to the class definition
+            if (!elementType.Resolve().BaseType.IsSameAs(_realmObject)) {
                 LogWarningPoint(
   $"SKIPPING {type.Name}.{columnName} because it is an IList but its generic type is not a RealmObject subclass, so will not persist",
   sequencePoint);
                 return;
             }
 
-        }
-
-        // still allow older lists to be declared and woven
-        else if (prop.PropertyType.Name == "RealmList`1" && prop.PropertyType.Namespace == "Realms")
-        {
-            // RealmList allows people to declare lists only of _realmObject due to the class definition
-            if (!prop.IsAutomatic())
-            {
-                LogErrorPoint(
-                    $"{type.Name}.{columnName} is not an automatic property but its type is a RealmList which normally indicates a relationship",
-                    sequencePoint);
-                return;
+            if (prop.SetMethod != null) {
+                ReplaceSetter(prop, backingField, columnName, 
+                          new GenericInstanceMethod(_genericSetListValueReference) { GenericArguments = { elementType } }, 
+                          typeImplementsPropertyChanged, propChangedEventDefinition, propChangedFieldDefinition);
             }
-            if (prop.SetMethod != null)
-            {
-                LogErrorPoint(
-                    $"{type.Name}.{columnName} has a setter but its type is a RealmList which only supports getters",
-                    sequencePoint);
-                return;
-            }
-
-            var elementType = ((GenericInstanceType) prop.PropertyType).GenericArguments.Single();
             ReplaceGetter(prop, columnName,
-                new GenericInstanceMethod(_genericGetListValueReference) {GenericArguments = {elementType}});
+        new GenericInstanceMethod(_genericGetListValueReference) { GenericArguments = { elementType } });
         }
         else if (prop.PropertyType.Resolve().BaseType.IsSameAs(_realmObject))
         {

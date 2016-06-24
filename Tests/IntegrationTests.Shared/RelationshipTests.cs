@@ -43,7 +43,7 @@ namespace IntegrationTests.Shared
         {
             public string Name { get; set; }
             public Dog TopDog { get; set; }
-            public IList<Dog> Dogs { get; } 
+            public IList<Dog> Dogs { get; set; } 
         }
 
         protected Realm realm;
@@ -240,14 +240,28 @@ namespace IntegrationTests.Shared
         [Test]
         public void TimLosesHisDogsInOneClear()
         {
-            var tim = realm.All<Owner>().Single( p => p.Name == "Tim");
-            Assert.That(tim.Dogs.Count(), Is.EqualTo(2));  
+            var tim = realm.All<Owner>().Single(p => p.Name == "Tim");
+            Assert.That(tim.Dogs.Count(), Is.EqualTo(2));
             using (var trans = realm.BeginWrite()) {
                 tim.Dogs.Clear();
-                trans.Commit ();
-            }                
-            var tim2 = realm.All<Owner>().Single( p => p.Name == "Tim");
-            Assert.That(tim2.Dogs.Count(), Is.EqualTo(0)); 
+                trans.Commit();
+            }
+            var tim2 = realm.All<Owner>().Single(p => p.Name == "Tim");
+            Assert.That(tim2.Dogs.Count(), Is.EqualTo(0));
+        }
+
+
+        [Test]
+        public void TimLosesHisDogsByAssigningNull()
+        {
+            var tim = realm.All<Owner>().Single(p => p.Name == "Tim");
+            Assert.That(tim.Dogs.Count(), Is.EqualTo(2));
+            using (var trans = realm.BeginWrite()) {
+                tim.Dogs = null;
+                trans.Commit();
+            }
+            var tim2 = realm.All<Owner>().Single(p => p.Name == "Tim");
+            Assert.That(tim2.Dogs.Count(), Is.EqualTo(0));
         }
 
 
@@ -369,13 +383,13 @@ namespace IntegrationTests.Shared
             Assert.That(person.Friends, Is.Null);
         }
 
-        [Test, Ignore("Fails until we support standalone lists")]
+        [Test]
         public void TestManagingStandaloneTwoLevelRelationship()
         {
             var person = new Person
             {
                 FullName = "Person 0",
-                Friends =
+                Friends = new List<Person>
                 {
                     new Person { FullName = "Friend A" },
                     new Person { FullName = "Friend B" }
@@ -391,28 +405,30 @@ namespace IntegrationTests.Shared
             }
 
             Assert.That(person.Friends is RealmList<Person>);
-            Assert.That(realm.All<Person>().ToList().Count, Is.EqualTo(3));
+            Assert.That(realm.All<Person>().ToList().Select(p => p.FirstName),
+                        Is.EquivalentTo(new[] { "Person", "Friend A", "Friend B" })
+                       );
         }
 
 
-        [Test, Ignore("Fails until we support standalone lists")]
+        [Test]
         public void TestManagingStandaloneThreeLevelRelationship()
         {
             var sally = new Person
             {
                 FullName = "Sally",
-                Friends =
+                Friends = new List<Person>
                 {
                     new Person { FullName = "Alice" },
                     new Person
                     {
                         FullName = "Joan",
-                        Friends =
+                        Friends = new List<Person>
                         {
                             new Person()
                             {
                                 FullName = "Krystal",
-                                Friends = { new Person {  FullName = "Sally"} }  // Managees a second Sally
+                                Friends = new List<Person> { new Person {  FullName = "Jane"} }  // Managees a second Sally
                             }
                         } 
 
@@ -425,18 +441,19 @@ namespace IntegrationTests.Shared
                 trans.Commit();
             }
 
-            Assert.That(realm.All<Person>().ToList().Count, Is.EqualTo(5));
-            Assert.That(realm.All<Person>().Count(p => p.FirstName=="Sally"), Is.EqualTo(2));
+            Assert.That(realm.All<Person>().ToList().Select(p => p.FirstName),
+                        Is.EquivalentTo(new[] { "Alice", "Joan", "Krystal", "Sally", "Jane" })
+                       );
         }
 
 
-        [Test, Ignore("Fails until we support standalone lists")]
+        [Test]
         public void TestCircularRelationshipsFromStandaloneTwoStage()
         {
             var sally = new Person
             {
                 FullName = "Sally",
-                Friends =
+                Friends = new List<Person>
                 {
                     new Person { FullName = "Alice" },
                     new Person { FullName = "Joan"  }       
@@ -445,17 +462,18 @@ namespace IntegrationTests.Shared
             var joanFriend = new Person()
             {
                 FullName = "Krystal",
-                Friends = {sally} 
+                Friends = new List<Person> {sally} 
             };
 
-            sally.Friends[1].Friends.Add(joanFriend);
+            sally.Friends[1].Friends = new List<Person> { joanFriend };
             using (var trans = realm.BeginWrite()) {
-                realm.Manage(sally);  // top person Managees entire tree
+                realm.Manage(sally);  // top person Manages entire tree
                 trans.Commit();
             }
 
-            Assert.That(realm.All<Person>().ToList().Count, Is.EqualTo(4));
-            Assert.That(realm.All<Person>().Count(p => p.FirstName=="Sally"), Is.EqualTo(1));
+            Assert.That(realm.All<Person>().ToList().Select(p => p.FirstName), 
+                        Is.EquivalentTo(new [] { "Alice", "Joan", "Krystal", "Sally"})
+                       );
         }
 
         #region DeleteRelated

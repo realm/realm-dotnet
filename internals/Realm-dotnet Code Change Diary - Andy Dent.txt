@@ -2270,6 +2270,7 @@ Realm.cs
   
 RealmObject.cs
 - GetListValue return type IList but still create RealmList
+- SetListValue added
 
 Use IList instead of RealmList in tests:
 - IntegrationTests.Shared
@@ -2285,7 +2286,27 @@ Use IList instead of RealmList in tests:
     - SetListValue take IList
         
 ModuleWeaver.cs
+- _genericSetListValueReference added
+- Execute  - init _genericSetListValueReference to ref RealmObject.SetListValue
 - WeaveProperty
   - allow Ilist<RealmObject subclass> as well as RealmList
-  - remove test banning setters on lists
+  - remove test banning setters on lists and RealmList
+  - generate setter for lists
   
+NativeTable.cs
+- linklist_is_empty added
+
+wrappers/table_cs.cpp  
+- table_linklist_is_empty added
+
+
+RelationshipTests.cs
+- class Owner added set to Dogs property
+- TimLosesHisDogsByAssigningNull added
+- TestManagingStandaloneTwoLevelRelationship enabled & added check for full list added
+- TestManagingStandaloneThreeLevelRelationship enabled & added check for full list added
+- TestCircularRelationshipsFromStandaloneTwoStage enabled & added check for full list added
+
+
+IntegrationTests.Shared/Person.cs
+- Friends added automatic set to property
