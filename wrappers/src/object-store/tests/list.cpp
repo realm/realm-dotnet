@@ -24,16 +24,16 @@ TEST_CASE("list") {
     config.cache = false;
     config.schema = std::make_unique<Schema>(Schema{
         {"origin", "", {
-            {"array", PropertyTypeArray, "target"}
+            {"array", PropertyType::Array, "target"}
         }},
         {"target", "", {
-            {"value", PropertyTypeInt}
+            {"value", PropertyType::Int}
         }},
         {"other_origin", "", {
-            {"array", PropertyTypeArray, "other_target"}
+            {"array", PropertyType::Array, "other_target"}
         }},
         {"other_target", "", {
-            {"value", PropertyTypeInt}
+            {"value", PropertyType::Int}
         }},
     });
 
@@ -72,7 +72,7 @@ TEST_CASE("list") {
         };
 
         auto require_change = [&] {
-            auto token = lst.add_notification_callback([&](CollectionChangeSet c, std::exception_ptr err) {
+            auto token = lst.add_notification_callback([&](CollectionChangeSet c, std::exception_ptr) {
                 change = c;
             });
             advance_and_notify(*r);
@@ -81,7 +81,7 @@ TEST_CASE("list") {
 
         auto require_no_change = [&] {
             bool first = true;
-            auto token = lst.add_notification_callback([&, first](CollectionChangeSet c, std::exception_ptr err) mutable {
+            auto token = lst.add_notification_callback([&, first](CollectionChangeSet, std::exception_ptr) mutable {
                 REQUIRE(first);
                 first = false;
             });

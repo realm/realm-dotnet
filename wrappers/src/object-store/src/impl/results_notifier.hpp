@@ -30,13 +30,14 @@ class ResultsNotifier : public CollectionNotifier {
 public:
     ResultsNotifier(Results& target);
 
+    void target_results_moved(Results& old_target, Results& new_target);
 private:
     // Target Results to update
     // Can only be used with lock_target() held
     Results* m_target_results;
 
     const SortOrder m_sort;
-    bool m_from_linkview;
+    bool m_target_is_in_table_order;
 
     // The source Query, in handover form iff m_sg is null
     std::unique_ptr<SharedGroup::Handover<Query>> m_query_handover;

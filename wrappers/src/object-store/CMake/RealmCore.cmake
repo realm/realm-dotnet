@@ -5,7 +5,9 @@ if(${CMAKE_GENERATOR} STREQUAL "Unix Makefiles")
 endif()
 
 if(SANITIZE_ADDRESS)
-  set(MAKEFLAGS "MAKEFLAGS=EXTRA_CFLAGS=-fsanitize=address EXTRA_LDFLAGS=-fsanitize=address")
+  set(EXPORT_MAKEFLAGS export MAKEFLAGS='EXTRA_CFLAGS=-fsanitize=address EXTRA_LDFLAGS=-fsanitize=address')
+else()
+  set(EXPORT_MAKEFLAGS true)
 endif()
 
 if (${CMAKE_VERSION} VERSION_GREATER "3.4.0")
@@ -60,6 +62,7 @@ function(download_realm_core core_version)
     add_library(realm STATIC IMPORTED)
     add_dependencies(realm realm-core)
     set_property(TARGET realm PROPERTY IMPORTED_LOCATION_DEBUG ${core_library_debug})
+    set_property(TARGET realm PROPERTY IMPORTED_LOCATION_COVERAGE ${core_library_debug})
     set_property(TARGET realm PROPERTY IMPORTED_LOCATION_RELEASE ${core_library_release})
     set_property(TARGET realm PROPERTY IMPORTED_LOCATION ${core_library_release})
 
@@ -67,8 +70,8 @@ function(download_realm_core core_version)
 endfunction()
 
 macro(define_built_realm_core_target core_directory)
-    set(core_library_debug ${core_directory}/src/realm/librealm-dbg${CMAKE_SHARED_LIBRARY_SUFFIX})
-    set(core_library_release ${core_directory}/src/realm/librealm${CMAKE_SHARED_LIBRARY_SUFFIX})
+    set(core_library_debug ${core_directory}/src/realm/librealm-dbg.a)
+    set(core_library_release ${core_directory}/src/realm/librealm.a)
     set(core_libraries ${core_library_debug} ${core_library_release})
 
     ExternalProject_Add_Step(realm-core ensure-libraries
@@ -77,10 +80,11 @@ macro(define_built_realm_core_target core_directory)
         DEPENDEES build
         )
 
-    add_library(realm SHARED IMPORTED)
+    add_library(realm STATIC IMPORTED)
     add_dependencies(realm realm-core)
 
     set_property(TARGET realm PROPERTY IMPORTED_LOCATION_DEBUG ${core_library_debug})
+    set_property(TARGET realm PROPERTY IMPORTED_LOCATION_COVERAGE ${core_library_debug})
     set_property(TARGET realm PROPERTY IMPORTED_LOCATION_RELEASE ${core_library_release})
     set_property(TARGET realm PROPERTY IMPORTED_LOCATION ${core_library_release})
 
@@ -95,7 +99,7 @@ function(clone_and_build_realm_core branch)
         PREFIX ${core_prefix_directory}
         BUILD_IN_SOURCE 1
         CONFIGURE_COMMAND ""
-        BUILD_COMMAND export ${MAKEFLAGS} && ${MAKE_EQUAL_MAKE} sh build.sh build
+        BUILD_COMMAND ${EXPORT_MAKEFLAGS} && make -C src/realm librealm.a librealm-dbg.a
         INSTALL_COMMAND ""
         ${USES_TERMINAL_BUILD}
         )
@@ -113,7 +117,7 @@ function(build_existing_realm_core core_directory)
         BUILD_IN_SOURCE 1
         BUILD_ALWAYS 1
         CONFIGURE_COMMAND ""
-        BUILD_COMMAND export ${MAKEFLAGS} && ${MAKE_EQUAL_MAKE} sh build.sh build
+        BUILD_COMMAND ${EXPORT_MAKEFLAGS} && make -C src/realm librealm.a librealm-dbg.a
         INSTALL_COMMAND ""
         ${USES_TERMINAL_BUILD}
         )

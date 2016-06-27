@@ -24,6 +24,7 @@
 
 #include <realm/group_shared.hpp>
 #include <realm/lang_bind_helper.hpp>
+#include <algorithm>
 
 using namespace realm;
 
@@ -38,7 +39,7 @@ struct MarkDirtyMixin  {
     bool set_double(size_t col, size_t row, double) { return mark_dirty(row, col); }
     bool set_string(size_t col, size_t row, StringData) { return mark_dirty(row, col); }
     bool set_binary(size_t col, size_t row, BinaryData) { return mark_dirty(row, col); }
-    bool set_olddatetime(size_t, size_t, OldDateTime) { return true; }
+    bool set_olddatetime(size_t col, size_t row, OldDateTime) { return mark_dirty(row, col); }
     bool set_timestamp(size_t col, size_t row, Timestamp) { return mark_dirty(row, col); }
     bool set_table(size_t col, size_t row) { return mark_dirty(row, col); }
     bool set_mixed(size_t col, size_t row, const Mixed&) { return mark_dirty(row, col); }
@@ -335,7 +336,7 @@ public:
         }
         else {
             // Array KVO can only send a single kind of change at a time, so
-            // if there's multiple just give up and send "Set"
+            // if there are multiple just give up and send "Set"
             o->indices.set(0);
             o->kind = ColumnInfo::Kind::SetAll;
         }

@@ -21,10 +21,12 @@
 
 
 #include <assert.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <sstream>
 #include <sys/epoll.h>
 #include <sys/time.h>
+#include <sys/stat.h>
 #include <system_error>
 #include <unistd.h>
 
@@ -35,8 +37,6 @@
 #define ANDROID_LOG(...)
 #endif
 
-#include <errno.h>
-#include <sstream>
 
 using namespace realm;
 using namespace realm::_impl;

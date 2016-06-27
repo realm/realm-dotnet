@@ -18,8 +18,6 @@
 
 #include "impl/results_notifier.hpp"
 
-#include "results.hpp"
-
 using namespace realm;
 using namespace realm::_impl;
 
@@ -27,11 +25,19 @@ ResultsNotifier::ResultsNotifier(Results& target)
 : CollectionNotifier(target.get_realm())
 , m_target_results(&target)
 , m_sort(target.get_sort())
-, m_from_linkview(target.get_linkview().get() != nullptr)
+, m_target_is_in_table_order(target.is_in_table_order())
 {
     Query q = target.get_query();
     set_table(*q.get_table());
     m_query_handover = Realm::Internal::get_shared_group(*get_realm()).export_for_handover(q, MutableSourcePayload::Move);
+}
+
+void ResultsNotifier::target_results_moved(Results& old_target, Results& new_target)
+{
+    auto lock = lock_target();
+
+    REALM_ASSERT(m_target_results == &old_target);
+    m_target_results = &new_target;
 }
 
 void ResultsNotifier::release_data() noexcept
@@ -87,12 +93,8 @@ bool ResultsNotifier::need_to_run()
     }
 
     // If we've run previously, check if we need to rerun
-    if (m_initial_run_complete) {
-        // Make an empty tableview from the query to get the table version, since
-        // Query doesn't expose it
-        if (m_query->find_all(0, 0, 0).sync_if_needed() == m_last_seen_version) {
-            return false;
-        }
+    if (m_initial_run_complete && m_query->sync_view_if_needed() == m_last_seen_version) {
+        return false;
     }
 
     return true;
@@ -124,8 +126,8 @@ void ResultsNotifier::calculate_changes()
         }
 
         m_changes = CollectionChangeBuilder::calculate(m_previous_rows, next_rows,
-                                                       [&](size_t row) { return m_info->row_did_change(*m_query->get_table(), row); },
-                                                       m_sort || m_from_linkview);
+                                                       get_modification_checker(*m_info, *m_query->get_table()),
+                                                       m_target_is_in_table_order && !m_sort);
 
         m_previous_rows = std::move(next_rows);
     }
@@ -141,6 +143,7 @@ void ResultsNotifier::run()
     if (!need_to_run())
         return;
 
+    m_query->sync_view_if_needed();
     m_tv = m_query->find_all();
     if (m_sort) {
         m_tv.sort(m_sort.column_indices, m_sort.ascending);

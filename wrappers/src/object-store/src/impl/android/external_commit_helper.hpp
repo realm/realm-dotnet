@@ -16,12 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#include <realm/group_shared.hpp>
 
 #include <thread>
 
 namespace realm {
-class ClientHistory;
 
 namespace _impl {
 class RealmCoordinator;
