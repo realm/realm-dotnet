@@ -27,6 +27,7 @@ LOCAL_SRC_FILES += src/object-store/src/schema.cpp
 LOCAL_SRC_FILES += src/object-store/src/shared_realm.cpp
 #LOCAL_SRC_FILES += src/object-store/src/parser/parser.cpp
 #LOCAL_SRC_FILES += src/object-store/src/parser/query_builder.cpp
+LOCAL_SRC_FILES += src/object-store/src/util/format.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/realm_coordinator.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/collection_change_builder.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/collection_notifier.cpp

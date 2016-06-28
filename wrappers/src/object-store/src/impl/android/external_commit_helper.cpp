@@ -19,7 +19,7 @@
 #include "impl/external_commit_helper.hpp"
 #include "impl/realm_coordinator.hpp"
 
-
+#include <stdlib.h>
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
