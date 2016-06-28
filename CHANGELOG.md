@@ -1,3 +1,9 @@
+0.xy.z (TBD)
+-------------------
+
+### Minor Changes
+* Fixed a crash on iOS when creating many short-lived realms very rapidly in parallel (#653)
+
 0.76.1 (2016-06-15)
 -------------------
 

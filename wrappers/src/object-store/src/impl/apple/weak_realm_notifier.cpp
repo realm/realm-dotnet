@@ -37,7 +37,9 @@ WeakRealmNotifier::WeakRealmNotifier(const std::shared_ptr<Realm>& realm, bool c
     ctx.info = new RefCountedWeakPointer{realm, {1}};
     ctx.perform = [](void* info) {
         if (auto realm = static_cast<RefCountedWeakPointer*>(info)->realm.lock()) {
-            realm->notify();
+            if (!realm->is_closed()) {
+                realm->notify();
+            }
         }
     };
     ctx.retain = [](const void* info) {
