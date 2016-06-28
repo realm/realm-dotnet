@@ -21,9 +21,9 @@
 
 #include <string>
 #include <vector>
+#include "object_schema.hpp"
 
 namespace realm {
-class ObjectSchema;
 
 class Schema : private std::vector<ObjectSchema> {
 private:
