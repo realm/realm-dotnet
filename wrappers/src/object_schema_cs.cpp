@@ -22,6 +22,7 @@
 #include "realm_export_decls.hpp"
 #include "object-store/src/shared_realm.hpp"
 #include "object-store/src/property.hpp"
+#include "object-store/src/object_schema.hpp"
 
 using namespace realm;
 
@@ -54,7 +55,7 @@ REALM_EXPORT void object_schema_add_property(ObjectSchema* cls, const char* name
         p.is_primary = is_primary;
         p.is_indexed = is_indexed;
         p.is_nullable = is_nullable;
-        cls->properties.push_back(std::move(p));
+        cls->persisted_properties.push_back(std::move(p));
     });
 }
 
