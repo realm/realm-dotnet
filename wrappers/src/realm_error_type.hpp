@@ -59,6 +59,8 @@ namespace realm {
 
         RealmFormatUpgradeRequired = 13,
 
+        RealmRowDetached = 21,
+
         StdArgumentOutOfRange = 100,
 
         StdIndexOutOfRange = 101,
