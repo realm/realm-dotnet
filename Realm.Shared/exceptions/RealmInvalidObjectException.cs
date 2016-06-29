@@ -18,7 +18,7 @@
 
 namespace Realms
 {
-    public class RealmInvalidObjectException : RealmFileAccessErrorException
+    public class RealmInvalidObjectException : RealmException
     {
         internal RealmInvalidObjectException(string message) : base(message)
         {
