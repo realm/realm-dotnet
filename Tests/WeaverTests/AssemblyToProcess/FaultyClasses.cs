@@ -24,7 +24,7 @@ namespace AssemblyToProcess
 {
     public class RealmListWithSetter : RealmObject
     {
-        public IList<Person> People { get;  } 
+        public IList<Person> People { get; set; } 
     }
 
     public class IndexedProperties : RealmObject
