@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2015 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,10 +21,10 @@
 
 #include "collection_notifications.hpp"
 #include "shared_realm.hpp"
+#include "impl/collection_notifier.hpp"
 
 #include <realm/table_view.hpp>
 #include <realm/util/optional.hpp>
-#include <realm/util/to_string.hpp>
 
 namespace realm {
 template<typename T> class BasicRowExpr;
@@ -48,17 +48,18 @@ public:
     // Results can be either be backed by nothing, a thin wrapper around a table,
     // or a wrapper around a query and a sort order which creates and updates
     // the tableview as needed
-    Results() = default;
+    Results();
     Results(SharedRealm r, const ObjectSchema& o, Table& table);
     Results(SharedRealm r, const ObjectSchema& o, Query q, SortOrder s = {});
+    Results(SharedRealm r, const ObjectSchema& o, TableView tv, SortOrder s);
     Results(SharedRealm r, const ObjectSchema& o, LinkViewRef lv, util::Optional<Query> q = {}, SortOrder s = {});
     ~Results();
 
     // Results is copyable and moveable
-    Results(Results const&) = default;
-    Results(Results&&) = default;
-    Results& operator=(Results&&) = default;
-    Results& operator=(Results const&) = default;
+    Results(Results&&);
+    Results& operator=(Results&&);
+    Results(const Results&);
+    Results& operator=(const Results&);
 
     // Get the Realm
     SharedRealm get_realm() const { return m_realm; }
@@ -116,7 +117,7 @@ public:
     // Get the min/max/average/sum of the given column
     // All but sum() returns none when there are zero matching rows
     // sum() returns 0, except for when it returns none
-    // Throws UnsupportedColumnTypeException for sum/average on datetime or non-numeric column
+    // Throws UnsupportedColumnTypeException for sum/average on timestamp or non-numeric column
     // Throws OutOfBoundsIndexException for an out-of-bounds column
     util::Optional<Mixed> max(size_t column);
     util::Optional<Mixed> min(size_t column);
@@ -134,20 +135,18 @@ public:
     // Ideally this would not be public but it's needed for some KVO stuff
     Mode get_mode() const { return m_mode; }
 
+    // Is this Results associated with a Realm that has not been invalidated?
+    bool is_valid() const;
+
     // The Results object has been invalidated (due to the Realm being invalidated)
     // All non-noexcept functions can throw this
-    struct InvalidatedException : public std::runtime_error
-    {
+    struct InvalidatedException : public std::runtime_error {
         InvalidatedException() : std::runtime_error("Access to invalidated Results objects") {}
     };
 
     // The input index parameter was out of bounds
-    struct OutOfBoundsIndexException : public std::out_of_range
-    {
-        OutOfBoundsIndexException(size_t r, size_t c) :
-            std::out_of_range((std::string)"Requested index " + util::to_string(r) +
-                              " greater than max " + util::to_string(c)),
-            requested(r), valid_count(c) {}
+    struct OutOfBoundsIndexException : public std::out_of_range {
+        OutOfBoundsIndexException(size_t r, size_t c);
         const size_t requested;
         const size_t valid_count;
     };
@@ -159,8 +158,8 @@ public:
 
     // The input Row object belongs to a different table
     struct IncorrectTableException : public std::runtime_error {
-        IncorrectTableException(StringData e, StringData a, const std::string &error) :
-            std::runtime_error(error), expected(e), actual(a) {}
+        IncorrectTableException(StringData e, StringData a, const std::string &error)
+        : std::runtime_error(error), expected(e), actual(a) {}
         const StringData expected;
         const StringData actual;
     };
@@ -171,7 +170,7 @@ public:
         StringData column_name;
         DataType column_type;
 
-        UnsupportedColumnTypeException(size_t column, const Table* table);
+        UnsupportedColumnTypeException(size_t column, const Table* table, const char* operation);
     };
 
     // Create an async query from this Results
@@ -182,13 +181,16 @@ public:
 
     bool wants_background_updates() const { return m_wants_background_updates; }
 
+    // Returns whether the rows are guaranteed to be in table order.
+    bool is_in_table_order() const;
+
     // Helper type to let ResultsNotifier update the tableview without giving access
     // to any other privates or letting anyone else do so
     class Internal {
         friend class _impl::ResultsNotifier;
         static void set_table_view(Results& results, TableView&& tv);
     };
-
+    
 private:
     SharedRealm m_realm;
     const ObjectSchema *m_object_schema;
@@ -199,7 +201,7 @@ private:
     SortOrder m_sort;
     bool m_live = true;
 
-    std::shared_ptr<_impl::ResultsNotifier> m_notifier;
+    _impl::CollectionNotifier::Handle<_impl::ResultsNotifier> m_notifier;
 
     Mode m_mode = Mode::Empty;
     bool m_has_used_table_view = false;
@@ -213,10 +215,11 @@ private:
 
     void prepare_async();
 
-    template<typename Int, typename Float, typename Double, typename DateTime>
+    template<typename Int, typename Float, typename Double, typename Timestamp>
     util::Optional<Mixed> aggregate(size_t column, bool return_none_for_empty,
+                                    const char* name,
                                     Int agg_int, Float agg_float,
-                                    Double agg_double, DateTime agg_datetime);
+                                    Double agg_double, Timestamp agg_timestamp);
 
     void set_table_view(TableView&& tv);
 };

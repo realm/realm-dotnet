@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2015 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,23 +19,20 @@
 #ifndef REALM_REALM_HPP
 #define REALM_REALM_HPP
 
-#include "schema.hpp"
-
-#include <realm/handover_defs.hpp>
-
 #include <memory>
-#include <mutex>
 #include <string>
 #include <thread>
 #include <vector>
-#include <mutex>
 
 namespace realm {
+    class BinaryData;
     class BindingContext;
     class Group;
     class Realm;
     class Replication;
+    class Schema;
     class SharedGroup;
+    class StringData;
     typedef std::shared_ptr<Realm> SharedRealm;
     typedef std::weak_ptr<Realm> WeakRealm;
 
@@ -44,6 +41,10 @@ namespace realm {
         class ListNotifier;
         class RealmCoordinator;
         class ResultsNotifier;
+    }
+
+    namespace util {
+        template<typename T> class Optional;
     }
 
     class Realm : public std::enable_shared_from_this<Realm> {
@@ -67,7 +68,7 @@ namespace realm {
             bool in_memory = false;
 
             // The following are intended for internal/testing purposes and
-            // should not be publically exposed in binding APIs
+            // should not be publicly exposed in binding APIs
 
             // If false, always return a new Realm instance, and don't return
             // that Realm instance for other requests for a cached Realm. Useful
@@ -119,12 +120,13 @@ namespace realm {
         bool is_in_read_transaction() const { return !!m_group; }
 
         bool refresh();
-        void set_auto_refresh(bool auto_refresh) { m_auto_refresh = auto_refresh; };
+        void set_auto_refresh(bool auto_refresh) { m_auto_refresh = auto_refresh; }
         bool auto_refresh() const { return m_auto_refresh; }
         void notify();
 
         void invalidate();
         bool compact();
+        void write_copy(StringData path, BinaryData encryption_key);
 
         std::thread::id thread_id() const { return m_thread_id; }
         void verify_thread() const;
@@ -136,7 +138,10 @@ namespace realm {
         // Realm after closing it will produce undefined behavior.
         void close();
 
-        bool is_closed() { return m_shared_group == nullptr; }
+        bool is_closed() { return !m_read_only_group && !m_shared_group; }
+
+        // returns the file format version upgraded from if an upgrade took place
+        util::Optional<int> file_format_upgraded_from_version() const;
 
         ~Realm();
 
@@ -164,7 +169,8 @@ namespace realm {
         static void open_with_config(const Config& config,
                                      std::unique_ptr<Replication>& history,
                                      std::unique_ptr<SharedGroup>& shared_group,
-                                     std::unique_ptr<Group>& read_only_group);
+                                     std::unique_ptr<Group>& read_only_group,
+                                     Realm *realm = nullptr);
 
       private:
         Config m_config;
@@ -178,6 +184,9 @@ namespace realm {
         Group *m_group = nullptr;
 
         std::shared_ptr<_impl::RealmCoordinator> m_coordinator;
+
+        // File format versions populated when a file format upgrade takes place during realm opening
+        int upgrade_initial_version = 0, upgrade_final_version = 0;
 
       public:
         std::unique_ptr<BindingContext> m_binding_context;
@@ -205,24 +214,26 @@ namespace realm {
             /** Thrown if the file needs to be upgraded to a new format, but upgrades have been explicitly disabled. */
             FormatUpgradeRequired,
         };
-        RealmFileException(Kind kind, std::string path, std::string message) :
-            std::runtime_error(std::move(message)), m_kind(kind), m_path(std::move(path)) {}
+        RealmFileException(Kind kind, std::string path, std::string message, std::string underlying) :
+            std::runtime_error(std::move(message)), m_kind(kind), m_path(std::move(path)), m_underlying(std::move(underlying)) {}
         Kind kind() const { return m_kind; }
         const std::string& path() const { return m_path; }
+        const std::string& underlying() const { return m_underlying; }
 
     private:
         Kind m_kind;
         std::string m_path;
+        std::string m_underlying;
     };
 
     class MismatchedConfigException : public std::runtime_error {
     public:
-        MismatchedConfigException(std::string message) : std::runtime_error(message) {}
+        MismatchedConfigException(StringData message, StringData path);
     };
 
     class InvalidTransactionException : public std::runtime_error {
     public:
-        InvalidTransactionException(std::string message) : std::runtime_error(message) {}
+        InvalidTransactionException(std::string message) : std::runtime_error(move(message)) {}
     };
 
     class IncorrectThreadException : public std::runtime_error {
@@ -230,9 +241,9 @@ namespace realm {
         IncorrectThreadException() : std::runtime_error("Realm accessed from incorrect thread.") {}
     };
 
-    class UnitializedRealmException : public std::runtime_error {
+    class UninitializedRealmException : public std::runtime_error {
     public:
-        UnitializedRealmException(std::string message) : std::runtime_error(message) {}
+        UninitializedRealmException(std::string message) : std::runtime_error(move(message)) {}
     };
 
     class InvalidEncryptionKeyException : public std::runtime_error {

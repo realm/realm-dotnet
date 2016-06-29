@@ -34,7 +34,7 @@ WeakRealmNotifier::WeakRealmNotifier(const std::shared_ptr<Realm>& realm, bool c
     };
 
     CFRunLoopSourceContext ctx{};
-    ctx.info = new RefCountedWeakPointer{realm, {1}};
+    ctx.info = new RefCountedWeakPointer{realm, {0}};
     ctx.perform = [](void* info) {
         if (auto realm = static_cast<RefCountedWeakPointer*>(info)->realm.lock()) {
             if (!realm->is_closed()) {
@@ -71,6 +71,7 @@ WeakRealmNotifier::WeakRealmNotifier(WeakRealmNotifier&& rgt)
 WeakRealmNotifier& WeakRealmNotifier::operator=(WeakRealmNotifier&& rgt)
 {
     WeakRealmNotifierBase::operator=(std::move(rgt));
+    invalidate();
     m_runloop = rgt.m_runloop;
     m_signal = rgt.m_signal;
     rgt.m_runloop = nullptr;
@@ -80,6 +81,11 @@ WeakRealmNotifier& WeakRealmNotifier::operator=(WeakRealmNotifier&& rgt)
 }
 
 WeakRealmNotifier::~WeakRealmNotifier()
+{
+    invalidate();
+}
+
+void WeakRealmNotifier::invalidate()
 {
     if (m_signal) {
         CFRunLoopSourceInvalidate(m_signal);

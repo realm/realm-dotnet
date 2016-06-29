@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2015 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,12 +19,12 @@
 #ifndef REALM_SCHEMA_HPP
 #define REALM_SCHEMA_HPP
 
-#include "object_schema.hpp"
-
 #include <string>
 #include <vector>
+#include "object_schema.hpp"
 
 namespace realm {
+
 class Schema : private std::vector<ObjectSchema> {
 private:
     using base = std::vector<ObjectSchema>;

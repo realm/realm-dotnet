@@ -18,7 +18,7 @@
 
 #include "impl/weak_realm_notifier_base.hpp"
 
-#include <CoreFoundation/CFRunLoop.h>
+typedef struct uv_async_s uv_async_t;
 
 namespace realm {
 class Realm;
@@ -36,13 +36,11 @@ public:
     WeakRealmNotifier(const WeakRealmNotifier&) = delete;
     WeakRealmNotifier& operator=(const WeakRealmNotifier&) = delete;
 
-    // Asynchronously call notify() on the Realm on the appropriate thread
+    // Asynchronously call notify() on the Realm on the main thread.
     void notify();
 
 private:
-    void invalidate();
-    CFRunLoopRef m_runloop;
-    CFRunLoopSourceRef m_signal;
+    uv_async_t* m_handle;
 };
 
 } // namespace _impl
