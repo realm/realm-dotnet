@@ -3,6 +3,8 @@
 
 ### Minor Changes
 * Fixed a crash on iOS when creating many short-lived realms very rapidly in parallel (#653)
+* `RealmObject.IsValid` lets you know if a managed object has been deleted
+* Accessing properties on invalid objects will throw an exception rather than crash with a segfault (#662)
 
 0.76.1 (2016-06-15)
 -------------------
