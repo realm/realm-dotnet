@@ -2326,7 +2326,6 @@ RelationshipTests.cs
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #287 IList Declarations - remove setter and combine with Yavor's ICopyValuesFrom
 
-        
 ModuleWeaver.cs
 - WeaveProperty
   - put back test banning setters on lists and RealmList
@@ -2347,3 +2346,6 @@ RealmObject.cs
 
 RealmList
 - added internal interace ICopyValuesFrom (thanks Yavor)
+
+ICopyValuesFrom.cs
+- factored out internal interface so can reuse in PCL copy of RealmList

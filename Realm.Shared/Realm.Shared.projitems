@@ -62,6 +62,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)handles\NotificationTokenHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmInvalidTransactionException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)extensions\RealmResultsCollectionChanged.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ICopyValuesFrom.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)weaving\" />

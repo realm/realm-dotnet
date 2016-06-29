@@ -80,6 +80,7 @@ namespace IntegrationTests
             set { _nickname = value; }
         }
 
+        // initialise list so standalone objects can be simply initialised with braced expressions
         public IList<Person> Friends { get; } = new List<Person>();
     }
 }

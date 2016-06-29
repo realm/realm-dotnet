@@ -34,7 +34,7 @@ namespace Realms
     /// </remarks>
     /// 
     /// <typeparam name="T">Type of the RealmObject which is the target of the relationship.</typeparam>
-    public class RealmList<T> : IList<T> where T : RealmObject
+    public class RealmList<T> : IList<T>, ICopyValuesFrom where T : RealmObject
     {
 
         /// <summary>
@@ -203,5 +203,11 @@ namespace Realms
         }
 
         #endregion
+
+        void ICopyValuesFrom.CopyValuesFrom(IEnumerable<RealmObject> values)
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+        }
+
     }
 }
