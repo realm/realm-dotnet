@@ -75,8 +75,16 @@ namespace Realms
             foreach (var prop in wovenProperties)
             {
                 var value = prop.Field.GetValue(this);
-                // list values will assign and may recurse back into here if lists contain standalones
-                prop.Info.SetValue(this, value, null);
+                var listValue = value as IEnumerable<RealmObject>;
+                if (listValue != null)
+                {
+                    var realmList = (ICopyValuesFrom)prop.Info.GetValue(this, null);
+                    realmList.CopyValuesFrom(listValue);
+                }
+                else
+                {
+                    prop.Info.SetValue(this, value, null);
+                }
             }
         }
 

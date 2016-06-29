@@ -326,19 +326,6 @@ public class ModuleWeaver
                 return;
             }
 
-            // go ahead and add a setter so can recurse through _CopyDataFromBackingFieldsToRow
-            var voidRef = _corLib.MainModule.TypeSystem.Void;
-            prop.SetMethod = new MethodDefinition($"set_{prop.Name}", 
-                                                  MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig, 
-                                                  voidRef);
-
-            prop.SetMethod.Body.Instructions.Clear();  // in case default content
-            prop.SetMethod.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
-            ReplaceSetter(prop, backingField, columnName,
-                      new GenericInstanceMethod(_genericSetListValueReference) { GenericArguments = { elementType } },
-                      typeImplementsPropertyChanged, propChangedEventDefinition, propChangedFieldDefinition);
-
-
             ReplaceGetter(prop, columnName,
                 new GenericInstanceMethod(_genericGetListValueReference) { GenericArguments = { elementType } });
         }
