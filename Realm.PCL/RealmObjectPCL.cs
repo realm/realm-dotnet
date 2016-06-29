@@ -40,6 +40,7 @@ namespace Realms
         /// </summary>
         public bool IsManaged => _realm != null;
 
+        public bool IsValid => false;
 
 
         #region Getters
