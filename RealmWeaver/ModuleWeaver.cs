@@ -101,7 +101,6 @@ public class ModuleWeaver
     private MethodReference _genericGetObjectValueReference;
     private MethodReference _genericSetObjectValueReference;
     private MethodReference _genericGetListValueReference;
-    private MethodReference _genericSetListValueReference;
     private MethodReference _wovenAttributeConstructor;
     private MethodReference _wovenPropertyAttributeConstructor;
 
@@ -151,7 +150,6 @@ public class ModuleWeaver
         _genericGetObjectValueReference = LookupMethodAndImport(_realmObject, "GetObjectValue");
         _genericSetObjectValueReference = LookupMethodAndImport(_realmObject, "SetObjectValue");
         _genericGetListValueReference = LookupMethodAndImport(_realmObject, "GetListValue");
-        _genericSetListValueReference = LookupMethodAndImport(_realmObject, "SetListValue");
 
         var wovenAttributeClass = _realmAssembly.MainModule.GetTypes().First(x => x.Name == "WovenAttribute");
         _wovenAttributeConstructor = ModuleDefinition.ImportReference(wovenAttributeClass.GetConstructors().First());

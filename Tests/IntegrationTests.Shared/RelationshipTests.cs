@@ -447,7 +447,7 @@ namespace IntegrationTests.Shared
             }
 
             Assert.That(realm.All<Person>().ToList().Select(p => p.FirstName),
-                        Is.EquivalentTo(new[] { "Alice", "Joan", "Krystal", "Sally", "Jane" })
+                        Is.EquivalentTo(new[] { "Alice", "Joan", "Krystal", "Sally", "Sally" })
                        );
         }
 

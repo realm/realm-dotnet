@@ -2324,14 +2324,12 @@ RelationshipTests.cs
 
 
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-#287 IList Declarations - remove setter
+#287 IList Declarations - remove setter and combine with Yavor's ICopyValuesFrom
 
         
 ModuleWeaver.cs
 - WeaveProperty
   - put back test banning setters on lists and RealmList
-  - unconditionally ADD setter for lists, needed for copying standalone trees
-- AddSetter added
 
 RelationshipTests.cs
 - class Owner removed set to Dogs property
@@ -2341,3 +2339,11 @@ RelationshipTests.cs
 
 IntegrationTests.Shared/Person.cs
 - Friends removed automatic set to property
+
+RealmObject.cs
+- SetListValue removed
+- _CopyDataFromBackingFieldsToRow use ICopyValuesFrom to get method to invoke to copy into RealmList generic instance.
+
+
+RealmList
+- added internal interace ICopyValuesFrom (thanks Yavor)
