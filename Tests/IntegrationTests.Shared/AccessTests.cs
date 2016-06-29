@@ -113,5 +113,27 @@ namespace IntegrationTests.Shared
             yield return new object[] { "StringProperty", "hello" };
             yield return new object[] { "NullableDateTimeOffsetProperty", new DateTimeOffset(1956, 6, 1, 0, 0, 0, TimeSpan.Zero) };
         }
+
+        [Test]
+        public void AccessingRemovedObjectShouldThrow()
+        {
+            // Arrange
+            Person p1 = null;
+            _realm.Write(() =>
+            {
+                p1 = _realm.CreateObject<Person>();
+
+                // Create another object to ensure there is a row in the db after deleting p1.
+                _realm.CreateObject<Person>();
+
+                _realm.Remove(p1);
+            });
+
+            // Act and assert
+            Assert.Throws<RealmInvalidObjectException>(() => 
+            { 
+                var illegalAccess = p1.FirstName; 
+            });
+        }
     }
 }
