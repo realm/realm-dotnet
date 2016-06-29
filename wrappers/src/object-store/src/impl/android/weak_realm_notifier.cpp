@@ -19,6 +19,7 @@
 #include "impl/weak_realm_notifier.hpp"
 #include "shared_realm.hpp"
 
+#include <errno.h>
 #include <fcntl.h> 
 #include <unistd.h>
 #include <android/log.h>
@@ -108,28 +109,31 @@ void WeakRealmNotifier::notify()
 
 int WeakRealmNotifier::looper_callback(int fd, int events, void* data)
 {
+    if ((events & ALOOPER_EVENT_INPUT) != 0) {
+
+        // this is a pointer to a heap-allocated weak Realm pointer created by the notifiying thread.
+        // the actual address to the pointer is communicated over a pipe.
+        // we have to delete it so as to not leak, using the same memory allocation facilities it was allocated with.
+        std::weak_ptr<Realm>* realm_ptr = nullptr;
+        while (read(fd, &realm_ptr, sizeof(realm_ptr)) == sizeof(realm_ptr)) {
+            if (auto realm = realm_ptr->lock()) {
+                if (!realm->is_closed()) {
+                    realm->notify();
+                }
+            }
+
+            delete realm_ptr;
+        }
+    }
+
     if ((events & ALOOPER_EVENT_HANGUP) != 0) {
         // this callback is always invoked on the looper thread so it's fine to get the looper like this
         ALooper_removeFd(ALooper_forThread(), fd);
         ::close(fd);
-
-        // Because we manually unregister and close the file descriptor we should NOT be returning 0 here
-        // source: https://groups.google.com/forum/#!topic/android-ndk/JDKpI66_Cxw
-        return 1;
     }
 
-    // this is a pointer to a heap-allocated weak Realm pointer created by the notifiying thread.
-    // the actual address to the pointer is communicated over a pipe.
-    // we have to delete it so as to not leak, using the same memory allocation facilities it was allocated with.
-    std::weak_ptr<Realm>* realm_ptr = nullptr;
-    while (read(fd, &realm_ptr, sizeof(realm_ptr)) == sizeof(realm_ptr)) {
-        if (auto realm = realm_ptr->lock()) {
-            if (!realm->is_closed()) {
-                realm->notify();
-            }
-        }
-
-        delete realm_ptr;
+    if ((events & ALOOPER_EVENT_ERROR) != 0) {
+        LOGE("Unexpected error on WeakRealmNotifier's ALooper message pipe.");
     }
 
     // return 1 to continue receiving events

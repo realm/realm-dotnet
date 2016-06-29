@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2015 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,19 +19,20 @@
 #ifndef REALM_OBJECT_STORE_HPP
 #define REALM_OBJECT_STORE_HPP
 
-#include "schema.hpp"
 #include "property.hpp"
 
 #include <realm/table_ref.hpp>
 
 #include <functional>
-
-#include <sstream>
+#include <string>
+#include <vector>
 
 namespace realm {
     class Group;
+    class ObjectSchema;
     class ObjectSchemaValidationException;
     class Schema;
+    class StringData;
 
     class ObjectStore {
       public:
@@ -160,6 +161,14 @@ namespace realm {
         std::vector<ObjectSchemaValidationException> m_validation_errors;
     };
 
+    class SchemaMismatchException : public ObjectStoreException {
+    public:
+        SchemaMismatchException(std::vector<ObjectSchemaValidationException> const& errors);
+        std::vector<ObjectSchemaValidationException> const& validation_errors() const { return m_validation_errors; }
+    private:
+        std::vector<ObjectSchemaValidationException> m_validation_errors;
+    };
+
     class ObjectSchemaValidationException : public ObjectStoreException {
       public:
         ObjectSchemaValidationException(std::string const& object_type) : m_object_type(object_type) {}
@@ -233,6 +242,16 @@ namespace realm {
         std::string primary_key() const { return m_primary_key; }
       private:
         std::string m_primary_key;
+    };
+
+    class InvalidLinkingObjectsPropertyException : public ObjectSchemaPropertyException {
+    public:
+        enum class Type {
+            OriginPropertyDoesNotExist,
+            OriginPropertyIsNotALink,
+            OriginPropertyInvalidLinkTarget,
+        };
+        InvalidLinkingObjectsPropertyException(Type error_type, std::string const& object_type, Property const& property);
     };
 }
 

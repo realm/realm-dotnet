@@ -24,6 +24,9 @@
 #include <pegtl/analyze.hh>
 #include <pegtl/trace.hh>
 
+// String tokens can't be followed by [A-z0-9_].
+#define string_token_t(s) seq< pegtl_istring_t(s), not_at< identifier_other > >
+
 using namespace pegtl;
 
 namespace realm {
@@ -54,8 +57,9 @@ struct int_num : plus< digit > {};
 
 struct number : seq< minus, sor< float_num, hex_num, int_num > > {};
 
-struct true_value : pegtl_istring_t("true") {};
-struct false_value : pegtl_istring_t("false") {};
+struct true_value : string_token_t("true") {};
+struct false_value : string_token_t("false") {};
+struct null_value : string_token_t("null") {};
 
 // key paths
 struct key_path : list< seq< sor< alpha, one< '_' > >, star< sor< alnum, one< '_', '-' > > > >, one< '.' > > {};
@@ -65,38 +69,35 @@ struct argument_index : plus< digit > {};
 struct argument : seq< one< '$' >, must< argument_index > > {};
 
 // expressions and operators
-struct expr : sor< dq_string, sq_string, number, argument, true_value, false_value, key_path > {};
-struct case_insensitive : pegtl_istring_t("[c]"){};
+struct expr : sor< dq_string, sq_string, number, argument, true_value, false_value, null_value, key_path > {};
+struct case_insensitive : pegtl_istring_t("[c]") {};
 
-struct eq : seq< sor< two< '=' >, one< '=' > >, opt< case_insensitive > >{};
+struct eq : seq< sor< two< '=' >, one< '=' > >, star< blank >, opt< case_insensitive > >{};
 struct noteq : pegtl::string< '!', '=' > {};
 struct lteq : pegtl::string< '<', '=' > {};
 struct lt : one< '<' > {};
 struct gteq : pegtl::string< '>', '=' > {};
 struct gt : one< '>' > {};
-struct contains : pegtl_istring_t("contains") {};
-struct begins : pegtl_istring_t("beginswith") {};
-struct ends : pegtl_istring_t("endswith") {};
+struct contains : string_token_t("contains") {};
+struct begins : string_token_t("beginswith") {};
+struct ends : string_token_t("endswith") {};
 
-template<typename A, typename B>
-struct pad_plus : seq< plus< B >, A, plus< B > > {};
-
-struct padded_oper : pad_plus< seq< sor< contains, begins, ends>, opt< case_insensitive > >, blank > {};
-struct symbolic_oper : pad< sor< eq, noteq, lteq, lt, gteq, gt >, blank > {};
+struct string_oper : seq< sor< contains, begins, ends>, star< blank >, opt< case_insensitive > > {};
+struct symbolic_oper : sor< eq, noteq, lteq, lt, gteq, gt > {};
 
 // predicates
-struct comparison_pred : seq< expr, sor< padded_oper, symbolic_oper >, expr > {};
+struct comparison_pred : seq< expr, pad< sor< string_oper, symbolic_oper >, blank >, expr > {};
 
 struct pred;
 struct group_pred : if_must< one< '(' >, pad< pred, blank >, one< ')' > > {};
-struct true_pred : pegtl_istring_t("truepredicate") {};
-struct false_pred : pegtl_istring_t("falsepredicate") {};
+struct true_pred : string_token_t("truepredicate") {};
+struct false_pred : string_token_t("falsepredicate") {};
 
-struct not_pre : seq< sor< one< '!' >, pegtl_istring_t("not") > > {};
+struct not_pre : seq< sor< one< '!' >, string_token_t("not") > > {};
 struct atom_pred : seq< opt< not_pre >, pad< sor< group_pred, true_pred, false_pred, comparison_pred >, blank > > {};
 
-struct and_op : pad< sor< two< '&' >, pegtl_istring_t("and") >, blank > {};
-struct or_op : pad< sor< two< '|' >, pegtl_istring_t("or") >, blank > {};
+struct and_op : pad< sor< two< '&' >, string_token_t("and") >, blank > {};
+struct or_op : pad< sor< two< '|' >, string_token_t("or") >, blank > {};
 
 struct or_ext : if_must< or_op, pred > {};
 struct and_ext : if_must< and_op, pred > {};
@@ -200,14 +201,14 @@ template< typename Rule >
 struct action : nothing< Rule > {};
 
 #ifdef REALM_PARSER_PRINT_TOKENS
-    #define DEBUG_PRINT_TOKEN(string) std::cout << string << std::endl
+    #define DEBUG_PRINT_TOKEN(string) do { std::cout << string << std::endl; while (0)
 #else
-    #define DEBUG_PRINT_TOKEN(string)
+    #define DEBUG_PRINT_TOKEN(string) do { static_cast<void>(string); } while (0)
 #endif
 
 template<> struct action< and_op >
 {
-    static void apply( const input & in, ParserState & state )
+    static void apply(const input&, ParserState& state)
     {
         DEBUG_PRINT_TOKEN("<and>");
         state.next_type = Predicate::Type::And;
@@ -216,7 +217,7 @@ template<> struct action< and_op >
 
 template<> struct action< or_op >
 {
-    static void apply( const input & in, ParserState & state )
+    static void apply(const input&, ParserState & state)
     {
         DEBUG_PRINT_TOKEN("<or>");
         state.next_type = Predicate::Type::Or;
@@ -226,7 +227,7 @@ template<> struct action< or_op >
 
 #define EXPRESSION_ACTION(rule, type)                               \
 template<> struct action< rule > {                                  \
-    static void apply( const input & in, ParserState & state ) {    \
+    static void apply(const input& in, ParserState& state) {        \
         DEBUG_PRINT_TOKEN(in.string());                             \
         state.add_expression(Expression(type, in.string())); }};
 
@@ -236,11 +237,12 @@ EXPRESSION_ACTION(key_path, Expression::Type::KeyPath)
 EXPRESSION_ACTION(number, Expression::Type::Number)
 EXPRESSION_ACTION(true_value, Expression::Type::True)
 EXPRESSION_ACTION(false_value, Expression::Type::False)
+EXPRESSION_ACTION(null_value, Expression::Type::Null)
 EXPRESSION_ACTION(argument_index, Expression::Type::Argument)
-    
+
 template<> struct action< true_pred >
 {
-    static void apply( const input & in, ParserState & state )
+    static void apply(const input& in, ParserState & state)
     {
         DEBUG_PRINT_TOKEN(in.string());
         state.current_group()->cpnd.sub_predicates.emplace_back(Predicate::Type::True);
@@ -249,7 +251,7 @@ template<> struct action< true_pred >
 
 template<> struct action< false_pred >
 {
-    static void apply( const input & in, ParserState & state )
+    static void apply(const input& in, ParserState & state)
     {
         DEBUG_PRINT_TOKEN(in.string());
         state.current_group()->cpnd.sub_predicates.emplace_back(Predicate::Type::False);
@@ -258,7 +260,7 @@ template<> struct action< false_pred >
 
 #define OPERATOR_ACTION(rule, oper)                                 \
 template<> struct action< rule > {                                  \
-    static void apply( const input & in, ParserState & state ) {    \
+    static void apply(const input& in, ParserState& state) {        \
         DEBUG_PRINT_TOKEN(in.string());                             \
         state.last_predicate()->cmpr.op = oper; }};
 
@@ -271,19 +273,19 @@ OPERATOR_ACTION(lt, Predicate::Operator::LessThan)
 OPERATOR_ACTION(begins, Predicate::Operator::BeginsWith)
 OPERATOR_ACTION(ends, Predicate::Operator::EndsWith)
 OPERATOR_ACTION(contains, Predicate::Operator::Contains)
-    
+
 template<> struct action< case_insensitive >
 {
-    static void apply( const input & in, ParserState & state )
+    static void apply(const input& in, ParserState & state)
     {
         DEBUG_PRINT_TOKEN(in.string());
         state.last_predicate()->cmpr.option = Predicate::OperatorOption::CaseInsensitive;
     }
 };
-    
+
 template<> struct action< one< '(' > >
 {
-    static void apply( const input & in, ParserState & state )
+    static void apply(const input&, ParserState & state)
     {
         DEBUG_PRINT_TOKEN("<begin_group>");
         state.add_predicate_to_current_group(Predicate::Type::And);
@@ -293,7 +295,7 @@ template<> struct action< one< '(' > >
 
 template<> struct action< group_pred >
 {
-    static void apply( const input & in, ParserState & state )
+    static void apply(const input&, ParserState & state)
     {
         DEBUG_PRINT_TOKEN("<end_group>");
         state.group_stack.pop_back();
@@ -302,7 +304,7 @@ template<> struct action< group_pred >
 
 template<> struct action< not_pre >
 {
-    static void apply( const input & in, ParserState & state )
+    static void apply(const input&, ParserState & state)
     {
         DEBUG_PRINT_TOKEN("<not>");
         state.negate_next = true;
@@ -315,9 +317,9 @@ struct error_message_control : pegtl::normal< Rule >
     static const std::string error_message;
 
     template< typename Input, typename ... States >
-    static void raise( const Input & in, States && ... )
+    static void raise(const Input& in, States&&...)
     {
-        throw pegtl::parse_error( error_message, in );
+        throw pegtl::parse_error(error_message, in);
     }
 };
 
@@ -349,5 +351,3 @@ void analyze_grammar()
 }
 
 }}
-
-

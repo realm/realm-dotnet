@@ -82,7 +82,7 @@ namespace realm {
         catch (const IncorrectThreadException& e) {
             return { RealmErrorType::RealmIncorrectThread, e.what() };
         }
-        catch (const UnitializedRealmException& e) {
+        catch (const UninitializedRealmException& e) {
             return { RealmErrorType::RealmUnitializedRealm, e.what() };
         }
         //catch (const util::DecryptionFailed& e) {

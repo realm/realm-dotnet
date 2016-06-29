@@ -10,7 +10,7 @@
 		<ListView ItemsSource="{Binding Entries}" x:Name="EntriesListView" ItemTapped="OnItemTapped" ItemSelected="OnItemSelected">
 			<ListView.ItemTemplate>
 				<DataTemplate>
-					<TextCell Text="{Binding Date, StringFormat='{0:dddd, MMMM d yyyy}'}" Detail="{Binding Date, StringFormat='{0:hh:mm tt}'}">
+					<TextCell Text="{Binding Title}" Detail="{Binding Date, StringFormat='{0:dddd, MMMM d yyyy}'}">
 						<TextCell.ContextActions>
 							<MenuItem Text="Delete" IsDestructive="true" 
 									  Command="{Binding BindingContext.DeleteEntryCommand, Source={x:Reference EntriesListView}" 

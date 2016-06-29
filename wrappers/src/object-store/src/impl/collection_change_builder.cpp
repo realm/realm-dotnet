@@ -18,8 +18,9 @@
 
 #include "impl/collection_change_builder.hpp"
 
-#include <algorithm>
 #include <realm/util/assert.hpp>
+#include <algorithm>
+#include <algorithm>
 
 using namespace realm;
 using namespace realm::_impl;
@@ -50,7 +51,7 @@ void CollectionChangeBuilder::merge(CollectionChangeBuilder&& c)
 
     // First update any old moves
     if (!c.moves.empty() || !c.deletions.empty() || !c.insertions.empty()) {
-        auto it = remove_if(begin(moves), end(moves), [&](auto& old) {
+        auto it = std::remove_if(begin(moves), end(moves), [&](auto& old) {
             // Check if the moved row was moved again, and if so just update the destination
             auto it = find_if(begin(c.moves), end(c.moves), [&](auto const& m) {
                 return old.to == m.from;
@@ -80,7 +81,7 @@ void CollectionChangeBuilder::merge(CollectionChangeBuilder&& c)
     // Ignore new moves of rows which were previously inserted (the implicit
     // delete from the move will remove the insert)
     if (!insertions.empty() && !c.moves.empty()) {
-        c.moves.erase(remove_if(begin(c.moves), end(c.moves),
+        c.moves.erase(std::remove_if(begin(c.moves), end(c.moves),
                               [&](auto const& m) { return insertions.contains(m.from); }),
                     end(c.moves));
     }
@@ -125,7 +126,7 @@ void CollectionChangeBuilder::clean_up_stale_moves()
     // Look for moves which are now no-ops, and remove them plus the associated
     // insert+delete. Note that this isn't just checking for from == to due to
     // that rows can also be shifted by other inserts and deletes
-    moves.erase(remove_if(begin(moves), end(moves), [&](auto const& move) {
+    moves.erase(std::remove_if(begin(moves), end(moves), [&](auto const& move) {
         if (move.from - deletions.count(0, move.from) != move.to - insertions.count(0, move.to))
             return false;
         deletions.remove(move.from);
@@ -252,11 +253,13 @@ void CollectionChangeBuilder::move_over(size_t row_ndx, size_t last_row, bool tr
     REALM_ASSERT(modifications.empty() || prev(modifications.end())->second - 1 <= last_row);
 
     if (row_ndx == last_row) {
+        if (track_moves) {
         auto shifted_from = insertions.erase_or_unshift(row_ndx);
         if (shifted_from != IndexSet::npos)
             deletions.add_shifted(shifted_from);
+            m_move_mapping.erase(row_ndx);
+        }
         modifications.remove(row_ndx);
-        m_move_mapping.erase(row_ndx);
         return;
     }
 
@@ -551,9 +554,9 @@ void calculate_moves_sorted(std::vector<RowInfo>& rows, CollectionChangeSet& cha
 CollectionChangeBuilder CollectionChangeBuilder::calculate(std::vector<size_t> const& prev_rows,
                                                            std::vector<size_t> const& next_rows,
                                                            std::function<bool (size_t)> row_did_change,
-                                                           bool sort)
+                                                           bool rows_are_in_table_order)
 {
-    REALM_ASSERT_DEBUG(sort || std::is_sorted(begin(next_rows), end(next_rows)));
+    REALM_ASSERT_DEBUG(!rows_are_in_table_order || std::is_sorted(begin(next_rows), end(next_rows)));
 
     CollectionChangeBuilder ret;
 
@@ -582,8 +585,8 @@ CollectionChangeBuilder CollectionChangeBuilder::calculate(std::vector<size_t> c
     });
 
     // Don't add rows which were modified to not match the query to `deletions`
-    // immediately because the unsorted move logic needs to be able to distinuish
-    // them from rows which were outright deleted
+    // immediately because the unsorted move logic needs to be able to
+    // distinguish them from rows which were outright deleted
     IndexSet removed;
 
     // Now that our old and new sets of rows are sorted by row index, we can
@@ -628,7 +631,7 @@ CollectionChangeBuilder CollectionChangeBuilder::calculate(std::vector<size_t> c
         }
     }
 
-    if (sort) {
+    if (!rows_are_in_table_order) {
         calculate_moves_sorted(new_rows, ret);
     }
     else {

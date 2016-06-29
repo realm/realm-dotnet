@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2015 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ struct Property;
 class ObjectSchema {
 public:
     ObjectSchema();
-    ObjectSchema(std::string name, std::string primary_key, std::initializer_list<Property> properties);
+    ObjectSchema(std::string name, std::string primary_key, std::initializer_list<Property> persisted_properties);
     ~ObjectSchema();
 
     // create object schema from existing table
@@ -39,7 +39,8 @@ public:
     ObjectSchema(const Group *group, const std::string &name);
 
     std::string name;
-    std::vector<Property> properties;
+    std::vector<Property> persisted_properties;
+    std::vector<Property> computed_properties;
     std::string primary_key;
 
     Property *property_for_name(StringData name);

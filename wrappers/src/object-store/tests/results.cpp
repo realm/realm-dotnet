@@ -1,21 +1,3 @@
-////////////////////////////////////////////////////////////////////////////
-//
-// Copyright 2016 Realm Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-////////////////////////////////////////////////////////////////////////////
-
 #include "catch.hpp"
 
 #include "util/index_helpers.hpp"
@@ -35,23 +17,23 @@
 
 using namespace realm;
 
-TEST_CASE("Results") {
+TEST_CASE("[results] notifications") {
     InMemoryTestFile config;
     config.cache = false;
     config.automatic_change_notifications = false;
     config.schema = std::make_unique<Schema>(Schema{
         {"object", "", {
-            {"value", PropertyTypeInt},
-            {"link", PropertyTypeObject, "linked to object", false, false, true}
+            {"value", PropertyType::Int},
+            {"link", PropertyType::Object, "linked to object", "", false, false, true}
         }},
         {"other object", "", {
-            {"value", PropertyTypeInt}
+            {"value", PropertyType::Int}
         }},
         {"linking object", "", {
-            {"link", PropertyTypeObject, "object", false, false, true}
+            {"link", PropertyType::Object, "object", "", false, false, true}
         }},
         {"linked to object", "", {
-            {"value", PropertyTypeInt}
+            {"value", PropertyType::Int}
         }}
     });
 
@@ -276,6 +258,18 @@ TEST_CASE("Results") {
             REQUIRE(change.modifications.empty());
         }
 
+        SECTION("modification indices are pre-insert/delete") {
+            r->begin_transaction();
+            table->set_int(0, 2, 0);
+            table->set_int(0, 3, 6);
+            r->commit_transaction();
+            advance_and_notify(*r);
+
+            REQUIRE(notification_calls == 2);
+            REQUIRE_INDICES(change.deletions, 1);
+            REQUIRE_INDICES(change.modifications, 2);
+        }
+
         SECTION("notifications are not delivered when collapsing transactions results in no net change") {
             r->begin_transaction();
             size_t ndx = table->add_empty_row();
@@ -426,13 +420,13 @@ TEST_CASE("Results") {
     }
 }
 
-TEST_CASE("Async Results error handling") {
+TEST_CASE("[results] async error handling") {
     InMemoryTestFile config;
     config.cache = false;
     config.automatic_change_notifications = false;
     config.schema = std::make_unique<Schema>(Schema{
         {"object", "", {
-            {"value", PropertyTypeInt},
+            {"value", PropertyType::Int},
         }},
     });
 
@@ -440,8 +434,28 @@ TEST_CASE("Async Results error handling") {
     auto coordinator = _impl::RealmCoordinator::get_existing_coordinator(config.path);
     Results results(r, *config.schema->find("object"), *r->read_group()->get_table("class_object"));
 
+    class OpenFileLimiter {
+    public:
+        OpenFileLimiter()
+        {
+            // Set the max open files to zero so that opening new files will fail
+            getrlimit(RLIMIT_NOFILE, &m_old);
+            rlimit rl = m_old;
+            rl.rlim_cur = 0;
+            setrlimit(RLIMIT_NOFILE, &rl);
+        }
+
+        ~OpenFileLimiter()
+        {
+            setrlimit(RLIMIT_NOFILE, &m_old);
+        }
+
+    private:
+        rlimit m_old;
+    };
+
     SECTION("error when opening the advancer SG") {
-        unlink(config.path.c_str());
+        OpenFileLimiter limiter;
 
         SECTION("error is delivered asynchronously") {
             bool called = false;
@@ -486,7 +500,7 @@ TEST_CASE("Async Results error handling") {
                 REQUIRE(err);
                 called = true;
             });
-            unlink(config.path.c_str());
+            OpenFileLimiter limiter;
 
             REQUIRE(!called);
             coordinator->on_change();
@@ -502,7 +516,7 @@ TEST_CASE("Async Results error handling") {
                 REQUIRE_FALSE(called);
                 called = true;
             });
-            unlink(config.path.c_str());
+            OpenFileLimiter limiter;
 
             advance_and_notify(*r);
 
@@ -517,6 +531,81 @@ TEST_CASE("Async Results error handling") {
 
             REQUIRE(called2);
         }
+    }
+}
 
+TEST_CASE("[results] notifications after move") {
+    InMemoryTestFile config;
+    config.cache = false;
+    config.automatic_change_notifications = false;
+    config.schema = std::make_unique<Schema>(Schema{
+        {"object", "", {
+            {"value", PropertyType::Int},
+        }},
+    });
+
+    auto r = Realm::get_shared_realm(config);
+    auto table = r->read_group()->get_table("class_object");
+    auto results = std::make_unique<Results>(r, *config.schema->find("object"), *table);
+
+    int notification_calls = 0;
+    auto token = results->add_notification_callback([&](CollectionChangeSet, std::exception_ptr err) {
+        REQUIRE_FALSE(err);
+        ++notification_calls;
+    });
+
+    advance_and_notify(*r);
+
+    auto write = [&](auto&& f) {
+        r->begin_transaction();
+        f();
+        r->commit_transaction();
+        advance_and_notify(*r);
+    };
+
+    SECTION("notifications continue to work after Results is moved (move-constructor)") {
+        Results r(std::move(*results));
+        results.reset();
+
+        write([&] {
+            table->set_int(0, table->add_empty_row(), 1);
+        });
+        REQUIRE(notification_calls == 2);
+    }
+
+    SECTION("notifications continue to work after Results is moved (move-assignment)") {
+        Results r;
+        r = std::move(*results);
+        results.reset();
+
+        write([&] {
+            table->set_int(0, table->add_empty_row(), 1);
+        });
+        REQUIRE(notification_calls == 2);
+    }
+}
+
+TEST_CASE("[results] error messages") {
+    InMemoryTestFile config;
+    config.schema = std::make_unique<Schema>(Schema{
+        {"object", "", {
+            {"value", PropertyType::String},
+        }},
+    });
+
+    auto r = Realm::get_shared_realm(config);
+    auto table = r->read_group()->get_table("class_object");
+    Results results(r, *config.schema->find("object"), *table);
+
+    r->begin_transaction();
+    table->add_empty_row();
+    r->commit_transaction();
+
+    SECTION("out of bounds access") {
+        REQUIRE_THROWS_WITH(results.get(5), "Requested index 5 greater than max 1");
+    }
+
+    SECTION("unsupported aggregate operation") {
+        REQUIRE_THROWS_WITH(results.sum(0), "Cannot sum property 'value': operation not supported for 'string' properties");
     }
 }

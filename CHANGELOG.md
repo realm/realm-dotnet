@@ -6,6 +6,10 @@
 * Creating standalone objects with lists of related objects is now possible. Passing such an object into `Realm.Manage` will cause the entire object graph from that object down to become managed.
 
 
+
+### Minor Changes
+* Fixed a crash on iOS when creating many short-lived realms very rapidly in parallel (Issue #653)
+
 0.76.1 (2016-06-15)
 -------------------
 
