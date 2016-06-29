@@ -80,6 +80,6 @@ namespace IntegrationTests
             set { _nickname = value; }
         }
 
-        public IList<Person> Friends { get; set; }  
+        public IList<Person> Friends { get; } = new List<Person>();
     }
 }

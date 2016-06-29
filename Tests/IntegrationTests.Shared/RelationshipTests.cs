@@ -43,7 +43,7 @@ namespace IntegrationTests.Shared
         {
             public string Name { get; set; }
             public Dog TopDog { get; set; }
-            public IList<Dog> Dogs { get; set; } 
+            public IList<Dog> Dogs { get; } 
         }
 
         protected Realm realm;
@@ -252,20 +252,6 @@ namespace IntegrationTests.Shared
 
 
         [Test]
-        public void TimLosesHisDogsByAssigningNull()
-        {
-            var tim = realm.All<Owner>().Single(p => p.Name == "Tim");
-            Assert.That(tim.Dogs.Count(), Is.EqualTo(2));
-            using (var trans = realm.BeginWrite()) {
-                tim.Dogs = null;
-                trans.Commit();
-            }
-            var tim2 = realm.All<Owner>().Single(p => p.Name == "Tim");
-            Assert.That(tim2.Dogs.Count(), Is.EqualTo(0));
-        }
-
-
-        [Test]
         public void TimLosesBilbo()
         {
             var bilbo = realm.All<Dog> ().First (p => p.Name == "Bilbo Fleabaggins");
@@ -374,25 +360,7 @@ namespace IntegrationTests.Shared
             Assert.That(dogAgain, Is.Not.Null);
             Assert.That(dog.IsManaged);
         }
-
-        [Test]
-        public void TestAddingRelationhipsToExistingViaAssignment()
-        {
-            Assert.That(realm.All<Dog>().Count(d => d.Name == "Bilbo Fleabaggins"), Is.EqualTo(1));  // starting with one
-            var dani = realm.All<Owner>().Where(p => p.Name == "Dani").Single();
-
-            realm.Write( () => {
-                var bilbo = realm.All<Dog>().Single(p => p.Name == "Bilbo Fleabaggins");
-                var maggie = realm.All<Dog>().Single(p => p.Name == "Maggie Mongrel");
-                dani.Dogs = new[] { bilbo, maggie };
-            });
-
-            var dani2 = realm.All<Owner>().Where(p => p.Name == "Dani").Single();
-            var daniDogNames = dani2.Dogs.Select(d => d.Name);
-            Assert.That(daniDogNames, Is.EquivalentTo(new[] { "Bilbo Fleabaggins", "Maggie Mongrel"}));
-            Assert.That(realm.All<Dog>().Count(d => d.Name == "Bilbo Fleabaggins"), Is.EqualTo(1));  // no Bilbo added, just linked
-        }
-
+        /*
         [Test, Description("This is the default C# behaviour for a list property")]
         public void StandaloneListsShouldBeNull()
         {
@@ -400,14 +368,32 @@ namespace IntegrationTests.Shared
 
             Assert.That(person.Friends, Is.Null);
         }
+*/
 
+        /*
+         NoteOnListInit
+         If you have a simple braced init like 
+         Friends = { new Person {  FullName = "Sally"} }
+         it requires the property is already initialised and is short-hand for a series of Add
+         calls such as
+         Friends.Add( new Person {  FullName = "Sally"} );
+
+         A null property has to be initialised with a full object:
+         Friends = new List<Person> { new Person {  FullName = "Sally"} }
+
+         We have two approaches under consideration which would allow the simple braced init:
+         1) automatically weave in a clause in the ctor initialising the list properties, 
+            which adds overhead to creating an object if they never use the list.
+         2) If the user chooses to init a list in the ctor, preserve the ctor init (which is a 
+            requested feature anyway in issue 109)
+        */
         [Test]
         public void TestManagingStandaloneTwoLevelRelationship()
         {
             var person = new Person
             {
                 FullName = "Jack Thorne",
-                Friends = new List<Person>
+                Friends = // see NoteOnListInit above
                 {
                     new Person { FullName = "Christian Molehound" },
                     new Person { FullName = "Frederick Van Whatnot" }
@@ -426,6 +412,7 @@ namespace IntegrationTests.Shared
             Assert.That(realm.All<Person>().ToList().Select(p => p.FirstName),
                         Is.EquivalentTo(new[] { "Jack", "Christian", "Frederick" })
                        );
+        
         }
 
 
@@ -435,18 +422,18 @@ namespace IntegrationTests.Shared
             var sally = new Person
             {
                 FullName = "Sally",
-                Friends = new List<Person>
+                Friends =  // see NoteOnListInit above
                 {
                     new Person { FullName = "Alice" },
                     new Person
                     {
                         FullName = "Joan",
-                        Friends = new List<Person>
+                        Friends =   // see NoteOnListInit above
                         {
                             new Person()
                             {
                                 FullName = "Krystal",
-                                Friends = new List<Person> { new Person {  FullName = "Jane"} }  // Managees a second Sally
+                                Friends =  { new Person {  FullName = "Sally"} }  // Managees a second Sally
                             }
                         } 
 
@@ -471,7 +458,7 @@ namespace IntegrationTests.Shared
             var sally = new Person
             {
                 FullName = "Sally",
-                Friends = new List<Person>
+                Friends =
                 {
                     new Person { FullName = "Alice" },
                     new Person { FullName = "Joan"  }       
@@ -480,12 +467,13 @@ namespace IntegrationTests.Shared
             var joanFriend = new Person()
             {
                 FullName = "Krystal",
-                Friends = new List<Person> {sally} 
+                Friends = {sally} 
             };
 
-            sally.Friends[1].Friends = new List<Person> { joanFriend };
             using (var trans = realm.BeginWrite()) {
-                realm.Manage(sally);  // top person Manages entire tree
+                realm.Manage(sally);  // top person Managees entire tree
+                sally.Friends[1].Friends.Add(joanFriend);  
+
                 trans.Commit();
             }
 

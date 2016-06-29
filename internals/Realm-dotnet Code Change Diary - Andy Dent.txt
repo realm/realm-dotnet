@@ -2321,3 +2321,23 @@ RealmObject.cs
 
 RelationshipTests.cs
 - TestManagingStandaloneTwoLevelRelationship - fix bad test values now it is being run
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#287 IList Declarations - remove setter
+
+        
+ModuleWeaver.cs
+- WeaveProperty
+  - put back test banning setters on lists and RealmList
+  - unconditionally ADD setter for lists, needed for copying standalone trees
+- AddSetter added
+
+RelationshipTests.cs
+- class Owner removed set to Dogs property
+- TimLosesHisDogsByAssigningNull removed
+
+- TestAddingRelationshipsToExistingViaAssignment removd
+
+IntegrationTests.Shared/Person.cs
+- Friends removed automatic set to property

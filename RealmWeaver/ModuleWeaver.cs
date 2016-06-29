@@ -318,13 +318,29 @@ public class ModuleWeaver
                 return;
             }
 
-            if (prop.SetMethod != null) {
-                ReplaceSetter(prop, backingField, columnName, 
-                          new GenericInstanceMethod(_genericSetListValueReference) { GenericArguments = { elementType } }, 
-                          typeImplementsPropertyChanged, propChangedEventDefinition, propChangedFieldDefinition);
+            if (prop.SetMethod != null)
+            {
+                LogErrorPoint(
+                    $"{type.Name}.{columnName} has a setter but its type is a {prop.PropertyType.Name} which only supports getters",
+                    sequencePoint);
+                return;
             }
+
+            // go ahead and add a setter so can recurse through _CopyDataFromBackingFieldsToRow
+            var voidRef = _corLib.MainModule.TypeSystem.Void;
+            prop.SetMethod = new MethodDefinition($"set_{prop.Name}", 
+                                                  MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig, 
+                                                  voidRef);
+
+            prop.SetMethod.Body.Instructions.Clear();  // in case default content
+            prop.SetMethod.Body.Instructions.Add(Instruction.Create(OpCodes.Ret));
+            ReplaceSetter(prop, backingField, columnName,
+                      new GenericInstanceMethod(_genericSetListValueReference) { GenericArguments = { elementType } },
+                      typeImplementsPropertyChanged, propChangedEventDefinition, propChangedFieldDefinition);
+
+
             ReplaceGetter(prop, columnName,
-        new GenericInstanceMethod(_genericGetListValueReference) { GenericArguments = { elementType } });
+                new GenericInstanceMethod(_genericGetListValueReference) { GenericArguments = { elementType } });
         }
         else if (prop.PropertyType.Resolve().BaseType.IsSameAs(_realmObject))
         {
@@ -522,7 +538,7 @@ public class ModuleWeaver
 
         if (setValueReference == null)
             throw new ArgumentNullException(nameof(setValueReference));
-
+        
         if (!weavePropertyChanged)
         {
             var start = prop.SetMethod.Body.Instructions.First();
