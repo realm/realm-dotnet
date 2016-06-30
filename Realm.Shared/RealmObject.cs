@@ -48,7 +48,7 @@ namespace Realms
         /// If the object has been deleted (say, on another thread), it is no longer valid and accessing properties on it
         /// will throw an exception.
         /// </summary>
-        public bool IsValid => _rowHandle != null &&_rowHandle.IsAttached;
+        public bool IsValid => _rowHandle?.IsAttached == true;
 
         internal void _Manage(Realm realm, RowHandle rowHandle)
         {
