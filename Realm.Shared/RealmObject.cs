@@ -45,7 +45,7 @@ namespace Realms
 
         /// <summary>
         /// Returns true if this object is managed and represents a row in the database.
-        /// If the object has been deleted (say, on another thread), it is no longer valid and accessing properties on it
+        /// If a managed object has been removed from the Realm, it is no longer valid and accessing properties on it
         /// will throw an exception.
         /// </summary>
         public bool IsValid => _rowHandle?.IsAttached == true;
