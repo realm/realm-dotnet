@@ -21,6 +21,7 @@
 #include "error_handling.hpp"
 #include "realm_export_decls.hpp"
 #include "marshalling.hpp"
+#include "object-store/src/object_store.hpp"
 #include "object-store/src/shared_realm.hpp"
 #include "object-store/src/schema.hpp"
 #include "object-store/src/binding_context.hpp"
@@ -99,24 +100,14 @@ REALM_EXPORT void shared_realm_destroy(SharedRealm* realm)
     });
 }
 
-REALM_EXPORT size_t shared_realm_has_table(SharedRealm* realm, uint16_t* table_name, size_t table_name_len)
+REALM_EXPORT Table* shared_realm_get_table(SharedRealm* realm, uint16_t* object_type, size_t object_type_len)
 {
     return handle_errors([&]() {
         Group* g = (*realm)->read_group();
-        Utf16StringAccessor str(table_name, table_name_len);
+        Utf16StringAccessor str(object_type, object_type_len);
 
-        return bool_to_size_t(g->has_table(str));
-    });
-}
-
-REALM_EXPORT Table* shared_realm_get_table(SharedRealm* realm, uint16_t* table_name, size_t table_name_len)
-{
-    return handle_errors([&]() {
-      Group* g = (*realm)->read_group();
-      Utf16StringAccessor str(table_name, table_name_len);
-
-      bool dummy; // get_or_add_table sets this to true if the table was added.
-      return LangBindHelper::get_or_add_table(*g, str, &dummy);
+        std::string table_name = ObjectStore::table_name_for_object_type(str);
+        return LangBindHelper::get_table(*g, table_name);
     });
 }
 

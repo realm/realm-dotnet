@@ -336,7 +336,7 @@ namespace Realms
         private TableHandle GetTable(Schema.Object schema)
         {
             var result = new TableHandle();
-            var tableName = "class_" + schema.Name;
+            var tableName = schema.Name;
 
             RuntimeHelpers.PrepareConstrainedRegions();
             try { /* Retain handle in a constrained execution region */ }
