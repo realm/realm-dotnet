@@ -49,9 +49,10 @@ namespace Realms
         /// </param>
         /// <returns>An <see cref="ObservableCollection{T}" />-like object useful for MVVM databinding.</returns>
         /// <seealso cref="RealmResults{T}.SubscribeForNotifications(RealmResults{T}.NotificationCallback)"/>
-        public static INotifyCollectionChanged ToNotifyCollectionChanged<T>(this RealmResults<T> results, Action<Exception> errorCallback, bool coalesceMultipleChangesIntoReset) where T : RealmObject
+        public static INotifyCollectionChanged ToNotifyCollectionChanged<T>(this IOrderedQueryable<T> results, Action<Exception> errorCallback, bool coalesceMultipleChangesIntoReset) where T : RealmObject
         {
-            if (results == null)
+            var realmResults = results as RealmResults<T>;
+            if (realmResults == null)
             {
                 throw new ArgumentNullException(nameof(results));
             }
@@ -61,7 +62,7 @@ namespace Realms
                 throw new ArgumentNullException(nameof(errorCallback));
             }
 
-            return new ReadOnlyObservableCollection<T>(new Adapter<T>(results, errorCallback, coalesceMultipleChangesIntoReset));
+            return new ReadOnlyObservableCollection<T>(new Adapter<T>(realmResults, errorCallback, coalesceMultipleChangesIntoReset));
         }
 
         sealed class Adapter<T> : ObservableCollection<T> where T : RealmObject
