@@ -3,9 +3,9 @@
     {
       "src": [
         {
-          "src": "../",
+          "src": "../Realm.PCL/",
           "files": [
-            "**.csproj"
+            "Realm.PCL.csproj"
           ],
           "exclude": [
             "**/obj/**",
