@@ -259,9 +259,9 @@ namespace IntegrationTests
                 Assert.That(p1.IsValid, Is.False);
             });
 
-            // IsValid should always return false for standalone objects
+            // IsValid should always return true for standalone objects
             var p2 = new Person();
-            Assert.That(p2.IsValid, Is.False);
+            Assert.That(p2.IsValid);
         }
 
     }  // ObjectIntegrationTests
