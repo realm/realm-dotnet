@@ -66,6 +66,9 @@ namespace Realms {
                 case RealmExceptionCodes.RealmFormatUpgradeRequired :
                     return new RealmMigrationNeededException(message);
 
+                case RealmExceptionCodes.RealmRowDetached:
+                    return new RealmInvalidObjectException(message);
+
                 case RealmExceptionCodes.StdArgumentOutOfRange :
                     return new ArgumentOutOfRangeException(message);
 

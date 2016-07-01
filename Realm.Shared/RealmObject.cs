@@ -43,6 +43,14 @@ namespace Realms
         /// </summary>
         public bool IsManaged => _realm != null;
 
+        /// <summary>
+        /// Returns true if this object is managed and represents a row in the database.
+        /// If a managed object has been removed from the Realm, it is no longer valid and accessing properties on it
+        /// will throw an exception.
+        /// Unmanaged objects are always considered valid.
+        /// </summary>
+        public bool IsValid => _rowHandle?.IsAttached != false;
+
         internal void _Manage(Realm realm, RowHandle rowHandle)
         {
             _realm = realm;
