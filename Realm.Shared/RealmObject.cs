@@ -49,7 +49,7 @@ namespace Realms
         /// will throw an exception.
         /// Unmanaged objects are always considered valid.
         /// </summary>
-        public bool IsValid => _rowHandle == null || _rowHandle.IsAttached;
+        public bool IsValid => _rowHandle?.IsAttached != false;
 
         internal void _Manage(Realm realm, RowHandle rowHandle)
         {
