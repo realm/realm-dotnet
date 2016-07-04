@@ -3,6 +3,9 @@
 <!-- Puts a copy of RealmWeaver.Fody.dll where it will be found by Fody -->
   <Target Name="CopyRealmWeaver" BeforeTargets="FodyTarget">
     <Message Text="CopyRealmWeaver" />
+    <Error 
+      Text="Solution directory was not set. If you are building via xbuild, specify by adding a /p:SolutionDir=/path/to/solution/folder argument. See github.com/realm/realm-dotnet/issues/656"
+      Condition="'$(SolutionDir)' == ''" />
     <Copy SourceFiles="$(MSBuildThisFileDirectory)../tools/RealmWeaver.Fody.dll" DestinationFolder="$(SolutionDir)/Tools" />
   </Target>
   <ItemGroup>
