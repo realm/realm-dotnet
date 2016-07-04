@@ -31,7 +31,7 @@ using System.Runtime.InteropServices;
 
 namespace IntegrationTests.Shared
 {
-    [TestFixture]
+    [TestFixture, Preserve(AllMembers = true)]
     public class NotificationTests
     {
         private string _databasePath;

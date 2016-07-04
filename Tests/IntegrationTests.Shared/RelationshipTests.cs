@@ -28,7 +28,7 @@ using System.Diagnostics;
 // unlike the Cocoa definitions, we use Pascal casing for properties
 namespace IntegrationTests.Shared
 {
-    [TestFixture]
+    [TestFixture, Preserve(AllMembers = true)]
     public class RelationshipTests
     {
         class Dog : RealmObject
