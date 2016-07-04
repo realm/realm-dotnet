@@ -34,7 +34,7 @@ namespace Realms
             NativeRow.destroy(handle);
         }
 
-        public long RowIndex => (long)NativeRow.row_get_row_index(this);
+        public IntPtr RowIndex => NativeRow.row_get_row_index(this);
         public bool IsAttached => NativeRow.row_get_is_attached(this)==(IntPtr)1;  // inline equiv of IntPtrToBool
 
         public override bool Equals(object p)

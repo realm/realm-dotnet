@@ -39,12 +39,21 @@ namespace Realms.Schema
         internal IntPtr Handle;
         internal Type Type;
 
+        internal IEnumerable<string> PropertyNames => _properties.Keys;
+
         public Object(string name)
         {
             if (string.IsNullOrEmpty(name)) throw new ArgumentException("Object name cannot be empty", nameof(name));
             Contract.EndContractBlock();
 
             Name = name;
+        }
+
+        public Property Find(string name)
+        {
+            Property property;
+            _properties.TryGetValue(name, out property);
+            return property;
         }
 
         public IEnumerator<Property> GetEnumerator()

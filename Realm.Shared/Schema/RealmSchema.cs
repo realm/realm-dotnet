@@ -65,7 +65,7 @@ namespace Realms
             return GetEnumerator();
         }
 
-        internal RealmSchema CloneForAdoption(SharedRealmHandle parent)
+        internal RealmSchema CloneForAdoption(SharedRealmHandle parent = null)
         {
             var objectsArray = this.ToArray();
             var handlesArray = objectsArray.Select(o => o.Handle).ToArray();
@@ -88,6 +88,21 @@ namespace Realms
             return new RealmSchema(schemaHandle, clones);
         }
 
+        internal RealmSchema DynamicClone(SharedRealmHandle parent = null)
+        {
+            var clone = CloneForAdoption(parent);
+            foreach (var type in clone)
+            {
+                type.Type = null;
+                foreach (var property in type)
+                {
+                    property.PropertyInfo = null;
+                }
+            }
+
+            return clone;
+        }
+
         internal static RealmSchema CreateSchemaForClasses(IEnumerable<Type> classes, SchemaHandle schemaHandle = null)
         {
             var builder = new Builder();
@@ -106,6 +121,8 @@ namespace Realms
                                               // we need to exclude dynamic assemblies. see https://bugzilla.xamarin.com/show_bug.cgi?id=39679
                                               .Where(a => !(a is System.Reflection.Emit.AssemblyBuilder))
                                               #endif
+                                              // exclude the Realm assembly
+                                              .Where(a => a != typeof(Realm).Assembly)
                                               .SelectMany(a => a.GetTypes())
                                               .Where(t => t.IsSubclassOf(typeof(RealmObject)));
 

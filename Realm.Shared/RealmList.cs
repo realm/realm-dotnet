@@ -100,13 +100,15 @@ namespace Realms
         /// </summary>
         public const int ITEM_NOT_FOUND = -1;
 
-        private RealmObject _parent;  // we only make sense within an owning object
+        private Realm _realm;
         private LinkListHandle _listHandle;
+        private readonly string _schemaClassName;
 
-        internal RealmList(RealmObject parent, LinkListHandle adoptedList)
+        internal RealmList(Realm realm, LinkListHandle adoptedList, string schemaClassName)
         {
-            _parent = parent;
+            _realm = realm;
             _listHandle = adoptedList;
+            _schemaClassName = schemaClassName;
         }
 
         #region implementing IList properties
@@ -153,7 +155,7 @@ namespace Realms
                 if (index < 0)
                     throw new IndexOutOfRangeException ();
                 var linkedRowPtr = NativeLinkList.get (_listHandle, (IntPtr)index);
-                return (T)_parent.MakeRealmObject(typeof(T), linkedRowPtr);
+                return (T)_realm.MakeObjectForRow(_schemaClassName, Realm.CreateRowHandle(linkedRowPtr, _realm.SharedRealmHandle));
             }
 
             set
@@ -294,7 +296,7 @@ namespace Realms
         private void ManageObjectIfNeeded(T obj)
         {
             if (!obj.IsManaged)
-                _parent.Realm.Manage(obj);
+                _realm.Manage(obj);
         }
 
         #endregion

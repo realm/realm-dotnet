@@ -32,7 +32,7 @@ namespace Realms
         private Realm _realm;
         internal QueryHandle _coreQueryHandle;  // set when recurse down to VisitConstant
         internal SortOrderHandle _optionalSortOrderHandle;  // set only when get OrderBy*
-        private Type _retType;
+        private Schema.Object _schema;
 
         private static class Methods 
         {
@@ -59,10 +59,10 @@ namespace Realms
             }
         }
 
-        internal RealmResultsVisitor(Realm realm, Type retType)
+        internal RealmResultsVisitor(Realm realm, Schema.Object schema)
         {
             _realm = realm;
-            _retType = retType;
+            _schema = schema;
         }
 
         private static Expression StripQuotes(Expression e)
@@ -103,7 +103,7 @@ namespace Realms
             if (isStarting)
             {
                 if (_optionalSortOrderHandle == null)
-                    _optionalSortOrderHandle = _realm.MakeSortOrderForTable(_retType);
+                    _optionalSortOrderHandle = _realm.MakeSortOrderForTable(_schema.Name);
                 else
                 {
                     var badCall = ascending ? "By" : "ByDescending";
@@ -175,7 +175,7 @@ namespace Realms
                     }
                     else 
                     {
-                        using (ResultsHandle rh = _realm.MakeResultsForQuery(_retType, _coreQueryHandle, _optionalSortOrderHandle)) 
+                        using (ResultsHandle rh = _realm.MakeResultsForQuery(_schema, _coreQueryHandle, _optionalSortOrderHandle)) 
                         {
                             var rowPtr = NativeResults.get_row(rh, IntPtr.Zero);
                             firstRow = Realm.CreateRowHandle(rowPtr, _realm.SharedRealmHandle);
@@ -183,7 +183,7 @@ namespace Realms
                     }
                     if (firstRow == null || firstRow.IsInvalid)
                         throw new InvalidOperationException("Sequence contains no matching element");
-                    return Expression.Constant(_realm.MakeObjectForRow(_retType, firstRow));
+                    return Expression.Constant(_realm.MakeObjectForRow(_schema.Name, firstRow));
                 }
                 if (m.Method.Name == "Single")  // same as unsorted First with extra checks
                 {
@@ -197,7 +197,7 @@ namespace Realms
                     var nextRow = Realm.CreateRowHandle(nextRowPtr, _realm.SharedRealmHandle);
                     if (!nextRow.IsInvalid)
                         throw new InvalidOperationException("Sequence contains more than one matching element");
-                    return Expression.Constant(_realm.MakeObjectForRow(_retType, firstRow));
+                    return Expression.Constant(_realm.MakeObjectForRow(_schema.Name, firstRow));
                 }
 
             }
@@ -553,7 +553,7 @@ namespace Realms
 
         private QueryHandle CreateQuery(Type elementType)
         {
-            var tableHandle = _realm.Metadata[elementType].Table;
+            var tableHandle = _realm.Metadata[elementType.Name].Table;
             var queryHandle = tableHandle.TableWhere();
 
             //At this point sh is invalid due to its handle being uninitialized, but the root is set correctly

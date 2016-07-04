@@ -26,20 +26,22 @@ namespace Realms
     internal class RealmResultsProvider : IQueryProvider
     {
         private Realm _realm;
+        private readonly Schema.Object _schema;
 
-        internal RealmResultsProvider(Realm realm)
+        internal RealmResultsProvider(Realm realm, Schema.Object schema)
         {
             _realm = realm;
+            _schema = schema;
         }
 
-        internal RealmResultsVisitor MakeVisitor(Type retType)
+        internal RealmResultsVisitor MakeVisitor()
         {
-            return new RealmResultsVisitor(_realm, retType);
+            return new RealmResultsVisitor(_realm, _schema);
         }
 
         public IQueryable<T> CreateQuery<T>(Expression expression)
         {
-            return new RealmResults<T>(_realm, this, expression, false);
+            return new RealmResults<T>(_realm, this, expression, _schema, false);
         }
 
         public IQueryable CreateQuery(Expression expression)
@@ -58,7 +60,7 @@ namespace Realms
         public T Execute<T>(Expression expression)
         {
             var retType = typeof(T);
-            var v = MakeVisitor(retType);
+            var v = MakeVisitor();
             Expression visitResult = v.Visit(expression);
             var constExp = visitResult as ConstantExpression;
             T ret = (T)constExp?.Value;

@@ -42,6 +42,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmFileAccessErrorException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmFileNotFoundException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmOutOfMemoryException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RealmObjectOps.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transaction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)native\NativeLinkList.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)handles\LinkListHandle.cs" />
@@ -64,11 +65,15 @@
     <Compile Include="$(MSBuildThisFileDirectory)Schema\PropertyType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Schema\Property.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Schema\Object.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmInvalidObjectException.cs" />
+	<Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmInvalidObjectException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Dynamic\DynamicRealmObject.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Dynamic\DynamicRealmObjectHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Dynamic\MetaRealmObject.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)weaving\" />
     <Folder Include="$(MSBuildThisFileDirectory)extensions\" />
     <Folder Include="$(MSBuildThisFileDirectory)Schema\" />
+    <Folder Include="$(MSBuildThisFileDirectory)Dynamic\" />
   </ItemGroup>
 </Project>

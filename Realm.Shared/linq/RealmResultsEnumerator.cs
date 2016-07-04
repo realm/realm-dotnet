@@ -32,13 +32,14 @@ namespace Realms
         private long _index = -1;  // must match Reset(), zero-based with no gaps indexing an ObjectStore Results
         private ResultsHandle _enumeratingResults = null;
         private Realm _realm;
-        private Type _retType = typeof(T);
+        private readonly Schema.Object _schema;
 
 
-        internal RealmResultsEnumerator(Realm realm, ResultsHandle rh)
+        internal RealmResultsEnumerator(Realm realm, ResultsHandle rh, Schema.Object schema)
         {
             _realm = realm;
             _enumeratingResults = rh;
+            _schema = schema;
         }
 
         /// <summary>
@@ -67,7 +68,7 @@ namespace Realms
             var rowHandle = Realm.CreateRowHandle(rowPtr, _realm.SharedRealmHandle);
             object nextObj = null;
             if (!rowHandle.IsInvalid)                 
-                nextObj = _realm.MakeObjectForRow(_retType, rowHandle);
+                nextObj = _realm.MakeObjectForRow(_schema.Name, rowHandle);
             Current = (T)nextObj;
             return nextObj != null;
         }

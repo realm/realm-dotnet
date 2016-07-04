@@ -73,6 +73,8 @@ namespace Realms
         /// <value>Typically left null so by default all RealmObjects will be able to be stored in all realms.</value>
         public Type[] ObjectClasses {get; set;} 
 
+        internal RealmSchema Schema { get; set; }
+
         /// <summary>
         /// Utility to build a path in which a realm will be created so can consistently use filenames and relative paths.
         /// </summary>
