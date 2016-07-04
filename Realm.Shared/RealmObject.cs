@@ -76,7 +76,7 @@ namespace Realms
             {
                 var value = prop.Field.GetValue(this);
                 var listValue = value as IEnumerable<RealmObject>;
-                if (listValue != null)
+                if (listValue != null)  // assume it is NOT a RealmList so need to wipe afer copy
                 {
                     var realmList = (ICopyValuesFrom)prop.Info.GetValue(this, null);
                     realmList.CopyValuesFrom(listValue);

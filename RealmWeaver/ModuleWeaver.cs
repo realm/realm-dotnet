@@ -45,6 +45,7 @@ public class ModuleWeaver
     private TypeDefinition System_Boolean;
     private TypeReference System_String;
     private TypeReference System_Type;
+    private TypeReference System_IList;
 
     private MethodReference _propChangedEventArgsConstructor;
     private MethodReference _propChangedEventHandlerInvokeReference;
@@ -163,7 +164,7 @@ public class ModuleWeaver
         System_String = ModuleDefinition.ImportReference(_corLib.MainModule.GetType("System.String"));
         System_Type = ModuleDefinition.ImportReference(_corLib.MainModule.GetType("System.Type"));
         // WARNING the GetType("System.Collections.Generic.List`1") below RETURNS NULL WHEN COMPILING A PCL
-        // UNUSED SO COMMENT OUT var listType = ModuleDefinition.ImportReference(_corLib.MainModule.GetType("System.Collections.Generic.List`1"));
+        System_IList = ModuleDefinition.ImportReference(_corLib.MainModule.GetType("System.Collections.Generic.List`1"));
 
         var systemAssembly = ModuleDefinition.AssemblyResolver.Resolve("System");
         var systemObjectModelAssembly = TryResolveAssembly("System.ObjectModel");
@@ -247,6 +248,7 @@ public class ModuleWeaver
         Debug.WriteLine("");
     }
 
+
     private void WeaveProperty(PropertyDefinition prop, TypeDefinition type, Dictionary<string, Tuple<MethodReference, MethodReference>> methodTable,
         bool typeImplementsPropertyChanged, EventDefinition propChangedEventDefinition,
         FieldDefinition propChangedFieldDefinition)
@@ -259,6 +261,9 @@ public class ModuleWeaver
             columnName = ((string) mapToAttribute.ConstructorArguments[0].Value);
 
         var backingField = GetBackingField(prop);
+        if (backingField == null) {
+            LogErrorPoint($"Property {prop.Name} has no backing field", sequencePoint);
+        }
 
         Debug.Write("  - " + prop.PropertyType.FullName + " " + prop.Name + " (Column: " + columnName + ").. ");
 
@@ -286,7 +291,7 @@ public class ModuleWeaver
                 LogWarningPoint(
                     $"{type.Name}.{columnName} is not an automatic property but its type is a RealmObject which normally indicates a relationship",
                     sequencePoint);
-
+            // note for To-Many relationships we expect most people to move to IList declarations so that could validly have a user-written getter
             Debug.WriteLine("Skipped because it's not automatic.");
             return;
         }
@@ -301,14 +306,12 @@ public class ModuleWeaver
 
             ReplaceGetter(prop, columnName, methodTable[typeId].Item1);
             ReplaceSetter(prop, backingField, columnName, methodTable[typeId].Item2, typeImplementsPropertyChanged, propChangedEventDefinition, propChangedFieldDefinition);
-        } 
+        }
 
-        // treat IList and RealmList identically
-        else if ((prop.PropertyType.Name == "IList`1" && prop.PropertyType.Namespace == "System.Collections.Generic")  ||
-            (prop.PropertyType.Name == "RealmList`1" && prop.PropertyType.Namespace == "Realms"))
-        {
+        // treat IList and RealmList similarly but IList gets a default so is useable as standalone
+        // IList or RealmList allows people to declare lists only of _realmObject due to the class definition
+        else if (prop.PropertyType.Name == "IList`1" && prop.PropertyType.Namespace == "System.Collections.Generic") {
             var elementType = ((GenericInstanceType)prop.PropertyType).GenericArguments.Single();
-            // IList or RealmList allows people to declare lists only of _realmObject due to the class definition
             if (!elementType.Resolve().BaseType.IsSameAs(_realmObject)) {
                 LogWarningPoint(
   $"SKIPPING {type.Name}.{columnName} because it is an IList but its generic type is not a RealmObject subclass, so will not persist",
@@ -316,10 +319,33 @@ public class ModuleWeaver
                 return;
             }
 
-            if (prop.SetMethod != null)
-            {
+            if (prop.SetMethod != null) {
                 LogErrorPoint(
-                    $"{type.Name}.{columnName} has a setter but its type is a {prop.PropertyType.Name} which only supports getters",
+                    $"{type.Name}.{columnName} has a setter but its type is a IList which only supports getters",
+                    sequencePoint);
+                return;
+            }
+            var concreteListType = new GenericInstanceType(System_IList) { GenericArguments = { elementType } };
+            var listConstructor = concreteListType.Resolve().GetConstructors().Single(c => c.IsPublic && c.Parameters.Count == 0);
+            var concreteListConstructor = listConstructor.MakeHostInstanceGeneric(elementType);
+
+            // weaves an init to List<T>
+
+            ReplaceListGetter(prop, backingField, columnName,
+                new GenericInstanceMethod(_genericGetListValueReference) { GenericArguments = { elementType } }, elementType,
+                             ModuleDefinition.ImportReference(concreteListConstructor) );
+        } else if (prop.PropertyType.Name == "RealmList`1" && prop.PropertyType.Namespace == "Realms") {
+            var elementType = ((GenericInstanceType)prop.PropertyType).GenericArguments.Single();
+            if (!elementType.Resolve().BaseType.IsSameAs(_realmObject)) {
+                LogWarningPoint(
+  $"SKIPPING {type.Name}.{columnName} because it is a RealmList but its generic type is not a RealmObject subclass, so will not persist",
+  sequencePoint);
+                return;
+            }
+
+            if (prop.SetMethod != null) {
+                LogErrorPoint(
+                    $"{type.Name}.{columnName} has a setter but its type is a RealmList which only supports getters",
                     sequencePoint);
                 return;
             }
@@ -411,15 +437,6 @@ public class ModuleWeaver
         }
     }
 
-    void PrependListFieldInitializerToConstructor(FieldReference field, MethodDefinition constructor, MethodReference listConstructor)
-    {
-        var start = constructor.Body.Instructions.First();
-        var il = constructor.Body.GetILProcessor();
-        il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));
-        il.InsertBefore(start, il.Create(OpCodes.Newobj, listConstructor));
-        il.InsertBefore(start, il.Create(OpCodes.Stfld, field));
-    }
-
     void ReplaceGetter(PropertyDefinition prop, string columnName, MethodReference getValueReference)
     {
         /// A synthesized property getter looks like this:
@@ -439,7 +456,7 @@ public class ModuleWeaver
         ///   9: ret
         /// This is roughly equivalent to:
         ///   if (!base.IsManaged) return this.<backingField>;
-        ///   else return base.GetValue<T>(<columnName>);
+        ///   return base.GetValue<T>(<columnName>);
 
         var start = prop.GetMethod.Body.Instructions.First();
         var il = prop.GetMethod.Body.GetILProcessor();
@@ -453,6 +470,106 @@ public class ModuleWeaver
         il.InsertBefore(start, il.Create(OpCodes.Ret));
 
         Debug.Write("[get] ");
+    }
+
+
+    void ReplaceListGetter(PropertyDefinition prop, FieldReference backingField, string columnName, MethodReference getListValueReference, TypeReference elementType, MethodReference listConstructor)
+    {
+        /// A synthesized property getter looks like this:
+        ///   0: ldarg.0  // load the this pointer
+        ///   1: ldfld <backingField>
+        ///   2: ret
+        /// We want to change it so it looks like this, from IL pane in Linqpad 5:
+        /*
+            IL_0000:  nop
+            IL_0001:  ldarg.0
+            IL_0002:  ldfld       <backingField>
+            IL_0007:  ldnull
+            IL_0008:  ceq
+            IL_000A:  stloc.0
+            IL_000B:  ldloc.0
+            IL_000C:  brfalse.s   IL_0038
+            IL_000E:  nop
+            IL_000F:  ldarg.0
+            IL_0010:  call        UserQuery+RealmObject.get_IsManaged
+            IL_0015:  stloc.1
+            IL_0016:  ldloc.1
+            IL_0017:  brfalse.s   IL_002C
+            IL_0019:  ldarg.0
+            IL_001A:  ldarg.0
+            IL_001B:  ldstr       <columnName>
+            IL_0020:  call        UserQuery+RealmObject.GetListObject
+            IL_0025:  stfld       <backingField>
+            IL_002A:  br.s        IL_0037
+            IL_002C:  ldarg.0
+            IL_002D:  newobj      System.Collections.Generic.List <  <elementType>  >..ctor
+            IL_0032:  stfld       <backingField>
+            IL_0037:  nop
+            IL_0038:  ldarg.0
+            IL_0039:  ldfld       <backingField>
+            IL_003E:  stloc.2
+            IL_003F:  br.s        IL_0041
+            IL_0041:  ldloc.2
+            IL_0042:  ret
+
+            This is roughly equivalent to:
+
+            if (<backingField> == null)
+            {
+               if (IsManaged)
+                     <backingField> = GetListObject<T>(<columnName>);
+               else
+                     <backingField> = new List<T>();
+            }
+            return <backingField>;  // supplied by the generated getter OR RealmObject._CopyDataFromBackingFieldsToRow
+        */
+
+        var start = prop.GetMethod.Body.Instructions.First();  // this is a label for return <backingField>;
+        var il = prop.GetMethod.Body.GetILProcessor();
+
+        // il.InsertBefore(start, il.Create(OpCodes.Nop));
+        il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));  // this for field ref
+        il.InsertBefore(start, il.Create(OpCodes.Ldfld, backingField));
+        il.InsertBefore(start, il.Create(OpCodes.Ldnull));
+        il.InsertBefore(start, il.Create(OpCodes.Ceq));
+
+        // remove the temp bool il.InsertBefore(start, il.Create(OpCodes.Stloc_0));
+        // il.InsertBefore(start, il.Create(OpCodes.Ldloc_0));
+        il.InsertBefore(start, il.Create(OpCodes.Brfalse_S, start));
+        // il.InsertBefore(start, il.Create(OpCodes.Nop));
+
+        il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));  // this for call
+        il.InsertBefore(start, il.Create(OpCodes.Call, _realmObjectIsManagedGetter));
+        il.InsertBefore(start, il.Create(OpCodes.Brfalse_S, start));
+        /*
+        // remove the temp bool il.InsertBefore(start, il.Create(OpCodes.Stloc_1));
+        // remove the temp bool il.InsertBefore(start, il.Create(OpCodes.Ldloc_1));
+        var jumpToElse = il.Create(OpCodes.Nop);  // fix below after inserting label, so this acts as forward reference
+        il.InsertBefore(start, jumpToElse);
+
+//???????        il.InsertBefore(start, il.Create(OpCodes.Ldarg_0)); 
+        */
+        il.InsertBefore(start, il.Create(OpCodes.Ldarg_0)); // this for call
+        il.InsertBefore(start, il.Create(OpCodes.Ldstr, columnName));
+        il.InsertBefore(start, il.Create(OpCodes.Call, getListValueReference));
+        il.InsertBefore(start, il.Create(OpCodes.Stfld, backingField));
+        /*
+        il.InsertBefore(start, il.Create(OpCodes.Br, start));
+
+        var labelElse = il.Create(OpCodes.Ldarg_0); // this for call
+        il.InsertBefore(start, labelElse); // else 
+        il.Replace(jumpToElse, il.Create(OpCodes.Brfalse, labelElse));  // fix up forward reference pointing here
+        il.InsertBefore(start, il.Create(OpCodes.Newobj, listConstructor));
+        il.InsertBefore(start, il.Create(OpCodes.Stfld, backingField));
+ //??????       il.InsertBefore(start, il.Create(OpCodes.Nop));
+        */
+
+        // note that we do NOT insert a ret, unlike other weavers, as we always 
+        // FALL THROUGH to return the backing field.
+        // Let Cecil optimize things for us. 
+        //TODO prop.SetMethod.Body.OptimizeMacros();
+
+        Debug.Write("[get list] ");
     }
 
     void ReplaceSetter(PropertyDefinition prop, FieldReference backingField, string columnName, MethodReference setValueReference, bool weavePropertyChanged, EventDefinition propChangedEventDefinition, FieldDefinition propChangedFieldDefinition)

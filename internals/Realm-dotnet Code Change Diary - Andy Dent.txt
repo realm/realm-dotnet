@@ -2349,3 +2349,20 @@ RealmList
 
 ICopyValuesFrom.cs
 - factored out internal interface so can reuse in PCL copy of RealmList
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#287 IList Declarations - weaving in default declarations for standalones
+
+Person.cs
+- remove init clause on Friends
+
+ModuleWeaver.cs
+- add System_IList field
+- Execute - init System_IList
+- WeaveProperty
+  - error if no backingField (temp double-check)
+  - IList set backing field if null
+  - restore warning on IList disallowing setter
+- PrependListFieldInitializerToConstructor removed unused method
+- ReplaceListGetter added
+  
