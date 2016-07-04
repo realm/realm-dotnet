@@ -20,7 +20,7 @@ namespace Realms
 {
     internal class SharedRealmHandle : RealmHandle
     {
-        [Preserve("Constructor used by marshaling, cannot be removed by linker")]
+        [Preserve]
         public SharedRealmHandle()
         {
         }
