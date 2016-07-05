@@ -69,6 +69,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Dynamic\DynamicRealmObject.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Dynamic\DynamicRealmObjectHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Dynamic\MetaRealmObject.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Dynamic\MetaRealmList.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)weaving\" />
