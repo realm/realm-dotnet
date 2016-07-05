@@ -31,6 +31,7 @@ namespace IntegrationTests.Shared
     [TestFixture, Preserve(AllMembers = true)]
     public class RelationshipTests
     {
+        [Preserve(AllMembers = true)]
         class Dog : RealmObject
         {
             public string Name { get; set; }
@@ -39,6 +40,7 @@ namespace IntegrationTests.Shared
             //Owner Owner { get; set; }  will uncomment when verifying that we have back-links from ToMany relationships
         }
 
+        [Preserve(AllMembers = true)]
         class Owner : RealmObject
         {
             public string Name { get; set; }
