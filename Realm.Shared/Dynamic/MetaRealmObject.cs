@@ -29,16 +29,10 @@ namespace Realms.Dynamic
                 return base.BindGetMember(binder);
             }
 
-            var convertedExpression = Expression;
-            if (convertedExpression.Type != LimitType)
-            {
-                convertedExpression = Expression.Convert(convertedExpression, LimitType);
-            }
-
             var arguments = new List<Expression>
             {
                 WeakConstant(_metadata.Table),
-                Expression.Field(convertedExpression, RealmObjectRowHandleField),
+                Expression.Field(GetLimitedSelf(), RealmObjectRowHandleField),
                 Expression.Constant(_metadata.ColumnIndices[property.Name])
             };
 
@@ -71,7 +65,7 @@ namespace Realms.Dynamic
                         realmObjectOpsMethod = typeof(RealmObjectOps).GetMethod(nameof(RealmObjectOps.GetDoubleValue));
                     break;
                 case Schema.PropertyType.String:
-                    arguments.Insert(0, Expression.Field(convertedExpression, RealmObjectRealmField));
+                    arguments.Insert(0, Expression.Field(GetLimitedSelf(), RealmObjectRealmField));
                     realmObjectOpsMethod = typeof(RealmObjectOps).GetMethod(nameof(RealmObjectOps.GetStringValue));
                     break;
                 case Schema.PropertyType.Data:
@@ -84,12 +78,12 @@ namespace Realms.Dynamic
                         realmObjectOpsMethod = typeof(RealmObjectOps).GetMethod(nameof(RealmObjectOps.GetDateTimeOffsetValue));
                     break;
                 case Schema.PropertyType.Object:
-                    arguments.Insert(0, Expression.Field(convertedExpression, RealmObjectRealmField));
+                    arguments.Insert(0, Expression.Field(GetLimitedSelf(), RealmObjectRealmField));
                     arguments.Add(Expression.Constant(property.ObjectType));
                     realmObjectOpsMethod = typeof(RealmObjectOps).GetMethod(nameof(RealmObjectOps.GetObjectValue)).MakeGenericMethod(typeof(DynamicRealmObject));
                     break;
                 case Schema.PropertyType.Array:
-                    arguments.Insert(0, Expression.Field(convertedExpression, RealmObjectRealmField));
+                    arguments.Insert(0, Expression.Field(GetLimitedSelf(), RealmObjectRealmField));
                     arguments.Add(Expression.Constant(property.ObjectType));
                     realmObjectOpsMethod = typeof(RealmObjectOps).GetMethod(nameof(RealmObjectOps.GetListValue)).MakeGenericMethod(typeof(DynamicRealmObject));
                     break;
@@ -102,7 +96,7 @@ namespace Realms.Dynamic
             }
 
             var argumentShouldBeDynamicRealmObject = BindingRestrictions.GetTypeRestriction(Expression, typeof(DynamicRealmObject));
-            var argumentShouldBeInTheSameRealm = BindingRestrictions.GetInstanceRestriction(Expression.Field(convertedExpression, RealmObjectRealmField), _realm);
+            var argumentShouldBeInTheSameRealm = BindingRestrictions.GetInstanceRestriction(Expression.Field(GetLimitedSelf(), RealmObjectRealmField), _realm);
             return new DynamicMetaObject(expression, argumentShouldBeDynamicRealmObject.Merge(argumentShouldBeInTheSameRealm));
         }
 
@@ -114,12 +108,10 @@ namespace Realms.Dynamic
                 return base.BindSetMember(binder, value);
             }
 
-            var convertedExpression = Expression.Convert(Expression, typeof(DynamicRealmObject));
-
             var arguments = new List<Expression>
             {
                 WeakConstant(_metadata.Table),
-                Expression.Field(convertedExpression, RealmObjectRowHandleField),
+                Expression.Field(GetLimitedSelf(), RealmObjectRowHandleField),
                 Expression.Constant(_metadata.ColumnIndices[property.Name]),
             };
 
@@ -178,7 +170,7 @@ namespace Realms.Dynamic
                     break;
                 case Schema.PropertyType.Object:
                     argumentType = typeof(RealmObject);
-                    arguments.Insert(0, Expression.Field(convertedExpression, RealmObjectRealmField));
+                    arguments.Insert(0, Expression.Field(GetLimitedSelf(), RealmObjectRealmField));
                     realmObjectOpsMethod = typeof(RealmObjectOps).GetMethod(nameof(RealmObjectOps.SetObjectValue)).MakeGenericMethod(typeof(RealmObject));
                     break;
             }
@@ -199,7 +191,7 @@ namespace Realms.Dynamic
             var expression = Expression.Block(Expression.Call(realmObjectOpsMethod, arguments), Expression.Default(binder.ReturnType));
 
             var argumentShouldBeDynamicRealmObject = BindingRestrictions.GetTypeRestriction(Expression, typeof(DynamicRealmObject));
-            var argumentShouldBeInTheSameRealm = BindingRestrictions.GetInstanceRestriction(Expression.Field(convertedExpression, RealmObjectRealmField), _realm);
+            var argumentShouldBeInTheSameRealm = BindingRestrictions.GetInstanceRestriction(Expression.Field(GetLimitedSelf(), RealmObjectRealmField), _realm);
             return new DynamicMetaObject(expression, argumentShouldBeDynamicRealmObject.Merge(argumentShouldBeInTheSameRealm));
         }
 
@@ -216,9 +208,15 @@ namespace Realms.Dynamic
             return Expression.Convert(property, typeof(T));
         }
 
-        private static MethodInfo GetOpsMethod(string methodName)
+        private Expression GetLimitedSelf()
         {
-            return typeof(RealmObjectOps).GetMethod(methodName, BindingFlags.Static | BindingFlags.NonPublic);
+            var convertedExpression = Expression;
+            if (convertedExpression.Type != LimitType)
+            {
+                convertedExpression = Expression.Convert(convertedExpression, LimitType);
+            }
+
+            return convertedExpression;
         }
     }
 }
