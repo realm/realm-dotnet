@@ -22,6 +22,7 @@ using Realms;
 
 namespace IntegrationTests
 {
+    [TestFixture, Preserve(AllMembers = true)]
     public class LINQvariableTests : PeopleTestsBase
     {
         // see comment on base method why this isn't decorated with [SetUp]

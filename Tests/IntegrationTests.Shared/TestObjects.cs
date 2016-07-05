@@ -21,6 +21,7 @@ using Realms;
 
 namespace IntegrationTests.Shared
 {
+    [Preserve(AllMembers = true)]
     public class AllTypesObject : RealmObject
     {
         public char CharProperty { get; set; }
@@ -47,31 +48,37 @@ namespace IntegrationTests.Shared
         public DateTimeOffset? NullableDateTimeOffsetProperty { get; set; }
     }
 
+    [Preserve(AllMembers = true)]
     public class ObjectIdCharObject : RealmObject
     {
         [ObjectId] public char CharProperty { get; set; }
     }
 
+    [Preserve(AllMembers = true)]
     public class ObjectIdByteObject : RealmObject
     {
         [ObjectId] public byte ByteProperty { get; set; }
     }
 
+    [Preserve(AllMembers = true)]
     public class ObjectIdInt16Object : RealmObject
     {
         [ObjectId] public short Int16Property { get; set; }
     }
 
+    [Preserve(AllMembers = true)]
     public class ObjectIdInt32Object : RealmObject
     {
         [ObjectId] public int Int32Property { get; set; }
     }
 
+    [Preserve(AllMembers = true)]
     public class ObjectIdInt64Object : RealmObject
     {
         [ObjectId] public long Int64Property { get; set; }
     }
 
+    [Preserve(AllMembers = true)]
     public class ObjectIdStringObject : RealmObject
     {
         [ObjectId] public string StringProperty { get; set; }
