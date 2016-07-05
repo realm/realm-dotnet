@@ -63,7 +63,6 @@
     <ClCompile Include="src\object-store\src\schema.cpp" />
     <ClCompile Include="src\object-store\src\shared_realm.cpp" />
     <ClCompile Include="src\object-store\src\util\format.cpp" />
-    <ClCompile Include="src\object_schema_cs.cpp" />
     <ClCompile Include="src\query_cs.cpp" />
     <ClCompile Include="src\realm-csharp.cpp" />
     <ClCompile Include="src\results_cs.cpp" />
@@ -113,6 +112,7 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>wrappers</RootNamespace>
     <TargetPlatformVersion>8.1</TargetPlatformVersion>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

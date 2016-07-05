@@ -29,7 +29,7 @@ namespace Realms
             [MarshalAs(UnmanagedType.LPStr)]
             internal string name;
 
-            [MarshalAs(UnmanagedType.I4)]
+            [MarshalAs(UnmanagedType.U1)]
             internal Schema.PropertyType type;
 
             [MarshalAs(UnmanagedType.LPStr)]

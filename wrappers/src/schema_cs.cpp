@@ -62,7 +62,7 @@ REALM_EXPORT Schema* schema_create(SchemaObject* objects, int objects_length, Sc
                 Property p;
                 p.name = property.name;
                 p.type = property.type;
-                p.object_type = property.object_type ?: "";
+                p.object_type = property.object_type ? property.object_type : "";
                 p.is_nullable = property.is_nullable;
                 p.is_primary = property.is_primary;
                 p.is_indexed = property.is_indexed;

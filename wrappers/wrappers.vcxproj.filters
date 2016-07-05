@@ -60,9 +60,6 @@
     <ClCompile Include="src\marshalling.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\object_schema_cs.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\query_cs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
