@@ -373,6 +373,15 @@ namespace Realms
             return (T)ret;
         }
 
+        /// <summary>
+        /// Factory for a managed object in a realm. Only valid within a Write transaction.
+        /// </summary>
+        /// <returns>A dynamically-accessed Realm object.</returns>
+        /// <param name="className">The type of object to create as defined in the schema.</param>
+        /// <remarks>
+        /// If the realm instance has been created from an untyped schema (such as when migrating from an older version of a realm) the returned object will be purely dynamic.
+        /// If the realm has been created from a typed schema as is the default case when calling <code>Realm.GetInstance()</code> the returned object will be an instance of a user-defined class, as if created by <code>Realm.CreateObject&lt;T&gt;()</code>.
+        /// </remarks>
         public dynamic CreateObject(string className)
         {
             RealmObject.Metadata ignored;
@@ -624,6 +633,11 @@ namespace Realms
             return new RealmResults<T>(this, schema, true);
         }
 
+        /// <summary>
+        /// Get a view of all the objects of a particular type
+        /// </summary>
+        /// <param name="className">The type of the objects as defined in the schema.</param>
+        /// <remarks>Because the objects inside the view are accessed dynamically, the view cannot be queried into using LINQ or other expression predicates.</remarks>
         public RealmResults<dynamic> All(string className)
         {
             var schema = Schema.Find(className);
@@ -673,9 +687,14 @@ namespace Realms
             RemoveRange(All<T>());
         }
 
-        public void RemoveAll(string typeName)
+        /// <summary>
+        /// Remove all objects of a type from the realm.
+        /// </summary>
+        /// <returns>The all.</returns>
+        /// <param name="className">Type of the objects to remove as defined in the schema.</param>
+        public void RemoveAll(string className)
         {
-            RemoveRange(All(typeName));
+            RemoveRange(All(className));
         }
 
         /// <summary>
