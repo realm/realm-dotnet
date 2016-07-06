@@ -72,60 +72,56 @@ namespace IntegrationTests.Shared
         }
 
         [TestCaseSource(typeof(AccessTests), nameof(AccessTests.SetAndGetValueCases))]
-        public void SetAndGetValue(string propertyName, object propertyValue)
+        public void SetAndGetValue<T>(string propertyName, T propertyValue)
         {
-            var getter = CreateDynamicGetter(propertyName);
-            var setter = CreateDynamicSetter(propertyName);
-
             object allTypesObject;
             using (var transaction = _realm.BeginWrite())
             {
                 allTypesObject = _realm.CreateObject("AllTypesObject");
 
-                setter(allTypesObject, propertyValue);
+                CreateDynamicSetter<T>(propertyName).Invoke(allTypesObject, propertyValue);
                 transaction.Commit();
             }
 
-            Assert.That(Convert.ChangeType(getter(allTypesObject), propertyValue.GetType()), Is.EqualTo(propertyValue));
+            Assert.That((T)CreateDynamicGetter(propertyName).Invoke(allTypesObject), Is.EqualTo(propertyValue));
         }
 
         [TestCaseSource(typeof(AccessTests), nameof(AccessTests.SetAndReplaceWithNullCases))]
-        public void SetValueAndReplaceWithNull(string propertyName, object propertyValue)
+        public void SetValueAndReplaceWithNull<T>(string propertyName, T propertyValue)
         {
             var getter = CreateDynamicGetter(propertyName);
-            var setter = CreateDynamicSetter(propertyName);
 
             object allTypesObject;
             using (var transaction = _realm.BeginWrite())
             {
                 allTypesObject = _realm.CreateObject("AllTypesObject");
 
-                setter(allTypesObject, propertyValue);
+                CreateDynamicSetter<T>(propertyName).Invoke(allTypesObject, propertyValue);
                 transaction.Commit();
             }
 
-            Assert.That(Convert.ChangeType(getter(allTypesObject), propertyValue.GetType()), Is.EqualTo(propertyValue));
+            Assert.That((T)getter(allTypesObject), Is.EqualTo(propertyValue));
 
             using (var transaction = _realm.BeginWrite())
             {
-                setter(allTypesObject, null);
+                CreateDynamicSetter<object>(propertyName).Invoke(allTypesObject, null);
                 transaction.Commit();
             }
 
             Assert.That(getter(allTypesObject), Is.EqualTo(null));
         }
 
-        private static Func<object, object> CreateDynamicGetter(string propertyName)
+        private static Func<object, dynamic> CreateDynamicGetter(string propertyName)
         {
             var binder = Binder.GetMember(CSharpBinderFlags.None, propertyName, typeof(DynamicAccessTests), new[] { CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null) });
             var callsite = CallSite<Func<CallSite, object, object>>.Create(binder);
             return (self) => callsite.Target(callsite, self);
         }
 
-        private static Action<object, object> CreateDynamicSetter(string propertyName)
+        private static Action<object, T> CreateDynamicSetter<T>(string propertyName)
         {
-            var binder = Binder.SetMember(CSharpBinderFlags.None, propertyName, typeof(DynamicAccessTests), new[] { CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null), CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null) });
-            var callsite = CallSite<Func<CallSite, object, object, object>>.Create(binder);
+            var binder = Binder.SetMember(CSharpBinderFlags.None, propertyName, typeof(DynamicAccessTests), new[] { CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null), CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.UseCompileTimeType, null) });
+            var callsite = CallSite<Func<CallSite, object, T, object>>.Create(binder);
             return (self, value) => callsite.Target(callsite, self, value);
         }
     }
