@@ -61,8 +61,11 @@ namespace Realms
             /// <returns>True only if can advance.</returns>
             public bool MoveNext()
             {
-                if (++_index >= _enumerating.Count)
+                var index = _index + 1;
+                if (index >= _enumerating.Count)
                     return false;
+
+                _index = index;
                 return true;
             }
 
