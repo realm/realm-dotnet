@@ -29,7 +29,7 @@ using System.Runtime.CompilerServices;
 
 namespace IntegrationTests.Shared
 {
-    [TestFixture]
+    [TestFixture, Preserve(AllMembers = true)]
     public class DynamicAccessTests
     {
         protected Realm _realm;

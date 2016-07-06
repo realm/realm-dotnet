@@ -28,16 +28,18 @@ using System.Diagnostics;
 // unlike the Cocoa definitions, we use Pascal casing for properties
 namespace IntegrationTests.Shared
 {
-    [TestFixture(Mode.RealmObject)]
-    [TestFixture(Mode.DynamicRealmObject)]
+    public enum DynamicTestObjectType
+    {
+        RealmObject,
+        DynamicRealmObject
+    }
+
+    [TestFixture(DynamicTestObjectType.RealmObject)]
+    [TestFixture(DynamicTestObjectType.DynamicRealmObject)]
+    [Preserve(AllMembers = true)]
     public class DynamicRelationshipTests
     {
-        public enum Mode
-        {
-            RealmObject,
-            DynamicRealmObject
-        }
-
+        [Preserve(AllMembers = true)]
         class DynamicDog : RealmObject
         {
             public string Name { get; set; }
@@ -46,6 +48,7 @@ namespace IntegrationTests.Shared
             //Owner Owner { get; set; }  will uncomment when verifying that we have back-links from ToMany relationships
         }
 
+        [Preserve(AllMembers = true)]
         class DynamicOwner : RealmObject
         {
             public string Name { get; set; }
@@ -56,10 +59,10 @@ namespace IntegrationTests.Shared
         private RealmConfiguration _configuration;
         private Realm _realm;
 
-        public DynamicRelationshipTests(Mode mode)
+        public DynamicRelationshipTests(DynamicTestObjectType mode)
         {
             var schema = RealmSchema.CreateSchemaForClasses(new[] { typeof(DynamicOwner), typeof(DynamicDog) });
-            if (mode == Mode.DynamicRealmObject)
+            if (mode == DynamicTestObjectType.DynamicRealmObject)
                 schema = schema.DynamicClone();
 
             _configuration = new RealmConfiguration { Schema = schema };
