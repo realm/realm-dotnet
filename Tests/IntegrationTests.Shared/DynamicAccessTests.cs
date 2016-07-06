@@ -75,7 +75,7 @@ namespace IntegrationTests.Shared
         public void SetAndGetValue(string propertyName, object propertyValue)
         {
             var getter = CreateDynamicGetter(propertyName);
-            var setter = CreateDynamicSetter(propertyName, propertyValue.GetType());
+            var setter = CreateDynamicSetter(propertyName);
 
             object allTypesObject;
             using (var transaction = _realm.BeginWrite())
@@ -93,7 +93,7 @@ namespace IntegrationTests.Shared
         public void SetValueAndReplaceWithNull(string propertyName, object propertyValue)
         {
             var getter = CreateDynamicGetter(propertyName);
-            var setter = CreateDynamicSetter(propertyName, typeof(Nullable<>).MakeGenericType(propertyValue.GetType()));
+            var setter = CreateDynamicSetter(propertyName);
 
             object allTypesObject;
             using (var transaction = _realm.BeginWrite())
@@ -118,29 +118,15 @@ namespace IntegrationTests.Shared
         private static Func<object, object> CreateDynamicGetter(string propertyName)
         {
             var binder = Binder.GetMember(CSharpBinderFlags.None, propertyName, typeof(DynamicAccessTests), new[] { CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null) });
-
-#if __IOS__
             var callsite = CallSite<Func<CallSite, object, object>>.Create(binder);
             return (self) => callsite.Target(callsite, self);
-#else
-            var self = Expression.Parameter(typeof(object));
-            return Expression.Lambda<Func<object, object>>(Expression.Dynamic(binder, typeof(object), self), self).Compile();
-#endif
         }
 
-        private static Action<object, object> CreateDynamicSetter(string propertyName, Type argumentType)
+        private static Action<object, object> CreateDynamicSetter(string propertyName)
         {
             var binder = Binder.SetMember(CSharpBinderFlags.None, propertyName, typeof(DynamicAccessTests), new[] { CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null), CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null) });
-
-#if __IOS__
             var callsite = CallSite<Func<CallSite, object, object, object>>.Create(binder);
             return (self, value) => callsite.Target(callsite, self, value);
-#else
-            var self = Expression.Parameter(typeof(object));
-            var value = Expression.Parameter(typeof(object));
-            return Expression.Lambda<Action<object, object>>(Expression.Dynamic(binder, typeof(object), self, Expression.Convert(value, argumentType)), self, value).Compile();
-#endif
-
         }
     }
 }
