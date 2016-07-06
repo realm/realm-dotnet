@@ -33,14 +33,14 @@ namespace IntegrationTests.Shared
     public class DynamicAccessTests
     {
         protected Realm _realm;
+        private RealmSchema _schema = RealmSchema.CreateSchemaForClasses(new[] { typeof(AllTypesObject) }).DynamicClone();
 
         [SetUp]
         public void Setup()
         {
             var config = new RealmConfiguration();
-            config.Schema = RealmSchema.CreateSchemaForClasses(new[] { typeof(AllTypesObject) }).DynamicClone();
             Realm.DeleteRealm(config);
-            _realm = Realm.GetInstance(config);
+            _realm = Realm.GetInstance(config, _schema);
         }
 
         [TearDown]

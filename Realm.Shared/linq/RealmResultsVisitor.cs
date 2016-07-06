@@ -32,7 +32,7 @@ namespace Realms
         private Realm _realm;
         internal QueryHandle _coreQueryHandle;  // set when recurse down to VisitConstant
         internal SortOrderHandle _optionalSortOrderHandle;  // set only when get OrderBy*
-        private Schema.Object _schema;
+        private Schema.ObjectSchema _schema;
 
         private static class Methods 
         {
@@ -59,7 +59,7 @@ namespace Realms
             }
         }
 
-        internal RealmResultsVisitor(Realm realm, Schema.Object schema)
+        internal RealmResultsVisitor(Realm realm, Schema.ObjectSchema schema)
         {
             _realm = realm;
             _schema = schema;

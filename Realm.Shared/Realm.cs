@@ -88,23 +88,30 @@ namespace Realms
         /// Factory for a Realm instance for this thread.
         /// </summary>
         /// <param name="config">Optional configuration.</param>
+        /// <param name="schema">Optional schema.</param>
         /// <returns>A realm instance.</returns>
         /// <exception cref="RealmFileAccessErrorException">Throws error if the filesystem has an error preventing file creation.</exception>
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-        public static Realm GetInstance(RealmConfiguration config=null)
+        public static Realm GetInstance(RealmConfiguration config = null, RealmSchema schema = null)
         {
             config = config ?? RealmConfiguration.DefaultConfiguration;
 
             var srHandle = new SharedRealmHandle();
 
-            RealmSchema schema;
-            if (config.ObjectClasses != null)
+            if (schema == null)
             {
-                schema = RealmSchema.CreateSchemaForClasses(config.ObjectClasses, new SchemaHandle(srHandle));
+                if (config.ObjectClasses != null)
+                {
+                    schema = RealmSchema.CreateSchemaForClasses(config.ObjectClasses, new SchemaHandle(srHandle));
+                }
+                else
+                {
+                    schema = RealmSchema.Default.CloneForAdoption(srHandle);
+                }
             }
             else
             {
-                schema = (config.Schema ?? RealmSchema.Default).CloneForAdoption(srHandle);
+                schema = schema.CloneForAdoption(srHandle);
             }
 
             var readOnly = MarshalHelpers.BoolToIntPtr(config.ReadOnly);
@@ -150,9 +157,13 @@ namespace Realms
 
         internal readonly SharedRealmHandle SharedRealmHandle;
         internal readonly Dictionary<string, RealmObject.Metadata> Metadata;
-        internal readonly RealmSchema Schema;
 
         internal bool IsInTransaction => MarshalHelpers.IntPtrToBool(NativeSharedRealm.is_in_transaction(SharedRealmHandle));
+
+        /// <summary>
+        /// The <see cref="RealmSchema"/> instance that describes all the types that can be stored in this <see cref="Realm"/>.
+        /// </summary>
+        public RealmSchema Schema { get; }
 
         private Realm(SharedRealmHandle sharedRealmHandle, RealmConfiguration config, RealmSchema schema)
         {
@@ -165,7 +176,7 @@ namespace Realms
             Schema = schema;
         }
 
-        private RealmObject.Metadata CreateRealmObjectMetadata(Schema.Object schema)
+        private RealmObject.Metadata CreateRealmObjectMetadata(Schema.ObjectSchema schema)
         {
             var table = this.GetTable(schema);
             Weaving.IRealmObjectHelper helper;
@@ -341,7 +352,7 @@ namespace Realms
 
 
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-        private TableHandle GetTable(Schema.Object schema)
+        private TableHandle GetTable(Schema.ObjectSchema schema)
         {
             var result = new TableHandle();
             var tableName = schema.Name;
@@ -422,7 +433,7 @@ namespace Realms
         }
 
 
-        internal ResultsHandle MakeResultsForQuery(Schema.Object schema, QueryHandle builtQuery, SortOrderHandle optionalSortOrder)
+        internal ResultsHandle MakeResultsForQuery(Schema.ObjectSchema schema, QueryHandle builtQuery, SortOrderHandle optionalSortOrder)
         {
             IntPtr resultsPtr = IntPtr.Zero;               
             if (optionalSortOrder == null)

@@ -44,12 +44,15 @@ namespace Realms
         private readonly List<NotificationCallback> _callbacks = new List<NotificationCallback>();
         private NotificationTokenHandle _notificationToken;
 
-        internal readonly Schema.Object Schema;
+        /// <summary>
+        /// The <see cref="Schema.ObjectSchema"/> that describes the type of item this collection can contain.
+        /// </summary>
+        public Schema.ObjectSchema ObjectSchema { get; }
 
         internal ResultsHandle ResultsHandle => _resultsHandle ?? (_resultsHandle = CreateResultsHandle()); 
         private ResultsHandle _resultsHandle = null;
 
-        public IQueryProvider Provider => _provider;
+        IQueryProvider IQueryable.Provider => _provider;
 
         internal T this[int index]
         {
@@ -57,7 +60,7 @@ namespace Realms
             {
                 var row = NativeResults.get_row(ResultsHandle, (IntPtr)index);
                 var rowHandle = Realm.CreateRowHandle(row, _realm.SharedRealmHandle);
-                return (T)(object)_realm.MakeObjectForRow(Schema.Name, rowHandle);
+                return (T)(object)_realm.MakeObjectForRow(ObjectSchema.Name, rowHandle);
             }
         }
 
@@ -98,17 +101,17 @@ namespace Realms
         /// <param name="error">An exception that might have occured while asynchronously monitoring a <see cref="RealmResults{T}"/> for changes, or <c>null</c> if no errors occured.</param>
         public delegate void NotificationCallback(RealmResults<T> sender, ChangeSet changes, Exception error);
 
-        internal RealmResults(Realm realm, RealmResultsProvider realmResultsProvider, Expression expression, Schema.Object schema, bool createdByAll)
+        internal RealmResults(Realm realm, RealmResultsProvider realmResultsProvider, Expression expression, Schema.ObjectSchema schema, bool createdByAll)
         {
             _realm = realm;
             _provider = realmResultsProvider;
             Expression = expression ?? Expression.Constant(this);
-            Schema = schema;
+            ObjectSchema = schema;
             _allRecords = createdByAll;
 
         }
 
-        internal RealmResults(Realm realm, Schema.Object schema, bool createdByAll)
+        internal RealmResults(Realm realm, Schema.ObjectSchema schema, bool createdByAll)
             : this(realm, new RealmResultsProvider(realm, schema), null, schema, createdByAll)
         {
         }
@@ -117,7 +120,7 @@ namespace Realms
         {
             if (_allRecords)
             {
-                return _realm.MakeResultsForTable(Schema.Name);
+                return _realm.MakeResultsForTable(ObjectSchema.Name);
             }
             else
             {
@@ -126,7 +129,7 @@ namespace Realms
                 qv.Visit(Expression);
                 var queryHandle = qv._coreQueryHandle; // grab out the built query definition
                 var sortHandle = qv._optionalSortOrderHandle;
-                return _realm.MakeResultsForQuery(Schema, queryHandle, sortHandle);
+                return _realm.MakeResultsForQuery(ObjectSchema, queryHandle, sortHandle);
             }
         }
 
@@ -136,7 +139,7 @@ namespace Realms
         /// <returns>An IEnumerator which will iterate through found Realm persistent objects.</returns>
         public IEnumerator<T> GetEnumerator()
         {
-            return new RealmResultsEnumerator<T>(_realm, ResultsHandle, Schema);
+            return new RealmResultsEnumerator<T>(_realm, ResultsHandle, ObjectSchema);
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -156,7 +159,7 @@ namespace Realms
             if (_allRecords)
             {
                 // use the type captured at build based on generic T
-                var tableHandle = _realm.Metadata[Schema.Name].Table;
+                var tableHandle = _realm.Metadata[ObjectSchema.Name].Table;
                 return (int)NativeTable.count_all(tableHandle);
             }
 

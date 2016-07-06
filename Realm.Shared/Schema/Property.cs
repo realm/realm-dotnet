@@ -24,9 +24,9 @@ using System.Reflection;
 namespace Realms.Schema
 {
     [DebuggerDisplay("Name = {Name}, Type = {Type}")]
-    internal class Property
+    public struct Property
     {
-        public string Name { get; private set; }
+        public string Name { get; set; }
 
         public PropertyType Type { get; set; }
 
@@ -39,27 +39,6 @@ namespace Realms.Schema
         public bool IsIndexed { get; set; }
 
         internal PropertyInfo PropertyInfo;
-
-        public Property(string name)
-        {
-            if (string.IsNullOrEmpty(name)) throw new ArgumentException("Property name must be a non-empty string", nameof(name));
-            Contract.EndContractBlock();
-
-            Name = name;
-        }
-
-        internal Property Clone()
-        {
-            return new Property(Name)
-            {
-                Type = Type,
-                ObjectType = ObjectType,
-                IsNullable = IsNullable,
-                IsObjectId = IsObjectId,
-                IsIndexed = IsIndexed,
-                PropertyInfo = PropertyInfo
-            };
-        }
     }
 }
 

@@ -35,7 +35,6 @@ namespace Realms
         private RowHandle _rowHandle;
         private Metadata _metadata;
 
-        internal Realm Realm => _realm;
         internal RowHandle RowHandle => _rowHandle;
         internal Metadata ObjectMetadata => _metadata;
 
@@ -52,6 +51,16 @@ namespace Realms
         /// </summary>
         public bool IsValid => _rowHandle?.IsAttached != false;
 
+        /// <summary>
+        /// The <see cref="Realm"/> instance this object belongs to, or <code>null</code> if it is unmanaged.
+        /// </summary>
+        public Realm Realm => _realm;
+
+        /// <summary>
+        /// The <see cref="Schema.ObjectSchema"/> instance that describes how the <see cref="Realm"/> this object belongs to sees it.
+        /// </summary>
+        public Schema.ObjectSchema ObjectSchema => _metadata?.Schema;
+
         internal void _Manage(Realm realm, RowHandle rowHandle, Metadata metadata)
         {
             _realm = realm;
@@ -67,7 +76,7 @@ namespace Realms
 
             internal Dictionary<string, IntPtr> ColumnIndices;
 
-            internal Schema.Object Schema;
+            internal Schema.ObjectSchema Schema;
         }
 
         internal void _CopyDataFromBackingFieldsToRow()
@@ -324,7 +333,10 @@ namespace Realms
         {
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
-            var objectType = _metadata.Schema.Find(propertyName).ObjectType;
+            Schema.Property property;
+            _metadata.Schema.TryFindProperty(propertyName, out property);
+            var objectType = property.ObjectType;
+
             var listHandle = _metadata.Table.TableLinkList (_metadata.ColumnIndices[propertyName], _rowHandle);
             return new RealmList<T>(_realm, listHandle, objectType);
         }
@@ -338,7 +350,9 @@ namespace Realms
             if (linkedRowPtr == IntPtr.Zero)
                 return null;
 
-            var objectType = _metadata.Schema.Find(propertyName).ObjectType;
+            Schema.Property property;
+            _metadata.Schema.TryFindProperty(propertyName, out property);
+            var objectType = property.ObjectType;
 
             return (T)_realm.MakeObjectForRow(objectType, Realm.CreateRowHandle(linkedRowPtr, _realm.SharedRealmHandle));
         }

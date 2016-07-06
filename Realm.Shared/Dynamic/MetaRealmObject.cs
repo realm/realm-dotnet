@@ -41,8 +41,8 @@ namespace Realms.Dynamic
 
         public override DynamicMetaObject BindGetMember(GetMemberBinder binder)
         {
-            var property = _metadata.Schema.Find(binder.Name);
-            if (property == null)
+            Schema.Property property;
+            if (!_metadata.Schema.TryFindProperty(binder.Name, out property))
             {
                 return base.BindGetMember(binder);
             }
@@ -120,8 +120,8 @@ namespace Realms.Dynamic
 
         public override DynamicMetaObject BindSetMember(SetMemberBinder binder, DynamicMetaObject value)
         {
-            var property = _metadata.Schema.Find(binder.Name);
-            if (property == null)
+            Schema.Property property;
+            if (!_metadata.Schema.TryFindProperty(binder.Name, out property))
             {
                 return base.BindSetMember(binder, value);
             }

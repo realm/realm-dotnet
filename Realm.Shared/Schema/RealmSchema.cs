@@ -23,14 +23,13 @@ using System.Collections.ObjectModel;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Realms.Schema;
 
 namespace Realms
 {
-    using Object = Schema.Object;
-
-    internal class RealmSchema : IReadOnlyCollection<Object>
+    public class RealmSchema : IReadOnlyCollection<ObjectSchema>
     {
-        private readonly ReadOnlyDictionary<string, Object> _objects;
+        private readonly ReadOnlyDictionary<string, ObjectSchema> _objects;
 
         internal readonly SchemaHandle Handle;
 
@@ -39,23 +38,23 @@ namespace Realms
         private static readonly Lazy<RealmSchema> _default = new Lazy<RealmSchema>(BuildDefaultSchema);
         internal static RealmSchema Default => _default.Value;
 
-        private RealmSchema(SchemaHandle handle, IEnumerable<Object> objects)
+        private RealmSchema(SchemaHandle handle, IEnumerable<ObjectSchema> objects)
         {
-            _objects = new ReadOnlyDictionary<string, Object>(objects.ToDictionary(o => o.Name));
+            _objects = new ReadOnlyDictionary<string, ObjectSchema>(objects.ToDictionary(o => o.Name));
             Handle = handle;
         }
 
-        public Object Find(string name)
+        public ObjectSchema Find(string name)
         {
             if (string.IsNullOrEmpty(name)) throw new ArgumentException("Object schema name must be a non-empty string", nameof(name));
             Contract.EndContractBlock();
 
-            Object obj;
+            ObjectSchema obj;
             _objects.TryGetValue(name, out obj);
             return obj;
         }
 
-        public IEnumerator<Object> GetEnumerator()
+        public IEnumerator<ObjectSchema> GetEnumerator()
         {
             return _objects.Values.GetEnumerator();
         }
@@ -69,19 +68,15 @@ namespace Realms
         {
             var objectsArray = this.ToArray();
             var handlesArray = objectsArray.Select(o => o.Handle).ToArray();
-            var schemaHandle = new SchemaHandle(parent);
+            System.Diagnostics.Debug.Assert(!handlesArray.Contains(IntPtr.Zero));
 
-            unsafe
+            var schemaHandle = new SchemaHandle(parent);
+            var ptr = NativeSchema.clone(Handle, handlesArray);
+            RuntimeHelpers.PrepareConstrainedRegions();
+            try { }
+            finally
             {
-                fixed (IntPtr* handlesPtr = handlesArray)
-                {
-                    RuntimeHelpers.PrepareConstrainedRegions();
-                    try { }
-                    finally
-                    {
-                        schemaHandle.SetHandle(NativeSchema.clone(Handle, handlesPtr));
-                    }
-                }
+                schemaHandle.SetHandle(ptr);
             }
 
             var clones = objectsArray.Select((o, i) => o.Clone(handlesArray[i]));
@@ -94,10 +89,6 @@ namespace Realms
             foreach (var type in clone)
             {
                 type.Type = null;
-                foreach (var property in type)
-                {
-                    property.PropertyInfo = null;
-                }
             }
 
             return clone;
@@ -108,7 +99,7 @@ namespace Realms
             var builder = new Builder();
             foreach (var @class in classes)
             {
-                builder.Add(Object.FromType(@class)); 
+                builder.Add(ObjectSchema.FromType(@class)); 
             }
 
             return builder.Build(schemaHandle ?? new SchemaHandle());
@@ -129,7 +120,7 @@ namespace Realms
             return CreateSchemaForClasses(realmObjectClasses);
         }
 
-        public class Builder : List<Object>
+        public class Builder : List<ObjectSchema>
         {
             public RealmSchema Build()
             {
@@ -138,6 +129,9 @@ namespace Realms
 
             internal RealmSchema Build(SchemaHandle schemaHandle)
             {
+                if (Count == 0) throw new InvalidOperationException("Cannot build an empty RealmSchema");
+                Contract.EndContractBlock();
+
                 var objects = new List<NativeSchema.Object>();
                 var properties = new List<NativeSchema.Property>();
 
@@ -156,20 +150,13 @@ namespace Realms
                 }
 
                 var handles = new IntPtr[Count];
+                var ptr = NativeSchema.create(objects.ToArray(), objects.Count, properties.ToArray(), handles);
 
-                unsafe
+                RuntimeHelpers.PrepareConstrainedRegions();
+                try { }
+                finally
                 {
-                    fixed (IntPtr* handlesPtr = handles)
-                    {
-                        var ptr = NativeSchema.create(objects.ToArray(), objects.Count, properties.ToArray(), handlesPtr);
-
-                        RuntimeHelpers.PrepareConstrainedRegions();
-                        try { }
-                        finally
-                        {
-                            schemaHandle.SetHandle(ptr);
-                        }
-                    }
+                    schemaHandle.SetHandle(ptr);
                 }
 
                 return new RealmSchema(schemaHandle, this.Select((o, i) => o.Clone(handles[i])));

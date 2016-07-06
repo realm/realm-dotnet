@@ -58,10 +58,10 @@ namespace Realms
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "schema_create", CallingConvention = CallingConvention.Cdecl)]
         internal static unsafe extern IntPtr create([MarshalAs(UnmanagedType.LPArray), In] Object[] objects, int objects_length,
                                                           [MarshalAs(UnmanagedType.LPArray), In] Property[] properties,
-                                                          IntPtr* object_schema_handles);
+                                                          [MarshalAs(UnmanagedType.LPArray), Out] IntPtr[] object_schema_handles);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "schema_clone", CallingConvention = CallingConvention.Cdecl)]
-        internal static unsafe extern IntPtr clone(SchemaHandle schema, IntPtr* object_schema_handles);
+        internal static extern IntPtr clone(SchemaHandle schema, [MarshalAs(UnmanagedType.LPArray), In, Out] IntPtr[] object_schema_handles);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "schema_destroy", CallingConvention = CallingConvention.Cdecl)]
         internal static extern void destroy(IntPtr schema);

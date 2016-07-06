@@ -64,7 +64,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Schema\RealmSchema.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Schema\PropertyType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Schema\Property.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Schema\Object.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Schema\ObjectSchema.cs" />
 	<Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmInvalidObjectException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Dynamic\DynamicRealmObject.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Dynamic\DynamicRealmObjectHelper.cs" />

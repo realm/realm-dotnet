@@ -19,11 +19,10 @@
 using System;
 using System.Diagnostics.Contracts;
 using System.Linq;
-using System.Reflection;
 
 namespace Realms.Schema
 {
-    internal enum PropertyType : byte
+    public enum PropertyType : byte
     {
         Int = 0,
         Bool = 1,

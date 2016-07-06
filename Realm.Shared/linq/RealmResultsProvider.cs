@@ -26,9 +26,9 @@ namespace Realms
     internal class RealmResultsProvider : IQueryProvider
     {
         private Realm _realm;
-        private readonly Schema.Object _schema;
+        private readonly Schema.ObjectSchema _schema;
 
-        internal RealmResultsProvider(Realm realm, Schema.Object schema)
+        internal RealmResultsProvider(Realm realm, Schema.ObjectSchema schema)
         {
             _realm = realm;
             _schema = schema;

@@ -32,10 +32,10 @@ namespace Realms
         private long _index = -1;  // must match Reset(), zero-based with no gaps indexing an ObjectStore Results
         private ResultsHandle _enumeratingResults = null;
         private Realm _realm;
-        private readonly Schema.Object _schema;
+        private readonly Schema.ObjectSchema _schema;
 
 
-        internal RealmResultsEnumerator(Realm realm, ResultsHandle rh, Schema.Object schema)
+        internal RealmResultsEnumerator(Realm realm, ResultsHandle rh, Schema.ObjectSchema schema)
         {
             _realm = realm;
             _enumeratingResults = rh;
