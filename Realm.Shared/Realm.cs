@@ -88,11 +88,15 @@ namespace Realms
         /// Factory for a Realm instance for this thread.
         /// </summary>
         /// <param name="config">Optional configuration.</param>
-        /// <param name="schema">Optional schema.</param>
         /// <returns>A realm instance.</returns>
         /// <exception cref="RealmFileAccessErrorException">Throws error if the filesystem has an error preventing file creation.</exception>
+        public static Realm GetInstance(RealmConfiguration config = null)
+        {
+            return GetInstance(config, null);
+        }
+
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-        public static Realm GetInstance(RealmConfiguration config = null, RealmSchema schema = null)
+        internal static Realm GetInstance(RealmConfiguration config, RealmSchema schema)
         {
             config = config ?? RealmConfiguration.DefaultConfiguration;
 
