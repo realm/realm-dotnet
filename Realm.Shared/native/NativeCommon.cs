@@ -88,8 +88,6 @@ namespace Realms {
             var message = (@this.messageLength != IntPtr.Zero) ?
                 new string(@this.messageBytes, 0 /* start offset */, (int)@this.messageLength, Encoding.UTF8)
                 : "no detail on exception";
-
-            //Marshal.FreeHGlobal(new IntPtr(@this.messageBytes));
             NativeCommon.delete_pointer(@this.messageBytes);
 
             return RealmException.Create((RealmExceptionCodes)@this.type, message);
