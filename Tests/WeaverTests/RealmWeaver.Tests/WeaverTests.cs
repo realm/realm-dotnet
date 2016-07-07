@@ -388,6 +388,28 @@ namespace RealmWeaver
         }
 
         [Test]
+        public void SetManyRelationship()
+        {
+            // Arrange
+            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.Person"));
+            var pn1 = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.PhoneNumber"));
+            var pn2 = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.PhoneNumber"));
+            o.IsManaged = true;
+
+            // Act
+            o.PhoneNumbers.Add(pn1);
+            o.PhoneNumbers.Add(pn2);
+
+            // Assert
+            Assert.That(o.LogList, Is.EqualTo(new List<string>
+            {
+                "IsManaged",
+                "RealmObject.SetObjectValue(propertyName = \"PrimaryNumber\", value = AssemblyToProcess.PhoneNumber)"
+            }));
+            Assert.That(GetAutoPropertyBackingFieldValue(o, "PrimaryNumber"), Is.Null);
+        }
+
+        [Test]
         public void ShouldNotWeaveIgnoredProperties()
         {
             // Arrange

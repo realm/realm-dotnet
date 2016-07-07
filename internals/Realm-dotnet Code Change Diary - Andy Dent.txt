@@ -2365,4 +2365,6 @@ ModuleWeaver.cs
   - restore warning on IList disallowing setter
 - PrependListFieldInitializerToConstructor removed unused method
 - ReplaceListGetter added
-  
+ 
+ #287 IList integration - add tests to help debug
+WeaverTests.cs - added SetManyRelationship to trigger 

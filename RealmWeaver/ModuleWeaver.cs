@@ -260,6 +260,8 @@ public class ModuleWeaver
         if (mapToAttribute != null)
             columnName = ((string) mapToAttribute.ConstructorArguments[0].Value);
 
+     //   Debugger.Launch();
+
         var backingField = GetBackingField(prop);
         if (backingField == null) {
             LogErrorPoint($"Property {prop.Name} has no backing field", sequencePoint);
