@@ -701,7 +701,6 @@ namespace Realms
         /// <summary>
         /// Remove all objects of a type from the realm.
         /// </summary>
-        /// <returns>The all.</returns>
         /// <param name="className">Type of the objects to remove as defined in the schema.</param>
         public void RemoveAll(string className)
         {
