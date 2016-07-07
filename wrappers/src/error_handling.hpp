@@ -20,6 +20,7 @@
 #define ERROR_HANDLING_HPP
 
 #include <string>
+#include <new>
 #include <realm.hpp>
 #include "realm_error_type.hpp"
 
@@ -30,13 +31,13 @@ struct NativeException {
     
     struct Marshallable {
         RealmErrorType type;
-        const char* messagesBytes;
+        void* messagesBytes;
         size_t messageLength;
     };
     
     Marshallable for_marshalling() const {
-        auto messageCopy = new char[message.size()];
-        message.copy(messageCopy, message.length());
+        auto messageCopy = ::operator new (message.size());
+        message.copy(reinterpret_cast<char*>(messageCopy), message.length());
 
         return {
             type,
