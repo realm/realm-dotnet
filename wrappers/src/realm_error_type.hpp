@@ -65,7 +65,9 @@ namespace realm {
 
         StdIndexOutOfRange = 101,
 
-        StdInvalidOperation = 102
+        StdInvalidOperation = 102,
+
+        NoError = 1000
     };
 
 }   // namespace realm

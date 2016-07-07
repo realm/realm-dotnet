@@ -79,6 +79,20 @@ auto handle_errors(F&& func) -> decltype(func())
     }
 }
 
+template <class F>
+auto handle_errors_param(F&& func, NativeException::Marshallable& ex) -> decltype(func())
+{
+    using RetVal = decltype(func());
+    ex.type = RealmErrorType::NoError;
+    try {
+        return func();
+    }
+    catch (...) {
+        ex = convert_exception().for_marshalling();  
+        return Default<RetVal>::default_value();
+    }
+}
+
 } // namespace realm
 
 #endif // ERROR_HANDLING_HPP

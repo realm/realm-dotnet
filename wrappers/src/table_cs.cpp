@@ -159,6 +159,17 @@ REALM_EXPORT size_t table_get_string(const Table* table_ptr, size_t column_ndx, 
     });
 }
 
+REALM_EXPORT size_t table_get_string_outerror(const Table* table_ptr, size_t column_ndx, size_t row_ndx, uint16_t * datatochsarp, size_t bufsize, bool* is_null, NativeException::Marshallable& ex)
+{
+    return handle_errors_param([&]() -> size_t {
+        StringData fielddata = table_ptr->get_string(column_ndx, row_ndx);
+        if ((*is_null = fielddata.is_null()))
+            return 0;
+        
+        return stringdata_to_csharpstringbuffer(fielddata, datatochsarp, bufsize);
+    }, ex);
+}
+
 REALM_EXPORT size_t table_get_binary(const Table* table_ptr, size_t column_ndx, size_t row_ndx, const char*& return_buffer, size_t& return_size)
 {
     return handle_errors([&]() {
