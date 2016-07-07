@@ -85,7 +85,7 @@ namespace Realms
         }
 
         #region Getters
-        protected string GetStringValue(string propertyName)
+        protected string GetStringValue_old(string propertyName)
         {
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
@@ -133,6 +133,11 @@ namespace Realms
             return Marshal.PtrToStringUni(_realm.stringGetBuffer, bytesRead);
             // leaving buffer sitting allocated for quick reuse next time we read a string                
         } // GetStringValue
+
+        protected string GetStringValue(string propertyName)
+        {
+            return NativeTable.GetString(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex);
+        }
 
         protected char GetCharValue(string propertyName)
         {

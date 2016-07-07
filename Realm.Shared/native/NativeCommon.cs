@@ -78,6 +78,7 @@ namespace Realms {
         IntPtr type;
         sbyte* messageBytes;
         IntPtr messageLength;
+        public bool WasThrown => type != (IntPtr) 1000;
 
         unsafe internal Exception Convert()
         {

@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
  
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace Realms
@@ -50,6 +51,52 @@ namespace Realms
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_string", CallingConvention = CallingConvention.Cdecl)]
         internal static extern IntPtr get_string(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex,
             IntPtr buffer, IntPtr bufsize, [MarshalAs(UnmanagedType.I1)] out bool isNull);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_string_outerror", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern IntPtr get_string_outerror(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex,
+            IntPtr buffer, IntPtr bufsize, [MarshalAs(UnmanagedType.I1)] out bool isNull, out NativeException ex);
+
+        internal static string GetString(TableHandle tableHandle, IntPtr columnIndex, long rowIndex)
+        {
+            int bufferSizeNeededChars = 128;
+            // First alloc this thread
+
+            var stringGetBuffer = Marshal.AllocHGlobal((IntPtr)(bufferSizeNeededChars * sizeof(char)));
+            var stringGetBufferLen = bufferSizeNeededChars;
+
+            var isNull = false;
+            NativeException nativeException;
+
+            // try to read
+            var bytesRead = (int)NativeTable.get_string_outerror(tableHandle, columnIndex, (IntPtr)rowIndex, stringGetBuffer,
+                (IntPtr)stringGetBufferLen, out isNull, out nativeException);
+            if (nativeException.WasThrown)
+            {
+                throw nativeException.Convert();
+            }
+            if (bytesRead == -1)
+            {
+                throw new RealmInvalidDatabaseException("Corrupted string data");
+            }
+            if (bytesRead > stringGetBufferLen)  // need a bigger buffer
+            {
+                Marshal.FreeHGlobal(stringGetBuffer);
+                stringGetBuffer = Marshal.AllocHGlobal((IntPtr)(bytesRead * sizeof(char)));
+                stringGetBufferLen = bytesRead;
+                // try to read with big buffer
+                bytesRead = (int)NativeTable.get_string_outerror(tableHandle, columnIndex, (IntPtr)rowIndex, stringGetBuffer,
+                    (IntPtr)stringGetBufferLen, out isNull, out nativeException);
+                if (nativeException.WasThrown)
+                {
+                    throw nativeException.Convert();
+                }
+                if (bytesRead == -1)  // bad UTF-8 in full string
+                    throw new RealmInvalidDatabaseException("Corrupted string data");
+                Debug.Assert(bytesRead <= stringGetBufferLen);
+            }  // needed re-read with expanded buffer
+
+            return bytesRead != 0 ? Marshal.PtrToStringUni(stringGetBuffer, bytesRead) : (isNull ? null : "");
+        }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_link", CallingConvention = CallingConvention.Cdecl)]
         internal static extern void set_link(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, IntPtr targetRowNdx);
