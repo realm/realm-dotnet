@@ -64,16 +64,13 @@ namespace Realms
             var stringGetBuffer = Marshal.AllocHGlobal((IntPtr)(bufferSizeNeededChars * sizeof(char)));
             var stringGetBufferLen = bufferSizeNeededChars;
 
-            var isNull = false;
+            bool isNull;
             NativeException nativeException;
 
             // try to read
             var bytesRead = (int)NativeTable.get_string_outerror(tableHandle, columnIndex, (IntPtr)rowIndex, stringGetBuffer,
                 (IntPtr)stringGetBufferLen, out isNull, out nativeException);
-            if (nativeException.WasThrown)
-            {
-                throw nativeException.Convert();
-            }
+            nativeException.ThrowIfNecessary();
             if (bytesRead == -1)
             {
                 throw new RealmInvalidDatabaseException("Corrupted string data");
@@ -86,10 +83,7 @@ namespace Realms
                 // try to read with big buffer
                 bytesRead = (int)NativeTable.get_string_outerror(tableHandle, columnIndex, (IntPtr)rowIndex, stringGetBuffer,
                     (IntPtr)stringGetBufferLen, out isNull, out nativeException);
-                if (nativeException.WasThrown)
-                {
-                    throw nativeException.Convert();
-                }
+                nativeException.ThrowIfNecessary();
                 if (bytesRead == -1)  // bad UTF-8 in full string
                     throw new RealmInvalidDatabaseException("Corrupted string data");
                 Debug.Assert(bytesRead <= stringGetBufferLen);

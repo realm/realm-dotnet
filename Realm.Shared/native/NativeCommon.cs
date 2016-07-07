@@ -23,6 +23,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
 using DotNetCross.Memory;
 
@@ -73,20 +74,33 @@ namespace Realms {
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    unsafe struct NativeException
+    internal unsafe struct NativeException
     {
-        IntPtr type;
-        sbyte* messageBytes;
-        IntPtr messageLength;
-        public bool WasThrown => type != (IntPtr) 1000;
+        public IntPtr type;
+        public sbyte* messageBytes;
+        public IntPtr messageLength;
+    }
 
-        unsafe internal Exception Convert()
+    public static class NativeExceptionExtensions
+    {
+        internal static unsafe Exception Convert(this NativeException @this)
         {
-            var message = (messageLength != IntPtr.Zero) ?
-                new string(messageBytes, 0 /* start offset */, (int)messageLength, Encoding.UTF8)
+            var message = (@this.messageLength != IntPtr.Zero) ?
+                new string(@this.messageBytes, 0 /* start offset */, (int)@this.messageLength, Encoding.UTF8)
                 : "no detail on exception";
 
-            return RealmException.Create((RealmExceptionCodes)type, message);
+            //Marshal.FreeHGlobal(new IntPtr(@this.messageBytes));
+            NativeCommon.delete_pointer(@this.messageBytes);
+
+            return RealmException.Create((RealmExceptionCodes)@this.type, message);
+        }
+
+        internal static void ThrowIfNecessary(this NativeException @this)
+        {
+            if (@this.type == (IntPtr)1000)
+                return;
+
+            throw @this.Convert();
         }
     }
 
@@ -133,6 +147,9 @@ namespace Realms {
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "fake_a_native_exception", CallingConvention = CallingConvention.Cdecl)]
         internal static extern void fake_a_native_exception(IntPtr errorCode);
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "delete_pointer", CallingConvention = CallingConvention.Cdecl)]
+        public static extern unsafe void delete_pointer(void* pointer);
 
         public static void Initialize()
         {

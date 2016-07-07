@@ -34,13 +34,13 @@ struct NativeException {
         size_t messageLength;
     };
     
-    // the return value of this method is tied to the lifetime of this
-    // it's ususally fine to pass it as a parameter to a .net callback,
-    // but take care of object lifetime when *returning* this value to .net
     Marshallable for_marshalling() const {
+        auto messageCopy = new char[message.size()];
+        message.copy(messageCopy, message.length());
+
         return {
             type,
-            message.data(),
+            messageCopy,
             message.size()
         };
     }
