@@ -467,11 +467,11 @@ public class ModuleWeaver
         var start = prop.GetMethod.Body.Instructions.First();
         var il = prop.GetMethod.Body.GetILProcessor();
 
-        il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));
+        il.InsertBefore(start, il.Create(OpCodes.Ldarg_0)); // this for call
         il.InsertBefore(start, il.Create(OpCodes.Call, _realmObjectIsManagedGetter));
         il.InsertBefore(start, il.Create(OpCodes.Brfalse_S, start));
-        il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));
-        il.InsertBefore(start, il.Create(OpCodes.Ldstr, columnName));
+        il.InsertBefore(start, il.Create(OpCodes.Ldarg_0)); // this for call
+        il.InsertBefore(start, il.Create(OpCodes.Ldstr, columnName)); // [stack = this | name ]
         il.InsertBefore(start, il.Create(OpCodes.Call, getValueReference));
         il.InsertBefore(start, il.Create(OpCodes.Ret));
 
@@ -532,46 +532,36 @@ public class ModuleWeaver
             }
             // original auto-generated getter starts here
             return <backingField>;  // supplied by the generated getter OR RealmObject._CopyDataFromBackingFieldsToRow
-
-        Andy-handwritten version looks more like (with added dups and returns)
-            if (<backingField> == null)
-            {
-               if (IsManaged)
-                     return <backingField> = GetListObject<T>(<columnName>);
-               return <backingField> = new List<T>();
-            }
-            return <backingField>;
         */
 
         var start = prop.GetMethod.Body.Instructions.First();  // this is a label for return <backingField>;
         var il = prop.GetMethod.Body.GetILProcessor();
 
-        il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));  // this for field ref
-        il.InsertBefore(start, il.Create(OpCodes.Ldfld, backingField));
-        il.InsertBefore(start, il.Create(OpCodes.Ldnull));
-        il.InsertBefore(start, il.Create(OpCodes.Bne_Un_S, start));
+        il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));  // this for field ref [ -> this]
+        il.InsertBefore(start, il.Create(OpCodes.Ldfld, backingField)); //  [ this -> field]
+        il.InsertBefore(start, il.Create(OpCodes.Ldnull)); // [field -> field, null]
+        il.InsertBefore(start, il.Create(OpCodes.Ceq));  // [field, null -> bool result]
+        il.InsertBefore(start, il.Create(OpCodes.Brfalse_S, start));  // []
 
-        il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));  // this for call
-        il.InsertBefore(start, il.Create(OpCodes.Call, _realmObjectIsManagedGetter));
+        il.InsertBefore(start, il.Create(OpCodes.Ldarg_0)); // this for stfld in both branches [ -> this ]
+        il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));  // this for call [ this -> this, this]
+        il.InsertBefore(start, il.Create(OpCodes.Call, _realmObjectIsManagedGetter));  // [ this, this -> this,  isManaged ]
 
-        var jumpToElse = il.Create(OpCodes.Brfalse_S, start);  // fix target label below after inserting label, so this acts as forward reference
-        il.InsertBefore(start, jumpToElse);
+        // push in the label then go relative to that - so we can forward-ref the lable insert if/else blocks backwards
 
-        il.InsertBefore(start, il.Create(OpCodes.Ldarg_0)); // this for call
-        il.InsertBefore(start, il.Create(OpCodes.Ldarg_0)); // this for loading columnName
-        il.InsertBefore(start, il.Create(OpCodes.Ldstr, columnName));
-        il.InsertBefore(start, il.Create(OpCodes.Call, getListValueReference));
-        il.InsertBefore(start, il.Create(OpCodes.Dup));  // duplicate backing field so can return
-        il.InsertBefore(start, il.Create(OpCodes.Stfld, backingField));
-        il.InsertBefore(start, il.Create(OpCodes.Ret));
-
-        var labelElse = il.Create(OpCodes.Ldarg_0); // this for call
+        var labelElse = il.Create(OpCodes.Nop);  //  [this]
         il.InsertBefore(start, labelElse); // else 
-        il.Replace(jumpToElse, il.Create(OpCodes.Brfalse_S, labelElse));  // fix up forward reference pointing here
-        il.InsertBefore(start, il.Create(OpCodes.Newobj, listConstructor));
-        il.InsertBefore(start, il.Create(OpCodes.Dup));  // duplicate backing field so can return
-        il.InsertBefore(start, il.Create(OpCodes.Stfld, backingField));
-        il.InsertBefore(start, il.Create(OpCodes.Ret));
+        il.InsertBefore(start, il.Create(OpCodes.Newobj, listConstructor)); // [this ->  this, listRef ]
+        il.InsertBefore(start, il.Create(OpCodes.Stfld, backingField));  //  [this, listRef -> ]
+        // fall through to start to read it back from backing field and return
+
+        // if block before else now gets inserted
+        il.InsertBefore(labelElse, il.Create(OpCodes.Brfalse_S, labelElse));  // [this,  isManaged -> this]
+        il.InsertBefore(labelElse, il.Create(OpCodes.Ldarg_0)); // this for call [ this -> this, this ]
+        il.InsertBefore(labelElse, il.Create(OpCodes.Ldstr, columnName));  // [this, this -> this, this, name ]
+        il.InsertBefore(labelElse, il.Create(OpCodes.Call, getListValueReference)); // [this, this, name -> this, listRef ]
+        il.InsertBefore(labelElse, il.Create(OpCodes.Stfld, backingField)); // [this, listRef -> ]
+        il.InsertBefore(labelElse, il.Create(OpCodes.Br_S, start));
 
         // note that we do NOT insert a ret, unlike other weavers, as usual path branches and
         // FALL THROUGH to return the backing field.
