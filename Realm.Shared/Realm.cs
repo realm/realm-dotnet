@@ -405,9 +405,9 @@ namespace Realms
 
         internal SortOrderHandle MakeSortOrderForTable(Type tableType)
         {
-            var tableHandle = Metadata[tableType].Table;
-            IntPtr sortOrderPtr = NativeSortOrder.create_for_table(tableHandle);
-            return CreateSortOrderHandle(sortOrderPtr);
+            var result = new SortOrderHandle();
+            result.CreateForTable(Metadata[tableType].Table);
+            return result;
         }
 
 
@@ -438,7 +438,7 @@ namespace Realms
 
             var tableHandle = Metadata[typeof(T)].Table;
 
-            var rowPtr = NativeTable.add_empty_row(tableHandle);
+            var rowPtr = NativeTable.AddEmptyRow(tableHandle);
             var rowHandle = CreateRowHandle(rowPtr, SharedRealmHandle);
 
             obj._Manage(this, rowHandle);
@@ -472,20 +472,6 @@ namespace Realms
                 rowHandle.SetHandle(rowPtr);
             }
             return rowHandle;
-        }
-
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-        internal static SortOrderHandle CreateSortOrderHandle(IntPtr sortOrderPtr)
-        {
-            var sortOrderHandle = new SortOrderHandle();
-
-            RuntimeHelpers.PrepareConstrainedRegions();
-            try { /* Retain handle in a constrained execution region */ }
-            finally
-            {
-                sortOrderHandle.SetHandle(sortOrderPtr);
-            }
-            return sortOrderHandle;
         }
 
         /// <summary>
@@ -609,7 +595,7 @@ namespace Realms
                 throw new RealmOutsideTransactionException("Cannot remove Realm object outside write transactions");
 
             var tableHandle = Metadata[obj.GetType()].Table;
-            NativeTable.remove_row(tableHandle, (RowHandle)obj.RowHandle);
+            NativeTable.RemoveRow(tableHandle, (RowHandle)obj.RowHandle);
         }
 
         /// <summary>

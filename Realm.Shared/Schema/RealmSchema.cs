@@ -75,12 +75,7 @@ namespace Realms
             {
                 fixed (IntPtr* handlesPtr = handlesArray)
                 {
-                    RuntimeHelpers.PrepareConstrainedRegions();
-                    try { }
-                    finally
-                    {
-                        schemaHandle.SetHandle(NativeSchema.clone(Handle, handlesPtr));
-                    }
+                    schemaHandle.InitializeCloneFrom(Handle, handlesPtr);
                 }
             }
 
@@ -121,8 +116,8 @@ namespace Realms
 
             internal RealmSchema Build(SchemaHandle schemaHandle)
             {
-                var objects = new List<NativeSchema.Object>();
-                var properties = new List<NativeSchema.Property>();
+                var objects = new List<SchemaHandle.Object>();
+                var properties = new List<SchemaHandle.Property>();
 
                 foreach (var @object in this)
                 {
@@ -130,7 +125,7 @@ namespace Realms
 
                     properties.AddRange(@object.Select(ForMarshalling));
 
-                    objects.Add(new NativeSchema.Object
+                    objects.Add(new SchemaHandle.Object
                     {
                         name = @object.Name,
                         properties_start = start,
@@ -144,23 +139,16 @@ namespace Realms
                 {
                     fixed (IntPtr* handlesPtr = handles)
                     {
-                        var ptr = NativeSchema.create(objects.ToArray(), objects.Count, properties.ToArray(), handlesPtr);
-
-                        RuntimeHelpers.PrepareConstrainedRegions();
-                        try { }
-                        finally
-                        {
-                            schemaHandle.SetHandle(ptr);
-                        }
+                        schemaHandle.Initialize(objects.ToArray(), objects.Count, properties.ToArray(), handlesPtr);
                     }
                 }
 
                 return new RealmSchema(schemaHandle, this.Select((o, i) => o.Clone(handles[i])));
             }
 
-            private static NativeSchema.Property ForMarshalling(Schema.Property property)
+            private static SchemaHandle.Property ForMarshalling(Schema.Property property)
             {
-                return new NativeSchema.Property
+                return new SchemaHandle.Property
                 {
                     name = property.Name,
                     type = property.Type,

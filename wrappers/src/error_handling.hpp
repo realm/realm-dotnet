@@ -68,20 +68,7 @@ struct Default<void> {
 };
 
 template <class F>
-auto handle_errors(F&& func) -> decltype(func())
-{
-    using RetVal = decltype(func());
-    try {
-        return func();
-    }
-    catch (...) {
-        throw_managed_exception(convert_exception());
-        return Default<RetVal>::default_value();
-    }
-}
-
-template <class F>
-auto handle_errors_param(F&& func, NativeException::Marshallable& ex) -> decltype(func())
+auto handle_errors(NativeException::Marshallable& ex, F&& func) -> decltype(func())
 {
     using RetVal = decltype(func());
     ex.type = RealmErrorType::NoError;
