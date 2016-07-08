@@ -331,8 +331,12 @@ public class ModuleWeaver
             var listConstructor = concreteListType.Resolve().GetConstructors().Single(c => c.IsPublic && c.Parameters.Count == 0);
             var concreteListConstructor = listConstructor.MakeHostInstanceGeneric(elementType);
 
-            // weaves an init to List<T>
-
+            // weaves list getter which also sets backing to List<T>, forcing it to accept us setting it post-init
+            var backingDef = backingField as FieldDefinition;
+            if (backingDef != null)
+            {
+                backingDef.Attributes &= ~FieldAttributes.InitOnly;  // without a set; auto property has this flag we must clear
+            }
             ReplaceListGetter(prop, backingField, columnName,
                 new GenericInstanceMethod(_genericGetListValueReference) { GenericArguments = { elementType } }, elementType,
                              ModuleDefinition.ImportReference(concreteListConstructor) );
@@ -474,14 +478,17 @@ public class ModuleWeaver
         Debug.Write("[get] ");
     }
 
-
+    // WARNING
+    // This code setting the backing field only works if the field is settable after init
+    // if you don't have an automatic set; on the property, it shows in the debugger with
+    //         Attributes    Private | InitOnly    Mono.Cecil.FieldAttributes
     void ReplaceListGetter(PropertyDefinition prop, FieldReference backingField, string columnName, MethodReference getListValueReference, TypeReference elementType, MethodReference listConstructor)
     {
         /// A synthesized property getter looks like this:
         ///   0: ldarg.0  // load the this pointer
         ///   1: ldfld <backingField>
         ///   2: ret
-        /// We want to change it so it looks like this, from IL pane in Linqpad 5:
+        /// We want to change it so it looks somewhat like this, from IL pane in Linqpad 5:
         /*
             IL_0000:  nop
             IL_0001:  ldarg.0
@@ -523,51 +530,52 @@ public class ModuleWeaver
                else
                      <backingField> = new List<T>();
             }
+            // original auto-generated getter starts here
             return <backingField>;  // supplied by the generated getter OR RealmObject._CopyDataFromBackingFieldsToRow
+
+        Andy-handwritten version looks more like (with added dups and returns)
+            if (<backingField> == null)
+            {
+               if (IsManaged)
+                     return <backingField> = GetListObject<T>(<columnName>);
+               return <backingField> = new List<T>();
+            }
+            return <backingField>;
         */
 
         var start = prop.GetMethod.Body.Instructions.First();  // this is a label for return <backingField>;
         var il = prop.GetMethod.Body.GetILProcessor();
 
-        // il.InsertBefore(start, il.Create(OpCodes.Nop));
         il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));  // this for field ref
         il.InsertBefore(start, il.Create(OpCodes.Ldfld, backingField));
         il.InsertBefore(start, il.Create(OpCodes.Ldnull));
-        il.InsertBefore(start, il.Create(OpCodes.Ceq));
-
-        // remove the temp bool il.InsertBefore(start, il.Create(OpCodes.Stloc_0));
-        // il.InsertBefore(start, il.Create(OpCodes.Ldloc_0));
-        il.InsertBefore(start, il.Create(OpCodes.Brfalse_S, start));
-        // il.InsertBefore(start, il.Create(OpCodes.Nop));
+        il.InsertBefore(start, il.Create(OpCodes.Bne_Un_S, start));
 
         il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));  // this for call
         il.InsertBefore(start, il.Create(OpCodes.Call, _realmObjectIsManagedGetter));
-        il.InsertBefore(start, il.Create(OpCodes.Brfalse_S, start));
-        /*
-        // remove the temp bool il.InsertBefore(start, il.Create(OpCodes.Stloc_1));
-        // remove the temp bool il.InsertBefore(start, il.Create(OpCodes.Ldloc_1));
-        var jumpToElse = il.Create(OpCodes.Nop);  // fix below after inserting label, so this acts as forward reference
+
+        var jumpToElse = il.Create(OpCodes.Brfalse_S, start);  // fix target label below after inserting label, so this acts as forward reference
         il.InsertBefore(start, jumpToElse);
 
-//???????        il.InsertBefore(start, il.Create(OpCodes.Ldarg_0)); 
-        */
         il.InsertBefore(start, il.Create(OpCodes.Ldarg_0)); // this for call
+        il.InsertBefore(start, il.Create(OpCodes.Ldarg_0)); // this for loading columnName
         il.InsertBefore(start, il.Create(OpCodes.Ldstr, columnName));
         il.InsertBefore(start, il.Create(OpCodes.Call, getListValueReference));
+        il.InsertBefore(start, il.Create(OpCodes.Dup));  // duplicate backing field so can return
         il.InsertBefore(start, il.Create(OpCodes.Stfld, backingField));
-        /*
-        il.InsertBefore(start, il.Create(OpCodes.Br, start));
+        il.InsertBefore(start, il.Create(OpCodes.Ret));
 
         var labelElse = il.Create(OpCodes.Ldarg_0); // this for call
         il.InsertBefore(start, labelElse); // else 
-        il.Replace(jumpToElse, il.Create(OpCodes.Brfalse, labelElse));  // fix up forward reference pointing here
+        il.Replace(jumpToElse, il.Create(OpCodes.Brfalse_S, labelElse));  // fix up forward reference pointing here
         il.InsertBefore(start, il.Create(OpCodes.Newobj, listConstructor));
+        il.InsertBefore(start, il.Create(OpCodes.Dup));  // duplicate backing field so can return
         il.InsertBefore(start, il.Create(OpCodes.Stfld, backingField));
- //??????       il.InsertBefore(start, il.Create(OpCodes.Nop));
-        */
+        il.InsertBefore(start, il.Create(OpCodes.Ret));
 
-        // note that we do NOT insert a ret, unlike other weavers, as we always 
+        // note that we do NOT insert a ret, unlike other weavers, as usual path branches and
         // FALL THROUGH to return the backing field.
+
         // Let Cecil optimize things for us. 
         //TODO prop.SetMethod.Body.OptimizeMacros();
 

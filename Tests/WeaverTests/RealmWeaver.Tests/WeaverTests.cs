@@ -29,6 +29,7 @@ using Mono.Cecil;
 using NUnit.Framework;
 using Realms;
 using System.ComponentModel;
+using AssemblyToProcess;
 using Mono.Cecil.Cil;
 
 namespace RealmWeaver
@@ -397,8 +398,9 @@ namespace RealmWeaver
             o.IsManaged = true;
 
             // Act
-            o.PhoneNumbers.Add(pn1);
-            o.PhoneNumbers.Add(pn2);
+            IList<PhoneNumber> nums = o.PhoneNumbers;
+            nums.Add(pn1);
+            nums.Add(pn2);
 
             // Assert
             Assert.That(o.LogList, Is.EqualTo(new List<string>
