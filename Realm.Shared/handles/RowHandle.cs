@@ -26,9 +26,11 @@ namespace Realms
         private static class NativeMethods
         {
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "row_get_row_index", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_row_index(RowHandle rowHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "row_get_is_attached",
                 CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_is_attached(RowHandle rowHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "row_destroy", CallingConvention = CallingConvention.Cdecl)]
             public static extern void destroy(IntPtr rowHandle);
@@ -52,6 +54,7 @@ namespace Realms
             get
             {
                 NativeException nativeException;
+                var result = NativeMethods.get_row_index(this, out nativeException);
                 nativeException.ThrowIfNecessary();
                 return (long)result;
             }
@@ -62,6 +65,7 @@ namespace Realms
             get
             {
                 NativeException nativeException;
+                var result = NativeMethods.get_is_attached(this, out nativeException);
                 nativeException.ThrowIfNecessary();
                 return result == (IntPtr) 1;  // inline equiv of IntPtrToBool
             }
