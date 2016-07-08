@@ -17,11 +17,24 @@
 ////////////////////////////////////////////////////////////////////////////
  
 using System;
+using System.Runtime.InteropServices;
 
 namespace Realms
 {
     internal class RowHandle: RealmHandle
     {
+        private static class NativeMethods
+        {
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "row_get_row_index", CallingConvention = CallingConvention.Cdecl)]
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "row_get_is_attached",
+                CallingConvention = CallingConvention.Cdecl)]
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "row_destroy", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void destroy(IntPtr rowHandle);
+
+        }
+
         //keep this one even though warned that it is not used. It is in fact used by marshalling
         //used by P/Invoke to automatically construct a TableHandle when returning a size_t as a TableHandle
         [Preserve]
@@ -31,11 +44,28 @@ namespace Realms
 
         protected override void Unbind()
         {
-            NativeRow.destroy(handle);
+            NativeMethods.destroy(handle);
         }
 
-        public long RowIndex => (long)NativeRow.row_get_row_index(this);
-        public bool IsAttached => NativeRow.row_get_is_attached(this)==(IntPtr)1;  // inline equiv of IntPtrToBool
+        public long RowIndex
+        {
+            get
+            {
+                NativeException nativeException;
+                nativeException.ThrowIfNecessary();
+                return (long)result;
+            }
+        }
+
+        public bool IsAttached
+        {
+            get
+            {
+                NativeException nativeException;
+                nativeException.ThrowIfNecessary();
+                return result == (IntPtr) 1;  // inline equiv of IntPtrToBool
+            }
+        }
 
         public override bool Equals(object p)
         {
