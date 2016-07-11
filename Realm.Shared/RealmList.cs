@@ -37,9 +37,9 @@ namespace Realms
         private class RealmListEnumerator : IEnumerator<T> 
         {
             private int index;
-            private IList<T> enumerating;
+            private RealmList<T> enumerating;
 
-            internal RealmListEnumerator(IList<T> parent)
+            internal RealmListEnumerator(RealmList<T> parent)
             {
                 index = -1;
                 enumerating = parent;

@@ -702,7 +702,8 @@ namespace Realms
         }
 
 
-        // This is a generic fallback, we normally handle with woven type-specific setters above
+        // Originally a generic fallback, now used only for RealmObject To-One relationship properties
+        // most other properties handled with woven type-specific setters above
         protected void SetObjectValue<T>(string propertyName, T value) where T : RealmObject
         {
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
