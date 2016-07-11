@@ -101,12 +101,7 @@ namespace IntegrationTests.Shared
                 new Owner {Name = "Katsumi", Dogs = { new Dog { Name = "Sir Yaps-a-lot", Vaccinated = false } } };
                 new Owner {Name = "Morgan", Dogs = { new Dog { Name = "Rudy Loosebooty" } } };
                 */
-                // to show you can assign later, create the Owner then assign their Dog
 
-                    /* syntax for later
-                var b = new Owner {Name = "Bjarne"};  
-                b.Dogs = new IList<Dog> { new Dog { Name = "Madame Barklouder", Vaccinated = false, Color = "White" }};
-                */
                 trans.Commit ();
             }
         }
@@ -360,33 +355,7 @@ namespace IntegrationTests.Shared
             Assert.That(dogAgain, Is.Not.Null);
             Assert.That(dog.IsManaged);
         }
-        /*
-        [Test, Description("This is the default C# behaviour for a list property")]
-        public void StandaloneListsShouldBeNull()
-        {
-            var person = new Person();
 
-            Assert.That(person.Friends, Is.Null);
-        }
-*/
-
-        /*
-         NoteOnListInit
-         If you have a simple braced init like 
-         Friends = { new Person {  FullName = "Sally"} }
-         it requires the property is already initialised and is short-hand for a series of Add
-         calls such as
-         Friends.Add( new Person {  FullName = "Sally"} );
-
-         A null property has to be initialised with a full object:
-         Friends = new List<Person> { new Person {  FullName = "Sally"} }
-
-         We have two approaches under consideration which would allow the simple braced init:
-         1) automatically weave in a clause in the ctor initialising the list properties, 
-            which adds overhead to creating an object if they never use the list.
-         2) If the user chooses to init a list in the ctor, preserve the ctor init (which is a 
-            requested feature anyway in issue 109)
-        */
         [Test]
         public void TestManagingStandaloneTwoLevelRelationship()
         {

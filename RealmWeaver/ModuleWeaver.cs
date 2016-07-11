@@ -307,13 +307,6 @@ public class ModuleWeaver
         // IList or RealmList allows people to declare lists only of _realmObject due to the class definition
         else if (prop.PropertyType.Name == "IList`1" && prop.PropertyType.Namespace == "System.Collections.Generic") {
             var elementType = ((GenericInstanceType)prop.PropertyType).GenericArguments.Single();
-            if (!elementType.Resolve().BaseType.IsSameAs(_realmObject)) {
-                LogWarningPoint(
-  $"SKIPPING {type.Name}.{columnName} because it is an IList but its generic type is not a RealmObject subclass, so will not persist",
-  sequencePoint);
-                return;
-            }
-
             if (prop.SetMethod != null) {
                 LogErrorPoint(
                     $"{type.Name}.{columnName} has a setter but its type is a IList which only supports getters",
@@ -335,13 +328,6 @@ public class ModuleWeaver
                              ModuleDefinition.ImportReference(concreteListConstructor) );
         } else if (prop.PropertyType.Name == "RealmList`1" && prop.PropertyType.Namespace == "Realms") {
             var elementType = ((GenericInstanceType)prop.PropertyType).GenericArguments.Single();
-            if (!elementType.Resolve().BaseType.IsSameAs(_realmObject)) {
-                LogWarningPoint(
-  $"SKIPPING {type.Name}.{columnName} because it is a RealmList but its generic type is not a RealmObject subclass, so will not persist",
-  sequencePoint);
-                return;
-            }
-
             if (prop.SetMethod != null) {
                 LogErrorPoint(
                     $"{type.Name}.{columnName} has a setter but its type is a RealmList which only supports getters",
