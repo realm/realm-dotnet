@@ -64,7 +64,7 @@ namespace Realms
             Debug.Assert(this.IsManaged);
 
             var thisType = this.GetType();
-            var wovenProperties = from prop in thisType.GetProperties()
+            var wovenPropertiesWithBacking = from prop in thisType.GetProperties()
                                   let backingField = prop.GetCustomAttributes(false)
                                                          .OfType<WovenPropertyAttribute>()
                                                          .Select(a => a.BackingFieldName)
@@ -72,19 +72,22 @@ namespace Realms
                                   where backingField != null
                                   select new { Info = prop, Field = thisType.GetField(backingField, BindingFlags.Instance | BindingFlags.NonPublic) };
 
-            foreach (var prop in wovenProperties)
+            foreach (var prop in wovenPropertiesWithBacking)
             {
                 var value = prop.Field.GetValue(this);
-                var listValue = value as IEnumerable<RealmObject>;
-                if (listValue != null)  // assume it is NOT a RealmList so need to wipe afer copy
-                {
-                    var realmList = (ICopyValuesFrom)prop.Info.GetValue(this, null);
-                    realmList.CopyValuesFrom(listValue);
-                }
-                else
-                {
-                    prop.Info.SetValue(this, value, null);
-                }
+                if (value != null) {
+                    var listValue = value as IEnumerable<RealmObject>;
+                    if (listValue != null)  // assume it is NOT a RealmList so need to wipe afer copy
+                    {
+                    // cope with ReplaceListGetter creating a getter which assumes 
+                    // a backing field for a managed IList is already a RealmList, so null it first
+                        prop.Field.SetValue(this, null);  // now getter will create a RealmList below
+                        var realmList = (ICopyValuesFrom)prop.Info.GetValue(this, null);
+                        realmList.CopyValuesFrom(listValue);
+                    } else {
+                        prop.Info.SetValue(this, value, null);
+                    }
+                }  // only null if blank relationship so leave as default
             }
         }
 

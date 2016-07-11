@@ -2361,7 +2361,7 @@ ModuleWeaver.cs
 - Execute - init System_IList
 - WeaveProperty
   - error if no backingField (temp double-check)
-  - IList set backing field if null
+  - IList set backing field to cope with new getter
   - restore warning on IList disallowing setter
 - PrependListFieldInitializerToConstructor removed unused method
 - ReplaceListGetter added
