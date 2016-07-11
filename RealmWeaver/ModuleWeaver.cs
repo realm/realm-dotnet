@@ -287,7 +287,6 @@ public class ModuleWeaver
                 LogWarningPoint(
                     $"{type.Name}.{columnName} is not an automatic property but its type is a RealmObject which normally indicates a relationship",
                     sequencePoint);
-            // note for To-Many relationships we expect most people to move to IList declarations so that could validly have a user-written getter
             Debug.WriteLine("Skipped because it's not automatic.");
             return;
         }
