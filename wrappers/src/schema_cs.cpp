@@ -28,32 +28,77 @@ using namespace realm;
 
 extern "C" {
 
-REALM_EXPORT std::vector<ObjectSchema>* schema_initializer_create()
+struct SchemaProperty
+{
+    char* name;
+    PropertyType type;
+    char* object_type;
+    bool is_nullable;
+    bool is_primary;
+    bool is_indexed;
+};
+
+struct SchemaObject
+{
+    char* name;
+    int properties_start;
+    int properties_end;
+};
+
+REALM_EXPORT Schema* schema_create(SchemaObject* objects, int objects_length, SchemaProperty* properties, ObjectSchema** handles)
 {
     return handle_errors([&]() {
-        return new std::vector<ObjectSchema>();
+        std::vector<ObjectSchema> object_schemas;
+        
+        for (int i = 0; i < objects_length; i++) {
+            SchemaObject& object = objects[i];
+            
+            ObjectSchema o;
+            o.name = object.name;
+            
+            for (int n = object.properties_start; n < object.properties_end; n++) {
+                SchemaProperty& property = properties[n];
+                
+                Property p;
+                p.name = property.name;
+                p.type = property.type;
+                p.object_type = property.object_type ? property.object_type : "";
+                p.is_nullable = property.is_nullable;
+                p.is_primary = property.is_primary;
+                p.is_indexed = property.is_indexed;
+                
+                o.persisted_properties.push_back(std::move(p));
+            }
+            
+            object_schemas.push_back(std::move(o));
+        }
+        
+        Schema* schema = new Schema(object_schemas);
+        
+        for (auto i = 0; i < objects_length; i++) {
+            handles[i] = &(*schema->find(objects[i].name));
+        }
+        
+        return schema;
     });
 }
-
-REALM_EXPORT void schema_initializer_destroy(std::vector<ObjectSchema>* schema_initializer)
-{
-    handle_errors([&]() {
-        delete schema_initializer;
-    });
-}
-
-REALM_EXPORT void schema_initializer_add_object_schema(std::vector<ObjectSchema>* schema_initializer, ObjectSchema* object_schema)
-{
-    handle_errors([&]() {
-        schema_initializer->push_back(std::move(*object_schema));
-    });
-}
-
-REALM_EXPORT Schema* schema_create(std::vector<ObjectSchema>* object_schemas, size_t len)
+    
+REALM_EXPORT Schema* schema_clone(Schema* schema, ObjectSchema** handles)
 {
     return handle_errors([&]() {
-        return new Schema(*object_schemas);
+        auto clone = new Schema(*schema);
+        for (auto i = 0; i < clone->size(); i++) {
+            handles[i] = &(*schema->find(*handles[i]));
+        }
+        
+        return clone;
     });
 }
 
+REALM_EXPORT void schema_destroy(Schema* schema)
+{
+    handle_errors([&]() {
+        delete schema;
+    });
+}
 }   // extern "C"

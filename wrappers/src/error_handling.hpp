@@ -46,6 +46,11 @@ struct NativeException {
     }
 };
     
+class RowDetachedException : public std::runtime_error {
+public:
+    RowDetachedException() : std::runtime_error("Attempted to access detached row") {}
+};
+
 NativeException convert_exception();
 
 void throw_managed_exception(const NativeException& exception);

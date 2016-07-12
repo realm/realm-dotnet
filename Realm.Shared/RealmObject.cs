@@ -43,6 +43,14 @@ namespace Realms
         /// </summary>
         public bool IsManaged => _realm != null;
 
+        /// <summary>
+        /// Returns true if this object is managed and represents a row in the database.
+        /// If a managed object has been removed from the Realm, it is no longer valid and accessing properties on it
+        /// will throw an exception.
+        /// Unmanaged objects are always considered valid.
+        /// </summary>
+        public bool IsValid => _rowHandle?.IsAttached != false;
+
         internal void _Manage(Realm realm, RowHandle rowHandle)
         {
             _realm = realm;
@@ -57,40 +65,36 @@ namespace Realms
             internal Weaving.IRealmObjectHelper Helper;
 
             internal Dictionary<string, IntPtr> ColumnIndices;
+
+            internal Schema.Object Schema;
         }
 
         internal void _CopyDataFromBackingFieldsToRow()
         {
             Debug.Assert(this.IsManaged);
 
-            var thisType = this.GetType();
-            var wovenPropertiesWithBacking = from prop in thisType.GetProperties()
-                                  let backingField = prop.GetCustomAttributes(false)
-                                                         .OfType<WovenPropertyAttribute>()
-                                                         .Select(a => a.BackingFieldName)
-                                                         .SingleOrDefault()
-                                  where backingField != null
-                                  select new { Info = prop, Field = thisType.GetField(backingField, BindingFlags.Instance | BindingFlags.NonPublic) };
-
-            foreach (var prop in wovenPropertiesWithBacking)
+            foreach (var property in _metadata.Schema)
             {
-                var value = prop.Field.GetValue(this);
+                var field = property.PropertyInfo.DeclaringType.GetField( 
+                               property.PropertyInfo.GetCustomAttribute<WovenPropertyAttribute>().BackingFieldName, 
+                               BindingFlags.Instance | BindingFlags.NonPublic
+                            );
+                var value = field?.GetValue(this);
                 if (value != null) {
                     var listValue = value as IEnumerable<RealmObject>;
-                    if (listValue != null)  // assume it is NOT a RealmList so need to wipe afer copy
+                    if (listValue != null)  // assume it is IList NOT a RealmList so need to wipe afer copy
                     {
                     // cope with ReplaceListGetter creating a getter which assumes 
                     // a backing field for a managed IList is already a RealmList, so null it first
-                        prop.Field.SetValue(this, null);  // now getter will create a RealmList below
-                        var realmList = (ICopyValuesFrom)prop.Info.GetValue(this, null);
+                        field.SetValue(this, null);  // now getter will create a RealmList below
+                        var realmList = (ICopyValuesFrom)property.PropertyInfo.GetValue(this, null);
                         realmList.CopyValuesFrom(listValue);
                     } else {
-                        prop.Info.SetValue(this, value, null);
+                        property.PropertyInfo.SetValue(this, value, null);
                     }
-                }  // only null if blank relationship so leave as default
+                }  // only null if blank relationship or string so leave as default
             }
         }
-
 
         #region Getters
         protected string GetStringValue(string propertyName)

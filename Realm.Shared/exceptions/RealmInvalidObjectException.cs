@@ -15,31 +15,13 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
-using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
-using System.Runtime.CompilerServices;
-using System.Runtime.ConstrainedExecution;
 
 namespace Realms
 {
-    internal class SchemaInitializerHandle : RealmHandle
+    public class RealmInvalidObjectException : RealmException
     {
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-        public SchemaInitializerHandle()
+        internal RealmInvalidObjectException(string message) : base(message)
         {
-            RuntimeHelpers.PrepareConstrainedRegions();
-            try { /* Retain handle in a constrained execution region */ }
-            finally
-            {
-                SetHandle(NativeSchema.initializer_create());
-            }
-        }
-
-        protected override void Unbind()
-        {
-            NativeSchema.initializer_destroy(handle);
         }
     }
 }

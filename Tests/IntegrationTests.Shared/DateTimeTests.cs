@@ -27,7 +27,7 @@ using System.Linq;
 
 namespace IntegrationTests.Shared
 {
-    [TestFixture]
+    [TestFixture, Preserve(AllMembers = true)]
     public class DateTimeTests
     {
         //TODO: this is ripe for refactoring across test fixture classes

@@ -452,7 +452,7 @@ namespace RealmWeaver
             Assert.That(personType.CustomAttributes.Any(a => a.AttributeType.Name == "WovenAttribute"));
         }
 
-        [Test, Ignore("Preserve attribute is not yet added, unignore when fixed.")]
+        [Test]
         public void ShouldAddPreserveAttributeToConstructor()
         {
             // Arrange and act
@@ -463,7 +463,7 @@ namespace RealmWeaver
             Assert.That(ctor.CustomAttributes.Any(a => a.AttributeType.Name == "PreserveAttribute"));
         }
 
-        [Test, Ignore("Preserve attribute is not yet added, unignore when fixed.")]
+        [Test]
         public void ShouldAddPreserveAttributeToHelperConstructor()
         {
             // Arrange and act

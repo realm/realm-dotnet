@@ -26,7 +26,7 @@ using System.Text;
 
 namespace IntegrationTests.Shared
 {
-    [TestFixture]
+    [TestFixture, Preserve(AllMembers = true)]
     public class StandAloneObjectTests
     {
         private Person _person;

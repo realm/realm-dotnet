@@ -33,10 +33,6 @@ namespace Realms
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_destroy", CallingConvention = CallingConvention.Cdecl)]
         internal static extern void destroy(IntPtr sharedRealm);
 
-        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_has_table",
-            CallingConvention = CallingConvention.Cdecl)]
-        internal static extern IntPtr has_table(SharedRealmHandle sharedRealm, string tableName);
-
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_begin_transaction",
             CallingConvention = CallingConvention.Cdecl)]
         internal static extern void begin_transaction(SharedRealmHandle sharedRealm);

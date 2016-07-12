@@ -36,6 +36,8 @@ REALM_EXPORT void row_destroy(Row* row_ptr)
 REALM_EXPORT size_t row_get_row_index(const Row* row_ptr)
 {
     return handle_errors([&]() {
+        if (!row_ptr->is_attached())
+            throw RowDetachedException();
         return row_ptr->get_index();
     });
 }

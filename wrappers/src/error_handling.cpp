@@ -94,6 +94,9 @@ namespace realm {
         catch (const IndexOutOfRangeException& e) {
             return { RealmErrorType::StdIndexOutOfRange, e.what() };
         }
+        catch (const RowDetachedException& e) {
+            return { RealmErrorType::RealmRowDetached, e.what() };
+        }
         catch (const std::bad_alloc& e) {
             return { RealmErrorType::RealmOutOfMemory, e.what() };
         }

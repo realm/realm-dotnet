@@ -27,7 +27,7 @@ using System.Threading.Tasks;
 
 namespace IntegrationTests
 {
-    [TestFixture]
+    [TestFixture, Preserve(AllMembers = true)]
     public class ObjectIntegrationTests : PeopleTestsBase
     {
 
@@ -247,9 +247,26 @@ namespace IntegrationTests
             Assert.That (iterCount, Is.EqualTo (3));
         }
 
+        [Test]
+        public void IsValidReturnsTrueWhenObjectRowIsAttached()
+        {
+            _realm.Write(() =>
+            {
+                var p1 = _realm.CreateObject<Person>();
+                Assert.That(p1.IsValid);
+
+                _realm.Remove(p1);
+                Assert.That(p1.IsValid, Is.False);
+            });
+
+            // IsValid should always return true for standalone objects
+            var p2 = new Person();
+            Assert.That(p2.IsValid);
+        }
+
     }  // ObjectIntegrationTests
 
-    [TestFixture]
+    [TestFixture, Preserve(AllMembers = true)]
     public class RealmMigrationTests
     {
         [Test]
