@@ -90,21 +90,32 @@ namespace Realms
         /// <param name="config">Optional configuration.</param>
         /// <returns>A realm instance.</returns>
         /// <exception cref="RealmFileAccessErrorException">Throws error if the filesystem has an error preventing file creation.</exception>
+        public static Realm GetInstance(RealmConfiguration config = null)
+        {
+            return GetInstance(config, null);
+        }
+
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-        public static Realm GetInstance(RealmConfiguration config=null)
+        internal static Realm GetInstance(RealmConfiguration config, RealmSchema schema)
         {
             config = config ?? RealmConfiguration.DefaultConfiguration;
 
             var srHandle = new SharedRealmHandle();
 
-            RealmSchema schema;
-            if (config.ObjectClasses == null)
+            if (schema == null)
             {
-                schema = RealmSchema.Default.CloneForAdoption(srHandle);
+                if (config.ObjectClasses != null)
+                {
+                    schema = RealmSchema.CreateSchemaForClasses(config.ObjectClasses, new SchemaHandle(srHandle));
+                }
+                else
+                {
+                    schema = RealmSchema.Default.CloneForAdoption(srHandle);
+                }
             }
             else
             {
-                schema = RealmSchema.CreateSchemaForClasses(config.ObjectClasses, new SchemaHandle(srHandle));
+                schema = schema.CloneForAdoption(srHandle);
             }
 
             var srPtr = IntPtr.Zero;
@@ -146,10 +157,14 @@ namespace Realms
         #endregion
 
         internal readonly SharedRealmHandle SharedRealmHandle;
-        internal readonly Dictionary<Type, RealmObject.Metadata> Metadata;
-        internal readonly RealmSchema Schema;
+        internal readonly Dictionary<string, RealmObject.Metadata> Metadata;
 
         internal bool IsInTransaction => SharedRealmHandle.IsInTransaction();
+
+        /// <summary>
+        /// The <see cref="RealmSchema"/> instance that describes all the types that can be stored in this <see cref="Realm"/>.
+        /// </summary>
+        public RealmSchema Schema { get; }
 
         private Realm(SharedRealmHandle sharedRealmHandle, RealmConfiguration config, RealmSchema schema)
         {
@@ -158,24 +173,32 @@ namespace Realms
             // update OUR config version number in case loaded one from disk
             Config.SchemaVersion = sharedRealmHandle.GetSchemaVersion();
 
-            Metadata = schema.ToDictionary(t => t.Type, CreateRealmObjectMetadata);
+            Metadata = schema.ToDictionary(t => t.Name, CreateRealmObjectMetadata);
             Schema = schema;
         }
 
-        private RealmObject.Metadata CreateRealmObjectMetadata(Schema.Object schema)
+        private RealmObject.Metadata CreateRealmObjectMetadata(Schema.ObjectSchema schema)
         {
             var table = this.GetTable(schema);
-            var wovenAtt = schema.Type.GetCustomAttribute<WovenAttribute>();
-            if (wovenAtt == null)
-                throw new RealmException($"Fody not properly installed. {schema.Type.FullName} is a RealmObject but has not been woven.");
-            var helper = (Weaving.IRealmObjectHelper)Activator.CreateInstance(wovenAtt.HelperType);
-            var properties = schema.ToDictionary(p => p.Name, p => NativeTable.GetColumnIndex(table, p.Name));
+            Weaving.IRealmObjectHelper helper;
+
+            if (schema.Type != null)
+            {
+                var wovenAtt = schema.Type.GetCustomAttribute<WovenAttribute>();
+                if (wovenAtt == null)
+                    throw new RealmException($"Fody not properly installed. {schema.Type.FullName} is a RealmObject but has not been woven.");
+                helper = (Weaving.IRealmObjectHelper)Activator.CreateInstance(wovenAtt.HelperType);
+            }
+            else
+            {
+                helper = Dynamic.DynamicRealmObjectHelper.Instance;
+            }
 
             return new RealmObject.Metadata
             {
                 Table = table,
                 Helper = helper,
-                ColumnIndices = properties,
+                ColumnIndices = schema.ToDictionary(p => p.Name, p => NativeTable.GetColumnIndex(table, p.Name)),
                 Schema = schema
             };
         }
@@ -330,7 +353,7 @@ namespace Realms
 
 
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-        private TableHandle GetTable(Schema.Object schema)
+        private TableHandle GetTable(Schema.ObjectSchema schema)
         {
             var result = new TableHandle();
             var tableName = schema.Name;
@@ -354,59 +377,78 @@ namespace Realms
         /// <exception cref="RealmOutsideTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
         public T CreateObject<T>() where T : RealmObject, new()
         {
+            RealmObject.Metadata metadata;
+            var ret = CreateObject(typeof(T).Name, out metadata);
+            if (typeof(T) != metadata.Schema.Type)
+                throw new ArgumentException($"The type {typeof(T).FullName} does not match the original type the schema was created for - {metadata.Schema.Type?.FullName}");
+
+            return (T)ret;
+        }
+
+        /// <summary>
+        /// Factory for a managed object in a realm. Only valid within a Write transaction.
+        /// </summary>
+        /// <returns>A dynamically-accessed Realm object.</returns>
+        /// <param name="className">The type of object to create as defined in the schema.</param>
+        /// <remarks>
+        /// If the realm instance has been created from an untyped schema (such as when migrating from an older version of a realm) the returned object will be purely dynamic.
+        /// If the realm has been created from a typed schema as is the default case when calling <code>Realm.GetInstance()</code> the returned object will be an instance of a user-defined class, as if created by <code>Realm.CreateObject&lt;T&gt;()</code>.
+        /// </remarks>
+        public dynamic CreateObject(string className)
+        {
+            RealmObject.Metadata ignored;
+            return CreateObject(className, out ignored);
+        }
+
+        private RealmObject CreateObject(string className, out RealmObject.Metadata metadata)
+        {
             if (!IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot create Realm object outside write transactions");
 
-            var objectType = typeof(T);
-            if (Config.ObjectClasses != null && !Config.ObjectClasses.Contains(objectType))
-                throw new ArgumentException($"The class {objectType.Name} is not in the limited set of classes for this realm");
+            if (!Metadata.TryGetValue(className, out metadata))
+                throw new ArgumentException($"The class {className} is not in the limited set of classes for this realm");
 
-            var metadata = Metadata[typeof(T)];
-
-            var result = (T)metadata.Helper.CreateInstance();
+            var result = metadata.Helper.CreateInstance();
 
             var rowPtr = NativeTable.AddEmptyRow(metadata.Table);
-            var rowHandle = CreateRowHandle (rowPtr, SharedRealmHandle);
+            var rowHandle = CreateRowHandle(rowPtr, SharedRealmHandle);
 
-            result._Manage(this, rowHandle);
+            result._Manage(this, rowHandle, metadata);
             return result;
         }
 
-        internal RealmObject MakeObjectForRow(Type objectType, RowHandle rowHandle)
+        internal RealmObject MakeObjectForRow(string className, RowHandle rowHandle)
         {
-            RealmObject ret = Metadata[objectType].Helper.CreateInstance();
-            ret._Manage(this, rowHandle);
+            var metadata = Metadata[className];
+            RealmObject ret = metadata.Helper.CreateInstance();
+            ret._Manage(this, rowHandle, metadata);
             return ret;
         }
 
 
-        internal ResultsHandle MakeResultsForTable(Type tableType)
+        internal ResultsHandle MakeResultsForTable(string className)
         {
-            var metadata = Metadata[tableType];
-            //IntPtr resultsPtr = NativeResults.create_for_table(SharedRealmHandle, metadata.Table, metadata.Schema.Handle);
+            var metadata = Metadata[className];
             var resultsPtr = NativeTable.CreateResults(metadata.Table, SharedRealmHandle, metadata.Schema.Handle);
             return CreateResultsHandle(resultsPtr);
         }
 
 
-        internal ResultsHandle MakeResultsForQuery(Type tableType, QueryHandle builtQuery, SortOrderHandle optionalSortOrder)
+        internal ResultsHandle MakeResultsForQuery(Schema.ObjectSchema schema, QueryHandle builtQuery, SortOrderHandle optionalSortOrder)
         {
-            var objSchema = Metadata[tableType].Schema.Handle;
-            IntPtr resultsPtr = IntPtr.Zero;
+            var resultsPtr = IntPtr.Zero;               
             if (optionalSortOrder == null)
-                //resultsPtr = NativeResults.create_for_query(SharedRealmHandle, builtQuery, objSchema);
-                resultsPtr = builtQuery.CreateResults(SharedRealmHandle, objSchema);
+                resultsPtr = builtQuery.CreateResults(SharedRealmHandle, schema.Handle);
             else
-            //resultsPtr = NativeResults.create_for_query_sorted(SharedRealmHandle, builtQuery, objSchema, optionalSortOrder);
-                resultsPtr = builtQuery.CreateSortedResults(SharedRealmHandle, objSchema, optionalSortOrder);
+                resultsPtr = builtQuery.CreateSortedResults(SharedRealmHandle, schema.Handle, optionalSortOrder);
             return CreateResultsHandle(resultsPtr);
         }
 
 
-        internal SortOrderHandle MakeSortOrderForTable(Type tableType)
+        internal SortOrderHandle MakeSortOrderForTable(string className)
         {
             var result = new SortOrderHandle();
-            result.CreateForTable(Metadata[tableType].Table);
+            result.CreateForTable(Metadata[className].Table);
             return result;
         }
 
@@ -436,12 +478,13 @@ namespace Realms
             if (!IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot start managing a Realm object outside write transactions");
 
-            var tableHandle = Metadata[typeof(T)].Table;
+            var metadata = Metadata[typeof(T).Name];
+            var tableHandle = metadata.Table;
 
             var rowPtr = NativeTable.AddEmptyRow(tableHandle);
             var rowHandle = CreateRowHandle(rowPtr, SharedRealmHandle);
 
-            obj._Manage(this, rowHandle);
+            obj._Manage(this, rowHandle, metadata);
             obj._CopyDataFromBackingFieldsToRow();
         }
 
@@ -580,7 +623,26 @@ namespace Realms
         /// <returns>A RealmResults that without further filtering, allows iterating all objects of class T, in this realm.</returns>
         public RealmResults<T> All<T>() where T: RealmObject
         {
-            return new RealmResults<T>(this, true);
+            var type = typeof(T);
+            var schema = Schema.Find(type.Name);
+            if (schema?.Type != type)
+                throw new ArgumentException($"The class {type.Name} is not in the limited set of classes for this realm");
+            
+            return new RealmResults<T>(this, schema, true);
+        }
+
+        /// <summary>
+        /// Get a view of all the objects of a particular type
+        /// </summary>
+        /// <param name="className">The type of the objects as defined in the schema.</param>
+        /// <remarks>Because the objects inside the view are accessed dynamically, the view cannot be queried into using LINQ or other expression predicates.</remarks>
+        public RealmResults<dynamic> All(string className)
+        {
+            var schema = Schema.Find(className);
+            if (schema == null)
+                throw new ArgumentException($"The class {className} is not in the limited set of classes for this realm");
+
+            return new RealmResults<dynamic>(this, schema, true);
         }
 
         /// <summary>
@@ -594,7 +656,7 @@ namespace Realms
             if (!IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot remove Realm object outside write transactions");
 
-            var tableHandle = Metadata[obj.GetType()].Table;
+            var tableHandle = obj.ObjectMetadata.Table;
             NativeTable.RemoveRow(tableHandle, (RowHandle)obj.RowHandle);
         }
 
@@ -603,8 +665,11 @@ namespace Realms
         /// </summary>
         /// <typeparam name="T">Type of the objects to remove.</typeparam>
         /// <param name="range">The query to match for.</param>
-        public void RemoveRange<T>(RealmResults<T> range) where T: RealmObject
+        public void RemoveRange<T>(RealmResults<T> range)
         {
+            if (range == null)
+                throw new ArgumentNullException(nameof(range));
+
             if (!IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot remove Realm objects outside write transactions");
 
@@ -617,10 +682,16 @@ namespace Realms
         /// <typeparam name="T">Type of the objects to remove.</typeparam>
         public void RemoveAll<T>() where T: RealmObject
         {
-            if (!IsInTransaction)
-                throw new RealmOutsideTransactionException("Cannot remove all Realm objects outside write transactions");
-
             RemoveRange(All<T>());
+        }
+
+        /// <summary>
+        /// Remove all objects of a type from the realm.
+        /// </summary>
+        /// <param name="className">Type of the objects to remove as defined in the schema.</param>
+        public void RemoveAll(string className)
+        {
+            RemoveRange(All(className));
         }
 
         /// <summary>
@@ -633,7 +704,7 @@ namespace Realms
 
             foreach (var @object in Schema)
             {
-                var resultsHandle = MakeResultsForTable(@object.Type);
+                var resultsHandle = MakeResultsForTable(@object.Name);
                 resultsHandle.Clear();
             }
         }

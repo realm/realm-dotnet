@@ -25,7 +25,7 @@ using Realms;
 
 namespace IntegrationTests.Shared
 {
-    [TestFixture]
+    [TestFixture, Preserve(AllMembers = true)]
     public class AccessTests
     {
         protected Realm _realm;
@@ -59,21 +59,21 @@ namespace IntegrationTests.Shared
             Assert.That(TestHelpers.GetPropertyValue(ato, propertyName), Is.EqualTo(propertyValue));
         }
 
-        public IEnumerable<object[]> SetAndGetValueCases()
+        public static object[] SetAndGetValueCases =
         {
-            yield return new object[] { "CharProperty", '0' };
-            yield return new object[] { "ByteProperty", (byte)100 };
-            yield return new object[] { "Int16Property", (short)100 };
-            yield return new object[] { "Int32Property", 100 };
-            yield return new object[] { "Int64Property", 100L };
-            yield return new object[] { "SingleProperty", 123.123f };
-            yield return new object[] { "DoubleProperty", 123.123 };
-            yield return new object[] { "BooleanProperty", true };
-            yield return new object[] { "ByteArrayProperty", new byte[] { 0xde, 0xad, 0xbe, 0xef } };
-            yield return new object[] { "ByteArrayProperty", new byte[0] };
-            yield return new object[] { "StringProperty", "hello" };
-            yield return new object[] { "DateTimeOffsetProperty", new DateTimeOffset(1956, 6, 1, 0, 0, 0, TimeSpan.Zero) };
-        }
+            new object[] { "CharProperty", '0' },
+            new object[] { "ByteProperty", (byte)100 },
+            new object[] { "Int16Property", (short)100 },
+            new object[] { "Int32Property", 100 },
+            new object[] { "Int64Property", 100L },
+            new object[] { "SingleProperty", 123.123f },
+            new object[] { "DoubleProperty", 123.123 },
+            new object[] { "BooleanProperty", true },
+            new object[] { "ByteArrayProperty", new byte[] { 0xde, 0xad, 0xbe, 0xef } },
+            new object[] { "ByteArrayProperty", new byte[0] },
+            new object[] { "StringProperty", "hello" },
+            new object[] { "DateTimeOffsetProperty", new DateTimeOffset(1956, 6, 1, 0, 0, 0, TimeSpan.Zero) }
+        };
 
         [TestCaseSource(nameof(SetAndReplaceWithNullCases))]
         public void SetValueAndReplaceWithNull(string propertyName, object propertyValue)
@@ -98,21 +98,22 @@ namespace IntegrationTests.Shared
             Assert.That(TestHelpers.GetPropertyValue(ato, propertyName), Is.EqualTo(null));
         }
 
-        public IEnumerable<object[]> SetAndReplaceWithNullCases()
+        public static object[] SetAndReplaceWithNullCases =
         {
-            yield return new object[] { "NullableCharProperty", '0' };
-            yield return new object[] { "NullableByteProperty", (byte)100 };
-            yield return new object[] { "NullableInt16Property", (short)100 };
-            yield return new object[] { "NullableInt32Property", 100 };
-            yield return new object[] { "NullableInt64Property", 100L };
-            yield return new object[] { "NullableSingleProperty", 123.123f };
-            yield return new object[] { "NullableDoubleProperty", 123.123 };
-            yield return new object[] { "NullableBooleanProperty", true };
-            yield return new object[] { "ByteArrayProperty", new byte[] { 0xde, 0xad, 0xbe, 0xef } };
-            yield return new object[] { "ByteArrayProperty", new byte[0] };
-            yield return new object[] { "StringProperty", "hello" };
-            yield return new object[] { "NullableDateTimeOffsetProperty", new DateTimeOffset(1956, 6, 1, 0, 0, 0, TimeSpan.Zero) };
-        }
+            new object[] { "NullableCharProperty", '0' },
+            new object[] { "NullableByteProperty", (byte)100 },
+            new object[] { "NullableInt16Property", (short)100 },
+            new object[] { "NullableInt32Property", 100 },
+            new object[] { "NullableInt64Property", 100L },
+            new object[] { "NullableSingleProperty", 123.123f },
+            new object[] { "NullableDoubleProperty", 123.123 },
+            new object[] { "NullableBooleanProperty", true },
+            new object[] { "ByteArrayProperty", new byte[] { 0xde, 0xad, 0xbe, 0xef } },
+            new object[] { "ByteArrayProperty", new byte[0] },
+            new object[] { "StringProperty", "hello" },
+            new object[] { "StringProperty", "" },
+            new object[] { "NullableDateTimeOffsetProperty", new DateTimeOffset(1956, 6, 1, 0, 0, 0, TimeSpan.Zero) }
+        };
 
         [Test]
         public void AccessingRemovedObjectShouldThrow()

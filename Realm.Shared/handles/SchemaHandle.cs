@@ -61,10 +61,10 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "schema_create", CallingConvention = CallingConvention.Cdecl)]
             public static extern unsafe IntPtr create([MarshalAs(UnmanagedType.LPArray), In] Object[] objects, int objects_length,
                                                               [MarshalAs(UnmanagedType.LPArray), In] Property[] properties,
-                                                              IntPtr* object_schema_handles, out NativeException ex);
+                                                              [MarshalAs(UnmanagedType.LPArray), Out]IntPtr[] object_schema_handles, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "schema_clone", CallingConvention = CallingConvention.Cdecl)]
-            public static extern unsafe IntPtr clone(SchemaHandle schema, IntPtr* object_schema_handles, out NativeException ex);
+            public static extern  IntPtr clone(SchemaHandle schema, [MarshalAs(UnmanagedType.LPArray), In, Out]IntPtr[] object_schema_handles, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "schema_destroy", CallingConvention = CallingConvention.Cdecl)]
             public static extern void destroy(IntPtr schema);
@@ -79,10 +79,10 @@ namespace Realms
         {
         }
 
-        public unsafe void Initialize(Object[] objects, int count, Property[] properties, IntPtr* handlesPtr)
+        public  void Initialize(Object[] objects, int count, Property[] properties, IntPtr[] objectSchemaHandles)
         {
             NativeException nativeException;
-            var ptr = NativeMethods.create(objects, count, properties, handlesPtr, out nativeException);
+            var ptr = NativeMethods.create(objects, count, properties, objectSchemaHandles, out nativeException);
             nativeException.ThrowIfNecessary();
 
             RuntimeHelpers.PrepareConstrainedRegions();
@@ -93,10 +93,10 @@ namespace Realms
             }
         }
 
-        public unsafe void InitializeCloneFrom(SchemaHandle schemaHandle, IntPtr* handlesPtr)
+        public  void InitializeCloneFrom(SchemaHandle schemaHandle, IntPtr[] objectSchemaHandles)
         {
             NativeException nativeException;
-            var ptr = NativeMethods.clone(schemaHandle, handlesPtr, out nativeException);
+            var ptr = NativeMethods.clone(schemaHandle, objectSchemaHandles, out nativeException);
             nativeException.ThrowIfNecessary();
 
             RuntimeHelpers.PrepareConstrainedRegions();

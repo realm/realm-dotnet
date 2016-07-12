@@ -98,9 +98,18 @@
     <Compile Include="..\Realm.Shared\exceptions\RealmInvalidObjectException.cs">
       <Link>Exceptions\RealmInvalidObjectException.cs</Link>
     </Compile>
+    <Compile Include="..\Realm.Shared\Schema\Property.cs">
+      <Link>Schema\Property.cs</Link>
+    </Compile>
+    <Compile Include="..\Realm.Shared\Schema\PropertyType.cs">
+      <Link>Schema\PropertyType.cs</Link>
+    </Compile>
+    <Compile Include="Schema\ObjectSchemaPCL.cs" />
+    <Compile Include="Schema\RealmSchemaPCL.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <ItemGroup>
     <Folder Include="Exceptions\" />
+    <Folder Include="Schema\" />
   </ItemGroup>
 </Project>

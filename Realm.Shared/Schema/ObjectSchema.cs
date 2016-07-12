@@ -19,33 +19,39 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
+using System.Linq;
 using System.Reflection;
 
 namespace Realms.Schema
 {
     [DebuggerDisplay("Name = {Name}, Properties = {Count}")]
-    internal class Object : ICollection<Property>
+    public class ObjectSchema : IReadOnlyCollection<Property>
     {
-        private readonly Dictionary<string, Property> _properties = new Dictionary<string, Property>();
+        private readonly ReadOnlyDictionary<string, Property> _properties;
 
         public string Name { get; private set; }
 
         public int Count => _properties.Count;
 
-        bool ICollection<Property>.IsReadOnly => false;
-
         internal IntPtr Handle;
         internal Type Type;
 
-        public Object(string name)
+        internal IEnumerable<string> PropertyNames => _properties.Keys;
+
+        private ObjectSchema(string name, IDictionary<string, Property> properties)
         {
             if (string.IsNullOrEmpty(name)) throw new ArgumentException("Object name cannot be empty", nameof(name));
+            if (properties == null) throw new ArgumentNullException(nameof(properties));
             Contract.EndContractBlock();
 
             Name = name;
+            _properties = new ReadOnlyDictionary<string, Property>(properties);
         }
+
+        public bool TryFindProperty(string name, out Property property) => _properties.TryGetValue(name, out property);
 
         public IEnumerator<Property> GetEnumerator()
         {
@@ -57,69 +63,25 @@ namespace Realms.Schema
             return GetEnumerator();
         }
 
-        public bool Remove(Property property)
+        internal ObjectSchema Clone(IntPtr handle)
         {
-            if (string.IsNullOrEmpty(property.Name)) throw new ArgumentException("Property name must be a string", nameof(property));
-            Contract.EndContractBlock();
-
-            return _properties.Remove(property.Name);
+            return new ObjectSchema(Name, _properties) { Type = Type, Handle = handle };
         }
 
-        public void Clear()
-        {
-            _properties.Clear();
-        }
-
-        public void Add(Property property)
-        {
-            if (string.IsNullOrEmpty(property.Name)) throw new ArgumentException("Property name must be a string", nameof(property));
-            Contract.EndContractBlock();
-
-            _properties.Add(property.Name, property);
-        }
-
-        public bool Contains(Property property)
-        {
-            return _properties.ContainsValue(property);
-        }
-
-        public void CopyTo(Property[] array, int arrayIndex)
-        {
-            if (array == null) throw new ArgumentNullException(nameof(array));
-            if (arrayIndex < 0) throw new ArgumentOutOfRangeException(nameof(arrayIndex));
-            if (array.Length - arrayIndex >= Count) throw new ArgumentException("The number of items in this collection is greater than the available space in the array");
-            Contract.EndContractBlock();
-
-            foreach (var property in this)
-            {
-                array[arrayIndex++] = property;
-            }
-        }
-
-        internal Object Clone(IntPtr handle)
-        {
-            var ret = new Object(Name) { Type = Type, Handle = handle };
-            foreach (var kvp in _properties)
-            {
-                ret._properties.Add(kvp.Key, kvp.Value.Clone());
-            }
-            return ret;
-        }
-
-        public static Object FromType(Type type)
+        public static ObjectSchema FromType(Type type)
         {
             if (type == null) throw new ArgumentNullException(nameof(type));
             if (type.BaseType != typeof(RealmObject)) throw new ArgumentException($"The class {type.FullName} must descend directly from RealmObject");
             Contract.EndContractBlock();
 
-            var @object = new Object(type.Name);
-            @object.Type = type;
+            var builder = new Builder(type.Name);
             foreach (var property in type.GetProperties(BindingFlags.Instance | BindingFlags.DeclaredOnly | BindingFlags.NonPublic | BindingFlags.Public))
             {
                 if (property.GetCustomAttribute<WovenPropertyAttribute>() == null) continue;
 
-                var schemaProperty = new Property(property.GetCustomAttribute<MapToAttribute>()?.Mapping ?? property.Name)
+                var schemaProperty = new Property
                 {
+                    Name = property.GetCustomAttribute<MapToAttribute>()?.Mapping ?? property.Name,
                     IsObjectId = property.GetCustomAttribute<ObjectIdAttribute>() != null,
                     IsIndexed = property.GetCustomAttribute<IndexedAttribute>() != null,
                     PropertyInfo = property
@@ -131,10 +93,33 @@ namespace Realms.Schema
                 schemaProperty.ObjectType = innerType?.Name;
                 schemaProperty.IsNullable = isNullable;
 
-                @object.Add(schemaProperty);
+                builder.Add(schemaProperty);
             }
 
-            return @object;
+            var ret = builder.Build();
+            ret.Type = type;
+            return ret;
+        }
+
+        public class Builder : List<Property>
+        {
+            public string Name { get; }
+
+            public Builder(string name)
+            {
+                if (string.IsNullOrEmpty(name)) throw new ArgumentException("Object name cannot be empty", nameof(name));
+                Contract.EndContractBlock();
+
+                Name = name;
+            }
+
+            public ObjectSchema Build()
+            {
+                if (Count == 0) throw new InvalidOperationException("Cannot build an empty ObjectSchema");
+                Contract.EndContractBlock();
+
+                return new ObjectSchema(Name, this.ToDictionary(p => p.Name));
+            }
         }
     }
 }

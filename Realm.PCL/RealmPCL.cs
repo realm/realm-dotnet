@@ -49,6 +49,11 @@ namespace Realms
         public RealmConfiguration Config { get; private set; }
 
         /// <summary>
+        /// The <see cref="RealmSchema"/> instance that describes all the types that can be stored in this <see cref="Realm"/>.
+        /// </summary>
+        public RealmSchema Schema { get; }
+
+        /// <summary>
         /// Factory for a Realm instance for this thread.
         /// </summary>
         /// <param name="databasePath">Path to the realm, must be a valid full path for the current platform, relative subdir, or just filename.</param>
@@ -75,13 +80,6 @@ namespace Realms
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return null;
         }  // GetInstance
-
-
-        private static IntPtr GenerateObjectSchema(Type objectClass)
-        {
-            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
-            return IntPtr.Zero;
-        }
 
         #endregion
 
@@ -196,6 +194,21 @@ namespace Realms
         }
 
         /// <summary>
+        /// Factory for a managed object in a realm. Only valid within a Write transaction.
+        /// </summary>
+        /// <returns>A dynamically-accessed Realm object.</returns>
+        /// <param name="className">The type of object to create as defined in the schema.</param>
+        /// <remarks>
+        /// If the realm instance has been created from an untyped schema (such as when migrating from an older version of a realm) the returned object will be purely dynamic.
+        /// If the realm has been created from a typed schema as is the default case when calling <code>Realm.GetInstance()</code> the returned object will be an instance of a user-defined class, as if created by <code>Realm.CreateObject&lt;T&gt;()</code>.
+        /// </remarks>
+        public dynamic CreateObject(string className)
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
+        }
+
+        /// <summary>
         /// This realm will start managing a RealmObject which has been created as a standalone object.
         /// </summary>
         /// <typeparam name="T">The Type T must not only be a RealmObject but also have been processd by the Fody weaver, so it has persistent properties.</typeparam>
@@ -299,6 +312,17 @@ namespace Realms
         }
 
         /// <summary>
+        /// Get a view of all the objects of a particular type
+        /// </summary>
+        /// <param name="className">The type of the objects as defined in the schema.</param>
+        /// <remarks>Because the objects inside the view are accessed dynamically, the view cannot be queried into using LINQ or other expression predicates.</remarks>
+        public RealmResults<dynamic> All(string className)
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
+        }
+
+        /// <summary>
         /// Removes a persistent object from this realm, effectively deleting it.
         /// </summary>
         /// <param name="obj">Must be an object persisted in this realm.</param>
@@ -324,6 +348,15 @@ namespace Realms
         /// </summary>
         /// <typeparam name="T">Type of the objects to remove.</typeparam>
         public void RemoveAll<T>() where T: RealmObject
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+        }
+
+        /// <summary>
+        /// Remove all objects of a type from the realm.
+        /// </summary>
+        /// <param name="className">Type of the objects to remove as defined in the schema.</param>
+        public void RemoveAll(string className)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }

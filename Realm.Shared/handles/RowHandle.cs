@@ -49,14 +49,14 @@ namespace Realms
             NativeMethods.destroy(handle);
         }
 
-        public long RowIndex
+        public IntPtr RowIndex
         {
             get
             {
                 NativeException nativeException;
                 var result = NativeMethods.get_row_index(this, out nativeException);
                 nativeException.ThrowIfNecessary();
-                return (long)result;
+                return result;
             }
         }
 

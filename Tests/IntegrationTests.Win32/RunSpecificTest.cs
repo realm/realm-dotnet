@@ -32,10 +32,10 @@ namespace IntegrationTests.Win32
         [Test, Explicit("Use this to run a specific test once")]
         public void RunTest()
         {
-            var testFixture = new SimpleLINQtests();
+            var testFixture = new NotificationTests();
             testFixture.Setup();
 
-            testFixture.CreateList();
+            testFixture.CollectionChangedAdapter_DeletingItemFromRealm_ShouldRaiseReset();
 
             testFixture.TearDown();
         }

@@ -68,7 +68,7 @@ namespace Realms
             public static extern UInt64 get_schema_version(SharedRealmHandle sharedRealm, out NativeException ex);
         }
 
-        [Preserve("Constructor used by marshaling, cannot be removed by linker")]
+        [Preserve]
         public SharedRealmHandle()
         {
         }

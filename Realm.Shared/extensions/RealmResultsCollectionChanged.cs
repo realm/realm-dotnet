@@ -20,6 +20,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Realms
@@ -84,6 +85,7 @@ namespace Realms
                 _coalesceMultipleChangesIntoReset = coalesceMultipleChangesIntoReset;
 
                 _token = results.SubscribeForNotifications(OnChange);
+                Debug.Assert(_token != null);
             }
 
             ~Adapter()

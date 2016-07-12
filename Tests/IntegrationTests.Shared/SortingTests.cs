@@ -25,13 +25,12 @@ using Realms;
 
 namespace IntegrationTests
 {
-
     class Cities : RealmObject
     {
         public string Name { set; get; }
     }
 
-
+    [TestFixture, Preserve(AllMembers = true)]
     class SortingTests : PeopleTestsBase
     {
             

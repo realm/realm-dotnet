@@ -101,6 +101,7 @@ public class ModuleWeaver
     private MethodReference _genericGetObjectValueReference;
     private MethodReference _genericSetObjectValueReference;
     private MethodReference _genericGetListValueReference;
+    private MethodReference _preserveAttributeConstructor;
     private MethodReference _wovenAttributeConstructor;
     private MethodReference _wovenPropertyAttributeConstructor;
 
@@ -150,6 +151,9 @@ public class ModuleWeaver
         _genericGetObjectValueReference = LookupMethodAndImport(_realmObject, "GetObjectValue");
         _genericSetObjectValueReference = LookupMethodAndImport(_realmObject, "SetObjectValue");
         _genericGetListValueReference = LookupMethodAndImport(_realmObject, "GetListValue");
+
+        var preserveAttributeClass = _realmAssembly.MainModule.GetTypes().First(x => x.Name == "PreserveAttribute");
+        _preserveAttributeConstructor = ModuleDefinition.ImportReference(preserveAttributeClass.GetConstructors().Single(c => c.Parameters.Count == 0));
 
         var wovenAttributeClass = _realmAssembly.MainModule.GetTypes().First(x => x.Name == "WovenAttribute");
         _wovenAttributeConstructor = ModuleDefinition.ImportReference(wovenAttributeClass.GetConstructors().First());
@@ -239,6 +243,9 @@ public class ModuleWeaver
             LogErrorPoint($"class {type.Name} must have a public constructor that takes no parameters", sequencePoint);
             return;
         }
+
+        var preserveAttribute = new CustomAttribute(_preserveAttributeConstructor);
+        objectConstructor.CustomAttributes.Add(preserveAttribute);
 
         var wovenAttribute = new CustomAttribute(_wovenAttributeConstructor);
         TypeReference helperType = WeaveRealmObjectHelper(type, objectConstructor);
@@ -703,6 +710,9 @@ public class ModuleWeaver
             il.Emit(OpCodes.Call, ModuleDefinition.ImportReference(System_Object.GetConstructors().Single()));
             il.Emit(OpCodes.Ret);
         }
+
+        var preserveAttribute = new CustomAttribute(_preserveAttributeConstructor);
+        ctor.CustomAttributes.Add(preserveAttribute);
 
         helperType.Methods.Add(ctor);
 

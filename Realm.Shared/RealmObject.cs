@@ -35,8 +35,8 @@ namespace Realms
         private RowHandle _rowHandle;
         private Metadata _metadata;
 
-        internal Realm Realm => _realm;
         internal RowHandle RowHandle => _rowHandle;
+        internal Metadata ObjectMetadata => _metadata;
 
         /// <summary>
         /// Allows you to check if the object has been associated with a Realm, either at creation or via Realm.Manage.
@@ -51,11 +51,21 @@ namespace Realms
         /// </summary>
         public bool IsValid => _rowHandle?.IsAttached != false;
 
-        internal void _Manage(Realm realm, RowHandle rowHandle)
+        /// <summary>
+        /// The <see cref="Realm"/> instance this object belongs to, or <code>null</code> if it is unmanaged.
+        /// </summary>
+        public Realm Realm => _realm;
+
+        /// <summary>
+        /// The <see cref="Schema.ObjectSchema"/> instance that describes how the <see cref="Realm"/> this object belongs to sees it.
+        /// </summary>
+        public Schema.ObjectSchema ObjectSchema => _metadata?.Schema;
+
+        internal void _Manage(Realm realm, RowHandle rowHandle, Metadata metadata)
         {
             _realm = realm;
             _rowHandle = rowHandle;
-            _metadata = realm.Metadata[GetType()];
+            _metadata = metadata;
         }
 
         internal class Metadata
@@ -66,7 +76,7 @@ namespace Realms
 
             internal Dictionary<string, IntPtr> ColumnIndices;
 
-            internal Schema.Object Schema;
+            internal Schema.ObjectSchema Schema;
         }
 
         internal void _CopyDataFromBackingFieldsToRow()
@@ -166,14 +176,14 @@ namespace Realms
         {
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
-            return NativeTable.GetFloat(_metadata.Table, _metadata.ColumnIndices[propertyName],  _rowHandle.RowIndex);
+            return NativeTable.GetSingle(_metadata.Table, _metadata.ColumnIndices[propertyName],  _rowHandle.RowIndex);
         }
 
         protected float? GetNullableSingleValue(string propertyName)
         {
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
-            return NativeTable.GetNullableFloat(_metadata.Table, _metadata.ColumnIndices[propertyName],  _rowHandle.RowIndex);
+            return NativeTable.GetNullableSingle(_metadata.Table, _metadata.ColumnIndices[propertyName],  _rowHandle.RowIndex);
         }
 
         protected double GetDoubleValue(string propertyName)
@@ -194,36 +204,40 @@ namespace Realms
         {
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
-            return NativeTable.GetBool(_metadata.Table, _metadata.ColumnIndices[propertyName],  _rowHandle.RowIndex);
+            return NativeTable.GetBoolean(_metadata.Table, _metadata.ColumnIndices[propertyName],  _rowHandle.RowIndex);
         }
 
         protected bool? GetNullableBooleanValue(string propertyName)
         {
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
-            return NativeTable.GetNullableBool(_metadata.Table, _metadata.ColumnIndices[propertyName],  _rowHandle.RowIndex);
+            return NativeTable.GetNullableBoolean(_metadata.Table, _metadata.ColumnIndices[propertyName],  _rowHandle.RowIndex);
         }
 
         protected DateTimeOffset GetDateTimeOffsetValue(string propertyName)
         {
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
-            return NativeTable.GetTimestampMilliseconds(_metadata.Table, _metadata.ColumnIndices[propertyName],  _rowHandle.RowIndex);
+            return NativeTable.GetDateTimeOffset(_metadata.Table, _metadata.ColumnIndices[propertyName],  _rowHandle.RowIndex);
         }
 
         protected DateTimeOffset? GetNullableDateTimeOffsetValue(string propertyName)
         {
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
-            return NativeTable.GetNullableTimestampMilliseconds(_metadata.Table, _metadata.ColumnIndices[propertyName],  _rowHandle.RowIndex);
+            return NativeTable.GetNullableDateTimeOffset(_metadata.Table, _metadata.ColumnIndices[propertyName],  _rowHandle.RowIndex);
         }
 
         protected RealmList<T> GetListValue<T>(string propertyName) where T : RealmObject
         {
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
-            var listHandle = _metadata.Table.TableLinkList (_metadata.ColumnIndices[propertyName], _rowHandle);
-            return new RealmList<T>(this, listHandle);
+            Schema.Property property;
+            _metadata.Schema.TryFindProperty(propertyName, out property);
+            var objectType = property.ObjectType;
+
+            var listHandle = _metadata.Table.TableLinkList (_metadata.ColumnIndices[propertyName], _rowHandle.RowIndex);
+            return new RealmList<T>(_realm, listHandle, objectType);
         }
 
         protected T GetObjectValue<T>(string propertyName) where T : RealmObject
@@ -232,14 +246,21 @@ namespace Realms
 
             var rowIndex = _rowHandle.RowIndex;
             var linkedRowPtr = NativeTable.GetLink (_metadata.Table, _metadata.ColumnIndices[propertyName], rowIndex);
-            return (T)MakeRealmObject(typeof(T), linkedRowPtr);
+            if (linkedRowPtr == IntPtr.Zero)
+                return null;
+
+            Schema.Property property;
+            _metadata.Schema.TryFindProperty(propertyName, out property);
+            var objectType = property.ObjectType;
+
+            return (T)_realm.MakeObjectForRow(objectType, Realm.CreateRowHandle(linkedRowPtr, _realm.SharedRealmHandle));
         }
 
         protected byte[] GetByteArrayValue(string propertyName)
         {
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
-            return NativeTable.GetBinary(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex);
+            return NativeTable.GetByteArray(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex);
         }
 
         #endregion
@@ -423,7 +444,7 @@ namespace Realms
             if (!_realm.IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
 
-            NativeTable.SetFloat(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value);
+            NativeTable.SetSingle(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value);
         }
 
         protected void SetNullableSingleValue(string propertyName, float? value)
@@ -433,7 +454,7 @@ namespace Realms
             if (!_realm.IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
 
-            NativeTable.SetNullableFloat(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value);
+            NativeTable.SetNullableSingle(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value);
         }
 
         protected void SetDoubleValue(string propertyName, double value)
@@ -463,7 +484,7 @@ namespace Realms
             if (!_realm.IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
 
-            NativeTable.SetBool(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value);
+            NativeTable.SetBoolean(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value);
         }
 
         protected void SetNullableBooleanValue(string propertyName, bool? value)
@@ -473,7 +494,7 @@ namespace Realms
             if (!_realm.IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
 
-            NativeTable.SetNullableBool(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value);
+            NativeTable.SetNullableBoolean(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value);
         }
 
         protected void SetDateTimeOffsetValue(string propertyName, DateTimeOffset value)
@@ -483,7 +504,7 @@ namespace Realms
             if (!_realm.IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
 
-            NativeTable.SetTimestampMilliseconds(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value);
+            NativeTable.SetDateTimeOffset(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value);
         }
 
         protected void SetNullableDateTimeOffsetValue(string propertyName, DateTimeOffset? value)
@@ -493,7 +514,7 @@ namespace Realms
             if (!_realm.IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
 
-            NativeTable.SetNullableTimestampMilliseconds(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value);
+            NativeTable.SetNullableDateTimeOffset(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value);
         }
 
         // TODO make not generic
@@ -524,24 +545,10 @@ namespace Realms
             if (!_realm.IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
 
-            NativeTable.SetBinary(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value);
+            NativeTable.SetByteArray(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value);
         }
 
         #endregion
-
-        /**
-         * Shared factory to make an object in the realm from a known row
-         * @param rowPtr may be null if a relationship lookup has failed.
-        */
-        internal RealmObject MakeRealmObject(Type objectType, IntPtr rowPtr) {
-            if (rowPtr == IntPtr.Zero)
-                return null;  // typically no related object
-            var ret = _realm.Metadata[objectType].Helper.CreateInstance();
-            var relatedHandle = Realm.CreateRowHandle (rowPtr, _realm.SharedRealmHandle);
-            ret._Manage(_realm, relatedHandle);
-            return ret;
-        }
-
 
         /// <summary>
         /// Compare objects with identity query for persistent objects.

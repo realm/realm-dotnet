@@ -23,14 +23,13 @@ using System.Collections.ObjectModel;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Realms.Schema;
 
 namespace Realms
 {
-    using Object = Schema.Object;
-
-    internal class RealmSchema : IReadOnlyCollection<Object>
+    public class RealmSchema : IReadOnlyCollection<ObjectSchema>
     {
-        private readonly ReadOnlyDictionary<string, Object> _objects;
+        private readonly ReadOnlyDictionary<string, ObjectSchema> _objects;
 
         internal readonly SchemaHandle Handle;
 
@@ -39,23 +38,23 @@ namespace Realms
         private static readonly Lazy<RealmSchema> _default = new Lazy<RealmSchema>(BuildDefaultSchema);
         internal static RealmSchema Default => _default.Value;
 
-        private RealmSchema(SchemaHandle handle, IEnumerable<Object> objects)
+        private RealmSchema(SchemaHandle handle, IEnumerable<ObjectSchema> objects)
         {
-            _objects = new ReadOnlyDictionary<string, Object>(objects.ToDictionary(o => o.Name));
+            _objects = new ReadOnlyDictionary<string, ObjectSchema>(objects.ToDictionary(o => o.Name));
             Handle = handle;
         }
 
-        public Object Find(string name)
+        public ObjectSchema Find(string name)
         {
             if (string.IsNullOrEmpty(name)) throw new ArgumentException("Object schema name must be a non-empty string", nameof(name));
             Contract.EndContractBlock();
 
-            Object obj;
+            ObjectSchema obj;
             _objects.TryGetValue(name, out obj);
             return obj;
         }
 
-        public IEnumerator<Object> GetEnumerator()
+        public IEnumerator<ObjectSchema> GetEnumerator()
         {
             return _objects.Values.GetEnumerator();
         }
@@ -65,22 +64,28 @@ namespace Realms
             return GetEnumerator();
         }
 
-        internal RealmSchema CloneForAdoption(SharedRealmHandle parent)
+        internal RealmSchema CloneForAdoption(SharedRealmHandle parent = null)
         {
             var objectsArray = this.ToArray();
             var handlesArray = objectsArray.Select(o => o.Handle).ToArray();
-            var schemaHandle = new SchemaHandle(parent);
+            System.Diagnostics.Debug.Assert(!handlesArray.Contains(IntPtr.Zero));
 
-            unsafe
-            {
-                fixed (IntPtr* handlesPtr = handlesArray)
-                {
-                    schemaHandle.InitializeCloneFrom(Handle, handlesPtr);
-                }
-            }
+            var schemaHandle = new SchemaHandle(parent);
+            schemaHandle.InitializeCloneFrom(Handle, handlesArray);
 
             var clones = objectsArray.Select((o, i) => o.Clone(handlesArray[i]));
             return new RealmSchema(schemaHandle, clones);
+        }
+
+        internal RealmSchema DynamicClone(SharedRealmHandle parent = null)
+        {
+            var clone = CloneForAdoption(parent);
+            foreach (var type in clone)
+            {
+                type.Type = null;
+            }
+
+            return clone;
         }
 
         internal static RealmSchema CreateSchemaForClasses(IEnumerable<Type> classes, SchemaHandle schemaHandle = null)
@@ -88,7 +93,7 @@ namespace Realms
             var builder = new Builder();
             foreach (var @class in classes)
             {
-                builder.Add(Object.FromType(@class)); 
+                builder.Add(ObjectSchema.FromType(@class)); 
             }
 
             return builder.Build(schemaHandle ?? new SchemaHandle());
@@ -101,13 +106,15 @@ namespace Realms
                                               // we need to exclude dynamic assemblies. see https://bugzilla.xamarin.com/show_bug.cgi?id=39679
                                               .Where(a => !(a is System.Reflection.Emit.AssemblyBuilder))
                                               #endif
+                                              // exclude the Realm assembly
+                                              .Where(a => a != typeof(Realm).Assembly)
                                               .SelectMany(a => a.GetTypes())
                                               .Where(t => t.IsSubclassOf(typeof(RealmObject)));
 
             return CreateSchemaForClasses(realmObjectClasses);
         }
 
-        public class Builder : List<Object>
+        public class Builder : List<ObjectSchema>
         {
             public RealmSchema Build()
             {
@@ -116,6 +123,9 @@ namespace Realms
 
             internal RealmSchema Build(SchemaHandle schemaHandle)
             {
+                if (Count == 0) throw new InvalidOperationException("Cannot build an empty RealmSchema");
+                Contract.EndContractBlock();
+
                 var objects = new List<SchemaHandle.Object>();
                 var properties = new List<SchemaHandle.Property>();
 
@@ -134,14 +144,7 @@ namespace Realms
                 }
 
                 var handles = new IntPtr[Count];
-
-                unsafe
-                {
-                    fixed (IntPtr* handlesPtr = handles)
-                    {
-                        schemaHandle.Initialize(objects.ToArray(), objects.Count, properties.ToArray(), handlesPtr);
-                    }
-                }
+                schemaHandle.Initialize(objects.ToArray(), objects.Count, properties.ToArray(), handles);
 
                 return new RealmSchema(schemaHandle, this.Select((o, i) => o.Clone(handles[i])));
             }

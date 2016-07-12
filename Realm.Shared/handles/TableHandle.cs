@@ -91,7 +91,7 @@ namespace Realms
 
         //acquire a LinkListHandle from table_get_linklist And set root in an atomic fashion 
         [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands"), SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
-        internal LinkListHandle TableLinkList(IntPtr columnIndex, RowHandle rowHandle)
+        internal LinkListHandle TableLinkList(IntPtr columnIndex, IntPtr rowIndex)
         {
             var listHandle = RootedLinkListHandle();
 
@@ -104,7 +104,6 @@ namespace Realms
             { }
             finally
             {
-                var rowIndex = rowHandle.RowIndex;
                 listHandle.SetHandle(NativeTable.GetLinklist (this, columnIndex, rowIndex));
             }//at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
             return listHandle;

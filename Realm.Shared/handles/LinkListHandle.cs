@@ -66,24 +66,24 @@ namespace Realms
             NativeMethods.destroy(handle);
         }
         
-        public void Add(long rowIndex)
+        public void Add(IntPtr rowIndex)
         {
             NativeException nativeException;
-            NativeMethods.add(this, (IntPtr)rowIndex, out nativeException);
+            NativeMethods.add(this, rowIndex, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public void Insert(long linkIndex, long rowIndex)
+        public void Insert(IntPtr linkIndex, IntPtr rowIndex)
         {
             NativeException nativeException;
-            NativeMethods.insert(this, (IntPtr)linkIndex, (IntPtr)rowIndex, out nativeException);
+            NativeMethods.insert(this, linkIndex, rowIndex, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public void Erase(long rowIndex)
+        public void Erase(IntPtr rowIndex)
         {
             NativeException nativeException;
-            NativeMethods.erase(this, (IntPtr)rowIndex, out nativeException);
+            NativeMethods.erase(this, rowIndex, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
@@ -94,20 +94,20 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public long Get(long linkIndex)
+        public IntPtr Get(IntPtr linkIndex)
         {
             NativeException nativeException;
-            var result = NativeMethods.get(this, (IntPtr)linkIndex, out nativeException);
+            var result = NativeMethods.get(this, linkIndex, out nativeException);
             nativeException.ThrowIfNecessary();
-            return (long)result;
+            return result;
         }
 
-        public long Find(long linkIndex, long startFrom)
+        public IntPtr Find(IntPtr linkIndex, IntPtr startFrom)
         {
             NativeException nativeException;
-            var result = NativeMethods.find(this, (IntPtr)linkIndex, (IntPtr)startFrom, out nativeException);
+            var result = NativeMethods.find(this, linkIndex, startFrom, out nativeException);
             nativeException.ThrowIfNecessary();
-            return (long) result;
+            return  result;
         }
 
         public int Size()
