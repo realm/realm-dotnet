@@ -206,7 +206,7 @@ public class ModuleWeaver
 
         var typeImplementsPropertyChanged =
             type.Interfaces.Any(t => t.FullName == "System.ComponentModel.INotifyPropertyChanged");
-
+        
         EventDefinition propChangedEventDefinition = null;
         FieldDefinition propChangedFieldDefinition = null;
 
@@ -474,41 +474,8 @@ public class ModuleWeaver
         ///   0: ldarg.0  // load the this pointer
         ///   1: ldfld <backingField>
         ///   2: ret
-        /// We want to change it so it looks somewhat like this, from IL pane in Linqpad 5:
+        /// We want to change it so it looks somewhat like this, in C#
         /*
-            IL_0000:  nop
-            IL_0001:  ldarg.0
-            IL_0002:  ldfld       <backingField>
-            IL_0007:  ldnull
-            IL_0008:  ceq
-            IL_000A:  stloc.0
-            IL_000B:  ldloc.0
-            IL_000C:  brfalse.s   IL_0038
-            IL_000E:  nop
-            IL_000F:  ldarg.0
-            IL_0010:  call        UserQuery+RealmObject.get_IsManaged
-            IL_0015:  stloc.1
-            IL_0016:  ldloc.1
-            IL_0017:  brfalse.s   IL_002C
-            IL_0019:  ldarg.0
-            IL_001A:  ldarg.0
-            IL_001B:  ldstr       <columnName>
-            IL_0020:  call        UserQuery+RealmObject.GetListObject
-            IL_0025:  stfld       <backingField>
-            IL_002A:  br.s        IL_0037
-            IL_002C:  ldarg.0
-            IL_002D:  newobj      System.Collections.Generic.List <  <elementType>  >..ctor
-            IL_0032:  stfld       <backingField>
-            IL_0037:  nop
-            IL_0038:  ldarg.0
-            IL_0039:  ldfld       <backingField>
-            IL_003E:  stloc.2
-            IL_003F:  br.s        IL_0041
-            IL_0041:  ldloc.2
-            IL_0042:  ret
-
-            This is roughly equivalent to:
-
             if (<backingField> == null)
             {
                if (IsManaged)
