@@ -43,9 +43,8 @@ namespace Realms
 
         public static class NativeMethods
         {
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_is_same_internal_results",
-                    CallingConvention = CallingConvention.Cdecl)]
-                public static extern IntPtr is_same_internal_results(ResultsHandle lhs, ResultsHandle rhs, out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_is_same_internal_results", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr is_same_internal_results(ResultsHandle lhs, ResultsHandle rhs, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_destroy", CallingConvention = CallingConvention.Cdecl)]
             public static extern void destroy(IntPtr resultsHandle);
