@@ -296,7 +296,7 @@ namespace Realms
         }
 
         #if __IOS__
-        [ObjCRuntime.MonoPInvokeCallback(typeof(NativeResults.NotificationCallback))]
+        [ObjCRuntime.MonoPInvokeCallback(typeof(ResultsHandle.NotificationCallback))]
         #endif
         internal static void NotificationCallback(IntPtr managedResultsHandle, PtrTo<ResultsHandle.CollectionChangeSet> changes, PtrTo<NativeException> exception)
         {
