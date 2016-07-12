@@ -85,12 +85,12 @@ namespace Realms
             return result;
         }
 
-        public long Count()
+        public int Count()
         {
             NativeException nativeException;
             var result = NativeMethods.count(this, out nativeException);
             nativeException.ThrowIfNecessary();
-            return (long)result;
+            return (int)result;
         }
 
         public void Clear()

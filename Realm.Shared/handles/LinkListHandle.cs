@@ -110,12 +110,12 @@ namespace Realms
             return (long) result;
         }
 
-        public long Size()
+        public int Size()
         {
             NativeException nativeException;
             var result = NativeMethods.size(this, out nativeException);
             nativeException.ThrowIfNecessary();
-            return (long) result;
+            return (int) result;
         }
     }
 }
