@@ -43,6 +43,9 @@ namespace IntegrationTests.Shared
         }
 
         [Test]
+#if WINDOWS
+        [Ignore("We don't support async on Windows just yet.")]
+#endif
         public async void AsyncWrite_ShouldExecuteOnWorkerThread()
         {
             var currentThreadId = Thread.CurrentThread.ManagedThreadId;
@@ -71,6 +74,9 @@ namespace IntegrationTests.Shared
         }
 
         [Test]
+#if WINDOWS
+        [Ignore("We don't support async on Windows just yet.")]
+#endif
         public async void AsyncWrite_UpdateViaObjectId()
         {
             var path = "/path/to/some/item";
