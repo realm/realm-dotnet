@@ -31,11 +31,9 @@ using namespace realm::binding;
 
 extern "C" {
 
-REALM_EXPORT void query_destroy(Query* query_ptr, NativeException::Marshallable& ex)
+REALM_EXPORT void query_destroy(Query* query_ptr)
 {
-    return handle_errors(ex, [&]() {
-        delete(query_ptr);
-    });
+    delete(query_ptr);
 }
 
 

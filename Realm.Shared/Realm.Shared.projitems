@@ -28,8 +28,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)linq\TypeSystem.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MarshalHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)native\NativeCommon.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)native\NativeQuery.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)native\NativeSharedRealm.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)native\NativeTable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PreserveAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realm.cs" />
@@ -41,7 +39,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmFileNotFoundException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmOutOfMemoryException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transaction.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)native\NativeLinkList.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)handles\LinkListHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RealmConfiguration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmMigrationNeededException.cs" />
@@ -53,7 +50,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)handles\ResultsHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)native\NativeResults.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)handles\SortOrderHandle.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)native\NativeSortOrder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)weaving\IRealmObjectHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)handles\NotificationTokenHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmInvalidTransactionException.cs" />

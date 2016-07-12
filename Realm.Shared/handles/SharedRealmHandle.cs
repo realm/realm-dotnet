@@ -73,10 +73,87 @@ namespace Realms
         {
         }
 
-
         protected override void Unbind()
         {
             NativeMethods.destroy(handle);
+        }
+
+        public IntPtr Open(SchemaHandle schemaHandle, string path, bool readOnly, IntPtr durability, byte[] encryptionKey, 
+                UInt64 schemaVersion, out NativeException ex)
+        {
+            NativeException nativeException;
+            var result = NativeMethods.open(schemaHandle, path, (IntPtr)path.Length, MarshalHelpers.BoolToIntPtr(readOnly), 
+                    durability, encryptionKey, schemaVersion, out nativeException);
+            nativeException.ThrowIfNecessary();
+            return result;
+        }
+
+        public void BindToManagedRealmHandle(IntPtr managedRealmHandle)
+        {
+            NativeException nativeException;
+            NativeMethods.bind_to_managed_realm_handle(this, managedRealmHandle, out nativeException);
+            nativeException.ThrowIfNecessary();
+        }
+
+        public void BeginTransaction()
+        {
+            NativeException nativeException;
+            NativeMethods.begin_transaction(this, out nativeException);
+            nativeException.ThrowIfNecessary();
+        }
+
+        public void CommitTransaction()
+        {
+            NativeException nativeException;
+            NativeMethods.commit_transaction(this, out nativeException);
+            nativeException.ThrowIfNecessary();
+        }
+
+        public void CancelTransaction()
+        {
+            NativeException nativeException;
+            NativeMethods.cancel_transaction(this, out nativeException);
+            nativeException.ThrowIfNecessary();
+        }
+
+        public bool IsInTransaction()
+        {
+            NativeException nativeException;
+            var result = NativeMethods.is_in_transaction(this, out nativeException);
+            nativeException.ThrowIfNecessary();
+            return MarshalHelpers.IntPtrToBool(result);
+        }
+
+        public bool Refresh()
+        {
+            NativeException nativeException;
+            var result = NativeMethods.refresh(this, out nativeException);
+            nativeException.ThrowIfNecessary();
+            return MarshalHelpers.IntPtrToBool(result);
+        }
+
+        public IntPtr GetTable(string tableName)
+        {
+            NativeException nativeException;
+            var result = NativeMethods.get_table(this, tableName, (IntPtr)tableName.Length, out nativeException);
+            nativeException.ThrowIfNecessary();
+            return result;
+        }
+
+        public bool IsSameInstance(SharedRealmHandle rhs)
+        {
+            NativeException nativeException;
+            var result = NativeMethods.is_same_instance(this, rhs, out nativeException);
+            nativeException.ThrowIfNecessary();
+            return MarshalHelpers.IntPtrToBool(result);
+        }
+
+        public ulong GetSchemaVersion()
+        {
+            NativeException nativeException;
+            var result = NativeMethods.get_schema_version(this, out nativeException);
+            nativeException.ThrowIfNecessary();
+            return result;
         }
     }
 }

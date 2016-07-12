@@ -40,7 +40,7 @@ namespace Realms
         private static extern IntPtr create_for_query_sorted(SharedRealmHandle sharedRealm, QueryHandle queryPtr, IntPtr objectSchema, SortOrderHandle sortOrderHandle, out NativeException ex);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_destroy", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void destroy(IntPtr resultsHandle, out NativeException ex);
+        private static extern void destroy(IntPtr resultsHandle);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_row", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr get_row(ResultsHandle results, IntPtr index, out NativeException ex);

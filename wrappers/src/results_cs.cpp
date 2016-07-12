@@ -42,11 +42,9 @@ struct SortOrderWrapper {
 
 extern "C" {
 
-REALM_EXPORT void results_destroy(Results* results_ptr, NativeException::Marshallable& ex)
+REALM_EXPORT void results_destroy(Results* results_ptr)
 {
-  handle_errors(ex, [&]() {
-      delete results_ptr;
-  });
+    delete results_ptr;
 }
 
 // TODO issue https://github.com/realm/realm-dotnet-private/issues/40 added as needs

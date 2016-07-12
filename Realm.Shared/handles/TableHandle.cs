@@ -37,7 +37,9 @@ namespace Realms
 
         protected override void Unbind()
         {
-            NativeTable.unbind(handle);
+            NativeException nativeException;
+            NativeTable.unbind(handle, out nativeException);
+            nativeException.ThrowIfNecessary();
         }
 
         /*

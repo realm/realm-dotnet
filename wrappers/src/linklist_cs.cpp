@@ -89,11 +89,9 @@ REALM_EXPORT size_t linklist_size(SharedLinkViewRef* linklist_ptr, NativeExcepti
 }
 
   
-REALM_EXPORT void linklist_destroy(SharedLinkViewRef* linklist_ptr, NativeException::Marshallable& ex)
+REALM_EXPORT void linklist_destroy(SharedLinkViewRef* linklist_ptr)
 {
-  return handle_errors(ex, [&]() {
     delete linklist_ptr;
-  });
 }
 
 }   // extern "C"
