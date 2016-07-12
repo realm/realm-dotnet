@@ -1,6 +1,10 @@
 0.xy.z (TBD)
 -------------------
 
+### Major Changes
+* It is now possible to introspect the schema of a Realm. (#645)
+* The Realm class received overloads for `Realm.CreateObject` and `Realm.All` that accept string arguments instead of generic parameters, enabling use of the `dynamic` keyword with objects whose exact type is not known at compile time. (#646)
+
 ### Minor Changes
 * Fixed a crash on iOS when creating many short-lived realms very rapidly in parallel (#653)
 * `RealmObject.IsValid` can be called to check if a managed object has been deleted
