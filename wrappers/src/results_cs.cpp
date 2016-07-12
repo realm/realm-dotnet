@@ -21,23 +21,10 @@
 #include "marshalling.hpp"
 #include "realm_export_decls.hpp"
 #include "results.hpp"
+#include "sort_order_wrapper.hpp"
 
 using namespace realm;
 using namespace realm::binding;
-
-/// Simple wrapper to keep the Table* we need to lookup column indices when we add clauses to a SortOrder.
-struct SortOrderWrapper {
-    SortOrder sort_order;
-    Table* table;
-
-    SortOrderWrapper(Table* in_table) : table(in_table) {}
-
-    void add_sort(size_t col, bool ascendingCol)
-    {
-      sort_order.column_indices.push_back(col);
-      sort_order.ascending.push_back(ascendingCol);
-    }
-};
 
 
 extern "C" {
@@ -56,34 +43,6 @@ REALM_EXPORT size_t results_is_same_internal_results(Results* lhs, Results* rhs,
   });
 }
 
-  REALM_EXPORT Results* results_create_for_table(SharedRealm* realm, Table* table_ptr, ObjectSchema* object_schema, NativeException::Marshallable& ex)
-  {
-    return handle_errors(ex, [&]() {
-      return new Results(*realm, *object_schema, *table_ptr);
-    });
-  }
-  
-  REALM_EXPORT Results* results_create_for_table_sorted(SharedRealm* realm, Table* table_ptr, ObjectSchema* object_schema, SortOrderWrapper* sortorder_ptr, NativeException::Marshallable& ex)
-  {
-    return handle_errors(ex, [&]() {
-      return new Results(*realm, *object_schema, Query(table_ptr->where()), sortorder_ptr->sort_order);
-    });
-  }
-  
-REALM_EXPORT Results* results_create_for_query(SharedRealm* realm, Query * query_ptr, ObjectSchema* object_schema, NativeException::Marshallable& ex)
-{
-  return handle_errors(ex, [&]() {
-      return new Results(*realm, *object_schema, *query_ptr);
-  });
-}
-
-REALM_EXPORT Results* results_create_for_query_sorted(SharedRealm* realm, Query * query_ptr, ObjectSchema* object_schema, SortOrderWrapper* sortorder_ptr, NativeException::Marshallable& ex)
-{
-  return handle_errors(ex, [&]() {
-      return new Results(*realm, *object_schema, *query_ptr, sortorder_ptr->sort_order);
-  });
-}
-
 REALM_EXPORT Row* results_get_row(Results* results_ptr, size_t ndx, NativeException::Marshallable& ex)
 {
   return handle_errors(ex, [&]() {
@@ -91,7 +50,7 @@ REALM_EXPORT Row* results_get_row(Results* results_ptr, size_t ndx, NativeExcept
       return new Row(results_ptr->get(ndx));
     }
     catch (std::out_of_range &exp) {
-      return (Row*)nullptr;
+      return static_cast<Row*>(nullptr);
     }
   });
 }

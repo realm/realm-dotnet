@@ -15,12 +15,15 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
+using System;
+using System.Runtime.InteropServices;
+
 namespace Realms
 {
     internal class LinkListHandle:RealmHandle
     {
-        private static class NativeLinkList
+        private static class NativeMethods
         {
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "linklist_add",
                     CallingConvention = CallingConvention.Cdecl)]
@@ -63,24 +66,24 @@ namespace Realms
             NativeMethods.destroy(handle);
         }
         
-        public void Add(IntPtr row_ndx)
+        public void Add(long rowIndex)
         {
             NativeException nativeException;
-            NativeMethods.add(this, out nativeException);
+            NativeMethods.add(this, (IntPtr)rowIndex, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public void Insert(IntPtr link_ndx, IntPtr row_ndx)
+        public void Insert(long linkIndex, long rowIndex)
         {
             NativeException nativeException;
-            NativeMethods.insert(this, out nativeException);
+            NativeMethods.insert(this, (IntPtr)linkIndex, (IntPtr)rowIndex, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public void Erase(IntPtr row_ndx)
+        public void Erase(long rowIndex)
         {
             NativeException nativeException;
-            NativeMethods.erase(this, out nativeException);
+            NativeMethods.erase(this, (IntPtr)rowIndex, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
@@ -91,25 +94,28 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public IntPtr get()
+        public long Get(long linkIndex)
         {
             NativeException nativeException;
-            NativeMethods.clear(this, out nativeException);
+            var result = NativeMethods.get(this, (IntPtr)linkIndex, out nativeException);
             nativeException.ThrowIfNecessary();
+            return (long)result;
         }
 
-        public IntPtr find(IntPtr link_ndx, IntPtr start_from)
+        public long Find(long linkIndex, long startFrom)
         {
             NativeException nativeException;
-            NativeMethods.clear(this, out nativeException);
+            var result = NativeMethods.find(this, (IntPtr)linkIndex, (IntPtr)startFrom, out nativeException);
             nativeException.ThrowIfNecessary();
+            return (long) result;
         }
 
-        public IntPtr size()
+        public long Size()
         {
             NativeException nativeException;
-            NativeMethods.clear(this, out nativeException);
+            var result = NativeMethods.size(this, out nativeException);
             nativeException.ThrowIfNecessary();
+            return (long) result;
         }
     }
 }

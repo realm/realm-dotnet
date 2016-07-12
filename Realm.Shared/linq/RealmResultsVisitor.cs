@@ -112,7 +112,7 @@ namespace Realms
             }
 
             var sortColName = body.Member.Name;
-            NativeSortOrder.add_sort_clause(_optionalSortOrderHandle, sortColName, (IntPtr)sortColName.Length, ascending ? (IntPtr)1 : IntPtr.Zero);
+            _optionalSortOrderHandle.AddClause(sortColName, ascending);
         }
 
 
@@ -177,7 +177,7 @@ namespace Realms
                     {
                         using (ResultsHandle rh = _realm.MakeResultsForQuery(_retType, _coreQueryHandle, _optionalSortOrderHandle)) 
                         {
-                            var rowPtr = NativeResults.get_row(rh, IntPtr.Zero);
+                            var rowPtr = rh.GetRow(0);
                             firstRow = Realm.CreateRowHandle(rowPtr, _realm.SharedRealmHandle);
                         }
                     }
@@ -335,7 +335,7 @@ namespace Realms
                         break;
 
                     default:
-                        throw new NotSupportedException(string.Format("The binary operator '{0}' is not supported", b.NodeType));
+                        throw new NotSupportedException($"The binary operator '{b.NodeType}' is not supported");
                 }
             }
             return b;
@@ -446,7 +446,7 @@ namespace Realms
             else if (valueType == typeof(DateTimeOffset))
                 queryHandle.TimestampMillisecondsLess(columnIndex, (DateTimeOffset)value);
             else if (valueType == typeof(string) || valueType == typeof(bool))
-                throw new Exception("Unsupported type " + valueType.Name);
+                throw new Exception($"Unsupported type {valueType.Name}");
             else
                 throw new NotImplementedException();
         }
@@ -468,7 +468,7 @@ namespace Realms
                 queryHandle.TimestampMillisecondsLessEqual(columnIndex, (DateTimeOffset)value);
 
             else if (valueType == typeof(string) || valueType == typeof(bool))
-                throw new Exception("Unsupported type " + valueType.Name);
+                throw new Exception($"Unsupported type {valueType.Name}");
             else
                 throw new NotImplementedException();
         }
@@ -489,7 +489,7 @@ namespace Realms
             else if (valueType == typeof(DateTimeOffset))
                 queryHandle.TimestampMillisecondsGreater(columnIndex, (DateTimeOffset)value);
             else if (valueType == typeof(string) || valueType == typeof(bool))
-                throw new Exception("Unsupported type " + valueType.Name);
+                throw new Exception($"Unsupported type {valueType.Name}");
             else
                 throw new NotImplementedException();
         }
@@ -510,7 +510,7 @@ namespace Realms
             else if (valueType == typeof(DateTimeOffset))
                 queryHandle.TimestampMillisecondsGreaterEqual(columnIndex, (DateTimeOffset)value);
             else if (valueType == typeof(string) || valueType == typeof(bool))
-                throw new Exception("Unsupported type " + valueType.Name);
+                throw new Exception($"Unsupported type {valueType.Name}");
             else
                 throw new NotImplementedException();
         }
@@ -542,7 +542,7 @@ namespace Realms
                 }
                 else if (c.Value.GetType() == typeof (object))
                 {
-                    throw new NotSupportedException(string.Format("The constant for '{0}' is not supported", c.Value));
+                    throw new NotSupportedException($"The constant for '{c.Value}' is not supported");
                 }
                 else
                 {
@@ -564,7 +564,7 @@ namespace Realms
             try { }
             finally
             {
-                queryHandle.SetHandle(NativeTable.where(tableHandle));
+                queryHandle.SetHandle(NativeTable.Where(tableHandle));
             }//at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
             return queryHandle;
         }
@@ -573,14 +573,14 @@ namespace Realms
         {
             if (m.Expression != null && m.Expression.NodeType == ExpressionType.Parameter)
             {
-                if (m.Type == typeof(Boolean)) {
+                if (m.Type == typeof(bool)) {
                     object rhs = true;  // box value
                     var leftName = m.Member.Name;
                     AddQueryEqual(_coreQueryHandle, leftName, rhs);
                 }
                 return m;
             }
-            throw new NotSupportedException(string.Format("The member '{0}' is not supported", m.Member.Name));
+            throw new NotSupportedException($"The member '{m.Member.Name}' is not supported");
         }
     }
 }

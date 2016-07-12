@@ -248,5 +248,8 @@
     <ClInclude Include="src\object-store\src\util\format.hpp">
       <Filter>Header Files\object-store\util</Filter>
     </ClInclude>
+    <ClInclude Include="src\sort_order_wrapper.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

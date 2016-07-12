@@ -26,7 +26,6 @@ namespace Realms
     {
         private static class NativeMethods
         {
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "sortorder_create_for_table", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_for_table(TableHandle handle, out NativeException ex);
 
@@ -77,6 +76,11 @@ namespace Realms
             }
         }
 
-
+        public void AddClause(string columnName, bool ascending)
+        {
+            NativeException nativeException;
+            NativeMethods.add_clause(this, columnName, (IntPtr)columnName.Length, MarshalHelpers.BoolToIntPtr(ascending), out nativeException);
+            nativeException.ThrowIfNecessary();
+        }
     }
 }

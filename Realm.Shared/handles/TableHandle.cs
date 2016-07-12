@@ -37,9 +37,7 @@ namespace Realms
 
         protected override void Unbind()
         {
-            NativeException nativeException;
-            NativeTable.unbind(handle, out nativeException);
-            nativeException.ThrowIfNecessary();
+            NativeTable.Unbind(handle);
         }
 
         /*
@@ -86,7 +84,7 @@ namespace Realms
             { }
             finally
             {
-                queryHandle.SetHandle(NativeTable.where(this));
+                queryHandle.SetHandle(NativeTable.Where(this));
             }//at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
             return queryHandle;
         }
@@ -107,7 +105,7 @@ namespace Realms
             finally
             {
                 var rowIndex = rowHandle.RowIndex;
-                listHandle.SetHandle( NativeTable.get_linklist (this, columnIndex, (IntPtr)rowIndex) );
+                listHandle.SetHandle(NativeTable.GetLinklist (this, columnIndex, rowIndex));
             }//at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
             return listHandle;
         }

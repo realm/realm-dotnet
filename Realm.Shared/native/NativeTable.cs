@@ -261,9 +261,6 @@ namespace Realms
 
         internal static void SetInt64Unique(TableHandle tableHandle, IntPtr columnIndex, long rowIndex, long value)
         {
-            if (value == null)
-                throw new ArgumentException("Object identifiers cannot be null");
-
             NativeException nativeException;
             set_int64_unique(tableHandle, columnIndex, (IntPtr)rowIndex, value, out nativeException);
             nativeException.ThrowIfNecessary();
@@ -484,5 +481,27 @@ namespace Realms
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_column_index", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr get_column_index(TableHandle tablehandle,
             [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen, out NativeException ex);
+
+        public static IntPtr CreateResults(TableHandle tableHandle, SharedRealmHandle sharedRealmHandle, IntPtr objectSchema)
+        {
+            NativeException nativeException;
+            var result = create_results(sharedRealmHandle, tableHandle, objectSchema, out nativeException);
+            nativeException.ThrowIfNecessary();
+            return result;
+        }
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_create_results", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr create_results(SharedRealmHandle sharedRealm, TableHandle handle, IntPtr objectSchema, out NativeException ex);
+
+        public static IntPtr CreateSortedResults(TableHandle tableHandle, SharedRealmHandle sharedRealmHandle, IntPtr objectSchema, SortOrderHandle sortOrderHandle)
+        {
+            NativeException nativeException;
+            var result = create_sorted_results(sharedRealmHandle, tableHandle, objectSchema, sortOrderHandle, out nativeException);
+            nativeException.ThrowIfNecessary();
+            return result;
+        }
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_create_sorted_results", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr create_sorted_results(SharedRealmHandle sharedRealm, TableHandle handle, IntPtr objectSchema, SortOrderHandle sortOrderHandle, out NativeException ex);
     }
 }

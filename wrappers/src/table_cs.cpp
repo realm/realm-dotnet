@@ -25,6 +25,8 @@
 
 #include <memory>
 #include "timestamp_helpers.hpp"
+#include "object-store/src/results.hpp"
+#include "sort_order_wrapper.hpp"
 
 using namespace realm;
 using namespace realm::binding;
@@ -308,5 +310,20 @@ REALM_EXPORT void table_remove_row(Table* table_ptr, Row* row_ptr, NativeExcepti
         table_ptr->move_last_over(row_ptr->get_index());
     });
 }
+
+REALM_EXPORT Results* table_create_results(SharedRealm* realm, Table* table_ptr, ObjectSchema* object_schema, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        return new Results(*realm, *object_schema, *table_ptr);
+    });
+}
+
+REALM_EXPORT Results* table_create_sorted_results(SharedRealm* realm, Table* table_ptr, ObjectSchema* object_schema, SortOrderWrapper* sortorder_ptr, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        return new Results(*realm, *object_schema, Query(table_ptr->where()), sortorder_ptr->sort_order);
+    });
+}
+
 
 }   // extern "C"

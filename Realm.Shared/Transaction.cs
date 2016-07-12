@@ -37,7 +37,7 @@ namespace Realms
         internal Transaction(SharedRealmHandle sharedRealmHandle)
         {
             this._sharedRealmHandle = sharedRealmHandle;
-            NativeSharedRealm.begin_transaction(sharedRealmHandle);
+            sharedRealmHandle.BeginTransaction();
             _isOpen = true;
         }
 
@@ -65,7 +65,7 @@ namespace Realms
             if (!_isOpen)
                 throw new Exception("Transaction was already closed. Cannot roll back");
 
-            NativeSharedRealm.cancel_transaction(_sharedRealmHandle);
+            _sharedRealmHandle.CancelTransaction();
             _isOpen = false;
         }
 
@@ -77,7 +77,7 @@ namespace Realms
             if (!_isOpen)
                 throw new Exception("Transaction was already closed. Cannot commit");
 
-            NativeSharedRealm.commit_transaction(_sharedRealmHandle);
+            _sharedRealmHandle.CommitTransaction();
             _isOpen = false;
         }
     }

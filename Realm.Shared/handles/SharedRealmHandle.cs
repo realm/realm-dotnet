@@ -78,12 +78,12 @@ namespace Realms
             NativeMethods.destroy(handle);
         }
 
-        public IntPtr Open(SchemaHandle schemaHandle, string path, bool readOnly, IntPtr durability, byte[] encryptionKey, 
-                UInt64 schemaVersion, out NativeException ex)
+        public IntPtr Open(SchemaHandle schemaHandle, string path, bool readOnly, bool durability, byte[] encryptionKey, 
+                ulong schemaVersion)
         {
             NativeException nativeException;
             var result = NativeMethods.open(schemaHandle, path, (IntPtr)path.Length, MarshalHelpers.BoolToIntPtr(readOnly), 
-                    durability, encryptionKey, schemaVersion, out nativeException);
+                    MarshalHelpers.BoolToIntPtr(durability), encryptionKey, schemaVersion, out nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
