@@ -515,12 +515,12 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public long Count()
+        public int Count()
         {
             NativeException nativeException;
             var result = NativeMethods.count(this, out nativeException);
             nativeException.ThrowIfNecessary();
-            return (long)result;
+            return (int)result;
         }
 
         public IntPtr CreateResults(SharedRealmHandle sharedRealm, IntPtr objectSchema)
