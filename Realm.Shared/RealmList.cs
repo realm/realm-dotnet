@@ -15,12 +15,13 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics;
+using System.Dynamic;
 
 namespace Realms
 {
@@ -32,39 +33,27 @@ namespace Realms
     /// </remarks>
     /// 
     /// <typeparam name="T">Type of the RealmObject which is the target of the relationship.</typeparam>
-    public class RealmList<T> : IList<T> where T : RealmObject
+    [Preserve(AllMembers = true)]
+    public class RealmList<T> : IList<T>, IRealmList, IDynamicMetaObjectProvider where T : RealmObject
     {
-        private class RealmListEnumerator : IEnumerator<T> 
+        public class Enumerator : IEnumerator<T>
         {
-            private int index;
-            private RealmList<T> enumerating;
+            private readonly RealmList<T> _enumerating;
+            private int _index;
 
-            internal RealmListEnumerator(RealmList<T> parent)
+            internal Enumerator(RealmList<T> parent)
             {
-                index = -1;
-                enumerating = parent;
+                _index = -1;
+                _enumerating = parent;
             }
 
             /// <summary>
             /// Return the current related object when iterating a related set.
             /// </summary>
             /// <exception cref="IndexOutOfRangeException">When we are not currently pointing at a valid item, either MoveNext has not been called for the first time or have iterated through all the items.</exception>
-            public T Current
-            {
-                get
-                {
-                    return enumerating[index];
-                }
-            }
+            public T Current => _enumerating[_index];
 
-            // also needed - https://msdn.microsoft.com/en-us/library/s793z9y2.aspx
-            object IEnumerator.Current
-            {
-                get
-                {
-                    return enumerating[index];
-                }
-            }
+            object IEnumerator.Current => Current;
 
             /// <summary>
             ///  Move the iterator to the next related object, starting "before" the first object.
@@ -72,9 +61,11 @@ namespace Realms
             /// <returns>True only if can advance.</returns>
             public bool MoveNext()
             {
-                index++;
-                if (index >= enumerating.Count)
+                var index = _index + 1;
+                if (index >= _enumerating.Count)
                     return false;
+
+                _index = index;
                 return true;
             }
 
@@ -83,7 +74,7 @@ namespace Realms
             /// </summary>
             public void Reset()
             {
-                index = -1;  // by definition BEFORE first item
+                _index = -1;  // by definition BEFORE first item
             }
 
             /// <summary>
@@ -100,13 +91,19 @@ namespace Realms
         /// </summary>
         public const int ITEM_NOT_FOUND = -1;
 
-        private RealmObject _parent;  // we only make sense within an owning object
+        private Realm _realm;
         private LinkListHandle _listHandle;
+        private readonly string _schemaClassName;
 
-        internal RealmList(RealmObject parent, LinkListHandle adoptedList)
+        Realm IRealmList.Realm => _realm;
+        LinkListHandle IRealmList.Handle => _listHandle;
+        string IRealmList.SchemaClassName => _schemaClassName;
+
+        internal RealmList(Realm realm, LinkListHandle adoptedList, string schemaClassName)
         {
-            _parent = parent;
+            _realm = realm;
             _listHandle = adoptedList;
+            _schemaClassName = schemaClassName;
         }
 
         #region implementing IList properties
@@ -146,6 +143,7 @@ namespace Realms
         /// <typeparam name="T">Type of the RealmObject which is the target of the relationship.</typeparam>
         /// <returns>A related item, if exception not thrown.</returns>
         /// <exception cref="IndexOutOfRangeException">When the index is out of range for the related items.</exception>
+        [System.Runtime.CompilerServices.IndexerName("Item")]
         public T this[int index]
         {
             get
@@ -153,7 +151,7 @@ namespace Realms
                 if (index < 0)
                     throw new IndexOutOfRangeException ();
                 var linkedRowPtr = NativeLinkList.get (_listHandle, (IntPtr)index);
-                return (T)_parent.MakeRealmObject(typeof(T), linkedRowPtr);
+                return (T)_realm.MakeObjectForRow(_schemaClassName, Realm.CreateRowHandle(linkedRowPtr, _realm.SharedRealmHandle));
             }
 
             set
@@ -222,9 +220,9 @@ namespace Realms
         /// Factory for an iterator to be called explicitly or used in a foreach loop.
         /// </summary>
         /// <returns>A RealmListEnumerator as the generic IEnumerator<T>.</returns>
-        public IEnumerator<T> GetEnumerator()
+        public Enumerator GetEnumerator()
         {
-            return new RealmListEnumerator(this);
+            return new Enumerator(this);
         }
 
         /// <summary>
@@ -286,17 +284,25 @@ namespace Realms
             NativeLinkList.erase(_listHandle, (IntPtr)index);        
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return new RealmListEnumerator(this);
-        }
+        IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         private void ManageObjectIfNeeded(T obj)
         {
             if (!obj.IsManaged)
-                _parent.Realm.Manage(obj);
+                _realm.Manage(obj);
         }
 
         #endregion
+
+        DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(System.Linq.Expressions.Expression expression) => new Dynamic.MetaRealmList(expression, this);
+    }
+
+    [Preserve(AllMembers = true)]
+    internal interface IRealmList
+    {
+        Realm Realm { get; }
+        LinkListHandle Handle { get; }
+        string SchemaClassName { get; }
     }
 }

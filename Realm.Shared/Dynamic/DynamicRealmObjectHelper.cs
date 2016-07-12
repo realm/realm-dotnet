@@ -16,27 +16,19 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System.Diagnostics;
-using System.Reflection;
+using System;
+using Realms.Weaving;
 
-namespace Realms.Schema
+namespace Realms.Dynamic
 {
-    [DebuggerDisplay("Name = {Name}, Type = {Type}")]
-    public struct Property
+    internal class DynamicRealmObjectHelper : IRealmObjectHelper
     {
-        public string Name { get; set; }
+        internal static readonly DynamicRealmObjectHelper Instance = new DynamicRealmObjectHelper();
 
-        public PropertyType Type { get; set; }
-
-        public string ObjectType { get; set; }
-
-        public bool IsNullable { get; set; }
-
-        public bool IsObjectId { get; set; }
-
-        public bool IsIndexed { get; set; }
-
-        internal PropertyInfo PropertyInfo;
+        public RealmObject CreateInstance()
+        {
+            return new DynamicRealmObject();
+        }
     }
 }
 

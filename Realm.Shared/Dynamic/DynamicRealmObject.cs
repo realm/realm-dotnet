@@ -16,27 +16,18 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System.Diagnostics;
-using System.Reflection;
+using System;
+using System.Dynamic;
+using System.Linq.Expressions;
 
-namespace Realms.Schema
+namespace Realms.Dynamic
 {
-    [DebuggerDisplay("Name = {Name}, Type = {Type}")]
-    public struct Property
+    internal class DynamicRealmObject : RealmObject, IDynamicMetaObjectProvider
     {
-        public string Name { get; set; }
-
-        public PropertyType Type { get; set; }
-
-        public string ObjectType { get; set; }
-
-        public bool IsNullable { get; set; }
-
-        public bool IsObjectId { get; set; }
-
-        public bool IsIndexed { get; set; }
-
-        internal PropertyInfo PropertyInfo;
+        public DynamicMetaObject GetMetaObject(Expression parameter)
+        {
+            return new MetaRealmObject(parameter, this);
+        }
     }
 }
 

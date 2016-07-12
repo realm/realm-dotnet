@@ -35,8 +35,8 @@ namespace Realms
         private RowHandle _rowHandle;
         private Metadata _metadata;
 
-        internal Realm Realm => _realm;
         internal RowHandle RowHandle => _rowHandle;
+        internal Metadata ObjectMetadata => _metadata;
 
         /// <summary>
         /// Allows you to check if the object has been associated with a Realm, either at creation or via Realm.Manage.
@@ -51,11 +51,21 @@ namespace Realms
         /// </summary>
         public bool IsValid => _rowHandle?.IsAttached != false;
 
-        internal void _Manage(Realm realm, RowHandle rowHandle)
+        /// <summary>
+        /// The <see cref="Realm"/> instance this object belongs to, or <code>null</code> if it is unmanaged.
+        /// </summary>
+        public Realm Realm => _realm;
+
+        /// <summary>
+        /// The <see cref="Schema.ObjectSchema"/> instance that describes how the <see cref="Realm"/> this object belongs to sees it.
+        /// </summary>
+        public Schema.ObjectSchema ObjectSchema => _metadata?.Schema;
+
+        internal void _Manage(Realm realm, RowHandle rowHandle, Metadata metadata)
         {
             _realm = realm;
             _rowHandle = rowHandle;
-            _metadata = realm.Metadata[GetType()];
+            _metadata = metadata;
         }
 
         internal class Metadata
@@ -66,7 +76,7 @@ namespace Realms
 
             internal Dictionary<string, IntPtr> ColumnIndices;
 
-            internal Schema.Object Schema;
+            internal Schema.ObjectSchema Schema;
         }
 
         internal void _CopyDataFromBackingFieldsToRow()
@@ -323,8 +333,12 @@ namespace Realms
         {
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
+            Schema.Property property;
+            _metadata.Schema.TryFindProperty(propertyName, out property);
+            var objectType = property.ObjectType;
+
             var listHandle = _metadata.Table.TableLinkList (_metadata.ColumnIndices[propertyName], _rowHandle);
-            return new RealmList<T>(this, listHandle);
+            return new RealmList<T>(_realm, listHandle, objectType);
         }
 
         protected T GetObjectValue<T>(string propertyName) where T : RealmObject
@@ -333,7 +347,14 @@ namespace Realms
 
             var rowIndex = _rowHandle.RowIndex;
             var linkedRowPtr = NativeTable.get_link (_metadata.Table, _metadata.ColumnIndices[propertyName], (IntPtr)rowIndex);
-            return (T)MakeRealmObject(typeof(T), linkedRowPtr);
+            if (linkedRowPtr == IntPtr.Zero)
+                return null;
+
+            Schema.Property property;
+            _metadata.Schema.TryFindProperty(propertyName, out property);
+            var objectType = property.ObjectType;
+
+            return (T)_realm.MakeObjectForRow(objectType, Realm.CreateRowHandle(linkedRowPtr, _realm.SharedRealmHandle));
         }
 
         protected byte[] GetByteArrayValue(string propertyName)
@@ -741,20 +762,6 @@ namespace Realms
         }
 
         #endregion
-
-        /**
-         * Shared factory to make an object in the realm from a known row
-         * @param rowPtr may be null if a relationship lookup has failed.
-        */
-        internal RealmObject MakeRealmObject(Type objectType, IntPtr rowPtr) {
-            if (rowPtr == IntPtr.Zero)
-                return null;  // typically no related object
-            var ret = _realm.Metadata[objectType].Helper.CreateInstance();
-            var relatedHandle = Realm.CreateRowHandle (rowPtr, _realm.SharedRealmHandle);
-            ret._Manage(_realm, relatedHandle);
-            return ret;
-        }
-
 
         /// <summary>
         /// Compare objects with identity query for persistent objects.

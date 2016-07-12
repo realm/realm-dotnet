@@ -88,7 +88,7 @@ REALM_EXPORT Schema* schema_clone(Schema* schema, ObjectSchema** handles)
     return handle_errors([&]() {
         auto clone = new Schema(*schema);
         for (auto i = 0; i < clone->size(); i++) {
-            handles[i] = &(*schema->find(*handles[i]));
+            handles[i] = &(*clone->find(*handles[i]));
         }
         
         return clone;
