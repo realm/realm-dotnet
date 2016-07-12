@@ -356,7 +356,7 @@ namespace Realms
             else if (valueType == typeof(bool))
                 queryHandle.BoolEqual(columnIndex, (bool)value);
             else if (valueType == typeof(int))
-                queryHandle.IntEqual(columnIndex, (long)value);
+                queryHandle.IntEqual(columnIndex, (int)value);
             else if (valueType == typeof(long))
                 queryHandle.LongEqual(columnIndex, (long)value);
             else if (valueType == typeof(float))
@@ -399,7 +399,7 @@ namespace Realms
             else if (valueType == typeof(bool))
                 queryHandle.BoolNotEqual(columnIndex, (bool)value);
             else if (valueType == typeof(int))
-                queryHandle.IntNotEqual(columnIndex, (long)value);
+                queryHandle.IntNotEqual(columnIndex, (int)value);
             else if (valueType == typeof(long))
                 queryHandle.LongNotEqual(columnIndex, (long)value);
             else if (valueType == typeof(float))
@@ -436,7 +436,7 @@ namespace Realms
 
             var valueType = value.GetType();
             if (valueType == typeof(int))
-                queryHandle.IntLess(columnIndex, (long)value);
+                queryHandle.IntLess(columnIndex, (int)value);
             else if (valueType == typeof(long))
                 queryHandle.LongLess(columnIndex, (long)value);
             else if (valueType == typeof(float))
@@ -457,7 +457,7 @@ namespace Realms
 
             var valueType = value.GetType();
             if (valueType == typeof(int))
-                queryHandle.IntLessEqual(columnIndex, (long)value);
+                queryHandle.IntLessEqual(columnIndex, (int)value);
             else if (valueType == typeof(long))
                 queryHandle.LongLessEqual(columnIndex, (long)value);
             else if (valueType == typeof(float))
@@ -479,7 +479,7 @@ namespace Realms
 
             var valueType = value.GetType();
             if (valueType == typeof(int))
-                queryHandle.IntGreater(columnIndex, (long)value);
+                queryHandle.IntGreater(columnIndex, (int)value);
             else if (valueType == typeof(long))
                 queryHandle.LongGreater(columnIndex, (long)value);
             else if (valueType == typeof(float))
@@ -500,7 +500,7 @@ namespace Realms
 
             var valueType = value.GetType();
             if (valueType == typeof(int))
-                queryHandle.IntGreaterEqual(columnIndex, (long)value);
+                queryHandle.IntGreaterEqual(columnIndex, (int)value);
             else if (valueType == typeof(long))
                 queryHandle.LongGreaterEqual(columnIndex, (long)value);
             else if (valueType == typeof(float))

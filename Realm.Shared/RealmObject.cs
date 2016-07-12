@@ -103,7 +103,7 @@ namespace Realms
         {
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
-            return (char?) NativeTable.GetInt64(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex);
+            return (char?) NativeTable.GetNullableInt64(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex);
         }
 
         protected byte GetByteValue(string propertyName)

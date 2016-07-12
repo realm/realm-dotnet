@@ -261,84 +261,84 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public void IntEqual(IntPtr columnIndex, long value)
+        public void IntEqual(IntPtr columnIndex, int value)
         {
             NativeException nativeException;
             NativeMethods.int_equal(this, columnIndex, (IntPtr)value, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public void IntNotEqual(IntPtr columnIndex, long value)
+        public void IntNotEqual(IntPtr columnIndex, int value)
         {
             NativeException nativeException;
             NativeMethods.int_not_equal(this, columnIndex, (IntPtr)value, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public void IntLess(IntPtr columnIndex, long value)
+        public void IntLess(IntPtr columnIndex, int value)
         {
             NativeException nativeException;
             NativeMethods.int_less(this, columnIndex, (IntPtr)value, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public void IntLessEqual(IntPtr columnIndex, long value)
+        public void IntLessEqual(IntPtr columnIndex, int value)
         {
             NativeException nativeException;
             NativeMethods.int_less_equal(this, columnIndex, (IntPtr)value, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public void IntGreater(IntPtr columnIndex, long value)
+        public void IntGreater(IntPtr columnIndex, int value)
         {
             NativeException nativeException;
             NativeMethods.int_greater(this, columnIndex, (IntPtr)value, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public void IntGreaterEqual(IntPtr columnIndex, long value)
+        public void IntGreaterEqual(IntPtr columnIndex, int value)
         {
             NativeException nativeException;
             NativeMethods.int_greater_equal(this, columnIndex, (IntPtr)value, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public void LongEqual(IntPtr columnIndex, Int64 value)
+        public void LongEqual(IntPtr columnIndex, long value)
         {
             NativeException nativeException;
             NativeMethods.long_equal(this, columnIndex, value, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public void LongNotEqual(IntPtr columnIndex, Int64 value)
+        public void LongNotEqual(IntPtr columnIndex, long value)
         {
             NativeException nativeException;
             NativeMethods.long_not_equal(this, columnIndex, value, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public void LongLess(IntPtr columnIndex, Int64 value)
+        public void LongLess(IntPtr columnIndex, long value)
         {
             NativeException nativeException;
             NativeMethods.long_less(this, columnIndex, value, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public void LongLessEqual(IntPtr columnIndex, Int64 value)
+        public void LongLessEqual(IntPtr columnIndex, long value)
         {
             NativeException nativeException;
             NativeMethods.long_less_equal(this, columnIndex, value, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public void LongGreater(IntPtr columnIndex, Int64 value)
+        public void LongGreater(IntPtr columnIndex, long value)
         {
             NativeException nativeException;
             NativeMethods.long_greater(this, columnIndex, value, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public void LongGreaterEqual(IntPtr columnIndex, Int64 value)
+        public void LongGreaterEqual(IntPtr columnIndex, long value)
         {
             NativeException nativeException;
             NativeMethods.long_greater_equal(this, columnIndex, value, out nativeException);
