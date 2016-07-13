@@ -28,6 +28,7 @@ using System.Diagnostics;
 // unlike the Cocoa definitions, we use Pascal casing for properties
 namespace IntegrationTests.Shared
 {
+    [Preserve(AllMembers = true)]
     public enum DynamicTestObjectType
     {
         RealmObject,
