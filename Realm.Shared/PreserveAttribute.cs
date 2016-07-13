@@ -25,8 +25,13 @@ namespace Realms
     [AttributeUsage(AttributeTargets.All)]
     public class PreserveAttribute : Attribute
     {
+#if WINDOWS
         public bool AllMembers { get; set; }
         public bool Conditional { get; set; }
+#else
+        public bool AllMembers;
+        public bool Conditional;
+#endif
 
         public PreserveAttribute(bool allMembers, bool conditional)
         {
