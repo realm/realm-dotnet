@@ -18,14 +18,33 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Realms
 {
     [StructLayout(LayoutKind.Sequential)]
     internal unsafe struct NativeException
     {
-        public IntPtr type;
+        public RealmExceptionCodes type;
         public sbyte* messageBytes;
         public IntPtr messageLength;
+
+        internal Exception Convert()
+        {
+            var message = (messageLength != IntPtr.Zero) ?
+                new string(messageBytes, 0 /* start offset */, (int)messageLength, Encoding.UTF8)
+                : "No further information available";
+            NativeCommon.delete_pointer(messageBytes);
+
+            return RealmException.Create(type, message);
+        }
+
+        internal void ThrowIfNecessary()
+        {
+            if (type == RealmExceptionCodes.NoError)
+                return;
+
+            throw Convert();
+        }
     }
 }

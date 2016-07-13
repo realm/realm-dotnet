@@ -28,27 +28,6 @@ using ObjCRuntime;
 #endif
 
 namespace Realms {
-    public static class NativeExceptionExtensions
-    {
-        internal static unsafe Exception Convert(this NativeException @this)
-        {
-            var message = (@this.messageLength != IntPtr.Zero) ?
-                new string(@this.messageBytes, 0 /* start offset */, (int)@this.messageLength, Encoding.UTF8)
-                : "No further information available";
-            NativeCommon.delete_pointer(@this.messageBytes);
-
-            return RealmException.Create((RealmExceptionCodes)@this.type, message);
-        }
-
-        internal static void ThrowIfNecessary(this NativeException @this)
-        {
-           if ((RealmExceptionCodes)@this.type == RealmExceptionCodes.NoError)
-                return;
-
-            throw @this.Convert();
-        }
-    }
-
     internal static class NativeCommon
     {
         public delegate void NotifyRealmCallback (IntPtr realmHandle);
