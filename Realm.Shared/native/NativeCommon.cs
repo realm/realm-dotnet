@@ -80,29 +80,26 @@ namespace Realms {
     [StructLayout(LayoutKind.Sequential)]
     internal unsafe struct NativeException
     {
-        public IntPtr type;
+        public RealmExceptionCodes type;
         public sbyte* messageBytes;
         public IntPtr messageLength;
-    }
 
-    public static class NativeExceptionExtensions
-    {
-        internal static unsafe Exception Convert(this NativeException @this)
+        internal Exception Convert()
         {
-            var message = (@this.messageLength != IntPtr.Zero) ?
-                new string(@this.messageBytes, 0 /* start offset */, (int)@this.messageLength, Encoding.UTF8)
+            var message = (this.messageLength != IntPtr.Zero) ?
+                new string(this.messageBytes, 0 /* start offset */, (int)this.messageLength, Encoding.UTF8)
                 : "No further information available";
-            NativeCommon.delete_pointer(@this.messageBytes);
+            NativeCommon.delete_pointer(this.messageBytes);
 
-            return RealmException.Create((RealmExceptionCodes)@this.type, message);
+            return RealmException.Create(this.type, message);
         }
 
-        internal static void ThrowIfNecessary(this NativeException @this)
+        internal void ThrowIfNecessary()
         {
-           if ((RealmExceptionCodes)@this.type == RealmExceptionCodes.NoError)
+            if (this.type == RealmExceptionCodes.NoError)
                 return;
 
-            throw @this.Convert();
+            throw Convert();
         }
     }
 
