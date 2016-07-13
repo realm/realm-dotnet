@@ -49,7 +49,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)linq\RealmResultsProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmMismatchedConfigException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)handles\ResultsHandle.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)native\NativeResults.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)handles\SortOrderHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)weaving\IRealmObjectHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)handles\NotificationTokenHandle.cs" />
