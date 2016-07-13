@@ -15,7 +15,8 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
+#include <sstream>
 #include <realm.hpp>
 #include "error_handling.hpp"
 #include "marshalling.hpp"
