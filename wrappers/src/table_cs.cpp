@@ -68,10 +68,17 @@ REALM_EXPORT Row* table_get_link(Table* table_ptr, size_t column_ndx, size_t row
 
 REALM_EXPORT SharedLinkViewRef* table_get_linklist(Table* table_ptr, size_t column_ndx, size_t row_ndx)
 {
-  return handle_errors([&]() -> SharedLinkViewRef* {
-    SharedLinkViewRef sr = std::make_shared<LinkViewRef>(table_ptr->get_linklist(column_ndx, row_ndx));
-    return new SharedLinkViewRef{ sr };  // weird double-layering necessary to get a raw pointer to a shared_ptr
-  });
+    return handle_errors([&]() -> SharedLinkViewRef* {
+        SharedLinkViewRef sr = std::make_shared<LinkViewRef>(table_ptr->get_linklist(column_ndx, row_ndx));
+        return new SharedLinkViewRef{ sr };  // weird double-layering necessary to get a raw pointer to a shared_ptr
+    });
+}
+
+REALM_EXPORT size_t table_linklist_is_empty(Table* table_ptr, size_t column_ndx, size_t row_ndx)
+{
+    return handle_errors([&]()  {
+        return bool_to_size_t(table_ptr->linklist_is_empty(column_ndx, row_ndx));
+    });
 }
 
 

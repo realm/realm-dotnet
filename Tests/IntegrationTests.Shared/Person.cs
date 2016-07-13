@@ -81,6 +81,6 @@ namespace IntegrationTests
             set { _nickname = value; }
         }
 
-        public RealmList<Person> Friends { get; }  
+        public IList<Person> Friends { get; }
     }
 }

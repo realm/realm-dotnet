@@ -85,12 +85,24 @@ namespace Realms
 
             foreach (var property in _metadata.Schema)
             {
-                if (property.Type == Schema.PropertyType.Array)
-                    continue;
-
-                var field = property.PropertyInfo.DeclaringType.GetField(property.PropertyInfo.GetCustomAttribute<WovenPropertyAttribute>().BackingFieldName, BindingFlags.Instance | BindingFlags.NonPublic);
-                var value = field.GetValue(this);
-                property.PropertyInfo.SetValue(this, value, null);;
+                var field = property.PropertyInfo.DeclaringType.GetField( 
+                               property.PropertyInfo.GetCustomAttribute<WovenPropertyAttribute>().BackingFieldName, 
+                               BindingFlags.Instance | BindingFlags.NonPublic
+                            );
+                var value = field?.GetValue(this);
+                if (value != null) {
+                    var listValue = value as IEnumerable<RealmObject>;
+                    if (listValue != null)  // assume it is IList NOT a RealmList so need to wipe afer copy
+                    {
+                    // cope with ReplaceListGetter creating a getter which assumes 
+                    // a backing field for a managed IList is already a RealmList, so null it first
+                        field.SetValue(this, null);  // now getter will create a RealmList below
+                        var realmList = (ICopyValuesFrom)property.PropertyInfo.GetValue(this, null);
+                        realmList.CopyValuesFrom(listValue);
+                    } else {
+                        property.PropertyInfo.SetValue(this, value, null);
+                    }
+                }  // only null if blank relationship or string so leave as default
             }
         }
 
@@ -329,7 +341,7 @@ namespace Realms
             return hasValue ? DateTimeOffsetExtensions.FromRealmUnixTimeMilliseconds(unixTimeMS) : (DateTimeOffset?)null;
         }
 
-        protected RealmList<T> GetListValue<T>(string propertyName) where T : RealmObject
+        protected IList<T> GetListValue<T>(string propertyName) where T : RealmObject
         {
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
@@ -714,7 +726,9 @@ namespace Realms
                 NativeTable.set_null(_metadata.Table, _metadata.ColumnIndices[propertyName], (IntPtr)rowIndex);
         }
 
-        // TODO make not generic
+
+        // Originally a generic fallback, now used only for RealmObject To-One relationship properties
+        // most other properties handled with woven type-specific setters above
         protected void SetObjectValue<T>(string propertyName, T value) where T : RealmObject
         {
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
