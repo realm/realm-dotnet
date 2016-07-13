@@ -126,8 +126,8 @@ namespace Realms
                 if (Count == 0) throw new InvalidOperationException("Cannot build an empty RealmSchema");
                 Contract.EndContractBlock();
 
-                var objects = new List<SchemaHandle.Object>();
-                var properties = new List<SchemaHandle.Property>();
+                var objects = new List<SchemaObject>();
+                var properties = new List<SchemaProperty>();
 
                 foreach (var @object in this)
                 {
@@ -135,7 +135,7 @@ namespace Realms
 
                     properties.AddRange(@object.Select(ForMarshalling));
 
-                    objects.Add(new SchemaHandle.Object
+                    objects.Add(new SchemaObject
                     {
                         name = @object.Name,
                         properties_start = start,
@@ -149,9 +149,9 @@ namespace Realms
                 return new RealmSchema(schemaHandle, this.Select((o, i) => o.Clone(handles[i])));
             }
 
-            private static SchemaHandle.Property ForMarshalling(Schema.Property property)
+            private static SchemaProperty ForMarshalling(Schema.Property property)
             {
-                return new SchemaHandle.Property
+                return new SchemaProperty
                 {
                     name = property.Name,
                     type = property.Type,

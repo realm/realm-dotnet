@@ -26,9 +26,9 @@ namespace Realms
         [StructLayout(LayoutKind.Sequential)]
         internal struct CollectionChangeSet
         {
-            public MarshalledVector<IntPtr> Deletions;
-            public MarshalledVector<IntPtr> Insertions;
-            public MarshalledVector<IntPtr> Modifications;
+            public MarshaledVector<IntPtr> Deletions;
+            public MarshaledVector<IntPtr> Insertions;
+            public MarshaledVector<IntPtr> Modifications;
 
             [StructLayout(LayoutKind.Sequential)]
             public struct Move
@@ -36,7 +36,7 @@ namespace Realms
                 public IntPtr From;
                 public IntPtr To;
             }
-            public MarshalledVector<Move> Moves;
+            public MarshaledVector<Move> Moves;
         }
 
         internal delegate void NotificationCallback(IntPtr managedResultsHandle, IntPtr collectionChanges, IntPtr notficiationException);

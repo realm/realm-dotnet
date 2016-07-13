@@ -20,71 +20,14 @@
 @file NativeCommon.cs provides mappings to common functions that don't fit the Table classes etc.
 */
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using DotNetCross.Memory;
 
 #if __IOS__
 using ObjCRuntime;
 #endif
 
 namespace Realms {
-
-    [StructLayout(LayoutKind.Sequential)]
-    struct MarshalledVector<T> where T : struct
-    {
-        IntPtr items;
-        IntPtr count;
-
-        internal IEnumerable<T> AsEnumerable()
-        {
-            return Enumerable.Range(0, (int)count).Select(MarshalElement);
-        }
-
-        unsafe T MarshalElement(int elementIndex)
-        {
-            var @struct = default(T);
-            Unsafe.CopyBlock(Unsafe.AsPointer(ref @struct), IntPtr.Add(items, elementIndex * Unsafe.SizeOf<T>()).ToPointer(), (uint)Unsafe.SizeOf<T>());
-            return @struct;
-        }
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    unsafe struct PtrTo<T> where T : struct
-    {
-        void* ptr;
-
-        internal T? Value
-        {
-            get
-            {
-                if (ptr == null)
-                {
-                    return null;
-                }
-
-                var @struct = default(T);
-                Unsafe.CopyBlock(Unsafe.AsPointer(ref @struct), ptr, (uint)Unsafe.SizeOf<T>());
-                return @struct;
-            }
-        }
-
-        public PtrTo(IntPtr intPtr)
-        {
-            ptr = intPtr.ToPointer();
-        } 
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe struct NativeException
-    {
-        public IntPtr type;
-        public sbyte* messageBytes;
-        public IntPtr messageLength;
-    }
-
     public static class NativeExceptionExtensions
     {
         internal static unsafe Exception Convert(this NativeException @this)
