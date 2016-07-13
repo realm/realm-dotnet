@@ -377,14 +377,14 @@ REALM_EXPORT void query_binary_not_equal(Query* query_ptr, size_t columnIndex, c
     });
 }
 
-REALM_EXPORT Results* query_create_results(SharedRealm* realm, Query * query_ptr, ObjectSchema* object_schema, NativeException::Marshallable& ex)
+REALM_EXPORT Results* query_create_results(Query * query_ptr, SharedRealm* realm, ObjectSchema* object_schema, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         return new Results(*realm, *object_schema, *query_ptr);
     });
 }
 
-REALM_EXPORT Results* query_create_sorted_results(SharedRealm* realm, Query * query_ptr, ObjectSchema* object_schema, SortOrderWrapper* sortorder_ptr, NativeException::Marshallable& ex)
+REALM_EXPORT Results* query_create_sorted_results(Query * query_ptr, SharedRealm* realm, ObjectSchema* object_schema, SortOrderWrapper* sortorder_ptr, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         return new Results(*realm, *object_schema, *query_ptr, sortorder_ptr->sort_order);

@@ -311,14 +311,14 @@ REALM_EXPORT void table_remove_row(Table* table_ptr, Row* row_ptr, NativeExcepti
     });
 }
 
-REALM_EXPORT Results* table_create_results(SharedRealm* realm, Table* table_ptr, ObjectSchema* object_schema, NativeException::Marshallable& ex)
+REALM_EXPORT Results* table_create_results(Table* table_ptr, SharedRealm* realm, ObjectSchema* object_schema, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         return new Results(*realm, *object_schema, *table_ptr);
     });
 }
 
-REALM_EXPORT Results* table_create_sorted_results(SharedRealm* realm, Table* table_ptr, ObjectSchema* object_schema, SortOrderWrapper* sortorder_ptr, NativeException::Marshallable& ex)
+REALM_EXPORT Results* table_create_sorted_results(Table* table_ptr, SharedRealm* realm, ObjectSchema* object_schema, SortOrderWrapper* sortorder_ptr, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         return new Results(*realm, *object_schema, Query(table_ptr->where()), sortorder_ptr->sort_order);

@@ -485,23 +485,23 @@ namespace Realms
         public static IntPtr CreateResults(TableHandle tableHandle, SharedRealmHandle sharedRealmHandle, IntPtr objectSchema)
         {
             NativeException nativeException;
-            var result = create_results(sharedRealmHandle, tableHandle, objectSchema, out nativeException);
+            var result = create_results(tableHandle, sharedRealmHandle, objectSchema, out nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_create_results", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr create_results(SharedRealmHandle sharedRealm, TableHandle handle, IntPtr objectSchema, out NativeException ex);
+        private static extern IntPtr create_results(TableHandle handle, SharedRealmHandle sharedRealm, IntPtr objectSchema, out NativeException ex);
 
         public static IntPtr CreateSortedResults(TableHandle tableHandle, SharedRealmHandle sharedRealmHandle, IntPtr objectSchema, SortOrderHandle sortOrderHandle)
         {
             NativeException nativeException;
-            var result = create_sorted_results(sharedRealmHandle, tableHandle, objectSchema, sortOrderHandle, out nativeException);
+            var result = create_sorted_results(tableHandle, sharedRealmHandle, objectSchema, sortOrderHandle, out nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_create_sorted_results", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr create_sorted_results(SharedRealmHandle sharedRealm, TableHandle handle, IntPtr objectSchema, SortOrderHandle sortOrderHandle, out NativeException ex);
+        private static extern IntPtr create_sorted_results(TableHandle handle, SharedRealmHandle sharedRealm, IntPtr objectSchema, SortOrderHandle sortOrderHandle, out NativeException ex);
     }
 }

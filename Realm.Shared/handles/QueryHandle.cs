@@ -182,10 +182,10 @@ namespace Realms
             public static extern IntPtr count(QueryHandle QueryHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_create_results", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr create_results(SharedRealmHandle sharedRealm, QueryHandle queryPtr, IntPtr objectSchema, out NativeException ex);
+            public static extern IntPtr create_results(QueryHandle queryPtr, SharedRealmHandle sharedRealm, IntPtr objectSchema, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_create_sorted_results", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr create_sorted_results(SharedRealmHandle sharedRealm, QueryHandle queryPtr, IntPtr objectSchema, SortOrderHandle sortOrderHandle, out NativeException ex);
+            public static extern IntPtr create_sorted_results(QueryHandle queryPtr, SharedRealmHandle sharedRealm, IntPtr objectSchema, SortOrderHandle sortOrderHandle, out NativeException ex);
 
         }
 
@@ -526,7 +526,7 @@ namespace Realms
         public IntPtr CreateResults(SharedRealmHandle sharedRealm, IntPtr objectSchema)
         {
             NativeException nativeException;
-            var result = NativeMethods.create_results(sharedRealm, this, objectSchema, out nativeException);
+            var result = NativeMethods.create_results(this, sharedRealm, objectSchema, out nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
@@ -534,7 +534,7 @@ namespace Realms
         public IntPtr CreateSortedResults(SharedRealmHandle sharedRealm, IntPtr objectSchema, SortOrderHandle sortOrderHandle)
         {
             NativeException nativeException;
-            var result = NativeMethods.create_sorted_results(sharedRealm, this, objectSchema, sortOrderHandle, out nativeException);
+            var result = NativeMethods.create_sorted_results(this, sharedRealm, objectSchema, sortOrderHandle, out nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
