@@ -39,17 +39,17 @@ namespace Realms
             return (T)realm.MakeObjectForRow(objectType, Realm.CreateRowHandle(linkedRowPtr, realm.SharedRealmHandle));
         }
 
-        public static void SetObject<T>(Realm realm, TableHandle table, IntPtr columnIndex, IntPtr rowIndex, T value) where T : RealmObject
+        public static void SetObject(Realm realm, TableHandle table, IntPtr columnIndex, IntPtr rowIndex, RealmObject @object)
         {
-            if (value == null)
+            if (@object == null)
             {
                 NativeTable.ClearLink(table, columnIndex, rowIndex);
             }
             else
             {
-                if (!value.IsManaged)
-                    realm.Manage(value);
-                NativeTable.SetLink(table, columnIndex, rowIndex, value.RowHandle.RowIndex);
+                if (!@object.IsManaged)
+                    realm.Manage(@object);
+                NativeTable.SetLink(table, columnIndex, rowIndex, @object.RowHandle.RowIndex);
             }
         }
     }
