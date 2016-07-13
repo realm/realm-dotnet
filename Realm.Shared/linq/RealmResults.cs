@@ -302,10 +302,10 @@ namespace Realms
         #if __IOS__
         [ObjCRuntime.MonoPInvokeCallback(typeof(ResultsHandle.NotificationCallback))]
         #endif
-        internal static void NotificationCallback(IntPtr managedResultsHandle, PtrTo<ResultsHandle.CollectionChangeSet> changes, PtrTo<NativeException> exception)
+        internal static void NotificationCallback(IntPtr managedResultsHandle, IntPtr changes, IntPtr exception)
         {
             var results = (Interface)GCHandle.FromIntPtr(managedResultsHandle).Target;
-            results.NotifyCallbacks(changes.Value, exception.Value);
+            results.NotifyCallbacks(new PtrTo<ResultsHandle.CollectionChangeSet>(changes).Value, new PtrTo<NativeException>(exception).Value);
         }
     }
 }

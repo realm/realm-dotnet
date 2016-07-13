@@ -32,6 +32,9 @@ using System.Runtime.InteropServices;
 namespace IntegrationTests.Shared
 {
     [TestFixture, Preserve(AllMembers = true)]
+#if WINDOWS
+    [Ignore("Notifications are not implemented on Windows yet")]
+#endif
     public class NotificationTests
     {
         private string _databasePath;

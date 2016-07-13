@@ -39,7 +39,7 @@ namespace Realms
             public MarshalledVector<Move> Moves;
         }
 
-        internal delegate void NotificationCallback(IntPtr managedResultsHandle, PtrTo<CollectionChangeSet> collectionChanges, PtrTo<NativeException> notficiationException);
+        internal delegate void NotificationCallback(IntPtr managedResultsHandle, IntPtr collectionChanges, IntPtr notficiationException);
 
         public static class NativeMethods
         {

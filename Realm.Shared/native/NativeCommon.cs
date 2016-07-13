@@ -70,6 +70,11 @@ namespace Realms {
                 return @struct;
             }
         }
+
+        public PtrTo(IntPtr intPtr)
+        {
+            ptr = intPtr.ToPointer();
+        } 
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -94,7 +99,7 @@ namespace Realms {
 
         internal static void ThrowIfNecessary(this NativeException @this)
         {
-            if (@this.type == (IntPtr)1000)
+           if ((RealmExceptionCodes)@this.type == RealmExceptionCodes.NoError)
                 return;
 
             throw @this.Convert();
