@@ -388,7 +388,7 @@ namespace RealmWeaver
             }));
         }
 
-        [Test]
+        [Test, Ignore("IList property tests are still missing")]
         public void SetManyRelationship()
         {
             // Arrange
@@ -403,12 +403,7 @@ namespace RealmWeaver
             nums.Add(pn2);
 
             // Assert
-            Assert.That(o.LogList, Is.EqualTo(new List<string>
-            {
-                "IsManaged",
-                "RealmObject.SetObjectValue(propertyName = \"PrimaryNumber\", value = AssemblyToProcess.PhoneNumber)"
-            }));
-            Assert.That(GetAutoPropertyBackingFieldValue(o, "PrimaryNumber"), Is.Null);
+            // (TODO)
         }
 
         [Test]
