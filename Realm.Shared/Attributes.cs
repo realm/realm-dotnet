@@ -21,18 +21,22 @@ using System.Reflection;
 
 namespace Realms
 {
+    [AttributeUsage(AttributeTargets.Property)]
     public class ObjectIdAttribute : Attribute
     {
     }
 
+    [AttributeUsage(AttributeTargets.Property)]
     public class IndexedAttribute : Attribute
     {
     }
 
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property)]
     public class IgnoredAttribute : Attribute
     {
     }
 
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property)]
     public class MapToAttribute : Attribute
     {
         public string Mapping { get; set; }
@@ -42,6 +46,7 @@ namespace Realms
         }
     }
 
+    [AttributeUsage(AttributeTargets.Class)]
     public class WovenAttribute : Attribute
     {
         internal Type HelperType { get; private set; }
