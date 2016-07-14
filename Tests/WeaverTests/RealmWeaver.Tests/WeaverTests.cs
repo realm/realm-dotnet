@@ -71,6 +71,7 @@ namespace RealmWeaver
             new realm::ModuleWeaver
             {
                 ModuleDefinition = moduleDefinition,
+                LogError = s => _errors.Add(s),
                 LogErrorPoint = (s, point) => _errors.Add(s),
                 LogWarningPoint = (s, point) => _warnings.Add(s)
             }.Execute();
@@ -494,7 +495,8 @@ namespace RealmWeaver
                 "ObjectIdProperties.DateTimeOffsetProperty is marked as [ObjectId] which is only allowed on integral and string types, not on System.DateTimeOffset",
                 "ObjectIdProperties.SingleProperty is marked as [ObjectId] which is only allowed on integral and string types, not on System.Single",
                 "The type AssemblyToProcess.Employee indirectly inherits from RealmObject which is not supported",
-                "class DefaultConstructorMissing must have a public constructor that takes no parameters"
+                "class DefaultConstructorMissing must have a public constructor that takes no parameters",
+                "class NoPersistedProperties is a RealmObject but has no persisted properties"
             };
 
             Assert.That(_errors, Is.EquivalentTo(expectedErrors));
