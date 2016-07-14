@@ -220,11 +220,13 @@ public class ModuleWeaver
             propChangedFieldDefinition = type.Fields.First(X => X.FullName.EndsWith("::PropertyChanged"));
         }
 
+        var persistedPropertyCount = 0;
         foreach (var prop in type.Properties.Where( x => x.HasThis && !x.CustomAttributes.Any(a => a.AttributeType.Name == "IgnoredAttribute")))
         {
             try
             {
-                WeaveProperty(prop, type, methodTable, typeImplementsPropertyChanged, propChangedEventDefinition, propChangedFieldDefinition);
+                var wasWoven = WeaveProperty(prop, type, methodTable, typeImplementsPropertyChanged, propChangedEventDefinition, propChangedFieldDefinition);
+                if (wasWoven) persistedPropertyCount++;
             }
             catch (Exception e)
             {
@@ -233,6 +235,12 @@ public class ModuleWeaver
                     $"Unexpected error caught weaving property '{type.Name}.{prop.Name}': {e.Message}.\r\nCallstack:\r\n{e.StackTrace}",
                     sequencePoint);
             }
+        }
+
+        if (persistedPropertyCount == 0)
+        {
+            LogError($"class {type.Name} is a RealmObject but has no persisted properties");
+            return;
         }
 
         var objectConstructor = type.GetConstructors()
@@ -256,7 +264,7 @@ public class ModuleWeaver
     }
 
 
-    private void WeaveProperty(PropertyDefinition prop, TypeDefinition type, Dictionary<string, Tuple<MethodReference, MethodReference>> methodTable,
+    private bool WeaveProperty(PropertyDefinition prop, TypeDefinition type, Dictionary<string, Tuple<MethodReference, MethodReference>> methodTable,
         bool typeImplementsPropertyChanged, EventDefinition propChangedEventDefinition,
         FieldDefinition propChangedFieldDefinition)
     {
@@ -276,7 +284,7 @@ public class ModuleWeaver
             LogErrorPoint(
                 $"{type.Name}.{prop.Name} is marked as [Indexed] which is only allowed on integral types as well as string, bool and DateTimeOffset, not on {prop.PropertyType.FullName}",
                 sequencePoint);
-            return;
+            return false;
         }
 
         var isObjectId = prop.CustomAttributes.Any(a => a.AttributeType.Name == "ObjectIdAttribute");
@@ -285,7 +293,7 @@ public class ModuleWeaver
             LogErrorPoint(
                 $"{type.Name}.{prop.Name} is marked as [ObjectId] which is only allowed on integral and string types, not on {prop.PropertyType.FullName}",
                 sequencePoint);
-            return;
+            return false;
         }
 
         if (!prop.IsAutomatic())
@@ -294,8 +302,7 @@ public class ModuleWeaver
                 LogWarningPoint(
                     $"{type.Name}.{columnName} is not an automatic property but its type is a RealmObject which normally indicates a relationship",
                     sequencePoint);
-            Debug.WriteLine("Skipped because it's not automatic.");
-            return;
+            return false;
         }
         if (_typeTable.ContainsKey(prop.PropertyType.FullName)) {
             var typeId = prop.PropertyType.FullName + (isObjectId ? " unique" : "");
@@ -318,14 +325,14 @@ public class ModuleWeaver
                 LogWarningPoint(
   $"SKIPPING {type.Name}.{columnName} because it is an IList but its generic type is not a RealmObject subclass, so will not persist",
   sequencePoint);
-                return;
+                return false;
             }
 
             if (prop.SetMethod != null) {
                 LogErrorPoint(
                     $"{type.Name}.{columnName} has a setter but its type is a IList which only supports getters",
                     sequencePoint);
-                return;
+                return false;
             }
             var concreteListType = new GenericInstanceType(System_IList) { GenericArguments = { elementType } };
             var listConstructor = concreteListType.Resolve().GetConstructors().Single(c => c.IsPublic && c.Parameters.Count == 0);
@@ -346,7 +353,7 @@ public class ModuleWeaver
                 LogErrorPoint(
                     $"{type.Name}.{columnName} has a setter but its type is a RealmList which only supports getters",
                     sequencePoint);
-                return;
+                return false;
             }
 
             ReplaceGetter(prop, columnName,
@@ -359,7 +366,7 @@ public class ModuleWeaver
                 LogWarningPoint(
                     $"{type.Name}.{columnName} is not an automatic property but its type is a RealmObject which normally indicates a relationship",
                     sequencePoint);
-                return;
+                return false;
             }
 
             ReplaceGetter(prop, columnName,
@@ -387,6 +394,7 @@ public class ModuleWeaver
         prop.CustomAttributes.Add(wovenPropertyAttribute);
 
         Debug.WriteLine("");
+        return true;
     }
 
     private TypeDefinition LookupType(string typeName, params AssemblyDefinition[] assemblies)
