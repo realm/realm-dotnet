@@ -2251,3 +2251,120 @@ SortingTests.cs
 
 RelationshipTests.cs
 - TestDeleteChildren added with Product and Report class definitions
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#287 IList Declarations
+
+RealmObjectPCL.cs
+- GetListValue return IList
+- _CopyDataFromBackingFieldsToRow - also skip over IList<>
+
+RealmList.cs
+- RealmListEnumerator 
+  - enumerating changed from RealmList to IList
+  - ctor param changed to IList
+
+Realm.cs
+- GenerateObjectSchema
+  - allow IList types in nullability checks
+  
+RealmObject.cs
+- GetListValue return type IList but still create RealmList
+- SetListValue added
+
+Use IList instead of RealmList in tests:
+- IntegrationTests.Shared
+  - Person.cs
+  - RelationshipTests.cs
+
+- WeaverTests
+  - AssemblyToProcess
+    - Person.cs
+    - FaultyClasses.cs
+  - Realm.FakeForWeaverTests/RealmObject.cs
+    - GetListValue return IList
+    - SetListValue take IList
+        
+ModuleWeaver.cs
+- _genericSetListValueReference added
+- Execute  - init _genericSetListValueReference to ref RealmObject.SetListValue
+- WeaveProperty
+  - allow Ilist<RealmObject subclass> as well as RealmList
+  - remove test banning setters on lists and RealmList
+  - generate setter for lists
+  
+NativeTable.cs
+- linklist_is_empty added
+
+wrappers/table_cs.cpp  
+- table_linklist_is_empty added
+
+
+RelationshipTests.cs
+- class Owner added set to Dogs property
+- TimLosesHisDogsByAssigningNull added
+- TestManagingStandaloneTwoLevelRelationship enabled & added check for full list added
+- TestManagingStandaloneThreeLevelRelationship enabled & added check for full list added
+- TestCircularRelationshipsFromStandaloneTwoStage enabled & added check for full list added
+- TestAddingRelationshipsToExistingViaAssignment added
+
+
+IntegrationTests.Shared/Person.cs
+- Friends added automatic set to property
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#287 IList Declarations - cope with adding hierarchies
+
+RealmObject.cs
+- _CopyDataFromBackingFieldsToRow remove continue for lists - they just work
+
+RelationshipTests.cs
+- TestManagingStandaloneTwoLevelRelationship - fix bad test values now it is being run
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#287 IList Declarations - remove setter and combine with Yavor's ICopyValuesFrom
+
+ModuleWeaver.cs
+- WeaveProperty
+  - put back test banning setters on lists and RealmList
+
+RelationshipTests.cs
+- class Owner removed set to Dogs property
+- TimLosesHisDogsByAssigningNull removed
+
+- TestAddingRelationshipsToExistingViaAssignment removd
+
+IntegrationTests.Shared/Person.cs
+- Friends removed automatic set to property
+
+RealmObject.cs
+- SetListValue removed
+- _CopyDataFromBackingFieldsToRow use ICopyValuesFrom to get method to invoke to copy into RealmList generic instance.
+
+
+RealmList
+- added internal interace ICopyValuesFrom (thanks Yavor)
+
+ICopyValuesFrom.cs
+- factored out internal interface so can reuse in PCL copy of RealmList
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#287 IList Declarations - weaving in default declarations for standalones
+
+Person.cs
+- remove init clause on Friends
+
+ModuleWeaver.cs
+- add System_IList field
+- Execute - init System_IList
+- WeaveProperty
+  - error if no backingField (temp double-check)
+  - IList set backing field to cope with new getter
+  - restore warning on IList disallowing setter
+- PrependListFieldInitializerToConstructor removed unused method
+- ReplaceListGetter added
+ 
+ #287 IList integration - add tests to help debug
+WeaverTests.cs - added SetManyRelationship to trigger 

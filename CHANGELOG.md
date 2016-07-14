@@ -1,11 +1,16 @@
-0.xy.z (TBD)
+0.77.0 (in progress)
 -------------------
 
 ### Major Changes
 * It is now possible to introspect the schema of a Realm. (#645)
 * The Realm class received overloads for `Realm.CreateObject` and `Realm.All` that accept string arguments instead of generic parameters, enabling use of the `dynamic` keyword with objects whose exact type is not known at compile time. (#646)
+* _To Many_ relationships can now be declared with an `IList<DestClass>` rather than requiring `RealmList<DestClass>`. This is **significantly faster** than using `RealmList` due to caching the list.   (Issue #287)
+* Creating standalone objects with lists of related objects is now possible. Passing such an object into `Realm.Manage` will cause the entire object graph from that object down to become managed.
+
+
 
 ### Minor Changes
+* Fixed a crash on iOS when creating many short-lived realms very rapidly in parallel (Issue #653)
 * Fixed a crash on iOS when creating many short-lived realms very rapidly in parallel (#653)
 * `RealmObject.IsValid` can be called to check if a managed object has been deleted
 * Accessing properties on invalid objects will throw an exception rather than crash with a segfault (#662)
@@ -15,7 +20,7 @@
 
 ### Minor Changes
 * The `Realm` static constructor will no longer throw a `TypeLoadException` when there is an active `System.Reflection.Emit.AssemblyBuilder` in the current `AppDomain`.
-* Fixed `Attempting to JIT compile` exception when using the Notifications API on iOS devices.
+* Fixed `Attempting to JIT compile` exception when using the Notifications API on iOS devices. (Issue #620)
 
 ### Breaking Changes
 No API change but sort order changes slightly with accented characters grouped together and some special characters sorting differently. "One third" now sorts ahead of "one-third".
@@ -33,10 +38,10 @@ Uses core 1.1.2
 * `RealmObject` classes will now implicitly implement `INotifyPropertyChanged` if you specify the interface on your class. Thanks to [Joe Brock](https://github.com/jdbrock) for this contribution!
 
 ### Minor Changes
-* `long` is supported in queries
-* Linker error looking for `System.String System.String::Format(System.IFormatProvider,System.String,System.Object)` fixed
-* Second-level descendants of `RealmObject` and static properties in `RealmObject` classes now cause the weaver to properly report errors as we don't (yet) support those.
-* Calling `.Equals()` on standalone objects no longer throws.
+* `long` is supported in queries (Issue #607)
+* Linker error looking for `System.String System.String::Format(System.IFormatProvider,System.String,System.Object)` fixed (Issue #591)
+* Second-level descendants of `RealmObject` and static properties in `RealmObject` classes now cause the weaver to properly report errors as we don't (yet) support those. (Issue #603)
+* Calling `.Equals()` on standalone objects no longer throws. (Issue #587)
 
 
 0.75.0 (2016-06-02)

@@ -29,6 +29,7 @@ using Mono.Cecil;
 using NUnit.Framework;
 using Realms;
 using System.ComponentModel;
+using AssemblyToProcess;
 using Mono.Cecil.Cil;
 
 namespace RealmWeaver
@@ -388,6 +389,29 @@ namespace RealmWeaver
         }
 
         [Test]
+        public void SetManyRelationship()
+        {
+            // Arrange
+            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.Person"));
+            var pn1 = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.PhoneNumber"));
+            var pn2 = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.PhoneNumber"));
+            o.IsManaged = true;
+
+            // Act
+            IList<PhoneNumber> nums = o.PhoneNumbers;
+            nums.Add(pn1);
+            nums.Add(pn2);
+
+            // Assert
+            Assert.That(o.LogList, Is.EqualTo(new List<string>
+            {
+                "IsManaged",
+                "RealmObject.SetObjectValue(propertyName = \"PrimaryNumber\", value = AssemblyToProcess.PhoneNumber)"
+            }));
+            Assert.That(GetAutoPropertyBackingFieldValue(o, "PrimaryNumber"), Is.Null);
+        }
+
+        [Test]
         public void ShouldNotWeaveIgnoredProperties()
         {
             // Arrange
@@ -464,7 +488,7 @@ namespace RealmWeaver
 
             var expectedErrors = new List<string>()
             {
-                "RealmListWithSetter.People has a setter but its type is a RealmList which only supports getters",
+                "RealmListWithSetter.People has a setter but its type is a IList which only supports getters",
                 "IndexedProperties.SingleProperty is marked as [Indexed] which is only allowed on integral types as well as string, bool and DateTimeOffset, not on System.Single",
                 "ObjectIdProperties.BooleanProperty is marked as [ObjectId] which is only allowed on integral and string types, not on System.Boolean",
                 "ObjectIdProperties.DateTimeOffsetProperty is marked as [ObjectId] which is only allowed on integral and string types, not on System.DateTimeOffset",

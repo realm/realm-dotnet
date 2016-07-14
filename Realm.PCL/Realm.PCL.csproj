@@ -95,6 +95,9 @@
       <Link>PreserveAttribute.cs</Link>
     </Compile>
     <Compile Include="Extensions\RealmResultsCollectionChangedPCL.cs" />
+    <Compile Include="..\Realm.Shared\ICopyValuesFrom.cs">
+      <Link>ICopyValuesFrom.cs</Link>
+    </Compile>
     <Compile Include="..\Realm.Shared\exceptions\RealmInvalidObjectException.cs">
       <Link>Exceptions\RealmInvalidObjectException.cs</Link>
     </Compile>

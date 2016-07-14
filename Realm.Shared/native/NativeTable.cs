@@ -193,6 +193,17 @@ namespace Realms
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_linklist", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr get_linklist(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex, out NativeException ex);
 
+        public static bool LinklistIsEmpty(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex)
+        {
+            NativeException nativeException;
+            var result = linklist_is_empty(tableHandle, columnIndex, rowIndex, out nativeException);
+            nativeException.ThrowIfNecessary();
+            return MarshalHelpers.IntPtrToBool(result);
+        }
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_linklist_is_empty", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr linklist_is_empty(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex, out NativeException ex);
+
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_null", CallingConvention = CallingConvention.Cdecl)]
         private static extern void set_null(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, out NativeException ex);
 

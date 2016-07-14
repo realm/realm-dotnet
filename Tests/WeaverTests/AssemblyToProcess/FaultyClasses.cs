@@ -17,13 +17,14 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using Realms;
 
 namespace AssemblyToProcess
 {
     public class RealmListWithSetter : RealmObject
     {
-        public RealmList<Person> People { get; set; } 
+        public IList<Person> People { get; set; } 
     }
 
     public class IndexedProperties : RealmObject

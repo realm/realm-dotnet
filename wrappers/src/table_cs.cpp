@@ -68,6 +68,13 @@ REALM_EXPORT SharedLinkViewRef* table_get_linklist(Table* table_ptr, size_t colu
   });
 }
 
+REALM_EXPORT size_t table_linklist_is_empty(Table* table_ptr, size_t column_ndx, size_t row_ndx, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]()  {
+        return bool_to_size_t(table_ptr->linklist_is_empty(column_ndx, row_ndx));
+    });
+}
+
 
 REALM_EXPORT size_t table_get_bool(const Table* table_ptr, size_t column_ndx, size_t row_ndx, NativeException::Marshallable& ex)
 {

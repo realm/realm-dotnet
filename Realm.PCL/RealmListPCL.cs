@@ -23,6 +23,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics;
+using System.Dynamic;
+
 
 namespace Realms
 {
@@ -34,7 +36,7 @@ namespace Realms
     /// </remarks>
     /// 
     /// <typeparam name="T">Type of the RealmObject which is the target of the relationship.</typeparam>
-    public class RealmList<T> : IList<T> where T : RealmObject
+    public class RealmList<T> : IList<T>, IRealmList, IDynamicMetaObjectProvider, ICopyValuesFrom where T : RealmObject
     {
 
         /// <summary>
@@ -203,5 +205,21 @@ namespace Realms
         }
 
         #endregion
+
+        void ICopyValuesFrom.CopyValuesFrom(IEnumerable<RealmObject> values)
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+        }
+
     }
+
+
+    [Preserve(AllMembers = true)]
+    internal interface IRealmList
+    {
+        Realm Realm { get; }
+        LinkListHandle Handle { get; }
+        string SchemaClassName { get; }
+    }
+
 }
