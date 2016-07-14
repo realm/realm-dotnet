@@ -15,6 +15,9 @@
 * `RealmObject.IsValid` can be called to check if a managed object has been deleted
 * Accessing properties on invalid objects will throw an exception rather than crash with a segfault (#662)
 
+Uses core 1.4.0
+
+
 0.76.1 (2016-06-15)
 -------------------
 
