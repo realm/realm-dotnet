@@ -1,6 +1,9 @@
 0.77.0 (in progress)
 -------------------
 
+### Breaking Changes
+* Sort order change in previous version was reverted.
+
 ### Major Changes
 * It is now possible to introspect the schema of a Realm. (#645)
 * The Realm class received overloads for `Realm.CreateObject` and `Realm.All` that accept string arguments instead of generic parameters, enabling use of the `dynamic` keyword with objects whose exact type is not known at compile time. (#646)
