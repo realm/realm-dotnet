@@ -224,16 +224,16 @@ namespace IntegrationTests
         }
 
         [Test]
-        public void SortsAccentedAndSpecialCorrectly ()
+        public void SortsByAcceptedOrder()
         {
             _realm.Write (() => {
-                foreach (var city in new [] { "Santo Domingo", "Sydney", "São Paulo", "Shanghai", "A-Place" , "A Place" } ) {
+                foreach (var city in new [] { "Santo Domingo", "Åby", "Sydney", "São Paulo", "Shanghai", "A-Place" , "A Place" } ) {
                     var co = _realm.CreateObject<Cities> ();
                     co.Name = city;
                 }
             });
             var sortedCities = _realm.All<Cities>().OrderBy(c => c.Name).ToList().Select(c => c.Name);
-            Assert.That(sortedCities, Is.EqualTo( new [] { "A Place", "A-Place", "Santo Domingo", "São Paulo", "Shanghai", "Sydney" }) );
+            Assert.That(sortedCities, Is.EqualTo( new [] { "A-Place", "A Place", "Santo Domingo", "São Paulo", "Shanghai", "Sydney", "Åby" }) );
         }
 
 
