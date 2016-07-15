@@ -132,38 +132,6 @@ namespace IntegrationTests
             Console.WriteLine("Time spent: " + sw.Elapsed);
             Console.WriteLine("Kilo-iterations per second: {0:0.00}", ((count/1000) / sw.Elapsed.TotalSeconds));
         }
-
-        string benchmarkString;
-
-        [Test, Explicit("Temporary benchmarker")]
-        public void Benchmark()
-        {
-            Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
-            var realm = Realm.GetInstance();
-            Person p = null;
-
-            realm.Write(() =>
-            {
-                p = realm.CreateObject<Person>();
-                p.FirstName = "Some long first name";
-                p.LastName = "And an even longer last name....";
-            });
-
-            var startTime = DateTime.Now;
-
-            var iterations = 1000000;
-            for (var i = 0; i < iterations; i++)
-            {
-                benchmarkString = p.FirstName;
-                benchmarkString = p.LastName;
-            }
-
-            var endTime = DateTime.Now;
-            var totalTicks = (endTime - startTime).Ticks;
-            var iterationTicks = totalTicks/iterations;
-
-            Console.WriteLine($"Benchmark completed. { iterations } iterations took { endTime - startTime }, which is {iterationTicks} ticks per iteration");
-        }
     }
 }
 
