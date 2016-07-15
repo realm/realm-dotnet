@@ -108,35 +108,50 @@ static util::Optional<Schema> create_schema(SchemaObject* objects, int objects_l
 
 extern "C" {
     
-    REALM_EXPORT void register_notify_realm_changed(NotifyRealmChangedT notifier)
+REALM_EXPORT void register_notify_realm_changed(NotifyRealmChangedT notifier)
 {
     notify_realm_changed = notifier;
 }
 
-REALM_EXPORT SharedRealm* shared_realm_open(uint16_t* path, size_t path_len, bool read_only, SharedGroup::DurabilityLevel durability,
-                        uint8_t* encryption_key, SchemaObject* objects, int objects_length, SchemaProperty* properties, bool delete_if_migration_needed, uint64_t schemaVersion, NativeException::Marshallable& ex)
+struct Configuration
 {
-    return handle_errors(ex, [=]() {
-        Utf16StringAccessor pathStr(path, path_len);
+    uint16_t* path;
+    size_t path_len;
+    
+    bool read_only;
+    
+    bool in_memory;
+    
+    char* encryption_key;
+    
+    Schema* schema;
+
+    bool delete_if_migration_needed;
+
+    uint64_t schema_version;
+};
+    
+REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        Utf16StringAccessor pathStr(configuration.path, configuration.path_len);
 
         Realm::Config config;
         config.path = pathStr.to_string();
-        config.in_memory = durability != SharedGroup::durability_Full;
+        config.in_memory = configuration.in_memory;
 
         // by definition the key is only allowwed to be 64 bytes long, enforced by C# code
-        if (encryption_key == nullptr)
-          config.encryption_key = std::vector<char>();
-        else
-          config.encryption_key = std::vector<char>(encryption_key, encryption_key+64);
+        if (configuration.encryption_key )
+          config.encryption_key = std::vector<char>(configuration.encryption_key, configuration.encryption_key+64);
 
-        if (read_only) {
+        if (configuration.read_only) {
             config.schema_mode = SchemaMode::ReadOnly;
-        } else if (delete_if_migration_needed) {
+        } else if (configuration.delete_if_migration_needed) {
             config.schema_mode = SchemaMode::ResetFile;
         }
         
-        config.schema = create_schema(objects, objects_length, properties);
-        config.schema_version = schemaVersion;
+        config.schema.reset(configuration.schema);
+        config.schema_version = configuration.schema_version;
 
         return new SharedRealm{Realm::get_shared_realm(config)};
     });

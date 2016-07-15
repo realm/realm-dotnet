@@ -115,7 +115,17 @@ namespace Realms
                 }
             }
 
-            var srPtr = srHandle.Open(config.DatabasePath, config.ReadOnly, false, config.EncryptionKey, schema, config.ShouldDeleteIfMigrationNeeded, config.SchemaVersion);
+            var configuration = new Native.Configuration
+            {
+                Path = config.DatabasePath,
+                read_only = config.ReadOnly,
+                encryption_key = config.EncryptionKey,
+                Schema = schema.Handle,
+                delete_if_migration_needed = config.ShouldDeleteIfMigrationNeeded,
+                schema_version = config.SchemaVersion
+            };
+
+            var srPtr = srHandle.Open(configuration);
 
             RuntimeHelpers.PrepareConstrainedRegions();
             try { /* Retain handle in a constrained execution region */ }
