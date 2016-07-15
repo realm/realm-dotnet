@@ -28,5 +28,6 @@ namespace AssemblyToProcess
     [MapTo("RemappedTable")]
     public class RemappedClass : RealmObject
     {
+        public int PropertyToEnsureHealthyClass { get; set; }
     }
 }
