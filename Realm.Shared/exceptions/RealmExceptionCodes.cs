@@ -15,12 +15,14 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
 namespace Realms {
 
-/// <summary>Codes used in forwarding exceptions from the native C++ core, to be regenerated in C#.</summary>
-/// <remarks> <b>Warning:</b> Keep these codes aligned with realm_error_type.hpp in wrappers.</remarks>
-    public enum RealmExceptionCodes {
+    /// <summary>Codes used in forwarding exceptions from the native C++ core, to be regenerated in C#.</summary>
+    /// <remarks> <b>Warning:</b> Keep these codes aligned with realm_error_type.hpp in wrappers.</remarks>
+    internal enum RealmExceptionCodes : sbyte {
+        NoError = -1,
+
         RealmError = 0,
         RealmFileAccessError = 1,
         RealmDecryptionFailed = 2,
@@ -38,4 +40,4 @@ namespace Realms {
         StdIndexOutOfRange = 101,
         StdInvalidOperation = 102
     }
-} // namespace Realms
+} 

@@ -16,6 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
  
+#include "realm_export_decls.hpp"
+
+extern "C" {
+REALM_EXPORT void delete_pointer(void* pointer)
+{
+        delete pointer;
+}
+} // extern "C"
 
 #ifdef DYNAMIC  // clang complains when making a dylib if there is no main(). :-/
 int main() { return 0; }

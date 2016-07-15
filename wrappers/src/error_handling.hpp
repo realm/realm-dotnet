@@ -20,6 +20,7 @@
 #define ERROR_HANDLING_HPP
 
 #include <string>
+#include <new>
 #include <realm.hpp>
 #include "realm_error_type.hpp"
 
@@ -30,17 +31,17 @@ struct NativeException {
     
     struct Marshallable {
         RealmErrorType type;
-        const char* messagesBytes;
+        void* messagesBytes;
         size_t messageLength;
     };
     
-    // the return value of this method is tied to the lifetime of this
-    // it's ususally fine to pass it as a parameter to a .net callback,
-    // but take care of object lifetime when *returning* this value to .net
     Marshallable for_marshalling() const {
+        auto messageCopy = ::operator new (message.size());
+        message.copy(reinterpret_cast<char*>(messageCopy), message.length());
+
         return {
             type,
-            message.data(),
+            messageCopy,
             message.size()
         };
     }
@@ -67,14 +68,15 @@ struct Default<void> {
 };
 
 template <class F>
-auto handle_errors(F&& func) -> decltype(func())
+auto handle_errors(NativeException::Marshallable& ex, F&& func) -> decltype(func())
 {
     using RetVal = decltype(func());
+    ex.type = RealmErrorType::NoError;
     try {
         return func();
     }
     catch (...) {
-        throw_managed_exception(convert_exception());
+        ex = convert_exception().for_marshalling();  
         return Default<RetVal>::default_value();
     }
 }

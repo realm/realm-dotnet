@@ -112,7 +112,7 @@ namespace Realms
             }
 
             var sortColName = body.Member.Name;
-            NativeSortOrder.add_sort_clause(_optionalSortOrderHandle, sortColName, (IntPtr)sortColName.Length, ascending ? (IntPtr)1 : IntPtr.Zero);
+            _optionalSortOrderHandle.AddClause(sortColName, ascending);
         }
 
 
@@ -152,14 +152,14 @@ namespace Realms
                 }
                 if (m.Method.Name == "Count")
                 {
-                    RecurseToWhereOrRunLambda(m);  
-                    int foundCount = (int)NativeQuery.count(_coreQueryHandle);
+                    RecurseToWhereOrRunLambda(m);
+                    var foundCount = _coreQueryHandle.Count();
                     return Expression.Constant(foundCount);
                 }
                 if (m.Method.Name == "Any")
                 {
-                    RecurseToWhereOrRunLambda(m);  
-                    var rowPtr = NativeQuery.findDirect(_coreQueryHandle, IntPtr.Zero);
+                    RecurseToWhereOrRunLambda(m);
+                    var rowPtr = _coreQueryHandle.FindDirect(IntPtr.Zero);
                     var firstRow = Realm.CreateRowHandle(rowPtr, _realm.SharedRealmHandle);
                     bool foundAny = !firstRow.IsInvalid;
                     return Expression.Constant(foundAny);
@@ -170,14 +170,14 @@ namespace Realms
                     RowHandle firstRow = null;
                     if (_optionalSortOrderHandle == null)
                     {
-                        var rowPtr = NativeQuery.findDirect(_coreQueryHandle, IntPtr.Zero);
+                        var rowPtr = _coreQueryHandle.FindDirect(IntPtr.Zero);
                         firstRow = Realm.CreateRowHandle(rowPtr, _realm.SharedRealmHandle);
                     }
                     else 
                     {
                         using (ResultsHandle rh = _realm.MakeResultsForQuery(_schema, _coreQueryHandle, _optionalSortOrderHandle)) 
                         {
-                            var rowPtr = NativeResults.get_row(rh, IntPtr.Zero);
+                            var rowPtr = rh.GetRow(0);
                             firstRow = Realm.CreateRowHandle(rowPtr, _realm.SharedRealmHandle);
                         }
                     }
@@ -188,12 +188,12 @@ namespace Realms
                 if (m.Method.Name == "Single")  // same as unsorted First with extra checks
                 {
                     RecurseToWhereOrRunLambda(m);  
-                    var rowPtr = NativeQuery.findDirect(_coreQueryHandle, IntPtr.Zero);
+                    var rowPtr = _coreQueryHandle.FindDirect(IntPtr.Zero);
                     var firstRow = Realm.CreateRowHandle(rowPtr, _realm.SharedRealmHandle);
                     if (firstRow.IsInvalid)
                         throw new InvalidOperationException("Sequence contains no matching element");
                     IntPtr nextIndex = (IntPtr)(firstRow.RowIndex+1);
-                    var nextRowPtr = NativeQuery.findDirect(_coreQueryHandle, nextIndex);
+                    var nextRowPtr = _coreQueryHandle.FindDirect(nextIndex);
                     var nextRow = Realm.CreateRowHandle(nextRowPtr, _realm.SharedRealmHandle);
                     if (!nextRow.IsInvalid)
                         throw new InvalidOperationException("Sequence contains more than one matching element");
@@ -204,19 +204,19 @@ namespace Realms
 
             if (m.Method.DeclaringType == typeof(string))
             {
-                NativeQuery.Operation<string> queryMethod = null;
+                QueryHandle.Operation<string> queryMethod = null;
 
                 if (m.Method == Methods.String.Contains.Value)
                 {
-                    queryMethod = (q, c, v) => NativeQuery.string_contains(q, c, v, (IntPtr)v.Length);
+                    queryMethod = (q, c, v) => q.StringContains(c, v);
                 }
                 else if (m.Method == Methods.String.StartsWith.Value)
                 {
-                    queryMethod = (q, c, v) => NativeQuery.string_starts_with(q, c, v, (IntPtr)v.Length);
+                    queryMethod = (q, c, v) => q.StringStartsWith(c, v);
                 }
                 else if (m.Method == Methods.String.EndsWith.Value)
                 {
-                    queryMethod = (q, c, v) => NativeQuery.string_ends_with(q, c, v, (IntPtr)v.Length);
+                    queryMethod = (q, c, v) => q.StringEndsWith(c, v);
                 }
 
                 if (queryMethod != null)
@@ -226,7 +226,7 @@ namespace Realms
                     {
                         throw new NotSupportedException($"The method '{m.Method}' has to be invoked on a RealmObject member");
                     }
-                    var columnIndex = NativeQuery.get_column_index(_coreQueryHandle, member.Member.Name, (IntPtr)member.Member.Name.Length);
+                    var columnIndex = _coreQueryHandle.GetColumnIndex(member.Member.Name);
 
                     var argument = ExtractConstantValue (m.Arguments.SingleOrDefault());
                     if (argument == null || argument.GetType() != typeof(string))
@@ -247,7 +247,7 @@ namespace Realms
             {
             case ExpressionType.Not:
                 {
-                    NativeQuery.not(_coreQueryHandle);                        
+                        _coreQueryHandle.Not();
                     this.Visit (u.Operand);  // recurse into richer expression, expect to VisitCombination
                 }
                     break;
@@ -259,11 +259,11 @@ namespace Realms
 
         protected void VisitCombination(BinaryExpression b,  Action<QueryHandle> combineWith )
         {
-            NativeQuery.group_begin(_coreQueryHandle);
+            _coreQueryHandle.GroupBegin();
             Visit(b.Left);
             combineWith(_coreQueryHandle);
             Visit(b.Right);
-            NativeQuery.group_end(_coreQueryHandle);
+            _coreQueryHandle.GroupEnd();
         }
 
         internal static object ExtractConstantValue(Expression expr)
@@ -292,7 +292,7 @@ namespace Realms
             }
             else if (b.NodeType == ExpressionType.OrElse)  // Boolean Or with short-circuit
             {
-                VisitCombination(b, qh => NativeQuery.or(qh) );
+                VisitCombination(b, qh => qh.Or());
             }
             else
             {
@@ -335,43 +335,37 @@ namespace Realms
                         break;
 
                     default:
-                        throw new NotSupportedException(string.Format("The binary operator '{0}' is not supported", b.NodeType));
+                        throw new NotSupportedException($"The binary operator '{b.NodeType}' is not supported");
                 }
             }
             return b;
         }
 
-#pragma warning disable 0642    // Disable warning about empty statements (See issue #68)
-
         private static void AddQueryEqual(QueryHandle queryHandle, string columnName, object value)
             {
-            var columnIndex = NativeQuery.get_column_index((QueryHandle)queryHandle, columnName, (IntPtr)columnName.Length);
+            var columnIndex = queryHandle.GetColumnIndex(columnName);
 
-            var valueType = value.GetType();
             if (value is string)
-            {
-                string valueStr = (string)value;
-                NativeQuery.string_equal((QueryHandle)queryHandle, columnIndex, valueStr, (IntPtr)valueStr.Length);
-            }
-            else if (valueType == typeof(bool))
-                NativeQuery.bool_equal((QueryHandle)queryHandle, columnIndex, MarshalHelpers.BoolToIntPtr((bool)value));
-            else if (valueType == typeof(int))
-                NativeQuery.int_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((int)value));
-            else if (valueType == typeof(long))
-                NativeQuery.long_equal((QueryHandle)queryHandle, columnIndex, (long)value);
-            else if (valueType == typeof(float))
-                NativeQuery.float_equal((QueryHandle)queryHandle, columnIndex, (float)value);
-            else if (valueType == typeof(double))
-                NativeQuery.double_equal((QueryHandle)queryHandle, columnIndex, (double)value);
-            else if (valueType == typeof(DateTimeOffset))
-                NativeQuery.timestamp_milliseconds_equal(queryHandle, columnIndex, ((DateTimeOffset)value).ToRealmUnixTimeMilliseconds());
-            else if (valueType == typeof(byte[]))
+                queryHandle.StringEqual(columnIndex, (string)value);
+            else if (value is bool)
+                queryHandle.BoolEqual(columnIndex, (bool)value);
+            else if (value is int)
+                queryHandle.IntEqual(columnIndex, (int)value);
+            else if (value is long)
+                queryHandle.LongEqual(columnIndex, (long)value);
+            else if (value is float)
+                queryHandle.FloatEqual(columnIndex, (float)value);
+            else if (value is double)
+                queryHandle.DoubleEqual(columnIndex, (double)value);
+            else if (value is DateTimeOffset)
+                queryHandle.TimestampMillisecondsEqual(columnIndex, (DateTimeOffset)value);
+            else if (value.GetType() == typeof(byte[]))
             {
                 var buffer = (byte[])value;
                 if (buffer.Length == 0)
                 {
                     // see RealmObject.SetByteArrayValue
-                    NativeQuery.binary_equal(queryHandle, columnIndex, (IntPtr)0x1, IntPtr.Zero);
+                    queryHandle.BinaryEqual(columnIndex, (IntPtr)0x1, IntPtr.Zero);
                     return;
                 }
 
@@ -379,7 +373,7 @@ namespace Realms
                 {
                     fixed (byte* bufferPtr = (byte[])value)
                     {
-                        NativeQuery.binary_equal(queryHandle, columnIndex, (IntPtr)bufferPtr, (IntPtr)buffer.LongLength);
+                        queryHandle.BinaryEqual(columnIndex, (IntPtr)bufferPtr, (IntPtr)buffer.LongLength);
                     }
                 }
             }
@@ -389,33 +383,29 @@ namespace Realms
 
         private static void AddQueryNotEqual(QueryHandle queryHandle, string columnName, object value)
         {
-            var columnIndex = NativeQuery.get_column_index((QueryHandle)queryHandle, columnName, (IntPtr)columnName.Length);
+            var columnIndex = queryHandle.GetColumnIndex(columnName);
 
-            var valueType = value.GetType();
-            if (value.GetType() == typeof(string))
-            {
-                string valueStr = (string)value;
-                NativeQuery.string_not_equal((QueryHandle)queryHandle, columnIndex, valueStr, (IntPtr)valueStr.Length);
-            }
-            else if (valueType == typeof(bool))
-                NativeQuery.bool_not_equal((QueryHandle)queryHandle, columnIndex, MarshalHelpers.BoolToIntPtr((bool)value));
-            else if (valueType == typeof(int))
-                NativeQuery.int_not_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((int)value));
-            else if (valueType == typeof(long))
-                NativeQuery.long_not_equal((QueryHandle)queryHandle, columnIndex, (long)value);
-            else if (valueType == typeof(float))
-                NativeQuery.float_not_equal((QueryHandle)queryHandle, columnIndex, (float)value);
-            else if (valueType == typeof(double))
-                NativeQuery.double_not_equal((QueryHandle)queryHandle, columnIndex, (double)value);
-            else if (valueType == typeof(DateTimeOffset))
-                NativeQuery.timestamp_milliseconds_not_equal(queryHandle, columnIndex, ((DateTimeOffset)value).ToRealmUnixTimeMilliseconds());
-            else if (valueType == typeof(byte[]))
+            if (value is string)
+                queryHandle.StringNotEqual(columnIndex, (string)value);
+            else if (value is bool)
+                queryHandle.BoolNotEqual(columnIndex, (bool)value);
+            else if (value is int)
+                queryHandle.IntNotEqual(columnIndex, (int)value);
+            else if (value is long)
+                queryHandle.LongNotEqual(columnIndex, (long)value);
+            else if (value is float)
+                queryHandle.FloatNotEqual(columnIndex, (float)value);
+            else if (value is double)
+                queryHandle.DoubleNotEqual(columnIndex, (double)value);
+            else if (value is DateTimeOffset)
+                queryHandle.TimestampMillisecondsNotEqual(columnIndex, (DateTimeOffset)value);
+            else if (value.GetType()== typeof(byte[]))
             {
                 var buffer = (byte[])value;
                 if (buffer.Length == 0)
                 {
                     // see RealmObject.SetByteArrayValue
-                    NativeQuery.binary_not_equal(queryHandle, columnIndex, (IntPtr)0x1, IntPtr.Zero);
+                    queryHandle.BinaryNotEqual(columnIndex, (IntPtr)0x1, IntPtr.Zero);
                     return;
                 }
 
@@ -423,7 +413,7 @@ namespace Realms
                 {
                     fixed (byte* bufferPtr = (byte[])value)
                     {
-                        NativeQuery.binary_not_equal(queryHandle, columnIndex, (IntPtr)bufferPtr, (IntPtr)buffer.LongLength);
+                        queryHandle.BinaryNotEqual(columnIndex, (IntPtr)bufferPtr, (IntPtr)buffer.LongLength);
                     }
                 }
             }
@@ -433,89 +423,83 @@ namespace Realms
 
         private static void AddQueryLessThan(QueryHandle queryHandle, string columnName, object value)
         {
-            var columnIndex = NativeQuery.get_column_index((QueryHandle)queryHandle, columnName, (IntPtr)columnName.Length);
+            var columnIndex = queryHandle.GetColumnIndex(columnName);
 
-            var valueType = value.GetType();
-            if (valueType == typeof(int))
-                NativeQuery.int_less((QueryHandle)queryHandle, columnIndex, (IntPtr)((int)value));
-            else if (valueType == typeof(long))
-                NativeQuery.long_less((QueryHandle)queryHandle, columnIndex, (long)value);
-            else if (valueType == typeof(float))
-                NativeQuery.float_less((QueryHandle)queryHandle, columnIndex, (float)value);
-            else if (valueType == typeof(double))
-                NativeQuery.double_less((QueryHandle)queryHandle, columnIndex, (double)value);
-            else if (valueType == typeof(DateTimeOffset))
-                NativeQuery.timestamp_milliseconds_less(queryHandle, columnIndex, ((DateTimeOffset)value).ToRealmUnixTimeMilliseconds());
-            else if (valueType == typeof(string) || valueType == typeof(bool))
-                throw new Exception("Unsupported type " + valueType.Name);
+            if (value is int)
+                queryHandle.IntLess(columnIndex, (int)value);
+            else if (value is long)
+                queryHandle.LongLess(columnIndex, (long)value);
+            else if (value is float)
+                queryHandle.FloatLess(columnIndex, (float)value);
+            else if (value is double)
+                queryHandle.DoubleLess(columnIndex, (double)value);
+            else if (value is DateTimeOffset)
+                queryHandle.TimestampMillisecondsLess(columnIndex, (DateTimeOffset)value);
+            else if (value is string || value is bool)
+                throw new Exception($"Unsupported type {value.GetType().Name}");
             else
                 throw new NotImplementedException();
         }
 
         private static void AddQueryLessThanOrEqual(QueryHandle queryHandle, string columnName, object value)
         {
-            var columnIndex = NativeQuery.get_column_index((QueryHandle)queryHandle, columnName, (IntPtr)columnName.Length);
+            var columnIndex = queryHandle.GetColumnIndex(columnName);
 
-            var valueType = value.GetType();
-            if (valueType == typeof(int))
-                NativeQuery.int_less_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((int)value));
-            else if (valueType == typeof(long))
-                NativeQuery.long_less_equal((QueryHandle)queryHandle, columnIndex, (long)value);
-            else if (valueType == typeof(float))
-                NativeQuery.float_less_equal((QueryHandle)queryHandle, columnIndex, (float)value);
-            else if (valueType == typeof(double))
-                NativeQuery.double_less_equal((QueryHandle)queryHandle, columnIndex, (double)value);
-            else if (valueType == typeof(DateTimeOffset))
-                NativeQuery.timestamp_milliseconds_less_equal(queryHandle, columnIndex, ((DateTimeOffset)value).ToRealmUnixTimeMilliseconds());
-            else if (valueType == typeof(string) || valueType == typeof(bool))
-                throw new Exception("Unsupported type " + valueType.Name);
+            if (value is int)
+                queryHandle.IntLessEqual(columnIndex, (int)value);
+            else if (value is long)
+                queryHandle.LongLessEqual(columnIndex, (long)value);
+            else if (value is float)
+                queryHandle.FloatLessEqual(columnIndex, (float)value);
+            else if (value is double)
+                queryHandle.DoubleLessEqual(columnIndex, (double)value);
+            else if (value is DateTimeOffset)
+                queryHandle.TimestampMillisecondsLessEqual(columnIndex, (DateTimeOffset)value);
+            else if (value is string || value is bool)
+                throw new Exception($"Unsupported type {value.GetType().Name}");
             else
                 throw new NotImplementedException();
         }
 
         private static void AddQueryGreaterThan(QueryHandle queryHandle, string columnName, object value)
         {
-            var columnIndex = NativeQuery.get_column_index((QueryHandle)queryHandle, columnName, (IntPtr)columnName.Length);
+            var columnIndex = queryHandle.GetColumnIndex(columnName);
 
-            var valueType = value.GetType();
-            if (valueType == typeof(int))
-                NativeQuery.int_greater((QueryHandle)queryHandle, columnIndex, (IntPtr)((int)value));
-            else if (valueType == typeof(long))
-                NativeQuery.long_greater((QueryHandle)queryHandle, columnIndex, (long)value);
-            else if (valueType == typeof(float))
-                NativeQuery.float_greater((QueryHandle)queryHandle, columnIndex, (float)value);
-            else if (valueType == typeof(double))
-                NativeQuery.double_greater((QueryHandle)queryHandle, columnIndex, (double)value);
-            else if (valueType == typeof(DateTimeOffset))
-                NativeQuery.timestamp_milliseconds_greater(queryHandle, columnIndex, ((DateTimeOffset)value).ToRealmUnixTimeMilliseconds());
-            else if (valueType == typeof(string) || valueType == typeof(bool))
-                throw new Exception("Unsupported type " + valueType.Name);
+            if (value is int)
+                queryHandle.IntGreater(columnIndex, (int)value);
+            else if (value is long)
+                queryHandle.LongGreater(columnIndex, (long)value);
+            else if (value is float)
+                queryHandle.FloatGreater(columnIndex, (float)value);
+            else if (value is double)
+                queryHandle.DoubleGreater(columnIndex, (double)value);
+            else if (value is DateTimeOffset)
+                queryHandle.TimestampMillisecondsGreater(columnIndex, (DateTimeOffset)value);
+            else if (value is string || value is bool)
+                throw new Exception($"Unsupported type {value.GetType().Name}");
             else
                 throw new NotImplementedException();
         }
 
         private static void AddQueryGreaterThanOrEqual(QueryHandle queryHandle, string columnName, object value)
         {
-            var columnIndex = NativeQuery.get_column_index((QueryHandle)queryHandle, columnName, (IntPtr)columnName.Length);
+            var columnIndex = queryHandle.GetColumnIndex(columnName);
 
-            var valueType = value.GetType();
-            if (valueType == typeof(int))
-                NativeQuery.int_greater_equal((QueryHandle)queryHandle, columnIndex, (IntPtr)((int)value));
-            else if (valueType == typeof(long))
-                NativeQuery.long_greater_equal((QueryHandle)queryHandle, columnIndex, (long)value);
-            else if (valueType == typeof(float))
-                NativeQuery.float_greater_equal((QueryHandle)queryHandle, columnIndex, (float)value);
-            else if (valueType == typeof(double))
-                NativeQuery.double_greater_equal((QueryHandle)queryHandle, columnIndex, (double)value);
-            else if (valueType == typeof(DateTimeOffset))
-                NativeQuery.timestamp_milliseconds_greater_equal(queryHandle, columnIndex, ((DateTimeOffset)value).ToRealmUnixTimeMilliseconds());
-            else if (valueType == typeof(string) || valueType == typeof(bool))
-                throw new Exception("Unsupported type " + valueType.Name);
+            if (value is int)
+                queryHandle.IntGreaterEqual(columnIndex, (int)value);
+            else if (value is long)
+                queryHandle.LongGreaterEqual(columnIndex, (long)value);
+            else if (value is float)
+                queryHandle.FloatGreaterEqual(columnIndex, (float)value);
+            else if (value is double)
+                queryHandle.DoubleGreaterEqual(columnIndex, (double)value);
+            else if (value is DateTimeOffset)
+                queryHandle.TimestampMillisecondsGreaterEqual(columnIndex, (DateTimeOffset)value);
+            else if (value is string || value is bool)
+                throw new Exception($"Unsupported type {value.GetType().Name}");
             else
                 throw new NotImplementedException();
         }
-
-#pragma warning restore 0642
 
         // strange as it may seem, this is also called for the LHS when simply iterating All<T>()
         internal override Expression VisitConstant(ConstantExpression c)
@@ -542,7 +526,7 @@ namespace Realms
                 }
                 else if (c.Value.GetType() == typeof (object))
                 {
-                    throw new NotSupportedException(string.Format("The constant for '{0}' is not supported", c.Value));
+                    throw new NotSupportedException($"The constant for '{c.Value}' is not supported");
                 }
                 else
                 {
@@ -564,7 +548,7 @@ namespace Realms
             try { }
             finally
             {
-                queryHandle.SetHandle(NativeTable.where(tableHandle));
+                queryHandle.SetHandle(NativeTable.Where(tableHandle));
             }//at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
             return queryHandle;
         }
@@ -573,14 +557,14 @@ namespace Realms
         {
             if (m.Expression != null && m.Expression.NodeType == ExpressionType.Parameter)
             {
-                if (m.Type == typeof(Boolean)) {
+                if (m.Type == typeof(bool)) {
                     object rhs = true;  // box value
                     var leftName = m.Member.Name;
                     AddQueryEqual(_coreQueryHandle, leftName, rhs);
                 }
                 return m;
             }
-            throw new NotSupportedException(string.Format("The member '{0}' is not supported", m.Member.Name));
+            throw new NotSupportedException($"The member '{m.Member.Name}' is not supported");
         }
     }
 }

@@ -45,9 +45,9 @@ struct SchemaObject
     int properties_end;
 };
 
-REALM_EXPORT Schema* schema_create(SchemaObject* objects, int objects_length, SchemaProperty* properties, ObjectSchema** handles)
+REALM_EXPORT Schema* schema_create(SchemaObject* objects, int objects_length, SchemaProperty* properties, ObjectSchema** handles, NativeException::Marshallable& ex)
 {
-    return handle_errors([&]() {
+    return handle_errors(ex, [&]() {
         std::vector<ObjectSchema> object_schemas;
         
         for (int i = 0; i < objects_length; i++) {
@@ -83,9 +83,9 @@ REALM_EXPORT Schema* schema_create(SchemaObject* objects, int objects_length, Sc
     });
 }
     
-REALM_EXPORT Schema* schema_clone(Schema* schema, ObjectSchema** handles)
+REALM_EXPORT Schema* schema_clone(Schema* schema, ObjectSchema** handles, NativeException::Marshallable& ex)
 {
-    return handle_errors([&]() {
+    return handle_errors(ex, [&]() {
         auto clone = new Schema(*schema);
         for (auto i = 0; i < clone->size(); i++) {
             handles[i] = &(*clone->find(*handles[i]));
@@ -97,8 +97,6 @@ REALM_EXPORT Schema* schema_clone(Schema* schema, ObjectSchema** handles)
 
 REALM_EXPORT void schema_destroy(Schema* schema)
 {
-    handle_errors([&]() {
-        delete schema;
-    });
+    delete schema;
 }
 }   // extern "C"

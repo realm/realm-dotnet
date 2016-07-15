@@ -29,18 +29,7 @@
 #include "realm/util/file.hpp" 
 #include "realm/alloc_slab.hpp"
 
-using ManagedExceptionThrowerT = void(*)(realm::NativeException::Marshallable);
-
-// CALLBACK TO THROW IN MANAGED SPACE
-static ManagedExceptionThrowerT ManagedExceptionThrower = nullptr;
-
 namespace realm {
-
-    void throw_managed_exception(const NativeException& exception)
-    {
-        assert(ManagedExceptionThrower != nullptr);
-        ManagedExceptionThrower(exception.for_marshalling());
-    }
 
     /**
     @note mostly copied from util.cpp in Java but has a much richer range of exceptions
@@ -110,17 +99,3 @@ namespace realm {
 
 }   // namespace realm
 
-extern "C" {
-    
-REALM_EXPORT void set_exception_thrower(ManagedExceptionThrowerT userThrower)
-{
-    ManagedExceptionThrower = userThrower;
-}
-
-// allow C# test code to generate an exception being thrown back
-REALM_EXPORT void fake_a_native_exception(int errorType)
-{
-    realm::throw_managed_exception({ realm::RealmErrorType(errorType), "this is fake_exception" });
-}
-
-}   // extern "C"

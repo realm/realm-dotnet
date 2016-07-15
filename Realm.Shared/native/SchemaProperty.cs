@@ -15,22 +15,30 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
-using System;
+
 using System.Runtime.InteropServices;
 
 namespace Realms
 {
-    internal static class NativeRow
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct SchemaProperty
     {
-        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "row_get_row_index", CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr row_get_row_index(RowHandle rowHandle);
+        [MarshalAs(UnmanagedType.LPStr)]
+        internal string name;
 
-        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "row_get_is_attached",
-            CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr row_get_is_attached(RowHandle rowHandle);
+        [MarshalAs(UnmanagedType.U1)]
+        internal Schema.PropertyType type;
 
-        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "row_destroy", CallingConvention = CallingConvention.Cdecl)]
-        public static extern void destroy(IntPtr rowHandle);
+        [MarshalAs(UnmanagedType.LPStr)]
+        internal string objectType;
+
+        [MarshalAs(UnmanagedType.I1)]
+        internal bool is_nullable;
+
+        [MarshalAs(UnmanagedType.I1)]
+        internal bool is_primary;
+
+        [MarshalAs(UnmanagedType.I1)]
+        internal bool is_indexed;
     }
 }
