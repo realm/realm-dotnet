@@ -341,31 +341,25 @@ namespace Realms
             return b;
         }
 
-#pragma warning disable 0642    // Disable warning about empty statements (See issue #68)
-
         private static void AddQueryEqual(QueryHandle queryHandle, string columnName, object value)
             {
             var columnIndex = queryHandle.GetColumnIndex(columnName);
 
-            var valueType = value.GetType();
             if (value is string)
-            {
-                var valueStr = (string)value;
-                queryHandle.StringEqual(columnIndex, valueStr);
-            }
-            else if (valueType == typeof(bool))
+                queryHandle.StringEqual(columnIndex, (string)value);
+            else if (value is bool)
                 queryHandle.BoolEqual(columnIndex, (bool)value);
-            else if (valueType == typeof(int))
+            else if (value is int)
                 queryHandle.IntEqual(columnIndex, (int)value);
-            else if (valueType == typeof(long))
+            else if (value is long)
                 queryHandle.LongEqual(columnIndex, (long)value);
-            else if (valueType == typeof(float))
+            else if (value is float)
                 queryHandle.FloatEqual(columnIndex, (float)value);
-            else if (valueType == typeof(double))
+            else if (value is double)
                 queryHandle.DoubleEqual(columnIndex, (double)value);
-            else if (valueType == typeof(DateTimeOffset))
+            else if (value is DateTimeOffset)
                 queryHandle.TimestampMillisecondsEqual(columnIndex, (DateTimeOffset)value);
-            else if (valueType == typeof(byte[]))
+            else if (value.GetType() == typeof(byte[]))
             {
                 var buffer = (byte[])value;
                 if (buffer.Length == 0)
@@ -391,24 +385,21 @@ namespace Realms
         {
             var columnIndex = queryHandle.GetColumnIndex(columnName);
 
-            var valueType = value.GetType();
             if (value is string)
-            {
                 queryHandle.StringNotEqual(columnIndex, (string)value);
-            }
-            else if (valueType == typeof(bool))
+            else if (value is bool)
                 queryHandle.BoolNotEqual(columnIndex, (bool)value);
-            else if (valueType == typeof(int))
+            else if (value is int)
                 queryHandle.IntNotEqual(columnIndex, (int)value);
-            else if (valueType == typeof(long))
+            else if (value is long)
                 queryHandle.LongNotEqual(columnIndex, (long)value);
-            else if (valueType == typeof(float))
+            else if (value is float)
                 queryHandle.FloatNotEqual(columnIndex, (float)value);
-            else if (valueType == typeof(double))
+            else if (value is double)
                 queryHandle.DoubleNotEqual(columnIndex, (double)value);
-            else if (valueType == typeof(DateTimeOffset))
+            else if (value is DateTimeOffset)
                 queryHandle.TimestampMillisecondsNotEqual(columnIndex, (DateTimeOffset)value);
-            else if (valueType == typeof(byte[]))
+            else if (value.GetType()== typeof(byte[]))
             {
                 var buffer = (byte[])value;
                 if (buffer.Length == 0)
@@ -434,19 +425,18 @@ namespace Realms
         {
             var columnIndex = queryHandle.GetColumnIndex(columnName);
 
-            var valueType = value.GetType();
-            if (valueType == typeof(int))
+            if (value is int)
                 queryHandle.IntLess(columnIndex, (int)value);
-            else if (valueType == typeof(long))
+            else if (value is long)
                 queryHandle.LongLess(columnIndex, (long)value);
-            else if (valueType == typeof(float))
+            else if (value is float)
                 queryHandle.FloatLess(columnIndex, (float)value);
-            else if (valueType == typeof(double))
+            else if (value is double)
                 queryHandle.DoubleLess(columnIndex, (double)value);
-            else if (valueType == typeof(DateTimeOffset))
+            else if (value is DateTimeOffset)
                 queryHandle.TimestampMillisecondsLess(columnIndex, (DateTimeOffset)value);
-            else if (valueType == typeof(string) || valueType == typeof(bool))
-                throw new Exception($"Unsupported type {valueType.Name}");
+            else if (value is string || value is bool)
+                throw new Exception($"Unsupported type {value.GetType().Name}");
             else
                 throw new NotImplementedException();
         }
@@ -455,20 +445,18 @@ namespace Realms
         {
             var columnIndex = queryHandle.GetColumnIndex(columnName);
 
-            var valueType = value.GetType();
-            if (valueType == typeof(int))
+            if (value is int)
                 queryHandle.IntLessEqual(columnIndex, (int)value);
-            else if (valueType == typeof(long))
+            else if (value is long)
                 queryHandle.LongLessEqual(columnIndex, (long)value);
-            else if (valueType == typeof(float))
+            else if (value is float)
                 queryHandle.FloatLessEqual(columnIndex, (float)value);
-            else if (valueType == typeof(double))
+            else if (value is double)
                 queryHandle.DoubleLessEqual(columnIndex, (double)value);
-            else if (valueType == typeof(DateTimeOffset))
+            else if (value is DateTimeOffset)
                 queryHandle.TimestampMillisecondsLessEqual(columnIndex, (DateTimeOffset)value);
-
-            else if (valueType == typeof(string) || valueType == typeof(bool))
-                throw new Exception($"Unsupported type {valueType.Name}");
+            else if (value is string || value is bool)
+                throw new Exception($"Unsupported type {value.GetType().Name}");
             else
                 throw new NotImplementedException();
         }
@@ -477,19 +465,18 @@ namespace Realms
         {
             var columnIndex = queryHandle.GetColumnIndex(columnName);
 
-            var valueType = value.GetType();
-            if (valueType == typeof(int))
+            if (value is int)
                 queryHandle.IntGreater(columnIndex, (int)value);
-            else if (valueType == typeof(long))
+            else if (value is long)
                 queryHandle.LongGreater(columnIndex, (long)value);
-            else if (valueType == typeof(float))
+            else if (value is float)
                 queryHandle.FloatGreater(columnIndex, (float)value);
-            else if (valueType == typeof(double))
+            else if (value is double)
                 queryHandle.DoubleGreater(columnIndex, (double)value);
-            else if (valueType == typeof(DateTimeOffset))
+            else if (value is DateTimeOffset)
                 queryHandle.TimestampMillisecondsGreater(columnIndex, (DateTimeOffset)value);
-            else if (valueType == typeof(string) || valueType == typeof(bool))
-                throw new Exception($"Unsupported type {valueType.Name}");
+            else if (value is string || value is bool)
+                throw new Exception($"Unsupported type {value.GetType().Name}");
             else
                 throw new NotImplementedException();
         }
@@ -498,24 +485,21 @@ namespace Realms
         {
             var columnIndex = queryHandle.GetColumnIndex(columnName);
 
-            var valueType = value.GetType();
-            if (valueType == typeof(int))
+            if (value is int)
                 queryHandle.IntGreaterEqual(columnIndex, (int)value);
-            else if (valueType == typeof(long))
+            else if (value is long)
                 queryHandle.LongGreaterEqual(columnIndex, (long)value);
-            else if (valueType == typeof(float))
+            else if (value is float)
                 queryHandle.FloatGreaterEqual(columnIndex, (float)value);
-            else if (valueType == typeof(double))
+            else if (value is double)
                 queryHandle.DoubleGreaterEqual(columnIndex, (double)value);
-            else if (valueType == typeof(DateTimeOffset))
+            else if (value is DateTimeOffset)
                 queryHandle.TimestampMillisecondsGreaterEqual(columnIndex, (DateTimeOffset)value);
-            else if (valueType == typeof(string) || valueType == typeof(bool))
-                throw new Exception($"Unsupported type {valueType.Name}");
+            else if (value is string || value is bool)
+                throw new Exception($"Unsupported type {value.GetType().Name}");
             else
                 throw new NotImplementedException();
         }
-
-#pragma warning restore 0642
 
         // strange as it may seem, this is also called for the LHS when simply iterating All<T>()
         internal override Expression VisitConstant(ConstantExpression c)
