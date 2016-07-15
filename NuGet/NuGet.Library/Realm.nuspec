@@ -26,6 +26,8 @@
 <!-- Our XML config file for Fody -->     
      <file src="FodyWeavers.xml.install.xdt" target="content"/>
      <file src="FodyWeavers.xml.uninstall.xdt" target="content"/>
+<!-- Inline documentation file -->
+    <file src="../../Realm.PCL/bin/$Configuration$/Realm.XML" target="lib/portable-net45+sl5+wp8+wpa81+win8+monoandroid+Xamarin.iOS10+monotouch+Xamarin.Mac" />
 <!-- PCL file -->
     <file src="../../Realm.PCL/bin/$Configuration$/Realm.dll" target="lib/portable-net45+sl5+wp8+wpa81+win8+monoandroid+Xamarin.iOS10+monotouch+Xamarin.Mac" />
 <!-- IOS file -->
