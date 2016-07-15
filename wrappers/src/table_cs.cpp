@@ -63,8 +63,9 @@ REALM_EXPORT Row* table_get_link(Table* table_ptr, size_t column_ndx, size_t row
 REALM_EXPORT SharedLinkViewRef* table_get_linklist(Table* table_ptr, size_t column_ndx, size_t row_ndx, NativeException::Marshallable& ex)
 {
   return handle_errors(ex, [&]() -> SharedLinkViewRef* {
-    SharedLinkViewRef sr = std::make_shared<LinkViewRef>(table_ptr->get_linklist(column_ndx, row_ndx));
-    return new SharedLinkViewRef{ sr };  // weird double-layering necessary to get a raw pointer to a shared_ptr
+    return new SharedLinkViewRef { 
+        std::make_shared<LinkViewRef>(table_ptr->get_linklist(column_ndx, row_ndx)) 
+    };  // weird double-layering necessary to get a raw pointer to a shared_ptr
   });
 }
 
@@ -328,7 +329,7 @@ REALM_EXPORT Results* table_create_results(Table* table_ptr, SharedRealm* realm,
 REALM_EXPORT Results* table_create_sorted_results(Table* table_ptr, SharedRealm* realm, ObjectSchema* object_schema, SortOrderWrapper* sortorder_ptr, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        return new Results(*realm, *object_schema, Query(table_ptr->where()), sortorder_ptr->sort_order);
+        return new Results(*realm, *object_schema, table_ptr->where(), sortorder_ptr->sort_order);
     });
 }
 
