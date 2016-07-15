@@ -118,13 +118,18 @@ namespace Realms
                 schema = schema.CloneForAdoption(srHandle);
             }
 
+            var configuration = new Native.Configuration
+            {
+                Path = config.DatabasePath,
+                read_only = config.ReadOnly,
+                encryption_key = config.EncryptionKey,
+                Schema = schema.Handle,
+                schema_version = config.SchemaVersion
+            };
+
             var srPtr = IntPtr.Zero;
             try {
-                srPtr = srHandle.Open(schema.Handle, 
-                    config.DatabasePath, 
-                    config.ReadOnly, false, 
-                    config.EncryptionKey,
-                    config.SchemaVersion);
+                srPtr = srHandle.Open(configuration);
             } catch (RealmMigrationNeededException) {
                 if (config.ShouldDeleteIfMigrationNeeded)
                 {
@@ -137,11 +142,7 @@ namespace Realms
                     //MigrateRealm(configuration);
                 }
                 // create after deleting old reopen after migrating 
-                srPtr = srHandle.Open(schema.Handle, 
-                    config.DatabasePath, 
-                    config.ReadOnly, false, 
-                    config.EncryptionKey,
-                    config.SchemaVersion);
+                srPtr = srHandle.Open(configuration);
             }
 
             RuntimeHelpers.PrepareConstrainedRegions();

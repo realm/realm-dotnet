@@ -26,8 +26,7 @@ namespace Realms
         private static class NativeMethods
         {
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_open", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr open(SchemaHandle schemaHandle, [MarshalAs(UnmanagedType.LPWStr)]string path, IntPtr pathLength, IntPtr readOnly,
-                IntPtr durability, byte[] encryptionKey, UInt64 schemaVersion, out NativeException ex);
+            public static extern IntPtr open(Native.Configuration configuration, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_bind_to_managed_realm_handle", CallingConvention = CallingConvention.Cdecl)]
             public static extern void bind_to_managed_realm_handle(SharedRealmHandle sharedRealm, IntPtr managedRealmHandle, out NativeException ex);
@@ -82,12 +81,10 @@ namespace Realms
             NativeMethods.destroy(handle);
         }
 
-        public IntPtr Open(SchemaHandle schemaHandle, string path, bool readOnly, bool durability, byte[] encryptionKey, 
-                ulong schemaVersion)
+        public IntPtr Open(Native.Configuration configuration)
         {
             NativeException nativeException;
-            var result = NativeMethods.open(schemaHandle, path, (IntPtr)path.Length, MarshalHelpers.BoolToIntPtr(readOnly), 
-                    MarshalHelpers.BoolToIntPtr(durability), encryptionKey, schemaVersion, out nativeException);
+            var result = NativeMethods.open(configuration, out nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
