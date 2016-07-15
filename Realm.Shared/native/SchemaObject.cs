@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -15,25 +15,18 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
-using System;
+
 using System.Runtime.InteropServices;
 
 namespace Realms
 {
-    // A NotificationToken in object-store references a Results object.
-    // We need to mirror this same relationship here.
-    internal class NotificationTokenHandle : RealmHandle
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct SchemaObject
     {
-        internal NotificationTokenHandle(ResultsHandle root) : base(root)
-        {
-        }
+        [MarshalAs(UnmanagedType.LPStr)]
+        internal string name;
 
-        protected override void Unbind()
-        {
-            IntPtr managedResultsHandle = ResultsHandle.DestroyNotificationtoken(handle);
-            GCHandle.FromIntPtr(managedResultsHandle).Free();
-        }
+        internal int properties_start;
+        internal int properties_end;
     }
 }
-

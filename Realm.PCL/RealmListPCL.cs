@@ -15,16 +15,16 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
 /// PROXY VERSION OF CLASS USED IN PCL FOR BAIT AND SWITCH PATTERN 
- 
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics;
 using System.Dynamic;
-
+using System.Linq.Expressions;
 
 namespace Realms
 {
@@ -211,6 +211,25 @@ namespace Realms
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }
 
+        DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression parameter)
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
+        }
+
+        #region implementing IRealmList properties
+        Realm IRealmList.Realm { get; }
+
+        LinkListHandle IRealmList.Handle { get; }
+
+        string IRealmList.SchemaClassName { get; }
+
+        #endregion
+
+    }
+
+    internal class LinkListHandle
+    {
     }
 
 

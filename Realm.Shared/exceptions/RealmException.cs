@@ -29,7 +29,7 @@ namespace Realms {
         {
         }
 
-        public static Exception Create(RealmExceptionCodes exceptionCode, string message)
+        internal static Exception Create(RealmExceptionCodes exceptionCode, string message)
         {
             // these are increasing enum value order
             switch (exceptionCode) {

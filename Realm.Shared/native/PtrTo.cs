@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -15,25 +15,36 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
 using System;
 using System.Runtime.InteropServices;
+using DotNetCross.Memory;
 
 namespace Realms
 {
-    // A NotificationToken in object-store references a Results object.
-    // We need to mirror this same relationship here.
-    internal class NotificationTokenHandle : RealmHandle
+    [StructLayout(LayoutKind.Sequential)]
+    unsafe struct PtrTo<T> where T : struct
     {
-        internal NotificationTokenHandle(ResultsHandle root) : base(root)
+        void* ptr;
+
+        internal T? Value
         {
+            get
+            {
+                if (ptr == null)
+                {
+                    return null;
+                }
+
+                var @struct = default(T);
+                Unsafe.CopyBlock(Unsafe.AsPointer(ref @struct), ptr, (uint)Unsafe.SizeOf<T>());
+                return @struct;
+            }
         }
 
-        protected override void Unbind()
+        public PtrTo(IntPtr intPtr)
         {
-            IntPtr managedResultsHandle = ResultsHandle.DestroyNotificationtoken(handle);
-            GCHandle.FromIntPtr(managedResultsHandle).Free();
-        }
+            ptr = intPtr.ToPointer();
+        } 
     }
 }
-

@@ -118,14 +118,11 @@ namespace Realms
                 schema = schema.CloneForAdoption(srHandle);
             }
 
-            var readOnly = MarshalHelpers.BoolToIntPtr(config.ReadOnly);
-            var durability = MarshalHelpers.BoolToIntPtr(false);
-            var databasePath = config.DatabasePath;
-            IntPtr srPtr = IntPtr.Zero;
+            var srPtr = IntPtr.Zero;
             try {
-                srPtr = NativeSharedRealm.open(schema.Handle, 
-                    databasePath, (IntPtr)databasePath.Length, 
-                    readOnly, durability, 
+                srPtr = srHandle.Open(schema.Handle, 
+                    config.DatabasePath, 
+                    config.ReadOnly, false, 
                     config.EncryptionKey,
                     config.SchemaVersion);
             } catch (RealmMigrationNeededException) {
@@ -140,9 +137,9 @@ namespace Realms
                     //MigrateRealm(configuration);
                 }
                 // create after deleting old reopen after migrating 
-                srPtr = NativeSharedRealm.open(schema.Handle, 
-                    databasePath, (IntPtr)databasePath.Length, 
-                    readOnly, durability, 
+                srPtr = srHandle.Open(schema.Handle, 
+                    config.DatabasePath, 
+                    config.ReadOnly, false, 
                     config.EncryptionKey,
                     config.SchemaVersion);
             }
@@ -162,7 +159,7 @@ namespace Realms
         internal readonly SharedRealmHandle SharedRealmHandle;
         internal readonly Dictionary<string, RealmObject.Metadata> Metadata;
 
-        internal bool IsInTransaction => MarshalHelpers.IntPtrToBool(NativeSharedRealm.is_in_transaction(SharedRealmHandle));
+        internal bool IsInTransaction => SharedRealmHandle.IsInTransaction();
 
         /// <summary>
         /// The <see cref="RealmSchema"/> instance that describes all the types that can be stored in this <see cref="Realm"/>.
@@ -174,7 +171,7 @@ namespace Realms
             SharedRealmHandle = sharedRealmHandle;
             Config = config;
             // update OUR config version number in case loaded one from disk
-            Config.SchemaVersion = NativeSharedRealm.get_schema_version(sharedRealmHandle);
+            Config.SchemaVersion = sharedRealmHandle.GetSchemaVersion();
 
             Metadata = schema.ToDictionary(t => t.Name, CreateRealmObjectMetadata);
             Schema = schema;
@@ -201,7 +198,7 @@ namespace Realms
             {
                 Table = table,
                 Helper = helper,
-                ColumnIndices = schema.ToDictionary(p => p.Name, p => NativeTable.get_column_index(table, p.Name, (IntPtr)p.Name.Length)),
+                ColumnIndices = schema.ToDictionary(p => p.Name, p => NativeTable.GetColumnIndex(table, p.Name)),
                 Schema = schema
             };
         }
@@ -223,7 +220,7 @@ namespace Realms
                 if (_realmChanged == null)
                 {
                     var managedRealmHandle = GCHandle.Alloc(this, GCHandleType.Weak);
-                    NativeSharedRealm.bind_to_managed_realm_handle(SharedRealmHandle, GCHandle.ToIntPtr(managedRealmHandle));
+                    SharedRealmHandle.BindToManagedRealmHandle(GCHandle.ToIntPtr(managedRealmHandle));
                 }
                     
                 _realmChanged += value;
@@ -318,7 +315,7 @@ namespace Realms
         /// <param name="rhs">The Realm to compare with the current Realm.</param>
         public bool IsSameInstance(Realm rhs)
         {
-            return MarshalHelpers.IntPtrToBool(NativeSharedRealm.is_same_instance(SharedRealmHandle, rhs.SharedRealmHandle));
+            return SharedRealmHandle.IsSameInstance(rhs.SharedRealmHandle);
         }
 
 
@@ -365,7 +362,7 @@ namespace Realms
             try { /* Retain handle in a constrained execution region */ }
             finally
             {
-                var tablePtr = NativeSharedRealm.get_table(SharedRealmHandle, tableName, (IntPtr)tableName.Length);
+                var tablePtr = SharedRealmHandle.GetTable(tableName);
                 result.SetHandle(tablePtr);
             }
             return result;
@@ -413,7 +410,7 @@ namespace Realms
 
             var result = metadata.Helper.CreateInstance();
 
-            var rowPtr = NativeTable.add_empty_row(metadata.Table);
+            var rowPtr = NativeTable.AddEmptyRow(metadata.Table);
             var rowHandle = CreateRowHandle(rowPtr, SharedRealmHandle);
 
             result._Manage(this, rowHandle, metadata);
@@ -432,27 +429,27 @@ namespace Realms
         internal ResultsHandle MakeResultsForTable(string className)
         {
             var metadata = Metadata[className];
-            IntPtr resultsPtr = NativeResults.create_for_table(SharedRealmHandle, metadata.Table, metadata.Schema.Handle);
+            var resultsPtr = NativeTable.CreateResults(metadata.Table, SharedRealmHandle, metadata.Schema.Handle);
             return CreateResultsHandle(resultsPtr);
         }
 
 
         internal ResultsHandle MakeResultsForQuery(Schema.ObjectSchema schema, QueryHandle builtQuery, SortOrderHandle optionalSortOrder)
         {
-            IntPtr resultsPtr = IntPtr.Zero;               
+            var resultsPtr = IntPtr.Zero;               
             if (optionalSortOrder == null)
-                resultsPtr = NativeResults.create_for_query(SharedRealmHandle, builtQuery, schema.Handle);
+                resultsPtr = builtQuery.CreateResults(SharedRealmHandle, schema.Handle);
             else
-                resultsPtr = NativeResults.create_for_query_sorted(SharedRealmHandle, builtQuery, schema.Handle, optionalSortOrder);
+                resultsPtr = builtQuery.CreateSortedResults(SharedRealmHandle, schema.Handle, optionalSortOrder);
             return CreateResultsHandle(resultsPtr);
         }
 
 
         internal SortOrderHandle MakeSortOrderForTable(string className)
         {
-            var tableHandle = Metadata[className].Table;
-            IntPtr sortOrderPtr = NativeSortOrder.create_for_table(tableHandle);
-            return CreateSortOrderHandle(sortOrderPtr);
+            var result = new SortOrderHandle();
+            result.CreateForTable(Metadata[className].Table);
+            return result;
         }
 
 
@@ -484,7 +481,7 @@ namespace Realms
             var metadata = Metadata[typeof(T).Name];
             var tableHandle = metadata.Table;
 
-            var rowPtr = NativeTable.add_empty_row(tableHandle);
+            var rowPtr = NativeTable.AddEmptyRow(tableHandle);
             var rowHandle = CreateRowHandle(rowPtr, SharedRealmHandle);
 
             obj._Manage(this, rowHandle, metadata);
@@ -518,20 +515,6 @@ namespace Realms
                 rowHandle.SetHandle(rowPtr);
             }
             return rowHandle;
-        }
-
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-        internal static SortOrderHandle CreateSortOrderHandle(IntPtr sortOrderPtr)
-        {
-            var sortOrderHandle = new SortOrderHandle();
-
-            RuntimeHelpers.PrepareConstrainedRegions();
-            try { /* Retain handle in a constrained execution region */ }
-            finally
-            {
-                sortOrderHandle.SetHandle(sortOrderPtr);
-            }
-            return sortOrderHandle;
         }
 
         /// <summary>
@@ -630,7 +613,7 @@ namespace Realms
         /// </returns>
         public bool Refresh()
         {
-            return MarshalHelpers.IntPtrToBool(NativeSharedRealm.refresh(SharedRealmHandle));
+            return SharedRealmHandle.Refresh();
         }
 
         /// <summary>
@@ -674,7 +657,7 @@ namespace Realms
                 throw new RealmOutsideTransactionException("Cannot remove Realm object outside write transactions");
 
             var tableHandle = obj.ObjectMetadata.Table;
-            NativeTable.remove_row(tableHandle, (RowHandle)obj.RowHandle);
+            NativeTable.RemoveRow(tableHandle, (RowHandle)obj.RowHandle);
         }
 
         /// <summary>
@@ -690,7 +673,7 @@ namespace Realms
             if (!IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot remove Realm objects outside write transactions");
 
-            NativeResults.clear(range.ResultsHandle);
+            range.ResultsHandle.Clear();
         }
 
         /// <summary>
@@ -722,7 +705,7 @@ namespace Realms
             foreach (var @object in Schema)
             {
                 var resultsHandle = MakeResultsForTable(@object.Name);
-                NativeResults.clear(resultsHandle);
+                resultsHandle.Clear();
             }
         }
     }

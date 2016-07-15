@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -16,24 +16,28 @@
 //
 ////////////////////////////////////////////////////////////////////////////
  
-using System;
-using System.Runtime.InteropServices;
+#ifndef SORT_ORDER_WRAPPER_HPP
+#define SORT_ORDER_WRAPPER_HPP
 
-namespace Realms
-{
-    // A NotificationToken in object-store references a Results object.
-    // We need to mirror this same relationship here.
-    internal class NotificationTokenHandle : RealmHandle
+#include <memory>
+#include "object-store/src/results.hpp"
+
+namespace realm {
+  
+/// Simple wrapper to keep the Table* we need to lookup column indices when we add clauses to a SortOrder.
+struct SortOrderWrapper {
+    SortOrder sort_order;
+    Table* table;
+
+    SortOrderWrapper(Table* in_table) : table(in_table) {}
+
+    void add_sort(size_t col, bool ascendingCol)
     {
-        internal NotificationTokenHandle(ResultsHandle root) : base(root)
-        {
-        }
-
-        protected override void Unbind()
-        {
-            IntPtr managedResultsHandle = ResultsHandle.DestroyNotificationtoken(handle);
-            GCHandle.FromIntPtr(managedResultsHandle).Free();
-        }
+      sort_order.column_indices.push_back(col);
+      sort_order.ascending.push_back(ascendingCol);
     }
+};
+
 }
 
+#endif  // SORT_ORDER_WRAPPER_HPP

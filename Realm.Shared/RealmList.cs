@@ -117,7 +117,7 @@ namespace Realms
             {
                 if (_listHandle.IsInvalid)
                     return 0;
-                return (int)NativeLinkList.size (_listHandle);
+                return (int)_listHandle.Size();
             }
         }
 
@@ -150,7 +150,7 @@ namespace Realms
             {
                 if (index < 0)
                     throw new IndexOutOfRangeException ();
-                var linkedRowPtr = NativeLinkList.get (_listHandle, (IntPtr)index);
+                var linkedRowPtr = _listHandle.Get((IntPtr)index);
                 return (T)_realm.MakeObjectForRow(_schemaClassName, Realm.CreateRowHandle(linkedRowPtr, _realm.SharedRealmHandle));
             }
 
@@ -173,7 +173,7 @@ namespace Realms
         {
             this.ManageObjectIfNeeded(item);
             var rowIndex = ((RealmObject)item).RowHandle.RowIndex;
-            NativeLinkList.add(_listHandle, (IntPtr)rowIndex);        
+            _listHandle.Add(rowIndex);
         }
 
         /// <summary>
@@ -181,7 +181,7 @@ namespace Realms
         /// </summary>
         public void Clear()
         {
-            NativeLinkList.clear(_listHandle);        
+            _listHandle.Clear();
         }
 
         /// <summary>
@@ -237,7 +237,7 @@ namespace Realms
                 throw new ArgumentException("Value does not belong to a realm", nameof(item));
 
             var rowIndex = ((RealmObject)item).RowHandle.RowIndex;
-            return (int)NativeLinkList.find(_listHandle, (IntPtr)rowIndex, (IntPtr)0);        
+            return (int) _listHandle.Find(rowIndex, IntPtr.Zero);
         }
 
         /// <summary>
@@ -254,7 +254,7 @@ namespace Realms
 
             this.ManageObjectIfNeeded(item);
             var rowIndex = ((RealmObject)item).RowHandle.RowIndex;
-            NativeLinkList.insert(_listHandle, (IntPtr)index, (IntPtr)rowIndex);        
+            _listHandle.Insert((IntPtr)index, rowIndex);
         }
 
         /// <summary>
@@ -281,7 +281,7 @@ namespace Realms
         {
             if (index < 0)
                 throw new IndexOutOfRangeException ();
-            NativeLinkList.erase(_listHandle, (IntPtr)index);        
+            _listHandle.Erase((IntPtr)index);
         }
 
         IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();

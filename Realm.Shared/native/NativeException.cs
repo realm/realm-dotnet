@@ -1,0 +1,50 @@
+////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2016 Realm Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+////////////////////////////////////////////////////////////////////////////
+
+using System;
+using System.Runtime.InteropServices;
+using System.Text;
+
+namespace Realms
+{
+    [StructLayout(LayoutKind.Sequential)]
+    internal unsafe struct NativeException
+    {
+        public RealmExceptionCodes type;
+        public sbyte* messageBytes;
+        public IntPtr messageLength;
+
+        internal Exception Convert()
+        {
+            var message = (messageLength != IntPtr.Zero) ?
+                new string(messageBytes, 0 /* start offset */, (int)messageLength, Encoding.UTF8)
+                : "No further information available";
+            NativeCommon.delete_pointer(messageBytes);
+
+            return RealmException.Create(type, message);
+        }
+
+        internal void ThrowIfNecessary()
+        {
+            if (type == RealmExceptionCodes.NoError)
+                return;
+
+            throw Convert();
+        }
+    }
+}

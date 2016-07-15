@@ -45,47 +45,6 @@ namespace IntegrationTests
             Realm.GetInstance().Close();
         }
 
-#if ENABLE_INTERNAL_NON_PCL_TESTS
-        // This is a test of the Exception throwing mechanism but is included in the Instance tests
-        // because getting an instance initialises the delegate for exceptions back to C#
-        [Test]
-        public void FakeExceptionThrowTest()
-        {
-            using (Realm.GetInstance())
-            {
-                Assert.Throws<RealmPermissionDeniedException>(() => NativeCommon.fake_a_native_exception((IntPtr)RealmExceptionCodes.RealmPermissionDenied));
-            }
-
-        }
-
-        [Test]
-        public void FakeExceptionThrowLoopingTest()
-        {
-            using (Realm.GetInstance())
-            {
-                for (int i = 0; i < 10000; ++i)
-                {
-#if DEBUG
-                    bool caughtIt = false;
-                    // Assert.Throws doesn't work with the VS debugger which thinks the exception is uncaught
-                    try
-                    {
-                        NativeCommon.fake_a_native_exception((IntPtr)RealmExceptionCodes.RealmPermissionDenied);
-                    }
-                    catch (RealmPermissionDeniedException)
-                    {
-                        caughtIt = true;
-                    }
-                    Assert.That(caughtIt, "Should have caught the expected exception");
-#else
-                Assert.Throws<RealmPermissionDeniedException>(
-                    () => NativeCommon.fake_a_native_exception((IntPtr) RealmExceptionCodes.RealmPermissionDenied));
-#endif
-                }
-            }
-        }
-#endif  // ENABLE_INTERNAL_NON_PCL_TESTS
-
         [Test]
         public void InstanceIsClosedByDispose()
         {

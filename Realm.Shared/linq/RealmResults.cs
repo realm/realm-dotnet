@@ -58,8 +58,8 @@ namespace Realms
         {
             get
             {
-                var row = NativeResults.get_row(ResultsHandle, (IntPtr)index);
-                var rowHandle = Realm.CreateRowHandle(row, _realm.SharedRealmHandle);
+                var rowPtr = ResultsHandle.GetRow(index);
+                var rowHandle = Realm.CreateRowHandle(rowPtr, _realm.SharedRealmHandle);
                 return (T)(object)_realm.MakeObjectForRow(ObjectSchema.Name, rowHandle);
             }
         }
@@ -160,7 +160,7 @@ namespace Realms
             {
                 // use the type captured at build based on generic T
                 var tableHandle = _realm.Metadata[ObjectSchema.Name].Table;
-                return (int)NativeTable.count_all(tableHandle);
+                return (int)NativeTable.CountAll(tableHandle);
             }
 
             // normally we would  be in RealmQRealmResultsr.VisitMethodCall, not here
@@ -168,7 +168,8 @@ namespace Realms
             // a RealmResults<blah> they change its compile-time type from IQueryable<blah> (which invokes LINQ)
             // to RealmResults<blah> and thus ends up here.
             // as in the unit test CountFoundWithCasting
-            return (int)NativeResults.count(ResultsHandle);
+            //return (int)NativeResults.count(ResultsHandle);
+            return (int) ResultsHandle.Count();
         }
 
         class NotificationToken : IDisposable
@@ -248,7 +249,7 @@ namespace Realms
 
             var managedResultsHandle = GCHandle.Alloc(this);
             var token = new NotificationTokenHandle(ResultsHandle);
-            var tokenHandle = NativeResults.add_notification_callback(ResultsHandle, GCHandle.ToIntPtr(managedResultsHandle), RealmResultsNativeHelper.NotificationCallback);;
+            var tokenHandle = ResultsHandle.AddNotificationCallback(GCHandle.ToIntPtr(managedResultsHandle), RealmResultsNativeHelper.NotificationCallback);
 
             RuntimeHelpers.PrepareConstrainedRegions();
             try
@@ -269,13 +270,13 @@ namespace Realms
             _notificationToken = null;
         }
                     
-        void RealmResultsNativeHelper.Interface.NotifyCallbacks(NativeResults.CollectionChangeSet? changes, NativeException? exception)
+        void RealmResultsNativeHelper.Interface.NotifyCallbacks(ResultsHandle.CollectionChangeSet? changes, NativeException? exception)
         {
             var managedException = exception?.Convert();
             ChangeSet changeset = null;
             if (changes != null)
             {
-                NativeResults.CollectionChangeSet actualChanges = changes.Value;
+                var actualChanges = changes.Value;
                 changeset = new ChangeSet(
                     insertedIndices: actualChanges.Insertions.AsEnumerable().Select(i => (int)i).ToArray(),
                     modifiedIndices: actualChanges.Modifications.AsEnumerable().Select(i => (int)i).ToArray(),
@@ -295,16 +296,16 @@ namespace Realms
     {
         internal interface Interface
         {
-            void NotifyCallbacks(NativeResults.CollectionChangeSet? changes, NativeException? exception);
+            void NotifyCallbacks(ResultsHandle.CollectionChangeSet? changes, NativeException? exception);
         }
 
         #if __IOS__
-        [ObjCRuntime.MonoPInvokeCallback(typeof(NativeResults.NotificationCallback))]
+        [ObjCRuntime.MonoPInvokeCallback(typeof(ResultsHandle.NotificationCallback))]
         #endif
-        internal static void NotificationCallback(IntPtr managedResultsHandle, PtrTo<NativeResults.CollectionChangeSet> changes, PtrTo<NativeException> exception)
+        internal static void NotificationCallback(IntPtr managedResultsHandle, IntPtr changes, IntPtr exception)
         {
             var results = (Interface)GCHandle.FromIntPtr(managedResultsHandle).Target;
-            results.NotifyCallbacks(changes.Value, exception.Value);
+            results.NotifyCallbacks(new PtrTo<ResultsHandle.CollectionChangeSet>(changes).Value, new PtrTo<NativeException>(exception).Value);
         }
     }
 }

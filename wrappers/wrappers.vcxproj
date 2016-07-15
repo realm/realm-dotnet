@@ -106,6 +106,7 @@
     <ClInclude Include="src\realm_error_type.hpp" />
     <ClInclude Include="src\realm_export_decls.hpp" />
     <ClInclude Include="src\shared_linklist.hpp" />
+    <ClInclude Include="src\sort_order_wrapper.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A1E763AD-24B9-4D6B-AACA-282BB33E350F}</ProjectGuid>
@@ -218,7 +219,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;WRAPPERS_EXPORTS;HAVE_STRUCT_TIMESPEC;REALM_ENABLE_REPLICATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;WRAPPERS_EXPORTS;HAVE_STRUCT_TIMESPEC;__unused=;REALM_ENABLE_REPLICATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\..\realm-core\src;..\..\realm-core\src\win32\pthread;src\object-store\src;src\object-store\src\impl;src\object-store\src\impl\generic;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -237,7 +238,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;WRAPPERS_EXPORTS;HAVE_STRUCT_TIMESPEC;REALM_ENABLE_REPLICATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;WRAPPERS_EXPORTS;HAVE_STRUCT_TIMESPEC;__unused=;REALM_ENABLE_REPLICATION;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\..\realm-core\src;..\..\realm-core\src\win32\pthread;src\object-store\src;src\object-store\src\impl;src\object-store\src\impl\generic;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>

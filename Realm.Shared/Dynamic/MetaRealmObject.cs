@@ -31,6 +31,7 @@ namespace Realms.Dynamic
 
         private static readonly FieldInfo RealmObjectRealmField = typeof(RealmObject).GetTypeInfo().GetField("_realm", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
         private static readonly FieldInfo RealmObjectRowHandleField = typeof(RealmObject).GetTypeInfo().GetField("_rowHandle", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+        private static readonly PropertyInfo RowHandleRowIndexProperty = typeof(RowHandle).GetTypeInfo().GetProperty("RowIndex", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 
         public MetaRealmObject(Expression expression, DynamicRealmObject value)
             : base(expression, BindingRestrictions.Empty, value)
@@ -50,64 +51,63 @@ namespace Realms.Dynamic
             var arguments = new List<Expression>
             {
                 WeakConstant(_metadata.Table),
-                Expression.Field(GetLimitedSelf(), RealmObjectRowHandleField),
-                Expression.Constant(_metadata.ColumnIndices[property.Name])
+                Expression.Constant(_metadata.ColumnIndices[property.Name]),
+                Expression.Property(Expression.Field(GetLimitedSelf(), RealmObjectRowHandleField), RowHandleRowIndexProperty),
             };
 
-            MethodInfo realmObjectOpsMethod = null;
+            MethodInfo getter = null;
 
             switch (property.Type)
             {
                 case Schema.PropertyType.Int:
                     if (property.IsNullable)
-                        realmObjectOpsMethod = typeof(RealmObjectOps).GetMethod(nameof(RealmObjectOps.GetNullableInt64Value));
+                        getter = GetGetMethod(NativeTable.GetNullableInt64);
                     else
-                        realmObjectOpsMethod = typeof(RealmObjectOps).GetMethod(nameof(RealmObjectOps.GetInt64Value));
+                        getter = GetGetMethod(NativeTable.GetInt64);
                     break;
                 case Schema.PropertyType.Bool:
                     if (property.IsNullable)
-                        realmObjectOpsMethod = typeof(RealmObjectOps).GetMethod(nameof(RealmObjectOps.GetNullableBooleanValue));
+                        getter = GetGetMethod(NativeTable.GetNullableBoolean);
                     else
-                        realmObjectOpsMethod = typeof(RealmObjectOps).GetMethod(nameof(RealmObjectOps.GetBooleanValue));
+                        getter = GetGetMethod(NativeTable.GetBoolean);
                     break;
                 case Schema.PropertyType.Float:
                     if (property.IsNullable)
-                        realmObjectOpsMethod = typeof(RealmObjectOps).GetMethod(nameof(RealmObjectOps.GetNullableSingleValue));
+                        getter = GetGetMethod(NativeTable.GetNullableSingle);
                     else
-                        realmObjectOpsMethod = typeof(RealmObjectOps).GetMethod(nameof(RealmObjectOps.GetSingleValue));
+                        getter = GetGetMethod(NativeTable.GetSingle);
                     break;
                 case Schema.PropertyType.Double:
                     if (property.IsNullable)
-                        realmObjectOpsMethod = typeof(RealmObjectOps).GetMethod(nameof(RealmObjectOps.GetNullableDoubleValue));
+                        getter = GetGetMethod(NativeTable.GetNullableDouble);
                     else
-                        realmObjectOpsMethod = typeof(RealmObjectOps).GetMethod(nameof(RealmObjectOps.GetDoubleValue));
+                        getter = GetGetMethod(NativeTable.GetDouble);
                     break;
                 case Schema.PropertyType.String:
-                    arguments.Insert(0, Expression.Field(GetLimitedSelf(), RealmObjectRealmField));
-                    realmObjectOpsMethod = typeof(RealmObjectOps).GetMethod(nameof(RealmObjectOps.GetStringValue));
+                    getter = GetGetMethod(NativeTable.GetString);
                     break;
                 case Schema.PropertyType.Data:
-                    realmObjectOpsMethod = typeof(RealmObjectOps).GetMethod(nameof(RealmObjectOps.GetByteArrayValue));
+                    getter = GetGetMethod(NativeTable.GetByteArray);
                     break;
                 case Schema.PropertyType.Date:
                     if (property.IsNullable)
-                        realmObjectOpsMethod = typeof(RealmObjectOps).GetMethod(nameof(RealmObjectOps.GetNullableDateTimeOffsetValue));
+                        getter = GetGetMethod(NativeTable.GetNullableDateTimeOffset);
                     else
-                        realmObjectOpsMethod = typeof(RealmObjectOps).GetMethod(nameof(RealmObjectOps.GetDateTimeOffsetValue));
+                        getter = GetGetMethod(NativeTable.GetDateTimeOffset);
                     break;
                 case Schema.PropertyType.Object:
                     arguments.Insert(0, Expression.Field(GetLimitedSelf(), RealmObjectRealmField));
                     arguments.Add(Expression.Constant(property.ObjectType));
-                    realmObjectOpsMethod = typeof(RealmObjectOps).GetMethod(nameof(RealmObjectOps.GetObjectValue)).MakeGenericMethod(typeof(DynamicRealmObject));
+                    getter = GetGetMethod(RealmObjectOps.GetObject<DynamicRealmObject>);
                     break;
                 case Schema.PropertyType.Array:
                     arguments.Insert(0, Expression.Field(GetLimitedSelf(), RealmObjectRealmField));
                     arguments.Add(Expression.Constant(property.ObjectType));
-                    realmObjectOpsMethod = typeof(RealmObjectOps).GetMethod(nameof(RealmObjectOps.GetListValue)).MakeGenericMethod(typeof(DynamicRealmObject));
+                    getter = GetGetMethod(RealmObjectOps.GetList<DynamicRealmObject>);
                     break;
             }
 
-            Expression expression = Expression.Call(realmObjectOpsMethod, arguments);
+            Expression expression = Expression.Call(getter, arguments);
             if (binder.ReturnType != expression.Type)
             {
                 expression = Expression.Convert(expression, binder.ReturnType);
@@ -129,11 +129,11 @@ namespace Realms.Dynamic
             var arguments = new List<Expression>
             {
                 WeakConstant(_metadata.Table),
-                Expression.Field(GetLimitedSelf(), RealmObjectRowHandleField),
                 Expression.Constant(_metadata.ColumnIndices[property.Name]),
+                Expression.Property(Expression.Field(GetLimitedSelf(), RealmObjectRowHandleField), RowHandleRowIndexProperty),
             };
 
-            MethodInfo realmObjectOpsMethod = null;
+            MethodInfo setter = null;
             Type argumentType = null;
 
             switch (property.Type)
@@ -141,55 +141,55 @@ namespace Realms.Dynamic
                 case Schema.PropertyType.Int:
                     argumentType = typeof(long);
                     if (property.IsNullable)
-                        realmObjectOpsMethod = typeof(RealmObjectOps).GetMethod(nameof(RealmObjectOps.SetNullableInt64Value));
+                        setter = GetSetMethod<long?>(NativeTable.SetNullableInt64);
                     else if (property.IsObjectId)
-                        realmObjectOpsMethod = typeof(RealmObjectOps).GetMethod(nameof(RealmObjectOps.SetInt64ValueUnique));
+                        setter = GetSetMethod<long>(NativeTable.SetInt64Unique);
                     else
-                        realmObjectOpsMethod = typeof(RealmObjectOps).GetMethod(nameof(RealmObjectOps.SetInt64Value));
+                        setter = GetSetMethod<long>(NativeTable.SetInt64);
                     break;
                 case Schema.PropertyType.Bool:
                     argumentType = typeof(bool);
                     if (property.IsNullable)
-                        realmObjectOpsMethod = typeof(RealmObjectOps).GetMethod(nameof(RealmObjectOps.SetNullableBooleanValue));
+                        setter = GetSetMethod<bool?>(NativeTable.SetNullableBoolean);
                     else
-                        realmObjectOpsMethod = typeof(RealmObjectOps).GetMethod(nameof(RealmObjectOps.SetBooleanValue));
+                        setter = GetSetMethod<bool>(NativeTable.SetBoolean);
                     break;
                 case Schema.PropertyType.Float:
                     argumentType = typeof(float);
                     if (property.IsNullable)
-                        realmObjectOpsMethod = typeof(RealmObjectOps).GetMethod(nameof(RealmObjectOps.SetNullableSingleValue));
+                        setter = GetSetMethod<float?>(NativeTable.SetNullableSingle);
                     else
-                        realmObjectOpsMethod = typeof(RealmObjectOps).GetMethod(nameof(RealmObjectOps.SetSingleValue));
+                        setter = GetSetMethod<float>(NativeTable.SetSingle);
                     break;
                 case Schema.PropertyType.Double:
                     argumentType = typeof(double);
                     if (property.IsNullable)
-                        realmObjectOpsMethod = typeof(RealmObjectOps).GetMethod(nameof(RealmObjectOps.SetNullableDoubleValue));
+                        setter = GetSetMethod<double?>(NativeTable.SetNullableDouble);
                     else
-                        realmObjectOpsMethod = typeof(RealmObjectOps).GetMethod(nameof(RealmObjectOps.SetDoubleValue));
+                        setter = GetSetMethod<double>(NativeTable.SetDouble);
                     break;
                 case Schema.PropertyType.String:
                     argumentType = typeof(string);
                     if (property.IsObjectId)
-                        realmObjectOpsMethod = typeof(RealmObjectOps).GetMethod(nameof(RealmObjectOps.SetStringValueUnique));
+                        setter = GetSetMethod<string>(NativeTable.SetStringUnique);
                     else
-                        realmObjectOpsMethod = typeof(RealmObjectOps).GetMethod(nameof(RealmObjectOps.SetStringValue));
+                        setter = GetSetMethod<string>(NativeTable.SetString);
                     break;
                 case Schema.PropertyType.Data:
                     argumentType = typeof(byte[]);
-                    realmObjectOpsMethod = typeof(RealmObjectOps).GetMethod(nameof(RealmObjectOps.SetByteArrayValue));
+                    setter = GetSetMethod<byte[]>(NativeTable.SetByteArray);
                     break;
                 case Schema.PropertyType.Date:
                     argumentType = typeof(DateTimeOffset);
                     if (property.IsNullable)
-                        realmObjectOpsMethod = typeof(RealmObjectOps).GetMethod(nameof(RealmObjectOps.SetNullableDateTimeOffsetValue));
+                        setter = GetSetMethod<DateTimeOffset?>(NativeTable.SetNullableDateTimeOffset);
                     else
-                        realmObjectOpsMethod = typeof(RealmObjectOps).GetMethod(nameof(RealmObjectOps.SetDateTimeOffsetValue));
+                        setter = GetSetMethod<DateTimeOffset>(NativeTable.SetDateTimeOffset);
                     break;
                 case Schema.PropertyType.Object:
                     argumentType = typeof(RealmObject);
                     arguments.Insert(0, Expression.Field(GetLimitedSelf(), RealmObjectRealmField));
-                    realmObjectOpsMethod = typeof(RealmObjectOps).GetMethod(nameof(RealmObjectOps.SetObjectValue)).MakeGenericMethod(typeof(RealmObject));
+                    setter = GetSetMethod<RealmObject>(RealmObjectOps.SetObject);
                     break;
             }
 
@@ -206,7 +206,7 @@ namespace Realms.Dynamic
 
             arguments.Add(valueExpression);
 
-            var expression = Expression.Block(Expression.Call(realmObjectOpsMethod, arguments), Expression.Default(binder.ReturnType));
+            var expression = Expression.Block(Expression.Call(setter, arguments), Expression.Default(binder.ReturnType));
 
             var argumentShouldBeDynamicRealmObject = BindingRestrictions.GetTypeRestriction(Expression, typeof(DynamicRealmObject));
             var argumentShouldBeInTheSameRealm = BindingRestrictions.GetInstanceRestriction(Expression.Field(GetLimitedSelf(), RealmObjectRealmField), _realm);
@@ -236,6 +236,14 @@ namespace Realms.Dynamic
 
             return convertedExpression;
         }
+
+        private static MethodInfo GetGetMethod<TResult>(Func<TableHandle, IntPtr, IntPtr, TResult> @delegate) => @delegate.Method;
+
+        private static MethodInfo GetGetMethod<TResult>(Func<Realm, TableHandle, IntPtr, IntPtr, string, TResult> @delegate) => @delegate.Method;
+
+        private static MethodInfo GetSetMethod<TValue>(Action<TableHandle, IntPtr, IntPtr, TValue> @delegate) => @delegate.Method;
+
+        private static MethodInfo GetSetMethod<TValue>(Action<Realm, TableHandle, IntPtr, IntPtr, TValue> @delegate) => @delegate.Method;
     }
 }
 

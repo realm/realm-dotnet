@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -15,25 +15,31 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
+using DotNetCross.Memory;
 
 namespace Realms
 {
-    // A NotificationToken in object-store references a Results object.
-    // We need to mirror this same relationship here.
-    internal class NotificationTokenHandle : RealmHandle
+    [StructLayout(LayoutKind.Sequential)]
+    struct MarshaledVector<T> where T : struct
     {
-        internal NotificationTokenHandle(ResultsHandle root) : base(root)
+        IntPtr items;
+        IntPtr count;
+
+        internal IEnumerable<T> AsEnumerable()
         {
+            return Enumerable.Range(0, (int)count).Select(MarshalElement);
         }
 
-        protected override void Unbind()
+        unsafe T MarshalElement(int elementIndex)
         {
-            IntPtr managedResultsHandle = ResultsHandle.DestroyNotificationtoken(handle);
-            GCHandle.FromIntPtr(managedResultsHandle).Free();
+            var @struct = default(T);
+            Unsafe.CopyBlock(Unsafe.AsPointer(ref @struct), IntPtr.Add(items, elementIndex * Unsafe.SizeOf<T>()).ToPointer(), (uint)Unsafe.SizeOf<T>());
+            return @struct;
         }
     }
 }
-

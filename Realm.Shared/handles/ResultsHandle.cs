@@ -17,11 +17,54 @@
 ////////////////////////////////////////////////////////////////////////////
  
 using System;
+using System.Runtime.InteropServices;
 
 namespace Realms
 {
     internal class ResultsHandle: RealmHandle
     {
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct CollectionChangeSet
+        {
+            public MarshaledVector<IntPtr> Deletions;
+            public MarshaledVector<IntPtr> Insertions;
+            public MarshaledVector<IntPtr> Modifications;
+
+            [StructLayout(LayoutKind.Sequential)]
+            public struct Move
+            {
+                public IntPtr From;
+                public IntPtr To;
+            }
+            public MarshaledVector<Move> Moves;
+        }
+
+        internal delegate void NotificationCallback(IntPtr managedResultsHandle, IntPtr collectionChanges, IntPtr notficiationException);
+
+        public static class NativeMethods
+        {
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_is_same_internal_results", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr is_same_internal_results(ResultsHandle lhs, ResultsHandle rhs, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_destroy", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void destroy(IntPtr resultsHandle);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_row", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_row(ResultsHandle results, IntPtr index, out NativeException ex);
+
+            [DllImport (InteropConfig.DLL_NAME, EntryPoint = "results_count", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr count(ResultsHandle results, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_clear", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void clear(ResultsHandle results, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_add_notification_callback", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr add_notification_callback(ResultsHandle results, IntPtr managedResultsHandle, NotificationCallback callback, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_destroy_notificationtoken", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr destroy_notificationtoken(IntPtr token, out NativeException ex);
+        }
+
         //keep this one even though warned that it is not used. It is in fact used by marshalling
         //used by P/Invoke to automatically construct a ResultsHandle when returning a size_t as a ResultsHandle
         [Preserve]
@@ -31,7 +74,46 @@ namespace Realms
 
         protected override void Unbind()
         {
-            NativeResults.destroy(handle);
+            NativeMethods.destroy(handle);
+        }
+
+        public IntPtr GetRow(long index)
+        {
+            NativeException nativeException;
+            var result = NativeMethods.get_row(this, (IntPtr)index, out nativeException);
+            nativeException.ThrowIfNecessary();
+            return result;
+        }
+
+        public int Count()
+        {
+            NativeException nativeException;
+            var result = NativeMethods.count(this, out nativeException);
+            nativeException.ThrowIfNecessary();
+            return (int)result;
+        }
+
+        public void Clear()
+        {
+            NativeException nativeException;
+            NativeMethods.clear(this, out nativeException);
+            nativeException.ThrowIfNecessary();
+        }
+
+        public IntPtr AddNotificationCallback(IntPtr managedResultsHandle, NotificationCallback callback)
+        {
+            NativeException nativeException;
+            var result = NativeMethods.add_notification_callback(this, managedResultsHandle, callback, out nativeException);
+            nativeException.ThrowIfNecessary();
+            return result;
+        }
+
+        public static IntPtr DestroyNotificationtoken(IntPtr token)
+        {
+            NativeException nativeException;
+            var result = NativeMethods.destroy_notificationtoken(token, out nativeException);
+            nativeException.ThrowIfNecessary();
+            return result;
         }
 
         public override bool Equals(object p)
@@ -48,7 +130,10 @@ namespace Realms
                 return true;
             }
 
-            return NativeResults.is_same_internal_results(this, (ResultsHandle) p) != IntPtr.Zero;
+            NativeException nativeException;
+            var result = NativeMethods.is_same_internal_results(this, (ResultsHandle) p, out nativeException);
+            nativeException.ThrowIfNecessary();
+            return  result != IntPtr.Zero;
         }
     }
 }

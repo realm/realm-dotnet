@@ -28,23 +28,21 @@ extern "C" {
 
 REALM_EXPORT void row_destroy(Row* row_ptr)
 {
-    handle_errors([&]() {
-        delete row_ptr;
-    });
+    delete row_ptr;
 }
 
-REALM_EXPORT size_t row_get_row_index(const Row* row_ptr)
+REALM_EXPORT size_t row_get_row_index(const Row* row_ptr, NativeException::Marshallable& ex)
 {
-    return handle_errors([&]() {
+    return handle_errors(ex, [&]() {
         if (!row_ptr->is_attached())
             throw RowDetachedException();
         return row_ptr->get_index();
     });
 }
 
-REALM_EXPORT size_t row_get_is_attached(const Row* row_ptr)
+REALM_EXPORT size_t row_get_is_attached(const Row* row_ptr, NativeException::Marshallable& ex)
 {
-    return handle_errors([&]() {
+    return handle_errors(ex, [&]() {
         return bool_to_size_t(row_ptr->is_attached());
     });
 }

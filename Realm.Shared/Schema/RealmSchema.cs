@@ -71,13 +71,7 @@ namespace Realms
             System.Diagnostics.Debug.Assert(!handlesArray.Contains(IntPtr.Zero));
 
             var schemaHandle = new SchemaHandle(parent);
-            var ptr = NativeSchema.clone(Handle, handlesArray);
-            RuntimeHelpers.PrepareConstrainedRegions();
-            try { }
-            finally
-            {
-                schemaHandle.SetHandle(ptr);
-            }
+            schemaHandle.InitializeCloneFrom(Handle, handlesArray);
 
             var clones = objectsArray.Select((o, i) => o.Clone(handlesArray[i]));
             return new RealmSchema(schemaHandle, clones);
@@ -132,8 +126,8 @@ namespace Realms
                 if (Count == 0) throw new InvalidOperationException("Cannot build an empty RealmSchema");
                 Contract.EndContractBlock();
 
-                var objects = new List<NativeSchema.Object>();
-                var properties = new List<NativeSchema.Property>();
+                var objects = new List<SchemaObject>();
+                var properties = new List<SchemaProperty>();
 
                 foreach (var @object in this)
                 {
@@ -141,7 +135,7 @@ namespace Realms
 
                     properties.AddRange(@object.Select(ForMarshalling));
 
-                    objects.Add(new NativeSchema.Object
+                    objects.Add(new SchemaObject
                     {
                         name = @object.Name,
                         properties_start = start,
@@ -150,21 +144,14 @@ namespace Realms
                 }
 
                 var handles = new IntPtr[Count];
-                var ptr = NativeSchema.create(objects.ToArray(), objects.Count, properties.ToArray(), handles);
-
-                RuntimeHelpers.PrepareConstrainedRegions();
-                try { }
-                finally
-                {
-                    schemaHandle.SetHandle(ptr);
-                }
+                schemaHandle.Initialize(objects.ToArray(), objects.Count, properties.ToArray(), handles);
 
                 return new RealmSchema(schemaHandle, this.Select((o, i) => o.Clone(handles[i])));
             }
 
-            private static NativeSchema.Property ForMarshalling(Schema.Property property)
+            private static SchemaProperty ForMarshalling(Schema.Property property)
             {
-                return new NativeSchema.Property
+                return new SchemaProperty
                 {
                     name = property.Name,
                     type = property.Type,

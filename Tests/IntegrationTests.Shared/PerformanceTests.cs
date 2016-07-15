@@ -132,7 +132,6 @@ namespace IntegrationTests
             Console.WriteLine("Time spent: " + sw.Elapsed);
             Console.WriteLine("Kilo-iterations per second: {0:0.00}", ((count/1000) / sw.Elapsed.TotalSeconds));
         }
-
     }
 }
 

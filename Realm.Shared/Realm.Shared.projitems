@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
@@ -27,12 +27,13 @@
     <Compile Include="$(MSBuildThisFileDirectory)linq\ExpressionVisitor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)linq\TypeSystem.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MarshalHelpers.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)native\MarshaledVector.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)native\NativeCommon.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)native\NativeQuery.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)native\NativeRow.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)native\NativeSchema.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)native\NativeSharedRealm.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)native\NativeException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)native\NativeTable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)native\PtrTo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)native\SchemaObject.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)native\SchemaProperty.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PreserveAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Realm.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RealmList.cs" />
@@ -44,7 +45,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmOutOfMemoryException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RealmObjectOps.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transaction.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)native\NativeLinkList.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)handles\LinkListHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RealmConfiguration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmMigrationNeededException.cs" />
@@ -54,9 +54,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)linq\RealmResultsProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmMismatchedConfigException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)handles\ResultsHandle.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)native\NativeResults.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)handles\SortOrderHandle.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)native\NativeSortOrder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)weaving\IRealmObjectHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)handles\NotificationTokenHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmInvalidTransactionException.cs" />
@@ -66,7 +64,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Schema\PropertyType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Schema\Property.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Schema\ObjectSchema.cs" />
-	<Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmInvalidObjectException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmInvalidObjectException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Dynamic\DynamicRealmObject.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Dynamic\DynamicRealmObjectHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Dynamic\MetaRealmObject.cs" />
