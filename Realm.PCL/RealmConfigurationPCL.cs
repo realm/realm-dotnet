@@ -85,6 +85,10 @@ namespace Realms
         /// <value>0-based value initially set to indicate user is not versioning.</value>
         public UInt64 SchemaVersion { get; set; }
 
+        public delegate void MigrationCallbackDelegate(Migration migration, UInt64 oldSchemaVersion);
+
+        public MigrationCallbackDelegate MigrationCallback { get; set; }
+
         /// <summary>
         /// Utility to build a path in which a realm will be created so can consistently use filenames and relative paths.
         /// </summary>
