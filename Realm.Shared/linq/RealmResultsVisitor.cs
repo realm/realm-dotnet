@@ -15,12 +15,13 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 
 using LazyMethod = System.Lazy<System.Reflection.MethodInfo>;
@@ -198,6 +199,29 @@ namespace Realms
                     if (!nextRow.IsInvalid)
                         throw new InvalidOperationException("Sequence contains more than one matching element");
                     return Expression.Constant(_realm.MakeObjectForRow(_schema.Name, firstRow));
+                }
+                if (m.Method.Name == nameof(Queryable.ElementAt))
+                {
+                    Visit(m.Arguments.First());
+                    var index = (int)ExtractConstantValue(m.Arguments.Last());
+
+                    RowHandle row = null;
+                    if (_optionalSortOrderHandle == null)
+                    {
+                        var rowPtr = _coreQueryHandle.FindDirect((IntPtr)index);
+                        row = Realm.CreateRowHandle(rowPtr, _realm.SharedRealmHandle);
+                    }
+                    else
+                    {
+                        using (ResultsHandle rh = _realm.MakeResultsForQuery(_schema, _coreQueryHandle, _optionalSortOrderHandle))
+                        {
+                            var rowPtr = rh.GetRow(index);
+                            row = Realm.CreateRowHandle(rowPtr, _realm.SharedRealmHandle);
+                        }
+                    }
+                    if (row == null || row.IsInvalid)
+                        throw new IndexOutOfRangeException();
+                    return Expression.Constant(_realm.MakeObjectForRow(_schema.Name, row));
                 }
 
             }
@@ -504,14 +528,14 @@ namespace Realms
         // strange as it may seem, this is also called for the LHS when simply iterating All<T>()
         internal override Expression VisitConstant(ConstantExpression c)
         {
-            IQueryable q = c.Value as IQueryable;
-            if (q != null)
+            var results = c.Value as IRealmResults;
+            if (results != null)
             {
                 // assume constant nodes w/ IQueryables are table references
                 if (_coreQueryHandle != null)
                     throw new Exception("We already have a table...");
 
-                _coreQueryHandle = CreateQuery(q.ElementType);
+                _coreQueryHandle = CreateQuery(results.ObjectSchema);
             }
             else if (c.Value == null)
             {
@@ -535,7 +559,7 @@ namespace Realms
             return c;
         }
 
-        private QueryHandle CreateQuery(Type elementType)
+        private QueryHandle CreateQuery(Schema.ObjectSchema elementType)
         {
             var tableHandle = _realm.Metadata[elementType.Name].Table;
             var queryHandle = tableHandle.TableWhere();
