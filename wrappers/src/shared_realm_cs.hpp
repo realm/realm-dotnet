@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#pragma once
-
+#ifndef SHARED_REALM_CS_HPP
+#define SHARED_REALM_CS_HPP
 
 class ManagedExceptionDuringMigration : public std::runtime_error
 {
@@ -25,3 +25,5 @@ public:
     ManagedExceptionDuringMigration() : std::runtime_error("Uncaught .NET exception during Realm migration") {
     }
 };
+
+#endif /* defined(SHARED_REALM_CS_HPP) */

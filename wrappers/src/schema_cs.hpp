@@ -16,7 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#pragma once
+#ifndef SCHEMA_CS_HPP
+#define SCHEMA_CS_HPP
 
 #include <vector>
 #include "object-store/src/schema.hpp"
@@ -55,7 +56,7 @@ struct SchemaForMarshaling
     
 };
 
-SchemaProperty SchemaProperty::for_marshalling(const realm::Property& property)
+REALM_FORCEINLINE SchemaProperty SchemaProperty::for_marshalling(const realm::Property& property)
 {
     return {
         property.name.c_str(),
@@ -67,7 +68,7 @@ SchemaProperty SchemaProperty::for_marshalling(const realm::Property& property)
     };
 }
 
-SchemaObject SchemaObject::for_marshalling(const realm::ObjectSchema& object, std::vector<SchemaProperty>& properties)
+REALM_FORCEINLINE SchemaObject SchemaObject::for_marshalling(const realm::ObjectSchema& object, std::vector<SchemaProperty>& properties)
 {
     SchemaObject ret;
     ret.name = object.name.c_str();
@@ -80,3 +81,5 @@ SchemaObject SchemaObject::for_marshalling(const realm::ObjectSchema& object, st
     
     return ret;
 }
+
+#endif /* defined(SCHEMA_CS_HPP) */
