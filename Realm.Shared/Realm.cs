@@ -125,12 +125,21 @@ namespace Realms
                 schema_version = config.SchemaVersion
             };
 
-            var srPtr = srHandle.Open(configuration);
-
-            var exceptionDuringMigration = migration?.MigrationException;
-            if (exceptionDuringMigration != null)
+            Migration migration = null;
+            if (config.MigrationCallback != null)
             {
-                throw new AggregateException("Exception occurred in a Realm migration callback. See inner exception for more details.", exceptionDuringMigration);
+                migration = new Migration(config, schema);
+                migration.PopulateConfiguration(ref configuration);
+            }
+
+            var srPtr = IntPtr.Zero;
+            try
+            {
+                srPtr = srHandle.Open(configuration);
+            }
+            catch (ManagedExceptionDuringMigrationException)
+            {
+                throw new AggregateException("Exception occurred in a Realm migration callback. See inner exception for more details.", migration?.MigrationException);
             }
 
             RuntimeHelpers.PrepareConstrainedRegions();

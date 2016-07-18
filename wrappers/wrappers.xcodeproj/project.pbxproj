@@ -126,6 +126,7 @@
 		48ED7C631C16F9C200AF23A4 /* shared_realm_cs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = shared_realm_cs.cpp; path = src/shared_realm_cs.cpp; sourceTree = "<group>"; };
 		48ED7C641C16F9C200AF23A4 /* table_cs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = table_cs.cpp; path = src/table_cs.cpp; sourceTree = "<group>"; };
 		85103B721D39225100A841A0 /* schema_cs.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = schema_cs.hpp; path = src/schema_cs.hpp; sourceTree = "<group>"; };
+		8510C5001D3D1194000CAD87 /* shared_realm_cs.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = shared_realm_cs.hpp; path = src/shared_realm_cs.hpp; sourceTree = "<group>"; };
 		8522B2B11CD11DC000E5C1F3 /* collection_notifications.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = collection_notifications.cpp; path = "src/object-store/src/collection_notifications.cpp"; sourceTree = "<group>"; };
 		8522B2B21CD11DC000E5C1F3 /* collection_notifications.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = collection_notifications.hpp; path = "src/object-store/src/collection_notifications.hpp"; sourceTree = "<group>"; };
 		8522B2B51CD11EA900E5C1F3 /* collection_change_builder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = collection_change_builder.cpp; path = "src/object-store/src/impl/collection_change_builder.cpp"; sourceTree = "<group>"; };
@@ -178,6 +179,7 @@
 				48ED7C5F1C16F9C200AF23A4 /* realm-csharp.cpp */,
 				48ED7C601C16F9C200AF23A4 /* row_cs.cpp */,
 				48ED7C621C16F9C200AF23A4 /* shared_linklist.hpp */,
+				8510C5001D3D1194000CAD87 /* shared_realm_cs.hpp */,
 				48ED7C631C16F9C200AF23A4 /* shared_realm_cs.cpp */,
 				48ED7C641C16F9C200AF23A4 /* table_cs.cpp */,
 				424267201C070BE500670B1C /* librealm-ios-no-bitcode-dbg.a */,
