@@ -32,3 +32,4 @@
 *.ico binary
 *.snk binary
 *.pdb binary
+*.realm binary

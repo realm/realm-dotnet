@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
@@ -31,8 +31,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)DynamicAccessTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DynamicRelationshipTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LifetimeTests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)RealmMigrationTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PrimaryKeyTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MigrationTests.cs" />
   </ItemGroup>
   <ItemGroup Condition=" '$(ProjectName)' != 'IntegrationTests.Win32' ">
     <Compile Include="$(MSBuildThisFileDirectory)TestRunner.cs" />

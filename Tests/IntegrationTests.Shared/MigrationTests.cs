@@ -16,21 +16,16 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.IO;
 using NUnit.Framework;
 using Realms;
-using System.Threading.Tasks;
+using System;
 
 namespace IntegrationTests
 {
-      // ObjectIntegrationTests
-
     [TestFixture, Preserve(AllMembers = true)]
-    public class RealmMigrationTests
+    public class MigrationTests
     {
         [Test]
         public void TriggerMigrationBySchemaVersion()
@@ -56,19 +51,60 @@ namespace IntegrationTests
         }
 
         [Test]
-        [Ignore("this tests for a condition that's only available under manual migrations, which we lack")]
         public void TriggerMigrationBySchemaEditing()
         {
-            
             // NOTE to regnerate the bundled database go edit the schema in Person.cs and comment/uncomment ExtraToTriggerMigration
             // running in between and saving a copy with the added field
             // this should never be needed as this test just needs the Realm to need migrating
             TestHelpers.CopyBundledDatabaseToDocuments(
                 "ForMigrationsToCopyAndMigrate.realm", "NeedsMigrating.realm");
 
-            // Assert
-            Realm realm1 = null;
-            Assert.Throws<RealmMigrationNeededException>( () => realm1 = Realm.GetInstance("NeedsMigrating.realm") );
+            var triggersSchemaFieldValue = string.Empty;
+
+            var configuration = new RealmConfiguration("NeedsMigrating.realm");
+            configuration.SchemaVersion = 100;
+            configuration.MigrationCallback = (migration, oldSchemaVersion) =>
+            {
+                Assert.That(oldSchemaVersion, Is.EqualTo(99));
+
+                var oldPeople = migration.OldRealm.All("Person");
+                var newPeople = migration.NewRealm.All<Person>();
+
+                Assert.That(newPeople.Count(), Is.EqualTo(oldPeople.Count()));
+
+                for (var i = 0; i < newPeople.Count(); i++)
+                {
+                    var oldPerson = oldPeople.ElementAt(i);
+                    var newPerson = newPeople.ElementAt(i);
+
+                    Assert.That(newPerson.LastName, Is.Not.EqualTo(oldPerson.TriggersSchema));
+                    newPerson.LastName = triggersSchemaFieldValue = oldPerson.TriggersSchema;
+                }
+            };
+
+            using (var realm = Realm.GetInstance(configuration))
+            {
+                var person = realm.All<Person>().Single();
+                Assert.That(person.LastName, Is.EqualTo(triggersSchemaFieldValue));
+            }
+        }
+
+        [Test]
+        public void ExceptionInMigrationCallback()
+        {
+            TestHelpers.CopyBundledDatabaseToDocuments(
+                "ForMigrationsToCopyAndMigrate.realm", "NeedsMigrating.realm");
+
+            var dummyException = new Exception();
+
+            var configuration = new RealmConfiguration("NeedsMigrating.realm");
+            configuration.MigrationCallback = (migration, oldSchemaVersion) =>
+            {
+                throw dummyException;
+            };
+
+            var ex = Assert.Throws<AggregateException>(() => Realm.GetInstance(configuration).Close());
+            Assert.That(ex.Flatten().InnerException, Is.SameAs(dummyException));
         }
 
         [Test]
