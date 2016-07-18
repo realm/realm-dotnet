@@ -10,6 +10,7 @@ namespace RealmWeaver
     {
         RealmOnlyNoPropertyChanged,
         RealmBeforePropertyChanged,
-        RealmAfterPropertyChanged
+        RealmAfterPropertyChanged,
+        PCLRealmOnlyNoPropertyChanged
     }
 }

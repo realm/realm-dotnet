@@ -72,13 +72,17 @@
       <Name>RealmWeaver.Fody</Name>
       <Aliases>realm</Aliases>
     </ProjectReference>
-    <ProjectReference Include="..\Realm.FakeForWeaverTests\Realm.FakeForWeaverTests.csproj">
-      <Project>{E6D5D6D7-4AF6-46E0-9C6A-EFB120D7F01D}</Project>
-      <Name>Realm.FakeForWeaverTests</Name>
-    </ProjectReference>
     <ProjectReference Include="..\AssemblyToProcess\AssemblyToProcess.csproj">
       <Project>{E97E649F-B703-47E3-B18A-0871D3498742}</Project>
       <Name>AssemblyToProcess</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PCLAssemblyToProcess\PCLAssemblyToProcess.csproj">
+      <Project>{f65e66c8-a3a0-40dc-aee4-1bff3174b9e7}</Project>
+      <Name>PCLAssemblyToProcess</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Realm.FakeForWeaverTests\Realm.FakeForWeaverTests.csproj">
+      <Project>{a80a308a-3aff-43f8-9186-383aaf148ca4}</Project>
+      <Name>Realm.FakeForWeaverTests</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

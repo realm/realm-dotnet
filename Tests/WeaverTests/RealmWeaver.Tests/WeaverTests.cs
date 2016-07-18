@@ -29,12 +29,12 @@ using Mono.Cecil;
 using NUnit.Framework;
 using Realms;
 using System.ComponentModel;
-using AssemblyToProcess;
 using Mono.Cecil.Cil;
 
 namespace RealmWeaver
 {
     [TestFixture(WeaverOptions.RealmOnlyNoPropertyChanged)]
+    [TestFixture(WeaverOptions.PCLRealmOnlyNoPropertyChanged)]
     [TestFixture(WeaverOptions.RealmAfterPropertyChanged)]
     [TestFixture(WeaverOptions.RealmBeforePropertyChanged)]
     public class Tests
@@ -105,7 +105,10 @@ namespace RealmWeaver
         [OneTimeSetUp]
         public void FixtureSetup()
         {
-            _sourceAssemblyPath = typeof(AssemblyToProcess.AllTypesObject).Assembly.Location;
+            _sourceAssemblyPath = _weaverOptions == WeaverOptions.PCLRealmOnlyNoPropertyChanged ?
+                typeof(AssemblyToProcess.PCLModuleLocator).Assembly.Location :
+                typeof(AssemblyToProcess.NonPCLModuleLocator).Assembly.Location;
+
             _targetAssemblyPath = _sourceAssemblyPath.Replace(".dll", $".{_weaverOptions}.dll");
 
             var moduleDefinition = ModuleDefinition.ReadModule(_sourceAssemblyPath);
@@ -114,6 +117,7 @@ namespace RealmWeaver
             switch (_weaverOptions)
             {
                 case WeaverOptions.RealmOnlyNoPropertyChanged:
+                case WeaverOptions.PCLRealmOnlyNoPropertyChanged:
                     WeaveRealm(moduleDefinition);
                     break;
                 
@@ -398,12 +402,6 @@ namespace RealmWeaver
             var pn2 = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.PhoneNumber"));
             o.IsManaged = true;
 
-            // Act
-            IList<PhoneNumber> nums = o.PhoneNumbers;
-            nums.Add(pn1);
-            nums.Add(pn2);
-
-            // Assert
             // (TODO)
         }
 
