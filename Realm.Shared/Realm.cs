@@ -127,6 +127,13 @@ namespace Realms
                 schema_version = config.SchemaVersion
             };
 
+            Migration migration = null;
+            if (config.MigrationCallback != null)
+            {
+                migration = new Migration(config, schema);
+                migration.PopulateConfiguration(ref configuration);
+            }
+
             var srPtr = IntPtr.Zero;
             try {
                 srPtr = srHandle.Open(configuration);
@@ -137,12 +144,16 @@ namespace Realms
                 }
                 else
                 {
-                    throw; // rethrow te exception
-                    //TODO when have Migration but also consider programmer control over auto migration
-                    //MigrateRealm(configuration);
+                    throw; // rethrow the exception
                 }
                 // create after deleting old reopen after migrating 
                 srPtr = srHandle.Open(configuration);
+            }
+
+            var exceptionDuringMigration = migration?.MigrationException;
+            if (exceptionDuringMigration != null)
+            {
+                throw new AggregateException("Exception occurred in a Realm migration callback. See inner exception for more details.", exceptionDuringMigration);
             }
 
             RuntimeHelpers.PrepareConstrainedRegions();
@@ -167,12 +178,10 @@ namespace Realms
         /// </summary>
         public RealmSchema Schema { get; }
 
-        private Realm(SharedRealmHandle sharedRealmHandle, RealmConfiguration config, RealmSchema schema)
+        internal Realm(SharedRealmHandle sharedRealmHandle, RealmConfiguration config, RealmSchema schema)
         {
             SharedRealmHandle = sharedRealmHandle;
             Config = config;
-            // update OUR config version number in case loaded one from disk
-            Config.SchemaVersion = sharedRealmHandle.GetSchemaVersion();
 
             Metadata = schema.ToDictionary(t => t.Name, CreateRealmObjectMetadata);
             Schema = schema;

@@ -27,8 +27,8 @@ namespace Realms
         private static class NativeMethods
         {
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "schema_create", CallingConvention = CallingConvention.Cdecl)]
-            public static extern unsafe IntPtr create([MarshalAs(UnmanagedType.LPArray), In] SchemaObject[] objects, int objects_length,
-                                                              [MarshalAs(UnmanagedType.LPArray), In] SchemaProperty[] properties,
+            public static extern unsafe IntPtr create([MarshalAs(UnmanagedType.LPArray), In] Native.SchemaObject[] objects, int objects_length,
+                                                              [MarshalAs(UnmanagedType.LPArray), In] Native.SchemaProperty[] properties,
                                                               [MarshalAs(UnmanagedType.LPArray), Out]IntPtr[] object_schema_handles, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "schema_clone", CallingConvention = CallingConvention.Cdecl)]
@@ -47,7 +47,7 @@ namespace Realms
         {
         }
 
-        public  void Initialize(SchemaObject[] objects, int count, SchemaProperty[] properties, IntPtr[] objectSchemaHandles)
+        public  void Initialize(Native.SchemaObject[] objects, int count, Native.SchemaProperty[] properties, IntPtr[] objectSchemaHandles)
         {
             NativeException nativeException;
             var ptr = NativeMethods.create(objects, count, properties, objectSchemaHandles, out nativeException);

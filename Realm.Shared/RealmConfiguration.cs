@@ -93,8 +93,11 @@ namespace Realms
         /// Number indicating the version, can be used to arbitrarily distinguish between schemas even if they have the same objects and properties.
         /// </summary>
         /// <value>0-based value initially set to indicate user is not versioning.</value>
-        public UInt64 SchemaVersion { get; set;} = RealmConfiguration.NotVersioned;
+        public UInt64 SchemaVersion { get; set; } = RealmConfiguration.NotVersioned;
 
+        public delegate void MigrationCallbackDelegate(Migration migration, UInt64 oldSchemaVersion);
+
+        public MigrationCallbackDelegate MigrationCallback { get; set; }
 
         private byte[] _EncryptionKey;
 

@@ -21,6 +21,8 @@ using System.Runtime.InteropServices;
 
 namespace Realms.Native
 {
+    internal delegate void MigrationCallback(IntPtr oldRealm, IntPtr newRealm, Schema oldSchema, ulong schemaVersion, IntPtr managedMigrationHandle);
+
     [StructLayout(LayoutKind.Sequential)]
     internal struct Configuration
     {
@@ -52,6 +54,9 @@ namespace Realms.Native
         }
 
         internal UInt64 schema_version;
+
+        internal MigrationCallback migration_callback;
+        internal IntPtr managed_migration_handle;
     }
 }
 
