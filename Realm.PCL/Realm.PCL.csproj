@@ -117,6 +117,10 @@
     <Compile Include="..\Realm.Shared\exceptions\RealmDuplicatePrimaryKeyValueException.cs">
       <Link>Exceptions\RealmDuplicatePrimaryKeyValueException.cs</Link>
     </Compile>
+    <Compile Include="..\Realm.Shared\exceptions\ManagedExceptionDuringMigrationException.cs">
+      <Link>Exceptions\ManagedExceptionDuringMigrationException.cs</Link>
+    </Compile>
+    <Compile Include="MigrationPCL.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <ItemGroup>
