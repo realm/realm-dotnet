@@ -24,6 +24,7 @@
 #include "realm_export_decls.hpp"
 #include "error_handling.hpp"
 #include "realm_error_type.hpp"
+#include "shared_realm_cs.hpp"
 
 // core headers for exception types
 #include "realm/util/file.hpp" 
@@ -85,6 +86,9 @@ namespace realm {
         }
         catch (const RowDetachedException& e) {
             return { RealmErrorType::RealmRowDetached, e.what() };
+        }
+        catch (const ManagedExceptionDuringMigration& e) {
+            return { RealmErrorType::RealmDotNetExceptionDuringMigration, e.what() };
         }
         catch (const std::bad_alloc& e) {
             return { RealmErrorType::RealmOutOfMemory, e.what() };

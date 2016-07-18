@@ -65,6 +65,8 @@ namespace realm {
 
         RealmRowDetached = 21,
 
+        RealmDotNetExceptionDuringMigration = 30,
+
         StdArgumentOutOfRange = 100,
 
         StdIndexOutOfRange = 101,

@@ -135,9 +135,12 @@ namespace Realms
             }
 
             var srPtr = IntPtr.Zero;
-            try {
+            try
+            {
                 srPtr = srHandle.Open(configuration);
-            } catch (RealmMigrationNeededException) {
+            }
+            catch (RealmMigrationNeededException)
+            {
                 if (config.ShouldDeleteIfMigrationNeeded)
                 {
                     DeleteRealm(config);
@@ -149,11 +152,9 @@ namespace Realms
                 // create after deleting old reopen after migrating 
                 srPtr = srHandle.Open(configuration);
             }
-
-            var exceptionDuringMigration = migration?.MigrationException;
-            if (exceptionDuringMigration != null)
+            catch (ManagedExceptionDuringMigrationException)
             {
-                throw new AggregateException("Exception occurred in a Realm migration callback. See inner exception for more details.", exceptionDuringMigration);
+                throw new AggregateException("Exception occurred in a Realm migration callback. See inner exception for more details.", migration?.MigrationException);
             }
 
             RuntimeHelpers.PrepareConstrainedRegions();

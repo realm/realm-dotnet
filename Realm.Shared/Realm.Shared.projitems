@@ -73,6 +73,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)native\Configuration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)native\Schema.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Migration.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)exceptions\ManagedExceptionDuringMigrationException.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)weaving\" />

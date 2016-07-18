@@ -27,7 +27,7 @@
 #include "object-store/src/binding_context.hpp"
 #include <list>
 #include "schema_cs.hpp"
-
+#include "shared_realm_cs.hpp"
 
 using namespace realm;
 using namespace realm::binding;
@@ -75,7 +75,7 @@ struct Configuration
     Schema* schema;
     uint64_t schema_version;
     
-    void (*migration_callback)(SharedRealm* old_realm, SharedRealm* new_realm, SchemaForMarshaling, uint64_t schema_version, void* managed_migration_handle);
+    bool (*migration_callback)(SharedRealm* old_realm, SharedRealm* new_realm, SchemaForMarshaling, uint64_t schema_version, void* managed_migration_handle);
     void* managed_migration_handle;
 };
     
@@ -117,7 +117,9 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, NativeE
                     schema_properties.data()
                 };
                 
-                configuration.migration_callback(&oldRealm, &newRealm, schema, oldRealm->config().schema_version, configuration.managed_migration_handle);
+                if (!configuration.migration_callback(&oldRealm, &newRealm, schema, oldRealm->config().schema_version, configuration.managed_migration_handle)) {
+                    throw ManagedExceptionDuringMigration();
+                }
             };
         }
         

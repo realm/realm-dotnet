@@ -47,7 +47,7 @@ namespace Realms
             configuration.managed_migration_handle = GCHandle.ToIntPtr(migrationHandle);
         }
 
-        private void Execute(Realm oldRealm, Realm newRealm, ref GCHandle migrationHandle)
+        private bool Execute(Realm oldRealm, Realm newRealm)
         {
             OldRealm = oldRealm;
             NewRealm = newRealm;
@@ -59,14 +59,13 @@ namespace Realms
             catch (Exception e)
             {
                 MigrationException = e;
+                return false;
             }
-            finally
-            {
-                migrationHandle.Free();
-            }
+
+            return true;
         }
 
-        private static void MigrationCallback(IntPtr oldRealmPtr, IntPtr newRealmPtr, Native.Schema oldSchema, ulong schemaVersion, IntPtr managedMigrationHandle)
+        private static bool MigrationCallback(IntPtr oldRealmPtr, IntPtr newRealmPtr, Native.Schema oldSchema, ulong schemaVersion, IntPtr managedMigrationHandle)
         {
             var migrationHandle = GCHandle.FromIntPtr(managedMigrationHandle);
             var migration = (Migration)migrationHandle.Target;
@@ -80,10 +79,6 @@ namespace Realms
             {
                 oldRealmHandle.SetHandle(oldRealmPtr);
                 newRealmHandle.SetHandle(newRealmPtr);
-
-                // this is to prevent .net from trying to destroy the realm - it's alredy owned by ObjectStore
-                oldRealmHandle.SetHandleAsInvalid();
-                newRealmHandle.SetHandleAsInvalid();
             }
 
             var oldConfiguration = new RealmConfiguration(migration._configuration.DatabasePath) { SchemaVersion = schemaVersion, ReadOnly = true };
@@ -91,7 +86,20 @@ namespace Realms
             var oldRealm = new Realm(oldRealmHandle, oldConfiguration, RealmSchema.CreateFromObjectStoreSchema(oldSchema, oldSchemaHandle));
 
             var newRealm = new Realm(newRealmHandle, migration._configuration, migration._schema);
-            migration.Execute(oldRealm, newRealm, ref migrationHandle);
+
+            var result = migration.Execute(oldRealm, newRealm);
+            migrationHandle.Free();
+
+            RuntimeHelpers.PrepareConstrainedRegions();
+            try { }
+            finally
+            {
+                // this is to prevent .net from trying to destroy the realm - it's alredy owned by ObjectStore
+                oldRealmHandle.SetHandleAsInvalid();
+                newRealmHandle.SetHandleAsInvalid();
+            }
+
+            return result;
         }
     }
 }
