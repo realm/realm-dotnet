@@ -89,6 +89,9 @@ namespace Realms
         /// <value>0-based value initially set to zero so all user-set values will be greater.</value>
         public UInt64 SchemaVersion { get; set;} = 0;
 
+        public delegate void MigrationCallbackDelegate(Migration migration, UInt64 oldSchemaVersion);
+
+        public MigrationCallbackDelegate MigrationCallback { get; set; }
 
         private byte[] _EncryptionKey;
 

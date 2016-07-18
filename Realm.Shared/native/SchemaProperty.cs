@@ -18,19 +18,21 @@
 
 using System.Runtime.InteropServices;
 
-namespace Realms
+namespace Realms.Native
 {
     [StructLayout(LayoutKind.Sequential)]
     internal struct SchemaProperty
     {
+        internal static readonly int Size = Marshal.SizeOf<SchemaProperty>();
+
         [MarshalAs(UnmanagedType.LPStr)]
         internal string name;
 
         [MarshalAs(UnmanagedType.U1)]
-        internal Schema.PropertyType type;
+        internal Realms.Schema.PropertyType type;
 
         [MarshalAs(UnmanagedType.LPStr)]
-        internal string objectType;
+        internal string object_type;
 
         [MarshalAs(UnmanagedType.I1)]
         internal bool is_nullable;

@@ -28,6 +28,7 @@
 #include "object-store/src/object_schema.hpp"
 #include "object-store/src/binding_context.hpp"
 #include <list>
+#include "schema_cs.hpp"
 
 
 using namespace realm;
@@ -129,6 +130,9 @@ struct Configuration
     bool delete_if_migration_needed;
 
     uint64_t schema_version;
+    
+    void (*migration_callback)(SharedRealm* old_realm, SharedRealm* new_realm, SchemaForMarshaling, uint64_t schema_version, void* managed_migration_handle);
+    void* managed_migration_handle;
 };
     
 REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, NativeException::Marshallable& ex)
@@ -153,6 +157,31 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, NativeE
         config.schema.reset(configuration.schema);
         config.schema_version = configuration.schema_version;
 
+        if (configuration.managed_migration_handle) {
+            config.migration_function = [&configuration](SharedRealm oldRealm, SharedRealm newRealm) {
+                std::vector<SchemaObject> schema_objects;
+                std::vector<ObjectSchema*> object_handles;
+                std::vector<SchemaProperty> schema_properties;
+                
+                for (auto& object : *oldRealm->config().schema) {
+                    schema_objects.push_back(SchemaObject::for_marshalling(object, schema_properties));
+                    object_handles.push_back(&object);
+                }
+                
+                SchemaForMarshaling schema {
+                    oldRealm->config().schema.get(),
+                    
+                    schema_objects.data(),
+                    object_handles.data(),
+                    static_cast<int>(schema_objects.size()),
+                    
+                    schema_properties.data()
+                };
+                
+                configuration.migration_callback(&oldRealm, &newRealm, schema, oldRealm->config().schema_version, configuration.managed_migration_handle);
+            };
+        }
+        
         return new SharedRealm{Realm::get_shared_realm(config)};
     });
 }

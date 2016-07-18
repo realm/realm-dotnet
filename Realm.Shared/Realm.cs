@@ -127,6 +127,12 @@ namespace Realms
 
             var srPtr = srHandle.Open(configuration);
 
+            var exceptionDuringMigration = migration?.MigrationException;
+            if (exceptionDuringMigration != null)
+            {
+                throw new AggregateException("Exception occurred in a Realm migration callback. See inner exception for more details.", exceptionDuringMigration);
+            }
+
             RuntimeHelpers.PrepareConstrainedRegions();
             try { /* Retain handle in a constrained execution region */ }
             finally
@@ -149,12 +155,10 @@ namespace Realms
         /// </summary>
         public RealmSchema Schema { get; }
 
-        private Realm(SharedRealmHandle sharedRealmHandle, RealmConfiguration config, RealmSchema schema)
+        internal Realm(SharedRealmHandle sharedRealmHandle, RealmConfiguration config, RealmSchema schema)
         {
             SharedRealmHandle = sharedRealmHandle;
             Config = config;
-            // update OUR config version number in case loaded one from disk
-            Config.SchemaVersion = sharedRealmHandle.GetSchemaVersion();
 
             Metadata = schema.ToDictionary(t => t.Name, CreateRealmObjectMetadata);
             Schema = schema;

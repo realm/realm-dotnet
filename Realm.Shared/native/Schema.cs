@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////////////////////////
+﻿////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -16,19 +16,22 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Runtime.InteropServices;
 
 namespace Realms.Native
 {
     [StructLayout(LayoutKind.Sequential)]
-    internal struct SchemaObject
+    internal struct Schema
     {
-        internal static readonly int Size = Marshal.SizeOf<SchemaObject>();
+        internal IntPtr handle;
 
-        [MarshalAs(UnmanagedType.LPStr)]
-        internal string name;
+        internal IntPtr /* SchemaObject[] */ objects;
+        internal IntPtr /* IntPtr[] */ object_handles;
+        internal int objects_len;
 
-        internal int properties_start;
-        internal int properties_end;
+        internal IntPtr /* SchemaProperty[] */ properties;
+
     }
 }
+
