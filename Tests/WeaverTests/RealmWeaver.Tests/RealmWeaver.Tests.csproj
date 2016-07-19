@@ -24,7 +24,7 @@
     <ConsolePause>false</ConsolePause>
     <CustomCommands>
       <CustomCommands>
-        <Command type="Execute" command="${SolutionDir}/packages/NUnit.ConsoleRunner.3.2.1/tools/nunit3-console.exe ${ProjectFile} --result=TestResult.xml;format=nunit2 --config=Debug --inprocess" workingdir="${SolutionDir}" />
+        <Command type="Execute" command="${SolutionDir}/packages/NUnit.ConsoleRunner.3.2.1/tools/nunit3-console.exe ${ProjectFile} --config=${Configuration} --inprocess" workingdir="${SolutionDir}" />
       </CustomCommands>
     </CustomCommands>
   </PropertyGroup>
