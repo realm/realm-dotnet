@@ -167,7 +167,7 @@ public class ModuleWeaver
         System_Boolean = ModuleDefinition.TypeSystem.Boolean;
         System_String = ModuleDefinition.TypeSystem.String;
         var typeTypeDefinition = _corLib.MainModule.GetType("System.Type");
-        if (typeTypeDefinition == null)
+        if (typeTypeDefinition == null) // For PCL's System.Type is only accessible as an ExportedType for some reason.
         {
             typeTypeDefinition = _corLib.MainModule.ExportedTypes.First(t => t.FullName == "System.Type").Resolve();
         }
