@@ -27,16 +27,16 @@ using System.Linq;
 using System.Reflection;
 using Mono.Cecil;
 using NUnit.Framework;
-using Realms;
 using System.ComponentModel;
-using Mono.Cecil.Cil;
 
 namespace RealmWeaver
 {
-    [TestFixture(WeaverOptions.RealmOnlyNoPropertyChanged)]
-    [TestFixture(WeaverOptions.PCLRealmOnlyNoPropertyChanged)]
-    [TestFixture(WeaverOptions.RealmAfterPropertyChanged)]
-    [TestFixture(WeaverOptions.RealmBeforePropertyChanged)]
+    [TestFixture(AssemblyType.NonPCL, PropertyChangedWeaver.NotUsed)]
+    [TestFixture(AssemblyType.NonPCL, PropertyChangedWeaver.BeforeRealmWeaver)]
+    [TestFixture(AssemblyType.NonPCL, PropertyChangedWeaver.AfterRealmWeaver)]
+    [TestFixture(AssemblyType.PCL, PropertyChangedWeaver.NotUsed)]
+    [TestFixture(AssemblyType.PCL, PropertyChangedWeaver.BeforeRealmWeaver)]
+    [TestFixture(AssemblyType.PCL, PropertyChangedWeaver.AfterRealmWeaver)]
     public class Tests
     {
         #region helpers
@@ -88,6 +88,20 @@ namespace RealmWeaver
 
         #endregion
 
+        public enum AssemblyType
+        {
+            NonPCL,
+            PCL
+        }
+
+        public enum PropertyChangedWeaver
+        {
+            NotUsed,
+            BeforeRealmWeaver,
+            AfterRealmWeaver
+        }
+
+
         private Assembly _assembly;
         private string _sourceAssemblyPath;
         private string _targetAssemblyPath;
@@ -95,45 +109,44 @@ namespace RealmWeaver
         private readonly List<string> _warnings = new List<string>();
         private readonly List<string> _errors = new List<string>();
 
-        private readonly WeaverOptions? _weaverOptions;
 
-        public Tests(WeaverOptions weaverOptions)
+        public Tests( AssemblyType assemblyType, PropertyChangedWeaver propertyChangedWeaver)
         {
-            _weaverOptions = weaverOptions;
+            _assemblyType = assemblyType;
+            _propertyChangedWeaver = propertyChangedWeaver;
         }
 
         [OneTimeSetUp]
         public void FixtureSetup()
         {
-            _sourceAssemblyPath = _weaverOptions == WeaverOptions.PCLRealmOnlyNoPropertyChanged ?
-                typeof(AssemblyToProcess.PCLModuleLocator).Assembly.Location :
-                typeof(AssemblyToProcess.NonPCLModuleLocator).Assembly.Location;
+            _sourceAssemblyPath = _assemblyType == AssemblyType.NonPCL ?
+                typeof(AssemblyToProcess.NonPCLModuleLocator).Assembly.Location :
+                typeof(AssemblyToProcess.PCLModuleLocator).Assembly.Location;
 
-            _targetAssemblyPath = _sourceAssemblyPath.Replace(".dll", $".{_weaverOptions}.dll");
+            _targetAssemblyPath = _sourceAssemblyPath.Replace(".dll", $".{_assemblyType}_PropertyChangedWeaver{_propertyChangedWeaver}.dll");
 
             var moduleDefinition = ModuleDefinition.ReadModule(_sourceAssemblyPath);
             (moduleDefinition.AssemblyResolver as DefaultAssemblyResolver).AddSearchDirectory(Path.GetDirectoryName(_sourceAssemblyPath));
 
-            switch (_weaverOptions)
+            switch (_propertyChangedWeaver)
             {
-                case WeaverOptions.RealmOnlyNoPropertyChanged:
-                case WeaverOptions.PCLRealmOnlyNoPropertyChanged:
+                case PropertyChangedWeaver.NotUsed:
                     WeaveRealm(moduleDefinition);
                     break;
                 
-                case WeaverOptions.RealmAfterPropertyChanged:
+                case PropertyChangedWeaver.BeforeRealmWeaver:
                     WeavePropertyChanged(moduleDefinition);
                     WeaveRealm(moduleDefinition);
                     break;
 
-                case WeaverOptions.RealmBeforePropertyChanged:
+                case PropertyChangedWeaver.AfterRealmWeaver:
                     WeaveRealm(moduleDefinition);
                     WeavePropertyChanged(moduleDefinition);
                     break;
             }
 
             // we need to change the assembly name because otherwise Mono loads the original assembly
-            moduleDefinition.Assembly.Name.Name += $".{_weaverOptions}";
+            moduleDefinition.Assembly.Name.Name += $".{_assemblyType}_PropertyChangedWeaver{_propertyChangedWeaver}";
 
             moduleDefinition.Write(_targetAssemblyPath);
             _assembly = Assembly.LoadFile(_targetAssemblyPath);
@@ -173,6 +186,7 @@ namespace RealmWeaver
             new object[] {"NullableDouble", 123.123, null},
             new object[] {"NullableBoolean", true, null}
         };
+
 
         private static IEnumerable<object[]> RandomValues()
         {
