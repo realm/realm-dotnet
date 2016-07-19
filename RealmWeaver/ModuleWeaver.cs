@@ -36,6 +36,8 @@ public class ModuleWeaver
     // An instance of Mono.Cecil.ModuleDefinition for processing
     public ModuleDefinition ModuleDefinition { get; set; }
 
+    public IAssemblyResolver AssemblyResolver { get; set; }
+
     private AssemblyDefinition _realmAssembly;
     private TypeDefinition _realmObject;
     private MethodReference _realmObjectIsManagedGetter;
@@ -141,7 +143,7 @@ public class ModuleWeaver
             }
         });
 
-        _realmAssembly = ModuleDefinition.AssemblyResolver.Resolve("Realm");  // Note that the assembly is Realm but the namespace Realms with the s
+        _realmAssembly = AssemblyResolver.Resolve("Realm");  // Note that the assembly is Realm but the namespace Realms with the s
 
         _realmObject = _realmAssembly.MainModule.GetTypes().First(x => x.Name == "RealmObject");
         _realmObjectIsManagedGetter = ModuleDefinition.ImportReference(_realmObject.Properties.Single(x => x.Name == "IsManaged").GetMethod);
@@ -162,7 +164,7 @@ public class ModuleWeaver
         var wovenPropertyAttributeClass = _realmAssembly.MainModule.GetTypes().First(x => x.Name == "WovenPropertyAttribute");
         _wovenPropertyAttributeConstructor = ModuleDefinition.ImportReference(wovenPropertyAttributeClass.GetConstructors().First());
 
-        _corLib = ModuleDefinition.AssemblyResolver.Resolve((AssemblyNameReference)ModuleDefinition.TypeSystem.CoreLibrary);
+        _corLib = AssemblyResolver.Resolve((AssemblyNameReference)ModuleDefinition.TypeSystem.CoreLibrary);
         System_Object = ModuleDefinition.TypeSystem.Object; 
         System_Boolean = ModuleDefinition.TypeSystem.Boolean;
         System_String = ModuleDefinition.TypeSystem.String;
@@ -176,14 +178,14 @@ public class ModuleWeaver
         var listTypeDefinition = _corLib.MainModule.GetType("System.Collections.Generic.List`1");
         if (listTypeDefinition == null)
         {
-            var collectionsAssembly = ModuleDefinition.AssemblyResolver.Resolve("System.Collections");
+            var collectionsAssembly = AssemblyResolver.Resolve("System.Collections");
             listTypeDefinition = collectionsAssembly.MainModule.ExportedTypes.FirstOrDefault(x => x.FullName == "System.Collections.Generic.List`1").Resolve();
             
         }
         System_IList = ModuleDefinition.ImportReference(listTypeDefinition);
 
-        var systemAssembly = ModuleDefinition.AssemblyResolver.Resolve("System");
-        var systemObjectModelAssembly = TryResolveAssembly("System.ObjectModel");
+        var systemAssembly = AssemblyResolver.Resolve("System");
+        var systemObjectModelAssembly = AssemblyResolver.Resolve("System.ObjectModel");
 
         var propertyChangedEventArgs = LookupType("PropertyChangedEventArgs", systemObjectModelAssembly, systemAssembly);
         _propChangedEventArgsConstructor = ModuleDefinition.ImportReference(propertyChangedEventArgs.GetConstructors().First());
@@ -196,7 +198,7 @@ public class ModuleWeaver
         var usesPropertyChangedFody = ModuleDefinition.AssemblyReferences.Any(X => X.Name == "PropertyChanged");
         if (usesPropertyChangedFody)
         {
-            var propChangedAssembly = ModuleDefinition.AssemblyResolver.Resolve("PropertyChanged");
+            var propChangedAssembly = AssemblyResolver.Resolve("PropertyChanged");
             var doNotNotifyAttributeDefinition = propChangedAssembly.MainModule.GetTypes().First(X => X.Name == "DoNotNotifyAttribute");
             _propChangedDoNotNotifyAttributeConstructorDefinition = ModuleDefinition.ImportReference(doNotNotifyAttributeDefinition.GetConstructors().First());
         }
@@ -441,19 +443,6 @@ public class ModuleWeaver
     private MethodReference LookupMethodAndImport(TypeDefinition typeDefinition, string methodName)
     {
         return ModuleDefinition.ImportReference(LookupMethod(typeDefinition, methodName));
-    }
-
-    private AssemblyDefinition TryResolveAssembly(string assemblyName)
-    {
-        try
-        {
-            return ModuleDefinition.AssemblyResolver.Resolve(assemblyName);
-        }
-        catch
-        {
-            LogInfo("Failed to resolve assembly: " + assemblyName);
-            return null;
-        }
     }
 
     void ReplaceGetter(PropertyDefinition prop, string columnName, MethodReference getValueReference)
