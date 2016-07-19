@@ -71,6 +71,7 @@ namespace RealmWeaver
             new realm::ModuleWeaver
             {
                 ModuleDefinition = moduleDefinition,
+                AssemblyResolver = moduleDefinition.AssemblyResolver,
                 LogError = s => _errors.Add(s),
                 LogErrorPoint = (s, point) => _errors.Add(s),
                 LogWarningPoint = (s, point) => _warnings.Add(s)
@@ -82,6 +83,7 @@ namespace RealmWeaver
             new propertychanged::ModuleWeaver
             {
                 ModuleDefinition = moduleDefinition,
+                AssemblyResolver = moduleDefinition.AssemblyResolver,
                 LogWarning = s => _warnings.Add(s)
             }.Execute();
         }
