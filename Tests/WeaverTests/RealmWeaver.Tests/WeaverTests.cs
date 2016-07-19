@@ -153,26 +153,37 @@ namespace RealmWeaver
             }
         }
 
-        [TestCase("CharProperty", '0')]
-        [TestCase("ByteProperty", (byte)100)]
-        [TestCase("Int16Property", (short)100)]
-        [TestCase("Int32Property", 100)]
-        [TestCase("Int64Property", 100L)]
-        [TestCase("SingleProperty", 123.123f)]
-        [TestCase("DoubleProperty", 123.123)]
-        [TestCase("BooleanProperty", true)]
-        [TestCase("StringProperty", "str")] 
-        [TestCase("NullableCharProperty", '0')]
-        [TestCase("NullableByteProperty", (byte)100)]
-        [TestCase("NullableInt16Property", (short)100)]
-        [TestCase("NullableInt32Property", 100)]
-        [TestCase("NullableInt64Property", 100L)]
-        [TestCase("NullableSingleProperty", 123.123f)] 
-        [TestCase("NullableDoubleProperty", 123.123)] 
-        [TestCase("NullableBooleanProperty", true)]
-        public void GetValueUnmanagedShouldGetBackingField(string propertyName, object propertyValue)
+        private static readonly object[][] RandomAndDefaultValues =
+        {
+            new object[] {"Char", '0', char.MinValue},
+            new object[] {"Byte", (byte) 100, (byte) 0},
+            new object[] {"Int16", (short) 100, (short) 0},
+            new object[] {"Int32", 100, 0},
+            new object[] {"Int64", 100L, 0L},
+            new object[] {"Single", 123.123f, 0.0f},
+            new object[] {"Double", 123.123, 0.0},
+            new object[] {"Boolean", true, false},
+            new object[] {"String", "str", null},
+            new object[] {"NullableChar", '0', null},
+            new object[] {"NullableByte", (byte) 100, null},
+            new object[] {"NullableInt16", (short) 100, null},
+            new object[] {"NullableInt32", 100, null},
+            new object[] {"NullableInt64", 100L, null},
+            new object[] {"NullableSingle", 123.123f, null},
+            new object[] {"NullableDouble", 123.123, null},
+            new object[] {"NullableBoolean", true, null}
+        };
+
+        private static IEnumerable<object[]> RandomValues()
+        {
+            return RandomAndDefaultValues.Select(a => new[] {a[0], a[1]});
+        }
+
+        [TestCaseSource(nameof(RandomValues))]
+        public void GetValueUnmanagedShouldGetBackingField(string typeName, object propertyValue)
         {
             // Arrange
+            var propertyName = typeName + "Property";
             var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.AllTypesObject"));
             SetAutoPropertyBackingFieldValue(o, propertyName, propertyValue);
 
@@ -184,23 +195,7 @@ namespace RealmWeaver
             Assert.That(returnedValue, Is.EqualTo(propertyValue));
         }
 
-        [TestCase("Char", '0')]
-        [TestCase("Byte", (byte)100)]
-        [TestCase("Int16", (short)100)]
-        [TestCase("Int32", 100)]
-        [TestCase("Int64", 100L)]
-        [TestCase("Single", 123.123f)]
-        [TestCase("Double", 123.123)]
-        [TestCase("Boolean", true)]
-        [TestCase("String", "str")] 
-        [TestCase("NullableChar", '0')]
-        [TestCase("NullableByte", (byte)100)]
-        [TestCase("NullableInt16", (short)100)]
-        [TestCase("NullableInt32", 100)]
-        [TestCase("NullableInt64", 100L)]
-        [TestCase("NullableSingle", 123.123f)] 
-        [TestCase("NullableDouble", 123.123)] 
-        [TestCase("NullableBoolean", true)]
+        [TestCaseSource(nameof(RandomValues))]
         public void SetValueUnmanagedShouldSetBackingField(string typeName, object propertyValue)
         {
             // Arrange
@@ -215,23 +210,7 @@ namespace RealmWeaver
             Assert.That(GetAutoPropertyBackingFieldValue(o, propertyName), Is.EqualTo(propertyValue));
         }
 
-        [TestCase("Char", '0')]
-        [TestCase("Byte", (byte)100)]
-        [TestCase("Int16", (short)100)]
-        [TestCase("Int32", 100)]
-        [TestCase("Int64", 100L)]
-        [TestCase("Single", 123.123f)]
-        [TestCase("Double", 123.123)]
-        [TestCase("Boolean", true)]
-        [TestCase("String", "str")] 
-        [TestCase("NullableChar", '0')]
-        [TestCase("NullableByte", (byte)100)]
-        [TestCase("NullableInt16", (short)100)]
-        [TestCase("NullableInt32", 100)]
-        [TestCase("NullableInt64", 100L)]
-        [TestCase("NullableSingle", 123.123f)] 
-        [TestCase("NullableDouble", 123.123)] 
-        [TestCase("NullableBoolean", true)]
+        [TestCaseSource(nameof(RandomValues))]
         public void GetValueManagedShouldGetQueryDatabase(string typeName, object propertyValue)
         {
             // Arrange
@@ -250,23 +229,7 @@ namespace RealmWeaver
             }));
         }
 
-        [TestCase("Char", '0', char.MinValue)]
-        [TestCase("Byte", (byte)100, (byte)0)]
-        [TestCase("Int16", (short)100, (short)0)]
-        [TestCase("Int32", 100, 0)]
-        [TestCase("Int64", 100L, 0L)]
-        [TestCase("Single", 123.123f, 0.0f)]
-        [TestCase("Double", 123.123, 0.0)]
-        [TestCase("Boolean", true, false)]
-        [TestCase("String", "str", null)] 
-        [TestCase("NullableChar", '0', null)]
-        [TestCase("NullableByte", (byte)100, null)]
-        [TestCase("NullableInt16", (short)100, null)]
-        [TestCase("NullableInt32", 100, null)]
-        [TestCase("NullableInt64", 100L, null)]
-        [TestCase("NullableSingle", 123.123f, null)] 
-        [TestCase("NullableDouble", 123.123, null)] 
-        [TestCase("NullableBoolean", true, null)]
+        [TestCaseSource(nameof(RandomAndDefaultValues))]
         public void SetValueManagedShouldUpdateDatabase(string typeName, object propertyValue, object defaultPropertyValue)
         {
             // Arrange
@@ -286,23 +249,7 @@ namespace RealmWeaver
             Assert.That(GetAutoPropertyBackingFieldValue(o, propertyName), Is.EqualTo(defaultPropertyValue));
         }
 
-        [TestCase("Char", '0', char.MinValue)]
-        [TestCase("Byte", (byte)100, (byte)0)]
-        [TestCase("Int16", (short)100, (short)0)]
-        [TestCase("Int32", 100, 0)]
-        [TestCase("Int64", 100L, 0L)]
-        [TestCase("Single", 123.123f, 0.0f)]
-        [TestCase("Double", 123.123, 0.0)]
-        [TestCase("Boolean", true, false)]
-        [TestCase("String", "str", null)]
-        [TestCase("NullableChar", '0', null)]
-        [TestCase("NullableByte", (byte)100, null)]
-        [TestCase("NullableInt16", (short)100, null)]
-        [TestCase("NullableInt32", 100, null)]
-        [TestCase("NullableInt64", 100L, null)]
-        [TestCase("NullableSingle", 123.123f, null)]
-        [TestCase("NullableDouble", 123.123, null)]
-        [TestCase("NullableBoolean", true, null)]
+        [TestCaseSource(nameof(RandomAndDefaultValues))]
         public void SetValueManagedShouldRaisePropertyChanged(string typeName, object propertyValue, object defaultPropertyValue)
         {
             // Arrange
@@ -393,7 +340,7 @@ namespace RealmWeaver
             }));
         }
 
-        [Test, Ignore("IList property tests are still missing")]
+        [Test]
         public void SetManyRelationship()
         {
             // Arrange
@@ -402,7 +349,7 @@ namespace RealmWeaver
             var pn2 = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.PhoneNumber"));
             o.IsManaged = true;
 
-            // (TODO)
+            Assert.Inconclusive("IList property tests still missing");
         }
 
         [Test]
