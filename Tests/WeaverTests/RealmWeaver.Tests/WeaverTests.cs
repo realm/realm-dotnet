@@ -130,7 +130,17 @@ namespace RealmWeaver
             _targetAssemblyPath = _sourceAssemblyPath.Replace(".dll", $".{_assemblyType}_PropertyChangedWeaver{_propertyChangedWeaver}.dll");
 
             var moduleDefinition = ModuleDefinition.ReadModule(_sourceAssemblyPath);
-            (moduleDefinition.AssemblyResolver as DefaultAssemblyResolver).AddSearchDirectory(Path.GetDirectoryName(_sourceAssemblyPath));
+
+            var assemblyResolver = (moduleDefinition.AssemblyResolver as DefaultAssemblyResolver);
+            assemblyResolver.AddSearchDirectory(Path.GetDirectoryName(_sourceAssemblyPath));
+
+            if (Environment.OSVersion.Platform == PlatformID.Unix)
+            {
+                // With Mono, we need the actual reference assemblies that we build against, rather than
+                // the GAC because typeforwarding might cause the layouts to be different.
+                var referenceAssembliesPath = Path.Combine(Path.GetDirectoryName(typeof(object).Assembly.Location), "Facades");
+                assemblyResolver.AddSearchDirectory(referenceAssembliesPath);
+            }
 
             switch (_propertyChangedWeaver)
             {
