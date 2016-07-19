@@ -2368,3 +2368,15 @@ ModuleWeaver.cs
  
  #287 IList integration - add tests to help debug
 WeaverTests.cs - added SetManyRelationship to trigger 
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#719 - Improve error messages for LINQ Member Expressions
+
+SimpleLINQTests.cs
+- IntegerConversionTriggersError added to see the message
+
+
+RealmResultsVisitor.cs
+- VisitBinary added Left and Right expression dumps into exception message.
+

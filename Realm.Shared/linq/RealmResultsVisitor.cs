@@ -299,13 +299,13 @@ namespace Realms
                 var leftMember = b.Left as MemberExpression;
                 if (leftMember == null)
                     throw new NotSupportedException(
-                        $"The lhs of the binary operator '{b.NodeType}' should be a member expression");
+                        $"The lhs of the binary operator '{b.NodeType}' should be a member expression. \nUnable to process `{b.Left}`");
                 var leftName = leftMember.Member.Name;
 
                 var rightValue = ExtractConstantValue(b.Right);
                 if (rightValue == null)
                 {
-                    throw new NotSupportedException($"The rhs of the binary operator '{b.NodeType}' should be a constant or closure variable expression");
+                    throw new NotSupportedException($"The rhs of the binary operator '{b.NodeType}' should be a constant or closure variable expression. \nUnable to process `{b.Right}`");
                 }
 
                 switch (b.NodeType)
