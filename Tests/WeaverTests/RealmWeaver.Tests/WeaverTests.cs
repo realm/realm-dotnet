@@ -101,6 +101,8 @@ namespace RealmWeaver
             AfterRealmWeaver
         }
 
+        private readonly AssemblyType _assemblyType;
+        private readonly PropertyChangedWeaver _propertyChangedWeaver;
 
         private Assembly _assembly;
         private string _sourceAssemblyPath;
