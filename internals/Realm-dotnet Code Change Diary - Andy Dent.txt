@@ -2371,6 +2371,19 @@ WeaverTests.cs - added SetManyRelationship to trigger
 
 
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#694 Use Core 1.4.0
+
+Makefile 
+- bump versions
+
+linklist_cs.cpp
+- had to add #include <sstream> for ostringstream
+
+marshalling.cpp
+- had to add #include <iostream> for cerr
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #719 - Improve error messages for LINQ Member Expressions
 
 SimpleLINQTests.cs

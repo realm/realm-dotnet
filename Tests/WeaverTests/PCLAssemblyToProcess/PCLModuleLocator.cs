@@ -15,19 +15,11 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
-using Realms;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AssemblyToProcess
 {
-    [MapTo("RemappedTable")]
-    public class RemappedClass : RealmObject
-    {
-        public int PropertyToEnsureHealthyClass { get; set; }
-    }
+    /// <summary>
+    /// This class serves as nothing but a way to locate the assembly in the weaver test.
+    /// </summary>
+    public class PCLModuleLocator { }
 }

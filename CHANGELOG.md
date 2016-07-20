@@ -1,6 +1,9 @@
 0.77.0 (in progress)
 -------------------
 
+### Breaking Changes
+* Sort order change in previous version was reverted.
+
 ### Major Changes
 * It is now possible to introspect the schema of a Realm. (#645)
 * The Realm class received overloads for `Realm.CreateObject` and `Realm.All` that accept string arguments instead of generic parameters, enabling use of the `dynamic` keyword with objects whose exact type is not known at compile time. (#646)
@@ -14,6 +17,9 @@
 * Fixed a crash on iOS when creating many short-lived realms very rapidly in parallel (#653)
 * `RealmObject.IsValid` can be called to check if a managed object has been deleted
 * Accessing properties on invalid objects will throw an exception rather than crash with a segfault (#662)
+
+Uses core 1.4.0
+
 
 0.76.1 (2016-06-15)
 -------------------

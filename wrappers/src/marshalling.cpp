@@ -20,6 +20,7 @@
 #include <realm.hpp>
 #include <realm/lang_bind_helper.hpp>
 #include "error_handling.hpp"
+#include <iostream>
 
 using namespace realm;
 

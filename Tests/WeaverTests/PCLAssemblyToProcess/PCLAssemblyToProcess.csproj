@@ -5,11 +5,11 @@
     <MinimumVisualStudioVersion>10.0</MinimumVisualStudioVersion>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{A80A308A-3AFF-43F8-9186-383AAF148CA4}</ProjectGuid>
+    <ProjectGuid>{F65E66C8-A3A0-40DC-AEE4-1BFF3174B9E7}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Realm</RootNamespace>
-    <AssemblyName>Realm</AssemblyName>
+    <RootNamespace>PCLAssemblyToProcess</RootNamespace>
+    <AssemblyName>PCLAssemblyToProcess</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -35,18 +35,35 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .NET Framework is automatically included -->
+    <ProjectReference Include="..\Realm.FakeForWeaverTests\Realm.FakeForWeaverTests.csproj">
+      <Project>{a80a308a-3aff-43f8-9186-383aaf148ca4}</Project>
+      <Name>Realm.FakeForWeaverTests</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\..\..\Realm.Shared\Attributes.cs">
-      <Link>Attributes.cs</Link>
+    <Compile Include="..\AssemblyToProcess\ClassWithStaticProperty.cs">
+      <Link>ClassWithStaticProperty.cs</Link>
     </Compile>
-    <Compile Include="..\..\..\Realm.Shared\PreserveAttribute.cs">
-      <Link>PreserveAttribute.cs</Link>
+    <Compile Include="..\AssemblyToProcess\FaultyClasses.cs">
+      <Link>FaultyClasses.cs</Link>
     </Compile>
-    <Compile Include="IRealmObjectHelper.cs" />
+    <Compile Include="..\AssemblyToProcess\Inheritance.cs">
+      <Link>Inheritance.cs</Link>
+    </Compile>
+    <Compile Include="..\AssemblyToProcess\IPersonTest.cs">
+      <Link>IPersonTest.cs</Link>
+    </Compile>
+    <Compile Include="..\AssemblyToProcess\Person.cs">
+      <Link>Person.cs</Link>
+    </Compile>
+    <Compile Include="..\AssemblyToProcess\RemappedClass.cs">
+      <Link>RemappedClass.cs</Link>
+    </Compile>
+    <Compile Include="..\AssemblyToProcess\TestObjects.cs">
+      <Link>TestObjects.cs</Link>
+    </Compile>
+    <Compile Include="PCLModuleLocator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RealmList.cs" />
-    <Compile Include="RealmObject.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
