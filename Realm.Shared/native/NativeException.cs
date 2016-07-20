@@ -29,22 +29,22 @@ namespace Realms
         public sbyte* messageBytes;
         public IntPtr messageLength;
 
-        internal Exception Convert()
+        internal Exception Convert(Func<NativeException, Exception> overrider)
         {
             var message = (messageLength != IntPtr.Zero) ?
                 new string(messageBytes, 0 /* start offset */, (int)messageLength, Encoding.UTF8)
                 : "No further information available";
             NativeCommon.delete_pointer(messageBytes);
 
-            return RealmException.Create(type, message);
+            return overrider?.Invoke(this) ?? RealmException.Create(type, message);
         }
 
-        internal void ThrowIfNecessary()
+        internal void ThrowIfNecessary(Func<NativeException, Exception> overrider = null)
         {
             if (type == RealmExceptionCodes.NoError)
                 return;
 
-            throw Convert();
+            throw Convert(overrider);
         }
     }
 }
