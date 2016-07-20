@@ -1,4 +1,4 @@
-0.77.0 (in progress)
+0.77.0 (2016-07-18)
 -------------------
 
 ### Breaking Changes
@@ -10,13 +10,14 @@
 * _To Many_ relationships can now be declared with an `IList<DestClass>` rather than requiring `RealmList<DestClass>`. This is **significantly faster** than using `RealmList` due to caching the list.   (Issue #287)
 * Creating standalone objects with lists of related objects is now possible. Passing such an object into `Realm.Manage` will cause the entire object graph from that object down to become managed.
 
-
-
 ### Minor Changes
 * Fixed a crash on iOS when creating many short-lived realms very rapidly in parallel (Issue #653)
 * Fixed a crash on iOS when creating many short-lived realms very rapidly in parallel (#653)
 * `RealmObject.IsValid` can be called to check if a managed object has been deleted
 * Accessing properties on invalid objects will throw an exception rather than crash with a segfault (#662)
+
+### Bug fixes
+* Exceptions thrown when creating a `Realm` no longer leave a leaking handle (Issue #503)
 
 Uses core 1.4.0
 
