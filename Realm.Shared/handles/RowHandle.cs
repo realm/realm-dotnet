@@ -55,7 +55,17 @@ namespace Realms
             {
                 NativeException nativeException;
                 var result = NativeMethods.get_row_index(this, out nativeException);
-                nativeException.ThrowIfNecessary();
+                nativeException.ThrowIfNecessary(ne =>
+                {
+                    if (ne.type == RealmExceptionCodes.RealmRowDetached)
+                    {
+                        if (Root.IsClosed)
+                            return new Exception("This object belongs to a closed realm.");
+                        else
+                            return new Exception("This object is detached. Was it deleted from the realm?");
+                    }
+                    return null;
+                });
                 return result;
             }
         }

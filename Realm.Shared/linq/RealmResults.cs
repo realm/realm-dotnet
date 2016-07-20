@@ -272,7 +272,7 @@ namespace Realms
                     
         void RealmResultsNativeHelper.Interface.NotifyCallbacks(ResultsHandle.CollectionChangeSet? changes, NativeException? exception)
         {
-            var managedException = exception?.Convert();
+            var managedException = exception?.Convert(null);
             ChangeSet changeset = null;
             if (changes != null)
             {
