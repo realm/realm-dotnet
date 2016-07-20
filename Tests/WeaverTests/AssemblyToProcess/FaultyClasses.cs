@@ -25,6 +25,8 @@ namespace AssemblyToProcess
     public class RealmListWithSetter : RealmObject
     {
         public IList<Person> People { get; set; } 
+
+        public int PropertyToEnsureOtherwiseHealthyClass { get; set; }
     }
 
     public class IndexedProperties : RealmObject
@@ -75,5 +77,16 @@ namespace AssemblyToProcess
     public class DefaultConstructorMissing : RealmObject
     {
         public DefaultConstructorMissing(int parameter) { }
+
+        public int PropertyToEnsureOtherwiseHealthyClass { get; set; }
+    }
+
+    // This class has no persisted properties. 
+    public class NoPersistedProperties : RealmObject
+    {
+        public int PublicField;
+
+        [Ignored]
+        public int IgnoredProperty { get; set; }
     }
 }
