@@ -28,16 +28,14 @@ namespace Realms
     {
         public List<string> LogList = new List<string>();
 
-        public void LogString(string s)
+        private void LogString(string s)
         {
             LogList.Add(s);
         }
 
-        public  void LogCall(string parameters = "", [CallerMemberName] string caller = "")
+        private void LogCall(string parameters = "", [CallerMemberName] string caller = "")
         {
-            var stackTrace = new StackTrace(1, false);
-            var type = stackTrace.GetFrame(0).GetMethod().DeclaringType;
-            LogString(type.Name + "." + caller + "(" + parameters + ")");
+            LogString("RealmObject." + caller + "(" + parameters + ")");
         }
 
         private bool _isManaged;

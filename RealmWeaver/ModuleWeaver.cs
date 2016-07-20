@@ -36,13 +36,15 @@ public class ModuleWeaver
     // An instance of Mono.Cecil.ModuleDefinition for processing
     public ModuleDefinition ModuleDefinition { get; set; }
 
+    public IAssemblyResolver AssemblyResolver { get; set; }
+
     private AssemblyDefinition _realmAssembly;
     private TypeDefinition _realmObject;
     private MethodReference _realmObjectIsManagedGetter;
 
     private AssemblyDefinition _corLib;
-    private TypeDefinition System_Object;
-    private TypeDefinition System_Boolean;
+    private TypeReference System_Object;
+    private TypeReference System_Boolean;
     private TypeReference System_String;
     private TypeReference System_Type;
     private TypeReference System_IList;
@@ -141,7 +143,7 @@ public class ModuleWeaver
             }
         });
 
-        _realmAssembly = ModuleDefinition.AssemblyResolver.Resolve("Realm");  // Note that the assembly is Realm but the namespace Realms with the s
+        _realmAssembly = AssemblyResolver.Resolve("Realm");  // Note that the assembly is Realm but the namespace Realms with the s
 
         _realmObject = _realmAssembly.MainModule.GetTypes().First(x => x.Name == "RealmObject");
         _realmObjectIsManagedGetter = ModuleDefinition.ImportReference(_realmObject.Properties.Single(x => x.Name == "IsManaged").GetMethod);
@@ -162,16 +164,28 @@ public class ModuleWeaver
         var wovenPropertyAttributeClass = _realmAssembly.MainModule.GetTypes().First(x => x.Name == "WovenPropertyAttribute");
         _wovenPropertyAttributeConstructor = ModuleDefinition.ImportReference(wovenPropertyAttributeClass.GetConstructors().First());
 
-        _corLib = ModuleDefinition.AssemblyResolver.Resolve((AssemblyNameReference)ModuleDefinition.TypeSystem.CoreLibrary);
-        System_Object = _corLib.MainModule.GetType("System.Object");
-        System_Boolean = _corLib.MainModule.GetType("System.Boolean");
-        System_String = ModuleDefinition.ImportReference(_corLib.MainModule.GetType("System.String"));
-        System_Type = ModuleDefinition.ImportReference(_corLib.MainModule.GetType("System.Type"));
-        // WARNING the GetType("System.Collections.Generic.List`1") below RETURNS NULL WHEN COMPILING A PCL
-        System_IList = ModuleDefinition.ImportReference(_corLib.MainModule.GetType("System.Collections.Generic.List`1"));
+        _corLib = AssemblyResolver.Resolve((AssemblyNameReference)ModuleDefinition.TypeSystem.CoreLibrary);
+        System_Object = ModuleDefinition.TypeSystem.Object; 
+        System_Boolean = ModuleDefinition.TypeSystem.Boolean;
+        System_String = ModuleDefinition.TypeSystem.String;
+        var typeTypeDefinition = _corLib.MainModule.GetType("System.Type");
+        if (typeTypeDefinition == null) // For PCL's System.Type is only accessible as an ExportedType for some reason.
+        {
+            typeTypeDefinition = _corLib.MainModule.ExportedTypes.First(t => t.FullName == "System.Type").Resolve();
+        }
+        System_Type = ModuleDefinition.ImportReference(typeTypeDefinition);
 
-        var systemAssembly = ModuleDefinition.AssemblyResolver.Resolve("System");
-        var systemObjectModelAssembly = TryResolveAssembly("System.ObjectModel");
+        var listTypeDefinition = _corLib.MainModule.GetType("System.Collections.Generic.List`1");
+        if (listTypeDefinition == null)
+        {
+            var collectionsAssembly = AssemblyResolver.Resolve("System.Collections");
+            listTypeDefinition = collectionsAssembly.MainModule.ExportedTypes.FirstOrDefault(x => x.FullName == "System.Collections.Generic.List`1").Resolve();
+            
+        }
+        System_IList = ModuleDefinition.ImportReference(listTypeDefinition);
+
+        var systemAssembly = AssemblyResolver.Resolve("System");
+        var systemObjectModelAssembly = AssemblyResolver.Resolve("System.ObjectModel");
 
         var propertyChangedEventArgs = LookupType("PropertyChangedEventArgs", systemObjectModelAssembly, systemAssembly);
         _propChangedEventArgsConstructor = ModuleDefinition.ImportReference(propertyChangedEventArgs.GetConstructors().First());
@@ -184,7 +198,7 @@ public class ModuleWeaver
         var usesPropertyChangedFody = ModuleDefinition.AssemblyReferences.Any(X => X.Name == "PropertyChanged");
         if (usesPropertyChangedFody)
         {
-            var propChangedAssembly = ModuleDefinition.AssemblyResolver.Resolve("PropertyChanged");
+            var propChangedAssembly = AssemblyResolver.Resolve("PropertyChanged");
             var doNotNotifyAttributeDefinition = propChangedAssembly.MainModule.GetTypes().First(X => X.Name == "DoNotNotifyAttribute");
             _propChangedDoNotNotifyAttributeConstructorDefinition = ModuleDefinition.ImportReference(doNotNotifyAttributeDefinition.GetConstructors().First());
         }
@@ -429,19 +443,6 @@ public class ModuleWeaver
     private MethodReference LookupMethodAndImport(TypeDefinition typeDefinition, string methodName)
     {
         return ModuleDefinition.ImportReference(LookupMethod(typeDefinition, methodName));
-    }
-
-    private AssemblyDefinition TryResolveAssembly(string assemblyName)
-    {
-        try
-        {
-            return ModuleDefinition.AssemblyResolver.Resolve(assemblyName);
-        }
-        catch
-        {
-            LogInfo("Failed to resolve assembly: " + assemblyName);
-            return null;
-        }
     }
 
     void ReplaceGetter(PropertyDefinition prop, string columnName, MethodReference getValueReference)
@@ -768,7 +769,7 @@ public class ModuleWeaver
     {
         var helperType = new TypeDefinition(null, "RealmHelper",
                                             TypeAttributes.Class | TypeAttributes.NestedPrivate | TypeAttributes.BeforeFieldInit,
-                                            ModuleDefinition.ImportReference(System_Object));
+                                            System_Object);
 
         helperType.Interfaces.Add(ModuleDefinition.ImportReference(_realmAssembly.MainModule.GetType("Realms.Weaving.IRealmObjectHelper")));
 
@@ -785,7 +786,7 @@ public class ModuleWeaver
         {
             var il = ctor.Body.GetILProcessor();
             il.Emit(OpCodes.Ldarg_0);
-            il.Emit(OpCodes.Call, ModuleDefinition.ImportReference(System_Object.GetConstructors().Single()));
+            il.Emit(OpCodes.Call, ModuleDefinition.ImportReference(System_Object.Resolve().GetConstructors().Single()));
             il.Emit(OpCodes.Ret);
         }
 

@@ -27,16 +27,16 @@ using System.Linq;
 using System.Reflection;
 using Mono.Cecil;
 using NUnit.Framework;
-using Realms;
 using System.ComponentModel;
-using AssemblyToProcess;
-using Mono.Cecil.Cil;
 
 namespace RealmWeaver
 {
-    [TestFixture(WeaverOptions.RealmOnlyNoPropertyChanged)]
-    [TestFixture(WeaverOptions.RealmAfterPropertyChanged)]
-    [TestFixture(WeaverOptions.RealmBeforePropertyChanged)]
+    [TestFixture(AssemblyType.NonPCL, PropertyChangedWeaver.NotUsed)]
+    [TestFixture(AssemblyType.NonPCL, PropertyChangedWeaver.BeforeRealmWeaver)]
+    [TestFixture(AssemblyType.NonPCL, PropertyChangedWeaver.AfterRealmWeaver)]
+    [TestFixture(AssemblyType.PCL, PropertyChangedWeaver.NotUsed)]
+    [TestFixture(AssemblyType.PCL, PropertyChangedWeaver.BeforeRealmWeaver)]
+    [TestFixture(AssemblyType.PCL, PropertyChangedWeaver.AfterRealmWeaver)]
     public class Tests
     {
         #region helpers
@@ -71,6 +71,7 @@ namespace RealmWeaver
             new realm::ModuleWeaver
             {
                 ModuleDefinition = moduleDefinition,
+                AssemblyResolver = moduleDefinition.AssemblyResolver,
                 LogError = s => _errors.Add(s),
                 LogErrorPoint = (s, point) => _errors.Add(s),
                 LogWarningPoint = (s, point) => _warnings.Add(s)
@@ -82,11 +83,28 @@ namespace RealmWeaver
             new propertychanged::ModuleWeaver
             {
                 ModuleDefinition = moduleDefinition,
+                AssemblyResolver = moduleDefinition.AssemblyResolver,
                 LogWarning = s => _warnings.Add(s)
             }.Execute();
         }
 
         #endregion
+
+        public enum AssemblyType
+        {
+            NonPCL,
+            PCL
+        }
+
+        public enum PropertyChangedWeaver
+        {
+            NotUsed,
+            BeforeRealmWeaver,
+            AfterRealmWeaver
+        }
+
+        private readonly AssemblyType _assemblyType;
+        private readonly PropertyChangedWeaver _propertyChangedWeaver;
 
         private Assembly _assembly;
         private string _sourceAssemblyPath;
@@ -95,41 +113,54 @@ namespace RealmWeaver
         private readonly List<string> _warnings = new List<string>();
         private readonly List<string> _errors = new List<string>();
 
-        private readonly WeaverOptions? _weaverOptions;
 
-        public Tests(WeaverOptions weaverOptions)
+        public Tests( AssemblyType assemblyType, PropertyChangedWeaver propertyChangedWeaver)
         {
-            _weaverOptions = weaverOptions;
+            _assemblyType = assemblyType;
+            _propertyChangedWeaver = propertyChangedWeaver;
         }
 
         [OneTimeSetUp]
         public void FixtureSetup()
         {
-            _sourceAssemblyPath = typeof(AssemblyToProcess.AllTypesObject).Assembly.Location;
-            _targetAssemblyPath = _sourceAssemblyPath.Replace(".dll", $".{_weaverOptions}.dll");
+            _sourceAssemblyPath = _assemblyType == AssemblyType.NonPCL ?
+                typeof(AssemblyToProcess.NonPCLModuleLocator).Assembly.Location :
+                typeof(AssemblyToProcess.PCLModuleLocator).Assembly.Location;
+
+            _targetAssemblyPath = _sourceAssemblyPath.Replace(".dll", $".{_assemblyType}_PropertyChangedWeaver{_propertyChangedWeaver}.dll");
 
             var moduleDefinition = ModuleDefinition.ReadModule(_sourceAssemblyPath);
-            (moduleDefinition.AssemblyResolver as DefaultAssemblyResolver).AddSearchDirectory(Path.GetDirectoryName(_sourceAssemblyPath));
 
-            switch (_weaverOptions)
+            var assemblyResolver = (moduleDefinition.AssemblyResolver as DefaultAssemblyResolver);
+            assemblyResolver.AddSearchDirectory(Path.GetDirectoryName(_sourceAssemblyPath));
+
+            if (Environment.OSVersion.Platform == PlatformID.Unix)
             {
-                case WeaverOptions.RealmOnlyNoPropertyChanged:
+                // With Mono, we need the actual reference assemblies that we build against, rather than
+                // the GAC because typeforwarding might cause the layouts to be different.
+                var referenceAssembliesPath = Path.Combine(Path.GetDirectoryName(typeof(object).Assembly.Location), "Facades");
+                assemblyResolver.AddSearchDirectory(referenceAssembliesPath);
+            }
+
+            switch (_propertyChangedWeaver)
+            {
+                case PropertyChangedWeaver.NotUsed:
                     WeaveRealm(moduleDefinition);
                     break;
                 
-                case WeaverOptions.RealmAfterPropertyChanged:
+                case PropertyChangedWeaver.BeforeRealmWeaver:
                     WeavePropertyChanged(moduleDefinition);
                     WeaveRealm(moduleDefinition);
                     break;
 
-                case WeaverOptions.RealmBeforePropertyChanged:
+                case PropertyChangedWeaver.AfterRealmWeaver:
                     WeaveRealm(moduleDefinition);
                     WeavePropertyChanged(moduleDefinition);
                     break;
             }
 
             // we need to change the assembly name because otherwise Mono loads the original assembly
-            moduleDefinition.Assembly.Name.Name += $".{_weaverOptions}";
+            moduleDefinition.Assembly.Name.Name += $".{_assemblyType}_PropertyChangedWeaver{_propertyChangedWeaver}";
 
             moduleDefinition.Write(_targetAssemblyPath);
             _assembly = Assembly.LoadFile(_targetAssemblyPath);
@@ -149,26 +180,38 @@ namespace RealmWeaver
             }
         }
 
-        [TestCase("CharProperty", '0')]
-        [TestCase("ByteProperty", (byte)100)]
-        [TestCase("Int16Property", (short)100)]
-        [TestCase("Int32Property", 100)]
-        [TestCase("Int64Property", 100L)]
-        [TestCase("SingleProperty", 123.123f)]
-        [TestCase("DoubleProperty", 123.123)]
-        [TestCase("BooleanProperty", true)]
-        [TestCase("StringProperty", "str")] 
-        [TestCase("NullableCharProperty", '0')]
-        [TestCase("NullableByteProperty", (byte)100)]
-        [TestCase("NullableInt16Property", (short)100)]
-        [TestCase("NullableInt32Property", 100)]
-        [TestCase("NullableInt64Property", 100L)]
-        [TestCase("NullableSingleProperty", 123.123f)] 
-        [TestCase("NullableDoubleProperty", 123.123)] 
-        [TestCase("NullableBooleanProperty", true)]
-        public void GetValueUnmanagedShouldGetBackingField(string propertyName, object propertyValue)
+        private static readonly object[][] RandomAndDefaultValues =
+        {
+            new object[] {"Char", '0', char.MinValue},
+            new object[] {"Byte", (byte) 100, (byte) 0},
+            new object[] {"Int16", (short) 100, (short) 0},
+            new object[] {"Int32", 100, 0},
+            new object[] {"Int64", 100L, 0L},
+            new object[] {"Single", 123.123f, 0.0f},
+            new object[] {"Double", 123.123, 0.0},
+            new object[] {"Boolean", true, false},
+            new object[] {"String", "str", null},
+            new object[] {"NullableChar", '0', null},
+            new object[] {"NullableByte", (byte) 100, null},
+            new object[] {"NullableInt16", (short) 100, null},
+            new object[] {"NullableInt32", 100, null},
+            new object[] {"NullableInt64", 100L, null},
+            new object[] {"NullableSingle", 123.123f, null},
+            new object[] {"NullableDouble", 123.123, null},
+            new object[] {"NullableBoolean", true, null}
+        };
+
+
+        private static IEnumerable<object[]> RandomValues()
+        {
+            return RandomAndDefaultValues.Select(a => new[] {a[0], a[1]});
+        }
+
+        [TestCaseSource(nameof(RandomValues))]
+        public void GetValueUnmanagedShouldGetBackingField(string typeName, object propertyValue)
         {
             // Arrange
+            var propertyName = typeName + "Property";
             var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.AllTypesObject"));
             SetAutoPropertyBackingFieldValue(o, propertyName, propertyValue);
 
@@ -180,23 +223,7 @@ namespace RealmWeaver
             Assert.That(returnedValue, Is.EqualTo(propertyValue));
         }
 
-        [TestCase("Char", '0')]
-        [TestCase("Byte", (byte)100)]
-        [TestCase("Int16", (short)100)]
-        [TestCase("Int32", 100)]
-        [TestCase("Int64", 100L)]
-        [TestCase("Single", 123.123f)]
-        [TestCase("Double", 123.123)]
-        [TestCase("Boolean", true)]
-        [TestCase("String", "str")] 
-        [TestCase("NullableChar", '0')]
-        [TestCase("NullableByte", (byte)100)]
-        [TestCase("NullableInt16", (short)100)]
-        [TestCase("NullableInt32", 100)]
-        [TestCase("NullableInt64", 100L)]
-        [TestCase("NullableSingle", 123.123f)] 
-        [TestCase("NullableDouble", 123.123)] 
-        [TestCase("NullableBoolean", true)]
+        [TestCaseSource(nameof(RandomValues))]
         public void SetValueUnmanagedShouldSetBackingField(string typeName, object propertyValue)
         {
             // Arrange
@@ -211,23 +238,7 @@ namespace RealmWeaver
             Assert.That(GetAutoPropertyBackingFieldValue(o, propertyName), Is.EqualTo(propertyValue));
         }
 
-        [TestCase("Char", '0')]
-        [TestCase("Byte", (byte)100)]
-        [TestCase("Int16", (short)100)]
-        [TestCase("Int32", 100)]
-        [TestCase("Int64", 100L)]
-        [TestCase("Single", 123.123f)]
-        [TestCase("Double", 123.123)]
-        [TestCase("Boolean", true)]
-        [TestCase("String", "str")] 
-        [TestCase("NullableChar", '0')]
-        [TestCase("NullableByte", (byte)100)]
-        [TestCase("NullableInt16", (short)100)]
-        [TestCase("NullableInt32", 100)]
-        [TestCase("NullableInt64", 100L)]
-        [TestCase("NullableSingle", 123.123f)] 
-        [TestCase("NullableDouble", 123.123)] 
-        [TestCase("NullableBoolean", true)]
+        [TestCaseSource(nameof(RandomValues))]
         public void GetValueManagedShouldGetQueryDatabase(string typeName, object propertyValue)
         {
             // Arrange
@@ -246,23 +257,7 @@ namespace RealmWeaver
             }));
         }
 
-        [TestCase("Char", '0', char.MinValue)]
-        [TestCase("Byte", (byte)100, (byte)0)]
-        [TestCase("Int16", (short)100, (short)0)]
-        [TestCase("Int32", 100, 0)]
-        [TestCase("Int64", 100L, 0L)]
-        [TestCase("Single", 123.123f, 0.0f)]
-        [TestCase("Double", 123.123, 0.0)]
-        [TestCase("Boolean", true, false)]
-        [TestCase("String", "str", null)] 
-        [TestCase("NullableChar", '0', null)]
-        [TestCase("NullableByte", (byte)100, null)]
-        [TestCase("NullableInt16", (short)100, null)]
-        [TestCase("NullableInt32", 100, null)]
-        [TestCase("NullableInt64", 100L, null)]
-        [TestCase("NullableSingle", 123.123f, null)] 
-        [TestCase("NullableDouble", 123.123, null)] 
-        [TestCase("NullableBoolean", true, null)]
+        [TestCaseSource(nameof(RandomAndDefaultValues))]
         public void SetValueManagedShouldUpdateDatabase(string typeName, object propertyValue, object defaultPropertyValue)
         {
             // Arrange
@@ -282,23 +277,7 @@ namespace RealmWeaver
             Assert.That(GetAutoPropertyBackingFieldValue(o, propertyName), Is.EqualTo(defaultPropertyValue));
         }
 
-        [TestCase("Char", '0', char.MinValue)]
-        [TestCase("Byte", (byte)100, (byte)0)]
-        [TestCase("Int16", (short)100, (short)0)]
-        [TestCase("Int32", 100, 0)]
-        [TestCase("Int64", 100L, 0L)]
-        [TestCase("Single", 123.123f, 0.0f)]
-        [TestCase("Double", 123.123, 0.0)]
-        [TestCase("Boolean", true, false)]
-        [TestCase("String", "str", null)]
-        [TestCase("NullableChar", '0', null)]
-        [TestCase("NullableByte", (byte)100, null)]
-        [TestCase("NullableInt16", (short)100, null)]
-        [TestCase("NullableInt32", 100, null)]
-        [TestCase("NullableInt64", 100L, null)]
-        [TestCase("NullableSingle", 123.123f, null)]
-        [TestCase("NullableDouble", 123.123, null)]
-        [TestCase("NullableBoolean", true, null)]
+        [TestCaseSource(nameof(RandomAndDefaultValues))]
         public void SetValueManagedShouldRaisePropertyChanged(string typeName, object propertyValue, object defaultPropertyValue)
         {
             // Arrange
@@ -389,7 +368,7 @@ namespace RealmWeaver
             }));
         }
 
-        [Test, Ignore("IList property tests are still missing")]
+        [Test]
         public void SetManyRelationship()
         {
             // Arrange
@@ -398,13 +377,7 @@ namespace RealmWeaver
             var pn2 = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.PhoneNumber"));
             o.IsManaged = true;
 
-            // Act
-            IList<PhoneNumber> nums = o.PhoneNumbers;
-            nums.Add(pn1);
-            nums.Add(pn2);
-
-            // Assert
-            // (TODO)
+            Assert.Inconclusive("IList property tests still missing");
         }
 
         [Test]

@@ -45,15 +45,15 @@
     <Compile Include="ClassWithStaticProperty.cs" />
     <Compile Include="FaultyClasses.cs" />
     <Compile Include="Inheritance.cs" />
+    <Compile Include="NonPCLModuleLocator.cs" />
     <Compile Include="Person.cs" />
     <Compile Include="IPersonTest.cs" />
     <Compile Include="RemappedClass.cs" />
-    <Compile Include="Sandbox.cs" />
     <Compile Include="TestObjects.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Realm.FakeForWeaverTests\Realm.FakeForWeaverTests.csproj">
-      <Project>{E6D5D6D7-4AF6-46E0-9C6A-EFB120D7F01D}</Project>
+      <Project>{a80a308a-3aff-43f8-9186-383aaf148ca4}</Project>
       <Name>Realm.FakeForWeaverTests</Name>
     </ProjectReference>
   </ItemGroup>

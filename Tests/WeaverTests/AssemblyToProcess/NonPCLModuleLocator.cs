@@ -15,20 +15,11 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AssemblyToProcess
 {
-    class Sandbox
-    {
-        public string AutoStringProperty { get; set; }
-
-        public string ManualStringProperty { get { return manualStringProperty; } set { manualStringProperty = value; } }
-        private string manualStringProperty;
-    }
+    /// <summary>
+    /// This class serves as nothing but a way to locate the assembly in the weaver test.
+    /// </summary>
+    public class NonPCLModuleLocator { }
 }
