@@ -2381,3 +2381,15 @@ linklist_cs.cpp
 
 marshalling.cpp
 - had to add #include <iostream> for cerr
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#719 - Improve error messages for LINQ Member Expressions
+
+SimpleLINQTests.cs
+- IntegerConversionTriggersError added to see the message
+
+
+RealmResultsVisitor.cs
+- VisitBinary added Left and Right expression dumps into exception message.
+
