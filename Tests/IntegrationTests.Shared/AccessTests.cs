@@ -136,5 +136,20 @@ namespace IntegrationTests.Shared
                 var illegalAccess = p1.FirstName; 
             });
         }
+
+        [Test]
+        public void AccessingObjectInClosedRealmShouldThrow()
+        {
+            // Arrange
+            Person p1 = null;
+            _realm.Write(() => { p1 = _realm.CreateObject<Person>(); });
+            _realm.Close();
+
+            // Act and assert
+            Assert.Throws<RealmClosedException>(() =>
+            {
+                var illegalAccess = p1.FirstName;
+            });
+        }
     }
 }
