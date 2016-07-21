@@ -7,7 +7,7 @@ Uses core 1.4.0
 
 
 0.77.0 (2016-07-18)
-----------------------------
+-------------------
 
 ### Breaking Changes
 * Sort order change in previous version was reverted.
@@ -17,7 +17,6 @@ Uses core 1.4.0
 * The Realm class received overloads for `Realm.CreateObject` and `Realm.All` that accept string arguments instead of generic parameters, enabling use of the `dynamic` keyword with objects whose exact type is not known at compile time. (#646)
 * _To Many_ relationships can now be declared with an `IList<DestClass>` rather than requiring `RealmList<DestClass>`. This is **significantly faster** than using `RealmList` due to caching the list.   (Issue #287)
 * Creating standalone objects with lists of related objects is now possible. Passing such an object into `Realm.Manage` will cause the entire object graph from that object down to become managed.
-
 
 ### Minor Changes
 * Fixed a crash on iOS when creating many short-lived realms very rapidly in parallel (Issue #653)
