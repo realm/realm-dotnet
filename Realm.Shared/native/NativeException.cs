@@ -29,17 +29,17 @@ namespace Realms
         public sbyte* messageBytes;
         public IntPtr messageLength;
 
-        internal Exception Convert(Func<NativeException, Exception> overrider)
+        internal Exception Convert(Func<RealmExceptionCodes, Exception> overrider)
         {
             var message = (messageLength != IntPtr.Zero) ?
                 new string(messageBytes, 0 /* start offset */, (int)messageLength, Encoding.UTF8)
                 : "No further information available";
             NativeCommon.delete_pointer(messageBytes);
 
-            return overrider?.Invoke(this) ?? RealmException.Create(type, message);
+            return overrider?.Invoke(type) ?? RealmException.Create(type, message);
         }
 
-        internal void ThrowIfNecessary(Func<NativeException, Exception> overrider = null)
+        internal void ThrowIfNecessary(Func<RealmExceptionCodes, Exception> overrider = null)
         {
             if (type == RealmExceptionCodes.NoError)
                 return;
