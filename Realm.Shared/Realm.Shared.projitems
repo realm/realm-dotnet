@@ -70,6 +70,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Dynamic\MetaRealmObject.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Dynamic\MetaRealmList.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Schema\PropertyTypeEx.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmClosedException.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)weaving\" />
