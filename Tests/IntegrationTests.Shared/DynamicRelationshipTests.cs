@@ -28,6 +28,7 @@ using System.Diagnostics;
 // unlike the Cocoa definitions, we use Pascal casing for properties
 namespace IntegrationTests.Shared
 {
+#if ENABLE_INTERNAL_NON_PCL_TESTS    
     [Preserve(AllMembers = true)]
     public enum DynamicTestObjectType
     {
@@ -298,4 +299,5 @@ namespace IntegrationTests.Shared
             Assert.Throws<IndexOutOfRangeException>(() => scratch = tim.Dogs[99]);
         }
     }
+#endif
 }
