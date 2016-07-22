@@ -29,7 +29,7 @@ namespace Realms
         public sbyte* messageBytes;
         public IntPtr messageLength;
 
-        internal Exception Convert(Func<RealmExceptionCodes, Exception> overrider)
+        internal Exception Convert(Func<RealmExceptionCodes, Exception> overrider = null)
         {
             var message = (messageLength != IntPtr.Zero) ?
                 new string(messageBytes, 0 /* start offset */, (int)messageLength, Encoding.UTF8)
