@@ -178,7 +178,7 @@ public class ModuleWeaver
         var listTypeDefinition = _corLib.MainModule.GetType("System.Collections.Generic.List`1");
         if (listTypeDefinition == null)
         {
-            System_IList = _realmAssembly.MainModule.ImportReference(typeof (System.Collections.Generic.IList<>));
+            System_IList = _realmAssembly.MainModule.ImportReference(typeof (System.Collections.Generic.List<>));
         }
         else
         {
