@@ -645,6 +645,29 @@ namespace Realms
             return new RealmResults<dynamic>(this, schema, true);
         }
 
+        #region ById
+        /// <summary>
+        /// Fast lookup of an object from a class which has an ObjectId property.
+        /// </summary>
+        /// <typeparam name="T">The Type T must not only be a RealmObject but also have been processd by the Fody weaver, so it has persistent properties.</typeparam>
+        /// <param name="id">Id to be matched exactly, same as an == search.</param>
+        /// <returns>Null or an object matdhing the id</returns>
+        public RealmResults<T> ById<T>(string id) where T : RealmObject
+        {
+            var schema = SchemaIfInRealm<T>();
+            var columnIndex = ObjectIdIndex(schema);
+
+            NativeException nativeException;
+            var rowPtr = NativeMethods.string_equal(this, columnIndex, id, (IntPtr)id.Length, out nativeException);
+            nativeException.ThrowIfNecessary();
+            var rowHandle = CreateRowHandle(rowPtr, SharedRealmHandle);
+
+            result._Manage(this, rowHandle, metadata);
+            return result;
+            return null;
+        }
+        #endregion ById
+
         /// <summary>
         /// Removes a persistent object from this realm, effectively deleting it.
         /// </summary>
