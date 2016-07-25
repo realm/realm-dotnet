@@ -125,6 +125,10 @@
     <Reference Include="System" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Core" />
+    <Reference Include="DotNetCross.Memory.Unsafe, Version=0.2.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\..\packages\DotNetCross.Memory.Unsafe.0.2.2\lib\dotnet\DotNetCross.Memory.Unsafe.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Xamarin.iOS" />
     <Reference Include="Xamarin.Forms.Platform.iOS">
       <HintPath>..\..\packages\Xamarin.Forms.2.0.1.6505\lib\Xamarin.iOS10\Xamarin.Forms.Platform.iOS.dll</HintPath>
