@@ -2393,3 +2393,17 @@ SimpleLINQTests.cs
 RealmResultsVisitor.cs
 - VisitBinary added Left and Right expression dumps into exception message.
 
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#402 Retrieve Optimally by ObjectId
+
+ObjectIdTests.cs
+- added
+
+Realm.cs
+- ById added (with overloads by types)
+- All<T> refactored out SchemaIfInRealm
+
+
+row_for_string_id
