@@ -180,7 +180,6 @@ public class ModuleWeaver
         {
             var collectionsAssembly = AssemblyResolver.Resolve("System.Collections");
             listTypeDefinition = collectionsAssembly.MainModule.GetType("System.Collections.Generic.List`1");
-
         }
         System_IList = ModuleDefinition.ImportReference(listTypeDefinition);
 
