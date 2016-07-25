@@ -391,4 +391,23 @@ REALM_EXPORT Results* query_create_sorted_results(Query * query_ptr, SharedRealm
     });
 }
 
+
+#pragma mark  ObjectId Searches
+
+REALM_EXPORT Row* row_for_string_id(size_t columnIndex, uint16_t* value, size_t value_len, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+
+        Utf16StringAccessor str(value, value_len);
+        query_ptr->equal(columnIndex, str);
+
+        const size_t row_ndx = query_ptr->find(0);
+        auto ret =  (Row*)nullptr;;
+        if (row_ndx != not_found)
+            ret = new Row((*query_ptr->get_table())[row_ndx]);
+        delete(query_ptr);
+        return ret;
+    });
+}
+
 }   // extern "C"
