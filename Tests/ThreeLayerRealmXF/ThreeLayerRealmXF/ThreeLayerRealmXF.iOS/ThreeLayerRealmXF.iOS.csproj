@@ -139,15 +139,26 @@
       <HintPath>..\..\packages\Xamarin.Forms.2.0.1.6505\lib\Xamarin.iOS10\Xamarin.Forms.Platform.dll</HintPath>
     </Reference>
   </ItemGroup>
-  <ItemGroup Condition=" '$(Platform)' == 'iPhone' ">
+  <ItemGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhone' ">
+    <Reference Include="Realm">
+      <HintPath>..\..\..\..\Realm.XamarinIOS\bin\iPhone\Debug\Realm.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhoneSimulator' ">
+    <Reference Include="Realm">
+      <HintPath>..\..\..\..\Realm.XamarinIOS\bin\iPhoneSimulator\Debug\Realm.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhone' ">
     <Reference Include="Realm">
       <HintPath>..\..\..\..\Realm.XamarinIOS\bin\iPhone\Release\Realm.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
-  <ItemGroup Condition=" '$(Platform)' == 'iPhoneSimulator' ">
+  <ItemGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhoneSimulator' ">
     <Reference Include="Realm">
-      <HintPath>..\..\..\..\Realm.XamarinIOS\bin\iPhone\Release\Realm.dll</HintPath>
+      <HintPath>..\..\..\..\Realm.XamarinIOS\bin\iPhoneSimulator\Release\Realm.dll</HintPath>
     </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
