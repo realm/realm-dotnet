@@ -46,7 +46,13 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-  <ItemGroup>
+  <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <Reference Include="Realm">
+      <HintPath>..\..\..\Realm.PCL\bin\Debug\Realm.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>  
+  <ItemGroup Condition=" '$(Configuration)' == 'Release' ">
     <Reference Include="Realm">
       <HintPath>..\..\..\Realm.PCL\bin\Release\Realm.dll</HintPath>
       <Private>False</Private>
