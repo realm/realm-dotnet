@@ -134,12 +134,22 @@ namespace RealmWeaver
             var assemblyResolver = (moduleDefinition.AssemblyResolver as DefaultAssemblyResolver);
             assemblyResolver.AddSearchDirectory(Path.GetDirectoryName(_sourceAssemblyPath));
 
-            if (Environment.OSVersion.Platform == PlatformID.Unix)
+            if (_assemblyType == AssemblyType.PCL)
             {
-                // With Mono, we need the actual reference assemblies that we build against, rather than
-                // the GAC because typeforwarding might cause the layouts to be different.
-                var referenceAssembliesPath = Path.Combine(Path.GetDirectoryName(typeof(object).Assembly.Location), "Facades");
-                assemblyResolver.AddSearchDirectory(referenceAssembliesPath);
+                if (Environment.OSVersion.Platform == PlatformID.Unix)
+                {
+                    // With Mono, we need the actual reference assemblies that we build against, rather than
+                    // the GAC because typeforwarding might cause the layouts to be different.
+                    var referenceAssembliesPath = Path.Combine(
+                        Path.GetDirectoryName(typeof (object).Assembly.Location), "Facades");
+                    assemblyResolver.AddSearchDirectory(referenceAssembliesPath);
+                }
+                else
+                {
+                    var pfPath = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+                    assemblyResolver.AddSearchDirectory(Path.Combine(pfPath,
+                        "Reference Assemblies\\Microsoft\\Framework\\.NETPortable\\v4.5\\Profile\\Profile111"));
+                }
             }
 
             switch (_propertyChangedWeaver)

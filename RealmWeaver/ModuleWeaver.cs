@@ -126,7 +126,7 @@ public class ModuleWeaver
     public void Execute()
     {
         // UNCOMMENT THIS DEBUGGER LAUNCH TO BE ABLE TO RUN A SEPARATE VS INSTANCE TO DEBUG WEAVING WHILST BUILDING
-        // Debugger.Launch();  
+        //Debugger.Launch();
 
         Debug.WriteLine("Weaving file: " + ModuleDefinition.FullyQualifiedName);
 
@@ -179,8 +179,8 @@ public class ModuleWeaver
         if (listTypeDefinition == null)
         {
             var collectionsAssembly = AssemblyResolver.Resolve("System.Collections");
-            listTypeDefinition = collectionsAssembly.MainModule.ExportedTypes.FirstOrDefault(x => x.FullName == "System.Collections.Generic.List`1").Resolve();
-            
+            listTypeDefinition = collectionsAssembly.MainModule.GetType("System.Collections.Generic.List`1");
+
         }
         System_IList = ModuleDefinition.ImportReference(listTypeDefinition);
 
