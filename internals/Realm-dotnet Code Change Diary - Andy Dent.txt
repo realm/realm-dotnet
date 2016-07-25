@@ -2393,3 +2393,11 @@ SimpleLINQTests.cs
 RealmResultsVisitor.cs
 - VisitBinary added Left and Right expression dumps into exception message.
 
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+£715 Fix Weaving error
+
+PurePCLBuildableTest.csproj
+- added to Realm.sln to make it easier to build and tests PCL errors
+
+ModuleWeaver.csproj
+- Execute - import System_IList directly from _realmAssembly.MainModule if fails to get type from _corLib

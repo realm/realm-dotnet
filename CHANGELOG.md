@@ -1,6 +1,7 @@
-0.77.1 (in progress)
+0.77.1 (2016-07-25)
 -------------------
 ### Minor Changes
+* Fixed a bug weaving pure PCL projects, released in v0.77.0 (#715)
 * Exception messages caused by using incompatible arguments in LINQ now include the offending argument (#719)
 
 Uses core 1.4.0

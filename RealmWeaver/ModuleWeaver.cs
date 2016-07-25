@@ -130,7 +130,7 @@ public class ModuleWeaver
 
         Debug.WriteLine("Weaving file: " + ModuleDefinition.FullyQualifiedName);
 
-        var submitAnalytics = System.Threading.Tasks.Task.Factory.StartNew (() => 
+        var submitAnalytics = System.Threading.Tasks.Task.Factory.StartNew(() =>
         {
             var analytics = new RealmWeaver.Analytics(ModuleDefinition);
             try
@@ -178,11 +178,12 @@ public class ModuleWeaver
         var listTypeDefinition = _corLib.MainModule.GetType("System.Collections.Generic.List`1");
         if (listTypeDefinition == null)
         {
-            var collectionsAssembly = AssemblyResolver.Resolve("System.Collections");
-            listTypeDefinition = collectionsAssembly.MainModule.ExportedTypes.FirstOrDefault(x => x.FullName == "System.Collections.Generic.List`1").Resolve();
-            
+            System_IList = _realmAssembly.MainModule.ImportReference(typeof (System.Collections.Generic.List<>));
         }
-        System_IList = ModuleDefinition.ImportReference(listTypeDefinition);
+        else
+        {
+            System_IList = ModuleDefinition.ImportReference(listTypeDefinition);
+        }
 
         var systemAssembly = AssemblyResolver.Resolve("System");
         var systemObjectModelAssembly = AssemblyResolver.Resolve("System.ObjectModel");
