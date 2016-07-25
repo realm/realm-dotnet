@@ -9,6 +9,7 @@ Uses core 1.4.0
 
 0.77.0 (2016-07-18)
 -------------------
+**Broken Version** - will not build PCL projects
 
 ### Breaking Changes
 * Sort order change in previous version was reverted.
