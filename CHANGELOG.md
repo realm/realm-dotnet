@@ -3,6 +3,7 @@
 ### Minor Changes
 * Fixed a bug weaving pure PCL projects, released in v0.77.0 (#715)
 * Exception messages caused by using incompatible arguments in LINQ now include the offending argument (#719)
+* PCL projects using ToNotifyCollectionChanged may have crashed due to mismatch between PCL signatures and platform builds.
 
 Uses core 1.4.0
 
