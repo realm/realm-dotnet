@@ -27,6 +27,7 @@
     <WarningLevel>4</WarningLevel>
     <AndroidLinkMode>None</AndroidLinkMode>
     <ConsolePause>false</ConsolePause>
+    <AndroidSupportedAbis>arm64-v8a;armeabi-v7a;x86;x86_64</AndroidSupportedAbis>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>full</DebugType>
@@ -36,6 +37,7 @@
     <WarningLevel>4</WarningLevel>
     <AndroidUseSharedRuntime>false</AndroidUseSharedRuntime>
     <ConsolePause>false</ConsolePause>
+    <AndroidSupportedAbis>armeabi-v7a;x86;arm64-v8a;x86_64</AndroidSupportedAbis>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -122,4 +124,32 @@
   <Import Project="..\packages\Xamarin.Android.Support.Vector.Drawable.23.3.0\build\Xamarin.Android.Support.Vector.Drawable.targets" Condition="Exists('..\packages\Xamarin.Android.Support.Vector.Drawable.23.3.0\build\Xamarin.Android.Support.Vector.Drawable.targets')" />
   <Import Project="..\packages\Realm.0.76.1\build\Realm.targets" Condition="Exists('..\packages\Realm.0.76.1\build\Realm.targets')" />
   <Import Project="..\packages\Xamarin.Forms.2.3.0.107\build\portable-win+net45+wp80+win81+wpa81+MonoAndroid10+MonoTouch10+Xamarin.iOS10\Xamarin.Forms.targets" Condition="Exists('..\packages\Xamarin.Forms.2.3.0.107\build\portable-win+net45+wp80+win81+wpa81+MonoAndroid10+MonoTouch10+Xamarin.iOS10\Xamarin.Forms.targets')" />
+  <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <AndroidNativeLibrary Include="..\..\..\wrappers\build\Debug-android\armeabi-v7a\libwrappers.so">
+      <Link>wrappers\armeabi-v7\libwrappers.so</Link>
+    </AndroidNativeLibrary>
+    <AndroidNativeLibrary Include="..\..\..\wrappers\build\Debug-android\x86\libwrappers.so">
+      <Link>wrappers\x86\libwrappers.so</Link>
+    </AndroidNativeLibrary>
+    <AndroidNativeLibrary Include="..\..\..\wrappers\build\Debug-android\x86_64\libwrappers.so">
+      <Link>wrappers\x86_64\libwrappers.so</Link>
+    </AndroidNativeLibrary>
+    <AndroidNativeLibrary Include="..\..\..\wrappers\build\Debug-android\arm64-v8a\libwrappers.so">
+      <Link>wrappers\arm64-v8a\libwrappers.so</Link>
+    </AndroidNativeLibrary>
+  </ItemGroup>
+  <ItemGroup Condition=" '$(Configuration)' == 'Release' ">
+    <AndroidNativeLibrary Include="..\..\..\wrappers\build\Release-android\armeabi-v7a\libwrappers.so">
+      <Link>wrappers\armeabi-v7\libwrappers.so</Link>
+    </AndroidNativeLibrary>
+    <AndroidNativeLibrary Include="..\..\..\wrappers\build\Release-android\x86\libwrappers.so">
+      <Link>wrappers\x86\libwrappers.so</Link>
+    </AndroidNativeLibrary>
+    <AndroidNativeLibrary Include="..\..\..\wrappers\build\Release-android\x86_64\libwrappers.so">
+      <Link>wrappers\x86_64\libwrappers.so</Link>
+    </AndroidNativeLibrary>
+    <AndroidNativeLibrary Include="..\..\..\wrappers\build\Release-android\arm64-v8a\libwrappers.so">
+      <Link>wrappers\arm64-v8a\libwrappers.so</Link>
+    </AndroidNativeLibrary>
+  </ItemGroup>
 </Project>
