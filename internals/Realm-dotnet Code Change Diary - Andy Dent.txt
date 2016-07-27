@@ -2416,4 +2416,22 @@ QuickJournalLocal.sln
 - cloned entire QuickJournal example and built local copy using relative links to it and 
   main Realm projects so can build and diagnose PCL errors without building nuget
   
-  
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Add PCL built schemas into unit tests
+
+ObjectIntegrationTests.cs
+- CreateObjectFromPCLTest added
+
+InstanceTests.cs
+- GetInstanceFromPCLTest added
+
+IntegrationTests.XamarinAndroid
+IntegrationTests.XamarinIOS  
+- added reference to PurePCLBuildableTest
+
+PurePCLBuildableTest/Class1.cs
+- renamed to ObjectInPCL
+- added properties of each type
+
+PurePCLBuildableTest
+- TestBuildingRealmFromPCL.MakeARealmWithPCL added

@@ -62,6 +62,16 @@ namespace IntegrationTests
             // Arrange, act and "assert" that no exception is thrown, using default location + unique name
             Realm.GetInstance(specialRealmName).Close();
         }
+        
+        [Test]
+        public void GetInstanceFromPCLTest()
+        {
+            // Arrange, act and "assert" that no exception is thrown, using default location + unique name
+            using (var realmFromPCL = PurePCLBuildableTest.TestBuildingRealmFromPCL.MakeARealmWithPCL()) {
+                Assert.IsNotNull(realmFromPCL);
+                Assert.That(realmFromPCL.IsClosed, Is.False);
+            }
+        }
 
         [Test]
         public void DeleteRealmWorksIfClosed()
