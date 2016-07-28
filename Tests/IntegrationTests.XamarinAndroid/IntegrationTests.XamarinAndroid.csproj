@@ -110,6 +110,10 @@
       <Project>{2379D669-4F4B-4FF6-AF8A-49FEA981EFC3}</Project>
       <Name>Realm.XamarinAndroid</Name>
     </ProjectReference>
+    <ProjectReference Include="..\PurePCLBuildableTest\PurePCLBuildableTest.csproj">
+      <Project>{C33439AD-387D-4F86-9DB8-9D4B48EC6750}</Project>
+      <Name>PurePCLBuildableTest</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <AndroidAsset Include="..\IntegrationTests.Shared\ForMigrationsToCopyAndMigrate.realm">

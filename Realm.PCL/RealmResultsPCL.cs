@@ -31,7 +31,7 @@ namespace Realms
     /// Iterable collection of one kind of RealmObject resulting from Realm.All or from a LINQ query expression.
     /// </summary>
     /// <typeparam name="T">Type of the RealmObject which is being returned.</typeparam>
-    public class RealmResults<T> : IQueryable<T>
+    public class RealmResults<T> : IOrderedQueryable<T>
     {
         /// <summary>
         /// A <see cref="ChangeSet" /> describes the changes inside a <see cref="RealmResults{T}" /> since the last time the notification callback was invoked.
