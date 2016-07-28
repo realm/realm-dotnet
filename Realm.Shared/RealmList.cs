@@ -26,10 +26,14 @@ using System.Dynamic;
 namespace Realms
 {
     /// <summary>
-    /// Used to declare to-many relationships and as the return type when you access such a relationship.
+    /// Return type for a managed object property when you declare a to-many relationships with IList. 
     /// </summary>
     /// <remarks>Relationships are ordered and preserve their order, hence the ability to use ordinal 
     /// indexes in calls such as Insert and RemoveAt.
+    /// </remarks>
+    /// <remarks>Although originally used in declarations, whilst that still compiles, 
+    /// it is <b>not</b> recommended as the IList approach both supports standalone objects and is 
+    /// implemented with a faster binding.
     /// </remarks>
     /// 
     /// <typeparam name="T">Type of the RealmObject which is the target of the relationship.</typeparam>
@@ -198,7 +202,8 @@ namespace Realms
         /// <summary>
         /// Copies all the elements to a portion of an array.
         /// </summary>
-        /// <param name="index">Ordinal zero-based starting index of the <b>destination</b> of thef related items being copied.</param>
+        /// <param name="array">Preallocated destination into which we copy.</param>
+        /// <param name="arrayIndex">Ordinal zero-based starting index of the <b>destination</b> of the related items being copied.</param>
         /// <exception cref="ArgumentNullException">Thrown if array is null.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if arrayIndex is less than 0.</exception>
         /// <exception cref="ArgumentException">Thrown if there is not enough room in array from arrayIndex onward.</exception>
