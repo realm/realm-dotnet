@@ -26,7 +26,7 @@ using System.Dynamic;
 namespace Realms
 {
     /// <summary>
-    /// Return type for a managed object property when you declare a to-many relationships with IList. 
+    /// Return type for a managed object property when you declare a to-many relationship with IList. 
     /// </summary>
     /// <remarks>Relationships are ordered and preserve their order, hence the ability to use ordinal 
     /// indexes in calls such as Insert and RemoveAt.
