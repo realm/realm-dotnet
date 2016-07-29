@@ -2393,7 +2393,48 @@ SimpleLINQTests.cs
 RealmResultsVisitor.cs
 - VisitBinary added Left and Right expression dumps into exception message.
 
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#715 Fix Weaving error
 
+PurePCLBuildableTest.csproj
+- added to Realm.sln to make it easier to build and tests PCL errors
+
+ModuleWeaver.csproj
+- Execute - import System_IList directly from _realmAssembly.MainModule if fails to get type from _corLib
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Fix signature mismatch in PCL ToNotifyCollectionChanged
+
+RealmResultsPCL.cs
+- changed RealmResults to implement IOrderedQueryable<T> instead of IQueryable<T>
+
+RealmResultsCollectionChanged.cs
+- replace RealmResults with IOrderedQueryable in ToNotifyCollectionChanged signatures
+
+QuickJournalLocal.sln
+- cloned entire QuickJournal example and built local copy using relative links to it and 
+  main Realm projects so can build and diagnose PCL errors without building nuget
+  
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Add PCL built schemas into unit tests
+
+ObjectIntegrationTests.cs
+- CreateObjectFromPCLTest added
+
+InstanceTests.cs
+- GetInstanceFromPCLTest added
+
+IntegrationTests.XamarinAndroid
+IntegrationTests.XamarinIOS  
+- added reference to PurePCLBuildableTest
+
+PurePCLBuildableTest/Class1.cs
+- renamed to ObjectInPCL
+- added properties of each type
+
+PurePCLBuildableTest
+- TestBuildingRealmFromPCL.MakeARealmWithPCL added
 
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #402 Retrieve Optimally by ObjectId

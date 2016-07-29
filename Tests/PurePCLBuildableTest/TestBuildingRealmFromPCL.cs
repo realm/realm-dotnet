@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////////////////////////
+﻿////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -16,18 +16,22 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System.Reflection;
+using System;
+using Realms;
 
-[assembly: AssemblyDescription("Realm is a mobile database: a replacement for SQLite")]
-[assembly: AssemblyCopyright("Copyright © 2016 Realm")]
-[assembly: AssemblyCompany("Realm Inc.")]
-[assembly: AssemblyProduct("Realm C#")]
+namespace PurePCLBuildableTest
+{
+    public static class TestBuildingRealmFromPCL
+    {
+        public static Realm MakeARealmWithPCL()
+        {
+            var conf = new RealmConfiguration("ThisIsDeclaredInPCL.realm");
+            conf.ObjectClasses = new [] {typeof(ObjectInPCL)};  // only this class in the Realm
+            Realm.DeleteRealm(conf);
+            var ret = Realm.GetInstance(conf);
+            ret.Write(() => ret.CreateObject<ObjectInPCL>());
+            return ret;
+        }
+    }
+}
 
-[assembly: AssemblyVersion("0.77.1.0")]
-[assembly: AssemblyFileVersion("0.77.1.0")]
-
-#if DEBUG
-[assembly: AssemblyConfiguration("Debug")]
-#else
-[assembly: AssemblyConfiguration("Release")]
-#endif

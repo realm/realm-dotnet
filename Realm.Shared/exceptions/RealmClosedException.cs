@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////////////////////////
+﻿////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -16,18 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System.Reflection;
+namespace Realms
+{
+    public class RealmClosedException : RealmException
+    {
+        public RealmClosedException(string message) : base(message)
+        {
+        }
+    }
+}
 
-[assembly: AssemblyDescription("Realm is a mobile database: a replacement for SQLite")]
-[assembly: AssemblyCopyright("Copyright © 2016 Realm")]
-[assembly: AssemblyCompany("Realm Inc.")]
-[assembly: AssemblyProduct("Realm C#")]
-
-[assembly: AssemblyVersion("0.77.1.0")]
-[assembly: AssemblyFileVersion("0.77.1.0")]
-
-#if DEBUG
-[assembly: AssemblyConfiguration("Debug")]
-#else
-[assembly: AssemblyConfiguration("Release")]
-#endif
