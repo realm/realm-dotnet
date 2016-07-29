@@ -417,11 +417,25 @@ namespace Realms
             return result;
         }
 
-        internal RealmObject MakeObjectForRow(string className, RowHandle rowHandle)
+        internal RealmObject MakeObjectForRow(RealmObject.Metadata metadata, IntPtr rowPtr)
+        {
+            RealmObject ret = metadata.Helper.CreateInstance();
+            ret._Manage(this, CreateRowHandle(rowPtr, SharedRealmHandle), metadata);
+            return ret;
+        }
+
+        internal RealmObject MakeObjectForRow(string className, IntPtr rowPtr)
+        {
+            return MakeObjectForRow(Metadata[className], rowPtr);
+        }
+
+
+        // extra version retained for callers which already have a RowHandle
+        internal RealmObject MakeObjectForRow(string className, RowHandle row)
         {
             var metadata = Metadata[className];
             RealmObject ret = metadata.Helper.CreateInstance();
-            ret._Manage(this, rowHandle, metadata);
+            ret._Manage(this, row, metadata);
             return ret;
         }
 

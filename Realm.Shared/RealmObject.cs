@@ -264,8 +264,7 @@ namespace Realms
             Schema.Property property;
             _metadata.Schema.TryFindProperty(propertyName, out property);
             var objectType = property.ObjectType;
-
-            return (T)_realm.MakeObjectForRow(objectType, Realm.CreateRowHandle(linkedRowPtr, _realm.SharedRealmHandle));
+            return (T)_realm.MakeObjectForRow(objectType, linkedRowPtr);
         }
 
         protected byte[] GetByteArrayValue(string propertyName)

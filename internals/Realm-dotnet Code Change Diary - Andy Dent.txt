@@ -2435,3 +2435,31 @@ PurePCLBuildableTest/Class1.cs
 
 PurePCLBuildableTest
 - TestBuildingRealmFromPCL.MakeARealmWithPCL added
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Refactoring MakeObject logic to assist ObjectID work and reduce lookups
+
+Realm.cs
+- MakeObjectForRow overload added to take a RealmObject.Metadata instead of doing lookup, and simple rowPtr
+- MakeObjectForRow original taking string, changed to take rowPtr for second arg and forward to new overload
+
+RealmList.cs
+- added field _targetMetadata
+- this[int index]
+  - init _targetMetadata if null
+  - use new MakeObjectForRow
+
+RealmObjectOps.cs
+-  GetObjectValue<T>(string propertyName) pass only rowPtr to MakeObjectForRow
+
+RealmObject.cs
+-  GetObjectValue<T>(string propertyName) pass only rowPtr to MakeObjectForRow
+
+RealmResultsEnumerator.cs
+- MoveNext
+  - quicker check for failure knowing a null rowPtr returned
+
+
+RealmResultsVisitor.cs
+- VisitMethodCall    
+  - quicker check for failure knowing a null rowPtr returned

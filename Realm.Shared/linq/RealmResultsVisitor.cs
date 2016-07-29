@@ -159,43 +159,38 @@ namespace Realms
                 if (m.Method.Name == "Any")
                 {
                     RecurseToWhereOrRunLambda(m);
-                    var rowPtr = _coreQueryHandle.FindDirect(IntPtr.Zero);
-                    var firstRow = Realm.CreateRowHandle(rowPtr, _realm.SharedRealmHandle);
-                    bool foundAny = !firstRow.IsInvalid;
+                    bool foundAny = _coreQueryHandle.FindDirect(IntPtr.Zero) != IntPtr.Zero;
                     return Expression.Constant(foundAny);
                 }
                 if (m.Method.Name == "First")
                 {
                     RecurseToWhereOrRunLambda(m);  
-                    RowHandle firstRow = null;
+                    IntPtr firstRowPtr = IntPtr.Zero;
                     if (_optionalSortOrderHandle == null)
                     {
-                        var rowPtr = _coreQueryHandle.FindDirect(IntPtr.Zero);
-                        firstRow = Realm.CreateRowHandle(rowPtr, _realm.SharedRealmHandle);
+                        firstRowPtr = _coreQueryHandle.FindDirect(IntPtr.Zero);
                     }
                     else 
                     {
                         using (ResultsHandle rh = _realm.MakeResultsForQuery(_schema, _coreQueryHandle, _optionalSortOrderHandle)) 
                         {
-                            var rowPtr = rh.GetRow(0);
-                            firstRow = Realm.CreateRowHandle(rowPtr, _realm.SharedRealmHandle);
+                            firstRowPtr = rh.GetRow(0);
                         }
                     }
-                    if (firstRow == null || firstRow.IsInvalid)
+                    if (firstRowPtr == IntPtr.Zero)
                         throw new InvalidOperationException("Sequence contains no matching element");
-                    return Expression.Constant(_realm.MakeObjectForRow(_schema.Name, firstRow));
+                    return Expression.Constant(_realm.MakeObjectForRow(_schema.Name, firstRowPtr));
                 }
                 if (m.Method.Name == "Single")  // same as unsorted First with extra checks
                 {
                     RecurseToWhereOrRunLambda(m);  
-                    var rowPtr = _coreQueryHandle.FindDirect(IntPtr.Zero);
-                    var firstRow = Realm.CreateRowHandle(rowPtr, _realm.SharedRealmHandle);
-                    if (firstRow.IsInvalid)
+                    var firstRowPtr = _coreQueryHandle.FindDirect(IntPtr.Zero);
+                    if (firstRowPtr == IntPtr.Zero)
                         throw new InvalidOperationException("Sequence contains no matching element");
+                    var firstRow = Realm.CreateRowHandle(firstRowPtr, _realm.SharedRealmHandle);
                     IntPtr nextIndex = (IntPtr)(firstRow.RowIndex+1);
                     var nextRowPtr = _coreQueryHandle.FindDirect(nextIndex);
-                    var nextRow = Realm.CreateRowHandle(nextRowPtr, _realm.SharedRealmHandle);
-                    if (!nextRow.IsInvalid)
+                    if (nextRowPtr != IntPtr.Zero)
                         throw new InvalidOperationException("Sequence contains more than one matching element");
                     return Expression.Constant(_realm.MakeObjectForRow(_schema.Name, firstRow));
                 }

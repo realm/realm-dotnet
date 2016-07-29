@@ -59,8 +59,7 @@ namespace Realms
             get
             {
                 var rowPtr = ResultsHandle.GetRow(index);
-                var rowHandle = Realm.CreateRowHandle(rowPtr, _realm.SharedRealmHandle);
-                return (T)(object)_realm.MakeObjectForRow(ObjectSchema.Name, rowHandle);
+                return (T)(object)_realm.MakeObjectForRow(ObjectSchema.Name, rowPtr);
             }
         }
 

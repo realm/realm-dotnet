@@ -36,7 +36,7 @@ namespace Realms
             if (linkedRowPtr == IntPtr.Zero)
                 return null;
 
-            return (T)realm.MakeObjectForRow(objectType, Realm.CreateRowHandle(linkedRowPtr, realm.SharedRealmHandle));
+            return (T)realm.MakeObjectForRow(objectType, linkedRowPtr);
         }
 
         public static void SetObject(Realm realm, TableHandle table, IntPtr columnIndex, IntPtr rowIndex, RealmObject @object)

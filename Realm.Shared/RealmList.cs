@@ -94,6 +94,7 @@ namespace Realms
         private Realm _realm;
         private LinkListHandle _listHandle;
         private readonly string _schemaClassName;
+        private RealmObject.Metadata _targetMetadata;  // lookup from _schemaClassName
 
         Realm IRealmList.Realm => _realm;
         LinkListHandle IRealmList.Handle => _listHandle;
@@ -151,7 +152,9 @@ namespace Realms
                 if (index < 0)
                     throw new IndexOutOfRangeException ();
                 var linkedRowPtr = _listHandle.Get((IntPtr)index);
-                return (T)_realm.MakeObjectForRow(_schemaClassName, Realm.CreateRowHandle(linkedRowPtr, _realm.SharedRealmHandle));
+                if (_targetMetadata == null)  // many list operations don't trigger object get so this is lazy
+                    _targetMetadata = _realm.Metadata[_schemaClassName];
+                return (T)_realm.MakeObjectForRow(_targetMetadata, linkedRowPtr);
             }
 
             set
