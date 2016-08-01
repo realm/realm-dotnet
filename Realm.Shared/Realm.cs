@@ -440,9 +440,8 @@ namespace Realms
         }
 
 
-        internal ResultsHandle MakeResultsForTable(string className)
+        internal ResultsHandle MakeResultsForTable(RealmObject.Metadata metadata)
         {
-            var metadata = Metadata[className];
             var resultsPtr = NativeTable.CreateResults(metadata.Table, SharedRealmHandle, metadata.Schema.Handle);
             return CreateResultsHandle(resultsPtr);
         }
@@ -718,7 +717,7 @@ namespace Realms
 
             foreach (var @object in Schema)
             {
-                var resultsHandle = MakeResultsForTable(@object.Name);
+                var resultsHandle = MakeResultsForTable(Metadata[@object.Name]);
                 resultsHandle.Clear();
             }
         }
