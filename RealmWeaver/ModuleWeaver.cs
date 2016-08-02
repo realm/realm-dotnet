@@ -23,6 +23,8 @@ using Mono.Cecil.Rocks;
 using Mono.Cecil.Cil;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Net;
+using RealmWeaver;
 
 public class ModuleWeaver
 {
@@ -37,6 +39,8 @@ public class ModuleWeaver
     public ModuleDefinition ModuleDefinition { get; set; }
 
     public IAssemblyResolver AssemblyResolver { get; set; }
+
+    public IAnalytics Analytics { get; set; } = new Analytics();
 
     private AssemblyDefinition _realmAssembly;
     private TypeDefinition _realmObject;
@@ -132,10 +136,9 @@ public class ModuleWeaver
 
         var submitAnalytics = System.Threading.Tasks.Task.Factory.StartNew(() =>
         {
-            var analytics = new RealmWeaver.Analytics(ModuleDefinition);
             try
             {
-                analytics.SubmitAnalytics();
+                Analytics.SubmitAnalytics(new AnalyticsData(ModuleDefinition));
             }
             catch (Exception e)
             {
