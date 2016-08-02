@@ -93,18 +93,16 @@ namespace Realms
 
         private Realm _realm;
         private LinkListHandle _listHandle;
-        private readonly string _schemaClassName;
-        private RealmObject.Metadata _targetMetadata;  // lookup from _schemaClassName
+        private RealmObject.Metadata _targetMetadata; 
 
         Realm IRealmList.Realm => _realm;
         LinkListHandle IRealmList.Handle => _listHandle;
-        string IRealmList.SchemaClassName => _schemaClassName;
 
-        internal RealmList(Realm realm, LinkListHandle adoptedList, string schemaClassName)
+        internal RealmList(Realm realm, LinkListHandle adoptedList, RealmObject.Metadata metadata)
         {
             _realm = realm;
             _listHandle = adoptedList;
-            _schemaClassName = schemaClassName;
+            _targetMetadata = metadata;
         }
 
         #region implementing IList properties
@@ -152,8 +150,6 @@ namespace Realms
                 if (index < 0)
                     throw new IndexOutOfRangeException ();
                 var linkedRowPtr = _listHandle.Get((IntPtr)index);
-                if (_targetMetadata == null)  // many list operations don't trigger object get so this is lazy
-                    _targetMetadata = _realm.Metadata[_schemaClassName];
                 return (T)_realm.MakeObjectForRow(_targetMetadata, linkedRowPtr);
             }
 
@@ -314,6 +310,5 @@ namespace Realms
     {
         Realm Realm { get; }
         LinkListHandle Handle { get; }
-        string SchemaClassName { get; }
     }
 }

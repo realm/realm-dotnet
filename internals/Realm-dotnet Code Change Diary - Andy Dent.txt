@@ -2473,3 +2473,26 @@ RealmResultsEnumerator.cs
 RealmResultsVisitor.cs
 - VisitMethodCall    
   - quicker check for failure knowing a null rowPtr returned
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Refactoring MakeObject logic - further cleanup lists
+
+RealmList.cs
+- RealmList
+  - IRealmList.SchemaClassName removed
+  - _schemaClassName removed
+  - ctor take a metadata param instead of className and set _targetMetadata
+  - this[int index] no longer lazy init _targetMetadata
+
+- IRealmList - removed SchemaClassName
+
+RealmListPCL.cs
+- removed IRealmList.SchemaClassName
+
+
+realmObject.cs
+- GetListValue<T>(string propertyName) lookup metadata for RealmList ctor
+
+RealmObjectOps.cs
+- GetList lookup metadata for RealmList ctor
