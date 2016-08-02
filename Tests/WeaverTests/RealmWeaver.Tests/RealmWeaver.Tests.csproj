@@ -66,6 +66,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AnalyticsTests.cs" />
     <Compile Include="WeaverTests.cs" />
     <Compile Include="Verifier.cs" />
   </ItemGroup>

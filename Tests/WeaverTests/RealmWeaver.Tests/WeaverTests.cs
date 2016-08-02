@@ -28,6 +28,9 @@ using System.Reflection;
 using Mono.Cecil;
 using NUnit.Framework;
 using System.ComponentModel;
+using IAnalytics = realm::RealmWeaver.IAnalytics;
+using IAnalyticsData = realm::RealmWeaver.IAnalyticsData;
+using ModuleWeaver = propertychanged::ModuleWeaver;
 
 namespace RealmWeaver
 {
@@ -66,6 +69,16 @@ namespace RealmWeaver
             o.GetType().GetProperty(propName).SetValue(o, propertyValue);
         }
 
+        internal class AnalyticsFake : IAnalytics
+        {
+            public IAnalyticsData AnalyticsData { get; set; }
+
+            public void SubmitAnalytics(IAnalyticsData analyticsData, Action<Uri> makeRequest = null)
+            {
+                AnalyticsData = analyticsData;
+            }
+        }
+
         private void WeaveRealm(ModuleDefinition moduleDefinition)
         {
             new realm::ModuleWeaver
@@ -74,7 +87,8 @@ namespace RealmWeaver
                 AssemblyResolver = moduleDefinition.AssemblyResolver,
                 LogError = s => _errors.Add(s),
                 LogErrorPoint = (s, point) => _errors.Add(s),
-                LogWarningPoint = (s, point) => _warnings.Add(s)
+                LogWarningPoint = (s, point) => _warnings.Add(s),
+                Analytics = analyticsFake
             }.Execute();
         }
 
@@ -105,6 +119,7 @@ namespace RealmWeaver
 
         private readonly AssemblyType _assemblyType;
         private readonly PropertyChangedWeaver _propertyChangedWeaver;
+        private AnalyticsFake analyticsFake = new AnalyticsFake();
 
         private Assembly _assembly;
         private string _sourceAssemblyPath;
@@ -471,6 +486,15 @@ namespace RealmWeaver
             Assert.That(_warnings, Is.EquivalentTo(expectedWarnings));
         }
 
+        [Test]
+        public void ShouldSubmitAnalytics()
+        {
+            var analyticsData = analyticsFake.AnalyticsData;
+
+            Assert.That(analyticsData.AppId, Does.EndWith("AssemblyToProcess.dll"));
+            Assert.That(analyticsData.RealmVersion, Is.EqualTo(typeof(realm::ModuleWeaver).Assembly.GetName().Version.ToString()));
+        }
+
 #if(DEBUG)
         [Test]
         public void PeVerify()
@@ -479,4 +503,5 @@ namespace RealmWeaver
         }
 #endif
     }
+
 }
