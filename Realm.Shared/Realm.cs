@@ -458,10 +458,10 @@ namespace Realms
         }
 
 
-        internal SortOrderHandle MakeSortOrderForTable(string className)
+        internal SortOrderHandle MakeSortOrderForTable(RealmObject.Metadata metadata)
         {
             var result = new SortOrderHandle();
-            result.CreateForTable(Metadata[className].Table);
+            result.CreateForTable(metadata.Table);
             return result;
         }
 

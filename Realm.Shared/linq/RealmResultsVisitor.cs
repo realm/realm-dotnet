@@ -32,7 +32,7 @@ namespace Realms
         private Realm _realm;
         internal QueryHandle _coreQueryHandle;  // set when recurse down to VisitConstant
         internal SortOrderHandle _optionalSortOrderHandle;  // set only when get OrderBy*
-        private Schema.ObjectSchema _schema;
+        private readonly RealmObject.Metadata _metadata;
 
         private static class Methods 
         {
@@ -59,10 +59,10 @@ namespace Realms
             }
         }
 
-        internal RealmResultsVisitor(Realm realm, Schema.ObjectSchema schema)
+        internal RealmResultsVisitor(Realm realm, RealmObject.Metadata metadata)
         {
             _realm = realm;
-            _schema = schema;
+            _metadata = metadata;
         }
 
         private static Expression StripQuotes(Expression e)
@@ -103,7 +103,7 @@ namespace Realms
             if (isStarting)
             {
                 if (_optionalSortOrderHandle == null)
-                    _optionalSortOrderHandle = _realm.MakeSortOrderForTable(_schema.Name);
+                    _optionalSortOrderHandle = _realm.MakeSortOrderForTable(_metadata);
                 else
                 {
                     var badCall = ascending ? "By" : "ByDescending";
@@ -179,7 +179,7 @@ namespace Realms
                     }
                     if (firstRowPtr == IntPtr.Zero)
                         throw new InvalidOperationException("Sequence contains no matching element");
-                    return Expression.Constant(_realm.MakeObjectForRow(_schema.Name, firstRowPtr));
+                    return Expression.Constant(_realm.MakeObjectForRow(_metadata, firstRowPtr));
                 }
                 if (m.Method.Name == "Single")  // same as unsorted First with extra checks
                 {
@@ -192,7 +192,7 @@ namespace Realms
                     var nextRowPtr = _coreQueryHandle.FindDirect(nextIndex);
                     if (nextRowPtr != IntPtr.Zero)
                         throw new InvalidOperationException("Sequence contains more than one matching element");
-                    return Expression.Constant(_realm.MakeObjectForRow(_schema.Name, firstRow));
+                    return Expression.Constant(_realm.MakeObjectForRow(_metadata, firstRow));
                 }
 
             }

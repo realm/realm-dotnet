@@ -2496,3 +2496,11 @@ realmObject.cs
 
 RealmObjectOps.cs
 - GetList lookup metadata for RealmList ctor
+
+Realm.cs
+- MakeSortOrderForTable take metadata instead of class name
+
+
+RealmResultsVisitor.cs
+- _schema removed
+- _metadata added
