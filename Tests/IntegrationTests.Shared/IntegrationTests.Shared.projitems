@@ -11,6 +11,7 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)AccessTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DateTimeTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)GlobalFixtureSetup.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PeopleTestsBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PerformanceTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Person.cs" />
