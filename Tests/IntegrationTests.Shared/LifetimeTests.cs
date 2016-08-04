@@ -7,8 +7,10 @@ using Realms;
 namespace IntegrationTests.Shared
 {
     [TestFixture, Preserve(AllMembers = true)]
-    public class ThreadingTests
+    public class LifetimeTests
     {
+        // This method was extracted to ensure that the actual realm instance
+        // isn't preserved in the scope of the test, even when the debugger is running.
         private WeakReference GetWeakRealm()
         {
             return new WeakReference(Realm.GetInstance());
