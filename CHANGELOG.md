@@ -1,3 +1,8 @@
+0.77.x (TBD)
+
+### Bug fixes
+* `RealmResults<T>` should implement `IQueryable.Provider` implicitly (#752)
+
 0.77.1 (2016-07-25)
 -------------------
 ### Minor Changes
