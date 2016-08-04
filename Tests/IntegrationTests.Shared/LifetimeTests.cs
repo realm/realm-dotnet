@@ -6,14 +6,19 @@ using Realms;
 
 namespace IntegrationTests.Shared
 {
-    [TestFixture]
+    [TestFixture, Preserve(AllMembers = true)]
     public class ThreadingTests
     {
+        private WeakReference GetWeakRealm()
+        {
+            return new WeakReference(Realm.GetInstance());
+        }
+
         [Test]
         public void RealmObjectsShouldKeepRealmAlive()
         {
             // Arrange
-            var realm = new WeakReference(Realm.GetInstance());
+            var realm = GetWeakRealm();
             Person person = null;
             ((Realm)realm.Target).Write(() => { person = ((Realm)realm.Target).CreateObject<Person>(); });
 
@@ -32,10 +37,9 @@ namespace IntegrationTests.Shared
         {
             // Arrange
             var realm = Realm.GetInstance();
-            var realmThatWillBeFinalized = new WeakReference(Realm.GetInstance());
+            var realmThatWillBeFinalized = GetWeakRealm();
             Person person = null;
             realm.Write(() => { person = realm.CreateObject<Person>(); });
-
 
             // Act
             GC.Collect();
