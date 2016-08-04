@@ -275,7 +275,7 @@ namespace Realms
         private void Dispose(bool disposing)
         {
             if (IsClosed)
-                throw new ObjectDisposedException("Realm");
+                throw new ObjectDisposedException(nameof(Realm));
             
             if (disposing)
             {
