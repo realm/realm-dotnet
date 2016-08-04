@@ -33,10 +33,6 @@ namespace IntegrationTests
         [SetUp]
         public virtual void Setup()
         {
-            // Reference the PCL specifically to make sure it's in the current AppDomain when the schema is created.
-            // If we don't do this, TestDriven.NET and the Resharper Nunit runner won't load the assembly. 
-            var reference = typeof (PurePCLBuildableTest.ObjectInPCL);
-
             Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
             _realm = Realm.GetInstance();
         }
