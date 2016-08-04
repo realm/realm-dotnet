@@ -74,24 +74,13 @@ namespace Realms
             public static extern UInt64 get_schema_version(SharedRealmHandle sharedRealm, out NativeException ex);
         }
 
-        public static int IdCounter = 0;
-        public static Dictionary<int, string> StackFrames = new Dictionary<int, string>(); 
-        public int Id;
-
         [Preserve]
         public SharedRealmHandle()
         {
-            Id = IdCounter++;
-            var st = new StackTrace();
-            var method = st.GetFrame(3).GetMethod();
-            StackFrames[Id] = method.DeclaringType.Name + "." + method.Name;
-            Console.WriteLine("#" + Id + " allocated in " + StackFrames[Id]);
         }
 
         protected override void Unbind()
         {
-            StackFrames.Remove(Id);
-
             NativeMethods.destroy(handle);
         }
 
@@ -107,8 +96,6 @@ namespace Realms
 
         public void CloseRealm()
         {
-            StackFrames[Id] += " (CLOSED)";
-
             NativeException nativeException;
             NativeMethods.close_realm(this, out nativeException);
             nativeException.ThrowIfNecessary();
