@@ -13,7 +13,7 @@ namespace IntegrationTests.Shared
         // isn't preserved in the scope of the test, even when the debugger is running.
         private WeakReference GetWeakRealm()
         {
-            return new WeakReference(Realm.GetInstance());
+            return new WeakReference(Realm.GetInstance("LifetimeTests.realm"));
         }
 
         [Test]
@@ -38,7 +38,7 @@ namespace IntegrationTests.Shared
         public void FinalizedRealmsShouldNotInvalidateSiblingRealms()
         {
             // Arrange
-            var realm = Realm.GetInstance();
+            var realm = Realm.GetInstance("LifetimeTests.realm");
             var realmThatWillBeFinalized = GetWeakRealm();
             Person person = null;
             realm.Write(() => { person = realm.CreateObject<Person>(); });
