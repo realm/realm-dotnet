@@ -263,16 +263,16 @@ namespace Realms
             Dispose(false);
         }
 
+        /// <summary>
+        ///  Dispose automatically closes the Realm if not already closed.
+        /// </summary>
         public void Dispose()
         {
             GC.SuppressFinalize(this);
             Dispose(true);
         }
 
-        /// <summary>
-        ///  Dispose automatically closes the Realm if not already closed.
-        /// </summary>
-        public void Dispose(bool disposing)
+        private void Dispose(bool disposing)
         {
             if (IsClosed)
                 throw new ObjectDisposedException("Realm");
