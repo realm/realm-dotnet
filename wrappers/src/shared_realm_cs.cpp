@@ -94,8 +94,14 @@ REALM_EXPORT void shared_realm_bind_to_managed_realm_handle(SharedRealm* realm, 
 
 REALM_EXPORT void shared_realm_destroy(SharedRealm* realm)
 {
-    (*realm)->close();
     delete realm;
+}
+
+REALM_EXPORT void shared_realm_close_realm(SharedRealm* realm, NativeException::Marshallable& ex)
+{
+    handle_errors(ex, [&]() {
+        (*realm)->close();
+    });
 }
 
 REALM_EXPORT Table* shared_realm_get_table(SharedRealm* realm, uint16_t* object_type, size_t object_type_len, NativeException::Marshallable& ex)

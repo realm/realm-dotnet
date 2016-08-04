@@ -17,6 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace Realms
@@ -34,6 +36,10 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_destroy", CallingConvention = CallingConvention.Cdecl)]
             public static extern void destroy(IntPtr sharedRealm);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_close_realm",
+                CallingConvention = CallingConvention.Cdecl)]
+            public static extern void close_realm(SharedRealmHandle sharedRealm, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_begin_transaction",
                 CallingConvention = CallingConvention.Cdecl)]
@@ -68,13 +74,24 @@ namespace Realms
             public static extern UInt64 get_schema_version(SharedRealmHandle sharedRealm, out NativeException ex);
         }
 
+        public static int IdCounter = 0;
+        public static Dictionary<int, string> StackFrames = new Dictionary<int, string>(); 
+        public int Id;
+
         [Preserve]
         public SharedRealmHandle()
         {
+            Id = IdCounter++;
+            var st = new StackTrace();
+            var method = st.GetFrame(3).GetMethod();
+            StackFrames[Id] = method.DeclaringType.Name + "." + method.Name;
+            Console.WriteLine("#" + Id + " allocated in " + StackFrames[Id]);
         }
 
         protected override void Unbind()
         {
+            StackFrames.Remove(Id);
+
             NativeMethods.destroy(handle);
         }
 
@@ -86,6 +103,15 @@ namespace Realms
                     MarshalHelpers.BoolToIntPtr(durability), encryptionKey, schemaVersion, out nativeException);
             nativeException.ThrowIfNecessary();
             return result;
+        }
+
+        public void CloseRealm()
+        {
+            StackFrames[Id] += " (CLOSED)";
+
+            NativeException nativeException;
+            NativeMethods.close_realm(this, out nativeException);
+            nativeException.ThrowIfNecessary();
         }
 
         public void BindToManagedRealmHandle(IntPtr managedRealmHandle)
