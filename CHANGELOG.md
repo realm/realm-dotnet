@@ -2,6 +2,7 @@
 
 ### Bug fixes
 * `RealmResults<T>` should implement `IQueryable.Provider` implicitly (#752)
+* Realms that close implicitly will no longer invalidate other instances (#746)
 
 0.77.1 (2016-07-25)
 -------------------
