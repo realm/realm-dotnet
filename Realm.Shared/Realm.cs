@@ -255,19 +255,33 @@ namespace Realms
             if (IsClosed)
                 return;
 
-            // Close the database
-            SharedRealmHandle.CloseRealm();
-
-            // And then the handle
-            SharedRealmHandle.Close();
+            Dispose();
         }
 
+        ~Realm()
+        {
+            Dispose(false);
+        }
+
+        public void Dispose()
+        {
+            GC.SuppressFinalize(this);
+            Dispose(true);
+        }
 
         /// <summary>
         ///  Dispose automatically closes the Realm if not already closed.
         /// </summary>
-        public void Dispose()
+        public void Dispose(bool disposing)
         {
+            if (IsClosed)
+                throw new ObjectDisposedException("Realm");
+            
+            if (disposing)
+            {
+                SharedRealmHandle.CloseRealm();
+            }
+
             SharedRealmHandle.Close();  // Note: this closes the *handle*, it does not trigger realm::Realm::close().
 
             if (stringGetBuffer != IntPtr.Zero)
