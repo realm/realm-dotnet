@@ -20,6 +20,8 @@ using System;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using Remotion.Linq.Parsing.ExpressionVisitors;
+using Remotion.Linq.Parsing.ExpressionVisitors.TreeEvaluation;
 
 namespace Realms
 {
@@ -59,7 +61,7 @@ namespace Realms
 
         public T Execute<T>(Expression expression)
         {
-            var retType = typeof(T);
+            expression = PartialEvaluatingExpressionVisitor.EvaluateIndependentSubtrees(expression, new EvaluatableExpressionFilter());
             var v = MakeVisitor();
             Expression visitResult = v.Visit(expression);
             var constExp = visitResult as ConstantExpression;
@@ -70,6 +72,10 @@ namespace Realms
         public object Execute(Expression expression)
         {
             throw new Exception("Non-generic Execute() called...");
+        }
+
+        private class EvaluatableExpressionFilter : EvaluatableExpressionFilterBase
+        {
         }
 
     }
