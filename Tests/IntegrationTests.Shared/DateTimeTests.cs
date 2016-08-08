@@ -134,7 +134,7 @@ namespace IntegrationTests.Shared
             var config = new RealmConfiguration() {ObjectClasses = new[] {typeof (IndexedDateTimeOffsetObject)}};
 
             // Act and "assert" that no exception is thrown here
-            Realm.GetInstance(config);
+            using (Realm.GetInstance(config)) { }
         }
     }
 }
