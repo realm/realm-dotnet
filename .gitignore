@@ -244,4 +244,4 @@ wrappers/libs-dbg
 
 *.xam
 
-Tests/IntegrationTests.XamarinAndroid/Resources/Resource.designer.cs
+Resource.designer.cs
