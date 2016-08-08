@@ -17,7 +17,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmFileExistsException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmInvalidDatabaseException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmPermissionDeniedException.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)extensions\DateTimeOffsetExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)handles\QueryHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)handles\RealmHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)handles\RowHandle.cs" />
