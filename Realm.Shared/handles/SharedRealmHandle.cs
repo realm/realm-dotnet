@@ -35,6 +35,10 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_destroy", CallingConvention = CallingConvention.Cdecl)]
             public static extern void destroy(IntPtr sharedRealm);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_close_realm",
+                CallingConvention = CallingConvention.Cdecl)]
+            public static extern void close_realm(SharedRealmHandle sharedRealm, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_begin_transaction",
                 CallingConvention = CallingConvention.Cdecl)]
             public static extern void begin_transaction(SharedRealmHandle sharedRealm, out NativeException ex);
@@ -86,6 +90,13 @@ namespace Realms
                     MarshalHelpers.BoolToIntPtr(durability), encryptionKey, schemaVersion, out nativeException);
             nativeException.ThrowIfNecessary();
             return result;
+        }
+
+        public void CloseRealm()
+        {
+            NativeException nativeException;
+            NativeMethods.close_realm(this, out nativeException);
+            nativeException.ThrowIfNecessary();
         }
 
         public void BindToManagedRealmHandle(IntPtr managedRealmHandle)
