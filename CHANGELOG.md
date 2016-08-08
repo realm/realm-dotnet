@@ -1,6 +1,6 @@
 0.77.x (TBD)
 ### Enhancements
-* Setting your **Build Verbosity** to `Detailed` will now display a message for every property woven, which can be useful if you suspect errors with Fody weaving.
+* Setting your **Build Verbosity** to `Detailed` or `Normal` will now display a message for every property woven, which can be useful if you suspect errors with Fody weaving.
 
 ### Bug fixes
 * `RealmResults<T>` should implement `IQueryable.Provider` implicitly (#752)
