@@ -137,15 +137,12 @@ namespace IntegrationTests.Shared
         [Test]
         public void DateTimeOffsetShouldStoreFullPrecision()
         {
-            Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
-            var realm = Realm.GetInstance();
-
             // Arrange
             const long ticks = 636059331339132912;
             var p = new Person { Birthday = new DateTimeOffset(ticks, TimeSpan.Zero) };
 
             // Act
-            realm.Write(() => { realm.Manage(p); });
+            _realm.Write(() => { _realm.Manage(p); });
 
             // Assert
             Assert.That(p.Birthday.Ticks, Is.EqualTo(ticks));
