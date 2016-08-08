@@ -309,13 +309,7 @@ public class ModuleWeaver
             return false;
         }
 
-        if (prop.IsAutomatic()) 
-        {
-            var objectIdMsg = isObjectId ? "[ObjectId]" : "";
-            var indexedMsg = isIndexed ? "[Indexed]" : "";
-            LogDebug($"Woven {type.Name}.{prop.Name} as a {prop.PropertyType.FullName} {objectIdMsg} {indexedMsg}");
-        } 
-        else 
+        if (!prop.IsAutomatic()) 
         {
             if (prop.PropertyType.Resolve().BaseType.IsSameAs(_realmObject))
                 LogWarningPoint(
@@ -413,6 +407,10 @@ public class ModuleWeaver
         prop.CustomAttributes.Add(wovenPropertyAttribute);
 
         Debug.WriteLine("");
+
+        var objectIdMsg = isObjectId ? "[ObjectId]" : "";
+        var indexedMsg = isIndexed ? "[Indexed]" : "";
+        LogDebug($"Woven {type.Name}.{prop.Name} as a {prop.PropertyType.FullName} {objectIdMsg} {indexedMsg}");
         return true;
     }
 
