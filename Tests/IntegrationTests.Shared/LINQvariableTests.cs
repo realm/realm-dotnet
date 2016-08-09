@@ -83,6 +83,69 @@ namespace IntegrationTests
             var c0 = _realm.All<Person>().Count(p => p.Score > minScore && p.Score <= maxScore);
             Assert.That(c0, Is.EqualTo(expectFound));
         }
+
+
+        // The following test cases exercise both Convert and Member RHS expressions
+
+        [TestCase("Peter", 1)]
+        [TestCase("Zach", 0)]
+        [TestCase("John", 2)]
+        public void FirstNamesEqual_TestCaseData(string matchName, int expectFound)
+        {
+            var data = new TestCaseData(matchName, expectFound);
+
+            var c0 = _realm.All<Person>().Count(p => p.FirstName == (string)data.Arguments[0]);
+            Assert.That(c0, Is.EqualTo(data.Arguments[1]));
+
+            var c1 = _realm.All<Person>().Count(p => p.FirstName.StartsWith((string)data.Arguments[0]));
+            Assert.That(c1, Is.EqualTo(data.Arguments[1]));
+
+            var c2 = _realm.All<Person>().Count(p => p.FirstName.Contains((string)data.Arguments[0]));
+            Assert.That(c2, Is.EqualTo(data.Arguments[1]));
+
+            var c3 = _realm.All<Person>().Count(p => p.FirstName.EndsWith((string)data.Arguments[0]));
+            Assert.That(c3, Is.EqualTo(data.Arguments[1]));
+        }
+
+        [TestCase("P", 1)]
+        [TestCase("Z", 0)]
+        [TestCase("J", 2)]
+        public void SingleLetterStartSearch_TestCaseData(string matchName, int expectFound)
+        {
+            var data = new TestCaseData(matchName, expectFound);
+
+            var c1 = _realm.All<Person>().Count(p => p.FirstName.StartsWith((string)data.Arguments[0]));
+            Assert.That(c1, Is.EqualTo(data.Arguments[1]));
+
+            var c2 = _realm.All<Person>().Count(p => p.FirstName.Contains((string)data.Arguments[0]));
+            Assert.That(c2, Is.EqualTo(data.Arguments[1]));
+        }
+
+        [TestCase("r", 1)]
+        [TestCase("z", 0)]
+        [TestCase("n", 2)]
+        public void SingleLetterEndSearch_TestCaseData(string matchName, int expectFound)
+        {
+            var data = new TestCaseData(matchName, expectFound);
+
+            var c2 = _realm.All<Person>().Count(p => p.FirstName.Contains((string)data.Arguments[0]));
+            Assert.That(c2, Is.EqualTo(data.Arguments[1]));
+
+            var c3 = _realm.All<Person>().Count(p => p.FirstName.EndsWith((string)data.Arguments[0]));
+            Assert.That(c3, Is.EqualTo(data.Arguments[1]));
+        }
+
+        [TestCase(0.0f, 200.0f, 2)]
+        [TestCase(0.0f, 90.0f, 1)]
+        [TestCase(0.0f, 30.0f, 0)]
+        [TestCase(-1.0f, 0.0f, 1)]
+        public void ScoreWithinRange_TestCaseData(float minScore, float maxScore, int expectFound)
+        {
+            var data = new TestCaseData(minScore, maxScore, expectFound);
+
+            var c0 = _realm.All<Person>().Count(p => p.Score > (float)data.Arguments[0] && p.Score <= (float)data.Arguments[1]);
+            Assert.That(c0, Is.EqualTo(data.Arguments[2]));
+        }
     }
 }
 
