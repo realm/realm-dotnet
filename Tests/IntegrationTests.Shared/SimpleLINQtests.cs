@@ -229,6 +229,15 @@ namespace IntegrationTests
             var endsWith = _realm.All<Person>().Where(p => p.Email.EndsWith(".net")).ToArray();
             Assert.That(endsWith.Length, Is.EqualTo(1));
             Assert.That(endsWith [0].FullName, Is.EqualTo("Peter Jameson"));
+
+            var @null = _realm.All<Person>().Where(p => p.OptionalAddress == null).ToArray();
+            Assert.That(@null[0].FullName, Is.EqualTo("Peter Jameson"));
+
+            var empty = _realm.All<Person>().Where(p => p.OptionalAddress == "").ToArray();
+            Assert.That(empty[0].FullName, Is.EqualTo("John Doe"));
+
+            var null_or_empty = _realm.All<Person>().Where(p => string.IsNullOrEmpty(p.OptionalAddress));
+            Assert.That(null_or_empty.Count(), Is.EqualTo(2));
         }
 
         [Test]
@@ -265,6 +274,22 @@ namespace IntegrationTests
         }
 
         [Test]
+        public void SearchComparingNullable()
+        {
+            var @null = _realm.All<Person>().Where(p => p.IsAmbivalent == null);
+            Assert.That(@null.Single().FullName, Is.EqualTo("Peter Jameson"));
+
+            var not_null = _realm.All<Person>().Where(p => p.IsAmbivalent != null);
+            Assert.That(not_null.Count(), Is.EqualTo(2));
+
+            var @true = _realm.All<Person>().Where(p => p.IsAmbivalent == true);
+            Assert.That(@true.Single().FullName, Is.EqualTo("John Smith"));
+
+            var @false = _realm.All<Person>().Where(p => p.IsAmbivalent == false);
+            Assert.That(@false.Single().FullName, Is.EqualTo("John Doe"));
+        }
+
+        [Test]
         public void SearchComparingByteArrays()
         {
             var DEADBEEF = new byte [] { 0xde, 0xad, 0xbe, 0xef };
@@ -280,9 +305,8 @@ namespace IntegrationTests
             var empty = _realm.All<Person>().Where(p => p.PublicCertificateBytes == EMPTY);
             Assert.That(empty, Is.Empty);
 
-            // we should support this as well - see #570
-            //var @null = _realm.All<Person>().Where(p => p.PublicCertificateBytes == null);
-            //Assert.That(@null.Count(), Is.EqualTo(1));
+            var @null = _realm.All<Person>().Where(p => p.PublicCertificateBytes == null);
+            Assert.That(@null.Count(), Is.EqualTo(1));
         }
 
         [Test]
