@@ -358,6 +358,7 @@ namespace Realms
             else if (value is double)
                 queryHandle.DoubleEqual(columnIndex, (double)value);
             else if (value is DateTimeOffset)
+                queryHandle.TimestampTicksEqual(columnIndex, (DateTimeOffset)value);
             else if (value.GetType() == typeof(byte[]))
             {
                 var buffer = (byte[])value;
@@ -397,6 +398,7 @@ namespace Realms
             else if (value is double)
                 queryHandle.DoubleNotEqual(columnIndex, (double)value);
             else if (value is DateTimeOffset)
+                queryHandle.TimestampTicksNotEqual(columnIndex, (DateTimeOffset)value);
             else if (value.GetType()== typeof(byte[]))
             {
                 var buffer = (byte[])value;
@@ -432,6 +434,7 @@ namespace Realms
             else if (value is double)
                 queryHandle.DoubleLess(columnIndex, (double)value);
             else if (value is DateTimeOffset)
+                queryHandle.TimestampTicksLess(columnIndex, (DateTimeOffset)value);
             else if (value is string || value is bool)
                 throw new Exception($"Unsupported type {value.GetType().Name}");
             else
@@ -451,6 +454,7 @@ namespace Realms
             else if (value is double)
                 queryHandle.DoubleLessEqual(columnIndex, (double)value);
             else if (value is DateTimeOffset)
+                queryHandle.TimestampTicksLessEqual(columnIndex, (DateTimeOffset)value);
             else if (value is string || value is bool)
                 throw new Exception($"Unsupported type {value.GetType().Name}");
             else
@@ -470,6 +474,7 @@ namespace Realms
             else if (value is double)
                 queryHandle.DoubleGreater(columnIndex, (double)value);
             else if (value is DateTimeOffset)
+                queryHandle.TimestampTicksGreater(columnIndex, (DateTimeOffset)value);
             else if (value is string || value is bool)
                 throw new Exception($"Unsupported type {value.GetType().Name}");
             else
@@ -489,6 +494,7 @@ namespace Realms
             else if (value is double)
                 queryHandle.DoubleGreaterEqual(columnIndex, (double)value);
             else if (value is DateTimeOffset)
+                queryHandle.TimestampTicksGreaterEqual(columnIndex, (DateTimeOffset)value);
             else if (value is string || value is bool)
                 throw new Exception($"Unsupported type {value.GetType().Name}");
             else
