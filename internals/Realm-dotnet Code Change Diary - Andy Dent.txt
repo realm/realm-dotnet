@@ -2446,3 +2446,23 @@ RealmSchema.cs
 - Builder.Build - throw message saying no RealmObjects, with URL for docs
 
 
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#518 Start Schema Version at zero
+
+
+RealmConfiguration.cs
+- NotVersioned removed
+- SchemaVersion now initialised to zero
+
+RealmConfigurationPCL.cs
+- NotVersioned removed
+
+ObjectIntegrationTests.cs
+- TriggerMigrationBySchemaVersion expect zero initial version
+
+ForMigrationsToCopyAndMigrate.realm
+- updated standard database with initial (zero) schema version
+
+RealmMigrationTests.cs
+- refactored out from ObjectIntegrationTests.cs
+- MigrationTriggersDelete - disabled as it is not triggered due issue 507

@@ -31,6 +31,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)DynamicAccessTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DynamicRelationshipTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LifetimeTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RealmMigrationTests.cs" />
   </ItemGroup>
   <ItemGroup Condition=" '$(ProjectName)' != 'IntegrationTests.Win32' ">
     <Compile Include="$(MSBuildThisFileDirectory)TestRunner.cs" />

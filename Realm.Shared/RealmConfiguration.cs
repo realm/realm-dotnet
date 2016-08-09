@@ -41,15 +41,6 @@ namespace Realms
         public static string DefaultRealmName  => "default.realm";
 
         /// <summary>
-        /// Constant used for SchemaVersion to indicate is not versioned.
-        /// </summary>
-        /// <remarks>
-        /// Must be maintained to match an internal ObjectStore::NotVersioned.
-        /// </remarks>
-        /// <value>Maximum value of UInt64.</value>
-        public static UInt64 NotVersioned => UInt64.MaxValue;
-
-        /// <summary>
         /// Flag mainly to help with temp databases and testing, indicates content can be abandoned when you change the schema.
         /// </summary>
         public readonly bool ShouldDeleteIfMigrationNeeded;
@@ -92,8 +83,8 @@ namespace Realms
         /// <summary>
         /// Number indicating the version, can be used to arbitrarily distinguish between schemas even if they have the same objects and properties.
         /// </summary>
-        /// <value>0-based value initially set to indicate user is not versioning.</value>
-        public UInt64 SchemaVersion { get; set;} = RealmConfiguration.NotVersioned;
+        /// <value>0-based value initially set to zero so all user-set values will be greater.</value>
+        public UInt64 SchemaVersion { get; set;} = 0;
 
 
         private byte[] _EncryptionKey;
