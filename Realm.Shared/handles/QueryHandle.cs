@@ -138,23 +138,23 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_double_greater_equal", CallingConvention = CallingConvention.Cdecl)]
             public static extern void double_greater_equal(QueryHandle queryPtr, IntPtr columnIndex, double value, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_timestamp_milliseconds_equal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void timestamp_milliseconds_equal(QueryHandle queryPtr, IntPtr columnIndex, Int64 value, out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_timestamp_ticks_equal", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void timestamp_ticks_equal(QueryHandle queryPtr, IntPtr columnIndex, Int64 value, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_timestamp_milliseconds_not_equal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void timestamp_milliseconds_not_equal(QueryHandle queryPtr, IntPtr columnIndex, Int64 value, out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_timestamp_ticks_not_equal", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void timestamp_ticks_not_equal(QueryHandle queryPtr, IntPtr columnIndex, Int64 value, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_timestamp_milliseconds_less", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void timestamp_milliseconds_less(QueryHandle queryPtr, IntPtr columnIndex, Int64 value, out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_timestamp_ticks_less", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void timestamp_ticks_less(QueryHandle queryPtr, IntPtr columnIndex, Int64 value, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_timestamp_milliseconds_less_equal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void timestamp_milliseconds_less_equal(QueryHandle queryPtr, IntPtr columnIndex, Int64 value, out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_timestamp_ticks_less_equal", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void timestamp_ticks_less_equal(QueryHandle queryPtr, IntPtr columnIndex, Int64 value, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_timestamp_milliseconds_greater", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void timestamp_milliseconds_greater(QueryHandle queryPtr, IntPtr columnIndex, Int64 value, out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_timestamp_ticks_greater", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void timestamp_ticks_greater(QueryHandle queryPtr, IntPtr columnIndex, Int64 value, out NativeException ex);
 
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_timestamp_milliseconds_greater_equal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void timestamp_milliseconds_greater_equal(QueryHandle queryPtr, IntPtr columnIndex, Int64 value, out NativeException ex);
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_timestamp_ticks_greater_equal", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void timestamp_ticks_greater_equal(QueryHandle queryPtr, IntPtr columnIndex, Int64 value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_find", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr findDirect(QueryHandle queryHandle, IntPtr beginAtRow, out NativeException ex);
@@ -429,45 +429,45 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public void TimestampMillisecondsEqual(IntPtr columnIndex, DateTimeOffset value)
+        public void TimestampTicksEqual(IntPtr columnIndex, DateTimeOffset value)
         {
             NativeException nativeException;
-            NativeMethods.timestamp_milliseconds_equal(this, columnIndex, value.ToRealmUnixTimeMilliseconds(), out nativeException);
+            NativeMethods.timestamp_ticks_equal(this, columnIndex, value.ToUniversalTime().Ticks, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public void TimestampMillisecondsNotEqual(IntPtr columnIndex, DateTimeOffset value)
+        public void TimestampTicksNotEqual(IntPtr columnIndex, DateTimeOffset value)
         {
             NativeException nativeException;
-            NativeMethods.timestamp_milliseconds_not_equal(this, columnIndex, value.ToRealmUnixTimeMilliseconds(), out nativeException);
+            NativeMethods.timestamp_ticks_not_equal(this, columnIndex, value.ToUniversalTime().Ticks, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public void TimestampMillisecondsLess(IntPtr columnIndex, DateTimeOffset value)
+        public void TimestampTicksLess(IntPtr columnIndex, DateTimeOffset value)
         {
             NativeException nativeException;
-            NativeMethods.timestamp_milliseconds_less(this, columnIndex, value.ToRealmUnixTimeMilliseconds(), out nativeException);
+            NativeMethods.timestamp_ticks_less(this, columnIndex, value.ToUniversalTime().Ticks, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public void TimestampMillisecondsLessEqual(IntPtr columnIndex, DateTimeOffset value)
+        public void TimestampTicksLessEqual(IntPtr columnIndex, DateTimeOffset value)
         {
             NativeException nativeException;
-            NativeMethods.timestamp_milliseconds_less_equal(this, columnIndex, value.ToRealmUnixTimeMilliseconds(), out nativeException);
+            NativeMethods.timestamp_ticks_less_equal(this, columnIndex, value.ToUniversalTime().Ticks, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public void TimestampMillisecondsGreater(IntPtr columnIndex, DateTimeOffset value)
+        public void TimestampTicksGreater(IntPtr columnIndex, DateTimeOffset value)
         {
             NativeException nativeException;
-            NativeMethods.timestamp_milliseconds_greater(this, columnIndex, value.ToRealmUnixTimeMilliseconds(), out nativeException);
+            NativeMethods.timestamp_ticks_greater(this, columnIndex, value.ToUniversalTime().Ticks, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public void TimestampMillisecondsGreaterEqual(IntPtr columnIndex, DateTimeOffset value)
+        public void TimestampTicksGreaterEqual(IntPtr columnIndex, DateTimeOffset value)
         {
             NativeException nativeException;
-            NativeMethods.timestamp_milliseconds_greater_equal(this, columnIndex, value.ToRealmUnixTimeMilliseconds(), out nativeException);
+            NativeMethods.timestamp_ticks_greater_equal(this, columnIndex, value.ToUniversalTime().Ticks, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
