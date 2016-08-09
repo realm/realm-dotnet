@@ -70,8 +70,9 @@ namespace Realms
             var migrationHandle = GCHandle.FromIntPtr(managedMigrationHandle);
             var migration = (Migration)migrationHandle.Target;
 
-            var oldRealmHandle = new SharedRealmHandle();
-            var newRealmHandle = new SharedRealmHandle();
+            // the realms here are owned by Object Store so we should do nothing to clean them up
+            var oldRealmHandle = new UnownedRealmHandle();
+            var newRealmHandle = new UnownedRealmHandle();
 
             RuntimeHelpers.PrepareConstrainedRegions();
             try { }
@@ -89,15 +90,6 @@ namespace Realms
 
             var result = migration.Execute(oldRealm, newRealm);
             migrationHandle.Free();
-
-            RuntimeHelpers.PrepareConstrainedRegions();
-            try { }
-            finally
-            {
-                // this is to prevent .net from trying to destroy the realm - it's alredy owned by ObjectStore
-                oldRealmHandle.SetHandleAsInvalid();
-                newRealmHandle.SetHandleAsInvalid();
-            }
 
             return result;
         }

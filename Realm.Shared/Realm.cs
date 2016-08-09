@@ -288,7 +288,7 @@ namespace Realms
             if (IsClosed)
                 throw new ObjectDisposedException(nameof(Realm));
             
-            if (disposing)
+            if (disposing && !(SharedRealmHandle is UnownedRealmHandle))
             {
                 SharedRealmHandle.CloseRealm();
             }

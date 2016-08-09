@@ -74,6 +74,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)native\Schema.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Migration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\ManagedExceptionDuringMigrationException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)handles\UnownedRealmHandle.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)weaving\" />
