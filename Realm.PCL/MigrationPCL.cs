@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////////////////////////
+﻿////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -16,19 +16,18 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System.Runtime.InteropServices;
-
-namespace Realms.Native
+namespace Realms
 {
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct SchemaObject
+    public class Migration
     {
-        internal static readonly int Size = Marshal.SizeOf<SchemaObject>();
+        public Realm OldRealm { get; private set; }
 
-        [MarshalAs(UnmanagedType.LPStr)]
-        internal string name;
+        public Realm NewRealm { get; private set; }
 
-        internal int properties_start;
-        internal int properties_end;
+        private Migration()
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+        }
     }
 }
+

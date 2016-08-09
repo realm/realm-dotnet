@@ -23,6 +23,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Realms.Schema;
 
 namespace Realms
@@ -99,6 +100,42 @@ namespace Realms
             return builder.Build(schemaHandle ?? new SchemaHandle());
         }
 
+        internal static RealmSchema CreateFromObjectStoreSchema(Native.Schema nativeSchema, SchemaHandle schemaHandle = null)
+        {
+            var objects = new ObjectSchema[nativeSchema.objects_len];
+            for (var i = 0; i < nativeSchema.objects_len; i++)
+            {
+                var objectSchema = Marshal.PtrToStructure<Native.SchemaObject>(IntPtr.Add(nativeSchema.objects, i * Native.SchemaObject.Size));
+                var builder = new ObjectSchema.Builder(objectSchema.name);
+
+                for (var n = objectSchema.properties_start; n < objectSchema.properties_end; n++)
+                {
+                    var nativeProperty = Marshal.PtrToStructure<Native.SchemaProperty>(IntPtr.Add(nativeSchema.properties, n * Native.SchemaProperty.Size));
+                    builder.Add(new Property
+                    {
+                        Name = nativeProperty.name,
+                        Type = nativeProperty.type,
+                        ObjectType = nativeProperty.object_type,
+                        IsObjectId = nativeProperty.is_primary,
+                        IsNullable = nativeProperty.is_nullable,
+                        IsIndexed = nativeProperty.is_indexed
+                    });
+                }
+
+                objects[i] = builder.Build();
+            }
+
+            schemaHandle = schemaHandle ?? new SchemaHandle();
+            RuntimeHelpers.PrepareConstrainedRegions();
+            try { }
+            finally
+            {
+                schemaHandle.SetHandle(nativeSchema.handle);
+            }
+
+            return new RealmSchema(schemaHandle, objects);
+        }
+
         private static RealmSchema BuildDefaultSchema()
         {
             var realmObjectClasses = AppDomain.CurrentDomain.GetAssemblies()
@@ -130,8 +167,8 @@ namespace Realms
                 }
                 Contract.EndContractBlock();
 
-                var objects = new List<SchemaObject>();
-                var properties = new List<SchemaProperty>();
+                var objects = new List<Native.SchemaObject>();
+                var properties = new List<Native.SchemaProperty>();
 
                 foreach (var @object in this)
                 {
@@ -139,7 +176,7 @@ namespace Realms
 
                     properties.AddRange(@object.Select(ForMarshalling));
 
-                    objects.Add(new SchemaObject
+                    objects.Add(new Native.SchemaObject
                     {
                         name = @object.Name,
                         properties_start = start,
@@ -153,13 +190,13 @@ namespace Realms
                 return new RealmSchema(schemaHandle, this.Select((o, i) => o.Clone(handles[i])));
             }
 
-            private static SchemaProperty ForMarshalling(Schema.Property property)
+            private static Native.SchemaProperty ForMarshalling(Schema.Property property)
             {
-                return new SchemaProperty
+                return new Native.SchemaProperty
                 {
                     name = property.Name,
                     type = property.Type,
-                    objectType = property.ObjectType,
+                    object_type = property.ObjectType,
                     is_nullable = property.IsNullable,
                     is_indexed = property.IsIndexed,
                     is_primary = property.IsObjectId

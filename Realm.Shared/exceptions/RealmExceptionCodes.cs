@@ -36,6 +36,8 @@ namespace Realms {
         RealmFormatUpgradeRequired = 13,
         RealmRowDetached = 21,
 
+        RealmDotNetExceptionDuringMigration = 30,
+
         StdArgumentOutOfRange = 100,
         StdIndexOutOfRange = 101,
         StdInvalidOperation = 102

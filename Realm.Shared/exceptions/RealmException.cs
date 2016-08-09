@@ -69,6 +69,9 @@ namespace Realms {
                 case RealmExceptionCodes.RealmRowDetached:
                     return new RealmInvalidObjectException(message);
 
+                case RealmExceptionCodes.RealmDotNetExceptionDuringMigration:
+                    return new ManagedExceptionDuringMigrationException(message);
+
                 case RealmExceptionCodes.StdArgumentOutOfRange :
                     return new ArgumentOutOfRangeException(message);
 

@@ -118,30 +118,43 @@ namespace Realms
                 schema = schema.CloneForAdoption(srHandle);
             }
 
+            var configuration = new Native.Configuration
+            {
+                Path = config.DatabasePath,
+                read_only = config.ReadOnly,
+                encryption_key = config.EncryptionKey,
+                Schema = schema.Handle,
+                schema_version = config.SchemaVersion
+            };
+
+            Migration migration = null;
+            if (config.MigrationCallback != null)
+            {
+                migration = new Migration(config, schema);
+                migration.PopulateConfiguration(ref configuration);
+            }
+
             var srPtr = IntPtr.Zero;
-            try {
-                srPtr = srHandle.Open(schema.Handle, 
-                    config.DatabasePath, 
-                    config.ReadOnly, false, 
-                    config.EncryptionKey,
-                    config.SchemaVersion);
-            } catch (RealmMigrationNeededException) {
+            try
+            {
+                srPtr = srHandle.Open(configuration);
+            }
+            catch (RealmMigrationNeededException)
+            {
                 if (config.ShouldDeleteIfMigrationNeeded)
                 {
                     DeleteRealm(config);
                 }
                 else
                 {
-                    throw; // rethrow te exception
-                    //TODO when have Migration but also consider programmer control over auto migration
-                    //MigrateRealm(configuration);
+                    throw; // rethrow the exception
                 }
                 // create after deleting old reopen after migrating 
-                srPtr = srHandle.Open(schema.Handle, 
-                    config.DatabasePath, 
-                    config.ReadOnly, false, 
-                    config.EncryptionKey,
-                    config.SchemaVersion);
+                srPtr = srHandle.Open(configuration);
+            }
+            catch (ManagedExceptionDuringMigrationException)
+            {
+                throw new AggregateException("Exception occurred in a Realm migration callback. See inner exception for more details.", migration?.MigrationException);
             }
 
             RuntimeHelpers.PrepareConstrainedRegions();
@@ -166,12 +179,10 @@ namespace Realms
         /// </summary>
         public RealmSchema Schema { get; }
 
-        private Realm(SharedRealmHandle sharedRealmHandle, RealmConfiguration config, RealmSchema schema)
+        internal Realm(SharedRealmHandle sharedRealmHandle, RealmConfiguration config, RealmSchema schema)
         {
             SharedRealmHandle = sharedRealmHandle;
             Config = config;
-            // update OUR config version number in case loaded one from disk
-            Config.SchemaVersion = sharedRealmHandle.GetSchemaVersion();
 
             Metadata = schema.ToDictionary(t => t.Name, CreateRealmObjectMetadata);
             Schema = schema;
@@ -277,7 +288,7 @@ namespace Realms
             if (IsClosed)
                 throw new ObjectDisposedException(nameof(Realm));
             
-            if (disposing)
+            if (disposing && !(SharedRealmHandle is UnownedRealmHandle))
             {
                 SharedRealmHandle.CloseRealm();
             }

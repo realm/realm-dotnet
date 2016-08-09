@@ -22,28 +22,11 @@
 #include "realm_export_decls.hpp"
 #include "object-store/src/shared_realm.hpp"
 #include "object-store/src/schema.hpp"
-#include "object-store/src/property.hpp"
+#include "schema_cs.hpp"
 
 using namespace realm;
 
 extern "C" {
-
-struct SchemaProperty
-{
-    char* name;
-    PropertyType type;
-    char* object_type;
-    bool is_nullable;
-    bool is_primary;
-    bool is_indexed;
-};
-
-struct SchemaObject
-{
-    char* name;
-    int properties_start;
-    int properties_end;
-};
 
 REALM_EXPORT Schema* schema_create(SchemaObject* objects, int objects_length, SchemaProperty* properties, ObjectSchema** handles, NativeException::Marshallable& ex)
 {

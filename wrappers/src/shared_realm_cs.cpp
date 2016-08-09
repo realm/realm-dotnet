@@ -26,7 +26,8 @@
 #include "object-store/src/schema.hpp"
 #include "object-store/src/binding_context.hpp"
 #include <list>
-
+#include "schema_cs.hpp"
+#include "shared_realm_cs.hpp"
 
 using namespace realm;
 using namespace realm::binding;
@@ -60,26 +61,68 @@ REALM_EXPORT void register_notify_realm_changed(NotifyRealmChangedT notifier)
     notify_realm_changed = notifier;
 }
 
-REALM_EXPORT SharedRealm* shared_realm_open(Schema* schema, uint16_t* path, size_t path_len, bool read_only, SharedGroup::DurabilityLevel durability,
-                        uint8_t* encryption_key, uint64_t schemaVersion, NativeException::Marshallable& ex)
+struct Configuration
+{
+    uint16_t* path;
+    size_t path_len;
+    
+    bool read_only;
+    
+    bool in_memory;
+    
+    char* encryption_key;
+    
+    Schema* schema;
+    uint64_t schema_version;
+    
+    bool (*migration_callback)(SharedRealm* old_realm, SharedRealm* new_realm, SchemaForMarshaling, uint64_t schema_version, void* managed_migration_handle);
+    void* managed_migration_handle;
+};
+    
+REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        Utf16StringAccessor pathStr(path, path_len);
+        Utf16StringAccessor pathStr(configuration.path, configuration.path_len);
 
         Realm::Config config;
         config.path = pathStr.to_string();
-        config.read_only = read_only;
-        config.in_memory = durability != SharedGroup::durability_Full;
+        config.read_only = configuration.read_only;
+        config.in_memory = configuration.read_only;
 
         // by definition the key is only allowwed to be 64 bytes long, enforced by C# code
-        if (encryption_key == nullptr)
-          config.encryption_key = std::vector<char>();
-        else
-          config.encryption_key = std::vector<char>(encryption_key, encryption_key+64);
+        if (configuration.encryption_key )
+          config.encryption_key = std::vector<char>(configuration.encryption_key, configuration.encryption_key+64);
 
-        config.schema.reset(schema);
-        config.schema_version = schemaVersion;
+        config.schema.reset(configuration.schema);
+        config.schema_version = configuration.schema_version;
 
+        if (configuration.managed_migration_handle) {
+            config.migration_function = [&configuration](SharedRealm oldRealm, SharedRealm newRealm) {
+                std::vector<SchemaObject> schema_objects;
+                std::vector<ObjectSchema*> object_handles;
+                std::vector<SchemaProperty> schema_properties;
+                
+                for (auto& object : *oldRealm->config().schema) {
+                    schema_objects.push_back(SchemaObject::for_marshalling(object, schema_properties));
+                    object_handles.push_back(&object);
+                }
+                
+                SchemaForMarshaling schema {
+                    oldRealm->config().schema.get(),
+                    
+                    schema_objects.data(),
+                    object_handles.data(),
+                    static_cast<int>(schema_objects.size()),
+                    
+                    schema_properties.data()
+                };
+                
+                if (!configuration.migration_callback(&oldRealm, &newRealm, schema, oldRealm->config().schema_version, configuration.managed_migration_handle)) {
+                    throw ManagedExceptionDuringMigration();
+                }
+            };
+        }
+        
         return new SharedRealm{Realm::get_shared_realm(config)};
     });
 }

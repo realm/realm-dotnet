@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////////////////////////
+﻿////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -16,19 +16,16 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System.Runtime.InteropServices;
-
-namespace Realms.Native
+namespace Realms
 {
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct SchemaObject
+    // this class represents a Realm that isn't owned by .net - like the realms
+    // in the object store migration callback
+    internal class UnownedRealmHandle : SharedRealmHandle
     {
-        internal static readonly int Size = Marshal.SizeOf<SchemaObject>();
-
-        [MarshalAs(UnmanagedType.LPStr)]
-        internal string name;
-
-        internal int properties_start;
-        internal int properties_end;
+        protected override void Unbind()
+        {
+            // do nothing - we don't own this, so we don't need to clean up
+        }
     }
 }
+

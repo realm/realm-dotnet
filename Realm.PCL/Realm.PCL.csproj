@@ -111,6 +111,10 @@
     </Compile>
     <Compile Include="Schema\ObjectSchemaPCL.cs" />
     <Compile Include="Schema\RealmSchemaPCL.cs" />
+    <Compile Include="..\Realm.Shared\exceptions\ManagedExceptionDuringMigrationException.cs">
+      <Link>Exceptions\ManagedExceptionDuringMigrationException.cs</Link>
+    </Compile>
+    <Compile Include="MigrationPCL.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <ItemGroup>
