@@ -38,8 +38,8 @@ namespace Realms
         public static void SetDateTimeOffset(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex, DateTimeOffset value)
         {
             NativeException nativeException;
-            var marshaledValue = value.ToRealmUnixTimeMilliseconds();
-            set_timestamp_milliseconds(tableHandle, columnIndex, rowIndex, marshaledValue, out nativeException);
+            var ticks = value.ToUniversalTime().Ticks;
+            set_timestamp_ticks(tableHandle, columnIndex, rowIndex, ticks, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
@@ -48,40 +48,40 @@ namespace Realms
             NativeException nativeException;
             if (value.HasValue)
             {
-                var marshaledValue = value.Value.ToRealmUnixTimeMilliseconds();
-                set_timestamp_milliseconds(tableHandle, columnIndex, rowIndex, marshaledValue, out nativeException);
+                var ticks = value.Value.ToUniversalTime().Ticks;
+                set_timestamp_ticks(tableHandle, columnIndex, rowIndex, ticks, out nativeException);
             }
             else
                 set_null(tableHandle, columnIndex, rowIndex, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_timestamp_milliseconds", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void set_timestamp_milliseconds(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, Int64 value, out NativeException ex);
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_timestamp_ticks", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void set_timestamp_ticks(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, Int64 value, out NativeException ex);
 
         public static DateTimeOffset GetDateTimeOffset(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex)
         {
             NativeException nativeException;
-            var result = get_timestamp_milliseconds(tableHandle, columnIndex, rowIndex, out nativeException);
+            var ticks = get_timestamp_ticks(tableHandle, columnIndex, rowIndex, out nativeException);
             nativeException.ThrowIfNecessary();
-            return DateTimeOffsetExtensions.FromRealmUnixTimeMilliseconds(result);
+            return new DateTimeOffset(ticks, TimeSpan.Zero);
         }
 
-        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_timestamp_milliseconds", CallingConvention = CallingConvention.Cdecl)]
-        private static extern Int64 get_timestamp_milliseconds(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex, out NativeException ex);
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_timestamp_ticks", CallingConvention = CallingConvention.Cdecl)]
+        private static extern Int64 get_timestamp_ticks(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex, out NativeException ex);
 
         public static DateTimeOffset? GetNullableDateTimeOffset(TableHandle tableHandle, IntPtr columnIndex,
             IntPtr rowIndex)
         {
             NativeException nativeException;
-            long unixTimeMs;
-            var hasValue = MarshalHelpers.IntPtrToBool(NativeTable.get_nullable_timestamp_milliseconds(tableHandle, columnIndex, rowIndex, out unixTimeMs, out nativeException));
+            long ticks;
+            var hasValue = MarshalHelpers.IntPtrToBool(NativeTable.get_nullable_timestamp_ticks(tableHandle, columnIndex, rowIndex, out ticks, out nativeException));
             nativeException.ThrowIfNecessary();
-            return hasValue ? DateTimeOffsetExtensions.FromRealmUnixTimeMilliseconds(unixTimeMs) : (DateTimeOffset?)null;
+            return hasValue ? new DateTimeOffset(ticks, TimeSpan.Zero) : (DateTimeOffset?)null;
         }
 
-        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_nullable_timestamp_milliseconds", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr get_nullable_timestamp_milliseconds(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex, out long retVal, out NativeException ex);
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_nullable_timestamp_ticks", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr get_nullable_timestamp_ticks(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex, out long retVal, out NativeException ex);
 
         public static void SetString(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex, string value)
         {

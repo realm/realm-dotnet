@@ -321,45 +321,45 @@ REALM_EXPORT void query_double_greater_equal(Query * query_ptr, size_t columnInd
     });
 }
 
-REALM_EXPORT void query_timestamp_milliseconds_equal(Query* query_ptr, size_t columnIndex, int64_t value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_timestamp_ticks_equal(Query* query_ptr, size_t columnIndex, int64_t value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query_ptr->equal(columnIndex, from_milliseconds(value));
+        query_ptr->equal(columnIndex, from_ticks(value));
     });
 }
 
-REALM_EXPORT void query_timestamp_milliseconds_not_equal(Query* query_ptr, size_t columnIndex, int64_t value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_timestamp_ticks_not_equal(Query* query_ptr, size_t columnIndex, int64_t value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query_ptr->not_equal(columnIndex, from_milliseconds(value));
+        query_ptr->not_equal(columnIndex, from_ticks(value));
     });
 }
 
-REALM_EXPORT void query_timestamp_milliseconds_less(Query* query_ptr, size_t columnIndex, int64_t value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_timestamp_ticks_less(Query* query_ptr, size_t columnIndex, int64_t value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query_ptr->less(columnIndex, from_milliseconds(value));
+        query_ptr->less(columnIndex, from_ticks(value));
     });
 }
 
-REALM_EXPORT void query_timestamp_milliseconds_less_equal(Query* query_ptr, size_t columnIndex, int64_t value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_timestamp_ticks_less_equal(Query* query_ptr, size_t columnIndex, int64_t value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query_ptr->less_equal(columnIndex, from_milliseconds(value));
+        query_ptr->less_equal(columnIndex, from_ticks(value));
     });
 }
 
-REALM_EXPORT void query_timestamp_milliseconds_greater(Query* query_ptr, size_t columnIndex, int64_t value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_timestamp_ticks_greater(Query* query_ptr, size_t columnIndex, int64_t value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query_ptr->greater(columnIndex, from_milliseconds(value));
+        query_ptr->greater(columnIndex, from_ticks(value));
     });
 }
 
-REALM_EXPORT void query_timestamp_milliseconds_greater_equal(Query* query_ptr, size_t columnIndex, int64_t value, NativeException::Marshallable& ex)
+REALM_EXPORT void query_timestamp_ticks_greater_equal(Query* query_ptr, size_t columnIndex, int64_t value, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
-        query_ptr->greater_equal(columnIndex, from_milliseconds(value));
+        query_ptr->greater_equal(columnIndex, from_ticks(value));
     });
 }
 

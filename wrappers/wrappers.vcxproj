@@ -107,6 +107,7 @@
     <ClInclude Include="src\realm_export_decls.hpp" />
     <ClInclude Include="src\shared_linklist.hpp" />
     <ClInclude Include="src\sort_order_wrapper.hpp" />
+    <ClInclude Include="src\timestamp_helpers.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A1E763AD-24B9-4D6B-AACA-282BB33E350F}</ProjectGuid>
