@@ -26,22 +26,22 @@ namespace Realms
     internal class RealmResultsProvider : IQueryProvider
     {
         private Realm _realm;
-        private readonly Schema.ObjectSchema _schema;
+        private readonly RealmObject.Metadata _metadata;
 
-        internal RealmResultsProvider(Realm realm, Schema.ObjectSchema schema)
+        internal RealmResultsProvider(Realm realm, RealmObject.Metadata metadata)
         {
             _realm = realm;
-            _schema = schema;
+            _metadata = metadata;
         }
 
         internal RealmResultsVisitor MakeVisitor()
         {
-            return new RealmResultsVisitor(_realm, _schema);
+            return new RealmResultsVisitor(_realm, _metadata);
         }
 
         public IQueryable<T> CreateQuery<T>(Expression expression)
         {
-            return new RealmResults<T>(_realm, this, expression, _schema, false);
+            return new RealmResults<T>(_realm, this, expression, _metadata, false);
         }
 
         public IQueryable CreateQuery(Expression expression)

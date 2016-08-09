@@ -65,12 +65,13 @@ namespace Realms
             
             ++_index;
             var rowPtr = _enumeratingResults.GetRow(_index);
-            var rowHandle = Realm.CreateRowHandle(rowPtr, _realm.SharedRealmHandle);
-            object nextObj = null;
-            if (!rowHandle.IsInvalid)                 
-                nextObj = _realm.MakeObjectForRow(_schema.Name, rowHandle);
-            Current = (T)nextObj;
-            return nextObj != null;
+            if (rowPtr == IntPtr.Zero) 
+            {
+                Current = (T)(object)null;
+                return false;
+            }
+            Current = (T)(object) _realm.MakeObjectForRow(_schema.Name, rowPtr);
+            return true;
         }
 
 
