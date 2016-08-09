@@ -429,42 +429,42 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public void TimestampEqual(IntPtr columnIndex, DateTimeOffset value)
+        public void TimestampTicksEqual(IntPtr columnIndex, DateTimeOffset value)
         {
             NativeException nativeException;
             NativeMethods.timestamp_ticks_equal(this, columnIndex, value.ToUniversalTime().Ticks, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public void TimestampNotEqual(IntPtr columnIndex, DateTimeOffset value)
+        public void TimestampTicksNotEqual(IntPtr columnIndex, DateTimeOffset value)
         {
             NativeException nativeException;
             NativeMethods.timestamp_ticks_not_equal(this, columnIndex, value.ToUniversalTime().Ticks, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public void TimestampLess(IntPtr columnIndex, DateTimeOffset value)
+        public void TimestampTicksLess(IntPtr columnIndex, DateTimeOffset value)
         {
             NativeException nativeException;
             NativeMethods.timestamp_ticks_less(this, columnIndex, value.ToUniversalTime().Ticks, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public void TimestampLessEqual(IntPtr columnIndex, DateTimeOffset value)
+        public void TimestampTicksLessEqual(IntPtr columnIndex, DateTimeOffset value)
         {
             NativeException nativeException;
             NativeMethods.timestamp_ticks_less_equal(this, columnIndex, value.ToUniversalTime().Ticks, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public void TimestampGreater(IntPtr columnIndex, DateTimeOffset value)
+        public void TimestampTicksGreater(IntPtr columnIndex, DateTimeOffset value)
         {
             NativeException nativeException;
             NativeMethods.timestamp_ticks_greater(this, columnIndex, value.ToUniversalTime().Ticks, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public void TimestampGreaterEqual(IntPtr columnIndex, DateTimeOffset value)
+        public void TimestampTicksGreaterEqual(IntPtr columnIndex, DateTimeOffset value)
         {
             NativeException nativeException;
             NativeMethods.timestamp_ticks_greater_equal(this, columnIndex, value.ToUniversalTime().Ticks, out nativeException);
