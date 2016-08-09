@@ -44,13 +44,15 @@ namespace Realms
         private readonly List<NotificationCallback> _callbacks = new List<NotificationCallback>();
         private NotificationTokenHandle _notificationToken;
 
+
         /// <summary>
         /// The <see cref="Schema.ObjectSchema"/> that describes the type of item this collection can contain.
         /// </summary>
-        public Schema.ObjectSchema ObjectSchema { get; }
+        public Schema.ObjectSchema ObjectSchema => _targetMetadata.Schema;
 
         internal ResultsHandle ResultsHandle => _resultsHandle ?? (_resultsHandle = CreateResultsHandle()); 
         private ResultsHandle _resultsHandle = null;
+        private RealmObject.Metadata _targetMetadata;  // lookup from ObjectSchema
 
         public IQueryProvider Provider => _provider;
 
@@ -58,9 +60,12 @@ namespace Realms
         {
             get
             {
+                if (index < 0)
+                    throw new IndexOutOfRangeException ();
                 var rowPtr = ResultsHandle.GetRow(index);
-                var rowHandle = Realm.CreateRowHandle(rowPtr, _realm.SharedRealmHandle);
-                return (T)(object)_realm.MakeObjectForRow(ObjectSchema.Name, rowHandle);
+                if (_targetMetadata == null)  // many list operations don't trigger object get so this is lazy
+                    _targetMetadata = _realm.Metadata[ObjectSchema.Name];
+                return (T)(object)_realm.MakeObjectForRow(_targetMetadata, rowPtr);
             }
         }
 
@@ -118,19 +123,18 @@ namespace Realms
 
         private ResultsHandle CreateResultsHandle()
         {
+            if (_targetMetadata == null)  // many list operations don't trigger object get so this is lazy
+                _targetMetadata = _realm.Metadata[ObjectSchema.Name];
             if (_allRecords)
             {
-                return _realm.MakeResultsForTable(ObjectSchema.Name);
+                return _realm.MakeResultsForTable(_targetMetadata);
             }
-            else
-            {
-                // do all the LINQ expression evaluation to build a query
-                var qv = _provider.MakeVisitor();
-                qv.Visit(Expression);
-                var queryHandle = qv._coreQueryHandle; // grab out the built query definition
-                var sortHandle = qv._optionalSortOrderHandle;
-                return _realm.MakeResultsForQuery(ObjectSchema, queryHandle, sortHandle);
-            }
+            // do all the LINQ expression evaluation to build a query
+            var qv = _provider.MakeVisitor();
+            qv.Visit(Expression);
+            var queryHandle = qv._coreQueryHandle; // grab out the built query definition
+            var sortHandle = qv._optionalSortOrderHandle;
+            return _realm.MakeResultsForQuery(ObjectSchema, queryHandle, sortHandle);
         }
 
         /// <summary>

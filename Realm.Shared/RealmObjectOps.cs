@@ -27,7 +27,7 @@ namespace Realms
         public static RealmList<T> GetList<T>(Realm realm, TableHandle table, IntPtr columnIndex, IntPtr rowIndex, string objectType) where T : RealmObject
         {
             var listHandle = table.TableLinkList(columnIndex, rowIndex);
-            return new RealmList<T>(realm, listHandle, objectType);
+            return new RealmList<T>(realm, listHandle, realm.Metadata[objectType]);
         }
 
         public static T GetObject<T>(Realm realm, TableHandle table, IntPtr columnIndex, IntPtr rowIndex, string objectType) where T : RealmObject
@@ -36,7 +36,7 @@ namespace Realms
             if (linkedRowPtr == IntPtr.Zero)
                 return null;
 
-            return (T)realm.MakeObjectForRow(objectType, Realm.CreateRowHandle(linkedRowPtr, realm.SharedRealmHandle));
+            return (T)realm.MakeObjectForRow(objectType, linkedRowPtr);
         }
 
         public static void SetObject(Realm realm, TableHandle table, IntPtr columnIndex, IntPtr rowIndex, RealmObject @object)
