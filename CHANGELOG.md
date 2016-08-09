@@ -2,6 +2,8 @@
 ### Enhancements
 * Setting your **Build Verbosity** to `Detailed` or `Normal` will now display a message for every property woven, which can be useful if you suspect errors with Fody weaving.
 * Better exception messages will helo diagnose _EmptySchema_ problems (#739)
+* Support for LINQ queries that check for `null` against `string`, `byte[]` and `Nullable<T>` properties.
+* Support for `string.IsNullOrEmpty` on persisted properties in LINQ queries.
 
 ### Bug fixes
 * `RealmResults<T>` should implement `IQueryable.Provider` implicitly (#752)
