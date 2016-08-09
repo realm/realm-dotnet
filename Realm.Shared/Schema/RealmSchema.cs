@@ -126,7 +126,7 @@ namespace Realms
                 if (Count == 0) 
                 {
                     throw new InvalidOperationException(
-                        "No RealmObjects. Has linker stripped them? See https://realm.io/docs/xamarin/latest/#linker-stripped-schema");                    throw new InvalidOperationException("Cannot build an empty ObjectSchema");
+                        "No RealmObjects. Has linker stripped them? See https://realm.io/docs/xamarin/latest/#linker-stripped-schema");
                 }
                 Contract.EndContractBlock();
 
