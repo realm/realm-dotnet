@@ -2435,3 +2435,14 @@ PurePCLBuildableTest/Class1.cs
 
 PurePCLBuildableTest
 - TestBuildingRealmFromPCL.MakeARealmWithPCL added
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#739 Better empty schema exception messages
+
+ObjectSchema.cs
+- Builder.Build - throw message identifying bad schema name with URL for docs
+
+RealmSchema.cs
+- Builder.Build - throw message saying no RealmObjects, with URL for docs
+
+
