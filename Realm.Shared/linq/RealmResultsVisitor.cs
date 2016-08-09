@@ -56,6 +56,8 @@ namespace Realms
                 internal static readonly LazyMethod StartsWith = Methods.Capture<string>(s => s.StartsWith(""));
 
                 internal static readonly LazyMethod EndsWith = Methods.Capture<string>(s => s.EndsWith(""));
+
+                internal static readonly LazyMethod NullOrEmpty = Methods.Capture<string>(s => string.IsNullOrEmpty(s));
             }
         }
 
@@ -217,6 +219,22 @@ namespace Realms
                 else if (m.Method == Methods.String.EndsWith.Value)
                 {
                     queryMethod = (q, c, v) => q.StringEndsWith(c, v);
+                }
+                else if (m.Method == Methods.String.NullOrEmpty.Value)
+                {
+                    var member = m.Arguments.SingleOrDefault() as MemberExpression;
+                    if (member == null)
+                    {
+                        throw new NotSupportedException($"The method '{m.Method}' has to be invoked with a RealmObject member");
+                    }
+                    var columnIndex = _coreQueryHandle.GetColumnIndex(member.Member.Name);
+
+                    _coreQueryHandle.GroupBegin();
+                    _coreQueryHandle.NullEqual(columnIndex);
+                    _coreQueryHandle.Or();
+                    _coreQueryHandle.StringEqual(columnIndex, string.Empty);
+                    _coreQueryHandle.GroupEnd();
+                    return m;
                 }
 
                 if (queryMethod != null)

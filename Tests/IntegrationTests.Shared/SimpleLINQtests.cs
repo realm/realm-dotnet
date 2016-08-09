@@ -236,8 +236,8 @@ namespace IntegrationTests
             var empty = _realm.All<Person>().Where(p => p.OptionalAddress == "").ToArray();
             Assert.That(empty[0].FullName, Is.EqualTo("John Doe"));
 
-            //var null_or_empty = _realm.All<Person>().Where(p => string.IsNullOrEmpty(p.OptionalAddress));
-            //Assert.That(null_or_empty.Count(), Is.EqualTo(2));
+            var null_or_empty = _realm.All<Person>().Where(p => string.IsNullOrEmpty(p.OptionalAddress));
+            Assert.That(null_or_empty.Count(), Is.EqualTo(2));
         }
 
         [Test]
