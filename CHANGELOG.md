@@ -1,4 +1,4 @@
-0.77.1 (2016-08-11)
+0.77.2 (2016-08-11)
 ### Enhancements
 * Setting your **Build Verbosity** to `Detailed` or `Normal` will now display a message for every property woven, which can be useful if you suspect errors with Fody weaving.
 * Better exception messages will helo diagnose _EmptySchema_ problems (#739)
