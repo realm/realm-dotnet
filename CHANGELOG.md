@@ -5,6 +5,7 @@
 * Support for LINQ queries that check for `null` against `string`, `byte[]` and `Nullable<T>` properties.
 * Support for `string.IsNullOrEmpty` on persisted properties in LINQ queries.
 * Schema construction has been streamlined to reduce overhead when opening a Realm
+* Schema version numbers now start at 0 rather than UInt64.MaxValue
 
 ### Bug fixes
 * `RealmResults<T>` should implement `IQueryable.Provider` implicitly (#752)

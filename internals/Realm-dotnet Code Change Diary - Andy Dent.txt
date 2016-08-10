@@ -2437,75 +2437,6 @@ PurePCLBuildableTest
 - TestBuildingRealmFromPCL.MakeARealmWithPCL added
 
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-Refactoring MakeObject logic to assist ObjectID work and reduce lookups
-
-Realm.cs
-- MakeObjectForRow overload added to take a RealmObject.Metadata instead of doing lookup, and simple rowPtr
-- MakeObjectForRow original taking string, changed to take rowPtr for second arg and forward to new overload
-- MakeResultsForTable take metadata instead of class name
-
-RealmList.cs
-- added field _targetMetadata
-- this[int index]
-  - init _targetMetadata if null
-  - use new MakeObjectForRow
-
-RealmResults.cs
-- added field _targetMetadata
-- this[int index]
-  - init _targetMetadata if null
-  - use new MakeObjectForRow
-- CreateResultsHandle
-  - init _targetMetadata if null
-- MakeResultsForTable take metadata instead of name
-- RemoveAll - lookup metadata for MakeResultsForTable
-
-RealmObjectOps.cs
--  GetObjectValue<T>(string propertyName) pass only rowPtr to MakeObjectForRow
-
-RealmObject.cs
--  GetObjectValue<T>(string propertyName) pass only rowPtr to MakeObjectForRow
-
-RealmResultsEnumerator.cs
-- MoveNext
-  - quicker check for failure knowing a null rowPtr returned
-
-RealmResultsVisitor.cs
-- VisitMethodCall    
-  - quicker check for failure knowing a null rowPtr returned
-
-
--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-Refactoring MakeObject logic - further cleanup lists
-
-RealmList.cs
-- RealmList
-  - IRealmList.SchemaClassName removed
-  - _schemaClassName removed
-  - ctor take a metadata param instead of className and set _targetMetadata
-  - this[int index] no longer lazy init _targetMetadata
-
-- IRealmList - removed SchemaClassName
-
-RealmListPCL.cs
-- removed IRealmList.SchemaClassName
-
-
-realmObject.cs
-- GetListValue<T>(string propertyName) lookup metadata for RealmList ctor
-
-RealmObjectOps.cs
-- GetList lookup metadata for RealmList ctor
-
-Realm.cs
-- MakeSortOrderForTable take metadata instead of class name
-
-
-RealmResultsVisitor.cs
-- _schema removed
-- _metadata added
-
--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #739 Better empty schema exception messages
 
 ObjectSchema.cs
@@ -2515,3 +2446,23 @@ RealmSchema.cs
 - Builder.Build - throw message saying no RealmObjects, with URL for docs
 
 
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#518 Start Schema Version at zero
+
+
+RealmConfiguration.cs
+- NotVersioned removed
+- SchemaVersion now initialised to zero
+
+RealmConfigurationPCL.cs
+- NotVersioned removed
+
+ObjectIntegrationTests.cs
+- TriggerMigrationBySchemaVersion expect zero initial version
+
+ForMigrationsToCopyAndMigrate.realm
+- updated standard database with initial (zero) schema version
+
+RealmMigrationTests.cs
+- refactored out from ObjectIntegrationTests.cs
+- MigrationTriggersDelete - disabled as it is not triggered due issue 507

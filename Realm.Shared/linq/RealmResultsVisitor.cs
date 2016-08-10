@@ -32,7 +32,7 @@ namespace Realms
         private Realm _realm;
         internal QueryHandle _coreQueryHandle;  // set when recurse down to VisitConstant
         internal SortOrderHandle _optionalSortOrderHandle;  // set only when get OrderBy*
-        private readonly RealmObject.Metadata _metadata;
+        private Schema.ObjectSchema _schema;
 
         private static class Methods 
         {
@@ -56,15 +56,13 @@ namespace Realms
                 internal static readonly LazyMethod StartsWith = Methods.Capture<string>(s => s.StartsWith(""));
 
                 internal static readonly LazyMethod EndsWith = Methods.Capture<string>(s => s.EndsWith(""));
-
-                internal static readonly LazyMethod NullOrEmpty = Methods.Capture<string>(s => string.IsNullOrEmpty(s));
             }
         }
 
-        internal RealmResultsVisitor(Realm realm, RealmObject.Metadata metadata)
+        internal RealmResultsVisitor(Realm realm, Schema.ObjectSchema schema)
         {
             _realm = realm;
-            _metadata = metadata;
+            _schema = schema;
         }
 
         private static Expression StripQuotes(Expression e)
@@ -105,7 +103,7 @@ namespace Realms
             if (isStarting)
             {
                 if (_optionalSortOrderHandle == null)
-                    _optionalSortOrderHandle = _realm.MakeSortOrderForTable(_metadata);
+                    _optionalSortOrderHandle = _realm.MakeSortOrderForTable(_schema.Name);
                 else
                 {
                     var badCall = ascending ? "By" : "ByDescending";
@@ -161,40 +159,45 @@ namespace Realms
                 if (m.Method.Name == "Any")
                 {
                     RecurseToWhereOrRunLambda(m);
-                    bool foundAny = _coreQueryHandle.FindDirect(IntPtr.Zero) != IntPtr.Zero;
+                    var rowPtr = _coreQueryHandle.FindDirect(IntPtr.Zero);
+                    var firstRow = Realm.CreateRowHandle(rowPtr, _realm.SharedRealmHandle);
+                    bool foundAny = !firstRow.IsInvalid;
                     return Expression.Constant(foundAny);
                 }
                 if (m.Method.Name == "First")
                 {
                     RecurseToWhereOrRunLambda(m);  
-                    IntPtr firstRowPtr = IntPtr.Zero;
+                    RowHandle firstRow = null;
                     if (_optionalSortOrderHandle == null)
                     {
-                        firstRowPtr = _coreQueryHandle.FindDirect(IntPtr.Zero);
+                        var rowPtr = _coreQueryHandle.FindDirect(IntPtr.Zero);
+                        firstRow = Realm.CreateRowHandle(rowPtr, _realm.SharedRealmHandle);
                     }
                     else 
                     {
                         using (ResultsHandle rh = _realm.MakeResultsForQuery(_schema, _coreQueryHandle, _optionalSortOrderHandle)) 
                         {
-                            firstRowPtr = rh.GetRow(0);
+                            var rowPtr = rh.GetRow(0);
+                            firstRow = Realm.CreateRowHandle(rowPtr, _realm.SharedRealmHandle);
                         }
                     }
-                    if (firstRowPtr == IntPtr.Zero)
+                    if (firstRow == null || firstRow.IsInvalid)
                         throw new InvalidOperationException("Sequence contains no matching element");
-                    return Expression.Constant(_realm.MakeObjectForRow(_metadata, firstRowPtr));
+                    return Expression.Constant(_realm.MakeObjectForRow(_schema.Name, firstRow));
                 }
                 if (m.Method.Name == "Single")  // same as unsorted First with extra checks
                 {
                     RecurseToWhereOrRunLambda(m);  
-                    var firstRowPtr = _coreQueryHandle.FindDirect(IntPtr.Zero);
-                    if (firstRowPtr == IntPtr.Zero)
+                    var rowPtr = _coreQueryHandle.FindDirect(IntPtr.Zero);
+                    var firstRow = Realm.CreateRowHandle(rowPtr, _realm.SharedRealmHandle);
+                    if (firstRow.IsInvalid)
                         throw new InvalidOperationException("Sequence contains no matching element");
-                    var firstRow = Realm.CreateRowHandle(firstRowPtr, _realm.SharedRealmHandle);
                     IntPtr nextIndex = (IntPtr)(firstRow.RowIndex+1);
                     var nextRowPtr = _coreQueryHandle.FindDirect(nextIndex);
-                    if (nextRowPtr != IntPtr.Zero)
+                    var nextRow = Realm.CreateRowHandle(nextRowPtr, _realm.SharedRealmHandle);
+                    if (!nextRow.IsInvalid)
                         throw new InvalidOperationException("Sequence contains more than one matching element");
-                    return Expression.Constant(_realm.MakeObjectForRow(_metadata, firstRow));
+                    return Expression.Constant(_realm.MakeObjectForRow(_schema.Name, firstRow));
                 }
 
             }
@@ -215,22 +218,6 @@ namespace Realms
                 {
                     queryMethod = (q, c, v) => q.StringEndsWith(c, v);
                 }
-                else if (m.Method == Methods.String.NullOrEmpty.Value)
-                {
-                    var member = m.Arguments.SingleOrDefault() as MemberExpression;
-                    if (member == null)
-                    {
-                        throw new NotSupportedException($"The method '{m.Method}' has to be invoked with a RealmObject member");
-                    }
-                    var columnIndex = _coreQueryHandle.GetColumnIndex(member.Member.Name);
-
-                    _coreQueryHandle.GroupBegin();
-                    _coreQueryHandle.NullEqual(columnIndex);
-                    _coreQueryHandle.Or();
-                    _coreQueryHandle.StringEqual(columnIndex, string.Empty);
-                    _coreQueryHandle.GroupEnd();
-                    return m;
-                }
 
                 if (queryMethod != null)
                 {
@@ -241,8 +228,8 @@ namespace Realms
                     }
                     var columnIndex = _coreQueryHandle.GetColumnIndex(member.Member.Name);
 
-                    object argument;
-                    if (!TryExtractConstantValue(m.Arguments.SingleOrDefault(), out argument) || argument.GetType() != typeof(string))
+                    var argument = ExtractConstantValue (m.Arguments.SingleOrDefault());
+                    if (argument == null || argument.GetType() != typeof(string))
                     {
                         throw new NotSupportedException($"The method '{m.Method}' has to be invoked with a single string constant argument or closure variable");
                     }
@@ -279,25 +266,22 @@ namespace Realms
             _coreQueryHandle.GroupEnd();
         }
 
-        internal static bool TryExtractConstantValue(Expression expr, out object value)
+        internal static object ExtractConstantValue(Expression expr)
         {
             var constant = expr as ConstantExpression;
             if (constant != null)
             {
-                value = constant.Value;
-                return true;
+                return constant.Value;
             }
 
             var memberAccess = expr as MemberExpression;
             if (memberAccess != null && memberAccess.Expression is ConstantExpression && memberAccess.Member is System.Reflection.FieldInfo)
             {
                 // handle closure variables
-                value = ((System.Reflection.FieldInfo)memberAccess.Member).GetValue(((ConstantExpression)memberAccess.Expression).Value);
-                return true;
+                return ((System.Reflection.FieldInfo)memberAccess.Member).GetValue(((ConstantExpression)memberAccess.Expression).Value);
             }
-
-            value = null;    
-            return false;
+                
+            return null;
         }
 
         internal override Expression VisitBinary(BinaryExpression b)
@@ -318,8 +302,8 @@ namespace Realms
                         $"The lhs of the binary operator '{b.NodeType}' should be a member expression. \nUnable to process `{b.Left}`");
                 var leftName = leftMember.Member.Name;
 
-                object rightValue;
-                if (!TryExtractConstantValue(b.Right, out rightValue))
+                var rightValue = ExtractConstantValue(b.Right);
+                if (rightValue == null)
                 {
                     throw new NotSupportedException($"The rhs of the binary operator '{b.NodeType}' should be a constant or closure variable expression. \nUnable to process `{b.Right}`");
                 }
@@ -361,9 +345,7 @@ namespace Realms
             {
             var columnIndex = queryHandle.GetColumnIndex(columnName);
 
-            if (value == null)
-                queryHandle.NullEqual(columnIndex);
-            else if (value is string)
+            if (value is string)
                 queryHandle.StringEqual(columnIndex, (string)value);
             else if (value is bool)
                 queryHandle.BoolEqual(columnIndex, (bool)value);
@@ -403,9 +385,7 @@ namespace Realms
         {
             var columnIndex = queryHandle.GetColumnIndex(columnName);
 
-            if (value == null)
-                queryHandle.NullNotEqual(columnIndex);
-            else if (value is string)
+            if (value is string)
                 queryHandle.StringNotEqual(columnIndex, (string)value);
             else if (value is bool)
                 queryHandle.BoolNotEqual(columnIndex, (bool)value);

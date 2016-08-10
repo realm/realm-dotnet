@@ -231,6 +231,8 @@ namespace Realms
 
         LinkListHandle IRealmList.Handle { get; }
 
+        string IRealmList.SchemaClassName { get; }
+
         #endregion
 
     }
@@ -245,6 +247,7 @@ namespace Realms
     {
         Realm Realm { get; }
         LinkListHandle Handle { get; }
+        string SchemaClassName { get; }
     }
 
 }

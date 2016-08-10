@@ -246,10 +246,10 @@ namespace Realms
 
             Schema.Property property;
             _metadata.Schema.TryFindProperty(propertyName, out property);
-            var relatedMeta = _realm.Metadata[property.ObjectType];
+            var objectType = property.ObjectType;
 
             var listHandle = _metadata.Table.TableLinkList (_metadata.ColumnIndices[propertyName], _rowHandle.RowIndex);
-            return new RealmList<T>(_realm, listHandle, relatedMeta);
+            return new RealmList<T>(_realm, listHandle, objectType);
         }
 
         protected T GetObjectValue<T>(string propertyName) where T : RealmObject
@@ -264,7 +264,8 @@ namespace Realms
             Schema.Property property;
             _metadata.Schema.TryFindProperty(propertyName, out property);
             var objectType = property.ObjectType;
-            return (T)_realm.MakeObjectForRow(objectType, linkedRowPtr);
+
+            return (T)_realm.MakeObjectForRow(objectType, Realm.CreateRowHandle(linkedRowPtr, _realm.SharedRealmHandle));
         }
 
         protected byte[] GetByteArrayValue(string propertyName)

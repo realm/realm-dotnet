@@ -34,13 +34,9 @@ namespace IntegrationTests
 
         public long Salary { get; set; }
 
-        public bool? IsAmbivalent { get; set; }
-
         public DateTimeOffset Birthday { get; set; }
 
         public byte[] PublicCertificateBytes { get; set; }
-
-        public string OptionalAddress { get; set; }
 
         // Property that's not persisted in Realm
         [Ignored]
