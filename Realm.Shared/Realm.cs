@@ -431,31 +431,18 @@ namespace Realms
             return result;
         }
 
-        internal RealmObject MakeObjectForRow(RealmObject.Metadata metadata, IntPtr rowPtr)
-        {
-            RealmObject ret = metadata.Helper.CreateInstance();
-            ret._Manage(this, CreateRowHandle(rowPtr, SharedRealmHandle), metadata);
-            return ret;
-        }
-
-        internal RealmObject MakeObjectForRow(string className, IntPtr rowPtr)
-        {
-            return MakeObjectForRow(Metadata[className], rowPtr);
-        }
-
-
-        // extra version retained for callers which already have a RowHandle
-        internal RealmObject MakeObjectForRow(string className, RowHandle row)
+        internal RealmObject MakeObjectForRow(string className, RowHandle rowHandle)
         {
             var metadata = Metadata[className];
             RealmObject ret = metadata.Helper.CreateInstance();
-            ret._Manage(this, row, metadata);
+            ret._Manage(this, rowHandle, metadata);
             return ret;
         }
 
 
-        internal ResultsHandle MakeResultsForTable(RealmObject.Metadata metadata)
+        internal ResultsHandle MakeResultsForTable(string className)
         {
+            var metadata = Metadata[className];
             var resultsPtr = NativeTable.CreateResults(metadata.Table, SharedRealmHandle, metadata.Schema.Handle);
             return CreateResultsHandle(resultsPtr);
         }
@@ -472,10 +459,10 @@ namespace Realms
         }
 
 
-        internal SortOrderHandle MakeSortOrderForTable(RealmObject.Metadata metadata)
+        internal SortOrderHandle MakeSortOrderForTable(string className)
         {
             var result = new SortOrderHandle();
-            result.CreateForTable(metadata.Table);
+            result.CreateForTable(Metadata[className].Table);
             return result;
         }
 
@@ -731,7 +718,7 @@ namespace Realms
 
             foreach (var @object in Schema)
             {
-                var resultsHandle = MakeResultsForTable(Metadata[@object.Name]);
+                var resultsHandle = MakeResultsForTable(@object.Name);
                 resultsHandle.Clear();
             }
         }

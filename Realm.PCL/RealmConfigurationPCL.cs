@@ -40,14 +40,6 @@ namespace Realms
         /// <value>A string representing a filename only, no path.</value>      
         public static string DefaultRealmName { get; }
 
-        /// <summary>
-        /// Constant used for SchemaVersion to indicate is not versioned.
-        /// </summary>
-        /// <remarks>
-        /// Must be maintained to match an internal ObjectStore::NotVersioned.
-        /// </remarks>
-        /// <value>Maximum value of UInt64.</value>
-        public static UInt64 NotVersioned { get; }
 
         /// <summary>
         /// Flag mainly to help with temp databases and testing, indicates content can be abandoned when you change the schema.

@@ -3,6 +3,7 @@
 * Setting your **Build Verbosity** to `Detailed` or `Normal` will now display a message for every property woven, which can be useful if you suspect errors with Fody weaving.
 * Better exception messages will helo diagnose _EmptySchema_ problems (#739)
 * Schema construction has been streamlined to reduce overhead when opening a Realm
+* Schema version numbers now start at 0 rather than UInt64.MaxValue
 
 ### Bug fixes
 * `RealmResults<T>` should implement `IQueryable.Provider` implicitly (#752)
