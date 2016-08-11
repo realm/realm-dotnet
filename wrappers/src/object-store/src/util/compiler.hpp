@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2015 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,20 +16,19 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef REALM_TEST_UTIL_TEST_FILE_HPP
-#define REALM_TEST_UTIL_TEST_FILE_HPP
+#ifndef REALM_UTIL_COMPILER_HPP
+#define REALM_UTIL_COMPILER_HPP
 
-#include "shared_realm.hpp"
-
-struct TestFile : realm::Realm::Config {
-    TestFile();
-    ~TestFile();
-};
-
-struct InMemoryTestFile : TestFile {
-    InMemoryTestFile();
-};
-
-void advance_and_notify(realm::Realm& realm);
-
+#ifdef __has_cpp_attribute
+#define REALM_HAS_CPP_ATTRIBUTE(attr) __has_cpp_attribute(attr)
+#else
+#define REALM_HAS_CPP_ATTRIBUTE(attr) 0
 #endif
+
+#if REALM_HAS_CPP_ATTRIBUTE(clang::fallthrough)
+#define REALM_FALLTHROUGH [[clang::fallthrough]]
+#else
+#define REALM_FALLTHROUGH
+#endif
+
+#endif // REALM_UTIL_COMPILER_HPP

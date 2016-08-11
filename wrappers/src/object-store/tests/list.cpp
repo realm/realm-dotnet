@@ -1,3 +1,21 @@
+////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2015 Realm Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+////////////////////////////////////////////////////////////////////////////
+
 #include "catch.hpp"
 
 #include "util/test_file.hpp"
@@ -22,26 +40,26 @@ TEST_CASE("list") {
     InMemoryTestFile config;
     config.automatic_change_notifications = false;
     config.cache = false;
-    config.schema = std::make_unique<Schema>(Schema{
-        {"origin", "", {
+    auto r = Realm::get_shared_realm(config);
+    r->update_schema({
+        {"origin", {
             {"array", PropertyType::Array, "target"}
         }},
-        {"target", "", {
+        {"target", {
             {"value", PropertyType::Int}
         }},
-        {"other_origin", "", {
+        {"other_origin", {
             {"array", PropertyType::Array, "other_target"}
         }},
-        {"other_target", "", {
+        {"other_target", {
             {"value", PropertyType::Int}
         }},
     });
 
-    auto r = Realm::get_shared_realm(config);
     auto& coordinator = *_impl::RealmCoordinator::get_existing_coordinator(config.path);
 
-    auto origin = r->read_group()->get_table("class_origin");
-    auto target = r->read_group()->get_table("class_target");
+    auto origin = r->read_group().get_table("class_origin");
+    auto target = r->read_group().get_table("class_target");
 
     r->begin_transaction();
 
@@ -61,7 +79,7 @@ TEST_CASE("list") {
 
     SECTION("add_notification_block()") {
         CollectionChangeSet change;
-        List lst(r, *r->config().schema->find("origin"), lv);
+        List lst(r, lv);
 
         auto write = [&](auto&& f) {
             r->begin_transaction();
@@ -189,8 +207,8 @@ TEST_CASE("list") {
 
             auto get_list = [&] {
                 auto r = Realm::get_shared_realm(config);
-                auto lv = r->read_group()->get_table("class_origin")->get_linklist(0, 0);
-                return List(r, *r->config().schema->find("origin"), lv);
+                auto lv = r->read_group().get_table("class_origin")->get_linklist(0, 0);
+                return List(r, lv);
             };
             auto change_list = [&] {
                 r->begin_transaction();
@@ -240,8 +258,8 @@ TEST_CASE("list") {
         }
 
         SECTION("tables-of-interest are tracked properly for multiple source versions") {
-            auto other_origin = r->read_group()->get_table("class_other_origin");
-            auto other_target = r->read_group()->get_table("class_other_target");
+            auto other_origin = r->read_group().get_table("class_other_origin");
+            auto other_target = r->read_group().get_table("class_other_target");
 
             r->begin_transaction();
             other_target->add_empty_row();
@@ -250,7 +268,7 @@ TEST_CASE("list") {
             lv2->add(0);
             r->commit_transaction();
 
-            List lst2(r, *r->config().schema->find("other_origin"), lv2);
+            List lst2(r, lv2);
 
             // Add a callback for list1, advance the version, then add a
             // callback for list2, so that the notifiers added at each source
@@ -299,8 +317,8 @@ TEST_CASE("list") {
     }
 
     SECTION("sorted add_notification_block()") {
-        List lst(r, *r->config().schema->find("origin"), lv);
-        Results results = lst.sort({{0}, {false}});
+        List lst(r, lv);
+        Results results = lst.sort({*target, {{0}}, {false}});
 
         int notification_calls = 0;
         CollectionChangeSet change;
@@ -355,7 +373,7 @@ TEST_CASE("list") {
     }
 
     SECTION("filtered add_notification_block()") {
-        List lst(r, *r->config().schema->find("origin"), lv);
+        List lst(r, lv);
         Results results = lst.filter(target->where().less(0, 9));
 
         int notification_calls = 0;
@@ -420,9 +438,9 @@ TEST_CASE("list") {
     }
 
     SECTION("sort()") {
-        auto objectschema = &*r->config().schema->find("origin");
-        List list(r, *objectschema, lv);
-        auto results = list.sort({{0}, {false}});
+        auto objectschema = &*r->schema().find("target");
+        List list(r, lv);
+        auto results = list.sort({*target, {{0}}, {false}});
 
         REQUIRE(&results.get_object_schema() == objectschema);
         REQUIRE(results.get_mode() == Results::Mode::LinkView);
@@ -435,8 +453,8 @@ TEST_CASE("list") {
     }
 
     SECTION("filter()") {
-        auto objectschema = &*r->config().schema->find("origin");
-        List list(r, *objectschema, lv);
+        auto objectschema = &*r->schema().find("target");
+        List list(r, lv);
         auto results = list.filter(target->where().greater(0, 5));
 
         REQUIRE(&results.get_object_schema() == objectschema);
@@ -446,5 +464,42 @@ TEST_CASE("list") {
         for (size_t i = 0; i < 4; ++i) {
             REQUIRE(results.get(i).get_index() == i + 6);
         }
+    }
+
+    SECTION("snapshot()") {
+        auto objectschema = &*r->schema().find("target");
+        List list(r, lv);
+
+        auto snapshot = list.snapshot();
+        REQUIRE(&snapshot.get_object_schema() == objectschema);
+        REQUIRE(snapshot.get_mode() == Results::Mode::TableView);
+        REQUIRE(snapshot.size() == 10);
+
+        r->begin_transaction();
+        for (size_t i = 0; i < 5; ++i) {
+            list.remove(0);
+        }
+        REQUIRE(snapshot.size() == 10);
+        for (size_t i = 0; i < snapshot.size(); ++i) {
+            REQUIRE(snapshot.get(i).is_attached());
+        }
+        for (size_t i = 0; i < 5; ++i) {
+            target->move_last_over(i);
+        }
+        REQUIRE(snapshot.size() == 10);
+        for (size_t i = 0; i < 5; ++i) {
+            REQUIRE(!snapshot.get(i).is_attached());
+        }
+        for (size_t i = 5; i < 10; ++i) {
+            REQUIRE(snapshot.get(i).is_attached());
+        }
+        list.add(0);
+        REQUIRE(snapshot.size() == 10);
+    }
+
+    SECTION("get_object_schema()") {
+        List list(r, lv);
+        auto objectschema = &*r->schema().find("target");
+        REQUIRE(&list.get_object_schema() == objectschema);
     }
 }

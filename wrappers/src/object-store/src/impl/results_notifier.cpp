@@ -24,12 +24,12 @@ using namespace realm::_impl;
 ResultsNotifier::ResultsNotifier(Results& target)
 : CollectionNotifier(target.get_realm())
 , m_target_results(&target)
-, m_sort(target.get_sort())
 , m_target_is_in_table_order(target.is_in_table_order())
 {
     Query q = target.get_query();
     set_table(*q.get_table());
     m_query_handover = Realm::Internal::get_shared_group(*get_realm()).export_for_handover(q, MutableSourcePayload::Move);
+    SortDescriptor::generate_patch(target.get_sort(), m_sort_handover);
 }
 
 void ResultsNotifier::target_results_moved(Results& old_target, Results& new_target)
@@ -146,7 +146,7 @@ void ResultsNotifier::run()
     m_query->sync_view_if_needed();
     m_tv = m_query->find_all();
     if (m_sort) {
-        m_tv.sort(m_sort.column_indices, m_sort.ascending);
+        m_tv.sort(m_sort);
     }
     m_last_seen_version = m_tv.sync_if_needed();
 
@@ -205,6 +205,7 @@ void ResultsNotifier::do_attach_to(SharedGroup& sg)
 {
     REALM_ASSERT(m_query_handover);
     m_query = sg.import_from_handover(std::move(m_query_handover));
+    m_sort = SortDescriptor::create_from_and_consume_patch(m_sort_handover, *m_query->get_table());
 }
 
 void ResultsNotifier::do_detach_from(SharedGroup& sg)
@@ -212,6 +213,7 @@ void ResultsNotifier::do_detach_from(SharedGroup& sg)
     REALM_ASSERT(m_query);
     REALM_ASSERT(!m_tv.is_attached());
 
+    SortDescriptor::generate_patch(m_sort, m_sort_handover);
     m_query_handover = sg.export_for_handover(*m_query, MutableSourcePayload::Move);
     m_query = nullptr;
 }

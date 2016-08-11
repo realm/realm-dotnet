@@ -31,17 +31,19 @@ public:
     ResultsNotifier(Results& target);
 
     void target_results_moved(Results& old_target, Results& new_target);
+
 private:
     // Target Results to update
     // Can only be used with lock_target() held
     Results* m_target_results;
 
-    const SortOrder m_sort;
-    bool m_target_is_in_table_order;
-
     // The source Query, in handover form iff m_sg is null
     std::unique_ptr<SharedGroup::Handover<Query>> m_query_handover;
     std::unique_ptr<Query> m_query;
+
+    SortDescriptor::HandoverPatch m_sort_handover;
+    SortDescriptor m_sort;
+    bool m_target_is_in_table_order;
 
     // The TableView resulting from running the query. Will be detached unless
     // the query was (re)run since the last time the handover object was created

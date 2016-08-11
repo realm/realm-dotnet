@@ -22,84 +22,57 @@
 #include "impl/results_notifier.hpp"
 #include "object_schema.hpp"
 #include "object_store.hpp"
+#include "schema.hpp"
+#include "util/compiler.hpp"
 #include "util/format.hpp"
 
 #include <stdexcept>
 
 using namespace realm;
 
-#ifdef __has_cpp_attribute
-#define REALM_HAS_CCP_ATTRIBUTE(attr) __has_cpp_attribute(attr)
-#else
-#define REALM_HAS_CCP_ATTRIBUTE(attr) 0
-#endif
-
-#if REALM_HAS_CCP_ATTRIBUTE(clang::fallthrough)
-#define REALM_FALLTHROUGH [[clang::fallthrough]]
-#else
-#define REALM_FALLTHROUGH
-#endif
-
 Results::Results() = default;
 Results::~Results() = default;
 
-Results::Results(SharedRealm r, const ObjectSchema &o, Query q, SortOrder s)
+Results::Results(SharedRealm r, Query q, SortDescriptor s)
 : m_realm(std::move(r))
-, m_object_schema(&o)
 , m_query(std::move(q))
 , m_table(m_query.get_table().get())
 , m_sort(std::move(s))
 , m_mode(Mode::Query)
 {
-    REALM_ASSERT(m_sort.column_indices.size() == m_sort.ascending.size());
 }
 
-Results::Results(SharedRealm r, const ObjectSchema &o, Table& table)
+Results::Results(SharedRealm r, Table& table)
 : m_realm(std::move(r))
-, m_object_schema(&o)
 , m_table(&table)
 , m_mode(Mode::Table)
 {
 }
 
-Results::Results(SharedRealm r, const ObjectSchema& o, LinkViewRef lv, util::Optional<Query> q, SortOrder s)
+Results::Results(SharedRealm r, LinkViewRef lv, util::Optional<Query> q, SortDescriptor s)
 : m_realm(std::move(r))
-, m_object_schema(&o)
 , m_link_view(lv)
 , m_table(&lv->get_target_table())
 , m_sort(std::move(s))
 , m_mode(Mode::LinkView)
 {
-    REALM_ASSERT(m_sort.column_indices.size() == m_sort.ascending.size());
     if (q) {
         m_query = std::move(*q);
         m_mode = Mode::Query;
     }
 }
 
-Results::Results(SharedRealm r, const ObjectSchema& o, TableView tv, SortOrder s)
+Results::Results(SharedRealm r, TableView tv, SortDescriptor s)
 : m_realm(std::move(r))
-, m_object_schema(&o)
 , m_table_view(std::move(tv))
 , m_table(&m_table_view.get_parent())
 , m_sort(std::move(s))
 , m_mode(Mode::TableView)
 {
-    REALM_ASSERT(m_sort.column_indices.size() == m_sort.ascending.size());
 }
 
 Results::Results(const Results&) = default;
-
-// Cannot be defaulted as TableViewBase::operator= is missing from the core static library.
-// Delegate to the copy constructor and move-assignment operators instead.
-Results& Results::operator=(const Results& other)
-{
-    if (this != &other) {
-        *this = Results(other);
-    }
-
-    return *this;
-}
+Results& Results::operator=(const Results&) = default;
 
 Results::Results(Results&& other)
 : m_realm(std::move(other.m_realm))
@@ -109,9 +82,9 @@ Results::Results(Results&& other)
 , m_link_view(std::move(other.m_link_view))
 , m_table(other.m_table)
 , m_sort(std::move(other.m_sort))
-, m_live(other.m_live)
 , m_notifier(std::move(other.m_notifier))
 , m_mode(other.m_mode)
+, m_update_policy(other.m_update_policy)
 , m_has_used_table_view(other.m_has_used_table_view)
 , m_wants_background_updates(other.m_wants_background_updates)
 {
@@ -152,19 +125,6 @@ void Results::validate_write() const
         throw InvalidTransactionException("Must be in a write transaction");
 }
 
-void Results::set_live(bool live)
-{
-    validate_read();
-
-    if (!live && (m_mode == Mode::Table || m_mode == Mode::LinkView)) {
-        m_query = get_query();
-        m_mode = Mode::Query;
-    }
-
-    update_tableview();
-    m_live = live;
-}
-
 size_t Results::size()
 {
     validate_read();
@@ -182,9 +142,28 @@ size_t Results::size()
     REALM_UNREACHABLE();
 }
 
+const ObjectSchema& Results::get_object_schema() const
+{
+    validate_read();
+
+    if (!m_object_schema) {
+        REALM_ASSERT(m_realm);
+        auto it = m_realm->schema().find(get_object_type());
+        REALM_ASSERT(it != m_realm->schema().end());
+        m_object_schema = &*it;
+    }
+
+    return *m_object_schema;
+}
+
+
 StringData Results::get_object_type() const noexcept
 {
-    return get_object_schema().name;
+    if (!m_table) {
+        return StringData();
+    }
+
+    return ObjectStore::object_type_for_table_name(m_table->get_name());
 }
 
 RowExpr Results::get(size_t row_ndx)
@@ -208,8 +187,7 @@ RowExpr Results::get(size_t row_ndx)
             update_tableview();
             if (row_ndx >= m_table_view.size())
                 break;
-            // FIXME: If clear() was called on the underlying Table, then is_row_attached(row_ndx) will still return true (core issue #1837).
-            if (!m_live && (m_table_view.get_parent().is_empty() || !m_table_view.is_row_attached(row_ndx)))
+            if (m_update_policy == UpdatePolicy::Never && !m_table_view.is_row_attached(row_ndx))
                 return {};
             return m_table_view.get(row_ndx);
     }
@@ -259,6 +237,8 @@ util::Optional<RowExpr> Results::last()
 
 bool Results::update_linkview()
 {
+    REALM_ASSERT(m_update_policy == UpdatePolicy::Auto);
+
     if (m_sort) {
         m_query = get_query();
         m_mode = Mode::Query;
@@ -268,9 +248,13 @@ bool Results::update_linkview()
     return true;
 }
 
-void Results::update_tableview()
+void Results::update_tableview(bool wants_notifications)
 {
-    validate_read();
+    if (m_update_policy == UpdatePolicy::Never) {
+        REALM_ASSERT(m_mode == Mode::TableView);
+        return;
+    }
+
     switch (m_mode) {
         case Mode::Empty:
         case Mode::Table:
@@ -280,15 +264,12 @@ void Results::update_tableview()
             m_query.sync_view_if_needed();
             m_table_view = m_query.find_all();
             if (m_sort) {
-                m_table_view.sort(m_sort.column_indices, m_sort.ascending);
+                m_table_view.sort(m_sort);
             }
             m_mode = Mode::TableView;
             break;
         case Mode::TableView:
-            if (!m_live) {
-                return;
-            }
-            if (!m_notifier && !m_realm->is_in_transaction() && m_realm->can_deliver_notifications()) {
+            if (wants_notifications && !m_notifier && !m_realm->is_in_transaction() && m_realm->can_deliver_notifications()) {
                 m_notifier = std::make_shared<_impl::ResultsNotifier>(*this);
                 _impl::RealmCoordinator::register_notifier(m_notifier);
             }
@@ -305,7 +286,8 @@ size_t Results::index_of(Row const& row)
         throw DetatchedAccessorException{};
     }
     if (m_table && row.get_table() != m_table) {
-        throw IncorrectTableException(m_object_schema->name,
+        throw IncorrectTableException(
+            ObjectStore::object_type_for_table_name(m_table->get_name()),
             ObjectStore::object_type_for_table_name(row.get_table()->get_name()),
             "Attempting to get the index of a Row of the wrong type"
         );
@@ -430,13 +412,16 @@ void Results::clear()
             validate_write();
             update_tableview();
 
-            if (m_live) {
-                m_table_view.clear(RemoveMode::unordered);
-            }
-            else {
-                // Copy the TableView because a non-live Results shouldn't have let its size() change.
-                TableView table_view_copy = m_table_view;
-                table_view_copy.clear(RemoveMode::unordered);
+            switch (m_update_policy) {
+                case UpdatePolicy::Auto:
+                    m_table_view.clear(RemoveMode::unordered);
+                    break;
+                case UpdatePolicy::Never: {
+                    // Copy the TableView because a frozen Results shouldn't let its size() change.
+                    TableView copy(m_table_view);
+                    copy.clear(RemoveMode::unordered);
+                    break;
+                }
             }
             break;
         case Mode::LinkView:
@@ -463,7 +448,9 @@ Query Results::get_query() const
 
             // The TableView has no associated query so create one with no conditions that is restricted
             // to the rows in the TableView.
-            m_table_view.sync_if_needed();
+            if (m_update_policy == UpdatePolicy::Auto) {
+                m_table_view.sync_if_needed();
+            }
             return Query(*m_table, std::unique_ptr<TableViewBase>(new TableView(m_table_view)));
         }
         case Mode::LinkView:
@@ -494,24 +481,57 @@ TableView Results::get_tableview()
     REALM_UNREACHABLE();
 }
 
-Results Results::sort(realm::SortOrder&& sort) const
+Results Results::sort(realm::SortDescriptor&& sort) const
 {
-    REALM_ASSERT(sort.column_indices.size() == sort.ascending.size());
-    return Results(m_realm, *m_object_schema, get_query(), std::move(sort));
+    return Results(m_realm, get_query(), std::move(sort));
 }
 
 Results Results::filter(Query&& q) const
 {
-    return Results(m_realm, *m_object_schema, get_query().and_query(std::move(q)), m_sort);
+    return Results(m_realm, get_query().and_query(std::move(q)), m_sort);
+}
+
+Results Results::snapshot() const &
+{
+    validate_read();
+
+    return Results(*this).snapshot();
+}
+
+Results Results::snapshot() &&
+{
+    validate_read();
+
+    switch (m_mode) {
+        case Mode::Empty:
+            return Results();
+
+        case Mode::Table:
+        case Mode::LinkView:
+            m_query = get_query();
+            m_mode = Mode::Query;
+
+            REALM_FALLTHROUGH;
+        case Mode::Query:
+        case Mode::TableView:
+            update_tableview(false);
+            m_notifier.reset();
+            m_update_policy = UpdatePolicy::Never;
+            return std::move(*this);
+    }
+    REALM_UNREACHABLE();
 }
 
 void Results::prepare_async()
 {
-    if (m_realm->config().read_only) {
+    if (m_realm->config().read_only()) {
         throw InvalidTransactionException("Cannot create asynchronous query for read-only Realms");
     }
     if (m_realm->is_in_transaction()) {
         throw InvalidTransactionException("Cannot create asynchronous query while in a write transaction");
+    }
+    if (m_update_policy == UpdatePolicy::Never) {
+        throw std::logic_error("Cannot create asynchronous query for snapshotted Results.");
     }
 
     if (!m_notifier) {
@@ -552,6 +572,7 @@ bool Results::is_in_table_order() const
 
 void Results::Internal::set_table_view(Results& results, realm::TableView &&tv)
 {
+    REALM_ASSERT(results.m_update_policy != UpdatePolicy::Never);
     // If the previous TableView was never actually used, then stop generating
     // new ones until the user actually uses the Results object again
     if (results.m_mode == Mode::TableView) {
@@ -570,7 +591,7 @@ Results::OutOfBoundsIndexException::OutOfBoundsIndexException(size_t r, size_t c
 , requested(r), valid_count(c) {}
 
 Results::UnsupportedColumnTypeException::UnsupportedColumnTypeException(size_t column, const Table* table, const char* operation)
-: std::runtime_error(util::format("Cannot %1 property '%2': operation not supported for '%3' properties",
+: std::logic_error(util::format("Cannot %1 property '%2': operation not supported for '%3' properties",
                                   operation, table->get_column_name(column),
                                   string_for_property_type(static_cast<PropertyType>(table->get_column_type(column)))))
 , column_index(column)
