@@ -2,6 +2,7 @@
 ### Enhancements
 * Setting your **Build Verbosity** to `Detailed` or `Normal` will now display a message for every property woven, which can be useful if you suspect errors with Fody weaving.
 * Better exception messages will helo diagnose _EmptySchema_ problems (#739)
+* Partial evaluation of LINQ expressions means more expressions types are supported as operands in binary expressions (#755)
 * Support for LINQ queries that check for `null` against `string`, `byte[]` and `Nullable<T>` properties.
 * Support for `string.IsNullOrEmpty` on persisted properties in LINQ queries.
 * Schema construction has been streamlined to reduce overhead when opening a Realm
