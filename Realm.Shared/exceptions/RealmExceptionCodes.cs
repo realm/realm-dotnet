@@ -34,6 +34,7 @@ namespace Realms {
         RealmMismatchedConfig = 9,
         RealmInvalidTransaction = 10,
         RealmFormatUpgradeRequired = 13,
+        RealmSchemaMismatch=14,
         RealmRowDetached = 21,
 
         StdArgumentOutOfRange = 100,

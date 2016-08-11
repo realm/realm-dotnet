@@ -2469,8 +2469,19 @@ RealmMigrationTests.cs
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #507 RealmMigrationSchemaNeededException not thrown
 
-wrappers/error_handling.cpp
-- convert_exception - add case for SchemaMismatchException passed back as RealmFormatUpgradeRequired
+wrappers/error_handling.hpp
+- RealmErrorType added RealmSchemaMismatch=14
 
+wrappers/error_handling.cpp
+- convert_exception - add case for SchemaMismatchException passed back as RealmSchemaMismatch
+
+RealmExceptionCodes.cs
+- RealmExceptionCodes  added RealmSchemaMismatch=14
+
+RealmException.cs
+- RealmException.Create  
+  - added case for RealmSchemaMismatch
+  - RealmFormatUpgradeRequired handled mapping to plain RealmException
+  
 RealmMigrationTests.cs
 - TriggerMigrationBySchemaEditing re-enabled

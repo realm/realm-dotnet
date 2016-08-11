@@ -64,6 +64,9 @@ namespace Realms {
                     return new RealmInvalidTransactionException(message);
 
                 case RealmExceptionCodes.RealmFormatUpgradeRequired :
+                    return new RealmException(message);  // rare unrecoverable case for now
+
+                case RealmExceptionCodes.RealmSchemaMismatch :
                     return new RealmMigrationNeededException(message);
 
                 case RealmExceptionCodes.RealmRowDetached:

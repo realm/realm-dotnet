@@ -76,7 +76,7 @@ namespace realm {
         }
         catch (const SchemaMismatchException& e) {
           // typically shared_realm_open failing because same schemaVersion but changed
-          return { RealmErrorType::RealmFormatUpgradeRequired, e.what() };
+          return { RealmErrorType::RealmSchemaMismatch, e.what() };
         }
         //catch (const util::DecryptionFailed& e) {
         //    return { RealmExceptionCodes::RealmDecryptionFailed, e.what(), nullptr);
