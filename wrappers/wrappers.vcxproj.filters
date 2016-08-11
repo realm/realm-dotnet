@@ -144,6 +144,15 @@
     <ClCompile Include="src\object-store\src\util\format.cpp">
       <Filter>Source Files\object-store\util</Filter>
     </ClCompile>
+    <ClCompile Include="src\object-store\src\placeholder.cpp">
+      <Filter>Source Files\object-store</Filter>
+    </ClCompile>
+    <ClCompile Include="src\object-store\src\thread_confined.cpp">
+      <Filter>Source Files\object-store</Filter>
+    </ClCompile>
+    <ClCompile Include="src\object-store\src\impl\handover.cpp">
+      <Filter>Source Files\object-store\impl</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\error_handling.hpp">
@@ -253,6 +262,12 @@
     </ClInclude>
     <ClInclude Include="src\timestamp_helpers.hpp">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\object-store\src\thread_confined.hpp">
+      <Filter>Header Files\object-store</Filter>
+    </ClInclude>
+    <ClInclude Include="src\object-store\src\impl\handover.hpp">
+      <Filter>Header Files\object-store\impl</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
