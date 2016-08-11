@@ -1,3 +1,21 @@
+////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2016 Realm Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+////////////////////////////////////////////////////////////////////////////
+
 #include "catch.hpp"
 
 #include "util/index_helpers.hpp"
@@ -12,34 +30,36 @@
 #include <realm/commit_log.hpp>
 #include <realm/group_shared.hpp>
 #include <realm/link_view.hpp>
+#include <realm/query_engine.hpp>
 
 #include <unistd.h>
 
 using namespace realm;
 
-TEST_CASE("[results] notifications") {
+TEST_CASE("results: notifications") {
     InMemoryTestFile config;
     config.cache = false;
     config.automatic_change_notifications = false;
-    config.schema = std::make_unique<Schema>(Schema{
-        {"object", "", {
+
+    auto r = Realm::get_shared_realm(config);
+    r->update_schema({
+        {"object", {
             {"value", PropertyType::Int},
             {"link", PropertyType::Object, "linked to object", "", false, false, true}
         }},
-        {"other object", "", {
+        {"other object", {
             {"value", PropertyType::Int}
         }},
-        {"linking object", "", {
+        {"linking object", {
             {"link", PropertyType::Object, "object", "", false, false, true}
         }},
-        {"linked to object", "", {
+        {"linked to object", {
             {"value", PropertyType::Int}
         }}
     });
 
-    auto r = Realm::get_shared_realm(config);
     auto coordinator = _impl::RealmCoordinator::get_existing_coordinator(config.path);
-    auto table = r->read_group()->get_table("class_object");
+    auto table = r->read_group().get_table("class_object");
 
     r->begin_transaction();
     table->add_empty_row(10);
@@ -47,7 +67,7 @@ TEST_CASE("[results] notifications") {
         table->set_int(0, i, i * 2);
     r->commit_transaction();
 
-    Results results(r, *config.schema->find("object"), table->where().greater(0, 0).less(0, 10));
+    Results results(r, table->where().greater(0, 0).less(0, 10));
 
     SECTION("unsorted notifications") {
         int notification_calls = 0;
@@ -146,21 +166,21 @@ TEST_CASE("[results] notifications") {
 
         SECTION("modifications to unrelated tables do not send notifications") {
             write([&] {
-                r->read_group()->get_table("class_other object")->add_empty_row();
+                r->read_group().get_table("class_other object")->add_empty_row();
             });
             REQUIRE(notification_calls == 1);
         }
 
         SECTION("irrelevant modifications to linked tables do not send notifications") {
             write([&] {
-                r->read_group()->get_table("class_linked to object")->add_empty_row();
+                r->read_group().get_table("class_linked to object")->add_empty_row();
             });
             REQUIRE(notification_calls == 1);
         }
 
         SECTION("irrelevant modifications to linking tables do not send notifications") {
             write([&] {
-                r->read_group()->get_table("class_linking object")->add_empty_row();
+                r->read_group().get_table("class_linking object")->add_empty_row();
             });
             REQUIRE(notification_calls == 1);
         }
@@ -300,7 +320,7 @@ TEST_CASE("[results] notifications") {
     }
 
     // Sort in descending order
-    results = results.sort({{0}, {false}});
+    results = results.sort({*table, {{0}}, {false}});
 
     SECTION("sorted notifications") {
         int notification_calls = 0;
@@ -420,19 +440,20 @@ TEST_CASE("[results] notifications") {
     }
 }
 
-TEST_CASE("[results] async error handling") {
+TEST_CASE("results: async error handling") {
     InMemoryTestFile config;
     config.cache = false;
     config.automatic_change_notifications = false;
-    config.schema = std::make_unique<Schema>(Schema{
-        {"object", "", {
+
+    auto r = Realm::get_shared_realm(config);
+    r->update_schema({
+        {"object", {
             {"value", PropertyType::Int},
         }},
     });
 
-    auto r = Realm::get_shared_realm(config);
     auto coordinator = _impl::RealmCoordinator::get_existing_coordinator(config.path);
-    Results results(r, *config.schema->find("object"), *r->read_group()->get_table("class_object"));
+    Results results(r, *r->read_group().get_table("class_object"));
 
     class OpenFileLimiter {
     public:
@@ -534,19 +555,20 @@ TEST_CASE("[results] async error handling") {
     }
 }
 
-TEST_CASE("[results] notifications after move") {
+TEST_CASE("results: notifications after move") {
     InMemoryTestFile config;
     config.cache = false;
     config.automatic_change_notifications = false;
-    config.schema = std::make_unique<Schema>(Schema{
-        {"object", "", {
+
+    auto r = Realm::get_shared_realm(config);
+    r->update_schema({
+        {"object", {
             {"value", PropertyType::Int},
         }},
     });
 
-    auto r = Realm::get_shared_realm(config);
-    auto table = r->read_group()->get_table("class_object");
-    auto results = std::make_unique<Results>(r, *config.schema->find("object"), *table);
+    auto table = r->read_group().get_table("class_object");
+    auto results = std::make_unique<Results>(r, *table);
 
     int notification_calls = 0;
     auto token = results->add_notification_callback([&](CollectionChangeSet, std::exception_ptr err) {
@@ -585,17 +607,17 @@ TEST_CASE("[results] notifications after move") {
     }
 }
 
-TEST_CASE("[results] error messages") {
+TEST_CASE("results: error messages") {
     InMemoryTestFile config;
-    config.schema = std::make_unique<Schema>(Schema{
-        {"object", "", {
+    config.schema = Schema{
+        {"object", {
             {"value", PropertyType::String},
         }},
-    });
+    };
 
     auto r = Realm::get_shared_realm(config);
-    auto table = r->read_group()->get_table("class_object");
-    Results results(r, *config.schema->find("object"), *table);
+    auto table = r->read_group().get_table("class_object");
+    Results results(r, *table);
 
     r->begin_transaction();
     table->add_empty_row();
@@ -607,5 +629,309 @@ TEST_CASE("[results] error messages") {
 
     SECTION("unsupported aggregate operation") {
         REQUIRE_THROWS_WITH(results.sum(0), "Cannot sum property 'value': operation not supported for 'string' properties");
+    }
+}
+
+TEST_CASE("results: snapshots") {
+    InMemoryTestFile config;
+    config.cache = false;
+    config.automatic_change_notifications = false;
+    config.schema = Schema{
+        {"object", {
+            {"value", PropertyType::Int},
+            {"array", PropertyType::Array, "linked to object"}
+        }},
+        {"linked to object", {
+            {"value", PropertyType::Int}
+        }}
+    };
+
+    auto r = Realm::get_shared_realm(config);
+
+    auto write = [&](auto&& f) {
+        r->begin_transaction();
+        f();
+        r->commit_transaction();
+        advance_and_notify(*r);
+    };
+
+    SECTION("snapshot of empty Results") {
+        Results results;
+        auto snapshot = results.snapshot();
+        REQUIRE(snapshot.size() == 0);
+    }
+
+    SECTION("snapshot of Results based on Table") {
+        auto table = r->read_group().get_table("class_object");
+        Results results(r, *table);
+
+        {
+            // A newly-added row should not appear in the snapshot.
+            auto snapshot = results.snapshot();
+            REQUIRE(results.size() == 0);
+            REQUIRE(snapshot.size() == 0);
+            write([=]{
+                table->add_empty_row();
+            });
+            REQUIRE(results.size() == 1);
+            REQUIRE(snapshot.size() == 0);
+        }
+
+        {
+            // Removing a row present in the snapshot should not affect the size of the snapshot,
+            // but will result in the snapshot returning a detached row accessor.
+            auto snapshot = results.snapshot();
+            REQUIRE(results.size() == 1);
+            REQUIRE(snapshot.size() == 1);
+            write([=]{
+                table->move_last_over(0);
+            });
+            REQUIRE(results.size() == 0);
+            REQUIRE(snapshot.size() == 1);
+            REQUIRE(!snapshot.get(0).is_attached());
+
+            // Adding a row at the same index that was formerly present in the snapshot shouldn't
+            // affect the state of the snapshot.
+            write([=]{
+                table->add_empty_row();
+            });
+            REQUIRE(snapshot.size() == 1);
+            REQUIRE(!snapshot.get(0).is_attached());
+        }
+    }
+
+    SECTION("snapshot of Results based on LinkView") {
+        auto object = r->read_group().get_table("class_object");
+        auto linked_to = r->read_group().get_table("class_linked to object");
+
+        write([=]{
+            object->add_empty_row();
+        });
+
+        LinkViewRef lv = object->get_linklist(1, 0);
+        Results results(r, lv);
+
+        {
+            // A newly-added row should not appear in the snapshot.
+            auto snapshot = results.snapshot();
+            REQUIRE(results.size() == 0);
+            REQUIRE(snapshot.size() == 0);
+            write([=]{
+                lv->add(linked_to->add_empty_row());
+            });
+            REQUIRE(results.size() == 1);
+            REQUIRE(snapshot.size() == 0);
+        }
+
+        {
+            // Removing a row from the link list should not affect the snapshot.
+            auto snapshot = results.snapshot();
+            REQUIRE(results.size() == 1);
+            REQUIRE(snapshot.size() == 1);
+            write([=]{
+                lv->remove(0);
+            });
+            REQUIRE(results.size() == 0);
+            REQUIRE(snapshot.size() == 1);
+            REQUIRE(snapshot.get(0).is_attached());
+
+            // Removing a row present in the snapshot from its table should result in the snapshot
+            // returning a detached row accessor.
+            write([=]{
+                linked_to->remove(0);
+            });
+            REQUIRE(snapshot.size() == 1);
+            REQUIRE(!snapshot.get(0).is_attached());
+
+            // Adding a new row to the link list shouldn't affect the state of the snapshot.
+            write([=]{
+                lv->add(linked_to->add_empty_row());
+            });
+            REQUIRE(snapshot.size() == 1);
+            REQUIRE(!snapshot.get(0).is_attached());
+        }
+    }
+
+    SECTION("snapshot of Results based on Query") {
+        auto table = r->read_group().get_table("class_object");
+        Query q = table->column<Int>(0) > 0;
+        Results results(r, std::move(q));
+
+        {
+            // A newly-added row should not appear in the snapshot.
+            auto snapshot = results.snapshot();
+            REQUIRE(results.size() == 0);
+            REQUIRE(snapshot.size() == 0);
+            write([=]{
+                table->set_int(0, table->add_empty_row(), 1);
+            });
+            REQUIRE(results.size() == 1);
+            REQUIRE(snapshot.size() == 0);
+        }
+
+        {
+            // Updating a row to no longer match the query criteria should not affect the snapshot.
+            auto snapshot = results.snapshot();
+            REQUIRE(results.size() == 1);
+            REQUIRE(snapshot.size() == 1);
+            write([=]{
+                table->set_int(0, 0, 0);
+            });
+            REQUIRE(results.size() == 0);
+            REQUIRE(snapshot.size() == 1);
+            REQUIRE(snapshot.get(0).is_attached());
+
+            // Removing a row present in the snapshot from its table should result in the snapshot
+            // returning a detached row accessor.
+            write([=]{
+                table->remove(0);
+            });
+            REQUIRE(snapshot.size() == 1);
+            REQUIRE(!snapshot.get(0).is_attached());
+
+            // Adding a new row that matches the query criteria shouldn't affect the state of the snapshot.
+            write([=]{
+                table->set_int(0, table->add_empty_row(), 1);
+            });
+            REQUIRE(snapshot.size() == 1);
+            REQUIRE(!snapshot.get(0).is_attached());
+        }
+    }
+
+    SECTION("snapshot of Results based on TableView from query") {
+        auto table = r->read_group().get_table("class_object");
+        Query q = table->column<Int>(0) > 0;
+        Results results(r, q.find_all());
+
+        {
+            // A newly-added row should not appear in the snapshot.
+            auto snapshot = results.snapshot();
+            REQUIRE(results.size() == 0);
+            REQUIRE(snapshot.size() == 0);
+            write([=]{
+                table->set_int(0, table->add_empty_row(), 1);
+            });
+            REQUIRE(results.size() == 1);
+            REQUIRE(snapshot.size() == 0);
+        }
+
+        {
+            // Updating a row to no longer match the query criteria should not affect the snapshot.
+            auto snapshot = results.snapshot();
+            REQUIRE(results.size() == 1);
+            REQUIRE(snapshot.size() == 1);
+            write([=]{
+                table->set_int(0, 0, 0);
+            });
+            REQUIRE(results.size() == 0);
+            REQUIRE(snapshot.size() == 1);
+            REQUIRE(snapshot.get(0).is_attached());
+
+            // Removing a row present in the snapshot from its table should result in the snapshot
+            // returning a detached row accessor.
+            write([=]{
+                table->remove(0);
+            });
+            REQUIRE(snapshot.size() == 1);
+            REQUIRE(!snapshot.get(0).is_attached());
+
+            // Adding a new row that matches the query criteria shouldn't affect the state of the snapshot.
+            write([=]{
+                table->set_int(0, table->add_empty_row(), 1);
+            });
+            REQUIRE(snapshot.size() == 1);
+            REQUIRE(!snapshot.get(0).is_attached());
+        }
+    }
+
+    SECTION("snapshot of Results based on TableView from backlinks") {
+        auto object = r->read_group().get_table("class_object");
+        auto linked_to = r->read_group().get_table("class_linked to object");
+
+        write([=]{
+            linked_to->add_empty_row();
+        });
+
+        TableView backlinks = linked_to->get_backlink_view(0, object.get(), 1);
+        Results results(r, std::move(backlinks));
+
+        auto lv = object->get_linklist(1, object->add_empty_row());
+
+        {
+            // A newly-added row should not appear in the snapshot.
+            auto snapshot = results.snapshot();
+            REQUIRE(results.size() == 0);
+            REQUIRE(snapshot.size() == 0);
+            write([=]{
+                lv->add(0);
+            });
+            REQUIRE(results.size() == 1);
+            REQUIRE(snapshot.size() == 0);
+        }
+
+        {
+            // Removing the link should not affect the snapshot.
+            auto snapshot = results.snapshot();
+            REQUIRE(results.size() == 1);
+            REQUIRE(snapshot.size() == 1);
+            write([=]{
+                lv->remove(0);
+            });
+            REQUIRE(results.size() == 0);
+            REQUIRE(snapshot.size() == 1);
+            REQUIRE(snapshot.get(0).is_attached());
+
+            // Removing a row present in the snapshot from its table should result in the snapshot
+            // returning a detached row accessor.
+            write([=]{
+                object->remove(0);
+            });
+            REQUIRE(snapshot.size() == 1);
+            REQUIRE(!snapshot.get(0).is_attached());
+
+            // Adding a new link shouldn't affect the state of the snapshot.
+            write([=]{
+                object->add_empty_row();
+                auto lv = object->get_linklist(1, object->add_empty_row());
+                lv->add(0);
+            });
+            REQUIRE(snapshot.size() == 1);
+            REQUIRE(!snapshot.get(0).is_attached());
+        }
+    }
+
+    SECTION("snapshot of Results with notification callback registered") {
+        auto table = r->read_group().get_table("class_object");
+        Query q = table->column<Int>(0) > 0;
+        Results results(r, q.find_all());
+
+        auto token = results.add_notification_callback([&](CollectionChangeSet, std::exception_ptr err) {
+            REQUIRE_FALSE(err);
+        });
+        advance_and_notify(*r);
+
+        SECTION("snapshot of lvalue") {
+            auto snapshot = results.snapshot();
+            write([=] {
+                table->set_int(0, table->add_empty_row(), 1);
+            });
+            REQUIRE(snapshot.size() == 0);
+        }
+
+        SECTION("snapshot of rvalue") {
+            auto snapshot = std::move(results).snapshot();
+            write([=] {
+                table->set_int(0, table->add_empty_row(), 1);
+            });
+            REQUIRE(snapshot.size() == 0);
+        }
+    }
+
+    SECTION("adding notification callback to snapshot throws") {
+        auto table = r->read_group().get_table("class_object");
+        Query q = table->column<Int>(0) > 0;
+        Results results(r, q.find_all());
+        auto snapshot = results.snapshot();
+        CHECK_THROWS(snapshot.add_notification_callback([](CollectionChangeSet, std::exception_ptr) {}));
     }
 }

@@ -20,6 +20,7 @@
 
 #include <realm/util/assert.hpp>
 #include <algorithm>
+
 #include <algorithm>
 
 using namespace realm;
@@ -254,9 +255,9 @@ void CollectionChangeBuilder::move_over(size_t row_ndx, size_t last_row, bool tr
 
     if (row_ndx == last_row) {
         if (track_moves) {
-        auto shifted_from = insertions.erase_or_unshift(row_ndx);
-        if (shifted_from != IndexSet::npos)
-            deletions.add_shifted(shifted_from);
+            auto shifted_from = insertions.erase_or_unshift(row_ndx);
+            if (shifted_from != IndexSet::npos)
+                deletions.add_shifted(shifted_from);
             m_move_mapping.erase(row_ndx);
         }
         modifications.remove(row_ndx);

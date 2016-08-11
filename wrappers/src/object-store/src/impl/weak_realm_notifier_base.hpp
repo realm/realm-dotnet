@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2015 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -49,6 +49,7 @@ public:
     bool is_for_realm(Realm* realm) const { return realm == m_realm_key; }
 
     bool is_for_current_thread() const { return m_thread_id == std::this_thread::get_id(); }
+
 private:
     std::weak_ptr<Realm> m_realm;
     std::thread::id m_thread_id = std::this_thread::get_id();

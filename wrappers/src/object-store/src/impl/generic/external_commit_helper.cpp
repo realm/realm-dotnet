@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2015 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -33,17 +33,17 @@ ExternalCommitHelper::ExternalCommitHelper(RealmCoordinator& parent)
        parent.get_encryption_key().data())
 , m_thread(std::async(std::launch::async, [=] {
     m_sg.begin_read();
-    //while (m_sg.wait_for_change()) {
-    //    m_sg.end_read();
-    //    m_sg.begin_read();
-    //    m_parent.on_change();
-    //}
+    while (m_sg.wait_for_change()) {
+        m_sg.end_read();
+        m_sg.begin_read();
+        m_parent.on_change();
+    }
 }))
 {
 }
 
 ExternalCommitHelper::~ExternalCommitHelper()
 {
-    //m_sg.wait_for_change_release();
-    //m_thread.wait(); // Wait for the thread to exit
+    m_sg.wait_for_change_release();
+    m_thread.wait(); // Wait for the thread to exit
 }

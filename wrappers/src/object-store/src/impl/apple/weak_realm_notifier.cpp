@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2015 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -37,9 +37,7 @@ WeakRealmNotifier::WeakRealmNotifier(const std::shared_ptr<Realm>& realm, bool c
     ctx.info = new RefCountedWeakPointer{realm, {0}};
     ctx.perform = [](void* info) {
         if (auto realm = static_cast<RefCountedWeakPointer*>(info)->realm.lock()) {
-            if (!realm->is_closed()) {
-                realm->notify();
-            }
+            realm->notify();
         }
     };
     ctx.retain = [](const void* info) {
@@ -71,6 +69,7 @@ WeakRealmNotifier::WeakRealmNotifier(WeakRealmNotifier&& rgt)
 WeakRealmNotifier& WeakRealmNotifier::operator=(WeakRealmNotifier&& rgt)
 {
     WeakRealmNotifierBase::operator=(std::move(rgt));
+
     invalidate();
     m_runloop = rgt.m_runloop;
     m_signal = rgt.m_signal;

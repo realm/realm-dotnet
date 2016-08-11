@@ -24,6 +24,7 @@
 #include "impl/collection_notifier.hpp"
 
 #include <realm/table_view.hpp>
+#include <realm/views.hpp>
 #include <realm/util/optional.hpp>
 
 namespace realm {
@@ -36,23 +37,16 @@ namespace _impl {
     class ResultsNotifier;
 }
 
-struct SortOrder {
-    std::vector<size_t> column_indices;
-    std::vector<bool> ascending;
-
-    explicit operator bool() const { return !column_indices.empty(); }
-};
-
 class Results {
 public:
     // Results can be either be backed by nothing, a thin wrapper around a table,
     // or a wrapper around a query and a sort order which creates and updates
     // the tableview as needed
     Results();
-    Results(SharedRealm r, const ObjectSchema& o, Table& table);
-    Results(SharedRealm r, const ObjectSchema& o, Query q, SortOrder s = {});
-    Results(SharedRealm r, const ObjectSchema& o, TableView tv, SortOrder s);
-    Results(SharedRealm r, const ObjectSchema& o, LinkViewRef lv, util::Optional<Query> q = {}, SortOrder s = {});
+    Results(SharedRealm r, Table& table);
+    Results(SharedRealm r, Query q, SortDescriptor s = {});
+    Results(SharedRealm r, TableView tv, SortDescriptor s = {});
+    Results(SharedRealm r, LinkViewRef lv, util::Optional<Query> q = {}, SortDescriptor s = {});
     ~Results();
 
     // Results is copyable and moveable
@@ -65,14 +59,14 @@ public:
     SharedRealm get_realm() const { return m_realm; }
 
     // Object schema describing the vendored object type
-    const ObjectSchema &get_object_schema() const { return *m_object_schema; }
+    const ObjectSchema &get_object_schema() const;
 
     // Get a query which will match the same rows as is contained in this Results
     // Returned query will not be valid if the current mode is Empty
     Query get_query() const;
 
     // Get the currently applied sort order for this Results
-    SortOrder const& get_sort() const noexcept { return m_sort; }
+    SortDescriptor const& get_sort() const noexcept { return m_sort; }
 
     // Get a tableview containing the same rows as this Results
     TableView get_tableview();
@@ -82,9 +76,6 @@ public:
 
     // Get the LinkView this Results is derived from, if any
     LinkViewRef get_linkview() const { return m_link_view; }
-
-    // Set whether the TableView should sync if needed before accessing results
-    void set_live(bool live);
 
     // Get the size of this results
     // Can be either O(1) or O(N) depending on the state of things
@@ -112,7 +103,11 @@ public:
 
     // Create a new Results by further filtering or sorting this Results
     Results filter(Query&& q) const;
-    Results sort(SortOrder&& sort) const;
+    Results sort(SortDescriptor&& sort) const;
+
+    // Return a snapshot of this Results that never updates to reflect changes in the underlying data.
+    Results snapshot() const &;
+    Results snapshot() &&;
 
     // Get the min/max/average/sum of the given column
     // All but sum() returns none when there are zero matching rows
@@ -128,8 +123,8 @@ public:
         Empty, // Backed by nothing (for missing tables)
         Table, // Backed directly by a Table
         Query, // Backed by a query that has not yet been turned into a TableView
-        LinkView, // Backed directly by a LinkView
-        TableView // Backed by a TableView created from a Query
+        LinkView,  // Backed directly by a LinkView
+        TableView, // Backed by a TableView created from a Query
     };
     // Get the currrent mode of the Results
     // Ideally this would not be public but it's needed for some KVO stuff
@@ -140,8 +135,8 @@ public:
 
     // The Results object has been invalidated (due to the Realm being invalidated)
     // All non-noexcept functions can throw this
-    struct InvalidatedException : public std::runtime_error {
-        InvalidatedException() : std::runtime_error("Access to invalidated Results objects") {}
+    struct InvalidatedException : public std::logic_error {
+        InvalidatedException() : std::logic_error("Access to invalidated Results objects") {}
     };
 
     // The input index parameter was out of bounds
@@ -152,20 +147,20 @@ public:
     };
 
     // The input Row object is not attached
-    struct DetatchedAccessorException : public std::runtime_error {
-        DetatchedAccessorException() : std::runtime_error("Atempting to access an invalid object") {}
+    struct DetatchedAccessorException : public std::logic_error {
+        DetatchedAccessorException() : std::logic_error("Atempting to access an invalid object") {}
     };
 
     // The input Row object belongs to a different table
-    struct IncorrectTableException : public std::runtime_error {
-        IncorrectTableException(StringData e, StringData a, const std::string &error)
-        : std::runtime_error(error), expected(e), actual(a) {}
+    struct IncorrectTableException : public std::logic_error {
+        IncorrectTableException(StringData e, StringData a, const std::string &error) :
+            std::logic_error(error), expected(e), actual(a) {}
         const StringData expected;
         const StringData actual;
     };
 
     // The requested aggregate operation is not supported for the column type
-    struct UnsupportedColumnTypeException : public std::runtime_error {
+    struct UnsupportedColumnTypeException : public std::logic_error {
         size_t column_index;
         StringData column_name;
         DataType column_type;
@@ -192,22 +187,27 @@ public:
     };
     
 private:
+    enum class UpdatePolicy {
+        Auto,  // Update automatically to reflect changes in the underlying data.
+        Never, // Never update.
+    };
+
     SharedRealm m_realm;
-    const ObjectSchema *m_object_schema;
+    mutable const ObjectSchema *m_object_schema = nullptr;
     Query m_query;
     TableView m_table_view;
     LinkViewRef m_link_view;
     Table* m_table = nullptr;
-    SortOrder m_sort;
-    bool m_live = true;
+    SortDescriptor m_sort;
 
     _impl::CollectionNotifier::Handle<_impl::ResultsNotifier> m_notifier;
 
     Mode m_mode = Mode::Empty;
+    UpdatePolicy m_update_policy = UpdatePolicy::Auto;
     bool m_has_used_table_view = false;
     bool m_wants_background_updates = true;
 
-    void update_tableview();
+    void update_tableview(bool wants_notifications = true);
     bool update_linkview();
 
     void validate_read() const;
