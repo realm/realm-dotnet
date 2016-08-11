@@ -24,7 +24,6 @@
 #include "impl/collection_notifier.hpp"
 
 #include <realm/table_view.hpp>
-#include <realm/views.hpp>
 #include <realm/util/optional.hpp>
 
 namespace realm {
