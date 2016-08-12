@@ -39,21 +39,17 @@
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <Import Project="..\packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets" Condition="Exists('..\packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets')" />
-  <Import Project="..\packages\Realm.0.74.1\build\Realm.targets" Condition="Exists('..\packages\Realm.0.74.1\build\Realm.targets')" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+  <Import Project="..\packages\Realm.0.77.2\build\Realm.targets" Condition="Exists('..\packages\Realm.0.77.2\build\Realm.targets')" />
   <ItemGroup>
     <None Include="FodyWeavers.xml" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="DotNetCross.Memory.Unsafe">
+      <HintPath>..\packages\DotNetCross.Memory.Unsafe.0.2.2\lib\DotNetCross.Memory.Unsafe.dll</HintPath>
+    </Reference>
     <Reference Include="Realm">
-      <HintPath>..\packages\Realm.0.74.1\lib\portable-net45+sl5+wp8+wpa81+win8+monoandroid+Xamarin.iOS10+monotouch+Xamarin.Mac\Realm.dll</HintPath>
+      <HintPath>..\packages\Realm.0.77.2\lib\portable-net45+sl5+wp8+wpa81+win8+monoandroid+Xamarin.iOS10+monotouch+Xamarin.Mac\Realm.dll</HintPath>
     </Reference>
   </ItemGroup>
 </Project>
