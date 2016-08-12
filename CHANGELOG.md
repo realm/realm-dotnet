@@ -3,7 +3,8 @@
 ### Bug fixes
 * Now throws a RealmMigrationSchemaNeededException if you have changed a `RealmObject` subclass declaration and not incremented the `SchemaVersion` (#518)
 
-Uses core 1.4.2
+Uses core 1.x.x
+
 
 0.77.2 (2016-08-11)
 -------------------
@@ -21,6 +22,7 @@ Uses core 1.4.2
 * Realms that close implicitly will no longer invalidate other instances (#746)
 
 Uses core 1.4.2
+
 
 0.77.1 (2016-07-25)
 -------------------
