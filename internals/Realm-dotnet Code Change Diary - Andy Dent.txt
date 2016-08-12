@@ -2449,7 +2449,6 @@ RealmSchema.cs
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #518 Start Schema Version at zero
 
-
 RealmConfiguration.cs
 - NotVersioned removed
 - SchemaVersion now initialised to zero
@@ -2466,3 +2465,23 @@ ForMigrationsToCopyAndMigrate.realm
 RealmMigrationTests.cs
 - refactored out from ObjectIntegrationTests.cs
 - MigrationTriggersDelete - disabled as it is not triggered due issue 507
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#507 RealmMigrationSchemaNeededException not thrown
+
+wrappers/error_handling.hpp
+- RealmErrorType added RealmSchemaMismatch=14
+
+wrappers/error_handling.cpp
+- convert_exception - add case for SchemaMismatchException passed back as RealmSchemaMismatch
+
+RealmExceptionCodes.cs
+- RealmExceptionCodes  added RealmSchemaMismatch=14
+
+RealmException.cs
+- RealmException.Create  
+  - added case for RealmSchemaMismatch
+  - RealmFormatUpgradeRequired handled mapping to plain RealmException
+  
+RealmMigrationTests.cs
+- TriggerMigrationBySchemaEditing re-enabled

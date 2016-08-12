@@ -63,6 +63,8 @@ namespace realm {
 
         RealmFormatUpgradeRequired = 13,
 
+        RealmSchemaMismatch = 14,
+
         RealmRowDetached = 21,
 
         StdArgumentOutOfRange = 100,
