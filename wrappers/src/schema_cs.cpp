@@ -23,6 +23,7 @@
 #include "object-store/src/shared_realm.hpp"
 #include "object-store/src/schema.hpp"
 #include "object-store/src/property.hpp"
+#include "object-store/src/object_schema.hpp"
 
 using namespace realm;
 

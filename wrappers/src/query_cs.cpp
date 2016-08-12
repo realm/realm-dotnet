@@ -25,7 +25,7 @@
 #include "object-store/src/schema.hpp"
 #include "timestamp_helpers.hpp"
 #include "object-store/src/results.hpp"
-#include "sort_order_wrapper.hpp"
+#include "sort_descriptor_marshaller.hpp"
 
 
 using namespace realm;
@@ -38,7 +38,7 @@ REALM_EXPORT void query_destroy(Query* query_ptr)
     delete(query_ptr);
 }
 
-REALM_EXPORT Row* query_find(Query * query_ptr, size_t begin_at_table_row, NativeException::Marshallable& ex)
+REALM_EXPORT Row* query_find(Query* query_ptr, size_t begin_at_table_row, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         if (begin_at_table_row >= query_ptr->get_table()->size())
@@ -380,14 +380,14 @@ REALM_EXPORT void query_binary_not_equal(Query* query_ptr, size_t columnIndex, c
 REALM_EXPORT Results* query_create_results(Query * query_ptr, SharedRealm* realm, ObjectSchema* object_schema, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        return new Results(*realm, *object_schema, *query_ptr);
+        return new Results(*realm, *query_ptr);
     });
 }
 
-REALM_EXPORT Results* query_create_sorted_results(Query * query_ptr, SharedRealm* realm, ObjectSchema* object_schema, SortOrderWrapper* sortorder_ptr, NativeException::Marshallable& ex)
+REALM_EXPORT Results* query_create_sorted_results(Query * query_ptr, SharedRealm* realm, ObjectSchema* object_schema, SortDescriptorMarshaller sort_descriptor, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        return new Results(*realm, *object_schema, *query_ptr, sortorder_ptr->sort_order);
+        return new Results(*realm, *query_ptr, sort_descriptor);
     });
 }
 
