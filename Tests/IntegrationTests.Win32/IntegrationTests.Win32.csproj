@@ -71,8 +71,13 @@
     <Reference Include="nunit.framework, Version=2.6.4.14350, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77">
       <HintPath>..\..\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
     </Reference>
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="Remotion.Linq">
+      <HintPath>..\..\packages\Remotion.Linq.2.1.1\lib\net45\Remotion.Linq.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GlobalFixtureSetup.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RunSpecificTest.cs" />
   </ItemGroup>
@@ -84,6 +89,10 @@
     <ProjectReference Include="..\..\wrappers\wrappers.vcxproj">
       <Project>{A1E763AD-24B9-4D6B-AACA-282BB33E350F}</Project>
       <Name>wrappers</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PurePCLBuildableTest\PurePCLBuildableTest.csproj">
+      <Project>{c33439ad-387d-4f86-9db8-9d4b48ec6750}</Project>
+      <Name>PurePCLBuildableTest</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

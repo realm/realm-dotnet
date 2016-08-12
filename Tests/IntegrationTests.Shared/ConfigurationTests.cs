@@ -254,7 +254,7 @@ namespace IntegrationTests
         }
 
 
-        [Test, Ignore("Currently, a RealmMismatchedConfigException is thrown. Registered as #580")]
+        [Test, Explicit("Currently, a RealmMismatchedConfigException is thrown. Registered as #580")]
         public void ReadOnlyRealmsWillNotAutoMigrate()
         {
             // Arrange

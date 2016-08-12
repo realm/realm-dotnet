@@ -52,7 +52,7 @@ namespace Realms
         internal ResultsHandle ResultsHandle => _resultsHandle ?? (_resultsHandle = CreateResultsHandle()); 
         private ResultsHandle _resultsHandle = null;
 
-        IQueryProvider IQueryable.Provider => _provider;
+        public IQueryProvider Provider => _provider;
 
         internal T this[int index]
         {

@@ -20,9 +20,6 @@ using NUnit.Framework;
 using Realms;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Text;
 using System.Linq;
 
 namespace IntegrationTests.Shared
@@ -118,5 +115,38 @@ namespace IntegrationTests.Shared
             Assert.That(_realm.All<Person>().Count(p => p.Birthday > birthday), Is.EqualTo(1));
         }
 
+        // Issue #294: At one point, simply having an object with an indexed DateTimeOffset property
+        // would cause a migration error when instantiating the database. This class and the test
+        // below verifies that this issue hasn't snuck back in.
+        [Preserve(AllMembers = true)]
+        public class IndexedDateTimeOffsetObject : RealmObject
+        {
+            [Indexed]
+            public DateTimeOffset DateTimeOffset { get; set; }
+        }
+
+        [Test]
+        public void IndexedDateTimeOffsetTest()
+        {
+            // Arrange
+            var config = new RealmConfiguration() {ObjectClasses = new[] {typeof (IndexedDateTimeOffsetObject)}};
+
+            // Act and "assert" that no exception is thrown here
+            using (Realm.GetInstance(config)) { }
+        }
+
+        [Test]
+        public void DateTimeOffsetShouldStoreFullPrecision()
+        {
+            // Arrange
+            const long ticks = 636059331339132912;
+            var p = new Person { Birthday = new DateTimeOffset(ticks, TimeSpan.Zero) };
+
+            // Act
+            _realm.Write(() => { _realm.Manage(p); });
+
+            // Assert
+            Assert.That(p.Birthday.Ticks, Is.EqualTo(ticks));
+        }
     }
 }

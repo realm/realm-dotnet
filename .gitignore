@@ -243,3 +243,5 @@ RealmWeaver.Fody.dll
 wrappers/libs-dbg
 
 *.xam
+
+Resource.designer.cs

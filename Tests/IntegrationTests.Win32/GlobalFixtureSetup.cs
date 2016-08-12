@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////////////////////////
+﻿////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -15,23 +15,19 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
-using System;
-using System.ComponentModel;
 
-[EditorBrowsable(EditorBrowsableState.Never)]
-internal static class DateTimeOffsetExtensions
+using NUnit.Framework;
+
+// No namespace to ensure this is applied to test fixtures in all namespaces.
+
+[SetUpFixture]
+public class GlobalFixtureSetup
 {
-    private static readonly DateTimeOffset UnixEpoch = new DateTimeOffset(1970, 1, 1, 0, 0, 0, TimeSpan.Zero);
-
-    internal static long ToRealmUnixTimeMilliseconds(this DateTimeOffset @this)
+    [SetUp]
+    public void SetUp()
     {
-        return Convert.ToInt64((@this.ToUniversalTime() - UnixEpoch).TotalMilliseconds);
-    }
-
-    internal static DateTimeOffset FromRealmUnixTimeMilliseconds( Int64 ms)
-    {
-        return UnixEpoch.AddMilliseconds(ms);
+        // Reference the PCL specifically to make sure it's in the current AppDomain when the schema is created.
+        // If we don't do this, TestDriven.NET and the Resharper Nunit runner won't load the assembly. 
+        var reference = typeof(PurePCLBuildableTest.ObjectInPCL);
     }
 }
-

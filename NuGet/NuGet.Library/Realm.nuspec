@@ -18,6 +18,7 @@
     <dependencies>
       <dependency id="Fody" version="1.29.4"/>
       <dependency id="DotNetCross.Memory.Unsafe" version="0.2.2"/>
+      <dependency id="Remotion.Linq" version="2.1.1"/>
     </dependencies>
   </metadata>
   <files>

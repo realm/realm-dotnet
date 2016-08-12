@@ -246,36 +246,50 @@ namespace Realms
 
 
         /// <summary>
-        ///  Closes the Realm if not already closed. Safe to call repeatedly.
+        /// Closes the Realm if not already closed. Safe to call repeatedly.
+        /// Note that this will close the file. Other references to the same database
+        /// on the same thread will be invalidated.
         /// </summary>
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         public void Close()
         {
             if (IsClosed)
                 return;
-            RuntimeHelpers.PrepareConstrainedRegions();
-            try { /* Close handle in a constrained execution region */ }
-            finally {
-                // Note we expect this call to also do explicit native close first rather than relying on destruction
-                // in case other handles preserve pointers - they will no longer work but don't stop closing
-                SharedRealmHandle.Close();
-            }
+
+            Dispose();
         }
 
+        ~Realm()
+        {
+            Dispose(false);
+        }
 
         /// <summary>
         ///  Dispose automatically closes the Realm if not already closed.
         /// </summary>
         public void Dispose()
         {
-            Close();
+            GC.SuppressFinalize(this);
+            Dispose(true);
+        }
+
+        private void Dispose(bool disposing)
+        {
+            if (IsClosed)
+                throw new ObjectDisposedException(nameof(Realm));
+            
+            if (disposing)
+            {
+                SharedRealmHandle.CloseRealm();
+            }
+
+            SharedRealmHandle.Close();  // Note: this closes the *handle*, it does not trigger realm::Realm::close().
+
             if (stringGetBuffer != IntPtr.Zero)
             {
                 Marshal.FreeHGlobal(stringGetBuffer);
                 stringGetBuffer = IntPtr.Zero;
                 stringGetBufferLen = 0;
             }
-                
         }
 
 

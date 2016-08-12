@@ -74,6 +74,10 @@ namespace realm {
         catch (const UninitializedRealmException& e) {
             return { RealmErrorType::RealmUnitializedRealm, e.what() };
         }
+        catch (const SchemaMismatchException& e) {
+          // typically shared_realm_open failing because same schemaVersion but changed
+          return { RealmErrorType::RealmSchemaMismatch, e.what() };
+        }
         //catch (const util::DecryptionFailed& e) {
         //    return { RealmExceptionCodes::RealmDecryptionFailed, e.what(), nullptr);
         //}

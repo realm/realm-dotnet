@@ -26,9 +26,9 @@ using System.Diagnostics;
 
 public class ModuleWeaver
 {
-    // Will log an informational message to MSBuild
-    public Action<string> LogDebug { get; set; } = m => { };
-    public Action<string> LogInfo { get; set; } = m => { };
+    // Will log an informational message to MSBuild - see https://github.com/Fody/Fody/wiki/ModuleWeaver for details
+    public Action<string> LogDebug { get; set; } = m => { };  // MessageImportance.Normal, included in verbosity Detailed
+    public Action<string> LogInfo { get; set; } = m => { };  // MessageImportance.High
     public Action<string, SequencePoint> LogWarningPoint { get; set; } = (m, p) => { };
     public Action<string> LogError { get; set; } = m => { };
     public Action<string, SequencePoint> LogErrorPoint { get; set; } = (m, p) => { };
@@ -291,8 +291,6 @@ public class ModuleWeaver
             columnName = ((string) mapToAttribute.ConstructorArguments[0].Value);
 
         var backingField = GetBackingField(prop);
-        Debug.Write("  - " + prop.PropertyType.FullName + " " + prop.Name + " (Column: " + columnName + ").. ");
-
         var isIndexed = prop.CustomAttributes.Any(a => a.AttributeType.Name == "IndexedAttribute");
         if (isIndexed && (!_indexableTypes.Contains(prop.PropertyType.FullName)))
         {
@@ -311,7 +309,7 @@ public class ModuleWeaver
             return false;
         }
 
-        if (!prop.IsAutomatic())
+        if (!prop.IsAutomatic()) 
         {
             if (prop.PropertyType.Resolve().BaseType.IsSameAs(_realmObject))
                 LogWarningPoint(
@@ -409,6 +407,10 @@ public class ModuleWeaver
         prop.CustomAttributes.Add(wovenPropertyAttribute);
 
         Debug.WriteLine("");
+
+        var objectIdMsg = isObjectId ? "[ObjectId]" : "";
+        var indexedMsg = isIndexed ? "[Indexed]" : "";
+        LogDebug($"Woven {type.Name}.{prop.Name} as a {prop.PropertyType.FullName} {objectIdMsg} {indexedMsg}");
         return true;
     }
 
