@@ -21,7 +21,6 @@
 #include "marshalling.hpp"
 #include "realm_export_decls.hpp"
 #include "results.hpp"
-#include "sort_order_wrapper.hpp"
 
 using namespace realm;
 using namespace realm::binding;
@@ -66,28 +65,6 @@ REALM_EXPORT size_t results_count(Results* results_ptr, NativeException::Marshal
 {
   return handle_errors(ex, [&]() {
       return results_ptr->size();
-  });
-}
-
-REALM_EXPORT SortOrderWrapper* sortorder_create_for_table(Table* table_ptr, NativeException::Marshallable& ex)
-{
-  return handle_errors(ex, [&]() {
-      return new SortOrderWrapper(table_ptr);
-  });
-}
-
-REALM_EXPORT void sortorder_destroy(SortOrderWrapper* sortorder_ptr)
-{
-    delete sortorder_ptr;
-}
-
-
-REALM_EXPORT void sortorder_add_clause(SortOrderWrapper* sortorder_ptr, uint16_t *  column_name, size_t column_name_len, size_t ascending, NativeException::Marshallable& ex)
-{
-  return handle_errors(ex, [&]() {
-      Utf16StringAccessor str(column_name, column_name_len);
-      auto colIndex = sortorder_ptr->table->get_column_index(str);
-      sortorder_ptr->add_sort(colIndex, ascending==1);
   });
 }
 

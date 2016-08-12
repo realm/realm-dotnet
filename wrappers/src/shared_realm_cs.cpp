@@ -68,7 +68,7 @@ REALM_EXPORT SharedRealm* shared_realm_open(Schema* schema, uint16_t* path, size
 
         Realm::Config config;
         config.path = pathStr.to_string();
-        config.read_only = read_only;
+        //config.read_only = read_only;
         config.in_memory = durability != SharedGroup::durability_Full;
 
         // by definition the key is only allowwed to be 64 bytes long, enforced by C# code
@@ -77,7 +77,7 @@ REALM_EXPORT SharedRealm* shared_realm_open(Schema* schema, uint16_t* path, size
         else
           config.encryption_key = std::vector<char>(encryption_key, encryption_key+64);
 
-        config.schema.reset(schema);
+        config.schema.emplace(*schema); // TODO: This copies the schema, so the handle kept in .net is wrong.
         config.schema_version = schemaVersion;
 
         return new SharedRealm{Realm::get_shared_realm(config)};
@@ -107,11 +107,10 @@ REALM_EXPORT void shared_realm_close_realm(SharedRealm* realm, NativeException::
 REALM_EXPORT Table* shared_realm_get_table(SharedRealm* realm, uint16_t* object_type, size_t object_type_len, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        Group* g = (*realm)->read_group();
         Utf16StringAccessor str(object_type, object_type_len);
 
         std::string table_name = ObjectStore::table_name_for_object_type(str);
-        return LangBindHelper::get_table(*g, table_name);
+        return LangBindHelper::get_table((*realm)->read_group(), table_name);
     });
 }
 

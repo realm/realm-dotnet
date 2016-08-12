@@ -153,6 +153,9 @@
     <ClCompile Include="src\object-store\src\impl\handover.cpp">
       <Filter>Source Files\object-store\impl</Filter>
     </ClCompile>
+    <ClCompile Include="src\win32_polyfill.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\error_handling.hpp">
@@ -257,9 +260,6 @@
     <ClInclude Include="src\object-store\src\util\format.hpp">
       <Filter>Header Files\object-store\util</Filter>
     </ClInclude>
-    <ClInclude Include="src\sort_order_wrapper.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\timestamp_helpers.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -268,6 +268,9 @@
     </ClInclude>
     <ClInclude Include="src\object-store\src\impl\handover.hpp">
       <Filter>Header Files\object-store\impl</Filter>
+    </ClInclude>
+    <ClInclude Include="src\sort_descriptor_marshaller.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
