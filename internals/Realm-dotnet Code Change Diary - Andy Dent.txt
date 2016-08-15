@@ -2486,6 +2486,65 @@ RealmException.cs
 RealmMigrationTests.cs
 - TriggerMigrationBySchemaEditing re-enabled
 
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Refactoring MakeObject logic to assist ObjectID work and reduce lookups
+
+Realm.cs
+- MakeObjectForRow overload added to take a RealmObject.Metadata instead of doing lookup, and simple rowPtr
+- MakeObjectForRow original taking string, changed to take rowPtr for second arg and forward to new overload
+- MakeResultsForTable take metadata instead of class name
+- MakeSortOrderForTable take metadata instead of class name
+- All(both overloads) - lookup metadata for RealmResults
+- RemoveAll optimise loop by foreach on Metadata instead of Schema
+
+RealmList.cs
+- RealmList
+  - added field _targetMetadata
+  - use new MakeObjectForRow
+  - IRealmList.SchemaClassName removed
+  - _schemaClassName removed
+  - ctor take a metadata param instead of className and set _targetMetadata
+- IRealmList - removed SchemaClassName
+
+RealmResults.cs
+- added field _targetMetadata
+- this[int index]
+  - init _targetMetadata if null
+  - use new MakeObjectForRow
+- CreateResultsHandle
+  - init _targetMetadata if null
+- MakeResultsForTable take metadata instead of name
+- RemoveAll - lookup metadata for MakeResultsForTable
+- ctor take Metadata instead of schema
+
+RealmResultsProvider.cs
+- _schema replaced by _metadata
+- ctor take Metadatata instead of schema
+
+
+RealmObjectOps.cs
+-  GetObjectValue<T>(string propertyName) pass only rowPtr to MakeObjectForRow
+- GetList lookup metadata for RealmList ctor
+
+RealmObject.cs
+-  GetObjectValue<T>(string propertyName) pass only rowPtr to MakeObjectForRow
+- GetListValue<T>(string propertyName) lookup metadata for RealmList ctor
+
+RealmResultsEnumerator.cs
+- MoveNext
+  - quicker check for failure knowing a null rowPtr returned
+
+RealmResultsVisitor.cs
+- _schema removed
+- _metadata added
+- VisitMethodCall    
+  - quicker check for failure knowing a null rowPtr returned
+
+
+RealmListPCL.cs
+- removed IRealmList.SchemaClassName
+
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #402 Retrieve Optimally by ObjectId
 

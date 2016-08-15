@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -41,13 +41,14 @@ namespace Realms
         private readonly RealmResultsProvider _provider = null;  // null if _allRecords
         private readonly bool _allRecords = false;
         private readonly Realm _realm;
+        private readonly RealmObject.Metadata _targetMetadata;
         private readonly List<NotificationCallback> _callbacks = new List<NotificationCallback>();
         private NotificationTokenHandle _notificationToken;
 
         /// <summary>
         /// The <see cref="Schema.ObjectSchema"/> that describes the type of item this collection can contain.
         /// </summary>
-        public Schema.ObjectSchema ObjectSchema { get; }
+        public Schema.ObjectSchema ObjectSchema => _targetMetadata.Schema;
 
         internal ResultsHandle ResultsHandle => _resultsHandle ?? (_resultsHandle = CreateResultsHandle()); 
         private ResultsHandle _resultsHandle = null;
@@ -58,9 +59,10 @@ namespace Realms
         {
             get
             {
+                if (index < 0)
+                    throw new IndexOutOfRangeException ();
                 var rowPtr = ResultsHandle.GetRow(index);
-                var rowHandle = Realm.CreateRowHandle(rowPtr, _realm.SharedRealmHandle);
-                return (T)(object)_realm.MakeObjectForRow(ObjectSchema.Name, rowHandle);
+                return (T)(object)_realm.MakeObjectForRow(_targetMetadata, rowPtr);
             }
         }
 
@@ -101,18 +103,18 @@ namespace Realms
         /// <param name="error">An exception that might have occured while asynchronously monitoring a <see cref="RealmResults{T}"/> for changes, or <c>null</c> if no errors occured.</param>
         public delegate void NotificationCallback(RealmResults<T> sender, ChangeSet changes, Exception error);
 
-        internal RealmResults(Realm realm, RealmResultsProvider realmResultsProvider, Expression expression, Schema.ObjectSchema schema, bool createdByAll)
+        internal RealmResults(Realm realm, RealmResultsProvider realmResultsProvider, Expression expression, RealmObject.Metadata metadata, bool createdByAll)
         {
             _realm = realm;
             _provider = realmResultsProvider;
             Expression = expression ?? Expression.Constant(this);
-            ObjectSchema = schema;
+            _targetMetadata = metadata;
             _allRecords = createdByAll;
 
         }
 
-        internal RealmResults(Realm realm, Schema.ObjectSchema schema, bool createdByAll)
-            : this(realm, new RealmResultsProvider(realm, schema), null, schema, createdByAll)
+        internal RealmResults(Realm realm, RealmObject.Metadata metadata, bool createdByAll)
+            : this(realm, new RealmResultsProvider(realm, metadata), null, metadata, createdByAll)
         {
         }
 
@@ -120,17 +122,14 @@ namespace Realms
         {
             if (_allRecords)
             {
-                return _realm.MakeResultsForTable(ObjectSchema.Name);
+                return _realm.MakeResultsForTable(_targetMetadata);
             }
-            else
-            {
-                // do all the LINQ expression evaluation to build a query
-                var qv = _provider.MakeVisitor();
-                qv.Visit(Expression);
-                var queryHandle = qv._coreQueryHandle; // grab out the built query definition
-                var sortHandle = qv._optionalSortOrderHandle;
-                return _realm.MakeResultsForQuery(ObjectSchema, queryHandle, sortHandle);
-            }
+            // do all the LINQ expression evaluation to build a query
+            var qv = _provider.MakeVisitor();
+            qv.Visit(Expression);
+            var queryHandle = qv._coreQueryHandle; // grab out the built query definition
+            var sortHandle = qv._optionalSortOrderHandle;
+            return _realm.MakeResultsForQuery(ObjectSchema, queryHandle, sortHandle);
         }
 
         /// <summary>
