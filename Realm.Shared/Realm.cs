@@ -685,7 +685,7 @@ namespace Realms
                 throw new RealmClassLacksObjectIdException($"Class {typeof(T).Name} does not have a property marked as ObjectId");
 
             NativeException nativeException;
-            var rowPtr = NativeMethods.row_for_string_id(this, columnIndex, id, (IntPtr)id.Length, out nativeException);
+            var rowPtr = NativeMethods.row_for_string_id(this, (IntPtr)columnIndex, id, (IntPtr)id.Length, out nativeException);
             nativeException.ThrowIfNecessary();
             var rowHandle = CreateRowHandle(rowPtr, SharedRealmHandle);
 
