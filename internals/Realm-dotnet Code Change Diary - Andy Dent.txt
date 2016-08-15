@@ -2495,6 +2495,11 @@ ObjectIdTests.cs
 Realm.cs
 - ById added (with overloads by types)
 - All<T> refactored out SchemaIfInRealm
+- CreateRealmObjectMetadata work out index of objectId col
+
+wrappers/query_cs.cpp
+- row_for_string_id added
 
 
-row_for_string_id
+RealmObject.Metadata
+- ObjectIdColIndex added

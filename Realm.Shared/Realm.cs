@@ -194,12 +194,22 @@ namespace Realms
                 helper = Dynamic.DynamicRealmObjectHelper.Instance;
             }
 
+            var colMap = new Dictionary<string, IntPtr>();
+            int objectIdIndex = -1;
+            foreach(var prop in schema)
+            {
+                var colIndex = NativeTable.GetColumnIndex(table, prop.Name);
+                colMap.Add(prop.Name, colIndex);
+                if (prop.IsObjectId)
+                    objectIdIndex = (int)colIndex;
+            }
             return new RealmObject.Metadata
             {
                 Table = table,
                 Helper = helper,
-                ColumnIndices = schema.ToDictionary(p => p.Name, p => NativeTable.GetColumnIndex(table, p.Name)),
-                Schema = schema
+                ColumnIndices = colMap,
+                Schema = schema,
+                ObjectIdColIndex = objectIdIndex
             };
         }
 
@@ -659,6 +669,7 @@ namespace Realms
             return new RealmResults<dynamic>(this, schema, true);
         }
 
+
         #region ById
         /// <summary>
         /// Fast lookup of an object from a class which has an ObjectId property.
@@ -668,11 +679,13 @@ namespace Realms
         /// <returns>Null or an object matdhing the id</returns>
         public RealmResults<T> ById<T>(string id) where T : RealmObject
         {
-            var schema = SchemaIfInRealm<T>();
-            var columnIndex = ObjectIdIndex(schema);
+            var metadata = Metadata[typeof(T).Name];
+            var columnIndex = metadata.ObjectIdColIndex;
+            if (columnIndex == -1)
+                throw new RealmClassLacksObjectIdException($"Class {typeof(T).Name} does not have a property marked as ObjectId");
 
             NativeException nativeException;
-            var rowPtr = NativeMethods.string_equal(this, columnIndex, id, (IntPtr)id.Length, out nativeException);
+            var rowPtr = NativeMethods.row_for_string_id(this, columnIndex, id, (IntPtr)id.Length, out nativeException);
             nativeException.ThrowIfNecessary();
             var rowHandle = CreateRowHandle(rowPtr, SharedRealmHandle);
 

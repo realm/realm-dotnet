@@ -27,6 +27,12 @@ using Realms.Schema;
 
 namespace Realms
 {
+    /// <summary>
+    /// Describe the complete set of classes stored in a Realm.
+    /// </summary>
+    /// <remarks>
+    /// By default this will be all the RealmObjects in all your assemblies unless you restrict with RealmConfiguration.ObjectClasses.
+    /// </remarks>
     public class RealmSchema : IReadOnlyCollection<ObjectSchema>
     {
         private readonly ReadOnlyDictionary<string, ObjectSchema> _objects;

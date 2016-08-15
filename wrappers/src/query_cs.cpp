@@ -393,14 +393,18 @@ REALM_EXPORT Results* query_create_sorted_results(Query * query_ptr, SharedRealm
 
 
 #pragma mark  ObjectId Searches
+// These build and use a query in one go.
+// Note that I am not terribly happy with the overhead of looking up the PrimaryKey field by name,
+// then further looking up column index from that name, but that is same as Cocoa.
 
-REALM_EXPORT Row* row_for_string_id(size_t columnIndex, uint16_t* value, size_t value_len, NativeException::Marshallable& ex)
+REALM_EXPORT Row* row_for_string_id(Table* table_ptr, size_t columnIndex, uint16_t* value, size_t value_len, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-
         Utf16StringAccessor str(value, value_len);
-        query_ptr->equal(columnIndex, str);
+        //TODO abstract out all the following bits
 
+        auto query_ptr = new Query(table_ptr->where());
+        query_ptr->equal(columnIndex, str);  // make a lambda
         const size_t row_ndx = query_ptr->find(0);
         auto ret =  (Row*)nullptr;;
         if (row_ndx != not_found)

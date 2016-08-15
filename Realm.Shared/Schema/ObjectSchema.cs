@@ -27,6 +27,9 @@ using System.Reflection;
 
 namespace Realms.Schema
 {
+    /// <summary>
+    /// Public descriptio of a class stored in a Realm, as a collection of managed Propertys.
+    /// </summary>
     [DebuggerDisplay("Name = {Name}, Properties = {Count}")]
     public class ObjectSchema : IReadOnlyCollection<Property>
     {
