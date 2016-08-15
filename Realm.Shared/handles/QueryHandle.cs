@@ -18,6 +18,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using Realms.native;
 
 namespace Realms
 {
@@ -182,10 +183,13 @@ namespace Realms
             public static extern IntPtr count(QueryHandle QueryHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_create_results", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr create_results(QueryHandle queryPtr, SharedRealmHandle sharedRealm, IntPtr objectSchema, out NativeException ex);
+            public static extern IntPtr create_results(QueryHandle queryPtr, SharedRealmHandle sharedRealm, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_create_sorted_results", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr create_sorted_results(QueryHandle queryPtr, SharedRealmHandle sharedRealm, IntPtr objectSchema, SortOrderHandle sortOrderHandle, out NativeException ex);
+            public static extern IntPtr create_sorted_results(QueryHandle queryPtr, SharedRealmHandle sharedRealm, IntPtr tablePtr,
+                [MarshalAs(UnmanagedType.LPArray), In]SortDescriptorBuilder.Clause.Marshalable[] sortClauses, IntPtr clauseCount,
+                [MarshalAs(UnmanagedType.LPArray), In]IntPtr[] flattenedColumnIndices,
+                out NativeException ex);
 
         }
 
@@ -523,18 +527,19 @@ namespace Realms
             return (int)result;
         }
 
-        public IntPtr CreateResults(SharedRealmHandle sharedRealm, IntPtr objectSchema)
+        public IntPtr CreateResults(SharedRealmHandle sharedRealm)
         {
             NativeException nativeException;
-            var result = NativeMethods.create_results(this, sharedRealm, objectSchema, out nativeException);
+            var result = NativeMethods.create_results(this, sharedRealm, out nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
 
-        public IntPtr CreateSortedResults(SharedRealmHandle sharedRealm, IntPtr objectSchema, SortOrderHandle sortOrderHandle)
+        public IntPtr CreateSortedResults(SharedRealmHandle sharedRealm, SortDescriptorBuilder sortDescriptorBuilder)
         {
             NativeException nativeException;
-            var result = NativeMethods.create_sorted_results(this, sharedRealm, objectSchema, sortOrderHandle, out nativeException);
+            var marshaledValues = sortDescriptorBuilder.Flatten();
+            var result = NativeMethods.create_sorted_results(this, sharedRealm, sortDescriptorBuilder.TablePtr, marshaledValues.Item2, (IntPtr)marshaledValues.Item2.Length, marshaledValues.Item1, out nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }

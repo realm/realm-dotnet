@@ -22,7 +22,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
-
+using Realms.native;
 using LazyMethod = System.Lazy<System.Reflection.MethodInfo>;
 
 namespace Realms
@@ -31,7 +31,8 @@ namespace Realms
     {
         private Realm _realm;
         internal QueryHandle _coreQueryHandle;  // set when recurse down to VisitConstant
-        internal SortOrderHandle _optionalSortOrderHandle;  // set only when get OrderBy*
+<<<<<<< HEAD
+        internal SortDescriptorBuilder OptionalSortDescriptorBuilder;  // set only when get OrderBy*
         private readonly RealmObject.Metadata _metadata;
 
         private static class Methods 
@@ -102,23 +103,24 @@ namespace Realms
 
             if (isStarting)
             {
-                if (_optionalSortOrderHandle == null)
-                    _optionalSortOrderHandle = _realm.MakeSortOrderForTable(_metadata);
+                if (OptionalSortDescriptorBuilder == null)
+                    OptionalSortDescriptorBuilder = _realm.CreateSortDescriptorForTable(_metadata);
                 else
                 {
-                    var badCall = ascending ? "By" : "ByDescending";
-                    throw new NotSupportedException($"You can only use one OrderBy or OrderByDescending clause, subsequent sort conditions should be Then{badCall}");
+                    var badCall = ascending ? "ThenBy" : "ThenByDescending";
+                    throw new NotSupportedException($"You can only use one OrderBy or OrderByDescending clause, subsequent sort conditions should be {badCall}");
                 }
             }
 
             var sortColName = body.Member.Name;
-            _optionalSortOrderHandle.AddClause(sortColName, ascending);
+            OptionalSortDescriptorBuilder.AddClause(sortColName, ascending);
         }
 
 
         internal override Expression VisitMethodCall(MethodCallExpression m)
         {
-            if (m.Method.DeclaringType == typeof(Queryable)) { 
+            if (m.Method.DeclaringType == typeof(Queryable))
+            { 
                 if (m.Method.Name == "Where")
                 {
                     this.Visit(m.Arguments[0]);
@@ -166,13 +168,13 @@ namespace Realms
                 {
                     RecurseToWhereOrRunLambda(m);  
                     IntPtr firstRowPtr = IntPtr.Zero;
-                    if (_optionalSortOrderHandle == null)
+                    if (OptionalSortDescriptorBuilder == null)
                     {
                         firstRowPtr = _coreQueryHandle.FindDirect(IntPtr.Zero);
                     }
                     else 
                     {
-                        using (ResultsHandle rh = _realm.MakeResultsForQuery(_metadata.Schema, _coreQueryHandle, _optionalSortOrderHandle)) 
+                        using (ResultsHandle rh = _realm.MakeResultsForQuery(_coreQueryHandle, OptionalSortDescriptorBuilder)) 
                         {
                             firstRowPtr = rh.GetRow(0);
                         }

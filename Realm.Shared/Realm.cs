@@ -26,6 +26,7 @@ using System.Runtime.ConstrainedExecution;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Realms.native;
 
 #if __IOS__
 using ObjCRuntime;
@@ -467,24 +468,21 @@ namespace Realms
         }
 
 
-        internal ResultsHandle MakeResultsForQuery(Schema.ObjectSchema schema, QueryHandle builtQuery, SortOrderHandle optionalSortOrder)
+        internal ResultsHandle MakeResultsForQuery(QueryHandle builtQuery, SortDescriptorBuilder optionalSortDescriptorBuilder)
         {
             var resultsPtr = IntPtr.Zero;               
-            if (optionalSortOrder == null)
-                resultsPtr = builtQuery.CreateResults(SharedRealmHandle, schema.Handle);
+            if (optionalSortDescriptorBuilder == null)
+                resultsPtr = builtQuery.CreateResults(SharedRealmHandle);
             else
-                resultsPtr = builtQuery.CreateSortedResults(SharedRealmHandle, schema.Handle, optionalSortOrder);
+                resultsPtr = builtQuery.CreateSortedResults(SharedRealmHandle, optionalSortDescriptorBuilder);
             return CreateResultsHandle(resultsPtr);
         }
 
 
-        internal SortOrderHandle MakeSortOrderForTable(RealmObject.Metadata metadata)
+        internal SortDescriptorBuilder CreateSortDescriptorForTable(RealmObject.Metadata metadata)
         {
-            var result = new SortOrderHandle();
-            result.CreateForTable(metadata.Table);
-            return result;
+            return new SortDescriptorBuilder(metadata);
         }
-
 
         /// <summary>
         /// This realm will start managing a RealmObject which has been created as a standalone object.
@@ -743,5 +741,6 @@ namespace Realms
                 resultsHandle.Clear();
             }
         }
+
     }
 }

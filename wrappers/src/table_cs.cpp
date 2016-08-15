@@ -319,16 +319,22 @@ REALM_EXPORT void table_remove_row(Table* table_ptr, Row* row_ptr, NativeExcepti
     });
 }
 
-REALM_EXPORT Results* table_create_results(Table* table_ptr, SharedRealm* realm, ObjectSchema* object_schema, NativeException::Marshallable& ex)
+REALM_EXPORT Results* table_create_results(Table* table_ptr, SharedRealm* realm, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         return new Results(*realm, *table_ptr);
     });
 }
 
-REALM_EXPORT Results* table_create_sorted_results(Table* table_ptr, SharedRealm* realm, ObjectSchema* object_schema, SortDescriptorMarshaller sort_descriptor, NativeException::Marshallable& ex)
+REALM_EXPORT Results* table_create_sorted_results(Table* table_ptr, SharedRealm* realm, MarshalableSortClause* sort_clauses, size_t clause_count, size_t* flattened_column_indices, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
+        std::vector<std::vector<size_t>> column_indices;
+        std::vector<bool> ascending;
+
+        unflatten_sort_clauses(sort_clauses, clause_count, flattened_column_indices, column_indices, ascending);
+
+        auto sort_descriptor = SortDescriptor(*table_ptr, column_indices, ascending);
         return new Results(*realm, table_ptr->where(), sort_descriptor);
     });
 }
