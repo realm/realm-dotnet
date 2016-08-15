@@ -693,8 +693,9 @@ namespace Realms
         /// </summary>
         /// <typeparam name="T">The Type T must not only be a RealmObject but also have been processd by the Fody weaver, so it has persistent properties.</typeparam>
         /// <param name="id">Id to be matched exactly, same as an == search.</param>
-        /// <returns>Null or an object matdhing the id</returns>
-        public RealmResults<T> ById<T>(string id) where T : RealmObject
+        /// <returns>Null or an object matdhing the id.</returns>
+        /// <exception cref="RealmClassLacksObjectIdException">If the RealmObject class T lacks an [ObjectId].</exception>
+        public T ById<T>(string id) where T : RealmObject
         {
             var metadata = Metadata[typeof(T).Name];
             var columnIndex = metadata.ObjectIdColIndex;
@@ -702,13 +703,9 @@ namespace Realms
                 throw new RealmClassLacksObjectIdException($"Class {typeof(T).Name} does not have a property marked as ObjectId");
 
             NativeException nativeException;
-            var rowPtr = NativeMethods.row_for_string_id(this, (IntPtr)columnIndex, id, (IntPtr)id.Length, out nativeException);
+            var rowPtr = NativeTable.row_for_string_id(metadata.Table, (IntPtr)columnIndex, id, (IntPtr)id.Length, out nativeException);
             nativeException.ThrowIfNecessary();
-            var rowHandle = CreateRowHandle(rowPtr, SharedRealmHandle);
-
-            result._Manage(this, rowHandle, metadata);
-            return result;
-            return null;
+            return (T)MakeObjectForRow(metadata, rowPtr);
         }
         #endregion ById
 

@@ -2553,7 +2553,6 @@ ObjectIdTests.cs
 
 Realm.cs
 - ById added (with overloads by types)
-- All<T> refactored out SchemaIfInRealm
 - CreateRealmObjectMetadata work out index of objectId col
 
 wrappers/query_cs.cpp
@@ -2562,3 +2561,6 @@ wrappers/query_cs.cpp
 
 RealmObject.Metadata
 - ObjectIdColIndex added
+
+RealmClassLacksObjectIdException
+- added

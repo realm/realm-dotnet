@@ -26,6 +26,7 @@ using Realms;
 namespace IntegrationTests.Shared
 {
     // using classes from TestObjects.cs
+    [TestFixture, Preserve(AllMembers = true)]
     public class ObjectIdTests
     {
 
@@ -55,10 +56,17 @@ namespace IntegrationTests.Shared
 
             var foundObj = _realm.ById<ObjectIdStringObject>("Zaphod");
             Assert.IsNotNull(foundObj);
-            Assert.That(foundObj.StringProperty, Is.EqualTo("Zaphod");
+            Assert.That(foundObj.StringProperty, Is.EqualTo("Zaphod"));
         }
 
-    
+
+        [Test]
+        public void ExceptionIfNoIdDeclared()
+        {
+            Assert.Throws<RealmClassLacksObjectIdException>( () => {
+                var foundObj = _realm.ById<Person>("Zaphod");
+            });
+        }
     }
 }
 
