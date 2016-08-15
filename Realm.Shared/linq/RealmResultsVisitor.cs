@@ -22,7 +22,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
-
+using Realms.native;
 using LazyMethod = System.Lazy<System.Reflection.MethodInfo>;
 
 namespace Realms
@@ -31,7 +31,7 @@ namespace Realms
     {
         private Realm _realm;
         internal QueryHandle _coreQueryHandle;  // set when recurse down to VisitConstant
-        internal SortOrderHandle _optionalSortOrderHandle;  // set only when get OrderBy*
+        internal SortDescriptorBuilder OptionalSortDescriptorBuilder;  // set only when get OrderBy*
         private Schema.ObjectSchema _schema;
 
         private static class Methods 
@@ -102,23 +102,24 @@ namespace Realms
 
             if (isStarting)
             {
-                if (_optionalSortOrderHandle == null)
-                    _optionalSortOrderHandle = _realm.MakeSortOrderForTable(_schema.Name);
+                if (OptionalSortDescriptorBuilder == null)
+                    OptionalSortDescriptorBuilder = _realm.CreateSortDescriptorForTable(_schema.Name);
                 else
                 {
-                    var badCall = ascending ? "By" : "ByDescending";
-                    throw new NotSupportedException($"You can only use one OrderBy or OrderByDescending clause, subsequent sort conditions should be Then{badCall}");
+                    var badCall = ascending ? "ThenBy" : "ThenByDescending";
+                    throw new NotSupportedException($"You can only use one OrderBy or OrderByDescending clause, subsequent sort conditions should be {badCall}");
                 }
             }
 
             var sortColName = body.Member.Name;
-            _optionalSortOrderHandle.AddClause(sortColName, ascending);
+            OptionalSortDescriptorBuilder.AddClause(sortColName, ascending);
         }
 
 
         internal override Expression VisitMethodCall(MethodCallExpression m)
         {
-            if (m.Method.DeclaringType == typeof(Queryable)) { 
+            if (m.Method.DeclaringType == typeof(Queryable))
+            { 
                 if (m.Method.Name == "Where")
                 {
                     this.Visit(m.Arguments[0]);
@@ -168,14 +169,14 @@ namespace Realms
                 {
                     RecurseToWhereOrRunLambda(m);  
                     RowHandle firstRow = null;
-                    if (_optionalSortOrderHandle == null)
+                    if (OptionalSortDescriptorBuilder == null)
                     {
                         var rowPtr = _coreQueryHandle.FindDirect(IntPtr.Zero);
                         firstRow = Realm.CreateRowHandle(rowPtr, _realm.SharedRealmHandle);
                     }
                     else 
                     {
-                        using (ResultsHandle rh = _realm.MakeResultsForQuery(_schema, _coreQueryHandle, _optionalSortOrderHandle)) 
+                        using (ResultsHandle rh = _realm.MakeResultsForQuery(_coreQueryHandle, OptionalSortDescriptorBuilder)) 
                         {
                             var rowPtr = rh.GetRow(0);
                             firstRow = Realm.CreateRowHandle(rowPtr, _realm.SharedRealmHandle);

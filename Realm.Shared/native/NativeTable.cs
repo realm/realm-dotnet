@@ -19,6 +19,7 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Realms.native;
 
 namespace Realms
 {
@@ -496,23 +497,27 @@ namespace Realms
         public static IntPtr CreateResults(TableHandle tableHandle, SharedRealmHandle sharedRealmHandle, IntPtr objectSchema)
         {
             NativeException nativeException;
-            var result = create_results(tableHandle, sharedRealmHandle, objectSchema, out nativeException);
+            var result = create_results(tableHandle, sharedRealmHandle, out nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_create_results", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr create_results(TableHandle handle, SharedRealmHandle sharedRealm, IntPtr objectSchema, out NativeException ex);
+        private static extern IntPtr create_results(TableHandle handle, SharedRealmHandle sharedRealm, out NativeException ex);
 
-        public static IntPtr CreateSortedResults(TableHandle tableHandle, SharedRealmHandle sharedRealmHandle, IntPtr objectSchema, SortOrderHandle sortOrderHandle)
+        public static IntPtr CreateSortedResults(TableHandle tableHandle, SharedRealmHandle sharedRealmHandle, SortDescriptorBuilder sortDescriptorBuilder)
         {
             NativeException nativeException;
-            var result = create_sorted_results(tableHandle, sharedRealmHandle, objectSchema, sortOrderHandle, out nativeException);
+            var marshaledValues = sortDescriptorBuilder.Flatten();
+            var result = create_sorted_results(tableHandle, sharedRealmHandle, marshaledValues.Item2, (IntPtr)marshaledValues.Item2.Length, marshaledValues.Item1, out nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_create_sorted_results", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr create_sorted_results(TableHandle handle, SharedRealmHandle sharedRealm, IntPtr objectSchema, SortOrderHandle sortOrderHandle, out NativeException ex);
+        private static extern IntPtr create_sorted_results(TableHandle handle, SharedRealmHandle sharedRealm,
+                [MarshalAs(UnmanagedType.LPArray), In]SortDescriptorBuilder.Clause.Marshalable[] sortClauses, IntPtr clauseCount,
+                [MarshalAs(UnmanagedType.LPArray), In]IntPtr[] flattenedColumnIndices,
+                out NativeException ex);
     }
 }
