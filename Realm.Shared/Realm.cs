@@ -431,20 +431,19 @@ namespace Realms
             return result;
         }
 
+
         internal RealmObject MakeObjectForRow(RealmObject.Metadata metadata, IntPtr rowPtr)
         {
-            RealmObject ret = metadata.Helper.CreateInstance();
-            ret._Manage(this, CreateRowHandle(rowPtr, SharedRealmHandle), metadata);
-            return ret;
+            return MakeObjectForRow(metadata, CreateRowHandle(rowPtr, SharedRealmHandle));
         }
+
 
         internal RealmObject MakeObjectForRow(string className, IntPtr rowPtr)
         {
-            return MakeObjectForRow(Metadata[className], rowPtr);
+            return MakeObjectForRow(Metadata [className], CreateRowHandle(rowPtr, SharedRealmHandle));
         }
 
 
-        // extra version retained for callers which already have a RowHandle
         internal RealmObject MakeObjectForRow(string className, RowHandle row)
         {
             return MakeObjectForRow(Metadata[className], row);
@@ -656,11 +655,11 @@ namespace Realms
         public RealmResults<T> All<T>() where T: RealmObject
         {
             var type = typeof(T);
-            var schema = Schema.Find(type.Name);
-            if (schema?.Type != type)
+            RealmObject.Metadata metadata;
+            if (!Metadata.TryGetValue(type.Name, out metadata) || metadata.Schema.Type != type)
                 throw new ArgumentException($"The class {type.Name} is not in the limited set of classes for this realm");
-            
-            return new RealmResults<T>(this, Metadata[typeof(T).Name], true);
+
+            return new RealmResults<T>(this, metadata, true);
         }
 
         /// <summary>
@@ -670,11 +669,11 @@ namespace Realms
         /// <remarks>Because the objects inside the view are accessed dynamically, the view cannot be queried into using LINQ or other expression predicates.</remarks>
         public RealmResults<dynamic> All(string className)
         {
-            var schema = Schema.Find(className);
-            if (schema == null)
+            RealmObject.Metadata metadata;
+            if (!Metadata.TryGetValue(className, out metadata))
                 throw new ArgumentException($"The class {className} is not in the limited set of classes for this realm");
 
-            return new RealmResults<dynamic>(this, Metadata[className], true);
+            return new RealmResults<dynamic>(this, metadata, true);
         }
 
         /// <summary>
@@ -734,9 +733,9 @@ namespace Realms
             if (!IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot remove all Realm objects outside write transactions");
 
-            foreach (var @object in Schema)
+            foreach (var metadata in Metadata.Values)
             {
-                var resultsHandle = MakeResultsForTable(Metadata[@object.Name]);
+                var resultsHandle = MakeResultsForTable(metadata);
                 resultsHandle.Clear();
             }
         }

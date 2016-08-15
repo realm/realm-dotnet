@@ -2535,6 +2535,7 @@ Realm.cs
 - MakeResultsForTable take metadata instead of class name
 - MakeSortOrderForTable take metadata instead of class name
 - All(both overloads) - lookup metadata for RealmResults
+- RemoveAll optimise loop by foreach on Metadata instead of Schema
 
 RealmList.cs
 - RealmList
