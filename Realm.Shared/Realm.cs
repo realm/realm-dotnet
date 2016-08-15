@@ -431,18 +431,36 @@ namespace Realms
             return result;
         }
 
-        internal RealmObject MakeObjectForRow(string className, RowHandle rowHandle)
+        internal RealmObject MakeObjectForRow(RealmObject.Metadata metadata, IntPtr rowPtr)
         {
-            var metadata = Metadata[className];
             RealmObject ret = metadata.Helper.CreateInstance();
-            ret._Manage(this, rowHandle, metadata);
+            ret._Manage(this, CreateRowHandle(rowPtr, SharedRealmHandle), metadata);
+            return ret;
+        }
+
+        internal RealmObject MakeObjectForRow(string className, IntPtr rowPtr)
+        {
+            return MakeObjectForRow(Metadata[className], rowPtr);
+        }
+
+
+        // extra version retained for callers which already have a RowHandle
+        internal RealmObject MakeObjectForRow(string className, RowHandle row)
+        {
+            return MakeObjectForRow(Metadata[className], row);
+        }
+
+
+        internal RealmObject MakeObjectForRow(RealmObject.Metadata metadata, RowHandle row)
+        {
+            RealmObject ret = metadata.Helper.CreateInstance();
+            ret._Manage(this, row, metadata);
             return ret;
         }
 
 
-        internal ResultsHandle MakeResultsForTable(string className)
+        internal ResultsHandle MakeResultsForTable(RealmObject.Metadata metadata)
         {
-            var metadata = Metadata[className];
             var resultsPtr = NativeTable.CreateResults(metadata.Table, SharedRealmHandle, metadata.Schema.Handle);
             return CreateResultsHandle(resultsPtr);
         }
@@ -459,10 +477,10 @@ namespace Realms
         }
 
 
-        internal SortOrderHandle MakeSortOrderForTable(string className)
+        internal SortOrderHandle MakeSortOrderForTable(RealmObject.Metadata metadata)
         {
             var result = new SortOrderHandle();
-            result.CreateForTable(Metadata[className].Table);
+            result.CreateForTable(metadata.Table);
             return result;
         }
 
@@ -642,7 +660,7 @@ namespace Realms
             if (schema?.Type != type)
                 throw new ArgumentException($"The class {type.Name} is not in the limited set of classes for this realm");
             
-            return new RealmResults<T>(this, schema, true);
+            return new RealmResults<T>(this, Metadata[typeof(T).Name], true);
         }
 
         /// <summary>
@@ -656,7 +674,7 @@ namespace Realms
             if (schema == null)
                 throw new ArgumentException($"The class {className} is not in the limited set of classes for this realm");
 
-            return new RealmResults<dynamic>(this, schema, true);
+            return new RealmResults<dynamic>(this, Metadata[className], true);
         }
 
         /// <summary>
@@ -718,7 +736,7 @@ namespace Realms
 
             foreach (var @object in Schema)
             {
-                var resultsHandle = MakeResultsForTable(@object.Name);
+                var resultsHandle = MakeResultsForTable(Metadata[@object.Name]);
                 resultsHandle.Clear();
             }
         }
