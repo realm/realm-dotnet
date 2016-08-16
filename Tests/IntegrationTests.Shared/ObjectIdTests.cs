@@ -135,7 +135,7 @@ namespace IntegrationTests.Shared
                 obj.Int64Property = 42000042;
             });
 
-            var foundObj = _realm.ObjectById("ObjectIdInt64Object", 42000042);
+            dynamic foundObj = _realm.ObjectById("ObjectIdInt64Object", 42000042);
             Assert.IsNotNull(foundObj);
             Assert.That(foundObj.Int64Property, Is.EqualTo(42000042));
         }
@@ -148,7 +148,7 @@ namespace IntegrationTests.Shared
                 obj.StringProperty = "Zaphod";
             });
 
-            var foundObj = _realm.ObjectById("ObjectIdStringObject", "Zaphod");
+            dynamic foundObj = _realm.ObjectById("ObjectIdStringObject", "Zaphod");
             Assert.IsNotNull(foundObj);
             Assert.That(foundObj.StringProperty, Is.EqualTo("Zaphod"));
         }
