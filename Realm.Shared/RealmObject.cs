@@ -569,7 +569,7 @@ namespace Realms
         /// Compare objects with identity query for persistent objects.
         /// </summary>
         /// <remarks>Persisted RealmObjects map their properties directly to the realm with no caching so multiple instances of a given object always refer to the same store.</remarks>
-        /// <param name="obj"></param>
+        /// <param name="obj">Object being compared against to see if is same C# object or maps to same managed object in Realm.</param>
         /// <returns>True when objects are the same memory object or refer to the same persisted object.</returns>
         public override bool Equals(object obj)
         {
