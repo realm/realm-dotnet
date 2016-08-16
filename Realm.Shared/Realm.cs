@@ -677,6 +677,7 @@ namespace Realms
         /// </summary>
         /// <param name="className">The type of the objects as defined in the schema.</param>
         /// <remarks>Because the objects inside the view are accessed dynamically, the view cannot be queried into using LINQ or other expression predicates.</remarks>
+        /// <returns>A RealmResults that without further filtering, allows iterating all objects of class `className`, in this realm.</returns>
         public RealmResults<dynamic> All(string className)
         {
             RealmObject.Metadata metadata;

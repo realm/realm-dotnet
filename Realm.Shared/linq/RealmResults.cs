@@ -148,11 +148,12 @@ namespace Realms
 
 
         /// <summary>
-        /// Fast count all objects of a given class.
+        /// Fast count all objects of a given class or invoked instead of LINQ in some casting scenarios.
         /// </summary>
         /// <remarks>
         /// Resolves to this method instead of the LINQ static extension <c>Count&lt;T&gt;(this IEnumerable&lt;T&gt;)</c>, when used directly on Realm.All.
         /// </remarks>
+        /// <returns>A zero-based count of all objects in a class or in the results of a search, without instantiating them.</returns>
         public int Count()
         {
             if (_allRecords)
