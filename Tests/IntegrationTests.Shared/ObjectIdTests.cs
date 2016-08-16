@@ -55,7 +55,7 @@ namespace IntegrationTests.Shared
                 obj.CharProperty = 'x';
             });
 
-            var foundObj = _realm.ById<ObjectIdCharObject>('x');
+            var foundObj = _realm.ObjectById<ObjectIdCharObject>('x');
             Assert.IsNotNull(foundObj);
             Assert.That(foundObj.CharProperty, Is.EqualTo('x'));
         }
@@ -68,7 +68,7 @@ namespace IntegrationTests.Shared
                 obj.ByteProperty = 42;
             });
 
-            var foundObj = _realm.ById<ObjectIdByteObject>(42);
+            var foundObj = _realm.ObjectById<ObjectIdByteObject>(42);
             Assert.IsNotNull(foundObj);
             Assert.That(foundObj.ByteProperty, Is.EqualTo(42));
         }
@@ -81,7 +81,7 @@ namespace IntegrationTests.Shared
                 obj.Int16Property = 4242;
             });
 
-            var foundObj = _realm.ById<ObjectIdInt16Object>(4242);
+            var foundObj = _realm.ObjectById<ObjectIdInt16Object>(4242);
             Assert.IsNotNull(foundObj);
             Assert.That(foundObj.Int16Property, Is.EqualTo(4242));
         }
@@ -94,7 +94,7 @@ namespace IntegrationTests.Shared
                 obj.Int32Property = 42000042;
             });
 
-            var foundObj = _realm.ById<ObjectIdInt32Object>(42000042);
+            var foundObj = _realm.ObjectById<ObjectIdInt32Object>(42000042);
             Assert.IsNotNull(foundObj);
             Assert.That(foundObj.Int32Property, Is.EqualTo(42000042));
         }
@@ -108,7 +108,7 @@ namespace IntegrationTests.Shared
                 obj.Int64Property = 42000042;
             });
 
-            var foundObj = _realm.ById<ObjectIdInt64Object>(42000042);
+            var foundObj = _realm.ObjectById<ObjectIdInt64Object>(42000042);
             Assert.IsNotNull(foundObj);
             Assert.That(foundObj.Int64Property, Is.EqualTo(42000042));
         }
@@ -121,7 +121,7 @@ namespace IntegrationTests.Shared
                 obj.StringProperty = "Zaphod";
             });
 
-            var foundObj = _realm.ById<ObjectIdStringObject>("Zaphod");
+            var foundObj = _realm.ObjectById<ObjectIdStringObject>("Zaphod");
             Assert.IsNotNull(foundObj);
             Assert.That(foundObj.StringProperty, Is.EqualTo("Zaphod"));
         }
@@ -131,7 +131,7 @@ namespace IntegrationTests.Shared
         public void ExceptionIfNoIdDeclared()
         {
             Assert.Throws<RealmClassLacksObjectIdException>( () => {
-                var foundObj = _realm.ById<Person>("Zaphod");
+                var foundObj = _realm.ObjectById<Person>("Zaphod");
             });
         }
 
@@ -149,9 +149,10 @@ namespace IntegrationTests.Shared
             // Act
             var t = new Thread(() =>
             {
-                var realm2 = Realm.GetInstance();
-                var foundObj = realm2.ById<ObjectIdInt64Object>(42000042);
-                foundValue = foundObj.Int64Property;
+                using (var realm2 = Realm.GetInstance()) {
+                    var foundObj = realm2.ObjectById<ObjectIdInt64Object>(42000042);
+                    foundValue = foundObj.Int64Property;
+                }
             });
             t.Start();
             t.Join();

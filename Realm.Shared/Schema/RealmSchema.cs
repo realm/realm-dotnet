@@ -28,7 +28,7 @@ using Realms.Schema;
 namespace Realms
 {
     /// <summary>
-    /// Describe the complete set of classes which may be stored in a Realm, either from assembly declarations or dynamically by evaluating a Realm from disk.
+    /// Describe the complete set of classes which may be stored in a Realm, either from assembly declarations or, dynamically, by evaluating a Realm from disk.
     /// </summary>
     /// <remarks>
     /// By default this will be all the RealmObjects in all your assemblies unless you restrict with RealmConfiguration.ObjectClasses. 
@@ -145,7 +145,7 @@ namespace Realms
             /// Build the RealmSchema to include all ObjectSchema added to this Builder.
             /// </summary>
             /// <exception cref="InvalidOperationException">Thrown if the Builder is empty.</exception>
-            /// <returns>A completed RealmSchema suitable for creating a new Realm.</returns>
+            /// <returns>A completed RealmSchema, suitable for creating a new Realm.</returns>
             public RealmSchema Build()
             {
                 return Build(new SchemaHandle());

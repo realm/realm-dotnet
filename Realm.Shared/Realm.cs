@@ -497,7 +497,7 @@ namespace Realms
         /// <summary>
         /// This realm will start managing a RealmObject which has been created as a standalone object.
         /// </summary>
-        /// <typeparam name="T">The Type T must not only be a RealmObject but also have been processd by the Fody weaver, so it has persistent properties.</typeparam>
+        /// <typeparam name="T">The Type T must not only be a RealmObject but also have been processed by the Fody weaver, so it has persistent properties.</typeparam>
         /// <param name="obj">Must be a standalone object, null not allowed.</param>
         /// <exception cref="RealmOutsideTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
         /// <exception cref="RealmObjectAlreadyManagedByRealmException">You can't manage the same object twice. This exception is thrown, rather than silently detecting the mistake, to help you debug your code</exception>
@@ -690,12 +690,11 @@ namespace Realms
 
         #region ById
 
-        private RealmObject.Metadata PrepById<T>(out IntPtr columnIndex)
+        private RealmObject.Metadata MetadataCheckingHasObjectId(string className)
         {
-            var metadata =  Metadata[typeof(T).Name];
+            var metadata =  Metadata[className];
             if (metadata.ObjectIdColIndex == -1)
-                throw new RealmClassLacksObjectIdException($"Class {typeof(T).Name} does not have a property marked as ObjectId");
-            columnIndex = (IntPtr)metadata.ObjectIdColIndex;
+                throw new RealmClassLacksObjectIdException($"Class {className} does not have a property marked as ObjectId");
             return metadata;
         }
 
@@ -705,14 +704,13 @@ namespace Realms
         /// </summary>
         /// <typeparam name="T">The Type T must not only be a RealmObject but also have been processd by the Fody weaver, so it has persistent properties.</typeparam>
         /// <param name="id">Id to be matched exactly, same as an == search. Int64 argument works for all integer properties supported as ObjectId.</param>
-        /// <returns>Null or an object matdhing the id.</returns>
+        /// <returns>Null or an object matching the id.</returns>
         /// <exception cref="RealmClassLacksObjectIdException">If the RealmObject class T lacks an [ObjectId].</exception>
-        public T ById<T>(Int64 id) where T : RealmObject
+        public T ObjectById<T>(Int64 id) where T : RealmObject
         {
-            IntPtr columnIndex;
-            var metadata = PrepById<T>(out columnIndex);
+            var metadata = MetadataCheckingHasObjectId(typeof(T).Name);
             NativeException nativeException;
-            var rowPtr = NativeTable.row_for_int_id(metadata.Table, columnIndex, id, out nativeException);
+            var rowPtr = NativeTable.row_for_int_id(metadata.Table, (IntPtr)metadata.ObjectIdColIndex, id, out nativeException);
             nativeException.ThrowIfNecessary();
             return (T)MakeObjectForRow(metadata, rowPtr);
         }
@@ -725,16 +723,47 @@ namespace Realms
         /// <param name="id">Id to be matched exactly, same as an == search.</param>
         /// <returns>Null or an object matdhing the id.</returns>
         /// <exception cref="RealmClassLacksObjectIdException">If the RealmObject class T lacks an [ObjectId].</exception>
-        public T ById<T>(string id) where T : RealmObject
+        public T ObjectById<T>(string id) where T : RealmObject
         {
-            IntPtr columnIndex;
-            var metadata = PrepById<T>(out columnIndex);
+            var metadata = MetadataCheckingHasObjectId(typeof(T).Name);
             NativeException nativeException;
-            var rowPtr = NativeTable.row_for_string_id(metadata.Table, columnIndex, id, (IntPtr)id.Length, out nativeException);
+            var rowPtr = NativeTable.row_for_string_id(metadata.Table, (IntPtr)metadata.ObjectIdColIndex, id, (IntPtr)id.Length, out nativeException);
             nativeException.ThrowIfNecessary();
             return (T)MakeObjectForRow(metadata, rowPtr);
         }
 
+        /// <summary>
+        /// Fast lookup of an object for dynamic use, from a class which has an ObjectId property.
+        /// </summary>
+        /// <param name="className">Name of class in dynamic situation.</param>
+        /// <param name="id">Id to be matched exactly, same as an == search.</param>
+        /// <returns>Null or an object matdhing the id.</returns>
+        /// <exception cref="RealmClassLacksObjectIdException">If the RealmObject class lacks an [ObjectId].</exception>
+        public RealmObject ObjectById(string className, Int64 id)
+        {
+            var metadata = MetadataCheckingHasObjectId(className);
+            NativeException nativeException;
+            var rowPtr = NativeTable.row_for_int_id(metadata.Table, (IntPtr)metadata.ObjectIdColIndex, id, out nativeException);
+            nativeException.ThrowIfNecessary();
+            return MakeObjectForRow(metadata, rowPtr);
+        }
+
+
+        /// <summary>
+        /// Fast lookup of an object for dynamic use, from a class which has an ObjectId property.
+        /// </summary>
+        /// <param name="className">Name of class in dynamic situation.</param>
+        /// <param name="id">Id to be matched exactly, same as an == search.</param>
+        /// <returns>Null or an object matdhing the id.</returns>
+        /// <exception cref="RealmClassLacksObjectIdException">If the RealmObject class lacks an [ObjectId].</exception>
+        public RealmObject ObjectById(string className, string id)
+        {
+            var metadata = MetadataCheckingHasObjectId(className);
+            NativeException nativeException;
+            var rowPtr = NativeTable.row_for_string_id(metadata.Table, (IntPtr)metadata.ObjectIdColIndex, id, (IntPtr)id.Length, out nativeException);
+            nativeException.ThrowIfNecessary();
+            return MakeObjectForRow(metadata, rowPtr);
+        }
         #endregion ById
 
         /// <summary>
