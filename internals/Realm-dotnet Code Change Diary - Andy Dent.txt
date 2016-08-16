@@ -2552,11 +2552,12 @@ ObjectIdTests.cs
 - added
 
 Realm.cs
-- ById added (with overloads by types)
+- ObjectById added (with overloads by types)
 - CreateRealmObjectMetadata work out index of objectId col
 
 wrappers/query_cs.cpp
 - row_for_string_id added
+- row_for_int_id added, both using find_first instead of Query
 
 
 RealmObject.Metadata

@@ -1,5 +1,8 @@
-0.77.x (TBD)
+0.78.0 (TBD)
 -------------------
+### Enhancements
+* You can retrieve single objects quickly using `Realm.ObjectById()` if they have an `[ObjectOd]` column specified.
+
 ### Bug fixes
 * Now throws a RealmMigrationSchemaNeededException if you have changed a `RealmObject` subclass declaration and not incremented the `SchemaVersion` (#518)
 

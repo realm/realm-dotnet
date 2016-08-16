@@ -128,10 +128,46 @@ namespace IntegrationTests.Shared
 
 
         [Test]
+        public void FindDynamicByInt64Id()
+        {
+            _realm.Write(() => {
+                var obj = _realm.CreateObject("ObjectIdInt64Object");
+                obj.Int64Property = 42000042;
+            });
+
+            var foundObj = _realm.ObjectById("ObjectIdInt64Object", 42000042);
+            Assert.IsNotNull(foundObj);
+            Assert.That(foundObj.Int64Property, Is.EqualTo(42000042));
+        }
+
+        [Test]
+        public void FindDynamicByStringId()
+        {
+            _realm.Write(() => {
+                var obj = _realm.CreateObject("ObjectIdStringObject");
+                obj.StringProperty = "Zaphod";
+            });
+
+            var foundObj = _realm.ObjectById("ObjectIdStringObject", "Zaphod");
+            Assert.IsNotNull(foundObj);
+            Assert.That(foundObj.StringProperty, Is.EqualTo("Zaphod"));
+        }
+
+
+        [Test]
         public void ExceptionIfNoIdDeclared()
         {
             Assert.Throws<RealmClassLacksObjectIdException>( () => {
                 var foundObj = _realm.ObjectById<Person>("Zaphod");
+            });
+        }
+
+
+        [Test]
+        public void ExceptionIfNoDynamicIdDeclared()
+        {
+            Assert.Throws<RealmClassLacksObjectIdException>( () => {
+                var foundObj = _realm.ObjectById("Person", "Zaphod");
             });
         }
 

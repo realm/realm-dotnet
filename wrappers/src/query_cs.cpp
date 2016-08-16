@@ -393,41 +393,31 @@ REALM_EXPORT Results* query_create_sorted_results(Query * query_ptr, SharedRealm
 
 
 #pragma mark  ObjectId Searches
-// These build and use a query in one go.
-// Note that I am not terribly happy with the overhead of looking up the PrimaryKey field by name,
-// then further looking up column index from that name, as used in Cocoa, so we get our colIndex from cached metadata in C#
+// These use the faster calls such as find_first_int rather than having to build and use a query in one go.
+// Note to bypass the overhead of looking up the PrimaryKey field by name,
+// then further looking up column index from that name, as used in Cocoa,
+// we get our colIndex from cached metadata in C#, which also allows the C# side to quickly check IF an ObjectId was declared
 
-  
-  
-Row* row_for_id(Table* table_ptr, size_t columnIndex, std::function<void(Query*)> queryParamSpecifier, NativeException::Marshallable& ex)
-{
-  return handle_errors(ex, [&]() {
-    auto query_ptr = new Query(table_ptr->where());
-    queryParamSpecifier(query_ptr);
-    const size_t row_ndx = query_ptr->find(0);
-    auto ret =  (Row*)nullptr;;
-    if (row_ndx != not_found)
-      ret = new Row((*query_ptr->get_table())[row_ndx]);
-    delete(query_ptr);
-    return ret;
-  });
-}
-
-  
 REALM_EXPORT Row* row_for_int_id(Table* table_ptr, size_t columnIndex, int64_t value, NativeException::Marshallable& ex)
 {
-  return row_for_id(table_ptr, columnIndex, [&](Query* query_ptr) {
-    query_ptr->equal(columnIndex, value);
-  }, ex);
+    return handle_errors(ex, [&]() {
+        const size_t row_ndx = table_ptr->find_first_int(columnIndex, value);
+        if (row_ndx == not_found)
+            return (Row*)nullptr;
+         return new Row(table_ptr->get(row_ndx));
+    });
 }
   
 
 REALM_EXPORT Row* row_for_string_id(Table* table_ptr, size_t columnIndex, uint16_t* value, size_t value_len, NativeException::Marshallable& ex)
 {
-  Utf16StringAccessor str(value, value_len);
-  return row_for_id(table_ptr, columnIndex, [&](Query* query_ptr) {
-    query_ptr->equal(columnIndex, str);
-  }, ex);
+    return handle_errors(ex, [&]() {
+        Utf16StringAccessor str(value, value_len);
+        const size_t row_ndx = table_ptr->find_first_string(columnIndex, str);
+        if (row_ndx == not_found)
+            return (Row*)nullptr;
+        return new Row(table_ptr->get(row_ndx));
+    });
 }
 
 }   // extern "C"
