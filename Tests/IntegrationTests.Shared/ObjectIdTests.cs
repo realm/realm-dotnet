@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 using NUnit.Framework;
+using System.Threading;
 using Realms;
 
 namespace IntegrationTests.Shared
@@ -133,6 +134,31 @@ namespace IntegrationTests.Shared
                 var foundObj = _realm.ById<Person>("Zaphod");
             });
         }
+
+
+
+        [Test]
+        public void GetByIdDifferentThreads()
+        {
+            _realm.Write(() => {
+                var obj = _realm.CreateObject<ObjectIdInt64Object>();
+                obj.Int64Property = 42000042;
+            });
+
+            Int64 foundValue = 0;
+            // Act
+            var t = new Thread(() =>
+            {
+                var realm2 = Realm.GetInstance();
+                var foundObj = realm2.ById<ObjectIdInt64Object>(42000042);
+                foundValue = foundObj.Int64Property;
+            });
+            t.Start();
+            t.Join();
+
+            Assert.That(foundValue, Is.EqualTo(42000042));
+        }
+    
     }
 }
 
