@@ -688,6 +688,35 @@ namespace Realms
 
 
         #region ById
+
+        private RealmObject.Metadata PrepById<T>(out IntPtr columnIndex)
+        {
+            var metadata =  Metadata[typeof(T).Name];
+            if (metadata.ObjectIdColIndex == -1)
+                throw new RealmClassLacksObjectIdException($"Class {typeof(T).Name} does not have a property marked as ObjectId");
+            columnIndex = (IntPtr)metadata.ObjectIdColIndex;
+            return metadata;
+        }
+
+
+        /// <summary>
+        /// Fast lookup of an object from a class which has an ObjectId property.
+        /// </summary>
+        /// <typeparam name="T">The Type T must not only be a RealmObject but also have been processd by the Fody weaver, so it has persistent properties.</typeparam>
+        /// <param name="id">Id to be matched exactly, same as an == search. Int64 argument works for all integer properties supported as ObjectId.</param>
+        /// <returns>Null or an object matdhing the id.</returns>
+        /// <exception cref="RealmClassLacksObjectIdException">If the RealmObject class T lacks an [ObjectId].</exception>
+        public T ById<T>(Int64 id) where T : RealmObject
+        {
+            IntPtr columnIndex;
+            var metadata = PrepById<T>(out columnIndex);
+            NativeException nativeException;
+            var rowPtr = NativeTable.row_for_int_id(metadata.Table, columnIndex, id, out nativeException);
+            nativeException.ThrowIfNecessary();
+            return (T)MakeObjectForRow(metadata, rowPtr);
+        }
+
+
         /// <summary>
         /// Fast lookup of an object from a class which has an ObjectId property.
         /// </summary>
@@ -697,16 +726,14 @@ namespace Realms
         /// <exception cref="RealmClassLacksObjectIdException">If the RealmObject class T lacks an [ObjectId].</exception>
         public T ById<T>(string id) where T : RealmObject
         {
-            var metadata = Metadata[typeof(T).Name];
-            var columnIndex = metadata.ObjectIdColIndex;
-            if (columnIndex == -1)
-                throw new RealmClassLacksObjectIdException($"Class {typeof(T).Name} does not have a property marked as ObjectId");
-
+            IntPtr columnIndex;
+            var metadata = PrepById<T>(out columnIndex);
             NativeException nativeException;
-            var rowPtr = NativeTable.row_for_string_id(metadata.Table, (IntPtr)columnIndex, id, (IntPtr)id.Length, out nativeException);
+            var rowPtr = NativeTable.row_for_string_id(metadata.Table, columnIndex, id, (IntPtr)id.Length, out nativeException);
             nativeException.ThrowIfNecessary();
             return (T)MakeObjectForRow(metadata, rowPtr);
         }
+
         #endregion ById
 
         /// <summary>

@@ -47,6 +47,72 @@ namespace IntegrationTests.Shared
         }
 
         [Test]
+        public void FindByCharId()
+        {
+            _realm.Write(() => {
+                var obj = _realm.CreateObject<ObjectIdCharObject>();
+                obj.CharProperty = 'x';
+            });
+
+            var foundObj = _realm.ById<ObjectIdCharObject>('x');
+            Assert.IsNotNull(foundObj);
+            Assert.That(foundObj.CharProperty, Is.EqualTo('x'));
+        }
+
+        [Test]
+        public void FindByByteId()
+        {
+            _realm.Write(() => {
+                var obj = _realm.CreateObject<ObjectIdByteObject>();
+                obj.ByteProperty = 42;
+            });
+
+            var foundObj = _realm.ById<ObjectIdByteObject>(42);
+            Assert.IsNotNull(foundObj);
+            Assert.That(foundObj.ByteProperty, Is.EqualTo(42));
+        }
+
+        [Test]
+        public void FindByInt16Id()
+        {
+            _realm.Write(() => {
+                var obj = _realm.CreateObject<ObjectIdInt16Object>();
+                obj.Int16Property = 4242;
+            });
+
+            var foundObj = _realm.ById<ObjectIdInt16Object>(4242);
+            Assert.IsNotNull(foundObj);
+            Assert.That(foundObj.Int16Property, Is.EqualTo(4242));
+        }
+
+        [Test]
+        public void FindByInt32Id()
+        {
+            _realm.Write(() => {
+                var obj = _realm.CreateObject<ObjectIdInt32Object>();
+                obj.Int32Property = 42000042;
+            });
+
+            var foundObj = _realm.ById<ObjectIdInt32Object>(42000042);
+            Assert.IsNotNull(foundObj);
+            Assert.That(foundObj.Int32Property, Is.EqualTo(42000042));
+        }
+
+
+        [Test]
+        public void FindByInt64Id()
+        {
+            _realm.Write(() => {
+                var obj = _realm.CreateObject<ObjectIdInt64Object>();
+                obj.Int64Property = 42000042;
+            });
+
+            var foundObj = _realm.ById<ObjectIdInt64Object>(42000042);
+            Assert.IsNotNull(foundObj);
+            Assert.That(foundObj.Int64Property, Is.EqualTo(42000042));
+        }
+
+        [Test]
         public void FindByStringId()
         {
             _realm.Write(() => {

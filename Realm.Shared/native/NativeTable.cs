@@ -514,11 +514,15 @@ namespace Realms
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_create_sorted_results", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr create_sorted_results(TableHandle handle, SharedRealmHandle sharedRealm, IntPtr objectSchema, SortOrderHandle sortOrderHandle, out NativeException ex);
-    
+
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "row_for_string_id", CallingConvention = CallingConvention.Cdecl)]
         internal static extern IntPtr row_for_string_id(TableHandle handle, IntPtr columnIndex, 
             [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen, out NativeException ex);
+
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "row_for_int_id", CallingConvention = CallingConvention.Cdecl)]
+        internal static extern IntPtr row_for_int_id(TableHandle handle, IntPtr columnIndex, Int64 value, out NativeException ex);
 
     }
 }
