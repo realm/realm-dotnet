@@ -19,6 +19,8 @@
 #ifndef REALM_SORT_DESCRIPTOR_WRAPPER_HPP
 #define REALM_SORT_DESCRIPTOR_WRAPPER_HPP
 
+#include <vector>
+
 struct MarshalableSortClause {
         size_t offset;
         size_t count;
@@ -26,7 +28,7 @@ struct MarshalableSortClause {
 };
 
 inline void unflatten_sort_clauses(MarshalableSortClause* sort_clauses, size_t clause_count, size_t* flattened_column_indices, 
-    std::vector<std::vector<unsigned>>& column_indices, std::vector<bool>& ascending)
+    std::vector<std::vector<size_t>>& column_indices, std::vector<bool>& ascending)
 {
     for(auto i = 0; i < clause_count; ++i) {
         ascending.push_back(sort_clauses[i].ascending);
