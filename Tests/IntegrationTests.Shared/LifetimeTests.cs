@@ -67,5 +67,21 @@ namespace IntegrationTests.Shared
             Assert.That(realmThatWillBeFinalized.IsAlive, Is.False);
             Assert.That(person.IsValid);
         }
+
+        [Test]
+        public async void TransactionShouldHoldStrongReferenceToRealm()
+        {
+            var realm = GetWeakRealm();
+            Func<Transaction> transactionFactory = () => ((Realm)realm.Target).BeginWrite();
+            var transaction = transactionFactory();
+
+            await System.Threading.Tasks.Task.Yield();
+
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+
+            Assert.DoesNotThrow(transaction.Dispose);
+            Assert.That(realm.IsAlive);
+        }
     }
 }
