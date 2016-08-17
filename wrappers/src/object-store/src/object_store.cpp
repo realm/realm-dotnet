@@ -654,3 +654,9 @@ InvalidLinkingObjectsPropertyException::InvalidLinkingObjectsPropertyException(T
             break;
     }
 }
+
+PrimaryKeyNotDeclaredException::PrimaryKeyNotDeclaredException(std::string const& object_type) :
+ObjectSchemaValidationException(object_type)
+{
+    m_what = util::format("There is no primary key declared in the class '%1'.", object_type);
+}

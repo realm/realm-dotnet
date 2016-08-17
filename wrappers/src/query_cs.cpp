@@ -25,6 +25,7 @@
 #include "object-store/src/schema.hpp"
 #include "timestamp_helpers.hpp"
 #include "object-store/src/results.hpp"
+#include "object-store/src/object_store.hpp"
 #include "sort_order_wrapper.hpp"
 
 
@@ -389,6 +390,40 @@ REALM_EXPORT Results* query_create_sorted_results(Query * query_ptr, SharedRealm
     return handle_errors(ex, [&]() {
         return new Results(*realm, *object_schema, *query_ptr, sortorder_ptr->sort_order);
     });
+}
+
+
+#pragma mark  PrimaryKey Searches
+Row* row_for_primarykey(Table* table_ptr, ObjectSchema* object_schema, std::function<size_t(Table*, size_t columnIndex)> finder, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        size_t columnIndex = realm::npos;
+        if (object_schema->primary_key.size() > 0)
+            columnIndex = table_ptr->get_column_index(object_schema->primary_key);
+        if (columnIndex == realm::npos)
+            throw PrimaryKeyNotDeclaredException(object_schema->name);
+        const size_t row_ndx = finder(table_ptr, columnIndex);
+        if (row_ndx == not_found)
+            return (Row*)nullptr;
+        return new Row(table_ptr->get(row_ndx));
+    });
+}
+
+
+REALM_EXPORT Row* row_for_int_primarykey(Table* table_ptr, ObjectSchema* object_schema, int64_t value, NativeException::Marshallable& ex)
+{
+    return row_for_primarykey(table_ptr, object_schema, [=](Table* table, size_t columnIndex) {
+        return table->find_first_int(columnIndex, value);
+    }, ex);
+}
+  
+
+REALM_EXPORT Row* row_for_string_primarykey(Table* table_ptr, ObjectSchema* object_schema, uint16_t* value, size_t value_len, NativeException::Marshallable& ex)
+{
+    Utf16StringAccessor str(value, value_len);
+    return row_for_primarykey(table_ptr, object_schema, [&](Table* table, size_t columnIndex) {
+        return table->find_first_string(columnIndex, str);
+    }, ex);
 }
 
 }   // extern "C"

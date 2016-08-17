@@ -16,30 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System.Diagnostics;
-using System.Reflection;
-
-namespace Realms.Schema
+namespace Realms
 {
-    /// <summary>
-    /// Describe a single property of a class stored in a Realm.
-    /// </summary>
-    [DebuggerDisplay("Name = {Name}, Type = {Type}")]
-    public struct Property
+    public class RealmClassLacksPrimaryKeyException : RealmException
     {
-        public string Name { get; set; }
-
-        public PropertyType Type { get; set; }
-
-        public string ObjectType { get; set; }
-
-        public bool IsNullable { get; set; }
-
-        public bool IsPrimaryKey { get; set; }
-
-        public bool IsIndexed { get; set; }
-
-        internal PropertyInfo PropertyInfo;
+        internal RealmClassLacksPrimaryKeyException(string message) : base(message)
+        {
+        }
     }
 }
-

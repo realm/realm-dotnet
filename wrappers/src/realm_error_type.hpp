@@ -67,6 +67,8 @@ namespace realm {
 
         RealmRowDetached = 21,
 
+        RealmTableHasNoPrimaryKey = 22,
+
         StdArgumentOutOfRange = 100,
 
         StdIndexOutOfRange = 101,

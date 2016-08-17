@@ -2494,45 +2494,6 @@ Realm.cs
 - MakeObjectForRow overload added to take a RealmObject.Metadata instead of doing lookup, and simple rowPtr
 - MakeObjectForRow original taking string, changed to take rowPtr for second arg and forward to new overload
 - MakeResultsForTable take metadata instead of class name
-
-RealmList.cs
-- added field _targetMetadata
-- this[int index]
-  - init _targetMetadata if null
-  - use new MakeObjectForRow
-
-RealmResults.cs
-- added field _targetMetadata
-- this[int index]
-  - init _targetMetadata if null
-  - use new MakeObjectForRow
-- CreateResultsHandle
-  - init _targetMetadata if null
-- MakeResultsForTable take metadata instead of name
-- RemoveAll - lookup metadata for MakeResultsForTable
-
-RealmObjectOps.cs
--  GetObjectValue<T>(string propertyName) pass only rowPtr to MakeObjectForRow
-
-RealmObject.cs
--  GetObjectValue<T>(string propertyName) pass only rowPtr to MakeObjectForRow
-
-RealmResultsEnumerator.cs
-- MoveNext
-  - quicker check for failure knowing a null rowPtr returned
-
-RealmResultsVisitor.cs
-- VisitMethodCall    
-  - quicker check for failure knowing a null rowPtr returned
-
-
--=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
-Refactoring MakeObject logic to assist ObjectID work and reduce lookups
-
-Realm.cs
-- MakeObjectForRow overload added to take a RealmObject.Metadata instead of doing lookup, and simple rowPtr
-- MakeObjectForRow original taking string, changed to take rowPtr for second arg and forward to new overload
-- MakeResultsForTable take metadata instead of class name
 - MakeSortOrderForTable take metadata instead of class name
 - All(both overloads) - lookup metadata for RealmResults
 - RemoveAll optimise loop by foreach on Metadata instead of Schema
@@ -2583,3 +2544,66 @@ RealmResultsVisitor.cs
 
 RealmListPCL.cs
 - removed IRealmList.SchemaClassName
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#402 Retrieve Optimally by ObjectId
+
+ObjectIdTests.cs
+- added
+
+Realm.cs
+- ObjectById added (with overloads by types)
+- CreateRealmObjectMetadata work out index of objectId col
+
+wrappers/query_cs.cpp
+- row_for_string_id added
+- row_for_int_id added, both using find_first instead of Query
+
+
+RealmObject.Metadata
+- ObjectIdColIndex added
+
+RealmClassLacksObjectIdException
+- added
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#402 Retrieve Optimally by ObjectId - rewrite to move more to c++
+
+RealmObject.cs
+- Metadata - removed ObjectIdColIndex
+
+Realm.cs
+- ObjectById rewritten to pass schema, renamed ObjectForPrimaryKey to match other SDKs
+- CreateRealmObjectMetadata don't work out index of objectId col
+- MetadataCheckingHasObjectId - removed helper method
+
+wrappers/query_cs.cpp
+- renamed *_for_id to row_for_int_primarykey
+
+wrappers/realm_error_type.hpp
+- RealmErrorType - RealmTableHasNoPrimaryKey=22 added
+
+wrappers/object_store.hpp/cpp
+- PrimaryKeyNotDeclaredException added
+
+wrappers/error_handling.cpp
+- convert_exception - map PrimaryKeyNotDeclaredException to RealmTableHasNoPrimaryKey
+
+RealmExceptionCodes.cs
+- RealmTableHasNoPrimaryKey=22 added
+
+RealmException.cs
+- Create - added mapping RealmTableHasNoPrimaryKey to RealmClassLacksObjectIdException
+
+ObjectIdTests.cs
+- renamed PrimaryKeyTests
+
+RealmPCL.cs
+- added proxy methods for all four ObjectForPrimaryKey variants
+
+
+AsyncTests.cs
+- AsyncWrite_UpdateViaPrimaryKey use ObjectForPrimaryKey instead of a search
+ 
+ 
+ General search and replace ObjectId with PrimaryKey

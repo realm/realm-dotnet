@@ -27,12 +27,24 @@ using Realms.Schema;
 
 namespace Realms
 {
+    /// <summary>
+    /// Describe the complete set of classes which may be stored in a Realm, either from assembly declarations or, dynamically, by evaluating a Realm from disk.
+    /// </summary>
+    /// <remarks>
+    /// By default this will be all the RealmObjects in all your assemblies unless you restrict with RealmConfiguration.ObjectClasses. 
+    /// Just because a given class <em>may</em> be stored in a Realm doesn't imply much overhead. There will be a small amount of metadata 
+    /// but objects only start to take up space once written. 
+    /// </remarks>
     public class RealmSchema : IReadOnlyCollection<ObjectSchema>
     {
         private readonly ReadOnlyDictionary<string, ObjectSchema> _objects;
 
         internal readonly SchemaHandle Handle;
 
+        /// <summary>
+        /// Number of known classes in the schema.
+        /// </summary>
+        /// <value>Count of known classes specified in this Schema.</value>
         public int Count => _objects.Count;
 
         private static readonly Lazy<RealmSchema> _default = new Lazy<RealmSchema>(BuildDefaultSchema);
@@ -44,6 +56,12 @@ namespace Realms
             Handle = handle;
         }
 
+        /// <summary>
+        /// Find the definition of a class in this schema.
+        /// </summary>
+        /// <param name="name">A valid class name which may be in this schema.</param>
+        /// <exception cref="ArgumentException">Thrown if an empty name is supplied.</exception>
+        /// <returns>An object or null to indicate not found.</returns>
         public ObjectSchema Find(string name)
         {
             if (string.IsNullOrEmpty(name)) throw new ArgumentException("Object schema name must be a non-empty string", nameof(name));
@@ -54,6 +72,10 @@ namespace Realms
             return obj;
         }
 
+        /// <summary>
+        /// Standard method from interface IEnumerable allows the RealmSchema to be used in a <c>foreach</c> or <c>ToList()</c>.
+        /// </summary>
+        /// <returns>An IEnumerator which will iterate through ObjectSchema declarations in this RealmSchema.</returns>
         public IEnumerator<ObjectSchema> GetEnumerator()
         {
             return _objects.Values.GetEnumerator();
@@ -114,8 +136,16 @@ namespace Realms
             return CreateSchemaForClasses(realmObjectClasses);
         }
 
+        /// <summary>
+        /// Helper class used to construct a RealmSchema.
+        /// </summary>
         public class Builder : List<ObjectSchema>
         {
+            /// <summary>
+            /// Build the RealmSchema to include all ObjectSchema added to this Builder.
+            /// </summary>
+            /// <exception cref="InvalidOperationException">Thrown if the Builder is empty.</exception>
+            /// <returns>A completed RealmSchema, suitable for creating a new Realm.</returns>
             public RealmSchema Build()
             {
                 return Build(new SchemaHandle());
@@ -162,7 +192,7 @@ namespace Realms
                     objectType = property.ObjectType,
                     is_nullable = property.IsNullable,
                     is_indexed = property.IsIndexed,
-                    is_primary = property.IsObjectId
+                    is_primary = property.IsPrimaryKey
                 };
             }
         }

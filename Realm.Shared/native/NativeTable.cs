@@ -514,5 +514,30 @@ namespace Realms
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_create_sorted_results", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr create_sorted_results(TableHandle handle, SharedRealmHandle sharedRealm, IntPtr objectSchema, SortOrderHandle sortOrderHandle, out NativeException ex);
+
+        internal static IntPtr RowForPrimaryKey(TableHandle tableHandle, IntPtr objectSchema, string id)
+        {
+            NativeException nativeException;
+            var result = row_for_string_primarykey(tableHandle, objectSchema, id, (IntPtr)id.Length, out nativeException);
+            nativeException.ThrowIfNecessary();
+            return result;
+        }
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "row_for_string_primarykey", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr row_for_string_primarykey(TableHandle handle, IntPtr objectSchema, 
+            [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen, out NativeException ex);
+
+
+        internal static IntPtr RowForPrimaryKey(TableHandle tableHandle, IntPtr objectSchema, Int64 id)
+        {
+            NativeException nativeException;
+            var result = row_for_int_primarykey(tableHandle, objectSchema, id,  out nativeException);
+            nativeException.ThrowIfNecessary();
+            return result;
+        }
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "row_for_int_primarykey", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr row_for_int_primarykey(TableHandle handle, IntPtr objectSchema, Int64 value, out NativeException ex);
+
     }
 }

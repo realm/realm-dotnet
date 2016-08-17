@@ -253,6 +253,11 @@ namespace realm {
         };
         InvalidLinkingObjectsPropertyException(Type error_type, std::string const& object_type, Property const& property);
     };
+
+    class PrimaryKeyNotDeclaredException : public ObjectSchemaValidationException {
+    public:
+        PrimaryKeyNotDeclaredException(std::string const& object_type);
+    };
 }
 
 #endif /* defined(REALM_OBJECT_STORE_HPP) */

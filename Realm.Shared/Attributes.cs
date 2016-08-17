@@ -22,7 +22,7 @@ using System.Reflection;
 namespace Realms
 {
     [AttributeUsage(AttributeTargets.Property)]
-    public class ObjectIdAttribute : Attribute
+    public class PrimaryKeyAttribute : Attribute
     {
     }
 

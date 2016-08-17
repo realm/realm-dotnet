@@ -322,6 +322,62 @@ namespace Realms
             return null;
         }
 
+
+        /// <summary>
+        /// Fast lookup of an object from a class which has a PrimaryKey property.
+        /// </summary>
+        /// <typeparam name="T">The Type T must not only be a RealmObject but also have been processd by the Fody weaver, so it has persistent properties.</typeparam>
+        /// <param name="id">Id to be matched exactly, same as an == search. Int64 argument works for all integer properties supported as PrimaryKey.</param>
+        /// <returns>Null or an object matching the id.</returns>
+        /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class T lacks an [PrimaryKey].</exception>
+        public T ObjectForPrimaryKey<T>(Int64 id) where T : RealmObject
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
+        }
+
+
+        /// <summary>
+        /// Fast lookup of an object from a class which has a PrimaryKey property.
+        /// </summary>
+        /// <typeparam name="T">The Type T must not only be a RealmObject but also have been processd by the Fody weaver, so it has persistent properties.</typeparam>
+        /// <param name="id">Id to be matched exactly, same as an == search.</param>
+        /// <returns>Null or an object matdhing the id.</returns>
+        /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class T lacks an [PrimaryKey].</exception>
+        public T ObjectForPrimaryKey<T>(string id) where T : RealmObject
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
+        }
+
+
+        /// <summary>
+        /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.
+        /// </summary>
+        /// <param name="className">Name of class in dynamic situation.</param>
+        /// <param name="id">Id to be matched exactly, same as an == search.</param>
+        /// <returns>Null or an object matdhing the id.</returns>
+        /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class lacks an [PrimaryKey].</exception>
+        public RealmObject ObjectForPrimaryKey(string className, Int64 id)
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
+        }
+
+
+        /// <summary>
+        /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.
+        /// </summary>
+        /// <param name="className">Name of class in dynamic situation.</param>
+        /// <param name="id">Id to be matched exactly, same as an == search.</param>
+        /// <returns>Null or an object matdhing the id.</returns>
+        /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class lacks an [PrimaryKey].</exception>
+        public RealmObject ObjectForPrimaryKey(string className, string id)
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
+        }
+
         /// <summary>
         /// Removes a persistent object from this realm, effectively deleting it.
         /// </summary>
