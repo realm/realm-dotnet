@@ -77,6 +77,10 @@ REALM_EXPORT SharedRealm* shared_realm_open(Schema* schema, uint16_t* path, size
         else
           config.encryption_key = std::vector<char>(encryption_key, encryption_key+64);
 
+        if (read_only) {
+            config.schema_mode = SchemaMode::ReadOnly;
+        }
+        
         config.schema.emplace(*schema); // TODO: This copies the schema, so the handle kept in .net is wrong.
         config.schema_version = schemaVersion;
 
