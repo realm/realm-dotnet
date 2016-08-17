@@ -72,6 +72,9 @@ namespace Realms {
                 case RealmExceptionCodes.RealmRowDetached:
                     return new RealmInvalidObjectException(message);
 
+                case RealmExceptionCodes.RealmTableHasNoPrimaryKey :
+                    return new RealmClassLacksPrimaryKeyException(message);
+                    
                 case RealmExceptionCodes.StdArgumentOutOfRange :
                     return new ArgumentOutOfRangeException(message);
 

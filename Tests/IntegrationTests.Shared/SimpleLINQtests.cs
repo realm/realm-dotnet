@@ -379,7 +379,7 @@ namespace IntegrationTests
             long biggerInt = 12;
             //if you want to see the error message, comment out the assert
             Assert.Throws<System.NotSupportedException>(() => {
-                _realm.All<ObjectIdInt16Object>().First(p => p.Int16Property == biggerInt);
+                _realm.All<PrimaryKeyInt16Object>().First(p => p.Int16Property == biggerInt);
             });
         }
 

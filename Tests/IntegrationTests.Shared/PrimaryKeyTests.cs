@@ -28,7 +28,7 @@ namespace IntegrationTests.Shared
 {
     // using classes from TestObjects.cs
     [TestFixture, Preserve(AllMembers = true)]
-    public class ObjectIdTests
+    public class PrimaryKeyTests
     {
 
         protected Realm _realm;
@@ -48,136 +48,136 @@ namespace IntegrationTests.Shared
         }
 
         [Test]
-        public void FindByCharId()
+        public void FindByCharPrimaryKey()
         {
             _realm.Write(() => {
-                var obj = _realm.CreateObject<ObjectIdCharObject>();
+                var obj = _realm.CreateObject<PrimaryKeyCharObject>();
                 obj.CharProperty = 'x';
             });
 
-            var foundObj = _realm.ObjectById<ObjectIdCharObject>('x');
+            var foundObj = _realm.ObjectForPrimaryKey<PrimaryKeyCharObject>('x');
             Assert.IsNotNull(foundObj);
             Assert.That(foundObj.CharProperty, Is.EqualTo('x'));
         }
 
         [Test]
-        public void FindByByteId()
+        public void FindByBytePrimaryKey()
         {
             _realm.Write(() => {
-                var obj = _realm.CreateObject<ObjectIdByteObject>();
+                var obj = _realm.CreateObject<PrimaryKeyByteObject>();
                 obj.ByteProperty = 42;
             });
 
-            var foundObj = _realm.ObjectById<ObjectIdByteObject>(42);
+            var foundObj = _realm.ObjectForPrimaryKey<PrimaryKeyByteObject>(42);
             Assert.IsNotNull(foundObj);
             Assert.That(foundObj.ByteProperty, Is.EqualTo(42));
         }
 
         [Test]
-        public void FindByInt16Id()
+        public void FindByInt16PrimaryKey()
         {
             _realm.Write(() => {
-                var obj = _realm.CreateObject<ObjectIdInt16Object>();
+                var obj = _realm.CreateObject<PrimaryKeyInt16Object>();
                 obj.Int16Property = 4242;
             });
 
-            var foundObj = _realm.ObjectById<ObjectIdInt16Object>(4242);
+            var foundObj = _realm.ObjectForPrimaryKey<PrimaryKeyInt16Object>(4242);
             Assert.IsNotNull(foundObj);
             Assert.That(foundObj.Int16Property, Is.EqualTo(4242));
         }
 
         [Test]
-        public void FindByInt32Id()
+        public void FindByInt32PrimaryKey()
         {
             _realm.Write(() => {
-                var obj = _realm.CreateObject<ObjectIdInt32Object>();
+                var obj = _realm.CreateObject<PrimaryKeyInt32Object>();
                 obj.Int32Property = 42000042;
             });
 
-            var foundObj = _realm.ObjectById<ObjectIdInt32Object>(42000042);
+            var foundObj = _realm.ObjectForPrimaryKey<PrimaryKeyInt32Object>(42000042);
             Assert.IsNotNull(foundObj);
             Assert.That(foundObj.Int32Property, Is.EqualTo(42000042));
         }
 
 
         [Test]
-        public void FindByInt64Id()
+        public void FindByInt64PrimaryKey()
         {
             _realm.Write(() => {
-                var obj = _realm.CreateObject<ObjectIdInt64Object>();
+                var obj = _realm.CreateObject<PrimaryKeyInt64Object>();
                 obj.Int64Property = 42000042;
             });
 
-            var foundObj = _realm.ObjectById<ObjectIdInt64Object>(42000042);
+            var foundObj = _realm.ObjectForPrimaryKey<PrimaryKeyInt64Object>(42000042);
             Assert.IsNotNull(foundObj);
             Assert.That(foundObj.Int64Property, Is.EqualTo(42000042));
         }
 
         [Test]
-        public void FindByStringId()
+        public void FindByStringPrimaryKey()
         {
             _realm.Write(() => {
-                var obj = _realm.CreateObject<ObjectIdStringObject>();
+                var obj = _realm.CreateObject<PrimaryKeyStringObject>();
                 obj.StringProperty = "Zaphod";
             });
 
-            var foundObj = _realm.ObjectById<ObjectIdStringObject>("Zaphod");
+            var foundObj = _realm.ObjectForPrimaryKey<PrimaryKeyStringObject>("Zaphod");
             Assert.IsNotNull(foundObj);
             Assert.That(foundObj.StringProperty, Is.EqualTo("Zaphod"));
         }
 
 
         [Test]
-        public void FindDynamicByInt64Id()
+        public void FindDynamicByInt64PrimaryKey()
         {
             _realm.Write(() => {
-                var obj = _realm.CreateObject("ObjectIdInt64Object");
+                var obj = _realm.CreateObject("PrimaryKeyInt64Object");
                 obj.Int64Property = 42000042;
             });
 
-            dynamic foundObj = _realm.ObjectById("ObjectIdInt64Object", 42000042);
+            dynamic foundObj = _realm.ObjectForPrimaryKey("PrimaryKeyInt64Object", 42000042);
             Assert.IsNotNull(foundObj);
             Assert.That(foundObj.Int64Property, Is.EqualTo(42000042));
         }
 
         [Test]
-        public void FindDynamicByStringId()
+        public void FindDynamicByStringPrimaryKey()
         {
             _realm.Write(() => {
-                var obj = _realm.CreateObject("ObjectIdStringObject");
+                var obj = _realm.CreateObject("PrimaryKeyStringObject");
                 obj.StringProperty = "Zaphod";
             });
 
-            dynamic foundObj = _realm.ObjectById("ObjectIdStringObject", "Zaphod");
+            dynamic foundObj = _realm.ObjectForPrimaryKey("PrimaryKeyStringObject", "Zaphod");
             Assert.IsNotNull(foundObj);
             Assert.That(foundObj.StringProperty, Is.EqualTo("Zaphod"));
         }
 
 
         [Test]
-        public void ExceptionIfNoIdDeclared()
+        public void ExceptionIfNoPrimaryKeyDeclared()
         {
-            Assert.Throws<RealmClassLacksObjectIdException>( () => {
-                var foundObj = _realm.ObjectById<Person>("Zaphod");
+            Assert.Throws<RealmClassLacksPrimaryKeyException>( () => {
+                var foundObj = _realm.ObjectForPrimaryKey<Person>("Zaphod");
             });
         }
 
 
         [Test]
-        public void ExceptionIfNoDynamicIdDeclared()
+        public void ExceptionIfNoDynamicIPrimaryKeyDeclared()
         {
-            Assert.Throws<RealmClassLacksObjectIdException>( () => {
-                var foundObj = _realm.ObjectById("Person", "Zaphod");
+            Assert.Throws<RealmClassLacksPrimaryKeyException>( () => {
+                var foundObj = _realm.ObjectForPrimaryKey("Person", "Zaphod");
             });
         }
 
 
 
         [Test]
-        public void GetByIdDifferentThreads()
+        public void GetByPrimaryKeyDifferentThreads()
         {
             _realm.Write(() => {
-                var obj = _realm.CreateObject<ObjectIdInt64Object>();
+                var obj = _realm.CreateObject<PrimaryKeyInt64Object>();
                 obj.Int64Property = 42000042;
             });
 
@@ -186,7 +186,7 @@ namespace IntegrationTests.Shared
             var t = new Thread(() =>
             {
                 using (var realm2 = Realm.GetInstance()) {
-                    var foundObj = realm2.ObjectById<ObjectIdInt64Object>(42000042);
+                    var foundObj = realm2.ObjectForPrimaryKey<PrimaryKeyInt64Object>(42000042);
                     foundValue = foundObj.Int64Property;
                 }
             });

@@ -311,11 +311,11 @@ namespace RealmWeaver
         [TestCase("Int32", 100, 0)]
         [TestCase("Int64", 100L, 0L)]
         [TestCase("String", "str", null)] 
-        public void SettingObjectIdPropertyShouldCallSetUnique(string typeName, object propertyValue, object defaultPropertyValue)
+        public void SettingPrimaryKeyPropertyShouldCallSetUnique(string typeName, object propertyValue, object defaultPropertyValue)
         {
             // Arrange
             var propertyName = typeName + "Property";
-            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.ObjectId" + typeName + "Object"));
+            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.PrimaryKey" + typeName + "Object"));
             o.IsManaged = true;
 
             // Act
@@ -459,9 +459,9 @@ namespace RealmWeaver
             {
                 "RealmListWithSetter.People has a setter but its type is a IList which only supports getters",
                 "IndexedProperties.SingleProperty is marked as [Indexed] which is only allowed on integral types as well as string, bool and DateTimeOffset, not on System.Single",
-                "ObjectIdProperties.BooleanProperty is marked as [ObjectId] which is only allowed on integral and string types, not on System.Boolean",
-                "ObjectIdProperties.DateTimeOffsetProperty is marked as [ObjectId] which is only allowed on integral and string types, not on System.DateTimeOffset",
-                "ObjectIdProperties.SingleProperty is marked as [ObjectId] which is only allowed on integral and string types, not on System.Single",
+                "PrimaryKeyProperties.BooleanProperty is marked as [PrimaryKey] which is only allowed on integral and string types, not on System.Boolean",
+                "PrimaryKeyProperties.DateTimeOffsetProperty is marked as [PrimaryKey] which is only allowed on integral and string types, not on System.DateTimeOffset",
+                "PrimaryKeyProperties.SingleProperty is marked as [PrimaryKey] which is only allowed on integral and string types, not on System.Single",
                 "The type AssemblyToProcess.Employee indirectly inherits from RealmObject which is not supported",
                 "class DefaultConstructorMissing must have a public constructor that takes no parameters",
                 "class NoPersistedProperties is a RealmObject but has no persisted properties"

@@ -2565,3 +2565,45 @@ RealmObject.Metadata
 
 RealmClassLacksObjectIdException
 - added
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#402 Retrieve Optimally by ObjectId - rewrite to move more to c++
+
+RealmObject.cs
+- Metadata - removed ObjectIdColIndex
+
+Realm.cs
+- ObjectById rewritten to pass schema, renamed ObjectForPrimaryKey to match other SDKs
+- CreateRealmObjectMetadata don't work out index of objectId col
+- MetadataCheckingHasObjectId - removed helper method
+
+wrappers/query_cs.cpp
+- renamed *_for_id to row_for_int_primarykey
+
+wrappers/realm_error_type.hpp
+- RealmErrorType - RealmTableHasNoPrimaryKey=22 added
+
+wrappers/object_store.hpp/cpp
+- PrimaryKeyNotDeclaredException added
+
+wrappers/error_handling.cpp
+- convert_exception - map PrimaryKeyNotDeclaredException to RealmTableHasNoPrimaryKey
+
+RealmExceptionCodes.cs
+- RealmTableHasNoPrimaryKey=22 added
+
+RealmException.cs
+- Create - added mapping RealmTableHasNoPrimaryKey to RealmClassLacksObjectIdException
+
+ObjectIdTests.cs
+- renamed PrimaryKeyTests
+
+RealmPCL.cs
+- added proxy methods for all four ObjectForPrimaryKey variants
+
+
+AsyncTests.cs
+- AsyncWrite_UpdateViaPrimaryKey use ObjectForPrimaryKey instead of a search
+ 
+ 
+ General search and replace ObjectId with PrimaryKey

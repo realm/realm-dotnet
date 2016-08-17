@@ -18,9 +18,9 @@
 
 namespace Realms
 {
-    public class RealmClassLacksObjectIdException : RealmException
+    public class RealmClassLacksPrimaryKeyException : RealmException
     {
-        internal RealmClassLacksObjectIdException(string message) : base(message)
+        internal RealmClassLacksPrimaryKeyException(string message) : base(message)
         {
         }
     }

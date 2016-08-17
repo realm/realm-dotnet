@@ -79,7 +79,7 @@ public class ModuleWeaver
         {"System.Nullable`1<System.DateTimeOffset>", "NullableDateTimeOffset"}
     };
 
-    private readonly List<string> _objectIdTypes = new List<string>
+    private readonly List<string> _primaryKeyTypes = new List<string>
     {
         "System.String",
         "System.Char",
@@ -300,11 +300,11 @@ public class ModuleWeaver
             return false;
         }
 
-        var isObjectId = prop.CustomAttributes.Any(a => a.AttributeType.Name == "ObjectIdAttribute");
-        if (isObjectId && (!_objectIdTypes.Contains(prop.PropertyType.FullName)))
+        var isPrimaryKey = prop.CustomAttributes.Any(a => a.AttributeType.Name == "PrimaryKeyAttribute");
+        if (isPrimaryKey && (!_primaryKeyTypes.Contains(prop.PropertyType.FullName)))
         {
             LogErrorPoint(
-                $"{type.Name}.{prop.Name} is marked as [ObjectId] which is only allowed on integral and string types, not on {prop.PropertyType.FullName}",
+                $"{type.Name}.{prop.Name} is marked as [PrimaryKey] which is only allowed on integral and string types, not on {prop.PropertyType.FullName}",
                 sequencePoint);
             return false;
         }
@@ -318,11 +318,11 @@ public class ModuleWeaver
             return false;
         }
         if (_typeTable.ContainsKey(prop.PropertyType.FullName)) {
-            var typeId = prop.PropertyType.FullName + (isObjectId ? " unique" : "");
+            var typeId = prop.PropertyType.FullName + (isPrimaryKey ? " unique" : "");
             if (!methodTable.ContainsKey(typeId)) {
                 var getter = LookupMethodAndImport(_realmObject, "Get" + _typeTable[prop.PropertyType.FullName] + "Value");
                 var setter = LookupMethodAndImport(_realmObject,
-                    "Set" + _typeTable[prop.PropertyType.FullName] + "Value" + (isObjectId ? "Unique" : ""));
+                    "Set" + _typeTable[prop.PropertyType.FullName] + "Value" + (isPrimaryKey ? "Unique" : ""));
                 methodTable[typeId] = Tuple.Create(getter, setter);
             }
 
@@ -408,9 +408,9 @@ public class ModuleWeaver
 
         Debug.WriteLine("");
 
-        var objectIdMsg = isObjectId ? "[ObjectId]" : "";
+        var primaryKeyMsg = isPrimaryKey ? "[PrimaryKey]" : "";
         var indexedMsg = isIndexed ? "[Indexed]" : "";
-        LogDebug($"Woven {type.Name}.{prop.Name} as a {prop.PropertyType.FullName} {objectIdMsg} {indexedMsg}");
+        LogDebug($"Woven {type.Name}.{prop.Name} as a {prop.PropertyType.FullName} {primaryKeyMsg} {indexedMsg}");
         return true;
     }
 

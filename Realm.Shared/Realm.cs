@@ -193,23 +193,12 @@ namespace Realms
             {
                 helper = Dynamic.DynamicRealmObjectHelper.Instance;
             }
-
-            var colMap = new Dictionary<string, IntPtr>();
-            int objectIdIndex = -1;
-            foreach(var prop in schema)
-            {
-                var colIndex = NativeTable.GetColumnIndex(table, prop.Name);
-                colMap.Add(prop.Name, colIndex);
-                if (prop.IsObjectId)
-                    objectIdIndex = (int)colIndex;
-            }
             return new RealmObject.Metadata
             {
                 Table = table,
                 Helper = helper,
-                ColumnIndices = colMap,
                 Schema = schema,
-                ObjectIdColIndex = objectIdIndex
+                ColumnIndices = schema.ToDictionary(p => p.Name, p => NativeTable.GetColumnIndex(table, p.Name))
             };
         }
 
@@ -688,83 +677,67 @@ namespace Realms
         }
 
 
-        #region ById
-
-        private RealmObject.Metadata MetadataCheckingHasObjectId(string className)
-        {
-            var metadata =  Metadata[className];
-            if (metadata.ObjectIdColIndex == -1)
-                throw new RealmClassLacksObjectIdException($"Class {className} does not have a property marked as ObjectId");
-            return metadata;
-        }
-
+        #region Quick ObjectForPrimaryKey
 
         /// <summary>
-        /// Fast lookup of an object from a class which has an ObjectId property.
+        /// Fast lookup of an object from a class which has a PrimaryKey property.
         /// </summary>
         /// <typeparam name="T">The Type T must not only be a RealmObject but also have been processd by the Fody weaver, so it has persistent properties.</typeparam>
-        /// <param name="id">Id to be matched exactly, same as an == search. Int64 argument works for all integer properties supported as ObjectId.</param>
+        /// <param name="id">Id to be matched exactly, same as an == search. Int64 argument works for all integer properties supported as PrimaryKey.</param>
         /// <returns>Null or an object matching the id.</returns>
-        /// <exception cref="RealmClassLacksObjectIdException">If the RealmObject class T lacks an [ObjectId].</exception>
-        public T ObjectById<T>(Int64 id) where T : RealmObject
+        /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class T lacks an [PrimaryKey].</exception>
+        public T ObjectForPrimaryKey<T>(Int64 id) where T : RealmObject
         {
-            var metadata = MetadataCheckingHasObjectId(typeof(T).Name);
-            NativeException nativeException;
-            var rowPtr = NativeTable.row_for_int_id(metadata.Table, (IntPtr)metadata.ObjectIdColIndex, id, out nativeException);
-            nativeException.ThrowIfNecessary();
+            var metadata = Metadata[typeof(T).Name];
+            var rowPtr = NativeTable.RowForPrimaryKey(metadata.Table, metadata.Schema.Handle, id);
             return (T)MakeObjectForRow(metadata, rowPtr);
         }
 
 
         /// <summary>
-        /// Fast lookup of an object from a class which has an ObjectId property.
+        /// Fast lookup of an object from a class which has a PrimaryKey property.
         /// </summary>
         /// <typeparam name="T">The Type T must not only be a RealmObject but also have been processd by the Fody weaver, so it has persistent properties.</typeparam>
         /// <param name="id">Id to be matched exactly, same as an == search.</param>
         /// <returns>Null or an object matdhing the id.</returns>
-        /// <exception cref="RealmClassLacksObjectIdException">If the RealmObject class T lacks an [ObjectId].</exception>
-        public T ObjectById<T>(string id) where T : RealmObject
+        /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class T lacks an [PrimaryKey].</exception>
+        public T ObjectForPrimaryKey<T>(string id) where T : RealmObject
         {
-            var metadata = MetadataCheckingHasObjectId(typeof(T).Name);
-            NativeException nativeException;
-            var rowPtr = NativeTable.row_for_string_id(metadata.Table, (IntPtr)metadata.ObjectIdColIndex, id, (IntPtr)id.Length, out nativeException);
-            nativeException.ThrowIfNecessary();
+            var metadata = Metadata[typeof(T).Name];
+            var rowPtr = NativeTable.RowForPrimaryKey(metadata.Table, metadata.Schema.Handle, id);
             return (T)MakeObjectForRow(metadata, rowPtr);
         }
 
+
         /// <summary>
-        /// Fast lookup of an object for dynamic use, from a class which has an ObjectId property.
+        /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.
         /// </summary>
         /// <param name="className">Name of class in dynamic situation.</param>
         /// <param name="id">Id to be matched exactly, same as an == search.</param>
         /// <returns>Null or an object matdhing the id.</returns>
-        /// <exception cref="RealmClassLacksObjectIdException">If the RealmObject class lacks an [ObjectId].</exception>
-        public RealmObject ObjectById(string className, Int64 id)
+        /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class lacks an [PrimaryKey].</exception>
+        public RealmObject ObjectForPrimaryKey(string className, Int64 id)
         {
-            var metadata = MetadataCheckingHasObjectId(className);
-            NativeException nativeException;
-            var rowPtr = NativeTable.row_for_int_id(metadata.Table, (IntPtr)metadata.ObjectIdColIndex, id, out nativeException);
-            nativeException.ThrowIfNecessary();
+            var metadata = Metadata[className];
+            var rowPtr = NativeTable.RowForPrimaryKey(metadata.Table, metadata.Schema.Handle, id);
             return MakeObjectForRow(metadata, rowPtr);
         }
 
 
         /// <summary>
-        /// Fast lookup of an object for dynamic use, from a class which has an ObjectId property.
+        /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.
         /// </summary>
         /// <param name="className">Name of class in dynamic situation.</param>
         /// <param name="id">Id to be matched exactly, same as an == search.</param>
         /// <returns>Null or an object matdhing the id.</returns>
-        /// <exception cref="RealmClassLacksObjectIdException">If the RealmObject class lacks an [ObjectId].</exception>
-        public RealmObject ObjectById(string className, string id)
+        /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class lacks an [PrimaryKey].</exception>
+        public RealmObject ObjectForPrimaryKey(string className, string id)
         {
-            var metadata = MetadataCheckingHasObjectId(className);
-            NativeException nativeException;
-            var rowPtr = NativeTable.row_for_string_id(metadata.Table, (IntPtr)metadata.ObjectIdColIndex, id, (IntPtr)id.Length, out nativeException);
-            nativeException.ThrowIfNecessary();
+            var metadata = Metadata[className];
+            var rowPtr = NativeTable.RowForPrimaryKey(metadata.Table, metadata.Schema.Handle, id);
             return MakeObjectForRow(metadata, rowPtr);
         }
-        #endregion ById
+        #endregion ObjectForPrimaryKey
 
         /// <summary>
         /// Removes a persistent object from this realm, effectively deleting it.

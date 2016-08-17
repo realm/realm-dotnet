@@ -111,8 +111,8 @@
     </Compile>
     <Compile Include="Schema\ObjectSchemaPCL.cs" />
     <Compile Include="Schema\RealmSchemaPCL.cs" />
-    <Compile Include="..\Realm.Shared\exceptions\RealmClassLacksObjectIdException.cs">
-      <Link>Exceptions\RealmClassLacksObjectIdException.cs</Link>
+    <Compile Include="..\Realm.Shared\exceptions\RealmClassLacksPrimaryKeyException.cs">
+      <Link>Exceptions\RealmClassLacksPrimaryKeyException.cs</Link>
     </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />

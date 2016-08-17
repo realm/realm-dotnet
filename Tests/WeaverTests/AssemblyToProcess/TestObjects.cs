@@ -72,33 +72,33 @@ namespace AssemblyToProcess
         public bool? NullableBooleanProperty { get; set; }
     }
 
-    public class ObjectIdCharObject : RealmObject
+    public class PrimaryKeyCharObject : RealmObject
     {
-        [ObjectId] public char CharProperty { get; set; }
+        [PrimaryKey] public char CharProperty { get; set; }
     }
 
-    public class ObjectIdByteObject : RealmObject
+    public class PrimaryKeyByteObject : RealmObject
     {
-        [ObjectId] public byte ByteProperty { get; set; }
+        [PrimaryKey] public byte ByteProperty { get; set; }
     }
 
-    public class ObjectIdInt16Object : RealmObject
+    public class PrimaryKeyInt16Object : RealmObject
     {
-        [ObjectId] public short Int16Property { get; set; }
+        [PrimaryKey] public short Int16Property { get; set; }
     }
 
-    public class ObjectIdInt32Object : RealmObject
+    public class PrimaryKeyInt32Object : RealmObject
     {
-        [ObjectId] public int Int32Property { get; set; }
+        [PrimaryKey] public int Int32Property { get; set; }
     }
 
-    public class ObjectIdInt64Object : RealmObject
+    public class PrimaryKeyInt64Object : RealmObject
     {
-        [ObjectId] public long Int64Property { get; set; }
+        [PrimaryKey] public long Int64Property { get; set; }
     }
 
-    public class ObjectIdStringObject : RealmObject
+    public class PrimaryKeyStringObject : RealmObject
     {
-        [ObjectId] public string StringProperty { get; set; }
+        [PrimaryKey] public string StringProperty { get; set; }
     }
 }

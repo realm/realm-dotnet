@@ -25,6 +25,7 @@
 #include "object-store/src/schema.hpp"
 #include "timestamp_helpers.hpp"
 #include "object-store/src/results.hpp"
+#include "object-store/src/object_store.hpp"
 #include "sort_order_wrapper.hpp"
 
 
@@ -392,32 +393,37 @@ REALM_EXPORT Results* query_create_sorted_results(Query * query_ptr, SharedRealm
 }
 
 
-#pragma mark  ObjectId Searches
-// These use the faster calls such as find_first_int rather than having to build and use a query in one go.
-// Note to bypass the overhead of looking up the PrimaryKey field by name,
-// then further looking up column index from that name, as used in Cocoa,
-// we get our colIndex from cached metadata in C#, which also allows the C# side to quickly check IF an ObjectId was declared
-
-REALM_EXPORT Row* row_for_int_id(Table* table_ptr, size_t columnIndex, int64_t value, NativeException::Marshallable& ex)
+#pragma mark  PrimaryKey Searches
+Row* row_for_primarykey(Table* table_ptr, ObjectSchema* object_schema, std::function<size_t(Table*, size_t columnIndex)> finder, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        const size_t row_ndx = table_ptr->find_first_int(columnIndex, value);
-        if (row_ndx == not_found)
-            return (Row*)nullptr;
-         return new Row(table_ptr->get(row_ndx));
-    });
-}
-  
-
-REALM_EXPORT Row* row_for_string_id(Table* table_ptr, size_t columnIndex, uint16_t* value, size_t value_len, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        Utf16StringAccessor str(value, value_len);
-        const size_t row_ndx = table_ptr->find_first_string(columnIndex, str);
+        size_t columnIndex = realm::npos;
+        if (object_schema->primary_key.size() > 0)
+            columnIndex = table_ptr->get_column_index(object_schema->primary_key);
+        if (columnIndex == realm::npos)
+            throw PrimaryKeyNotDeclaredException(object_schema->name);
+        const size_t row_ndx = finder(table_ptr, columnIndex);
         if (row_ndx == not_found)
             return (Row*)nullptr;
         return new Row(table_ptr->get(row_ndx));
     });
+}
+
+
+REALM_EXPORT Row* row_for_int_primarykey(Table* table_ptr, ObjectSchema* object_schema, int64_t value, NativeException::Marshallable& ex)
+{
+    return row_for_primarykey(table_ptr, object_schema, [=](Table* table, size_t columnIndex) {
+        return table->find_first_int(columnIndex, value);
+    }, ex);
+}
+  
+
+REALM_EXPORT Row* row_for_string_primarykey(Table* table_ptr, ObjectSchema* object_schema, uint16_t* value, size_t value_len, NativeException::Marshallable& ex)
+{
+    Utf16StringAccessor str(value, value_len);
+    return row_for_primarykey(table_ptr, object_schema, [&](Table* table, size_t columnIndex) {
+        return table->find_first_string(columnIndex, str);
+    }, ex);
 }
 
 }   // extern "C"

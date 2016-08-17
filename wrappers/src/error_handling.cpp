@@ -90,6 +90,9 @@ namespace realm {
         catch (const RowDetachedException& e) {
             return { RealmErrorType::RealmRowDetached, e.what() };
         }
+        catch (const PrimaryKeyNotDeclaredException& e) {
+            return { RealmErrorType::RealmTableHasNoPrimaryKey, e.what() };
+        }
         catch (const std::bad_alloc& e) {
             return { RealmErrorType::RealmOutOfMemory, e.what() };
         }

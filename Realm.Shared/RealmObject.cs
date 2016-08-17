@@ -77,8 +77,6 @@ namespace Realms
             internal Dictionary<string, IntPtr> ColumnIndices;
 
             internal Schema.ObjectSchema Schema;
-
-            internal int ObjectIdColIndex;
         }
 
         internal void _CopyDataFromBackingFieldsToRow()
