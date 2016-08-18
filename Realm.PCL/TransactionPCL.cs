@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
  
-/// PROXY VERSION OF CLASS USED IN PCL FOR BAIT AND SWITCH PATTERN 
+// PROXY VERSION OF CLASS USED IN PCL FOR BAIT AND SWITCH PATTERN 
  
 using System;
 using System.Collections.Generic;

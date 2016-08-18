@@ -124,16 +124,28 @@ namespace Realms
             }
         }
 
+        /// <summary>
+        /// Standard <a href="https://msdn.microsoft.com/en-us/library/system.collections.ilist.aspx">IList</a> property.
+        /// </summary>
+        /// <value><c>false</c> at all times.</value>
         public bool IsReadOnly
         {
             get { return false; }
         }
 
+        /// <summary>
+        /// Standard <a href="https://msdn.microsoft.com/en-us/library/system.collections.ilist.aspx">IList</a> property.
+        /// </summary>
+        /// <value><c>false</c> at all times as the set of related objects may be changed.</value>
         public bool IsFixedSize
         {
             get { return false; }
         }
 
+        /// <summary>
+        /// Standard <a href="https://msdn.microsoft.com/en-us/library/system.collections.ilist.aspx">IList</a> property.
+        /// </summary>
+        /// <value><c>true</c> at all times.</value>
         public bool IsSynchronized
         {
             get { return true; }
@@ -221,7 +233,7 @@ namespace Realms
 
 
         /// <summary>
-        /// Factory for an iterator to be called explicitly or used in a foreach loop.
+        /// Related RealmObject enumerator factory for an iterator to be called explicitly or used in a foreach loop.
         /// </summary>
         /// <returns>A RealmListEnumerator as the generic IEnumerator<T>.</returns>
         public Enumerator GetEnumerator()

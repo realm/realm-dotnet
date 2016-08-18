@@ -35,8 +35,14 @@ namespace Realms.Schema
     {
         private readonly ReadOnlyDictionary<string, Property> _properties;
 
+        /// <summary>
+        /// Name of the original class declaration from which the schema was built.
+        /// </summary>
         public string Name { get; private set; }
 
+        /// <summary>
+        /// Number of properties in the schema, which is the persistent properties from the original class.
+        /// </summary>
         public int Count => _properties.Count;
 
         internal IntPtr Handle;
@@ -54,8 +60,18 @@ namespace Realms.Schema
             _properties = new ReadOnlyDictionary<string, Property>(properties);
         }
 
+        /// <summary>
+        /// Looks for a Property by Name. Failure to find means it is not regarded as a property to persist in a Realm.
+        /// </summary>
+        /// <returns><c>true</c>, if a property was found matching Name, <c>false</c> otherwise.</returns>
+        /// <param name="name">Name of the Property to match exactly.</param>
+        /// <param name="property">Property returned only if found matching Name.</param>
         public bool TryFindProperty(string name, out Property property) => _properties.TryGetValue(name, out property);
 
+        /// <summary>
+        /// Property enumerator factory for an iterator to be called explicitly or used in a foreach loop.
+        /// </summary>
+        /// <returns>An enumerator over the list of Property instances described in the schema.</returns>
         public IEnumerator<Property> GetEnumerator()
         {
             return _properties.Values.GetEnumerator();
@@ -71,6 +87,12 @@ namespace Realms.Schema
             return new ObjectSchema(Name, _properties) { Type = Type, Handle = handle };
         }
 
+        /// <summary>
+        /// Creates a schema describing .
+        /// </summary>
+        /// <exception cref="ArgumentException">Thrown if no class Type is provided or if it doesn't descend directly from RealmObject.</exception>
+        /// <returns>An ObjectSchema describing the specified Type.</returns>
+        /// <param name="type">Type of a RealmObject descendant for which you want a schema.</param>
         public static ObjectSchema FromType(Type type)
         {
             if (type == null) throw new ArgumentNullException(nameof(type));
@@ -104,6 +126,9 @@ namespace Realms.Schema
             return ret;
         }
 
+        /// <summary>
+        /// Helper class used to construct an ObjectSchema.
+        /// </summary>
         public class Builder : List<Property>
         {
             public string Name { get; }
@@ -116,6 +141,11 @@ namespace Realms.Schema
                 Name = name;
             }
 
+            /// <summary>
+            /// Build the ObjectSchema to include all Property instances added to this Builder.
+            /// </summary>
+            /// <exception cref="InvalidOperationException">Thrown if the Builder is empty.</exception>
+            /// <returns>A completed ObjectSchema, suitable for composing a RealmSchema that will be used to create a new Realm.</returns>
             public ObjectSchema Build()
             {
                 if (Count == 0) 

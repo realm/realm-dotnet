@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
  
-/// PROXY VERSION OF CLASS USED IN PCL FOR BAIT AND SWITCH PATTERN 
+// PROXY VERSION OF CLASS USED IN PCL FOR BAIT AND SWITCH PATTERN 
  
  
 using System;
@@ -86,6 +86,8 @@ namespace Realms
         /// <summary>
         /// Handler type used by <see cref="RealmChanged"/> 
         /// </summary>
+        /// <param name="sender">The Realm which has changed.</param>
+        /// <param name="e">Currently an empty argument, in future may indicate more details about the change.</param>
         public delegate void RealmChangedEventHandler(object sender, EventArgs e);
 
         /// <summary>
@@ -281,6 +283,7 @@ namespace Realms
         /// });
         /// </example>
         /// <param name="action">Action to perform inside a transaction, creating, updating or removing objects.</param>
+        /// <returns>A standard <c>Task</c> so it can be used by <c>await</c>.</returns>
         public Task WriteAsync(Action<Realm> action)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
@@ -316,6 +319,7 @@ namespace Realms
         /// </summary>
         /// <param name="className">The type of the objects as defined in the schema.</param>
         /// <remarks>Because the objects inside the view are accessed dynamically, the view cannot be queried into using LINQ or other expression predicates.</remarks>
+        /// <returns>A RealmResults that without further filtering, allows iterating all objects of className, in this realm.</returns>
         public RealmResults<dynamic> All(string className)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();

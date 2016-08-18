@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
  
-/// PROXY VERSION OF CLASS USED IN PCL FOR BAIT AND SWITCH PATTERN 
+// PROXY VERSION OF CLASS USED IN PCL FOR BAIT AND SWITCH PATTERN 
 
 using System;
 using System.IO;
@@ -80,6 +80,8 @@ namespace Realms
         /// <summary>
         /// Utility to build a path in which a realm will be created so can consistently use filenames and relative paths.
         /// </summary>
+        /// <param name="optionalPath">Path to the realm, must be a valid full path for the current platform, relative subdir, or just filename.</param>
+        /// <returns>A full path including name of Realm file.</returns>
         public static string PathToRealm(string optionalPath = null)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();

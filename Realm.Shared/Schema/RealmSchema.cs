@@ -28,7 +28,7 @@ using Realms.Schema;
 namespace Realms
 {
     /// <summary>
-    /// Describe the complete set of classes which may be stored in a Realm, either from assembly declarations or, dynamically, by evaluating a Realm from disk.
+    /// Describes the complete set of classes which may be stored in a Realm, either from assembly declarations or, dynamically, by evaluating a Realm from disk.
     /// </summary>
     /// <remarks>
     /// By default this will be all the RealmObjects in all your assemblies unless you restrict with RealmConfiguration.ObjectClasses. 
@@ -57,10 +57,10 @@ namespace Realms
         }
 
         /// <summary>
-        /// Find the definition of a class in this schema.
+        /// Finds the definition of a class in this schema.
         /// </summary>
         /// <param name="name">A valid class name which may be in this schema.</param>
-        /// <exception cref="ArgumentException">Thrown if an empty name is supplied.</exception>
+        /// <exception cref="ArgumentException">Thrown if a name is not supplied.</exception>
         /// <returns>An object or null to indicate not found.</returns>
         public ObjectSchema Find(string name)
         {
