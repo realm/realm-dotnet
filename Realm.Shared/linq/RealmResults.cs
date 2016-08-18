@@ -148,11 +148,16 @@ namespace Realms
 
 
         /// <summary>
-        /// Fast count all objects of a given class.
+        /// Fast count all objects of a given class, or in a RealmResults after casting.
         /// </summary>
         /// <remarks>
         /// Resolves to this method instead of the LINQ static extension <c>Count&lt;T&gt;(this IEnumerable&lt;T&gt;)</c>, when used directly on Realm.All.
+		/// <br>
+		/// if someone CASTS a RealmResults<blah> variable from a Where call to 
+        /// a RealmResults<blah> they change its compile-time type from IQueryable<blah> (which invokes LINQ)
+        /// to RealmResults<blah> and thus ends up here.
         /// </remarks>
+        /// <returns>Count of all objects in a class or in the results of a search, without instantiating them.</returns>
         public int Count()
         {
             if (_allRecords)
@@ -163,11 +168,8 @@ namespace Realms
             }
 
             // normally we would  be in RealmQRealmResultsr.VisitMethodCall, not here
-            // however, if someone CASTS a RealmResults<blah> variable from a Where call to 
-            // a RealmResults<blah> they change its compile-time type from IQueryable<blah> (which invokes LINQ)
-            // to RealmResults<blah> and thus ends up here.
+            // however, casting as described in the remarks above can cause this method to be invoked.
             // as in the unit test CountFoundWithCasting
-            //return (int)NativeResults.count(ResultsHandle);
             return (int) ResultsHandle.Count();
         }
 
