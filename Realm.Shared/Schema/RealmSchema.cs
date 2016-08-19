@@ -162,7 +162,7 @@ namespace Realms
                     objectType = property.ObjectType,
                     is_nullable = property.IsNullable,
                     is_indexed = property.IsIndexed,
-                    is_primary = property.IsObjectId
+                    is_primary = property.IsPrimaryKey
                 };
             }
         }

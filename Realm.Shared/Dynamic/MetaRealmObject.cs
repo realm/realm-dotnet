@@ -142,7 +142,7 @@ namespace Realms.Dynamic
                     argumentType = typeof(long);
                     if (property.IsNullable)
                         setter = GetSetMethod<long?>(NativeTable.SetNullableInt64);
-                    else if (property.IsObjectId)
+                    else if (property.IsPrimaryKey)
                         setter = GetSetMethod<long>(NativeTable.SetInt64Unique);
                     else
                         setter = GetSetMethod<long>(NativeTable.SetInt64);
@@ -170,7 +170,7 @@ namespace Realms.Dynamic
                     break;
                 case Schema.PropertyType.String:
                     argumentType = typeof(string);
-                    if (property.IsObjectId)
+                    if (property.IsPrimaryKey)
                         setter = GetSetMethod<string>(NativeTable.SetStringUnique);
                     else
                         setter = GetSetMethod<string>(NativeTable.SetString);
