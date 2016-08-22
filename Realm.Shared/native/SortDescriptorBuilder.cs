@@ -26,6 +26,11 @@ namespace Realms.native
     {
         public class Clause
         {
+            // This list contains the column indices necessary to traverse
+            // the links. The last index in the list must be to a non-link column.
+            // I.e. if sort is being applied to Dog.Owner.Name, there will
+            // be two indices, the first pointing to Dog.Owner and the second
+            // to Person.Name (given Owner is an instance of Person).
             public List<IntPtr> ColumnIndexChain;
             public bool Ascending;
 
