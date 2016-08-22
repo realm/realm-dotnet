@@ -67,7 +67,7 @@ namespace IntegrationTests.Shared
 
         class MyDataObject : RealmObject
         {
-            [ObjectId]
+            [PrimaryKey]
             public string Path { get; set; }
 
             public int? ExpensiveToComputeValue { get; set; }
@@ -77,7 +77,7 @@ namespace IntegrationTests.Shared
 #if WINDOWS
         [Ignore("We don't support async on Windows just yet.")]
 #endif
-        public async void AsyncWrite_UpdateViaObjectId()
+        public async void AsyncWrite_UpdateViaPrimaryKey()
         {
             var path = "/path/to/some/item";
             MyDataObject obj = null;

@@ -79,11 +79,12 @@ namespace Realms.Schema
             {
                 if (property.GetCustomAttribute<WovenPropertyAttribute>() == null) continue;
 
+                bool isPrimaryKey = property.GetCustomAttribute<PrimaryKeyAttribute>() != null;
                 var schemaProperty = new Property
                 {
                     Name = property.GetCustomAttribute<MapToAttribute>()?.Mapping ?? property.Name,
-                    IsObjectId = property.GetCustomAttribute<ObjectIdAttribute>() != null,
-                    IsIndexed = property.GetCustomAttribute<IndexedAttribute>() != null,
+                    IsPrimaryKey = isPrimaryKey,
+                    IsIndexed = isPrimaryKey || property.GetCustomAttribute<IndexedAttribute>() != null,
                     PropertyInfo = property
                 };
 

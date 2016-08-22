@@ -32,7 +32,7 @@ namespace Realms.Schema
 
         public bool IsNullable { get; set; }
 
-        public bool IsObjectId { get; set; }
+        public bool IsPrimaryKey { get; set; }
 
         public bool IsIndexed { get; set; }
 

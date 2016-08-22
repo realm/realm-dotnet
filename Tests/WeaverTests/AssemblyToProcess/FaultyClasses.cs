@@ -51,25 +51,25 @@ namespace AssemblyToProcess
         public float SingleProperty { get; set; }
     }
 
-    public class ObjectIdProperties : RealmObject
+    public class PrimaryKeyProperties : RealmObject
     {
         // These should be allowed:
 
-        [ObjectId]
+        [PrimaryKey]
         public int IntProperty { get; set; }
 
-        [ObjectId]
+        [PrimaryKey]
         public string StringProperty { get; set; }
 
         // These should cause errors:
 
-        [ObjectId]
+        [PrimaryKey]
         public bool BooleanProperty { get; set; }
 
-        [ObjectId]
+        [PrimaryKey]
         public DateTimeOffset DateTimeOffsetProperty { get; set; }
 
-        [ObjectId]
+        [PrimaryKey]
         public float SingleProperty { get; set; }
     }
 

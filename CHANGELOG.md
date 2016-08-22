@@ -1,5 +1,8 @@
-0.77.x (TBD)
+0.78.0 (TBD)
 -------------------
+### Breaking Changes
+* The term `ObjectId` has been replaced with `PrimaryKey` in order to align with the other SDKs. This affects the `[ObjectId]` attribute used to decorate a property.
+
 ### Bug fixes
 * Now throws a RealmMigrationSchemaNeededException if you have changed a `RealmObject` subclass declaration and not incremented the `SchemaVersion` (#518)
 

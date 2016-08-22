@@ -2583,3 +2583,9 @@ RealmResultsVisitor.cs
 
 RealmListPCL.cs
 - removed IRealmList.SchemaClassName
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+Renaming ObjectId to PrimaryKey
+
+General search and replace ObjectId with PrimaryKey
