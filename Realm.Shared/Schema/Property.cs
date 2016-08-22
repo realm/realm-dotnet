@@ -21,6 +21,9 @@ using System.Reflection;
 
 namespace Realms.Schema
 {
+    /// <summary>
+    /// Describes a single property of a class stored in a Realm.
+    /// </summary>
     [DebuggerDisplay("Name = {Name}, Type = {Type}")]
     public struct Property
     {

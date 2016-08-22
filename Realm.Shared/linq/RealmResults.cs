@@ -15,7 +15,7 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -36,7 +36,7 @@ namespace Realms
     /// <typeparam name="T">Type of the RealmObject which is being returned.</typeparam>
     public class RealmResults<T> : IOrderedQueryable<T>, RealmResultsNativeHelper.Interface
     {
-        public Type ElementType => typeof (T);
+        public Type ElementType => typeof(T);
         public Expression Expression { get; } = null; // null if _allRecords
         private readonly RealmResultsProvider _provider = null;  // null if _allRecords
         private readonly bool _allRecords = false;
@@ -50,7 +50,7 @@ namespace Realms
         /// </summary>
         public Schema.ObjectSchema ObjectSchema => _targetMetadata.Schema;
 
-        internal ResultsHandle ResultsHandle => _resultsHandle ?? (_resultsHandle = CreateResultsHandle()); 
+        internal ResultsHandle ResultsHandle => _resultsHandle ?? (_resultsHandle = CreateResultsHandle());
         private ResultsHandle _resultsHandle = null;
 
         public IQueryProvider Provider => _provider;
@@ -60,7 +60,7 @@ namespace Realms
             get
             {
                 if (index < 0)
-                    throw new IndexOutOfRangeException ();
+                    throw new IndexOutOfRangeException();
                 var rowPtr = ResultsHandle.GetRow(index);
                 return (T)(object)_realm.MakeObjectForRow(_targetMetadata, rowPtr);
             }
@@ -74,20 +74,20 @@ namespace Realms
             /// <summary>
             /// The indices in the new version of the <see cref="RealmResults{T}" /> which were newly inserted.
             /// </summary>
-            public readonly int[] InsertedIndices;
+            public readonly int [] InsertedIndices;
 
             /// <summary>
             /// The indices in the new version of the <see cref="RealmResults{T}"/> which were modified. This means that the property of an object at that index was modified
             /// or the property of another object it's related to.
             /// </summary>
-            public readonly int[] ModifiedIndices;
+            public readonly int [] ModifiedIndices;
 
             /// <summary>
             /// The indices of objects in the previous version of the <see cref="RealmResults{T}"/> which have been removed from this one.
             /// </summary>
-            public readonly int[] DeletedIndices;
+            public readonly int [] DeletedIndices;
 
-            internal ChangeSet(int[] insertedIndices, int[] modifiedIndices, int[] deletedIndices)
+            internal ChangeSet(int [] insertedIndices, int [] modifiedIndices, int [] deletedIndices)
             {
                 InsertedIndices = insertedIndices;
                 ModifiedIndices = modifiedIndices;
@@ -148,27 +148,29 @@ namespace Realms
 
 
         /// <summary>
-        /// Fast count all objects of a given class.
+        /// Fast count all objects of a given class, or in a RealmResults after casting.
         /// </summary>
         /// <remarks>
-        /// Resolves to this method instead of the LINQ static extension <c>Count&lt;T&gt;(this IEnumerable&lt;T&gt;)</c>, when used directly on Realm.All.
+        /// Resolves to this method instead of the LINQ static extension <c>Count<T>(this IEnumerable<T>)</c>, when used directly on Realm.All.
+        /// <br>
+        /// if someone CASTS a RealmResults<T> variable from a Where call to 
+        /// a RealmResults<T> they change its compile-time type from IQueryable<blah> (which invokes LINQ)
+        /// to RealmResults<T> and thus ends up here.
         /// </remarks>
+        /// <returns>Count of all objects in a class or in the results of a search, without instantiating them.</returns>
         public int Count()
         {
             if (_allRecords)
             {
                 // use the type captured at build based on generic T
-                var tableHandle = _realm.Metadata[ObjectSchema.Name].Table;
+                var tableHandle = _realm.Metadata [ObjectSchema.Name].Table;
                 return (int)NativeTable.CountAll(tableHandle);
             }
 
             // normally we would  be in RealmQRealmResultsr.VisitMethodCall, not here
-            // however, if someone CASTS a RealmResults<blah> variable from a Where call to 
-            // a RealmResults<blah> they change its compile-time type from IQueryable<blah> (which invokes LINQ)
-            // to RealmResults<blah> and thus ends up here.
+            // however, casting as described in the remarks above can cause this method to be invoked.
             // as in the unit test CountFoundWithCasting
-            //return (int)NativeResults.count(ResultsHandle);
-            return (int) ResultsHandle.Count();
+            return (int)ResultsHandle.Count();
         }
 
         class NotificationToken : IDisposable
@@ -268,7 +270,7 @@ namespace Realms
             _notificationToken.Dispose();
             _notificationToken = null;
         }
-                    
+
         void RealmResultsNativeHelper.Interface.NotifyCallbacks(ResultsHandle.CollectionChangeSet? changes, NativeException? exception)
         {
             var managedException = exception?.Convert();
@@ -298,9 +300,9 @@ namespace Realms
             void NotifyCallbacks(ResultsHandle.CollectionChangeSet? changes, NativeException? exception);
         }
 
-        #if __IOS__
+#if __IOS__
         [ObjCRuntime.MonoPInvokeCallback(typeof(ResultsHandle.NotificationCallback))]
-        #endif
+#endif
         internal static void NotificationCallback(IntPtr managedResultsHandle, IntPtr changes, IntPtr exception)
         {
             var results = (Interface)GCHandle.FromIntPtr(managedResultsHandle).Target;

@@ -62,11 +62,13 @@ namespace Realms
         /// <remarks>Specify classes by type. Searched linearly so order in decreasing frequency of creating objects.</remarks>
         /// <example>eg: `config.ObjectClasses = new Type[] { typeof(CommonClass), typeof(RareClass) };`</example>
         /// <value>Typically left null so by default all RealmObjects will be able to be stored in all realms.</value>
-        public Type[] ObjectClasses {get; set;} 
+        public Type[] ObjectClasses {get; set;}
 
         /// <summary>
         /// Utility to build a path in which a realm will be created so can consistently use filenames and relative paths.
         /// </summary>
+        /// <param name="optionalPath">Path to the realm, must be a valid full path for the current platform, relative subdir, or just filename.</param>
+        /// <returns>A full path including name of Realm file.</returns>
         public static string PathToRealm(string optionalPath = null)
         {
             if (string.IsNullOrEmpty(optionalPath)) {

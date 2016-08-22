@@ -22,8 +22,20 @@ using Realms.Schema;
 
 namespace Realms
 {
+    /// <summary>
+    /// Describes the complete set of classes which may be stored in a Realm, either from assembly declarations or, dynamically, by evaluating a Realm from disk.
+    /// </summary>
+    /// <remarks>
+    /// By default this will be all the RealmObjects in all your assemblies unless you restrict with RealmConfiguration.ObjectClasses. 
+    /// Just because a given class <em>may</em> be stored in a Realm doesn't imply much overhead. There will be a small amount of metadata 
+    /// but objects only start to take up space once written. 
+    /// </remarks>
     public class RealmSchema : IReadOnlyCollection<ObjectSchema>
     {
+        /// <summary>
+        /// Number of known classes in the schema.
+        /// </summary>
+        /// <value>Count of known classes specified in this Schema.</value>
         public int Count { get; }
 
         private RealmSchema()
@@ -31,12 +43,22 @@ namespace Realms
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }
 
+        /// <summary>
+        /// Finds the definition of a class in this schema.
+        /// </summary>
+        /// <param name="name">A valid class name which may be in this schema.</param>
+        /// <exception cref="ArgumentException">Thrown if a name is not supplied.</exception>
+        /// <returns>An object or null to indicate not found.</returns>
         public ObjectSchema Find(string name)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return null;
         }
 
+        /// <summary>
+        /// Standard method from interface IEnumerable allows the RealmSchema to be used in a <c>foreach</c> or <c>ToList()</c>.
+        /// </summary>
+        /// <returns>An IEnumerator which will iterate through ObjectSchema declarations in this RealmSchema.</returns>
         public IEnumerator<ObjectSchema> GetEnumerator()
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
@@ -45,8 +67,16 @@ namespace Realms
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
+        /// <summary>
+        /// Helper class used to construct a RealmSchema.
+        /// </summary>
         public class Builder : List<ObjectSchema>
         {
+            /// <summary>
+            /// Build the RealmSchema to include all ObjectSchema added to this Builder.
+            /// </summary>
+            /// <exception cref="InvalidOperationException">Thrown if the Builder is empty.</exception>
+            /// <returns>A completed RealmSchema, suitable for creating a new Realm.</returns>
             public RealmSchema Build()
             {
                 RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
