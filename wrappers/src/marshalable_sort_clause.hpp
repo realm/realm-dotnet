@@ -30,6 +30,9 @@ struct MarshalableSortClause {
 inline void unflatten_sort_clauses(MarshalableSortClause* sort_clauses, size_t clause_count, size_t* flattened_column_indices, 
     std::vector<std::vector<size_t>>& column_indices, std::vector<bool>& ascending)
 {
+    ascending.reserve(clause_count);
+    column_indices.reserve(clause_count);
+
     for(auto i = 0; i < clause_count; ++i) {
         ascending.push_back(sort_clauses[i].ascending);
         column_indices.push_back(std::vector<size_t>(flattened_column_indices + sort_clauses[i].offset, 
