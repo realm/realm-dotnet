@@ -68,7 +68,7 @@ namespace Realms.Schema
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         /// <summary>
-        /// Creates a schema describing .
+        /// Creates a schema describing a RealmObject subclass in terms of its persisted members.
         /// </summary>
         /// <exception cref="ArgumentException">Thrown if no class Type is provided or if it doesn't descend directly from RealmObject.</exception>
         /// <returns>An ObjectSchema describing the specified Type.</returns>
