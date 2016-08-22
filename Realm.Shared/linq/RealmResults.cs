@@ -124,15 +124,13 @@ namespace Realms
             {
                 return _realm.MakeResultsForTable(_targetMetadata);
             }
-            else
-            {
-                // do all the LINQ expression evaluation to build a query
-                var qv = _provider.MakeVisitor();
-                qv.Visit(Expression);
-                var queryHandle = qv._coreQueryHandle; // grab out the built query definition
-                var sortHandle = qv.OptionalSortDescriptorBuilder;
-                return _realm.MakeResultsForQuery(queryHandle, sortHandle);
-            }
+
+            // do all the LINQ expression evaluation to build a query
+            var qv = _provider.MakeVisitor();
+            qv.Visit(Expression);
+            var queryHandle = qv._coreQueryHandle; // grab out the built query definition
+            var sortHandle = qv.OptionalSortDescriptorBuilder;
+            return _realm.MakeResultsForQuery(queryHandle, sortHandle);
         }
 
         /// <summary>

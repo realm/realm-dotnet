@@ -50,8 +50,8 @@ namespace Realms.native
             _metadata = metadata;
         }
 
-        // This method adds a direct sort clause. To add clauses that follow links, 
-        // make a new one that populates the ColumnIndexChain further.
+        // This method adds a direct sort clause, i.e. a clause that doesn't involve
+        // any links.
         public void AddClause(string columnName, bool @ascending)
         {
             var columnIndex = _metadata.ColumnIndices[columnName];
