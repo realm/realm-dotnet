@@ -16,15 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef REALM_SORT_DESCRIPTOR_WRAPPER_HPP
-#define REALM_SORT_DESCRIPTOR_WRAPPER_HPP
+#ifndef REALM_MARSHALABLE_SORT_CLAUSE_HPP
+#define REALM_MARSHALABLE_SORT_CLAUSE_HPP
 
 #include <vector>
 
 struct MarshalableSortClause {
-        size_t offset;
-        size_t count;
-        bool ascending;
+    size_t offset;
+    size_t count;
+    bool ascending;
 };
 
 inline void unflatten_sort_clauses(MarshalableSortClause* sort_clauses, size_t clause_count, size_t* flattened_column_indices, 
@@ -37,32 +37,4 @@ inline void unflatten_sort_clauses(MarshalableSortClause* sort_clauses, size_t c
     }
 }
 
-//struct SortDescriptorMarshaller {
-//    struct SortClause {
-//    };
-//
-//    SortClause* clauses;
-//    size_t clause_count;
-//
-//    size_t* flattened_column_indices;
-//
-//    realm::Table* table;
-//
-//    operator realm::SortDescriptor() const
-//    {
-//        std::vector<std::vector<size_t>> column_indices;
-//        std::vector<bool> ascending;
-//
-//        for(auto i = 0; i != clause_count; ++i) {
-//            auto& clause = clauses[i];
-//
-//            column_indices.push_back(std::vector<size_t>(flattened_column_indices + clause.offset, 
-//                flattened_column_indices + clause.offset + clause.count));
-//            ascending.push_back(clause.ascending);
-//        }
-//
-//        return realm::SortDescriptor(*table, column_indices, ascending);
-//    }
-//};
-
-#endif //REALM_SORT_DESCRIPTOR_WRAPPER_HPP
+#endif //REALM_MARSHALABLE_SORT_CLAUSE_HPP

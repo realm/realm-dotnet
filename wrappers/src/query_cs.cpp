@@ -25,7 +25,7 @@
 #include "object-store/src/schema.hpp"
 #include "timestamp_helpers.hpp"
 #include "object-store/src/results.hpp"
-#include "sort_descriptor_marshaller.hpp"
+#include "marshalable_sort_clause.hpp"
 
 
 using namespace realm;

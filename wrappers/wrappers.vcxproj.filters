@@ -269,7 +269,7 @@
     <ClInclude Include="src\object-store\src\impl\handover.hpp">
       <Filter>Header Files\object-store\impl</Filter>
     </ClInclude>
-    <ClInclude Include="src\sort_descriptor_marshaller.hpp">
+    <ClInclude Include="src\marshalable_sort_clause.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
