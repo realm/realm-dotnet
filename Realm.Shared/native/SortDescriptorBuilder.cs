@@ -43,7 +43,7 @@ namespace Realms.native
         private readonly List<Clause> _clauses = new List<Clause>();
         private readonly RealmObject.Metadata _metadata;
 
-        public IntPtr TablePtr => _metadata.Table.DangerousGetHandle();
+        public TableHandle TableHandle => _metadata.Table;
 
         public SortDescriptorBuilder(RealmObject.Metadata metadata)
         {
