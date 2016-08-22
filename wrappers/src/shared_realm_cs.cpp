@@ -68,7 +68,6 @@ REALM_EXPORT SharedRealm* shared_realm_open(Schema* schema, uint16_t* path, size
 
         Realm::Config config;
         config.path = pathStr.to_string();
-        //config.read_only = read_only;
         config.in_memory = durability != SharedGroup::durability_Full;
 
         // by definition the key is only allowwed to be 64 bytes long, enforced by C# code
