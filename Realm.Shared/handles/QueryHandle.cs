@@ -186,7 +186,7 @@ namespace Realms
             public static extern IntPtr create_results(QueryHandle queryPtr, SharedRealmHandle sharedRealm, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_create_sorted_results", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr create_sorted_results(QueryHandle queryPtr, SharedRealmHandle sharedRealm, IntPtr tablePtr,
+            public static extern IntPtr create_sorted_results(QueryHandle queryPtr, SharedRealmHandle sharedRealm, TableHandle tablePtr,
                 [MarshalAs(UnmanagedType.LPArray), In]SortDescriptorBuilder.Clause.Marshalable[] sortClauses, IntPtr clauseCount,
                 [MarshalAs(UnmanagedType.LPArray), In]IntPtr[] flattenedColumnIndices,
                 out NativeException ex);
@@ -539,7 +539,7 @@ namespace Realms
         {
             NativeException nativeException;
             var marshaledValues = sortDescriptorBuilder.Flatten();
-            var result = NativeMethods.create_sorted_results(this, sharedRealm, sortDescriptorBuilder.TablePtr, marshaledValues.Item2, (IntPtr)marshaledValues.Item2.Length, marshaledValues.Item1, out nativeException);
+            var result = NativeMethods.create_sorted_results(this, sharedRealm, sortDescriptorBuilder.TableHandle, marshaledValues.Item2, (IntPtr)marshaledValues.Item2.Length, marshaledValues.Item1, out nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
