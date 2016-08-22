@@ -31,7 +31,6 @@ namespace Realms
     {
         private Realm _realm;
         internal QueryHandle _coreQueryHandle;  // set when recurse down to VisitConstant
-<<<<<<< HEAD
         internal SortDescriptorBuilder OptionalSortDescriptorBuilder;  // set only when get OrderBy*
         private readonly RealmObject.Metadata _metadata;
 
