@@ -563,7 +563,7 @@ namespace Realms
         /// <returns>A transaction in write mode, which is required for any creation or modification of objects persisted in a Realm.</returns>
         public Transaction BeginWrite()
         {
-            return new Transaction(SharedRealmHandle);
+            return new Transaction(this);
         }
 
         /// <summary>

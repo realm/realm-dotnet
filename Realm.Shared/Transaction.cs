@@ -31,13 +31,13 @@ namespace Realms
     /// </remarks>
     public class Transaction : IDisposable
     {
-        private SharedRealmHandle _sharedRealmHandle;
+        private Realm _realm;
         private bool _isOpen;
 
-        internal Transaction(SharedRealmHandle sharedRealmHandle)
+        internal Transaction(Realm realm)
         {
-            this._sharedRealmHandle = sharedRealmHandle;
-            sharedRealmHandle.BeginTransaction();
+            _realm = realm;
+            realm.SharedRealmHandle.BeginTransaction();
             _isOpen = true;
         }
 
@@ -65,7 +65,7 @@ namespace Realms
             if (!_isOpen)
                 throw new Exception("Transaction was already closed. Cannot roll back");
 
-            _sharedRealmHandle.CancelTransaction();
+            _realm.SharedRealmHandle.CancelTransaction();
             _isOpen = false;
         }
 
@@ -77,7 +77,7 @@ namespace Realms
             if (!_isOpen)
                 throw new Exception("Transaction was already closed. Cannot commit");
 
-            _sharedRealmHandle.CommitTransaction();
+            _realm.SharedRealmHandle.CommitTransaction();
             _isOpen = false;
         }
     }
