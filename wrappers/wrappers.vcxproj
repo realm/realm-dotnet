@@ -112,7 +112,7 @@
     <ClInclude Include="src\realm_error_type.hpp" />
     <ClInclude Include="src\realm_export_decls.hpp" />
     <ClInclude Include="src\shared_linklist.hpp" />
-    <ClInclude Include="src\sort_descriptor_marshaller.hpp" />
+    <ClInclude Include="src\marshalable_sort_clause.hpp" />
     <ClInclude Include="src\timestamp_helpers.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
