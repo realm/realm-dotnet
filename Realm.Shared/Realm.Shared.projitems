@@ -26,6 +26,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)linq\ExpressionVisitor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)linq\TypeSystem.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MarshalHelpers.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)native\SortDescriptorBuilder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)native\MarshaledVector.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)native\NativeCommon.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)native\NativeException.cs" />
@@ -53,7 +54,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)linq\RealmResultsProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmMismatchedConfigException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)handles\ResultsHandle.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)handles\SortOrderHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)weaving\IRealmObjectHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)handles\NotificationTokenHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmInvalidTransactionException.cs" />

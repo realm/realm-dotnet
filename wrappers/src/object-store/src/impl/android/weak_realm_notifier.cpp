@@ -100,7 +100,7 @@ void WeakRealmNotifier::notify()
         // to do so we allocate a weak pointer on the heap and send its address over a pipe.
         // the other end of the pipe is read by the realm thread. when it's done with the pointer, it deletes it.
         auto realm_ptr = new std::weak_ptr<Realm>(realm());
-        if (write(m_message_pipe.write, &realm_ptr, sizeof(realm_ptr)) != sizeof(realm_ptr)) {
+        if (::write(m_message_pipe.write, &realm_ptr, sizeof(realm_ptr)) != sizeof(realm_ptr)) {
             delete realm_ptr;
             LOGE("Buffer overrun when writing to WeakRealmNotifier's ALooper message pipe.");
         }
@@ -110,16 +110,13 @@ void WeakRealmNotifier::notify()
 int WeakRealmNotifier::looper_callback(int fd, int events, void* data)
 {
     if ((events & ALOOPER_EVENT_INPUT) != 0) {
-
         // this is a pointer to a heap-allocated weak Realm pointer created by the notifiying thread.
         // the actual address to the pointer is communicated over a pipe.
         // we have to delete it so as to not leak, using the same memory allocation facilities it was allocated with.
         std::weak_ptr<Realm>* realm_ptr = nullptr;
         while (read(fd, &realm_ptr, sizeof(realm_ptr)) == sizeof(realm_ptr)) {
             if (auto realm = realm_ptr->lock()) {
-                if (!realm->is_closed()) {
-                    realm->notify();
-                }
+                realm->notify();
             }
 
             delete realm_ptr;

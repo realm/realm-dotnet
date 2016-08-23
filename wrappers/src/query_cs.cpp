@@ -25,7 +25,7 @@
 #include "object-store/src/schema.hpp"
 #include "timestamp_helpers.hpp"
 #include "object-store/src/results.hpp"
-#include "sort_order_wrapper.hpp"
+#include "marshalable_sort_clause.hpp"
 
 
 using namespace realm;
@@ -38,7 +38,7 @@ REALM_EXPORT void query_destroy(Query* query_ptr)
     delete(query_ptr);
 }
 
-REALM_EXPORT Row* query_find(Query * query_ptr, size_t begin_at_table_row, NativeException::Marshallable& ex)
+REALM_EXPORT Row* query_find(Query* query_ptr, size_t begin_at_table_row, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         if (begin_at_table_row >= query_ptr->get_table()->size())
@@ -377,17 +377,23 @@ REALM_EXPORT void query_binary_not_equal(Query* query_ptr, size_t columnIndex, c
     });
 }
 
-REALM_EXPORT Results* query_create_results(Query * query_ptr, SharedRealm* realm, ObjectSchema* object_schema, NativeException::Marshallable& ex)
+REALM_EXPORT Results* query_create_results(Query * query_ptr, SharedRealm* realm, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        return new Results(*realm, *object_schema, *query_ptr);
+        return new Results(*realm, *query_ptr);
     });
 }
 
-REALM_EXPORT Results* query_create_sorted_results(Query * query_ptr, SharedRealm* realm, ObjectSchema* object_schema, SortOrderWrapper* sortorder_ptr, NativeException::Marshallable& ex)
+REALM_EXPORT Results* query_create_sorted_results(Query * query_ptr, SharedRealm* realm, Table* table_ptr, MarshalableSortClause* sort_clauses, size_t clause_count, size_t* flattened_column_indices, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        return new Results(*realm, *object_schema, *query_ptr, sortorder_ptr->sort_order);
+        std::vector<std::vector<size_t>> column_indices;
+        std::vector<bool> ascending;
+
+        unflatten_sort_clauses(sort_clauses, clause_count, flattened_column_indices, column_indices, ascending);
+
+        auto sort_descriptor = SortDescriptor(*table_ptr, column_indices, ascending);
+        return new Results(*realm, *query_ptr, sort_descriptor);
     });
 }
 

@@ -16,28 +16,18 @@
 //
 ////////////////////////////////////////////////////////////////////////////
  
-#ifndef SORT_ORDER_WRAPPER_HPP
-#define SORT_ORDER_WRAPPER_HPP
+#include <realm/group_shared.hpp>
 
-#include <memory>
-#include "object-store/src/results.hpp"
+// Functions that are missing on Windows. 
+#ifdef WIN32
 
-namespace realm {
-  
-/// Simple wrapper to keep the Table* we need to lookup column indices when we add clauses to a SortOrder.
-struct SortOrderWrapper {
-    SortOrder sort_order;
-    Table* table;
-
-    SortOrderWrapper(Table* in_table) : table(in_table) {}
-
-    void add_sort(size_t col, bool ascendingCol)
-    {
-      sort_order.column_indices.push_back(col);
-      sort_order.ascending.push_back(ascendingCol);
-    }
-};
-
+bool realm::SharedGroup::wait_for_change()
+{
+    return false;
 }
 
-#endif  // SORT_ORDER_WRAPPER_HPP
+void realm::SharedGroup::wait_for_change_release()
+{
+}
+
+#endif

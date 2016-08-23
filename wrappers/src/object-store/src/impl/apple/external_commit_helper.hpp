@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////
 //
-// Copyright 2016 Realm Inc.
+// Copyright 2015 Realm Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -67,13 +67,14 @@ private:
     // (on tvOS) m_notify_fd is read-only and m_notify_fd_write is write-only.
     FdHolder m_notify_fd;
     FdHolder m_notify_fd_write;
+
     // File descriptor for the kqueue
     FdHolder m_kq;
+
     // The two ends of an anonymous pipe used to notify the kqueue() thread that
     // it should be shut down.
     FdHolder m_shutdown_read_fd;
     FdHolder m_shutdown_write_fd;
 };
-
 } // namespace _impl
 } // namespace realm
