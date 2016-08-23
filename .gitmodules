@@ -1,9 +1,3 @@
-[submodule "external/pegtl"]
-	path = wrappers/src/object-store/external/pegtl
-	url = https://github.com/ColinH/PEGTL
-[submodule "external/catch"]
-	path = wrappers/src/object-store/external/catch
-	url = https://github.com/philsquared/Catch
 [submodule "wrappers/src/object-store"]
 	path = wrappers/src/object-store
 	url = https://github.com/realm/realm-object-store.git
