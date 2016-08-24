@@ -29,6 +29,7 @@ LOCAL_SRC_FILES += src/object-store/src/thread_confined.cpp
 #LOCAL_SRC_FILES += src/object-store/src/parser/parser.cpp
 #LOCAL_SRC_FILES += src/object-store/src/parser/query_builder.cpp
 LOCAL_SRC_FILES += src/object-store/src/util/format.cpp
+LOCAL_SRC_FILES += src/object-store/src/impl/weak_realm_notifier.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/realm_coordinator.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/collection_change_builder.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/collection_notifier.cpp
@@ -37,7 +38,6 @@ LOCAL_SRC_FILES += src/object-store/src/impl/results_notifier.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/transact_log_handler.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/handover.cpp
 LOCAL_SRC_FILES += src/object-store/src/impl/android/external_commit_helper.cpp
-LOCAL_SRC_FILES += src/object-store/src/impl/android/weak_realm_notifier.cpp
 
 LOCAL_SRC_FILES += src/error_handling.cpp
 LOCAL_SRC_FILES += src/linklist_cs.cpp

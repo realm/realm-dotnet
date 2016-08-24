@@ -114,12 +114,6 @@
     <ClCompile Include="src\object-store\src\impl\generic\external_commit_helper.cpp">
       <Filter>Source Files\object-store\impl\generic</Filter>
     </ClCompile>
-    <ClCompile Include="src\object-store\src\impl\android\weak_realm_notifier.cpp">
-      <Filter>Source Files\object-store\impl\android</Filter>
-    </ClCompile>
-    <ClCompile Include="src\object-store\src\impl\apple\weak_realm_notifier.cpp">
-      <Filter>Source Files\object-store\impl\apple</Filter>
-    </ClCompile>
     <ClCompile Include="src\debug.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -155,6 +149,9 @@
     </ClCompile>
     <ClCompile Include="src\win32_polyfill.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\object-store\src\impl\weak_realm_notifier.cpp">
+      <Filter>Source Files\object-store\impl</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
