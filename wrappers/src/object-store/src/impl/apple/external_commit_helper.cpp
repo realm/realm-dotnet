@@ -112,9 +112,15 @@ ExternalCommitHelper::ExternalCommitHelper(RealmCoordinator& parent)
             ret = mkfifo(path.c_str(), 0600);
             err = errno;
         }
-        // the fifo already existing isn't an error
-        if (ret == -1 && err != EEXIST) {
-            throw std::system_error(err, std::system_category());
+
+        if (ret == -1) {
+            if (err == EEXIST) {
+                // the fifo already existing isn't an error
+            } else if (err == EACCES) {
+                throw RealmFileException(RealmFileException::Kind::PermissionDenied, path, "Permission denied opening named pipe");
+            } else {
+                throw std::system_error(err, std::system_category());
+            }
         }
     }
 
