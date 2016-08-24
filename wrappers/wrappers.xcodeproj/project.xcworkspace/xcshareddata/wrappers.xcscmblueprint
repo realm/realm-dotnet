@@ -1,0 +1,30 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "A4F5C6C34F3AC6C3C77B5EE18308D04CDACA3A6C",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "8F3C415DA79CDA7D23734F285B95F9F9A3C0CB81" : 0,
+    "A4F5C6C34F3AC6C3C77B5EE18308D04CDACA3A6C" : 0
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "D79185C1-CC51-4FC7-BA35-317B5D001D01",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "8F3C415DA79CDA7D23734F285B95F9F9A3C0CB81" : "realm-dotnet\/wrappers\/src\/object-store\/",
+    "A4F5C6C34F3AC6C3C77B5EE18308D04CDACA3A6C" : "realm-dotnet\/"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "wrappers",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "wrappers\/wrappers.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/realm\/realm-object-store.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "8F3C415DA79CDA7D23734F285B95F9F9A3C0CB81"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "github.com:realm\/realm-dotnet.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "A4F5C6C34F3AC6C3C77B5EE18308D04CDACA3A6C"
+    }
+  ]
+}
