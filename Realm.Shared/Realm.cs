@@ -194,7 +194,6 @@ namespace Realms
             {
                 helper = Dynamic.DynamicRealmObjectHelper.Instance;
             }
-
             return new RealmObject.Metadata
             {
                 Table = table,
@@ -487,7 +486,7 @@ namespace Realms
         /// <summary>
         /// This realm will start managing a RealmObject which has been created as a standalone object.
         /// </summary>
-        /// <typeparam name="T">The Type T must not only be a RealmObject but also have been processd by the Fody weaver, so it has persistent properties.</typeparam>
+        /// <typeparam name="T">The Type T must not only be a RealmObject but also have been processed by the Fody weaver, so it has persistent properties.</typeparam>
         /// <param name="obj">Must be a standalone object, null not allowed.</param>
         /// <exception cref="RealmOutsideTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
         /// <exception cref="RealmObjectAlreadyManagedByRealmException">You can't manage the same object twice. This exception is thrown, rather than silently detecting the mistake, to help you debug your code</exception>
@@ -677,6 +676,69 @@ namespace Realms
 
             return new RealmResults<dynamic>(this, metadata, true);
         }
+
+
+        #region Quick ObjectForPrimaryKey
+
+        /// <summary>
+        /// Fast lookup of an object from a class which has a PrimaryKey property.
+        /// </summary>
+        /// <typeparam name="T">The Type T must not only be a RealmObject but also have been processd by the Fody weaver, so it has persistent properties.</typeparam>
+        /// <param name="id">Id to be matched exactly, same as an == search. Int64 argument works for all integer properties supported as PrimaryKey.</param>
+        /// <returns>Null or an object matching the id.</returns>
+        /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class T lacks an [PrimaryKey].</exception>
+        public T ObjectForPrimaryKey<T>(Int64 id) where T : RealmObject
+        {
+            var metadata = Metadata[typeof(T).Name];
+            var rowPtr = NativeTable.RowForPrimaryKey(metadata.Table, metadata.Schema.Handle, id);
+            return (T)MakeObjectForRow(metadata, rowPtr);
+        }
+
+
+        /// <summary>
+        /// Fast lookup of an object from a class which has a PrimaryKey property.
+        /// </summary>
+        /// <typeparam name="T">The Type T must not only be a RealmObject but also have been processd by the Fody weaver, so it has persistent properties.</typeparam>
+        /// <param name="id">Id to be matched exactly, same as an == search.</param>
+        /// <returns>Null or an object matdhing the id.</returns>
+        /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class T lacks an [PrimaryKey].</exception>
+        public T ObjectForPrimaryKey<T>(string id) where T : RealmObject
+        {
+            var metadata = Metadata[typeof(T).Name];
+            var rowPtr = NativeTable.RowForPrimaryKey(metadata.Table, metadata.Schema.Handle, id);
+            return (T)MakeObjectForRow(metadata, rowPtr);
+        }
+
+
+        /// <summary>
+        /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.
+        /// </summary>
+        /// <param name="className">Name of class in dynamic situation.</param>
+        /// <param name="id">Id to be matched exactly, same as an == search.</param>
+        /// <returns>Null or an object matdhing the id.</returns>
+        /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class lacks an [PrimaryKey].</exception>
+        public RealmObject ObjectForPrimaryKey(string className, Int64 id)
+        {
+            var metadata = Metadata[className];
+            var rowPtr = NativeTable.RowForPrimaryKey(metadata.Table, metadata.Schema.Handle, id);
+            return MakeObjectForRow(metadata, rowPtr);
+        }
+
+
+        /// <summary>
+        /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.
+        /// </summary>
+        /// <param name="className">Name of class in dynamic situation.</param>
+        /// <param name="id">Id to be matched exactly, same as an == search.</param>
+        /// <returns>Null or an object matdhing the id.</returns>
+        /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class lacks an [PrimaryKey].</exception>
+        public RealmObject ObjectForPrimaryKey(string className, string id)
+        {
+            var metadata = Metadata[className];
+            var rowPtr = NativeTable.RowForPrimaryKey(metadata.Table, metadata.Schema.Handle, id);
+            return MakeObjectForRow(metadata, rowPtr);
+        }
+        #endregion ObjectForPrimaryKey
 
         /// <summary>
         /// Removes a persistent object from this realm, effectively deleting it.
