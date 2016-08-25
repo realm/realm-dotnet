@@ -65,9 +65,13 @@ REALM_EXPORT Schema* schema_create(SchemaObject* objects, int objects_length, Sc
                 p.type = property.type;
                 p.object_type = property.object_type ? property.object_type : "";
                 p.is_nullable = property.is_nullable;
-                p.is_primary = property.is_primary;
+
+                if ((p.is_primary = property.is_primary))
+                {
+                  REALM_ASSERT(o.primary_key.length() == 0);
+                  o.primary_key = property.name;
+                }
                 p.is_indexed = property.is_indexed;
-                
                 o.persisted_properties.push_back(std::move(p));
             }
             

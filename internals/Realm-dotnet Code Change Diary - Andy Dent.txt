@@ -2644,3 +2644,5 @@ AsyncTests.cs
 ObjectSchema.cs
 - FromType - also mark as indexed if IsPrimaryKey
  
+wrappers/schema_cs.cpp
+- schema_create now set the primary_key string to name of property specified as [PrimaryKey]
