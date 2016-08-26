@@ -65,7 +65,6 @@ namespace IntegrationTests
         }
 
         [Test]
-        [Ignore("Disable until issue 507 fixed - RealmMigrationNeededException no longer thrown")]
         public void MigrationTriggersDelete()
         {
             // Arrange

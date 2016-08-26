@@ -58,21 +58,21 @@ namespace IntegrationTests.Shared
             public RealmList<DynamicDog> Dogs { get; }
         }
 
-        private RealmSchema _schema;
+        private RealmConfiguration _configuration;
         private Realm _realm;
 
         public DynamicRelationshipTests(DynamicTestObjectType mode)
         {
-            _schema = RealmSchema.CreateSchemaForClasses(new[] { typeof(DynamicOwner), typeof(DynamicDog) });
+            _configuration = new RealmConfiguration { ObjectClasses = new[] { typeof(DynamicOwner), typeof(DynamicDog) } };
             if (mode == DynamicTestObjectType.DynamicRealmObject)
-                _schema = _schema.DynamicClone();
+                _configuration.Dynamic = true;
         }
 
         [SetUp]
         public void Setup()
         {
-            Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
-            _realm = Realm.GetInstance(RealmConfiguration.DefaultConfiguration, _schema);
+            Realm.DeleteRealm(_configuration);
+            _realm = Realm.GetInstance(_configuration);
 
             using (var trans = _realm.BeginWrite())
             {
