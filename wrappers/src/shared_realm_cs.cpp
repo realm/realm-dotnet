@@ -80,8 +80,9 @@ REALM_EXPORT SharedRealm* shared_realm_open(Schema* schema, uint16_t* path, size
             config.schema_mode = SchemaMode::ReadOnly;
         }
         
-        config.schema.emplace(*schema); // TODO: This copies the schema, so the handle kept in .net is wrong.
+        config.schema.emplace(*schema); // warning: This copies the schema, so the handle kept in .net is wrong.
         config.schema_version = schemaVersion;
+        delete schema;  // is now invalid kill and caller must clear its handle
 
         return new SharedRealm{Realm::get_shared_realm(config)};
     });

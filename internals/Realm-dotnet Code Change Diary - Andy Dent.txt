@@ -2589,3 +2589,13 @@ RealmListPCL.cs
 Renaming ObjectId to PrimaryKey
 
 General search and replace ObjectId with PrimaryKey
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#789 Cope with value semantics in object store of passed in schema
+
+wrappers/shared_realm_cs.cpp
+- shared_realm_open delete the passed in schema after copying
+
+Realm.cs
+- GetInstance dispose the schema handle after opening a Realm.

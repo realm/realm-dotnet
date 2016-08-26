@@ -144,6 +144,7 @@ namespace Realms
                     config.EncryptionKey,
                     config.SchemaVersion);
             }
+            schema.Handle.Dispose();  // forget it as value semantics have copied it in ObjectStore and the C++ object has been deleted.
 
             RuntimeHelpers.PrepareConstrainedRegions();
             try { /* Retain handle in a constrained execution region */ }
