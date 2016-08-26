@@ -55,7 +55,6 @@
 		48ED7C6D1C16F9C200AF23A4 /* realm_export_decls.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48ED7C5E1C16F9C200AF23A4 /* realm_export_decls.hpp */; };
 		48ED7C6E1C16F9C200AF23A4 /* realm-csharp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48ED7C5F1C16F9C200AF23A4 /* realm-csharp.cpp */; };
 		48ED7C6F1C16F9C200AF23A4 /* row_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48ED7C601C16F9C200AF23A4 /* row_cs.cpp */; };
-		48ED7C701C16F9C200AF23A4 /* schema_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48ED7C611C16F9C200AF23A4 /* schema_cs.cpp */; };
 		48ED7C711C16F9C200AF23A4 /* shared_linklist.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 48ED7C621C16F9C200AF23A4 /* shared_linklist.hpp */; };
 		48ED7C721C16F9C200AF23A4 /* shared_realm_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48ED7C631C16F9C200AF23A4 /* shared_realm_cs.cpp */; };
 		48ED7C731C16F9C200AF23A4 /* table_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 48ED7C641C16F9C200AF23A4 /* table_cs.cpp */; };
@@ -122,7 +121,6 @@
 		48ED7C5E1C16F9C200AF23A4 /* realm_export_decls.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = realm_export_decls.hpp; path = src/realm_export_decls.hpp; sourceTree = "<group>"; };
 		48ED7C5F1C16F9C200AF23A4 /* realm-csharp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "realm-csharp.cpp"; path = "src/realm-csharp.cpp"; sourceTree = "<group>"; };
 		48ED7C601C16F9C200AF23A4 /* row_cs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = row_cs.cpp; path = src/row_cs.cpp; sourceTree = "<group>"; };
-		48ED7C611C16F9C200AF23A4 /* schema_cs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = schema_cs.cpp; path = src/schema_cs.cpp; sourceTree = "<group>"; };
 		48ED7C621C16F9C200AF23A4 /* shared_linklist.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = shared_linklist.hpp; path = src/shared_linklist.hpp; sourceTree = "<group>"; };
 		48ED7C631C16F9C200AF23A4 /* shared_realm_cs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = shared_realm_cs.cpp; path = src/shared_realm_cs.cpp; sourceTree = "<group>"; };
 		48ED7C641C16F9C200AF23A4 /* table_cs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = table_cs.cpp; path = src/table_cs.cpp; sourceTree = "<group>"; };
@@ -177,7 +175,6 @@
 				48ED7C5E1C16F9C200AF23A4 /* realm_export_decls.hpp */,
 				48ED7C5F1C16F9C200AF23A4 /* realm-csharp.cpp */,
 				48ED7C601C16F9C200AF23A4 /* row_cs.cpp */,
-				48ED7C611C16F9C200AF23A4 /* schema_cs.cpp */,
 				48ED7C621C16F9C200AF23A4 /* shared_linklist.hpp */,
 				48ED7C631C16F9C200AF23A4 /* shared_realm_cs.cpp */,
 				48ED7C641C16F9C200AF23A4 /* table_cs.cpp */,
@@ -381,7 +378,6 @@
 				48D3475B1C74861900CD0E02 /* index_set.cpp in Sources */,
 				48361AFD1D6201CB0051D2E6 /* handover.cpp in Sources */,
 				48ED7C6F1C16F9C200AF23A4 /* row_cs.cpp in Sources */,
-				48ED7C701C16F9C200AF23A4 /* schema_cs.cpp in Sources */,
 				48ED7C6B1C16F9C200AF23A4 /* query_cs.cpp in Sources */,
 				8522B2BD1CD11EA900E5C1F3 /* collection_change_builder.cpp in Sources */,
 				48ED7C671C16F9C200AF23A4 /* linklist_cs.cpp in Sources */,

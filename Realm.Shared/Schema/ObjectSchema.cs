@@ -45,7 +45,6 @@ namespace Realms.Schema
         /// </summary>
         public int Count => _properties.Count;
 
-        internal IntPtr Handle;
         internal Type Type;
 
         internal IEnumerable<string> PropertyNames => _properties.Keys;
@@ -80,11 +79,6 @@ namespace Realms.Schema
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
-        }
-
-        internal ObjectSchema Clone(IntPtr handle)
-        {
-            return new ObjectSchema(Name, _properties) { Type = Type, Handle = handle };
         }
 
         /// <summary>

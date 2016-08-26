@@ -24,6 +24,8 @@
 #include "object-store/src/object_store.hpp"
 #include "object-store/src/shared_realm.hpp"
 #include "object-store/src/schema.hpp"
+#include "object-store/src/property.hpp"
+#include "object-store/src/object_schema.hpp"
 #include "object-store/src/binding_context.hpp"
 #include <list>
 
@@ -50,20 +52,71 @@ private:
     void* m_managed_realm_handle;
 };
 
+struct SchemaProperty
+{
+    char* name;
+    PropertyType type;
+    char* object_type;
+    bool is_nullable;
+    bool is_primary;
+    bool is_indexed;
+};
+
+struct SchemaObject
+{
+    char* name;
+    int properties_start;
+    int properties_end;
+};
+
+static util::Optional<Schema> create_schema(SchemaObject* objects, int objects_length, SchemaProperty* properties)
+{
+    std::vector<ObjectSchema> object_schemas;
+    object_schemas.reserve(objects_length);
+    
+    for (int i = 0; i < objects_length; i++) {
+        SchemaObject& object = objects[i];
+        
+        ObjectSchema o;
+        o.name = object.name;
+        
+        for (int n = object.properties_start; n < object.properties_end; n++) {
+            SchemaProperty& property = properties[n];
+            
+            Property p;
+            p.name = property.name;
+            p.type = property.type;
+            p.object_type = property.object_type ? property.object_type : "";
+            p.is_nullable = property.is_nullable;
+            p.is_indexed = property.is_indexed;
+            
+            if ((p.is_primary = property.is_primary)) {
+                o.primary_key = p.name;
+            }
+            
+            o.persisted_properties.push_back(std::move(p));
+        }
+        
+        object_schemas.push_back(std::move(o));
+    }
+    
+    return util::Optional<Schema>(std::move(object_schemas));
+}
+    
 }
 }
 
 extern "C" {
-
-REALM_EXPORT void register_notify_realm_changed(NotifyRealmChangedT notifier)
+    
+    REALM_EXPORT void register_notify_realm_changed(NotifyRealmChangedT notifier)
 {
     notify_realm_changed = notifier;
 }
 
-REALM_EXPORT SharedRealm* shared_realm_open(Schema* schema, uint16_t* path, size_t path_len, bool read_only, SharedGroup::DurabilityLevel durability,
-                        uint8_t* encryption_key, uint64_t schemaVersion, NativeException::Marshallable& ex)
+REALM_EXPORT SharedRealm* shared_realm_open(uint16_t* path, size_t path_len, bool read_only, SharedGroup::DurabilityLevel durability,
+                        uint8_t* encryption_key, SchemaObject* objects, int objects_length, SchemaProperty* properties, bool delete_if_migration_needed, uint64_t schemaVersion, NativeException::Marshallable& ex)
 {
-    return handle_errors(ex, [&]() {
+    return handle_errors(ex, [=]() {
         Utf16StringAccessor pathStr(path, path_len);
 
         Realm::Config config;
@@ -78,9 +131,11 @@ REALM_EXPORT SharedRealm* shared_realm_open(Schema* schema, uint16_t* path, size
 
         if (read_only) {
             config.schema_mode = SchemaMode::ReadOnly;
+        } else if (delete_if_migration_needed) {
+            config.schema_mode = SchemaMode::ResetFile;
         }
         
-        config.schema.emplace(*schema); // TODO: This copies the schema, so the handle kept in .net is wrong.
+        config.schema = create_schema(objects, objects_length, properties);
         config.schema_version = schemaVersion;
 
         return new SharedRealm{Realm::get_shared_realm(config)};
@@ -120,7 +175,7 @@ REALM_EXPORT Table* shared_realm_get_table(SharedRealm* realm, uint16_t* object_
 REALM_EXPORT uint64_t  shared_realm_get_schema_version(SharedRealm* realm, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-      return (*realm)->config().schema_version;
+      return (*realm)->schema_version();
     });
 }
 

@@ -39,8 +39,6 @@ namespace Realms
     {
         private readonly ReadOnlyDictionary<string, ObjectSchema> _objects;
 
-        internal readonly SchemaHandle Handle;
-
         /// <summary>
         /// Number of known classes in the schema.
         /// </summary>
@@ -50,10 +48,9 @@ namespace Realms
         private static readonly Lazy<RealmSchema> _default = new Lazy<RealmSchema>(BuildDefaultSchema);
         internal static RealmSchema Default => _default.Value;
 
-        private RealmSchema(SchemaHandle handle, IEnumerable<ObjectSchema> objects)
+        private RealmSchema(IEnumerable<ObjectSchema> objects)
         {
             _objects = new ReadOnlyDictionary<string, ObjectSchema>(objects.ToDictionary(o => o.Name));
-            Handle = handle;
         }
 
         /// <summary>
@@ -86,31 +83,7 @@ namespace Realms
             return GetEnumerator();
         }
 
-        internal RealmSchema CloneForAdoption(SharedRealmHandle parent = null)
-        {
-            var objectsArray = this.ToArray();
-            var handlesArray = objectsArray.Select(o => o.Handle).ToArray();
-            System.Diagnostics.Debug.Assert(!handlesArray.Contains(IntPtr.Zero));
-
-            var schemaHandle = new SchemaHandle(parent);
-            schemaHandle.InitializeCloneFrom(Handle, handlesArray);
-
-            var clones = objectsArray.Select((o, i) => o.Clone(handlesArray[i]));
-            return new RealmSchema(schemaHandle, clones);
-        }
-
-        internal RealmSchema DynamicClone(SharedRealmHandle parent = null)
-        {
-            var clone = CloneForAdoption(parent);
-            foreach (var type in clone)
-            {
-                type.Type = null;
-            }
-
-            return clone;
-        }
-
-        internal static RealmSchema CreateSchemaForClasses(IEnumerable<Type> classes, SchemaHandle schemaHandle = null)
+        internal static RealmSchema CreateSchemaForClasses(IEnumerable<Type> classes)
         {
             var builder = new Builder();
             foreach (var @class in classes)
@@ -118,7 +91,7 @@ namespace Realms
                 builder.Add(ObjectSchema.FromType(@class)); 
             }
 
-            return builder.Build(schemaHandle ?? new SchemaHandle());
+            return builder.Build();
         }
 
         private static RealmSchema BuildDefaultSchema()
@@ -148,11 +121,6 @@ namespace Realms
             /// <returns>A completed RealmSchema, suitable for creating a new Realm.</returns>
             public RealmSchema Build()
             {
-                return Build(new SchemaHandle());
-            }
-
-            internal RealmSchema Build(SchemaHandle schemaHandle)
-            {
                 if (Count == 0) 
                 {
                     throw new InvalidOperationException(
@@ -177,10 +145,7 @@ namespace Realms
                     }); 
                 }
 
-                var handles = new IntPtr[Count];
-                schemaHandle.Initialize(objects.ToArray(), objects.Count, properties.ToArray(), handles);
-
-                return new RealmSchema(schemaHandle, this.Select((o, i) => o.Clone(handles[i])));
+                return new RealmSchema(this);
             }
 
             private static SchemaProperty ForMarshalling(Schema.Property property)

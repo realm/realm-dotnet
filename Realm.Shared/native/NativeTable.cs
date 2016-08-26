@@ -494,7 +494,7 @@ namespace Realms
         private static extern IntPtr get_column_index(TableHandle tablehandle,
             [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen, out NativeException ex);
 
-        public static IntPtr CreateResults(TableHandle tableHandle, SharedRealmHandle sharedRealmHandle, IntPtr objectSchema)
+        public static IntPtr CreateResults(TableHandle tableHandle, SharedRealmHandle sharedRealmHandle)
         {
             NativeException nativeException;
             var result = create_results(tableHandle, sharedRealmHandle, out nativeException);
