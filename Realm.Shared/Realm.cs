@@ -107,43 +107,15 @@ namespace Realms
             {
                 if (config.ObjectClasses != null)
                 {
-                    schema = RealmSchema.CreateSchemaForClasses(config.ObjectClasses, new SchemaHandle(srHandle));
+                    schema = RealmSchema.CreateSchemaForClasses(config.ObjectClasses);
                 }
                 else
                 {
-                    schema = RealmSchema.Default.CloneForAdoption(srHandle);
+                    schema = RealmSchema.Default;
                 }
-            }
-            else
-            {
-                schema = schema.CloneForAdoption(srHandle);
             }
 
-            var srPtr = IntPtr.Zero;
-            try {
-                srPtr = srHandle.Open(schema.Handle, 
-                    config.DatabasePath, 
-                    config.ReadOnly, false, 
-                    config.EncryptionKey,
-                    config.SchemaVersion);
-            } catch (RealmMigrationNeededException) {
-                if (config.ShouldDeleteIfMigrationNeeded)
-                {
-                    DeleteRealm(config);
-                }
-                else
-                {
-                    throw; // rethrow te exception
-                    //TODO when have Migration but also consider programmer control over auto migration
-                    //MigrateRealm(configuration);
-                }
-                // create after deleting old reopen after migrating 
-                srPtr = srHandle.Open(schema.Handle, 
-                    config.DatabasePath, 
-                    config.ReadOnly, false, 
-                    config.EncryptionKey,
-                    config.SchemaVersion);
-            }
+            var srPtr = srHandle.Open(config.DatabasePath, config.ReadOnly, false, config.EncryptionKey, schema, config.ShouldDeleteIfMigrationNeeded, config.SchemaVersion);
 
             RuntimeHelpers.PrepareConstrainedRegions();
             try { /* Retain handle in a constrained execution region */ }
@@ -183,7 +155,7 @@ namespace Realms
             var table = this.GetTable(schema);
             Weaving.IRealmObjectHelper helper;
 
-            if (schema.Type != null)
+            if (schema.Type != null && !Config.Dynamic)
             {
                 var wovenAtt = schema.Type.GetCustomAttribute<WovenAttribute>();
                 if (wovenAtt == null)
@@ -462,7 +434,7 @@ namespace Realms
 
         internal ResultsHandle MakeResultsForTable(RealmObject.Metadata metadata)
         {
-            var resultsPtr = NativeTable.CreateResults(metadata.Table, SharedRealmHandle, metadata.Schema.Handle);
+            var resultsPtr = NativeTable.CreateResults(metadata.Table, SharedRealmHandle);
             return CreateResultsHandle(resultsPtr);
         }
 

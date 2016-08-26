@@ -55,6 +55,7 @@ namespace Realms
         /// </summary>
         public string DatabasePath {get; private set;}
 
+        internal bool Dynamic;
 
         /// <summary>
         /// The list of classes persisted in a Realm opened with this configuration.
