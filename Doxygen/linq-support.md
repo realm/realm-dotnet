@@ -10,7 +10,7 @@ On this you can then apply the operators listed below.
 consist of a collection of the class initially specified.
 
 `Where` takes a predicate. To see the supported operations for predicates in Realm queries, refer to the
-[Predicate Operations](#PredicateOperations) section.
+[Predicate Operations](#predicate-operations) section.
 
 
 ## Projection Operators
@@ -51,7 +51,7 @@ but it would be redundant as a query in Realm will always consist of a collectio
 `DefaultIfEmpty` are not yet supported.
 
 `First` takes a predicate. To see the supported operations for predicates in Realm queries, refer to the
-[Predicate Operations](#PredicateOperations) section.
+[Predicate Operations](#predicate-operations) section.
 
 
 ## Quantifiers
@@ -60,7 +60,7 @@ but it would be redundant as a query in Realm will always consist of a collectio
 `All` and `Contains` are not yet supported.
 
 `Any` takes a predicate. To see the supported operations for predicates in Realm queries, refer to the
-[Predicate Operations](#PredicateOperations) section.
+[Predicate Operations](#predicate-operations) section.
 
 
 ## Aggregate Operators 
@@ -69,7 +69,7 @@ but it would be redundant as a query in Realm will always consist of a collectio
 `LongCount`, `Sum`, `Min`, `Max` and `Average` are not yet supported. 
 
 `Count` takes an optional predicate. To see the supported operations for predicates in Realm queries, refer to the
-[Predicate Operations](#PredicateOperations) section.
+[Predicate Operations](#predicate-operations) section.
 
 
 ## Join Operators 
@@ -107,6 +107,7 @@ Furthermore, the following can be used for numerical types:
 ## String Operators
 With strings, you can use:
 `string.Contains`, `string.StartsWith` and `string.EndsWith`. Currently, only case sensitive comparisons are supported.
+
 
 
 
