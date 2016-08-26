@@ -69,7 +69,7 @@ namespace Realms
             return new ReadOnlyObservableCollection<T>(new Adapter<T>((RealmResults<T>)results, errorCallback, coalesceMultipleChangesIntoReset));
         }
 
-        sealed class Adapter<T> : ObservableCollection<T> where T : RealmObject
+        public sealed class Adapter<T> : ObservableCollection<T> where T : RealmObject
         {
             readonly RealmResults<T> _results;
             readonly IDisposable _token;
