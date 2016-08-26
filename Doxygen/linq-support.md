@@ -80,6 +80,7 @@ you simply reference it from your customer class.
 
 
 #Predicate Operations
+
 As a general rule, you can only create predicates with conditions that rely on data in Realm. Imagine a class
 ```csharp
 class Person : RealmObject
@@ -96,6 +97,16 @@ Given this class, you can create queries with conditions that apply to the `Firs
 not to the `FullName` property. Likewise, public fields and properties with the `[Ignored]` attribute cannot be
 used. 
 
+Note that currently, the property must be the left side of a condition. This means that
+```csharp
+var oldDogs = realm.All<Dog>().Where(dog => 7 < dog.Age); // INVALID query, do not copy
+```
+is illegal and would have to be changed into the equivalent
+```csharp
+var oldDogs = realm.All<Dog>().Where(dog => dog.Age > 7); // Fixed
+```
+ 
+
 ## Relational Operators
 Equality operators can be applied to all property types:
 `==`, `!=`
@@ -106,7 +117,42 @@ Furthermore, the following can be used for numerical types:
 
 ## String Operators
 With strings, you can use:
-`string.Contains`, `string.StartsWith` and `string.EndsWith`. Currently, only case sensitive comparisons are supported.
+`Contains`, `StartsWith` and `EndsWith`. Currently, only case sensitive comparisons are supported.
+
+
+#A note on liveness
+
+Realm queries are *live*, in the sense that they will continue to represent the current state of the database. 
+
+```csharp
+realm.Write(() => 
+{
+    var p1 = realm.CreateObject<Person>();
+    p1.FirstName = "John";
+
+    var p2 = realm.CreateObject<Person>();
+    p2.FirstName = "Peter";
+});
+
+var js = realm.All<Person>().Where(p => p.FirstName.StartsWith("J"));
+
+foreach(var j in js)
+    Console.WriteLine(j.FirstName); // ==> John
+
+realm.Write(() =>
+{
+    var p3 = realm.CreateObject<Person>();
+    p3.FirstName = "Joe";
+});
+
+foreach(var j in js)
+    Console.WriteLine(j.FirstName); // ==> John, Joe
+```
+
+This differs from the typical behavior of object/relational mappers (ORM's) where the result of a query is fetched 
+and kept in memory as it was.
+However, it also differs from the behavior of LINQ to Objects, where every iteration will reevaluate expressions,
+meaning that changes to both sides of a condition will affect the result.
 
 
 
