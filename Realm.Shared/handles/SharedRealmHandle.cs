@@ -90,7 +90,7 @@ namespace Realms
 
         public IntPtr Open(string path, bool readOnly, bool durability, byte[] encryptionKey, RealmSchema schema, bool deleteIfMigrationNeeded, ulong schemaVersion)
         {
-            var marshaledSchema = new SchemaMarshaller(schema);
+            var marshaledSchema = new SchemaMarshaler(schema);
 
             NativeException nativeException;
             var result = NativeMethods.open(path, (IntPtr)path.Length, MarshalHelpers.BoolToIntPtr(readOnly), 
@@ -174,12 +174,12 @@ namespace Realms
             return result;
         }
 
-        private class SchemaMarshaller
+        private class SchemaMarshaler
         {
             internal readonly SchemaObject[] Objects;
             internal readonly SchemaProperty[] Properties;
 
-            internal SchemaMarshaller(RealmSchema schema)
+            internal SchemaMarshaler(RealmSchema schema)
             {
                 var properties = new List<SchemaProperty>();
 
