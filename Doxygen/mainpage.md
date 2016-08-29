@@ -16,6 +16,7 @@ Helper classes you may use are:
 - [RealmResults](@ref Realms.RealmResults)
 
 Querying and Sorting are provided on a [Realm](@ref Realms.Realm) using standard LINQ syntax including `Where` and `OrderBy`.
+To see what is supported, refer to the [LINQ Support](api/linq-support.html) page.
 
 ![Realm Overview Diagram](UnderstandingRealmForXamarin.png)
 
@@ -66,11 +67,6 @@ class Hero : RealmObject
     System.Diagnostics.Debug.WriteLine($"Created {numAwe} heroes");
     _realm.Close();
 ```
-
-LINQ support
-------------
-
-To perform queries on a Realm database, you can use LINQ. To see what is supported, refer to the [LINQ Support](api/linq-support.html) page.
 
 
 Problem reports and Feature requests
