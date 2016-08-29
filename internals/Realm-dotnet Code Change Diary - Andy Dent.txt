@@ -2589,3 +2589,60 @@ RealmListPCL.cs
 Renaming ObjectId to PrimaryKey
 
 General search and replace ObjectId with PrimaryKey
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#402 Retrieve Optimally by ObjectId
+
+ObjectIdTests.cs
+- added
+
+Realm.cs
+- ObjectById added (with overloads by types)
+- CreateRealmObjectMetadata work out index of objectId col
+
+wrappers/query_cs.cpp
+- row_for_string_id added
+- row_for_int_id added, both using find_first instead of Query
+
+
+RealmObject.Metadata
+- ObjectIdColIndex added
+
+RealmClassLacksObjectIdException
+- added
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#402 Retrieve Optimally by ObjectId - rewrite to move more to c++
+
+RealmObject.cs
+- Metadata - removed ObjectIdColIndex
+
+Realm.cs
+- ObjectById rewritten to pass schema, renamed ObjectForPrimaryKey to match other SDKs
+- CreateRealmObjectMetadata don't work out index of objectId col
+- MetadataCheckingHasObjectId - removed helper method
+
+wrappers/realm_error_type.hpp
+- RealmErrorType - RealmTableHasNoPrimaryKey=22 added
+
+wrappers/error_handling.cpp
+- convert_exception - map MissingPrimaryKeyException to RealmTableHasNoPrimaryKey
+
+RealmExceptionCodes.cs
+- RealmTableHasNoPrimaryKey=22 added
+
+RealmException.cs
+- Create - added mapping RealmTableHasNoPrimaryKey to RealmClassLacksObjectIdException
+
+RealmPCL.cs
+- added proxy methods for all four ObjectForPrimaryKey variants
+
+AsyncTests.cs
+- AsyncWrite_UpdateViaPrimaryKey use ObjectForPrimaryKey instead of a search
+ 
+ 
+ObjectSchema.cs
+- FromType - also mark as indexed if IsPrimaryKey
+ 
+wrappers/schema_cs.cpp
+- schema_create now set the primary_key string to name of property specified as [PrimaryKey]

@@ -28,6 +28,7 @@
 // core headers for exception types
 #include "realm/util/file.hpp" 
 #include "realm/alloc_slab.hpp"
+#include "object_accessor.hpp"
 
 namespace realm {
 
@@ -89,6 +90,9 @@ namespace realm {
         }
         catch (const RowDetachedException& e) {
             return { RealmErrorType::RealmRowDetached, e.what() };
+        }
+        catch (const MissingPrimaryKeyException& e) {
+            return { RealmErrorType::RealmTableHasNoPrimaryKey, e.what() };
         }
         catch (const std::bad_alloc& e) {
             return { RealmErrorType::RealmOutOfMemory, e.what() };

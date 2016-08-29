@@ -519,5 +519,30 @@ namespace Realms
                 [MarshalAs(UnmanagedType.LPArray), In]SortDescriptorBuilder.Clause.Marshalable[] sortClauses, IntPtr clauseCount,
                 [MarshalAs(UnmanagedType.LPArray), In]IntPtr[] flattenedColumnIndices,
                 out NativeException ex);
+
+        internal static IntPtr RowForPrimaryKey(TableHandle tableHandle, int primaryKeyColumnIndex, string id)
+        {
+            NativeException nativeException;
+            var result = row_for_string_primarykey(tableHandle, (IntPtr)primaryKeyColumnIndex, id, (IntPtr)id.Length, out nativeException);
+            nativeException.ThrowIfNecessary();
+            return result;
+        }
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "row_for_string_primarykey", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr row_for_string_primarykey(TableHandle handle, IntPtr columnIndex,
+            [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen, out NativeException ex);
+
+
+        internal static IntPtr RowForPrimaryKey(TableHandle tableHandle, int primaryKeyColumnIndex, Int64 id)
+        {
+            NativeException nativeException;
+            var result = row_for_int_primarykey(tableHandle, (IntPtr)primaryKeyColumnIndex, id,  out nativeException);
+            nativeException.ThrowIfNecessary();
+            return result;
+        }
+
+        [DllImport(InteropConfig.DLL_NAME, EntryPoint = "row_for_int_primarykey", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr row_for_int_primarykey(TableHandle handle, IntPtr columnIndex, Int64 value, out NativeException ex);
+
     }
 }

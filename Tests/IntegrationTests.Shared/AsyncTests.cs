@@ -89,7 +89,7 @@ namespace IntegrationTests.Shared
 
             await _realm.WriteAsync(realm =>
             {
-                var dataObj = realm.All<MyDataObject>().Single(d => d.Path == path);
+                var dataObj = realm.ObjectForPrimaryKey<MyDataObject>(path);
                 dataObj.ExpensiveToComputeValue = 123; // imagine this was a very CPU-intensive operation
             });
 

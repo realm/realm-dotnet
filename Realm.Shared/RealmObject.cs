@@ -76,6 +76,8 @@ namespace Realms
 
             internal Dictionary<string, IntPtr> ColumnIndices;
 
+            internal int PrimaryKeyColumnIndex;
+
             internal Schema.ObjectSchema Schema;
         }
 
