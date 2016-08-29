@@ -166,11 +166,22 @@ namespace Realms
             {
                 helper = Dynamic.DynamicRealmObjectHelper.Instance;
             }
+            // build up column index in a loop so can spot and cache primary key index on the way
+            var initColumnMap = new Dictionary<string, IntPtr>();
+            int initPrimaryKeyIndex = -1;
+            foreach(var prop in schema)
+            {
+                var colIndex = NativeTable.GetColumnIndex(table, prop.Name);
+                initColumnMap.Add(prop.Name, colIndex);
+                if (prop.IsPrimaryKey)
+                    initPrimaryKeyIndex = (int)colIndex;
+            }
             return new RealmObject.Metadata
             {
                 Table = table,
                 Helper = helper,
-                ColumnIndices = schema.ToDictionary(p => p.Name, p => NativeTable.GetColumnIndex(table, p.Name)),
+                ColumnIndices = initColumnMap, 
+                PrimaryKeyColumnIndex = initPrimaryKeyIndex,
                 Schema = schema
             };
         }
@@ -662,7 +673,7 @@ namespace Realms
         public T ObjectForPrimaryKey<T>(Int64 id) where T : RealmObject
         {
             var metadata = Metadata[typeof(T).Name];
-            var rowPtr = NativeTable.RowForPrimaryKey(metadata.Table, metadata.Schema.Handle, id);
+            var rowPtr = NativeTable.RowForPrimaryKey(metadata.Table, metadata.PrimaryKeyColumnIndex, id);
             return (T)MakeObjectForRow(metadata, rowPtr);
         }
 
@@ -677,7 +688,7 @@ namespace Realms
         public T ObjectForPrimaryKey<T>(string id) where T : RealmObject
         {
             var metadata = Metadata[typeof(T).Name];
-            var rowPtr = NativeTable.RowForPrimaryKey(metadata.Table, metadata.Schema.Handle, id);
+            var rowPtr = NativeTable.RowForPrimaryKey(metadata.Table, metadata.PrimaryKeyColumnIndex, id);
             return (T)MakeObjectForRow(metadata, rowPtr);
         }
 
@@ -692,7 +703,7 @@ namespace Realms
         public RealmObject ObjectForPrimaryKey(string className, Int64 id)
         {
             var metadata = Metadata[className];
-            var rowPtr = NativeTable.RowForPrimaryKey(metadata.Table, metadata.Schema.Handle, id);
+            var rowPtr = NativeTable.RowForPrimaryKey(metadata.Table, metadata.PrimaryKeyColumnIndex, id);
             return MakeObjectForRow(metadata, rowPtr);
         }
 
@@ -707,7 +718,7 @@ namespace Realms
         public RealmObject ObjectForPrimaryKey(string className, string id)
         {
             var metadata = Metadata[className];
-            var rowPtr = NativeTable.RowForPrimaryKey(metadata.Table, metadata.Schema.Handle, id);
+            var rowPtr = NativeTable.RowForPrimaryKey(metadata.Table, metadata.PrimaryKeyColumnIndex, id);
             return MakeObjectForRow(metadata, rowPtr);
         }
         #endregion ObjectForPrimaryKey

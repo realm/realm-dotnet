@@ -400,14 +400,14 @@ REALM_EXPORT Results* query_create_sorted_results(Query * query_ptr, SharedRealm
 
 
 #pragma mark  PrimaryKey Searches
-Row* row_for_primarykey(Table* table_ptr, ObjectSchema* object_schema, std::function<size_t(Table*, size_t columnIndex)> finder, NativeException::Marshallable& ex)
+Row* row_for_primarykey(Table* table_ptr, size_t columnIndex, std::function<size_t(Table*)> finder, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        auto primary_prop = object_schema->primary_key_property();
-        if (!primary_prop) {
-            throw MissingPrimaryKeyException(object_schema->name, object_schema->name + " does not have a primary key");
+        if (columnIndex >= table_ptr->get_column_count()) {
+            const std::string name {table_ptr->get_name()};
+            throw MissingPrimaryKeyException( name, name + " does not have a primary key");
         }
-        const size_t row_ndx = finder(table_ptr, primary_prop->table_column);
+        const size_t row_ndx = finder(table_ptr);
         if (row_ndx == not_found)
             return (Row*)nullptr;
         return new Row(table_ptr->get(row_ndx));
@@ -415,18 +415,18 @@ Row* row_for_primarykey(Table* table_ptr, ObjectSchema* object_schema, std::func
 }
 
 
-REALM_EXPORT Row* row_for_int_primarykey(Table* table_ptr, ObjectSchema* object_schema, int64_t value, NativeException::Marshallable& ex)
+REALM_EXPORT Row* row_for_int_primarykey(Table* table_ptr, size_t columnIndex, int64_t value, NativeException::Marshallable& ex)
 {
-    return row_for_primarykey(table_ptr, object_schema, [=](Table* table, size_t columnIndex) {
+    return row_for_primarykey(table_ptr, columnIndex, [=](Table* table) {
         return table->find_first_int(columnIndex, value);
     }, ex);
 }
   
 
-REALM_EXPORT Row* row_for_string_primarykey(Table* table_ptr, ObjectSchema* object_schema, uint16_t* value, size_t value_len, NativeException::Marshallable& ex)
+REALM_EXPORT Row* row_for_string_primarykey(Table* table_ptr, size_t columnIndex, uint16_t* value, size_t value_len, NativeException::Marshallable& ex)
 {
     Utf16StringAccessor str(value, value_len);
-    return row_for_primarykey(table_ptr, object_schema, [&](Table* table, size_t columnIndex) {
+    return row_for_primarykey(table_ptr, columnIndex, [&](Table* table) {
         return table->find_first_string(columnIndex, str);
     }, ex);
 }
