@@ -78,7 +78,7 @@ namespace Realms
 
             private bool _suspendNotifications;
 
-            internal Adapter(RealmResults<T> results, Action<Exception> errorCallback, bool coalesceMultipleChangesIntoReset) : base(results)
+            public Adapter(RealmResults<T> results, Action<Exception> errorCallback, bool coalesceMultipleChangesIntoReset) : base(results)
             {
                 _results = results;
                 _errorCallback = errorCallback;
