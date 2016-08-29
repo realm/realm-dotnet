@@ -1,5 +1,5 @@
 LINQ support in Realm Xamarin
------------------------------
+=============================
 
 To make a query with Realm, you use the `Realm.All<>()` method to get a `RealmResults` instance. 
 On this you can then apply the operators listed below.
@@ -27,7 +27,7 @@ var oldDogs = from d in realm.All<Dog>() where d.Age > 8 select d;
 ```
 
 
-## Partitioning Operators
+## Partitioning Operators 
 `Take`, `Skip`, `TakeWhile` and `SkipWhile` are not yet supported.
 
 These are less important than when using an ORM. Given Realm's zero-copy pattern, data is only read from the
@@ -120,8 +120,8 @@ public class Customer : RealmObject
 This works like an ordinary reference in C# which means that if two `Customer` instances are assigned the same `Address`
 object, changes to that address will apply to both customer objects.
 
-
-#Predicate Operations
+<a name="predicate-operations"> </a>
+## Predicate Operations
 
 As a general rule, you can only create predicates with conditions that rely on data in Realm. Imagine a class
 ```csharp
@@ -176,7 +176,7 @@ var PuppyRexes = realm.All<Dog>().Where(dog => dog.Age < 2 && dog.Name == "Rex")
 ```
 
 
-#A note on liveness
+## A note on liveness
 
 Realm queries are *live*, in the sense that they will continue to represent the current state of the database. 
 
