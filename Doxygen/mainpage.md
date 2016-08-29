@@ -67,6 +67,11 @@ class Hero : RealmObject
     _realm.Close();
 ```
 
+LINQ support
+------------
+
+To perform queries on a Realm database, you can use LINQ. To see what is supported, refer to the [Linq Support](api/linq-support.html) page.
+
 
 Problem reports and Feature requests
 ------
