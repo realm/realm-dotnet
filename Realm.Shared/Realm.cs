@@ -371,7 +371,7 @@ namespace Realms
         /// Factory for a managed object in a realm. Only valid within a Write transaction.
         /// </summary>
         /// <remarks>Using CreateObject is more efficient than creating standalone objects, assigning their values, then using Manage because it avoids copying properties to the realm.</remarks>
-        /// <typeparam name="T">The Type T must not only be a RealmObject but also have been processd by the Fody weaver, so it has persistent properties.</typeparam>
+        /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
         /// <returns>An object which is already managed.</returns>
         /// <exception cref="RealmOutsideTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
         public T CreateObject<T>() where T : RealmObject, new()
@@ -633,7 +633,7 @@ namespace Realms
         /// <summary>
         /// Extract an iterable set of objects for direct use or further query.
         /// </summary>
-        /// <typeparam name="T">The Type T must not only be a RealmObject but also have been processd by the Fody weaver, so it has persistent properties.</typeparam>
+        /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
         /// <returns>A RealmResults that without further filtering, allows iterating all objects of class T, in this realm.</returns>
         public RealmResults<T> All<T>() where T: RealmObject
         {
@@ -666,7 +666,7 @@ namespace Realms
         /// <summary>
         /// Fast lookup of an object from a class which has a PrimaryKey property.
         /// </summary>
-        /// <typeparam name="T">The Type T must not only be a RealmObject but also have been processd by the Fody weaver, so it has persistent properties.</typeparam>
+        /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
         /// <param name="id">Id to be matched exactly, same as an == search. Int64 argument works for all integer properties supported as PrimaryKey.</param>
         /// <returns>Null or an object matching the id.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class T lacks an [PrimaryKey].</exception>
@@ -681,7 +681,7 @@ namespace Realms
         /// <summary>
         /// Fast lookup of an object from a class which has a PrimaryKey property.
         /// </summary>
-        /// <typeparam name="T">The Type T must not only be a RealmObject but also have been processd by the Fody weaver, so it has persistent properties.</typeparam>
+        /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
         /// <param name="id">Id to be matched exactly, same as an == search.</param>
         /// <returns>Null or an object matdhing the id.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class T lacks an [PrimaryKey].</exception>
