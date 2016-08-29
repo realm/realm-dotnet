@@ -161,13 +161,18 @@ Furthermore, the following can be used for numerical types:
 With strings, you can use:
 `Contains`, `StartsWith` and `EndsWith`. Currently, only case sensitive comparisons are supported.
 
+Example:
+```csharp
+var peopleWhoseNameBeginsWithJ = realm.All<Person>.Where(person => person.FirstName.StartsWith("J"));
+```
+
 
 ## Composition
-You can use parenthesis and the `||` and `&&` operators to compose queries.
+You can use parentheses and the `||` and `&&` operators to compose queries.
 
 Example:
 ```csharp
-var petersPuppies = realm.All<Dog>().Where(dog => dog.Age < 2 && dog.Owner == peter);
+var PuppyRexes = realm.All<Dog>().Where(dog => dog.Age < 2 && dog.Name == "Rex");
 ```
 
 
