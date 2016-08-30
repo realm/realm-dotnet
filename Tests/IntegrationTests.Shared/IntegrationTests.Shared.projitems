@@ -14,7 +14,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)PeopleTestsBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PerformanceTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Person.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)SimpleLINQtests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RealmResults\LINQvariableTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RealmResults\SimpleLINQtests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RealmResults\SortingTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)StandAloneObjectTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TestHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RelationshipTests.cs" />
@@ -24,8 +26,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)TestObjects.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RemoveTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RefreshTests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)SortingTests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)LINQvariableTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NotificationTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AsyncTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DynamicAccessTests.cs" />
