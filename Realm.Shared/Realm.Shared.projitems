@@ -70,6 +70,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Schema\PropertyTypeEx.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmClosedException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmClassLacksPrimaryKeyException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmDuplicatePrimaryKeyValueException.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)weaving\" />

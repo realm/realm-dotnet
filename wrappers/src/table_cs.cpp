@@ -231,10 +231,13 @@ REALM_EXPORT void table_set_int64(Table* table_ptr, size_t column_ndx, size_t ro
     });
 }
 
-REALM_EXPORT void table_set_int64_unique(Table* table_ptr, size_t column_ndx, size_t row_ndx, int64_t value, NativeException::Marshallable& ex)
+REALM_EXPORT bool table_set_int64_unique(Table* table_ptr, size_t column_ndx, size_t row_ndx, int64_t value, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
+        if (table_ptr->find_first_int(column_ndx, value) != not_found)
+            return false;  // already exists
         table_ptr->set_int_unique(column_ndx, row_ndx, value);
+        return true;
     });
 }
 
@@ -260,11 +263,14 @@ REALM_EXPORT void table_set_string(Table* table_ptr, size_t column_ndx, size_t r
     });
 }
 
-REALM_EXPORT void table_set_string_unique(Table* table_ptr, size_t column_ndx, size_t row_ndx, uint16_t* value, size_t value_len, NativeException::Marshallable& ex)
+REALM_EXPORT bool table_set_string_unique(Table* table_ptr, size_t column_ndx, size_t row_ndx, uint16_t* value, size_t value_len, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         Utf16StringAccessor str(value, value_len);
+        if (table_ptr->find_first_string(column_ndx, str) != not_found)
+            return false;  // already exists
         table_ptr->set_string_unique(column_ndx, row_ndx, str);
+        return true;
     });
 }
 

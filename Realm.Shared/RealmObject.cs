@@ -280,6 +280,12 @@ namespace Realms
 
         #region Setters
 
+        private void ThrowDuplicatePrimaryKey(string propertyName, string value)
+        {
+            throw new RealmDuplicatePrimaryKeyValueException($"Class {ObjectSchema.Name} already has a primary key in {propertyName} with value '{value}'");
+        }
+
+
         protected void SetStringValue(string propertyName, string value)
         {
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
@@ -297,7 +303,8 @@ namespace Realms
             if (!_realm.IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
 
-            NativeTable.SetStringUnique(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value);
+            if (!NativeTable.SetStringUnique(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value))
+                ThrowDuplicatePrimaryKey(propertyName, value);
         }
 
         protected void SetCharValue(string propertyName, char value)
@@ -317,7 +324,9 @@ namespace Realms
             if (!_realm.IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
 
-            NativeTable.SetInt64Unique(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value);
+            if (!NativeTable.SetInt64Unique(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value))
+                ThrowDuplicatePrimaryKey(propertyName, $"{value}");
+
         }
 
         protected void SetNullableCharValue(string propertyName, char? value)
@@ -347,7 +356,8 @@ namespace Realms
             if (!_realm.IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
 
-            NativeTable.SetInt64Unique(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value);
+            if (!NativeTable.SetInt64Unique(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value))
+                ThrowDuplicatePrimaryKey(propertyName, $"{value}");
         }
 
         protected void SetNullableByteValue(string propertyName, byte? value)
@@ -377,7 +387,8 @@ namespace Realms
             if (!_realm.IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
 
-            NativeTable.SetInt64Unique(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value);
+            if (!NativeTable.SetInt64Unique(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value))
+                ThrowDuplicatePrimaryKey(propertyName, $"{value}");
         }
 
         protected void SetNullableInt16Value(string propertyName, short? value)
@@ -407,7 +418,8 @@ namespace Realms
             if (!_realm.IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
 
-            NativeTable.SetInt64Unique(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value);
+            if (!NativeTable.SetInt64Unique(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value))
+                ThrowDuplicatePrimaryKey(propertyName, $"{value}");
         }
 
         protected void SetNullableInt32Value(string propertyName, int? value)
@@ -437,7 +449,8 @@ namespace Realms
             if (!_realm.IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
 
-            NativeTable.SetInt64Unique(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value);
+            if (!NativeTable.SetInt64Unique(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value))
+                ThrowDuplicatePrimaryKey(propertyName, $"{value}");
         }
 
         protected void SetNullableInt64Value(string propertyName, long? value)

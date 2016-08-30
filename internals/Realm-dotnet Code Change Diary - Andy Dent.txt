@@ -2646,3 +2646,22 @@ ObjectSchema.cs
  
 wrappers/schema_cs.cpp
 - schema_create now set the primary_key string to name of property specified as [PrimaryKey]
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#655 Protect primary key so detects attempt to set twice
+
+wrappers/table_cs.cpp
+- table_set_int64_unique and  table_set_string_unique
+  change return type to bool and check if key already exists
+
+NativeTable.cs
+- set_int64_unique and set_string_unique return bools
+
+RealmDuplicatePrimaryKeyValueException.cs
+- added
+
+RealmObject.cs
+- ThrowDuplicatePrimaryKey added
+- SetStringValueUnique, SetCharValueUnique, SetByteValueUnique, SetInt16ValueUnique,
+  SetInt32ValueUnique & SetInt64ValueUnique 
+  check return type and call ThrowDuplicatePrimaryKey
