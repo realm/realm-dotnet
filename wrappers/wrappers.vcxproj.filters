@@ -69,9 +69,6 @@
     <ClCompile Include="src\row_cs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\schema_cs.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\shared_realm_cs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
