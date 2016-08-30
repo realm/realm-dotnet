@@ -101,6 +101,7 @@ namespace realm {
         }
         catch (const MissingPrimaryKeyException& e) {
             return { RealmErrorType::RealmTableHasNoPrimaryKey, e.what() };
+        }
         catch (const ManagedExceptionDuringMigration& e) {
             return { RealmErrorType::RealmDotNetExceptionDuringMigration, e.what() };
         }

@@ -266,5 +266,8 @@
     <ClInclude Include="src\marshalable_sort_clause.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\schema_cs.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

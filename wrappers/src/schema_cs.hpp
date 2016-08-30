@@ -21,6 +21,7 @@
 
 #include <vector>
 #include "object-store/src/schema.hpp"
+#include "object-store/src/object_schema.hpp"
 #include "object-store/src/property.hpp"
 
 struct SchemaProperty
@@ -46,10 +47,7 @@ struct SchemaObject
 
 struct SchemaForMarshaling
 {
-    realm::Schema* handle;
-    
     SchemaObject* objects;
-    realm::ObjectSchema** object_handles;
     int objects_len;
     
     SchemaProperty* properties;
@@ -81,5 +79,7 @@ REALM_FORCEINLINE SchemaObject SchemaObject::for_marshalling(const realm::Object
     
     return ret;
 }
+
+realm::util::Optional<realm::Schema> create_schema(SchemaObject* objects, int objects_length, SchemaProperty* properties);
 
 #endif /* defined(SCHEMA_CS_HPP) */

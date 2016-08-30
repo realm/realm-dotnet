@@ -26,60 +26,36 @@
 
 using namespace realm;
 
-extern "C" {
-
-REALM_EXPORT Schema* schema_create(SchemaObject* objects, int objects_length, SchemaProperty* properties, ObjectSchema** handles, NativeException::Marshallable& ex)
+util::Optional<Schema> create_schema(SchemaObject* objects, int objects_length, SchemaProperty* properties)
 {
-    return handle_errors(ex, [&]() {
-        std::vector<ObjectSchema> object_schemas;
+    std::vector<ObjectSchema> object_schemas;
+    object_schemas.reserve(objects_length);
+    
+    for (int i = 0; i < objects_length; i++) {
+        SchemaObject& object = objects[i];
         
-        for (int i = 0; i < objects_length; i++) {
-            SchemaObject& object = objects[i];
+        ObjectSchema o;
+        o.name = object.name;
+        
+        for (int n = object.properties_start; n < object.properties_end; n++) {
+            SchemaProperty& property = properties[n];
             
-            ObjectSchema o;
-            o.name = object.name;
+            Property p;
+            p.name = property.name;
+            p.type = property.type;
+            p.object_type = property.object_type ? property.object_type : "";
+            p.is_nullable = property.is_nullable;
+            p.is_indexed = property.is_indexed;
             
-            for (int n = object.properties_start; n < object.properties_end; n++) {
-                SchemaProperty& property = properties[n];
-                
-                Property p;
-                p.name = property.name;
-                p.type = property.type;
-                p.object_type = property.object_type ? property.object_type : "";
-                p.is_nullable = property.is_nullable;
-                p.is_primary = property.is_primary;
-                p.is_indexed = property.is_indexed;
-                
-                o.persisted_properties.push_back(std::move(p));
+            if ((p.is_primary = property.is_primary)) {
+                o.primary_key = p.name;
             }
             
-            object_schemas.push_back(std::move(o));
+            o.persisted_properties.push_back(std::move(p));
         }
         
-        Schema* schema = new Schema(object_schemas);
-        
-        for (auto i = 0; i < objects_length; i++) {
-            handles[i] = &(*schema->find(objects[i].name));
-        }
-        
-        return schema;
-    });
-}
+        object_schemas.push_back(std::move(o));
+    }
     
-REALM_EXPORT Schema* schema_clone(Schema* schema, ObjectSchema** handles, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        auto clone = new Schema(*schema);
-        for (auto i = 0; i < clone->size(); i++) {
-            handles[i] = &(*clone->find(*handles[i]));
-        }
-        
-        return clone;
-    });
+    return util::Optional<Schema>(std::move(object_schemas));
 }
-
-REALM_EXPORT void schema_destroy(Schema* schema)
-{
-    delete schema;
-}
-}   // extern "C"

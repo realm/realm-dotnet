@@ -99,6 +99,7 @@
     <ClInclude Include="src\object-store\src\util\format.hpp" />
     <ClInclude Include="src\realm_error_type.hpp" />
     <ClInclude Include="src\realm_export_decls.hpp" />
+    <ClInclude Include="src\schema_cs.hpp" />
     <ClInclude Include="src\shared_linklist.hpp" />
     <ClInclude Include="src\marshalable_sort_clause.hpp" />
     <ClInclude Include="src\timestamp_helpers.hpp" />

@@ -202,14 +202,14 @@ namespace Realms
                     var index = (int)ExtractConstantValue(m.Arguments.Last());
 
                     RowHandle row = null;
-                    if (_optionalSortOrderHandle == null)
+                    if (OptionalSortDescriptorBuilder == null)
                     {
                         var rowPtr = _coreQueryHandle.FindDirect((IntPtr)index);
                         row = Realm.CreateRowHandle(rowPtr, _realm.SharedRealmHandle);
                     }
                     else
                     {
-                        using (ResultsHandle rh = _realm.MakeResultsForQuery(_schema, _coreQueryHandle, _optionalSortOrderHandle))
+                        using (ResultsHandle rh = _realm.MakeResultsForQuery(_coreQueryHandle, OptionalSortDescriptorBuilder))
                         {
                             var rowPtr = rh.GetRow(index);
                             row = Realm.CreateRowHandle(rowPtr, _realm.SharedRealmHandle);
@@ -217,7 +217,7 @@ namespace Realms
                     }
                     if (row == null || row.IsInvalid)
                         throw new IndexOutOfRangeException();
-                    return Expression.Constant(_realm.MakeObjectForRow(_schema.Name, row));
+                    return Expression.Constant(_realm.MakeObjectForRow(_metadata, row));
                 }
 
             }

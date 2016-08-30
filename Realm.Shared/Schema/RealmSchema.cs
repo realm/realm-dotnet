@@ -95,7 +95,7 @@ namespace Realms
             return builder.Build();
         }
 
-        internal static RealmSchema CreateFromObjectStoreSchema(Native.Schema nativeSchema, SchemaHandle schemaHandle = null)
+        internal static RealmSchema CreateFromObjectStoreSchema(Native.Schema nativeSchema)
         {
             var objects = new ObjectSchema[nativeSchema.objects_len];
             for (var i = 0; i < nativeSchema.objects_len; i++)
@@ -111,7 +111,7 @@ namespace Realms
                         Name = nativeProperty.name,
                         Type = nativeProperty.type,
                         ObjectType = nativeProperty.object_type,
-                        IsObjectId = nativeProperty.is_primary,
+                        IsPrimaryKey = nativeProperty.is_primary,
                         IsNullable = nativeProperty.is_nullable,
                         IsIndexed = nativeProperty.is_indexed
                     });
@@ -120,15 +120,7 @@ namespace Realms
                 objects[i] = builder.Build();
             }
 
-            schemaHandle = schemaHandle ?? new SchemaHandle();
-            RuntimeHelpers.PrepareConstrainedRegions();
-            try { }
-            finally
-            {
-                schemaHandle.SetHandle(nativeSchema.handle);
-            }
-
-            return new RealmSchema(schemaHandle, objects);
+            return new RealmSchema(objects);
         }
 
         private static RealmSchema BuildDefaultSchema()

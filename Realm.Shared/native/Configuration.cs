@@ -45,14 +45,8 @@ namespace Realms.Native
         [MarshalAs(UnmanagedType.I1)]
         internal bool in_memory;
 
-        [MarshalAs(UnmanagedType.LPArray)]
-        internal byte[] encryption_key;
-
-        private IntPtr schema;
-        internal SchemaHandle Schema
-        {
-            set { schema = value.DangerousGetHandle(); }
-        }
+        [MarshalAs(UnmanagedType.I1)]
+        internal bool delete_if_migration_needed;
 
         internal UInt64 schema_version;
 

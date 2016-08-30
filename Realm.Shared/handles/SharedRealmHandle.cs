@@ -28,7 +28,11 @@ namespace Realms
         private static class NativeMethods
         {
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_open", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr open(Native.Configuration configuration, out NativeException ex);
+            public static extern IntPtr open(Native.Configuration configuration,
+                [MarshalAs(UnmanagedType.LPArray), In] Native.SchemaObject[] objects, int objects_length,
+                [MarshalAs(UnmanagedType.LPArray), In] Native.SchemaProperty[] properties,
+                byte[] encryptionKey,
+                out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_bind_to_managed_realm_handle", CallingConvention = CallingConvention.Cdecl)]
             public static extern void bind_to_managed_realm_handle(SharedRealmHandle sharedRealm, IntPtr managedRealmHandle, out NativeException ex);
@@ -83,12 +87,12 @@ namespace Realms
             NativeMethods.destroy(handle);
         }
 
-        public IntPtr Open(Native.Configuration configuration)
+        public IntPtr Open(Native.Configuration configuration, RealmSchema schema, byte[] encryptionKey)
         {
             var marshaledSchema = new SchemaMarshaler(schema);
 
             NativeException nativeException;
-            var result = NativeMethods.open(configuration, out nativeException);
+            var result = NativeMethods.open(configuration, marshaledSchema.Objects, marshaledSchema.Objects.Length, marshaledSchema.Properties, encryptionKey, out nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
@@ -170,12 +174,12 @@ namespace Realms
 
         private class SchemaMarshaler
         {
-            internal readonly SchemaObject[] Objects;
-            internal readonly SchemaProperty[] Properties;
+            internal readonly Native.SchemaObject[] Objects;
+            internal readonly Native.SchemaProperty[] Properties;
 
             internal SchemaMarshaler(RealmSchema schema)
             {
-                var properties = new List<SchemaProperty>();
+                var properties = new List<Native.SchemaProperty>();
 
                 Objects = schema.Select(@object =>
                 {
@@ -183,7 +187,7 @@ namespace Realms
 
                     properties.AddRange(@object.Select(ForMarshalling));
 
-                    return new SchemaObject
+                    return new Native.SchemaObject
                     {
                         name = @object.Name,
                         properties_start = start,
@@ -193,13 +197,13 @@ namespace Realms
                 Properties = properties.ToArray();
             }
 
-            private static SchemaProperty ForMarshalling(Schema.Property property)
+            private static Native.SchemaProperty ForMarshalling(Schema.Property property)
             {
-                return new SchemaProperty
+                return new Native.SchemaProperty
                 {
                     name = property.Name,
                     type = property.Type,
-                    objectType = property.ObjectType,
+                    object_type = property.ObjectType,
                     is_nullable = property.IsNullable,
                     is_indexed = property.IsIndexed,
                     is_primary = property.IsPrimaryKey

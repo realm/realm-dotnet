@@ -35,7 +35,7 @@ namespace IntegrationTests
             Realm.DeleteRealm(config1);  // ensure start clean
             var realm1 = Realm.GetInstance(config1);
             // new database doesn't push back a version number
-            Assert.That(config1.SchemaVersion, Is.EqualTo(RealmConfiguration.NotVersioned));
+            Assert.That(config1.SchemaVersion, Is.EqualTo(0));
             realm1.Close();
 
             // Act

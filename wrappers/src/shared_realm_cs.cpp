@@ -53,57 +53,6 @@ private:
     void* m_managed_realm_handle;
 };
 
-struct SchemaProperty
-{
-    char* name;
-    PropertyType type;
-    char* object_type;
-    bool is_nullable;
-    bool is_primary;
-    bool is_indexed;
-};
-
-struct SchemaObject
-{
-    char* name;
-    int properties_start;
-    int properties_end;
-};
-
-static util::Optional<Schema> create_schema(SchemaObject* objects, int objects_length, SchemaProperty* properties)
-{
-    std::vector<ObjectSchema> object_schemas;
-    object_schemas.reserve(objects_length);
-    
-    for (int i = 0; i < objects_length; i++) {
-        SchemaObject& object = objects[i];
-        
-        ObjectSchema o;
-        o.name = object.name;
-        
-        for (int n = object.properties_start; n < object.properties_end; n++) {
-            SchemaProperty& property = properties[n];
-            
-            Property p;
-            p.name = property.name;
-            p.type = property.type;
-            p.object_type = property.object_type ? property.object_type : "";
-            p.is_nullable = property.is_nullable;
-            p.is_indexed = property.is_indexed;
-            
-            if ((p.is_primary = property.is_primary)) {
-                o.primary_key = p.name;
-            }
-            
-            o.persisted_properties.push_back(std::move(p));
-        }
-        
-        object_schemas.push_back(std::move(o));
-    }
-    
-    return util::Optional<Schema>(std::move(object_schemas));
-}
-    
 }
 }
 
@@ -123,10 +72,6 @@ struct Configuration
     
     bool in_memory;
     
-    char* encryption_key;
-    
-    Schema* schema;
-
     bool delete_if_migration_needed;
 
     uint64_t schema_version;
@@ -135,7 +80,7 @@ struct Configuration
     void* managed_migration_handle;
 };
     
-REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, NativeException::Marshallable& ex)
+REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         Utf16StringAccessor pathStr(configuration.path, configuration.path_len);
@@ -145,8 +90,8 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, NativeE
         config.in_memory = configuration.in_memory;
 
         // by definition the key is only allowwed to be 64 bytes long, enforced by C# code
-        if (configuration.encryption_key )
-          config.encryption_key = std::vector<char>(configuration.encryption_key, configuration.encryption_key+64);
+        if (encryption_key )
+          config.encryption_key = std::vector<char>(encryption_key, encryption_key+64);
 
         if (configuration.read_only) {
             config.schema_mode = SchemaMode::ReadOnly;
@@ -154,31 +99,26 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, NativeE
             config.schema_mode = SchemaMode::ResetFile;
         }
         
-        config.schema.reset(configuration.schema);
+        config.schema = create_schema(objects, objects_length, properties);
         config.schema_version = configuration.schema_version;
 
         if (configuration.managed_migration_handle) {
-            config.migration_function = [&configuration](SharedRealm oldRealm, SharedRealm newRealm) {
+            config.migration_function = [&configuration](SharedRealm oldRealm, SharedRealm newRealm, Schema schema) {
                 std::vector<SchemaObject> schema_objects;
-                std::vector<ObjectSchema*> object_handles;
                 std::vector<SchemaProperty> schema_properties;
                 
-                for (auto& object : *oldRealm->config().schema) {
+                for (auto& object : schema) {
                     schema_objects.push_back(SchemaObject::for_marshalling(object, schema_properties));
-                    object_handles.push_back(&object);
                 }
                 
-                SchemaForMarshaling schema {
-                    oldRealm->config().schema.get(),
-                    
+                SchemaForMarshaling schema_for_marshaling {
                     schema_objects.data(),
-                    object_handles.data(),
                     static_cast<int>(schema_objects.size()),
                     
                     schema_properties.data()
                 };
                 
-                if (!configuration.migration_callback(&oldRealm, &newRealm, schema, oldRealm->config().schema_version, configuration.managed_migration_handle)) {
+                if (!configuration.migration_callback(&oldRealm, &newRealm, schema_for_marshaling, oldRealm->schema_version(), configuration.managed_migration_handle)) {
                     throw ManagedExceptionDuringMigration();
                 }
             };

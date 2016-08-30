@@ -24,14 +24,10 @@ namespace Realms.Native
     [StructLayout(LayoutKind.Sequential)]
     internal struct Schema
     {
-        internal IntPtr handle;
-
         internal IntPtr /* SchemaObject[] */ objects;
-        internal IntPtr /* IntPtr[] */ object_handles;
         internal int objects_len;
 
         internal IntPtr /* SchemaProperty[] */ properties;
-
     }
 }
 

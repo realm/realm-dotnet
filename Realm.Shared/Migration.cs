@@ -83,8 +83,7 @@ namespace Realms
             }
 
             var oldConfiguration = new RealmConfiguration(migration._configuration.DatabasePath) { SchemaVersion = schemaVersion, ReadOnly = true };
-            var oldSchemaHandle = new SchemaHandle(oldRealmHandle);
-            var oldRealm = new Realm(oldRealmHandle, oldConfiguration, RealmSchema.CreateFromObjectStoreSchema(oldSchema, oldSchemaHandle));
+            var oldRealm = new Realm(oldRealmHandle, oldConfiguration, RealmSchema.CreateFromObjectStoreSchema(oldSchema));
 
             var newRealm = new Realm(newRealmHandle, migration._configuration, migration._schema);
 

@@ -119,8 +119,6 @@ namespace Realms
             {
                 Path = config.DatabasePath,
                 read_only = config.ReadOnly,
-                encryption_key = config.EncryptionKey,
-                Schema = schema.Handle,
                 delete_if_migration_needed = config.ShouldDeleteIfMigrationNeeded,
                 schema_version = config.SchemaVersion
             };
@@ -135,7 +133,7 @@ namespace Realms
             var srPtr = IntPtr.Zero;
             try
             {
-                srPtr = srHandle.Open(configuration);
+                srPtr = srHandle.Open(configuration, schema, config.EncryptionKey);
             }
             catch (ManagedExceptionDuringMigrationException)
             {
