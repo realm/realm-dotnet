@@ -59,6 +59,7 @@
     <ClCompile Include="src\realm-csharp.cpp" />
     <ClCompile Include="src\results_cs.cpp" />
     <ClCompile Include="src\row_cs.cpp" />
+    <ClCompile Include="src\schema_cs.cpp" />
     <ClCompile Include="src\shared_realm_cs.cpp" />
     <ClCompile Include="src\table_cs.cpp" />
     <ClCompile Include="src\win32_polyfill.cpp" />
