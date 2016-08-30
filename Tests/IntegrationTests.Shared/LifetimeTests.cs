@@ -29,8 +29,13 @@ namespace IntegrationTests.Shared
         // isn't preserved in the scope of the test, even when the debugger is running.
         private WeakReference GetWeakRealm()
         {
-            Realm.DeleteRealm(new RealmConfiguration("LifetimeTests.realm"));
             return new WeakReference(Realm.GetInstance("LifetimeTests.realm"));
+        }
+
+        [SetUp]
+        public void SetUp()
+        {
+            Realm.DeleteRealm(new RealmConfiguration("LifetimeTests.realm"));
         }
 
         [Test]
