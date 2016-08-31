@@ -235,8 +235,7 @@ REALM_EXPORT void table_set_int64(Table* table_ptr, size_t column_ndx, size_t ro
 REALM_EXPORT void table_set_int64_unique(Table* table_ptr, size_t column_ndx, size_t row_ndx, int64_t value, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        if (table_ptr->find_first_int(column_ndx, value) != not_found)
-        {
+        if (table_ptr->find_first_int(column_ndx, value) != not_found) {
             throw SetDuplicatePrimaryKeyValueException(
                     table_ptr->get_name(),
                     table_ptr->get_column_name(column_ndx),
@@ -273,8 +272,7 @@ REALM_EXPORT void table_set_string_unique(Table* table_ptr, size_t column_ndx, s
 {
     return handle_errors(ex, [&]() {
         Utf16StringAccessor str(value, value_len);
-        if (table_ptr->find_first_string(column_ndx, str) != not_found)
-        {
+        if (table_ptr->find_first_string(column_ndx, str) != not_found) {
             throw SetDuplicatePrimaryKeyValueException(
                     table_ptr->get_name(),
                     table_ptr->get_column_name(column_ndx),

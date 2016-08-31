@@ -76,7 +76,7 @@ namespace Realms {
                     return new RealmClassLacksPrimaryKeyException(message);
 
                 case RealmExceptionCodes.RealmDuplicatePrimaryKeyValue :
-                return new RealmDuplicatePrimaryKeyValueException(message);
+                    return new RealmDuplicatePrimaryKeyValueException(message);
 
                 case RealmExceptionCodes.StdArgumentOutOfRange :
                     return new ArgumentOutOfRangeException(message);

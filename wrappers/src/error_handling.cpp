@@ -34,7 +34,7 @@ namespace realm {
 
     SetDuplicatePrimaryKeyValueException::SetDuplicatePrimaryKeyValueException(std::string object_type, std::string property, std::string value)
         : std::runtime_error(util::format(
-            "Primary key property '%1.%2' already has a primary key '%3'",
+            "A %1 object already exists with primary key property %2 == '%3'",
         object_type, property, value))
     {}
 
