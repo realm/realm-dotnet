@@ -76,7 +76,7 @@ struct Configuration
 
     uint64_t schema_version;
     
-    bool (*migration_callback)(SharedRealm* old_realm, SharedRealm* new_realm, SchemaForMarshaling, uint64_t schema_version, void* managed_migration_handle);
+     bool (__cdecl *migration_callback)(SharedRealm* old_realm, SharedRealm* new_realm, SchemaForMarshaling, uint64_t schema_version, void* managed_migration_handle);
     void* managed_migration_handle;
 };
     
@@ -103,11 +103,13 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
         config.schema_version = configuration.schema_version;
 
         if (configuration.managed_migration_handle) {
+            config.schema_mode = SchemaMode::Automatic;
+
             config.migration_function = [&configuration](SharedRealm oldRealm, SharedRealm newRealm, Schema schema) {
                 std::vector<SchemaObject> schema_objects;
                 std::vector<SchemaProperty> schema_properties;
                 
-                for (auto& object : schema) {
+                for (auto& object : oldRealm->schema()) {
                     schema_objects.push_back(SchemaObject::for_marshalling(object, schema_properties));
                 }
                 
@@ -154,7 +156,11 @@ REALM_EXPORT Table* shared_realm_get_table(SharedRealm* realm, uint16_t* object_
         Utf16StringAccessor str(object_type, object_type_len);
 
         std::string table_name = ObjectStore::table_name_for_object_type(str);
-        return LangBindHelper::get_table((*realm)->read_group(), table_name);
+        auto result = LangBindHelper::get_table((*realm)->read_group(), table_name);
+        if (!result)
+            throw std::logic_error("The table named '" + table_name + "' was not found");
+
+        return result;
     });
 }
 

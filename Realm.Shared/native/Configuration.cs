@@ -22,6 +22,7 @@ using System.Runtime.InteropServices;
 namespace Realms.Native
 {
     [return: MarshalAs(UnmanagedType.I1)]
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     internal delegate bool MigrationCallback(IntPtr oldRealm, IntPtr newRealm, Schema oldSchema, ulong schemaVersion, IntPtr managedMigrationHandle);
 
     [StructLayout(LayoutKind.Sequential)]

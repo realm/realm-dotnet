@@ -97,7 +97,7 @@ namespace IntegrationTests
 
             var dummyException = new Exception();
 
-            var configuration = new RealmConfiguration("NeedsMigrating.realm");
+            var configuration = new RealmConfiguration("NeedsMigrating.realm") { SchemaVersion = 100 };
             configuration.MigrationCallback = (migration, oldSchemaVersion) =>
             {
                 throw dummyException;
