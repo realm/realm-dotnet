@@ -2650,18 +2650,30 @@ wrappers/schema_cs.cpp
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 #655 Protect primary key so detects attempt to set twice
 
-wrappers/table_cs.cpp
-- table_set_int64_unique and  table_set_string_unique
-  change return type to bool and check if key already exists
-
-NativeTable.cs
-- set_int64_unique and set_string_unique return bools
-
 RealmDuplicatePrimaryKeyValueException.cs
 - added
 
-RealmObject.cs
-- ThrowDuplicatePrimaryKey added
-- SetStringValueUnique, SetCharValueUnique, SetByteValueUnique, SetInt16ValueUnique,
-  SetInt32ValueUnique & SetInt64ValueUnique 
-  check return type and call ThrowDuplicatePrimaryKey
+RealmExceptionCodes.cs
+- RealmDuplicatePrimaryKeyValue added
+
+RealmExceptions.cs
+- Create - map RealmDuplicatePrimaryKeyValue to RealmDuplicatePrimaryKeyValueException
+    
+wrappers/realm_error_type.hpp
+- RealmDuplicatePrimaryKeyValue added
+
+
+wrappers/error_handling.hpp
+- add decl of SetDuplicatePrimaryKeyValueException
+
+wrappers/error_handling.cpp
+- map the existing objectstore DuplicatePrimaryKeyValueException and  SetDuplicatePrimaryKeyValueException to RealmDuplicatePrimaryKeyValue
+
+wrappers/table_cs.cpp
+- table_set_int64_unique and  table_set_string_unique
+  change return type to bool and check if key already exists
+- table_set_null throw std::invalid_argument object not a new std::invalid_argument
+
+PrimaryKeyTests.cs
+- PrimaryKeyIntObjectIsUnique added
+- PrimaryKeyStringObjectIsUnique added

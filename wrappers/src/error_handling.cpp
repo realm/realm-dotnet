@@ -32,6 +32,13 @@
 
 namespace realm {
 
+    SetDuplicatePrimaryKeyValueException::SetDuplicatePrimaryKeyValueException(std::string object_type, std::string property, std::string value)
+        : std::runtime_error(util::format(
+            "Primary key property '%1.%2' already has a primary key '%3'",
+        object_type, property, value))
+    {}
+
+
     /**
     @note mostly copied from util.cpp in Java but has a much richer range of exceptions
     @warning if you update these codes also update the matching RealmExceptionCodes.cs
@@ -93,6 +100,12 @@ namespace realm {
         }
         catch (const MissingPrimaryKeyException& e) {
             return { RealmErrorType::RealmTableHasNoPrimaryKey, e.what() };
+        }
+        catch (const DuplicatePrimaryKeyValueException& e) {
+            return { RealmErrorType::RealmDuplicatePrimaryKeyValue, e.what() };
+        }
+        catch (const SetDuplicatePrimaryKeyValueException& e) {
+            return { RealmErrorType::RealmDuplicatePrimaryKeyValue, e.what() };  // map to same as DuplicatePrimaryKeyValueException
         }
         catch (const std::bad_alloc& e) {
             return { RealmErrorType::RealmOutOfMemory, e.what() };

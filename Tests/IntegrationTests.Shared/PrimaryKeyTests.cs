@@ -195,6 +195,41 @@ namespace IntegrationTests.Shared
 
             Assert.That(foundValue, Is.EqualTo(42000042));
         }
+
+
+        [Test]
+        public void PrimaryKeyStringObjectIsUnique()
+        {
+            _realm.Write(() => {
+                var o1 = _realm.CreateObject<PrimaryKeyStringObject>();
+                o1.StringProperty = "Zaphod";
+            });
+
+            Assert.Throws<RealmDuplicatePrimaryKeyValueException>( () => {
+                _realm.Write(() => {
+                    var o2 = _realm.CreateObject<PrimaryKeyStringObject>();
+                    o2.StringProperty = "Zaphod"; // deliberately reuse id
+                });
+            });
+        }
+
+
+        [Test]
+        public void PrimaryKeyIntObjectIsUnique()
+        {
+            _realm.Write(() => {
+                var o1 = _realm.CreateObject<PrimaryKeyInt64Object>();
+                o1.Int64Property = 9999000;
+            });
+
+            Assert.Throws<RealmDuplicatePrimaryKeyValueException>( () => {
+                _realm.Write(() => {
+                    var o2 = _realm.CreateObject<PrimaryKeyInt64Object>();
+                    o2.Int64Property = 9999000; // deliberately reuse id
+                });
+            });
+        }
+
     
     }
 }

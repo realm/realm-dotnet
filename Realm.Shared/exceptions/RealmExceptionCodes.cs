@@ -37,6 +37,7 @@ namespace Realms {
         RealmSchemaMismatch=14,
         RealmRowDetached = 21,
         RealmTableHasNoPrimaryKey = 22,
+        RealmDuplicatePrimaryKeyValue = 23,
 
         StdArgumentOutOfRange = 100,
         StdIndexOutOfRange = 101,

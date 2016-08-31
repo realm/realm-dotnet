@@ -52,6 +52,13 @@ public:
     RowDetachedException() : std::runtime_error("Attempted to access detached row") {}
 };
 
+
+class SetDuplicatePrimaryKeyValueException : public std::runtime_error {
+public:
+    SetDuplicatePrimaryKeyValueException(std::string object_type, std::string property, std::string value);
+};
+
+
 NativeException convert_exception();
 
 void throw_managed_exception(const NativeException& exception);

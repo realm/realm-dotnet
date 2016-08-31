@@ -22,6 +22,7 @@
 #include "marshalling.hpp"
 #include "realm_export_decls.hpp"
 #include "shared_linklist.hpp"
+#include "util/format.hpp"
 
 #include <memory>
 #include "timestamp_helpers.hpp"
@@ -211,7 +212,7 @@ REALM_EXPORT void table_set_null(Table* table_ptr, size_t column_ndx, size_t row
 {
     return handle_errors(ex, [&]() {
         if (!table_ptr->is_nullable(column_ndx))
-            throw new std::invalid_argument("Column is not nullable");
+            throw std::invalid_argument("Column is not nullable");
 
         table_ptr->set_null(column_ndx, row_ndx);
     });
@@ -231,13 +232,18 @@ REALM_EXPORT void table_set_int64(Table* table_ptr, size_t column_ndx, size_t ro
     });
 }
 
-REALM_EXPORT bool table_set_int64_unique(Table* table_ptr, size_t column_ndx, size_t row_ndx, int64_t value, NativeException::Marshallable& ex)
+REALM_EXPORT void table_set_int64_unique(Table* table_ptr, size_t column_ndx, size_t row_ndx, int64_t value, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         if (table_ptr->find_first_int(column_ndx, value) != not_found)
-            return false;  // already exists
+        {
+            throw SetDuplicatePrimaryKeyValueException(
+                    table_ptr->get_name(),
+                    table_ptr->get_column_name(column_ndx),
+                    util::format("%1", value)
+            );
+        }
         table_ptr->set_int_unique(column_ndx, row_ndx, value);
-        return true;
     });
 }
 
@@ -263,14 +269,19 @@ REALM_EXPORT void table_set_string(Table* table_ptr, size_t column_ndx, size_t r
     });
 }
 
-REALM_EXPORT bool table_set_string_unique(Table* table_ptr, size_t column_ndx, size_t row_ndx, uint16_t* value, size_t value_len, NativeException::Marshallable& ex)
+REALM_EXPORT void table_set_string_unique(Table* table_ptr, size_t column_ndx, size_t row_ndx, uint16_t* value, size_t value_len, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         Utf16StringAccessor str(value, value_len);
         if (table_ptr->find_first_string(column_ndx, str) != not_found)
-            return false;  // already exists
+        {
+            throw SetDuplicatePrimaryKeyValueException(
+                    table_ptr->get_name(),
+                    table_ptr->get_column_name(column_ndx),
+                    str.to_string()
+            );
+        }
         table_ptr->set_string_unique(column_ndx, row_ndx, str);
-        return true;
     });
 }
 

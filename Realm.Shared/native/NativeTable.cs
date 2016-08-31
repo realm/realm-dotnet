@@ -98,19 +98,18 @@ namespace Realms
         private static extern void set_string(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx,
             [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen, out NativeException ex);
 
-        public static bool SetStringUnique(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex, string value)
+        public static void SetStringUnique(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex, string value)
         {
             if (value == null)
                 throw new ArgumentException("Object identifiers cannot be null");
 
             NativeException nativeException;
-            bool wasUnique = set_string_unique(tableHandle, columnIndex, rowIndex, value, (IntPtr)value.Length, out nativeException);
+            set_string_unique(tableHandle, columnIndex, rowIndex, value, (IntPtr)value.Length, out nativeException);
             nativeException.ThrowIfNecessary();
-            return wasUnique;
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_string_unique", CallingConvention = CallingConvention.Cdecl)]
-        private static extern bool set_string_unique(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx,
+        private static extern void set_string_unique(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx,
             [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen, out NativeException ex);
 
         public static string GetString(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex)
@@ -272,16 +271,15 @@ namespace Realms
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_int64", CallingConvention = CallingConvention.Cdecl)]
         private static extern void set_int64(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, Int64 value, out NativeException ex);
 
-        public static bool SetInt64Unique(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex, long value)
+        public static void SetInt64Unique(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex, long value)
         {
             NativeException nativeException;
-            bool wasUnique = set_int64_unique(tableHandle, columnIndex, rowIndex, value, out nativeException);
+            set_int64_unique(tableHandle, columnIndex, rowIndex, value, out nativeException);
             nativeException.ThrowIfNecessary();
-            return wasUnique;
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_int64_unique", CallingConvention = CallingConvention.Cdecl)]
-        private static extern bool set_int64_unique(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, Int64 value, out NativeException ex);
+        private static extern void set_int64_unique(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, Int64 value, out NativeException ex);
 
         public static long GetInt64(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex)
         {

@@ -69,6 +69,8 @@ namespace realm {
 
         RealmTableHasNoPrimaryKey = 22,
 
+        RealmDuplicatePrimaryKeyValue = 23,
+
         StdArgumentOutOfRange = 100,
 
         StdIndexOutOfRange = 101,
