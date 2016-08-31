@@ -32,6 +32,12 @@ namespace IntegrationTests.Shared
             return new WeakReference(Realm.GetInstance("LifetimeTests.realm"));
         }
 
+        [SetUp]
+        public void SetUp()
+        {
+            Realm.DeleteRealm(new RealmConfiguration("LifetimeTests.realm"));
+        }
+
         [Test]
         public void RealmObjectsShouldKeepRealmAlive()
         {
@@ -48,6 +54,9 @@ namespace IntegrationTests.Shared
             Assert.That(realm.IsAlive);
             Assert.That(((Realm)realm.Target).IsClosed, Is.False);
             Assert.That(person.IsValid);
+
+            // TearDown
+            ((Realm)realm.Target).Close();
         }
 
         [Test]
@@ -66,6 +75,9 @@ namespace IntegrationTests.Shared
             // Assert
             Assert.That(realmThatWillBeFinalized.IsAlive, Is.False);
             Assert.That(person.IsValid);
+
+            // TearDown
+            realm.Close();
         }
 
         [Test]
@@ -82,6 +94,9 @@ namespace IntegrationTests.Shared
 
             Assert.DoesNotThrow(transaction.Dispose);
             Assert.That(realm.IsAlive);
+
+            // TearDown
+            ((Realm)realm.Target).Close();
         }
     }
 }

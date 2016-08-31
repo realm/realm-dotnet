@@ -16,6 +16,7 @@ Helper classes you may use are:
 - [RealmResults](@ref Realms.RealmResults)
 
 Querying and Sorting are provided on a [Realm](@ref Realms.Realm) using standard LINQ syntax including `Where` and `OrderBy`.
+To see what is supported, refer to the [LINQ Support](linq-support.md) page.
 
 ![Realm Overview Diagram](UnderstandingRealmForXamarin.png)
 
