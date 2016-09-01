@@ -22,13 +22,27 @@ using System.Runtime.InteropServices;
 
 namespace Realms
 {
+    /// <summary>
+    /// This class is given to you when you migrate your database from one version to another.
+    /// It contains two properties: <c>OldRealm</c> and <c>NewRealm</c>.
+    /// The <c>NewRealm</c> is the one you should make sure is up to date. It will contain
+    /// models corresponding to the configuration you've supplied.
+    /// You can read from the old realm and access properties that have been removed from
+    /// the classes by using the dynamic api. See more in the migrations section in the documentation.
+    /// </summary>
     public class Migration
     {
         private readonly RealmConfiguration _configuration;
         private readonly RealmSchema _schema;
 
+        /// <summary>
+        /// This is the realm as it was before migrating. Use the dnyamic API to access it
+        /// </summary>
         public Realm OldRealm { get; private set; }
 
+        /// <summary>
+        /// This is the realm that you should modify and make sure is up to date.
+        /// </summary>
         public Realm NewRealm { get; private set; }
 
         internal Exception MigrationException;
