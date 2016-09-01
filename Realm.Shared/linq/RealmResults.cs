@@ -34,7 +34,7 @@ namespace Realms
     /// You can sort efficiently using the standard LINQ operators <c>OrderBy</c> or <c>OrderByDescending</c> followed by any number of
     /// <c>ThenBy</c> or <c>ThenByDescending</c>.</remarks>
     /// <typeparam name="T">Type of the RealmObject which is being returned.</typeparam>
-    public class RealmResults<T> : IOrderedQueryable<T>, RealmResultsNativeHelper.Interface
+    public class RealmResults<T> : IOrderedQueryable<T>, RealmResultsNativeHelper.Interface, IRealmResults
     {
         public Type ElementType => typeof(T);
         public Expression Expression { get; } = null; // null if _allRecords
@@ -293,6 +293,11 @@ namespace Realms
         }
 
     }  // RealmResults
+
+    internal interface IRealmResults
+    {
+        Schema.ObjectSchema ObjectSchema { get; }
+    }
 
     internal static class RealmResultsNativeHelper
     {

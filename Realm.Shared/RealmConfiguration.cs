@@ -89,6 +89,20 @@ namespace Realms
         /// <value>0-based value initially set to zero so all user-set values will be greater.</value>
         public UInt64 SchemaVersion { get; set;} = 0;
 
+        /// <summary>
+        /// In order to handle manual migrations, you need to supply one of these to your <c>RealmConfiguration</c>.
+        /// It will be called with a <c>Migration</c> instance containing the pre- and the post-migration realm.
+        /// You should make sure that the <c>NewRealm</c> property on it contains a database that is up
+        /// to date when returning.
+        /// The <c>oldSchemaVersion</c> parameter will tell you which version the user is migrating *from*.
+        /// They should always be migrating to the current version.
+        /// </summary>
+        public delegate void MigrationCallbackDelegate(Migration migration, UInt64 oldSchemaVersion);
+
+        /// <summary>
+        /// Gets or sets the migration callback.
+        /// </summary>
+        public MigrationCallbackDelegate MigrationCallback { get; set; }
 
         private byte[] _EncryptionKey;
 

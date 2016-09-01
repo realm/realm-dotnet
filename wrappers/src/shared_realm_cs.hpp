@@ -16,19 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System.Runtime.InteropServices;
+#ifndef SHARED_REALM_CS_HPP
+#define SHARED_REALM_CS_HPP
 
-namespace Realms.Native
+class ManagedExceptionDuringMigration : public std::runtime_error
 {
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct SchemaObject
-    {
-        internal static readonly int Size = Marshal.SizeOf<SchemaObject>();
-
-        [MarshalAs(UnmanagedType.LPStr)]
-        internal string name;
-
-        internal int properties_start;
-        internal int properties_end;
+public:
+    ManagedExceptionDuringMigration() : std::runtime_error("Uncaught .NET exception during Realm migration") {
     }
-}
+};
+
+#endif /* defined(SHARED_REALM_CS_HPP) */

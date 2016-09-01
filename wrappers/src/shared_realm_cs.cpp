@@ -28,7 +28,8 @@
 #include "object-store/src/object_schema.hpp"
 #include "object-store/src/binding_context.hpp"
 #include <list>
-
+#include "schema_cs.hpp"
+#include "shared_realm_cs.hpp"
 
 using namespace realm;
 using namespace realm::binding;
@@ -52,92 +53,77 @@ private:
     void* m_managed_realm_handle;
 };
 
-struct SchemaProperty
-{
-    char* name;
-    PropertyType type;
-    char* object_type;
-    bool is_nullable;
-    bool is_primary;
-    bool is_indexed;
-};
-
-struct SchemaObject
-{
-    char* name;
-    int properties_start;
-    int properties_end;
-};
-
-static util::Optional<Schema> create_schema(SchemaObject* objects, int objects_length, SchemaProperty* properties)
-{
-    std::vector<ObjectSchema> object_schemas;
-    object_schemas.reserve(objects_length);
-    
-    for (int i = 0; i < objects_length; i++) {
-        SchemaObject& object = objects[i];
-        
-        ObjectSchema o;
-        o.name = object.name;
-        
-        for (int n = object.properties_start; n < object.properties_end; n++) {
-            SchemaProperty& property = properties[n];
-            
-            Property p;
-            p.name = property.name;
-            p.type = property.type;
-            p.object_type = property.object_type ? property.object_type : "";
-            p.is_nullable = property.is_nullable;
-            p.is_indexed = property.is_indexed;
-            
-            if ((p.is_primary = property.is_primary)) {
-                o.primary_key = p.name;
-            }
-            
-            o.persisted_properties.push_back(std::move(p));
-        }
-        
-        object_schemas.push_back(std::move(o));
-    }
-    
-    return util::Optional<Schema>(std::move(object_schemas));
-}
-    
 }
 }
 
 extern "C" {
     
-    REALM_EXPORT void register_notify_realm_changed(NotifyRealmChangedT notifier)
+REALM_EXPORT void register_notify_realm_changed(NotifyRealmChangedT notifier)
 {
     notify_realm_changed = notifier;
 }
 
-REALM_EXPORT SharedRealm* shared_realm_open(uint16_t* path, size_t path_len, bool read_only, SharedGroup::DurabilityLevel durability,
-                        uint8_t* encryption_key, SchemaObject* objects, int objects_length, SchemaProperty* properties, bool delete_if_migration_needed, uint64_t schemaVersion, NativeException::Marshallable& ex)
+struct Configuration
 {
-    return handle_errors(ex, [=]() {
-        Utf16StringAccessor pathStr(path, path_len);
+    uint16_t* path;
+    size_t path_len;
+    
+    bool read_only;
+    
+    bool in_memory;
+    
+    bool delete_if_migration_needed;
+
+    uint64_t schema_version;
+    
+    bool (*migration_callback)(SharedRealm* old_realm, SharedRealm* new_realm, SchemaForMarshaling, uint64_t schema_version, void* managed_migration_handle);
+    void* managed_migration_handle;
+};
+    
+REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        Utf16StringAccessor pathStr(configuration.path, configuration.path_len);
 
         Realm::Config config;
         config.path = pathStr.to_string();
-        config.in_memory = durability != SharedGroup::durability_Full;
+        config.in_memory = configuration.in_memory;
 
         // by definition the key is only allowwed to be 64 bytes long, enforced by C# code
-        if (encryption_key == nullptr)
-          config.encryption_key = std::vector<char>();
-        else
+        if (encryption_key )
           config.encryption_key = std::vector<char>(encryption_key, encryption_key+64);
 
-        if (read_only) {
+        if (configuration.read_only) {
             config.schema_mode = SchemaMode::ReadOnly;
-        } else if (delete_if_migration_needed) {
+        } else if (configuration.delete_if_migration_needed) {
             config.schema_mode = SchemaMode::ResetFile;
         }
         
         config.schema = create_schema(objects, objects_length, properties);
-        config.schema_version = schemaVersion;
+        config.schema_version = configuration.schema_version;
 
+        if (configuration.managed_migration_handle) {
+            config.migration_function = [&configuration](SharedRealm oldRealm, SharedRealm newRealm, Schema schema) {
+                std::vector<SchemaObject> schema_objects;
+                std::vector<SchemaProperty> schema_properties;
+                
+                for (auto& object : oldRealm->schema()) {
+                    schema_objects.push_back(SchemaObject::for_marshalling(object, schema_properties));
+                }
+                
+                SchemaForMarshaling schema_for_marshaling {
+                    schema_objects.data(),
+                    static_cast<int>(schema_objects.size()),
+                    
+                    schema_properties.data()
+                };
+                
+                if (!configuration.migration_callback(&oldRealm, &newRealm, schema_for_marshaling, oldRealm->schema_version(), configuration.managed_migration_handle)) {
+                    throw ManagedExceptionDuringMigration();
+                }
+            };
+        }
+        
         return new SharedRealm{Realm::get_shared_realm(config)};
     });
 }
@@ -168,7 +154,11 @@ REALM_EXPORT Table* shared_realm_get_table(SharedRealm* realm, uint16_t* object_
         Utf16StringAccessor str(object_type, object_type_len);
 
         std::string table_name = ObjectStore::table_name_for_object_type(str);
-        return LangBindHelper::get_table((*realm)->read_group(), table_name);
+        auto result = LangBindHelper::get_table((*realm)->read_group(), table_name);
+        if (!result)
+            throw std::logic_error("The table named '" + table_name + "' was not found");
+
+        return result;
     });
 }
 
