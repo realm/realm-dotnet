@@ -76,7 +76,7 @@ struct Configuration
 
     uint64_t schema_version;
     
-     bool (*migration_callback)(SharedRealm* old_realm, SharedRealm* new_realm, SchemaForMarshaling, uint64_t schema_version, void* managed_migration_handle);
+    bool (*migration_callback)(SharedRealm* old_realm, SharedRealm* new_realm, SchemaForMarshaling, uint64_t schema_version, void* managed_migration_handle);
     void* managed_migration_handle;
 };
     
