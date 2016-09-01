@@ -16,31 +16,43 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Runtime.InteropServices;
 
 namespace Realms.Native
 {
+    [return: MarshalAs(UnmanagedType.I1)]
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    internal delegate bool MigrationCallback(IntPtr oldRealm, IntPtr newRealm, Schema oldSchema, ulong schemaVersion, IntPtr managedMigrationHandle);
+
     [StructLayout(LayoutKind.Sequential)]
-    internal struct SchemaProperty
+    internal struct Configuration
     {
-        internal static readonly int Size = Marshal.SizeOf<SchemaProperty>();
+        [MarshalAs(UnmanagedType.LPWStr)]
+        private string path;
+        private IntPtr path_len;
 
-        [MarshalAs(UnmanagedType.LPStr)]
-        internal string name;
-
-        [MarshalAs(UnmanagedType.U1)]
-        internal Realms.Schema.PropertyType type;
-
-        [MarshalAs(UnmanagedType.LPStr)]
-        internal string object_type;
-
-        [MarshalAs(UnmanagedType.I1)]
-        internal bool is_nullable;
-
-        [MarshalAs(UnmanagedType.I1)]
-        internal bool is_primary;
+        internal string Path
+        {
+            set
+            {
+                path = value;
+                path_len = (IntPtr)value.Length;
+            }
+        }
 
         [MarshalAs(UnmanagedType.I1)]
-        internal bool is_indexed;
+        internal bool read_only;
+        [MarshalAs(UnmanagedType.I1)]
+        internal bool in_memory;
+
+        [MarshalAs(UnmanagedType.I1)]
+        internal bool delete_if_migration_needed;
+
+        internal UInt64 schema_version;
+
+        internal MigrationCallback migration_callback;
+        internal IntPtr managed_migration_handle;
     }
 }
+

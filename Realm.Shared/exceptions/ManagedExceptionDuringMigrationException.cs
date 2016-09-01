@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////////////////////////
+﻿////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -16,19 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System.Runtime.InteropServices;
+using System;
 
-namespace Realms.Native
+namespace Realms
 {
-    [StructLayout(LayoutKind.Sequential)]
-    internal struct SchemaObject
+    internal class ManagedExceptionDuringMigrationException : Exception
     {
-        internal static readonly int Size = Marshal.SizeOf<SchemaObject>();
-
-        [MarshalAs(UnmanagedType.LPStr)]
-        internal string name;
-
-        internal int properties_start;
-        internal int properties_end;
+        public ManagedExceptionDuringMigrationException(string message) : base(message)
+        {
+        }
     }
 }
+

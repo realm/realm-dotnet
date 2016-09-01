@@ -5,6 +5,7 @@
 
 ### Enhancements
 * You can retrieve single objects quickly using `Realm.ObjectForPrimaryKey()` if they have a `[PrimaryKey]` property specified.
+* Manual migrations are now supported. You can specify exactly how your data should be migrated when updating your data model.
 
 ### Bug fixes
 * Now throws a RealmMigrationSchemaNeededException if you have changed a `RealmObject` subclass declaration and not incremented the `SchemaVersion` (#518)

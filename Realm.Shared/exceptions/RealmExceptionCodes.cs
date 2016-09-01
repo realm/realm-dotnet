@@ -39,6 +39,8 @@ namespace Realms {
         RealmTableHasNoPrimaryKey = 22,
         RealmDuplicatePrimaryKeyValue = 23,
 
+        RealmDotNetExceptionDuringMigration = 30,
+
         StdArgumentOutOfRange = 100,
         StdIndexOutOfRange = 101,
         StdInvalidOperation = 102

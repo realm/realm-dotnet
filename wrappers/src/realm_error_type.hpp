@@ -71,6 +71,8 @@ namespace realm {
 
         RealmDuplicatePrimaryKeyValue = 23,
 
+        RealmDotNetExceptionDuringMigration = 30,
+
         StdArgumentOutOfRange = 100,
 
         StdIndexOutOfRange = 101,

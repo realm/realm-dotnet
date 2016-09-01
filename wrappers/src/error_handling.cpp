@@ -24,6 +24,7 @@
 #include "realm_export_decls.hpp"
 #include "error_handling.hpp"
 #include "realm_error_type.hpp"
+#include "shared_realm_cs.hpp"
 
 // core headers for exception types
 #include "realm/util/file.hpp" 
@@ -100,6 +101,9 @@ namespace realm {
         }
         catch (const MissingPrimaryKeyException& e) {
             return { RealmErrorType::RealmTableHasNoPrimaryKey, e.what() };
+        }
+        catch (const ManagedExceptionDuringMigration& e) {
+            return { RealmErrorType::RealmDotNetExceptionDuringMigration, e.what() };
         }
         catch (const DuplicatePrimaryKeyValueException& e) {
             return { RealmErrorType::RealmDuplicatePrimaryKeyValue, e.what() };

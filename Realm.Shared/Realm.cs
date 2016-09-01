@@ -115,7 +115,30 @@ namespace Realms
                 }
             }
 
-            var srPtr = srHandle.Open(config.DatabasePath, config.ReadOnly, false, config.EncryptionKey, schema, config.ShouldDeleteIfMigrationNeeded, config.SchemaVersion);
+            var configuration = new Native.Configuration
+            {
+                Path = config.DatabasePath,
+                read_only = config.ReadOnly,
+                delete_if_migration_needed = config.ShouldDeleteIfMigrationNeeded,
+                schema_version = config.SchemaVersion
+            };
+
+            Migration migration = null;
+            if (config.MigrationCallback != null)
+            {
+                migration = new Migration(config, schema);
+                migration.PopulateConfiguration(ref configuration);
+            }
+
+            var srPtr = IntPtr.Zero;
+            try
+            {
+                srPtr = srHandle.Open(configuration, schema, config.EncryptionKey);
+            }
+            catch (ManagedExceptionDuringMigrationException)
+            {
+                throw new AggregateException("Exception occurred in a Realm migration callback. See inner exception for more details.", migration?.MigrationException);
+            }
 
             RuntimeHelpers.PrepareConstrainedRegions();
             try { /* Retain handle in a constrained execution region */ }
@@ -139,12 +162,10 @@ namespace Realms
         /// </summary>
         public RealmSchema Schema { get; }
 
-        private Realm(SharedRealmHandle sharedRealmHandle, RealmConfiguration config, RealmSchema schema)
+        internal Realm(SharedRealmHandle sharedRealmHandle, RealmConfiguration config, RealmSchema schema)
         {
             SharedRealmHandle = sharedRealmHandle;
             Config = config;
-            // update OUR config version number in case loaded one from disk
-            Config.SchemaVersion = sharedRealmHandle.GetSchemaVersion();
 
             Metadata = schema.ToDictionary(t => t.Name, CreateRealmObjectMetadata);
             Schema = schema;
@@ -262,7 +283,7 @@ namespace Realms
             if (IsClosed)
                 throw new ObjectDisposedException(nameof(Realm));
             
-            if (disposing)
+            if (disposing && !(SharedRealmHandle is UnownedRealmHandle))
             {
                 SharedRealmHandle.CloseRealm();
             }

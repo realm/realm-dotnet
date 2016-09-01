@@ -275,5 +275,4 @@ namespace IntegrationTests
         }
 
     }  // ObjectIntegrationTests
-
 }

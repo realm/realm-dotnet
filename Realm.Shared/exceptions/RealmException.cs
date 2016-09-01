@@ -78,6 +78,9 @@ namespace Realms {
                 case RealmExceptionCodes.RealmDuplicatePrimaryKeyValue :
                     return new RealmDuplicatePrimaryKeyValueException(message);
 
+                case RealmExceptionCodes.RealmDotNetExceptionDuringMigration:
+                    return new ManagedExceptionDuringMigrationException(message);
+
                 case RealmExceptionCodes.StdArgumentOutOfRange :
                     return new ArgumentOutOfRangeException(message);
 
