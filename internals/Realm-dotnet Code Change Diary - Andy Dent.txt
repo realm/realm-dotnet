@@ -2677,3 +2677,16 @@ wrappers/table_cs.cpp
 PrimaryKeyTests.cs
 - PrimaryKeyIntObjectIsUnique added
 - PrimaryKeyStringObjectIsUnique added
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#802 More Elements
+
+SimpleLINQtests.cs
+- LastWorks, LastFailsToFind added
+
+SortingTests.cs
+- LastIsDifferentSorted added
+
+RealmResultsVisitor.cs
+- VisitMethodCall added case for Last

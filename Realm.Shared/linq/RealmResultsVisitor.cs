@@ -195,7 +195,21 @@ namespace Realms
                         throw new InvalidOperationException("Sequence contains more than one matching element");
                     return Expression.Constant(_realm.MakeObjectForRow(_metadata, firstRow));
                 }
+                if (m.Method.Name == "Last")
+                {
+                    RecurseToWhereOrRunLambda(m); 
 
+                    var lastRowPtr = IntPtr.Zero;
+                    using (ResultsHandle rh = _realm.MakeResultsForQuery(_coreQueryHandle, OptionalSortDescriptorBuilder)) 
+                    {
+                        var lastIndex = rh.Count() - 1;
+                        if (lastIndex >= 0)
+                            lastRowPtr = rh.GetRow(lastIndex);
+                    }
+                    if (lastRowPtr == IntPtr.Zero)
+                        throw new InvalidOperationException("Sequence contains no matching element");
+                    return Expression.Constant(_realm.MakeObjectForRow(_metadata, lastRowPtr));
+                }
             }
 
             if (m.Method.DeclaringType == typeof(string))

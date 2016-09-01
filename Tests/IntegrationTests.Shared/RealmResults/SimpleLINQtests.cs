@@ -360,6 +360,31 @@ namespace IntegrationTests
         }
 
 
+
+
+        [Test]
+        public void LastFailsToFind()
+        {
+            Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().Last(p => p.Latitude > 100));
+            Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().Where(p => p.Latitude > 100).Last());
+            Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().Last(p => p.Score > 50000));
+            Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().Last(p => p.LastName == "Samantha"));
+        }
+
+        [Test]
+        public void LastWorks()
+        {
+            var s0 = _realm.All<Person>().Last(p => p.Longitude < -70.0 && p.Longitude > -90.0);
+            Assert.That(s0.Email, Is.EqualTo("john@doe.com"));  // Last same as First when one match
+
+            var s1 = _realm.All<Person>().Where(p => p.Score == 100.0f).Last();
+            Assert.That(s1.Email, Is.EqualTo("john@doe.com"));
+
+            var s2 = _realm.All<Person>().Last(p => p.FirstName == "John");
+            Assert.That(s2.FirstName, Is.EqualTo("John"));  // order not guaranteed in two items but know they match this
+        }
+
+
         [Test]
         public void ChainedSearch()
         {

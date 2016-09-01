@@ -223,6 +223,25 @@ namespace IntegrationTests
             Assert.That(sortedFirst.Email, Is.EqualTo("john@doe.com"));
         }
 
+
+        [Test]
+        public void LastIsDifferentSorted()
+        {
+            foreach(var p in _realm.All<Person>().OrderByDescending(p => p.Score))
+                System.Diagnostics.Debug.WriteLine($"Sorted Person {p.FullName} Score {p.Score}");
+            var lowestScore = _realm.All<Person>().OrderByDescending(p => p.Score).Last();
+            Assert.That(lowestScore.Email, Is.EqualTo("john@smith.com"));
+
+            var sortedLastInteresting = _realm.All<Person>().OrderByDescending(p => p.LastName).Last(p => p.IsInteresting);
+            Assert.That(sortedLastInteresting.Email, Is.EqualTo("peter@jameson.net"));
+
+            var sortedLast = _realm.All<Person>().
+                Where(p => p.FirstName=="John").
+                OrderBy(p => p.Salary).
+                Last();
+            Assert.That(sortedLast.Email, Is.EqualTo("john@doe.com"));
+        }
+
         [Test]
         public void SortsByAcceptedOrder()
         {
