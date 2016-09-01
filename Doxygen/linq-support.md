@@ -17,23 +17,6 @@ Example:
 var oldDogs = realm.All<Dog>().Where(dog => dog.Age > 8);
 ```
 
-## Projection Operators
-`Select` and `SelectMany` are not yet supported.
-
-The `select` keyword used with the query syntax is supported as long as you select the `RealmObject` itself
-and not some derivative:
-```csharp
-var oldDogs = from d in realm.All<Dog>() where d.Age > 8 select d;
-```
-
-
-## Partitioning Operators 
-`Take`, `Skip`, `TakeWhile` and `SkipWhile` are not yet supported.
-
-These are less important than when using an ORM. Given Realm's zero-copy pattern, data is only read from the
-database when the properties on the objects are accessed, so there is little overhead in simply iterating
-over a part of a result.
-
 
 ## Ordering Operators
 `OrderBy`, `OrderByDescending`, `ThenBy` and `ThenByDescending` are all supported. `Reverse` is not yet supported.
@@ -45,14 +28,6 @@ Example:
 var contacts = realm.All<Person>().OrderBy(p => p.LastName).ThenBy(p => p.FirstName);
 ```
 
-## Grouping Operators
-`GroupBy`is not supported.
-
-
-## Set Operators 
-`Distinct`, `Union`, `Intersect` and `Except` are not supported.
-
-
 ## Conversion Operators
 `ToArray`, `ToList`, `ToDictionary` and `ToLookup` are all supported. `Cast` isn't, 
 but it would be redundant as a query in Realm will always consist of a collection of the class initially specified.
@@ -61,10 +36,6 @@ Example:
 ```csharp
 var phoneBook = realm.All<Person>().ToDictionary(person => person.PhoneNumber);
 ```
-
-
-## Concatenation Operators
-`Concat` is not supported.
 
 
 ## Element Operators
@@ -95,30 +66,6 @@ refer to the [Predicate Operations](#predicate-operations) section.
 [Predicate Operations](#predicate-operations) section.
 
 
-## Join Operators 
-`Join` and `GroupJoin` are not supported. 
-
-Note that joins are less vital when using Realm than when using a relational database and an ORM. Instead of
-using keys to identify relations, you simply refer to the related object. 
-
-So given a class
-```csharp
-public class Address : RealmObject
-{
-    public string StreetName { get; set; }
-    public int Number { get; set; }
-}
-```
-you can simply use that in another class like so:
-```csharp
-public class Customer : RealmObject
-{
-    public string Name { get; set; }
-    public Address Address { get; set; }
-}
-```
-This works like an ordinary reference in C# which means that if two `Customer` instances are assigned the same `Address`
-object, changes to that address will apply to both customer objects.
 
 <a name="predicate-operations"> </a>
 ## Predicate Operations
@@ -220,8 +167,64 @@ before the time when the query was first run (via `foreach`, `ToList` etc.)
 Newly added log entries will be included on subsequent runs, but the time they are compared to will not be updated.
 
 
+## Not yet supported
+
+The following features are not yet supported. A few of them will not be supported as the Realm architecture
+renders them unnecessary.
 
 
+### Grouping Operators
+`GroupBy`is not supported.
 
 
+### Set Operators 
+`Distinct`, `Union`, `Intersect` and `Except` are not supported.
+
+
+### Partitioning Operators 
+`Take`, `Skip`, `TakeWhile` and `SkipWhile` are not yet supported.
+
+These are less important than when using an ORM. Given Realm's zero-copy pattern, data is only read from the
+database when the properties on the objects are accessed, so there is little overhead in simply iterating
+over a part of a result.
+
+
+### Projection Operators
+`Select` and `SelectMany` are not yet supported.
+
+The `select` keyword used with the query syntax is supported as long as you select the `RealmObject` itself
+and not some derivative:
+```csharp
+var oldDogs = from d in realm.All<Dog>() where d.Age > 8 select d;
+```
+
+
+## Concatenation Operators
+`Concat` is not supported.
+
+
+### Join Operators 
+`Join` and `GroupJoin` are not supported. 
+
+Note that joins are less vital when using Realm than when using a relational database and an ORM. Instead of
+using keys to identify relations, you simply refer to the related object. 
+
+So given a class
+```csharp
+public class Address : RealmObject
+{
+    public string StreetName { get; set; }
+    public int Number { get; set; }
+}
+```
+you can simply use that in another class like so:
+```csharp
+public class Customer : RealmObject
+{
+    public string Name { get; set; }
+    public Address Address { get; set; }
+}
+```
+This works like an ordinary reference in C# which means that if two `Customer` instances are assigned the same `Address`
+object, changes to that address will apply to both customer objects.
 
