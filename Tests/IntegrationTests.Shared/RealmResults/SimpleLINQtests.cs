@@ -338,6 +338,22 @@ namespace IntegrationTests
 
 
         [Test]
+        public void SingleOrDefaultReturnsDefault()
+        {
+            var countBefore = _realm.All<Person>().Count();
+            var expectedDef = _realm.All<Person>().SingleOrDefault(p => p.FirstName == "Zaphod");
+            Assert.That( _realm.All<Person>().Count(), Is.EqualTo(countBefore+1));
+            Assert.That(expectedDef.FirstName, Is.Null);
+            Assert.That(expectedDef.Score, Is.EqualTo(0));
+
+            expectedDef = _realm.All<Person>().Where(p => p.FirstName == "Just Some Guy").SingleOrDefault();
+            Assert.That( _realm.All<Person>().Count(), Is.EqualTo(countBefore+2));
+            Assert.That(expectedDef.FirstName, Is.Null);
+            Assert.That(expectedDef.Score, Is.EqualTo(0));
+        }
+
+
+        [Test]
         public void FirstFailsToFind()
         {
             Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().First(p => p.Latitude > 100));
@@ -345,6 +361,7 @@ namespace IntegrationTests
             Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().First(p => p.Score > 50000));
             Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().First(p => p.FirstName == "Samantha"));
         }
+
 
         [Test]
         public void FirstWorks()
@@ -360,6 +377,20 @@ namespace IntegrationTests
         }
 
 
+        [Test]
+        public void FirstOrDefaultReturnsDefault()
+        {
+            var countBefore = _realm.All<Person>().Count();
+            var expectedDef = _realm.All<Person>().FirstOrDefault(p => p.FirstName == "Zaphod");
+            Assert.That( _realm.All<Person>().Count(), Is.EqualTo(countBefore+1));
+            Assert.That(expectedDef.FirstName, Is.Null);
+            Assert.That(expectedDef.Score, Is.EqualTo(0));
+
+            expectedDef = _realm.All<Person>().Where(p => p.FirstName == "Just Some Guy").FirstOrDefault();
+            Assert.That( _realm.All<Person>().Count(), Is.EqualTo(countBefore+2));
+            Assert.That(expectedDef.FirstName, Is.Null);
+            Assert.That(expectedDef.Score, Is.EqualTo(0));
+        }
 
 
         [Test]
@@ -382,6 +413,73 @@ namespace IntegrationTests
 
             var s2 = _realm.All<Person>().Last(p => p.FirstName == "John");
             Assert.That(s2.FirstName, Is.EqualTo("John"));  // order not guaranteed in two items but know they match this
+        }
+
+
+        [Test]
+        public void LastOrDefaultReturnsDefault()
+        {
+            var countBefore = _realm.All<Person>().Count();
+            var expectedDef = _realm.All<Person>().LastOrDefault(p => p.FirstName == "Zaphod");
+            Assert.That( _realm.All<Person>().Count(), Is.EqualTo(countBefore+1));
+            Assert.That(expectedDef.FirstName, Is.Null);
+            Assert.That(expectedDef.Score, Is.EqualTo(0));
+
+            expectedDef = _realm.All<Person>().Where(p => p.FirstName == "Just Some Guy").LastOrDefault();
+            Assert.That( _realm.All<Person>().Count(), Is.EqualTo(countBefore+2));
+            Assert.That(expectedDef.FirstName, Is.Null);
+            Assert.That(expectedDef.Score, Is.EqualTo(0));
+        }
+
+
+        [Test]
+        public void ElementAtOutOfRange()
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => _realm.All<Person>().Where(p => p.Latitude > 140).ElementAt(0));
+            Assert.Throws<ArgumentOutOfRangeException>(() => _realm.All<Person>().Where(p => p.FirstName == "Samantha").ElementAt(0));
+            Assert.Throws<ArgumentOutOfRangeException>(() => _realm.All<Person>().Where(p => p.FirstName == "Peter").ElementAt(10));
+        }
+
+
+        [Test]
+        public void ElementAtInRange()
+        {
+            var s0 = _realm.All<Person>().Where(p => p.Longitude < -70.0 && p.Longitude > -90.0).ElementAt(0);
+            Assert.That(s0.Email, Is.EqualTo("john@doe.com")); 
+
+            var s1 = _realm.All<Person>().Where(p => p.Score == 100.0f).ElementAt(0);
+            Assert.That(s1.Email, Is.EqualTo("john@doe.com"));
+
+            var s2 = _realm.All<Person>().Where(p => p.FirstName == "John").ElementAt(1);
+            Assert.That(s2.FirstName, Is.EqualTo("John")); 
+        }
+
+
+        [Test]
+        public void ElementAtOrDefaultReturnsDefault()
+        {
+            var countBefore = _realm.All<Person>().Count();
+            var expectedDef = _realm.All<Person>().Where(p => p.FirstName == "Just Some Guy").ElementAtOrDefault(0);
+            Assert.That( _realm.All<Person>().Count(), Is.EqualTo(countBefore+1));
+            Assert.That(expectedDef.FirstName, Is.Null);
+            Assert.That(expectedDef.Score, Is.EqualTo(0));
+        }
+
+
+        [Test, Explicit("Cast is not correct, not sure about our implementation")]
+        public void DefaultIfEmptyReturnsDefault()
+        {
+            var expectedDef = (Person) _realm.All<Person>().Where(p => p.FirstName == "Just Some Guy").DefaultIfEmpty();
+            Assert.That( _realm.All<Person>().Count(), Is.EqualTo(1));
+            Assert.That(expectedDef.FirstName, Is.Null);
+            Assert.That(expectedDef.Score, Is.EqualTo(0));
+
+            _realm.RemoveAll<Person>();
+            Assert.That( _realm.All<Person>().Count(), Is.EqualTo(0));
+            expectedDef = (Person) _realm.All<Person>().DefaultIfEmpty();
+            Assert.That( _realm.All<Person>().Count(), Is.EqualTo(1));
+            Assert.That(expectedDef.FirstName, Is.Null);
+            Assert.That(expectedDef.Score, Is.EqualTo(0));
         }
 
 

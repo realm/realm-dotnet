@@ -95,7 +95,7 @@ namespace Realms
         /// <param name="index">Ordinal zero-based index of the related items.</param>
         /// <typeparam name="T">Type of the RealmObject which is the target of the relationship.</typeparam>
         /// <returns>A related item, if exception not thrown.</returns>
-        /// <exception cref="IndexOutOfRangeException">When the index is out of range for the related items.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">When the index is out of range for the related items.</exception>
         public T this[int index]
         {
             get
@@ -186,7 +186,7 @@ namespace Realms
         /// <param name="index">Ordinal zero-based index at which to insert the related items.</param>
         /// <param name="item">RealmObject being inserted into the relationship.</param>
         /// <typeparam name="T">Type of the RealmObject which is the target of the relationship.</typeparam>
-        /// <exception cref="IndexOutOfRangeException">When the index is out of range for the related items.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">When the index is out of range for the related items.</exception>
         public void Insert(int index, T item)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
@@ -208,7 +208,7 @@ namespace Realms
         /// Breaks the relationship to the item at the ordinal index, without deleting the item.
         /// </summary>
         /// <param name="index">Ordinal zero-based index of the related item.</param>
-        /// <exception cref="IndexOutOfRangeException">When the index is out of range for the related items.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">When the index is out of range for the related items.</exception>
         public void RemoveAt(int index)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();

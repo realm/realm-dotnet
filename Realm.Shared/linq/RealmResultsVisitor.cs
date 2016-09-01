@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Diagnostics;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -117,6 +118,42 @@ namespace Realms
         }
 
 
+        private Expression MakeDefaultWithTransactionIfNeeded(RealmObject.Metadata metadata)
+        {
+            RealmObject obj = null;
+            if (_realm.IsInTransaction)
+                obj = _realm.CreateObject(_metadata);
+            else 
+                _realm.Write( () => { 
+                    obj = _realm.CreateObject(_metadata); 
+                });
+            return Expression.Constant(obj);
+        }
+
+
+        private RowHandle VisitElementAt(MethodCallExpression m)
+        {
+            Visit(m.Arguments.First());
+            var index = (int)ExtractConstantValue(m.Arguments.Last());
+
+            RowHandle row = null;
+            if (OptionalSortDescriptorBuilder == null)
+            {
+                var rowPtr = _coreQueryHandle.FindDirect((IntPtr)index);
+                row = Realm.CreateRowHandle(rowPtr, _realm.SharedRealmHandle);
+            }
+            else
+            {
+                using (ResultsHandle rh = _realm.MakeResultsForQuery(_coreQueryHandle, OptionalSortDescriptorBuilder))
+                {
+                    var rowPtr = rh.GetRow(index);
+                    row = Realm.CreateRowHandle(rowPtr, _realm.SharedRealmHandle);
+                }
+            }
+            return row;
+        }
+
+
         internal override Expression VisitMethodCall(MethodCallExpression m)
         {
             if (m.Method.DeclaringType == typeof(Queryable))
@@ -164,7 +201,7 @@ namespace Realms
                     bool foundAny = _coreQueryHandle.FindDirect(IntPtr.Zero) != IntPtr.Zero;
                     return Expression.Constant(foundAny);
                 }
-                if (m.Method.Name == "First")
+                if (m.Method.Name.StartsWith("First"))
                 {
                     RecurseToWhereOrRunLambda(m);  
                     IntPtr firstRowPtr = IntPtr.Zero;
@@ -179,16 +216,23 @@ namespace Realms
                             firstRowPtr = rh.GetRow(0);
                         }
                     }
-                    if (firstRowPtr == IntPtr.Zero)
-                        throw new InvalidOperationException("Sequence contains no matching element");
-                    return Expression.Constant(_realm.MakeObjectForRow(_metadata, firstRowPtr));
+                    if (firstRowPtr != IntPtr.Zero)
+                        return Expression.Constant(_realm.MakeObjectForRow(_metadata, firstRowPtr));
+                    if (m.Method.Name == "First")
+                            throw new InvalidOperationException("Sequence contains no matching element");
+                    Debug.Assert (m.Method.Name == "FirstorDefault");
+                    return MakeDefaultWithTransactionIfNeeded(_metadata);
                 }
-                if (m.Method.Name == "Single")  // same as unsorted First with extra checks
+                if (m.Method.Name.StartsWith("Single"))  // same as unsorted First with extra checks
                 {
                     RecurseToWhereOrRunLambda(m);  
                     var firstRowPtr = _coreQueryHandle.FindDirect(IntPtr.Zero);
-                    if (firstRowPtr == IntPtr.Zero)
-                        throw new InvalidOperationException("Sequence contains no matching element");
+                    if (firstRowPtr == IntPtr.Zero) {
+                        if (m.Method.Name == "Single")
+                            throw new InvalidOperationException("Sequence contains no matching element");
+                        Debug.Assert (m.Method.Name == "SingleorDefault");
+                        return MakeDefaultWithTransactionIfNeeded(_metadata);
+                    }
                     var firstRow = Realm.CreateRowHandle(firstRowPtr, _realm.SharedRealmHandle);
                     IntPtr nextIndex = (IntPtr)(firstRow.RowIndex+1);
                     var nextRowPtr = _coreQueryHandle.FindDirect(nextIndex);
@@ -196,7 +240,7 @@ namespace Realms
                         throw new InvalidOperationException("Sequence contains more than one matching element");
                     return Expression.Constant(_realm.MakeObjectForRow(_metadata, firstRow));
                 }
-                if (m.Method.Name == "Last")
+                if (m.Method.Name.StartsWith("Last"))
                 {
                     RecurseToWhereOrRunLambda(m); 
 
@@ -207,31 +251,25 @@ namespace Realms
                         if (lastIndex >= 0)
                             lastRowPtr = rh.GetRow(lastIndex);
                     }
-                    if (lastRowPtr == IntPtr.Zero)
+                    if (lastRowPtr != IntPtr.Zero)
+                        return Expression.Constant(_realm.MakeObjectForRow(_metadata, lastRowPtr));
+                    if (m.Method.Name == "Last")
                         throw new InvalidOperationException("Sequence contains no matching element");
-                    return Expression.Constant(_realm.MakeObjectForRow(_metadata, lastRowPtr));
+                    Debug.Assert (m.Method.Name == "LastorDefault");
+                    return MakeDefaultWithTransactionIfNeeded(_metadata);
                 }
                 if (m.Method.Name == nameof(Queryable.ElementAt))
                 {
-                    Visit(m.Arguments.First());
-                    var index = (int)ExtractConstantValue(m.Arguments.Last());
-
-                    RowHandle row = null;
-                    if (OptionalSortDescriptorBuilder == null)
-                    {
-                        var rowPtr = _coreQueryHandle.FindDirect((IntPtr)index);
-                        row = Realm.CreateRowHandle(rowPtr, _realm.SharedRealmHandle);
-                    }
-                    else
-                    {
-                        using (ResultsHandle rh = _realm.MakeResultsForQuery(_coreQueryHandle, OptionalSortDescriptorBuilder))
-                        {
-                            var rowPtr = rh.GetRow(index);
-                            row = Realm.CreateRowHandle(rowPtr, _realm.SharedRealmHandle);
-                        }
-                    }
+                    var row = VisitElementAt(m);
                     if (row == null || row.IsInvalid)
-                        throw new IndexOutOfRangeException();
+                        throw new ArgumentOutOfRangeException();
+                    return Expression.Constant(_realm.MakeObjectForRow(_metadata, row));
+                }
+                if (m.Method.Name == nameof(Queryable.ElementAtOrDefault))
+                {
+                    var row = VisitElementAt(m);
+                    if (row == null || row.IsInvalid)
+                        return MakeDefaultWithTransactionIfNeeded(_metadata);
                     return Expression.Constant(_realm.MakeObjectForRow(_metadata, row));
                 }
 

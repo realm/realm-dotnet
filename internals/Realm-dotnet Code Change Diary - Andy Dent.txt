@@ -2684,9 +2684,28 @@ PrimaryKeyTests.cs
 
 SimpleLINQtests.cs
 - LastWorks, LastFailsToFind added
+- ElementAtOutOfRange, ElementAtInRange added
+- FirstOrDefaultReturnsDefault added
+- SingleOrDefaultReturnsDefault added
+- LastOrDefaultReturnsDefault added
+- ElementAtOrDefaultReturnsDefault added
+- DefaultIfEmptyReturnsDefault added
 
 SortingTests.cs
 - LastIsDifferentSorted added
 
 RealmResultsVisitor.cs
-- VisitMethodCall added case for Last
+- MakeDefaultWithTransactionIfNeeded added
+- VisitElementAt added
+- VisitMethodCall 
+  - added case for Last
+  - added case for LastOrDefault
+  - added case for FirstOrDefault
+  - added case for SingleOrDefault
+  - added case for ElementAtOrDefault
+
+Realm.cs 
+- CreateObject(classname, out metadata)
+  - refactored out to call 
+
+Global search and replace IndexOutOfRangeException with ArgumentOutOfRangeException

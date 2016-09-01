@@ -60,7 +60,7 @@ namespace Realms
             get
             {
                 if (index < 0)
-                    throw new IndexOutOfRangeException();
+                    throw new ArgumentOutOfRangeException();
                 var rowPtr = ResultsHandle.GetRow(index);
                 return (T)(object)_realm.MakeObjectForRow(_targetMetadata, rowPtr);
             }

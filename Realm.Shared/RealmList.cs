@@ -54,7 +54,7 @@ namespace Realms
             /// <summary>
             /// Return the current related object when iterating a related set.
             /// </summary>
-            /// <exception cref="IndexOutOfRangeException">When we are not currently pointing at a valid item, either MoveNext has not been called for the first time or have iterated through all the items.</exception>
+            /// <exception cref="ArgumentOutOfRangeException">When we are not currently pointing at a valid item, either MoveNext has not been called for the first time or have iterated through all the items.</exception>
             public T Current => _enumerating[_index];
 
             object IEnumerator.Current => Current;
@@ -157,14 +157,14 @@ namespace Realms
         /// <param name="index">Ordinal zero-based index of the related items.</param>
         /// <typeparam name="T">Type of the RealmObject which is the target of the relationship.</typeparam>
         /// <returns>A related item, if exception not thrown.</returns>
-        /// <exception cref="IndexOutOfRangeException">When the index is out of range for the related items.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">When the index is out of range for the related items.</exception>
         [System.Runtime.CompilerServices.IndexerName("Item")]
         public T this[int index]
         {
             get
             {
                 if (index < 0)
-                    throw new IndexOutOfRangeException ();
+                    throw new ArgumentOutOfRangeException ();
                 var linkedRowPtr = _listHandle.Get((IntPtr)index);
                 return (T)_realm.MakeObjectForRow(_targetMetadata, linkedRowPtr);
             }
@@ -262,11 +262,11 @@ namespace Realms
         /// <param name="index">Ordinal zero-based index at which to insert the related items.</param>
         /// <param name="item">RealmObject being inserted into the relationship.</param>
         /// <typeparam name="T">Type of the RealmObject which is the target of the relationship.</typeparam>
-        /// <exception cref="IndexOutOfRangeException">When the index is out of range for the related items.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">When the index is out of range for the related items.</exception>
         public void Insert(int index, T item)
         {
             if (index < 0)
-                throw new IndexOutOfRangeException ();
+                throw new ArgumentOutOfRangeException ();
 
             this.ManageObjectIfNeeded(item);
             var rowIndex = ((RealmObject)item).RowHandle.RowIndex;
@@ -292,11 +292,11 @@ namespace Realms
         /// Breaks the relationship to the item at the ordinal index, without deleting the item.
         /// </summary>
         /// <param name="index">Ordinal zero-based index of the related item.</param>
-        /// <exception cref="IndexOutOfRangeException">When the index is out of range for the related items.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">When the index is out of range for the related items.</exception>
         public void RemoveAt(int index)
         {
             if (index < 0)
-                throw new IndexOutOfRangeException ();
+                throw new ArgumentOutOfRangeException ();
             _listHandle.Erase((IntPtr)index);
         }
 

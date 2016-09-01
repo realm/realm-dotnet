@@ -297,12 +297,12 @@ namespace IntegrationTests.Shared
         public void TestExceptionsFromEmptyListOutOfRange()
         {
             var dani = realm.All<Owner>().Where(p => p.Name == "Dani").First();
-            Assert.Throws<IndexOutOfRangeException>(() => dani.Dogs.RemoveAt(0));
+            Assert.Throws<ArgumentOutOfRangeException>(() => dani.Dogs.RemoveAt(0));
             var bilbo = realm.All<Dog>().Single(p => p.Name == "Bilbo Fleabaggins");
             Dog scratch;  // for assignment in following getters
-            Assert.Throws<IndexOutOfRangeException>(() => dani.Dogs.Insert(-1, bilbo));
-            Assert.Throws<IndexOutOfRangeException>(() => dani.Dogs.Insert(0, bilbo));
-            Assert.Throws<IndexOutOfRangeException>(() => scratch = dani.Dogs [0]);
+            Assert.Throws<ArgumentOutOfRangeException>(() => dani.Dogs.Insert(-1, bilbo));
+            Assert.Throws<ArgumentOutOfRangeException>(() => dani.Dogs.Insert(0, bilbo));
+            Assert.Throws<ArgumentOutOfRangeException>(() => scratch = dani.Dogs [0]);
         }
 
 
@@ -315,7 +315,7 @@ namespace IntegrationTests.Shared
             var movedOnToFirstItem = iter.MoveNext();
             Assert.That(movedOnToFirstItem, Is.False);
             Dog currentDog;
-            Assert.Throws<IndexOutOfRangeException>(() => currentDog = iter.Current);
+            Assert.Throws<ArgumentOutOfRangeException>(() => currentDog = iter.Current);
         }
 
 
@@ -323,12 +323,12 @@ namespace IntegrationTests.Shared
         public void TestExceptionsFromTimsDogsOutOfRange()
         {
             var tim = realm.All<Owner>().Single(p => p.Name == "Tim");
-            Assert.Throws<IndexOutOfRangeException>(() => tim.Dogs.RemoveAt(4));
+            Assert.Throws<ArgumentOutOfRangeException>(() => tim.Dogs.RemoveAt(4));
             var bilbo = realm.All<Dog>().Single(p => p.Name == "Bilbo Fleabaggins");
             Dog scratch;  // for assignment in following getters
-            Assert.Throws<IndexOutOfRangeException>(() => tim.Dogs.Insert(-1, bilbo));
-            Assert.Throws<IndexOutOfRangeException>(() => tim.Dogs.Insert(3, bilbo));
-            Assert.Throws<IndexOutOfRangeException>(() => scratch = tim.Dogs [99]);
+            Assert.Throws<ArgumentOutOfRangeException>(() => tim.Dogs.Insert(-1, bilbo));
+            Assert.Throws<ArgumentOutOfRangeException>(() => tim.Dogs.Insert(3, bilbo));
+            Assert.Throws<ArgumentOutOfRangeException>(() => scratch = tim.Dogs [99]);
         }
 
         [Test]

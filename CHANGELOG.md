@@ -10,6 +10,7 @@
 ### Bug fixes
 * Now throws a RealmMigrationSchemaNeededException if you have changed a `RealmObject` subclass declaration and not incremented the `SchemaVersion` (#518)
 * Fixed a bug where disposing a `Transaction` would throw an `ObjectDisposedException` if its `Realm` was garbage-collected (#779)
+* Corrected the exception being thrown `IndexOutOfRangeException` to be  `ArgumentOutOfRangeException`
 
 Uses core 1.x.x
 
