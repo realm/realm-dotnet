@@ -103,8 +103,6 @@ REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaO
         config.schema_version = configuration.schema_version;
 
         if (configuration.managed_migration_handle) {
-            config.schema_mode = SchemaMode::Automatic;
-
             config.migration_function = [&configuration](SharedRealm oldRealm, SharedRealm newRealm, Schema schema) {
                 std::vector<SchemaObject> schema_objects;
                 std::vector<SchemaProperty> schema_properties;
