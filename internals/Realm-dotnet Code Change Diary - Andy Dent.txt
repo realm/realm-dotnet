@@ -2695,7 +2695,6 @@ SortingTests.cs
 - LastIsDifferentSorted added
 
 RealmResultsVisitor.cs
-- MakeDefaultWithTransactionIfNeeded added
 - VisitElementAt added
 - VisitMethodCall 
   - added case for Last
@@ -2703,9 +2702,5 @@ RealmResultsVisitor.cs
   - added case for FirstOrDefault
   - added case for SingleOrDefault
   - added case for ElementAtOrDefault
-
-Realm.cs 
-- CreateObject(classname, out metadata)
-  - refactored out to call 
 
 Global search and replace IndexOutOfRangeException with ArgumentOutOfRangeException

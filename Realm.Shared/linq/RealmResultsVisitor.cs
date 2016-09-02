@@ -118,19 +118,6 @@ namespace Realms
         }
 
 
-        private Expression MakeDefaultWithTransactionIfNeeded(RealmObject.Metadata metadata)
-        {
-            RealmObject obj = null;
-            if (_realm.IsInTransaction)
-                obj = _realm.CreateObject(_metadata);
-            else 
-                _realm.Write( () => { 
-                    obj = _realm.CreateObject(_metadata); 
-                });
-            return Expression.Constant(obj);
-        }
-
-
         private RowHandle VisitElementAt(MethodCallExpression m)
         {
             Visit(m.Arguments.First());
@@ -219,9 +206,19 @@ namespace Realms
                     if (firstRowPtr != IntPtr.Zero)
                         return Expression.Constant(_realm.MakeObjectForRow(_metadata, firstRowPtr));
                     if (m.Method.Name == "First")
-                            throw new InvalidOperationException("Sequence contains no matching element");
+                        throw new InvalidOperationException("Sequence contains no matching element");
                     Debug.Assert (m.Method.Name == "FirstorDefault");
-                    return MakeDefaultWithTransactionIfNeeded(_metadata);
+                    return Expression.Constant(null);
+                }
+                if (m.Method.Name == "DefaultIfEmpty")
+                {
+                    RecurseToWhereOrRunLambda(m);  
+                    IntPtr firstRowPtr =  _coreQueryHandle.FindDirect(IntPtr.Zero);
+                    if (firstRowPtr != IntPtr.Zero)
+                        return m;  // as if just a "Where"
+                   // var ret = new IList<RealmObject>();
+                   // ret.Add(null);
+                    return Expression.Constant(null);
                 }
                 if (m.Method.Name.StartsWith("Single"))  // same as unsorted First with extra checks
                 {
@@ -231,7 +228,7 @@ namespace Realms
                         if (m.Method.Name == "Single")
                             throw new InvalidOperationException("Sequence contains no matching element");
                         Debug.Assert (m.Method.Name == "SingleorDefault");
-                        return MakeDefaultWithTransactionIfNeeded(_metadata);
+                        return Expression.Constant(null);
                     }
                     var firstRow = Realm.CreateRowHandle(firstRowPtr, _realm.SharedRealmHandle);
                     IntPtr nextIndex = (IntPtr)(firstRow.RowIndex+1);
@@ -256,7 +253,7 @@ namespace Realms
                     if (m.Method.Name == "Last")
                         throw new InvalidOperationException("Sequence contains no matching element");
                     Debug.Assert (m.Method.Name == "LastorDefault");
-                    return MakeDefaultWithTransactionIfNeeded(_metadata);
+                    return Expression.Constant(null);
                 }
                 if (m.Method.Name == nameof(Queryable.ElementAt))
                 {
@@ -269,7 +266,7 @@ namespace Realms
                 {
                     var row = VisitElementAt(m);
                     if (row == null || row.IsInvalid)
-                        return MakeDefaultWithTransactionIfNeeded(_metadata);
+                        return Expression.Constant(null);
                     return Expression.Constant(_realm.MakeObjectForRow(_metadata, row));
                 }
 

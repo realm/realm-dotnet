@@ -420,11 +420,13 @@ namespace Realms
             return CreateObject(className, out ignored);
         }
 
-
-        internal RealmObject CreateObject(RealmObject.Metadata metadata)
+        private RealmObject CreateObject(string className, out RealmObject.Metadata metadata)
         {
             if (!IsInTransaction)
                 throw new RealmOutsideTransactionException("Cannot create Realm object outside write transactions");
+
+            if (!Metadata.TryGetValue(className, out metadata))
+                throw new ArgumentException($"The class {className} is not in the limited set of classes for this realm");
 
             var result = metadata.Helper.CreateInstance();
 
@@ -433,14 +435,6 @@ namespace Realms
 
             result._Manage(this, rowHandle, metadata);
             return result;
-        }
-
-
-        private RealmObject CreateObject(string className, out RealmObject.Metadata metadata)
-        {
-            if (!Metadata.TryGetValue(className, out metadata))
-                throw new ArgumentException($"The class {className} is not in the limited set of classes for this realm");
-            return CreateObject(metadata);
         }
 
 

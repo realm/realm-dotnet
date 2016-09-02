@@ -340,16 +340,11 @@ namespace IntegrationTests
         [Test]
         public void SingleOrDefaultReturnsDefault()
         {
-            var countBefore = _realm.All<Person>().Count();
             var expectedDef = _realm.All<Person>().SingleOrDefault(p => p.FirstName == "Zaphod");
-            Assert.That( _realm.All<Person>().Count(), Is.EqualTo(countBefore+1));
-            Assert.That(expectedDef.FirstName, Is.Null);
-            Assert.That(expectedDef.Score, Is.EqualTo(0));
+            Assert.That(expectedDef, Is.Null);
 
             expectedDef = _realm.All<Person>().Where(p => p.FirstName == "Just Some Guy").SingleOrDefault();
-            Assert.That( _realm.All<Person>().Count(), Is.EqualTo(countBefore+2));
-            Assert.That(expectedDef.FirstName, Is.Null);
-            Assert.That(expectedDef.Score, Is.EqualTo(0));
+            Assert.That(expectedDef, Is.Null);
         }
 
 
@@ -380,16 +375,11 @@ namespace IntegrationTests
         [Test]
         public void FirstOrDefaultReturnsDefault()
         {
-            var countBefore = _realm.All<Person>().Count();
             var expectedDef = _realm.All<Person>().FirstOrDefault(p => p.FirstName == "Zaphod");
-            Assert.That( _realm.All<Person>().Count(), Is.EqualTo(countBefore+1));
-            Assert.That(expectedDef.FirstName, Is.Null);
-            Assert.That(expectedDef.Score, Is.EqualTo(0));
+            Assert.That(expectedDef, Is.Null);
 
             expectedDef = _realm.All<Person>().Where(p => p.FirstName == "Just Some Guy").FirstOrDefault();
-            Assert.That( _realm.All<Person>().Count(), Is.EqualTo(countBefore+2));
-            Assert.That(expectedDef.FirstName, Is.Null);
-            Assert.That(expectedDef.Score, Is.EqualTo(0));
+            Assert.That(expectedDef, Is.Null);
         }
 
 
@@ -419,16 +409,11 @@ namespace IntegrationTests
         [Test]
         public void LastOrDefaultReturnsDefault()
         {
-            var countBefore = _realm.All<Person>().Count();
             var expectedDef = _realm.All<Person>().LastOrDefault(p => p.FirstName == "Zaphod");
-            Assert.That( _realm.All<Person>().Count(), Is.EqualTo(countBefore+1));
-            Assert.That(expectedDef.FirstName, Is.Null);
-            Assert.That(expectedDef.Score, Is.EqualTo(0));
+            Assert.That(expectedDef, Is.Null);
 
             expectedDef = _realm.All<Person>().Where(p => p.FirstName == "Just Some Guy").LastOrDefault();
-            Assert.That( _realm.All<Person>().Count(), Is.EqualTo(countBefore+2));
-            Assert.That(expectedDef.FirstName, Is.Null);
-            Assert.That(expectedDef.Score, Is.EqualTo(0));
+            Assert.That(expectedDef, Is.Null);
         }
 
 
@@ -458,28 +443,17 @@ namespace IntegrationTests
         [Test]
         public void ElementAtOrDefaultReturnsDefault()
         {
-            var countBefore = _realm.All<Person>().Count();
             var expectedDef = _realm.All<Person>().Where(p => p.FirstName == "Just Some Guy").ElementAtOrDefault(0);
-            Assert.That( _realm.All<Person>().Count(), Is.EqualTo(countBefore+1));
-            Assert.That(expectedDef.FirstName, Is.Null);
-            Assert.That(expectedDef.Score, Is.EqualTo(0));
+            Assert.That(expectedDef, Is.Null);
         }
 
 
-        [Test, Explicit("Cast is not correct, not sure about our implementation")]
+        // note that DefaultIfEmpty returns a collection of one item
+        [Test]
         public void DefaultIfEmptyReturnsDefault()
         {
-            var expectedDef = (Person) _realm.All<Person>().Where(p => p.FirstName == "Just Some Guy").DefaultIfEmpty();
-            Assert.That( _realm.All<Person>().Count(), Is.EqualTo(1));
-            Assert.That(expectedDef.FirstName, Is.Null);
-            Assert.That(expectedDef.Score, Is.EqualTo(0));
-
-            _realm.RemoveAll<Person>();
-            Assert.That( _realm.All<Person>().Count(), Is.EqualTo(0));
-            expectedDef = (Person) _realm.All<Person>().DefaultIfEmpty();
-            Assert.That( _realm.All<Person>().Count(), Is.EqualTo(1));
-            Assert.That(expectedDef.FirstName, Is.Null);
-            Assert.That(expectedDef.Score, Is.EqualTo(0));
+            var expectedDef = (Person) _realm.All<Person>().Where(p => p.FirstName == "Just Some Guy").DefaultIfEmpty().Single();
+            Assert.That(expectedDef, Is.Null);
         }
 
 
