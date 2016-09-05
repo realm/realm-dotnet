@@ -515,6 +515,13 @@ namespace IntegrationTests
         [Test, Explicit("Currently broken and hard to implement")]
         public void DefaultIfEmptyReturnsDefault()
         {
+            /*
+             * This is comprehensively broken and awkward to fix in our current architecture.
+             * Looking at the test code below, the Count is invoked on a RealmResults and directly 
+             * invokes its query handle, which of course has zero elements.
+             * One posible approach is to toggle the RealmResults into a special state where
+             * it acts as a generator for a single null pointer.* 
+             */
             var expectCollectionOfOne = _realm.All<Person>().Where(p => p.FirstName == "Just Some Guy").DefaultIfEmpty();
             Assert.That(expectCollectionOfOne.Count(), Is.EqualTo(1));
             var expectedDef = expectCollectionOfOne.Single();

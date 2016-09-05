@@ -212,6 +212,7 @@ namespace Realms
                 }
                 if (m.Method.Name == nameof(Queryable.DefaultIfEmpty))
                 {
+                    // FIXME: See discussion in the test DefaultIfEmptyReturnsDefault
                     RecurseToWhereOrRunLambda(m);  
                     IntPtr firstRowPtr =  _coreQueryHandle.FindDirect(IntPtr.Zero);
                     if (firstRowPtr != IntPtr.Zero)
