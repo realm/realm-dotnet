@@ -57,6 +57,9 @@ namespace Realms
         /// <summary>
         ///  Move the iterator to the next related object, starting "before" the first object.
         /// </summary>
+        /// <remarks>
+        /// Is a factory for RealmObjects, loading a new one and updating <c>Current</c>. 
+        /// </remarks>
         /// <returns>True only if can advance.</returns>
         public bool MoveNext()
         {

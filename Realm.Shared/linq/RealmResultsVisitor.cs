@@ -123,7 +123,7 @@ namespace Realms
             Visit(m.Arguments.First());
             var index = (int)ExtractConstantValue(m.Arguments.Last());
 
-            RowHandle row = null;
+            RowHandle row;
             if (OptionalSortDescriptorBuilder == null)
             {
                 var rowPtr = _coreQueryHandle.FindDirect((IntPtr)index);
@@ -145,50 +145,50 @@ namespace Realms
         {
             if (m.Method.DeclaringType == typeof(Queryable))
             { 
-                if (m.Method.Name == "Where")
+                if (m.Method.Name == nameof(Queryable.Where))
                 {
                     this.Visit(m.Arguments[0]);
                     LambdaExpression lambda = (LambdaExpression)StripQuotes(m.Arguments[1]);
                     this.Visit(lambda.Body);
                     return m;
                 }
-                if (m.Method.Name == "OrderBy")
+                if (m.Method.Name == nameof(Queryable.OrderBy))
                 {
                     this.Visit(m.Arguments[0]);
                     AddSort((LambdaExpression)StripQuotes(m.Arguments[1]), true, true);
                     return m;
                 }
-                if (m.Method.Name == "OrderByDescending")
+                if (m.Method.Name == nameof(Queryable.OrderByDescending))
                 {
                     this.Visit(m.Arguments[0]);
                     AddSort((LambdaExpression)StripQuotes(m.Arguments[1]), true, false);
                     return m;
                 }
-                if (m.Method.Name == "ThenBy")
+                if (m.Method.Name == nameof(Queryable.ThenBy))
                 {
                     this.Visit(m.Arguments[0]);
                     AddSort((LambdaExpression)StripQuotes(m.Arguments[1]), false, true);
                     return m;
                 }
-                if (m.Method.Name == "ThenByDescending")
+                if (m.Method.Name == nameof(Queryable.ThenByDescending))
                 {
                     this.Visit(m.Arguments[0]);
                     AddSort((LambdaExpression)StripQuotes(m.Arguments[1]), false, false);
                     return m;
                 }
-                if (m.Method.Name == "Count")
+                if (m.Method.Name == nameof(Queryable.Count))
                 {
                     RecurseToWhereOrRunLambda(m);
                     var foundCount = _coreQueryHandle.Count();
                     return Expression.Constant(foundCount);
                 }
-                if (m.Method.Name == "Any")
+                if (m.Method.Name == nameof(Queryable.Any))
                 {
                     RecurseToWhereOrRunLambda(m);
                     bool foundAny = _coreQueryHandle.FindDirect(IntPtr.Zero) != IntPtr.Zero;
                     return Expression.Constant(foundAny);
                 }
-                if (m.Method.Name.StartsWith("First"))
+                if (m.Method.Name.StartsWith(nameof(Queryable.First)))
                 {
                     RecurseToWhereOrRunLambda(m);  
                     IntPtr firstRowPtr = IntPtr.Zero;
@@ -205,29 +205,31 @@ namespace Realms
                     }
                     if (firstRowPtr != IntPtr.Zero)
                         return Expression.Constant(_realm.MakeObjectForRow(_metadata, firstRowPtr));
-                    if (m.Method.Name == "First")
+                    if (m.Method.Name ==nameof(Queryable.First))
                         throw new InvalidOperationException("Sequence contains no matching element");
-                    Debug.Assert (m.Method.Name == "FirstorDefault");
+                    Debug.Assert (m.Method.Name == nameof(Queryable.FirstOrDefault));
                     return Expression.Constant(null);
                 }
-                if (m.Method.Name == "DefaultIfEmpty")
+                if (m.Method.Name == nameof(Queryable.DefaultIfEmpty))
                 {
                     RecurseToWhereOrRunLambda(m);  
                     IntPtr firstRowPtr =  _coreQueryHandle.FindDirect(IntPtr.Zero);
                     if (firstRowPtr != IntPtr.Zero)
                         return m;  // as if just a "Where"
-                   // var ret = new IList<RealmObject>();
-                   // ret.Add(null);
-                    return Expression.Constant(null);
+                    var innerType = m.Type.GetGenericArguments()[0];
+                    var listType = typeof(List<>).MakeGenericType(innerType);
+                    var singleNullItemList = Activator.CreateInstance(listType);
+                    ((IList)singleNullItemList).Add(null);
+                    return Expression.Constant(singleNullItemList);
                 }
-                if (m.Method.Name.StartsWith("Single"))  // same as unsorted First with extra checks
+                if (m.Method.Name.StartsWith(nameof(Queryable.Single)))  // same as unsorted First with extra checks
                 {
                     RecurseToWhereOrRunLambda(m);  
                     var firstRowPtr = _coreQueryHandle.FindDirect(IntPtr.Zero);
                     if (firstRowPtr == IntPtr.Zero) {
-                        if (m.Method.Name == "Single")
+                        if (m.Method.Name == nameof(Queryable.Single))
                             throw new InvalidOperationException("Sequence contains no matching element");
-                        Debug.Assert (m.Method.Name == "SingleorDefault");
+                        Debug.Assert (m.Method.Name == nameof(Queryable.SingleOrDefault));
                         return Expression.Constant(null);
                     }
                     var firstRow = Realm.CreateRowHandle(firstRowPtr, _realm.SharedRealmHandle);
@@ -237,7 +239,7 @@ namespace Realms
                         throw new InvalidOperationException("Sequence contains more than one matching element");
                     return Expression.Constant(_realm.MakeObjectForRow(_metadata, firstRow));
                 }
-                if (m.Method.Name.StartsWith("Last"))
+                if (m.Method.Name.StartsWith(nameof(Queryable.Last)))
                 {
                     RecurseToWhereOrRunLambda(m); 
 
@@ -250,26 +252,23 @@ namespace Realms
                     }
                     if (lastRowPtr != IntPtr.Zero)
                         return Expression.Constant(_realm.MakeObjectForRow(_metadata, lastRowPtr));
-                    if (m.Method.Name == "Last")
+                    if (m.Method.Name == nameof(Queryable.Last))
                         throw new InvalidOperationException("Sequence contains no matching element");
-                    Debug.Assert (m.Method.Name == "LastorDefault");
+                    Debug.Assert (m.Method.Name == nameof(Queryable.LastOrDefault));
                     return Expression.Constant(null);
                 }
-                if (m.Method.Name == nameof(Queryable.ElementAt))
+                if (m.Method.Name.StartsWith(nameof(Queryable.ElementAt)))
                 {
                     var row = VisitElementAt(m);
                     if (row == null || row.IsInvalid)
-                        throw new ArgumentOutOfRangeException();
-                    return Expression.Constant(_realm.MakeObjectForRow(_metadata, row));
-                }
-                if (m.Method.Name == nameof(Queryable.ElementAtOrDefault))
-                {
-                    var row = VisitElementAt(m);
-                    if (row == null || row.IsInvalid)
+                    {
+                        if (m.Method.Name == nameof(Queryable.ElementAt))
+                            throw new ArgumentOutOfRangeException();
+                        Debug.Assert(m.Method.Name == nameof(Queryable.ElementAtOrDefault));
                         return Expression.Constant(null);
+                    }
                     return Expression.Constant(_realm.MakeObjectForRow(_metadata, row));
                 }
-
             }
 
             if (m.Method.DeclaringType == typeof(string))

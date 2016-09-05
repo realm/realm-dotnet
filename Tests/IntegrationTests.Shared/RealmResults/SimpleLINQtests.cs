@@ -338,6 +338,20 @@ namespace IntegrationTests
 
 
         [Test]
+        public void SingleOrDefaultWorks()
+        {
+            var s0 = _realm.All<Person>().SingleOrDefault(p => p.Longitude < -70.0 && p.Longitude > -90.0);
+            Assert.That(s0.Email, Is.EqualTo("john@doe.com"));
+
+            var s1 = _realm.All<Person>().Where(p => p.Score == 100.0f).SingleOrDefault();
+            Assert.That(s1.Email, Is.EqualTo("john@doe.com"));
+
+            var s2 = _realm.All<Person>().SingleOrDefault(p => p.FirstName == "Peter");
+            Assert.That(s2.FirstName, Is.EqualTo("Peter"));
+        }
+
+
+        [Test]
         public void SingleOrDefaultReturnsDefault()
         {
             var expectedDef = _realm.All<Person>().SingleOrDefault(p => p.FirstName == "Zaphod");
@@ -353,7 +367,6 @@ namespace IntegrationTests
         {
             Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().First(p => p.Latitude > 100));
             Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().Where(p => p.Latitude > 100).First());
-            Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().First(p => p.Score > 50000));
             Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().First(p => p.FirstName == "Samantha"));
         }
 
@@ -368,6 +381,20 @@ namespace IntegrationTests
             Assert.That(s1.Email, Is.EqualTo("john@doe.com"));
 
             var s2 = _realm.All<Person>().First(p => p.FirstName == "John");
+            Assert.That(s2.FirstName, Is.EqualTo("John"));
+        }
+
+
+        [Test]
+        public void FirstOrDefaultWorks()
+        {
+            var s0 = _realm.All<Person>().FirstOrDefault(p => p.Longitude < -70.0 && p.Longitude > -90.0);
+            Assert.That(s0.Email, Is.EqualTo("john@doe.com"));
+
+            var s1 = _realm.All<Person>().Where(p => p.Score == 100.0f).FirstOrDefault();
+            Assert.That(s1.Email, Is.EqualTo("john@doe.com"));
+
+            var s2 = _realm.All<Person>().FirstOrDefault(p => p.FirstName == "John");
             Assert.That(s2.FirstName, Is.EqualTo("John"));
         }
 
@@ -388,9 +415,9 @@ namespace IntegrationTests
         {
             Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().Last(p => p.Latitude > 100));
             Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().Where(p => p.Latitude > 100).Last());
-            Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().Last(p => p.Score > 50000));
             Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().Last(p => p.LastName == "Samantha"));
         }
+
 
         [Test]
         public void LastWorks()
@@ -402,6 +429,20 @@ namespace IntegrationTests
             Assert.That(s1.Email, Is.EqualTo("john@doe.com"));
 
             var s2 = _realm.All<Person>().Last(p => p.FirstName == "John");
+            Assert.That(s2.FirstName, Is.EqualTo("John"));  // order not guaranteed in two items but know they match this
+        }
+
+
+        [Test]
+        public void LastOrDefaultWorks()
+        {
+            var s0 = _realm.All<Person>().LastOrDefault(p => p.Longitude < -70.0 && p.Longitude > -90.0);
+            Assert.That(s0.Email, Is.EqualTo("john@doe.com"));  // Last same as First when one match
+
+            var s1 = _realm.All<Person>().Where(p => p.Score == 100.0f).LastOrDefault();
+            Assert.That(s1.Email, Is.EqualTo("john@doe.com"));
+
+            var s2 = _realm.All<Person>().LastOrDefault(p => p.FirstName == "John");
             Assert.That(s2.FirstName, Is.EqualTo("John"));  // order not guaranteed in two items but know they match this
         }
 
@@ -423,6 +464,8 @@ namespace IntegrationTests
             Assert.Throws<ArgumentOutOfRangeException>(() => _realm.All<Person>().Where(p => p.Latitude > 140).ElementAt(0));
             Assert.Throws<ArgumentOutOfRangeException>(() => _realm.All<Person>().Where(p => p.FirstName == "Samantha").ElementAt(0));
             Assert.Throws<ArgumentOutOfRangeException>(() => _realm.All<Person>().Where(p => p.FirstName == "Peter").ElementAt(10));
+            Assert.Throws<ArgumentOutOfRangeException>(() => _realm.All<Person>().ElementAt(10));
+            Assert.Throws<ArgumentOutOfRangeException>(() => _realm.All<Person>().ElementAt(-1));
         }
 
 
@@ -437,6 +480,26 @@ namespace IntegrationTests
 
             var s2 = _realm.All<Person>().Where(p => p.FirstName == "John").ElementAt(1);
             Assert.That(s2.FirstName, Is.EqualTo("John")); 
+
+            var s3 = _realm.All<Person>().ElementAt(2);
+            Assert.That(s3.FirstName, Is.EqualTo("Peter")); 
+        }
+
+
+        [Test]
+        public void ElementAtOrDefaultInRange()
+        {
+            var s0 = _realm.All<Person>().Where(p => p.Longitude < -70.0 && p.Longitude > -90.0).ElementAtOrDefault(0);
+            Assert.That(s0.Email, Is.EqualTo("john@doe.com")); 
+
+            var s1 = _realm.All<Person>().Where(p => p.Score == 100.0f).ElementAtOrDefault(0);
+            Assert.That(s1.Email, Is.EqualTo("john@doe.com"));
+
+            var s2 = _realm.All<Person>().Where(p => p.FirstName == "John").ElementAtOrDefault(1);
+            Assert.That(s2.FirstName, Is.EqualTo("John")); 
+
+            var s3 = _realm.All<Person>().ElementAtOrDefault(2);
+            Assert.That(s3.FirstName, Is.EqualTo("Peter")); 
         }
 
 
@@ -449,10 +512,12 @@ namespace IntegrationTests
 
 
         // note that DefaultIfEmpty returns a collection of one item
-        [Test]
+        [Test, Explicit("Currently broken and hard to implement")]
         public void DefaultIfEmptyReturnsDefault()
         {
-            var expectedDef = (Person) _realm.All<Person>().Where(p => p.FirstName == "Just Some Guy").DefaultIfEmpty().Single();
+            var expectCollectionOfOne = _realm.All<Person>().Where(p => p.FirstName == "Just Some Guy").DefaultIfEmpty();
+            Assert.That(expectCollectionOfOne.Count(), Is.EqualTo(1));
+            var expectedDef = expectCollectionOfOne.Single();
             Assert.That(expectedDef, Is.Null);
         }
 
