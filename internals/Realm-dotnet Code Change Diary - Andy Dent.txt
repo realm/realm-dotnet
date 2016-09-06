@@ -2706,3 +2706,22 @@ RealmResultsVisitor.cs
   - added case for ElementAtOrDefault
 
 Global search and replace IndexOutOfRangeException with ArgumentOutOfRangeException
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#708 Support queries on char types
+
+SimpleLinqTests.cs
+- SearchComparingChar added
+
+RealmResultsVisitor.cs
+- add a case for char to
+  AddQueryEqual
+  AddQueryNotEqual
+  AddQueryLessThan
+  AddQueryLessThanOrEqual
+  AddQueryGreaterThan
+  AddQueryGreaterThanOrEqual
+- VisitBinary added detection of Convert on lhs
+  
+  
