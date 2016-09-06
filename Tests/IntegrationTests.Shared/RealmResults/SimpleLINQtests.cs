@@ -586,18 +586,5 @@ namespace IntegrationTests
             Assert.That(johnScorer.FullName, Is.EqualTo("John Doe"));
         }
 
-        /// <summary>
-        ///  Test primarily to see our message when user has wrong parameter type.
-        /// </summary>
-        [Test]
-        public void IntegerConversionTriggersError()
-        {
-            long biggerInt = 12;
-            //if you want to see the error message, comment out the assert
-            Assert.Throws<System.NotSupportedException>(() => {
-                _realm.All<PrimaryKeyInt16Object>().First(p => p.Int16Property == biggerInt);
-            });
-        }
-
     } // SimpleLINQtests
 }
