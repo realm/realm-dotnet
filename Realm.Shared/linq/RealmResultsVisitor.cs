@@ -36,11 +36,12 @@ namespace Realms
         internal SortDescriptorBuilder OptionalSortDescriptorBuilder;  // set only when get OrderBy*
         private readonly RealmObject.Metadata _metadata;
 
-        private static class Methods 
+        private static class Methods
         {
             internal static LazyMethod Capture<T>(Expression<Action<T>> lambda)
             {
-                return new LazyMethod(() => {
+                return new LazyMethod(() =>
+                {
                     var method = (lambda.Body as MethodCallExpression).Method;
                     if (method.IsGenericMethod)
                     {
@@ -89,9 +90,10 @@ namespace Realms
         private void RecurseToWhereOrRunLambda(MethodCallExpression m)
         {
             this.Visit(m.Arguments[0]);  // creates the query or recurse to "Where"
-            if (m.Arguments.Count > 1) {
-                LambdaExpression lambda = (LambdaExpression)StripQuotes (m.Arguments[1]);
-                this.Visit (lambda.Body);
+            if (m.Arguments.Count > 1)
+            {
+                LambdaExpression lambda = (LambdaExpression)StripQuotes(m.Arguments[1]);
+                this.Visit(lambda.Body);
             }
         }
 
@@ -144,7 +146,7 @@ namespace Realms
         internal override Expression VisitMethodCall(MethodCallExpression m)
         {
             if (m.Method.DeclaringType == typeof(Queryable))
-            { 
+            {
                 if (m.Method.Name == nameof(Queryable.Where))
                 {
                     this.Visit(m.Arguments[0]);
@@ -190,31 +192,34 @@ namespace Realms
                 }
                 if (m.Method.Name.StartsWith(nameof(Queryable.First)))
                 {
-                    RecurseToWhereOrRunLambda(m);  
+                    RecurseToWhereOrRunLambda(m);
                     IntPtr firstRowPtr = IntPtr.Zero;
                     if (OptionalSortDescriptorBuilder == null)
                     {
                         firstRowPtr = _coreQueryHandle.FindDirect(IntPtr.Zero);
                     }
-                    else 
+                    else
                     {
-                        using (ResultsHandle rh = _realm.MakeResultsForQuery(_coreQueryHandle, OptionalSortDescriptorBuilder)) 
+                        using (ResultsHandle rh = _realm.MakeResultsForQuery(_coreQueryHandle, OptionalSortDescriptorBuilder))
                         {
                             firstRowPtr = rh.GetRow(0);
                         }
                     }
                     if (firstRowPtr != IntPtr.Zero)
                         return Expression.Constant(_realm.MakeObjectForRow(_metadata, firstRowPtr));
-                    if (m.Method.Name ==nameof(Queryable.First))
+                    if (m.Method.Name == nameof(Queryable.First))
                         throw new InvalidOperationException("Sequence contains no matching element");
-                    Debug.Assert (m.Method.Name == nameof(Queryable.FirstOrDefault));
+                    Debug.Assert(m.Method.Name == nameof(Queryable.FirstOrDefault));
                     return Expression.Constant(null);
                 }
+/*
+// FIXME: See discussion in the test DefaultIfEmptyReturnsDefault
+// kept because it shows part of what might be a viable implementation if can work out architectural issues
+
                 if (m.Method.Name == nameof(Queryable.DefaultIfEmpty))
                 {
-                    // FIXME: See discussion in the test DefaultIfEmptyReturnsDefault
-                    RecurseToWhereOrRunLambda(m);  
-                    IntPtr firstRowPtr =  _coreQueryHandle.FindDirect(IntPtr.Zero);
+                    RecurseToWhereOrRunLambda(m);
+                    IntPtr firstRowPtr = _coreQueryHandle.FindDirect(IntPtr.Zero);
                     if (firstRowPtr != IntPtr.Zero)
                         return m;  // as if just a "Where"
                     var innerType = m.Type.GetGenericArguments()[0];
@@ -223,18 +228,20 @@ namespace Realms
                     ((IList)singleNullItemList).Add(null);
                     return Expression.Constant(singleNullItemList);
                 }
+*/
                 if (m.Method.Name.StartsWith(nameof(Queryable.Single)))  // same as unsorted First with extra checks
                 {
-                    RecurseToWhereOrRunLambda(m);  
+                    RecurseToWhereOrRunLambda(m);
                     var firstRowPtr = _coreQueryHandle.FindDirect(IntPtr.Zero);
-                    if (firstRowPtr == IntPtr.Zero) {
+                    if (firstRowPtr == IntPtr.Zero)
+                    {
                         if (m.Method.Name == nameof(Queryable.Single))
                             throw new InvalidOperationException("Sequence contains no matching element");
-                        Debug.Assert (m.Method.Name == nameof(Queryable.SingleOrDefault));
+                        Debug.Assert(m.Method.Name == nameof(Queryable.SingleOrDefault));
                         return Expression.Constant(null);
                     }
                     var firstRow = Realm.CreateRowHandle(firstRowPtr, _realm.SharedRealmHandle);
-                    IntPtr nextIndex = (IntPtr)(firstRow.RowIndex+1);
+                    IntPtr nextIndex = (IntPtr)(firstRow.RowIndex + 1);
                     var nextRowPtr = _coreQueryHandle.FindDirect(nextIndex);
                     if (nextRowPtr != IntPtr.Zero)
                         throw new InvalidOperationException("Sequence contains more than one matching element");
@@ -242,10 +249,10 @@ namespace Realms
                 }
                 if (m.Method.Name.StartsWith(nameof(Queryable.Last)))
                 {
-                    RecurseToWhereOrRunLambda(m); 
+                    RecurseToWhereOrRunLambda(m);
 
                     var lastRowPtr = IntPtr.Zero;
-                    using (ResultsHandle rh = _realm.MakeResultsForQuery(_coreQueryHandle, OptionalSortDescriptorBuilder)) 
+                    using (ResultsHandle rh = _realm.MakeResultsForQuery(_coreQueryHandle, OptionalSortDescriptorBuilder))
                     {
                         var lastIndex = rh.Count() - 1;
                         if (lastIndex >= 0)
@@ -255,7 +262,7 @@ namespace Realms
                         return Expression.Constant(_realm.MakeObjectForRow(_metadata, lastRowPtr));
                     if (m.Method.Name == nameof(Queryable.Last))
                         throw new InvalidOperationException("Sequence contains no matching element");
-                    Debug.Assert (m.Method.Name == nameof(Queryable.LastOrDefault));
+                    Debug.Assert(m.Method.Name == nameof(Queryable.LastOrDefault));
                     return Expression.Constant(null);
                 }
                 if (m.Method.Name.StartsWith(nameof(Queryable.ElementAt)))
@@ -298,7 +305,7 @@ namespace Realms
                     }
                     var columnIndex = _coreQueryHandle.GetColumnIndex(member.Member.Name);
 
-                    var argument = ExtractConstantValue (m.Arguments.SingleOrDefault());
+                    var argument = ExtractConstantValue(m.Arguments.SingleOrDefault());
                     if (argument == null || argument.GetType() != typeof(string))
                     {
                         throw new NotSupportedException($"The method '{m.Method}' has to be invoked with a single string constant argument or closure variable");
@@ -315,11 +322,11 @@ namespace Realms
         {
             switch (u.NodeType)
             {
-            case ExpressionType.Not:
-                {
+                case ExpressionType.Not:
+                    {
                         _coreQueryHandle.Not();
-                    this.Visit (u.Operand);  // recurse into richer expression, expect to VisitCombination
-                }
+                        this.Visit(u.Operand);  // recurse into richer expression, expect to VisitCombination
+                    }
                     break;
                 default:
                     throw new NotSupportedException($"The unary operator '{u.NodeType}' is not supported");
@@ -327,7 +334,7 @@ namespace Realms
             return u;
         }
 
-        protected void VisitCombination(BinaryExpression b,  Action<QueryHandle> combineWith )
+        protected void VisitCombination(BinaryExpression b, Action<QueryHandle> combineWith)
         {
             _coreQueryHandle.GroupBegin();
             Visit(b.Left);
@@ -350,7 +357,7 @@ namespace Realms
                 // handle closure variables
                 return ((System.Reflection.FieldInfo)memberAccess.Member).GetValue(((ConstantExpression)memberAccess.Expression).Value);
             }
-                
+
             return null;
         }
 
@@ -358,7 +365,7 @@ namespace Realms
         {
             if (b.NodeType == ExpressionType.AndAlso)  // Boolean And with short-circuit
             {
-                VisitCombination(b, (qh) => { /* noop -- AND is the default combinator */} );
+                VisitCombination(b, (qh) => { /* noop -- AND is the default combinator */});
             }
             else if (b.NodeType == ExpressionType.OrElse)  // Boolean Or with short-circuit
             {
@@ -368,12 +375,14 @@ namespace Realms
             {
                 var leftMember = b.Left as MemberExpression;
                 string leftName = null;  // yes you need to init this for the if statement below
-                if (leftMember == null) {
+                if (leftMember == null)
+                {
                     // bit of a hack to cope with the way LINQ changes the RHS of a char literal to an Int32
                     // so an incoming lambda looks like {p => (Convert(p.CharProperty) == 65)}
                     // from Where(p => p.CharProperty == 'A')
                     var leftConvert = b.Left as UnaryExpression;
-                    if (leftConvert?.NodeType == ExpressionType.Convert) {
+                    if (leftConvert?.NodeType == ExpressionType.Convert)
+                    {
                         var leftConvertMember = leftConvert.Operand as MemberExpression;
                         leftName = leftConvertMember?.Member.Name;
                     }
@@ -424,7 +433,7 @@ namespace Realms
         }
 
         private static void AddQueryEqual(QueryHandle queryHandle, string columnName, object value)
-            {
+        {
             var columnIndex = queryHandle.GetColumnIndex(columnName);
 
             if (value is string)
@@ -485,7 +494,7 @@ namespace Realms
                 queryHandle.DoubleNotEqual(columnIndex, (double)value);
             else if (value is DateTimeOffset)
                 queryHandle.TimestampTicksNotEqual(columnIndex, (DateTimeOffset)value);
-            else if (value.GetType()== typeof(byte[]))
+            else if (value.GetType() == typeof(byte[]))
             {
                 var buffer = (byte[])value;
                 if (buffer.Length == 0)
@@ -614,11 +623,11 @@ namespace Realms
             {
                 if (c.Value is bool)
                 {
-                } 
+                }
                 else if (c.Value is string)
                 {
                 }
-                else if (c.Value.GetType() == typeof (object))
+                else if (c.Value.GetType() == typeof(object))
                 {
                     throw new NotSupportedException($"The constant for '{c.Value}' is not supported");
                 }
@@ -651,7 +660,8 @@ namespace Realms
         {
             if (m.Expression != null && m.Expression.NodeType == ExpressionType.Parameter)
             {
-                if (m.Type == typeof(bool)) {
+                if (m.Type == typeof(bool))
+                {
                     object rhs = true;  // box value
                     var leftName = m.Member.Name;
                     AddQueryEqual(_coreQueryHandle, leftName, rhs);
