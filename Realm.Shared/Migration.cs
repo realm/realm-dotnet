@@ -79,6 +79,9 @@ namespace Realms
             return true;
         }
 
+#if __IOS__
+        [ObjCRuntime.MonoPInvokeCallback(typeof(Native.MigrationCallback))]
+#endif
         private static bool MigrationCallback(IntPtr oldRealmPtr, IntPtr newRealmPtr, Native.Schema oldSchema, ulong schemaVersion, IntPtr managedMigrationHandle)
         {
             var migrationHandle = GCHandle.FromIntPtr(managedMigrationHandle);
