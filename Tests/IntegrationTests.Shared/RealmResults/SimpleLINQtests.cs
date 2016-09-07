@@ -286,6 +286,53 @@ namespace IntegrationTests
         }
 
         [Test]
+        public void SearchComparingChar()
+        {
+            _realm.Write( () => {
+                var c1 = _realm.CreateObject<PrimaryKeyCharObject>();
+                c1.CharProperty = 'A';
+                var c2 = _realm.CreateObject<PrimaryKeyCharObject>();
+                c2.CharProperty = 'B';
+                var c3 = _realm.CreateObject<PrimaryKeyCharObject>();
+                c3.CharProperty = 'c';
+                var c4 = _realm.CreateObject<PrimaryKeyCharObject>();
+                c4.CharProperty = 'a';
+            });
+            var equality = _realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty == 'A').ToArray();
+            Assert.That(equality.Select(p => p.CharProperty), Is.EquivalentTo(
+                new []{'A'}));
+            
+
+            var inequality =_realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty != 'c').ToArray();
+            Assert.That(inequality.Select(p => p.CharProperty), Is.EquivalentTo(
+                new []{'A', 'B', 'a'}));
+
+            var lessThan =_realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty < 'c').ToArray();
+            Assert.That(lessThan.Select(p => p.CharProperty), Is.EquivalentTo(
+                new []{'A', 'B', 'a'}));
+
+            var lessOrEqualThan =_realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty <= 'c').ToArray();
+            Assert.That(lessOrEqualThan.Select(p => p.CharProperty), Is.EquivalentTo(
+                new []{'A', 'B', 'a', 'c'}));
+
+            var greaterThan =_realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty > 'a').ToArray();
+            Assert.That(greaterThan.Select(p => p.CharProperty), Is.EquivalentTo(
+                new []{'c'}));
+
+            var greaterOrEqualThan =_realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty >= 'B').ToArray();
+            Assert.That(greaterOrEqualThan.Select(p => p.CharProperty), Is.EquivalentTo(
+                new []{'B', 'a', 'c'}));
+
+            var between =_realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty > 'A' && p.CharProperty < 'a').ToArray();
+            Assert.That(between.Select(p => p.CharProperty), Is.EquivalentTo(
+                new []{'B'}));
+            
+            var missing = _realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty == 'X').ToArray();
+            Assert.That(missing.Length, Is.EqualTo(0));
+        }
+
+
+        [Test]
         public void AnySucceeds()
         {
             Assert.That(_realm.All<Person>().Where(p => p.Latitude > 50).Any());
@@ -537,19 +584,6 @@ namespace IntegrationTests
             Assert.That(johnScorer, Is.Not.Null);
             Assert.That(johnScorer.Score, Is.EqualTo(100.0f));
             Assert.That(johnScorer.FullName, Is.EqualTo("John Doe"));
-        }
-
-        /// <summary>
-        ///  Test primarily to see our message when user has wrong parameter type.
-        /// </summary>
-        [Test]
-        public void IntegerConversionTriggersError()
-        {
-            long biggerInt = 12;
-            //if you want to see the error message, comment out the assert
-            Assert.Throws<System.NotSupportedException>(() => {
-                _realm.All<PrimaryKeyInt16Object>().First(p => p.Int16Property == biggerInt);
-            });
         }
 
     } // SimpleLINQtests

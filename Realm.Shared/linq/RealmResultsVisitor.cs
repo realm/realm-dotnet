@@ -367,10 +367,22 @@ namespace Realms
             else
             {
                 var leftMember = b.Left as MemberExpression;
-                if (leftMember == null)
-                    throw new NotSupportedException(
-                        $"The lhs of the binary operator '{b.NodeType}' should be a member expression. \nUnable to process `{b.Left}`");
-                var leftName = leftMember.Member.Name;
+                string leftName = null;  // yes you need to init this for the if statement below
+                if (leftMember == null) {
+                    // bit of a hack to cope with the way LINQ changes the RHS of a char literal to an Int32
+                    // so an incoming lambda looks like {p => (Convert(p.CharProperty) == 65)}
+                    // from Where(p => p.CharProperty == 'A')
+                    var leftConvert = b.Left as UnaryExpression;
+                    if (leftConvert?.NodeType == ExpressionType.Convert) {
+                        var leftConvertMember = leftConvert.Operand as MemberExpression;
+                        leftName = leftConvertMember?.Member.Name;
+                    }
+                    if (leftName == null)
+                        throw new NotSupportedException(
+                            $"The lhs of the binary operator '{b.NodeType}' should be a member expression. \nUnable to process `{b.Left}`");
+                }
+                else
+                    leftName = leftMember.Member.Name;
 
                 var rightValue = ExtractConstantValue(b.Right);
                 if (rightValue == null)
@@ -419,6 +431,8 @@ namespace Realms
                 queryHandle.StringEqual(columnIndex, (string)value);
             else if (value is bool)
                 queryHandle.BoolEqual(columnIndex, (bool)value);
+            else if (value is char)
+                queryHandle.IntEqual(columnIndex, (int)value);
             else if (value is int)
                 queryHandle.IntEqual(columnIndex, (int)value);
             else if (value is long)
@@ -459,6 +473,8 @@ namespace Realms
                 queryHandle.StringNotEqual(columnIndex, (string)value);
             else if (value is bool)
                 queryHandle.BoolNotEqual(columnIndex, (bool)value);
+            else if (value is char)
+                queryHandle.IntNotEqual(columnIndex, (int)value);
             else if (value is int)
                 queryHandle.IntNotEqual(columnIndex, (int)value);
             else if (value is long)
@@ -495,7 +511,9 @@ namespace Realms
         {
             var columnIndex = queryHandle.GetColumnIndex(columnName);
 
-            if (value is int)
+            if (value is char)
+                queryHandle.IntLess(columnIndex, (int)value);
+            else if (value is int)
                 queryHandle.IntLess(columnIndex, (int)value);
             else if (value is long)
                 queryHandle.LongLess(columnIndex, (long)value);
@@ -515,7 +533,9 @@ namespace Realms
         {
             var columnIndex = queryHandle.GetColumnIndex(columnName);
 
-            if (value is int)
+            if (value is char)
+                queryHandle.IntLessEqual(columnIndex, (int)value);
+            else if (value is int)
                 queryHandle.IntLessEqual(columnIndex, (int)value);
             else if (value is long)
                 queryHandle.LongLessEqual(columnIndex, (long)value);
@@ -535,7 +555,9 @@ namespace Realms
         {
             var columnIndex = queryHandle.GetColumnIndex(columnName);
 
-            if (value is int)
+            if (value is char)
+                queryHandle.IntGreater(columnIndex, (int)value);
+            else if (value is int)
                 queryHandle.IntGreater(columnIndex, (int)value);
             else if (value is long)
                 queryHandle.LongGreater(columnIndex, (long)value);
@@ -555,7 +577,9 @@ namespace Realms
         {
             var columnIndex = queryHandle.GetColumnIndex(columnName);
 
-            if (value is int)
+            if (value is char)
+                queryHandle.IntGreaterEqual(columnIndex, (int)value);
+            else if (value is int)
                 queryHandle.IntGreaterEqual(columnIndex, (int)value);
             else if (value is long)
                 queryHandle.LongGreaterEqual(columnIndex, (long)value);
