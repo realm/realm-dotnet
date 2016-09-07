@@ -2677,3 +2677,51 @@ wrappers/table_cs.cpp
 PrimaryKeyTests.cs
 - PrimaryKeyIntObjectIsUnique added
 - PrimaryKeyStringObjectIsUnique added
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#802 More Elements
+
+SimpleLINQtests.cs
+- LastWorks, LastFailsToFind added
+- ElementAtOutOfRange, ElementAtInRange added
+- FirstOrDefaultReturnsDefault added
+- SingleOrDefaultReturnsDefault added
+- LastOrDefaultReturnsDefault added
+- ElementAtOrDefaultReturnsDefault added
+- DefaultIfEmptyReturnsDefault added
+- SingleOrDefaultorks, FirstOrDefaultWorks, 
+  LastOrDefaultWorks and ElementAtOrDefaultInRange added
+
+SortingTests.cs
+- LastIsDifferentSorted added
+
+RealmResultsVisitor.cs
+- VisitElementAt added
+- VisitMethodCall 
+  - added case for Last
+  - added case for LastOrDefault
+  - added case for FirstOrDefault
+  - added case for SingleOrDefault
+  - added case for ElementAtOrDefault
+
+Global search and replace IndexOutOfRangeException with ArgumentOutOfRangeException
+
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#708 Support queries on char types
+
+SimpleLinqTests.cs
+- SearchComparingChar added
+
+RealmResultsVisitor.cs
+- add a case for char to
+  AddQueryEqual
+  AddQueryNotEqual
+  AddQueryLessThan
+  AddQueryLessThanOrEqual
+  AddQueryGreaterThan
+  AddQueryGreaterThanOrEqual
+- VisitBinary added detection of Convert on lhs
+  
+  

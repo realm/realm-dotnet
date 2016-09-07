@@ -45,7 +45,7 @@ namespace Realms
         /// <summary>
         /// Return the current related object when iterating a related set.
         /// </summary>
-        /// <exception cref="IndexOutOfRangeException">When we are not currently pointing at a valid item, either MoveNext has not been called for the first time or have iterated through all the items.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">When we are not currently pointing at a valid item, either MoveNext has not been called for the first time or have iterated through all the items.</exception>
         public T Current { get; private set; }
 
         // also needed - https://msdn.microsoft.com/en-us/library/s793z9y2.aspx
@@ -57,6 +57,9 @@ namespace Realms
         /// <summary>
         ///  Move the iterator to the next related object, starting "before" the first object.
         /// </summary>
+        /// <remarks>
+        /// Is a factory for RealmObjects, loading a new one and updating <c>Current</c>. 
+        /// </remarks>
         /// <returns>True only if can advance.</returns>
         public bool MoveNext()
         {

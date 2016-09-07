@@ -286,6 +286,53 @@ namespace IntegrationTests
         }
 
         [Test]
+        public void SearchComparingChar()
+        {
+            _realm.Write( () => {
+                var c1 = _realm.CreateObject<PrimaryKeyCharObject>();
+                c1.CharProperty = 'A';
+                var c2 = _realm.CreateObject<PrimaryKeyCharObject>();
+                c2.CharProperty = 'B';
+                var c3 = _realm.CreateObject<PrimaryKeyCharObject>();
+                c3.CharProperty = 'c';
+                var c4 = _realm.CreateObject<PrimaryKeyCharObject>();
+                c4.CharProperty = 'a';
+            });
+            var equality = _realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty == 'A').ToArray();
+            Assert.That(equality.Select(p => p.CharProperty), Is.EquivalentTo(
+                new []{'A'}));
+            
+
+            var inequality =_realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty != 'c').ToArray();
+            Assert.That(inequality.Select(p => p.CharProperty), Is.EquivalentTo(
+                new []{'A', 'B', 'a'}));
+
+            var lessThan =_realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty < 'c').ToArray();
+            Assert.That(lessThan.Select(p => p.CharProperty), Is.EquivalentTo(
+                new []{'A', 'B', 'a'}));
+
+            var lessOrEqualThan =_realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty <= 'c').ToArray();
+            Assert.That(lessOrEqualThan.Select(p => p.CharProperty), Is.EquivalentTo(
+                new []{'A', 'B', 'a', 'c'}));
+
+            var greaterThan =_realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty > 'a').ToArray();
+            Assert.That(greaterThan.Select(p => p.CharProperty), Is.EquivalentTo(
+                new []{'c'}));
+
+            var greaterOrEqualThan =_realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty >= 'B').ToArray();
+            Assert.That(greaterOrEqualThan.Select(p => p.CharProperty), Is.EquivalentTo(
+                new []{'B', 'a', 'c'}));
+
+            var between =_realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty > 'A' && p.CharProperty < 'a').ToArray();
+            Assert.That(between.Select(p => p.CharProperty), Is.EquivalentTo(
+                new []{'B'}));
+            
+            var missing = _realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty == 'X').ToArray();
+            Assert.That(missing.Length, Is.EqualTo(0));
+        }
+
+
+        [Test]
         public void AnySucceeds()
         {
             Assert.That(_realm.All<Person>().Where(p => p.Latitude > 50).Any());
@@ -338,13 +385,38 @@ namespace IntegrationTests
 
 
         [Test]
+        public void SingleOrDefaultWorks()
+        {
+            var s0 = _realm.All<Person>().SingleOrDefault(p => p.Longitude < -70.0 && p.Longitude > -90.0);
+            Assert.That(s0.Email, Is.EqualTo("john@doe.com"));
+
+            var s1 = _realm.All<Person>().Where(p => p.Score == 100.0f).SingleOrDefault();
+            Assert.That(s1.Email, Is.EqualTo("john@doe.com"));
+
+            var s2 = _realm.All<Person>().SingleOrDefault(p => p.FirstName == "Peter");
+            Assert.That(s2.FirstName, Is.EqualTo("Peter"));
+        }
+
+
+        [Test]
+        public void SingleOrDefaultReturnsDefault()
+        {
+            var expectedDef = _realm.All<Person>().SingleOrDefault(p => p.FirstName == "Zaphod");
+            Assert.That(expectedDef, Is.Null);
+
+            expectedDef = _realm.All<Person>().Where(p => p.FirstName == "Just Some Guy").SingleOrDefault();
+            Assert.That(expectedDef, Is.Null);
+        }
+
+
+        [Test]
         public void FirstFailsToFind()
         {
             Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().First(p => p.Latitude > 100));
             Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().Where(p => p.Latitude > 100).First());
-            Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().First(p => p.Score > 50000));
             Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().First(p => p.FirstName == "Samantha"));
         }
+
 
         [Test]
         public void FirstWorks()
@@ -361,6 +433,150 @@ namespace IntegrationTests
 
 
         [Test]
+        public void FirstOrDefaultWorks()
+        {
+            var s0 = _realm.All<Person>().FirstOrDefault(p => p.Longitude < -70.0 && p.Longitude > -90.0);
+            Assert.That(s0.Email, Is.EqualTo("john@doe.com"));
+
+            var s1 = _realm.All<Person>().Where(p => p.Score == 100.0f).FirstOrDefault();
+            Assert.That(s1.Email, Is.EqualTo("john@doe.com"));
+
+            var s2 = _realm.All<Person>().FirstOrDefault(p => p.FirstName == "John");
+            Assert.That(s2.FirstName, Is.EqualTo("John"));
+        }
+
+
+        [Test]
+        public void FirstOrDefaultReturnsDefault()
+        {
+            var expectedDef = _realm.All<Person>().FirstOrDefault(p => p.FirstName == "Zaphod");
+            Assert.That(expectedDef, Is.Null);
+
+            expectedDef = _realm.All<Person>().Where(p => p.FirstName == "Just Some Guy").FirstOrDefault();
+            Assert.That(expectedDef, Is.Null);
+        }
+
+
+        [Test]
+        public void LastFailsToFind()
+        {
+            Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().Last(p => p.Latitude > 100));
+            Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().Where(p => p.Latitude > 100).Last());
+            Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().Last(p => p.LastName == "Samantha"));
+        }
+
+
+        [Test]
+        public void LastWorks()
+        {
+            var s0 = _realm.All<Person>().Last(p => p.Longitude < -70.0 && p.Longitude > -90.0);
+            Assert.That(s0.Email, Is.EqualTo("john@doe.com"));  // Last same as First when one match
+
+            var s1 = _realm.All<Person>().Where(p => p.Score == 100.0f).Last();
+            Assert.That(s1.Email, Is.EqualTo("john@doe.com"));
+
+            var s2 = _realm.All<Person>().Last(p => p.FirstName == "John");
+            Assert.That(s2.FirstName, Is.EqualTo("John"));  // order not guaranteed in two items but know they match this
+        }
+
+
+        [Test]
+        public void LastOrDefaultWorks()
+        {
+            var s0 = _realm.All<Person>().LastOrDefault(p => p.Longitude < -70.0 && p.Longitude > -90.0);
+            Assert.That(s0.Email, Is.EqualTo("john@doe.com"));  // Last same as First when one match
+
+            var s1 = _realm.All<Person>().Where(p => p.Score == 100.0f).LastOrDefault();
+            Assert.That(s1.Email, Is.EqualTo("john@doe.com"));
+
+            var s2 = _realm.All<Person>().LastOrDefault(p => p.FirstName == "John");
+            Assert.That(s2.FirstName, Is.EqualTo("John"));  // order not guaranteed in two items but know they match this
+        }
+
+
+        [Test]
+        public void LastOrDefaultReturnsDefault()
+        {
+            var expectedDef = _realm.All<Person>().LastOrDefault(p => p.FirstName == "Zaphod");
+            Assert.That(expectedDef, Is.Null);
+
+            expectedDef = _realm.All<Person>().Where(p => p.FirstName == "Just Some Guy").LastOrDefault();
+            Assert.That(expectedDef, Is.Null);
+        }
+
+
+        [Test]
+        public void ElementAtOutOfRange()
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => _realm.All<Person>().Where(p => p.Latitude > 140).ElementAt(0));
+            Assert.Throws<ArgumentOutOfRangeException>(() => _realm.All<Person>().Where(p => p.FirstName == "Samantha").ElementAt(0));
+            Assert.Throws<ArgumentOutOfRangeException>(() => _realm.All<Person>().Where(p => p.FirstName == "Peter").ElementAt(10));
+            Assert.Throws<ArgumentOutOfRangeException>(() => _realm.All<Person>().ElementAt(10));
+            Assert.Throws<ArgumentOutOfRangeException>(() => _realm.All<Person>().ElementAt(-1));
+        }
+
+
+        [Test]
+        public void ElementAtInRange()
+        {
+            var s0 = _realm.All<Person>().Where(p => p.Longitude < -70.0 && p.Longitude > -90.0).ElementAt(0);
+            Assert.That(s0.Email, Is.EqualTo("john@doe.com")); 
+
+            var s1 = _realm.All<Person>().Where(p => p.Score == 100.0f).ElementAt(0);
+            Assert.That(s1.Email, Is.EqualTo("john@doe.com"));
+
+            var s2 = _realm.All<Person>().Where(p => p.FirstName == "John").ElementAt(1);
+            Assert.That(s2.FirstName, Is.EqualTo("John")); 
+
+            var s3 = _realm.All<Person>().ElementAt(2);
+            Assert.That(s3.FirstName, Is.EqualTo("Peter")); 
+        }
+
+
+        [Test]
+        public void ElementAtOrDefaultInRange()
+        {
+            var s0 = _realm.All<Person>().Where(p => p.Longitude < -70.0 && p.Longitude > -90.0).ElementAtOrDefault(0);
+            Assert.That(s0.Email, Is.EqualTo("john@doe.com")); 
+
+            var s1 = _realm.All<Person>().Where(p => p.Score == 100.0f).ElementAtOrDefault(0);
+            Assert.That(s1.Email, Is.EqualTo("john@doe.com"));
+
+            var s2 = _realm.All<Person>().Where(p => p.FirstName == "John").ElementAtOrDefault(1);
+            Assert.That(s2.FirstName, Is.EqualTo("John")); 
+
+            var s3 = _realm.All<Person>().ElementAtOrDefault(2);
+            Assert.That(s3.FirstName, Is.EqualTo("Peter")); 
+        }
+
+
+        [Test]
+        public void ElementAtOrDefaultReturnsDefault()
+        {
+            var expectedDef = _realm.All<Person>().Where(p => p.FirstName == "Just Some Guy").ElementAtOrDefault(0);
+            Assert.That(expectedDef, Is.Null);
+        }
+
+
+        // note that DefaultIfEmpty returns a collection of one item
+        [Test, Explicit("Currently broken and hard to implement")]
+        public void DefaultIfEmptyReturnsDefault()
+        {
+            /*
+             * This is comprehensively broken and awkward to fix in our current architecture.
+             * Looking at the test code below, the Count is invoked on a RealmResults and directly 
+             * invokes its query handle, which of course has zero elements.
+             * One posible approach is to toggle the RealmResults into a special state where
+             * it acts as a generator for a single null pointer.* 
+             */
+            var expectCollectionOfOne = _realm.All<Person>().Where(p => p.FirstName == "Just Some Guy").DefaultIfEmpty();
+            Assert.That(expectCollectionOfOne.Count(), Is.EqualTo(1));
+            var expectedDef = expectCollectionOfOne.Single();
+            Assert.That(expectedDef, Is.Null);
+        }
+
+
+        [Test]
         public void ChainedSearch()
         {
             var moderateScorers = _realm.All<Person>().Where(p => p.Score >= 20.0f && p.Score <= 100.0f);
@@ -368,19 +584,6 @@ namespace IntegrationTests
             Assert.That(johnScorer, Is.Not.Null);
             Assert.That(johnScorer.Score, Is.EqualTo(100.0f));
             Assert.That(johnScorer.FullName, Is.EqualTo("John Doe"));
-        }
-
-        /// <summary>
-        ///  Test primarily to see our message when user has wrong parameter type.
-        /// </summary>
-        [Test]
-        public void IntegerConversionTriggersError()
-        {
-            long biggerInt = 12;
-            //if you want to see the error message, comment out the assert
-            Assert.Throws<System.NotSupportedException>(() => {
-                _realm.All<PrimaryKeyInt16Object>().First(p => p.Int16Property == biggerInt);
-            });
         }
 
     } // SimpleLINQtests

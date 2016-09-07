@@ -4,12 +4,22 @@
 * The term `ObjectId` has been replaced with `PrimaryKey` in order to align with the other SDKs. This affects the `[ObjectId]` attribute used to decorate a property.
 
 ### Enhancements
-* You can retrieve single objects quickly using `Realm.ObjectForPrimaryKey()` if they have a `[PrimaryKey]` property specified.
-* Manual migrations are now supported. You can specify exactly how your data should be migrated when updating your data model.
+* You can retrieve single objects quickly using `Realm.ObjectForPrimaryKey()` if they have a `[PrimaryKey]` property specified. (#402)
+* Manual migrations are now supported. You can specify exactly how your data should be migrated when updating your data model. (#545)
+* LINQ searches no longer throw a `NotSupportedException` if your integer type on the other side of an expression fails to exactly match your property's integer type.
+* Additional LINQ methods now supported: (#802)
+    * Last
+    * LastOrDefault
+    * FirstOrDefault
+    * SingleOrDefault
+    * ElementAt
+    * ElementAtOrDefault
 
 ### Bug fixes
+* Searching char field types now works. (#708)
 * Now throws a RealmMigrationSchemaNeededException if you have changed a `RealmObject` subclass declaration and not incremented the `SchemaVersion` (#518)
 * Fixed a bug where disposing a `Transaction` would throw an `ObjectDisposedException` if its `Realm` was garbage-collected (#779)
+* Corrected the exception being thrown `IndexOutOfRangeException` to be  `ArgumentOutOfRangeException`
 
 Uses core 1.x.x
 

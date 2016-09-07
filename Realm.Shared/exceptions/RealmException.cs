@@ -85,7 +85,7 @@ namespace Realms {
                     return new ArgumentOutOfRangeException(message);
 
                 case RealmExceptionCodes.StdIndexOutOfRange :
-                    return new IndexOutOfRangeException(message);
+                    return new ArgumentOutOfRangeException(message);
 
                 case RealmExceptionCodes.StdInvalidOperation :
                     return new InvalidOperationException(message);

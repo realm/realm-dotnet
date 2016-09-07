@@ -67,9 +67,9 @@ namespace IntegrationTests
         [Test]
         public void AllSortUpUp()
         {
-            var sortAA = _realm.All<Person>().
-                OrderBy(p => p.FirstName).
-                ThenBy(p => p.Latitude).ToList();
+            var sortAA = _realm.All<Person>()
+                .OrderBy(p => p.FirstName)
+                .ThenBy(p => p.Latitude).ToList();
             var sortAAname = sortAA.Select(p => p.FirstName);
             Assert.That(sortAAname, Is.EqualTo( new [] {"John", "John", "John", "Peter"}) );
             var sortAAlat = sortAA.Select(p => p.Latitude);
@@ -80,9 +80,9 @@ namespace IntegrationTests
         [Test]
         public void AllSortDownUp()
         {
-            var sortDA = _realm.All<Person>().
-                OrderByDescending(p => p.FirstName).
-                ThenBy(p => p.Latitude).ToList();
+            var sortDA = _realm.All<Person>()
+                .OrderByDescending(p => p.FirstName)
+                .ThenBy(p => p.Latitude).ToList();
             var sortDAname = sortDA.Select(p => p.FirstName);
             Assert.That(sortDAname, Is.EqualTo( new [] {"Peter", "John", "John", "John"}) );
             var sortDAlat = sortDA.Select(p => p.Latitude);
@@ -93,9 +93,9 @@ namespace IntegrationTests
         [Test]
         public void AllSortUpDown()
         {
-            var sortAD = _realm.All<Person>().
-                OrderBy(p => p.FirstName).
-                ThenByDescending(p => p.Latitude).ToList();
+            var sortAD = _realm.All<Person>()
+                .OrderBy(p => p.FirstName)
+                .ThenByDescending(p => p.Latitude).ToList();
             var sortADname = sortAD.Select(p => p.FirstName);
             Assert.That(sortADname, Is.EqualTo( new [] {"John", "John", "John", "Peter"}) );
             var sortADlat = sortAD.Select(p => p.Latitude);
@@ -106,9 +106,9 @@ namespace IntegrationTests
         [Test]
         public void AllSortDownDown()
         {
-            var sortDD = _realm.All<Person>().
-                OrderByDescending(p => p.FirstName).
-                ThenByDescending(p => p.Latitude).ToList();
+            var sortDD = _realm.All<Person>()
+                .OrderByDescending(p => p.FirstName)
+                .ThenByDescending(p => p.Latitude).ToList();
             var sortDDname = sortDD.Select(p => p.FirstName);
             Assert.That(sortDDname, Is.EqualTo( new [] {"Peter", "John", "John", "John"}) );
             var sortDDlat = sortDD.Select(p => p.Latitude);
@@ -142,9 +142,9 @@ namespace IntegrationTests
         [Test]
         public void QuerySortUpUp()
         {
-            var sortAA = _realm.All<Person>().Where(p => p.IsInteresting).
-                OrderBy(p => p.FirstName).
-                ThenBy(p => p.Latitude).ToList();
+            var sortAA = _realm.All<Person>().Where(p => p.IsInteresting)
+                .OrderBy(p => p.FirstName)
+                .ThenBy(p => p.Latitude).ToList();
             var sortAAname = sortAA.Select(p => p.FirstName);
             Assert.That(sortAAname, Is.EqualTo( new [] {"John", "John", "Peter"}) );
             var sortAAlat = sortAA.Select(p => p.Latitude);
@@ -155,9 +155,9 @@ namespace IntegrationTests
         [Test]
         public void QuerySortDownUp()
         {
-            var sortDA = _realm.All<Person>().Where(p => p.IsInteresting).
-                OrderByDescending(p => p.FirstName).
-                ThenBy(p => p.Latitude).ToList();
+            var sortDA = _realm.All<Person>().Where(p => p.IsInteresting)
+                .OrderByDescending(p => p.FirstName)
+                .ThenBy(p => p.Latitude).ToList();
             var sortDAname = sortDA.Select(p => p.FirstName);
             Assert.That(sortDAname, Is.EqualTo( new [] {"Peter", "John", "John"}) );
             var sortDAlat = sortDA.Select(p => p.Latitude);
@@ -168,9 +168,9 @@ namespace IntegrationTests
         [Test]
         public void QuerySortUpDown()
         {
-            var sortAD = _realm.All<Person>().Where(p => p.IsInteresting).
-                OrderBy(p => p.FirstName).
-                ThenByDescending(p => p.Latitude).ToList();
+            var sortAD = _realm.All<Person>().Where(p => p.IsInteresting)
+                .OrderBy(p => p.FirstName)
+                .ThenByDescending(p => p.Latitude).ToList();
             var sortADname = sortAD.Select(p => p.FirstName);
             Assert.That(sortADname, Is.EqualTo( new [] {"John", "John", "Peter"}) );
             var sortADlat = sortAD.Select(p => p.Latitude);
@@ -181,9 +181,9 @@ namespace IntegrationTests
         [Test]
         public void QuerySortDownDown()
         {
-            var sortDD = _realm.All<Person>().Where(p => p.IsInteresting).
-                OrderByDescending(p => p.FirstName).
-                ThenByDescending(p => p.Latitude).ToList();
+            var sortDD = _realm.All<Person>().Where(p => p.IsInteresting)
+                .OrderByDescending(p => p.FirstName)
+                .ThenByDescending(p => p.Latitude).ToList();
             var sortDDname = sortDD.Select(p => p.FirstName);
             Assert.That(sortDDname, Is.EqualTo( new [] {"Peter", "John", "John"}) );
             var sortDDlat = sortDD.Select(p => p.Latitude);
@@ -197,12 +197,12 @@ namespace IntegrationTests
             Assert.Throws<NotSupportedException>(() => _realm.All<Person>().OrderBy(p => p.Latitude > 100).ToList(), 
                 "If you use an expression other than simple property specifier it throws." );
 
-            Assert.Throws<NotSupportedException>(() => _realm.All<Person>().Where(p => p.IsInteresting).
-                OrderBy(p => p.FirstName).OrderBy(p => p.Latitude).ToList(), 
+            Assert.Throws<NotSupportedException>(() => _realm.All<Person>().Where(p => p.IsInteresting)
+                .OrderBy(p => p.FirstName).OrderBy(p => p.Latitude).ToList(), 
                 "Should catch using more than one OrderBy" );
 
-            Assert.Throws<NotSupportedException>(() => _realm.All<Person>().Where(p => p.IsInteresting).
-                OrderByDescending(p => p.FirstName).OrderBy(p => p.Latitude).ToList(), 
+            Assert.Throws<NotSupportedException>(() => _realm.All<Person>().Where(p => p.IsInteresting)
+                .OrderByDescending(p => p.FirstName).OrderBy(p => p.Latitude).ToList(), 
                 "Should catch using both OrderBy and OrderByDescending" );
         }
 
@@ -216,12 +216,41 @@ namespace IntegrationTests
             var sortedFirstInteresting = _realm.All<Person>().OrderByDescending(p => p.FirstName).First(p => p.IsInteresting);
             Assert.That(sortedFirstInteresting.Email, Is.EqualTo("peter@jameson.net"));
 
-            var sortedFirst = _realm.All<Person>().
-                Where(p => p.FirstName=="John").
-                OrderBy(p => p.Latitude).
-                First();
+            var sortedFirst = _realm.All<Person>()
+                .Where(p => p.FirstName=="John")
+                .OrderBy(p => p.Latitude)
+                .First();
             Assert.That(sortedFirst.Email, Is.EqualTo("john@doe.com"));
         }
+
+
+        [Test]
+        public void LastIsDifferentSorted()
+        {
+            var lowestScore = _realm.All<Person>().OrderByDescending(p => p.Score).Last();
+            Assert.That(lowestScore.Email, Is.EqualTo("john@smith.com"));
+
+            var sortedLastInteresting = _realm.All<Person>().OrderByDescending(p => p.LastName).Last(p => p.IsInteresting);
+            Assert.That(sortedLastInteresting.Email, Is.EqualTo("peter@jameson.net"));
+
+            var sortedLast = _realm.All<Person>()
+                                   .Where(p => p.FirstName=="John")
+                                   .OrderBy(p => p.Salary)
+                                   .Last();
+            Assert.That(sortedLast.Email, Is.EqualTo("john@doe.com"));
+        }
+
+
+        [Test]
+        public void ElementAtSorted()
+        {
+            var lowestScore = _realm.All<Person>().OrderByDescending(p => p.Score).ElementAt(3);
+            Assert.That(lowestScore.Email, Is.EqualTo("john@smith.com"));
+
+            var sortedFirstInteresting = _realm.All<Person>().OrderByDescending(p => p.FirstName).Where(p => p.IsInteresting).ElementAt(0);
+            Assert.That(sortedFirstInteresting.Email, Is.EqualTo("peter@jameson.net"));
+        }
+
 
         [Test]
         public void SortsByAcceptedOrder()
