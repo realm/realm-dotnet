@@ -1,4 +1,4 @@
-0.78.0 (TBD)
+0.78.0 (2016-09-09)
 -------------------
 ### Breaking Changes
 * The term `ObjectId` has been replaced with `PrimaryKey` in order to align with the other SDKs. This affects the `[ObjectId]` attribute used to decorate a property.
@@ -21,7 +21,7 @@
 * Fixed a bug where disposing a `Transaction` would throw an `ObjectDisposedException` if its `Realm` was garbage-collected (#779)
 * Corrected the exception being thrown `IndexOutOfRangeException` to be  `ArgumentOutOfRangeException`
 
-Uses core 1.x.x
+Uses core 1.5.1
 
 
 0.77.2 (2016-08-11)
