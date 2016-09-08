@@ -4,9 +4,9 @@
   <navindex>
     <tab type="mainpage" visible="yes" title=""/>
 <!-- Andy removed because don't think it is needed     <tab type="user" url="http://realm.io/" title="&#x2190; go back to realm.io"/>    -->
-      <tab type="classlist" visible="yes" title="" intro="" selected="true"/>
+      <tab type="classlist" visible="no" title="" intro=""/>
+      <tab type="hierarchy" visible="yes" title="" intro="" selected="true"/>
       <tab type="classindex" visible="$ALPHABETICAL_INDEX" title=""/> 
-      <tab type="hierarchy" visible="yes" title="" intro=""/>
       <tab type="classmembers" visible="yes" title="" intro=""/>
     <tab type="pages" visible="no" title="" intro=""/>
     <tab type="modules" visible="yes" title="" intro=""/>

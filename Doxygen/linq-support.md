@@ -43,7 +43,7 @@ All of the main element operators are supported:
 
 * `First` and `FirstOrDefault` 
 * `Last` and `LastOrDefault`
-* `Single`and `SingleOrDefault` are supported. 
+* `Single` and `SingleOrDefault`. 
 
 These methods take an optional predicate. To see the supported operations for predicates in Realm queries, 
 refer to the [Predicate Operations](#predicate-operations) section.
