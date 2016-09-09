@@ -59,6 +59,8 @@ namespace Realms
                 internal static readonly LazyMethod StartsWith = Methods.Capture<string>(s => s.StartsWith(""));
 
                 internal static readonly LazyMethod EndsWith = Methods.Capture<string>(s => s.EndsWith(""));
+
+                internal static readonly LazyMethod NullOrEmpty = Methods.Capture<string>(s => string.IsNullOrEmpty(s));
             }
         }
 
@@ -123,7 +125,12 @@ namespace Realms
         private RowHandle VisitElementAt(MethodCallExpression m)
         {
             Visit(m.Arguments.First());
-            var index = (int)ExtractConstantValue(m.Arguments.Last());
+            object argument;
+            if (!TryExtractConstantValue(m.Arguments.Last(), out argument) || argument.GetType() != typeof(int))
+            {
+                throw new NotSupportedException($"The method '{m.Method}' has to be invoked with a single integer constant argument or closure variable");
+            }
+            var index = (int)argument;
 
             RowHandle row;
             if (OptionalSortDescriptorBuilder == null)
@@ -295,6 +302,22 @@ namespace Realms
                 {
                     queryMethod = (q, c, v) => q.StringEndsWith(c, v);
                 }
+                else if (m.Method == Methods.String.NullOrEmpty.Value)
+                {
+                    var member = m.Arguments.SingleOrDefault() as MemberExpression;
+                    if (member == null)
+                    {
+                        throw new NotSupportedException($"The method '{m.Method}' has to be invoked with a RealmObject member");
+                    }
+                    var columnIndex = _coreQueryHandle.GetColumnIndex(member.Member.Name);
+
+                    _coreQueryHandle.GroupBegin();
+                    _coreQueryHandle.NullEqual(columnIndex);
+                    _coreQueryHandle.Or();
+                    _coreQueryHandle.StringEqual(columnIndex, string.Empty);
+                    _coreQueryHandle.GroupEnd();
+                    return m;
+                }
 
                 if (queryMethod != null)
                 {
@@ -305,9 +328,8 @@ namespace Realms
                     }
                     var columnIndex = _coreQueryHandle.GetColumnIndex(member.Member.Name);
 
-                    var argument = ExtractConstantValue(m.Arguments.SingleOrDefault());
-                    if (argument == null || argument.GetType() != typeof(string))
-                    {
+                    object argument;
+                    if (!TryExtractConstantValue(m.Arguments.SingleOrDefault(), out argument) || argument.GetType() != typeof(string))                    {
                         throw new NotSupportedException($"The method '{m.Method}' has to be invoked with a single string constant argument or closure variable");
                     }
                     queryMethod(_coreQueryHandle, columnIndex, (string)argument);
@@ -343,22 +365,24 @@ namespace Realms
             _coreQueryHandle.GroupEnd();
         }
 
-        internal static object ExtractConstantValue(Expression expr)
+        internal static bool TryExtractConstantValue(Expression expr, out object value)
         {
             var constant = expr as ConstantExpression;
             if (constant != null)
             {
-                return constant.Value;
+                value = constant.Value; 
+                return true;
             }
 
             var memberAccess = expr as MemberExpression;
             if (memberAccess != null && memberAccess.Expression is ConstantExpression && memberAccess.Member is System.Reflection.FieldInfo)
             {
                 // handle closure variables
-                return ((System.Reflection.FieldInfo)memberAccess.Member).GetValue(((ConstantExpression)memberAccess.Expression).Value);
+                value = ((System.Reflection.FieldInfo)memberAccess.Member).GetValue(((ConstantExpression)memberAccess.Expression).Value);
+                return true;
             }
-
-            return null;
+            value = null;
+            return false;
         }
 
         internal override Expression VisitBinary(BinaryExpression b)
@@ -393,8 +417,8 @@ namespace Realms
                 else
                     leftName = leftMember.Member.Name;
 
-                var rightValue = ExtractConstantValue(b.Right);
-                if (rightValue == null)
+                object rightValue;
+                if (!TryExtractConstantValue(b.Right, out rightValue))
                 {
                     throw new NotSupportedException($"The rhs of the binary operator '{b.NodeType}' should be a constant or closure variable expression. \nUnable to process `{b.Right}`");
                 }
@@ -436,7 +460,9 @@ namespace Realms
         {
             var columnIndex = queryHandle.GetColumnIndex(columnName);
 
-            if (value is string)
+            if (value == null) 
+                queryHandle.NullEqual(columnIndex);
+            else if (value is string)
                 queryHandle.StringEqual(columnIndex, (string)value);
             else if (value is bool)
                 queryHandle.BoolEqual(columnIndex, (bool)value);
@@ -478,7 +504,9 @@ namespace Realms
         {
             var columnIndex = queryHandle.GetColumnIndex(columnName);
 
-            if (value is string)
+            if (value == null)
+                queryHandle.NullNotEqual(columnIndex);
+            else if (value is string)
                 queryHandle.StringNotEqual(columnIndex, (string)value);
             else if (value is bool)
                 queryHandle.BoolNotEqual(columnIndex, (bool)value);
