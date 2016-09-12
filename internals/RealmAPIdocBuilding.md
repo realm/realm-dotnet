@@ -23,8 +23,10 @@ Tabs were hidden which cannot be configured normall, by setting their attribute 
 
 * `pages` tab
 * `classes` tab
+* `classlist` tab
 
 The nested tabs under the `classes` tab were moved out to appear directly under `navindex`.
 
 The Class Index is not generated, using the Doxygen configuration, because its role was adequately covered by the Class List. The index is of little use for such a simple API.
 
+Similarly, we disable the graphical Class Hierarchy so that the textual version is seen immediately.

@@ -62,9 +62,10 @@ namespace IntegrationTests
                 p1.Longitude = 0.076132;
                 p1.Birthday = new DateTimeOffset(1959, 3, 13, 0, 0, 0, TimeSpan.Zero);
                 p1.PublicCertificateBytes = new byte[] { 0xca, 0xfe, 0xba, 0xbe };
+                p1.OptionalAddress = "12 Cosgrove St.";
+                p1.IsAmbivalent = true; 
                 transaction.Commit();
             }
-            Debug.WriteLine("p1 is named " + p1.FullName);
 
             using (var transaction = _realm.BeginWrite())
             {
@@ -78,9 +79,10 @@ namespace IntegrationTests
                 p2.Longitude = -73.9748113;
                 p2.Birthday = new DateTimeOffset(1963, 4, 14, 0, 0, 0, TimeSpan.Zero);
                 p2.PublicCertificateBytes = new byte[] { 0xde, 0xad, 0xbe, 0xef };
+                p2.OptionalAddress = string.Empty;
+                p2.IsAmbivalent = false; 
                 transaction.Commit();
             }
-            Debug.WriteLine("p2 is named " + p2.FullName);
 
             using (var transaction = _realm.BeginWrite())
             {
@@ -95,7 +97,6 @@ namespace IntegrationTests
                 p3.Birthday = new DateTimeOffset(1989, 2, 25, 0, 0, 0, TimeSpan.Zero);
                 transaction.Commit();
             }
-            Debug.WriteLine("p3 is named " + p3.FullName);
         }
     }
 }

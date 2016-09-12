@@ -39,13 +39,20 @@ var phoneBook = realm.All<Person>().ToDictionary(person => person.PhoneNumber);
 
 
 ## Element Operators
-`First` and `Single` are supported. 
+All of the main element operators are supported:
 
-`FirstOrDefault`, `ElementAt`, `ElementAtOrDefault`, `SingleOrDefault`, `Last`, `LastOrDefault` and 
-`DefaultIfEmpty` are not yet supported.
+* `First` and `FirstOrDefault` 
+* `Last` and `LastOrDefault`
+* `Single` and `SingleOrDefault`. 
 
 These methods take an optional predicate. To see the supported operations for predicates in Realm queries, 
 refer to the [Predicate Operations](#predicate-operations) section.
+
+Access to a single element by an index is supported by `ElementAt` and `ElementAtOrDefault`.
+
+Note that, as is standard C# behaviour of `default(T)`, the variants `...OrDefault` return a single null `RealmObject` if there is no matching element.
+
+`DefaultIfEmpty` is not yet supported.
 
 
 ## Quantifiers

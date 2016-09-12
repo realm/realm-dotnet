@@ -378,6 +378,20 @@ REALM_EXPORT void query_binary_not_equal(Query* query_ptr, size_t columnIndex, c
     });
 }
 
+REALM_EXPORT void query_null_equal(Query* query_ptr, size_t columnIndex, NativeException::Marshallable& ex)   
+{   
+    handle_errors(ex, [&]() {   
+        query_ptr->equal(columnIndex, null());    
+    });   
+}   
+    
+REALM_EXPORT void query_null_not_equal(Query* query_ptr, size_t columnIndex, NativeException::Marshallable& ex)   
+{   
+    handle_errors(ex, [&]() {   
+        query_ptr->not_equal(columnIndex, null());    
+    });   
+}   
+
 REALM_EXPORT Results* query_create_results(Query * query_ptr, SharedRealm* realm, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
