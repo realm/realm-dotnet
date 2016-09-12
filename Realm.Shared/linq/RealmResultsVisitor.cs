@@ -60,7 +60,7 @@ namespace Realms
 
                 internal static readonly LazyMethod EndsWith = Methods.Capture<string>(s => s.EndsWith(""));
 
-                internal static readonly LazyMethod NullOrEmpty = Methods.Capture<string>(s => string.IsNullOrEmpty(s));
+                internal static readonly LazyMethod IsNullOrEmpty = Methods.Capture<string>(s => string.IsNullOrEmpty(s));
             }
         }
 
@@ -302,7 +302,7 @@ namespace Realms
                 {
                     queryMethod = (q, c, v) => q.StringEndsWith(c, v);
                 }
-                else if (m.Method == Methods.String.NullOrEmpty.Value)
+                else if (m.Method == Methods.String.IsNullOrEmpty.Value)
                 {
                     var member = m.Arguments.SingleOrDefault() as MemberExpression;
                     if (member == null)
