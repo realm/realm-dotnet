@@ -21,6 +21,7 @@ using System.IO;
 using NUnit.Framework;
 using Realms;
 using System;
+using System.Diagnostics;
 
 namespace IntegrationTests
 {
@@ -128,4 +129,130 @@ namespace IntegrationTests
             Assert.That(File.Exists(config.DatabasePath));
         }
     }
+
+    #region MigrationExperiment
+    /*
+
+    namespace Version0
+    {
+        public class Person : RealmObject
+        {
+            public string FirstName { get; set; }
+            public string LastName { get; set; }
+            public int Age { get; set; }
+        }
+    }
+
+    namespace Version1
+    {
+        public class Person : RealmObject
+        {
+            public string FullName { get; set; }
+            public int Age { get; set; }
+        }
+    }
+
+    namespace Version2
+    {
+        public class Person : RealmObject
+        {
+            public string FullName { get; set; }
+            public DateTimeOffset Birthday { get; set; }
+        }
+    }
+
+    public class MigrationExperiment
+    {
+        public void PrintObject(object o)
+        {
+            Debug.WriteLine(string.Join(", ", o.GetType().GetProperties().Select(p => p.Name + " = " + p.GetValue(o))));
+        }
+
+        public void Version0Test()
+        {
+            var config = new RealmConfiguration("MigrationExperiment") { ObjectClasses = new[] { typeof(Version0.Person) } };
+            Realm.DeleteRealm(config);
+            var realm = Realm.GetInstance(config);
+
+            realm.Write(() =>
+            {
+                var p1 = realm.CreateObject<Version0.Person>();
+                p1.FirstName = "John";
+                p1.LastName = "Peterson";
+                p1.Age = 64;
+
+                var p2 = realm.CreateObject<Version0.Person>();
+                p2.FirstName = "Peter";
+                p2.LastName = "Johnson";
+                p2.Age = 28;
+            });
+
+            realm.All<Version0.Person>().ToList().ForEach(PrintObject);
+        }
+
+        public void Version1Test()
+        {
+            var config = new RealmConfiguration("MigrationExperiment")
+            {
+                SchemaVersion = 1,
+                ObjectClasses = new[] { typeof(Version1.Person) },
+                MigrationCallback = (migration, oldSchemaVersion) =>
+                {
+                    var newPeople = migration.NewRealm.All<Version1.Person>();
+
+                    // Use the dynamic api for oldPeople so we can access
+                    // .FirstName and .LastName even though they no longer
+                    // exist in the class definition.
+                    var oldPeople = migration.OldRealm.All("Person");
+
+                    for (var i = 0; i < newPeople.Count(); i++)
+                    {
+                        var oldPerson = oldPeople.ElementAt(i);
+                        var newPerson = newPeople.ElementAt(i);
+
+                        newPerson.FullName = oldPerson.FirstName + " " + oldPerson.LastName;
+                    }
+                }
+            };
+            var realm = Realm.GetInstance(config);
+            realm.All<Version1.Person>().ToList().ForEach(PrintObject);
+        }
+
+        public void Version2Test()
+        {
+            var config = new RealmConfiguration("MigrationExperiment")
+            {
+                SchemaVersion = 2,
+                ObjectClasses = new[] { typeof(Version2.Person) },
+                MigrationCallback = (migration, oldSchemaVersion) =>
+                {
+                    var newPeople = migration.NewRealm.All<Version2.Person>();
+                    var oldPeople = migration.OldRealm.All("Person");
+
+                    for (var i = 0; i < newPeople.Count(); i++)
+                    {
+                        var oldPerson = oldPeople.ElementAt(i);
+                        var newPerson = newPeople.ElementAt(i);
+
+                        // Migrate Person from version 0 to 1: replace FirstName and LastName with FullName
+                        if (oldSchemaVersion < 1)
+                        {
+                            newPerson.FullName = oldPerson.FirstName + " " + oldPerson.LastName;
+                        }
+
+                        // Migrate Person from version 1 to 2: replace Age with Birthday
+                        if (oldSchemaVersion < 2)
+                        {
+                            newPerson.Birthday = DateTimeOffset.Now.AddYears(-(int)oldPerson.Age);
+                        }
+                    }
+                }
+            };
+            var realm = Realm.GetInstance(config);
+            realm.All<Version2.Person>().ToList().ForEach(PrintObject);
+        }
+    }
+
+    */
+    #endregion
 }
