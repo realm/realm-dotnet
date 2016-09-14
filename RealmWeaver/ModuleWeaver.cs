@@ -309,7 +309,8 @@ public class ModuleWeaver
             return false;
         }
 
-        if (!prop.IsAutomatic()) 
+        // Expression-based properties are also considered automatic,  but they have no setter.
+        if (!prop.IsAutomatic() || prop.SetMethod == null) 
         {
             if (prop.PropertyType.Resolve().BaseType.IsSameAs(_realmObject))
                 LogWarningPoint(
