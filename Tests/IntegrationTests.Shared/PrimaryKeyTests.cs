@@ -113,6 +113,15 @@ namespace IntegrationTests.Shared
             Assert.That(foundObj.Int64Property, Is.EqualTo(42000042));
         }
 
+
+        [Test]
+        public void DontFindByInt64PrimaryKey()
+        {
+            var foundObj = _realm.ObjectForPrimaryKey<PrimaryKeyInt64Object>(3);
+            Assert.IsNull(foundObj);
+        }
+
+
         [Test]
         public void FindByStringPrimaryKey()
         {
@@ -124,6 +133,14 @@ namespace IntegrationTests.Shared
             var foundObj = _realm.ObjectForPrimaryKey<PrimaryKeyStringObject>("Zaphod");
             Assert.IsNotNull(foundObj);
             Assert.That(foundObj.StringProperty, Is.EqualTo("Zaphod"));
+        }
+
+
+        [Test]
+        public void DontFindByStringPrimaryKey()
+        {
+            var foundObj = _realm.ObjectForPrimaryKey<PrimaryKeyStringObject>("Ford");
+            Assert.IsNull(foundObj);
         }
 
 
@@ -140,6 +157,15 @@ namespace IntegrationTests.Shared
             Assert.That(foundObj.Int64Property, Is.EqualTo(42000042));
         }
 
+
+        [Test]
+        public void DontFindDynamicByInt64PrimaryKey()
+        {
+            dynamic foundObj = _realm.ObjectForPrimaryKey("PrimaryKeyInt64Object", 33);
+            Assert.IsNull(foundObj);
+        }
+
+
         [Test]
         public void FindDynamicByStringPrimaryKey()
         {
@@ -151,6 +177,14 @@ namespace IntegrationTests.Shared
             dynamic foundObj = _realm.ObjectForPrimaryKey("PrimaryKeyStringObject", "Zaphod");
             Assert.IsNotNull(foundObj);
             Assert.That(foundObj.StringProperty, Is.EqualTo("Zaphod"));
+        }
+
+
+        [Test]
+        public void DontFindDynamicByStringPrimaryKey()
+        {
+            dynamic foundObj = _realm.ObjectForPrimaryKey("PrimaryKeyStringObject", "Dent");
+            Assert.IsNull(foundObj);
         }
 
 
@@ -230,7 +264,18 @@ namespace IntegrationTests.Shared
             });
         }
 
-    
+
+        [Test]
+        public void PrimaryKeyFailsIfClassNotinRealm()
+        {
+            var conf = RealmConfiguration.DefaultConfiguration.ConfigWithPath("Skinny");
+            conf.ObjectClasses = new []{typeof(Person)};
+            var skinny = Realm.GetInstance(conf);
+            Assert.Throws<KeyNotFoundException>( () => {
+                var obj = skinny.ObjectForPrimaryKey<PrimaryKeyInt64Object>(42);
+            });
+        }
+            
     }
 }
 

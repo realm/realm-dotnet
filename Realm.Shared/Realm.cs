@@ -695,6 +695,8 @@ namespace Realms
         {
             var metadata = Metadata[typeof(T).Name];
             var rowPtr = NativeTable.RowForPrimaryKey(metadata.Table, metadata.PrimaryKeyColumnIndex, id);
+            if (rowPtr == IntPtr.Zero)
+                return null;
             return (T)MakeObjectForRow(metadata, rowPtr);
         }
 
@@ -710,6 +712,8 @@ namespace Realms
         {
             var metadata = Metadata[typeof(T).Name];
             var rowPtr = NativeTable.RowForPrimaryKey(metadata.Table, metadata.PrimaryKeyColumnIndex, id);
+            if (rowPtr == IntPtr.Zero)
+                return null;
             return (T)MakeObjectForRow(metadata, rowPtr);
         }
 
@@ -725,6 +729,8 @@ namespace Realms
         {
             var metadata = Metadata[className];
             var rowPtr = NativeTable.RowForPrimaryKey(metadata.Table, metadata.PrimaryKeyColumnIndex, id);
+            if (rowPtr == IntPtr.Zero)
+                return null;
             return MakeObjectForRow(metadata, rowPtr);
         }
 
@@ -740,6 +746,8 @@ namespace Realms
         {
             var metadata = Metadata[className];
             var rowPtr = NativeTable.RowForPrimaryKey(metadata.Table, metadata.PrimaryKeyColumnIndex, id);
+            if (rowPtr == IntPtr.Zero)
+                return null;
             return MakeObjectForRow(metadata, rowPtr);
         }
         #endregion ObjectForPrimaryKey
