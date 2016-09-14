@@ -89,6 +89,9 @@ namespace AssemblyToProcess
         // One-to-many relationship
         public IList<PhoneNumber> PhoneNumbers { get; }
 
+        // Expression property
+        public string LowerCaseEmail => Email_.ToLower();
+
         public Person()
         {
         }
