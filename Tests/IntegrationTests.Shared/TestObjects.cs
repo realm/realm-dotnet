@@ -89,4 +89,24 @@ namespace IntegrationTests.Shared
         [PrimaryKey]
         public string StringProperty { get; set; }
     }
+
+    [Preserve(AllMembers = true)]
+    public class ClassWithUnqueriableMembers : RealmObject
+    {
+        public string RealPropertyToSatisfyWeaver { get; set; }
+
+        public string PublicField;
+
+        public string PublicMethod()
+        {
+            return null; 
+        }
+
+        [Ignored]
+        public string IgnoredProperty { get; set; }
+
+        public string NonAutomaticProperty => null;
+
+        public Person RealmObjectProperty { get; set; }
+    }
 }
