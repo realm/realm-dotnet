@@ -1,3 +1,8 @@
+0.78.1 (2016-09-15)
+-------------------
+### Bug fixes
+* `Realm.ObjectForPrimaryKey()` now returns null if it failed to find an object (#833).
+
 0.78.0 (2016-09-09)
 -------------------
 ### Breaking Changes

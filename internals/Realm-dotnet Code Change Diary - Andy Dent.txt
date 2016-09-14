@@ -2724,4 +2724,18 @@ RealmResultsVisitor.cs
   AddQueryGreaterThanOrEqual
 - VisitBinary added detection of Convert on lhs
   
+
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#833 ObjectForPrimaryKey possible failure with interfaces
+
+PrimaryKeyTests.cs
+- PrimaryKeyFailsIfClassNotinRealm added
+- DontFindByStringPrimaryKey added
+- DontFindByInt64PrimaryKey added
+- DontFindDynamicByInt64PrimaryKey added
+- DontFindDynamicByStringPrimaryKey added
+
+Realm.cs
+- ObjectForPrimaryKey - all variations
+  - check for rowPtr returned as zero and return null to indicate not found
   
