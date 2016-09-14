@@ -47,7 +47,6 @@
     <Compile Include="Inheritance.cs" />
     <Compile Include="NonPCLModuleLocator.cs" />
     <Compile Include="Person.cs" />
-    <Compile Include="IPersonTest.cs" />
     <Compile Include="RemappedClass.cs" />
     <Compile Include="TestObjects.cs" />
   </ItemGroup>
