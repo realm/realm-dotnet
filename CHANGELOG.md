@@ -2,7 +2,9 @@
 -------------------
 ### Bug fixes
 * `Realm.ObjectForPrimaryKey()` now returns null if it failed to find an object (#833).
-* Querying anything but persisted properties now throws instead of causing a crash #251 and #723
+* Querying anything but persisted properties now throws instead of causing a crash (#251 and #723)
+
+Uses core 1.5.1
 
 
 0.78.0 (2016-09-09)
