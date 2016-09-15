@@ -309,8 +309,7 @@ public class ModuleWeaver
             return false;
         }
 
-        // Expression-based properties are also considered automatic,  but they have no setter.
-        if (!prop.IsAutomatic() || prop.SetMethod == null) 
+        if (!prop.IsAutomatic()) 
         {
             if (prop.PropertyType.Resolve().BaseType.IsSameAs(_realmObject))
                 LogWarningPoint(
@@ -318,9 +317,15 @@ public class ModuleWeaver
                     sequencePoint);
             return false;
         }
-        if (_typeTable.ContainsKey(prop.PropertyType.FullName)) {
+        if (_typeTable.ContainsKey(prop.PropertyType.FullName))
+        {
+            // If the property is automatic but doesn't have a setter, we should still ignore it.
+            if (prop.SetMethod == null)
+                return false;
+            
             var typeId = prop.PropertyType.FullName + (isPrimaryKey ? " unique" : "");
-            if (!methodTable.ContainsKey(typeId)) {
+            if (!methodTable.ContainsKey(typeId))
+            {
                 var getter = LookupMethodAndImport(_realmObject, "Get" + _typeTable[prop.PropertyType.FullName] + "Value");
                 var setter = LookupMethodAndImport(_realmObject,
                     "Set" + _typeTable[prop.PropertyType.FullName] + "Value" + (isPrimaryKey ? "Unique" : ""));
@@ -333,16 +338,19 @@ public class ModuleWeaver
 
         // treat IList and RealmList similarly but IList gets a default so is useable as standalone
         // IList or RealmList allows people to declare lists only of _realmObject due to the class definition
-        else if (prop.PropertyType.Name == "IList`1" && prop.PropertyType.Namespace == "System.Collections.Generic") {
+        else if (prop.PropertyType.Name == "IList`1" && prop.PropertyType.Namespace == "System.Collections.Generic")
+        {
             var elementType = ((GenericInstanceType)prop.PropertyType).GenericArguments.Single();
-            if (!elementType.Resolve().BaseType.IsSameAs(_realmObject)) {
+            if (!elementType.Resolve().BaseType.IsSameAs(_realmObject))
+            {
                 LogWarningPoint(
   $"SKIPPING {type.Name}.{columnName} because it is an IList but its generic type is not a RealmObject subclass, so will not persist",
   sequencePoint);
                 return false;
             }
 
-            if (prop.SetMethod != null) {
+            if (prop.SetMethod != null)
+            {
                 LogErrorPoint(
                     $"{type.Name}.{columnName} has a setter but its type is a IList which only supports getters",
                     sequencePoint);
@@ -360,10 +368,13 @@ public class ModuleWeaver
             }
             ReplaceListGetter(prop, backingField, columnName,
                 new GenericInstanceMethod(_genericGetListValueReference) { GenericArguments = { elementType } }, elementType,
-                             ModuleDefinition.ImportReference(concreteListConstructor) );
-        } else if (prop.PropertyType.Name == "RealmList`1" && prop.PropertyType.Namespace == "Realms") {
+                             ModuleDefinition.ImportReference(concreteListConstructor));
+        }
+        else if (prop.PropertyType.Name == "RealmList`1" && prop.PropertyType.Namespace == "Realms")
+        {
             var elementType = ((GenericInstanceType)prop.PropertyType).GenericArguments.Single();
-            if (prop.SetMethod != null) {
+            if (prop.SetMethod != null)
+            {
                 LogErrorPoint(
                     $"{type.Name}.{columnName} has a setter but its type is a RealmList which only supports getters",
                     sequencePoint);
