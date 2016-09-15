@@ -107,6 +107,8 @@ namespace IntegrationTests.Shared
 
         public string NonAutomaticProperty => null;
 
+        public string PropertyWithOnlyGet { get { return null;  } }
+
         public Person RealmObjectProperty { get; set; }
     }
 }

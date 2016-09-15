@@ -27,6 +27,9 @@ namespace IntegrationTests.Shared.RealmResults
             var accessNonAutomaticProperty = realm.All<ClassWithUnqueryableMembers>().Where(c => c.NonAutomaticProperty == null);
             Assert.Throws<NotSupportedException>(() => accessNonAutomaticProperty.ToList());
 
+            var accessPropertyWithOnlyGet = realm.All<ClassWithUnqueryableMembers>().Where(c => c.PropertyWithOnlyGet == null);
+            Assert.Throws<NotSupportedException>(() => accessPropertyWithOnlyGet.ToList());
+
             var indirectAccess =
                 realm.All<ClassWithUnqueryableMembers>().Where(c => c.RealmObjectProperty.FirstName == null);
             Assert.Throws<NotSupportedException>(() => indirectAccess.ToList());
