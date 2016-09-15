@@ -50,9 +50,6 @@
     <Compile Include="..\AssemblyToProcess\Inheritance.cs">
       <Link>Inheritance.cs</Link>
     </Compile>
-    <Compile Include="..\AssemblyToProcess\IPersonTest.cs">
-      <Link>IPersonTest.cs</Link>
-    </Compile>
     <Compile Include="..\AssemblyToProcess\Person.cs">
       <Link>Person.cs</Link>
     </Compile>

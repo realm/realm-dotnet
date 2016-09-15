@@ -397,25 +397,22 @@ namespace Realms
             }
             else
             {
-                var leftMember = b.Left as MemberExpression;
-                string leftName = null;  // yes you need to init this for the if statement below
-                if (leftMember == null)
+                var memberExpression = b.Left as MemberExpression;
+
+                // bit of a hack to cope with the way LINQ changes the RHS of a char literal to an Int32
+                // so an incoming lambda looks like {p => (Convert(p.CharProperty) == 65)}
+                // from Where(p => p.CharProperty == 'A')
+                if (memberExpression == null && b.Left.NodeType == ExpressionType.Convert)
+                    memberExpression = ((UnaryExpression) b.Left).Operand as MemberExpression;
+
+                if (memberExpression == null || 
+                    memberExpression.Member.MemberType != MemberTypes.Property ||
+                    !_metadata.Schema.PropertyNames.Contains(memberExpression.Member.Name))
                 {
-                    // bit of a hack to cope with the way LINQ changes the RHS of a char literal to an Int32
-                    // so an incoming lambda looks like {p => (Convert(p.CharProperty) == 65)}
-                    // from Where(p => p.CharProperty == 'A')
-                    var leftConvert = b.Left as UnaryExpression;
-                    if (leftConvert?.NodeType == ExpressionType.Convert)
-                    {
-                        var leftConvertMember = leftConvert.Operand as MemberExpression;
-                        leftName = leftConvertMember?.Member.Name;
-                    }
-                    if (leftName == null)
-                        throw new NotSupportedException(
-                            $"The lhs of the binary operator '{b.NodeType}' should be a member expression. \nUnable to process `{b.Left}`");
+                    throw new NotSupportedException($"The left-hand side of the {b.NodeType} operator must be a direct access to a persisted property in Realm.\nUnable to process '{b.Left}'.");
                 }
-                else
-                    leftName = leftMember.Member.Name;
+
+                var leftName = memberExpression.Member.Name;
 
                 object rightValue;
                 if (!TryExtractConstantValue(b.Right, out rightValue))

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
@@ -14,6 +14,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)PeopleTestsBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PerformanceTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Person.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RealmResults\DisallowedPredicateParameters.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RealmResults\LINQvariableTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RealmResults\SimpleLINQtests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RealmResults\SortingTests.cs" />
