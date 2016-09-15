@@ -21,7 +21,6 @@ using Realms;
 
 namespace IntegrationTests.Shared
 {
-    [Preserve(AllMembers = true)]
     public class AllTypesObject : RealmObject
     {
         public char CharProperty { get; set; }
@@ -48,49 +47,42 @@ namespace IntegrationTests.Shared
         public DateTimeOffset? NullableDateTimeOffsetProperty { get; set; }
     }
 
-    [Preserve(AllMembers = true)]
     public class PrimaryKeyCharObject : RealmObject
     {
         [PrimaryKey]
         public char CharProperty { get; set; }
     }
 
-    [Preserve(AllMembers = true)]
     public class PrimaryKeyByteObject : RealmObject
     {
         [PrimaryKey]
         public byte ByteProperty { get; set; }
     }
 
-    [Preserve(AllMembers = true)]
     public class PrimaryKeyInt16Object : RealmObject
     {
         [PrimaryKey]
         public short Int16Property { get; set; }
     }
 
-    [Preserve(AllMembers = true)]
     public class PrimaryKeyInt32Object : RealmObject
     {
         [PrimaryKey]
         public int Int32Property { get; set; }
     }
 
-    [Preserve(AllMembers = true)]
     public class PrimaryKeyInt64Object : RealmObject
     {
         [PrimaryKey]
         public long Int64Property { get; set; }
     }
 
-    [Preserve(AllMembers = true)]
     public class PrimaryKeyStringObject : RealmObject
     {
         [PrimaryKey]
         public string StringProperty { get; set; }
     }
 
-    [Preserve(AllMembers = true)]
     public class ClassWithUnqueryableMembers : RealmObject
     {
         public string RealPropertyToSatisfyWeaver { get; set; }

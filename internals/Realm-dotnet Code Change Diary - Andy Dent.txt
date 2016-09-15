@@ -2739,3 +2739,11 @@ Realm.cs
 - ObjectForPrimaryKey - all variations
   - check for rowPtr returned as zero and return null to indicate not found
   
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+#822 Ensure Weaver adds Preserve
+
+General remove - all RealmObject subclasses in unit tests
+[Preserve(AllMembers = true)] removed
+
+IntegrationTests.XamarinIOS.csproj
+- turn on Full linking for all configurations
