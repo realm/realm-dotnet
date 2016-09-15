@@ -91,7 +91,7 @@ namespace IntegrationTests.Shared
     }
 
     [Preserve(AllMembers = true)]
-    public class ClassWithUnqueriableMembers : RealmObject
+    public class ClassWithUnqueryableMembers : RealmObject
     {
         public string RealPropertyToSatisfyWeaver { get; set; }
 
