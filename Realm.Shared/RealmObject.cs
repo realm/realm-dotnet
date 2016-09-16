@@ -29,6 +29,10 @@ namespace Realms
     /// <summary>
     /// Base for any object that can be persisted in a Realm.
     /// </summary>
+    /// <remarks>
+    /// Has a Preserve attribute to attempt to preserve all subtypes without having to weave.
+    /// </remarks>
+    [Preserve(AllMembers=true, Conditional=false)]
     public class RealmObject
     {
         private Realm _realm;
