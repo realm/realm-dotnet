@@ -2747,3 +2747,9 @@ General remove - all RealmObject subclasses in unit tests
 
 IntegrationTests.XamarinIOS.csproj
 - turn on Full linking for all configurations
+
+
+ModuleWeaver.cs
+- _preserveAttributeConstructorWithType added
+- WeaveType add _preserveAttributeConstructorWithType to constructor
+- WeaveProperty - add _preserveAttribute to each woven property

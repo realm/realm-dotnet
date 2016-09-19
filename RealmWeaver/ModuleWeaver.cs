@@ -105,6 +105,7 @@ public class ModuleWeaver
     private MethodReference _genericSetObjectValueReference;
     private MethodReference _genericGetListValueReference;
     private MethodReference _preserveAttributeConstructor;
+    private MethodReference _preserveAttributeConstructorWithParams;
     private MethodReference _wovenAttributeConstructor;
     private MethodReference _wovenPropertyAttributeConstructor;
 
@@ -157,6 +158,7 @@ public class ModuleWeaver
 
         var preserveAttributeClass = _realmAssembly.MainModule.GetTypes().First(x => x.Name == "PreserveAttribute");
         _preserveAttributeConstructor = ModuleDefinition.ImportReference(preserveAttributeClass.GetConstructors().Single(c => c.Parameters.Count == 0));
+        _preserveAttributeConstructorWithParams = ModuleDefinition.ImportReference(preserveAttributeClass.GetConstructors().Single(c => c.Parameters.Count == 2));
 
         var wovenAttributeClass = _realmAssembly.MainModule.GetTypes().First(x => x.Name == "WovenAttribute");
         _wovenAttributeConstructor = ModuleDefinition.ImportReference(wovenAttributeClass.GetConstructors().First());
@@ -270,6 +272,11 @@ public class ModuleWeaver
 
         var preserveAttribute = new CustomAttribute(_preserveAttributeConstructor);
         objectConstructor.CustomAttributes.Add(preserveAttribute);
+        preserveAttribute = new CustomAttribute(_preserveAttributeConstructorWithParams);  // recreate so has new instance
+        preserveAttribute.ConstructorArguments.Add(new CustomAttributeArgument(System_Boolean, true));  // AllMembers
+        preserveAttribute.ConstructorArguments.Add(new CustomAttributeArgument(System_Boolean, false));  // Conditional
+        type.CustomAttributes.Add(preserveAttribute);
+        LogDebug($"Added [Preserve] to {type.Name} and its constructor");
 
         var wovenAttribute = new CustomAttribute(_wovenAttributeConstructor);
         TypeReference helperType = WeaveRealmObjectHelper(type, objectConstructor);
@@ -413,6 +420,9 @@ public class ModuleWeaver
                 $"class '{type.Name}' field '{columnName}' is a '{prop.PropertyType}' which is not yet supported",
                 sequencePoint);
         }
+
+        var preserveAttribute = new CustomAttribute(_preserveAttributeConstructor);
+        prop.CustomAttributes.Add(preserveAttribute);
 
         var wovenPropertyAttribute = new CustomAttribute(_wovenPropertyAttributeConstructor);
         wovenPropertyAttribute.ConstructorArguments.Add(new CustomAttributeArgument(System_String, backingField.Name));
