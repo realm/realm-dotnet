@@ -1,3 +1,9 @@
+0.7x.x (TBD)
+-------------------
+### Enhancements
+* IOS Linking all should work - we now add a [Preserve] attribue to all woven members of your `RealmObject` subclasses so you do not need to manually add `[Preserve(allMembers=true)]`  (#822)
+
+
 0.78.1 (2016-09-15)
 -------------------
 ### Bug fixes

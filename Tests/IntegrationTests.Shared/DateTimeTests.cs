@@ -118,7 +118,6 @@ namespace IntegrationTests.Shared
         // Issue #294: At one point, simply having an object with an indexed DateTimeOffset property
         // would cause a migration error when instantiating the database. This class and the test
         // below verifies that this issue hasn't snuck back in.
-        [Preserve(AllMembers = true)]
         public class IndexedDateTimeOffsetObject : RealmObject
         {
             [Indexed]

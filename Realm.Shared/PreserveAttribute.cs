@@ -22,8 +22,8 @@ namespace Realms
 {
     // Tell the linker to preserve a class or method even if it looks like it's not invoked.
     // Since it matches by name, it works to just declare it here.
-    [AttributeUsage(AttributeTargets.All)]
-    public class PreserveAttribute : Attribute
+    [AttributeUsage(AttributeTargets.All, AllowMultiple=true)]
+    public sealed class PreserveAttribute : Attribute
     {
 #if WINDOWS
         public bool AllMembers { get; set; }
