@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
  
 using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Management;
 using System.Net;
@@ -53,10 +52,131 @@ namespace RealmWeaver
     // - What OS you are running on
     // - What OS you are building for
     // - An anonymized MAC address and assembly name ID to aggregate the other information on.
-    internal class Analytics
+
+
+    public interface IAnalyticsData
     {
-        private const string MixPanelToken = "ce0fac19508f6c8f20066d345d360fd0";
-        private const string JsonTemplate = @"{
+        string MixPanelToken { get; }
+        byte[] UserId { get; }
+        string AppId { get; }
+        string OsName { get; }
+        string OsVersion { get; }
+        string TargetOs { get; }
+        string RealmVersion { get; }
+    }
+
+    public class AnalyticsData : IAnalyticsData
+    {
+        public string MixPanelToken => "ce0fac19508f6c8f20066d345d360fd0";
+        private readonly ModuleDefinition _moduleDefinition;
+
+        public byte[] UserId => GenerateComputerIdentifier();
+
+        private static byte[] GenerateComputerIdentifier()
+        {
+            try
+            {
+                if (Environment.OSVersion.Platform == PlatformID.Win32Windows ||
+                    Environment.OSVersion.Platform == PlatformID.Win32NT)
+                {
+                    var scope = new ManagementScope("\\\\localhost\\root\\CIMV2", null);
+                    scope.Connect();
+                    var query = new ObjectQuery("SELECT UUID FROM Win32_ComputerSystemProduct");
+                    var searcher = new ManagementObjectSearcher(scope, query);
+
+                    var uuid = searcher.Get().Cast<ManagementObject>().FirstOrDefault()?["UUID"] as string;
+                    return string.IsNullOrEmpty(uuid) ? null : Encoding.UTF8.GetBytes(uuid);
+                }
+                else  // Assume OS X if not Windows.
+                {
+                    var macs = from nic in NetworkInterface.GetAllNetworkInterfaces()
+                               where nic.Name == "en0"
+                               select nic.GetPhysicalAddress().GetAddressBytes();
+                    return macs.FirstOrDefault();
+                }
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public string AppId => _moduleDefinition.Name;
+
+        public string OsName
+        {
+            get
+            {
+                switch (Environment.OSVersion.Platform)
+                {
+                    // Mono completely messes up reporting the OS name and version for OS X, so...
+                    /*   case PlatformID.MacOSX:
+                    return "osx";
+                case PlatformID.Unix:
+                    return "linux";
+                    */
+                    case PlatformID.Win32Windows:
+                    case PlatformID.Win32NT:
+                        return "windows";
+                    default:
+                        return "osx";  // proved "windows" detected so default to "osx" for now
+                }
+
+            }
+        }
+
+        public string OsVersion => Environment.OSVersion.Version.ToString();
+
+        public string TargetOs
+        {
+            get
+            {
+                if (_moduleDefinition.AssemblyReferences.Any(r => r.Name == "Xamarin.iOS"))
+                    return "ios";
+                else if (_moduleDefinition.AssemblyReferences.Any(r => r.Name == "Xamarin.Mac"))
+                    return "osx";
+                else if (_moduleDefinition.AssemblyReferences.Any(r => r.Name == "Mono.Android"))
+                    return "android";
+                else
+                    return "windows";  // in theory is generic .Net but Tim requested we use windows for now
+                // TODO: figure out a way to tell whether we're building for Windows, UWP, PCL, Unity(?), etc. if we wanted to
+            }
+        }
+
+        public string RealmVersion => System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
+
+        internal AnalyticsData(ModuleDefinition moduleDefinition)
+        {
+            _moduleDefinition = moduleDefinition;
+        }
+    }
+
+    public interface IAnalytics
+    {
+        void SubmitAnalytics(IAnalyticsData analyticsData, Action<Uri> makeRequest = null);
+    }
+
+    public class Analytics : IAnalytics
+    {
+        private static string SHA256Hash(byte[] bytes)
+        {
+            using (var sha256 = System.Security.Cryptography.SHA256.Create())
+            {
+                return BitConverter.ToString(sha256.ComputeHash(bytes));
+            }
+        }
+
+        private static string Anonymize(byte[] bytes)
+        {
+            return bytes != null ? SHA256Hash(bytes) : "UNKNOWN";
+        }
+
+        private static string Anonymize(string @string)
+        {
+            return SHA256Hash(Encoding.UTF8.GetBytes(@string));
+        }
+
+        private static string JsonTemplate => @"{
    ""event"": ""%EVENT%"",
    ""properties"": {
       ""token"": ""%TOKEN%"",
@@ -73,161 +193,40 @@ namespace RealmWeaver
    }
 }";
 
-        private readonly ModuleDefinition _moduleDefinition;
-
-        private static string AnonymizedUserID
+        private static string GetJsonPayload(IAnalyticsData analyticsData)
         {
-            get
-            {
-                try
-                {
-                    var id = GenerateComputerIdentifier();
-                    return id != null ? SHA256Hash(id) : "UNKNOWN";
-                }
-                catch
-                {
-                    return "UNKNOWN";
-                }
-            }
+            return JsonTemplate
+                .Replace("%EVENT%", "Run")
+                .Replace("%TOKEN%", analyticsData.MixPanelToken)
+                .Replace("%USER_ID%", Anonymize(analyticsData.UserId))
+                .Replace("%APP_ID%", Anonymize(analyticsData.AppId))
+
+                // Version of weaver is expected to match that of the library.
+                .Replace("%REALM_VERSION%", analyticsData.RealmVersion)
+                .Replace("%OS_TYPE%", analyticsData.OsName)
+                .Replace("%OS_VERSION%", analyticsData.OsVersion)
+                .Replace("%TARGET_OS%", analyticsData.TargetOs);
         }
 
-        private static byte[] GenerateComputerIdentifier()
+        public void SubmitAnalytics(IAnalyticsData analyticsData, Action<Uri> makeRequest = null)
         {
-            if (Environment.OSVersion.Platform == PlatformID.Win32Windows ||
-                Environment.OSVersion.Platform == PlatformID.Win32NT)
-            {
-                var scope = new ManagementScope("\\\\localhost\\root\\CIMV2", null);
-                scope.Connect();
-                var query = new ObjectQuery("SELECT UUID FROM Win32_ComputerSystemProduct");
-                var searcher = new ManagementObjectSearcher(scope, query);
+            if (makeRequest == null) makeRequest = MakeWebRequest;
 
-                var uuid = searcher.Get().Cast<ManagementObject>().FirstOrDefault()?["UUID"] as string;
-                return string.IsNullOrEmpty(uuid) ? null : Encoding.UTF8.GetBytes(uuid);
-            }
-            else  // Assume OS X if not Windows.
-            {
-                var macs = from nic in NetworkInterface.GetAllNetworkInterfaces()
-                           where nic.Name == "en0"
-                           select nic.GetPhysicalAddress().GetAddressBytes();
-                return macs.FirstOrDefault();
-            }
+            // uncomment next two lines to inspect the payload under Windows VS build
+            //var load = JsonPayload;
+            //Debugger.Launch();
+
+            var base64Payload = Convert.ToBase64String(Encoding.UTF8.GetBytes(GetJsonPayload(analyticsData)));
+            makeRequest(new Uri("https://api.mixpanel.com/track/?data=" + base64Payload + "&ip=1"));
         }
 
-        private string AnonymizedAppID
+        private static void MakeWebRequest(Uri uri)
         {
-            get
-            {
-                return SHA256Hash(System.Text.Encoding.UTF8.GetBytes(_moduleDefinition.Name));
-            }
-        }
-
-        private string TargetOS
-        {
-            get
-            {
-                if (_moduleDefinition.AssemblyReferences.Any(r => r.Name == "Xamarin.iOS"))
-                    return "ios";
-                else if (_moduleDefinition.AssemblyReferences.Any(r => r.Name == "Xamarin.Mac"))
-                    return "osx";
-                else if (_moduleDefinition.AssemblyReferences.Any(r => r.Name == "Mono.Android"))
-                    return "android";
-                else
-                    return "windows";  // in theory is generic .Net but Tim requested we use windows for now
-                // TODO: figure out a way to tell whether we're building for Windows, UWP, PCL, Unity(?), etc. if we wanted to
-            }
-        }
-
-        private string JsonPayload
-        {
-            get
-            {
-                string osName, osVersion;
-                ComputeHostOSNameAndVersion(out osName, out osVersion);
-
-                return JsonTemplate
-                    .Replace("%EVENT%", "Run")
-                    .Replace("%TOKEN%", MixPanelToken)
-                    .Replace("%USER_ID%", AnonymizedUserID)
-                    .Replace("%APP_ID%", AnonymizedAppID)
-
-                    // Version of weaver is expected to match that of the library.
-                    .Replace("%REALM_VERSION%", System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString())
-
-                    .Replace("%OS_TYPE%", osName)
-                    .Replace("%OS_VERSION%", osVersion)
-                    .Replace("%TARGET_OS%", TargetOS);
-            }
-        }
-
-        internal Analytics(ModuleDefinition moduleDefinition)
-        {
-            _moduleDefinition = moduleDefinition;
-        }
-
-        internal void SubmitAnalytics()
-        {
-        // uncomment next two lines to inspect the payload under Windows VS build
-        //    var load = JsonPayload;
-        //    Debugger.Launch();  
-
-            var base64Payload = Convert.ToBase64String(Encoding.UTF8.GetBytes(JsonPayload));
-            var request = HttpWebRequest.CreateHttp(new Uri("https://api.mixpanel.com/track/?data=" + base64Payload + "&ip=1"));
+            var request = WebRequest.CreateHttp(uri);
             request.Method = "GET";
             request.Timeout = 4000;
             request.ReadWriteTimeout = 2000;
             request.GetResponse();
-        }
-
-        private static string SHA256Hash(byte[] bytes)
-        {
-            using (var sha256 = System.Security.Cryptography.SHA256.Create())
-            {
-                return BitConverter.ToString(sha256.ComputeHash(bytes));
-            }
-        }
-
-        private static void ComputeHostOSNameAndVersion(out string name, out string version)
-        {
-            switch (Environment.OSVersion.Platform)
-            {
-            // Mono completely messes up reporting the OS name and version for OS X, so...
-             /*   case PlatformID.MacOSX:
-                    name = "osx";
-                    break;
-                case PlatformID.Unix:
-                    name = "linux";
-                    break; */
-                case PlatformID.Win32Windows:
-                case PlatformID.Win32NT:
-                    name = "windows";
-                    break;
-                default:
-                    name = "osx";  // proved "windows" detected so default to "osx" for now
-//                    name = Environment.OSVersion.Platform.ToString();
-                    break;
-            }
-            version = Environment.OSVersion.Version.ToString();
-        }
-
-        private static class MacOSXVersion
-        {
-            private static bool RunSwVersion(string argument, out string output)
-            {
-                var process = Process.Start(new ProcessStartInfo("sw_vers", argument)
-                    {
-                        UseShellExecute = false,
-                        RedirectStandardOutput = true
-                    });
-                output = process.StandardOutput.ReadToEnd().Trim();
-                process.WaitForExit();
-                return process.ExitCode == 0;
-            }
-
-            internal static bool ComputeSwVersionOSNameAndVersion(out string name, out string version)
-            {
-                version = null;
-                return RunSwVersion("-productName", out name) && RunSwVersion("-productVersion", out version);
-            }
         }
     }
 }
