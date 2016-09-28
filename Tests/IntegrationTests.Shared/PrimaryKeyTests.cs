@@ -18,7 +18,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Diagnostics;
 using System.Linq;
 using NUnit.Framework;
 using System.Threading;
@@ -274,6 +274,27 @@ namespace IntegrationTests.Shared
             Assert.Throws<KeyNotFoundException>( () => {
                 var obj = skinny.ObjectForPrimaryKey<PrimaryKeyInt64Object>(42);
             });
+        }
+
+        // mostly a little test to show iterating schema and getting primary key names
+        [Test]
+        public void CanGetNameOfPrimaryKeyFromSchema()
+        {
+            int classesWithPK = 0;
+            int classesWitoutPK = 0;
+            foreach (var objSchema in _realm.Schema)
+            {
+                var primaryKeyProp = objSchema.Where(prop => prop.IsPrimaryKey).FirstOrDefault();
+                if (string.IsNullOrEmpty(primaryKeyProp.Name))
+                    classesWitoutPK++;
+                else
+                {
+                    classesWithPK++;
+                    Debug.WriteLine($"PK test - {objSchema.Name} has a PK {primaryKeyProp.Name}");
+                }
+            }
+            Assert.That(classesWitoutPK > classesWithPK);  // slightly crap assertion to ensure test works
+
         }
             
     }
