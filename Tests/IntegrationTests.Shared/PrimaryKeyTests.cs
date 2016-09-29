@@ -290,11 +290,11 @@ namespace IntegrationTests.Shared
                 else
                 {
                     classesWithPK++;
-                    Debug.WriteLine($"PK test - {objSchema.Name} has a PK {primaryKeyProp.Name}");
+                    // uncomment the next line to see output list all primary keys in all classes in all unit tests
+                    // Debug.WriteLine($"PK test - {objSchema.Name} has a PK {primaryKeyProp.Name}");
                 }
             }
-            Assert.That(classesWitoutPK > classesWithPK);  // slightly crap assertion to ensure test works
-
+            Assert.That(classesWitoutPK > classesWithPK);  // simple assertion likely to remain valid regardless how many classes in test suite overall
         }
             
     }
