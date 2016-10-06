@@ -85,7 +85,7 @@ namespace IntegrationTests.Shared
         {
             var query = _realm.GetAll<Person>();
             RealmResults<Person>.ChangeSet changes = null;
-            RealmResults<Person>.NotificationCallback cb = (s, c, e) => changes = c;
+            RealmResults<Person>.NotificationCallbackDelegate cb = (s, c, e) => changes = c;
 
             using (query.SubscribeForNotifications(cb))
             {

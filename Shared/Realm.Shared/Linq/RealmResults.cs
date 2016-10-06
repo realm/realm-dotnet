@@ -40,7 +40,7 @@ namespace Realms
         private readonly bool _allRecords;
         private readonly Realm _realm;
         private readonly RealmObject.Metadata _targetMetadata;
-        private readonly List<NotificationCallback> _callbacks = new List<NotificationCallback>();
+        private readonly List<NotificationCallbackDelegate> _callbacks = new List<NotificationCallbackDelegate>();
         private NotificationTokenHandle _notificationToken;
         private ResultsHandle _resultsHandle;
 
@@ -106,9 +106,9 @@ namespace Realms
         /// A callback that will be invoked each time the contents of a <see cref="RealmResults{T}"/> have changed.
         /// </summary>
         /// <param name="sender">The <see cref="RealmResults{T}"/> being monitored for changes.</param>
-        /// <param name="changes">The <see cref="ChangeSet"/> describing the changes to a <see cref="RealmResults{T}"/>, or <c>null</c> if an error occurred.</param>
-        /// <param name="error">An exception that might have occurred while asynchronously monitoring a <see cref="RealmResults{T}"/> for changes, or <c>null</c> if no errors occurred.</param>
-        public delegate void NotificationCallback(RealmResults<T> sender, ChangeSet changes, Exception error);
+        /// <param name="changes">The <see cref="ChangeSet"/> describing the changes to a <see cref="RealmResults{T}"/>, or <c>null</c> if an error occured.</param>
+        /// <param name="error">An exception that might have occurred while asynchronously monitoring a <see cref="RealmResults{T}"/> for changes, or <c>null</c> if no errors occured.</param>
+        public delegate void NotificationCallbackDelegate(RealmResults<T> sender, ChangeSet changes, Exception error);
 
         internal RealmResults(Realm realm, RealmResultsProvider realmResultsProvider, Expression expression, RealmObject.Metadata metadata, bool createdByAll)
         {
@@ -178,10 +178,10 @@ namespace Realms
 
         private class NotificationToken : IDisposable
         {
-            private RealmResults<T> _results;
-            private NotificationCallback _callback;
+            RealmResults<T> _results;
+            NotificationCallbackDelegate _callback;
 
-            internal NotificationToken(RealmResults<T> results, NotificationCallback callback)
+            internal NotificationToken(RealmResults<T> results, NotificationCallbackDelegate callback)
             {
                 _results = results;
                 _callback = callback;
@@ -225,7 +225,7 @@ namespace Realms
         /// A subscription token. It must be kept alive for as long as you want to receive change notifications.
         /// To stop receiving notifications, call <see cref="IDisposable.Dispose" />.
         /// </returns>
-        public IDisposable SubscribeForNotifications(NotificationCallback callback)
+        public IDisposable SubscribeForNotifications(NotificationCallbackDelegate callback)
         {
             if (_callbacks.Count == 0)
             {
@@ -237,7 +237,7 @@ namespace Realms
             return new NotificationToken(this, callback);
         }
 
-        internal void RemoveCallback(NotificationCallback callback)
+        internal void RemoveCallback(NotificationCallbackDelegate callback)
         {
             _callbacks.Remove(callback);
 
@@ -292,6 +292,23 @@ namespace Realms
             {
                 callback(this, changeset, managedException);
             }
+        }
+    }
+
+    internal static class RealmResultsNativeHelper
+    {
+        internal interface Interface
+        {
+            void NotifyCallbacks(ResultsHandle.CollectionChangeSet? changes, NativeException? exception);
+        }
+
+#if __IOS__
+        [ObjCRuntime.MonoPInvokeCallback(typeof(ResultsHandle.NotificationCallbackDelegate))]
+#endif
+        internal static void NotificationCallback(IntPtr managedResultsHandle, IntPtr changes, IntPtr exception)
+        {
+            var results = (Interface)GCHandle.FromIntPtr(managedResultsHandle).Target;
+            results.NotifyCallbacks(new PtrTo<ResultsHandle.CollectionChangeSet>(changes).Value, new PtrTo<NativeException>(exception).Value);
         }
     }
 }
