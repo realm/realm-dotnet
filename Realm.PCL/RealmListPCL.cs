@@ -40,7 +40,7 @@ namespace Realms
     /// </remarks>
     /// 
     /// <typeparam name="T">Type of the RealmObject which is the target of the relationship.</typeparam>
-    public class RealmList<T> : IList<T>, IRealmList, IDynamicMetaObjectProvider, ICopyValuesFrom where T : RealmObject
+    public class RealmList<T> : IList<T>, IRealmList, IDynamicMetaObjectProvider where T : RealmObject
     {
 
         /// <summary>
@@ -226,11 +226,6 @@ namespace Realms
         }
 
         #endregion
-
-        void ICopyValuesFrom.CopyValuesFrom(IEnumerable<RealmObject> values)
-        {
-            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
-        }
 
         DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression parameter)
         {

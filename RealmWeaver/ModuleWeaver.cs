@@ -48,6 +48,9 @@ public class ModuleWeaver
     private TypeReference System_String;
     private TypeReference System_Type;
     private TypeReference System_IList;
+    private TypeReference System_DateTimeOffset;
+    private TypeReference System_Int32;
+    private MethodReference System_DatetimeOffset_Op_Inequality;
 
     private MethodReference _propChangedEventArgsConstructor;
     private MethodReference _propChangedEventHandlerInvokeReference;
@@ -109,9 +112,6 @@ public class ModuleWeaver
     private MethodReference _wovenAttributeConstructor;
     private MethodReference _wovenPropertyAttributeConstructor;
 
-    private TypeDefinition _icopyValuesFrom;
-    private MethodReference _icopyValuesFrom_CopyValuesFromMethod;
-
     private IEnumerable<TypeDefinition> GetMatchingTypes()
     {
         foreach (var type in ModuleDefinition.GetTypes().Where(t => t.IsDescendedFrom(_realmObject)))
@@ -152,9 +152,6 @@ public class ModuleWeaver
         _realmObject = _realmAssembly.MainModule.GetTypes().First(x => x.Name == "RealmObject");
         _realmObjectIsManagedGetter = ModuleDefinition.ImportReference(_realmObject.Properties.Single(x => x.Name == "IsManaged").GetMethod);
 
-        _icopyValuesFrom = _realmAssembly.MainModule.GetType("Realms.ICopyValuesFrom");
-        _icopyValuesFrom_CopyValuesFromMethod = ModuleDefinition.ImportReference(_icopyValuesFrom.Methods.Single(x => x.Name == "CopyValuesFrom"));
-
         // Cache of getter and setter methods for the various types.
         var methodTable = new Dictionary<string, Tuple<MethodReference, MethodReference>>();
 
@@ -176,14 +173,16 @@ public class ModuleWeaver
         System_Object = ModuleDefinition.TypeSystem.Object;
         System_Boolean = ModuleDefinition.TypeSystem.Boolean;
         System_String = ModuleDefinition.TypeSystem.String;
-        var typeTypeDefinition = _corLib.MainModule.GetType("System.Type");
-        if (typeTypeDefinition == null) // For PCL's System.Type is only accessible as an ExportedType for some reason.
-        {
-            typeTypeDefinition = _corLib.MainModule.ExportedTypes.First(t => t.FullName == "System.Type").Resolve();
-        }
-        System_Type = ModuleDefinition.ImportReference(typeTypeDefinition);
+        System_Int32 = ModuleDefinition.TypeSystem.Int32;
+
+        var dateTimeOffsetType = GetTypeFromSystemAssembly("System.DateTimeOffset");
+        System_DateTimeOffset = ModuleDefinition.ImportReference(dateTimeOffsetType);
+        System_DatetimeOffset_Op_Inequality = ModuleDefinition.ImportReference(dateTimeOffsetType.GetMethods().Single(m => m.Name == "op_Inequality"));
+
+        System_Type = ModuleDefinition.ImportReference(GetTypeFromSystemAssembly("System.Type"));
 
         var listTypeDefinition = _corLib.MainModule.GetType("System.Collections.Generic.List`1");
+
         if (listTypeDefinition == null)
         {
             System_IList = ModuleDefinition.ImportReference(typeof(System.Collections.Generic.List<>));
@@ -810,6 +809,83 @@ public class ModuleWeaver
         return property.PropertyType.Name == "RealmList`1" && property.PropertyType.Namespace == "Realms";
     }
 
+    private static bool IsDateTimeOffset(PropertyDefinition property)
+    {
+        return property.PropertyType.Name == "DateTimeOffset" && property.PropertyType.Namespace == "System";
+    }
+
+    private static bool IsNullable(PropertyDefinition property)
+    {
+        return property.PropertyType.Name.Contains("Nullable`1") && property.PropertyType.Namespace == "System";
+    }
+
+    private static bool IsSingle(PropertyDefinition property)
+    {
+        return property.PropertyType.Name == "Single" && property.PropertyType.Namespace == "System";
+    }
+
+    private static bool IsDouble(PropertyDefinition property)
+    {
+        return property.PropertyType.Name == "Double" && property.PropertyType.Namespace == "System";
+    }
+
+    private MethodReference GetIListMethodReference(TypeDefinition interfaceType, string methodName, GenericInstanceType genericInstance)
+    {
+        MethodReference reference = null;
+        var definition = interfaceType.GetMethods().FirstOrDefault(m => m.FullName.Contains($"::{methodName}"));
+        if (definition == null)
+        {
+            foreach (var parent in interfaceType.Interfaces)
+            {
+                reference = GetIListMethodReference(parent.Resolve(), methodName, genericInstance);
+                if (reference != null)
+                {
+                    break;
+                }
+            }
+        }
+        else
+        {
+            var generic = definition.MakeHostInstanceGeneric(genericInstance.GenericArguments.ToArray());
+            reference = ModuleDefinition.ImportReference(generic);
+        }
+
+        return reference;
+    }
+
+    private MethodReference MakeMethodGeneric(MethodReference methodReference, GenericInstanceType genericInstance)
+    {
+        var reference = new MethodReference(methodReference.Name, methodReference.ReturnType, genericInstance)
+        {
+            HasThis = methodReference.HasThis,
+            ExplicitThis = methodReference.ExplicitThis,
+            CallingConvention = methodReference.CallingConvention
+        };
+
+        foreach (var parameter in methodReference.Parameters)
+        {
+            reference.Parameters.Add(parameter);
+        }
+
+        foreach (var genericParameter in methodReference.GenericParameters)
+        {
+            reference.GenericParameters.Add(new GenericParameter(genericParameter.Name, reference));
+        }
+
+        return reference;
+    }
+
+    private TypeDefinition GetTypeFromSystemAssembly(string typeName)
+    {
+        var objectTypeDefinition = _corLib.MainModule.GetType(typeName);
+        if (objectTypeDefinition == null) // For PCL's System.XXX is only accessible as an ExportedType for some reason.
+        {
+            objectTypeDefinition = _corLib.MainModule.ExportedTypes.First(t => t.FullName == typeName).Resolve();
+        }
+
+        return objectTypeDefinition;
+    }
+
     private TypeDefinition WeaveRealmObjectHelper(TypeDefinition realmObjectType, MethodDefinition objectConstructor, IDictionary<PropertyDefinition, FieldReference> properties)
     {
         var helperType = new TypeDefinition(null, "RealmHelper",
@@ -833,62 +909,156 @@ public class ModuleWeaver
 				var casted = (ObjectType)instance;
 				
 				*foreach* non-list woven property in casted's schema
-				casted.Property = casted.Field;
+				if (casted.field != default(fieldType))
+				{
+				    casted.Property = casted.Field;
+				}
 
 				*foreach* list woven property in casted's schema
 				var list = casted.field;
 				casted.field = null;
-				((ICopyValuesFrom)casted.Property).CopyValuesFrom(list);
+				for (var i = 0; i < list.Count; i++)
+				{
+				    casted.Property.Add(list[i]);
+				}
 			*/
 
             var instanceParameter = new ParameterDefinition("instance", ParameterAttributes.None, ModuleDefinition.ImportReference(_realmObject));
             copyToRealm.Parameters.Add(instanceParameter);
 
+            copyToRealm.Body.Variables.Add(new VariableDefinition(ModuleDefinition.ImportReference(realmObjectType)));
+
+            byte currentStloc = 1;
+            if (properties.Any(p => IsDateTimeOffset(p.Key)))
+            {
+                copyToRealm.Body.Variables.Add(new VariableDefinition(System_DateTimeOffset));
+                currentStloc++;
+            }
+
             foreach (var kvp in properties.Where(kvp => IsIList(kvp.Key) || IsRealmList(kvp.Key)))
             {
                 copyToRealm.Body.Variables.Add(new VariableDefinition(ModuleDefinition.ImportReference(kvp.Value.FieldType)));
+                copyToRealm.Body.Variables.Add(new VariableDefinition(System_Int32));
             }
 
             var il = copyToRealm.Body.GetILProcessor();
-            il.Emit(OpCodes.Ldarg_1);
-            il.Emit(OpCodes.Castclass, ModuleDefinition.ImportReference(realmObjectType));
+            il.Append(il.Create(OpCodes.Ldarg_1));
+            il.Append(il.Create(OpCodes.Castclass, ModuleDefinition.ImportReference(realmObjectType)));
+            il.Append(il.Create(OpCodes.Stloc_0));
 
-            byte currentStloc = 0;
             foreach (var kvp in properties)
             {
                 var property = kvp.Key;
                 var field = kvp.Value;
+
                 if (property.SetMethod != null)
                 {
-                    il.Emit(OpCodes.Dup);
-                    il.Emit(OpCodes.Dup);
-                    il.Emit(OpCodes.Ldfld, field);
-                    il.Emit(OpCodes.Call, ModuleDefinition.ImportReference(property.SetMethod));
+                    if (!IsNullable(property))
+                    {
+                        il.Append(il.Create(OpCodes.Ldloc_0));
+                        il.Append(il.Create(OpCodes.Ldfld, field));
+
+                        if (IsDateTimeOffset(property))
+                        {
+                            il.Append(il.Create(OpCodes.Ldloca_S, (byte)1));
+                            il.Append(il.Create(OpCodes.Initobj, field.FieldType));
+                            il.Append(il.Create(OpCodes.Ldloc_1));
+                            il.Append(il.Create(OpCodes.Call, System_DatetimeOffset_Op_Inequality));
+                        }
+                        else if (IsSingle(property))
+                        {
+                            il.Append(il.Create(OpCodes.Ldc_R4, 0f));
+                        }
+                        else if (IsDouble(property))
+                        {
+                            il.Append(il.Create(OpCodes.Ldc_R8, 0.0));
+                        }
+                    }
+
+                    var jumpLabel = il.Create(OpCodes.Nop);
+                    il.Append(jumpLabel);
+                    il.Append(il.Create(OpCodes.Ldloc_0));
+                    il.Append(il.Create(OpCodes.Ldloc_0));
+                    il.Append(il.Create(OpCodes.Ldfld, field));
+                    il.Append(il.Create(OpCodes.Call, ModuleDefinition.ImportReference(property.SetMethod)));
+                    var label = il.Create(OpCodes.Nop);
+                    il.Append(label);
+
+                    if (!IsNullable(property))
+                    {
+                        if (IsSingle(property) || IsDouble(property))
+                        {
+                            il.Replace(jumpLabel, il.Create(OpCodes.Beq_S, label));
+                        }
+                        else
+                        {
+                            il.Replace(jumpLabel, il.Create(OpCodes.Brfalse_S, label));
+                        }
+                    }
                 }
                 else if (IsIList(property) || IsRealmList(property))
                 {
-                    il.Emit(OpCodes.Dup);
-                    il.Emit(OpCodes.Ldfld, field);
-                    il.Emit(OpCodes.Stloc_S, currentStloc);
-                    il.Emit(OpCodes.Dup);
-                    il.Emit(OpCodes.Ldnull);
-                    il.Emit(OpCodes.Stfld, field);
-                    il.Emit(OpCodes.Dup);
-                    il.Emit(OpCodes.Callvirt, ModuleDefinition.ImportReference(property.GetMethod));
-                    il.Emit(OpCodes.Castclass, ModuleDefinition.ImportReference(_icopyValuesFrom));
-                    il.Emit(OpCodes.Ldloc_S, currentStloc);
-                    il.Emit(OpCodes.Callvirt, _icopyValuesFrom_CopyValuesFromMethod);
-                    currentStloc++;
+                    var propertyTypeDefinition = property.PropertyType.Resolve();
+                    var genericType = (GenericInstanceType)property.PropertyType;
+                    var iList_Get_ItemMethodReference = GetIListMethodReference(propertyTypeDefinition, "get_Item", genericType);
+                    var iList_AddMethodReference = GetIListMethodReference(propertyTypeDefinition, "Add", genericType);
+                    var iList_Get_CountMethodReference = GetIListMethodReference(propertyTypeDefinition, "get_Count", genericType);
+
+                    var iteratorStLoc = (byte)(currentStloc + 1);
+                    il.Append(il.Create(OpCodes.Ldloc_0));
+                    il.Append(il.Create(OpCodes.Ldfld, field));
+
+                    var jumpPlaceholder = il.Create(OpCodes.Nop);
+                    il.Append(jumpPlaceholder);
+
+                    il.Append(il.Create(OpCodes.Ldloc_0));
+                    il.Append(il.Create(OpCodes.Ldfld, field));
+                    il.Append(il.Create(OpCodes.Stloc_S, currentStloc));
+                    il.Append(il.Create(OpCodes.Ldloc_0));
+                    il.Append(il.Create(OpCodes.Ldnull));
+                    il.Append(il.Create(OpCodes.Stfld, field));
+                    il.Append(il.Create(OpCodes.Ldc_I4_0));
+                    il.Append(il.Create(OpCodes.Stloc_S, iteratorStLoc));
+
+                    var cyclePlaceholder = il.Create(OpCodes.Nop);
+                    il.Append(cyclePlaceholder);
+
+                    var cycleStart = il.Create(OpCodes.Nop);
+                    il.Append(cycleStart);
+
+                    il.Append(il.Create(OpCodes.Ldloc_0));
+                    il.Append(il.Create(OpCodes.Callvirt, ModuleDefinition.ImportReference(property.GetMethod)));
+                    il.Append(il.Create(OpCodes.Ldloc_S, currentStloc));
+                    il.Append(il.Create(OpCodes.Ldloc_S, iteratorStLoc));
+                    il.Append(il.Create(OpCodes.Callvirt, iList_Get_ItemMethodReference));
+                    il.Append(il.Create(OpCodes.Callvirt, iList_AddMethodReference));
+                    il.Append(il.Create(OpCodes.Ldloc_S, iteratorStLoc));
+                    il.Append(il.Create(OpCodes.Ldc_I4_1));
+                    il.Append(il.Create(OpCodes.Add));
+                    il.Append(il.Create(OpCodes.Stloc_S, iteratorStLoc));
+
+                    var cycleLabel = il.Create(OpCodes.Nop);
+                    il.Append(cycleLabel);
+                    il.Replace(cyclePlaceholder, il.Create(OpCodes.Br_S, cycleLabel));
+
+                    il.Append(il.Create(OpCodes.Ldloc_S, iteratorStLoc));
+                    il.Append(il.Create(OpCodes.Ldloc_S, currentStloc));
+                    il.Append(il.Create(OpCodes.Callvirt, iList_Get_CountMethodReference));
+                    il.Append(il.Create(OpCodes.Blt_S, cycleStart));
+
+                    var jumpLabel = il.Create(OpCodes.Nop);
+                    il.Append(jumpLabel);
+                    il.Replace(jumpPlaceholder, il.Create(OpCodes.Brfalse_S, jumpLabel));
+
+                    currentStloc += 2;
                 }
                 else
                 {
                     var sequencePoint = property.GetMethod.Body.Instructions.First().SequencePoint;
                     LogErrorPoint($"{realmObjectType.Name}.{property.Name} does not have a setter and is not an IList.", sequencePoint);
                 }
-
             }
 
-            il.Emit(OpCodes.Pop); // We're void, so pop the last value from the stack to avoid returning it with Ret
             il.Emit(OpCodes.Ret);
         }
         copyToRealm.CustomAttributes.Add(new CustomAttribute(_preserveAttributeConstructor));

@@ -20,6 +20,7 @@ using NUnit.Framework;
 using Realms;
 using System.Collections.Generic;
 using System.Linq;
+using System;
 
 namespace IntegrationTests.Shared
 {
@@ -119,6 +120,11 @@ namespace IntegrationTests.Shared
                 {
                     realm.Manage(new OneListProperty());
                 }), $"{nameof(OneListProperty)} manage failed.");
+
+                Assert.DoesNotThrow(() => realm.Write(() =>
+                {
+                    realm.Manage(new AllPropsClass());
+                }), $"{nameof(AllPropsClass)} manage failed.");
             }
         }
 
@@ -166,6 +172,30 @@ namespace IntegrationTests.Shared
         public class OneListProperty : RealmObject
         {
             public IList<Person> People { get; }
+        }
+
+        public class AllPropsClass : RealmObject
+        {
+            public string String { get; set; }
+            public char Char { get; set; }
+            public byte Byte { get; set; }
+            public Int16 Int16 { get; set; }
+            public Int32 Int32 { get; set; }
+            public Int64 Int64 { get; set; }
+            public Single Single { get; set; }
+            public Double Double { get; set; }
+            public DateTimeOffset DateTimeOffset { get; set; }
+            public Boolean Boolean { get; set; }
+            public Byte[] ByteArray { get; set; }
+            public char? NullableChar { get; set; }
+            public byte? NullableByte { get; set; }
+            public Int16? NullableInt16 { get; set; }
+            public Int32? NullableInt32 { get; set; }
+            public Int64? NullableInt64 { get; set; }
+            public Single? NullableSingle { get; set; }
+            public Double? NullableDouble { get; set; }
+            public DateTimeOffset? NullableDateTimeOffset { get; set; }
+            public Boolean? NullableBoolean { get; set; }
         }
     }
 }

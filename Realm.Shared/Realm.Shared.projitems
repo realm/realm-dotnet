@@ -57,7 +57,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)handles\NotificationTokenHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)exceptions\RealmInvalidTransactionException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)extensions\RealmResultsCollectionChanged.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ICopyValuesFrom.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Schema\RealmSchema.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Schema\PropertyType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Schema\Property.cs" />
