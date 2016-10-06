@@ -18,11 +18,8 @@
 
 using NUnit.Framework;
 using Realms;
-using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace IntegrationTests.Shared
 {
@@ -85,5 +82,90 @@ namespace IntegrationTests.Shared
 
             Assert.DoesNotThrow(() => _person.Equals(otherPerson));
         }
+
+		[Test]
+		public void RealmObject_WhenManaged_ShouldNotThrow()
+		{
+			// This is a test to ensure that our weaver is generating valid IL regardless of property configurations
+
+			using (var realm = Realm.GetInstance())
+			{
+				Assert.DoesNotThrow(() => realm.Write(() =>
+				{
+					realm.Manage(new NoListProperties());
+				}), $"{nameof(NoListProperties)} manage failed.");
+
+				Assert.DoesNotThrow(() => realm.Write(() =>
+				{
+					realm.Manage(new OnlyListProperties());
+				}), $"{nameof(OnlyListProperties)} manage failed.");
+
+				Assert.DoesNotThrow(() => realm.Write(() =>
+				{
+					realm.Manage(new MixedProperties1());
+				}), $"{nameof(MixedProperties1)} manage failed.");
+
+				Assert.DoesNotThrow(() => realm.Write(() =>
+				{
+					realm.Manage(new MixedProperties2());
+				}), $"{nameof(MixedProperties2)} manage failed.");
+
+				Assert.DoesNotThrow(() => realm.Write(() =>
+				{
+					realm.Manage(new OneNonListProperty());
+				}), $"{nameof(OneNonListProperty)} manage failed.");
+
+				Assert.DoesNotThrow(() => realm.Write(() =>
+				{
+					realm.Manage(new OneListProperty());
+				}), $"{nameof(OneListProperty)} manage failed.");
+			}
+		}
+
+		public class NoListProperties : RealmObject
+		{
+			public string Name { get; set; }
+
+			public int Age { get; set; }
+		}
+
+		public class OnlyListProperties : RealmObject
+		{
+			public IList<Person> Friends { get; }
+
+			public IList<Person> Enemies { get; }
+		}
+
+		public class MixedProperties1 : RealmObject
+		{
+			public string Name { get; set; }
+
+			public IList<Person> Friends { get; }
+
+			public int Age { get; set; }
+
+			public IList<Person> Enemies { get; }
+		}
+
+		public class MixedProperties2 : RealmObject
+		{
+			public IList<Person> Friends { get; }
+
+			public int Age { get; set; }
+
+			public IList<Person> Enemies { get; }
+
+			public string Name { get; set; }
+		}
+
+		public class OneNonListProperty : RealmObject
+		{
+			public string Name { get; set; }
+		}
+
+		public class OneListProperty : RealmObject
+		{
+			public IList<Person> People { get; }
+		}
     }
 }
