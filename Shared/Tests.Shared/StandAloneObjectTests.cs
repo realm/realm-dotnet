@@ -69,7 +69,7 @@ namespace IntegrationTests.Shared
 
                 Assert.That(_person.IsManaged);
 
-                var p = realm.All<Person>().Single();
+                var p = realm.GetAll<Person>().Single();
                 Assert.That(p.FirstName, Is.EqualTo("Arthur"));
                 Assert.That(p.LastName, Is.EqualTo("Dent"));
                 Assert.That(p.IsInteresting);

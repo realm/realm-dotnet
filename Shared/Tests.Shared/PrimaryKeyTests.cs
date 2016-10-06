@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -274,7 +274,7 @@ namespace IntegrationTests.Shared
         {
             Assert.Throws<RealmClassLacksPrimaryKeyException>(() =>
             {
-                var foundObj = _realm.ObjectForPrimaryKey<Person>("Zaphod");
+                var foundObj = _realm.Find<Person>("Zaphod");
             });
         }
 
@@ -283,7 +283,7 @@ namespace IntegrationTests.Shared
         {
             Assert.Throws<RealmClassLacksPrimaryKeyException>(() =>
             {
-                var foundObj = _realm.ObjectForPrimaryKey("Person", "Zaphod");
+                var foundObj = _realm.Find("Person", "Zaphod");
             });
         }
 
@@ -303,7 +303,7 @@ namespace IntegrationTests.Shared
             {
                 using (var realm2 = Realm.GetInstance())
                 {
-                    var foundObj = realm2.ObjectForPrimaryKey<PrimaryKeyInt64Object>(42000042);
+                    var foundObj = realm2.Find<PrimaryKeyInt64Object>(42000042);
                     foundValue = foundObj.Int64Property;
                 }
             });
@@ -367,7 +367,7 @@ namespace IntegrationTests.Shared
             var skinny = Realm.GetInstance(conf);
             Assert.Throws<KeyNotFoundException>(() =>
             {
-                var obj = skinny.ObjectForPrimaryKey<PrimaryKeyInt64Object>(42);
+                var obj = skinny.Find<PrimaryKeyInt64Object>(42);
             });
         }
     }

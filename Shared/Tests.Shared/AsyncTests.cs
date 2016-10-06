@@ -51,7 +51,7 @@ namespace IntegrationTests.Shared
             var currentThreadId = Thread.CurrentThread.ManagedThreadId;
             var otherThreadId = currentThreadId;
 
-            Assert.That(_realm.All<Person>().Count(), Is.EqualTo(0));
+            Assert.That(_realm.GetAll<Person>().Count(), Is.EqualTo(0));
             await _realm.WriteAsync(realm =>
             {
                 otherThreadId = Thread.CurrentThread.ManagedThreadId;
@@ -61,7 +61,7 @@ namespace IntegrationTests.Shared
             // see #564
             TestHelpers.RunEventLoop(TimeSpan.FromMilliseconds(100));
 
-            Assert.That(_realm.All<Person>().Count(), Is.EqualTo(1));
+            Assert.That(_realm.GetAll<Person>().Count(), Is.EqualTo(1));
             Assert.That(otherThreadId, Is.Not.EqualTo(currentThreadId));
         }
 
@@ -89,7 +89,7 @@ namespace IntegrationTests.Shared
 
             await _realm.WriteAsync(realm =>
             {
-                var dataObj = realm.ObjectForPrimaryKey<MyDataObject>(path);
+                var dataObj = realm.Find<MyDataObject>(path);
                 dataObj.ExpensiveToComputeValue = 123; // imagine this was a very CPU-intensive operation
             });
 

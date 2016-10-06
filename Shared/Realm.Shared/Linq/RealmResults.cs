@@ -28,7 +28,7 @@ using System.Runtime.InteropServices;
 namespace Realms
 {
     /// <summary>
-    /// Iterable, sortable collection of one kind of RealmObject resulting from <see cref="Realm.All()"/> or from a LINQ query expression.
+    /// Iterable, sortable collection of one kind of RealmObject resulting from <see cref="Realm.GetAll()"/> or from a LINQ query expression.
     /// </summary>
     /// <remarks>Implements <a hlink="https://msdn.microsoft.com/en-us/library/system.linq.iorderedqueryable">IOrderedQueryable</a>.  <br />
     /// You can sort efficiently using the standard LINQ operators <c>OrderBy</c> or <c>OrderByDescending</c> followed by any number of
@@ -154,7 +154,7 @@ namespace Realms
         /// Fast count all objects of a given class, or in a RealmResults after casting.
         /// </summary>
         /// <remarks>
-        /// Resolves to this method instead of the LINQ static extension <c>Count&lt;T&gt;(this IEnumerable&lt;T&gt;)</c>, when used directly on Realm.All.
+        /// Resolves to this method instead of the LINQ static extension <c>Count&lt;T&gt;(this IEnumerable&lt;T&gt;)</c>, when used directly on <c>Realm.GetAll</c>.
         /// <br/>
         /// if someone CASTS a RealmResults&lt;T&gt; variable from a Where call to
         /// a RealmResults&lt;T&gt; they change its compile-time type from IQueryable&lt;T&gt; (which invokes LINQ)

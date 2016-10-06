@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -63,7 +63,7 @@ namespace IntegrationTests.Shared
             // Assert
             // Assert.That(!p2.InRealm);
 
-            var allPeople = _realm.All<Person>().ToList();
+            var allPeople = _realm.GetAll<Person>().ToList();
             Assert.That(allPeople, Is.EquivalentTo(new List<Person> { p1, p3 }));
         }
 
@@ -98,10 +98,10 @@ namespace IntegrationTests.Shared
             });
 
             // Act
-            _realm.Write(() => _realm.RemoveRange<Person>((RealmResults<Person>)_realm.All<Person>().Where(p => !p.IsInteresting)));
+            _realm.Write(() => _realm.RemoveRange<Person>((RealmResults<Person>)_realm.GetAll<Person>().Where(p => !p.IsInteresting)));
 
             // Assert
-            Assert.That(_realm.All<Person>().ToList().Select(p => p.FirstName).ToArray(),
+            Assert.That(_realm.GetAll<Person>().ToList().Select(p => p.FirstName).ToArray(),
                 Is.EqualTo(new[] { "person to keep" }));
         }
 
@@ -115,14 +115,14 @@ namespace IntegrationTests.Shared
                 _realm.CreateObject<Person>();
                 _realm.CreateObject<Person>();
 
-                Assert.That(_realm.All<Person>().Count(), Is.EqualTo(3));
+                Assert.That(_realm.GetAll<Person>().Count(), Is.EqualTo(3));
             });
 
             // Act
             _realm.Write(() => _realm.RemoveAll<Person>());
 
             // Assert
-            Assert.That(_realm.All<Person>().Count(), Is.EqualTo(0));
+            Assert.That(_realm.GetAll<Person>().Count(), Is.EqualTo(0));
         }
 
         [Test]
@@ -135,16 +135,16 @@ namespace IntegrationTests.Shared
                 _realm.CreateObject<Person>();
                 _realm.CreateObject<AllTypesObject>();
 
-                Assert.That(_realm.All<Person>().Count(), Is.EqualTo(2));
-                Assert.That(_realm.All<AllTypesObject>().Count(), Is.EqualTo(1));
+                Assert.That(_realm.GetAll<Person>().Count(), Is.EqualTo(2));
+                Assert.That(_realm.GetAll<AllTypesObject>().Count(), Is.EqualTo(1));
             });
 
             // Act
             _realm.Write(() => _realm.RemoveAll());
 
             // Assert
-            Assert.That(_realm.All<Person>().Count(), Is.EqualTo(0));
-            Assert.That(_realm.All<AllTypesObject>().Count(), Is.EqualTo(0));
+            Assert.That(_realm.GetAll<Person>().Count(), Is.EqualTo(0));
+            Assert.That(_realm.GetAll<AllTypesObject>().Count(), Is.EqualTo(0));
         }
 
         [Test]

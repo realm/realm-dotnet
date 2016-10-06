@@ -67,8 +67,8 @@ namespace IntegrationTests
             {
                 Assert.That(oldSchemaVersion, Is.EqualTo(99));
 
-                var oldPeople = migration.OldRealm.All("Person");
-                var newPeople = migration.NewRealm.All<Person>();
+                var oldPeople = migration.OldRealm.GetAll("Person");
+                var newPeople = migration.NewRealm.GetAll<Person>();
 
                 Assert.That(newPeople.Count(), Is.EqualTo(oldPeople.Count()));
 
@@ -84,7 +84,7 @@ namespace IntegrationTests
 
             using (var realm = Realm.GetInstance(configuration))
             {
-                var person = realm.All<Person>().Single();
+                var person = realm.GetAll<Person>().Single();
                 Assert.That(person.LastName, Is.EqualTo(triggersSchemaFieldValue));
             }
         }

@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -27,7 +27,7 @@ using System.Linq.Expressions;
 namespace Realms
 {
     /// <summary>
-    /// Iterable collection of one kind of RealmObject resulting from Realm.All or from a LINQ query expression.
+    /// Iterable collection of one kind of RealmObject resulting from Realm.GetAll or from a LINQ query expression.
     /// </summary>
     /// <typeparam name="T">Type of the RealmObject which is being returned.</typeparam>
     public class RealmResults<T> : IOrderedQueryable<T>
@@ -92,7 +92,7 @@ namespace Realms
         }
 
         /// <summary>
-        /// Fast count all objects of a given class, or in a RealmResults after casting.
+        /// Count all objects if created by <see cref="Realm.GetAll"/> of the parameterised type, faster than a search.
         /// </summary>
         /// <remarks>
         /// Resolves to this method instead of the LINQ static extension <c>Count&lt;T&gt;(this IEnumerable&lt;T&gt;)</c>, when used directly on Realm.All.

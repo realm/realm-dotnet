@@ -664,8 +664,8 @@ namespace Realms
         /// <example>
         /// await realm.WriteAsync(tempRealm =&gt; 
         /// {
-        ///     var pongo = tempRealm.All&lt;Dog&gt;().Single(d =&gt; d.Name == "Pongo");
-        ///     var missis = tempRealm.All&lt;Dog&gt;().Single(d =&gt; d.Name == "Missis");
+        ///     var pongo = tempRealm.GetAll&lt;Dog&gt;().Single(d =&gt; d.Name == "Pongo");
+        ///     var missis = tempRealm.GetAll&lt;Dog&gt;().Single(d =&gt; d.Name == "Missis");
         ///     for (var i = 0; i &lt; 15; i++)
         ///     {
         ///         var pup = tempRealm.CreateObject&lt;Dog&gt;();
@@ -714,7 +714,7 @@ namespace Realms
         /// </summary>
         /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
         /// <returns>A RealmResults that without further filtering, allows iterating all objects of class T, in this realm.</returns>
-        public RealmResults<T> All<T>() where T : RealmObject
+        public RealmResults<T> GetAll<T>() where T: RealmObject
         {
             var type = typeof(T);
             RealmObject.Metadata metadata;
@@ -732,7 +732,7 @@ namespace Realms
         /// <param name="className">The type of the objects as defined in the schema.</param>
         /// <remarks>Because the objects inside the view are accessed dynamically, the view cannot be queried into using LINQ or other expression predicates.</remarks>
         /// <returns>A RealmResults that without further filtering, allows iterating all objects of className, in this realm.</returns>
-        public RealmResults<dynamic> All(string className)
+        public RealmResults<dynamic> GetAll(string className)
         {
             RealmObject.Metadata metadata;
             if (!Metadata.TryGetValue(className, out metadata))
@@ -743,7 +743,8 @@ namespace Realms
             return new RealmResults<dynamic>(this, metadata, true);
         }
 
-        #region Quick ObjectForPrimaryKey
+
+        #region Quick Find using primary key
 
         /// <summary>
         /// Fast lookup of an object from a class which has a PrimaryKey property.
@@ -752,7 +753,7 @@ namespace Realms
         /// <param name="id">Id to be matched exactly, same as an == search. An argument of type <c>long?</c> works for all integer properties, supported as PrimaryKey.</param>
         /// <returns>Null or an object matching the id.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class T lacks an [PrimaryKey].</exception>
-        public T ObjectForPrimaryKey<T>(long? id) where T : RealmObject
+        public T Find<T>(long? id) where T : RealmObject
         {
             var metadata = Metadata[typeof(T).Name];
             var objectPtr = metadata.Table.ObjectForPrimaryKey(SharedRealmHandle, id);
@@ -771,7 +772,7 @@ namespace Realms
         /// <param name="id">Id to be matched exactly, same as an == search.</param>
         /// <returns>Null or an object matching the id.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class T lacks an [PrimaryKey].</exception>
-        public T ObjectForPrimaryKey<T>(string id) where T : RealmObject
+        public T Find<T>(string id) where T : RealmObject
         {
             var metadata = Metadata[typeof(T).Name];
             var objectPtr = metadata.Table.ObjectForPrimaryKey(SharedRealmHandle, id);
@@ -790,7 +791,7 @@ namespace Realms
         /// <param name="id">Id to be matched exactly, same as an == search. An argument of type <c>long?</c> works for all integer properties, supported as PrimaryKey.</param>
         /// <returns>Null or an object matching the id.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class lacks an [PrimaryKey].</exception>
-        public RealmObject ObjectForPrimaryKey(string className, long? id)
+        public RealmObject Find(string className, long? id)
         {
             var metadata = Metadata[className];
             var objectPtr = metadata.Table.ObjectForPrimaryKey(SharedRealmHandle, id);
@@ -809,7 +810,7 @@ namespace Realms
         /// <param name="id">Id to be matched exactly, same as an == search.</param>
         /// <returns>Null or an object matching the id.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class lacks an [PrimaryKey].</exception>
-        public RealmObject ObjectForPrimaryKey(string className, string id)
+        public RealmObject Find(string className, string id)
         {
             var metadata = Metadata[className];
             var objectPtr = metadata.Table.ObjectForPrimaryKey(SharedRealmHandle, id);
@@ -821,7 +822,7 @@ namespace Realms
             return MakeObject(metadata, objectPtr);
         }
 
-        #endregion ObjectForPrimaryKey
+        #endregion Quick Find using primary key
 
         /// <summary>
         /// Removes a persistent object from this realm, effectively deleting it.
@@ -865,7 +866,7 @@ namespace Realms
         /// <typeparam name="T">Type of the objects to remove.</typeparam>
         public void RemoveAll<T>() where T : RealmObject
         {
-            RemoveRange(All<T>());
+            RemoveRange(GetAll<T>());
         }
 
         /// <summary>
@@ -874,7 +875,7 @@ namespace Realms
         /// <param name="className">Type of the objects to remove as defined in the schema.</param>
         public void RemoveAll(string className)
         {
-            RemoveRange(All(className));
+            RemoveRange(GetAll(className));
         }
 
         /// <summary>
@@ -888,5 +889,87 @@ namespace Realms
                 resultsHandle.Clear(SharedRealmHandle);
             }
         }
+
+        #region Obsolete methods
+
+        [Obsolete("This method has been renamed. Use GetAll for the same results.")]
+        /// <summary>
+        /// Extract an iterable set of objects for direct use or further query.
+        /// </summary>
+        /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
+        /// <returns>A RealmResults that without further filtering, allows iterating all objects of class T, in this realm.</returns>
+        public RealmResults<T> All<T>() where T : RealmObject
+        {
+            return GetAll<T>();
+        }
+
+        [Obsolete("This method has been renamed. Use GetAll for the same results.")]
+        /// <summary>
+        /// Get a view of all the objects of a particular type
+        /// </summary>
+        /// <param name="className">The type of the objects as defined in the schema.</param>
+        /// <remarks>Because the objects inside the view are accessed dynamically, the view cannot be queried into using LINQ or other expression predicates.</remarks>
+        /// <returns>A RealmResults that without further filtering, allows iterating all objects of className, in this realm.</returns>
+        public RealmResults<dynamic> All(string className)
+        {
+            return GetAll(className);
+        }
+
+        [Obsolete("This method has been renamed. Use Find for the same results.")]
+        /// <summary>
+        /// Fast lookup of an object from a class which has a PrimaryKey property.
+        /// </summary>
+        /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
+        /// <param name="id">Id to be matched exactly, same as an == search. Int64 argument works for all integer properties supported as PrimaryKey.</param>
+        /// <returns>Null or an object matching the id.</returns>
+        /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class T lacks an [PrimaryKey].</exception>
+        public T ObjectForPrimaryKey<T>(Int64 id) where T : RealmObject
+        {
+            return Find<T>(id);
+        }
+
+
+        [Obsolete("This method has been renamed. Use Find for the same results.")]
+        /// <summary>
+        /// Fast lookup of an object from a class which has a PrimaryKey property.
+        /// </summary>
+        /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
+        /// <param name="id">Id to be matched exactly, same as an == search.</param>
+        /// <returns>Null or an object matdhing the id.</returns>
+        /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class T lacks an [PrimaryKey].</exception>
+        public T ObjectForPrimaryKey<T>(string id) where T : RealmObject
+        {
+            return Find<T>(id);
+        }
+
+
+        [Obsolete("This method has been renamed. Use Find for the same results.")]
+        /// <summary>
+        /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.
+        /// </summary>
+        /// <param name="className">Name of class in dynamic situation.</param>
+        /// <param name="id">Id to be matched exactly, same as an == search.</param>
+        /// <returns>Null or an object matdhing the id.</returns>
+        /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class lacks an [PrimaryKey].</exception>
+        public RealmObject ObjectForPrimaryKey(string className, Int64 id)
+        {
+            return Find(className, id);
+        }
+
+
+        [Obsolete("This method has been renamed. Use Find for the same results.")]
+        /// <summary>
+        /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.
+        /// </summary>
+        /// <param name="className">Name of class in dynamic situation.</param>
+        /// <param name="id">Id to be matched exactly, same as an == search.</param>
+        /// <returns>Null or an object matdhing the id.</returns>
+        /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class lacks an [PrimaryKey].</exception>
+        public RealmObject ObjectForPrimaryKey(string className, string id)
+        {
+            return Find(className, id);
+        }
+
+        #endregion
     }
 }

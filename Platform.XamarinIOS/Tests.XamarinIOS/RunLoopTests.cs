@@ -63,7 +63,7 @@ namespace IntegrationTests.XamarinIOS
                     p1.FullName = "Person 1";
                 });
 
-                var q = r.All<Person>();
+                var q = r.GetAll<Person>();
                 Assert.That(q.Count, Is.EqualTo(1));
 
                 WriteOnDifferentThread(newRealm =>

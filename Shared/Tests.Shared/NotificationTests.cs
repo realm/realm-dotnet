@@ -83,7 +83,7 @@ namespace IntegrationTests.Shared
         [Test]
         public void ResultsShouldSendNotifications()
         {
-            var query = _realm.All<Person>();
+            var query = _realm.GetAll<Person>();
             RealmResults<Person>.ChangeSet changes = null;
             RealmResults<Person>.NotificationCallback cb = (s, c, e) => changes = c;
 
@@ -111,7 +111,7 @@ namespace IntegrationTests.Shared
             });
 
             Exception error = null;
-            var query = _realm.All<OrderedObject>().Where(o => o.IsPartOfResults).OrderBy(o => o.Order);
+            var query = _realm.GetAll<OrderedObject>().Where(o => o.IsPartOfResults).OrderBy(o => o.Order);
             var observable = query.ToNotifyCollectionChanged(e => error = e, coalesceMultipleChangesIntoReset: coalesce);
             var handle = GCHandle.Alloc(observable); // prevent this from being collected across event loops
 
@@ -140,7 +140,7 @@ namespace IntegrationTests.Shared
                     {
                         foreach (var value in change)
                         {
-                            _realm.All<OrderedObject>().Single(o => o.Order == value).IsPartOfResults = false;
+                            _realm.GetAll<OrderedObject>().Single(o => o.Order == value).IsPartOfResults = false;
                         }
                     }
                 });
@@ -208,7 +208,7 @@ namespace IntegrationTests.Shared
                     obj.Order = i;
                 }
             });
-            var query = _realm.All<OrderedObject>();
+            var query = _realm.GetAll<OrderedObject>();
             Exception error = null;
             var events = new List<NotifyCollectionChangedAction>();
 

@@ -37,16 +37,16 @@ namespace IntegrationTests
         [TestCase("John", 2)]
         public void FirstNamesEqual(string matchName, int expectFound)
         {
-            var c0 = _realm.All<Person>().Count(p => p.FirstName == matchName);
+            var c0 = _realm.GetAll<Person>().Count(p => p.FirstName == matchName);
             Assert.That(c0, Is.EqualTo(expectFound));
 
-            var c1 = _realm.All<Person>().Count(p => p.FirstName.StartsWith(matchName));
+            var c1 = _realm.GetAll<Person>().Count(p => p.FirstName.StartsWith(matchName));
             Assert.That(c1, Is.EqualTo(expectFound));
 
-            var c2 = _realm.All<Person>().Count(p => p.FirstName.Contains(matchName));
+            var c2 = _realm.GetAll<Person>().Count(p => p.FirstName.Contains(matchName));
             Assert.That(c2, Is.EqualTo(expectFound));
 
-            var c3 = _realm.All<Person>().Count(p => p.FirstName.EndsWith(matchName));
+            var c3 = _realm.GetAll<Person>().Count(p => p.FirstName.EndsWith(matchName));
             Assert.That(c3, Is.EqualTo(expectFound));
         }
 
@@ -55,10 +55,10 @@ namespace IntegrationTests
         [TestCase("J", 2)]
         public void SingleLetterStartSearch(string matchName, int expectFound)
         {
-            var c1 = _realm.All<Person>().Count(p => p.FirstName.StartsWith(matchName));
+            var c1 = _realm.GetAll<Person>().Count(p => p.FirstName.StartsWith(matchName));
             Assert.That(c1, Is.EqualTo(expectFound));
 
-            var c2 = _realm.All<Person>().Count(p => p.FirstName.Contains(matchName));
+            var c2 = _realm.GetAll<Person>().Count(p => p.FirstName.Contains(matchName));
             Assert.That(c2, Is.EqualTo(expectFound));
         }
 
@@ -67,10 +67,10 @@ namespace IntegrationTests
         [TestCase("n", 2)]
         public void SingleLetterEndSearch(string matchName, int expectFound)
         {
-            var c2 = _realm.All<Person>().Count(p => p.FirstName.Contains(matchName));
+            var c2 = _realm.GetAll<Person>().Count(p => p.FirstName.Contains(matchName));
             Assert.That(c2, Is.EqualTo(expectFound));
 
-            var c3 = _realm.All<Person>().Count(p => p.FirstName.EndsWith(matchName));
+            var c3 = _realm.GetAll<Person>().Count(p => p.FirstName.EndsWith(matchName));
             Assert.That(c3, Is.EqualTo(expectFound));
         }
 
@@ -80,7 +80,7 @@ namespace IntegrationTests
         [TestCase(-1.0f, 0.0f, 1)]
         public void ScoreWithinRange(float minScore, float maxScore, int expectFound)
         {
-            var c0 = _realm.All<Person>().Count(p => p.Score > minScore && p.Score <= maxScore);
+            var c0 = _realm.GetAll<Person>().Count(p => p.Score > minScore && p.Score <= maxScore);
             Assert.That(c0, Is.EqualTo(expectFound));
         }
 
@@ -93,16 +93,16 @@ namespace IntegrationTests
         {
             var data = new TestCaseData(matchName, expectFound);
 
-            var c0 = _realm.All<Person>().Count(p => p.FirstName == (string)data.Arguments[0]);
+            var c0 = _realm.GetAll<Person>().Count(p => p.FirstName == (string)data.Arguments[0]);
             Assert.That(c0, Is.EqualTo(data.Arguments[1]));
 
-            var c1 = _realm.All<Person>().Count(p => p.FirstName.StartsWith((string)data.Arguments[0]));
+            var c1 = _realm.GetAll<Person>().Count(p => p.FirstName.StartsWith((string)data.Arguments[0]));
             Assert.That(c1, Is.EqualTo(data.Arguments[1]));
 
-            var c2 = _realm.All<Person>().Count(p => p.FirstName.Contains((string)data.Arguments[0]));
+            var c2 = _realm.GetAll<Person>().Count(p => p.FirstName.Contains((string)data.Arguments[0]));
             Assert.That(c2, Is.EqualTo(data.Arguments[1]));
 
-            var c3 = _realm.All<Person>().Count(p => p.FirstName.EndsWith((string)data.Arguments[0]));
+            var c3 = _realm.GetAll<Person>().Count(p => p.FirstName.EndsWith((string)data.Arguments[0]));
             Assert.That(c3, Is.EqualTo(data.Arguments[1]));
         }
 
@@ -113,10 +113,10 @@ namespace IntegrationTests
         {
             var data = new TestCaseData(matchName, expectFound);
 
-            var c1 = _realm.All<Person>().Count(p => p.FirstName.StartsWith((string)data.Arguments[0]));
+            var c1 = _realm.GetAll<Person>().Count(p => p.FirstName.StartsWith((string)data.Arguments[0]));
             Assert.That(c1, Is.EqualTo(data.Arguments[1]));
 
-            var c2 = _realm.All<Person>().Count(p => p.FirstName.Contains((string)data.Arguments[0]));
+            var c2 = _realm.GetAll<Person>().Count(p => p.FirstName.Contains((string)data.Arguments[0]));
             Assert.That(c2, Is.EqualTo(data.Arguments[1]));
         }
 
@@ -127,10 +127,10 @@ namespace IntegrationTests
         {
             var data = new TestCaseData(matchName, expectFound);
 
-            var c2 = _realm.All<Person>().Count(p => p.FirstName.Contains((string)data.Arguments[0]));
+            var c2 = _realm.GetAll<Person>().Count(p => p.FirstName.Contains((string)data.Arguments[0]));
             Assert.That(c2, Is.EqualTo(data.Arguments[1]));
 
-            var c3 = _realm.All<Person>().Count(p => p.FirstName.EndsWith((string)data.Arguments[0]));
+            var c3 = _realm.GetAll<Person>().Count(p => p.FirstName.EndsWith((string)data.Arguments[0]));
             Assert.That(c3, Is.EqualTo(data.Arguments[1]));
         }
 
@@ -142,7 +142,7 @@ namespace IntegrationTests
         {
             var data = new TestCaseData(minScore, maxScore, expectFound);
 
-            var c0 = _realm.All<Person>().Count(p => p.Score > (float)data.Arguments[0] && p.Score <= (float)data.Arguments[1]);
+            var c0 = _realm.GetAll<Person>().Count(p => p.Score > (float)data.Arguments[0] && p.Score <= (float)data.Arguments[1]);
             Assert.That(c0, Is.EqualTo(data.Arguments[2]));
         }
     }
