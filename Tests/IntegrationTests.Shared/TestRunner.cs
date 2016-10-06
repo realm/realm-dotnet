@@ -34,8 +34,13 @@ namespace IntegrationTests.Shared
 			var testExecutionContext = TestExecutionContext.CurrentContext;
 			testExecutionContext.WorkDirectory = Environment.CurrentDirectory;
 
-			var workItem = suite.CreateWorkItem (TestFilter.Empty);
-			workItem.Execute (testExecutionContext);
+#if __IOS__
+			var workItem = suite.CreateWorkItem (TestFilter.Empty, null);
+#else
+            var workItem = suite.CreateWorkItem(TestFilter.Empty);
+#endif
+
+            workItem.Execute (testExecutionContext);
 
 			var testWriter = new NUnitLite.Runner.NUnit2XmlOutputWriter (DateTime.Now);
 			using (var writer = new StreamWriter (outputStream)) 
