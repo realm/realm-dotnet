@@ -315,10 +315,10 @@ namespace Realms
 
         void ICopyValuesFrom.CopyValuesFrom(IEnumerable<RealmObject> values)
         {
-			if (values == null)
-			{
-				return;
-			}
+            if (values == null)
+            {
+                return;
+            }
 
             foreach (var item in values.Cast<T>())
             {

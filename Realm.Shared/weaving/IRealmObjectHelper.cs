@@ -22,6 +22,6 @@ namespace Realms.Weaving
     {
         RealmObject CreateInstance();
 
-		void CopyToRealm(RealmObject instance);
+        void CopyToRealm(RealmObject instance);
     }
 }

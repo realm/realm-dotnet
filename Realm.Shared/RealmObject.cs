@@ -88,7 +88,7 @@ namespace Realms
         internal void _CopyDataFromBackingFieldsToRow()
         {
             Debug.Assert(this.IsManaged);
-			_metadata.Helper.CopyToRealm(this);
+            _metadata.Helper.CopyToRealm(this);
         }
 
         #region Getters
