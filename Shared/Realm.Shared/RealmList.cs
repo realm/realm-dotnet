@@ -91,11 +91,6 @@ namespace Realms
             }
         }
 
-        /// <summary>
-        /// Value returned by IndexOf if an item is not found.
-        /// </summary>
-        public const int ITEM_NOT_FOUND = -1;
-
         private Realm _realm;
         private LinkListHandle _listHandle;
         private RealmObject.Metadata _targetMetadata;
@@ -200,7 +195,7 @@ namespace Realms
         /// <returns>True if found, false if not found.</returns>
         public bool Contains(T item)
         {
-            return IndexOf(item) != ITEM_NOT_FOUND;
+            return IndexOf(item) > -1;
         }
 
         /// <summary>
@@ -247,7 +242,7 @@ namespace Realms
         /// Finds an ordinal index for an item in a relationship.
         /// </summary>
         /// <param name="item">RealmObject being removed from the relationship.</param>
-        /// <returns>0-based index if the item was found in the related set, or RealmList.ITEM_NOT_FOUND.</returns>
+        /// <returns>0-based index if the item was found in the related set, -1 otherwise.</returns>
         public int IndexOf(T item)
         {
             if (!item.IsManaged)
@@ -283,7 +278,7 @@ namespace Realms
         public bool Remove(T item)
         {
             var index = IndexOf(item);
-            if (index == ITEM_NOT_FOUND)
+            if (index < 0)
             {
                 return false;
             }
