@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -187,7 +187,7 @@ namespace IntegrationTests
             var config = new RealmConfiguration("UnableToOpenWithKeyIfNotEncrypted.realm");
             Realm.DeleteRealm(config);  // ensure guarded from prev tests
             var openedWithoutKey = Realm.GetInstance(config);
-            openedWithoutKey.Close();
+            openedWithoutKey.Dispose();
             var emptyKey = new byte[64];
             config.EncryptionKey = emptyKey;
 
@@ -211,7 +211,7 @@ namespace IntegrationTests
             var emptyKey = new byte[64];
             config.EncryptionKey = emptyKey;
             var openedWithKey = Realm.GetInstance(config);
-            openedWithKey.Close();
+            openedWithKey.Dispose();
             config.EncryptionKey[0] = 42;
 
             // Assert
@@ -235,7 +235,7 @@ namespace IntegrationTests
             answerKey[0] = 42;
             config.EncryptionKey = answerKey;
             var openedWithKey = Realm.GetInstance(config);
-            openedWithKey.Close();
+            openedWithKey.Dispose();
 
             var config2 = new RealmConfiguration("AbleToReopenEncryptedWithSameKey.realm");
             var answerKey2 = new byte[64];

@@ -100,15 +100,6 @@ namespace Realms
         public bool IsClosed => false;
 
         /// <summary>
-        ///  Closes the Realm if not already closed. Safe to call repeatedly.
-        /// </summary>
-        //// [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-        public void Close()
-        {
-            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
-        }
-
-        /// <summary>
         ///  Dispose automatically closes the Realm if not already closed.
         /// </summary>
         public void Dispose()
@@ -440,30 +431,29 @@ namespace Realms
 
         #region Obsolete methods
 
-        [Obsolete("This method has been renamed. Use GetAll for the same results.")]
         /// <summary>
         /// Extract an iterable set of objects for direct use or further query.
         /// </summary>
         /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
         /// <returns>A RealmResults that without further filtering, allows iterating all objects of class T, in this realm.</returns>
+        [Obsolete("This method has been renamed. Use GetAll for the same results.")]
         public RealmResults<T> All<T>() where T : RealmObject
         {
             return GetAll<T>();
         }
 
-        [Obsolete("This method has been renamed. Use GetAll for the same results.")]
         /// <summary>
         /// Get a view of all the objects of a particular type
         /// </summary>
         /// <param name="className">The type of the objects as defined in the schema.</param>
         /// <remarks>Because the objects inside the view are accessed dynamically, the view cannot be queried into using LINQ or other expression predicates.</remarks>
         /// <returns>A RealmResults that without further filtering, allows iterating all objects of className, in this realm.</returns>
+        [Obsolete("This method has been renamed. Use GetAll for the same results.")]
         public RealmResults<dynamic> All(string className)
         {
             return GetAll(className);
         }
 
-        [Obsolete("This method has been renamed. Use Find for the same results.")]
         /// <summary>
         /// Fast lookup of an object from a class which has a PrimaryKey property.
         /// </summary>
@@ -471,13 +461,13 @@ namespace Realms
         /// <param name="id">Id to be matched exactly, same as an == search. Int64 argument works for all integer properties supported as PrimaryKey.</param>
         /// <returns>Null or an object matching the id.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class T lacks an [PrimaryKey].</exception>
+        [Obsolete("This method has been renamed. Use Find for the same results.")]
         public T ObjectForPrimaryKey<T>(Int64 id) where T : RealmObject
         {
             return Find<T>(id);
         }
 
 
-        [Obsolete("This method has been renamed. Use Find for the same results.")]
         /// <summary>
         /// Fast lookup of an object from a class which has a PrimaryKey property.
         /// </summary>
@@ -485,13 +475,13 @@ namespace Realms
         /// <param name="id">Id to be matched exactly, same as an == search.</param>
         /// <returns>Null or an object matdhing the id.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class T lacks an [PrimaryKey].</exception>
+        [Obsolete("This method has been renamed. Use Find for the same results.")]
         public T ObjectForPrimaryKey<T>(string id) where T : RealmObject
         {
             return Find<T>(id);
         }
 
 
-        [Obsolete("This method has been renamed. Use Find for the same results.")]
         /// <summary>
         /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.
         /// </summary>
@@ -499,13 +489,13 @@ namespace Realms
         /// <param name="id">Id to be matched exactly, same as an == search.</param>
         /// <returns>Null or an object matdhing the id.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class lacks an [PrimaryKey].</exception>
+        [Obsolete("This method has been renamed. Use Find for the same results.")]
         public RealmObject ObjectForPrimaryKey(string className, Int64 id)
         {
             return Find(className, id);
         }
 
 
-        [Obsolete("This method has been renamed. Use Find for the same results.")]
         /// <summary>
         /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.
         /// </summary>
@@ -513,12 +503,12 @@ namespace Realms
         /// <param name="id">Id to be matched exactly, same as an == search.</param>
         /// <returns>Null or an object matdhing the id.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class lacks an [PrimaryKey].</exception>
+        [Obsolete("This method has been renamed. Use Find for the same results.")]
         public RealmObject ObjectForPrimaryKey(string className, string id)
         {
             return Find(className, id);
         }
 
-        [Obsolete("This method has been renamed. Use Add for the same results.")]
         /// <summary>
         /// This realm will start managing a RealmObject which has been created as a standalone object.
         /// </summary>
@@ -527,9 +517,20 @@ namespace Realms
         /// <exception cref="RealmOutsideTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
         /// <exception cref="RealmObjectAlreadyManagedByRealmException">You can't manage the same object twice. This exception is thrown, rather than silently detecting the mistake, to help you debug your code</exception>
         /// <exception cref="RealmObjectManagedByAnotherRealmException">You can't manage an object with more than one realm</exception>
+        [Obsolete("This method has been renamed. Use Add for the same results.")]
         public void Manage<T>(T obj) where T : RealmObject
         {
             Add(obj);
+        }
+
+        /// <summary>
+        ///  Closes the Realm if not already closed. Safe to call repeatedly.
+        /// </summary>
+        //[ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+        [Obsolete("This method has been deprecated. Instead, dispose the realm to close it.")]
+        public void Close()
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }
 
         #endregion

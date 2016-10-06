@@ -171,18 +171,18 @@ namespace Realms
 
         #region Obsolete members
 
-        [Obsolete("This field has been renamed. Use IsReadOnly instead.")]
         /// <summary>
         /// Flag to indicate Realm is opened readonly so can open from locked locations such as bundled with an application.
         /// </summary>
+        [Obsolete("This field has been renamed. Use IsReadOnly instead.")]
         public bool ReadOnly;
 
-        [Obsolete("This method has been renamed. Use GetPathToRealm instead.")]
         /// <summary>
         /// Utility to build a path in which a realm will be created so can consistently use filenames and relative paths.
         /// </summary>
         /// <param name="optionalPath">Path to the realm, must be a valid full path for the current platform, relative subdir, or just filename.</param>
         /// <returns>A full path including name of Realm file.</returns>
+        [Obsolete("This method has been renamed. Use GetPathToRealm instead.")]
         public static string PathToRealm(string optionalPath = null)
         {
             return GetPathToRealm(optionalPath);

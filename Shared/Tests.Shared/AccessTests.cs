@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -40,7 +40,7 @@ namespace IntegrationTests.Shared
         [TearDown]
         public void TearDown()
         {
-            _realm.Close();
+            _realm.Dispose();
             Realm.DeleteRealm(_realm.Config);
         }
 
@@ -143,7 +143,7 @@ namespace IntegrationTests.Shared
             // Arrange
             Person p1 = null;
             _realm.Write(() => p1 = _realm.CreateObject<Person>());
-            _realm.Close();
+            _realm.Dispose();
 
             // Act and assert
             Assert.Throws<RealmClosedException>(() =>

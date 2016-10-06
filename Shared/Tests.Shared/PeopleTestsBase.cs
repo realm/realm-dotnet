@@ -41,7 +41,7 @@ namespace IntegrationTests
         [TearDown]
         public virtual void TearDown()
         {
-            _realm.Close();
+            _realm.Dispose();
             Realm.DeleteRealm(_realm.Config);
         }
 

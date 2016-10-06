@@ -39,7 +39,7 @@ namespace IntegrationTests.Shared
         [TearDown]
         public void TearDown()
         {
-            _realm.Close();
+            _realm.Dispose();
             Realm.DeleteRealm(_realm.Config);
         }
 
@@ -49,7 +49,7 @@ namespace IntegrationTests.Shared
             {
                 var r = Realm.GetInstance();
                 r.Write(() => action(r));
-                r.Close();
+                r.Dispose();
             });
             thread.Start();
             thread.Join();
