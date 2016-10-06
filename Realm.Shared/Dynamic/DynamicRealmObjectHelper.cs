@@ -17,6 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
+using System.Reflection;
 using Realms.Weaving;
 
 namespace Realms.Dynamic
@@ -25,7 +27,35 @@ namespace Realms.Dynamic
     {
         internal static readonly DynamicRealmObjectHelper Instance = new DynamicRealmObjectHelper();
 
-        public RealmObject CreateInstance()
+		public void CopyToRealm(RealmObject instance)
+		{
+			foreach (var property in instance.ObjectSchema)
+			{
+				var field = property.PropertyInfo.DeclaringType.GetField(
+						   property.PropertyInfo.GetCustomAttribute<WovenPropertyAttribute>().BackingFieldName,
+						   BindingFlags.Instance | BindingFlags.NonPublic
+						);
+				var value = field?.GetValue(this);
+				if (value != null)
+				{
+					var listValue = value as IEnumerable<RealmObject>;
+					if (listValue != null)  // assume it is IList NOT a RealmList so need to wipe afer copy
+					{
+						// cope with ReplaceListGetter creating a getter which assumes 
+						// a backing field for a managed IList is already a RealmList, so null it first
+						field.SetValue(this, null);  // now getter will create a RealmList below
+						var realmList = (ICopyValuesFrom)property.PropertyInfo.GetValue(this, null);
+						realmList.CopyValuesFrom(listValue);
+					}
+					else
+					{
+						property.PropertyInfo.SetValue(this, value, null);
+					}
+				}  // only null if blank relationship or string so leave as default
+			}
+		}
+
+		public RealmObject CreateInstance()
         {
             return new DynamicRealmObject();
         }
