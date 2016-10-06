@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -40,12 +40,22 @@ namespace Realms
         /// <summary>
         /// Flag indicating that the database will be deleted if the schema mismatches the one in the code. Use this when debugging and developing your app but never release it with this flag set to <c>true</c>.
         /// </summary>
-        public readonly bool ShouldDeleteIfMigrationNeeded;
+        public bool ShouldDeleteIfMigrationNeeded { get; }
 
         /// <summary>
         /// Flag to indicate Realm is opened readonly so can open from locked locations such as bundled with an application.
         /// </summary>
-        public bool ReadOnly;
+        public bool IsReadOnly
+        {
+            get
+            {
+                return ReadOnly;
+            }
+            set
+            {
+                ReadOnly = value;
+            }
+        }
 
         /// <summary>
         /// Gets the full path of the realms opened with this configuration, may be overriden by passing in a separate name.
@@ -227,5 +237,15 @@ namespace Realms
         /// <returns>A hash code for this instance that is suitable for use in hashing algorithms and data structures such as a
         /// hash table.</returns>
         public override int GetHashCode() => DatabasePath.GetHashCode();
+
+        #region Obsolete members
+
+        [Obsolete("This field has been renamed. Use IsReadOnly instead.")]
+        /// <summary>
+        /// Flag to indicate Realm is opened readonly so can open from locked locations such as bundled with an application.
+        /// </summary>
+        public bool ReadOnly;
+        
+        #endregion
     }
 }

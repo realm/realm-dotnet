@@ -152,7 +152,7 @@ namespace IntegrationTests.Shared
             var p = new Person { Birthday = new DateTimeOffset(Ticks, TimeSpan.Zero) };
 
             // Act
-            _realm.Write(() => { _realm.Manage(p); });
+            _realm.Write(() => { _realm.Add(p); });
 
             // Assert
             Assert.That(p.Birthday.Ticks, Is.EqualTo(Ticks));

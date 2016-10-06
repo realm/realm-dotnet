@@ -63,7 +63,7 @@ namespace IntegrationTests.Shared
             {
                 using (var transaction = realm.BeginWrite())
                 {
-                    realm.Manage(_person);
+                    realm.Add(_person);
                     transaction.Commit();
                 }
 

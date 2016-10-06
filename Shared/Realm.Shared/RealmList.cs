@@ -315,7 +315,7 @@ namespace Realms
         {
             if (!obj.IsManaged)
             {
-                _realm.Manage(obj);
+                _realm.Add(obj);
             }
         }
 
