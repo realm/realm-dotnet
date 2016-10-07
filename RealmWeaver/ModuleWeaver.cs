@@ -906,20 +906,20 @@ public class ModuleWeaver
         {
             // This roughly translates to
             /*
-				var casted = (ObjectType)instance;
+				var castInstance = (ObjectType)instance;
 				
-				*foreach* non-list woven property in casted's schema
-				if (casted.field != default(fieldType))
+				*foreach* non-list woven property in castInstance's schema
+				if (castInstance.field != default(fieldType))
 				{
-				    casted.Property = casted.Field;
+				    castInstance.Property = castInstance.Field;
 				}
 
-				*foreach* list woven property in casted's schema
-				var list = casted.field;
-				casted.field = null;
+				*foreach* list woven property in castInstance's schema
+				var list = castInstance.field;
+				castInstance.field = null;
 				for (var i = 0; i < list.Count; i++)
 				{
-				    casted.Property.Add(list[i]);
+				    castInstance.Property.Add(list[i]);
 				}
 			*/
 
@@ -1055,7 +1055,7 @@ public class ModuleWeaver
                 else
                 {
                     var sequencePoint = property.GetMethod.Body.Instructions.First().SequencePoint;
-                    LogErrorPoint($"{realmObjectType.Name}.{property.Name} does not have a setter and is not an IList.", sequencePoint);
+                    LogErrorPoint($"{realmObjectType.Name}.{property.Name} does not have a setter and is not an IList. This is an error in Realm, so please file a bug report.", sequencePoint);
                 }
             }
 
