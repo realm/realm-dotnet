@@ -16,13 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
-
 namespace Realms.Weaving
 {
     public interface IRealmObjectHelper
     {
         RealmObject CreateInstance();
+
+        void CopyToRealm(RealmObject instance);
     }
 }
-

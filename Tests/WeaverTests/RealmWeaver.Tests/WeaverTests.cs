@@ -28,6 +28,7 @@ using System.Reflection;
 using Mono.Cecil;
 using NUnit.Framework;
 using System.ComponentModel;
+using Realms.Weaving;
 
 namespace RealmWeaver
 {
@@ -469,6 +470,78 @@ namespace RealmWeaver
 
             Assert.That(_errors, Is.EquivalentTo(expectedErrors));
             Assert.That(_warnings, Is.EquivalentTo(expectedWarnings));
+        }
+
+        [TestCase("String", "string")]
+        [TestCase("Char", 'd')]
+        [TestCase("Byte", (byte)3)]
+        [TestCase("Int16", (Int16)3)]
+        [TestCase("Int32", 3)]
+        [TestCase("Int64", (Int64)3)]
+        [TestCase("Single", (float)3.3)]
+        [TestCase("Double", 3.3)]
+        [TestCase("Boolean", true)]
+        public void WovenCopyToRealm_ShouldSetNonDefaultProperties(string propertyName, object propertyValue)
+        {
+            var objectType = _assembly.GetType("AssemblyToProcess.NonNullableProperties");
+            var instance = (dynamic)Activator.CreateInstance(objectType);
+            instance.IsManaged = true;
+            SetPropertyValue(instance, propertyName, propertyValue);
+
+            CopyToRealm(objectType, instance);
+
+            Assert.That(instance.LogList, Is.EqualTo(new List<string>
+            {
+                "IsManaged",
+                $"RealmObject.Set{propertyName}Value(propertyName = \"{propertyName}\", value = {propertyValue})"
+            }));
+        }
+
+        [Test]
+        public void WovenCopyToRealm_ShouldSetNonDefaultDateTimeOffsetProperties()
+        {
+            // DateTimeOffset can't be set as a constant
+            WovenCopyToRealm_ShouldSetNonDefaultProperties("DateTimeOffset", new DateTimeOffset(1, 1, 1, 1, 1, 1, TimeSpan.Zero));
+        }
+
+        [Test]
+        public void WovenCopyToRealm_ShouldSetNonDefaultByteArrayProperties()
+        {
+            // ByteArray can't be set as a constant
+            WovenCopyToRealm_ShouldSetNonDefaultProperties("ByteArray", new byte[] { 4, 3, 2 });
+        }
+        
+
+        [Test]
+        public void WovenCopyToRealm_ShouldAlwaysSetNullableProperties()
+        {
+            var objectType = _assembly.GetType("AssemblyToProcess.NullableProperties");
+            var instance = (dynamic)Activator.CreateInstance(objectType);
+            instance.IsManaged = true;
+
+            CopyToRealm(objectType, instance);
+
+            var properties = ((Type)instance.GetType()).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            var targetList = properties.Where(p => p.Name != "IsManaged")
+                                       .SelectMany(p =>
+                                       {
+                                           return new[]
+                                           {
+                                               "IsManaged",
+                                               $"RealmObject.SetNullable{p.Name}Value(propertyName = \"{p.Name}\", value = )"
+                                           };
+                                       })
+                                       .ToList();
+
+            Assert.That(instance.LogList, Is.EqualTo(targetList));
+        }
+
+        private static void CopyToRealm(Type objectType, dynamic instance)
+        {
+            var wovenAttribute = objectType.CustomAttributes.Single(a => a.AttributeType.Name == "WovenAttribute");
+            var helperType = (Type)wovenAttribute.ConstructorArguments[0].Value;
+            var helper = (IRealmObjectHelper)Activator.CreateInstance(helperType);
+            helper.CopyToRealm(instance);
         }
 
 #if(DEBUG)

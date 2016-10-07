@@ -15,7 +15,7 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
 using System;
 using System.Linq;
 using Mono.Cecil;
@@ -48,6 +48,9 @@ public class ModuleWeaver
     private TypeReference System_String;
     private TypeReference System_Type;
     private TypeReference System_IList;
+    private TypeReference System_DateTimeOffset;
+    private TypeReference System_Int32;
+    private MethodReference System_DatetimeOffset_Op_Inequality;
 
     private MethodReference _propChangedEventArgsConstructor;
     private MethodReference _propChangedEventHandlerInvokeReference;
@@ -167,17 +170,19 @@ public class ModuleWeaver
         _wovenPropertyAttributeConstructor = ModuleDefinition.ImportReference(wovenPropertyAttributeClass.GetConstructors().First());
 
         _corLib = AssemblyResolver.Resolve((AssemblyNameReference)ModuleDefinition.TypeSystem.CoreLibrary);
-        System_Object = ModuleDefinition.TypeSystem.Object; 
+        System_Object = ModuleDefinition.TypeSystem.Object;
         System_Boolean = ModuleDefinition.TypeSystem.Boolean;
         System_String = ModuleDefinition.TypeSystem.String;
-        var typeTypeDefinition = _corLib.MainModule.GetType("System.Type");
-        if (typeTypeDefinition == null) // For PCL's System.Type is only accessible as an ExportedType for some reason.
-        {
-            typeTypeDefinition = _corLib.MainModule.ExportedTypes.First(t => t.FullName == "System.Type").Resolve();
-        }
-        System_Type = ModuleDefinition.ImportReference(typeTypeDefinition);
+        System_Int32 = ModuleDefinition.TypeSystem.Int32;
+
+        var dateTimeOffsetType = GetTypeFromSystemAssembly("System.DateTimeOffset");
+        System_DateTimeOffset = ModuleDefinition.ImportReference(dateTimeOffsetType);
+        System_DatetimeOffset_Op_Inequality = ModuleDefinition.ImportReference(dateTimeOffsetType.GetMethods().Single(m => m.Name == "op_Inequality"));
+
+        System_Type = ModuleDefinition.ImportReference(GetTypeFromSystemAssembly("System.Type"));
 
         var listTypeDefinition = _corLib.MainModule.GetType("System.Collections.Generic.List`1");
+
         if (listTypeDefinition == null)
         {
             System_IList = ModuleDefinition.ImportReference(typeof(System.Collections.Generic.List<>));
@@ -214,7 +219,7 @@ public class ModuleWeaver
             }
             catch (Exception e)
             {
-                LogError( $"Unexpected error caught weaving type '{type.Name}': {e.Message}.\r\nCallstack:\r\n{e.StackTrace}");
+                LogError($"Unexpected error caught weaving type '{type.Name}': {e.Message}.\r\nCallstack:\r\n{e.StackTrace}");
             }
         }
 
@@ -227,7 +232,7 @@ public class ModuleWeaver
 
         var typeImplementsPropertyChanged =
             type.Interfaces.Any(t => t.FullName == "System.ComponentModel.INotifyPropertyChanged");
-        
+
         EventDefinition propChangedEventDefinition = null;
         FieldDefinition propChangedFieldDefinition = null;
 
@@ -237,13 +242,17 @@ public class ModuleWeaver
             propChangedFieldDefinition = type.Fields.First(X => X.FullName.EndsWith("::PropertyChanged"));
         }
 
-        var persistedPropertyCount = 0;
-        foreach (var prop in type.Properties.Where( x => x.HasThis && !x.CustomAttributes.Any(a => a.AttributeType.Name == "IgnoredAttribute")))
+        var persistedProperties = new Dictionary<PropertyDefinition, FieldReference>();
+        foreach (var prop in type.Properties.Where(x => x.HasThis && !x.CustomAttributes.Any(a => a.AttributeType.Name == "IgnoredAttribute")))
         {
             try
             {
-                var wasWoven = WeaveProperty(prop, type, methodTable, typeImplementsPropertyChanged, propChangedEventDefinition, propChangedFieldDefinition);
-                if (wasWoven) persistedPropertyCount++;
+                FieldReference field;
+                var wasWoven = WeaveProperty(prop, type, methodTable, typeImplementsPropertyChanged, propChangedEventDefinition, propChangedFieldDefinition, out field);
+                if (wasWoven)
+                {
+                    persistedProperties[prop] = field;
+                }
             }
             catch (Exception e)
             {
@@ -254,7 +263,7 @@ public class ModuleWeaver
             }
         }
 
-        if (persistedPropertyCount == 0)
+        if (!persistedProperties.Any())
         {
             LogError($"class {type.Name} is a RealmObject but has no persisted properties");
             return;
@@ -279,7 +288,7 @@ public class ModuleWeaver
         LogDebug($"Added [Preserve] to {type.Name} and its constructor");
 
         var wovenAttribute = new CustomAttribute(_wovenAttributeConstructor);
-        TypeReference helperType = WeaveRealmObjectHelper(type, objectConstructor);
+        TypeReference helperType = WeaveRealmObjectHelper(type, objectConstructor, persistedProperties);
         wovenAttribute.ConstructorArguments.Add(new CustomAttributeArgument(System_Type, helperType));
         type.CustomAttributes.Add(wovenAttribute);
         Debug.WriteLine("");
@@ -287,17 +296,17 @@ public class ModuleWeaver
 
 
     private bool WeaveProperty(PropertyDefinition prop, TypeDefinition type, Dictionary<string, Tuple<MethodReference, MethodReference>> methodTable,
-        bool typeImplementsPropertyChanged, EventDefinition propChangedEventDefinition,
-        FieldDefinition propChangedFieldDefinition)
+                               bool typeImplementsPropertyChanged, EventDefinition propChangedEventDefinition,
+                               FieldDefinition propChangedFieldDefinition, out FieldReference backingField)
     {
         var sequencePoint = prop.GetMethod.Body.Instructions.First().SequencePoint;
 
         var columnName = prop.Name;
         var mapToAttribute = prop.CustomAttributes.FirstOrDefault(a => a.AttributeType.Name == "MapToAttribute");
         if (mapToAttribute != null)
-            columnName = ((string) mapToAttribute.ConstructorArguments[0].Value);
+            columnName = ((string)mapToAttribute.ConstructorArguments[0].Value);
 
-        var backingField = GetBackingField(prop);
+        backingField = GetBackingField(prop);
         var isIndexed = prop.CustomAttributes.Any(a => a.AttributeType.Name == "IndexedAttribute");
         if (isIndexed && (!_indexableTypes.Contains(prop.PropertyType.FullName)))
         {
@@ -316,7 +325,7 @@ public class ModuleWeaver
             return false;
         }
 
-        if (!prop.IsAutomatic()) 
+        if (!prop.IsAutomatic())
         {
             if (prop.PropertyType.Resolve().BaseType.IsSameAs(_realmObject))
                 LogWarningPoint(
@@ -329,7 +338,7 @@ public class ModuleWeaver
             // If the property is automatic but doesn't have a setter, we should still ignore it.
             if (prop.SetMethod == null)
                 return false;
-            
+
             var typeId = prop.PropertyType.FullName + (isPrimaryKey ? " unique" : "");
             if (!methodTable.ContainsKey(typeId))
             {
@@ -345,7 +354,7 @@ public class ModuleWeaver
 
         // treat IList and RealmList similarly but IList gets a default so is useable as standalone
         // IList or RealmList allows people to declare lists only of _realmObject due to the class definition
-        else if (prop.PropertyType.Name == "IList`1" && prop.PropertyType.Namespace == "System.Collections.Generic")
+        else if (IsIList(prop))
         {
             var elementType = ((GenericInstanceType)prop.PropertyType).GenericArguments.Single();
             if (!elementType.Resolve().BaseType.IsSameAs(_realmObject))
@@ -377,7 +386,7 @@ public class ModuleWeaver
                 new GenericInstanceMethod(_genericGetListValueReference) { GenericArguments = { elementType } }, elementType,
                              ModuleDefinition.ImportReference(concreteListConstructor));
         }
-        else if (prop.PropertyType.Name == "RealmList`1" && prop.PropertyType.Namespace == "Realms")
+        else if (IsRealmList(prop))
         {
             var elementType = ((GenericInstanceType)prop.PropertyType).GenericArguments.Single();
             if (prop.SetMethod != null)
@@ -402,11 +411,11 @@ public class ModuleWeaver
             }
 
             ReplaceGetter(prop, columnName,
-                new GenericInstanceMethod(_genericGetObjectValueReference) {GenericArguments = {prop.PropertyType}});
+                new GenericInstanceMethod(_genericGetObjectValueReference) { GenericArguments = { prop.PropertyType } });
             ReplaceSetter(prop, backingField, columnName,
-                new GenericInstanceMethod(_genericSetObjectValueReference) {GenericArguments = {prop.PropertyType}},
+                new GenericInstanceMethod(_genericSetObjectValueReference) { GenericArguments = { prop.PropertyType } },
                 typeImplementsPropertyChanged, propChangedEventDefinition, propChangedFieldDefinition);
-                // with casting in the _realmObject methods, should just work
+            // with casting in the _realmObject methods, should just work
         }
         else if (prop.PropertyType.FullName == "System.DateTime")
         {
@@ -425,7 +434,6 @@ public class ModuleWeaver
         prop.CustomAttributes.Add(preserveAttribute);
 
         var wovenPropertyAttribute = new CustomAttribute(_wovenPropertyAttributeConstructor);
-        wovenPropertyAttribute.ConstructorArguments.Add(new CustomAttributeArgument(System_String, backingField.Name));
         prop.CustomAttributes.Add(wovenPropertyAttribute);
 
         Debug.WriteLine("");
@@ -634,7 +642,7 @@ public class ModuleWeaver
 
         if (setValueReference == null)
             throw new ArgumentNullException(nameof(setValueReference));
-        
+
         if (!weavePropertyChanged)
         {
             var start = prop.SetMethod.Body.Instructions.First();
@@ -697,12 +705,12 @@ public class ModuleWeaver
                 ldloc.1
                 brfalse.s IL_0017
             */
-            il.Append(il.Create(OpCodes.Ldarg_0));                         
+            il.Append(il.Create(OpCodes.Ldarg_0));
             il.Append(il.Create(OpCodes.Call, _realmObjectIsManagedGetter));
-            il.Append(il.Create(OpCodes.Ldc_I4_0));                        
-            il.Append(il.Create(OpCodes.Ceq));                             
-            il.Append(il.Create(OpCodes.Stloc_1));                         
-            il.Append(il.Create(OpCodes.Ldloc_1));                         
+            il.Append(il.Create(OpCodes.Ldc_I4_0));
+            il.Append(il.Create(OpCodes.Ceq));
+            il.Append(il.Create(OpCodes.Stloc_1));
+            il.Append(il.Create(OpCodes.Ldloc_1));
             var jumpToLabelA = il.Create(OpCodes.Nop);
             il.Append(jumpToLabelA); // Jump to A
 
@@ -790,7 +798,94 @@ public class ModuleWeaver
             .SingleOrDefault();
     }
 
-    private TypeDefinition WeaveRealmObjectHelper(TypeDefinition realmObjectType, MethodDefinition objectConstructor)
+    private static bool IsIList(PropertyDefinition property)
+    {
+        return property.PropertyType.Name == "IList`1" && property.PropertyType.Namespace == "System.Collections.Generic";
+    }
+
+    private static bool IsRealmList(PropertyDefinition property)
+    {
+        return property.PropertyType.Name == "RealmList`1" && property.PropertyType.Namespace == "Realms";
+    }
+
+    private static bool IsDateTimeOffset(PropertyDefinition property)
+    {
+        return property.PropertyType.Name == "DateTimeOffset" && property.PropertyType.Namespace == "System";
+    }
+
+    private static bool IsNullable(PropertyDefinition property)
+    {
+        return property.PropertyType.Name.Contains("Nullable`1") && property.PropertyType.Namespace == "System";
+    }
+
+    private static bool IsSingle(PropertyDefinition property)
+    {
+        return property.PropertyType.Name == "Single" && property.PropertyType.Namespace == "System";
+    }
+
+    private static bool IsDouble(PropertyDefinition property)
+    {
+        return property.PropertyType.Name == "Double" && property.PropertyType.Namespace == "System";
+    }
+
+    private MethodReference GetIListMethodReference(TypeDefinition interfaceType, string methodName, GenericInstanceType genericInstance)
+    {
+        MethodReference reference = null;
+        var definition = interfaceType.GetMethods().FirstOrDefault(m => m.FullName.Contains($"::{methodName}"));
+        if (definition == null)
+        {
+            foreach (var parent in interfaceType.Interfaces)
+            {
+                reference = GetIListMethodReference(parent.Resolve(), methodName, genericInstance);
+                if (reference != null)
+                {
+                    break;
+                }
+            }
+        }
+        else
+        {
+            var generic = definition.MakeHostInstanceGeneric(genericInstance.GenericArguments.ToArray());
+            reference = ModuleDefinition.ImportReference(generic);
+        }
+
+        return reference;
+    }
+
+    private MethodReference MakeMethodGeneric(MethodReference methodReference, GenericInstanceType genericInstance)
+    {
+        var reference = new MethodReference(methodReference.Name, methodReference.ReturnType, genericInstance)
+        {
+            HasThis = methodReference.HasThis,
+            ExplicitThis = methodReference.ExplicitThis,
+            CallingConvention = methodReference.CallingConvention
+        };
+
+        foreach (var parameter in methodReference.Parameters)
+        {
+            reference.Parameters.Add(parameter);
+        }
+
+        foreach (var genericParameter in methodReference.GenericParameters)
+        {
+            reference.GenericParameters.Add(new GenericParameter(genericParameter.Name, reference));
+        }
+
+        return reference;
+    }
+
+    private TypeDefinition GetTypeFromSystemAssembly(string typeName)
+    {
+        var objectTypeDefinition = _corLib.MainModule.GetType(typeName);
+        if (objectTypeDefinition == null) // For PCL's System.XXX is only accessible as an ExportedType for some reason.
+        {
+            objectTypeDefinition = _corLib.MainModule.ExportedTypes.First(t => t.FullName == typeName).Resolve();
+        }
+
+        return objectTypeDefinition;
+    }
+
+    private TypeDefinition WeaveRealmObjectHelper(TypeDefinition realmObjectType, MethodDefinition objectConstructor, IDictionary<PropertyDefinition, FieldReference> properties)
     {
         var helperType = new TypeDefinition(null, "RealmHelper",
                                             TypeAttributes.Class | TypeAttributes.NestedPrivate | TypeAttributes.BeforeFieldInit,
@@ -805,6 +900,168 @@ public class ModuleWeaver
             il.Emit(OpCodes.Ret);
         }
         helperType.Methods.Add(createInstance);
+
+        var copyToRealm = new MethodDefinition("CopyToRealm", MethodAttributes.Public | MethodAttributes.Final | MethodAttributes.HideBySig | MethodAttributes.Virtual | MethodAttributes.NewSlot, ModuleDefinition.TypeSystem.Void);
+        {
+            // This roughly translates to
+            /*
+				var castInstance = (ObjectType)instance;
+				
+				*foreach* non-list woven property in castInstance's schema
+				if (castInstance.field != default(fieldType))
+				{
+				    castInstance.Property = castInstance.Field;
+				}
+
+				*foreach* list woven property in castInstance's schema
+				var list = castInstance.field;
+				castInstance.field = null;
+				for (var i = 0; i < list.Count; i++)
+				{
+				    castInstance.Property.Add(list[i]);
+				}
+			*/
+
+            var instanceParameter = new ParameterDefinition("instance", ParameterAttributes.None, ModuleDefinition.ImportReference(_realmObject));
+            copyToRealm.Parameters.Add(instanceParameter);
+
+            copyToRealm.Body.Variables.Add(new VariableDefinition(ModuleDefinition.ImportReference(realmObjectType)));
+
+            byte currentStloc = 1;
+            if (properties.Any(p => IsDateTimeOffset(p.Key)))
+            {
+                copyToRealm.Body.Variables.Add(new VariableDefinition(System_DateTimeOffset));
+                currentStloc++;
+            }
+
+            foreach (var kvp in properties.Where(kvp => IsIList(kvp.Key) || IsRealmList(kvp.Key)))
+            {
+                copyToRealm.Body.Variables.Add(new VariableDefinition(ModuleDefinition.ImportReference(kvp.Value.FieldType)));
+                copyToRealm.Body.Variables.Add(new VariableDefinition(System_Int32));
+            }
+
+            var il = copyToRealm.Body.GetILProcessor();
+            il.Append(il.Create(OpCodes.Ldarg_1));
+            il.Append(il.Create(OpCodes.Castclass, ModuleDefinition.ImportReference(realmObjectType)));
+            il.Append(il.Create(OpCodes.Stloc_0));
+
+            foreach (var kvp in properties)
+            {
+                var property = kvp.Key;
+                var field = kvp.Value;
+
+                if (property.SetMethod != null)
+                {
+                    if (!IsNullable(property))
+                    {
+                        il.Append(il.Create(OpCodes.Ldloc_0));
+                        il.Append(il.Create(OpCodes.Ldfld, field));
+
+                        if (IsDateTimeOffset(property))
+                        {
+                            il.Append(il.Create(OpCodes.Ldloca_S, (byte)1));
+                            il.Append(il.Create(OpCodes.Initobj, field.FieldType));
+                            il.Append(il.Create(OpCodes.Ldloc_1));
+                            il.Append(il.Create(OpCodes.Call, System_DatetimeOffset_Op_Inequality));
+                        }
+                        else if (IsSingle(property))
+                        {
+                            il.Append(il.Create(OpCodes.Ldc_R4, 0f));
+                        }
+                        else if (IsDouble(property))
+                        {
+                            il.Append(il.Create(OpCodes.Ldc_R8, 0.0));
+                        }
+                    }
+
+                    var jumpLabel = il.Create(OpCodes.Nop);
+                    il.Append(jumpLabel);
+                    il.Append(il.Create(OpCodes.Ldloc_0));
+                    il.Append(il.Create(OpCodes.Ldloc_0));
+                    il.Append(il.Create(OpCodes.Ldfld, field));
+                    il.Append(il.Create(OpCodes.Call, ModuleDefinition.ImportReference(property.SetMethod)));
+                    var label = il.Create(OpCodes.Nop);
+                    il.Append(label);
+
+                    if (!IsNullable(property))
+                    {
+                        if (IsSingle(property) || IsDouble(property))
+                        {
+                            il.Replace(jumpLabel, il.Create(OpCodes.Beq_S, label));
+                        }
+                        else
+                        {
+                            il.Replace(jumpLabel, il.Create(OpCodes.Brfalse_S, label));
+                        }
+                    }
+                }
+                else if (IsIList(property) || IsRealmList(property))
+                {
+                    var propertyTypeDefinition = property.PropertyType.Resolve();
+                    var genericType = (GenericInstanceType)property.PropertyType;
+                    var iList_Get_ItemMethodReference = GetIListMethodReference(propertyTypeDefinition, "get_Item", genericType);
+                    var iList_AddMethodReference = GetIListMethodReference(propertyTypeDefinition, "Add", genericType);
+                    var iList_Get_CountMethodReference = GetIListMethodReference(propertyTypeDefinition, "get_Count", genericType);
+
+                    var iteratorStLoc = (byte)(currentStloc + 1);
+                    il.Append(il.Create(OpCodes.Ldloc_0));
+                    il.Append(il.Create(OpCodes.Ldfld, field));
+
+                    var jumpPlaceholder = il.Create(OpCodes.Nop);
+                    il.Append(jumpPlaceholder);
+
+                    il.Append(il.Create(OpCodes.Ldloc_0));
+                    il.Append(il.Create(OpCodes.Ldfld, field));
+                    il.Append(il.Create(OpCodes.Stloc_S, currentStloc));
+                    il.Append(il.Create(OpCodes.Ldloc_0));
+                    il.Append(il.Create(OpCodes.Ldnull));
+                    il.Append(il.Create(OpCodes.Stfld, field));
+                    il.Append(il.Create(OpCodes.Ldc_I4_0));
+                    il.Append(il.Create(OpCodes.Stloc_S, iteratorStLoc));
+
+                    var cyclePlaceholder = il.Create(OpCodes.Nop);
+                    il.Append(cyclePlaceholder);
+
+                    var cycleStart = il.Create(OpCodes.Nop);
+                    il.Append(cycleStart);
+
+                    il.Append(il.Create(OpCodes.Ldloc_0));
+                    il.Append(il.Create(OpCodes.Callvirt, ModuleDefinition.ImportReference(property.GetMethod)));
+                    il.Append(il.Create(OpCodes.Ldloc_S, currentStloc));
+                    il.Append(il.Create(OpCodes.Ldloc_S, iteratorStLoc));
+                    il.Append(il.Create(OpCodes.Callvirt, iList_Get_ItemMethodReference));
+                    il.Append(il.Create(OpCodes.Callvirt, iList_AddMethodReference));
+                    il.Append(il.Create(OpCodes.Ldloc_S, iteratorStLoc));
+                    il.Append(il.Create(OpCodes.Ldc_I4_1));
+                    il.Append(il.Create(OpCodes.Add));
+                    il.Append(il.Create(OpCodes.Stloc_S, iteratorStLoc));
+
+                    var cycleLabel = il.Create(OpCodes.Nop);
+                    il.Append(cycleLabel);
+                    il.Replace(cyclePlaceholder, il.Create(OpCodes.Br_S, cycleLabel));
+
+                    il.Append(il.Create(OpCodes.Ldloc_S, iteratorStLoc));
+                    il.Append(il.Create(OpCodes.Ldloc_S, currentStloc));
+                    il.Append(il.Create(OpCodes.Callvirt, iList_Get_CountMethodReference));
+                    il.Append(il.Create(OpCodes.Blt_S, cycleStart));
+
+                    var jumpLabel = il.Create(OpCodes.Nop);
+                    il.Append(jumpLabel);
+                    il.Replace(jumpPlaceholder, il.Create(OpCodes.Brfalse_S, jumpLabel));
+
+                    currentStloc += 2;
+                }
+                else
+                {
+                    var sequencePoint = property.GetMethod.Body.Instructions.First().SequencePoint;
+                    LogErrorPoint($"{realmObjectType.Name}.{property.Name} does not have a setter and is not an IList. This is an error in Realm, so please file a bug report.", sequencePoint);
+                }
+            }
+
+            il.Emit(OpCodes.Ret);
+        }
+        copyToRealm.CustomAttributes.Add(new CustomAttribute(_preserveAttributeConstructor));
+        helperType.Methods.Add(copyToRealm);
 
         const MethodAttributes ctorAttributes = MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName;
         var ctor = new MethodDefinition(".ctor", ctorAttributes, ModuleDefinition.TypeSystem.Void);

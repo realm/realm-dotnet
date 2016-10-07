@@ -17,6 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
+using System.Reflection;
 using Realms.Weaving;
 
 namespace Realms.Dynamic
@@ -24,6 +26,11 @@ namespace Realms.Dynamic
     internal class DynamicRealmObjectHelper : IRealmObjectHelper
     {
         internal static readonly DynamicRealmObjectHelper Instance = new DynamicRealmObjectHelper();
+
+        public void CopyToRealm(RealmObject instance)
+        {
+            throw new NotSupportedException("DynamicRealmObjectHelper cannot exist in unmanaged state, so CopyToRealm should not be called ever.");
+        }
 
         public RealmObject CreateInstance()
         {

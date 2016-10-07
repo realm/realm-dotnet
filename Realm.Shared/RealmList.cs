@@ -38,7 +38,7 @@ namespace Realms
     /// 
     /// <typeparam name="T">Type of the RealmObject which is the target of the relationship.</typeparam>
     [Preserve(AllMembers = true)]
-    public class RealmList<T> : IList<T>, IRealmList, IDynamicMetaObjectProvider, ICopyValuesFrom where T : RealmObject
+    public class RealmList<T> : IList<T>, IRealmList, IDynamicMetaObjectProvider where T : RealmObject
     {
         public class Enumerator : IEnumerator<T>
         {
@@ -312,14 +312,6 @@ namespace Realms
         #endregion
 
         DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(System.Linq.Expressions.Expression expression) => new Dynamic.MetaRealmList(expression, this);
-
-        void ICopyValuesFrom.CopyValuesFrom(IEnumerable<RealmObject> values)
-        {
-            foreach (var item in values.Cast<T>())
-            {
-                Add(item);
-            }
-        }
     }
 
     [Preserve(AllMembers = true)]

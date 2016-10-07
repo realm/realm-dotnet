@@ -15,14 +15,10 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms;
 
@@ -132,6 +128,92 @@ namespace IntegrationTests
             Console.WriteLine("Time spent: " + sw.Elapsed);
             Console.WriteLine("Kilo-iterations per second: {0:0.00}", ((count/1000) / sw.Elapsed.TotalSeconds));
         }
+
+        [TestCase(100000), Explicit]
+        public void ManageSmallObjectPerformanceTest(int count)
+        {
+            var objects = new List<MiniPerson>();
+            for (var i = 0; i < count; i++)
+            {
+                objects.Add(new MiniPerson
+                {
+                    Name = "Name" + i,
+                    IsInteresting = true
+                });
+            }
+
+            var sw = new Stopwatch();
+            sw.Start();
+
+            _realm.Write(() =>
+            {
+                foreach (var obj in objects)
+                {
+                    _realm.Manage(obj);
+                }
+            });
+            sw.Stop();
+            Console.WriteLine($"{count} objects managed for {sw.ElapsedMilliseconds} ms");
+
+            sw.Restart();
+            _realm.Write(() =>
+            {
+                for (var i = 0; i < count; i++)
+                {
+                    var newObject = _realm.CreateObject<MiniPerson>();
+                    newObject.Name = objects[i].Name;
+                    newObject.IsInteresting = objects[i].IsInteresting;
+                }
+            });
+
+            Console.WriteLine($"{count} objects created for {sw.ElapsedMilliseconds} ms");
+        }
+
+        [TestCase(100000), Explicit]
+        public void ManageLargeObjectPerformanceTest(int count)
+        {
+            var objects = new List<Person>();
+            for (var i = 0; i < count; i++)
+            {
+                objects.Add(new Person
+                {
+                    FirstName = "Name" + i,
+                    IsInteresting = true
+                });
+            }
+
+            var sw = new Stopwatch();
+            sw.Start();
+
+            _realm.Write(() =>
+            {
+                foreach (var obj in objects)
+                {
+                    _realm.Manage(obj);
+                }
+            });
+            sw.Stop();
+            Console.WriteLine($"{count} objects managed for {sw.ElapsedMilliseconds} ms");
+
+            sw.Restart();
+            _realm.Write(() =>
+            {
+                for (var i = 0; i < count; i++)
+                {
+                    var newObject = _realm.CreateObject<Person>();
+                    newObject.FirstName = objects[i].FirstName;
+                    newObject.IsInteresting = objects[i].IsInteresting;
+                }
+            });
+
+            Console.WriteLine($"{count} objects created for {sw.ElapsedMilliseconds} ms");
+        }
+    }
+
+    public class MiniPerson : RealmObject
+    {
+        public string Name { get; set; }
+
+        public bool IsInteresting { get; set; }
     }
 }
-

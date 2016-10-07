@@ -189,6 +189,17 @@ namespace Realms
             LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
         }
 
+        protected DateTimeOffset? GetNullableDateTimeOffsetValue(string propertyName)
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
+            return DateTimeOffset.MinValue;
+        }
+
+        protected void SetNullableDateTimeOffsetValue(string propertyName, DateTimeOffset? value)
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
+        }
+
         protected char? GetNullableCharValue(string propertyName)
         {
             LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
@@ -295,6 +306,17 @@ namespace Realms
         }
 
         protected void SetObjectValue<T>(string propertyName, T value) where T : RealmObject
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
+        }
+
+        protected byte[] GetByteArrayValue(string propertyName)
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
+            return new byte[0];
+        }
+
+        protected void SetByteArrayValue(string propertyName, byte[] value)
         {
             LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
         }
