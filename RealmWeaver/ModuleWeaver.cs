@@ -423,6 +423,12 @@ public class ModuleWeaver
                 $"class '{type.Name}' field '{prop.Name}' is a DateTime which is not supported - use DateTimeOffset instead.",
                 sequencePoint);
         }
+        else if (prop.PropertyType.FullName == "System.Nullable`1<System.DateTime>")
+        {
+            LogErrorPoint(
+                $"class '{type.Name}' field '{prop.Name}' is a DateTime? which is not supported - use DateTimeOffset? instead.",
+                sequencePoint);
+        }
         else
         {
             LogErrorPoint(

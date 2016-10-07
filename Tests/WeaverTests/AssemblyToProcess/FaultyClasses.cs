@@ -89,4 +89,19 @@ namespace AssemblyToProcess
         [Ignored]
         public int IgnoredProperty { get; set; }
     }
+
+    public class NotSupportedProperties : RealmObject
+    {
+        public DateTime DateTimeProperty { get; set; }
+
+        public DateTime? NullableDateTimeProperty { get; set; }
+
+        public MyEnum EnumProperty { get; set; }
+
+        public enum MyEnum
+        {
+            Value1,
+            Value2
+        }
+    }
 }
