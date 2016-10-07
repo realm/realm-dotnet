@@ -434,7 +434,6 @@ public class ModuleWeaver
         prop.CustomAttributes.Add(preserveAttribute);
 
         var wovenPropertyAttribute = new CustomAttribute(_wovenPropertyAttributeConstructor);
-        wovenPropertyAttribute.ConstructorArguments.Add(new CustomAttributeArgument(System_String, backingField.Name));
         prop.CustomAttributes.Add(wovenPropertyAttribute);
 
         Debug.WriteLine("");

@@ -60,11 +60,5 @@ namespace Realms
     [AttributeUsage(AttributeTargets.Property)]
     public class WovenPropertyAttribute : Attribute
     {
-        internal string BackingFieldName { get; private set; }
-
-        public WovenPropertyAttribute(string backingFieldName)
-        {
-            this.BackingFieldName = backingFieldName;
-        }
     }
 }
