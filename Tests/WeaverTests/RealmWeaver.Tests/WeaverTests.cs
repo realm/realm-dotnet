@@ -464,7 +464,10 @@ namespace RealmWeaver
                 "PrimaryKeyProperties.SingleProperty is marked as [PrimaryKey] which is only allowed on integral and string types, not on System.Single",
                 "The type AssemblyToProcess.Employee indirectly inherits from RealmObject which is not supported",
                 "class DefaultConstructorMissing must have a public constructor that takes no parameters",
-                "class NoPersistedProperties is a RealmObject but has no persisted properties"
+                "class NoPersistedProperties is a RealmObject but has no persisted properties",
+                "class 'NotSupportedProperties' field 'DateTimeProperty' is a DateTime which is not supported - use DateTimeOffset instead.",
+                "class 'NotSupportedProperties' field 'NullableDateTimeProperty' is a DateTime? which is not supported - use DateTimeOffset? instead.",
+                "class 'NotSupportedProperties' field 'EnumProperty' is a 'AssemblyToProcess.NotSupportedProperties/MyEnum' which is not yet supported"
             };
 
             Assert.That(_errors, Is.EquivalentTo(expectedErrors));
