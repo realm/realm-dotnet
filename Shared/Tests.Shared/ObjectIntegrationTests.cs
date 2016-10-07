@@ -156,20 +156,20 @@ namespace IntegrationTests
         }
 
         [Test]
-        public void ManageOutsideTransactionShouldFail()
+        public void AddOutsideTransactionShouldFail()
         {
             var obj = new Person();
             Assert.Throws<RealmOutsideTransactionException>(() => _realm.Add(obj));
         }
 
         [Test]
-        public void ManageNullObjectShouldFail()
+        public void AddNullObjectShouldFail()
         {
             Assert.Throws<ArgumentNullException>(() => _realm.Add(null as Person));
         }
 
         [Test]
-        public void ManageAnObjectFromAnotherRealmShouldFail()
+        public void AddAnObjectFromAnotherRealmShouldFail()
         {
             Person p;
             using (var transaction = _realm.BeginWrite())
@@ -178,7 +178,7 @@ namespace IntegrationTests
                 transaction.Commit();
             }
 
-            var secondaryConfig = new RealmConfiguration("ManageAnObjectFromAnotherRealmShouldFail");
+            var secondaryConfig = new RealmConfiguration("AddAnObjectFromAnotherRealmShouldFail");
             Realm.DeleteRealm(secondaryConfig);
             using (var otherRealm = Realm.GetInstance(secondaryConfig))
             {
@@ -187,7 +187,7 @@ namespace IntegrationTests
         }
 
         [Test]
-        public void ManageAnObjectToRealmItAlreadyBelongsToShouldFail()
+        public void AddAnObjectToRealmItAlreadyBelongsToShouldFail()
         {
             Person p;
             using (var transaction = _realm.BeginWrite())

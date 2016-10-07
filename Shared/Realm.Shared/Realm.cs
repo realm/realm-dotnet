@@ -550,8 +550,8 @@ namespace Realms
 
             var objectHandle = CreateObjectHandle(objectPtr, SharedRealmHandle);
 
-            obj._Manage(this, objectHandle, metadata);
-            metadata.Helper.CopyToRealm(obj, update);
+            obj._SetOwner(this, rowHandle, metadata);
+            obj._CopyDataFromBackingFieldsToRow();
         }
 
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]

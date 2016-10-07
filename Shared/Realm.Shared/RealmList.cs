@@ -19,6 +19,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Dynamic;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
@@ -306,7 +307,7 @@ namespace Realms
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        private void ManageObjectIfNeeded(T obj)
+        private void AddObjectToRealmIfNeeded(T obj)
         {
             if (!obj.IsManaged)
             {

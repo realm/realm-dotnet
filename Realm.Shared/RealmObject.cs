@@ -62,7 +62,7 @@ namespace Realms
         /// </summary>
         public Schema.ObjectSchema ObjectSchema => _metadata?.Schema;
 
-        internal void _Manage(Realm realm, RowHandle rowHandle, Metadata metadata)
+        internal void _SetOwner(Realm realm, RowHandle rowHandle, Metadata metadata)
         {
             _realm = realm;
             _rowHandle = rowHandle;
