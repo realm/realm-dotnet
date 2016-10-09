@@ -84,7 +84,7 @@ namespace Realms
             /// <summary>
             /// Standard Dispose with no side-effects.
             /// </summary>
-            public void Dispose() 
+            public void Dispose()
             {
             }
         }
@@ -97,7 +97,7 @@ namespace Realms
 
         private Realm _realm;
         private LinkListHandle _listHandle;
-        private RealmObject.Metadata _targetMetadata; 
+        private RealmObject.Metadata _targetMetadata;
 
         Realm IRealmList.Realm => _realm;
         LinkListHandle IRealmList.Handle => _listHandle;
@@ -164,7 +164,7 @@ namespace Realms
             get
             {
                 if (index < 0)
-                    throw new ArgumentOutOfRangeException ();
+                    throw new ArgumentOutOfRangeException();
                 var linkedRowPtr = _listHandle.Get((IntPtr)index);
                 return (T)_realm.MakeObjectForRow(_targetMetadata, linkedRowPtr);
             }
@@ -225,8 +225,9 @@ namespace Realms
             if (arrayIndex < 0)
                 throw new ArgumentOutOfRangeException();
             if ((arrayIndex + Count) > array.Length)
-                throw new ArgumentException();            
-            foreach (var obj in this) {
+                throw new ArgumentException();
+            foreach (var obj in this)
+            {
                 array[arrayIndex++] = obj;
             }
         }
@@ -253,7 +254,7 @@ namespace Realms
                 throw new ArgumentException("Value does not belong to a realm", nameof(item));
 
             var rowIndex = ((RealmObject)item).RowHandle.RowIndex;
-            return (int) _listHandle.Find(rowIndex, IntPtr.Zero);
+            return (int)_listHandle.Find(rowIndex, IntPtr.Zero);
         }
 
         /// <summary>
@@ -266,7 +267,7 @@ namespace Realms
         public void Insert(int index, T item)
         {
             if (index < 0)
-                throw new ArgumentOutOfRangeException ();
+                throw new ArgumentOutOfRangeException();
 
             this.ManageObjectIfNeeded(item);
             var rowIndex = ((RealmObject)item).RowHandle.RowIndex;
@@ -281,10 +282,10 @@ namespace Realms
         /// <returns>True if the item was found and removed, false if it is not in the related set.</returns>
         public bool Remove(T item)
         {
-            int index = IndexOf (item);
+            int index = IndexOf(item);
             if (index == ITEM_NOT_FOUND)
                 return false;
-            RemoveAt (index);
+            RemoveAt(index);
             return true;
         }
 
@@ -296,7 +297,7 @@ namespace Realms
         public void RemoveAt(int index)
         {
             if (index < 0)
-                throw new ArgumentOutOfRangeException ();
+                throw new ArgumentOutOfRangeException();
             _listHandle.Erase((IntPtr)index);
         }
 

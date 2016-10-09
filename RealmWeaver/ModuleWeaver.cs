@@ -17,12 +17,12 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Linq;
-using Mono.Cecil;
-using Mono.Cecil.Rocks;
-using Mono.Cecil.Cil;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using Mono.Cecil;
+using Mono.Cecil.Cil;
+using Mono.Cecil.Rocks;
 
 public class ModuleWeaver
 {
@@ -60,26 +60,26 @@ public class ModuleWeaver
 
     private readonly Dictionary<string, string> _typeTable = new Dictionary<string, string>
     {
-        {"System.String", "String"},
-        {"System.Char", "Char"},
-        {"System.Byte", "Byte"},
-        {"System.Int16", "Int16"},
-        {"System.Int32", "Int32"},
-        {"System.Int64", "Int64"},
-        {"System.Single", "Single"},
-        {"System.Double", "Double"},
-        {"System.Boolean", "Boolean"},
-        {"System.DateTimeOffset", "DateTimeOffset"},
-        {"System.Byte[]", "ByteArray"},
-        {"System.Nullable`1<System.Char>", "NullableChar"},
-        {"System.Nullable`1<System.Byte>", "NullableByte"},
-        {"System.Nullable`1<System.Int16>", "NullableInt16"},
-        {"System.Nullable`1<System.Int32>", "NullableInt32"},
-        {"System.Nullable`1<System.Int64>", "NullableInt64"},
-        {"System.Nullable`1<System.Single>", "NullableSingle"},
-        {"System.Nullable`1<System.Double>", "NullableDouble"},
-        {"System.Nullable`1<System.Boolean>", "NullableBoolean"},
-        {"System.Nullable`1<System.DateTimeOffset>", "NullableDateTimeOffset"}
+        { "System.String", "String" },
+        { "System.Char", "Char" },
+        { "System.Byte", "Byte" },
+        { "System.Int16", "Int16" },
+        { "System.Int32", "Int32" },
+        { "System.Int64", "Int64" },
+        { "System.Single", "Single" },
+        { "System.Double", "Double" },
+        { "System.Boolean", "Boolean" },
+        { "System.DateTimeOffset", "DateTimeOffset" },
+        { "System.Byte[]", "ByteArray" },
+        { "System.Nullable`1<System.Char>", "NullableChar" },
+        { "System.Nullable`1<System.Byte>", "NullableByte" },
+        { "System.Nullable`1<System.Int16>", "NullableInt16" },
+        { "System.Nullable`1<System.Int32>", "NullableInt32" },
+        { "System.Nullable`1<System.Int64>", "NullableInt64" },
+        { "System.Nullable`1<System.Single>", "NullableSingle" },
+        { "System.Nullable`1<System.Double>", "NullableDouble" },
+        { "System.Nullable`1<System.Boolean>", "NullableBoolean" },
+        { "System.Nullable`1<System.DateTimeOffset>", "NullableDateTimeOffset" }
     };
 
     private readonly List<string> _primaryKeyTypes = new List<string>
@@ -360,8 +360,8 @@ public class ModuleWeaver
             if (!elementType.Resolve().BaseType.IsSameAs(_realmObject))
             {
                 LogWarningPoint(
-  $"SKIPPING {type.Name}.{columnName} because it is an IList but its generic type is not a RealmObject subclass, so will not persist",
-  sequencePoint);
+                    $"SKIPPING {type.Name}.{columnName} because it is an IList but its generic type is not a RealmObject subclass, so will not persist",
+                    sequencePoint);
                 return false;
             }
 
@@ -383,7 +383,7 @@ public class ModuleWeaver
                 backingDef.Attributes &= ~FieldAttributes.InitOnly;  // without a set; auto property has this flag we must clear
             }
             ReplaceListGetter(prop, backingField, columnName,
-                new GenericInstanceMethod(_genericGetListValueReference) { GenericArguments = { elementType } }, elementType,
+                new GenericInstanceMethod(_genericGetListValueReference) { GenericArguments = { elementType } },
                              ModuleDefinition.ImportReference(concreteListConstructor));
         }
         else if (IsRealmList(prop))
@@ -450,7 +450,7 @@ public class ModuleWeaver
         return true;
     }
 
-    private TypeDefinition LookupType(string typeName, params AssemblyDefinition[] assemblies)
+    private static TypeDefinition LookupType(string typeName, params AssemblyDefinition[] assemblies)
     {
         if (typeName == null)
             throw new ArgumentNullException(nameof(typeName));
@@ -469,7 +469,7 @@ public class ModuleWeaver
         throw new ApplicationException("Unable to find type: " + typeName);
     }
 
-    private MethodDefinition LookupMethod(TypeDefinition typeDefinition, string methodName)
+    private static MethodDefinition LookupMethod(TypeDefinition typeDefinition, string methodName)
     {
         var method = typeDefinition.Methods.FirstOrDefault(x => x.Name == methodName);
 
@@ -484,7 +484,7 @@ public class ModuleWeaver
         return ModuleDefinition.ImportReference(LookupMethod(typeDefinition, methodName));
     }
 
-    void ReplaceGetter(PropertyDefinition prop, string columnName, MethodReference getValueReference)
+    private void ReplaceGetter(PropertyDefinition prop, string columnName, MethodReference getValueReference)
     {
         /// A synthesized property getter looks like this:
         ///   0: ldarg.0
@@ -523,13 +523,13 @@ public class ModuleWeaver
     // This code setting the backing field only works if the field is settable after init
     // if you don't have an automatic set; on the property, it shows in the debugger with
     //         Attributes    Private | InitOnly    Mono.Cecil.FieldAttributes
-    void ReplaceListGetter(PropertyDefinition prop, FieldReference backingField, string columnName, MethodReference getListValueReference, TypeReference elementType, MethodReference listConstructor)
+    private void ReplaceListGetter(PropertyDefinition prop, FieldReference backingField, string columnName, MethodReference getListValueReference, MethodReference listConstructor)
     {
-        /// A synthesized property getter looks like this:
-        ///   0: ldarg.0  // load the this pointer
-        ///   1: ldfld <backingField>
-        ///   2: ret
-        /// We want to change it so it looks somewhat like this, in C#
+        // A synthesized property getter looks like this:
+        //   0: ldarg.0  // load the this pointer
+        //   1: ldfld <backingField>
+        //   2: ret
+        // We want to change it so it looks somewhat like this, in C#
         /*
             if (<backingField> == null)
             {
@@ -546,7 +546,7 @@ public class ModuleWeaver
         var il = prop.GetMethod.Body.GetILProcessor();
 
         il.InsertBefore(start, il.Create(OpCodes.Ldarg_0));  // this for field ref [ -> this]
-        il.InsertBefore(start, il.Create(OpCodes.Ldfld, backingField)); //  [ this -> field]
+        il.InsertBefore(start, il.Create(OpCodes.Ldfld, backingField)); // [ this -> field]
         il.InsertBefore(start, il.Create(OpCodes.Ldnull)); // [field -> field, null]
         il.InsertBefore(start, il.Create(OpCodes.Ceq));  // [field, null -> bool result]
         il.InsertBefore(start, il.Create(OpCodes.Brfalse_S, start));  // []
@@ -557,10 +557,10 @@ public class ModuleWeaver
 
         // push in the label then go relative to that - so we can forward-ref the lable insert if/else blocks backwards
 
-        var labelElse = il.Create(OpCodes.Nop);  //  [this]
+        var labelElse = il.Create(OpCodes.Nop);  // [this]
         il.InsertBefore(start, labelElse); // else 
         il.InsertBefore(start, il.Create(OpCodes.Newobj, listConstructor)); // [this ->  this, listRef ]
-        il.InsertBefore(start, il.Create(OpCodes.Stfld, backingField));  //  [this, listRef -> ]
+        il.InsertBefore(start, il.Create(OpCodes.Stfld, backingField));  // [this, listRef -> ]
         // fall through to start to read it back from backing field and return
 
         // if block before else now gets inserted
@@ -575,76 +575,76 @@ public class ModuleWeaver
         // FALL THROUGH to return the backing field.
 
         // Let Cecil optimize things for us. 
-        //TODO prop.SetMethod.Body.OptimizeMacros();
+        // TODO prop.SetMethod.Body.OptimizeMacros();
 
         Debug.Write("[get list] ");
     }
 
-    void ReplaceSetter(PropertyDefinition prop, FieldReference backingField, string columnName, MethodReference setValueReference, bool weavePropertyChanged, EventDefinition propChangedEventDefinition, FieldDefinition propChangedFieldDefinition)
+    private void ReplaceSetter(PropertyDefinition prop, FieldReference backingField, string columnName, MethodReference setValueReference, bool weavePropertyChanged, EventDefinition propChangedEventDefinition, FieldDefinition propChangedFieldDefinition)
     {
-        /// A synthesized property setter looks like this:
-        ///   0: ldarg.0
-        ///   1: ldarg.1
-        ///   2: stfld <backingField>
-        ///   3: ret
-        ///   
-        /// If we want to weave support for INotifyPropertyChanged as well, we want to change it so it looks like this:
-        ///   0. ldarg.0
-        ///   1. call Realms.RealmObject.get_IsManaged
-        ///   2. ldc.i4.0
-        ///   3. ceq
-        ///   4. stloc.1
-        ///   5. ldloc.1
-        ///   6. brfalse.s 11
-        ///   7. ldarg.0
-        ///   8. ldarg.1
-        ///   9. stfld <backingField>
-        ///   10. br.s 15
-        ///   11. ldarg.0
-        ///   12. ldstr <columnName>
-        ///   13. ldarg.1
-        ///   14. call Realms.RealmObject.SetValue<T>
-        ///   15. ldarg.0
-        ///   16. ldfld PropertyChanged
-        ///   17. stloc.0
-        ///   18. ldloc.0
-        ///   19. ldnull
-        ///   20. cgt.un
-        ///   21. stloc.2
-        ///   22. ldloc.2
-        ///   23. brfalse.s 30
-        ///   24. ldarg.0
-        ///   25. ldfld PropertyChanged
-        ///   26. ldarg.0
-        ///   27. ldstr <columnName>
-        ///   28. newobj PropertyChangedEventArgs
-        ///   29. callvirt PropertyChangedEventHandler.Invoke
-        ///   30. ret
-        ///   
-        /// This is roughly equivalent to:
-        ///   if (!base.IsManaged) this.<backingField> = value;
-        ///   else base.SetValue<T>(<columnName>, value);
-        ///     
-        ///   if (PropertyChanged != null)
-        ///     PropertyChanged(this, new PropertyChangedEventArgs(<columnName>);
-        ///  
-        /// If we want to only weave support for Realm (without INotifyPropertyChanged), we want to change it so it looks like this:
-        ///   0: ldarg.0
-        ///   1: call Realms.RealmObject.get_IsManaged
-        ///   2: brfalse.s 8
-        ///   3: ldarg.0
-        ///   4: ldstr <columnName>
-        ///   5: ldarg.1
-        ///   6: call Realms.RealmObject.SetValue<T>
-        ///   7: ret
-        ///   8: ldarg.0
-        ///   9: ldarg.1
-        ///   10: stfld <backingField>
-        ///   11: ret
-        ///   
-        /// This is roughly equivalent to:
-        ///   if (!base.IsManaged) this.<backingField> = value;
-        ///   else base.SetValue<T>(<columnName>, value);
+        //// A synthesized property setter looks like this:
+        ////   0: ldarg.0
+        ////   1: ldarg.1
+        ////   2: stfld <backingField>
+        ////   3: ret
+        ////   
+        //// If we want to weave support for INotifyPropertyChanged as well, we want to change it so it looks like this:
+        ////   0. ldarg.0
+        ////   1. call Realms.RealmObject.get_IsManaged
+        ////   2. ldc.i4.0
+        ////   3. ceq
+        ////   4. stloc.1
+        ////   5. ldloc.1
+        ////   6. brfalse.s 11
+        ////   7. ldarg.0
+        ////   8. ldarg.1
+        ////   9. stfld <backingField>
+        ////   10. br.s 15
+        ////   11. ldarg.0
+        ////   12. ldstr <columnName>
+        ////   13. ldarg.1
+        ////   14. call Realms.RealmObject.SetValue<T>
+        ////   15. ldarg.0
+        ////   16. ldfld PropertyChanged
+        ////   17. stloc.0
+        ////   18. ldloc.0
+        ////   19. ldnull
+        ////   20. cgt.un
+        ////   21. stloc.2
+        ////   22. ldloc.2
+        ////   23. brfalse.s 30
+        ////   24. ldarg.0
+        ////   25. ldfld PropertyChanged
+        ////   26. ldarg.0
+        ////   27. ldstr <columnName>
+        ////   28. newobj PropertyChangedEventArgs
+        ////   29. callvirt PropertyChangedEventHandler.Invoke
+        ////   30. ret
+        ////   
+        //// This is roughly equivalent to:
+        ////   if (!base.IsManaged) this.<backingField> = value;
+        ////   else base.SetValue<T>(<columnName>, value);
+        ////     
+        ////   if (PropertyChanged != null)
+        ////     PropertyChanged(this, new PropertyChangedEventArgs(<columnName>);
+        ////  
+        //// If we want to only weave support for Realm (without INotifyPropertyChanged), we want to change it so it looks like this:
+        ////   0: ldarg.0
+        ////   1: call Realms.RealmObject.get_IsManaged
+        ////   2: brfalse.s 8
+        ////   3: ldarg.0
+        ////   4: ldstr <columnName>
+        ////   5: ldarg.1
+        ////   6: call Realms.RealmObject.SetValue<T>
+        ////   7: ret
+        ////   8: ldarg.0
+        ////   9: ldarg.1
+        ////   10: stfld <backingField>
+        ////   11: ret
+        ////   
+        //// This is roughly equivalent to:
+        ////   if (!base.IsManaged) this.<backingField> = value;
+        ////   else base.SetValue<T>(<columnName>, value);
 
         if (setValueReference == null)
             throw new ArgumentNullException(nameof(setValueReference));
@@ -858,28 +858,6 @@ public class ModuleWeaver
         return reference;
     }
 
-    private MethodReference MakeMethodGeneric(MethodReference methodReference, GenericInstanceType genericInstance)
-    {
-        var reference = new MethodReference(methodReference.Name, methodReference.ReturnType, genericInstance)
-        {
-            HasThis = methodReference.HasThis,
-            ExplicitThis = methodReference.ExplicitThis,
-            CallingConvention = methodReference.CallingConvention
-        };
-
-        foreach (var parameter in methodReference.Parameters)
-        {
-            reference.Parameters.Add(parameter);
-        }
-
-        foreach (var genericParameter in methodReference.GenericParameters)
-        {
-            reference.GenericParameters.Add(new GenericParameter(genericParameter.Name, reference));
-        }
-
-        return reference;
-    }
-
     private TypeDefinition GetTypeFromSystemAssembly(string typeName)
     {
         var objectTypeDefinition = _corLib.MainModule.GetType(typeName);
@@ -911,22 +889,22 @@ public class ModuleWeaver
         {
             // This roughly translates to
             /*
-				var castInstance = (ObjectType)instance;
-				
-				*foreach* non-list woven property in castInstance's schema
-				if (castInstance.field != default(fieldType))
-				{
-				    castInstance.Property = castInstance.Field;
-				}
+                var castInstance = (ObjectType)instance;
+                
+                *foreach* non-list woven property in castInstance's schema
+                if (castInstance.field != default(fieldType))
+                {
+                    castInstance.Property = castInstance.Field;
+                }
 
-				*foreach* list woven property in castInstance's schema
-				var list = castInstance.field;
-				castInstance.field = null;
-				for (var i = 0; i < list.Count; i++)
-				{
-				    castInstance.Property.Add(list[i]);
-				}
-			*/
+                *foreach* list woven property in castInstance's schema
+                var list = castInstance.field;
+                castInstance.field = null;
+                for (var i = 0; i < list.Count; i++)
+                {
+                    castInstance.Property.Add(list[i]);
+                }
+            */
 
             var instanceParameter = new ParameterDefinition("instance", ParameterAttributes.None, ModuleDefinition.ImportReference(_realmObject));
             copyToRealm.Parameters.Add(instanceParameter);

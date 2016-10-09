@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
 using Realms;
 
 namespace PurePCLBuildableTest
@@ -26,7 +25,7 @@ namespace PurePCLBuildableTest
         public static Realm MakeARealmWithPCL()
         {
             var conf = new RealmConfiguration("ThisIsDeclaredInPCL.realm");
-            conf.ObjectClasses = new [] {typeof(ObjectInPCL)};  // only this class in the Realm
+            conf.ObjectClasses = new[] { typeof(ObjectInPCL) };  // only this class in the Realm
             Realm.DeleteRealm(conf);
             var ret = Realm.GetInstance(conf);
             ret.Write(() => ret.CreateObject<ObjectInPCL>());
@@ -34,4 +33,3 @@ namespace PurePCLBuildableTest
         }
     }
 }
-

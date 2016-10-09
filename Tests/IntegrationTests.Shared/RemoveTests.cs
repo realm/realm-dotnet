@@ -61,7 +61,7 @@ namespace IntegrationTests.Shared
             _realm.Write(() => _realm.Remove(p2));
 
             // Assert
-            //Assert.That(!p2.InRealm);
+            // Assert.That(!p2.InRealm);
 
             var allPeople = _realm.All<Person>().ToList();
             Assert.That(allPeople, Is.EquivalentTo(new List<Person> { p1, p3 }));
@@ -76,7 +76,7 @@ namespace IntegrationTests.Shared
             _realm.Write(() => p = _realm.CreateObject<Person>());
 
             // Act and assert
-            Assert.Throws<RealmOutsideTransactionException>(() => _realm.Remove(p) );
+            Assert.Throws<RealmOutsideTransactionException>(() => _realm.Remove(p));
         }
 
         [Test]
@@ -107,7 +107,7 @@ namespace IntegrationTests.Shared
         }
 
         [Test]
-        public void RemoveAllRemovesAllObjectsOfAGivenType() 
+        public void RemoveAllRemovesAllObjectsOfAGivenType()
         {
             // Arrange
             _realm.Write(() =>

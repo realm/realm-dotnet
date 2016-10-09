@@ -15,24 +15,25 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
 using System;
 
-namespace Realms {
-
+namespace Realms
+{
     /// <summary>
     /// Base for Realm specific exceptions. Use only for catching.
     /// </summary>
-    public class RealmException :  Exception {
-
-        internal RealmException(String detailMessage) : base(detailMessage)
+    public class RealmException : Exception
+    {
+        internal RealmException(string detailMessage) : base(detailMessage)
         {
         }
 
         internal static Exception Create(RealmExceptionCodes exceptionCode, string message)
         {
             // these are increasing enum value order
-            switch (exceptionCode) {
+            switch (exceptionCode)
+            {
                 case RealmExceptionCodes.RealmError:
                     return new RealmException(message);
 
@@ -45,16 +46,16 @@ namespace Realms {
                 case RealmExceptionCodes.RealmFileExists:
                     return new RealmFileExistsException(message);
 
-                case RealmExceptionCodes.RealmFileNotFound :
+                case RealmExceptionCodes.RealmFileNotFound:
                     return new RealmFileNotFoundException(message);
 
-                case RealmExceptionCodes.RealmInvalidDatabase :
+                case RealmExceptionCodes.RealmInvalidDatabase:
                     return new RealmInvalidDatabaseException(message);
 
-                case RealmExceptionCodes.RealmOutOfMemory :
+                case RealmExceptionCodes.RealmOutOfMemory:
                     return new RealmOutOfMemoryException(message);
 
-                case RealmExceptionCodes.RealmPermissionDenied :
+                case RealmExceptionCodes.RealmPermissionDenied:
                     return new RealmPermissionDeniedException(message);
 
                 case RealmExceptionCodes.RealmMismatchedConfig:
@@ -63,31 +64,31 @@ namespace Realms {
                 case RealmExceptionCodes.RealmInvalidTransaction:
                     return new RealmInvalidTransactionException(message);
 
-                case RealmExceptionCodes.RealmFormatUpgradeRequired :
+                case RealmExceptionCodes.RealmFormatUpgradeRequired:
                     return new RealmException(message);  // rare unrecoverable case for now
 
-                case RealmExceptionCodes.RealmSchemaMismatch :
+                case RealmExceptionCodes.RealmSchemaMismatch:
                     return new RealmMigrationNeededException(message);
 
                 case RealmExceptionCodes.RealmRowDetached:
                     return new RealmInvalidObjectException(message);
 
-                case RealmExceptionCodes.RealmTableHasNoPrimaryKey :
+                case RealmExceptionCodes.RealmTableHasNoPrimaryKey:
                     return new RealmClassLacksPrimaryKeyException(message);
 
-                case RealmExceptionCodes.RealmDuplicatePrimaryKeyValue :
+                case RealmExceptionCodes.RealmDuplicatePrimaryKeyValue:
                     return new RealmDuplicatePrimaryKeyValueException(message);
 
                 case RealmExceptionCodes.RealmDotNetExceptionDuringMigration:
                     return new ManagedExceptionDuringMigrationException(message);
 
-                case RealmExceptionCodes.StdArgumentOutOfRange :
+                case RealmExceptionCodes.StdArgumentOutOfRange:
                     return new ArgumentOutOfRangeException(message);
 
-                case RealmExceptionCodes.StdIndexOutOfRange :
+                case RealmExceptionCodes.StdIndexOutOfRange:
                     return new ArgumentOutOfRangeException(message);
 
-                case RealmExceptionCodes.StdInvalidOperation :
+                case RealmExceptionCodes.StdInvalidOperation:
                     return new InvalidOperationException(message);
 
                 default:
@@ -95,6 +96,5 @@ namespace Realms {
             }
 
         }
+    }
 }
-
-}  // namespace Realms

@@ -21,7 +21,7 @@ using System.Runtime.InteropServices;
 
 namespace Realms
 {
-    internal class LinkListHandle:RealmHandle
+    internal class LinkListHandle : RealmHandle
     {
         private static class NativeMethods
         {
@@ -58,7 +58,7 @@ namespace Realms
         {
             NativeMethods.destroy(handle);
         }
-        
+
         public void Add(IntPtr rowIndex)
         {
             NativeException nativeException;
@@ -100,7 +100,7 @@ namespace Realms
             NativeException nativeException;
             var result = NativeMethods.find(this, linkIndex, startFrom, out nativeException);
             nativeException.ThrowIfNecessary();
-            return  result;
+            return result;
         }
 
         public int Size()
@@ -108,7 +108,7 @@ namespace Realms
             NativeException nativeException;
             var result = NativeMethods.size(this, out nativeException);
             nativeException.ThrowIfNecessary();
-            return (int) result;
+            return (int)result;
         }
     }
 }

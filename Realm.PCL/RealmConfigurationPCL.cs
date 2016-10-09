@@ -15,11 +15,10 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
 // PROXY VERSION OF CLASS USED IN PCL FOR BAIT AND SWITCH PATTERN 
 
 using System;
-using System.IO;
 
 // see internals/RealmConfigurations.md for a detailed diagram of how this interacts with the ObjectStore configuration
 
@@ -54,7 +53,7 @@ namespace Realms
         /// <summary>
         /// The full path of any realms opened with this configuration, may be overriden by passing in a separate name.
         /// </summary>
-        public string DatabasePath {get; private set;}
+        public string DatabasePath { get; private set; }
 
         /// <summary>
         /// The list of classes persisted in a Realm opened with this configuration.
@@ -95,12 +94,12 @@ namespace Realms
         /// <summary>
         public static RealmConfiguration DefaultConfiguration
         {
-            set {} 
+            set { }
             get
             {
                 RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();  // if attempt to use DefaultConfiguration as first line of their code with just PCL linked, want exception!
                 return null;
-            } 
+            }
         }
 
         /// <summary>
@@ -108,7 +107,7 @@ namespace Realms
         /// </summary>
         /// <param name="optionalPath">Path to the realm, must be a valid full path for the current platform, relative subdir, or just filename.</param>
         /// <param name="shouldDeleteIfMigrationNeeded">Optional Flag mainly to help with temp databases and testing, indicates content can be abandoned when you change the schema.</param> 
-        public RealmConfiguration(string optionalPath = null, bool shouldDeleteIfMigrationNeeded=false)
+        public RealmConfiguration(string optionalPath = null, bool shouldDeleteIfMigrationNeeded = false)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }

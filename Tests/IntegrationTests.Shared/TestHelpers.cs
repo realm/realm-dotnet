@@ -41,14 +41,14 @@ namespace IntegrationTests
 
         public static T GetPropertyValue<T>(this object obj, string propertyName)
         {
-            return (T) GetPropertyValue(obj, propertyName); 
+            return (T)GetPropertyValue(obj, propertyName);
         }
 
-        public static void CopyBundledDatabaseToDocuments(string realmName, string destPath=null, bool overwrite=true)
+        public static void CopyBundledDatabaseToDocuments(string realmName, string destPath = null, bool overwrite = true)
         {
             destPath = RealmConfiguration.PathToRealm(destPath);  // any relative subdir or filename works
 
-            #if __ANDROID__
+#if __ANDROID__
             using (var asset = Android.App.Application.Context.Assets.Open(realmName))
             using (var destination = File.OpenWrite(destPath))
             {
@@ -56,13 +56,13 @@ namespace IntegrationTests
             }
 
             return;
-            #endif
+#endif
 
             string sourceDir = "";
-            #if __IOS__
+#if __IOS__
             sourceDir = NSBundle.MainBundle.BundlePath;
-            #endif
-            //TODO add cases for Windows setting sourcedir for bundled files
+#endif
+            // TODO add cases for Windows setting sourcedir for bundled files
 
             File.Copy(Path.Combine(sourceDir, realmName), destPath, overwrite);
         }

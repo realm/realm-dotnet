@@ -219,23 +219,23 @@ namespace Realms
                     Debug.Assert(m.Method.Name == nameof(Queryable.FirstOrDefault));
                     return Expression.Constant(null);
                 }
-/*
-// FIXME: See discussion in the test DefaultIfEmptyReturnsDefault
-// kept because it shows part of what might be a viable implementation if can work out architectural issues
+                /*
+                // FIXME: See discussion in the test DefaultIfEmptyReturnsDefault
+                // kept because it shows part of what might be a viable implementation if can work out architectural issues
 
-                if (m.Method.Name == nameof(Queryable.DefaultIfEmpty))
-                {
-                    RecurseToWhereOrRunLambda(m);
-                    IntPtr firstRowPtr = _coreQueryHandle.FindDirect(IntPtr.Zero);
-                    if (firstRowPtr != IntPtr.Zero)
-                        return m;  // as if just a "Where"
-                    var innerType = m.Type.GetGenericArguments()[0];
-                    var listType = typeof(List<>).MakeGenericType(innerType);
-                    var singleNullItemList = Activator.CreateInstance(listType);
-                    ((IList)singleNullItemList).Add(null);
-                    return Expression.Constant(singleNullItemList);
-                }
-*/
+                                if (m.Method.Name == nameof(Queryable.DefaultIfEmpty))
+                                {
+                                    RecurseToWhereOrRunLambda(m);
+                                    IntPtr firstRowPtr = _coreQueryHandle.FindDirect(IntPtr.Zero);
+                                    if (firstRowPtr != IntPtr.Zero)
+                                        return m;  // as if just a "Where"
+                                    var innerType = m.Type.GetGenericArguments()[0];
+                                    var listType = typeof(List<>).MakeGenericType(innerType);
+                                    var singleNullItemList = Activator.CreateInstance(listType);
+                                    ((IList)singleNullItemList).Add(null);
+                                    return Expression.Constant(singleNullItemList);
+                                }
+                */
                 if (m.Method.Name.StartsWith(nameof(Queryable.Single)))  // same as unsorted First with extra checks
                 {
                     RecurseToWhereOrRunLambda(m);
@@ -329,7 +329,8 @@ namespace Realms
                     var columnIndex = _coreQueryHandle.GetColumnIndex(member.Member.Name);
 
                     object argument;
-                    if (!TryExtractConstantValue(m.Arguments.SingleOrDefault(), out argument) || argument.GetType() != typeof(string))                    {
+                    if (!TryExtractConstantValue(m.Arguments.SingleOrDefault(), out argument) || argument.GetType() != typeof(string))
+                    {
                         throw new NotSupportedException($"The method '{m.Method}' has to be invoked with a single string constant argument or closure variable");
                     }
                     queryMethod(_coreQueryHandle, columnIndex, (string)argument);
@@ -370,7 +371,7 @@ namespace Realms
             var constant = expr as ConstantExpression;
             if (constant != null)
             {
-                value = constant.Value; 
+                value = constant.Value;
                 return true;
             }
 
@@ -389,7 +390,7 @@ namespace Realms
         {
             if (b.NodeType == ExpressionType.AndAlso)  // Boolean And with short-circuit
             {
-                VisitCombination(b, (qh) => { /* noop -- AND is the default combinator */});
+                VisitCombination(b, (qh) => { /* noop -- AND is the default combinator */ });
             }
             else if (b.NodeType == ExpressionType.OrElse)  // Boolean Or with short-circuit
             {
@@ -403,9 +404,9 @@ namespace Realms
                 // so an incoming lambda looks like {p => (Convert(p.CharProperty) == 65)}
                 // from Where(p => p.CharProperty == 'A')
                 if (memberExpression == null && b.Left.NodeType == ExpressionType.Convert)
-                    memberExpression = ((UnaryExpression) b.Left).Operand as MemberExpression;
+                    memberExpression = ((UnaryExpression)b.Left).Operand as MemberExpression;
 
-                if (memberExpression == null || 
+                if (memberExpression == null ||
                     memberExpression.Member.MemberType != MemberTypes.Property ||
                     !_metadata.Schema.PropertyNames.Contains(memberExpression.Member.Name))
                 {
@@ -457,7 +458,7 @@ namespace Realms
         {
             var columnIndex = queryHandle.GetColumnIndex(columnName);
 
-            if (value == null) 
+            if (value == null)
                 queryHandle.NullEqual(columnIndex);
             else if (value is string)
                 queryHandle.StringEqual(columnIndex, (string)value);
@@ -668,16 +669,18 @@ namespace Realms
             var tableHandle = _realm.Metadata[elementType.Name].Table;
             var queryHandle = tableHandle.TableWhere();
 
-            //At this point sh is invalid due to its handle being uninitialized, but the root is set correctly
-            //a finalize at this point will not leak anything and the handle will not do anything
+            // At this point sh is invalid due to its handle being uninitialized, but the root is set correctly
+            // a finalize at this point will not leak anything and the handle will not do anything
 
-            //now, set the TableView handle...
-            RuntimeHelpers.PrepareConstrainedRegions();//the following finally will run with no out-of-band exceptions
-            try { }
+            // now, set the TableView handle...
+            RuntimeHelpers.PrepareConstrainedRegions(); // the following finally will run with no out-of-band exceptions
+            try
+            {
+            }
             finally
             {
                 queryHandle.SetHandle(NativeTable.Where(tableHandle));
-            }//at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
+            } // at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
             return queryHandle;
         }
 

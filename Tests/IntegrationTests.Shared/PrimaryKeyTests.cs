@@ -50,7 +50,8 @@ namespace IntegrationTests.Shared
         [Test]
         public void FindByCharPrimaryKey()
         {
-            _realm.Write(() => {
+            _realm.Write(() =>
+            {
                 var obj = _realm.CreateObject<PrimaryKeyCharObject>();
                 obj.CharProperty = 'x';
             });
@@ -63,7 +64,8 @@ namespace IntegrationTests.Shared
         [Test]
         public void FindByBytePrimaryKey()
         {
-            _realm.Write(() => {
+            _realm.Write(() =>
+            {
                 var obj = _realm.CreateObject<PrimaryKeyByteObject>();
                 obj.ByteProperty = 42;
             });
@@ -76,7 +78,8 @@ namespace IntegrationTests.Shared
         [Test]
         public void FindByInt16PrimaryKey()
         {
-            _realm.Write(() => {
+            _realm.Write(() =>
+            {
                 var obj = _realm.CreateObject<PrimaryKeyInt16Object>();
                 obj.Int16Property = 4242;
             });
@@ -89,7 +92,8 @@ namespace IntegrationTests.Shared
         [Test]
         public void FindByInt32PrimaryKey()
         {
-            _realm.Write(() => {
+            _realm.Write(() =>
+            {
                 var obj = _realm.CreateObject<PrimaryKeyInt32Object>();
                 obj.Int32Property = 42000042;
             });
@@ -103,7 +107,8 @@ namespace IntegrationTests.Shared
         [Test]
         public void FindByInt64PrimaryKey()
         {
-            _realm.Write(() => {
+            _realm.Write(() =>
+            {
                 var obj = _realm.CreateObject<PrimaryKeyInt64Object>();
                 obj.Int64Property = 42000042;
             });
@@ -125,7 +130,8 @@ namespace IntegrationTests.Shared
         [Test]
         public void FindByStringPrimaryKey()
         {
-            _realm.Write(() => {
+            _realm.Write(() =>
+            {
                 var obj = _realm.CreateObject<PrimaryKeyStringObject>();
                 obj.StringProperty = "Zaphod";
             });
@@ -147,7 +153,8 @@ namespace IntegrationTests.Shared
         [Test]
         public void FindDynamicByInt64PrimaryKey()
         {
-            _realm.Write(() => {
+            _realm.Write(() =>
+            {
                 var obj = _realm.CreateObject("PrimaryKeyInt64Object");
                 obj.Int64Property = 42000042;
             });
@@ -169,7 +176,8 @@ namespace IntegrationTests.Shared
         [Test]
         public void FindDynamicByStringPrimaryKey()
         {
-            _realm.Write(() => {
+            _realm.Write(() =>
+            {
                 var obj = _realm.CreateObject("PrimaryKeyStringObject");
                 obj.StringProperty = "Zaphod";
             });
@@ -191,7 +199,8 @@ namespace IntegrationTests.Shared
         [Test]
         public void ExceptionIfNoPrimaryKeyDeclared()
         {
-            Assert.Throws<RealmClassLacksPrimaryKeyException>( () => {
+            Assert.Throws<RealmClassLacksPrimaryKeyException>(() =>
+            {
                 var foundObj = _realm.ObjectForPrimaryKey<Person>("Zaphod");
             });
         }
@@ -200,7 +209,8 @@ namespace IntegrationTests.Shared
         [Test]
         public void ExceptionIfNoDynamicIPrimaryKeyDeclared()
         {
-            Assert.Throws<RealmClassLacksPrimaryKeyException>( () => {
+            Assert.Throws<RealmClassLacksPrimaryKeyException>(() =>
+            {
                 var foundObj = _realm.ObjectForPrimaryKey("Person", "Zaphod");
             });
         }
@@ -210,7 +220,8 @@ namespace IntegrationTests.Shared
         [Test]
         public void GetByPrimaryKeyDifferentThreads()
         {
-            _realm.Write(() => {
+            _realm.Write(() =>
+            {
                 var obj = _realm.CreateObject<PrimaryKeyInt64Object>();
                 obj.Int64Property = 42000042;
             });
@@ -219,7 +230,8 @@ namespace IntegrationTests.Shared
             // Act
             var t = new Thread(() =>
             {
-                using (var realm2 = Realm.GetInstance()) {
+                using (var realm2 = Realm.GetInstance())
+                {
                     var foundObj = realm2.ObjectForPrimaryKey<PrimaryKeyInt64Object>(42000042);
                     foundValue = foundObj.Int64Property;
                 }
@@ -234,13 +246,16 @@ namespace IntegrationTests.Shared
         [Test]
         public void PrimaryKeyStringObjectIsUnique()
         {
-            _realm.Write(() => {
+            _realm.Write(() =>
+            {
                 var o1 = _realm.CreateObject<PrimaryKeyStringObject>();
                 o1.StringProperty = "Zaphod";
             });
 
-            Assert.Throws<RealmDuplicatePrimaryKeyValueException>( () => {
-                _realm.Write(() => {
+            Assert.Throws<RealmDuplicatePrimaryKeyValueException>(() =>
+            {
+                _realm.Write(() =>
+                {
                     var o2 = _realm.CreateObject<PrimaryKeyStringObject>();
                     o2.StringProperty = "Zaphod"; // deliberately reuse id
                 });
@@ -251,13 +266,16 @@ namespace IntegrationTests.Shared
         [Test]
         public void PrimaryKeyIntObjectIsUnique()
         {
-            _realm.Write(() => {
+            _realm.Write(() =>
+            {
                 var o1 = _realm.CreateObject<PrimaryKeyInt64Object>();
                 o1.Int64Property = 9999000;
             });
 
-            Assert.Throws<RealmDuplicatePrimaryKeyValueException>( () => {
-                _realm.Write(() => {
+            Assert.Throws<RealmDuplicatePrimaryKeyValueException>(() =>
+            {
+                _realm.Write(() =>
+                {
                     var o2 = _realm.CreateObject<PrimaryKeyInt64Object>();
                     o2.Int64Property = 9999000; // deliberately reuse id
                 });
@@ -269,13 +287,14 @@ namespace IntegrationTests.Shared
         public void PrimaryKeyFailsIfClassNotinRealm()
         {
             var conf = RealmConfiguration.DefaultConfiguration.ConfigWithPath("Skinny");
-            conf.ObjectClasses = new []{typeof(Person)};
+            conf.ObjectClasses = new[] { typeof(Person) };
             var skinny = Realm.GetInstance(conf);
-            Assert.Throws<KeyNotFoundException>( () => {
+            Assert.Throws<KeyNotFoundException>(() =>
+            {
                 var obj = skinny.ObjectForPrimaryKey<PrimaryKeyInt64Object>(42);
             });
         }
-            
+
     }
 }
 

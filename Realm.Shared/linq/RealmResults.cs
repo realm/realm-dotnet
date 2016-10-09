@@ -74,20 +74,20 @@ namespace Realms
             /// <summary>
             /// The indices in the new version of the <see cref="RealmResults{T}" /> which were newly inserted.
             /// </summary>
-            public readonly int [] InsertedIndices;
+            public readonly int[] InsertedIndices;
 
             /// <summary>
             /// The indices in the new version of the <see cref="RealmResults{T}"/> which were modified. This means that the property of an object at that index was modified
             /// or the property of another object it's related to.
             /// </summary>
-            public readonly int [] ModifiedIndices;
+            public readonly int[] ModifiedIndices;
 
             /// <summary>
             /// The indices of objects in the previous version of the <see cref="RealmResults{T}"/> which have been removed from this one.
             /// </summary>
-            public readonly int [] DeletedIndices;
+            public readonly int[] DeletedIndices;
 
-            internal ChangeSet(int [] insertedIndices, int [] modifiedIndices, int [] deletedIndices)
+            internal ChangeSet(int[] insertedIndices, int[] modifiedIndices, int[] deletedIndices)
             {
                 InsertedIndices = insertedIndices;
                 ModifiedIndices = modifiedIndices;
@@ -164,7 +164,7 @@ namespace Realms
             if (_allRecords)
             {
                 // use the type captured at build based on generic T
-                var tableHandle = _realm.Metadata [ObjectSchema.Name].Table;
+                var tableHandle = _realm.Metadata[ObjectSchema.Name].Table;
                 return (int)NativeTable.CountAll(tableHandle);
             }
 
@@ -282,8 +282,7 @@ namespace Realms
                 changeset = new ChangeSet(
                     insertedIndices: actualChanges.Insertions.AsEnumerable().Select(i => (int)i).ToArray(),
                     modifiedIndices: actualChanges.Modifications.AsEnumerable().Select(i => (int)i).ToArray(),
-                    deletedIndices: actualChanges.Deletions.AsEnumerable().Select(i => (int)i).ToArray()
-                );
+                    deletedIndices: actualChanges.Deletions.AsEnumerable().Select(i => (int)i).ToArray());
             }
 
             foreach (var callback in _callbacks)

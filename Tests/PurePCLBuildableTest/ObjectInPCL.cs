@@ -24,7 +24,7 @@ namespace PurePCLBuildableTest
 {
     public class ObjectInPCL : RealmObject
     {
-    // all the simple properties
+        // all the simple properties
         public char CharProperty { get; set; }
         public byte ByteProperty { get; set; }
         public short Int16Property { get; set; }
@@ -48,9 +48,8 @@ namespace PurePCLBuildableTest
         public bool? NullableBooleanProperty { get; set; }
         public DateTimeOffset? NullableDateTimeOffsetProperty { get; set; }
 
-    // relationship properties
-        public ObjectInPCL OneAndOnly {get; set;}
+        // relationship properties
+        public ObjectInPCL OneAndOnly { get; set; }
         public IList<ObjectInPCL> Siblings { get; }
-
     }
 }

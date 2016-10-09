@@ -37,7 +37,7 @@ namespace IntegrationTests
         }
 
         [TearDown]
-        public void TearDown() 
+        public void TearDown()
         {
             _realm.Close();
             Realm.DeleteRealm(_realm.Config);
@@ -56,7 +56,7 @@ namespace IntegrationTests
             for (var rowIndex = 0; rowIndex < numRecs; rowIndex++)
             {
                 using (var trans = _realm.BeginWrite())
-                {         
+                {
                     var hangOntoObjectsUntilCommit = new List<RealmObject>();
                     for (var iTrans = 0; iTrans < recsPerTrans; ++iTrans)
                     {
@@ -71,9 +71,9 @@ namespace IntegrationTests
             sw.Stop();
 
             Console.WriteLine("Time spent: " + sw.Elapsed);
-            Console.WriteLine("Kilo-iterations per second: {0:0.00}", ((numRecs/1000) / sw.Elapsed.TotalSeconds));
+            Console.WriteLine("Kilo-iterations per second: {0:0.00}", ((numRecs / 1000) / sw.Elapsed.TotalSeconds));
         }
-            
+
 
         [TestCase(1000000, 1000), Explicit]
         public void BindingCreateObjectPerformanceTest(int totalRecs, int recsPerTrans)
@@ -100,9 +100,9 @@ namespace IntegrationTests
             sw.Stop();
 
             Console.WriteLine("Time spent: " + sw.Elapsed);
-            Console.WriteLine("Kilo-iterations per second: {0:0.00}", ((numRecs/1000) / sw.Elapsed.TotalSeconds));
+            Console.WriteLine("Kilo-iterations per second: {0:0.00}", ((numRecs / 1000) / sw.Elapsed.TotalSeconds));
         }
-            
+
 
         [TestCase(1000000), Explicit]
         public void BindingSetValuePerformanceTest(int count)
@@ -126,7 +126,7 @@ namespace IntegrationTests
             sw.Stop();
 
             Console.WriteLine("Time spent: " + sw.Elapsed);
-            Console.WriteLine("Kilo-iterations per second: {0:0.00}", ((count/1000) / sw.Elapsed.TotalSeconds));
+            Console.WriteLine("Kilo-iterations per second: {0:0.00}", ((count / 1000) / sw.Elapsed.TotalSeconds));
         }
 
         [TestCase(100000), Explicit]

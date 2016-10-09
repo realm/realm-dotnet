@@ -15,21 +15,18 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
-using System;
-using System.Linq;
-using System.Collections.Generic;
+
 
 using Foundation;
-using UIKit;
 using MonoTouch.NUnit.UI;
+using UIKit;
 
 namespace IntegrationTests.XamarinIOS
 {
     // The UIApplicationDelegate for the application. This class is responsible for launching the
     // User Interface of the application, as well as listening (and optionally responding) to
     // application events from iOS.
-    [Register ("UnitTestAppDelegate")]
+    [Register("UnitTestAppDelegate")]
     public partial class UnitTestAppDelegate : UIApplicationDelegate
     {
         // class-level declarations
@@ -43,20 +40,20 @@ namespace IntegrationTests.XamarinIOS
         //
         // You have 17 seconds to return from this method, or iOS will terminate your application.
         //
-        public override bool FinishedLaunching (UIApplication app, NSDictionary options)
+        public override bool FinishedLaunching(UIApplication app, NSDictionary options)
         {
             // create a new window instance based on the screen size
-            window = new UIWindow (UIScreen.MainScreen.Bounds);
-            runner = new TouchRunner (window);
+            window = new UIWindow(UIScreen.MainScreen.Bounds);
+            runner = new TouchRunner(window);
 
             // register every tests included in the main application/assembly
-            runner.Add (System.Reflection.Assembly.GetExecutingAssembly ());
+            runner.Add(System.Reflection.Assembly.GetExecutingAssembly());
 
-            window.RootViewController = new UINavigationController (runner.GetViewController ());
-            
+            window.RootViewController = new UINavigationController(runner.GetViewController());
+
             // make the window visible
-            window.MakeKeyAndVisible ();
-            
+            window.MakeKeyAndVisible();
+
             return true;
         }
     }

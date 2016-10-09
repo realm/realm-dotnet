@@ -46,7 +46,7 @@ namespace IntegrationTests.Shared
             public string Name { get; set; }
             public string Color { get; set; }
             public bool Vaccinated { get; set; }
-            //Owner Owner { get; set; }  will uncomment when verifying that we have back-links from ToMany relationships
+            // Owner Owner { get; set; }  will uncomment when verifying that we have back-links from ToMany relationships
         }
 
         class DynamicOwner : RealmObject

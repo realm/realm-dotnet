@@ -15,11 +15,10 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
 // PROXY VERSION OF CLASS USED IN PCL FOR BAIT AND SWITCH PATTERN 
- 
+
 using System;
-using System.Diagnostics;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -70,7 +69,7 @@ namespace Realms
         /// <param name="error">An exception that might have occured while asynchronously monitoring a <see cref="RealmResults{T}"/> for changes, or <c>null</c> if no errors occured.</param>
         public delegate void NotificationCallback(RealmResults<T> sender, ChangeSet changes, Exception error);
 
-        public Type ElementType => typeof (T);
+        public Type ElementType => typeof(T);
         public Expression Expression { get; }
         public IQueryProvider Provider => null;
 

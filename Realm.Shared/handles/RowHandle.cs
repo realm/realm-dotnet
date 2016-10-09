@@ -15,13 +15,13 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
 using System;
 using System.Runtime.InteropServices;
 
 namespace Realms
 {
-    internal class RowHandle: RealmHandle
+    internal class RowHandle : RealmHandle
     {
         private static class NativeMethods
         {
@@ -37,8 +37,8 @@ namespace Realms
 
         }
 
-        //keep this one even though warned that it is not used. It is in fact used by marshalling
-        //used by P/Invoke to automatically construct a TableHandle when returning a size_t as a TableHandle
+        // keep this one even though warned that it is not used. It is in fact used by marshalling
+        // used by P/Invoke to automatically construct a TableHandle when returning a size_t as a TableHandle
         [Preserve]
         public RowHandle(SharedRealmHandle sharedRealmHandle) : base(sharedRealmHandle)
         {
@@ -77,7 +77,7 @@ namespace Realms
                 NativeException nativeException;
                 var result = NativeMethods.get_is_attached(this, out nativeException);
                 nativeException.ThrowIfNecessary();
-                return result == (IntPtr) 1;  // inline equiv of IntPtrToBool
+                return result == (IntPtr)1;  // inline equiv of IntPtrToBool
             }
         }
 
@@ -95,7 +95,7 @@ namespace Realms
                 return true;
             }
 
-            return ((RowHandle) p).RowIndex == RowIndex;
+            return ((RowHandle)p).RowIndex == RowIndex;
         }
     }
 }

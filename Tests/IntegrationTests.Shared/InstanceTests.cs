@@ -15,7 +15,7 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
 using System;
 using System.IO;
 using NUnit.Framework;
@@ -62,12 +62,13 @@ namespace IntegrationTests
             // Arrange, act and "assert" that no exception is thrown, using default location + unique name
             Realm.GetInstance(specialRealmName).Close();
         }
-        
+
         [Test]
         public void GetInstanceFromPCLTest()
         {
             // Arrange, act and "assert" that no exception is thrown, using default location + unique name
-            using (var realmFromPCL = PurePCLBuildableTest.TestBuildingRealmFromPCL.MakeARealmWithPCL()) {
+            using (var realmFromPCL = PurePCLBuildableTest.TestBuildingRealmFromPCL.MakeARealmWithPCL())
+            {
                 Assert.IsNotNull(realmFromPCL);
                 Assert.That(realmFromPCL.IsClosed, Is.False);
             }
@@ -140,8 +141,8 @@ namespace IntegrationTests
             {
                 // Assert
                 Assert.False(GC.ReferenceEquals(realm1, realm2));
-                Assert.That(realm1.GetHashCode(), Is.Not.EqualTo(0));  
-                Assert.That(realm1.GetHashCode(), Is.Not.EqualTo(realm2.GetHashCode())); 
+                Assert.That(realm1.GetHashCode(), Is.Not.EqualTo(0));
+                Assert.That(realm1.GetHashCode(), Is.Not.EqualTo(realm2.GetHashCode()));
             }
         }
 
@@ -178,7 +179,7 @@ namespace IntegrationTests
 
         class LoneClass : RealmObject
         {
-            public string Name { get; set;}
+            public string Name { get; set; }
         }
 
         [Test]
@@ -187,14 +188,16 @@ namespace IntegrationTests
             // Arrange
             var config = new RealmConfiguration("RealmWithOneClass.realm");
             Realm.DeleteRealm(config);
-            config.ObjectClasses = new Type[] {typeof(LoneClass)};
+            config.ObjectClasses = new Type[] { typeof(LoneClass) };
 
             // Act
-            using (var lonelyRealm = Realm.GetInstance(config)) {
-                lonelyRealm.Write( () => {
+            using (var lonelyRealm = Realm.GetInstance(config))
+            {
+                lonelyRealm.Write(() =>
+                {
                     var p = lonelyRealm.CreateObject<LoneClass>();
                     p.Name = "The Singular";
-                }); 
+                });
 
                 // Assert
                 Assert.That(lonelyRealm.All<LoneClass>().Count(), Is.EqualTo(1));
@@ -207,17 +210,18 @@ namespace IntegrationTests
             // Arrange
             var config = new RealmConfiguration("RealmWithOneClass.realm");
             Realm.DeleteRealm(config);
-            config.ObjectClasses = new Type[] {typeof(LoneClass)};
+            config.ObjectClasses = new Type[] { typeof(LoneClass) };
 
             // Act and assert
-            using (var lonelyRealm = Realm.GetInstance(config)) {
+            using (var lonelyRealm = Realm.GetInstance(config))
+            {
                 using (var trans = lonelyRealm.BeginWrite())
                 {
                     Assert.Throws<ArgumentException>(() =>
                         {
-                            lonelyRealm.CreateObject<Person>(); 
-                        }, 
-                        "Can't create an object with a class not included in this Realm"); 
+                            lonelyRealm.CreateObject<Person>();
+                        },
+                        "Can't create an object with a class not included in this Realm");
                 } // transaction
             }  // realm
         }
@@ -229,14 +233,14 @@ namespace IntegrationTests
             // Arrange
             var config = new RealmConfiguration("RealmWithOneClass.realm");
             Realm.DeleteRealm(config);
-            config.ObjectClasses = new Type[] {typeof(LoneClass), typeof(object)};
+            config.ObjectClasses = new Type[] { typeof(LoneClass), typeof(object) };
 
             // Act and assert
             Assert.Throws<ArgumentException>(() =>
                 {
-                    Realm.GetInstance(config); 
-                }, 
-                "Can't have classes in the list which are not RealmObjects"); 
+                    Realm.GetInstance(config);
+                },
+                "Can't have classes in the list which are not RealmObjects");
         }
 
     }

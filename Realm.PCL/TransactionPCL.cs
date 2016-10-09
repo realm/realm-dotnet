@@ -15,13 +15,10 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
 // PROXY VERSION OF CLASS USED IN PCL FOR BAIT AND SWITCH PATTERN 
- 
+
 using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Text;
 
 namespace Realms
 {
@@ -34,9 +31,9 @@ namespace Realms
     public class Transaction : IDisposable
     {
 
-        internal Transaction() {}
-        
-        
+        internal Transaction() { }
+
+
         /// <summary>
         /// Will automatically <c>Rollback</c> the transaction on existing scope, if not explicitly Committed.
         /// </summary>

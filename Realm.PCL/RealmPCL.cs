@@ -15,10 +15,10 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
 // PROXY VERSION OF CLASS USED IN PCL FOR BAIT AND SWITCH PATTERN 
- 
- 
+
+
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -74,8 +74,8 @@ namespace Realms
         /// <param name="config">Optional configuration.</param>
         /// <returns>A realm instance.</returns>
         /// <exception cref="RealmFileAccessErrorException">Throws error if the filesystem has an error preventing file creation.</exception>
-        //[ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-        public static Realm GetInstance(RealmConfiguration config=null)
+        // [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+        public static Realm GetInstance(RealmConfiguration config = null)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return null;
@@ -105,7 +105,7 @@ namespace Realms
         /// <summary>
         ///  Closes the Realm if not already closed. Safe to call repeatedly.
         /// </summary>
-        //[ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+        // [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         public void Close()
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
@@ -138,7 +138,7 @@ namespace Realms
         /// </summary>
         /// <param name="rhs">The Realm to compare with the current Realm.</param>
         /// <returns><c>true</c> if the Realms are functionally equal.</returns>
-        public  bool Equals(Realm rhs)
+        public bool Equals(Realm rhs)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return false;
@@ -308,7 +308,7 @@ namespace Realms
         /// </summary>
         /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
         /// <returns>A RealmResults that without further filtering, allows iterating all objects of class T, in this realm.</returns>
-        public RealmResults<T> All<T>() where T: RealmObject
+        public RealmResults<T> All<T>() where T : RealmObject
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return null;
@@ -398,7 +398,7 @@ namespace Realms
         /// </summary>
         /// <typeparam name="T">Type of the objects to remove.</typeparam>
         /// <param name="range">The query to match for.</param>
-        public void RemoveRange<T>(RealmResults<T> range) where T: RealmObject
+        public void RemoveRange<T>(RealmResults<T> range) where T : RealmObject
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }
@@ -407,7 +407,7 @@ namespace Realms
         /// Remove all objects of a type from the realm.
         /// </summary>
         /// <typeparam name="T">Type of the objects to remove.</typeparam>
-        public void RemoveAll<T>() where T: RealmObject
+        public void RemoveAll<T>() where T : RealmObject
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }

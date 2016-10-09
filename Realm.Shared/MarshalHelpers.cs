@@ -15,7 +15,7 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
@@ -51,8 +51,8 @@ namespace Realms
                 return (IntPtr)8;  // type_Timestamp
             if (columnType == typeof(bool) || columnType == typeof(bool?))
                 return (IntPtr)1;  // type_Bool
-            if (columnType == typeof (byte[]))
-                return (IntPtr) 4; // type_Data
+            if (columnType == typeof(byte[]))
+                return (IntPtr)4; // type_Data
             if (columnType.BaseType == typeof(RealmObject))
                 return (IntPtr)12;  // type_Link
             if (columnType.IsGenericType)

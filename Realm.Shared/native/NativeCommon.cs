@@ -15,7 +15,7 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
 /**
 @file NativeCommon.cs provides mappings to common functions that don't fit the Table classes etc.
 */
@@ -27,17 +27,18 @@ using System.Text;
 using ObjCRuntime;
 #endif
 
-namespace Realms {
+namespace Realms
+{
     internal static class NativeCommon
     {
-        public delegate void NotifyRealmCallback (IntPtr realmHandle);
+        public delegate void NotifyRealmCallback(IntPtr realmHandle);
 
-        #if DEBUG
-        public delegate void DebugLoggerCallback (IntPtr utf8String, IntPtr stringLen);
+#if DEBUG
+        public delegate void DebugLoggerCallback(IntPtr utf8String, IntPtr stringLen);
 
-        #if __IOS__
-        [MonoPInvokeCallback (typeof (DebugLoggerCallback))]
-        #endif
+#if __IOS__
+        [MonoPInvokeCallback(typeof(DebugLoggerCallback))]
+#endif
         private static unsafe void DebugLogger(IntPtr utf8String, IntPtr stringLen)
         {
             var message = new String((sbyte*)utf8String, 0 /* start offset */, (int)stringLen, Encoding.UTF8);
@@ -46,7 +47,7 @@ namespace Realms {
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "set_debug_logger", CallingConvention = CallingConvention.Cdecl)]
         public static extern void set_debug_logger(DebugLoggerCallback callback);
-        #endif  // DEBUG
+#endif  // DEBUG
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "register_notify_realm_changed", CallingConvention = CallingConvention.Cdecl)]
         public static extern void register_notify_realm_changed(NotifyRealmCallback callback);
@@ -56,9 +57,9 @@ namespace Realms {
 
         public static void Initialize()
         {
-            #if DEBUG
+#if DEBUG
             set_debug_logger(DebugLogger);
-            #endif
+#endif
         }
     }
 }  // namespace Realms

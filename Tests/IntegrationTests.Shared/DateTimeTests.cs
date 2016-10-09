@@ -27,7 +27,7 @@ namespace IntegrationTests.Shared
     [TestFixture, Preserve(AllMembers = true)]
     public class DateTimeTests
     {
-        //TODO: this is ripe for refactoring across test fixture classes
+        // TODO: this is ripe for refactoring across test fixture classes
 
         protected Realm _realm;
 
@@ -75,10 +75,13 @@ namespace IntegrationTests.Shared
         [Test]
         public void SortingFinelyDifferentDateTimes()
         {
-            using (var transaction = _realm.BeginWrite()) {
-                foreach (var ms in new List<Int32> { 10, 999, 998, 42 }) {
+            using (var transaction = _realm.BeginWrite())
+            {
+                foreach (var ms in new List<Int32> { 10, 999, 998, 42 })
+                {
                     var birthday = new DateTimeOffset(1912, 6, 23, 23, 59, 59, ms, TimeSpan.Zero);
-                    foreach (var addMs in new List<double> { -2000.0, 1.0, -1.0, 1000.0, 100.0 }) {
+                    foreach (var addMs in new List<double> { -2000.0, 1.0, -1.0, 1000.0, 100.0 })
+                    {
                         Person turing = _realm.CreateObject<Person>();
                         turing.Birthday = birthday.AddMilliseconds(addMs);
                     }
@@ -89,7 +92,8 @@ namespace IntegrationTests.Shared
             // Assert
             var sortedTurings = _realm.All<Person>().OrderBy(p => p.Birthday);
             DateTimeOffset prevB = new DateTimeOffset();
-            foreach (var t in sortedTurings) {
+            foreach (var t in sortedTurings)
+            {
                 Assert.That(t.Birthday, Is.GreaterThan(prevB));
                 prevB = t.Birthday;
             }
@@ -100,8 +104,10 @@ namespace IntegrationTests.Shared
         public void FindingByMilliseconds()
         {
             var birthday = new DateTimeOffset(1912, 6, 23, 23, 59, 59, 0, TimeSpan.Zero);
-            using (var transaction = _realm.BeginWrite()) {
-                foreach (var addMs in new List<double> { 0.0, 1.0, -1.0 }) {
+            using (var transaction = _realm.BeginWrite())
+            {
+                foreach (var addMs in new List<double> { 0.0, 1.0, -1.0 })
+                {
                     Person turing = _realm.CreateObject<Person>();
                     turing.Birthday = birthday.AddMilliseconds(addMs);
                 }
@@ -128,7 +134,7 @@ namespace IntegrationTests.Shared
         public void IndexedDateTimeOffsetTest()
         {
             // Arrange
-            var config = new RealmConfiguration() {ObjectClasses = new[] {typeof (IndexedDateTimeOffsetObject)}};
+            var config = new RealmConfiguration() { ObjectClasses = new[] { typeof(IndexedDateTimeOffsetObject) } };
 
             // Act and "assert" that no exception is thrown here
             using (Realm.GetInstance(config)) { }

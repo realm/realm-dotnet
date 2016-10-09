@@ -27,7 +27,7 @@ namespace Realms
     /// <summary>
     ///  This is now more of a skinny wrapper on top of the ObjectStore Results class.
     /// </summary>
-    internal class RealmResultsEnumerator<T> : IEnumerator<T> 
+    internal class RealmResultsEnumerator<T> : IEnumerator<T>
     {
         private long _index = -1;  // must match Reset(), zero-based with no gaps indexing an ObjectStore Results
         private ResultsHandle _enumeratingResults = null;
@@ -65,15 +65,16 @@ namespace Realms
         {
             if (_enumeratingResults == null)
                 return false;
-            
+
             ++_index;
             var rowPtr = _enumeratingResults.GetRow(_index);
-            if (rowPtr == IntPtr.Zero) 
+            if (rowPtr == IntPtr.Zero)
             {
                 Current = (T)(object)null;
                 return false;
             }
-            Current = (T)(object) _realm.MakeObjectForRow(_schema.Name, rowPtr);
+
+            Current = (T)(object)_realm.MakeObjectForRow(_schema.Name, rowPtr);
             return true;
         }
 
@@ -89,7 +90,7 @@ namespace Realms
         /// <summary>
         /// Standard Dispose with no side-effects.
         /// </summary>
-        public void Dispose() 
+        public void Dispose()
         {
         }
     }

@@ -34,7 +34,7 @@ namespace IntegrationTests
         [Test, Explicit("Manual test for debugging")]
         public void SimpleTest()
         {
-            MakeThreePeople ();
+            MakeThreePeople();
             var allPeople = _realm.All<Person>().Count();
             Debug.WriteLine($"There are {allPeople} in total");
 
@@ -85,7 +85,7 @@ namespace IntegrationTests
                 p1.Score = 99.0f;
                 Assert.That(p2.Score, Is.EqualTo(99.0f));  // value propagates despite transaction not finished
                 Assert.That(p1.Equals(p2));  // identity-based comparison holds
-                transaction.Commit(); 
+                transaction.Commit();
             }
 
             // Assert
@@ -245,16 +245,17 @@ namespace IntegrationTests
         [Test]
         public void IteratePeople()
         {
-            MakeThreePeople ();
+            MakeThreePeople();
 
             // primarily just testing we iterate through all the people in the realm
             int iterCount = 0;
-            string[] emails = {"john@smith.com", "john@doe.com", "peter@jameson.net"};
-            foreach (var p in _realm.All<Person>()) {
+            string[] emails = { "john@smith.com", "john@doe.com", "peter@jameson.net" };
+            foreach (var p in _realm.All<Person>())
+            {
                 Assert.That(p.Email, Is.EqualTo(emails[iterCount]));
                 iterCount++;
             }
-            Assert.That (iterCount, Is.EqualTo (3));
+            Assert.That(iterCount, Is.EqualTo(3));
         }
 
         [Test]

@@ -15,13 +15,13 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
 using System;
 using System.Runtime.InteropServices;
 
 namespace Realms
 {
-    internal class ResultsHandle: RealmHandle
+    internal class ResultsHandle : RealmHandle
     {
         [StructLayout(LayoutKind.Sequential)]
         internal struct CollectionChangeSet
@@ -52,7 +52,7 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_get_row", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_row(ResultsHandle results, IntPtr index, out NativeException ex);
 
-            [DllImport (InteropConfig.DLL_NAME, EntryPoint = "results_count", CallingConvention = CallingConvention.Cdecl)]
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_count", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr count(ResultsHandle results, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_clear", CallingConvention = CallingConvention.Cdecl)]
@@ -65,8 +65,8 @@ namespace Realms
             public static extern IntPtr destroy_notificationtoken(IntPtr token, out NativeException ex);
         }
 
-        //keep this one even though warned that it is not used. It is in fact used by marshalling
-        //used by P/Invoke to automatically construct a ResultsHandle when returning a size_t as a ResultsHandle
+        // keep this one even though warned that it is not used. It is in fact used by marshalling
+        // used by P/Invoke to automatically construct a ResultsHandle when returning a size_t as a ResultsHandle
         [Preserve]
         public ResultsHandle()
         {
@@ -131,9 +131,9 @@ namespace Realms
             }
 
             NativeException nativeException;
-            var result = NativeMethods.is_same_internal_results(this, (ResultsHandle) p, out nativeException);
+            var result = NativeMethods.is_same_internal_results(this, (ResultsHandle)p, out nativeException);
             nativeException.ThrowIfNecessary();
-            return  result != IntPtr.Zero;
+            return result != IntPtr.Zero;
         }
     }
 }

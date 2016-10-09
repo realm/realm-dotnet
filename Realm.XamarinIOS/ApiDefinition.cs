@@ -69,4 +69,3 @@ namespace Realms.XamarinIOS
     // For more information, see http://developer.xamarin.com/guides/ios/advanced_topics/binding_objective-c/
     //
 }
-

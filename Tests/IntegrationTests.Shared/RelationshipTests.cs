@@ -36,7 +36,7 @@ namespace IntegrationTests.Shared
             public string Name { get; set; }
             public string Color { get; set; }
             public bool Vaccinated { get; set; }
-            //Owner Owner { get; set; }  will uncomment when verifying that we have back-links from ToMany relationships
+            // Owner Owner { get; set; }  will uncomment when verifying that we have back-links from ToMany relationships
         }
 
         class Owner : RealmObject
@@ -156,7 +156,7 @@ namespace IntegrationTests.Shared
         {
             var tim = realm.All<Owner>().First(p => p.Name == "Tim");
             Assert.Throws<ArgumentNullException>(() => tim.Dogs.CopyTo(null, 0));
-            Dog [] copiedDogs = new Dog [2];
+            Dog[] copiedDogs = new Dog[2];
             Assert.Throws<ArgumentOutOfRangeException>(() => tim.Dogs.CopyTo(copiedDogs, -1));
             Assert.Throws<ArgumentException>(() => tim.Dogs.CopyTo(copiedDogs, 1));  // insuffiient room
         }
@@ -191,7 +191,7 @@ namespace IntegrationTests.Shared
             }
             var tim2 = realm.All<Owner>().First(p => p.Name == "Tim");
             Assert.That(tim2.Dogs.Count(), Is.EqualTo(3));
-            Assert.That(tim2.Dogs [2].Name, Is.EqualTo("Maggie Mongrel"));
+            Assert.That(tim2.Dogs[2].Name, Is.EqualTo("Maggie Mongrel"));
         }
 
 
@@ -208,8 +208,8 @@ namespace IntegrationTests.Shared
             }
             var tim2 = realm.All<Owner>().Single(p => p.Name == "Tim");
             Assert.That(tim2.Dogs.Count(), Is.EqualTo(3));
-            Assert.That(tim2.Dogs [1].Name, Is.EqualTo("Maggie Mongrel"));
-            Assert.That(tim2.Dogs [2].Name, Is.EqualTo("Earl Yippington III"));
+            Assert.That(tim2.Dogs[1].Name, Is.EqualTo("Maggie Mongrel"));
+            Assert.That(tim2.Dogs[2].Name, Is.EqualTo("Earl Yippington III"));
         }
 
 
@@ -225,7 +225,7 @@ namespace IntegrationTests.Shared
             }
             var tim2 = realm.All<Owner>().Single(p => p.Name == "Tim");
             Assert.That(tim2.Dogs.Count(), Is.EqualTo(1));
-            Assert.That(tim2.Dogs [0].Name, Is.EqualTo("Earl Yippington III"));
+            Assert.That(tim2.Dogs[0].Name, Is.EqualTo("Earl Yippington III"));
             using (var trans = realm.BeginWrite())
             {
                 tim.Dogs.RemoveAt(0);
@@ -265,7 +265,7 @@ namespace IntegrationTests.Shared
             }
             var tim2 = realm.All<Owner>().Single(p => p.Name == "Tim");
             Assert.That(tim2.Dogs.Count(), Is.EqualTo(1));
-            Assert.That(tim2.Dogs [0].Name, Is.EqualTo("Earl Yippington III"));
+            Assert.That(tim2.Dogs[0].Name, Is.EqualTo("Earl Yippington III"));
         }
 
 
@@ -300,7 +300,7 @@ namespace IntegrationTests.Shared
             Dog scratch;  // for assignment in following getters
             Assert.Throws<ArgumentOutOfRangeException>(() => dani.Dogs.Insert(-1, bilbo));
             Assert.Throws<ArgumentOutOfRangeException>(() => dani.Dogs.Insert(0, bilbo));
-            Assert.Throws<ArgumentOutOfRangeException>(() => scratch = dani.Dogs [0]);
+            Assert.Throws<ArgumentOutOfRangeException>(() => scratch = dani.Dogs[0]);
         }
 
 
@@ -326,7 +326,7 @@ namespace IntegrationTests.Shared
             Dog scratch;  // for assignment in following getters
             Assert.Throws<ArgumentOutOfRangeException>(() => tim.Dogs.Insert(-1, bilbo));
             Assert.Throws<ArgumentOutOfRangeException>(() => tim.Dogs.Insert(3, bilbo));
-            Assert.Throws<ArgumentOutOfRangeException>(() => scratch = tim.Dogs [99]);
+            Assert.Throws<ArgumentOutOfRangeException>(() => scratch = tim.Dogs[99]);
         }
 
         [Test]
@@ -366,7 +366,8 @@ namespace IntegrationTests.Shared
         [Test]
         public void TestManagingStandaloneTwoLevelRelationship()
         {
-            var person = new Person {
+            var person = new Person
+            {
                 FullName = "Jack Thorne",
                 Friends = // see NoteOnListInit above
                 {
@@ -385,8 +386,7 @@ namespace IntegrationTests.Shared
 
             Assert.That(person.Friends is RealmList<Person>);
             Assert.That(realm.All<Person>().ToList().Select(p => p.FirstName),
-                        Is.EquivalentTo(new [] { "Jack", "Christian", "Frederick" })
-                       );
+                        Is.EquivalentTo(new[] { "Jack", "Christian", "Frederick" }));
 
         }
 
@@ -394,7 +394,8 @@ namespace IntegrationTests.Shared
         [Test]
         public void TestManagingStandaloneThreeLevelRelationship()
         {
-            var sally = new Person {
+            var sally = new Person
+            {
                 FullName = "Sally",
                 Friends =  // see NoteOnListInit above
                 {
@@ -407,7 +408,7 @@ namespace IntegrationTests.Shared
                             new Person()
                             {
                                 FullName = "Krystal",
-                                Friends =  { new Person {  FullName = "Sally"} }  // Managees a second Sally
+                                Friends = { new Person { FullName = "Sally" } } // Managees a second Sally
                             }
                         }
 
@@ -417,28 +418,29 @@ namespace IntegrationTests.Shared
 
             using (var trans = realm.BeginWrite())
             {
-                realm.Manage(sally);  // top person Managees entire tree
+                realm.Manage(sally); // top person Managees entire tree
                 trans.Commit();
             }
 
             Assert.That(realm.All<Person>().ToList().Select(p => p.FirstName),
-                        Is.EquivalentTo(new [] { "Alice", "Joan", "Krystal", "Sally", "Sally" })
-                       );
+                        Is.EquivalentTo(new[] { "Alice", "Joan", "Krystal", "Sally", "Sally" }));
         }
 
 
         [Test]
         public void TestCircularRelationshipsFromStandaloneTwoStage()
         {
-            var sally = new Person {
+            var sally = new Person
+            {
                 FullName = "Sally",
                 Friends =
                 {
                     new Person { FullName = "Alice" },
-                    new Person { FullName = "Joan"  }
+                    new Person { FullName = "Joan" }
                 }
             };
-            var joanFriend = new Person() {
+            var joanFriend = new Person()
+            {
                 FullName = "Krystal",
                 Friends = { sally }
             };
@@ -446,14 +448,13 @@ namespace IntegrationTests.Shared
             using (var trans = realm.BeginWrite())
             {
                 realm.Manage(sally);  // top person Managees entire tree
-                sally.Friends [1].Friends.Add(joanFriend);
+                sally.Friends[1].Friends.Add(joanFriend);
 
                 trans.Commit();
             }
 
             Assert.That(realm.All<Person>().ToList().Select(p => p.FirstName),
-                        Is.EquivalentTo(new [] { "Alice", "Joan", "Krystal", "Sally" })
-                       );
+                        Is.EquivalentTo(new[] { "Alice", "Joan", "Krystal", "Sally" }));
         }
 
         #region DeleteRelated
@@ -479,7 +480,8 @@ namespace IntegrationTests.Shared
         public void TestDeleteChildren()
         {
             // Arrange - setup some hierarchies
-            realm.Write(() => {
+            realm.Write(() =>
+            {
                 for (var pid = 1; pid <= 4; ++pid)
                 {
                     var p = realm.CreateObject<Product>();
@@ -498,7 +500,8 @@ namespace IntegrationTests.Shared
             Assert.IsNotNull(delP);
             Assert.That(delP.Reports.Count, Is.EqualTo(5));
 
-            realm.Write(() => {
+            realm.Write(() =>
+            {
                 foreach (var r in delP.Reports.ToList())  // use ToList to get static list so can remove items
                     realm.Remove(r);  // removes from the realm, and updates delP.Reports so can't just iterate that
             });

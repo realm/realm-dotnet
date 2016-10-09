@@ -15,7 +15,7 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -54,9 +54,9 @@ namespace Realms
             NativeCommon.register_notify_realm_changed(NotifyRealmChanged);
         }
 
-        #if __IOS__
-        [MonoPInvokeCallback (typeof (NativeCommon.NotifyRealmCallback))]
-        #endif
+#if __IOS__
+        [MonoPInvokeCallback(typeof(NativeCommon.NotifyRealmCallback))]
+#endif
         private static void NotifyRealmChanged(IntPtr realmHandle)
         {
             var gch = GCHandle.FromIntPtr(realmHandle);
@@ -148,7 +148,7 @@ namespace Realms
             }
 
             return new Realm(srHandle, config, schema);
-        } 
+        }
 
         #endregion
 
@@ -190,7 +190,7 @@ namespace Realms
             // build up column index in a loop so can spot and cache primary key index on the way
             var initColumnMap = new Dictionary<string, IntPtr>();
             int initPrimaryKeyIndex = -1;
-            foreach(var prop in schema)
+            foreach (var prop in schema)
             {
                 var colIndex = NativeTable.GetColumnIndex(table, prop.Name);
                 initColumnMap.Add(prop.Name, colIndex);
@@ -201,7 +201,7 @@ namespace Realms
             {
                 Table = table,
                 Helper = helper,
-                ColumnIndices = initColumnMap, 
+                ColumnIndices = initColumnMap,
                 PrimaryKeyColumnIndex = initPrimaryKeyIndex,
                 Schema = schema
             };
@@ -228,7 +228,7 @@ namespace Realms
                     var managedRealmHandle = GCHandle.Alloc(this, GCHandleType.Weak);
                     SharedRealmHandle.BindToManagedRealmHandle(GCHandle.ToIntPtr(managedRealmHandle));
                 }
-                    
+
                 _realmChanged += value;
             }
 
@@ -282,7 +282,7 @@ namespace Realms
         {
             if (IsClosed)
                 throw new ObjectDisposedException(nameof(Realm));
-            
+
             if (disposing && !(SharedRealmHandle is UnownedRealmHandle))
             {
                 SharedRealmHandle.CloseRealm();
@@ -315,7 +315,7 @@ namespace Realms
         /// </summary>
         /// <param name="rhs">The Realm to compare with the current Realm.</param>
         /// <returns><c>true</c> if the Realms are functionally equal.</returns>
-        public  bool Equals(Realm rhs)
+        public bool Equals(Realm rhs)
         {
             if (rhs == null)
                 return false;
@@ -356,8 +356,8 @@ namespace Realms
         /// <param name="configuration">A configuration which supplies the realm path.</param>
         static public void DeleteRealm(RealmConfiguration configuration)
         {
-            //TODO add cache checking when implemented, https://github.com/realm/realm-dotnet/issues/308
-            //when cache checking, uncomment in IntegrationTests.cs RealmInstanceTests.DeleteRealmFailsIfOpenSameThread and add a variant to test open on different thread
+            // TODO add cache checking when implemented, https://github.com/realm/realm-dotnet/issues/308
+            // when cache checking, uncomment in IntegrationTests.cs RealmInstanceTests.DeleteRealmFailsIfOpenSameThread and add a variant to test open on different thread
             var lockOnWhileDeleting = new object();
             lock (lockOnWhileDeleting)
             {
@@ -446,7 +446,7 @@ namespace Realms
 
         internal RealmObject MakeObjectForRow(string className, IntPtr rowPtr)
         {
-            return MakeObjectForRow(Metadata [className], CreateRowHandle(rowPtr, SharedRealmHandle));
+            return MakeObjectForRow(Metadata[className], CreateRowHandle(rowPtr, SharedRealmHandle));
         }
 
 
@@ -473,7 +473,7 @@ namespace Realms
 
         internal ResultsHandle MakeResultsForQuery(QueryHandle builtQuery, SortDescriptorBuilder optionalSortDescriptorBuilder)
         {
-            var resultsPtr = IntPtr.Zero;               
+            var resultsPtr = IntPtr.Zero;
             if (optionalSortDescriptorBuilder == null)
                 resultsPtr = builtQuery.CreateResults(SharedRealmHandle);
             else
@@ -656,7 +656,7 @@ namespace Realms
         /// </summary>
         /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
         /// <returns>A RealmResults that without further filtering, allows iterating all objects of class T, in this realm.</returns>
-        public RealmResults<T> All<T>() where T: RealmObject
+        public RealmResults<T> All<T>() where T : RealmObject
         {
             var type = typeof(T);
             RealmObject.Metadata metadata;
@@ -787,7 +787,7 @@ namespace Realms
         /// Remove all objects of a type from the realm.
         /// </summary>
         /// <typeparam name="T">Type of the objects to remove.</typeparam>
-        public void RemoveAll<T>() where T: RealmObject
+        public void RemoveAll<T>() where T : RealmObject
         {
             RemoveRange(All<T>());
         }

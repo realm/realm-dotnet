@@ -14,25 +14,25 @@ namespace AssemblyToProcess
             get
             {
                 return myDog;
-                //if (myDog != null)
-                //{
-                //    return myDog;
-                //}
-                //var dogs = Realm.GetInstance().All<Dog>();
-                //if (dogs.Count() == 0)
-                //{
-                //    Realm.GetInstance().Write(() =>
-                //    {
-                //        var dog = Realm.GetInstance().CreateObject<Dog>();
-                //        dog.Name = "my precious";
-                //        myDog = dog;
-                //    });
-                //}
-                //else
-                //{
-                //    myDog = dogs.First();
-                //}
-                //return myDog;
+                // if (myDog != null)
+                // {
+                //     return myDog;
+                // }
+                // var dogs = Realm.GetInstance().All<Dog>();
+                // if (dogs.Count() == 0)
+                // {
+                //     Realm.GetInstance().Write(() =>
+                //     {
+                //         var dog = Realm.GetInstance().CreateObject<Dog>();
+                //         dog.Name = "my precious";
+                //         myDog = dog;
+                //     });
+                // }
+                // else
+                // {
+                //     myDog = dogs.First();
+                // }
+                // return myDog;
             }
         }
     }

@@ -481,7 +481,7 @@ namespace Realms
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_remove_row", CallingConvention = CallingConvention.Cdecl)]
         private static extern void remove_row(TableHandle tableHandle, RowHandle rowHandle, out NativeException ex);
 
-         //returns -1 if the column string does not match a column index
+        // returns -1 if the column string does not match a column index
         public static IntPtr GetColumnIndex(TableHandle tableHandle, string name)
         {
             NativeException nativeException;
