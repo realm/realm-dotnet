@@ -104,8 +104,8 @@ namespace Realms
         /// A callback that will be invoked each time the contents of a <see cref="RealmResults{T}"/> have changed.
         /// </summary>
         /// <param name="sender">The <see cref="RealmResults{T}"/> being monitored for changes.</param>
-        /// <param name="changes">The <see cref="ChangeSet"/> describing the changes to a <see cref="RealmResults{T}"/>, or <c>null</c> if an error occured.</param>
-        /// <param name="error">An exception that might have occured while asynchronously monitoring a <see cref="RealmResults{T}"/> for changes, or <c>null</c> if no errors occured.</param>
+        /// <param name="changes">The <see cref="ChangeSet"/> describing the changes to a <see cref="RealmResults{T}"/>, or <c>null</c> if an error occurred.</param>
+        /// <param name="error">An exception that might have occurred while asynchronously monitoring a <see cref="RealmResults{T}"/> for changes, or <c>null</c> if no errors occurred.</param>
         public delegate void NotificationCallback(RealmResults<T> sender, ChangeSet changes, Exception error);
 
         internal RealmResults(Realm realm, RealmResultsProvider realmResultsProvider, Expression expression, RealmObject.Metadata metadata, bool createdByAll)
@@ -152,11 +152,11 @@ namespace Realms
         /// Fast count all objects of a given class, or in a RealmResults after casting.
         /// </summary>
         /// <remarks>
-        /// Resolves to this method instead of the LINQ static extension <c>Count<T>(this IEnumerable<T>)</c>, when used directly on Realm.All.
-        /// <br>
-        /// if someone CASTS a RealmResults<T> variable from a Where call to 
-        /// a RealmResults<T> they change its compile-time type from IQueryable<blah> (which invokes LINQ)
-        /// to RealmResults<T> and thus ends up here.
+        /// Resolves to this method instead of the LINQ static extension <c>Count&lt;T&gt;(this IEnumerable&lt;T&gt;)</c>, when used directly on Realm.All.
+        /// <br/>
+        /// if someone CASTS a RealmResults&lt;T&gt; variable from a Where call to 
+        /// a RealmResults&lt;T&gt; they change its compile-time type from IQueryable&lt;T&gt; (which invokes LINQ)
+        /// to RealmResults&lt;T&gt; and thus ends up here.
         /// </remarks>
         /// <returns>Count of all objects in a class or in the results of a search, without instantiating them.</returns>
         public int Count()

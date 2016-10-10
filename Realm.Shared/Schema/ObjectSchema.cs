@@ -36,12 +36,12 @@ namespace Realms.Schema
         private readonly ReadOnlyDictionary<string, Property> _properties;
 
         /// <summary>
-        /// Name of the original class declaration from which the schema was built.
+        /// Gets the name of the original class declaration from which the schema was built.
         /// </summary>
         public string Name { get; private set; }
 
         /// <summary>
-        /// Number of properties in the schema, which is the persistent properties from the original class.
+        /// Gets the number of properties in the schema, which is the persistent properties from the original class.
         /// </summary>
         public int Count => _properties.Count;
 
@@ -145,6 +145,9 @@ namespace Realms.Schema
         /// </summary>
         public class Builder : List<Property>
         {
+            /// <summary>
+            /// Gets the name of the class to be returned in the ObjectSchema.
+            /// </summary>
             public string Name { get; }
 
             public Builder(string name)

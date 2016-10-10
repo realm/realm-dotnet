@@ -42,9 +42,9 @@ namespace Realms
         private static readonly Lazy<RealmSchema> _default = new Lazy<RealmSchema>(BuildDefaultSchema);
 
         /// <summary>
-        /// Number of known classes in the schema.
+        /// Gets the number of known classes in the schema.
         /// </summary>
-        /// <value>Count of known classes specified in this Schema.</value>
+        /// <value>The count of known classes specified in this Schema.</value>
         public int Count => _objects.Count;
 
         internal static RealmSchema Default => _default.Value;

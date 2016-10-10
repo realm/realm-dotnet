@@ -28,7 +28,7 @@ namespace Realms
     /// The <c>NewRealm</c> is the one you should make sure is up to date. It will contain
     /// models corresponding to the configuration you've supplied.
     /// You can read from the old realm and access properties that have been removed from
-    /// the classes by using the dynamic api. See more in the migrations section in the documentation.
+    /// the classes by using the dynamic API. See more in the migrations section in the documentation.
     /// </summary>
     public class Migration
     {
@@ -36,12 +36,12 @@ namespace Realms
         private readonly RealmSchema _schema;
 
         /// <summary>
-        /// This is the realm as it was before migrating. Use the dnyamic API to access it
+        /// Gets the realm as it was before migrating. Use the dynamic API to access it.
         /// </summary>
         public Realm OldRealm { get; private set; }
 
         /// <summary>
-        /// This is the realm that you should modify and make sure is up to date.
+        /// Gets the realm that you should modify and make sure is up to date.
         /// </summary>
         public Realm NewRealm { get; private set; }
 

@@ -62,19 +62,19 @@ namespace Realms
         }
 
         /// <summary>
-        /// Configuration that controls the Realm path and other settings.
+        /// Gets the <see cref="RealmConfiguration"/> that controls this realm's path and other settings.
         /// </summary>
         public RealmConfiguration Config { get; private set; }
 
         /// <summary>
         /// Factory for a Realm instance for this thread.
         /// </summary>
-        /// <param name="databasePath">Path to the realm, must be a valid full path for the current platform, relative subdir, or just filename.</param>
+        /// <param name="databasePath">Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.</param>
         /// <remarks>If you specify a relative path, sandboxing by the OS may cause failure if you specify anything other than a subdirectory. <br />
         /// Instances are cached for a given absolute path and thread, so you may get back the same instance.
         /// </remarks>
         /// <returns>A realm instance, possibly from cache.</returns>
-        /// <exception cref="RealmFileAccessErrorException">Throws error if the filesystem has an error preventing file creation.</exception>
+        /// <exception cref="RealmFileAccessErrorException">Throws error if the file system returns an error preventing file creation.</exception>
         public static Realm GetInstance(string databasePath)
         {
             var config = RealmConfiguration.DefaultConfiguration;
@@ -91,7 +91,7 @@ namespace Realms
         /// </summary>
         /// <param name="config">Optional configuration.</param>
         /// <returns>A realm instance.</returns>
-        /// <exception cref="RealmFileAccessErrorException">Throws error if the filesystem has an error preventing file creation.</exception>
+        /// <exception cref="RealmFileAccessErrorException">Throws error if the file system returns an error, preventing file creation.</exception>
         public static Realm GetInstance(RealmConfiguration config = null)
         {
             return GetInstance(config, null);
@@ -162,7 +162,7 @@ namespace Realms
         internal bool IsInTransaction => SharedRealmHandle.IsInTransaction();
 
         /// <summary>
-        /// The <see cref="RealmSchema"/> instance that describes all the types that can be stored in this <see cref="Realm"/>.
+        /// Gets the <see cref="RealmSchema"/> instance that describes all the types that can be stored in this <see cref="Realm"/>.
         /// </summary>
         public RealmSchema Schema { get; }
 
@@ -228,7 +228,7 @@ namespace Realms
         private event RealmChangedEventHandler _realmChanged;
 
         /// <summary>
-        /// Triggered when a realm has changed (i.e. a transaction was committed)
+        /// Triggered when a realm has changed (i.e. a transaction was committed).
         /// </summary>
         public event RealmChangedEventHandler RealmChanged
         {
@@ -321,34 +321,34 @@ namespace Realms
         /// <summary>
         /// Determines whether the specified Realm is equal to the current Realm.
         /// </summary>
-        /// <param name="rhs">The Realm to compare with the current Realm.</param>
+        /// <param name="other">The Realm to compare with the current Realm.</param>
         /// <returns><c>true</c> if the Realms are functionally equal.</returns>
-        public bool Equals(Realm rhs)
+        public bool Equals(Realm other)
         {
-            if (rhs == null)
+            if (other == null)
             {
                 return false;
             }
 
-            if (ReferenceEquals(this, rhs))
+            if (ReferenceEquals(this, other))
             {
                 return true;
             }
 
-            return Config.Equals(rhs.Config) && IsClosed == rhs.IsClosed;
+            return Config.Equals(other.Config) && IsClosed == other.IsClosed;
         }
 
         /// <summary>
-        /// Determines whether this instance is the same core instance as the specified rhs.
+        /// Determines whether this instance is the same core instance as the passed in argument.
         /// </summary>
         /// <remarks>
         /// You can, and should, have multiple instances open on different threads which have the same path and open the same Realm.
         /// </remarks>
-        /// <returns><c>true</c> if this instance is the same core instance the specified rhs; otherwise, <c>false</c>.</returns>
-        /// <param name="rhs">The Realm to compare with the current Realm.</param>
-        public bool IsSameInstance(Realm rhs)
+        /// <returns><c>true</c> if this instance is the same core instance; otherwise, <c>false</c>.</returns>
+        /// <param name="other">The Realm to compare with the current Realm.</param>
+        public bool IsSameInstance(Realm other)
         {
-            return SharedRealmHandle.IsSameInstance(rhs.SharedRealmHandle);
+            return SharedRealmHandle.IsSameInstance(other.SharedRealmHandle);
         }
 
         /// <summary>
@@ -427,7 +427,7 @@ namespace Realms
         /// <returns>A dynamically-accessed Realm object.</returns>
         /// <param name="className">The type of object to create as defined in the schema.</param>
         /// <remarks>
-        /// If the realm instance has been created from an untyped schema (such as when migrating from an older version of a realm) the returned object will be purely dynamic.
+        /// If the realm instance has been created from an un-typed schema (such as when migrating from an older version of a realm) the returned object will be purely dynamic.
         /// If the realm has been created from a typed schema as is the default case when calling <code>Realm.GetInstance()</code> the returned object will be an instance of a user-defined class, as if created by <code>Realm.CreateObject&lt;T&gt;()</code>.
         /// </remarks>
         public dynamic CreateObject(string className)
@@ -584,12 +584,13 @@ namespace Realms
         /// <summary>
         /// Factory for a write Transaction. Essential object to create scope for updates.
         /// </summary>
-        /// <example>
-        /// using (var trans = myrealm.BeginWrite()) { 
-        ///     var rex = myrealm.CreateObject&lt;Dog&gt;();
+        /// <example><c>
+        /// using (var trans = realm.BeginWrite()) 
+        /// { 
+        ///     var rex = realm.CreateObject&lt;Dog&gt;();
         ///     rex.Name = "Rex";
         ///     trans.Commit();
-        /// }
+        /// }</c>
         /// </example>
         /// <returns>A transaction in write mode, which is required for any creation or modification of objects persisted in a Realm.</returns>
         public Transaction BeginWrite()
@@ -606,13 +607,13 @@ namespace Realms
         /// Be careful of wrapping multiple single property updates in multiple `Write` calls. It is more efficient to update several properties 
         /// or even create multiple objects in a single Write, unless you need to guarantee finer-grained updates.
         /// </remarks>
-        /// <example>
+        /// <example><c>
         /// realm.Write(() => 
         /// {
-        ///     d = myrealm.CreateObject&lt;Dog&gt;();
+        ///     d = realm.CreateObject&lt;Dog&gt;();
         ///     d.Name = "Eddie";
         ///     d.Age = 5;
-        /// });
+        /// });</c>
         /// </example>
         /// <param name="action">Action to perform inside a transaction, creating, updating or removing objects.</param>
         public void Write(Action action)
@@ -671,7 +672,7 @@ namespace Realms
 
         /// <summary>
         /// Update a Realm and outstanding objects to point to the most recent data for this Realm.
-        /// This is only necessary when you have a Realm on a non-runloop thread that needs manual refreshing.
+        /// This is only necessary when you have a Realm on a thread without a runloop that needs manual refreshing.
         /// </summary>
         /// <returns>
         /// Whether the realm had any updates. Note that this may return true even if no data has actually changed.
@@ -699,7 +700,7 @@ namespace Realms
         }
 
         /// <summary>
-        /// Get a view of all the objects of a particular type
+        /// Get a view of all the objects of a particular type.
         /// </summary>
         /// <param name="className">The type of the objects as defined in the schema.</param>
         /// <remarks>Because the objects inside the view are accessed dynamically, the view cannot be queried into using LINQ or other expression predicates.</remarks>
@@ -741,7 +742,7 @@ namespace Realms
         /// </summary>
         /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
         /// <param name="id">Id to be matched exactly, same as an == search.</param>
-        /// <returns>Null or an object matdhing the id.</returns>
+        /// <returns>Null or an object matching the id.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class T lacks an [PrimaryKey].</exception>
         public T ObjectForPrimaryKey<T>(string id) where T : RealmObject
         {
@@ -760,7 +761,7 @@ namespace Realms
         /// </summary>
         /// <param name="className">Name of class in dynamic situation.</param>
         /// <param name="id">Id to be matched exactly, same as an == search.</param>
-        /// <returns>Null or an object matdhing the id.</returns>
+        /// <returns>Null or an object matching the id.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class lacks an [PrimaryKey].</exception>
         public RealmObject ObjectForPrimaryKey(string className, long id)
         {
@@ -779,7 +780,7 @@ namespace Realms
         /// </summary>
         /// <param name="className">Name of class in dynamic situation.</param>
         /// <param name="id">Id to be matched exactly, same as an == search.</param>
-        /// <returns>Null or an object matdhing the id.</returns>
+        /// <returns>Null or an object matching the id.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class lacks an [PrimaryKey].</exception>
         public RealmObject ObjectForPrimaryKey(string className, string id)
         {
@@ -813,7 +814,7 @@ namespace Realms
         }
 
         /// <summary>
-        /// Remove objects matcing a query from the realm.
+        /// Remove objects matching a query from the realm.
         /// </summary>
         /// <typeparam name="T">Type of the objects to remove.</typeparam>
         /// <param name="range">The query to match for.</param>

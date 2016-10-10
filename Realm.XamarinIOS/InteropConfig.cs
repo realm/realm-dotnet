@@ -29,7 +29,7 @@ namespace Realms
     internal static class InteropConfig
     {
         /// <summary>
-        /// Compile-time test of platform being 64bit.
+        /// Gets a value indicating whether the platform is 64 bit.
         /// </summary>
         public static bool Is64Bit
         {

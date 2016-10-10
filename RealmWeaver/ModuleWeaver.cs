@@ -505,24 +505,24 @@ public class ModuleWeaver
 
     private void ReplaceGetter(PropertyDefinition prop, string columnName, MethodReference getValueReference)
     {
-        /// A synthesized property getter looks like this:
-        ///   0: ldarg.0
-        ///   1: ldfld <backingField>
-        ///   2: ret
-        /// We want to change it so it looks like this:
-        ///   0: ldarg.0
-        ///   1: call Realms.RealmObject.get_IsManaged
-        ///   2: brfalse.s 7
-        ///   3: ldarg.0
-        ///   4: ldstr <columnName>
-        ///   5: call Realms.RealmObject.GetValue<T>
-        ///   6: ret
-        ///   7: ldarg.0
-        ///   8: ldfld <backingField>
-        ///   9: ret
-        /// This is roughly equivalent to:
-        ///   if (!base.IsManaged) return this.<backingField>;
-        ///   return base.GetValue<T>(<columnName>);
+        // A synthesized property getter looks like this:
+        //   0: ldarg.0
+        //   1: ldfld <backingField>
+        //   2: ret
+        // We want to change it so it looks like this:
+        //   0: ldarg.0
+        //   1: call Realms.RealmObject.get_IsManaged
+        //   2: brfalse.s 7
+        //   3: ldarg.0
+        //   4: ldstr <columnName>
+        //   5: call Realms.RealmObject.GetValue<T>
+        //   6: ret
+        //   7: ldarg.0
+        //   8: ldfld <backingField>
+        //   9: ret
+        // This is roughly equivalent to:
+        //   if (!base.IsManaged) return this.<backingField>;
+        //   return base.GetValue<T>(<columnName>);
 
         var start = prop.GetMethod.Body.Instructions.First();
         var il = prop.GetMethod.Body.GetILProcessor();

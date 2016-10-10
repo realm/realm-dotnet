@@ -24,21 +24,21 @@ using System.Linq;
 namespace Realms
 {
     /// <summary>
-    /// Realm configuration specifying settings that affect your Realm behaviour.
+    /// Realm configuration specifying settings that affect the Realm's behavior.
     /// </summary>
     /// <remarks>
-    /// Main role is generating a canonical path from whatever absolute, relative subdir or just filename user supplies.
+    /// Main role is generating a canonical path from whatever absolute, relative subdirectory or just filename the user supplies.
     /// </remarks>
     public class RealmConfiguration
     {
         /// <summary>
-        /// Standard filename to be combined with the platform-specific document directory.
+        /// Gets the filename to be combined with the platform-specific document directory.
         /// </summary>
         /// <value>A string representing a filename only, no path.</value>      
         public static string DefaultRealmName => "default.realm";
 
         /// <summary>
-        /// Flag mainly to help with temp databases and testing, indicates content can be abandoned when you change the schema.
+        /// Flag mainly to help with temp databases and testing, indicates that content can be abandoned when you change the schema.
         /// </summary>
         public readonly bool ShouldDeleteIfMigrationNeeded;
 
@@ -48,24 +48,24 @@ namespace Realms
         public bool ReadOnly;
 
         /// <summary>
-        /// The full path of any realms opened with this configuration, may be overriden by passing in a separate name.
+        /// Gets the full path of the realms opened with this configuration, may be overriden by passing in a separate name.
         /// </summary>
         public string DatabasePath { get; private set; }
 
         internal bool Dynamic;
 
         /// <summary>
-        /// The list of classes persisted in a Realm opened with this configuration.
+        /// Gets or sets the list of classes persisted in a Realm opened with this configuration.
         /// </summary>
         /// <remarks>Specify classes by type. Searched linearly so order in decreasing frequency of creating objects.</remarks>
-        /// <example>eg: `config.ObjectClasses = new Type[] { typeof(CommonClass), typeof(RareClass) };`</example>
+        /// <example>For example: `config.ObjectClasses = new Type[] { typeof(CommonClass), typeof(RareClass) };`.</example>
         /// <value>Typically left null so by default all RealmObjects will be able to be stored in all realms.</value>
         public Type[] ObjectClasses { get; set; }
 
         /// <summary>
         /// Utility to build a path in which a realm will be created so can consistently use filenames and relative paths.
         /// </summary>
-        /// <param name="optionalPath">Path to the realm, must be a valid full path for the current platform, relative subdir, or just filename.</param>
+        /// <param name="optionalPath">Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.</param>
         /// <returns>A full path including name of Realm file.</returns>
         public static string PathToRealm(string optionalPath = null)
         {
@@ -88,7 +88,7 @@ namespace Realms
         }
 
         /// <summary>
-        /// Number indicating the version, can be used to arbitrarily distinguish between schemas even if they have the same objects and properties.
+        /// Gets or sets a number, indicating the version of the schema. Can be used to arbitrarily distinguish between schemas even if they have the same objects and properties.
         /// </summary>
         /// <value>0-based value initially set to zero so all user-set values will be greater.</value>
         public ulong SchemaVersion { get; set; } = 0;
@@ -101,6 +101,8 @@ namespace Realms
         /// The <c>oldSchemaVersion</c> parameter will tell you which version the user is migrating *from*.
         /// They should always be migrating to the current version.
         /// </summary>
+        /// <param name="migration">The <see cref="Migration"/> instance, containing information about the old and the new realm.</param>
+        /// <param name="oldSchemaVersion">An unsigned long value indicating the schema version of the old realm.</param>
         public delegate void MigrationCallbackDelegate(Migration migration, ulong oldSchemaVersion);
 
         /// <summary>
@@ -111,7 +113,7 @@ namespace Realms
         private byte[] _encryptionKey;
 
         /// <summary>
-        /// Specify the key used to encrypt the entire Realm. Once set, must be specified each time file is used.
+        /// Gets or sets the key, used to encrypt the entire Realm. Once set, must be specified each time file is used.
         /// </summary>
         /// <value>Full 64byte (512bit) key for AES-256 encryption.</value>
         public byte[] EncryptionKey
@@ -133,14 +135,14 @@ namespace Realms
         }
 
         /// <summary>
-        /// Configuration you can override which is used when you create a new Realm without specifying a configuration.
+        /// Gets or sets the configuration that is used when creating a new Realm without specifying a configuration.
         /// </summary>
         public static RealmConfiguration DefaultConfiguration { get; set; } = new RealmConfiguration();
 
         /// <summary>
-        /// Constructor allowing path override.
+        /// Initializes a new instance of the <see cref="RealmConfiguration"/> class.
         /// </summary>
-        /// <param name="optionalPath">Path to the realm, must be a valid full path for the current platform, relative subdir, or just filename.</param>
+        /// <param name="optionalPath">Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.</param>
         /// <param name="shouldDeleteIfMigrationNeeded">Optional Flag mainly to help with temp databases and testing, indicates content can be abandoned when you change the schema.</param> 
         public RealmConfiguration(string optionalPath = null, bool shouldDeleteIfMigrationNeeded = false)
         {
@@ -149,10 +151,10 @@ namespace Realms
         }
 
         /// <summary>
-        /// Clone method allowing you to override or customise the current path.
+        /// Clone method allowing you to override or customize the current path.
         /// </summary>
         /// <returns>An object with a fully-specified, canonical path.</returns>
-        /// <param name="newConfigPath">Path to the realm, must be a valid full path for the current platform, relative subdir, or just filename.</param>
+        /// <param name="newConfigPath">Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.</param>
         public RealmConfiguration ConfigWithPath(string newConfigPath)
         {
             var ret = (RealmConfiguration)MemberwiseClone();

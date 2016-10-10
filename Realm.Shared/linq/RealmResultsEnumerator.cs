@@ -22,9 +22,7 @@ using System.Collections.Generic;
 
 namespace Realms
 {
-    /// <summary>
-    ///  This is now more of a skinny wrapper on top of the ObjectStore Results class.
-    /// </summary>
+    // This is now more of a skinny wrapper on top of the ObjectStore Results class.
     internal class RealmResultsEnumerator<T> : IEnumerator<T>
     {
         private long _index = -1;  // must match Reset(), zero-based with no gaps indexing an ObjectStore Results
@@ -40,7 +38,7 @@ namespace Realms
         }
 
         /// <summary>
-        /// Return the current related object when iterating a related set.
+        /// Gets the current related object when iterating a related set.
         /// </summary>
         /// <exception cref="ArgumentOutOfRangeException">When we are not currently pointing at a valid item, either MoveNext has not been called for the first time or have iterated through all the items.</exception>
         public T Current { get; private set; }
@@ -75,7 +73,7 @@ namespace Realms
         }
 
         /// <summary>
-        /// Reset the iter to before the first object, so MoveNext will move to it.
+        /// Reset the iterator to before the first object, so MoveNext will move to it.
         /// </summary>
         public void Reset()
         {

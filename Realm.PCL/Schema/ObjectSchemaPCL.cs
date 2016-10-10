@@ -28,12 +28,12 @@ namespace Realms.Schema
     public class ObjectSchema : IReadOnlyCollection<Property>
     {
         /// <summary>
-        /// Name of the original class declaration from which the schema was built.
+        /// Gets the name of the original class declaration from which the schema was built.
         /// </summary>
         public string Name { get; }
 
         /// <summary>
-        /// Number of properties in the schema, which is the persistent properties from the original class.
+        /// Gets the number of properties in the schema, which is the persistent properties from the original class.
         /// </summary>
         public int Count { get; }
 
@@ -85,7 +85,7 @@ namespace Realms.Schema
         public class Builder : List<Property>
         {
             /// <summary>
-            /// Name of the class to be returned in the ObjectSchema.
+            /// Gets the name of the class to be returned in the ObjectSchema.
             /// </summary>
             public string Name { get; }
 

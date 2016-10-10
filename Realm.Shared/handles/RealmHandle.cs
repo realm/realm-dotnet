@@ -93,8 +93,8 @@ namespace Realms
         // }
 
         /// <summary>
-        /// override Unbind and put in code that actually calls core and unbinds whatever this handle is about.
-        /// when this is called, it has alreadyt been verified that it is safe to call core - so just put in code that does the job.
+        /// Override Unbind and put in code that actually calls core and unbinds whatever this handle is about.
+        /// when this is called, it has already been verified that it is safe to call core - so just put in code that does the job.
         /// </summary>
         protected abstract void Unbind();
 

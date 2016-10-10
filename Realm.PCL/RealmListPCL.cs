@@ -37,7 +37,6 @@ namespace Realms
     /// it is <b>not</b> recommended as the IList approach both supports standalone objects and is 
     /// implemented with a faster binding.
     /// </remarks>
-    /// 
     /// <typeparam name="T">Type of the RealmObject which is the target of the relationship.</typeparam>
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class RealmList<T> : IList<T>, IRealmList, IDynamicMetaObjectProvider where T : RealmObject
@@ -48,8 +47,9 @@ namespace Realms
         public const int ITEM_NOT_FOUND = -1;
 
         #region implementing IList properties
+
         /// <summary>
-        /// Returns the count of related items.
+        /// Gets the number of related items.
         /// </summary>
         /// <returns>0 if there are no related items, including a "null" relationship never established, or the count of items.</returns>
         public int Count
@@ -65,28 +65,19 @@ namespace Realms
         /// Standard <a href="https://msdn.microsoft.com/en-us/library/system.collections.ilist.aspx">IList</a> property.
         /// </summary>
         /// <value><c>false</c> at all times.</value>
-        public bool IsReadOnly
-        {
-            get { return false; }
-        }
+        public bool IsReadOnly => false;
 
         /// <summary>
         /// Standard <a href="https://msdn.microsoft.com/en-us/library/system.collections.ilist.aspx">IList</a> property.
         /// </summary>
         /// <value><c>false</c> at all times as the set of related objects may be changed.</value>
-        public bool IsFixedSize
-        {
-            get { return false; }
-        }
+        public bool IsFixedSize => false;
 
         /// <summary>
         /// Standard <a href="https://msdn.microsoft.com/en-us/library/system.collections.ilist.aspx">IList</a> property.
         /// </summary>
         /// <value><c>true</c> at all times.</value>
-        public bool IsSynchronized
-        {
-            get { return true; }
-        }
+        public bool IsSynchronized => true;
 
         /// <summary>
         /// Returns the item at the ordinal index.
@@ -116,7 +107,6 @@ namespace Realms
         /// Makes a relationship to an item, appending it at the end of the sorted relationship.
         /// </summary>
         /// <param name="item">RealmObject being added to the relationship.</param>
-        /// <typeparam name="T">Type of the RealmObject which is the target of the relationship.</typeparam>
         public void Add(T item)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
@@ -134,7 +124,6 @@ namespace Realms
         /// Tests if an item exists in the related set.
         /// </summary>
         /// <param name="item">Object to be searched for in the related items.</param>
-        /// <typeparam name="T">Type of the RealmObject which is the target of the relationship.</typeparam>
         /// <returns>True if found, false if not found.</returns>
         public bool Contains(T item)
         {
@@ -145,7 +134,7 @@ namespace Realms
         /// <summary>
         /// Copies all the elements to a portion of an array.
         /// </summary>
-        /// <param name="array">Preallocated destination into which we copy.</param>
+        /// <param name="array">Pre-allocated destination into which we copy.</param>
         /// <param name="arrayIndex">Ordinal zero-based starting index of the <b>destination</b> of the related items being copied.</param>
         /// <exception cref="ArgumentNullException">Thrown if array is null.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if arrayIndex is less than 0.</exception>

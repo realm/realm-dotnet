@@ -33,9 +33,9 @@ namespace Realms
     public class RealmSchema : IReadOnlyCollection<ObjectSchema>
     {
         /// <summary>
-        /// Number of known classes in the schema.
+        /// Gets the number of known classes in the schema.
         /// </summary>
-        /// <value>Count of known classes specified in this Schema.</value>
+        /// <value>The count of known classes specified in this Schema.</value>
         public int Count { get; }
 
         private RealmSchema()
