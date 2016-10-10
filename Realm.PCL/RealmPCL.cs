@@ -36,8 +36,6 @@ namespace Realms
     {
         #region static
 
-        private static readonly IEnumerable<Type> RealmObjectClasses;
-
         [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1409:RemoveUnnecessaryCode")]
         static Realm()
         {

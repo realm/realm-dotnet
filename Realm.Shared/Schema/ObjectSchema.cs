@@ -79,15 +79,9 @@ namespace Realms.Schema
         /// Property enumerator factory for an iterator to be called explicitly or used in a foreach loop.
         /// </summary>
         /// <returns>An enumerator over the list of Property instances described in the schema.</returns>
-        public IEnumerator<Property> GetEnumerator()
-        {
-            return _properties.Values.GetEnumerator();
-        }
+        public IEnumerator<Property> GetEnumerator() => _properties.Values.GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         /// <summary>
         /// Creates a schema describing a RealmObject subclass in terms of its persisted members.
@@ -169,7 +163,7 @@ namespace Realms.Schema
             /// <returns>A completed ObjectSchema, suitable for composing a RealmSchema that will be used to create a new Realm.</returns>
             public ObjectSchema Build()
             {
-                if (Count == 0) 
+                if (Count == 0)
                 {
                     throw new InvalidOperationException(
                         $"No properties in {Name}, has linker stripped it? See https://realm.io/docs/xamarin/latest/#linker-stripped-schema");

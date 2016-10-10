@@ -89,6 +89,7 @@ namespace Realms
         }
 
         #region Getters
+
         protected string GetStringValue(string propertyName)
         {
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");

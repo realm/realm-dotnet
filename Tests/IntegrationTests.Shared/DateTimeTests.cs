@@ -90,7 +90,7 @@ namespace IntegrationTests.Shared
 
             // Assert
             var sortedTurings = _realm.All<Person>().OrderBy(p => p.Birthday);
-            DateTimeOffset prevB = new DateTimeOffset();
+            var prevB = new DateTimeOffset();
             foreach (var t in sortedTurings)
             {
                 Assert.That(t.Birthday, Is.GreaterThan(prevB));
@@ -133,7 +133,10 @@ namespace IntegrationTests.Shared
         public void IndexedDateTimeOffsetTest()
         {
             // Arrange
-            var config = new RealmConfiguration() { ObjectClasses = new[] { typeof(IndexedDateTimeOffsetObject) } };
+            var config = new RealmConfiguration
+            {
+                ObjectClasses = new[] { typeof(IndexedDateTimeOffsetObject) }
+            };
 
             // Act and "assert" that no exception is thrown here
             using (Realm.GetInstance(config))

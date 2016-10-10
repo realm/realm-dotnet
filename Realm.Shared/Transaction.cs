@@ -28,7 +28,7 @@ namespace Realms
     /// </remarks>
     public class Transaction : IDisposable
     {
-        private Realm _realm;
+        private readonly Realm _realm;
         private bool _isOpen;
 
         internal Transaction(Realm realm)

@@ -83,7 +83,6 @@ namespace Realms
         /// Returns the item at the ordinal index.
         /// </summary>
         /// <param name="index">Ordinal zero-based index of the related items.</param>
-        /// <typeparam name="T">Type of the RealmObject which is the target of the relationship.</typeparam>
         /// <returns>A related item, if exception not thrown.</returns>
         /// <exception cref="ArgumentOutOfRangeException">When the index is out of range for the related items.</exception>
         public T this[int index]
@@ -99,6 +98,7 @@ namespace Realms
                 RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             }
         }
+
         #endregion
 
         #region implementing IList members

@@ -33,7 +33,7 @@ namespace Realms
     /// </summary>
     /// <remarks>
     /// By default this will be all the RealmObjects in all your assemblies unless you restrict with RealmConfiguration.ObjectClasses. 
-    /// Just because a given class <em>may</em> be stored in a Realm doesn't imply much overhead. There will be a small amount of metadata 
+    /// Just because a given class <em>may</em> be stored in a Realm doesn't imply much overhead. There will be a small amount of metadata
     /// but objects only start to take up space once written. 
     /// </remarks>
     public class RealmSchema : IReadOnlyCollection<ObjectSchema>

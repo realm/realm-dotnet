@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-// PROXY VERSION OF CLASS USED IN PCL FOR BAIT AND SWITCH PATTERN 
+// PROXY VERSION OF CLASS USED IN PCL FOR BAIT AND SWITCH PATTERN
 
 using System;
 using System.Collections;
@@ -97,7 +97,7 @@ namespace Realms
         /// <remarks>
         /// Resolves to this method instead of the LINQ static extension <c>Count&lt;T&gt;(this IEnumerable&lt;T&gt;)</c>, when used directly on Realm.All.
         /// <br/>
-        /// if someone CASTS a RealmResults&lt;T&gt; variable from a Where call to 
+        /// if someone CASTS a RealmResults&lt;T&gt; variable from a Where call to
         /// a RealmResults&lt;T&gt; they change its compile-time type from IQueryable&lt;T&gt; (which invokes LINQ)
         /// to RealmResults&lt;T&gt; and thus ends up here.
         /// </remarks>
@@ -113,7 +113,7 @@ namespace Realms
         /// </summary>
         /// <remarks>
         /// <para>
-        /// The callback will be asynchronously invoked with the initial <see cref="RealmResults{T}" />, and then called again after each write transaction 
+        /// The callback will be asynchronously invoked with the initial <see cref="RealmResults{T}" />, and then called again after each write transaction
         /// which changes either any of the objects in the collection, or which objects are in the collection.
         /// The <c>changes</c> parameter will be <c>null</c> the first time the callback is invoked with the initial results.
         /// For each call after that, it will contain information about which rows in the results were added, removed or modified.

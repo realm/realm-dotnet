@@ -34,7 +34,7 @@ namespace Realms
         /// <summary>
         /// Gets the filename to be combined with the platform-specific document directory.
         /// </summary>
-        /// <value>A string representing a filename only, no path.</value>      
+        /// <value>A string representing a filename only, no path.</value>
         public static string DefaultRealmName => "default.realm";
 
         /// <summary>
@@ -143,7 +143,7 @@ namespace Realms
         /// Initializes a new instance of the <see cref="RealmConfiguration"/> class.
         /// </summary>
         /// <param name="optionalPath">Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.</param>
-        /// <param name="shouldDeleteIfMigrationNeeded">Optional Flag mainly to help with temp databases and testing, indicates content can be abandoned when you change the schema.</param> 
+        /// <param name="shouldDeleteIfMigrationNeeded">Optional Flag mainly to help with temp databases and testing, indicates content can be abandoned when you change the schema.</param>
         public RealmConfiguration(string optionalPath = null, bool shouldDeleteIfMigrationNeeded = false)
         {
             ShouldDeleteIfMigrationNeeded = shouldDeleteIfMigrationNeeded;
@@ -226,9 +226,6 @@ namespace Realms
         /// </summary>
         /// <returns>A hash code for this instance that is suitable for use in hashing algorithms and data structures such as a
         /// hash table.</returns>
-        public override int GetHashCode()
-        {
-            return DatabasePath.GetHashCode();
-        }
+        public override int GetHashCode() => DatabasePath.GetHashCode();
     }
 }
