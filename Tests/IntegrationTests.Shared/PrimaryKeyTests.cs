@@ -18,10 +18,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Linq;
-using NUnit.Framework;
+using System.Text;
 using System.Threading;
+using NUnit.Framework;
 using Realms;
 
 namespace IntegrationTests.Shared

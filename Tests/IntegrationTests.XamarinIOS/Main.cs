@@ -19,7 +19,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Collections.Generic;
 
 using Foundation;
 using UIKit;
@@ -31,7 +30,8 @@ namespace IntegrationTests.XamarinIOS
         // This is the main entry point of the application.
         static void Main(string[] args)
         {
-            if (NSProcessInfo.ProcessInfo.Arguments.Any("--headless".Equals)) {
+            if (NSProcessInfo.ProcessInfo.Arguments.Any("--headless".Equals))
+            {
                 using (var output = File.OpenWrite(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "TestResults.iOS.xml")))
                 {
                     IntegrationTests.Shared.TestRunner.Run("iOS", output);

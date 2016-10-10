@@ -18,8 +18,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Linq;
+using System.Text;
 using NUnit.Framework;
 using Realms;
 
@@ -27,7 +27,7 @@ namespace IntegrationTests
 {
     class Cities : RealmObject
     {
-        public string Name { set; get; }
+        public string Name { get; set; }
     }
 
     [TestFixture, Preserve(AllMembers = true)]

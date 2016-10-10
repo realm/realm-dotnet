@@ -17,11 +17,11 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using NUnit.Framework;
-using Realms;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Collections.Generic;
+using NUnit.Framework;
+using Realms;
 
 namespace IntegrationTests.Shared
 {

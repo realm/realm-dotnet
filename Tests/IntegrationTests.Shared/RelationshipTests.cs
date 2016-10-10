@@ -16,13 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using NUnit.Framework;
 using Realms;
-using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Linq;
-using System.Diagnostics;
 
 // NOTE some of the following data comes from Tim's data used in the Browser screenshot in the Mac app store
 // unlike the Cocoa definitions, we use Pascal casing for properties

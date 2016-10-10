@@ -19,7 +19,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Collections.Generic;
 
 // see internals/RealmConfigurations.md for a detailed diagram of how this interacts with the ObjectStore configuration
 
@@ -126,7 +125,7 @@ namespace Realms
         /// <summary>
         /// Configuration you can override which is used when you create a new Realm without specifying a configuration.
         /// </summary>
-        public static RealmConfiguration DefaultConfiguration { set; get; } = new RealmConfiguration();
+        public static RealmConfiguration DefaultConfiguration { get; set; } = new RealmConfiguration();
 
         /// <summary>
         /// Constructor allowing path override.

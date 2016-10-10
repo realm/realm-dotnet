@@ -18,10 +18,10 @@
 
 using System;
 using System.IO;
-using NUnit.Framework;
-using System.Threading.Tasks;
-using Realms;
 using System.Threading;
+using System.Threading.Tasks;
+using NUnit.Framework;
+using Realms;
 
 namespace IntegrationTests
 {

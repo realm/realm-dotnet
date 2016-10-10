@@ -18,16 +18,16 @@
 
 #if ENABLE_INTERNAL_NON_PCL_TESTS
 using System;
-using System.Linq;
-using NUnit.Framework;
-using Realms;
-using System.Threading;
-using System.IO;
-using System.Threading.Tasks;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Collections;
+using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
+using NUnit.Framework;
+using Realms;
 
 namespace IntegrationTests.Shared
 {

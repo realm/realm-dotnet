@@ -15,10 +15,10 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
-using Realms;
+
 using System;
 using System.Collections.Generic;
+using Realms;
 
 namespace AssemblyToProcess
 {
@@ -60,19 +60,20 @@ namespace AssemblyToProcess
                 LastName = parts[parts.Length - 1];
             }
         }
-        
+
         // Re-mapped property
         [MapTo("Email")]
         private string Email_ { get; set; }
-        
+
         // Wrapped version of previous property
         [Ignored]
-        public string Email 
-        { 
-            get { return Email_; } 
-            set { 
-                if (!value.Contains("@")) throw new Exception("Invalid email address"); 
-                Email_ = value; 
+        public string Email
+        {
+            get { return Email_; }
+            set
+            {
+                if (!value.Contains("@")) throw new Exception("Invalid email address");
+                Email_ = value;
             }
         }
 

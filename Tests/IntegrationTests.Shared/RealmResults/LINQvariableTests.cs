@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using NUnit.Framework;
 using System.Linq;
+using NUnit.Framework;
 using Realms;
 
 namespace IntegrationTests

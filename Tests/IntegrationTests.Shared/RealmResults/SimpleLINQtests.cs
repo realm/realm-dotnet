@@ -18,11 +18,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Linq;
+using System.Text;
+using IntegrationTests.Shared;
 using NUnit.Framework;
 using Realms;
-using IntegrationTests.Shared;
 
 namespace IntegrationTests
 {

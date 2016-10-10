@@ -17,8 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using Realms;
 using System.Collections.Generic;
+using Realms;
 
 namespace IntegrationTests
 {

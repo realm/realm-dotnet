@@ -19,10 +19,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.IO;
-using NUnit.Framework;
+using System.Linq;
 using System.Threading.Tasks;
+using NUnit.Framework;
 using Realms;
 
 namespace IntegrationTests

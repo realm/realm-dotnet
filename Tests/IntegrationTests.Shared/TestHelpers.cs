@@ -18,12 +18,11 @@
 
 using System;
 using System.IO;
-using Realms;
-
 #if __IOS__
-using Foundation;
 using CoreFoundation;
+using Foundation;
 #endif
+using Realms;
 
 namespace IntegrationTests
 {

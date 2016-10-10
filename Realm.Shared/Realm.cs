@@ -18,19 +18,17 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.ConstrainedExecution;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Realms.native;
-
 #if __IOS__
 using ObjCRuntime;
 #endif
+using Realms.native;
 
 namespace Realms
 {
@@ -351,7 +349,7 @@ namespace Realms
         ///  Deletes all the files associated with a realm. Hides knowledge of the auxiliary filenames from the programmer.
         /// </summary>
         /// <param name="configuration">A configuration which supplies the realm path.</param>
-        static public void DeleteRealm(RealmConfiguration configuration)
+        public static void DeleteRealm(RealmConfiguration configuration)
         {
             // TODO add cache checking when implemented, https://github.com/realm/realm-dotnet/issues/308
             // when cache checking, uncomment in IntegrationTests.cs RealmInstanceTests.DeleteRealmFailsIfOpenSameThread and add a variant to test open on different thread

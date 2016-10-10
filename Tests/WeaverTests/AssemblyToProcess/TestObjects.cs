@@ -17,8 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using Realms;
 using System.ComponentModel;
+using Realms;
 
 namespace AssemblyToProcess
 {
@@ -74,31 +74,37 @@ namespace AssemblyToProcess
 
     public class PrimaryKeyCharObject : RealmObject
     {
-        [PrimaryKey] public char CharProperty { get; set; }
+        [PrimaryKey]
+        public char CharProperty { get; set; }
     }
 
     public class PrimaryKeyByteObject : RealmObject
     {
-        [PrimaryKey] public byte ByteProperty { get; set; }
+        [PrimaryKey]
+        public byte ByteProperty { get; set; }
     }
 
     public class PrimaryKeyInt16Object : RealmObject
     {
-        [PrimaryKey] public short Int16Property { get; set; }
+        [PrimaryKey]
+        public short Int16Property { get; set; }
     }
 
     public class PrimaryKeyInt32Object : RealmObject
     {
-        [PrimaryKey] public int Int32Property { get; set; }
+        [PrimaryKey]
+        public int Int32Property { get; set; }
     }
 
     public class PrimaryKeyInt64Object : RealmObject
     {
-        [PrimaryKey] public long Int64Property { get; set; }
+        [PrimaryKey]
+        public long Int64Property { get; set; }
     }
 
     public class PrimaryKeyStringObject : RealmObject
     {
-        [PrimaryKey] public string StringProperty { get; set; }
+        [PrimaryKey]
+        public string StringProperty { get; set; }
     }
 }

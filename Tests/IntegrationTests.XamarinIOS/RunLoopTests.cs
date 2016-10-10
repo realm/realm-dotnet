@@ -17,12 +17,11 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using NUnit.Framework;
-using Realms;
 using System.IO;
-using System.Threading;
 using System.Linq;
+using System.Threading;
 using Foundation;
+using NUnit.Framework;
 
 namespace IntegrationTests.XamarinIOS
 {
@@ -39,7 +38,7 @@ namespace IntegrationTests.XamarinIOS
 
         private void WriteOnDifferentThread(Action<Realm> action)
         {
-            var thread = new Thread(() => 
+            var thread = new Thread(() =>
             {
                 var r = Realm.GetInstance(_databasePath);
                 r.Write(() => action(r));

@@ -16,11 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using NUnit.Framework;
-using Realms;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System;
+using NUnit.Framework;
+using Realms;
 
 namespace IntegrationTests.Shared
 {

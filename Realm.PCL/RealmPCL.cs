@@ -176,7 +176,7 @@ namespace Realms
         ///  Deletes all the files associated with a realm. Hides knowledge of the auxiliary filenames from the programmer.
         /// </summary>
         /// <param name="configuration">A configuration which supplies the realm path.</param>
-        static public void DeleteRealm(RealmConfiguration configuration)
+        public static void DeleteRealm(RealmConfiguration configuration)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }
