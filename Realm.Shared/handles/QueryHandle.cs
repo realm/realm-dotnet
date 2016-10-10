@@ -18,7 +18,7 @@
 
 using System;
 using System.Runtime.InteropServices;
-using Realms.native;
+using Realms.Native;
 
 namespace Realms
 {

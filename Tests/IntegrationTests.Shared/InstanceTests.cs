@@ -28,13 +28,13 @@ namespace IntegrationTests
     [TestFixture, Preserve(AllMembers = true)]
     public class InstanceTests
     {
-        const string specialRealmName = "EnterTheMagic.realm";
+        const string SpecialRealmName = "EnterTheMagic.realm";
 
         [TestFixtureSetUp]
         public void Setup()
         {
             Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
-            var uniqueConfig = new RealmConfiguration(specialRealmName);  // for when need 2 realms or want to not use default
+            var uniqueConfig = new RealmConfiguration(SpecialRealmName);  // for when need 2 realms or want to not use default
             Realm.DeleteRealm(uniqueConfig);
         }
 
@@ -60,7 +60,7 @@ namespace IntegrationTests
         public void GetInstanceWithJustFilenameTest()
         {
             // Arrange, act and "assert" that no exception is thrown, using default location + unique name
-            Realm.GetInstance(specialRealmName).Close();
+            Realm.GetInstance(SpecialRealmName).Close();
         }
 
         [Test]

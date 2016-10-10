@@ -43,13 +43,13 @@ public class ModuleWeaver
     private MethodReference _realmObjectIsManagedGetter;
 
     private AssemblyDefinition _corLib;
-    private TypeReference System_Object;
-    private TypeReference System_Boolean;
-    private TypeReference System_Type;
-    private TypeReference System_IList;
-    private TypeReference System_DateTimeOffset;
-    private TypeReference System_Int32;
-    private MethodReference System_DatetimeOffset_Op_Inequality;
+    private TypeReference _system_Object;
+    private TypeReference _system_Boolean;
+    private TypeReference _system_Type;
+    private TypeReference _system_IList;
+    private TypeReference _system_DateTimeOffset;
+    private TypeReference _system_Int32;
+    private MethodReference _system_DatetimeOffset_Op_Inequality;
 
     private MethodReference _propChangedEventArgsConstructor;
     private MethodReference _propChangedEventHandlerInvokeReference;
@@ -169,25 +169,25 @@ public class ModuleWeaver
         _wovenPropertyAttributeConstructor = ModuleDefinition.ImportReference(wovenPropertyAttributeClass.GetConstructors().First());
 
         _corLib = AssemblyResolver.Resolve((AssemblyNameReference)ModuleDefinition.TypeSystem.CoreLibrary);
-        System_Object = ModuleDefinition.TypeSystem.Object;
-        System_Boolean = ModuleDefinition.TypeSystem.Boolean;
-        System_Int32 = ModuleDefinition.TypeSystem.Int32;
+        _system_Object = ModuleDefinition.TypeSystem.Object;
+        _system_Boolean = ModuleDefinition.TypeSystem.Boolean;
+        _system_Int32 = ModuleDefinition.TypeSystem.Int32;
 
         var dateTimeOffsetType = GetTypeFromSystemAssembly("System.DateTimeOffset");
-        System_DateTimeOffset = ModuleDefinition.ImportReference(dateTimeOffsetType);
-        System_DatetimeOffset_Op_Inequality = ModuleDefinition.ImportReference(dateTimeOffsetType.GetMethods().Single(m => m.Name == "op_Inequality"));
+        _system_DateTimeOffset = ModuleDefinition.ImportReference(dateTimeOffsetType);
+        _system_DatetimeOffset_Op_Inequality = ModuleDefinition.ImportReference(dateTimeOffsetType.GetMethods().Single(m => m.Name == "op_Inequality"));
 
-        System_Type = ModuleDefinition.ImportReference(GetTypeFromSystemAssembly("System.Type"));
+        _system_Type = ModuleDefinition.ImportReference(GetTypeFromSystemAssembly("System.Type"));
 
         var listTypeDefinition = _corLib.MainModule.GetType("System.Collections.Generic.List`1");
 
         if (listTypeDefinition == null)
         {
-            System_IList = ModuleDefinition.ImportReference(typeof(System.Collections.Generic.List<>));
+            _system_IList = ModuleDefinition.ImportReference(typeof(System.Collections.Generic.List<>));
         }
         else
         {
-            System_IList = ModuleDefinition.ImportReference(listTypeDefinition);
+            _system_IList = ModuleDefinition.ImportReference(listTypeDefinition);
         }
 
         var systemAssembly = AssemblyResolver.Resolve("System");
@@ -280,14 +280,14 @@ public class ModuleWeaver
         var preserveAttribute = new CustomAttribute(_preserveAttributeConstructor);
         objectConstructor.CustomAttributes.Add(preserveAttribute);
         preserveAttribute = new CustomAttribute(_preserveAttributeConstructorWithParams);  // recreate so has new instance
-        preserveAttribute.ConstructorArguments.Add(new CustomAttributeArgument(System_Boolean, true));  // AllMembers
-        preserveAttribute.ConstructorArguments.Add(new CustomAttributeArgument(System_Boolean, false));  // Conditional
+        preserveAttribute.ConstructorArguments.Add(new CustomAttributeArgument(_system_Boolean, true));  // AllMembers
+        preserveAttribute.ConstructorArguments.Add(new CustomAttributeArgument(_system_Boolean, false));  // Conditional
         type.CustomAttributes.Add(preserveAttribute);
         LogDebug($"Added [Preserve] to {type.Name} and its constructor");
 
         var wovenAttribute = new CustomAttribute(_wovenAttributeConstructor);
         TypeReference helperType = WeaveRealmObjectHelper(type, objectConstructor, persistedProperties);
-        wovenAttribute.ConstructorArguments.Add(new CustomAttributeArgument(System_Type, helperType));
+        wovenAttribute.ConstructorArguments.Add(new CustomAttributeArgument(_system_Type, helperType));
         type.CustomAttributes.Add(wovenAttribute);
         Debug.WriteLine(string.Empty);
     }
@@ -370,7 +370,7 @@ public class ModuleWeaver
                     sequencePoint);
                 return false;
             }
-            var concreteListType = new GenericInstanceType(System_IList) { GenericArguments = { elementType } };
+            var concreteListType = new GenericInstanceType(_system_IList) { GenericArguments = { elementType } };
             var listConstructor = concreteListType.Resolve().GetConstructors().Single(c => c.IsPublic && c.Parameters.Count == 0);
             var concreteListConstructor = listConstructor.MakeHostInstanceGeneric(elementType);
 
@@ -691,12 +691,12 @@ public class ModuleWeaver
             if (_propChangedDoNotNotifyAttributeConstructorDefinition != null)
                 prop.CustomAttributes.Add(new CustomAttribute(_propChangedDoNotNotifyAttributeConstructorDefinition));
 
-            if (System_Boolean == null)
+            if (_system_Boolean == null)
                 throw new ApplicationException("System_Boolean is null");
 
             prop.SetMethod.Body.Variables.Add(new VariableDefinition("handler", _propChangedEventHandlerReference));
-            prop.SetMethod.Body.Variables.Add(new VariableDefinition(System_Boolean));
-            prop.SetMethod.Body.Variables.Add(new VariableDefinition(System_Boolean));
+            prop.SetMethod.Body.Variables.Add(new VariableDefinition(_system_Boolean));
+            prop.SetMethod.Body.Variables.Add(new VariableDefinition(_system_Boolean));
 
             var ret = il.Create(OpCodes.Ret);
 
@@ -871,7 +871,7 @@ public class ModuleWeaver
     {
         var helperType = new TypeDefinition(null, "RealmHelper",
                                             TypeAttributes.Class | TypeAttributes.NestedPrivate | TypeAttributes.BeforeFieldInit,
-                                            System_Object);
+                                            _system_Object);
 
         helperType.Interfaces.Add(ModuleDefinition.ImportReference(_realmAssembly.MainModule.GetType("Realms.Weaving.IRealmObjectHelper")));
 
@@ -912,14 +912,14 @@ public class ModuleWeaver
             byte currentStloc = 1;
             if (properties.Any(p => IsDateTimeOffset(p.Key)))
             {
-                copyToRealm.Body.Variables.Add(new VariableDefinition(System_DateTimeOffset));
+                copyToRealm.Body.Variables.Add(new VariableDefinition(_system_DateTimeOffset));
                 currentStloc++;
             }
 
             foreach (var kvp in properties.Where(kvp => IsIList(kvp.Key) || IsRealmList(kvp.Key)))
             {
                 copyToRealm.Body.Variables.Add(new VariableDefinition(ModuleDefinition.ImportReference(kvp.Value.FieldType)));
-                copyToRealm.Body.Variables.Add(new VariableDefinition(System_Int32));
+                copyToRealm.Body.Variables.Add(new VariableDefinition(_system_Int32));
             }
 
             var il = copyToRealm.Body.GetILProcessor();
@@ -944,7 +944,7 @@ public class ModuleWeaver
                             il.Append(il.Create(OpCodes.Ldloca_S, (byte)1));
                             il.Append(il.Create(OpCodes.Initobj, field.FieldType));
                             il.Append(il.Create(OpCodes.Ldloc_1));
-                            il.Append(il.Create(OpCodes.Call, System_DatetimeOffset_Op_Inequality));
+                            il.Append(il.Create(OpCodes.Call, _system_DatetimeOffset_Op_Inequality));
                         }
                         else if (IsSingle(property))
                         {
@@ -1045,12 +1045,12 @@ public class ModuleWeaver
         copyToRealm.CustomAttributes.Add(new CustomAttribute(_preserveAttributeConstructor));
         helperType.Methods.Add(copyToRealm);
 
-        const MethodAttributes ctorAttributes = MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName;
-        var ctor = new MethodDefinition(".ctor", ctorAttributes, ModuleDefinition.TypeSystem.Void);
+        const MethodAttributes CtorAttributes = MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName;
+        var ctor = new MethodDefinition(".ctor", CtorAttributes, ModuleDefinition.TypeSystem.Void);
         {
             var il = ctor.Body.GetILProcessor();
             il.Emit(OpCodes.Ldarg_0);
-            il.Emit(OpCodes.Call, ModuleDefinition.ImportReference(System_Object.Resolve().GetConstructors().Single()));
+            il.Emit(OpCodes.Call, ModuleDefinition.ImportReference(_system_Object.Resolve().GetConstructors().Single()));
             il.Emit(OpCodes.Ret);
         }
 

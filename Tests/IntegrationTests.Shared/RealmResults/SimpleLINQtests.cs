@@ -292,18 +292,18 @@ namespace IntegrationTests
         [Test]
         public void SearchComparingByteArrays()
         {
-            var DEADBEEF = new byte[] { 0xde, 0xad, 0xbe, 0xef };
-            var CAFEBABE = new byte[] { 0xca, 0xfe, 0xba, 0xbe };
-            var EMPTY = new byte[0];
+            var deadbeef = new byte[] { 0xde, 0xad, 0xbe, 0xef };
+            var cafebabe = new byte[] { 0xca, 0xfe, 0xba, 0xbe };
+            var empty = new byte[0];
 
-            var equality = _realm.All<Person>().Where(p => p.PublicCertificateBytes == CAFEBABE);
-            Assert.That(equality.Single().PublicCertificateBytes, Is.EqualTo(CAFEBABE));
+            var equality = _realm.All<Person>().Where(p => p.PublicCertificateBytes == cafebabe);
+            Assert.That(equality.Single().PublicCertificateBytes, Is.EqualTo(cafebabe));
 
-            var unequality = _realm.All<Person>().Where(p => p.PublicCertificateBytes != DEADBEEF);
+            var unequality = _realm.All<Person>().Where(p => p.PublicCertificateBytes != deadbeef);
             Assert.That(unequality.Count(), Is.EqualTo(2));
 
-            var empty = _realm.All<Person>().Where(p => p.PublicCertificateBytes == EMPTY);
-            Assert.That(empty, Is.Empty);
+            var emptyness = _realm.All<Person>().Where(p => p.PublicCertificateBytes == empty);
+            Assert.That(emptyness, Is.Empty);
 
             // we should support this as well - see #570
             // var @null = _realm.All<Person>().Where(p => p.PublicCertificateBytes == null);

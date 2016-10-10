@@ -105,7 +105,7 @@ namespace Realms
         /// </summary>
         public MigrationCallbackDelegate MigrationCallback { get; set; }
 
-        private byte[] _EncryptionKey;
+        private byte[] _encryptionKey;
 
         /// <summary>
         /// Specify the key used to encrypt the entire Realm. Once set, must be specified each time file is used.
@@ -113,12 +113,12 @@ namespace Realms
         /// <value>Full 64byte (512bit) key for AES-256 encryption.</value>
         public byte[] EncryptionKey
         {
-            get { return _EncryptionKey; }
+            get { return _encryptionKey; }
             set
             {
                 if (value != null && value.Length != 64)
                     throw new FormatException("EncryptionKey must be 64 bytes");
-                _EncryptionKey = value;
+                _encryptionKey = value;
             }
         }
 

@@ -22,7 +22,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using Realms.native;
+using Realms.Native;
 using LazyMethod = System.Lazy<System.Reflection.MethodInfo>;
 
 namespace Realms
@@ -30,9 +30,10 @@ namespace Realms
     internal class RealmResultsVisitor : ExpressionVisitor
     {
         private Realm _realm;
-        internal QueryHandle _coreQueryHandle;  // set when recurse down to VisitConstant
-        internal SortDescriptorBuilder OptionalSortDescriptorBuilder;  // set only when get OrderBy*
         private readonly RealmObject.Metadata _metadata;
+
+        internal QueryHandle CoreQueryHandle;  // set when recurse down to VisitConstant
+        internal SortDescriptorBuilder OptionalSortDescriptorBuilder;  // set only when get OrderBy*
 
         private static class Methods
         {
@@ -133,12 +134,12 @@ namespace Realms
             RowHandle row;
             if (OptionalSortDescriptorBuilder == null)
             {
-                var rowPtr = _coreQueryHandle.FindDirect((IntPtr)index);
+                var rowPtr = CoreQueryHandle.FindDirect((IntPtr)index);
                 row = Realm.CreateRowHandle(rowPtr, _realm.SharedRealmHandle);
             }
             else
             {
-                using (ResultsHandle rh = _realm.MakeResultsForQuery(_coreQueryHandle, OptionalSortDescriptorBuilder))
+                using (ResultsHandle rh = _realm.MakeResultsForQuery(CoreQueryHandle, OptionalSortDescriptorBuilder))
                 {
                     var rowPtr = rh.GetRow(index);
                     row = Realm.CreateRowHandle(rowPtr, _realm.SharedRealmHandle);
@@ -186,13 +187,13 @@ namespace Realms
                 if (m.Method.Name == nameof(Queryable.Count))
                 {
                     RecurseToWhereOrRunLambda(m);
-                    var foundCount = _coreQueryHandle.Count();
+                    var foundCount = CoreQueryHandle.Count();
                     return Expression.Constant(foundCount);
                 }
                 if (m.Method.Name == nameof(Queryable.Any))
                 {
                     RecurseToWhereOrRunLambda(m);
-                    bool foundAny = _coreQueryHandle.FindDirect(IntPtr.Zero) != IntPtr.Zero;
+                    bool foundAny = CoreQueryHandle.FindDirect(IntPtr.Zero) != IntPtr.Zero;
                     return Expression.Constant(foundAny);
                 }
                 if (m.Method.Name.StartsWith(nameof(Queryable.First)))
@@ -201,11 +202,11 @@ namespace Realms
                     IntPtr firstRowPtr = IntPtr.Zero;
                     if (OptionalSortDescriptorBuilder == null)
                     {
-                        firstRowPtr = _coreQueryHandle.FindDirect(IntPtr.Zero);
+                        firstRowPtr = CoreQueryHandle.FindDirect(IntPtr.Zero);
                     }
                     else
                     {
-                        using (ResultsHandle rh = _realm.MakeResultsForQuery(_coreQueryHandle, OptionalSortDescriptorBuilder))
+                        using (ResultsHandle rh = _realm.MakeResultsForQuery(CoreQueryHandle, OptionalSortDescriptorBuilder))
                         {
                             firstRowPtr = rh.GetRow(0);
                         }
@@ -237,7 +238,7 @@ namespace Realms
                 if (m.Method.Name.StartsWith(nameof(Queryable.Single)))  // same as unsorted First with extra checks
                 {
                     RecurseToWhereOrRunLambda(m);
-                    var firstRowPtr = _coreQueryHandle.FindDirect(IntPtr.Zero);
+                    var firstRowPtr = CoreQueryHandle.FindDirect(IntPtr.Zero);
                     if (firstRowPtr == IntPtr.Zero)
                     {
                         if (m.Method.Name == nameof(Queryable.Single))
@@ -247,7 +248,7 @@ namespace Realms
                     }
                     var firstRow = Realm.CreateRowHandle(firstRowPtr, _realm.SharedRealmHandle);
                     IntPtr nextIndex = (IntPtr)(firstRow.RowIndex + 1);
-                    var nextRowPtr = _coreQueryHandle.FindDirect(nextIndex);
+                    var nextRowPtr = CoreQueryHandle.FindDirect(nextIndex);
                     if (nextRowPtr != IntPtr.Zero)
                         throw new InvalidOperationException("Sequence contains more than one matching element");
                     return Expression.Constant(_realm.MakeObjectForRow(_metadata, firstRow));
@@ -257,7 +258,7 @@ namespace Realms
                     RecurseToWhereOrRunLambda(m);
 
                     var lastRowPtr = IntPtr.Zero;
-                    using (ResultsHandle rh = _realm.MakeResultsForQuery(_coreQueryHandle, OptionalSortDescriptorBuilder))
+                    using (ResultsHandle rh = _realm.MakeResultsForQuery(CoreQueryHandle, OptionalSortDescriptorBuilder))
                     {
                         var lastIndex = rh.Count() - 1;
                         if (lastIndex >= 0)
@@ -307,13 +308,13 @@ namespace Realms
                     {
                         throw new NotSupportedException($"The method '{m.Method}' has to be invoked with a RealmObject member");
                     }
-                    var columnIndex = _coreQueryHandle.GetColumnIndex(member.Member.Name);
+                    var columnIndex = CoreQueryHandle.GetColumnIndex(member.Member.Name);
 
-                    _coreQueryHandle.GroupBegin();
-                    _coreQueryHandle.NullEqual(columnIndex);
-                    _coreQueryHandle.Or();
-                    _coreQueryHandle.StringEqual(columnIndex, string.Empty);
-                    _coreQueryHandle.GroupEnd();
+                    CoreQueryHandle.GroupBegin();
+                    CoreQueryHandle.NullEqual(columnIndex);
+                    CoreQueryHandle.Or();
+                    CoreQueryHandle.StringEqual(columnIndex, string.Empty);
+                    CoreQueryHandle.GroupEnd();
                     return m;
                 }
 
@@ -324,14 +325,14 @@ namespace Realms
                     {
                         throw new NotSupportedException($"The method '{m.Method}' has to be invoked on a RealmObject member");
                     }
-                    var columnIndex = _coreQueryHandle.GetColumnIndex(member.Member.Name);
+                    var columnIndex = CoreQueryHandle.GetColumnIndex(member.Member.Name);
 
                     object argument;
                     if (!TryExtractConstantValue(m.Arguments.SingleOrDefault(), out argument) || argument.GetType() != typeof(string))
                     {
                         throw new NotSupportedException($"The method '{m.Method}' has to be invoked with a single string constant argument or closure variable");
                     }
-                    queryMethod(_coreQueryHandle, columnIndex, (string)argument);
+                    queryMethod(CoreQueryHandle, columnIndex, (string)argument);
                     return m;
                 }
             }
@@ -345,7 +346,7 @@ namespace Realms
             {
                 case ExpressionType.Not:
                     {
-                        _coreQueryHandle.Not();
+                        CoreQueryHandle.Not();
                         this.Visit(u.Operand);  // recurse into richer expression, expect to VisitCombination
                     }
                     break;
@@ -357,11 +358,11 @@ namespace Realms
 
         protected void VisitCombination(BinaryExpression b, Action<QueryHandle> combineWith)
         {
-            _coreQueryHandle.GroupBegin();
+            CoreQueryHandle.GroupBegin();
             Visit(b.Left);
-            combineWith(_coreQueryHandle);
+            combineWith(CoreQueryHandle);
             Visit(b.Right);
-            _coreQueryHandle.GroupEnd();
+            CoreQueryHandle.GroupEnd();
         }
 
         internal static bool TryExtractConstantValue(Expression expr, out object value)
@@ -422,27 +423,27 @@ namespace Realms
                 switch (b.NodeType)
                 {
                     case ExpressionType.Equal:
-                        AddQueryEqual(_coreQueryHandle, leftName, rightValue);
+                        AddQueryEqual(CoreQueryHandle, leftName, rightValue);
                         break;
 
                     case ExpressionType.NotEqual:
-                        AddQueryNotEqual(_coreQueryHandle, leftName, rightValue);
+                        AddQueryNotEqual(CoreQueryHandle, leftName, rightValue);
                         break;
 
                     case ExpressionType.LessThan:
-                        AddQueryLessThan(_coreQueryHandle, leftName, rightValue);
+                        AddQueryLessThan(CoreQueryHandle, leftName, rightValue);
                         break;
 
                     case ExpressionType.LessThanOrEqual:
-                        AddQueryLessThanOrEqual(_coreQueryHandle, leftName, rightValue);
+                        AddQueryLessThanOrEqual(CoreQueryHandle, leftName, rightValue);
                         break;
 
                     case ExpressionType.GreaterThan:
-                        AddQueryGreaterThan(_coreQueryHandle, leftName, rightValue);
+                        AddQueryGreaterThan(CoreQueryHandle, leftName, rightValue);
                         break;
 
                     case ExpressionType.GreaterThanOrEqual:
-                        AddQueryGreaterThanOrEqual(_coreQueryHandle, leftName, rightValue);
+                        AddQueryGreaterThanOrEqual(CoreQueryHandle, leftName, rightValue);
                         break;
 
                     default:
@@ -635,10 +636,10 @@ namespace Realms
             if (results != null)
             {
                 // assume constant nodes w/ IQueryables are table references
-                if (_coreQueryHandle != null)
+                if (CoreQueryHandle != null)
                     throw new Exception("We already have a table...");
 
-                _coreQueryHandle = CreateQuery(results.ObjectSchema);
+                CoreQueryHandle = CreateQuery(results.ObjectSchema);
             }
             else if (c.Value == null)
             {
@@ -690,7 +691,7 @@ namespace Realms
                 {
                     object rhs = true;  // box value
                     var leftName = m.Member.Name;
-                    AddQueryEqual(_coreQueryHandle, leftName, rhs);
+                    AddQueryEqual(CoreQueryHandle, leftName, rhs);
                 }
                 return m;
             }

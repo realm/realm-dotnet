@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
 namespace Realms.Native
@@ -26,6 +27,7 @@ namespace Realms.Native
     internal delegate bool MigrationCallback(IntPtr oldRealm, IntPtr newRealm, Schema oldSchema, ulong schemaVersion, IntPtr managedMigrationHandle);
 
     [StructLayout(LayoutKind.Sequential)]
+    [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1307:AccessibleFieldsMustBeginWithUpperCaseLetter")]
     internal struct Configuration
     {
         [MarshalAs(UnmanagedType.LPWStr)]
@@ -55,4 +57,3 @@ namespace Realms.Native
         internal IntPtr managed_migration_handle;
     }
 }
-

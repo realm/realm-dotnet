@@ -20,7 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
-namespace Realms.native
+namespace Realms.Native
 {
     internal class SortDescriptorBuilder
     {

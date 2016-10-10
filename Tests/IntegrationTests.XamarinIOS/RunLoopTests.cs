@@ -22,6 +22,7 @@ using System.Linq;
 using System.Threading;
 using Foundation;
 using NUnit.Framework;
+using Realms;
 
 namespace IntegrationTests.XamarinIOS
 {

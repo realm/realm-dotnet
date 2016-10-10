@@ -28,7 +28,7 @@ using System.Threading.Tasks;
 #if __IOS__
 using ObjCRuntime;
 #endif
-using Realms.native;
+using Realms.Native;
 
 namespace Realms
 {
@@ -43,8 +43,8 @@ namespace Realms
         #region static
 
         // shared string buffer for getter because can only be getting on this one thread per Realm
-        internal IntPtr stringGetBuffer = IntPtr.Zero;
-        internal int stringGetBufferLen;
+        internal IntPtr StringGetBuffer = IntPtr.Zero;
+        internal int StringGetBufferLen;
 
         static Realm()
         {
@@ -288,11 +288,11 @@ namespace Realms
 
             SharedRealmHandle.Close();  // Note: this closes the *handle*, it does not trigger realm::Realm::close().
 
-            if (stringGetBuffer != IntPtr.Zero)
+            if (StringGetBuffer != IntPtr.Zero)
             {
-                Marshal.FreeHGlobal(stringGetBuffer);
-                stringGetBuffer = IntPtr.Zero;
-                stringGetBufferLen = 0;
+                Marshal.FreeHGlobal(StringGetBuffer);
+                StringGetBuffer = IntPtr.Zero;
+                StringGetBufferLen = 0;
             }
         }
 

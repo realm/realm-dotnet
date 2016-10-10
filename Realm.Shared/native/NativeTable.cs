@@ -15,14 +15,16 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
-using Realms.native;
+using Realms.Native;
 
 namespace Realms
 {
+    [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:ElementMustBeginWithUpperCaseLetter")]
     internal static class NativeTable
     {
         public static IntPtr AddEmptyRow(TableHandle tableHandle)

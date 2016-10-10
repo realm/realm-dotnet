@@ -47,9 +47,9 @@ namespace IntegrationTests.Shared
         [Test]
         public void PropertySet()
         {
-            const string name = "John";
-            Assert.DoesNotThrow(() => _person.FirstName = name);
-            Assert.AreEqual(name, _person.FirstName);
+            const string Name = "John";
+            Assert.DoesNotThrow(() => _person.FirstName = Name);
+            Assert.AreEqual(Name, _person.FirstName);
         }
 
         [Test]
