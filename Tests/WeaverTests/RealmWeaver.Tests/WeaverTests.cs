@@ -18,6 +18,7 @@
 
 extern alias propertychanged;
 extern alias realm;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -113,7 +114,6 @@ namespace RealmWeaver
         private readonly List<string> _warnings = new List<string>();
         private readonly List<string> _errors = new List<string>();
 
-
         public Tests(AssemblyType assemblyType, PropertyChangedWeaver propertyChangedWeaver)
         {
             _assemblyType = assemblyType;
@@ -174,7 +174,9 @@ namespace RealmWeaver
             catch (ReflectionTypeLoadException e)
             {
                 foreach (var item in e.LoaderExceptions)
+                {
                     Debug.WriteLine("Loader exception: " + item.Message.ToString());
+                }
 
                 Assert.Fail("Load failure");
             }
@@ -200,7 +202,6 @@ namespace RealmWeaver
             new object[] { "NullableDouble", 123.123, null },
             new object[] { "NullableBoolean", true, null }
         };
-
 
         private static IEnumerable<object[]> RandomValues()
         {
@@ -288,8 +289,7 @@ namespace RealmWeaver
             var eventRaised = false;
             o.PropertyChanged += new PropertyChangedEventHandler((s, e) =>
             {
-                if (e.PropertyName == propertyName)
-                    eventRaised = true;
+                eventRaised |= e.PropertyName == propertyName;
             });
 
             // Act
@@ -512,7 +512,6 @@ namespace RealmWeaver
             // ByteArray can't be set as a constant
             WovenCopyToRealm_ShouldSetNonDefaultProperties("ByteArray", new byte[] { 4, 3, 2 });
         }
-
 
         [Test]
         public void WovenCopyToRealm_ShouldAlwaysSetNullableProperties()

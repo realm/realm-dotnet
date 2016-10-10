@@ -70,7 +70,9 @@ namespace Realms
         public delegate void NotificationCallback(RealmResults<T> sender, ChangeSet changes, Exception error);
 
         public Type ElementType => typeof(T);
+
         public Expression Expression { get; }
+
         public IQueryProvider Provider => null;
 
         /// <summary>
@@ -88,7 +90,6 @@ namespace Realms
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return null;
         }
-
 
         /// <summary>
         /// Count all objects if created by <see cref="Realm.All"/> of the parameterised type, faster than a search.

@@ -27,6 +27,7 @@ namespace AssemblyToProcess
     public class PhoneNumber : RealmObject
     {
         public string Kind { get; set; }
+
         public string Number { get; set; }
     }
 
@@ -35,10 +36,13 @@ namespace AssemblyToProcess
     {
         // Automatically implemented (overridden) properties
         public string FirstName { get; set; }
+
         public string LastName { get; set; }
 
         public float Score { get; set; }
+
         public double Latitude { get; set; }
+
         public double Longitude { get; set; }
 
         public DateTimeOffset Birthday { get; set; }
@@ -54,7 +58,10 @@ namespace AssemblyToProcess
         // Composite property
         public string FullName
         {
-            get { return FirstName + " " + LastName; }
+            get
+            {
+                return FirstName + " " + LastName;
+            }
 
             set
             {
@@ -72,10 +79,18 @@ namespace AssemblyToProcess
         [Ignored]
         public string Email
         {
-            get { return Email_; }
+            get
+            {
+                return Email_;
+            }
+
             set
             {
-                if (!value.Contains("@")) throw new Exception("Invalid email address");
+                if (!value.Contains("@"))
+                {
+                    throw new Exception("Invalid email address");
+                }
+
                 Email_ = value;
             }
         }
@@ -83,8 +98,15 @@ namespace AssemblyToProcess
         // Manually implemented property
         public string Address
         {
-            get { return GetStringValue("Address"); }
-            set { SetStringValue("Address", value); }
+            get
+            {
+                return GetStringValue("Address");
+            }
+
+            set
+            {
+                SetStringValue("Address", value);
+            }
         }
 
         // One-to-one relationship

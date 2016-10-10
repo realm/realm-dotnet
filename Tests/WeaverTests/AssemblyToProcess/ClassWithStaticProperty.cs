@@ -8,12 +8,14 @@ namespace AssemblyToProcess
     {
         public string Name { get; set; }
 
-        private static Dog myDog = null;
+        private static Dog myDog;
+
         public static Dog MyOnlyDog
         {
             get
             {
                 return myDog;
+
                 // if (myDog != null)
                 // {
                 //     return myDog;

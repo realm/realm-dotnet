@@ -116,7 +116,6 @@ namespace IntegrationTests
             Assert.That(config1, Is.Not.EqualTo(config1b));
         }
 
-
         [Test]
         public void ConfigurationsHaveDifferentHashes()
         {
@@ -128,7 +127,6 @@ namespace IntegrationTests
             Assert.That(config1.GetHashCode(), Is.Not.EqualTo(0));
             Assert.That(config1.GetHashCode(), Is.Not.EqualTo(config2.GetHashCode()));
         }
-
 
         [Test]
         public void EncryptionKeyMustBe64Bytes()
@@ -145,7 +143,6 @@ namespace IntegrationTests
             Assert.Throws<FormatException>(() => config.EncryptionKey = bigKey);
         }
 
-
         [Test]
         public void ValidEncryptionKeyAcceoted()
         {
@@ -160,7 +157,6 @@ namespace IntegrationTests
             Assert.DoesNotThrow(() => config.EncryptionKey = null);
         }
 
-
         [Test]
         public void UnableToOpenWithNoKey()
         {
@@ -171,13 +167,20 @@ namespace IntegrationTests
             Realm.DeleteRealm(config);  // ensure guarded from prev tests
             var emptyKey = new byte[64];
             config.EncryptionKey = emptyKey;
-            using (Realm.GetInstance(config)) { }
+            using (Realm.GetInstance(config))
+            {
+            }
+
             config.EncryptionKey = null;
 
             // Assert
-            Assert.Throws<RealmFileAccessErrorException>(() => { using (Realm.GetInstance(config)) { } });
+            Assert.Throws<RealmFileAccessErrorException>(() =>
+            {
+                using (Realm.GetInstance(config))
+                {
+                }
+            });
         }
-
 
         [Test]
         public void UnableToOpenWithKeyIfNotEncrypted()
@@ -193,9 +196,13 @@ namespace IntegrationTests
             config.EncryptionKey = emptyKey;
 
             // Assert
-            Assert.Throws<RealmFileAccessErrorException>(() => { using (Realm.GetInstance(config)) { } });
+            Assert.Throws<RealmFileAccessErrorException>(() =>
+            {
+                using (Realm.GetInstance(config))
+                {
+                }
+            });
         }
-
 
         [Test]
         public void UnableToOpenWithDifferentKey()
@@ -212,9 +219,13 @@ namespace IntegrationTests
             config.EncryptionKey[0] = 42;
 
             // Assert
-            Assert.Throws<RealmFileAccessErrorException>(() => { using (Realm.GetInstance(config)) { } });
+            Assert.Throws<RealmFileAccessErrorException>(() =>
+            {
+                using (Realm.GetInstance(config))
+                {
+                }
+            });
         }
-
 
         [Test]
         public void AbleToReopenEncryptedWithSameKey()
@@ -236,9 +247,13 @@ namespace IntegrationTests
             config2.EncryptionKey = answerKey2;
 
             // Assert
-            Assert.DoesNotThrow(() => { using (Realm.GetInstance(config2)) { } });
+            Assert.DoesNotThrow(() =>
+            {
+                using (Realm.GetInstance(config2))
+                {
+                }
+            });
         }
-
 
         [Test]
         public void ReadOnlyFilesMustExist()
@@ -253,7 +268,6 @@ namespace IntegrationTests
                 Realm.GetInstance(config);
             });
         }
-
 
         [Test, Explicit("Currently, a RealmMismatchedConfigException is thrown. Registered as #580")]
         public void ReadOnlyRealmsWillNotAutoMigrate()
@@ -272,7 +286,6 @@ namespace IntegrationTests
                 Realm.GetInstance(config);
             });
         }
-
 
         [Test]
         public void ReadOnlyRealmsArentWritable()
@@ -301,7 +314,7 @@ namespace IntegrationTests
                         var neverMade = openedReadonly.CreateObject<Person>();
                     });
                 });
-            }  // auto-closing realm
+            }
         }
     }
 }

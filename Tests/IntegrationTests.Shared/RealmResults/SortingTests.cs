@@ -36,7 +36,6 @@ namespace IntegrationTests
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     internal class SortingTests : PeopleTestsBase
     {
-
         // see comment on base method why this isn't decorated with [SetUp]
         public override void Setup()
         {
@@ -55,7 +54,6 @@ namespace IntegrationTests
             });
         }
 
-
         [Test]
         public void AllSortOneLevel()
         {
@@ -65,7 +63,6 @@ namespace IntegrationTests
             var s1 = _realm.All<Person>().OrderByDescending(p => p.Latitude).ToList().Select(p => p.Latitude);
             Assert.That(s1, Is.EqualTo(new[] { 51.508530, 40.7637286, 40.7637286, 37.7798657 }));
         }
-
 
         [Test]
         public void AllSortUpUp()
@@ -79,7 +76,6 @@ namespace IntegrationTests
             Assert.That(sortAAlat, Is.EqualTo(new[] { 40.7637286, 40.7637286, 51.508530, 37.7798657 }));
         }
 
-
         [Test]
         public void AllSortDownUp()
         {
@@ -91,7 +87,6 @@ namespace IntegrationTests
             var sortDAlat = sortDA.Select(p => p.Latitude);
             Assert.That(sortDAlat, Is.EqualTo(new[] { 37.7798657, 40.7637286, 40.7637286, 51.508530 }));
         }
-
 
         [Test]
         public void AllSortUpDown()
@@ -105,7 +100,6 @@ namespace IntegrationTests
             Assert.That(sortADlat, Is.EqualTo(new[] { 51.508530, 40.7637286, 40.7637286, 37.7798657 }));
         }
 
-
         [Test]
         public void AllSortDownDown()
         {
@@ -117,9 +111,6 @@ namespace IntegrationTests
             var sortDDlat = sortDD.Select(p => p.Latitude);
             Assert.That(sortDDlat, Is.EqualTo(new[] { 37.7798657, 51.508530, 40.7637286, 40.7637286 }));
         }
-
-
-
 
         [Test]
         public void QuerySortOneLevelNumbers()
@@ -133,14 +124,12 @@ namespace IntegrationTests
             Assert.That(s1, Is.EqualTo(new[] { 37.7798657, 40.7637286, 51.508530 }));
         }
 
-
         [Test]
         public void QuerySortOneLevelStrings()
         {
             var s0 = _realm.All<Person>().Where(p => p.IsInteresting).OrderBy(p => p.LastName).ToList().Select(p => p.LastName).ToList();
             Assert.That(s0, Is.EqualTo(new[] { "Jameson", "Jamez", "Smith" }));
         }
-
 
         [Test]
         public void QuerySortUpUp()
@@ -154,7 +143,6 @@ namespace IntegrationTests
             Assert.That(sortAAlat, Is.EqualTo(new[] { 40.7637286, 51.508530, 37.7798657 }));
         }
 
-
         [Test]
         public void QuerySortDownUp()
         {
@@ -166,7 +154,6 @@ namespace IntegrationTests
             var sortDAlat = sortDA.Select(p => p.Latitude);
             Assert.That(sortDAlat, Is.EqualTo(new[] { 37.7798657, 40.7637286, 51.508530 }));
         }
-
 
         [Test]
         public void QuerySortUpDown()
@@ -180,7 +167,6 @@ namespace IntegrationTests
             Assert.That(sortADlat, Is.EqualTo(new[] { 51.508530, 40.7637286, 37.7798657 }));
         }
 
-
         [Test]
         public void QuerySortDownDown()
         {
@@ -192,7 +178,6 @@ namespace IntegrationTests
             var sortDDlat = sortDD.Select(p => p.Latitude);
             Assert.That(sortDDlat, Is.EqualTo(new[] { 37.7798657, 51.508530, 40.7637286 }));
         }
-
 
         [Test]
         public void SortExceptionsForInvalidSortCode()
@@ -208,7 +193,6 @@ namespace IntegrationTests
                 .OrderByDescending(p => p.FirstName).OrderBy(p => p.Latitude).ToList(),
                 "Should catch using both OrderBy and OrderByDescending");
         }
-
 
         [Test]
         public void FirstIsDifferentSorted()
@@ -226,7 +210,6 @@ namespace IntegrationTests
             Assert.That(sortedFirst.Email, Is.EqualTo("john@doe.com"));
         }
 
-
         [Test]
         public void LastIsDifferentSorted()
         {
@@ -243,7 +226,6 @@ namespace IntegrationTests
             Assert.That(sortedLast.Email, Is.EqualTo("john@doe.com"));
         }
 
-
         [Test]
         public void ElementAtSorted()
         {
@@ -253,7 +235,6 @@ namespace IntegrationTests
             var sortedFirstInteresting = _realm.All<Person>().OrderByDescending(p => p.FirstName).Where(p => p.IsInteresting).ElementAt(0);
             Assert.That(sortedFirstInteresting.Email, Is.EqualTo("peter@jameson.net"));
         }
-
 
         [Test]
         public void SortsByAcceptedOrder()

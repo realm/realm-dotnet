@@ -17,8 +17,6 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Collections.Generic;
-using System.Reflection;
 using Realms.Weaving;
 
 namespace Realms.Dynamic
@@ -38,4 +36,3 @@ namespace Realms.Dynamic
         }
     }
 }
-

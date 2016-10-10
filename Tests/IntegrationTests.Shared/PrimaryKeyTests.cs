@@ -30,7 +30,6 @@ namespace IntegrationTests.Shared
     [TestFixture, Preserve(AllMembers = true)]
     public class PrimaryKeyTests
     {
-
         protected Realm _realm;
 
         [SetUp]
@@ -103,7 +102,6 @@ namespace IntegrationTests.Shared
             Assert.That(foundObj.Int32Property, Is.EqualTo(42000042));
         }
 
-
         [Test]
         public void FindByInt64PrimaryKey()
         {
@@ -118,14 +116,12 @@ namespace IntegrationTests.Shared
             Assert.That(foundObj.Int64Property, Is.EqualTo(42000042));
         }
 
-
         [Test]
         public void DontFindByInt64PrimaryKey()
         {
             var foundObj = _realm.ObjectForPrimaryKey<PrimaryKeyInt64Object>(3);
             Assert.IsNull(foundObj);
         }
-
 
         [Test]
         public void FindByStringPrimaryKey()
@@ -141,14 +137,12 @@ namespace IntegrationTests.Shared
             Assert.That(foundObj.StringProperty, Is.EqualTo("Zaphod"));
         }
 
-
         [Test]
         public void DontFindByStringPrimaryKey()
         {
             var foundObj = _realm.ObjectForPrimaryKey<PrimaryKeyStringObject>("Ford");
             Assert.IsNull(foundObj);
         }
-
 
         [Test]
         public void FindDynamicByInt64PrimaryKey()
@@ -164,14 +158,12 @@ namespace IntegrationTests.Shared
             Assert.That(foundObj.Int64Property, Is.EqualTo(42000042));
         }
 
-
         [Test]
         public void DontFindDynamicByInt64PrimaryKey()
         {
             dynamic foundObj = _realm.ObjectForPrimaryKey("PrimaryKeyInt64Object", 33);
             Assert.IsNull(foundObj);
         }
-
 
         [Test]
         public void FindDynamicByStringPrimaryKey()
@@ -187,14 +179,12 @@ namespace IntegrationTests.Shared
             Assert.That(foundObj.StringProperty, Is.EqualTo("Zaphod"));
         }
 
-
         [Test]
         public void DontFindDynamicByStringPrimaryKey()
         {
             dynamic foundObj = _realm.ObjectForPrimaryKey("PrimaryKeyStringObject", "Dent");
             Assert.IsNull(foundObj);
         }
-
 
         [Test]
         public void ExceptionIfNoPrimaryKeyDeclared()
@@ -205,7 +195,6 @@ namespace IntegrationTests.Shared
             });
         }
 
-
         [Test]
         public void ExceptionIfNoDynamicIPrimaryKeyDeclared()
         {
@@ -214,8 +203,6 @@ namespace IntegrationTests.Shared
                 var foundObj = _realm.ObjectForPrimaryKey("Person", "Zaphod");
             });
         }
-
-
 
         [Test]
         public void GetByPrimaryKeyDifferentThreads()
@@ -227,6 +214,7 @@ namespace IntegrationTests.Shared
             });
 
             long foundValue = 0;
+
             // Act
             var t = new Thread(() =>
             {
@@ -241,7 +229,6 @@ namespace IntegrationTests.Shared
 
             Assert.That(foundValue, Is.EqualTo(42000042));
         }
-
 
         [Test]
         public void PrimaryKeyStringObjectIsUnique()
@@ -262,7 +249,6 @@ namespace IntegrationTests.Shared
             });
         }
 
-
         [Test]
         public void PrimaryKeyIntObjectIsUnique()
         {
@@ -282,7 +268,6 @@ namespace IntegrationTests.Shared
             });
         }
 
-
         [Test]
         public void PrimaryKeyFailsIfClassNotinRealm()
         {
@@ -294,7 +279,5 @@ namespace IntegrationTests.Shared
                 var obj = skinny.ObjectForPrimaryKey<PrimaryKeyInt64Object>(42);
             });
         }
-
     }
 }
-

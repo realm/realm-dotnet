@@ -20,6 +20,5 @@ namespace AssemblyToProcess
 {
     public class Employee : Person
     {
-
     }
 }

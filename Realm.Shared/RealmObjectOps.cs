@@ -23,7 +23,6 @@ namespace Realms
     [Preserve(AllMembers = true)]
     internal static class RealmObjectOps
     {
-
         public static RealmList<T> GetList<T>(Realm realm, TableHandle table, IntPtr columnIndex, IntPtr rowIndex, string objectType) where T : RealmObject
         {
             var listHandle = table.TableLinkList(columnIndex, rowIndex);
@@ -34,7 +33,9 @@ namespace Realms
         {
             var linkedRowPtr = NativeTable.GetLink(table, columnIndex, rowIndex);
             if (linkedRowPtr == IntPtr.Zero)
+            {
                 return null;
+            }
 
             return (T)realm.MakeObjectForRow(objectType, linkedRowPtr);
         }
@@ -48,7 +49,10 @@ namespace Realms
             else
             {
                 if (!@object.IsManaged)
+                {
                     realm.Manage(@object);
+                }
+
                 NativeTable.SetLink(table, columnIndex, rowIndex, @object.RowHandle.RowIndex);
             }
         }

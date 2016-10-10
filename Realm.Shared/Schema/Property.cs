@@ -42,4 +42,3 @@ namespace Realms.Schema
         internal PropertyInfo PropertyInfo;
     }
 }
-

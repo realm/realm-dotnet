@@ -56,6 +56,7 @@ namespace Realms
             {
                 throw new ArgumentNullException(nameof(results));
             }
+
             if (!(results is RealmResults<T>))
             {
                 throw new ArgumentException($"{nameof(results)} must be an instance of RealmResults<{typeof(T).Name}>", nameof(results));
@@ -136,6 +137,7 @@ namespace Realms
                 {
                     this.Add(item);
                 }
+
                 _suspendNotifications = false;
                 RaiseReset();
             }

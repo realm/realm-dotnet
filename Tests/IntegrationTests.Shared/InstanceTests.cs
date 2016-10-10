@@ -53,6 +53,7 @@ namespace IntegrationTests
             {
                 Assert.That(!temp.IsClosed);
             }
+
             Assert.That(temp.IsClosed);
         }
 
@@ -90,7 +91,6 @@ namespace IntegrationTests
             Assert.False(File.Exists(config.DatabasePath));
         }
 
-
         [Test]
         public void GetUniqueInstancesDifferentThreads()
         {
@@ -115,7 +115,6 @@ namespace IntegrationTests
             realm2.Close();
         }
 
-
         [Test]
         public void GetCachedInstancesSameThread()
         {
@@ -130,7 +129,6 @@ namespace IntegrationTests
                 Assert.That(realm1, Is.EqualTo(realm2));
             }
         }
-
 
         [Test]
         public void InstancesHaveDifferentHashes()
@@ -175,7 +173,6 @@ namespace IntegrationTests
             // Arrange
             Assert.Throws<RealmPermissionDeniedException>(() => Realm.GetInstance("/"));
         }
-
 
         private class LoneClass : RealmObject
         {
@@ -222,10 +219,9 @@ namespace IntegrationTests
                             lonelyRealm.CreateObject<Person>();
                         },
                         "Can't create an object with a class not included in this Realm");
-                } // transaction
-            }  // realm
+                }
+            }
         }
-
 
         [Test]
         public void RealmObjectClassesOnlyAllowRealmObjects()
@@ -237,11 +233,10 @@ namespace IntegrationTests
 
             // Act and assert
             Assert.Throws<ArgumentException>(() =>
-                {
-                    Realm.GetInstance(config);
-                },
-                "Can't have classes in the list which are not RealmObjects");
+            {
+                Realm.GetInstance(config);
+            },
+            "Can't have classes in the list which are not RealmObjects");
         }
-
     }
 }

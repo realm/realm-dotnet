@@ -94,7 +94,6 @@ namespace Realms
                 default:
                     return new Exception(message);
             }
-
         }
     }
 }

@@ -45,7 +45,6 @@ namespace IntegrationTests.Shared
             Realm.DeleteRealm(_realm.Config);
         }
 
-
         [Test]
         public void SetAndGetPropertyTest(
             [Values(0, 11, 23)] int hour,
@@ -71,7 +70,6 @@ namespace IntegrationTests.Shared
             Assert.That(turingAgain.Birthday, Is.EqualTo(turingsBirthday));
         }
 
-
         [Test]
         public void SortingFinelyDifferentDateTimes()
         {
@@ -86,6 +84,7 @@ namespace IntegrationTests.Shared
                         turing.Birthday = birthday.AddMilliseconds(addMs);
                     }
                 }
+
                 transaction.Commit();
             }
 
@@ -99,7 +98,6 @@ namespace IntegrationTests.Shared
             }
         }
 
-
         [Test]
         public void FindingByMilliseconds()
         {
@@ -111,6 +109,7 @@ namespace IntegrationTests.Shared
                     Person turing = _realm.CreateObject<Person>();
                     turing.Birthday = birthday.AddMilliseconds(addMs);
                 }
+
                 transaction.Commit();
             }
 
@@ -137,7 +136,9 @@ namespace IntegrationTests.Shared
             var config = new RealmConfiguration() { ObjectClasses = new[] { typeof(IndexedDateTimeOffsetObject) } };
 
             // Act and "assert" that no exception is thrown here
-            using (Realm.GetInstance(config)) { }
+            using (Realm.GetInstance(config))
+            {
+            }
         }
 
         [Test]

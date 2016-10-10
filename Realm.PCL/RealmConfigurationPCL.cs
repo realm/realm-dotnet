@@ -21,10 +21,8 @@
 using System;
 
 // see internals/RealmConfigurations.md for a detailed diagram of how this interacts with the ObjectStore configuration
-
 namespace Realms
 {
-
     /// <summary>
     /// Realm configuration specifying settings that affect your Realm behaviour.
     /// </summary>
@@ -38,7 +36,6 @@ namespace Realms
         /// </summary>
         /// <value>A string representing a filename only, no path.</value>      
         public static string DefaultRealmName { get; }
-
 
         /// <summary>
         /// Flag mainly to help with temp databases and testing, indicates content can be abandoned when you change the schema.
@@ -99,6 +96,7 @@ namespace Realms
                 RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();  // if attempt to use DefaultConfiguration as first line of their code with just PCL linked, want exception!
                 return null;
             }
+
             set
             {
             }
@@ -137,8 +135,6 @@ namespace Realms
             return false;
         }
 
-
-
         /// <summary>
         /// Determines whether the specified RealmConfiguration is equal to the current RealmConfiguration.
         /// </summary>
@@ -151,7 +147,6 @@ namespace Realms
             return false;
         }
 
-
         /// <summary>
         /// Serves as a hash function for a RealmConfiguration based on its path.
         /// </summary>
@@ -162,7 +157,5 @@ namespace Realms
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return 0;
         }
-
-    }  // class RealmConfiguration
-}  // namespace Realms
-
+    }
+}

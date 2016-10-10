@@ -44,15 +44,20 @@ namespace IntegrationTests.Shared
         private class DynamicDog : RealmObject
         {
             public string Name { get; set; }
+
             public string Color { get; set; }
+
             public bool Vaccinated { get; set; }
+            
             // Owner Owner { get; set; }  will uncomment when verifying that we have back-links from ToMany relationships
         }
 
         private class DynamicOwner : RealmObject
         {
             public string Name { get; set; }
+
             public DynamicDog TopDog { get; set; }
+
             public RealmList<DynamicDog> Dogs { get; }
         }
 
@@ -63,7 +68,9 @@ namespace IntegrationTests.Shared
         {
             _configuration = new RealmConfiguration { ObjectClasses = new[] { typeof(DynamicOwner), typeof(DynamicDog) } };
             if (mode == DynamicTestObjectType.DynamicRealmObject)
+            {
                 _configuration.Dynamic = true;
+            }
         }
 
         [SetUp]
@@ -123,6 +130,7 @@ namespace IntegrationTests.Shared
             {
                 dogNames.Add(dog.Name);
             }
+
             Assert.That(dogNames, Is.EquivalentTo(new[] { "Bilbo Fleabaggins", "Earl Yippington III" }));
         }
 
@@ -139,6 +147,7 @@ namespace IntegrationTests.Shared
             {
                 dogNames.Add(dog.Name);
             }
+
             Assert.That(dogNames, Is.EquivalentTo(new[] { "Bilbo Fleabaggins", "Earl Yippington III" }));
         }
 
@@ -151,6 +160,7 @@ namespace IntegrationTests.Shared
                 tim.TopDog = null;
                 trans.Commit();
             }
+
             var tim2 = _realm.All("DynamicOwner").ToArray().First(p => p.Name == "Tim");
             Assert.That(tim2.TopDog, Is.Null);  // the dog departure was saved
         }
@@ -166,6 +176,7 @@ namespace IntegrationTests.Shared
                 tim.Dogs.Add(dog3);
                 trans.Commit();
             }
+
             var tim2 = _realm.All("DynamicOwner").ToArray().First(p => p.Name == "Tim");
             Assert.That(tim2.Dogs.Count, Is.EqualTo(3));
             Assert.That(tim2.Dogs[2].Name, Is.EqualTo("Maggie Mongrel"));
@@ -182,6 +193,7 @@ namespace IntegrationTests.Shared
                 tim.Dogs.Insert(1, dog3);
                 trans.Commit();
             }
+
             var tim2 = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
             Assert.That(tim2.Dogs.Count, Is.EqualTo(3));
             Assert.That(tim2.Dogs[1].Name, Is.EqualTo("Maggie Mongrel"));
@@ -198,6 +210,7 @@ namespace IntegrationTests.Shared
                 tim.Dogs.RemoveAt(0);
                 trans.Commit();
             }
+
             var tim2 = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
             Assert.That(tim2.Dogs.Count, Is.EqualTo(1));
             Assert.That(tim2.Dogs[0].Name, Is.EqualTo("Earl Yippington III"));
@@ -206,6 +219,7 @@ namespace IntegrationTests.Shared
                 tim.Dogs.RemoveAt(0);
                 trans.Commit();
             }
+
             var tim3 = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
             Assert.That(tim2.Dogs.Count, Is.EqualTo(0));
             Assert.That(tim3.Dogs.Count, Is.EqualTo(0)); // reloaded object has same empty related set
@@ -221,6 +235,7 @@ namespace IntegrationTests.Shared
                 tim.Dogs.Clear();
                 trans.Commit();
             }
+
             var tim2 = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
             Assert.That(tim2.Dogs.Count, Is.EqualTo(0));
         }
@@ -236,6 +251,7 @@ namespace IntegrationTests.Shared
                 tim.Dogs.Remove(bilbo);
                 trans.Commit();
             }
+
             var tim2 = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
             Assert.That(tim2.Dogs.Count, Is.EqualTo(1));
             Assert.That(tim2.Dogs[0].Name, Is.EqualTo("Earl Yippington III"));
@@ -253,11 +269,12 @@ namespace IntegrationTests.Shared
         {
             var dani = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Dani");
             Assert.That(dani.Dogs.Count, Is.EqualTo(0));  // ToMany relationships always return a RealmList
-            int dogsIterated = 0;
+            var dogsIterated = 0;
             foreach (var d in dani.Dogs)
             {
                 dogsIterated++;
             }
+
             Assert.That(dogsIterated, Is.EqualTo(0));
         }
 

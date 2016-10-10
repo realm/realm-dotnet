@@ -42,7 +42,6 @@ namespace Realms
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class RealmList<T> : IList<T>, IRealmList, IDynamicMetaObjectProvider where T : RealmObject
     {
-
         /// <summary>
         /// Value returned by IndexOf if an item is not found.
         /// </summary>
@@ -113,7 +112,6 @@ namespace Realms
 
         #region implementing IList members
 
-
         /// <summary>
         /// Makes a relationship to an item, appending it at the end of the sorted relationship.
         /// </summary>
@@ -157,11 +155,10 @@ namespace Realms
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }
 
-
         /// <summary>
         /// Related RealmObject enumerator factory for an iterator to be called explicitly or used in a foreach loop.
         /// </summary>
-        /// <returns>A RealmListEnumerator as the generic IEnumerator<T>.</returns>
+        /// <returns>A RealmListEnumerator as the generic IEnumerator&lt;T&gt;.</returns>
         public IEnumerator<T> GetEnumerator()
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
@@ -172,7 +169,6 @@ namespace Realms
         /// Finds an ordinal index for an item in a relationship.
         /// </summary>
         /// <param name="item">RealmObject being removed from the relationship.</param>
-        /// <typeparam name="T">Type of the RealmObject which is the target of the relationship.</typeparam>
         /// <returns>0-based index if the item was found in the related set, or RealmList.ITEM_NOT_FOUND.</returns>
         public int IndexOf(T item)
         {
@@ -185,7 +181,6 @@ namespace Realms
         /// </summary>
         /// <param name="index">Ordinal zero-based index at which to insert the related items.</param>
         /// <param name="item">RealmObject being inserted into the relationship.</param>
-        /// <typeparam name="T">Type of the RealmObject which is the target of the relationship.</typeparam>
         /// <exception cref="ArgumentOutOfRangeException">When the index is out of range for the related items.</exception>
         public void Insert(int index, T item)
         {
@@ -196,7 +191,6 @@ namespace Realms
         /// Breaks the relationship to the specified item, without deleting the item.
         /// </summary>
         /// <param name="item">RealmObject being removed from the relationship.</param>
-        /// <typeparam name="T">Type of the RealmObject which is the target of the relationship.</typeparam>
         /// <returns>True if the item was found and removed, false if it is not in the related set.</returns>
         public bool Remove(T item)
         {
@@ -239,7 +233,6 @@ namespace Realms
         LinkListHandle IRealmList.Handle { get; }
 
         #endregion
-
     }
 
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
@@ -247,12 +240,12 @@ namespace Realms
     {
     }
 
-
     [Preserve(AllMembers = true)]
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     internal interface IRealmList
     {
         Realm Realm { get; }
+
         LinkListHandle Handle { get; }
     }
 }

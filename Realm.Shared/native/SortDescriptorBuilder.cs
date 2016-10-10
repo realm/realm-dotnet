@@ -81,8 +81,8 @@ namespace Realms.Native
                     Offset = (IntPtr)columnIndexFlattener.Count,
                     Count = (IntPtr)clause.ColumnIndexChain.Count,
                     Ascending = clause.Ascending
-
                 });
+
                 columnIndexFlattener.AddRange(clause.ColumnIndexChain);
             }
 

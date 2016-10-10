@@ -75,9 +75,9 @@ namespace Realms
             {
                 e = ((UnaryExpression)e).Operand;
             }
+
             return e;
         }
-
 
         /**
         Expressions will typically be in a form:
@@ -93,22 +93,25 @@ namespace Realms
             this.Visit(m.Arguments[0]);  // creates the query or recurse to "Where"
             if (m.Arguments.Count > 1)
             {
-                LambdaExpression lambda = (LambdaExpression)StripQuotes(m.Arguments[1]);
+                var lambda = (LambdaExpression)StripQuotes(m.Arguments[1]);
                 this.Visit(lambda.Body);
             }
         }
-
 
         private void AddSort(LambdaExpression lambda, bool isStarting, bool ascending)
         {
             var body = lambda.Body as MemberExpression;
             if (body == null)
+            {
                 throw new NotSupportedException($"The expression {lambda} cannot be used in an Order clause");
+            }
 
             if (isStarting)
             {
                 if (OptionalSortDescriptorBuilder == null)
+                {
                     OptionalSortDescriptorBuilder = _realm.CreateSortDescriptorForTable(_metadata);
+                }
                 else
                 {
                     var badCall = ascending ? "ThenBy" : "ThenByDescending";
@@ -120,7 +123,6 @@ namespace Realms
             OptionalSortDescriptorBuilder.AddClause(sortColName, ascending);
         }
 
-
         private RowHandle VisitElementAt(MethodCallExpression m)
         {
             Visit(m.Arguments.First());
@@ -129,6 +131,7 @@ namespace Realms
             {
                 throw new NotSupportedException($"The method '{m.Method}' has to be invoked with a single integer constant argument or closure variable");
             }
+
             var index = (int)argument;
 
             RowHandle row;
@@ -145,9 +148,9 @@ namespace Realms
                     row = Realm.CreateRowHandle(rowPtr, _realm.SharedRealmHandle);
                 }
             }
+
             return row;
         }
-
 
         internal override Expression VisitMethodCall(MethodCallExpression m)
         {
@@ -156,50 +159,57 @@ namespace Realms
                 if (m.Method.Name == nameof(Queryable.Where))
                 {
                     this.Visit(m.Arguments[0]);
-                    LambdaExpression lambda = (LambdaExpression)StripQuotes(m.Arguments[1]);
+                    var lambda = (LambdaExpression)StripQuotes(m.Arguments[1]);
                     this.Visit(lambda.Body);
                     return m;
                 }
+
                 if (m.Method.Name == nameof(Queryable.OrderBy))
                 {
                     this.Visit(m.Arguments[0]);
                     AddSort((LambdaExpression)StripQuotes(m.Arguments[1]), true, true);
                     return m;
                 }
+
                 if (m.Method.Name == nameof(Queryable.OrderByDescending))
                 {
                     this.Visit(m.Arguments[0]);
                     AddSort((LambdaExpression)StripQuotes(m.Arguments[1]), true, false);
                     return m;
                 }
+
                 if (m.Method.Name == nameof(Queryable.ThenBy))
                 {
                     this.Visit(m.Arguments[0]);
                     AddSort((LambdaExpression)StripQuotes(m.Arguments[1]), false, true);
                     return m;
                 }
+
                 if (m.Method.Name == nameof(Queryable.ThenByDescending))
                 {
                     this.Visit(m.Arguments[0]);
                     AddSort((LambdaExpression)StripQuotes(m.Arguments[1]), false, false);
                     return m;
                 }
+
                 if (m.Method.Name == nameof(Queryable.Count))
                 {
                     RecurseToWhereOrRunLambda(m);
                     var foundCount = CoreQueryHandle.Count();
                     return Expression.Constant(foundCount);
                 }
+
                 if (m.Method.Name == nameof(Queryable.Any))
                 {
                     RecurseToWhereOrRunLambda(m);
-                    bool foundAny = CoreQueryHandle.FindDirect(IntPtr.Zero) != IntPtr.Zero;
+                    var foundAny = CoreQueryHandle.FindDirect(IntPtr.Zero) != IntPtr.Zero;
                     return Expression.Constant(foundAny);
                 }
+
                 if (m.Method.Name.StartsWith(nameof(Queryable.First)))
                 {
                     RecurseToWhereOrRunLambda(m);
-                    IntPtr firstRowPtr = IntPtr.Zero;
+                    var firstRowPtr = IntPtr.Zero;
                     if (OptionalSortDescriptorBuilder == null)
                     {
                         firstRowPtr = CoreQueryHandle.FindDirect(IntPtr.Zero);
@@ -211,13 +221,21 @@ namespace Realms
                             firstRowPtr = rh.GetRow(0);
                         }
                     }
+
                     if (firstRowPtr != IntPtr.Zero)
+                    {
                         return Expression.Constant(_realm.MakeObjectForRow(_metadata, firstRowPtr));
+                    }
+
                     if (m.Method.Name == nameof(Queryable.First))
+                    {
                         throw new InvalidOperationException("Sequence contains no matching element");
+                    }
+
                     Debug.Assert(m.Method.Name == nameof(Queryable.FirstOrDefault), "If it's not 'First', it ought to be 'FirstOrDefault'.");
                     return Expression.Constant(null);
                 }
+
                 /*
                 // FIXME: See discussion in the test DefaultIfEmptyReturnsDefault
                 // kept because it shows part of what might be a viable implementation if can work out architectural issues
@@ -242,17 +260,25 @@ namespace Realms
                     if (firstRowPtr == IntPtr.Zero)
                     {
                         if (m.Method.Name == nameof(Queryable.Single))
+                        {
                             throw new InvalidOperationException("Sequence contains no matching element");
+                        }
+
                         Debug.Assert(m.Method.Name == nameof(Queryable.SingleOrDefault), "If it's not 'Single', it ought to be 'SingleOrDefault'.");
                         return Expression.Constant(null);
                     }
+
                     var firstRow = Realm.CreateRowHandle(firstRowPtr, _realm.SharedRealmHandle);
-                    IntPtr nextIndex = (IntPtr)(firstRow.RowIndex + 1);
+                    var nextIndex = firstRow.RowIndex + 1;
                     var nextRowPtr = CoreQueryHandle.FindDirect(nextIndex);
                     if (nextRowPtr != IntPtr.Zero)
+                    {
                         throw new InvalidOperationException("Sequence contains more than one matching element");
+                    }
+
                     return Expression.Constant(_realm.MakeObjectForRow(_metadata, firstRow));
                 }
+
                 if (m.Method.Name.StartsWith(nameof(Queryable.Last)))
                 {
                     RecurseToWhereOrRunLambda(m);
@@ -262,25 +288,39 @@ namespace Realms
                     {
                         var lastIndex = rh.Count() - 1;
                         if (lastIndex >= 0)
+                        {
                             lastRowPtr = rh.GetRow(lastIndex);
+                        }
                     }
+
                     if (lastRowPtr != IntPtr.Zero)
+                    {
                         return Expression.Constant(_realm.MakeObjectForRow(_metadata, lastRowPtr));
+                    }
+
                     if (m.Method.Name == nameof(Queryable.Last))
+                    {
                         throw new InvalidOperationException("Sequence contains no matching element");
+                    }
+
                     Debug.Assert(m.Method.Name == nameof(Queryable.LastOrDefault), "If it's not 'Last', it ought to be 'LastOrDefault'.");
                     return Expression.Constant(null);
                 }
+
                 if (m.Method.Name.StartsWith(nameof(Queryable.ElementAt)))
                 {
                     var row = VisitElementAt(m);
                     if (row == null || row.IsInvalid)
                     {
                         if (m.Method.Name == nameof(Queryable.ElementAt))
+                        {
                             throw new ArgumentOutOfRangeException();
+                        }
+
                         Debug.Assert(m.Method.Name == nameof(Queryable.ElementAtOrDefault), "If it's not 'ElementAt', it ought to be 'ElementAtOrDefault'.");
                         return Expression.Constant(null);
                     }
+
                     return Expression.Constant(_realm.MakeObjectForRow(_metadata, row));
                 }
             }
@@ -308,6 +348,7 @@ namespace Realms
                     {
                         throw new NotSupportedException($"The method '{m.Method}' has to be invoked with a RealmObject member");
                     }
+
                     var columnIndex = CoreQueryHandle.GetColumnIndex(member.Member.Name);
 
                     CoreQueryHandle.GroupBegin();
@@ -325,6 +366,7 @@ namespace Realms
                     {
                         throw new NotSupportedException($"The method '{m.Method}' has to be invoked on a RealmObject member");
                     }
+
                     var columnIndex = CoreQueryHandle.GetColumnIndex(member.Member.Name);
 
                     object argument;
@@ -332,6 +374,7 @@ namespace Realms
                     {
                         throw new NotSupportedException($"The method '{m.Method}' has to be invoked with a single string constant argument or closure variable");
                     }
+
                     queryMethod(CoreQueryHandle, columnIndex, (string)argument);
                     return m;
                 }
@@ -345,14 +388,13 @@ namespace Realms
             switch (u.NodeType)
             {
                 case ExpressionType.Not:
-                    {
-                        CoreQueryHandle.Not();
-                        this.Visit(u.Operand);  // recurse into richer expression, expect to VisitCombination
-                    }
+                    CoreQueryHandle.Not();
+                    this.Visit(u.Operand);  // recurse into richer expression, expect to VisitCombination
                     break;
                 default:
                     throw new NotSupportedException($"The unary operator '{u.NodeType}' is not supported");
             }
+
             return u;
         }
 
@@ -381,6 +423,7 @@ namespace Realms
                 value = ((System.Reflection.FieldInfo)memberAccess.Member).GetValue(((ConstantExpression)memberAccess.Expression).Value);
                 return true;
             }
+
             value = null;
             return false;
         }
@@ -403,7 +446,9 @@ namespace Realms
                 // so an incoming lambda looks like {p => (Convert(p.CharProperty) == 65)}
                 // from Where(p => p.CharProperty == 'A')
                 if (memberExpression == null && b.Left.NodeType == ExpressionType.Convert)
+                {
                     memberExpression = ((UnaryExpression)b.Left).Operand as MemberExpression;
+                }
 
                 if (memberExpression == null ||
                     memberExpression.Member.MemberType != MemberTypes.Property ||
@@ -450,6 +495,7 @@ namespace Realms
                         throw new NotSupportedException($"The binary operator '{b.NodeType}' is not supported");
                 }
             }
+
             return b;
         }
 
@@ -458,23 +504,41 @@ namespace Realms
             var columnIndex = queryHandle.GetColumnIndex(columnName);
 
             if (value == null)
+            {
                 queryHandle.NullEqual(columnIndex);
+            }
             else if (value is string)
+            {
                 queryHandle.StringEqual(columnIndex, (string)value);
+            }
             else if (value is bool)
+            {
                 queryHandle.BoolEqual(columnIndex, (bool)value);
+            }
             else if (value is char)
+            {
                 queryHandle.IntEqual(columnIndex, (int)value);
+            }
             else if (value is int)
+            {
                 queryHandle.IntEqual(columnIndex, (int)value);
+            }
             else if (value is long)
+            {
                 queryHandle.LongEqual(columnIndex, (long)value);
+            }
             else if (value is float)
+            {
                 queryHandle.FloatEqual(columnIndex, (float)value);
+            }
             else if (value is double)
+            {
                 queryHandle.DoubleEqual(columnIndex, (double)value);
+            }
             else if (value is DateTimeOffset)
+            {
                 queryHandle.TimestampTicksEqual(columnIndex, (DateTimeOffset)value);
+            }
             else if (value.GetType() == typeof(byte[]))
             {
                 var buffer = (byte[])value;
@@ -494,7 +558,9 @@ namespace Realms
                 }
             }
             else
+            {
                 throw new NotImplementedException();
+            }
         }
 
         private static void AddQueryNotEqual(QueryHandle queryHandle, string columnName, object value)
@@ -502,23 +568,41 @@ namespace Realms
             var columnIndex = queryHandle.GetColumnIndex(columnName);
 
             if (value == null)
+            {
                 queryHandle.NullNotEqual(columnIndex);
+            }
             else if (value is string)
+            {
                 queryHandle.StringNotEqual(columnIndex, (string)value);
+            }
             else if (value is bool)
+            {
                 queryHandle.BoolNotEqual(columnIndex, (bool)value);
+            }
             else if (value is char)
+            {
                 queryHandle.IntNotEqual(columnIndex, (int)value);
+            }
             else if (value is int)
+            {
                 queryHandle.IntNotEqual(columnIndex, (int)value);
+            }
             else if (value is long)
+            {
                 queryHandle.LongNotEqual(columnIndex, (long)value);
+            }
             else if (value is float)
+            {
                 queryHandle.FloatNotEqual(columnIndex, (float)value);
+            }
             else if (value is double)
+            {
                 queryHandle.DoubleNotEqual(columnIndex, (double)value);
+            }
             else if (value is DateTimeOffset)
+            {
                 queryHandle.TimestampTicksNotEqual(columnIndex, (DateTimeOffset)value);
+            }
             else if (value.GetType() == typeof(byte[]))
             {
                 var buffer = (byte[])value;
@@ -538,7 +622,9 @@ namespace Realms
                 }
             }
             else
+            {
                 throw new NotImplementedException();
+            }
         }
 
         private static void AddQueryLessThan(QueryHandle queryHandle, string columnName, object value)
@@ -546,21 +632,37 @@ namespace Realms
             var columnIndex = queryHandle.GetColumnIndex(columnName);
 
             if (value is char)
+            {
                 queryHandle.IntLess(columnIndex, (int)value);
+            }
             else if (value is int)
+            {
                 queryHandle.IntLess(columnIndex, (int)value);
+            }
             else if (value is long)
+            {
                 queryHandle.LongLess(columnIndex, (long)value);
+            }
             else if (value is float)
+            {
                 queryHandle.FloatLess(columnIndex, (float)value);
+            }
             else if (value is double)
+            {
                 queryHandle.DoubleLess(columnIndex, (double)value);
+            }
             else if (value is DateTimeOffset)
+            {
                 queryHandle.TimestampTicksLess(columnIndex, (DateTimeOffset)value);
+            }
             else if (value is string || value is bool)
+            {
                 throw new Exception($"Unsupported type {value.GetType().Name}");
+            }
             else
+            {
                 throw new NotImplementedException();
+            }
         }
 
         private static void AddQueryLessThanOrEqual(QueryHandle queryHandle, string columnName, object value)
@@ -568,21 +670,37 @@ namespace Realms
             var columnIndex = queryHandle.GetColumnIndex(columnName);
 
             if (value is char)
+            {
                 queryHandle.IntLessEqual(columnIndex, (int)value);
+            }
             else if (value is int)
+            {
                 queryHandle.IntLessEqual(columnIndex, (int)value);
+            }
             else if (value is long)
+            {
                 queryHandle.LongLessEqual(columnIndex, (long)value);
+            }
             else if (value is float)
+            {
                 queryHandle.FloatLessEqual(columnIndex, (float)value);
+            }
             else if (value is double)
+            {
                 queryHandle.DoubleLessEqual(columnIndex, (double)value);
+            }
             else if (value is DateTimeOffset)
+            {
                 queryHandle.TimestampTicksLessEqual(columnIndex, (DateTimeOffset)value);
+            }
             else if (value is string || value is bool)
+            {
                 throw new Exception($"Unsupported type {value.GetType().Name}");
+            }
             else
+            {
                 throw new NotImplementedException();
+            }
         }
 
         private static void AddQueryGreaterThan(QueryHandle queryHandle, string columnName, object value)
@@ -590,21 +708,37 @@ namespace Realms
             var columnIndex = queryHandle.GetColumnIndex(columnName);
 
             if (value is char)
+            {
                 queryHandle.IntGreater(columnIndex, (int)value);
+            }
             else if (value is int)
+            {
                 queryHandle.IntGreater(columnIndex, (int)value);
+            }
             else if (value is long)
+            {
                 queryHandle.LongGreater(columnIndex, (long)value);
+            }
             else if (value is float)
+            {
                 queryHandle.FloatGreater(columnIndex, (float)value);
+            }
             else if (value is double)
+            {
                 queryHandle.DoubleGreater(columnIndex, (double)value);
+            }
             else if (value is DateTimeOffset)
+            {
                 queryHandle.TimestampTicksGreater(columnIndex, (DateTimeOffset)value);
+            }
             else if (value is string || value is bool)
+            {
                 throw new Exception($"Unsupported type {value.GetType().Name}");
+            }
             else
+            {
                 throw new NotImplementedException();
+            }
         }
 
         private static void AddQueryGreaterThanOrEqual(QueryHandle queryHandle, string columnName, object value)
@@ -612,21 +746,37 @@ namespace Realms
             var columnIndex = queryHandle.GetColumnIndex(columnName);
 
             if (value is char)
+            {
                 queryHandle.IntGreaterEqual(columnIndex, (int)value);
+            }
             else if (value is int)
+            {
                 queryHandle.IntGreaterEqual(columnIndex, (int)value);
+            }
             else if (value is long)
+            {
                 queryHandle.LongGreaterEqual(columnIndex, (long)value);
+            }
             else if (value is float)
+            {
                 queryHandle.FloatGreaterEqual(columnIndex, (float)value);
+            }
             else if (value is double)
+            {
                 queryHandle.DoubleGreaterEqual(columnIndex, (double)value);
+            }
             else if (value is DateTimeOffset)
+            {
                 queryHandle.TimestampTicksGreaterEqual(columnIndex, (DateTimeOffset)value);
+            }
             else if (value is string || value is bool)
+            {
                 throw new Exception($"Unsupported type {value.GetType().Name}");
+            }
             else
+            {
                 throw new NotImplementedException();
+            }
         }
 
         // strange as it may seem, this is also called for the LHS when simply iterating All<T>()
@@ -637,7 +787,9 @@ namespace Realms
             {
                 // assume constant nodes w/ IQueryables are table references
                 if (CoreQueryHandle != null)
+                {
                     throw new Exception("We already have a table...");
+                }
 
                 CoreQueryHandle = CreateQuery(results.ObjectSchema);
             }
@@ -660,6 +812,7 @@ namespace Realms
                 {
                 }
             }
+
             return c;
         }
 
@@ -680,6 +833,7 @@ namespace Realms
             {
                 queryHandle.SetHandle(NativeTable.Where(tableHandle));
             } // at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
+
             return queryHandle;
         }
 
@@ -693,8 +847,10 @@ namespace Realms
                     var leftName = m.Member.Name;
                     AddQueryEqual(CoreQueryHandle, leftName, rhs);
                 }
+
                 return m;
             }
+
             throw new NotSupportedException($"The member '{m.Member.Name}' is not supported");
         }
     }

@@ -84,7 +84,6 @@ namespace IntegrationTests
             Assert.That(c0, Is.EqualTo(expectFound));
         }
 
-
         // The following test cases exercise both Convert and Member RHS expressions
 
         [TestCase("Peter", 1)]
@@ -148,4 +147,3 @@ namespace IntegrationTests
         }
     }
 }
-

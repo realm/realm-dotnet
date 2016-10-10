@@ -81,7 +81,9 @@ namespace AssemblyToProcess
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class DefaultConstructorMissing : RealmObject
     {
-        public DefaultConstructorMissing(int parameter) { }
+        public DefaultConstructorMissing(int parameter)
+        {
+        }
 
         public int PropertyToEnsureOtherwiseHealthyClass { get; set; }
     }

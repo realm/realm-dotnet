@@ -92,7 +92,9 @@ namespace Realms
             var newRealmHandle = new UnownedRealmHandle();
 
             RuntimeHelpers.PrepareConstrainedRegions();
-            try { }
+            try
+            {
+            }
             finally
             {
                 oldRealmHandle.SetHandle(oldRealmPtr);
@@ -111,4 +113,3 @@ namespace Realms
         }
     }
 }
-

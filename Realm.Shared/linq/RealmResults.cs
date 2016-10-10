@@ -36,14 +36,17 @@ namespace Realms
     /// <typeparam name="T">Type of the RealmObject which is being returned.</typeparam>
     public class RealmResults<T> : IOrderedQueryable<T>, RealmResultsNativeHelper.Interface, IRealmResults
     {
-        public Type ElementType => typeof(T);
-        public Expression Expression { get; } = null; // null if _allRecords
-        private readonly RealmResultsProvider _provider = null;  // null if _allRecords
-        private readonly bool _allRecords = false;
+        private readonly RealmResultsProvider _provider;  // null if _allRecords
+        private readonly bool _allRecords;
         private readonly Realm _realm;
         private readonly RealmObject.Metadata _targetMetadata;
         private readonly List<NotificationCallback> _callbacks = new List<NotificationCallback>();
         private NotificationTokenHandle _notificationToken;
+        private ResultsHandle _resultsHandle;
+
+        public Type ElementType => typeof(T);
+
+        public Expression Expression { get; } // null if _allRecords
 
         /// <summary>
         /// The <see cref="Schema.ObjectSchema"/> that describes the type of item this collection can contain.
@@ -51,7 +54,6 @@ namespace Realms
         public Schema.ObjectSchema ObjectSchema => _targetMetadata.Schema;
 
         internal ResultsHandle ResultsHandle => _resultsHandle ?? (_resultsHandle = CreateResultsHandle());
-        private ResultsHandle _resultsHandle = null;
 
         public IQueryProvider Provider => _provider;
 
@@ -60,7 +62,10 @@ namespace Realms
             get
             {
                 if (index < 0)
+                {
                     throw new ArgumentOutOfRangeException();
+                }
+
                 var rowPtr = ResultsHandle.GetRow(index);
                 return (T)(object)_realm.MakeObjectForRow(_targetMetadata, rowPtr);
             }
@@ -110,7 +115,6 @@ namespace Realms
             Expression = expression ?? Expression.Constant(this);
             _targetMetadata = metadata;
             _allRecords = createdByAll;
-
         }
 
         internal RealmResults(Realm realm, RealmObject.Metadata metadata, bool createdByAll)
@@ -142,11 +146,7 @@ namespace Realms
             return new RealmResultsEnumerator<T>(_realm, ResultsHandle, ObjectSchema);
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return (IEnumerator)GetEnumerator();  // using our class generic type, just redirect the legacy get
-        }
-
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator(); // using our class generic type, just redirect the legacy get
 
         /// <summary>
         /// Fast count all objects of a given class, or in a RealmResults after casting.
@@ -255,7 +255,8 @@ namespace Realms
 
             RuntimeHelpers.PrepareConstrainedRegions();
             try
-            { }
+            {
+            }
             finally
             {
                 token.SetHandle(tokenHandle);

@@ -51,8 +51,16 @@ namespace Realms.Schema
 
         private ObjectSchema(string name, IDictionary<string, Property> properties)
         {
-            if (string.IsNullOrEmpty(name)) throw new ArgumentException("Object name cannot be empty", nameof(name));
-            if (properties == null) throw new ArgumentNullException(nameof(properties));
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentException("Object name cannot be empty", nameof(name));
+            }
+
+            if (properties == null)
+            {
+                throw new ArgumentNullException(nameof(properties));
+            }
+
             Contract.EndContractBlock();
 
             Name = name;
@@ -89,16 +97,27 @@ namespace Realms.Schema
         /// <param name="type">Type of a RealmObject descendant for which you want a schema.</param>
         public static ObjectSchema FromType(Type type)
         {
-            if (type == null) throw new ArgumentNullException(nameof(type));
-            if (type.BaseType != typeof(RealmObject)) throw new ArgumentException($"The class {type.FullName} must descend directly from RealmObject");
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
+            if (type.BaseType != typeof(RealmObject))
+            {
+                throw new ArgumentException($"The class {type.FullName} must descend directly from RealmObject");
+            }
+
             Contract.EndContractBlock();
 
             var builder = new Builder(type.Name);
             foreach (var property in type.GetProperties(BindingFlags.Instance | BindingFlags.DeclaredOnly | BindingFlags.NonPublic | BindingFlags.Public))
             {
-                if (property.GetCustomAttribute<WovenPropertyAttribute>() == null) continue;
+                if (property.GetCustomAttribute<WovenPropertyAttribute>() == null)
+                {
+                    continue;
+                }
 
-                bool isPrimaryKey = property.GetCustomAttribute<PrimaryKeyAttribute>() != null;
+                var isPrimaryKey = property.GetCustomAttribute<PrimaryKeyAttribute>() != null;
                 var schemaProperty = new Property
                 {
                     Name = property.GetCustomAttribute<MapToAttribute>()?.Mapping ?? property.Name,
@@ -130,7 +149,11 @@ namespace Realms.Schema
 
             public Builder(string name)
             {
-                if (string.IsNullOrEmpty(name)) throw new ArgumentException("Object name cannot be empty", nameof(name));
+                if (string.IsNullOrEmpty(name))
+                {
+                    throw new ArgumentException("Object name cannot be empty", nameof(name));
+                }
+
                 Contract.EndContractBlock();
 
                 Name = name;
@@ -148,6 +171,7 @@ namespace Realms.Schema
                     throw new InvalidOperationException(
                         $"No properties in {Name}, has linker stripped it? See https://realm.io/docs/xamarin/latest/#linker-stripped-schema");
                 }
+
                 Contract.EndContractBlock();
 
                 return new ObjectSchema(Name, this.ToDictionary(p => p.Name));
@@ -155,4 +179,3 @@ namespace Realms.Schema
         }
     }
 }
-

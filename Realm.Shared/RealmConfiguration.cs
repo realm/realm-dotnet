@@ -21,10 +21,8 @@ using System.IO;
 using System.Linq;
 
 // see internals/RealmConfigurations.md for a detailed diagram of how this interacts with the ObjectStore configuration
-
 namespace Realms
 {
-
     /// <summary>
     /// Realm configuration specifying settings that affect your Realm behaviour.
     /// </summary>
@@ -75,12 +73,17 @@ namespace Realms
             {
                 return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), DefaultRealmName);
             }
+
             if (!Path.IsPathRooted(optionalPath))
             {
                 optionalPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), optionalPath);
             }
+
             if (optionalPath[optionalPath.Length - 1] == Path.DirectorySeparatorChar)   // ends with dir sep
+            {
                 optionalPath = Path.Combine(optionalPath, DefaultRealmName);
+            }
+
             return optionalPath;
         }
 
@@ -113,11 +116,18 @@ namespace Realms
         /// <value>Full 64byte (512bit) key for AES-256 encryption.</value>
         public byte[] EncryptionKey
         {
-            get { return _encryptionKey; }
+            get
+            {
+                return _encryptionKey;
+            }
+
             set
             {
                 if (value != null && value.Length != 64)
+                {
                     throw new FormatException("EncryptionKey must be 64 bytes");
+                }
+
                 _encryptionKey = value;
             }
         }
@@ -145,21 +155,28 @@ namespace Realms
         /// <param name="newConfigPath">Path to the realm, must be a valid full path for the current platform, relative subdir, or just filename.</param>
         public RealmConfiguration ConfigWithPath(string newConfigPath)
         {
-            RealmConfiguration ret = (RealmConfiguration)MemberwiseClone();
+            var ret = (RealmConfiguration)MemberwiseClone();
             string candidatePath;  // may need canonicalising
             if (!string.IsNullOrEmpty(newConfigPath))
             {
                 if (Path.IsPathRooted(newConfigPath))
+                {
                     candidatePath = newConfigPath;
+                }
                 else
                 {  // append a relative path, maybe just a relative subdir needing filename
                     var usWithoutFile = Path.GetDirectoryName(DatabasePath);
                     if (newConfigPath[newConfigPath.Length - 1] == Path.DirectorySeparatorChar) // ends with separator
+                    {
                         newConfigPath = Path.Combine(newConfigPath, DefaultRealmName);  // add filename to relative subdir
+                    }
+
                     candidatePath = Path.Combine(usWithoutFile, newConfigPath);
                 }
+
                 ret.DatabasePath = Path.GetFullPath(candidatePath);  // canonical version, removing embedded ../ and other relative artifacts
             }
+
             return ret;
         }
 
@@ -172,11 +189,12 @@ namespace Realms
         public override bool Equals(object obj)
         {
             if (obj == null)
+            {
                 return false;
+            }
+
             return Equals(obj as RealmConfiguration);
         }
-
-
 
         /// <summary>
         /// Determines whether the specified RealmConfiguration is equal to the current RealmConfiguration.
@@ -187,14 +205,19 @@ namespace Realms
         public bool Equals(RealmConfiguration rhs)
         {
             if (rhs == null)
+            {
                 return false;
+            }
+
             if (GC.ReferenceEquals(this, rhs))
+            {
                 return true;
+            }
+
             return ShouldDeleteIfMigrationNeeded == rhs.ShouldDeleteIfMigrationNeeded &&
                 DatabasePath == rhs.DatabasePath &&
                 ((EncryptionKey == null && rhs.EncryptionKey == null) || EncryptionKey.SequenceEqual(rhs.EncryptionKey));
         }
-
 
         /// <summary>
         /// Serves as a hash function for a RealmConfiguration based on its path.
@@ -205,7 +228,5 @@ namespace Realms
         {
             return DatabasePath.GetHashCode();
         }
-
-    }  // class RealmConfiguration
-}  // namespace Realms
-
+    }
+}

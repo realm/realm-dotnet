@@ -28,9 +28,13 @@ public class ModuleWeaver
 {
     // Will log an informational message to MSBuild - see https://github.com/Fody/Fody/wiki/ModuleWeaver for details
     public Action<string> LogDebug { get; set; } = m => { };  // MessageImportance.Normal, included in verbosity Detailed
+
     public Action<string> LogInfo { get; set; } = m => { };  // MessageImportance.High
+
     public Action<string, SequencePoint> LogWarningPoint { get; set; } = (m, p) => { };
+
     public Action<string> LogError { get; set; } = m => { };
+
     public Action<string, SequencePoint> LogErrorPoint { get; set; } = (m, p) => { };
 
     // An instance of Mono.Cecil.ModuleDefinition for processing
@@ -292,7 +296,6 @@ public class ModuleWeaver
         Debug.WriteLine(string.Empty);
     }
 
-
     private bool WeaveProperty(PropertyDefinition prop, TypeDefinition type, Dictionary<string, Tuple<MethodReference, MethodReference>> methodTable,
                                bool typeImplementsPropertyChanged, EventDefinition propChangedEventDefinition,
                                FieldDefinition propChangedFieldDefinition, out FieldReference backingField)
@@ -302,7 +305,9 @@ public class ModuleWeaver
         var columnName = prop.Name;
         var mapToAttribute = prop.CustomAttributes.FirstOrDefault(a => a.AttributeType.Name == "MapToAttribute");
         if (mapToAttribute != null)
+        {
             columnName = (string)mapToAttribute.ConstructorArguments[0].Value;
+        }
 
         backingField = GetBackingField(prop);
         var isIndexed = prop.CustomAttributes.Any(a => a.AttributeType.Name == "IndexedAttribute");
@@ -326,16 +331,22 @@ public class ModuleWeaver
         if (!prop.IsAutomatic())
         {
             if (prop.PropertyType.Resolve().BaseType.IsSameAs(_realmObject))
+            {
                 LogWarningPoint(
-                    $"{type.Name}.{columnName} is not an automatic property but its type is a RealmObject which normally indicates a relationship",
-                    sequencePoint);
+                   $"{type.Name}.{columnName} is not an automatic property but its type is a RealmObject which normally indicates a relationship",
+                   sequencePoint);
+            }
+
             return false;
         }
+
         if (_typeTable.ContainsKey(prop.PropertyType.FullName))
         {
             // If the property is automatic but doesn't have a setter, we should still ignore it.
             if (prop.SetMethod == null)
+            {
                 return false;
+            }
 
             var typeId = prop.PropertyType.FullName + (isPrimaryKey ? " unique" : string.Empty);
             if (!methodTable.ContainsKey(typeId))
@@ -370,6 +381,7 @@ public class ModuleWeaver
                     sequencePoint);
                 return false;
             }
+
             var concreteListType = new GenericInstanceType(_system_IList) { GenericArguments = { elementType } };
             var listConstructor = concreteListType.Resolve().GetConstructors().Single(c => c.IsPublic && c.Parameters.Count == 0);
             var concreteListConstructor = listConstructor.MakeHostInstanceGeneric(elementType);
@@ -380,6 +392,7 @@ public class ModuleWeaver
             {
                 backingDef.Attributes &= ~FieldAttributes.InitOnly;  // without a set; auto property has this flag we must clear
             }
+
             ReplaceListGetter(prop, backingField, columnName,
                 new GenericInstanceMethod(_genericGetListValueReference) { GenericArguments = { elementType } },
                              ModuleDefinition.ImportReference(concreteListConstructor));
@@ -408,12 +421,12 @@ public class ModuleWeaver
                 return false;
             }
 
+            // with casting in the _realmObject methods, should just work
             ReplaceGetter(prop, columnName,
                 new GenericInstanceMethod(_genericGetObjectValueReference) { GenericArguments = { prop.PropertyType } });
             ReplaceSetter(prop, backingField, columnName,
                 new GenericInstanceMethod(_genericSetObjectValueReference) { GenericArguments = { prop.PropertyType } },
                 typeImplementsPropertyChanged, propChangedEventDefinition, propChangedFieldDefinition);
-            // with casting in the _realmObject methods, should just work
         }
         else if (prop.PropertyType.FullName == "System.DateTime")
         {
@@ -451,17 +464,23 @@ public class ModuleWeaver
     private static TypeDefinition LookupType(string typeName, params AssemblyDefinition[] assemblies)
     {
         if (typeName == null)
+        {
             throw new ArgumentNullException(nameof(typeName));
+        }
 
         if (assemblies.Length == 0)
+        {
             throw new ArgumentException("One or more assemblies must be specified to look up type: " + typeName, nameof(assemblies));
+        }
 
         foreach (var assembly in assemblies)
         {
             var type = assembly?.MainModule.Types.FirstOrDefault(x => x.Name == typeName);
 
             if (type != null)
+            {
                 return type;
+            }
         }
 
         throw new ApplicationException("Unable to find type: " + typeName);
@@ -472,7 +491,9 @@ public class ModuleWeaver
         var method = typeDefinition.Methods.FirstOrDefault(x => x.Name == methodName);
 
         if (method == null)
+        {
             throw new ApplicationException("Unable to find method: " + methodName);
+        }
 
         return method;
     }
@@ -645,7 +666,9 @@ public class ModuleWeaver
         ////   else base.SetValue<T>(<columnName>, value);
 
         if (setValueReference == null)
+        {
             throw new ArgumentNullException(nameof(setValueReference));
+        }
 
         if (!weavePropertyChanged)
         {
@@ -664,19 +687,29 @@ public class ModuleWeaver
         else
         {
             if (propChangedEventDefinition == null)
+            {
                 throw new ArgumentNullException(nameof(propChangedEventDefinition));
+            }
 
             if (propChangedFieldDefinition == null)
+            {
                 throw new ArgumentNullException(nameof(propChangedFieldDefinition));
+            }
 
             if (_realmObjectIsManagedGetter == null)
+            {
                 throw new ArgumentNullException(nameof(_realmObjectIsManagedGetter));
+            }
 
             if (setValueReference == null)
+            {
                 throw new ArgumentNullException(nameof(setValueReference));
+            }
 
             if (_propChangedEventArgsConstructor == null)
+            {
                 throw new ArgumentNullException(nameof(_propChangedEventArgsConstructor));
+            }
 
             // Whilst we're only targetting auto-properties here, someone like PropertyChanged.Fody
             // may have already come in and rewritten our IL. Lets clear everything and start from scratch.
@@ -689,10 +722,14 @@ public class ModuleWeaver
             // To combat this, we'll check if the PropertyChanged assembly is available, and if so, attribute
             // the property such that PropertyChanged.Fody won't touch it.
             if (_propChangedDoNotNotifyAttributeConstructorDefinition != null)
+            {
                 prop.CustomAttributes.Add(new CustomAttribute(_propChangedDoNotNotifyAttributeConstructorDefinition));
+            }
 
             if (_system_Boolean == null)
+            {
                 throw new ApplicationException("System_Boolean is null");
+            }
 
             prop.SetMethod.Body.Variables.Add(new VariableDefinition("handler", _propChangedEventHandlerReference));
             prop.SetMethod.Body.Variables.Add(new VariableDefinition(_system_Boolean));
@@ -881,6 +918,7 @@ public class ModuleWeaver
             il.Emit(OpCodes.Newobj, objectConstructor);
             il.Emit(OpCodes.Ret);
         }
+
         helperType.Methods.Add(createInstance);
 
         var copyToRealm = new MethodDefinition("CopyToRealm", MethodAttributes.Public | MethodAttributes.Final | MethodAttributes.HideBySig | MethodAttributes.Virtual | MethodAttributes.NewSlot, ModuleDefinition.TypeSystem.Void);
@@ -1042,6 +1080,7 @@ public class ModuleWeaver
 
             il.Emit(OpCodes.Ret);
         }
+
         copyToRealm.CustomAttributes.Add(new CustomAttribute(_preserveAttributeConstructor));
         helperType.Methods.Add(copyToRealm);
 

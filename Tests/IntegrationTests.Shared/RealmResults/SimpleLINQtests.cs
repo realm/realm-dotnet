@@ -43,7 +43,6 @@ namespace IntegrationTests
             Assert.That(s0.Count(), Is.EqualTo(1));
             Assert.That(s0[0].Score, Is.EqualTo(42.42f));
 
-
             var s1 = _realm.All<Person>().Where(p => p.Longitude < -70.0 && p.Longitude > -90.0).ToList();
             Assert.That(s1[0].Email, Is.EqualTo("john@doe.com"));
 
@@ -55,7 +54,6 @@ namespace IntegrationTests
             var s3 = _realm.All<Person>().Where(p => p.Email != "");
             Assert.That(s3.Count(), Is.EqualTo(3));
         }
-
 
         [Test]
         public void CountWithNot()
@@ -72,7 +70,6 @@ namespace IntegrationTests
             var countNotComplex = _realm.All<Person>().Where(p => !(p.Longitude < -70.0 && p.Longitude > -90.0)).Count();
             Assert.That(countNotComplex, Is.EqualTo(2));
         }
-
 
         [Test]
         public void CountFoundItems()
@@ -94,7 +91,6 @@ namespace IntegrationTests
             Assert.That(c4, Is.EqualTo(2));
         }
 
-
         // added to pick up a nasty side-effect from casting
         [Test]
         public void CountFoundWithCasting()
@@ -104,7 +100,6 @@ namespace IntegrationTests
             var c0 = r1.Count();  // invokes RealmResults<T>.Count() shortcut method
             Assert.That(c0, Is.EqualTo(1));
         }
-
 
         [Test]
         public void CountFails()
@@ -118,7 +113,6 @@ namespace IntegrationTests
             var c3 = _realm.All<Person>().Where(p => p.FirstName == "Samantha").Count();
             Assert.That(c3, Is.EqualTo(0));
         }
-
 
         // Extension method rather than SQL-style LINQ
         // Also tests the Count on results, ElementOf, First and Single methods
@@ -327,7 +321,6 @@ namespace IntegrationTests
             var equality = _realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty == 'A').ToArray();
             Assert.That(equality.Select(p => p.CharProperty), Is.EquivalentTo(new[] { 'A' }));
 
-
             var inequality = _realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty != 'c').ToArray();
             Assert.That(inequality.Select(p => p.CharProperty), Is.EquivalentTo(new[] { 'A', 'B', 'a' }));
 
@@ -350,7 +343,6 @@ namespace IntegrationTests
             Assert.That(missing.Length, Is.EqualTo(0));
         }
 
-
         [Test]
         public void AnySucceeds()
         {
@@ -360,7 +352,6 @@ namespace IntegrationTests
             Assert.That(_realm.All<Person>().Where(p => p.FirstName == "John").Any());
         }
 
-
         [Test]
         public void AnyFails()
         {
@@ -368,7 +359,6 @@ namespace IntegrationTests
             Assert.False(_realm.All<Person>().Where(p => p.Score > 50000).Any());
             Assert.False(_realm.All<Person>().Where(p => p.FirstName == "Samantha").Any());
         }
-
 
         [Test]
         public void SingleFailsToFind()
@@ -379,7 +369,6 @@ namespace IntegrationTests
             Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().Single(p => p.FirstName == "Samantha"));
         }
 
-
         [Test]
         public void SingleFindsTooMany()
         {
@@ -387,7 +376,6 @@ namespace IntegrationTests
             Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().Single(p => p.Score != 100.0f));
             Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().Single(p => p.FirstName == "John"));
         }
-
 
         [Test]
         public void SingleWorks()
@@ -402,7 +390,6 @@ namespace IntegrationTests
             Assert.That(s2.FirstName, Is.EqualTo("Peter"));
         }
 
-
         [Test]
         public void SingleOrDefaultWorks()
         {
@@ -416,7 +403,6 @@ namespace IntegrationTests
             Assert.That(s2.FirstName, Is.EqualTo("Peter"));
         }
 
-
         [Test]
         public void SingleOrDefaultReturnsDefault()
         {
@@ -427,7 +413,6 @@ namespace IntegrationTests
             Assert.That(expectedDef, Is.Null);
         }
 
-
         [Test]
         public void FirstFailsToFind()
         {
@@ -435,7 +420,6 @@ namespace IntegrationTests
             Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().Where(p => p.Latitude > 100).First());
             Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().First(p => p.FirstName == "Samantha"));
         }
-
 
         [Test]
         public void FirstWorks()
@@ -450,7 +434,6 @@ namespace IntegrationTests
             Assert.That(s2.FirstName, Is.EqualTo("John"));
         }
 
-
         [Test]
         public void FirstOrDefaultWorks()
         {
@@ -464,7 +447,6 @@ namespace IntegrationTests
             Assert.That(s2.FirstName, Is.EqualTo("John"));
         }
 
-
         [Test]
         public void FirstOrDefaultReturnsDefault()
         {
@@ -475,7 +457,6 @@ namespace IntegrationTests
             Assert.That(expectedDef, Is.Null);
         }
 
-
         [Test]
         public void LastFailsToFind()
         {
@@ -483,7 +464,6 @@ namespace IntegrationTests
             Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().Where(p => p.Latitude > 100).Last());
             Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().Last(p => p.LastName == "Samantha"));
         }
-
 
         [Test]
         public void LastWorks()
@@ -498,7 +478,6 @@ namespace IntegrationTests
             Assert.That(s2.FirstName, Is.EqualTo("John"));  // order not guaranteed in two items but know they match this
         }
 
-
         [Test]
         public void LastOrDefaultWorks()
         {
@@ -512,7 +491,6 @@ namespace IntegrationTests
             Assert.That(s2.FirstName, Is.EqualTo("John"));  // order not guaranteed in two items but know they match this
         }
 
-
         [Test]
         public void LastOrDefaultReturnsDefault()
         {
@@ -523,7 +501,6 @@ namespace IntegrationTests
             Assert.That(expectedDef, Is.Null);
         }
 
-
         [Test]
         public void ElementAtOutOfRange()
         {
@@ -533,7 +510,6 @@ namespace IntegrationTests
             Assert.Throws<ArgumentOutOfRangeException>(() => _realm.All<Person>().ElementAt(10));
             Assert.Throws<ArgumentOutOfRangeException>(() => _realm.All<Person>().ElementAt(-1));
         }
-
 
         [Test]
         public void ElementAtInRange()
@@ -551,7 +527,6 @@ namespace IntegrationTests
             Assert.That(s3.FirstName, Is.EqualTo("Peter"));
         }
 
-
         [Test]
         public void ElementAtOrDefaultInRange()
         {
@@ -568,14 +543,12 @@ namespace IntegrationTests
             Assert.That(s3.FirstName, Is.EqualTo("Peter"));
         }
 
-
         [Test]
         public void ElementAtOrDefaultReturnsDefault()
         {
             var expectedDef = _realm.All<Person>().Where(p => p.FirstName == "Just Some Guy").ElementAtOrDefault(0);
             Assert.That(expectedDef, Is.Null);
         }
-
 
         // note that DefaultIfEmpty returns a collection of one item
         [Test, Explicit("Currently broken and hard to implement")]
@@ -594,7 +567,6 @@ namespace IntegrationTests
             Assert.That(expectedDef, Is.Null);
         }
 
-
         [Test]
         public void ChainedSearch()
         {
@@ -604,6 +576,5 @@ namespace IntegrationTests
             Assert.That(johnScorer.Score, Is.EqualTo(100.0f));
             Assert.That(johnScorer.FullName, Is.EqualTo("John Doe"));
         }
-
-    } // SimpleLINQtests
+    }
 }

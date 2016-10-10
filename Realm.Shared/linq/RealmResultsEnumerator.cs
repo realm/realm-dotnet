@@ -32,7 +32,6 @@ namespace Realms
         private Realm _realm;
         private readonly Schema.ObjectSchema _schema;
 
-
         internal RealmResultsEnumerator(Realm realm, ResultsHandle rh, Schema.ObjectSchema schema)
         {
             _realm = realm;
@@ -47,10 +46,7 @@ namespace Realms
         public T Current { get; private set; }
 
         // also needed - https://msdn.microsoft.com/en-us/library/s793z9y2.aspx
-        object IEnumerator.Current
-        {
-            get { return this.Current; }
-        }
+        object IEnumerator.Current => this.Current;
 
         /// <summary>
         ///  Move the iterator to the next related object, starting "before" the first object.
@@ -62,7 +58,9 @@ namespace Realms
         public bool MoveNext()
         {
             if (_enumeratingResults == null)
+            {
                 return false;
+            }
 
             ++_index;
             var rowPtr = _enumeratingResults.GetRow(_index);
@@ -75,7 +73,6 @@ namespace Realms
             Current = (T)(object)_realm.MakeObjectForRow(_schema.Name, rowPtr);
             return true;
         }
-
 
         /// <summary>
         /// Reset the iter to before the first object, so MoveNext will move to it.
@@ -93,4 +90,3 @@ namespace Realms
         }
     }
 }
-

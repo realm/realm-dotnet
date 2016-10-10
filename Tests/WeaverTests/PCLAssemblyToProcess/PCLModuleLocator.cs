@@ -21,5 +21,7 @@ namespace AssemblyToProcess
     /// <summary>
     /// This class serves as nothing but a way to locate the assembly in the weaver test.
     /// </summary>
-    public class PCLModuleLocator { }
+    public class PCLModuleLocator
+    {
+    }
 }

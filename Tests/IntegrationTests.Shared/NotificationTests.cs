@@ -80,7 +80,6 @@ namespace IntegrationTests.Shared
             Assert.That(wasNotified, "RealmChanged notification was not triggered");
         }
 
-
         [Test]
         public void ResultsShouldSendNotifications()
         {
@@ -175,7 +174,8 @@ namespace IntegrationTests.Shared
 
         public IEnumerable<TestCaseData> CollectionChangedTestCases()
         {
-            var cases = new object[][] {
+            var cases = new object[][] 
+            {
                 new object[] { new int[] { }, NotifyCollectionChangedAction.Add, new int[] { 1 } },
                 new object[] { new int[] { }, NotifyCollectionChangedAction.Add, new int[] { 1, 2, 3 } },
                 new object[] { new int[] { 1, 2, 3 }, NotifyCollectionChangedAction.Remove, new int[] { 1, 2, 3 } },

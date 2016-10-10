@@ -34,6 +34,7 @@ namespace IntegrationTests
             var config1 = new RealmConfiguration("ChangingVersion.realm");
             Realm.DeleteRealm(config1);  // ensure start clean
             var realm1 = Realm.GetInstance(config1);
+
             // new database doesn't push back a version number
             Assert.That(config1.SchemaVersion, Is.EqualTo(0));
             realm1.Close();
@@ -47,7 +48,6 @@ namespace IntegrationTests
             Assert.DoesNotThrow(() => realm2 = Realm.GetInstance(config2)); // same path, different version, should auto-migrate quietly
             Assert.That(realm2.Config.SchemaVersion, Is.EqualTo(99));
             realm2.Close();
-
         }
 
         [Test]

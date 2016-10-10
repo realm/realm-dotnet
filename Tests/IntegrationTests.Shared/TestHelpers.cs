@@ -66,7 +66,6 @@ namespace IntegrationTests
             File.Copy(Path.Combine(sourceDir, realmName), destPath, overwrite);
         }
 
-
         public static void RunEventLoop(TimeSpan duration)
         {
 #if __IOS__

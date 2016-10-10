@@ -15,7 +15,7 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
 using System;
 
 namespace Realms
@@ -28,4 +28,3 @@ namespace Realms
         }
     }
 }
-

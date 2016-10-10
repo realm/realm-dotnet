@@ -196,7 +196,6 @@ namespace Realms
                 [MarshalAs(UnmanagedType.LPArray), In]SortDescriptorBuilder.Clause.Marshalable[] sortClauses, IntPtr clauseCount,
                 [MarshalAs(UnmanagedType.LPArray), In]IntPtr[] flattenedColumnIndices,
                 out NativeException ex);
-
         }
 
         public QueryHandle(RealmHandle root) : base(root)

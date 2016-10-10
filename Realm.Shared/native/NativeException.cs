@@ -44,7 +44,9 @@ namespace Realms
         internal void ThrowIfNecessary(Func<RealmExceptionCodes, Exception> overrider = null)
         {
             if (type == RealmExceptionCodes.NoError)
+            {
                 return;
+            }
 
             throw Convert(overrider);
         }

@@ -34,7 +34,6 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "row_destroy", CallingConvention = CallingConvention.Cdecl)]
             public static extern void destroy(IntPtr rowHandle);
-
         }
 
         // keep this one even though warned that it is not used. It is in fact used by marshalling
@@ -60,10 +59,13 @@ namespace Realms
                     if (type == RealmExceptionCodes.RealmRowDetached)
                     {
                         if (Root.IsClosed)
+                        {
                             return new RealmClosedException("This object belongs to a closed realm.");
-                        else
-                            return new RealmInvalidObjectException("This object is detached. Was it deleted from the realm?");
+                        }
+
+                        return new RealmInvalidObjectException("This object is detached. Was it deleted from the realm?");
                     }
+
                     return null;
                 });
                 return result;

@@ -18,12 +18,11 @@
 
 // PROXY VERSION OF CLASS USED IN PCL FOR BAIT AND SWITCH PATTERN 
 
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
-// using System.Runtime.ConstrainedExecution;
+//// using System.Runtime.ConstrainedExecution;
 
 namespace Realms
 {
@@ -76,7 +75,7 @@ namespace Realms
         /// <param name="config">Optional configuration.</param>
         /// <returns>A realm instance.</returns>
         /// <exception cref="RealmFileAccessErrorException">Throws error if the filesystem has an error preventing file creation.</exception>
-        // [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+        //// [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         public static Realm GetInstance(RealmConfiguration config = null)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
@@ -103,16 +102,14 @@ namespace Realms
         /// <returns>True if closed.</returns>
         public bool IsClosed => false;
 
-
         /// <summary>
         ///  Closes the Realm if not already closed. Safe to call repeatedly.
         /// </summary>
-        // [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+        //// [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         public void Close()
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }
-
 
         /// <summary>
         ///  Dispose automatically closes the Realm if not already closed.
@@ -121,7 +118,6 @@ namespace Realms
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }
-
 
         /// <summary>
         /// Generic override determines whether the specified <see cref="System.Object"/> is equal to the current Realm.
@@ -134,7 +130,6 @@ namespace Realms
             return false;
         }
 
-
         /// <summary>
         /// Determines whether the specified Realm is equal to the current Realm.
         /// </summary>
@@ -145,7 +140,6 @@ namespace Realms
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return false;
         }
-
 
         /// <summary>
         /// Determines whether this instance is the same core instance as the specified rhs.
@@ -161,7 +155,6 @@ namespace Realms
             return false;
         }
 
-
         /// <summary>
         /// Serves as a hash function for a Realm based on the core instance.
         /// </summary>
@@ -173,7 +166,6 @@ namespace Realms
             return 0;
         }
 
-
         /// <summary>
         ///  Deletes all the files associated with a realm. Hides knowledge of the auxiliary filenames from the programmer.
         /// </summary>
@@ -182,7 +174,6 @@ namespace Realms
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }
-
 
         /// <summary>
         /// Factory for a managed object in a realm. Only valid within a Write transaction.
@@ -224,7 +215,6 @@ namespace Realms
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }
-
 
         /// <summary>
         /// Factory for a write Transaction. Essential object to create scope for updates.
@@ -304,7 +294,6 @@ namespace Realms
             return false;
         }
 
-
         /// <summary>
         /// Extract an iterable set of objects for direct use or further query.
         /// </summary>
@@ -328,7 +317,6 @@ namespace Realms
             return null;
         }
 
-
         /// <summary>
         /// Fast lookup of an object from a class which has a PrimaryKey property.
         /// </summary>
@@ -341,7 +329,6 @@ namespace Realms
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return null;
         }
-
 
         /// <summary>
         /// Fast lookup of an object from a class which has a PrimaryKey property.
@@ -356,7 +343,6 @@ namespace Realms
             return null;
         }
 
-
         /// <summary>
         /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.
         /// </summary>
@@ -369,7 +355,6 @@ namespace Realms
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return null;
         }
-
 
         /// <summary>
         /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.

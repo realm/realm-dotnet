@@ -67,7 +67,6 @@ namespace IntegrationTests.Shared
             Assert.That(allPeople, Is.EquivalentTo(new List<Person> { p1, p3 }));
         }
 
-
         [Test]
         public void RemoveOutsideTransactionShouldFail()
         {
@@ -146,7 +145,6 @@ namespace IntegrationTests.Shared
             // Assert
             Assert.That(_realm.All<Person>().Count(), Is.EqualTo(0));
             Assert.That(_realm.All<AllTypesObject>().Count(), Is.EqualTo(0));
-
         }
     }
 }

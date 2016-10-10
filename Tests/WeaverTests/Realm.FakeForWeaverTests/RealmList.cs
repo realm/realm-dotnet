@@ -19,9 +19,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Realms
 {
@@ -32,10 +29,7 @@ namespace Realms
             throw new NotImplementedException();
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         public void Add(T item)
         {
@@ -63,7 +57,9 @@ namespace Realms
         }
 
         public int Count { get; }
+
         public bool IsReadOnly { get; }
+
         public int IndexOf(T item)
         {
             throw new NotImplementedException();
@@ -81,8 +77,15 @@ namespace Realms
 
         public T this[int index]
         {
-            get { throw new NotImplementedException(); }
-            set { throw new NotImplementedException(); }
+            get
+            {
+                throw new NotImplementedException();
+            }
+
+            set
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

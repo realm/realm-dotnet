@@ -79,7 +79,10 @@ namespace Realms
         {
             var config = RealmConfiguration.DefaultConfiguration;
             if (!string.IsNullOrEmpty(databasePath))
+            {
                 config = config.ConfigWithPath(databasePath);
+            }
+
             return GetInstance(config);
         }
 
@@ -139,7 +142,10 @@ namespace Realms
             }
 
             RuntimeHelpers.PrepareConstrainedRegions();
-            try { /* Retain handle in a constrained execution region */ }
+            try
+            {
+                /* Retain handle in a constrained execution region */
+            }
             finally
             {
                 srHandle.SetHandle(srPtr);
@@ -178,23 +184,30 @@ namespace Realms
             {
                 var wovenAtt = schema.Type.GetCustomAttribute<WovenAttribute>();
                 if (wovenAtt == null)
+                {
                     throw new RealmException($"Fody not properly installed. {schema.Type.FullName} is a RealmObject but has not been woven.");
+                }
+
                 helper = (Weaving.IRealmObjectHelper)Activator.CreateInstance(wovenAtt.HelperType);
             }
             else
             {
                 helper = Dynamic.DynamicRealmObjectHelper.Instance;
             }
+
             // build up column index in a loop so can spot and cache primary key index on the way
             var initColumnMap = new Dictionary<string, IntPtr>();
-            int initPrimaryKeyIndex = -1;
+            var initPrimaryKeyIndex = -1;
             foreach (var prop in schema)
             {
                 var colIndex = NativeTable.GetColumnIndex(table, prop.Name);
                 initColumnMap.Add(prop.Name, colIndex);
                 if (prop.IsPrimaryKey)
+                {
                     initPrimaryKeyIndex = (int)colIndex;
+                }
             }
+
             return new RealmObject.Metadata
             {
                 Table = table,
@@ -238,8 +251,7 @@ namespace Realms
 
         private void NotifyChanged(EventArgs e)
         {
-            if (_realmChanged != null)
-                _realmChanged(this, e);
+            _realmChanged?.Invoke(this, e);
         }
 
         /// <summary>
@@ -247,7 +259,6 @@ namespace Realms
         /// </summary>
         /// <returns>True if closed.</returns>
         public bool IsClosed => SharedRealmHandle.IsClosed;
-
 
         /// <summary>
         /// Closes the Realm if not already closed. Safe to call repeatedly.
@@ -257,7 +268,9 @@ namespace Realms
         public void Close()
         {
             if (IsClosed)
+            {
                 return;
+            }
 
             Dispose();
         }
@@ -279,7 +292,9 @@ namespace Realms
         private void Dispose(bool disposing)
         {
             if (IsClosed)
+            {
                 throw new ObjectDisposedException(nameof(Realm));
+            }
 
             if (disposing && !(SharedRealmHandle is UnownedRealmHandle))
             {
@@ -296,14 +311,12 @@ namespace Realms
             }
         }
 
-
         /// <summary>
         /// Generic override determines whether the specified <see cref="System.Object"/> is equal to the current Realm.
         /// </summary>
         /// <param name="obj">The <see cref="System.Object"/> to compare with the current Realm.</param>
         /// <returns><c>true</c> if the Realms are functionally equal.</returns>
         public override bool Equals(object obj) => Equals(obj as Realm);
-
 
         /// <summary>
         /// Determines whether the specified Realm is equal to the current Realm.
@@ -313,12 +326,17 @@ namespace Realms
         public bool Equals(Realm rhs)
         {
             if (rhs == null)
+            {
                 return false;
+            }
+
             if (ReferenceEquals(this, rhs))
+            {
                 return true;
+            }
+
             return Config.Equals(rhs.Config) && IsClosed == rhs.IsClosed;
         }
-
 
         /// <summary>
         /// Determines whether this instance is the same core instance as the specified rhs.
@@ -333,7 +351,6 @@ namespace Realms
             return SharedRealmHandle.IsSameInstance(rhs.SharedRealmHandle);
         }
 
-
         /// <summary>
         /// Serves as a hash function for a Realm based on the core instance.
         /// </summary>
@@ -343,7 +360,6 @@ namespace Realms
         {
             return (int)SharedRealmHandle.DangerousGetHandle();
         }
-
 
         /// <summary>
         ///  Deletes all the files associated with a realm. Hides knowledge of the auxiliary filenames from the programmer.
@@ -366,7 +382,6 @@ namespace Realms
             }
         }
 
-
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         private TableHandle GetTable(Schema.ObjectSchema schema)
         {
@@ -374,12 +389,16 @@ namespace Realms
             var tableName = schema.Name;
 
             RuntimeHelpers.PrepareConstrainedRegions();
-            try { /* Retain handle in a constrained execution region */ }
+            try
+            {
+                /* Retain handle in a constrained execution region */
+            }
             finally
             {
                 var tablePtr = SharedRealmHandle.GetTable(tableName);
                 result.SetHandle(tablePtr);
             }
+
             return result;
         }
 
@@ -395,7 +414,9 @@ namespace Realms
             RealmObject.Metadata metadata;
             var ret = CreateObject(typeof(T).Name, out metadata);
             if (typeof(T) != metadata.Schema.Type)
+            {
                 throw new ArgumentException($"The type {typeof(T).FullName} does not match the original type the schema was created for - {metadata.Schema.Type?.FullName}");
+            }
 
             return (T)ret;
         }
@@ -418,10 +439,14 @@ namespace Realms
         private RealmObject CreateObject(string className, out RealmObject.Metadata metadata)
         {
             if (!IsInTransaction)
+            {
                 throw new RealmOutsideTransactionException("Cannot create Realm object outside write transactions");
+            }
 
             if (!Metadata.TryGetValue(className, out metadata))
+            {
                 throw new ArgumentException($"The class {className} is not in the limited set of classes for this realm");
+            }
 
             var result = metadata.Helper.CreateInstance();
 
@@ -432,32 +457,27 @@ namespace Realms
             return result;
         }
 
-
         internal RealmObject MakeObjectForRow(RealmObject.Metadata metadata, IntPtr rowPtr)
         {
             return MakeObjectForRow(metadata, CreateRowHandle(rowPtr, SharedRealmHandle));
         }
-
 
         internal RealmObject MakeObjectForRow(string className, IntPtr rowPtr)
         {
             return MakeObjectForRow(Metadata[className], CreateRowHandle(rowPtr, SharedRealmHandle));
         }
 
-
         internal RealmObject MakeObjectForRow(string className, RowHandle row)
         {
             return MakeObjectForRow(Metadata[className], row);
         }
 
-
         internal RealmObject MakeObjectForRow(RealmObject.Metadata metadata, RowHandle row)
         {
-            RealmObject ret = metadata.Helper.CreateInstance();
+            var ret = metadata.Helper.CreateInstance();
             ret._Manage(this, row, metadata);
             return ret;
         }
-
 
         internal ResultsHandle MakeResultsForTable(RealmObject.Metadata metadata)
         {
@@ -465,17 +485,20 @@ namespace Realms
             return CreateResultsHandle(resultsPtr);
         }
 
-
         internal ResultsHandle MakeResultsForQuery(QueryHandle builtQuery, SortDescriptorBuilder optionalSortDescriptorBuilder)
         {
             var resultsPtr = IntPtr.Zero;
             if (optionalSortDescriptorBuilder == null)
+            {
                 resultsPtr = builtQuery.CreateResults(SharedRealmHandle);
+            }
             else
+            {
                 resultsPtr = builtQuery.CreateSortedResults(SharedRealmHandle, optionalSortDescriptorBuilder);
+            }
+
             return CreateResultsHandle(resultsPtr);
         }
-
 
         internal SortDescriptorBuilder CreateSortDescriptorForTable(RealmObject.Metadata metadata)
         {
@@ -493,19 +516,24 @@ namespace Realms
         public void Manage<T>(T obj) where T : RealmObject
         {
             if (obj == null)
+            {
                 throw new ArgumentNullException(nameof(obj));
+            }
 
             if (obj.IsManaged)
             {
                 if (obj.Realm.SharedRealmHandle == this.SharedRealmHandle)
+                {
                     throw new RealmObjectAlreadyManagedByRealmException("The object is already managed by this realm");
+                }
 
                 throw new RealmObjectManagedByAnotherRealmException("Cannot start to manage an object with a realm when it's already managed by another realm");
             }
 
-
             if (!IsInTransaction)
+            {
                 throw new RealmOutsideTransactionException("Cannot start managing a Realm object outside write transactions");
+            }
 
             var metadata = Metadata[typeof(T).Name];
             var tableHandle = metadata.Table;
@@ -523,14 +551,17 @@ namespace Realms
             var resultsHandle = new ResultsHandle();
 
             RuntimeHelpers.PrepareConstrainedRegions();
-            try { /* Retain handle in a constrained execution region */ }
+            try
+            {
+                /* Retain handle in a constrained execution region */
+            }
             finally
             {
                 resultsHandle.SetHandle(resultsPtr);
             }
+
             return resultsHandle;
         }
-
 
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         internal static RowHandle CreateRowHandle(IntPtr rowPtr, SharedRealmHandle sharedRealmHandle)
@@ -538,11 +569,15 @@ namespace Realms
             var rowHandle = new RowHandle(sharedRealmHandle);
 
             RuntimeHelpers.PrepareConstrainedRegions();
-            try { /* Retain handle in a constrained execution region */ }
+            try
+            {
+                /* Retain handle in a constrained execution region */
+            }
             finally
             {
                 rowHandle.SetHandle(rowPtr);
             }
+
             return rowHandle;
         }
 
@@ -551,7 +586,7 @@ namespace Realms
         /// </summary>
         /// <example>
         /// using (var trans = myrealm.BeginWrite()) { 
-        ///     var rex = myrealm.CreateObject<Dog>();
+        ///     var rex = myrealm.CreateObject&lt;Dog&gt;();
         ///     rex.Name = "Rex";
         ///     trans.Commit();
         /// }
@@ -574,7 +609,7 @@ namespace Realms
         /// <example>
         /// realm.Write(() => 
         /// {
-        ///     d = myrealm.CreateObject<Dog>();
+        ///     d = myrealm.CreateObject&lt;Dog&gt;();
         ///     d.Name = "Eddie";
         ///     d.Age = 5;
         /// });
@@ -656,7 +691,9 @@ namespace Realms
             var type = typeof(T);
             RealmObject.Metadata metadata;
             if (!Metadata.TryGetValue(type.Name, out metadata) || metadata.Schema.Type != type)
+            {
                 throw new ArgumentException($"The class {type.Name} is not in the limited set of classes for this realm");
+            }
 
             return new RealmResults<T>(this, metadata, true);
         }
@@ -671,11 +708,12 @@ namespace Realms
         {
             RealmObject.Metadata metadata;
             if (!Metadata.TryGetValue(className, out metadata))
+            {
                 throw new ArgumentException($"The class {className} is not in the limited set of classes for this realm");
+            }
 
             return new RealmResults<dynamic>(this, metadata, true);
         }
-
 
         #region Quick ObjectForPrimaryKey
 
@@ -691,10 +729,12 @@ namespace Realms
             var metadata = Metadata[typeof(T).Name];
             var rowPtr = NativeTable.RowForPrimaryKey(metadata.Table, metadata.PrimaryKeyColumnIndex, id);
             if (rowPtr == IntPtr.Zero)
+            {
                 return null;
+            }
+
             return (T)MakeObjectForRow(metadata, rowPtr);
         }
-
 
         /// <summary>
         /// Fast lookup of an object from a class which has a PrimaryKey property.
@@ -708,10 +748,12 @@ namespace Realms
             var metadata = Metadata[typeof(T).Name];
             var rowPtr = NativeTable.RowForPrimaryKey(metadata.Table, metadata.PrimaryKeyColumnIndex, id);
             if (rowPtr == IntPtr.Zero)
+            {
                 return null;
+            }
+
             return (T)MakeObjectForRow(metadata, rowPtr);
         }
-
 
         /// <summary>
         /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.
@@ -725,10 +767,12 @@ namespace Realms
             var metadata = Metadata[className];
             var rowPtr = NativeTable.RowForPrimaryKey(metadata.Table, metadata.PrimaryKeyColumnIndex, id);
             if (rowPtr == IntPtr.Zero)
+            {
                 return null;
+            }
+
             return MakeObjectForRow(metadata, rowPtr);
         }
-
 
         /// <summary>
         /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.
@@ -742,9 +786,13 @@ namespace Realms
             var metadata = Metadata[className];
             var rowPtr = NativeTable.RowForPrimaryKey(metadata.Table, metadata.PrimaryKeyColumnIndex, id);
             if (rowPtr == IntPtr.Zero)
+            {
                 return null;
+            }
+
             return MakeObjectForRow(metadata, rowPtr);
         }
+
         #endregion ObjectForPrimaryKey
 
         /// <summary>
@@ -756,10 +804,12 @@ namespace Realms
         public void Remove(RealmObject obj)
         {
             if (!IsInTransaction)
+            {
                 throw new RealmOutsideTransactionException("Cannot remove Realm object outside write transactions");
+            }
 
             var tableHandle = obj.ObjectMetadata.Table;
-            NativeTable.RemoveRow(tableHandle, (RowHandle)obj.RowHandle);
+            NativeTable.RemoveRow(tableHandle, obj.RowHandle);
         }
 
         /// <summary>
@@ -770,10 +820,14 @@ namespace Realms
         public void RemoveRange<T>(RealmResults<T> range)
         {
             if (range == null)
+            {
                 throw new ArgumentNullException(nameof(range));
+            }
 
             if (!IsInTransaction)
+            {
                 throw new RealmOutsideTransactionException("Cannot remove Realm objects outside write transactions");
+            }
 
             range.ResultsHandle.Clear();
         }
@@ -802,7 +856,9 @@ namespace Realms
         public void RemoveAll()
         {
             if (!IsInTransaction)
+            {
                 throw new RealmOutsideTransactionException("Cannot remove all Realm objects outside write transactions");
+            }
 
             foreach (var metadata in Metadata.Values)
             {
@@ -810,6 +866,5 @@ namespace Realms
                 resultsHandle.Clear();
             }
         }
-
     }
 }

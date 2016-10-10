@@ -65,7 +65,9 @@ namespace Realms
             {
                 var index = _index + 1;
                 if (index >= _enumerating.Count)
+                {
                     return false;
+                }
 
                 _index = index;
                 return true;
@@ -87,7 +89,6 @@ namespace Realms
             }
         }
 
-
         /// <summary>
         /// Value returned by IndexOf if an item is not found.
         /// </summary>
@@ -98,6 +99,7 @@ namespace Realms
         private RealmObject.Metadata _targetMetadata;
 
         Realm IRealmList.Realm => _realm;
+
         LinkListHandle IRealmList.Handle => _listHandle;
 
         internal RealmList(Realm realm, LinkListHandle adoptedList, RealmObject.Metadata metadata)
@@ -117,8 +119,11 @@ namespace Realms
             get
             {
                 if (_listHandle.IsInvalid)
+                {
                     return 0;
-                return (int)_listHandle.Size();
+                }
+
+                return _listHandle.Size();
             }
         }
 
@@ -126,28 +131,19 @@ namespace Realms
         /// Standard <a href="https://msdn.microsoft.com/en-us/library/system.collections.ilist.aspx">IList</a> property.
         /// </summary>
         /// <value><c>false</c> at all times.</value>
-        public bool IsReadOnly
-        {
-            get { return false; }
-        }
+        public bool IsReadOnly => false;
 
         /// <summary>
         /// Standard <a href="https://msdn.microsoft.com/en-us/library/system.collections.ilist.aspx">IList</a> property.
         /// </summary>
         /// <value><c>false</c> at all times as the set of related objects may be changed.</value>
-        public bool IsFixedSize
-        {
-            get { return false; }
-        }
+        public bool IsFixedSize => false;
 
         /// <summary>
         /// Standard <a href="https://msdn.microsoft.com/en-us/library/system.collections.ilist.aspx">IList</a> property.
         /// </summary>
         /// <value><c>true</c> at all times.</value>
-        public bool IsSynchronized
-        {
-            get { return true; }
-        }
+        public bool IsSynchronized => true;
 
         /// <summary>
         /// Returns the item at the ordinal index.
@@ -162,7 +158,10 @@ namespace Realms
             get
             {
                 if (index < 0)
+                {
                     throw new ArgumentOutOfRangeException();
+                }
+
                 var linkedRowPtr = _listHandle.Get((IntPtr)index);
                 return (T)_realm.MakeObjectForRow(_targetMetadata, linkedRowPtr);
             }
@@ -172,10 +171,10 @@ namespace Realms
                 throw new NotImplementedException();
             }
         }
+
         #endregion
 
         #region implementing IList members
-
 
         /// <summary>
         /// Makes a relationship to an item, appending it at the end of the sorted relationship.
@@ -185,7 +184,7 @@ namespace Realms
         public void Add(T item)
         {
             this.ManageObjectIfNeeded(item);
-            var rowIndex = ((RealmObject)item).RowHandle.RowIndex;
+            var rowIndex = item.RowHandle.RowIndex;
             _listHandle.Add(rowIndex);
         }
 
@@ -219,17 +218,25 @@ namespace Realms
         public void CopyTo(T[] array, int arrayIndex)
         {
             if (array == null)
+            {
                 throw new ArgumentNullException();
+            }
+
             if (arrayIndex < 0)
+            {
                 throw new ArgumentOutOfRangeException();
+            }
+
             if ((arrayIndex + Count) > array.Length)
+            {
                 throw new ArgumentException();
+            }
+
             foreach (var obj in this)
             {
                 array[arrayIndex++] = obj;
             }
         }
-
 
         /// <summary>
         /// Related RealmObject enumerator factory for an iterator to be called explicitly or used in a foreach loop.
@@ -249,9 +256,11 @@ namespace Realms
         public int IndexOf(T item)
         {
             if (!item.IsManaged)
+            {
                 throw new ArgumentException("Value does not belong to a realm", nameof(item));
+            }
 
-            var rowIndex = ((RealmObject)item).RowHandle.RowIndex;
+            var rowIndex = item.RowHandle.RowIndex;
             return (int)_listHandle.Find(rowIndex, IntPtr.Zero);
         }
 
@@ -265,10 +274,12 @@ namespace Realms
         public void Insert(int index, T item)
         {
             if (index < 0)
+            {
                 throw new ArgumentOutOfRangeException();
+            }
 
             this.ManageObjectIfNeeded(item);
-            var rowIndex = ((RealmObject)item).RowHandle.RowIndex;
+            var rowIndex = item.RowHandle.RowIndex;
             _listHandle.Insert((IntPtr)index, rowIndex);
         }
 
@@ -280,9 +291,12 @@ namespace Realms
         /// <returns>True if the item was found and removed, false if it is not in the related set.</returns>
         public bool Remove(T item)
         {
-            int index = IndexOf(item);
+            var index = IndexOf(item);
             if (index == ITEM_NOT_FOUND)
+            {
                 return false;
+            }
+
             RemoveAt(index);
             return true;
         }
@@ -295,17 +309,23 @@ namespace Realms
         public void RemoveAt(int index)
         {
             if (index < 0)
+            {
                 throw new ArgumentOutOfRangeException();
+            }
+
             _listHandle.Erase((IntPtr)index);
         }
 
         IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
+
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         private void ManageObjectIfNeeded(T obj)
         {
             if (!obj.IsManaged)
+            {
                 _realm.Manage(obj);
+            }
         }
 
         #endregion
@@ -317,6 +337,7 @@ namespace Realms
     internal interface IRealmList
     {
         Realm Realm { get; }
+
         LinkListHandle Handle { get; }
     }
 }

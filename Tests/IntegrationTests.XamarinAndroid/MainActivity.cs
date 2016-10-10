@@ -31,6 +31,7 @@ namespace IntegrationTests.XamarinAndroid
         {
             // tests can be inside the main assembly
             AddTest(Assembly.GetExecutingAssembly());
+
             // or in any reference assemblies
             // AddTest (typeof (Your.Library.TestClass).Assembly);
 
@@ -39,4 +40,3 @@ namespace IntegrationTests.XamarinAndroid
         }
     }
 }
-

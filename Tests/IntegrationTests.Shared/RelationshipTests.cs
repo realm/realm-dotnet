@@ -34,15 +34,20 @@ namespace IntegrationTests.Shared
         private class Dog : RealmObject
         {
             public string Name { get; set; }
+
             public string Color { get; set; }
+
             public bool Vaccinated { get; set; }
+            
             // Owner Owner { get; set; }  will uncomment when verifying that we have back-links from ToMany relationships
         }
 
         private class Owner : RealmObject
         {
             public string Name { get; set; }
+
             public Dog TopDog { get; set; }
+
             public IList<Dog> Dogs { get; }
         }
 
@@ -120,7 +125,6 @@ namespace IntegrationTests.Shared
             Assert.That(tim.TopDog.Name, Is.EqualTo("Bilbo Fleabaggins"));
         }
 
-
         [Test]
         public void TimHasTwoIterableDogs()
         {
@@ -130,9 +134,9 @@ namespace IntegrationTests.Shared
             {
                 dogNames.Add(dog.Name);
             }
+
             Assert.That(dogNames, Is.EquivalentTo(new List<string> { "Bilbo Fleabaggins", "Earl Yippington III" }));
         }
-
 
         /// <summary>
         /// Check if ToList can be invoked on a related RealmResults
@@ -147,22 +151,19 @@ namespace IntegrationTests.Shared
             {
                 dogNames.Add(dog.Name);
             }
+
             Assert.That(dogNames, Is.EquivalentTo(new List<string> { "Bilbo Fleabaggins", "Earl Yippington III" }));
         }
-
 
         [Test]
         public void TimsIterableDogsThrowExceptions()
         {
             var tim = realm.All<Owner>().First(p => p.Name == "Tim");
             Assert.Throws<ArgumentNullException>(() => tim.Dogs.CopyTo(null, 0));
-            Dog[] copiedDogs = new Dog[2];
+            var copiedDogs = new Dog[2];
             Assert.Throws<ArgumentOutOfRangeException>(() => tim.Dogs.CopyTo(copiedDogs, -1));
             Assert.Throws<ArgumentException>(() => tim.Dogs.CopyTo(copiedDogs, 1));  // insuffiient room
         }
-
-
-
 
         [Test]
         public void TimRetiredHisTopDog()
@@ -173,10 +174,10 @@ namespace IntegrationTests.Shared
                 tim.TopDog = null;
                 trans.Commit();
             }
+
             var tim2 = realm.All<Owner>().First(p => p.Name == "Tim");
             Assert.That(tim2.TopDog, Is.Null);  // the dog departure was saved
         }
-
 
         [Test]
         public void TimAddsADogLater()
@@ -189,11 +190,11 @@ namespace IntegrationTests.Shared
                 tim.Dogs.Add(dog3);
                 trans.Commit();
             }
+
             var tim2 = realm.All<Owner>().First(p => p.Name == "Tim");
             Assert.That(tim2.Dogs.Count(), Is.EqualTo(3));
             Assert.That(tim2.Dogs[2].Name, Is.EqualTo("Maggie Mongrel"));
         }
-
 
         [Test]
         public void TimAddsADogByInsert()
@@ -206,12 +207,12 @@ namespace IntegrationTests.Shared
                 tim.Dogs.Insert(1, dog3);
                 trans.Commit();
             }
+
             var tim2 = realm.All<Owner>().Single(p => p.Name == "Tim");
             Assert.That(tim2.Dogs.Count(), Is.EqualTo(3));
             Assert.That(tim2.Dogs[1].Name, Is.EqualTo("Maggie Mongrel"));
             Assert.That(tim2.Dogs[2].Name, Is.EqualTo("Earl Yippington III"));
         }
-
 
         [Test]
         public void TimLosesHisDogsByOrder()
@@ -223,6 +224,7 @@ namespace IntegrationTests.Shared
                 tim.Dogs.RemoveAt(0);
                 trans.Commit();
             }
+
             var tim2 = realm.All<Owner>().Single(p => p.Name == "Tim");
             Assert.That(tim2.Dogs.Count(), Is.EqualTo(1));
             Assert.That(tim2.Dogs[0].Name, Is.EqualTo("Earl Yippington III"));
@@ -231,11 +233,11 @@ namespace IntegrationTests.Shared
                 tim.Dogs.RemoveAt(0);
                 trans.Commit();
             }
+
             var tim3 = realm.All<Owner>().Single(p => p.Name == "Tim");
             Assert.That(tim2.Dogs.Count(), Is.EqualTo(0));
             Assert.That(tim3.Dogs.Count(), Is.EqualTo(0)); // reloaded object has same empty related set
         }
-
 
         [Test]
         public void TimLosesHisDogsInOneClear()
@@ -247,10 +249,10 @@ namespace IntegrationTests.Shared
                 tim.Dogs.Clear();
                 trans.Commit();
             }
+
             var tim2 = realm.All<Owner>().Single(p => p.Name == "Tim");
             Assert.That(tim2.Dogs.Count(), Is.EqualTo(0));
         }
-
 
         [Test]
         public void TimLosesBilbo()
@@ -263,11 +265,11 @@ namespace IntegrationTests.Shared
                 tim.Dogs.Remove(bilbo);
                 trans.Commit();
             }
+
             var tim2 = realm.All<Owner>().Single(p => p.Name == "Tim");
             Assert.That(tim2.Dogs.Count(), Is.EqualTo(1));
             Assert.That(tim2.Dogs[0].Name, Is.EqualTo("Earl Yippington III"));
         }
-
 
         [Test]
         public void DaniHasNoTopDog()
@@ -275,7 +277,6 @@ namespace IntegrationTests.Shared
             var dani = realm.All<Owner>().Where(p => p.Name == "Dani").First();
             Assert.That(dani.TopDog, Is.Null);
         }
-
 
         [Test]
         public void DaniHasNoDogs()
@@ -287,9 +288,9 @@ namespace IntegrationTests.Shared
             {
                 dogsIterated++;
             }
+
             Assert.That(dogsIterated, Is.EqualTo(0));
         }
-
 
         [Test]
         public void TestExceptionsFromEmptyListOutOfRange()
@@ -303,7 +304,6 @@ namespace IntegrationTests.Shared
             Assert.Throws<ArgumentOutOfRangeException>(() => scratch = dani.Dogs[0]);
         }
 
-
         [Test]
         public void TestExceptionsFromIteratingEmptyList()
         {
@@ -315,7 +315,6 @@ namespace IntegrationTests.Shared
             Dog currentDog;
             Assert.Throws<ArgumentOutOfRangeException>(() => currentDog = iter.Current);
         }
-
 
         [Test]
         public void TestExceptionsFromTimsDogsOutOfRange()
@@ -387,9 +386,7 @@ namespace IntegrationTests.Shared
             Assert.That(person.Friends is RealmList<Person>);
             Assert.That(realm.All<Person>().ToList().Select(p => p.FirstName),
                         Is.EquivalentTo(new[] { "Jack", "Christian", "Frederick" }));
-
         }
-
 
         [Test]
         public void TestManagingStandaloneThreeLevelRelationship()
@@ -411,7 +408,6 @@ namespace IntegrationTests.Shared
                                 Friends = { new Person { FullName = "Sally" } } // Managees a second Sally
                             }
                         }
-
                     }
                 }
             };
@@ -425,7 +421,6 @@ namespace IntegrationTests.Shared
             Assert.That(realm.All<Person>().ToList().Select(p => p.FirstName),
                         Is.EquivalentTo(new[] { "Alice", "Joan", "Krystal", "Sally", "Sally" }));
         }
-
 
         [Test]
         public void TestCircularRelationshipsFromStandaloneTwoStage()
@@ -458,21 +453,28 @@ namespace IntegrationTests.Shared
         }
 
         #region DeleteRelated
+
         // from http://stackoverflow.com/questions/37819634/best-method-to-remove-managed-child-lists-one-to-many-parent-child-relationsh
         // shows a workaround for our lack of cascading delete
         public class Product : RealmObject
         {
             public int Id { get; set; }
+
             public string Name { get; set; }
+
             public string Date { get; set; }
+
             public IList<Report> Reports { get; } // child objects
         }
 
         public class Report : RealmObject
         {
             public int Id { get; set; }
+
             public string Ref { get; set; }
+
             public string Date { get; set; }
+
             public Product Parent { get; set; } // Parent object reference
         }
 
@@ -504,8 +506,11 @@ namespace IntegrationTests.Shared
             realm.Write(() =>
             {
                 foreach (var r in delP.Reports.ToList())  // use ToList to get static list so can remove items
+                {
                     realm.Remove(r);  // removes from the realm, and updates delP.Reports so can't just iterate that
+                }
             });
+
             Assert.That(delP.Reports.Count, Is.EqualTo(0));
         }
         #endregion

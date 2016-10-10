@@ -30,9 +30,9 @@ namespace Realms
     /// </remarks>
     public class Transaction : IDisposable
     {
-
-        internal Transaction() { }
-
+        internal Transaction()
+        {
+        }
 
         /// <summary>
         /// Will automatically <c>Rollback</c> the transaction on existing scope, if not explicitly Committed.

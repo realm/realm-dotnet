@@ -44,6 +44,7 @@ namespace Realms
     public class MapToAttribute : Attribute
     {
         public string Mapping { get; set; }
+
         public MapToAttribute(string mapping)
         {
             this.Mapping = mapping;

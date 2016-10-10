@@ -30,7 +30,6 @@ namespace IntegrationTests
     [TestFixture, Preserve(AllMembers = true)]
     public class ObjectIntegrationTests : PeopleTestsBase
     {
-
         [Test, Explicit("Manual test for debugging")]
         public void SimpleTest()
         {
@@ -42,12 +41,16 @@ namespace IntegrationTests
 
             Debug.WriteLine("Interesting people include:");
             foreach (var p in interestingPeople)
+            {
                 Debug.WriteLine(" - " + p.FullName + " (" + p.Email + ")");
+            }
 
             var johns = from p in _realm.All<Person>() where p.FirstName == "John" select p;
             Debug.WriteLine("People named John:");
             foreach (var p in johns)
+            {
                 Debug.WriteLine(" - " + p.FullName + " (" + p.Email + ")");
+            }
         }
 
         [Test]
@@ -109,6 +112,7 @@ namespace IntegrationTests
                 p.Longitude = 0.076132;
                 transaction.Commit();
             }
+
             var allPeople = _realm.All<Person>().ToList();
             Person p2 = allPeople[0];  // pull it back out of the database otherwise can't tell if just a dumb property
             var receivedFirstName = p2.FirstName;
@@ -137,6 +141,7 @@ namespace IntegrationTests
 
                 transaction.Commit();
             }
+
             var receivedEmail = p.Email;
 
             // Assert
@@ -209,13 +214,14 @@ namespace IntegrationTests
             Assert.Throws<RealmOutsideTransactionException>(() => p.FirstName = "John");
         }
 
-
 #if ENABLE_INTERNAL_NON_PCL_TESTS
+
         [Test]
         public void NonAutomaticPropertiesShouldNotBeWoven()
         {
             Assert.That(typeof(Person).GetProperty("Nickname").GetCustomAttributes(typeof(WovenPropertyAttribute), false), Is.Empty);
         }
+
 #endif
         [Test]
         public void NonAutomaticPropertiesShouldBeIgnored()
@@ -233,7 +239,6 @@ namespace IntegrationTests
             Assert.That(vinnie.FullName, Is.EqualTo("Vincent Adultman"));
             Assert.That(string.IsNullOrEmpty(vinnie.Nickname));
         }
-
 
         [Test]
         public void CanSimplyCountAll()
@@ -255,6 +260,7 @@ namespace IntegrationTests
                 Assert.That(p.Email, Is.EqualTo(emails[iterCount]));
                 iterCount++;
             }
+
             Assert.That(iterCount, Is.EqualTo(3));
         }
 
@@ -274,6 +280,5 @@ namespace IntegrationTests
             var p2 = new Person();
             Assert.That(p2.IsValid);
         }
-
-    }  // ObjectIntegrationTests
+    }
 }

@@ -36,6 +36,7 @@ namespace Realms
                 public IntPtr From;
                 public IntPtr To;
             }
+
             public MarshaledVector<Move> Moves;
         }
 

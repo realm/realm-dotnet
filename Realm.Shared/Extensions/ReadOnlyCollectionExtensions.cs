@@ -16,11 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
 
 namespace Realms
 {
@@ -29,7 +27,10 @@ namespace Realms
         internal static ReadOnlyCollection<T> ToReadOnlyCollection<T>(this IEnumerable<T> sequence)
         {
             if (sequence == null)
+            {
                 return DefaultReadOnlyCollection<T>.Empty;
+            }
+
             return sequence as ReadOnlyCollection<T> ?? new ReadOnlyCollection<T>(sequence.ToArray());
         }
 
@@ -42,7 +43,10 @@ namespace Realms
                 get
                 {
                     if (_defaultCollection == null)
+                    {
                         _defaultCollection = new ReadOnlyCollection<T>(new T[0]);
+                    }
+
                     return _defaultCollection;
                 }
             }

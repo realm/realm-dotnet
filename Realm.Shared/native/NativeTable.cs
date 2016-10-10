@@ -55,7 +55,10 @@ namespace Realms
                 set_timestamp_ticks(tableHandle, columnIndex, rowIndex, ticks, out nativeException);
             }
             else
+            {
                 set_null(tableHandle, columnIndex, rowIndex, out nativeException);
+            }
+
             nativeException.ThrowIfNecessary();
         }
 
@@ -78,7 +81,7 @@ namespace Realms
         {
             NativeException nativeException;
             long ticks;
-            var hasValue = MarshalHelpers.IntPtrToBool(NativeTable.get_nullable_timestamp_ticks(tableHandle, columnIndex, rowIndex, out ticks, out nativeException));
+            var hasValue = MarshalHelpers.IntPtrToBool(get_nullable_timestamp_ticks(tableHandle, columnIndex, rowIndex, out ticks, out nativeException));
             nativeException.ThrowIfNecessary();
             return hasValue ? new DateTimeOffset(ticks, TimeSpan.Zero) : (DateTimeOffset?)null;
         }
@@ -90,9 +93,14 @@ namespace Realms
         {
             NativeException nativeException;
             if (value != null)
+            {
                 set_string(tableHandle, columnIndex, rowIndex, value, (IntPtr)value.Length, out nativeException);
+            }
             else
+            {
                 set_null(tableHandle, columnIndex, rowIndex, out nativeException);
+            }
+
             nativeException.ThrowIfNecessary();
         }
 
@@ -103,7 +111,9 @@ namespace Realms
         public static void SetStringUnique(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex, string value)
         {
             if (value == null)
+            {
                 throw new ArgumentException("Object identifiers cannot be null");
+            }
 
             NativeException nativeException;
             set_string_unique(tableHandle, columnIndex, rowIndex, value, (IntPtr)value.Length, out nativeException);
@@ -117,8 +127,8 @@ namespace Realms
         public static string GetString(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex)
         {
             var bufferSizeNeededChars = 128;
+            
             // First alloc this thread
-
             var stringGetBuffer = Marshal.AllocHGlobal((IntPtr)(bufferSizeNeededChars * sizeof(char)));
             var stringGetBufferLen = bufferSizeNeededChars;
 
@@ -133,17 +143,22 @@ namespace Realms
             {
                 throw new RealmInvalidDatabaseException("Corrupted string data");
             }
+
             if (bytesRead > stringGetBufferLen)  // need a bigger buffer
             {
                 Marshal.FreeHGlobal(stringGetBuffer);
                 stringGetBuffer = Marshal.AllocHGlobal((IntPtr)(bytesRead * sizeof(char)));
                 stringGetBufferLen = bytesRead;
+
                 // try to read with big buffer
                 bytesRead = (int)get_string(tableHandle, columnIndex, rowIndex, stringGetBuffer,
                     (IntPtr)stringGetBufferLen, out isNull, out nativeException);
                 nativeException.ThrowIfNecessary();
                 if (bytesRead == -1)  // bad UTF-8 in full string
+                {
                     throw new RealmInvalidDatabaseException("Corrupted string data");
+                }
+
                 Debug.Assert(bytesRead <= stringGetBufferLen, "Buffer must have overflowed.");
             }  // needed re-read with expanded buffer
 
@@ -221,9 +236,14 @@ namespace Realms
         {
             NativeException nativeException;
             if (value.HasValue)
+            {
                 set_bool(tableHandle, columnIndex, rowIndex, MarshalHelpers.BoolToIntPtr(value.Value), out nativeException);
+            }
             else
+            {
                 set_null(tableHandle, columnIndex, rowIndex, out nativeException);
+            }
+
             nativeException.ThrowIfNecessary();
         }
 
@@ -264,9 +284,14 @@ namespace Realms
         {
             NativeException nativeException;
             if (value.HasValue)
+            {
                 set_int64(tableHandle, columnIndex, rowIndex, value.Value, out nativeException);
+            }
             else
+            {
                 set_null(tableHandle, columnIndex, rowIndex, out nativeException);
+            }
+
             nativeException.ThrowIfNecessary();
         }
 
@@ -317,9 +342,14 @@ namespace Realms
         {
             NativeException nativeException;
             if (value.HasValue)
+            {
                 set_float(tableHandle, columnIndex, rowIndex, value.Value, out nativeException);
+            }
             else
+            {
                 set_null(tableHandle, columnIndex, rowIndex, out nativeException);
+            }
+
             nativeException.ThrowIfNecessary();
         }
 
@@ -360,9 +390,14 @@ namespace Realms
         {
             NativeException nativeException;
             if (value.HasValue)
+            {
                 set_double(tableHandle, columnIndex, rowIndex, value.Value, out nativeException);
+            }
             else
+            {
                 set_null(tableHandle, columnIndex, rowIndex, out nativeException);
+            }
+
             nativeException.ThrowIfNecessary();
         }
 
@@ -412,6 +447,7 @@ namespace Realms
                     set_binary(tableHandle, columnIndex, rowIndex, (IntPtr)buffer, (IntPtr)value.LongLength, out nativeException);
                 }
             }
+
             nativeException.ThrowIfNecessary();
         }
 
@@ -534,7 +570,6 @@ namespace Realms
         private static extern IntPtr row_for_string_primarykey(TableHandle handle, IntPtr columnIndex,
             [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen, out NativeException ex);
 
-
         internal static IntPtr RowForPrimaryKey(TableHandle tableHandle, int primaryKeyColumnIndex, long id)
         {
             NativeException nativeException;
@@ -545,6 +580,5 @@ namespace Realms
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "row_for_int_primarykey", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr row_for_int_primarykey(TableHandle handle, IntPtr columnIndex, long value, out NativeException ex);
-
     }
 }

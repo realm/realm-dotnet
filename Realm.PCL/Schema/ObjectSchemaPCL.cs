@@ -107,4 +107,3 @@ namespace Realms.Schema
         }
     }
 }
-

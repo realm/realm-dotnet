@@ -26,15 +26,25 @@ namespace AssemblyToProcess
     public class NonNullableProperties : RealmObject
     {
         public string String { get; set; }
+
         public char Char { get; set; }
+
         public byte Byte { get; set; }
+
         public short Int16 { get; set; }
+
         public int Int32 { get; set; }
+
         public long Int64 { get; set; }
+
         public float Single { get; set; }
+
         public double Double { get; set; }
+
         public DateTimeOffset DateTimeOffset { get; set; }
+
         public bool Boolean { get; set; }
+
         public byte[] ByteArray { get; set; }
     }
 
@@ -42,13 +52,21 @@ namespace AssemblyToProcess
     public class NullableProperties : RealmObject
     {
         public char? Char { get; set; }
+
         public byte? Byte { get; set; }
+
         public short? Int16 { get; set; }
+
         public int? Int32 { get; set; }
+
         public long? Int64 { get; set; }
+
         public float? Single { get; set; }
+
         public double? Double { get; set; }
+
         public DateTimeOffset? DateTimeOffset { get; set; }
+
         public bool? Boolean { get; set; }
     }
 }

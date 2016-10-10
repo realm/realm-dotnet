@@ -45,7 +45,6 @@ namespace IntegrationTests
             Realm.DeleteRealm(_realm.Config);
         }
 
-
         protected void MakeThreePeople()
         {
             Person p1, p2, p3;

@@ -39,7 +39,6 @@ using Microsoft.Win32.SafeHandles;
 // however, in that case (say same table taken out of a shared group 10 times) the last 9 tables are refcounted in core, so them being refcounted down
 // should not affect the tenth table being accessed concurrenlty at the same time
 
-
 // according to .net sourcecode we have a guarentee that a CriticalHandle will not get finalized while it is used in an interop call
 
 /*
@@ -49,10 +48,8 @@ using Microsoft.Win32.SafeHandles;
  * see http://reflector.webtropy.com/default.aspx/Dotnetfx_Win7_3@5@1/Dotnetfx_Win7_3@5@1/3@5@1/DEVDIV/depot/DevDiv/releases/whidbey/NetFXspW7/ndp/clr/src/BCL/System/Runtime/InteropServices/CriticalHandle@cs/1/CriticalHandle@cs
  */
 
-
 namespace Realms
 {
-
     [SecurityPermission(SecurityAction.InheritanceDemand, UnmanagedCode = true)]
     [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
     internal abstract class RealmHandle : SafeHandleZeroOrMinusOneIsInvalid
@@ -95,7 +92,6 @@ namespace Realms
         //     get { return handle == IntPtr.Zero || handle == new IntPtr(-1); }
         // }
 
-
         /// <summary>
         /// override Unbind and put in code that actually calls core and unbinds whatever this handle is about.
         /// when this is called, it has alreadyt been verified that it is safe to call core - so just put in code that does the job.
@@ -123,7 +119,6 @@ namespace Realms
         // otherwise the finalizer might free the handle concurrently or not at all
         internal readonly RealmHandle Root; // internal to allow constructors in e.g. TableViewHandle to reference Root of e.g. TableHandle
 
-
         // at creation, we must always specify the root if any, or null if the object is itself a root
         // root in this respect means the object where it and all its children must be accessed serially
         // for instance a Group from a transaction have the shared group as root, a table from such a group have
@@ -148,7 +143,11 @@ namespace Realms
         // please only call if unbindlist is not null
         private void LockAndUndbindList()
         {
-            if (_unbindList.Count == 0) return;
+            if (_unbindList.Count == 0)
+            {
+                return;
+            }
+
             // outside the lock so we may get a really strange value here.
             // however. If we get 0 and the real value was something else, we will find out inside the lock in unbindlockedlist
             // if we get !=0 and the real value was in fact 0, then we will just skip and then catch up next time around.
@@ -193,6 +192,7 @@ namespace Realms
                     new T {Root=parent.Root};
             }
         */
+
         // What i'd like:
         /*
             T RootedHandle<T>(RealmHandle parent) where T:RealmHandle, new(RealmHandle)
@@ -213,9 +213,7 @@ namespace Realms
         protected RealmHandle() : base(true)
         {
             _unbindList = GetUnbindList(); // we are a root object, we need a list for our children
-
         }
-
 
         // called automatically but only once from criticalhandle when this handle is disposing or finalizing
         // see http://reflector.webtropy.com/default.aspx/4@0/4@0/DEVDIV_TFS/Dev10/Releases/RTMRel/ndp/clr/src/BCL/System/Runtime/InteropServices/CriticalHandle@cs/1305376/CriticalHandle@cs
@@ -227,8 +225,9 @@ namespace Realms
             // In that case, release should just do nothing at all - there is nothing to release.
             // Also, of course if we were called somehow with an invalid handle (should never happen except as stated above), it would not be a good idea to pass it to core
             if (IsInvalid)
+            {
                 return true;
-
+            }
 
             try
             {
@@ -252,15 +251,15 @@ namespace Realms
                     Root.RequestUnbind(this); // ask our root to unbind us (if it is itself finalizing) or put us into the unbind list (if it is still running)
                     // note that the this instance cannot and will never be aroot itself bc root != null
                 }
+
                 return true;
             }
             catch (Exception) // okay to catch general exception here, we do really not wish to leak any exceptions right now
             {
-                return false;
                 // it would be really bad if we got an exception in here. We must not pass it on, but have to return false
+                return false;
             }
         }
-
 
         // only call inside a lock on UnbindListLock
         private void UnbindLockedList()
@@ -271,10 +270,10 @@ namespace Realms
                 {
                     realmHandle.Unbind();
                 }
+
                 _unbindList.Clear();
             }
         }
-
 
         // used in the case we need to set the handle as part of a larger setup operation
         // the original SetHandle method is not callable from other classes, and we need that feature
@@ -289,7 +288,6 @@ namespace Realms
         {
             return base.ToString() + handle.ToInt64().ToString("x8", CultureInfo.InvariantCulture);
         }
-
 
         /// <summary>
         /// Called by children to this root, when they would like to 

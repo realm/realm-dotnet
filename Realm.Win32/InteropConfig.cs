@@ -21,7 +21,6 @@ using System.Diagnostics;
 
 namespace Realms
 {
-
     /// <summary>
     /// Per-platform utility functions. A copy of this file exists in each platform project such as Realm.Win32.
     /// </summary>
@@ -49,7 +48,6 @@ namespace Realms
             }
 #endif
         }
-
 
 #if (DEBUG)
         private const string BuildName = "Debug";

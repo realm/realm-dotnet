@@ -39,6 +39,7 @@ public static class Verifier
         {
             return string.Empty;
         }
+
         var process = Process.Start(new ProcessStartInfo(exePath, "\"" + assemblyPath2 + "\"")
         {
             RedirectStandardOutput = true,
@@ -58,6 +59,7 @@ public static class Verifier
         {
             exePath = Environment.ExpandEnvironmentVariables(@"%programfiles(x86)%\Microsoft SDKs\Windows\v8.0A\Bin\NETFX 4.0 Tools\PEVerify.exe");
         }
+
         return exePath;
     }
 

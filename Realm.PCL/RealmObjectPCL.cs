@@ -43,7 +43,6 @@ namespace Realms
         /// </summary>
         public bool IsValid => false;
 
-
         #region Getters
 
         protected string GetStringValue(string propertyName)
@@ -330,6 +329,5 @@ namespace Realms
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return false;
         }
-
     }
 }
