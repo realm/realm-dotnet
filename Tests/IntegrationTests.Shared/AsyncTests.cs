@@ -65,7 +65,7 @@ namespace IntegrationTests.Shared
             Assert.That(otherThreadId, Is.Not.EqualTo(currentThreadId));
         }
 
-        class MyDataObject : RealmObject
+        internal class MyDataObject : RealmObject
         {
             [PrimaryKey]
             public string Path { get; set; }

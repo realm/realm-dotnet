@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using NUnit.Framework;
 using Realms;
 
@@ -71,7 +72,7 @@ namespace IntegrationTests
             sw.Stop();
 
             Console.WriteLine("Time spent: " + sw.Elapsed);
-            Console.WriteLine("Kilo-iterations per second: {0:0.00}", ((numRecs / 1000) / sw.Elapsed.TotalSeconds));
+            Console.WriteLine("Kilo-iterations per second: {0:0.00}", (numRecs / 1000) / sw.Elapsed.TotalSeconds);
         }
 
 
@@ -100,7 +101,7 @@ namespace IntegrationTests
             sw.Stop();
 
             Console.WriteLine("Time spent: " + sw.Elapsed);
-            Console.WriteLine("Kilo-iterations per second: {0:0.00}", ((numRecs / 1000) / sw.Elapsed.TotalSeconds));
+            Console.WriteLine("Kilo-iterations per second: {0:0.00}", (numRecs / 1000) / sw.Elapsed.TotalSeconds);
         }
 
 
@@ -126,7 +127,7 @@ namespace IntegrationTests
             sw.Stop();
 
             Console.WriteLine("Time spent: " + sw.Elapsed);
-            Console.WriteLine("Kilo-iterations per second: {0:0.00}", ((count / 1000) / sw.Elapsed.TotalSeconds));
+            Console.WriteLine("Kilo-iterations per second: {0:0.00}", (count / 1000) / sw.Elapsed.TotalSeconds);
         }
 
         [TestCase(100000), Explicit]
@@ -210,6 +211,7 @@ namespace IntegrationTests
         }
     }
 
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class MiniPerson : RealmObject
     {
         public string Name { get; set; }

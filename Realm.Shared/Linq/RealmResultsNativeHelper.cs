@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////////////////////////
+﻿////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -18,33 +18,23 @@
 
 using System;
 using System.Runtime.InteropServices;
-using DotNetCross.Memory;
 
 namespace Realms
 {
-    [StructLayout(LayoutKind.Sequential)]
-    internal unsafe struct PtrTo<T> where T : struct
+    internal static class RealmResultsNativeHelper
     {
-        private void* ptr;
-
-        internal T? Value
+        internal interface Interface
         {
-            get
-            {
-                if (ptr == null)
-                {
-                    return null;
-                }
-
-                var @struct = default(T);
-                Unsafe.CopyBlock(Unsafe.AsPointer(ref @struct), ptr, (uint)Unsafe.SizeOf<T>());
-                return @struct;
-            }
+            void NotifyCallbacks(ResultsHandle.CollectionChangeSet? changes, NativeException? exception);
         }
 
-        public PtrTo(IntPtr intPtr)
+#if __IOS__
+        [ObjCRuntime.MonoPInvokeCallback(typeof(ResultsHandle.NotificationCallback))]
+#endif
+        internal static void NotificationCallback(IntPtr managedResultsHandle, IntPtr changes, IntPtr exception)
         {
-            ptr = intPtr.ToPointer();
-        } 
+            var results = (Interface)GCHandle.FromIntPtr(managedResultsHandle).Target;
+            results.NotifyCallbacks(new PtrTo<ResultsHandle.CollectionChangeSet>(changes).Value, new PtrTo<NativeException>(exception).Value);
+        }
     }
 }

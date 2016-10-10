@@ -18,16 +18,19 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Realms;
 
 namespace AssemblyToProcess
 {
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class PhoneNumber : RealmObject
     {
         public string Kind { get; set; }
         public string Number { get; set; }
     }
 
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class Person : RealmObject
     {
         // Automatically implemented (overridden) properties
@@ -97,5 +100,4 @@ namespace AssemblyToProcess
         {
         }
     }
-
 }

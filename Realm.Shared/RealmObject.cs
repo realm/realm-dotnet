@@ -83,7 +83,7 @@ namespace Realms
 
         internal void _CopyDataFromBackingFieldsToRow()
         {
-            Debug.Assert(this.IsManaged);
+            Debug.Assert(this.IsManaged, "Can't copy from unmanaged object.");
             _metadata.Helper.CopyToRealm(this);
         }
 

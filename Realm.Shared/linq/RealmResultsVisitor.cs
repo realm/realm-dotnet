@@ -215,7 +215,7 @@ namespace Realms
                         return Expression.Constant(_realm.MakeObjectForRow(_metadata, firstRowPtr));
                     if (m.Method.Name == nameof(Queryable.First))
                         throw new InvalidOperationException("Sequence contains no matching element");
-                    Debug.Assert(m.Method.Name == nameof(Queryable.FirstOrDefault));
+                    Debug.Assert(m.Method.Name == nameof(Queryable.FirstOrDefault), "If it's not 'First', it ought to be 'FirstOrDefault'.");
                     return Expression.Constant(null);
                 }
                 /*
@@ -243,7 +243,7 @@ namespace Realms
                     {
                         if (m.Method.Name == nameof(Queryable.Single))
                             throw new InvalidOperationException("Sequence contains no matching element");
-                        Debug.Assert(m.Method.Name == nameof(Queryable.SingleOrDefault));
+                        Debug.Assert(m.Method.Name == nameof(Queryable.SingleOrDefault), "If it's not 'Single', it ought to be 'SingleOrDefault'.");
                         return Expression.Constant(null);
                     }
                     var firstRow = Realm.CreateRowHandle(firstRowPtr, _realm.SharedRealmHandle);
@@ -268,7 +268,7 @@ namespace Realms
                         return Expression.Constant(_realm.MakeObjectForRow(_metadata, lastRowPtr));
                     if (m.Method.Name == nameof(Queryable.Last))
                         throw new InvalidOperationException("Sequence contains no matching element");
-                    Debug.Assert(m.Method.Name == nameof(Queryable.LastOrDefault));
+                    Debug.Assert(m.Method.Name == nameof(Queryable.LastOrDefault), "If it's not 'Last', it ought to be 'LastOrDefault'.");
                     return Expression.Constant(null);
                 }
                 if (m.Method.Name.StartsWith(nameof(Queryable.ElementAt)))
@@ -278,7 +278,7 @@ namespace Realms
                     {
                         if (m.Method.Name == nameof(Queryable.ElementAt))
                             throw new ArgumentOutOfRangeException();
-                        Debug.Assert(m.Method.Name == nameof(Queryable.ElementAtOrDefault));
+                        Debug.Assert(m.Method.Name == nameof(Queryable.ElementAtOrDefault), "If it's not 'ElementAt', it ought to be 'ElementAtOrDefault'.");
                         return Expression.Constant(null);
                     }
                     return Expression.Constant(_realm.MakeObjectForRow(_metadata, row));

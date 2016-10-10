@@ -70,8 +70,8 @@ namespace IntegrationTests.Shared
                 transaction.Commit();
             }
 
-            Assert.That((char)(allTypesObject.CharProperty), Is.EqualTo('F'));
-            Assert.That((char)(allTypesObject.NullableCharProperty), Is.EqualTo('o'));
+            Assert.That((char)allTypesObject.CharProperty, Is.EqualTo('F'));
+            Assert.That((char)allTypesObject.NullableCharProperty, Is.EqualTo('o'));
             Assert.That(allTypesObject.StringProperty, Is.EqualTo("o"));
         }
 

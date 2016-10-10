@@ -174,10 +174,10 @@ namespace Realms
             return (int)ResultsHandle.Count();
         }
 
-        class NotificationToken : IDisposable
+        private class NotificationToken : IDisposable
         {
-            RealmResults<T> _results;
-            NotificationCallback _callback;
+            private RealmResults<T> _results;
+            private NotificationCallback _callback;
 
             internal NotificationToken(RealmResults<T> results, NotificationCallback callback)
             {
@@ -247,7 +247,7 @@ namespace Realms
 
         private void SubscribeForNotifications()
         {
-            Debug.Assert(_notificationToken == null);
+            Debug.Assert(_notificationToken == null, "_notificationToken must be null before subscribing.");
 
             var managedResultsHandle = GCHandle.Alloc(this);
             var token = new NotificationTokenHandle(ResultsHandle);
@@ -266,7 +266,7 @@ namespace Realms
 
         private void UnsubscribeFromNotifications()
         {
-            Debug.Assert(_notificationToken != null);
+            Debug.Assert(_notificationToken != null, "_notificationToken must not be null to unsubscribe.");
 
             _notificationToken.Dispose();
             _notificationToken = null;
@@ -289,29 +289,6 @@ namespace Realms
             {
                 callback(this, changeset, managedException);
             }
-        }
-
-    }  // RealmResults
-
-    internal interface IRealmResults
-    {
-        Schema.ObjectSchema ObjectSchema { get; }
-    }
-
-    internal static class RealmResultsNativeHelper
-    {
-        internal interface Interface
-        {
-            void NotifyCallbacks(ResultsHandle.CollectionChangeSet? changes, NativeException? exception);
-        }
-
-#if __IOS__
-        [ObjCRuntime.MonoPInvokeCallback(typeof(ResultsHandle.NotificationCallback))]
-#endif
-        internal static void NotificationCallback(IntPtr managedResultsHandle, IntPtr changes, IntPtr exception)
-        {
-            var results = (Interface)GCHandle.FromIntPtr(managedResultsHandle).Target;
-            results.NotifyCallbacks(new PtrTo<ResultsHandle.CollectionChangeSet>(changes).Value, new PtrTo<NativeException>(exception).Value);
         }
     }
 }

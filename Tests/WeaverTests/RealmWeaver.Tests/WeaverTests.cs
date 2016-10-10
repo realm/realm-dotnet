@@ -131,7 +131,7 @@ namespace RealmWeaver
 
             var moduleDefinition = ModuleDefinition.ReadModule(_sourceAssemblyPath);
 
-            var assemblyResolver = (moduleDefinition.AssemblyResolver as DefaultAssemblyResolver);
+            var assemblyResolver = moduleDefinition.AssemblyResolver as DefaultAssemblyResolver;
             assemblyResolver.AddSearchDirectory(Path.GetDirectoryName(_sourceAssemblyPath));
 
             if (Environment.OSVersion.Platform == PlatformID.Unix)

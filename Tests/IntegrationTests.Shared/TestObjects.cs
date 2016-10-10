@@ -17,10 +17,12 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Realms;
 
 namespace IntegrationTests.Shared
 {
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class AllTypesObject : RealmObject
     {
         public char CharProperty { get; set; }
@@ -47,42 +49,49 @@ namespace IntegrationTests.Shared
         public DateTimeOffset? NullableDateTimeOffsetProperty { get; set; }
     }
 
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class PrimaryKeyCharObject : RealmObject
     {
         [PrimaryKey]
         public char CharProperty { get; set; }
     }
 
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class PrimaryKeyByteObject : RealmObject
     {
         [PrimaryKey]
         public byte ByteProperty { get; set; }
     }
 
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class PrimaryKeyInt16Object : RealmObject
     {
         [PrimaryKey]
         public short Int16Property { get; set; }
     }
 
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class PrimaryKeyInt32Object : RealmObject
     {
         [PrimaryKey]
         public int Int32Property { get; set; }
     }
 
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class PrimaryKeyInt64Object : RealmObject
     {
         [PrimaryKey]
         public long Int64Property { get; set; }
     }
 
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class PrimaryKeyStringObject : RealmObject
     {
         [PrimaryKey]
         public string StringProperty { get; set; }
     }
 
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class ClassWithUnqueryableMembers : RealmObject
     {
         public string RealPropertyToSatisfyWeaver { get; set; }

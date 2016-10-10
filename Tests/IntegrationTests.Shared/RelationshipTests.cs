@@ -31,7 +31,7 @@ namespace IntegrationTests.Shared
     [TestFixture, Preserve(AllMembers = true)]
     public class RelationshipTests
     {
-        class Dog : RealmObject
+        private class Dog : RealmObject
         {
             public string Name { get; set; }
             public string Color { get; set; }
@@ -39,7 +39,7 @@ namespace IntegrationTests.Shared
             // Owner Owner { get; set; }  will uncomment when verifying that we have back-links from ToMany relationships
         }
 
-        class Owner : RealmObject
+        private class Owner : RealmObject
         {
             public string Name { get; set; }
             public Dog TopDog { get; set; }
@@ -489,7 +489,8 @@ namespace IntegrationTests.Shared
                     for (var rid = 1; rid <= 5; ++rid)
                     {
                         var r = realm.CreateObject<Report>();
-                        r.Id = rid + pid * 1000; r.Ref = $"Report {pid}:{rid}";
+                        r.Id = rid + (pid * 1000);
+                        r.Ref = $"Report {pid}:{rid}";
                         p.Reports.Add(r);
                     }
                 }

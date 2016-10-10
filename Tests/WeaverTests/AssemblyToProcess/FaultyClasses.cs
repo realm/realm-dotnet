@@ -18,17 +18,20 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Realms;
 
 namespace AssemblyToProcess
 {
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class RealmListWithSetter : RealmObject
     {
-        public IList<Person> People { get; set; } 
+        public IList<Person> People { get; set; }
 
         public int PropertyToEnsureOtherwiseHealthyClass { get; set; }
     }
 
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class IndexedProperties : RealmObject
     {
         // These should be allowed:
@@ -51,6 +54,7 @@ namespace AssemblyToProcess
         public float SingleProperty { get; set; }
     }
 
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class PrimaryKeyProperties : RealmObject
     {
         // These should be allowed:
@@ -74,6 +78,7 @@ namespace AssemblyToProcess
     }
 
     // This class has no default constructor which is necessary for Realm.CreateObject<>()
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class DefaultConstructorMissing : RealmObject
     {
         public DefaultConstructorMissing(int parameter) { }
@@ -82,6 +87,7 @@ namespace AssemblyToProcess
     }
 
     // This class has no persisted properties. 
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class NoPersistedProperties : RealmObject
     {
         public int PublicField;
@@ -90,6 +96,7 @@ namespace AssemblyToProcess
         public int IgnoredProperty { get; set; }
     }
 
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class NotSupportedProperties : RealmObject
     {
         public DateTime DateTimeProperty { get; set; }

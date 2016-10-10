@@ -17,25 +17,29 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Reflection;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Realms
 {
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     [AttributeUsage(AttributeTargets.Property)]
     public class PrimaryKeyAttribute : Attribute
     {
     }
 
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     [AttributeUsage(AttributeTargets.Property)]
     public class IndexedAttribute : Attribute
     {
     }
 
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property)]
     public class IgnoredAttribute : Attribute
     {
     }
 
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property)]
     public class MapToAttribute : Attribute
     {
@@ -46,6 +50,7 @@ namespace Realms
         }
     }
 
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     [AttributeUsage(AttributeTargets.Class)]
     public class WovenAttribute : Attribute
     {
@@ -57,6 +62,7 @@ namespace Realms
         }
     }
 
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     [AttributeUsage(AttributeTargets.Property)]
     public class WovenPropertyAttribute : Attribute
     {

@@ -144,7 +144,7 @@ namespace Realms
                 nativeException.ThrowIfNecessary();
                 if (bytesRead == -1)  // bad UTF-8 in full string
                     throw new RealmInvalidDatabaseException("Corrupted string data");
-                Debug.Assert(bytesRead <= stringGetBufferLen);
+                Debug.Assert(bytesRead <= stringGetBufferLen, "Buffer must have overflowed.");
             }  // needed re-read with expanded buffer
 
             return bytesRead != 0 ? Marshal.PtrToStringUni(stringGetBuffer, bytesRead) : (isNull ? null : string.Empty);

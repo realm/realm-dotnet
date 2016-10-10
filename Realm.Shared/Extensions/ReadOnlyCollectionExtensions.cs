@@ -17,32 +17,35 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.IO;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text;
 
-using Foundation;
-using UIKit;
-
-namespace IntegrationTests.XamarinIOS
+namespace Realms
 {
-    public class Application
+    internal static class ReadOnlyCollectionExtensions
     {
-        // This is the main entry point of the application.
-        private static void Main(string[] args)
+        internal static ReadOnlyCollection<T> ToReadOnlyCollection<T>(this IEnumerable<T> sequence)
         {
-            if (NSProcessInfo.ProcessInfo.Arguments.Any("--headless".Equals))
+            if (sequence == null)
+                return DefaultReadOnlyCollection<T>.Empty;
+            return sequence as ReadOnlyCollection<T> ?? new ReadOnlyCollection<T>(sequence.ToArray());
+        }
+
+        private static class DefaultReadOnlyCollection<T>
+        {
+            private static ReadOnlyCollection<T> _defaultCollection;
+
+            internal static ReadOnlyCollection<T> Empty
             {
-                using (var output = File.OpenWrite(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "TestResults.iOS.xml")))
+                get
                 {
-                    IntegrationTests.Shared.TestRunner.Run("iOS", output);
+                    if (_defaultCollection == null)
+                        _defaultCollection = new ReadOnlyCollection<T>(new T[0]);
+                    return _defaultCollection;
                 }
-
-                return;
             }
-
-            // if you want to use a different Application Delegate class from "UnitTestAppDelegate"
-            // you can specify it here.
-            UIApplication.Main(args, null, "UnitTestAppDelegate");
         }
     }
 }

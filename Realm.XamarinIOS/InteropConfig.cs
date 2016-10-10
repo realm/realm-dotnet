@@ -45,7 +45,7 @@ namespace Realms
                 return true;
             }
 #else
-            get { return (IntPtr.Size == 8); }
+            get { return IntPtr.Size == 8; }
 #endif
         }
 

@@ -41,7 +41,7 @@ namespace IntegrationTests.Shared
     [Preserve(AllMembers = true)]
     public class DynamicRelationshipTests
     {
-        class DynamicDog : RealmObject
+        private class DynamicDog : RealmObject
         {
             public string Name { get; set; }
             public string Color { get; set; }
@@ -49,7 +49,7 @@ namespace IntegrationTests.Shared
             // Owner Owner { get; set; }  will uncomment when verifying that we have back-links from ToMany relationships
         }
 
-        class DynamicOwner : RealmObject
+        private class DynamicOwner : RealmObject
         {
             public string Name { get; set; }
             public DynamicDog TopDog { get; set; }

@@ -71,10 +71,10 @@ namespace Realms
 
         public sealed class Adapter<T> : ObservableCollection<T> where T : RealmObject
         {
-            readonly RealmResults<T> _results;
-            readonly IDisposable _token;
-            readonly Action<Exception> _errorCallback;
-            readonly bool _coalesceMultipleChangesIntoReset;
+            private readonly RealmResults<T> _results;
+            private readonly IDisposable _token;
+            private readonly Action<Exception> _errorCallback;
+            private readonly bool _coalesceMultipleChangesIntoReset;
 
             private bool _suspendNotifications;
 
@@ -85,7 +85,7 @@ namespace Realms
                 _coalesceMultipleChangesIntoReset = coalesceMultipleChangesIntoReset;
 
                 _token = results.SubscribeForNotifications(OnChange);
-                Debug.Assert(_token != null);
+                Debug.Assert(_token != null, "Subscription token must not be null.");
             }
 
             ~Adapter()
@@ -93,7 +93,7 @@ namespace Realms
                 _token.Dispose();
             }
 
-            void OnChange(RealmResults<T> sender, RealmResults<T>.ChangeSet change, Exception error)
+            private void OnChange(RealmResults<T> sender, RealmResults<T>.ChangeSet change, Exception error)
             {
                 if (error != null)
                 {
@@ -128,7 +128,7 @@ namespace Realms
                 }
             }
 
-            void Recreate()
+            private void Recreate()
             {
                 _suspendNotifications = true;
                 this.Clear();
@@ -140,7 +140,7 @@ namespace Realms
                 RaiseReset();
             }
 
-            void RaiseReset()
+            private void RaiseReset()
             {
                 base.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
                 base.OnPropertyChanged(new PropertyChangedEventArgs(nameof(Count)));

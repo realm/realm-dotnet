@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
@@ -25,13 +26,15 @@ using Realms;
 
 namespace IntegrationTests
 {
-    class Cities : RealmObject
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    internal class Cities : RealmObject
     {
         public string Name { get; set; }
     }
 
     [TestFixture, Preserve(AllMembers = true)]
-    class SortingTests : PeopleTestsBase
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    internal class SortingTests : PeopleTestsBase
     {
 
         // see comment on base method why this isn't decorated with [SetUp]
@@ -266,7 +269,5 @@ namespace IntegrationTests
             var sortedCities = _realm.All<Cities>().OrderBy(c => c.Name).ToList().Select(c => c.Name);
             Assert.That(sortedCities, Is.EqualTo(new[] { "A-Place", "A Place", "Santo Domingo", "São Paulo", "Shanghai", "Sydney", "Åby" }));
         }
-
-
-    } // SortingTests
+    }
 }

@@ -19,7 +19,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -325,31 +324,6 @@ namespace Realms
             if (arguments != iv.Arguments || expression != iv.Expression)
                 return (Expression)Expression.Invoke(expression, arguments);
             return (Expression)iv;
-        }
-    }
-
-    internal static class ReadOnlyCollectionExtensions
-    {
-        internal static ReadOnlyCollection<T> ToReadOnlyCollection<T>(this IEnumerable<T> sequence)
-        {
-            if (sequence == null)
-                return ReadOnlyCollectionExtensions.DefaultReadOnlyCollection<T>.Empty;
-            return sequence as ReadOnlyCollection<T> ?? new ReadOnlyCollection<T>((IList<T>)Enumerable.ToArray<T>(sequence));
-        }
-
-        private static class DefaultReadOnlyCollection<T>
-        {
-            private static ReadOnlyCollection<T> _defaultCollection;
-
-            internal static ReadOnlyCollection<T> Empty
-            {
-                get
-                {
-                    if (ReadOnlyCollectionExtensions.DefaultReadOnlyCollection<T>._defaultCollection == null)
-                        ReadOnlyCollectionExtensions.DefaultReadOnlyCollection<T>._defaultCollection = new ReadOnlyCollection<T>((IList<T>)new T[0]);
-                    return ReadOnlyCollectionExtensions.DefaultReadOnlyCollection<T>._defaultCollection;
-                }
-            }
         }
     }
 }

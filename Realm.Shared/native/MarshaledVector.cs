@@ -25,17 +25,17 @@ using DotNetCross.Memory;
 namespace Realms
 {
     [StructLayout(LayoutKind.Sequential)]
-    struct MarshaledVector<T> where T : struct
+    internal struct MarshaledVector<T> where T : struct
     {
-        IntPtr items;
-        IntPtr count;
+        private IntPtr items;
+        private IntPtr count;
 
         internal IEnumerable<T> AsEnumerable()
         {
             return Enumerable.Range(0, (int)count).Select(MarshalElement);
         }
 
-        unsafe T MarshalElement(int elementIndex)
+        private unsafe T MarshalElement(int elementIndex)
         {
             var @struct = default(T);
             Unsafe.CopyBlock(Unsafe.AsPointer(ref @struct), IntPtr.Add(items, elementIndex * Unsafe.SizeOf<T>()).ToPointer(), (uint)Unsafe.SizeOf<T>());

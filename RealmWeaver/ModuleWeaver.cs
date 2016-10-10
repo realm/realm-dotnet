@@ -302,7 +302,7 @@ public class ModuleWeaver
         var columnName = prop.Name;
         var mapToAttribute = prop.CustomAttributes.FirstOrDefault(a => a.AttributeType.Name == "MapToAttribute");
         if (mapToAttribute != null)
-            columnName = ((string)mapToAttribute.ConstructorArguments[0].Value);
+            columnName = (string)mapToAttribute.ConstructorArguments[0].Value;
 
         backingField = GetBackingField(prop);
         var isIndexed = prop.CustomAttributes.Any(a => a.AttributeType.Name == "IndexedAttribute");

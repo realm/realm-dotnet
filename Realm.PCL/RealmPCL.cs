@@ -21,6 +21,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 // using System.Runtime.ConstrainedExecution;
 
@@ -38,6 +39,7 @@ namespace Realms
 
         private static readonly IEnumerable<Type> RealmObjectClasses;
 
+        [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1409:RemoveUnnecessaryCode")]
         static Realm()
         {
             // TODO decide if this can be removed or if that would make signatures different

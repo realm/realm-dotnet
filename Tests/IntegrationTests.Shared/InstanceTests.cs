@@ -28,7 +28,7 @@ namespace IntegrationTests
     [TestFixture, Preserve(AllMembers = true)]
     public class InstanceTests
     {
-        const string SpecialRealmName = "EnterTheMagic.realm";
+        private const string SpecialRealmName = "EnterTheMagic.realm";
 
         [TestFixtureSetUp]
         public void Setup()
@@ -177,7 +177,7 @@ namespace IntegrationTests
         }
 
 
-        class LoneClass : RealmObject
+        private class LoneClass : RealmObject
         {
             public string Name { get; set; }
         }
