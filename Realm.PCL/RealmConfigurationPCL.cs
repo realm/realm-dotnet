@@ -74,9 +74,9 @@ namespace Realms
         /// </summary>
         /// Number indicating the version, can be used to arbitrarily distinguish between schemas even if they have the same objects and properties.
         /// <value>0-based value initially set to indicate user is not versioning.</value>
-        public UInt64 SchemaVersion { get; set; }
+        public ulong SchemaVersion { get; set; }
 
-        public delegate void MigrationCallbackDelegate(Migration migration, UInt64 oldSchemaVersion);
+        public delegate void MigrationCallbackDelegate(Migration migration, ulong oldSchemaVersion);
 
         public MigrationCallbackDelegate MigrationCallback { get; set; }
 
@@ -88,17 +88,19 @@ namespace Realms
         public static string PathToRealm(string optionalPath = null)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
-            return "";
+            return string.Empty;
         }
 
         /// <summary>
         public static RealmConfiguration DefaultConfiguration
         {
-            set { }
             get
             {
                 RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();  // if attempt to use DefaultConfiguration as first line of their code with just PCL linked, want exception!
                 return null;
+            }
+            set
+            {
             }
         }
 
@@ -126,10 +128,10 @@ namespace Realms
         /// <summary>
         /// Generic override determines whether the specified <see cref="System.Object"/> is equal to the current RealmConfiguration.
         /// </summary>
-        /// <param name="rhs">The <see cref="System.Object"/> to compare with the current RealmConfiguration.</param>
+        /// <param name="obj">The <see cref="System.Object"/> to compare with the current RealmConfiguration.</param>
         /// <returns><c>true</c> if the specified <see cref="System.Object"/> is equal to the current
         /// <see cref="Realms.RealmConfiguration"/>; otherwise, <c>false</c>.</returns>
-        public override bool Equals(Object rhs)
+        public override bool Equals(object obj)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return false;

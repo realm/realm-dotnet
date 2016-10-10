@@ -74,7 +74,7 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_schema_version",
                 CallingConvention = CallingConvention.Cdecl)]
-            public static extern UInt64 get_schema_version(SharedRealmHandle sharedRealm, out NativeException ex);
+            public static extern ulong get_schema_version(SharedRealmHandle sharedRealm, out NativeException ex);
         }
 
         [Preserve]

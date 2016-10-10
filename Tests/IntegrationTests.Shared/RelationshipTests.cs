@@ -130,7 +130,7 @@ namespace IntegrationTests.Shared
             {
                 dogNames.Add(dog.Name);
             }
-            Assert.That(dogNames, Is.EquivalentTo(new List<String> { "Bilbo Fleabaggins", "Earl Yippington III" }));
+            Assert.That(dogNames, Is.EquivalentTo(new List<string> { "Bilbo Fleabaggins", "Earl Yippington III" }));
         }
 
 
@@ -147,7 +147,7 @@ namespace IntegrationTests.Shared
             {
                 dogNames.Add(dog.Name);
             }
-            Assert.That(dogNames, Is.EquivalentTo(new List<String> { "Bilbo Fleabaggins", "Earl Yippington III" }));
+            Assert.That(dogNames, Is.EquivalentTo(new List<string> { "Bilbo Fleabaggins", "Earl Yippington III" }));
         }
 
 

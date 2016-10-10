@@ -15,7 +15,7 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -47,7 +47,7 @@ public static class Verifier
         });
 
         process.WaitForExit(10000);
-        return process.StandardOutput.ReadToEnd().Trim().Replace(assemblyPath2, "");
+        return process.StandardOutput.ReadToEnd().Trim().Replace(assemblyPath2, string.Empty);
     }
 
     static string GetPathToPEVerify()
@@ -63,6 +63,6 @@ public static class Verifier
 
     static string TrimLineNumbers(string foo)
     {
-        return Regex.Replace(foo, @"0x.*]", "");
+        return Regex.Replace(foo, @"0x.*]", string.Empty);
     }
 }

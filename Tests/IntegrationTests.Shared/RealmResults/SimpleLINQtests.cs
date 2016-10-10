@@ -325,33 +325,26 @@ namespace IntegrationTests
                 c4.CharProperty = 'a';
             });
             var equality = _realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty == 'A').ToArray();
-            Assert.That(equality.Select(p => p.CharProperty), Is.EquivalentTo(
-                new[] { 'A' }));
+            Assert.That(equality.Select(p => p.CharProperty), Is.EquivalentTo(new[] { 'A' }));
 
 
             var inequality = _realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty != 'c').ToArray();
-            Assert.That(inequality.Select(p => p.CharProperty), Is.EquivalentTo(
-                new[] { 'A', 'B', 'a' }));
+            Assert.That(inequality.Select(p => p.CharProperty), Is.EquivalentTo(new[] { 'A', 'B', 'a' }));
 
             var lessThan = _realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty < 'c').ToArray();
-            Assert.That(lessThan.Select(p => p.CharProperty), Is.EquivalentTo(
-                new[] { 'A', 'B', 'a' }));
+            Assert.That(lessThan.Select(p => p.CharProperty), Is.EquivalentTo(new[] { 'A', 'B', 'a' }));
 
             var lessOrEqualThan = _realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty <= 'c').ToArray();
-            Assert.That(lessOrEqualThan.Select(p => p.CharProperty), Is.EquivalentTo(
-                new[] { 'A', 'B', 'a', 'c' }));
+            Assert.That(lessOrEqualThan.Select(p => p.CharProperty), Is.EquivalentTo(new[] { 'A', 'B', 'a', 'c' }));
 
             var greaterThan = _realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty > 'a').ToArray();
-            Assert.That(greaterThan.Select(p => p.CharProperty), Is.EquivalentTo(
-                new[] { 'c' }));
+            Assert.That(greaterThan.Select(p => p.CharProperty), Is.EquivalentTo(new[] { 'c' }));
 
             var greaterOrEqualThan = _realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty >= 'B').ToArray();
-            Assert.That(greaterOrEqualThan.Select(p => p.CharProperty), Is.EquivalentTo(
-                new[] { 'B', 'a', 'c' }));
+            Assert.That(greaterOrEqualThan.Select(p => p.CharProperty), Is.EquivalentTo(new[] { 'B', 'a', 'c' }));
 
             var between = _realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty > 'A' && p.CharProperty < 'a').ToArray();
-            Assert.That(between.Select(p => p.CharProperty), Is.EquivalentTo(
-                new[] { 'B' }));
+            Assert.That(between.Select(p => p.CharProperty), Is.EquivalentTo(new[] { 'B' }));
 
             var missing = _realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty == 'X').ToArray();
             Assert.That(missing.Length, Is.EqualTo(0));

@@ -58,7 +58,7 @@ namespace Realms
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_timestamp_ticks", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void set_timestamp_ticks(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, Int64 value, out NativeException ex);
+        private static extern void set_timestamp_ticks(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, long value, out NativeException ex);
 
         public static DateTimeOffset GetDateTimeOffset(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex)
         {
@@ -69,7 +69,7 @@ namespace Realms
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_timestamp_ticks", CallingConvention = CallingConvention.Cdecl)]
-        private static extern Int64 get_timestamp_ticks(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex, out NativeException ex);
+        private static extern long get_timestamp_ticks(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex, out NativeException ex);
 
         public static DateTimeOffset? GetNullableDateTimeOffset(TableHandle tableHandle, IntPtr columnIndex,
             IntPtr rowIndex)
@@ -145,7 +145,7 @@ namespace Realms
                 Debug.Assert(bytesRead <= stringGetBufferLen);
             }  // needed re-read with expanded buffer
 
-            return bytesRead != 0 ? Marshal.PtrToStringUni(stringGetBuffer, bytesRead) : (isNull ? null : "");
+            return bytesRead != 0 ? Marshal.PtrToStringUni(stringGetBuffer, bytesRead) : (isNull ? null : string.Empty);
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_string", CallingConvention = CallingConvention.Cdecl)]
@@ -269,7 +269,7 @@ namespace Realms
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_int64", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void set_int64(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, Int64 value, out NativeException ex);
+        private static extern void set_int64(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, long value, out NativeException ex);
 
         public static void SetInt64Unique(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex, long value)
         {
@@ -279,7 +279,7 @@ namespace Realms
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_int64_unique", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void set_int64_unique(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, Int64 value, out NativeException ex);
+        private static extern void set_int64_unique(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, long value, out NativeException ex);
 
         public static long GetInt64(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex)
         {
@@ -290,7 +290,7 @@ namespace Realms
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_int64", CallingConvention = CallingConvention.Cdecl)]
-        private static extern Int64 get_int64(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex, out NativeException ex);
+        private static extern long get_int64(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex, out NativeException ex);
 
         public static long? GetNullableInt64(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex)
         {
@@ -302,7 +302,7 @@ namespace Realms
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_nullable_int64", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr get_nullable_int64(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex, out Int64 retVal, out NativeException ex);
+        private static extern IntPtr get_nullable_int64(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex, out long retVal, out NativeException ex);
 
         public static void SetSingle(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex, float value)
         {
@@ -459,7 +459,7 @@ namespace Realms
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_count_all", CallingConvention = CallingConvention.Cdecl)]
-        private static extern Int64 count_all(TableHandle handle, out NativeException ex);
+        private static extern long count_all(TableHandle handle, out NativeException ex);
 
         public static void Unbind(IntPtr tablePointer)
         {
@@ -533,7 +533,7 @@ namespace Realms
             [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen, out NativeException ex);
 
 
-        internal static IntPtr RowForPrimaryKey(TableHandle tableHandle, int primaryKeyColumnIndex, Int64 id)
+        internal static IntPtr RowForPrimaryKey(TableHandle tableHandle, int primaryKeyColumnIndex, long id)
         {
             NativeException nativeException;
             var result = row_for_int_primarykey(tableHandle, (IntPtr)primaryKeyColumnIndex, id,  out nativeException);
@@ -542,7 +542,7 @@ namespace Realms
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "row_for_int_primarykey", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr row_for_int_primarykey(TableHandle handle, IntPtr columnIndex, Int64 value, out NativeException ex);
+        private static extern IntPtr row_for_int_primarykey(TableHandle handle, IntPtr columnIndex, long value, out NativeException ex);
 
     }
 }

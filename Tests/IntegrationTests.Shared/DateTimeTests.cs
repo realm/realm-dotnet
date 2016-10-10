@@ -48,10 +48,10 @@ namespace IntegrationTests.Shared
 
         [Test]
         public void SetAndGetPropertyTest(
-            [Values(0, 11, 23)] Int32 hour,
-            [Values(0, 6, 30, 59)] Int32 mins,
-            [Values(0, 6, 30, 59)] Int32 secs,
-            [Values(0, 1, 999)] Int32 ms)
+            [Values(0, 11, 23)] int hour,
+            [Values(0, 6, 30, 59)] int mins,
+            [Values(0, 6, 30, 59)] int secs,
+            [Values(0, 1, 999)] int ms)
         {
             var turingsBirthday = new DateTimeOffset(1912, 6, 23, hour, mins, secs, ms, TimeSpan.Zero);
 
@@ -77,7 +77,7 @@ namespace IntegrationTests.Shared
         {
             using (var transaction = _realm.BeginWrite())
             {
-                foreach (var ms in new List<Int32> { 10, 999, 998, 42 })
+                foreach (var ms in new List<int> { 10, 999, 998, 42 })
                 {
                     var birthday = new DateTimeOffset(1912, 6, 23, 23, 59, 59, ms, TimeSpan.Zero);
                     foreach (var addMs in new List<double> { -2000.0, 1.0, -1.0, 1000.0, 100.0 })

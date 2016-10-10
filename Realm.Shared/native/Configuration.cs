@@ -49,7 +49,7 @@ namespace Realms.Native
         [MarshalAs(UnmanagedType.I1)]
         internal bool delete_if_migration_needed;
 
-        internal UInt64 schema_version;
+        internal ulong schema_version;
 
         internal MigrationCallback migration_callback;
         internal IntPtr managed_migration_handle;

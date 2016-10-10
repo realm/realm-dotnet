@@ -15,16 +15,13 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
-using System;
 
-namespace Realms {
-
-public class RealmDecryptionFailedException : RealmFileAccessErrorException {
-
-    public RealmDecryptionFailedException(String message) : base(message)
+namespace Realms
+{
+    public class RealmDecryptionFailedException : RealmFileAccessErrorException
     {
+        public RealmDecryptionFailedException(string message) : base(message)
+        {
+        }
     }
 }
-
-} // namespace Realms

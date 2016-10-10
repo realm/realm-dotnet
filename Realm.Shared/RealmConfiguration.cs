@@ -89,7 +89,7 @@ namespace Realms
         /// Number indicating the version, can be used to arbitrarily distinguish between schemas even if they have the same objects and properties.
         /// </summary>
         /// <value>0-based value initially set to zero so all user-set values will be greater.</value>
-        public UInt64 SchemaVersion { get; set; } = 0;
+        public ulong SchemaVersion { get; set; } = 0;
 
         /// <summary>
         /// In order to handle manual migrations, you need to supply one of these to your <c>RealmConfiguration</c>.
@@ -99,7 +99,7 @@ namespace Realms
         /// The <c>oldSchemaVersion</c> parameter will tell you which version the user is migrating *from*.
         /// They should always be migrating to the current version.
         /// </summary>
-        public delegate void MigrationCallbackDelegate(Migration migration, UInt64 oldSchemaVersion);
+        public delegate void MigrationCallbackDelegate(Migration migration, ulong oldSchemaVersion);
 
         /// <summary>
         /// Gets or sets the migration callback.
@@ -167,14 +167,14 @@ namespace Realms
         /// <summary>
         /// Generic override determines whether the specified <see cref="System.Object"/> is equal to the current RealmConfiguration.
         /// </summary>
-        /// <param name="rhs">The <see cref="System.Object"/> to compare with the current RealmConfiguration.</param>
+        /// <param name="obj">The <see cref="System.Object"/> to compare with the current RealmConfiguration.</param>
         /// <returns><c>true</c> if the specified <see cref="System.Object"/> is equal to the current
         /// <see cref="Realms.RealmConfiguration"/>; otherwise, <c>false</c>.</returns>
-        public override bool Equals(Object rhs)
+        public override bool Equals(object obj)
         {
-            if (rhs == null)
+            if (obj == null)
                 return false;
-            return Equals(rhs as RealmConfiguration);
+            return Equals(obj as RealmConfiguration);
         }
 
 

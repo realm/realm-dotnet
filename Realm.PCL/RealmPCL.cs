@@ -124,9 +124,9 @@ namespace Realms
         /// <summary>
         /// Generic override determines whether the specified <see cref="System.Object"/> is equal to the current Realm.
         /// </summary>
-        /// <param name="rhs">The <see cref="System.Object"/> to compare with the current Realm.</param>
+        /// <param name="obj">The <see cref="System.Object"/> to compare with the current Realm.</param>
         /// <returns><c>true</c> if the Realms are functionally equal.</returns>
-        public override bool Equals(Object rhs)
+        public override bool Equals(object obj)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return false;
@@ -331,10 +331,10 @@ namespace Realms
         /// Fast lookup of an object from a class which has a PrimaryKey property.
         /// </summary>
         /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
-        /// <param name="id">Id to be matched exactly, same as an == search. Int64 argument works for all integer properties supported as PrimaryKey.</param>
+        /// <param name="id">Id to be matched exactly, same as an == search. ulong argument works for all integer properties supported as PrimaryKey.</param>
         /// <returns>Null or an object matching the id.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class T lacks an [PrimaryKey].</exception>
-        public T ObjectForPrimaryKey<T>(Int64 id) where T : RealmObject
+        public T ObjectForPrimaryKey<T>(ulong id) where T : RealmObject
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return null;
@@ -362,7 +362,7 @@ namespace Realms
         /// <param name="id">Id to be matched exactly, same as an == search.</param>
         /// <returns>Null or an object matdhing the id.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class lacks an [PrimaryKey].</exception>
-        public RealmObject ObjectForPrimaryKey(string className, Int64 id)
+        public RealmObject ObjectForPrimaryKey(string className, ulong id)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return null;

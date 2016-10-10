@@ -24,12 +24,12 @@ namespace Realms
 {
     internal class MarshalHelpers
     {
-        public static IntPtr BoolToIntPtr(Boolean value)
+        public static IntPtr BoolToIntPtr(bool value)
         {
             return value ? (IntPtr)1 : (IntPtr)0;
         }
 
-        public static Boolean IntPtrToBool(IntPtr value)
+        public static bool IntPtrToBool(IntPtr value)
         {
             return (IntPtr)1 == value;
         }

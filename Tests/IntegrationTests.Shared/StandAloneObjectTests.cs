@@ -179,23 +179,23 @@ namespace IntegrationTests.Shared
             public string String { get; set; }
             public char Char { get; set; }
             public byte Byte { get; set; }
-            public Int16 Int16 { get; set; }
-            public Int32 Int32 { get; set; }
-            public Int64 Int64 { get; set; }
-            public Single Single { get; set; }
-            public Double Double { get; set; }
+            public short Int16 { get; set; }
+            public int Int32 { get; set; }
+            public long Int64 { get; set; }
+            public float Single { get; set; }
+            public double Double { get; set; }
             public DateTimeOffset DateTimeOffset { get; set; }
-            public Boolean Boolean { get; set; }
-            public Byte[] ByteArray { get; set; }
+            public bool Boolean { get; set; }
+            public byte[] ByteArray { get; set; }
             public char? NullableChar { get; set; }
             public byte? NullableByte { get; set; }
-            public Int16? NullableInt16 { get; set; }
-            public Int32? NullableInt32 { get; set; }
-            public Int64? NullableInt64 { get; set; }
-            public Single? NullableSingle { get; set; }
-            public Double? NullableDouble { get; set; }
+            public short? NullableInt16 { get; set; }
+            public int? NullableInt32 { get; set; }
+            public long? NullableInt64 { get; set; }
+            public float? NullableSingle { get; set; }
+            public double? NullableDouble { get; set; }
             public DateTimeOffset? NullableDateTimeOffset { get; set; }
-            public Boolean? NullableBoolean { get; set; }
+            public bool? NullableBoolean { get; set; }
         }
     }
 }

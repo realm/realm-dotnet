@@ -16,8 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
-
 namespace Realms
 {
     /// <summary>
@@ -28,7 +26,7 @@ namespace Realms
     /// </remarks>
     public class RealmFileAccessErrorException : RealmException
     {
-        internal RealmFileAccessErrorException(String message) : base(message)
+        internal RealmFileAccessErrorException(string message) : base(message)
         {
         }
     }

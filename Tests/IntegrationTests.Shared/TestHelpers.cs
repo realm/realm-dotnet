@@ -58,7 +58,7 @@ namespace IntegrationTests
             return;
 #endif
 
-            string sourceDir = "";
+            string sourceDir = string.Empty;
 #if __IOS__
             sourceDir = NSBundle.MainBundle.BundlePath;
 #endif

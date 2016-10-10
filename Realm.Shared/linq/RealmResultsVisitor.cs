@@ -54,13 +54,13 @@ namespace Realms
 
             internal static class String
             {
-                internal static readonly LazyMethod Contains = Methods.Capture<string>(s => s.Contains(""));
+                internal static readonly LazyMethod Contains = Capture<string>(s => s.Contains(string.Empty));
 
-                internal static readonly LazyMethod StartsWith = Methods.Capture<string>(s => s.StartsWith(""));
+                internal static readonly LazyMethod StartsWith = Capture<string>(s => s.StartsWith(string.Empty));
 
-                internal static readonly LazyMethod EndsWith = Methods.Capture<string>(s => s.EndsWith(""));
+                internal static readonly LazyMethod EndsWith = Capture<string>(s => s.EndsWith(string.Empty));
 
-                internal static readonly LazyMethod IsNullOrEmpty = Methods.Capture<string>(s => string.IsNullOrEmpty(s));
+                internal static readonly LazyMethod IsNullOrEmpty = Capture<string>(s => string.IsNullOrEmpty(s));
             }
         }
 

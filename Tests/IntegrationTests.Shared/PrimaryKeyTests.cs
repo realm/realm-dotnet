@@ -226,7 +226,7 @@ namespace IntegrationTests.Shared
                 obj.Int64Property = 42000042;
             });
 
-            Int64 foundValue = 0;
+            long foundValue = 0;
             // Act
             var t = new Thread(() =>
             {

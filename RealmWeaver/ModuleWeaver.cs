@@ -45,7 +45,6 @@ public class ModuleWeaver
     private AssemblyDefinition _corLib;
     private TypeReference System_Object;
     private TypeReference System_Boolean;
-    private TypeReference System_String;
     private TypeReference System_Type;
     private TypeReference System_IList;
     private TypeReference System_DateTimeOffset;
@@ -172,7 +171,6 @@ public class ModuleWeaver
         _corLib = AssemblyResolver.Resolve((AssemblyNameReference)ModuleDefinition.TypeSystem.CoreLibrary);
         System_Object = ModuleDefinition.TypeSystem.Object;
         System_Boolean = ModuleDefinition.TypeSystem.Boolean;
-        System_String = ModuleDefinition.TypeSystem.String;
         System_Int32 = ModuleDefinition.TypeSystem.Int32;
 
         var dateTimeOffsetType = GetTypeFromSystemAssembly("System.DateTimeOffset");
@@ -291,7 +289,7 @@ public class ModuleWeaver
         TypeReference helperType = WeaveRealmObjectHelper(type, objectConstructor, persistedProperties);
         wovenAttribute.ConstructorArguments.Add(new CustomAttributeArgument(System_Type, helperType));
         type.CustomAttributes.Add(wovenAttribute);
-        Debug.WriteLine("");
+        Debug.WriteLine(string.Empty);
     }
 
 
@@ -339,12 +337,12 @@ public class ModuleWeaver
             if (prop.SetMethod == null)
                 return false;
 
-            var typeId = prop.PropertyType.FullName + (isPrimaryKey ? " unique" : "");
+            var typeId = prop.PropertyType.FullName + (isPrimaryKey ? " unique" : string.Empty);
             if (!methodTable.ContainsKey(typeId))
             {
                 var getter = LookupMethodAndImport(_realmObject, "Get" + _typeTable[prop.PropertyType.FullName] + "Value");
                 var setter = LookupMethodAndImport(_realmObject,
-                    "Set" + _typeTable[prop.PropertyType.FullName] + "Value" + (isPrimaryKey ? "Unique" : ""));
+                    "Set" + _typeTable[prop.PropertyType.FullName] + "Value" + (isPrimaryKey ? "Unique" : string.Empty));
                 methodTable[typeId] = Tuple.Create(getter, setter);
             }
 
@@ -442,10 +440,10 @@ public class ModuleWeaver
         var wovenPropertyAttribute = new CustomAttribute(_wovenPropertyAttributeConstructor);
         prop.CustomAttributes.Add(wovenPropertyAttribute);
 
-        Debug.WriteLine("");
+        Debug.WriteLine(string.Empty);
 
-        var primaryKeyMsg = isPrimaryKey ? "[PrimaryKey]" : "";
-        var indexedMsg = isIndexed ? "[Indexed]" : "";
+        var primaryKeyMsg = isPrimaryKey ? "[PrimaryKey]" : string.Empty;
+        var indexedMsg = isIndexed ? "[Indexed]" : string.Empty;
         LogDebug($"Woven {type.Name}.{prop.Name} as a {prop.PropertyType.FullName} {primaryKeyMsg} {indexedMsg}");
         return true;
     }
