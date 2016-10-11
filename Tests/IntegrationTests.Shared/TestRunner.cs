@@ -33,6 +33,7 @@ namespace IntegrationTests.Shared
 
             var testExecutionContext = TestExecutionContext.CurrentContext;
             testExecutionContext.WorkDirectory = Environment.CurrentDirectory;
+            //THIS SHOULD BE A VIOLATION
 
             var workItem = suite.CreateWorkItem(TestFilter.Empty);
             workItem.Execute(testExecutionContext);
