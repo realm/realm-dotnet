@@ -79,18 +79,17 @@ namespace Realms
             return e;
         }
 
-        /**
-        Expressions will typically be in a form:
-        - with embedded Lambda `Count(p => !p.IsInteresting)`
-        - at the end of a Where `Where(p => !p.IsInteresting).Where()`
+        /*
+            Expressions will typically be in a form:
+            - with embedded Lambda `Count(p => !p.IsInteresting)`
+            - at the end of a Where `Where(p => !p.IsInteresting).Where()`
 
-        The latter form is handled by recursion where evaluation of Visit will 
-        take us back into VisitMethodCall to evaluate the Where call.
-
+            The latter form is handled by recursion where evaluation of Visit will 
+            take us back into VisitMethodCall to evaluate the Where call.
         */
         private void RecurseToWhereOrRunLambda(MethodCallExpression m)
         {
-            this.Visit(m.Arguments[0]);  // creates the query or recurse to "Where"
+            this.Visit(m.Arguments[0]); // creates the query or recurse to "Where"
             if (m.Arguments.Count > 1)
             {
                 var lambda = (LambdaExpression)StripQuotes(m.Arguments[1]);
@@ -232,7 +231,7 @@ namespace Realms
                         throw new InvalidOperationException("Sequence contains no matching element");
                     }
 
-                    Debug.Assert(m.Method.Name == nameof(Queryable.FirstOrDefault), "If it's not 'First', it ought to be 'FirstOrDefault'.");
+                    Debug.Assert(m.Method.Name == nameof(Queryable.FirstOrDefault), $"The method {m.Method.Name}  is not supported. We expected {nameof(Queryable.FirstOrDefault)}.");
                     return Expression.Constant(null);
                 }
 
@@ -264,7 +263,7 @@ namespace Realms
                             throw new InvalidOperationException("Sequence contains no matching element");
                         }
 
-                        Debug.Assert(m.Method.Name == nameof(Queryable.SingleOrDefault), "If it's not 'Single', it ought to be 'SingleOrDefault'.");
+                        Debug.Assert(m.Method.Name == nameof(Queryable.SingleOrDefault), $"The method {m.Method.Name}  is not supported. We expected {nameof(Queryable.SingleOrDefault)}.");
                         return Expression.Constant(null);
                     }
 
@@ -303,7 +302,7 @@ namespace Realms
                         throw new InvalidOperationException("Sequence contains no matching element");
                     }
 
-                    Debug.Assert(m.Method.Name == nameof(Queryable.LastOrDefault), "If it's not 'Last', it ought to be 'LastOrDefault'.");
+                    Debug.Assert(m.Method.Name == nameof(Queryable.LastOrDefault), $"The method {m.Method.Name}  is not supported. We expected {nameof(Queryable.LastOrDefault)}.");
                     return Expression.Constant(null);
                 }
 
@@ -317,7 +316,7 @@ namespace Realms
                             throw new ArgumentOutOfRangeException();
                         }
 
-                        Debug.Assert(m.Method.Name == nameof(Queryable.ElementAtOrDefault), "If it's not 'ElementAt', it ought to be 'ElementAtOrDefault'.");
+                        Debug.Assert(m.Method.Name == nameof(Queryable.ElementAtOrDefault), $"The method {m.Method.Name}  is not supported. We expected {nameof(Queryable.ElementAtOrDefault)}.");
                         return Expression.Constant(null);
                     }
 

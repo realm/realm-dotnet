@@ -38,7 +38,7 @@ namespace Realms
         public static string DefaultRealmName => "default.realm";
 
         /// <summary>
-        /// Flag mainly to help with temp databases and testing, indicates that content can be abandoned when you change the schema.
+        /// Flag indicating that the database will be deleted if the schema mismatches the one in the code. Use this when debugging and developing your app but never release it with this flag set to <c>true</c>.
         /// </summary>
         public readonly bool ShouldDeleteIfMigrationNeeded;
 
@@ -183,9 +183,9 @@ namespace Realms
         }
 
         /// <summary>
-        /// Generic override determines whether the specified <see cref="System.Object"/> is equal to the current RealmConfiguration.
+        /// Generic override determines whether the specified <see cref="System.Object"/> is equal to the current <see cref="Realms.RealmConfiguration" />.
         /// </summary>
-        /// <param name="obj">The <see cref="System.Object"/> to compare with the current RealmConfiguration.</param>
+        /// <param name="obj">The <see cref="System.Object"/> to compare with the current <see cref="Realms.RealmConfiguration" />.</param>
         /// <returns><c>true</c> if the specified <see cref="System.Object"/> is equal to the current
         /// <see cref="Realms.RealmConfiguration"/>; otherwise, <c>false</c>.</returns>
         public override bool Equals(object obj)

@@ -16,6 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
+using System.Diagnostics;
+
 namespace Realms
 {
     /// <summary>
@@ -28,11 +31,13 @@ namespace Realms
 #if REALM_32       
             get
             {
+                Debug.Assert(IntPtr.Size == 4, "REALM_32 symbol is defined, but we're in a 64 bit process.");
                 return false;
             }
 #elif REALM_64
             get
             {
+                Debug.Assert(IntPtr.Size == 8, "REALM_64 symbol is defined, but we're in a 32 bit process.");
                 return true;
             }
 #else

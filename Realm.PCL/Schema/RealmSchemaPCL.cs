@@ -35,7 +35,6 @@ namespace Realms
         /// <summary>
         /// Gets the number of known classes in the schema.
         /// </summary>
-        /// <value>The count of known classes specified in this Schema.</value>
         public int Count { get; }
 
         private RealmSchema()

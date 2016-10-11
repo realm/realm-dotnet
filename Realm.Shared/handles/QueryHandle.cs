@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Realms.Native;
 
@@ -33,6 +34,7 @@ namespace Realms
         // This is a delegate type meant to represent one of the "query operator" methods such as float_less and bool_equal
         internal delegate void Operation<T>(QueryHandle queryPtr, IntPtr columnIndex, T value);
 
+        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1121:UseBuiltInTypeAlias")]
         private static class NativeMethods
         {
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_binary_equal", CallingConvention = CallingConvention.Cdecl)]
@@ -86,76 +88,76 @@ namespace Realms
             public static extern void int_greater_equal(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_long_equal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void long_equal(QueryHandle queryPtr, IntPtr columnIndex, long value, out NativeException ex);
+            public static extern void long_equal(QueryHandle queryPtr, IntPtr columnIndex, Int64 value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_long_not_equal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void long_not_equal(QueryHandle queryPtr, IntPtr columnIndex, long value, out NativeException ex);
+            public static extern void long_not_equal(QueryHandle queryPtr, IntPtr columnIndex, Int64 value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_long_less", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void long_less(QueryHandle queryPtr, IntPtr columnIndex, long value, out NativeException ex);
+            public static extern void long_less(QueryHandle queryPtr, IntPtr columnIndex, Int64 value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_long_less_equal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void long_less_equal(QueryHandle queryPtr, IntPtr columnIndex, long value, out NativeException ex);
+            public static extern void long_less_equal(QueryHandle queryPtr, IntPtr columnIndex, Int64 value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_long_greater", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void long_greater(QueryHandle queryPtr, IntPtr columnIndex, long value, out NativeException ex);
+            public static extern void long_greater(QueryHandle queryPtr, IntPtr columnIndex, Int64 value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_long_greater_equal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void long_greater_equal(QueryHandle queryPtr, IntPtr columnIndex, long value, out NativeException ex);
+            public static extern void long_greater_equal(QueryHandle queryPtr, IntPtr columnIndex, Int64 value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_float_equal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void float_equal(QueryHandle queryPtr, IntPtr columnIndex, float value, out NativeException ex);
+            public static extern void float_equal(QueryHandle queryPtr, IntPtr columnIndex, Single value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_float_not_equal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void float_not_equal(QueryHandle queryPtr, IntPtr columnIndex, float value, out NativeException ex);
+            public static extern void float_not_equal(QueryHandle queryPtr, IntPtr columnIndex, Single value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_float_less", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void float_less(QueryHandle queryPtr, IntPtr columnIndex, float value, out NativeException ex);
+            public static extern void float_less(QueryHandle queryPtr, IntPtr columnIndex, Single value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_float_less_equal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void float_less_equal(QueryHandle queryPtr, IntPtr columnIndex, float value, out NativeException ex);
+            public static extern void float_less_equal(QueryHandle queryPtr, IntPtr columnIndex, Single value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_float_greater", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void float_greater(QueryHandle queryPtr, IntPtr columnIndex, float value, out NativeException ex);
+            public static extern void float_greater(QueryHandle queryPtr, IntPtr columnIndex, Single value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_float_greater_equal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void float_greater_equal(QueryHandle queryPtr, IntPtr columnIndex, float value, out NativeException ex);
+            public static extern void float_greater_equal(QueryHandle queryPtr, IntPtr columnIndex, Single value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_double_equal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void double_equal(QueryHandle queryPtr, IntPtr columnIndex, double value, out NativeException ex);
+            public static extern void double_equal(QueryHandle queryPtr, IntPtr columnIndex, Double value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_double_not_equal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void double_not_equal(QueryHandle queryPtr, IntPtr columnIndex, double value, out NativeException ex);
+            public static extern void double_not_equal(QueryHandle queryPtr, IntPtr columnIndex, Double value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_double_less", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void double_less(QueryHandle queryPtr, IntPtr columnIndex, double value, out NativeException ex);
+            public static extern void double_less(QueryHandle queryPtr, IntPtr columnIndex, Double value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_double_less_equal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void double_less_equal(QueryHandle queryPtr, IntPtr columnIndex, double value, out NativeException ex);
+            public static extern void double_less_equal(QueryHandle queryPtr, IntPtr columnIndex, Double value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_double_greater", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void double_greater(QueryHandle queryPtr, IntPtr columnIndex, double value, out NativeException ex);
+            public static extern void double_greater(QueryHandle queryPtr, IntPtr columnIndex, Double value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_double_greater_equal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void double_greater_equal(QueryHandle queryPtr, IntPtr columnIndex, double value, out NativeException ex);
+            public static extern void double_greater_equal(QueryHandle queryPtr, IntPtr columnIndex, Double value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_timestamp_ticks_equal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void timestamp_ticks_equal(QueryHandle queryPtr, IntPtr columnIndex, long value, out NativeException ex);
+            public static extern void timestamp_ticks_equal(QueryHandle queryPtr, IntPtr columnIndex, Int64 value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_timestamp_ticks_not_equal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void timestamp_ticks_not_equal(QueryHandle queryPtr, IntPtr columnIndex, long value, out NativeException ex);
+            public static extern void timestamp_ticks_not_equal(QueryHandle queryPtr, IntPtr columnIndex, Int64 value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_timestamp_ticks_less", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void timestamp_ticks_less(QueryHandle queryPtr, IntPtr columnIndex, long value, out NativeException ex);
+            public static extern void timestamp_ticks_less(QueryHandle queryPtr, IntPtr columnIndex, Int64 value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_timestamp_ticks_less_equal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void timestamp_ticks_less_equal(QueryHandle queryPtr, IntPtr columnIndex, long value, out NativeException ex);
+            public static extern void timestamp_ticks_less_equal(QueryHandle queryPtr, IntPtr columnIndex, Int64 value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_timestamp_ticks_greater", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void timestamp_ticks_greater(QueryHandle queryPtr, IntPtr columnIndex, long value, out NativeException ex);
+            public static extern void timestamp_ticks_greater(QueryHandle queryPtr, IntPtr columnIndex, Int64 value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_timestamp_ticks_greater_equal", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void timestamp_ticks_greater_equal(QueryHandle queryPtr, IntPtr columnIndex, long value, out NativeException ex);
+            public static extern void timestamp_ticks_greater_equal(QueryHandle queryPtr, IntPtr columnIndex, Int64 value, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_null_equal", CallingConvention = CallingConvention.Cdecl)]
             public static extern void null_equal(QueryHandle queryPtr, IntPtr columnIndex, out NativeException ex);

@@ -18,6 +18,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.InteropServices;
 
@@ -25,6 +26,7 @@ namespace Realms
 {
     internal class SharedRealmHandle : RealmHandle
     {
+        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1121:UseBuiltInTypeAlias")]
         private static class NativeMethods
         {
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_open", CallingConvention = CallingConvention.Cdecl)]
@@ -74,7 +76,7 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_get_schema_version",
                 CallingConvention = CallingConvention.Cdecl)]
-            public static extern ulong get_schema_version(SharedRealmHandle sharedRealm, out NativeException ex);
+            public static extern UInt64 get_schema_version(SharedRealmHandle sharedRealm, out NativeException ex);
         }
 
         [Preserve]
@@ -156,10 +158,10 @@ namespace Realms
             return result;
         }
 
-        public bool IsSameInstance(SharedRealmHandle rhs)
+        public bool IsSameInstance(SharedRealmHandle other)
         {
             NativeException nativeException;
-            var result = NativeMethods.is_same_instance(this, rhs, out nativeException);
+            var result = NativeMethods.is_same_instance(this, other, out nativeException);
             nativeException.ThrowIfNecessary();
             return MarshalHelpers.IntPtrToBool(result);
         }

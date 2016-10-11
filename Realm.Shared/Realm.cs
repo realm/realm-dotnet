@@ -42,10 +42,6 @@ namespace Realms
     {
         #region static
 
-        // shared string buffer for getter because can only be getting on this one thread per Realm
-        internal IntPtr StringGetBuffer = IntPtr.Zero;
-        internal int StringGetBufferLen;
-
         static Realm()
         {
             NativeCommon.Initialize();
@@ -302,13 +298,6 @@ namespace Realms
             }
 
             SharedRealmHandle.Close();  // Note: this closes the *handle*, it does not trigger realm::Realm::close().
-
-            if (StringGetBuffer != IntPtr.Zero)
-            {
-                Marshal.FreeHGlobal(StringGetBuffer);
-                StringGetBuffer = IntPtr.Zero;
-                StringGetBufferLen = 0;
-            }
         }
 
         /// <summary>
@@ -722,7 +711,7 @@ namespace Realms
         /// Fast lookup of an object from a class which has a PrimaryKey property.
         /// </summary>
         /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
-        /// <param name="id">Id to be matched exactly, same as an == search. long argument works for all integer properties supported as PrimaryKey.</param>
+        /// <param name="id">Id to be matched exactly, same as an == search. An argument of type <c>long</c> works for all integer properties, supported as PrimaryKey.</param>
         /// <returns>Null or an object matching the id.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class T lacks an [PrimaryKey].</exception>
         public T ObjectForPrimaryKey<T>(long id) where T : RealmObject
