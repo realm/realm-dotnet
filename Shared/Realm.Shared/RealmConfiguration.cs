@@ -38,12 +38,12 @@ namespace Realms
         public static string DefaultRealmName => "default.realm";
 
         /// <summary>
-        /// Flag indicating that the database will be deleted if the schema mismatches the one in the code. Use this when debugging and developing your app but never release it with this flag set to <c>true</c>.
+        /// Gets a value indicating whether the database will be deleted if the schema mismatches the one in the code. Use this when debugging and developing your app but never release it with this flag set to <c>true</c>.
         /// </summary>
         public bool ShouldDeleteIfMigrationNeeded { get; }
 
         /// <summary>
-        /// Flag to indicate Realm is opened readonly so can open from locked locations such as bundled with an application.
+        /// Gets or sets a value indicating whether a Realm is opened as readonly. This allows opening it from locked locations such as resources, bundled with an application.
         /// </summary>
         public bool IsReadOnly
         {
@@ -51,6 +51,7 @@ namespace Realms
             {
                 return ReadOnly;
             }
+
             set
             {
                 ReadOnly = value;

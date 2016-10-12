@@ -250,7 +250,6 @@ namespace Realms
         /// <returns>True if closed.</returns>
         public bool IsClosed => SharedRealmHandle.IsClosed;
 
-
         ~Realm()
         {
             Dispose(false);
@@ -696,7 +695,7 @@ namespace Realms
         /// </summary>
         /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
         /// <returns>A RealmResults that without further filtering, allows iterating all objects of class T, in this realm.</returns>
-        public RealmResults<T> GetAll<T>() where T: RealmObject
+        public RealmResults<T> GetAll<T>() where T : RealmObject
         {
             var type = typeof(T);
             RealmObject.Metadata metadata;
@@ -724,7 +723,6 @@ namespace Realms
 
             return new RealmResults<dynamic>(this, metadata, true);
         }
-
 
         #region Quick Find using primary key
 
@@ -905,11 +903,10 @@ namespace Realms
         /// <returns>Null or an object matching the id.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class T lacks an [PrimaryKey].</exception>
         [Obsolete("This method has been renamed. Use Find for the same results.")]
-        public T ObjectForPrimaryKey<T>(Int64 id) where T : RealmObject
+        public T ObjectForPrimaryKey<T>(long id) where T : RealmObject
         {
             return Find<T>(id);
         }
-
 
         /// <summary>
         /// Fast lookup of an object from a class which has a PrimaryKey property.
@@ -924,7 +921,6 @@ namespace Realms
             return Find<T>(id);
         }
 
-
         /// <summary>
         /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.
         /// </summary>
@@ -933,11 +929,10 @@ namespace Realms
         /// <returns>Null or an object matdhing the id.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class lacks an [PrimaryKey].</exception>
         [Obsolete("This method has been renamed. Use Find for the same results.")]
-        public RealmObject ObjectForPrimaryKey(string className, Int64 id)
+        public RealmObject ObjectForPrimaryKey(string className, long id)
         {
             return Find(className, id);
         }
-
 
         /// <summary>
         /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.

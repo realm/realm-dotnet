@@ -178,8 +178,8 @@ namespace Realms
 
         private class NotificationToken : IDisposable
         {
-            RealmResults<T> _results;
-            NotificationCallbackDelegate _callback;
+            private RealmResults<T> _results;
+            private NotificationCallbackDelegate _callback;
 
             internal NotificationToken(RealmResults<T> results, NotificationCallbackDelegate callback)
             {
@@ -292,23 +292,6 @@ namespace Realms
             {
                 callback(this, changeset, managedException);
             }
-        }
-    }
-
-    internal static class RealmResultsNativeHelper
-    {
-        internal interface Interface
-        {
-            void NotifyCallbacks(ResultsHandle.CollectionChangeSet? changes, NativeException? exception);
-        }
-
-#if __IOS__
-        [ObjCRuntime.MonoPInvokeCallback(typeof(ResultsHandle.NotificationCallbackDelegate))]
-#endif
-        internal static void NotificationCallback(IntPtr managedResultsHandle, IntPtr changes, IntPtr exception)
-        {
-            var results = (Interface)GCHandle.FromIntPtr(managedResultsHandle).Target;
-            results.NotifyCallbacks(new PtrTo<ResultsHandle.CollectionChangeSet>(changes).Value, new PtrTo<NativeException>(exception).Value);
         }
     }
 }
