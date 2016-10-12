@@ -20,7 +20,7 @@ using System;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 
-namespace Realms
+namespace Realms.Sync
 {
     public class User : ISerializable
     {
