@@ -25,13 +25,6 @@ namespace Realms
     {
         private static class NativeMethods
         {
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "row_get_row_index", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_row_index(RowHandle rowHandle, out NativeException ex);
-
-            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "row_get_is_attached",
-                CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get_is_attached(RowHandle rowHandle, out NativeException ex);
-
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "row_destroy", CallingConvention = CallingConvention.Cdecl)]
             public static extern void destroy(IntPtr rowHandle);
         }
@@ -39,65 +32,13 @@ namespace Realms
         // keep this one even though warned that it is not used. It is in fact used by marshalling
         // used by P/Invoke to automatically construct a TableHandle when returning a size_t as a TableHandle
         [Preserve]
-        public RowHandle(SharedRealmHandle sharedRealmHandle) : base(sharedRealmHandle)
+        public RowHandle(RealmHandle sharedRealmHandle) : base(sharedRealmHandle)
         {
         }
 
         protected override void Unbind()
         {
             NativeMethods.destroy(handle);
-        }
-
-        public IntPtr RowIndex
-        {
-            get
-            {
-                NativeException nativeException;
-                var result = NativeMethods.get_row_index(this, out nativeException);
-                nativeException.ThrowIfNecessary(type =>
-                {
-                    if (type == RealmExceptionCodes.RealmRowDetached)
-                    {
-                        if (Root.IsClosed)
-                        {
-                            return new RealmClosedException("This object belongs to a closed realm.");
-                        }
-
-                        return new RealmInvalidObjectException("This object is detached. Was it deleted from the realm?");
-                    }
-
-                    return null;
-                });
-                return result;
-            }
-        }
-
-        public bool IsAttached
-        {
-            get
-            {
-                NativeException nativeException;
-                var result = NativeMethods.get_is_attached(this, out nativeException);
-                nativeException.ThrowIfNecessary();
-                return result == (IntPtr)1;  // inline equiv of IntPtrToBool
-            }
-        }
-
-        public override bool Equals(object p)
-        {
-            // If parameter is null, return false. 
-            if (ReferenceEquals(p, null))
-            {
-                return false;
-            }
-
-            // Optimization for a common success case. 
-            if (ReferenceEquals(this, p))
-            {
-                return true;
-            }
-
-            return ((RowHandle)p).RowIndex == RowIndex;
         }
     }
 }

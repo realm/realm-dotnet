@@ -20,15 +20,30 @@
 #include "error_handling.hpp"
 #include "marshalling.hpp"
 #include "realm_export_decls.hpp"
+#include "object_accessor.hpp"
 
 using namespace realm;
 using namespace realm::binding;
 
 extern "C" {
-
-REALM_EXPORT void row_destroy(Row* row_ptr)
-{
-    delete row_ptr;
-}
-
+    REALM_EXPORT size_t object_get_is_valid(const Object* object_ptr, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            return bool_to_size_t(object_ptr->is_valid());
+        });
+    }
+    
+    REALM_EXPORT void row_destroy(Object* object_ptr)
+    {
+        delete object_ptr;
+    }
+    
+    REALM_EXPORT size_t row_get_row_index(const Object* object_ptr, NativeException::Marshallable& ex)
+    {
+        return handle_errors(ex, [&]() {
+            if (!object_ptr->is_valid())
+                throw RowDetachedException();
+            return object_ptr->row().get_index();
+        });
+    }
 }   // extern "C"

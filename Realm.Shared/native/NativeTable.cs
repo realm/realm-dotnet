@@ -39,77 +39,76 @@ namespace Realms
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_add_empty_row", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr add_empty_row(TableHandle tableHandle, out NativeException ex);
 
-        public static void SetDateTimeOffset(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex, DateTimeOffset value)
+        public static void SetDateTimeOffset(ObjectHandle handle, IntPtr propertyIndex, DateTimeOffset value)
         {
             NativeException nativeException;
             var ticks = value.ToUniversalTime().Ticks;
-            set_timestamp_ticks(tableHandle, columnIndex, rowIndex, ticks, out nativeException);
+            set_timestamp_ticks(handle, propertyIndex, ticks, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public static void SetNullableDateTimeOffset(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex, DateTimeOffset? value)
+        public static void SetNullableDateTimeOffset(ObjectHandle handle, IntPtr propertyIndex, DateTimeOffset? value)
         {
             NativeException nativeException;
             if (value.HasValue)
             {
                 var ticks = value.Value.ToUniversalTime().Ticks;
-                set_timestamp_ticks(tableHandle, columnIndex, rowIndex, ticks, out nativeException);
+                set_timestamp_ticks(handle, propertyIndex, ticks, out nativeException);
             }
             else
             {
-                set_null(tableHandle, columnIndex, rowIndex, out nativeException);
+                set_null(handle, propertyIndex, out nativeException);
             }
 
             nativeException.ThrowIfNecessary();
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_timestamp_ticks", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void set_timestamp_ticks(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, Int64 value, out NativeException ex);
+        private static extern void set_timestamp_ticks(ObjectHandle handle, IntPtr propertyIndex, Int64 value, out NativeException ex);
 
-        public static DateTimeOffset GetDateTimeOffset(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex)
+        public static DateTimeOffset GetDateTimeOffset(ObjectHandle handle, IntPtr propertyIndex)
         {
             NativeException nativeException;
-            var ticks = get_timestamp_ticks(tableHandle, columnIndex, rowIndex, out nativeException);
+            var ticks = get_timestamp_ticks(handle, propertyIndex, out nativeException);
             nativeException.ThrowIfNecessary();
             return new DateTimeOffset(ticks, TimeSpan.Zero);
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_timestamp_ticks", CallingConvention = CallingConvention.Cdecl)]
-        private static extern Int64 get_timestamp_ticks(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex, out NativeException ex);
+        private static extern Int64 get_timestamp_ticks(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
 
-        public static DateTimeOffset? GetNullableDateTimeOffset(TableHandle tableHandle, IntPtr columnIndex,
-            IntPtr rowIndex)
+        public static DateTimeOffset? GetNullableDateTimeOffset(ObjectHandle handle, IntPtr propertyIndex)
         {
             NativeException nativeException;
             long ticks;
-            var hasValue = MarshalHelpers.IntPtrToBool(get_nullable_timestamp_ticks(tableHandle, columnIndex, rowIndex, out ticks, out nativeException));
+            var hasValue = MarshalHelpers.IntPtrToBool(get_nullable_timestamp_ticks(handle, propertyIndex, out ticks, out nativeException));
             nativeException.ThrowIfNecessary();
             return hasValue ? new DateTimeOffset(ticks, TimeSpan.Zero) : (DateTimeOffset?)null;
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_nullable_timestamp_ticks", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr get_nullable_timestamp_ticks(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex, out Int64 retVal, out NativeException ex);
+        private static extern IntPtr get_nullable_timestamp_ticks(ObjectHandle handle, IntPtr propertyIndex, out Int64 retVal, out NativeException ex);
 
-        public static void SetString(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex, string value)
+        public static void SetString(ObjectHandle handle, IntPtr propertyIndex, string value)
         {
             NativeException nativeException;
             if (value != null)
             {
-                set_string(tableHandle, columnIndex, rowIndex, value, (IntPtr)value.Length, out nativeException);
+                set_string(handle, propertyIndex, value, (IntPtr)value.Length, out nativeException);
             }
             else
             {
-                set_null(tableHandle, columnIndex, rowIndex, out nativeException);
+                set_null(handle, propertyIndex, out nativeException);
             }
 
             nativeException.ThrowIfNecessary();
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_string", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void set_string(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx,
+        private static extern void set_string(ObjectHandle handle, IntPtr propertyIndex,
             [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen, out NativeException ex);
 
-        public static void SetStringUnique(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex, string value)
+        public static void SetStringUnique(ObjectHandle handle, IntPtr propertyIndex, string value)
         {
             if (value == null)
             {
@@ -117,15 +116,15 @@ namespace Realms
             }
 
             NativeException nativeException;
-            set_string_unique(tableHandle, columnIndex, rowIndex, value, (IntPtr)value.Length, out nativeException);
+            set_string_unique(handle, propertyIndex, value, (IntPtr)value.Length, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_string_unique", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void set_string_unique(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx,
+        private static extern void set_string_unique(ObjectHandle handle, IntPtr propertyIndex,
             [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen, out NativeException ex);
 
-        public static string GetString(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex)
+        public static string GetString(ObjectHandle handle, IntPtr propertyIndex)
         {
             var bufferSizeNeededChars = 128;
             
@@ -137,7 +136,7 @@ namespace Realms
             NativeException nativeException;
 
             // try to read
-            var bytesRead = (int)get_string(tableHandle, columnIndex, rowIndex, stringGetBuffer,
+            var bytesRead = (int)get_string(handle, propertyIndex, stringGetBuffer,
                 (IntPtr)stringGetBufferLen, out isNull, out nativeException);
             nativeException.ThrowIfNecessary();
             if (bytesRead == -1)
@@ -145,307 +144,307 @@ namespace Realms
                 throw new RealmInvalidDatabaseException("Corrupted string data");
             }
 
-            if (bytesRead > stringGetBufferLen)  // need a bigger buffer
+            if (bytesRead > stringGetBufferLen) // need a bigger buffer
             {
                 Marshal.FreeHGlobal(stringGetBuffer);
                 stringGetBuffer = Marshal.AllocHGlobal((IntPtr)(bytesRead * sizeof(char)));
                 stringGetBufferLen = bytesRead;
 
                 // try to read with big buffer
-                bytesRead = (int)get_string(tableHandle, columnIndex, rowIndex, stringGetBuffer,
+                bytesRead = (int)get_string(handle, propertyIndex, stringGetBuffer,
                     (IntPtr)stringGetBufferLen, out isNull, out nativeException);
                 nativeException.ThrowIfNecessary();
-                if (bytesRead == -1)  // bad UTF-8 in full string
+                if (bytesRead == -1) // bad UTF-8 in full string
                 {
                     throw new RealmInvalidDatabaseException("Corrupted string data");
                 }
 
                 Debug.Assert(bytesRead <= stringGetBufferLen, "Buffer must have overflowed.");
-            }  // needed re-read with expanded buffer
+            } // needed re-read with expanded buffer
 
             return bytesRead != 0 ? Marshal.PtrToStringUni(stringGetBuffer, bytesRead) : (isNull ? null : string.Empty);
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_string", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr get_string(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex,
+        private static extern IntPtr get_string(ObjectHandle handle, IntPtr propertyIndex,
             IntPtr buffer, IntPtr bufsize, [MarshalAs(UnmanagedType.I1)] out bool isNull, out NativeException ex);
 
-        public static void SetLink(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex, IntPtr targetRowIndex)
+        public static void SetLink(ObjectHandle handle, IntPtr propertyIndex, ObjectHandle targetHandle)
         {
             NativeException nativeException;
-            set_link(tableHandle, columnIndex, rowIndex, targetRowIndex, out nativeException);
+            set_link(handle, propertyIndex, targetHandle, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_link", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void set_link(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, IntPtr targetRowNdx, out NativeException ex);
+        private static extern void set_link(ObjectHandle handle, IntPtr propertyIndex, ObjectHandle targetHandle, out NativeException ex);
 
-        public static void ClearLink(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex)
+        public static void ClearLink(ObjectHandle handle, IntPtr propertyIndex)
         {
             NativeException nativeException;
-            clear_link(tableHandle, columnIndex, rowIndex, out nativeException);
+            clear_link(handle, propertyIndex, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_clear_link", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void clear_link(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, out NativeException ex);
+        private static extern void clear_link(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
 
-        public static IntPtr GetLink(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex)
+        public static IntPtr GetLink(ObjectHandle handle, IntPtr propertyIndex)
         {
             NativeException nativeException;
-            var result = get_link(tableHandle, columnIndex, rowIndex, out nativeException);
+            var result = get_link(handle, propertyIndex, out nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_link", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr get_link(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex, out NativeException ex);
+        private static extern IntPtr get_link(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
 
-        public static IntPtr GetLinklist(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex)
+        public static IntPtr GetLinklist(ObjectHandle handle, IntPtr propertyIndex)
         {
             NativeException nativeException;
-            var result = get_linklist(tableHandle, columnIndex, rowIndex, out nativeException);
+            var result = get_linklist(handle, propertyIndex, out nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_linklist", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr get_linklist(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex, out NativeException ex);
+        private static extern IntPtr get_linklist(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
 
-        public static bool LinklistIsEmpty(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex)
+        public static bool LinklistIsEmpty(ObjectHandle handle, IntPtr propertyIndex)
         {
             NativeException nativeException;
-            var result = linklist_is_empty(tableHandle, columnIndex, rowIndex, out nativeException);
+            var result = linklist_is_empty(handle, propertyIndex, out nativeException);
             nativeException.ThrowIfNecessary();
             return MarshalHelpers.IntPtrToBool(result);
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_linklist_is_empty", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr linklist_is_empty(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex, out NativeException ex);
+        private static extern IntPtr linklist_is_empty(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_null", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void set_null(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, out NativeException ex);
+        private static extern void set_null(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
 
-        public static void SetBoolean(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex, bool value)
+        public static void SetBoolean(ObjectHandle handle, IntPtr propertyIndex, bool value)
         {
             NativeException nativeException;
-            set_bool(tableHandle, columnIndex, rowIndex, MarshalHelpers.BoolToIntPtr(value), out nativeException);
+            set_bool(handle, propertyIndex, MarshalHelpers.BoolToIntPtr(value), out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public static void SetNullableBoolean(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex, bool? value)
+        public static void SetNullableBoolean(ObjectHandle handle, IntPtr propertyIndex, bool? value)
         {
             NativeException nativeException;
             if (value.HasValue)
             {
-                set_bool(tableHandle, columnIndex, rowIndex, MarshalHelpers.BoolToIntPtr(value.Value), out nativeException);
+                set_bool(handle, propertyIndex, MarshalHelpers.BoolToIntPtr(value.Value), out nativeException);
             }
             else
             {
-                set_null(tableHandle, columnIndex, rowIndex, out nativeException);
+                set_null(handle, propertyIndex, out nativeException);
             }
 
             nativeException.ThrowIfNecessary();
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_bool", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void set_bool(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, IntPtr value, out NativeException ex);
+        private static extern void set_bool(ObjectHandle handle, IntPtr propertyIndex, IntPtr value, out NativeException ex);
 
-        public static bool GetBoolean(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex)
+        public static bool GetBoolean(ObjectHandle handle, IntPtr propertyIndex)
         {
             NativeException nativeException;
-            var result = get_bool(tableHandle, columnIndex, rowIndex, out nativeException);
+            var result = get_bool(handle, propertyIndex, out nativeException);
             nativeException.ThrowIfNecessary();
             return MarshalHelpers.IntPtrToBool(result);
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_bool", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr get_bool(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex, out NativeException ex);
+        private static extern IntPtr get_bool(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
 
-        public static bool? GetNullableBoolean(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex)
+        public static bool? GetNullableBoolean(ObjectHandle handle, IntPtr propertyIndex)
         {
             NativeException nativeException;
             IntPtr value;
-            var hasValue = MarshalHelpers.IntPtrToBool(NativeTable.get_nullable_bool(tableHandle, columnIndex, rowIndex, out value, out nativeException));
+            var hasValue = MarshalHelpers.IntPtrToBool(get_nullable_bool(handle, propertyIndex, out value, out nativeException));
             nativeException.ThrowIfNecessary();
             return hasValue ? MarshalHelpers.IntPtrToBool(value) : (bool?)null;
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_nullable_bool", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr get_nullable_bool(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex, out IntPtr retVal, out NativeException ex);
+        private static extern IntPtr get_nullable_bool(ObjectHandle handle, IntPtr propertyIndex, out IntPtr retVal, out NativeException ex);
 
-        public static void SetInt64(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex, long value)
+        public static void SetInt64(ObjectHandle handle, IntPtr propertyIndex, long value)
         {
             NativeException nativeException;
-            set_int64(tableHandle, columnIndex, rowIndex, value, out nativeException);
+            set_int64(handle, propertyIndex, value, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public static void SetNullableInt64(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex, long? value)
+        public static void SetNullableInt64(ObjectHandle handle, IntPtr propertyIndex, long? value)
         {
             NativeException nativeException;
             if (value.HasValue)
             {
-                set_int64(tableHandle, columnIndex, rowIndex, value.Value, out nativeException);
+                set_int64(handle, propertyIndex, value.Value, out nativeException);
             }
             else
             {
-                set_null(tableHandle, columnIndex, rowIndex, out nativeException);
+                set_null(handle, propertyIndex, out nativeException);
             }
 
             nativeException.ThrowIfNecessary();
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_int64", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void set_int64(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, Int64 value, out NativeException ex);
+        private static extern void set_int64(ObjectHandle handle, IntPtr propertyIndex, Int64 value, out NativeException ex);
 
-        public static void SetInt64Unique(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex, long value)
+        public static void SetInt64Unique(ObjectHandle handle, IntPtr propertyIndex, long value)
         {
             NativeException nativeException;
-            set_int64_unique(tableHandle, columnIndex, rowIndex, value, out nativeException);
+            set_int64_unique(handle, propertyIndex, value, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_int64_unique", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void set_int64_unique(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, Int64 value, out NativeException ex);
+        private static extern void set_int64_unique(ObjectHandle handle, IntPtr propertyIndex, Int64 value, out NativeException ex);
 
-        public static long GetInt64(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex)
+        public static long GetInt64(ObjectHandle handle, IntPtr propertyIndex)
         {
             NativeException nativeException;
-            var result = get_int64(tableHandle, columnIndex, rowIndex, out nativeException);
+            var result = get_int64(handle, propertyIndex, out nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_int64", CallingConvention = CallingConvention.Cdecl)]
-        private static extern Int64 get_int64(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex, out NativeException ex);
+        private static extern Int64 get_int64(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
 
-        public static long? GetNullableInt64(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex)
+        public static long? GetNullableInt64(ObjectHandle handle, IntPtr propertyIndex)
         {
             NativeException nativeException;
             long value;
-            var hasValue = MarshalHelpers.IntPtrToBool(NativeTable.get_nullable_int64(tableHandle, columnIndex, rowIndex, out value, out nativeException));
+            var hasValue = MarshalHelpers.IntPtrToBool(get_nullable_int64(handle, propertyIndex, out value, out nativeException));
             nativeException.ThrowIfNecessary();
             return hasValue ? value : (long?)null;
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_nullable_int64", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr get_nullable_int64(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex, out Int64 retVal, out NativeException ex);
+        private static extern IntPtr get_nullable_int64(ObjectHandle handle, IntPtr propertyIndex, out Int64 retVal, out NativeException ex);
 
-        public static void SetSingle(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex, float value)
+        public static void SetSingle(ObjectHandle handle, IntPtr propertyIndex, float value)
         {
             NativeException nativeException;
-            set_float(tableHandle, columnIndex, rowIndex, value, out nativeException);
+            set_float(handle, propertyIndex, value, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public static void SetNullableSingle(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex, float? value)
+        public static void SetNullableSingle(ObjectHandle handle, IntPtr propertyIndex, float? value)
         {
             NativeException nativeException;
             if (value.HasValue)
             {
-                set_float(tableHandle, columnIndex, rowIndex, value.Value, out nativeException);
+                set_float(handle, propertyIndex, value.Value, out nativeException);
             }
             else
             {
-                set_null(tableHandle, columnIndex, rowIndex, out nativeException);
+                set_null(handle, propertyIndex, out nativeException);
             }
 
             nativeException.ThrowIfNecessary();
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_float", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void set_float(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, Single value, out NativeException ex);
+        private static extern void set_float(ObjectHandle handle, IntPtr propertyIndex, Single value, out NativeException ex);
 
-        public static float GetSingle(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex)
+        public static float GetSingle(ObjectHandle handle, IntPtr propertyIndex)
         {
             NativeException nativeException;
-            var result = get_float(tableHandle, columnIndex, rowIndex, out nativeException);
+            var result = get_float(handle, propertyIndex, out nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_float", CallingConvention = CallingConvention.Cdecl)]
-        private static extern Single get_float(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex, out NativeException ex);
+        private static extern Single get_float(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
 
-        public static float? GetNullableSingle(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex)
+        public static float? GetNullableSingle(ObjectHandle handle, IntPtr propertyIndex)
         {
             NativeException nativeException;
             float value;
-            var hasValue = MarshalHelpers.IntPtrToBool(NativeTable.get_nullable_float(tableHandle, columnIndex, rowIndex, out value, out nativeException));
+            var hasValue = MarshalHelpers.IntPtrToBool(get_nullable_float(handle, propertyIndex, out value, out nativeException));
             nativeException.ThrowIfNecessary();
             return hasValue ? value : (float?)null;
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_nullable_float", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr get_nullable_float(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex, out Single retVal, out NativeException ex);
+        private static extern IntPtr get_nullable_float(ObjectHandle handle, IntPtr propertyIndex, out Single retVal, out NativeException ex);
 
-        public static void SetDouble(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex, double value)
+        public static void SetDouble(ObjectHandle handle, IntPtr propertyIndex, double value)
         {
             NativeException nativeException;
-            set_double(tableHandle, columnIndex, rowIndex, value, out nativeException);
+            set_double(handle, propertyIndex, value, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public static void SetNullableDouble(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex, double? value)
+        public static void SetNullableDouble(ObjectHandle handle, IntPtr propertyIndex, double? value)
         {
             NativeException nativeException;
             if (value.HasValue)
             {
-                set_double(tableHandle, columnIndex, rowIndex, value.Value, out nativeException);
+                set_double(handle, propertyIndex, value.Value, out nativeException);
             }
             else
             {
-                set_null(tableHandle, columnIndex, rowIndex, out nativeException);
+                set_null(handle, propertyIndex, out nativeException);
             }
 
             nativeException.ThrowIfNecessary();
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_double", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void set_double(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, Double value, out NativeException ex);
+        private static extern void set_double(ObjectHandle handle, IntPtr propertyIndex, Double value, out NativeException ex);
 
-        public static double GetDouble(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex)
+        public static double GetDouble(ObjectHandle handle, IntPtr propertyIndex)
         {
             NativeException nativeException;
-            var result = get_double(tableHandle, columnIndex, rowIndex, out nativeException);
+            var result = get_double(handle, propertyIndex, out nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_double", CallingConvention = CallingConvention.Cdecl)]
-        private static extern Double get_double(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex, out NativeException ex);
+        private static extern Double get_double(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
 
-        public static double? GetNullableDouble(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex)
+        public static double? GetNullableDouble(ObjectHandle handle, IntPtr propertyIndex)
         {
             NativeException nativeException;
             double value;
-            var hasValue = MarshalHelpers.IntPtrToBool(NativeTable.get_nullable_double(tableHandle, columnIndex, rowIndex, out value, out nativeException));
+            var hasValue = MarshalHelpers.IntPtrToBool(get_nullable_double(handle, propertyIndex, out value, out nativeException));
             nativeException.ThrowIfNecessary();
             return hasValue ? value : (double?)null;
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_nullable_double", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr get_nullable_double(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex, out Double retVal, out NativeException ex);
+        private static extern IntPtr get_nullable_double(ObjectHandle handle, IntPtr propertyIndex, out Double retVal, out NativeException ex);
 
-        public static unsafe void SetByteArray(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex, byte[] value)
+        public static unsafe void SetByteArray(ObjectHandle handle, IntPtr propertyIndex, byte[] value)
         {
             NativeException nativeException;
             if (value == null)
             {
-                set_null(tableHandle, columnIndex, rowIndex, out nativeException);
+                set_null(handle, propertyIndex, out nativeException);
             }
             else if (value.Length == 0)
             {
                 // empty byte arrays are expressed in terms of a BinaryData object with a dummy pointer and zero size
                 // that's how core differentiates between empty and null buffers
-                set_binary(tableHandle, columnIndex, rowIndex, (IntPtr)0x1, IntPtr.Zero, out nativeException);
+                set_binary(handle, propertyIndex, (IntPtr)0x1, IntPtr.Zero, out nativeException);
             }
             else
             {
                 fixed (byte* buffer = value)
                 {
-                    set_binary(tableHandle, columnIndex, rowIndex, (IntPtr)buffer, (IntPtr)value.LongLength, out nativeException);
+                    set_binary(handle, propertyIndex, (IntPtr)buffer, (IntPtr)value.LongLength, out nativeException);
                 }
             }
 
@@ -453,15 +452,15 @@ namespace Realms
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_binary", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr set_binary(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex,
+        private static extern IntPtr set_binary(ObjectHandle handle, IntPtr propertyIndex,
             IntPtr buffer, IntPtr bufferLength, out NativeException ex);
 
-        public static byte[] GetByteArray(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex)
+        public static byte[] GetByteArray(ObjectHandle handle, IntPtr propertyIndex)
         {
             NativeException nativeException;
             int bufferSize;
             IntPtr buffer;
-            var hasValue = get_binary(tableHandle, columnIndex, rowIndex, out buffer, out bufferSize, out nativeException) != IntPtr.Zero;
+            var hasValue = get_binary(handle, propertyIndex, out buffer, out bufferSize, out nativeException) != IntPtr.Zero;
             nativeException.ThrowIfNecessary();
 
             if (hasValue)
@@ -475,7 +474,7 @@ namespace Realms
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_binary", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr get_binary(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex,
+        private static extern IntPtr get_binary(ObjectHandle handle, IntPtr propertyIndex,
             out IntPtr retBuffer, out int retBufferLength, out NativeException ex);
 
         public static IntPtr Where(TableHandle tableHandle)
@@ -510,15 +509,15 @@ namespace Realms
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_unbind", CallingConvention = CallingConvention.Cdecl)]
         private static extern void unbind(IntPtr tableHandle, out NativeException ex);
 
-        public static void RemoveRow(TableHandle tableHandle, RowHandle rowHandle)
+        public static void RemoveRow(ObjectHandle handle)
         {
             NativeException nativeException;
-            remove_row(tableHandle, rowHandle, out nativeException);
+            remove_row(handle, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_remove_row", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void remove_row(TableHandle tableHandle, RowHandle rowHandle, out NativeException ex);
+        private static extern void remove_row(ObjectHandle handle, out NativeException ex);
 
         // returns -1 if the column string does not match a column index
         public static IntPtr GetColumnIndex(TableHandle tableHandle, string name)
@@ -568,7 +567,7 @@ namespace Realms
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "row_for_string_primarykey", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr row_for_string_primarykey(TableHandle handle, IntPtr columnIndex,
+        private static extern IntPtr row_for_string_primarykey(TableHandle handle, IntPtr propertyIndex,
             [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen, out NativeException ex);
 
         internal static IntPtr RowForPrimaryKey(TableHandle tableHandle, int primaryKeyColumnIndex, long id)
@@ -580,6 +579,6 @@ namespace Realms
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "row_for_int_primarykey", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr row_for_int_primarykey(TableHandle handle, IntPtr columnIndex, Int64 value, out NativeException ex);
+        private static extern IntPtr row_for_int_primarykey(TableHandle handle, IntPtr propertyIndex, Int64 value, out NativeException ex);
     }
 }

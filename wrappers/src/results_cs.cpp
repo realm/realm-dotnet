@@ -42,11 +42,11 @@ REALM_EXPORT size_t results_is_same_internal_results(Results* lhs, Results* rhs,
   });
 }
 
-REALM_EXPORT Row* results_get_row(Results* results_ptr, size_t ndx, NativeException::Marshallable& ex)
+REALM_EXPORT Object* results_get_row(Results* results_ptr, size_t ndx, NativeException::Marshallable& ex)
 {
   return handle_errors(ex, [&]() {
     try {
-      return new Row(results_ptr->get(ndx));
+      return new Object(results_ptr->get_realm(), results_ptr->get_object_schema(), results_ptr->get(ndx));
     }
     catch (std::out_of_range &exp) {
       return static_cast<Row*>(nullptr);

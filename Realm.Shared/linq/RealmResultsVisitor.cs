@@ -89,11 +89,11 @@ namespace Realms
         */
         private void RecurseToWhereOrRunLambda(MethodCallExpression m)
         {
-            this.Visit(m.Arguments[0]); // creates the query or recurse to "Where"
+            Visit(m.Arguments[0]); // creates the query or recurse to "Where"
             if (m.Arguments.Count > 1)
             {
                 var lambda = (LambdaExpression)StripQuotes(m.Arguments[1]);
-                this.Visit(lambda.Body);
+                Visit(lambda.Body);
             }
         }
 
@@ -122,7 +122,7 @@ namespace Realms
             OptionalSortDescriptorBuilder.AddClause(sortColName, ascending);
         }
 
-        private RowHandle VisitElementAt(MethodCallExpression m)
+        private ObjectHandle VisitElementAt(MethodCallExpression m)
         {
             Visit(m.Arguments.First());
             object argument;
@@ -133,18 +133,18 @@ namespace Realms
 
             var index = (int)argument;
 
-            RowHandle row;
+            ObjectHandle row;
             if (OptionalSortDescriptorBuilder == null)
             {
-                var rowPtr = CoreQueryHandle.FindDirect((IntPtr)index);
-                row = Realm.CreateRowHandle(rowPtr, _realm.SharedRealmHandle);
+                var objectPtr = CoreQueryHandle.FindDirect((IntPtr)index);
+                row = Realm.CreateObjectHandle(objectPtr, _realm.SharedRealmHandle);
             }
             else
             {
                 using (ResultsHandle rh = _realm.MakeResultsForQuery(CoreQueryHandle, OptionalSortDescriptorBuilder))
                 {
-                    var rowPtr = rh.GetRow(index);
-                    row = Realm.CreateRowHandle(rowPtr, _realm.SharedRealmHandle);
+                    var objectPtr = rh.GetObject(index);
+                    row = Realm.CreateObjectHandle(objectPtr, _realm.SharedRealmHandle);
                 }
             }
 
@@ -217,7 +217,7 @@ namespace Realms
                     {
                         using (ResultsHandle rh = _realm.MakeResultsForQuery(CoreQueryHandle, OptionalSortDescriptorBuilder))
                         {
-                            firstRowPtr = rh.GetRow(0);
+                            firstRowPtr = rh.GetObject(0);
                         }
                     }
 
@@ -267,7 +267,7 @@ namespace Realms
                         return Expression.Constant(null);
                     }
 
-                    var firstRow = Realm.CreateRowHandle(firstRowPtr, _realm.SharedRealmHandle);
+                    var firstRow = Realm.CreateObjectHandle(firstRowPtr, _realm.SharedRealmHandle);
                     var nextIndex = firstRow.RowIndex + 1;
                     var nextRowPtr = CoreQueryHandle.FindDirect(nextIndex);
                     if (nextRowPtr != IntPtr.Zero)
@@ -288,7 +288,7 @@ namespace Realms
                         var lastIndex = rh.Count() - 1;
                         if (lastIndex >= 0)
                         {
-                            lastRowPtr = rh.GetRow(lastIndex);
+                            lastRowPtr = rh.GetObject(lastIndex);
                         }
                     }
 
@@ -308,8 +308,8 @@ namespace Realms
 
                 if (m.Method.Name.StartsWith(nameof(Queryable.ElementAt)))
                 {
-                    var row = VisitElementAt(m);
-                    if (row == null || row.IsInvalid)
+                    var objectHandle = VisitElementAt(m);
+                    if (objectHandle == null || objectHandle.IsInvalid)
                     {
                         if (m.Method.Name == nameof(Queryable.ElementAt))
                         {
@@ -320,7 +320,7 @@ namespace Realms
                         return Expression.Constant(null);
                     }
 
-                    return Expression.Constant(_realm.MakeObjectForRow(_metadata, row));
+                    return Expression.Constant(_realm.MakeObjectForRow(_metadata, objectHandle));
                 }
             }
 

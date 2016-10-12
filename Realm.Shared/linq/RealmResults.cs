@@ -66,7 +66,7 @@ namespace Realms
                     throw new ArgumentOutOfRangeException();
                 }
 
-                var rowPtr = ResultsHandle.GetRow(index);
+                var rowPtr = ResultsHandle.GetObject(index);
                 return (T)(object)_realm.MakeObjectForRow(_targetMetadata, rowPtr);
             }
         }

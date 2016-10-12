@@ -183,7 +183,7 @@ namespace Realms
         public void Add(T item)
         {
             this.ManageObjectIfNeeded(item);
-            var rowIndex = item.RowHandle.RowIndex;
+            var rowIndex = item.ObjectHandle.RowIndex;
             _listHandle.Add(rowIndex);
         }
 
@@ -257,7 +257,7 @@ namespace Realms
                 throw new ArgumentException("Value does not belong to a realm", nameof(item));
             }
 
-            var rowIndex = item.RowHandle.RowIndex;
+            var rowIndex = item.ObjectHandle.RowIndex;
             return (int)_listHandle.Find(rowIndex, IntPtr.Zero);
         }
 
@@ -275,7 +275,7 @@ namespace Realms
             }
 
             this.ManageObjectIfNeeded(item);
-            var rowIndex = item.RowHandle.RowIndex;
+            var rowIndex = item.ObjectHandle.RowIndex;
             _listHandle.Insert((IntPtr)index, rowIndex);
         }
 

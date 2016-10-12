@@ -81,6 +81,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Migration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\ManagedExceptionDuringMigrationException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Handles\UnownedRealmHandle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Handles\ObjectHandle.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Weaving\" />

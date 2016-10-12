@@ -104,13 +104,12 @@ namespace RealmWeaver
                 var uuid = searcher.Get().Cast<ManagementObject>().FirstOrDefault()?["UUID"] as string;
                 return string.IsNullOrEmpty(uuid) ? null : Encoding.UTF8.GetBytes(uuid);
             }
-            else  // Assume OS X if not Windows.
-            {
-                var macs = from nic in NetworkInterface.GetAllNetworkInterfaces()
-                           where nic.Name == "en0"
-                           select nic.GetPhysicalAddress().GetAddressBytes();
-                return macs.FirstOrDefault();
-            }
+
+            // Assume OS X if not Windows.
+            var macs = from nic in NetworkInterface.GetAllNetworkInterfaces()
+                       where nic.Name == "en0"
+                       select nic.GetPhysicalAddress().GetAddressBytes();
+            return macs.FirstOrDefault();
         }
 
         private string AnonymizedAppID

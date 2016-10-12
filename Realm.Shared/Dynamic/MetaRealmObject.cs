@@ -51,7 +51,7 @@ namespace Realms.Dynamic
             var arguments = new List<Expression>
             {
                 WeakConstant(_metadata.Table),
-                Expression.Constant(_metadata.ColumnIndices[property.Name]),
+                Expression.Constant(_metadata.PropertyIndices[property.Name]),
                 Expression.Property(Expression.Field(GetLimitedSelf(), RealmObjectRowHandleField), RowHandleRowIndexProperty),
             };
 
@@ -154,7 +154,7 @@ namespace Realms.Dynamic
             var arguments = new List<Expression>
             {
                 WeakConstant(_metadata.Table),
-                Expression.Constant(_metadata.ColumnIndices[property.Name]),
+                Expression.Constant(_metadata.PropertyIndices[property.Name]),
                 Expression.Property(Expression.Field(GetLimitedSelf(), RealmObjectRowHandleField), RowHandleRowIndexProperty),
             };
 
@@ -294,12 +294,12 @@ namespace Realms.Dynamic
             return convertedExpression;
         }
 
-        private static MethodInfo GetGetMethod<TResult>(Func<TableHandle, IntPtr, IntPtr, TResult> @delegate) => @delegate.Method;
+        private static MethodInfo GetGetMethod<TResult>(Func<ObjectHandle, IntPtr, TResult> @delegate) => @delegate.Method;
 
-        private static MethodInfo GetGetMethod<TResult>(Func<Realm, TableHandle, IntPtr, IntPtr, string, TResult> @delegate) => @delegate.Method;
+        private static MethodInfo GetGetMethod<TResult>(Func<Realm, ObjectHandle, IntPtr, string, TResult> @delegate) => @delegate.Method;
 
-        private static MethodInfo GetSetMethod<TValue>(Action<TableHandle, IntPtr, IntPtr, TValue> @delegate) => @delegate.Method;
+        private static MethodInfo GetSetMethod<TValue>(Action<ObjectHandle, IntPtr, TValue> @delegate) => @delegate.Method;
 
-        private static MethodInfo GetSetMethod<TValue>(Action<Realm, TableHandle, IntPtr, IntPtr, TValue> @delegate) => @delegate.Method;
+        private static MethodInfo GetSetMethod<TValue>(Action<Realm, ObjectHandle, IntPtr, TValue> @delegate) => @delegate.Method;
     }
 }

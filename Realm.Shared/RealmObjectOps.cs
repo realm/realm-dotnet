@@ -23,15 +23,15 @@ namespace Realms
     [Preserve(AllMembers = true)]
     internal static class RealmObjectOps
     {
-        public static RealmList<T> GetList<T>(Realm realm, TableHandle table, IntPtr columnIndex, IntPtr rowIndex, string objectType) where T : RealmObject
+        public static RealmList<T> GetList<T>(Realm realm, ObjectHandle handle, IntPtr columnIndex, string objectType) where T : RealmObject
         {
-            var listHandle = table.TableLinkList(columnIndex, rowIndex);
+            var listHandle = handle.TableLinkList(columnIndex);
             return new RealmList<T>(realm, listHandle, realm.Metadata[objectType]);
         }
 
-        public static T GetObject<T>(Realm realm, TableHandle table, IntPtr columnIndex, IntPtr rowIndex, string objectType) where T : RealmObject
+        public static T GetObject<T>(Realm realm, ObjectHandle handle, IntPtr columnIndex, string objectType) where T : RealmObject
         {
-            var linkedRowPtr = NativeTable.GetLink(table, columnIndex, rowIndex);
+            var linkedRowPtr = NativeTable.GetLink(handle, columnIndex);
             if (linkedRowPtr == IntPtr.Zero)
             {
                 return null;
@@ -40,11 +40,11 @@ namespace Realms
             return (T)realm.MakeObjectForRow(objectType, linkedRowPtr);
         }
 
-        public static void SetObject(Realm realm, TableHandle table, IntPtr columnIndex, IntPtr rowIndex, RealmObject @object)
+        public static void SetObject(Realm realm, ObjectHandle handle, IntPtr columnIndex, RealmObject @object)
         {
             if (@object == null)
             {
-                NativeTable.ClearLink(table, columnIndex, rowIndex);
+                NativeTable.ClearLink(handle, columnIndex);
             }
             else
             {
@@ -53,7 +53,7 @@ namespace Realms
                     realm.Manage(@object);
                 }
 
-                NativeTable.SetLink(table, columnIndex, rowIndex, @object.RowHandle.RowIndex);
+                NativeTable.SetLink(handle, columnIndex, @object.ObjectHandle);
             }
         }
     }

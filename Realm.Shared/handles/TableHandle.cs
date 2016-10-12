@@ -57,11 +57,6 @@ namespace Realms
             return new QueryHandle(Root ?? this);
         }
 
-        private LinkListHandle RootedLinkListHandle()
-        {
-            return new LinkListHandle(Root ?? this);
-        }
-
         // call with a parent, will set the correct root (parent if parent.root=null, or parent.root otherwise)
         // if You want a RootedTableHandle with is self-rooted, call with no parameter
         internal static TableHandle RootedTableHandle(RealmHandle parent)
@@ -89,27 +84,6 @@ namespace Realms
             } // at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
 
             return queryHandle;
-        }
-
-        // acquire a LinkListHandle from table_get_linklist And set root in an atomic fashion 
-        [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands"), SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
-        internal LinkListHandle TableLinkList(IntPtr columnIndex, IntPtr rowIndex)
-        {
-            var listHandle = RootedLinkListHandle();
-
-            // At this point sh is invalid due to its handle being uninitialized, but the root is set correctly
-            // a finalize at this point will not leak anything and the handle will not do anything
-
-            // now, set the TableView handle...
-            RuntimeHelpers.PrepareConstrainedRegions(); // the following finally will run with no out-of-band exceptions
-            try
-            {
-            }
-            finally
-            {
-                listHandle.SetHandle(NativeTable.GetLinklist(this, columnIndex, rowIndex));
-            } // at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
-            return listHandle;
         }
     }
 }
