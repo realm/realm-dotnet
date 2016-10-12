@@ -24,7 +24,7 @@ namespace Realms
     public class Credentials
     {
         public static Credentials Custom(string identityProvider, string userIdentifier,
-            Dictionary<string, object> userInfo)
+            IDictionary<string, object> userInfo)
         {
             throw new NotImplementedException();
         }
@@ -50,6 +50,6 @@ namespace Realms
         }
 
         public string IdentityProvider { get; private set; }
-        public Dictionary<string, object> UserInfo { get; private set; }
+        public IDictionary<string, object> UserInfo { get; private set; }
     }
 }

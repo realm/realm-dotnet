@@ -17,26 +17,14 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
 
 namespace Realms
 {
-    public class User
+    public class User : ISerializable
     {
-        public static User GetCurrentUser()
-        {
-            throw new NotImplementedException();
-        }
-
-        public static User FromJson()
-        {
-            throw new NotImplementedException();
-        }
-
-        public static User Authenticate(Credentials credentials, string serverUrl)
-        {
-            throw new NotImplementedException();
-        }
+        public static User CurrentUser { get; private set; }
 
         public static async Task<User> AuthenticateAsync(Credentials credentials, string serverUrl)
         {
@@ -54,7 +42,7 @@ namespace Realms
             throw new NotImplementedException();
         }
 
-        public string ToJson()
+        public void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             throw new NotImplementedException();
         }
