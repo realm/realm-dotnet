@@ -1,7 +1,11 @@
 0.7x.x (TBD)
 -------------------
+### Breaking Changes
+* This version updates the file format. Older versions will not be able to open files created with this version. (#846)
+
 ### Enhancements
 * IOS Linking all should work - we now add a [Preserve] attribue to all woven members of your `RealmObject` subclasses so you do not need to manually add `[Preserve(allMembers=true)]`  (#822)
+
 
 
 0.78.1 (2016-09-15)

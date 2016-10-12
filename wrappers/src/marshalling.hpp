@@ -113,12 +113,12 @@ inline size_t bool_to_size_t(bool value) {
     return 0;
 }
 
-//a size_t sent from C# with value 0 means durability_full, other values means durabillity_memonly, but please
+//a size_t sent from C# with value 0 means Durability::Full, other values means durabillity_memonly, but please
 //use 1 for durabillity_memonly to make room for later extensions
-inline SharedGroup::DurabilityLevel size_t_to_durabilitylevel(size_t value) {
+inline SharedGroupOptions::Durability size_t_to_durability(size_t value) {
     if (value == 0)
-        return SharedGroup::durability_Full;
-    return SharedGroup::durability_MemOnly;
+        return SharedGroupOptions::Durability::Full;
+    return SharedGroupOptions::Durability::MemOnly;
 }
 
 size_t stringdata_to_csharpstringbuffer(StringData str, uint16_t * csharpbuffer, size_t bufsize); //note bufsize is _in_16bit_words 
