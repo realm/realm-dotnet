@@ -15,7 +15,7 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
@@ -24,12 +24,12 @@ namespace Realms
 {
     internal class MarshalHelpers
     {
-        public static IntPtr BoolToIntPtr(Boolean value)
+        public static IntPtr BoolToIntPtr(bool value)
         {
             return value ? (IntPtr)1 : (IntPtr)0;
         }
 
-        public static Boolean IntPtrToBool(IntPtr value)
+        public static bool IntPtrToBool(IntPtr value)
         {
             return (IntPtr)1 == value;
         }
@@ -39,28 +39,55 @@ namespace Realms
             // values correspond to core/data_type.hpp enum DataType
             // ordered in decreasing likelihood of type
             if (columnType == typeof(string))
+            {
                 return (IntPtr)2;  // type_String
+            }
+
             if (columnType == typeof(char) || columnType == typeof(byte) || columnType == typeof(short) || columnType == typeof(int) || columnType == typeof(long) ||
                 columnType == typeof(char?) || columnType == typeof(byte?) || columnType == typeof(short?) || columnType == typeof(int?) || columnType == typeof(long?))
+            {
                 return (IntPtr)0;  // type_Int
+            }
+
             if (columnType == typeof(float) || columnType == typeof(float?))
+            {
                 return (IntPtr)9;  // type_Float
+            }
+
             if (columnType == typeof(double) || columnType == typeof(double?))
+            {
                 return (IntPtr)10; // type_Double
+            }
+
             if (columnType == typeof(DateTimeOffset) || columnType == typeof(DateTimeOffset?))
+            {
                 return (IntPtr)8;  // type_Timestamp
+            }
+
             if (columnType == typeof(bool) || columnType == typeof(bool?))
+            {
                 return (IntPtr)1;  // type_Bool
-            if (columnType == typeof (byte[]))
-                return (IntPtr) 4; // type_Data
+            }
+
+            if (columnType == typeof(byte[]))
+            {
+                return (IntPtr)4; // type_Data
+            }
+
             if (columnType.BaseType == typeof(RealmObject))
+            {
                 return (IntPtr)12;  // type_Link
+            }
+
             if (columnType.IsGenericType)
             {
                 var type = columnType.GetGenericTypeDefinition();
                 if (type == typeof(RealmList<>) || type == typeof(IList<>))
+                {
                     return (IntPtr)13;  // type_LinkList 
+                }
             }
+
             /*
             TODO
                     Table = 5, // type_Table for sub-tables, not relatinoships????

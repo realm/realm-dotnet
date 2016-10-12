@@ -17,9 +17,9 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
-using System.Collections.Generic;
 
 namespace Realms.Schema
 {
@@ -27,7 +27,11 @@ namespace Realms.Schema
     {
         public static PropertyType ToPropertyType(this Type type, out bool isNullable, out Type innerType)
         {
-            if (type == null) throw new ArgumentNullException(nameof(type));
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
             Contract.EndContractBlock();
 
             innerType = null;
@@ -35,7 +39,9 @@ namespace Realms.Schema
             var nullableType = Nullable.GetUnderlyingType(type);
             isNullable = nullableType != null;
             if (isNullable)
+            {
                 type = nullableType;
+            }
 
             switch (Type.GetTypeCode(type))
             {
@@ -57,7 +63,9 @@ namespace Realms.Schema
             }
 
             if (type == typeof(DateTimeOffset))
+            {
                 return PropertyType.Date;
+            }
 
             if (type == typeof(byte[]))
             {

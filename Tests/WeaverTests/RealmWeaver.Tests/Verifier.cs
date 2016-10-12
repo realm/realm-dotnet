@@ -15,7 +15,7 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -32,13 +32,14 @@ public static class Verifier
         Assert.AreEqual(TrimLineNumbers(before), TrimLineNumbers(after), message);
     }
 
-    static string Validate(string assemblyPath2)
+    private static string Validate(string assemblyPath2)
     {
         var exePath = GetPathToPEVerify();
         if (!File.Exists(exePath))
         {
             return string.Empty;
         }
+
         var process = Process.Start(new ProcessStartInfo(exePath, "\"" + assemblyPath2 + "\"")
         {
             RedirectStandardOutput = true,
@@ -47,10 +48,10 @@ public static class Verifier
         });
 
         process.WaitForExit(10000);
-        return process.StandardOutput.ReadToEnd().Trim().Replace(assemblyPath2, "");
+        return process.StandardOutput.ReadToEnd().Trim().Replace(assemblyPath2, string.Empty);
     }
 
-    static string GetPathToPEVerify()
+    private static string GetPathToPEVerify()
     {
         var exePath = Environment.ExpandEnvironmentVariables(@"%programfiles(x86)%\Microsoft SDKs\Windows\v7.0A\Bin\NETFX 4.0 Tools\PEVerify.exe");
 
@@ -58,11 +59,12 @@ public static class Verifier
         {
             exePath = Environment.ExpandEnvironmentVariables(@"%programfiles(x86)%\Microsoft SDKs\Windows\v8.0A\Bin\NETFX 4.0 Tools\PEVerify.exe");
         }
+
         return exePath;
     }
 
-    static string TrimLineNumbers(string foo)
+    private static string TrimLineNumbers(string foo)
     {
-        return Regex.Replace(foo, @"0x.*]", "");
+        return Regex.Replace(foo, @"0x.*]", string.Empty);
     }
 }

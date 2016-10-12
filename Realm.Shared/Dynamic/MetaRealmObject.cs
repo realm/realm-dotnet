@@ -61,27 +61,47 @@ namespace Realms.Dynamic
             {
                 case Schema.PropertyType.Int:
                     if (property.IsNullable)
+                    {
                         getter = GetGetMethod(NativeTable.GetNullableInt64);
+                    }
                     else
+                    {
                         getter = GetGetMethod(NativeTable.GetInt64);
+                    }
+
                     break;
                 case Schema.PropertyType.Bool:
                     if (property.IsNullable)
+                    {
                         getter = GetGetMethod(NativeTable.GetNullableBoolean);
+                    }
                     else
+                    {
                         getter = GetGetMethod(NativeTable.GetBoolean);
+                    }
+
                     break;
                 case Schema.PropertyType.Float:
                     if (property.IsNullable)
+                    {
                         getter = GetGetMethod(NativeTable.GetNullableSingle);
+                    }
                     else
+                    {
                         getter = GetGetMethod(NativeTable.GetSingle);
+                    }
+
                     break;
                 case Schema.PropertyType.Double:
                     if (property.IsNullable)
+                    {
                         getter = GetGetMethod(NativeTable.GetNullableDouble);
+                    }
                     else
+                    {
                         getter = GetGetMethod(NativeTable.GetDouble);
+                    }
+
                     break;
                 case Schema.PropertyType.String:
                     getter = GetGetMethod(NativeTable.GetString);
@@ -91,9 +111,14 @@ namespace Realms.Dynamic
                     break;
                 case Schema.PropertyType.Date:
                     if (property.IsNullable)
+                    {
                         getter = GetGetMethod(NativeTable.GetNullableDateTimeOffset);
+                    }
                     else
+                    {
                         getter = GetGetMethod(NativeTable.GetDateTimeOffset);
+                    }
+
                     break;
                 case Schema.PropertyType.Object:
                     arguments.Insert(0, Expression.Field(GetLimitedSelf(), RealmObjectRealmField));
@@ -141,39 +166,66 @@ namespace Realms.Dynamic
                 case Schema.PropertyType.Int:
                     argumentType = typeof(long);
                     if (property.IsNullable)
+                    {
                         setter = GetSetMethod<long?>(NativeTable.SetNullableInt64);
+                    }
                     else if (property.IsPrimaryKey)
+                    {
                         setter = GetSetMethod<long>(NativeTable.SetInt64Unique);
+                    }
                     else
+                    {
                         setter = GetSetMethod<long>(NativeTable.SetInt64);
+                    }
+
                     break;
                 case Schema.PropertyType.Bool:
                     argumentType = typeof(bool);
                     if (property.IsNullable)
+                    {
                         setter = GetSetMethod<bool?>(NativeTable.SetNullableBoolean);
+                    }
                     else
+                    {
                         setter = GetSetMethod<bool>(NativeTable.SetBoolean);
+                    }
+
                     break;
                 case Schema.PropertyType.Float:
                     argumentType = typeof(float);
                     if (property.IsNullable)
+                    {
                         setter = GetSetMethod<float?>(NativeTable.SetNullableSingle);
+                    }
                     else
+                    {
                         setter = GetSetMethod<float>(NativeTable.SetSingle);
+                    }
+
                     break;
                 case Schema.PropertyType.Double:
                     argumentType = typeof(double);
                     if (property.IsNullable)
+                    {
                         setter = GetSetMethod<double?>(NativeTable.SetNullableDouble);
+                    }
                     else
+                    {
                         setter = GetSetMethod<double>(NativeTable.SetDouble);
+                    }
+
                     break;
                 case Schema.PropertyType.String:
                     argumentType = typeof(string);
                     if (property.IsPrimaryKey)
+                    {
                         setter = GetSetMethod<string>(NativeTable.SetStringUnique);
+                    }
                     else
+                    {
                         setter = GetSetMethod<string>(NativeTable.SetString);
+                    }
+
                     break;
                 case Schema.PropertyType.Data:
                     argumentType = typeof(byte[]);
@@ -182,9 +234,14 @@ namespace Realms.Dynamic
                 case Schema.PropertyType.Date:
                     argumentType = typeof(DateTimeOffset);
                     if (property.IsNullable)
+                    {
                         setter = GetSetMethod<DateTimeOffset?>(NativeTable.SetNullableDateTimeOffset);
+                    }
                     else
+                    {
                         setter = GetSetMethod<DateTimeOffset>(NativeTable.SetDateTimeOffset);
+                    }
+
                     break;
                 case Schema.PropertyType.Object:
                     argumentType = typeof(RealmObject);
@@ -246,4 +303,3 @@ namespace Realms.Dynamic
         private static MethodInfo GetSetMethod<TValue>(Action<Realm, TableHandle, IntPtr, IntPtr, TValue> @delegate) => @delegate.Method;
     }
 }
-

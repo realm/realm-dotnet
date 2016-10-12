@@ -15,37 +15,58 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
-using Realms;
+
 using System;
+using System.Diagnostics.CodeAnalysis;
+using Realms;
 
 namespace AssemblyToProcess
 {
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class NonNullableProperties : RealmObject
     {
         public string String { get; set; }
+
         public char Char { get; set; }
+
         public byte Byte { get; set; }
-        public Int16 Int16 { get; set; }
-        public Int32 Int32 { get; set; }
-        public Int64 Int64 { get; set; }
-        public Single Single { get; set; }
-        public Double Double { get; set; }
+
+        public short Int16 { get; set; }
+
+        public int Int32 { get; set; }
+
+        public long Int64 { get; set; }
+
+        public float Single { get; set; }
+
+        public double Double { get; set; }
+
         public DateTimeOffset DateTimeOffset { get; set; }
-        public Boolean Boolean { get; set; }
+
+        public bool Boolean { get; set; }
+
         public byte[] ByteArray { get; set; }
     }
 
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class NullableProperties : RealmObject
     {
         public char? Char { get; set; }
+
         public byte? Byte { get; set; }
-        public Int16? Int16 { get; set; }
-        public Int32? Int32 { get; set; }
-        public Int64? Int64 { get; set; }
-        public Single? Single { get; set; }
-        public Double? Double { get; set; }
+
+        public short? Int16 { get; set; }
+
+        public int? Int32 { get; set; }
+
+        public long? Int64 { get; set; }
+
+        public float? Single { get; set; }
+
+        public double? Double { get; set; }
+
         public DateTimeOffset? DateTimeOffset { get; set; }
-        public Boolean? Boolean { get; set; }
+
+        public bool? Boolean { get; set; }
     }
 }

@@ -17,8 +17,8 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using Realms;
 using System.Collections.Generic;
+using Realms;
 
 namespace IntegrationTests
 {
@@ -26,17 +26,23 @@ namespace IntegrationTests
     {
         // Automatically implemented (overridden) properties
         public string FirstName { get; set; }
+
         public string LastName { get; set; }
+
         public float Score { get; set; }
+
         public double Latitude { get; set; }
+
         public double Longitude { get; set; }
 
         public long Salary { get; set; }
+
         public bool? IsAmbivalent { get; set; }
 
         public DateTimeOffset Birthday { get; set; }
 
         public byte[] PublicCertificateBytes { get; set; }
+
         public string OptionalAddress { get; set; }
 
         // Property that's not persisted in Realm
@@ -47,7 +53,10 @@ namespace IntegrationTests
         [Ignored]
         public string FullName
         {
-            get { return FirstName + " " + LastName; }
+            get
+            {
+                return FirstName + " " + LastName;
+            }
 
             set
             {
@@ -56,7 +65,7 @@ namespace IntegrationTests
                 LastName = parts[parts.Length - 1];
             }
         }
-        
+
         // Re-mapped property
         [MapTo("Email")]
         private string Email_ { get; set; }
@@ -65,10 +74,18 @@ namespace IntegrationTests
         [Ignored]
         public string Email
         {
-            get { return Email_; }
+            get
+            {
+                return Email_;
+            }
+
             set
             {
-                if (!value.Contains("@")) throw new Exception("Invalid email address");
+                if (!value.Contains("@"))
+                {
+                    throw new Exception("Invalid email address");
+                }
+
                 Email_ = value;
             }
         }
@@ -76,10 +93,18 @@ namespace IntegrationTests
         public bool IsInteresting { get; set; }
 
         private string _nickname;
+
         public string Nickname
         {
-            get { return _nickname; }
-            set { _nickname = value; }
+            get
+            {
+                return _nickname;
+            }
+
+            set
+            {
+                _nickname = value;
+            }
         }
 
         public IList<Person> Friends { get; }

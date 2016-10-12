@@ -15,12 +15,10 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 namespace Realms
 {
@@ -39,6 +37,7 @@ namespace Realms
         }
 
         private bool _isManaged;
+
         public bool IsManaged
         {
             get
@@ -46,13 +45,17 @@ namespace Realms
                 LogString("IsManaged");
                 return _isManaged;
             }
-            set { _isManaged = value;  }
+
+            set
+            {
+                _isManaged = value;
+            }
         }
 
         protected string GetStringValue(string propertyName)
         {
             LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
-            return "";
+            return string.Empty;
         }
 
         protected void SetStringValue(string propertyName, string value)

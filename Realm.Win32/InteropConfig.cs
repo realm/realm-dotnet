@@ -15,13 +15,12 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
 using System;
 using System.Diagnostics;
 
 namespace Realms
 {
-    
     /// <summary>
     /// Per-platform utility functions. A copy of this file exists in each platform project such as Realm.Win32.
     /// </summary>
@@ -30,21 +29,25 @@ namespace Realms
         public static bool Is64Bit
         {
 #if REALM_32       
-            get {
-                Debug.Assert(IntPtr.Size == 4);
+            get
+            {
+                Debug.Assert(IntPtr.Size == 4, "REALM_32 symbol is defined, but we're in a 64 bit process.");
                 return false;
             }
 #elif REALM_64
-            get {
-                Debug.Assert(IntPtr.Size == 8);
+            get
+            {
+                Debug.Assert(IntPtr.Size == 8, "REALM_64 symbol is defined, but we're in a 32 bit process.");
                 return true;
             }
 #else
-            //if this is evaluated every time, a faster way could be implemented. Size is cost when we are running though so perhaps it gets inlined by the JITter
-            get { return (IntPtr.Size == 8); }
+            // if this is evaluated every time, a faster way could be implemented. Size is cost when we are running though so perhaps it gets inlined by the JITter
+            get
+            {
+                return IntPtr.Size == 8;
+            }
 #endif
         }
-
 
 #if (DEBUG)
         private const string BuildName = "Debug";

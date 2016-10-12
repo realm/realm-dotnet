@@ -16,18 +16,18 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-extern alias realm;
 extern alias propertychanged;
+extern alias realm;
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using Mono.Cecil;
 using NUnit.Framework;
-using System.ComponentModel;
 using Realms.Weaving;
 
 namespace RealmWeaver
@@ -44,7 +44,7 @@ namespace RealmWeaver
 
         private static dynamic GetAutoPropertyBackingFieldValue(object o, string propertyName)
         {
-            var propertyField = ((Type) o.GetType())
+            var propertyField = ((Type)o.GetType())
                 .GetField($"<{propertyName}>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance);
             var fieldValue = propertyField.GetValue(o);
             return fieldValue;
@@ -52,7 +52,7 @@ namespace RealmWeaver
 
         private static void SetAutoPropertyBackingFieldValue(object o, string propertyName, object propertyValue)
         {
-            var propertyField = ((Type) o.GetType())
+            var propertyField = ((Type)o.GetType())
                 .GetField($"<{propertyName}>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance);
             propertyField.SetValue(o, propertyValue);
         }
@@ -114,8 +114,7 @@ namespace RealmWeaver
         private readonly List<string> _warnings = new List<string>();
         private readonly List<string> _errors = new List<string>();
 
-
-        public Tests( AssemblyType assemblyType, PropertyChangedWeaver propertyChangedWeaver)
+        public Tests(AssemblyType assemblyType, PropertyChangedWeaver propertyChangedWeaver)
         {
             _assemblyType = assemblyType;
             _propertyChangedWeaver = propertyChangedWeaver;
@@ -132,7 +131,7 @@ namespace RealmWeaver
 
             var moduleDefinition = ModuleDefinition.ReadModule(_sourceAssemblyPath);
 
-            var assemblyResolver = (moduleDefinition.AssemblyResolver as DefaultAssemblyResolver);
+            var assemblyResolver = moduleDefinition.AssemblyResolver as DefaultAssemblyResolver;
             assemblyResolver.AddSearchDirectory(Path.GetDirectoryName(_sourceAssemblyPath));
 
             if (Environment.OSVersion.Platform == PlatformID.Unix)
@@ -148,7 +147,7 @@ namespace RealmWeaver
                 case PropertyChangedWeaver.NotUsed:
                     WeaveRealm(moduleDefinition);
                     break;
-                
+
                 case PropertyChangedWeaver.BeforeRealmWeaver:
                     WeavePropertyChanged(moduleDefinition);
                     WeaveRealm(moduleDefinition);
@@ -175,7 +174,9 @@ namespace RealmWeaver
             catch (ReflectionTypeLoadException e)
             {
                 foreach (var item in e.LoaderExceptions)
+                {
                     Debug.WriteLine("Loader exception: " + item.Message.ToString());
+                }
 
                 Assert.Fail("Load failure");
             }
@@ -183,29 +184,28 @@ namespace RealmWeaver
 
         private static readonly object[][] RandomAndDefaultValues =
         {
-            new object[] {"Char", '0', char.MinValue},
-            new object[] {"Byte", (byte) 100, (byte) 0},
-            new object[] {"Int16", (short) 100, (short) 0},
-            new object[] {"Int32", 100, 0},
-            new object[] {"Int64", 100L, 0L},
-            new object[] {"Single", 123.123f, 0.0f},
-            new object[] {"Double", 123.123, 0.0},
-            new object[] {"Boolean", true, false},
-            new object[] {"String", "str", null},
-            new object[] {"NullableChar", '0', null},
-            new object[] {"NullableByte", (byte) 100, null},
-            new object[] {"NullableInt16", (short) 100, null},
-            new object[] {"NullableInt32", 100, null},
-            new object[] {"NullableInt64", 100L, null},
-            new object[] {"NullableSingle", 123.123f, null},
-            new object[] {"NullableDouble", 123.123, null},
-            new object[] {"NullableBoolean", true, null}
+            new object[] { "Char", '0', char.MinValue },
+            new object[] { "Byte", (byte)100, (byte)0 },
+            new object[] { "Int16", (short)100, (short)0 },
+            new object[] { "Int32", 100, 0 },
+            new object[] { "Int64", 100L, 0L },
+            new object[] { "Single", 123.123f, 0.0f },
+            new object[] { "Double", 123.123, 0.0 },
+            new object[] { "Boolean", true, false },
+            new object[] { "String", "str", null },
+            new object[] { "NullableChar", '0', null },
+            new object[] { "NullableByte", (byte)100, null },
+            new object[] { "NullableInt16", (short)100, null },
+            new object[] { "NullableInt32", 100, null },
+            new object[] { "NullableInt64", 100L, null },
+            new object[] { "NullableSingle", 123.123f, null },
+            new object[] { "NullableDouble", 123.123, null },
+            new object[] { "NullableBoolean", true, null }
         };
-
 
         private static IEnumerable<object[]> RandomValues()
         {
-            return RandomAndDefaultValues.Select(a => new[] {a[0], a[1]});
+            return RandomAndDefaultValues.Select(a => new[] { a[0], a[1] });
         }
 
         [TestCaseSource(nameof(RandomValues))]
@@ -289,8 +289,7 @@ namespace RealmWeaver
             var eventRaised = false;
             o.PropertyChanged += new PropertyChangedEventHandler((s, e) =>
             {
-                if (e.PropertyName == propertyName)
-                    eventRaised = true;
+                eventRaised |= e.PropertyName == propertyName;
             });
 
             // Act
@@ -311,7 +310,7 @@ namespace RealmWeaver
         [TestCase("Int16", (short)100, (short)0)]
         [TestCase("Int32", 100, 0)]
         [TestCase("Int64", 100L, 0L)]
-        [TestCase("String", "str", null)] 
+        [TestCase("String", "str", null)]
         public void SettingPrimaryKeyPropertyShouldCallSetUnique(string typeName, object propertyValue, object defaultPropertyValue)
         {
             // Arrange
@@ -513,7 +512,6 @@ namespace RealmWeaver
             // ByteArray can't be set as a constant
             WovenCopyToRealm_ShouldSetNonDefaultProperties("ByteArray", new byte[] { 4, 3, 2 });
         }
-        
 
         [Test]
         public void WovenCopyToRealm_ShouldAlwaysSetNullableProperties()
@@ -551,7 +549,7 @@ namespace RealmWeaver
         [Test]
         public void PeVerify()
         {
-            Verifier.Verify(_sourceAssemblyPath,_targetAssemblyPath);
+            Verifier.Verify(_sourceAssemblyPath, _targetAssemblyPath);
         }
 #endif
     }

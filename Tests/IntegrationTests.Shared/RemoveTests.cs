@@ -17,11 +17,11 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using NUnit.Framework;
-using Realms;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Collections.Generic;
+using NUnit.Framework;
+using Realms;
 
 namespace IntegrationTests.Shared
 {
@@ -61,12 +61,11 @@ namespace IntegrationTests.Shared
             _realm.Write(() => _realm.Remove(p2));
 
             // Assert
-            //Assert.That(!p2.InRealm);
+            // Assert.That(!p2.InRealm);
 
             var allPeople = _realm.All<Person>().ToList();
             Assert.That(allPeople, Is.EquivalentTo(new List<Person> { p1, p3 }));
         }
-
 
         [Test]
         public void RemoveOutsideTransactionShouldFail()
@@ -76,7 +75,7 @@ namespace IntegrationTests.Shared
             _realm.Write(() => p = _realm.CreateObject<Person>());
 
             // Act and assert
-            Assert.Throws<RealmOutsideTransactionException>(() => _realm.Remove(p) );
+            Assert.Throws<RealmOutsideTransactionException>(() => _realm.Remove(p));
         }
 
         [Test]
@@ -99,7 +98,7 @@ namespace IntegrationTests.Shared
             });
 
             // Act
-            _realm.Write(() => _realm.RemoveRange<Person>(((RealmResults<Person>)_realm.All<Person>().Where(p => !p.IsInteresting))));
+            _realm.Write(() => _realm.RemoveRange<Person>((RealmResults<Person>)_realm.All<Person>().Where(p => !p.IsInteresting)));
 
             // Assert
             Assert.That(_realm.All<Person>().ToList().Select(p => p.FirstName).ToArray(),
@@ -107,7 +106,7 @@ namespace IntegrationTests.Shared
         }
 
         [Test]
-        public void RemoveAllRemovesAllObjectsOfAGivenType() 
+        public void RemoveAllRemovesAllObjectsOfAGivenType()
         {
             // Arrange
             _realm.Write(() =>
@@ -146,7 +145,6 @@ namespace IntegrationTests.Shared
             // Assert
             Assert.That(_realm.All<Person>().Count(), Is.EqualTo(0));
             Assert.That(_realm.All<AllTypesObject>().Count(), Is.EqualTo(0));
-
         }
     }
 }

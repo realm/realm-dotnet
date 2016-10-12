@@ -16,21 +16,18 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
-
-namespace Realms {
-
-/// <summary>
-/// Exception when you can't open an existing realm file, or create a new one.
-/// </summary>
-/// <remarks>
-/// May be seen in testing if you have crashed a unit test but an external test runner is still going.
-/// </remarks>
-public class RealmPermissionDeniedException : RealmFileAccessErrorException {
-
-    internal RealmPermissionDeniedException(String message) : base(message)
+namespace Realms
+{
+    /// <summary>
+    /// Exception when you can't open an existing realm file, or create a new one.
+    /// </summary>
+    /// <remarks>
+    /// May be seen in testing if you have crashed a unit test but an external test runner is still going.
+    /// </remarks>
+    public class RealmPermissionDeniedException : RealmFileAccessErrorException
     {
+        internal RealmPermissionDeniedException(string message) : base(message)
+        {
+        }
     }
 }
-
-} // namespace Realms

@@ -15,22 +15,20 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.ConstrainedExecution;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Realms.native;
-
 #if __IOS__
 using ObjCRuntime;
 #endif
+using Realms.Native;
 
 namespace Realms
 {
@@ -44,19 +42,15 @@ namespace Realms
     {
         #region static
 
-        // shared string buffer for getter because can only be getting on this one thread per Realm
-        internal IntPtr stringGetBuffer = IntPtr.Zero;
-        internal int stringGetBufferLen;
-
         static Realm()
         {
             NativeCommon.Initialize();
             NativeCommon.register_notify_realm_changed(NotifyRealmChanged);
         }
 
-        #if __IOS__
-        [MonoPInvokeCallback (typeof (NativeCommon.NotifyRealmCallback))]
-        #endif
+#if __IOS__
+        [MonoPInvokeCallback(typeof(NativeCommon.NotifyRealmCallback))]
+#endif
         private static void NotifyRealmChanged(IntPtr realmHandle)
         {
             var gch = GCHandle.FromIntPtr(realmHandle);
@@ -64,24 +58,27 @@ namespace Realms
         }
 
         /// <summary>
-        /// Configuration that controls the Realm path and other settings.
+        /// Gets the <see cref="RealmConfiguration"/> that controls this realm's path and other settings.
         /// </summary>
         public RealmConfiguration Config { get; private set; }
 
         /// <summary>
         /// Factory for a Realm instance for this thread.
         /// </summary>
-        /// <param name="databasePath">Path to the realm, must be a valid full path for the current platform, relative subdir, or just filename.</param>
+        /// <param name="databasePath">Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.</param>
         /// <remarks>If you specify a relative path, sandboxing by the OS may cause failure if you specify anything other than a subdirectory. <br />
         /// Instances are cached for a given absolute path and thread, so you may get back the same instance.
         /// </remarks>
         /// <returns>A realm instance, possibly from cache.</returns>
-        /// <exception cref="RealmFileAccessErrorException">Throws error if the filesystem has an error preventing file creation.</exception>
+        /// <exception cref="RealmFileAccessErrorException">Throws error if the file system returns an error preventing file creation.</exception>
         public static Realm GetInstance(string databasePath)
         {
             var config = RealmConfiguration.DefaultConfiguration;
             if (!string.IsNullOrEmpty(databasePath))
+            {
                 config = config.ConfigWithPath(databasePath);
+            }
+
             return GetInstance(config);
         }
 
@@ -90,7 +87,7 @@ namespace Realms
         /// </summary>
         /// <param name="config">Optional configuration.</param>
         /// <returns>A realm instance.</returns>
-        /// <exception cref="RealmFileAccessErrorException">Throws error if the filesystem has an error preventing file creation.</exception>
+        /// <exception cref="RealmFileAccessErrorException">Throws error if the file system returns an error, preventing file creation.</exception>
         public static Realm GetInstance(RealmConfiguration config = null)
         {
             return GetInstance(config, null);
@@ -141,14 +138,17 @@ namespace Realms
             }
 
             RuntimeHelpers.PrepareConstrainedRegions();
-            try { /* Retain handle in a constrained execution region */ }
+            try
+            {
+                /* Retain handle in a constrained execution region */
+            }
             finally
             {
                 srHandle.SetHandle(srPtr);
             }
 
             return new Realm(srHandle, config, schema);
-        } 
+        }
 
         #endregion
 
@@ -158,7 +158,7 @@ namespace Realms
         internal bool IsInTransaction => SharedRealmHandle.IsInTransaction();
 
         /// <summary>
-        /// The <see cref="RealmSchema"/> instance that describes all the types that can be stored in this <see cref="Realm"/>.
+        /// Gets the <see cref="RealmSchema"/> instance that describes all the types that can be stored in this <see cref="Realm"/>.
         /// </summary>
         public RealmSchema Schema { get; }
 
@@ -180,28 +180,35 @@ namespace Realms
             {
                 var wovenAtt = schema.Type.GetCustomAttribute<WovenAttribute>();
                 if (wovenAtt == null)
+                {
                     throw new RealmException($"Fody not properly installed. {schema.Type.FullName} is a RealmObject but has not been woven.");
+                }
+
                 helper = (Weaving.IRealmObjectHelper)Activator.CreateInstance(wovenAtt.HelperType);
             }
             else
             {
                 helper = Dynamic.DynamicRealmObjectHelper.Instance;
             }
+
             // build up column index in a loop so can spot and cache primary key index on the way
             var initColumnMap = new Dictionary<string, IntPtr>();
-            int initPrimaryKeyIndex = -1;
-            foreach(var prop in schema)
+            var initPrimaryKeyIndex = -1;
+            foreach (var prop in schema)
             {
                 var colIndex = NativeTable.GetColumnIndex(table, prop.Name);
                 initColumnMap.Add(prop.Name, colIndex);
                 if (prop.IsPrimaryKey)
+                {
                     initPrimaryKeyIndex = (int)colIndex;
+                }
             }
+
             return new RealmObject.Metadata
             {
                 Table = table,
                 Helper = helper,
-                ColumnIndices = initColumnMap, 
+                ColumnIndices = initColumnMap,
                 PrimaryKeyColumnIndex = initPrimaryKeyIndex,
                 Schema = schema
             };
@@ -217,7 +224,7 @@ namespace Realms
         private event RealmChangedEventHandler _realmChanged;
 
         /// <summary>
-        /// Triggered when a realm has changed (i.e. a transaction was committed)
+        /// Triggered when a realm has changed (i.e. a transaction was committed).
         /// </summary>
         public event RealmChangedEventHandler RealmChanged
         {
@@ -228,7 +235,7 @@ namespace Realms
                     var managedRealmHandle = GCHandle.Alloc(this, GCHandleType.Weak);
                     SharedRealmHandle.BindToManagedRealmHandle(GCHandle.ToIntPtr(managedRealmHandle));
                 }
-                    
+
                 _realmChanged += value;
             }
 
@@ -240,8 +247,7 @@ namespace Realms
 
         private void NotifyChanged(EventArgs e)
         {
-            if (_realmChanged != null)
-                _realmChanged(this, e);
+            _realmChanged?.Invoke(this, e);
         }
 
         /// <summary>
@@ -249,7 +255,6 @@ namespace Realms
         /// </summary>
         /// <returns>True if closed.</returns>
         public bool IsClosed => SharedRealmHandle.IsClosed;
-
 
         /// <summary>
         /// Closes the Realm if not already closed. Safe to call repeatedly.
@@ -259,7 +264,9 @@ namespace Realms
         public void Close()
         {
             if (IsClosed)
+            {
                 return;
+            }
 
             Dispose();
         }
@@ -281,63 +288,57 @@ namespace Realms
         private void Dispose(bool disposing)
         {
             if (IsClosed)
+            {
                 throw new ObjectDisposedException(nameof(Realm));
-            
+            }
+
             if (disposing && !(SharedRealmHandle is UnownedRealmHandle))
             {
                 SharedRealmHandle.CloseRealm();
             }
 
             SharedRealmHandle.Close();  // Note: this closes the *handle*, it does not trigger realm::Realm::close().
-
-            if (stringGetBuffer != IntPtr.Zero)
-            {
-                Marshal.FreeHGlobal(stringGetBuffer);
-                stringGetBuffer = IntPtr.Zero;
-                stringGetBufferLen = 0;
-            }
         }
-
 
         /// <summary>
         /// Generic override determines whether the specified <see cref="System.Object"/> is equal to the current Realm.
         /// </summary>
-        /// <param name="rhs">The <see cref="System.Object"/> to compare with the current Realm.</param>
+        /// <param name="obj">The <see cref="System.Object"/> to compare with the current Realm.</param>
         /// <returns><c>true</c> if the Realms are functionally equal.</returns>
-        public override bool Equals(Object rhs)
-        {
-            return Equals(rhs as Realm);
-        }
-
+        public override bool Equals(object obj) => Equals(obj as Realm);
 
         /// <summary>
         /// Determines whether the specified Realm is equal to the current Realm.
         /// </summary>
-        /// <param name="rhs">The Realm to compare with the current Realm.</param>
+        /// <param name="other">The Realm to compare with the current Realm.</param>
         /// <returns><c>true</c> if the Realms are functionally equal.</returns>
-        public  bool Equals(Realm rhs)
+        public bool Equals(Realm other)
         {
-            if (rhs == null)
+            if (other == null)
+            {
                 return false;
-            if (ReferenceEquals(this, rhs))
+            }
+
+            if (ReferenceEquals(this, other))
+            {
                 return true;
-            return Config.Equals(rhs.Config) && IsClosed == rhs.IsClosed;
+            }
+
+            return Config.Equals(other.Config) && IsClosed == other.IsClosed;
         }
 
-
         /// <summary>
-        /// Determines whether this instance is the same core instance as the specified rhs.
+        /// Determines whether this instance is the same core instance as the passed in argument.
         /// </summary>
         /// <remarks>
         /// You can, and should, have multiple instances open on different threads which have the same path and open the same Realm.
         /// </remarks>
-        /// <returns><c>true</c> if this instance is the same core instance the specified rhs; otherwise, <c>false</c>.</returns>
-        /// <param name="rhs">The Realm to compare with the current Realm.</param>
-        public bool IsSameInstance(Realm rhs)
+        /// <returns><c>true</c> if this instance is the same core instance; otherwise, <c>false</c>.</returns>
+        /// <param name="other">The Realm to compare with the current Realm.</param>
+        public bool IsSameInstance(Realm other)
         {
-            return SharedRealmHandle.IsSameInstance(rhs.SharedRealmHandle);
+            return SharedRealmHandle.IsSameInstance(other.SharedRealmHandle);
         }
-
 
         /// <summary>
         /// Serves as a hash function for a Realm based on the core instance.
@@ -349,15 +350,14 @@ namespace Realms
             return (int)SharedRealmHandle.DangerousGetHandle();
         }
 
-
         /// <summary>
         ///  Deletes all the files associated with a realm. Hides knowledge of the auxiliary filenames from the programmer.
         /// </summary>
         /// <param name="configuration">A configuration which supplies the realm path.</param>
-        static public void DeleteRealm(RealmConfiguration configuration)
+        public static void DeleteRealm(RealmConfiguration configuration)
         {
-            //TODO add cache checking when implemented, https://github.com/realm/realm-dotnet/issues/308
-            //when cache checking, uncomment in IntegrationTests.cs RealmInstanceTests.DeleteRealmFailsIfOpenSameThread and add a variant to test open on different thread
+            // TODO add cache checking when implemented, https://github.com/realm/realm-dotnet/issues/308
+            // when cache checking, uncomment in IntegrationTests.cs RealmInstanceTests.DeleteRealmFailsIfOpenSameThread and add a variant to test open on different thread
             var lockOnWhileDeleting = new object();
             lock (lockOnWhileDeleting)
             {
@@ -371,7 +371,6 @@ namespace Realms
             }
         }
 
-
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         private TableHandle GetTable(Schema.ObjectSchema schema)
         {
@@ -379,12 +378,16 @@ namespace Realms
             var tableName = schema.Name;
 
             RuntimeHelpers.PrepareConstrainedRegions();
-            try { /* Retain handle in a constrained execution region */ }
+            try
+            {
+                /* Retain handle in a constrained execution region */
+            }
             finally
             {
                 var tablePtr = SharedRealmHandle.GetTable(tableName);
                 result.SetHandle(tablePtr);
             }
+
             return result;
         }
 
@@ -400,7 +403,9 @@ namespace Realms
             RealmObject.Metadata metadata;
             var ret = CreateObject(typeof(T).Name, out metadata);
             if (typeof(T) != metadata.Schema.Type)
+            {
                 throw new ArgumentException($"The type {typeof(T).FullName} does not match the original type the schema was created for - {metadata.Schema.Type?.FullName}");
+            }
 
             return (T)ret;
         }
@@ -411,7 +416,7 @@ namespace Realms
         /// <returns>A dynamically-accessed Realm object.</returns>
         /// <param name="className">The type of object to create as defined in the schema.</param>
         /// <remarks>
-        /// If the realm instance has been created from an untyped schema (such as when migrating from an older version of a realm) the returned object will be purely dynamic.
+        /// If the realm instance has been created from an un-typed schema (such as when migrating from an older version of a realm) the returned object will be purely dynamic.
         /// If the realm has been created from a typed schema as is the default case when calling <code>Realm.GetInstance()</code> the returned object will be an instance of a user-defined class, as if created by <code>Realm.CreateObject&lt;T&gt;()</code>.
         /// </remarks>
         public dynamic CreateObject(string className)
@@ -423,10 +428,14 @@ namespace Realms
         private RealmObject CreateObject(string className, out RealmObject.Metadata metadata)
         {
             if (!IsInTransaction)
+            {
                 throw new RealmOutsideTransactionException("Cannot create Realm object outside write transactions");
+            }
 
             if (!Metadata.TryGetValue(className, out metadata))
+            {
                 throw new ArgumentException($"The class {className} is not in the limited set of classes for this realm");
+            }
 
             var result = metadata.Helper.CreateInstance();
 
@@ -437,32 +446,27 @@ namespace Realms
             return result;
         }
 
-
         internal RealmObject MakeObjectForRow(RealmObject.Metadata metadata, IntPtr rowPtr)
         {
             return MakeObjectForRow(metadata, CreateRowHandle(rowPtr, SharedRealmHandle));
         }
 
-
         internal RealmObject MakeObjectForRow(string className, IntPtr rowPtr)
         {
-            return MakeObjectForRow(Metadata [className], CreateRowHandle(rowPtr, SharedRealmHandle));
+            return MakeObjectForRow(Metadata[className], CreateRowHandle(rowPtr, SharedRealmHandle));
         }
-
 
         internal RealmObject MakeObjectForRow(string className, RowHandle row)
         {
             return MakeObjectForRow(Metadata[className], row);
         }
 
-
         internal RealmObject MakeObjectForRow(RealmObject.Metadata metadata, RowHandle row)
         {
-            RealmObject ret = metadata.Helper.CreateInstance();
+            var ret = metadata.Helper.CreateInstance();
             ret._Manage(this, row, metadata);
             return ret;
         }
-
 
         internal ResultsHandle MakeResultsForTable(RealmObject.Metadata metadata)
         {
@@ -470,17 +474,20 @@ namespace Realms
             return CreateResultsHandle(resultsPtr);
         }
 
-
         internal ResultsHandle MakeResultsForQuery(QueryHandle builtQuery, SortDescriptorBuilder optionalSortDescriptorBuilder)
         {
-            var resultsPtr = IntPtr.Zero;               
+            var resultsPtr = IntPtr.Zero;
             if (optionalSortDescriptorBuilder == null)
+            {
                 resultsPtr = builtQuery.CreateResults(SharedRealmHandle);
+            }
             else
+            {
                 resultsPtr = builtQuery.CreateSortedResults(SharedRealmHandle, optionalSortDescriptorBuilder);
+            }
+
             return CreateResultsHandle(resultsPtr);
         }
-
 
         internal SortDescriptorBuilder CreateSortDescriptorForTable(RealmObject.Metadata metadata)
         {
@@ -498,19 +505,24 @@ namespace Realms
         public void Manage<T>(T obj) where T : RealmObject
         {
             if (obj == null)
+            {
                 throw new ArgumentNullException(nameof(obj));
+            }
 
             if (obj.IsManaged)
             {
                 if (obj.Realm.SharedRealmHandle == this.SharedRealmHandle)
+                {
                     throw new RealmObjectAlreadyManagedByRealmException("The object is already managed by this realm");
+                }
 
                 throw new RealmObjectManagedByAnotherRealmException("Cannot start to manage an object with a realm when it's already managed by another realm");
             }
 
-
             if (!IsInTransaction)
+            {
                 throw new RealmOutsideTransactionException("Cannot start managing a Realm object outside write transactions");
+            }
 
             var metadata = Metadata[typeof(T).Name];
             var tableHandle = metadata.Table;
@@ -528,14 +540,17 @@ namespace Realms
             var resultsHandle = new ResultsHandle();
 
             RuntimeHelpers.PrepareConstrainedRegions();
-            try { /* Retain handle in a constrained execution region */ }
+            try
+            {
+                /* Retain handle in a constrained execution region */
+            }
             finally
             {
                 resultsHandle.SetHandle(resultsPtr);
             }
+
             return resultsHandle;
         }
-
 
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         internal static RowHandle CreateRowHandle(IntPtr rowPtr, SharedRealmHandle sharedRealmHandle)
@@ -543,23 +558,28 @@ namespace Realms
             var rowHandle = new RowHandle(sharedRealmHandle);
 
             RuntimeHelpers.PrepareConstrainedRegions();
-            try { /* Retain handle in a constrained execution region */ }
+            try
+            {
+                /* Retain handle in a constrained execution region */
+            }
             finally
             {
                 rowHandle.SetHandle(rowPtr);
             }
+
             return rowHandle;
         }
 
         /// <summary>
         /// Factory for a write Transaction. Essential object to create scope for updates.
         /// </summary>
-        /// <example>
-        /// using (var trans = myrealm.BeginWrite()) { 
-        ///     var rex = myrealm.CreateObject<Dog>();
+        /// <example><c>
+        /// using (var trans = realm.BeginWrite()) 
+        /// { 
+        ///     var rex = realm.CreateObject&lt;Dog&gt;();
         ///     rex.Name = "Rex";
         ///     trans.Commit();
-        /// }
+        /// }</c>
         /// </example>
         /// <returns>A transaction in write mode, which is required for any creation or modification of objects persisted in a Realm.</returns>
         public Transaction BeginWrite()
@@ -576,13 +596,13 @@ namespace Realms
         /// Be careful of wrapping multiple single property updates in multiple `Write` calls. It is more efficient to update several properties 
         /// or even create multiple objects in a single Write, unless you need to guarantee finer-grained updates.
         /// </remarks>
-        /// <example>
+        /// <example><c>
         /// realm.Write(() => 
         /// {
-        ///     d = myrealm.CreateObject<Dog>();
+        ///     d = realm.CreateObject&lt;Dog&gt;();
         ///     d.Name = "Eddie";
         ///     d.Age = 5;
-        /// });
+        /// });</c>
         /// </example>
         /// <param name="action">Action to perform inside a transaction, creating, updating or removing objects.</param>
         public void Write(Action action)
@@ -641,7 +661,7 @@ namespace Realms
 
         /// <summary>
         /// Update a Realm and outstanding objects to point to the most recent data for this Realm.
-        /// This is only necessary when you have a Realm on a non-runloop thread that needs manual refreshing.
+        /// This is only necessary when you have a Realm on a thread without a runloop that needs manual refreshing.
         /// </summary>
         /// <returns>
         /// Whether the realm had any updates. Note that this may return true even if no data has actually changed.
@@ -656,18 +676,20 @@ namespace Realms
         /// </summary>
         /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
         /// <returns>A RealmResults that without further filtering, allows iterating all objects of class T, in this realm.</returns>
-        public RealmResults<T> All<T>() where T: RealmObject
+        public RealmResults<T> All<T>() where T : RealmObject
         {
             var type = typeof(T);
             RealmObject.Metadata metadata;
             if (!Metadata.TryGetValue(type.Name, out metadata) || metadata.Schema.Type != type)
+            {
                 throw new ArgumentException($"The class {type.Name} is not in the limited set of classes for this realm");
+            }
 
             return new RealmResults<T>(this, metadata, true);
         }
 
         /// <summary>
-        /// Get a view of all the objects of a particular type
+        /// Get a view of all the objects of a particular type.
         /// </summary>
         /// <param name="className">The type of the objects as defined in the schema.</param>
         /// <remarks>Because the objects inside the view are accessed dynamically, the view cannot be queried into using LINQ or other expression predicates.</remarks>
@@ -676,11 +698,12 @@ namespace Realms
         {
             RealmObject.Metadata metadata;
             if (!Metadata.TryGetValue(className, out metadata))
+            {
                 throw new ArgumentException($"The class {className} is not in the limited set of classes for this realm");
+            }
 
             return new RealmResults<dynamic>(this, metadata, true);
         }
-
 
         #region Quick ObjectForPrimaryKey
 
@@ -688,68 +711,78 @@ namespace Realms
         /// Fast lookup of an object from a class which has a PrimaryKey property.
         /// </summary>
         /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
-        /// <param name="id">Id to be matched exactly, same as an == search. Int64 argument works for all integer properties supported as PrimaryKey.</param>
+        /// <param name="id">Id to be matched exactly, same as an == search. An argument of type <c>long</c> works for all integer properties, supported as PrimaryKey.</param>
         /// <returns>Null or an object matching the id.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class T lacks an [PrimaryKey].</exception>
-        public T ObjectForPrimaryKey<T>(Int64 id) where T : RealmObject
+        public T ObjectForPrimaryKey<T>(long id) where T : RealmObject
         {
             var metadata = Metadata[typeof(T).Name];
             var rowPtr = NativeTable.RowForPrimaryKey(metadata.Table, metadata.PrimaryKeyColumnIndex, id);
             if (rowPtr == IntPtr.Zero)
+            {
                 return null;
+            }
+
             return (T)MakeObjectForRow(metadata, rowPtr);
         }
-
 
         /// <summary>
         /// Fast lookup of an object from a class which has a PrimaryKey property.
         /// </summary>
         /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
         /// <param name="id">Id to be matched exactly, same as an == search.</param>
-        /// <returns>Null or an object matdhing the id.</returns>
+        /// <returns>Null or an object matching the id.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class T lacks an [PrimaryKey].</exception>
         public T ObjectForPrimaryKey<T>(string id) where T : RealmObject
         {
             var metadata = Metadata[typeof(T).Name];
             var rowPtr = NativeTable.RowForPrimaryKey(metadata.Table, metadata.PrimaryKeyColumnIndex, id);
             if (rowPtr == IntPtr.Zero)
+            {
                 return null;
+            }
+
             return (T)MakeObjectForRow(metadata, rowPtr);
         }
-
 
         /// <summary>
         /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.
         /// </summary>
         /// <param name="className">Name of class in dynamic situation.</param>
         /// <param name="id">Id to be matched exactly, same as an == search.</param>
-        /// <returns>Null or an object matdhing the id.</returns>
+        /// <returns>Null or an object matching the id.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class lacks an [PrimaryKey].</exception>
-        public RealmObject ObjectForPrimaryKey(string className, Int64 id)
+        public RealmObject ObjectForPrimaryKey(string className, long id)
         {
             var metadata = Metadata[className];
             var rowPtr = NativeTable.RowForPrimaryKey(metadata.Table, metadata.PrimaryKeyColumnIndex, id);
             if (rowPtr == IntPtr.Zero)
+            {
                 return null;
+            }
+
             return MakeObjectForRow(metadata, rowPtr);
         }
-
 
         /// <summary>
         /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.
         /// </summary>
         /// <param name="className">Name of class in dynamic situation.</param>
         /// <param name="id">Id to be matched exactly, same as an == search.</param>
-        /// <returns>Null or an object matdhing the id.</returns>
+        /// <returns>Null or an object matching the id.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class lacks an [PrimaryKey].</exception>
         public RealmObject ObjectForPrimaryKey(string className, string id)
         {
             var metadata = Metadata[className];
             var rowPtr = NativeTable.RowForPrimaryKey(metadata.Table, metadata.PrimaryKeyColumnIndex, id);
             if (rowPtr == IntPtr.Zero)
+            {
                 return null;
+            }
+
             return MakeObjectForRow(metadata, rowPtr);
         }
+
         #endregion ObjectForPrimaryKey
 
         /// <summary>
@@ -761,24 +794,30 @@ namespace Realms
         public void Remove(RealmObject obj)
         {
             if (!IsInTransaction)
+            {
                 throw new RealmOutsideTransactionException("Cannot remove Realm object outside write transactions");
+            }
 
             var tableHandle = obj.ObjectMetadata.Table;
-            NativeTable.RemoveRow(tableHandle, (RowHandle)obj.RowHandle);
+            NativeTable.RemoveRow(tableHandle, obj.RowHandle);
         }
 
         /// <summary>
-        /// Remove objects matcing a query from the realm.
+        /// Remove objects matching a query from the realm.
         /// </summary>
         /// <typeparam name="T">Type of the objects to remove.</typeparam>
         /// <param name="range">The query to match for.</param>
         public void RemoveRange<T>(RealmResults<T> range)
         {
             if (range == null)
+            {
                 throw new ArgumentNullException(nameof(range));
+            }
 
             if (!IsInTransaction)
+            {
                 throw new RealmOutsideTransactionException("Cannot remove Realm objects outside write transactions");
+            }
 
             range.ResultsHandle.Clear();
         }
@@ -787,7 +826,7 @@ namespace Realms
         /// Remove all objects of a type from the realm.
         /// </summary>
         /// <typeparam name="T">Type of the objects to remove.</typeparam>
-        public void RemoveAll<T>() where T: RealmObject
+        public void RemoveAll<T>() where T : RealmObject
         {
             RemoveRange(All<T>());
         }
@@ -807,7 +846,9 @@ namespace Realms
         public void RemoveAll()
         {
             if (!IsInTransaction)
+            {
                 throw new RealmOutsideTransactionException("Cannot remove all Realm objects outside write transactions");
+            }
 
             foreach (var metadata in Metadata.Values)
             {
@@ -815,6 +856,5 @@ namespace Realms
                 resultsHandle.Clear();
             }
         }
-
     }
 }

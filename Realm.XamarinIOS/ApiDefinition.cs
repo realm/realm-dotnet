@@ -1,12 +1,4 @@
-﻿using System;
-
-using UIKit;
-using Foundation;
-using ObjCRuntime;
-using CoreGraphics;
-
-
-// WARNING even though this file contains apparently generic content with no function
+﻿// WARNING even though this file contains apparently generic content with no function
 // it is still needed to compile as this is an IOS Binding Project 
 // and the compilation scripts expect this file to be present
 
@@ -67,6 +59,4 @@ namespace Realms.XamarinIOS
     //     IntPtr Constructor (ElmoMuppet elmo);
     //
     // For more information, see http://developer.xamarin.com/guides/ios/advanced_topics/binding_objective-c/
-    //
 }
-

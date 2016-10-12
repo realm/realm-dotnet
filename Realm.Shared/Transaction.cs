@@ -15,11 +15,8 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
 using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Text;
 
 namespace Realms
 {
@@ -31,7 +28,7 @@ namespace Realms
     /// </remarks>
     public class Transaction : IDisposable
     {
-        private Realm _realm;
+        private readonly Realm _realm;
         private bool _isOpen;
 
         internal Transaction(Realm realm)
@@ -47,14 +44,20 @@ namespace Realms
         public void Dispose()
         {
             if (!_isOpen)
+            {
                 return;
+            }
 
-            //var exceptionOccurred = Marshal.GetExceptionPointers() != IntPtr.Zero || Marshal.GetExceptionCode() != 0;
+            // var exceptionOccurred = Marshal.GetExceptionPointers() != IntPtr.Zero || Marshal.GetExceptionCode() != 0;
             var exceptionOccurred = true; // TODO: Can we find this out on iOS? Otherwise, we have to remove it!
             if (exceptionOccurred)
+            {
                 Rollback();
+            }
             else
+            {
                 Commit();
+            }
         }
 
         /// <summary>
@@ -63,7 +66,9 @@ namespace Realms
         public void Rollback()
         {
             if (!_isOpen)
+            {
                 throw new Exception("Transaction was already closed. Cannot roll back");
+            }
 
             _realm.SharedRealmHandle.CancelTransaction();
             _isOpen = false;
@@ -75,7 +80,9 @@ namespace Realms
         public void Commit()
         {
             if (!_isOpen)
+            {
                 throw new Exception("Transaction was already closed. Cannot commit");
+            }
 
             _realm.SharedRealmHandle.CommitTransaction();
             _isOpen = false;

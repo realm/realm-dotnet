@@ -23,9 +23,9 @@ using DotNetCross.Memory;
 namespace Realms
 {
     [StructLayout(LayoutKind.Sequential)]
-    unsafe struct PtrTo<T> where T : struct
+    internal unsafe struct PtrTo<T> where T : struct
     {
-        void* ptr;
+        private void* ptr;
 
         internal T? Value
         {

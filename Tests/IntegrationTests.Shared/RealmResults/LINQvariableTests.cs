@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using NUnit.Framework;
 using System.Linq;
+using NUnit.Framework;
 using Realms;
 
 namespace IntegrationTests
@@ -26,10 +26,10 @@ namespace IntegrationTests
     public class LINQvariableTests : PeopleTestsBase
     {
         // see comment on base method why this isn't decorated with [SetUp]
-        public override void Setup ()
+        public override void Setup()
         {
-            base.Setup ();
-            MakeThreePeople ();
+            base.Setup();
+            MakeThreePeople();
         }
 
         [TestCase("Peter", 1)]
@@ -83,7 +83,6 @@ namespace IntegrationTests
             var c0 = _realm.All<Person>().Count(p => p.Score > minScore && p.Score <= maxScore);
             Assert.That(c0, Is.EqualTo(expectFound));
         }
-
 
         // The following test cases exercise both Convert and Member RHS expressions
 
@@ -148,4 +147,3 @@ namespace IntegrationTests
         }
     }
 }
-

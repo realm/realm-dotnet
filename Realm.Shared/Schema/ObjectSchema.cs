@@ -36,12 +36,12 @@ namespace Realms.Schema
         private readonly ReadOnlyDictionary<string, Property> _properties;
 
         /// <summary>
-        /// Name of the original class declaration from which the schema was built.
+        /// Gets the name of the original class declaration from which the schema was built.
         /// </summary>
         public string Name { get; private set; }
 
         /// <summary>
-        /// Number of properties in the schema, which is the persistent properties from the original class.
+        /// Gets the number of properties in the schema, which is the persistent properties from the original class.
         /// </summary>
         public int Count => _properties.Count;
 
@@ -51,8 +51,16 @@ namespace Realms.Schema
 
         private ObjectSchema(string name, IDictionary<string, Property> properties)
         {
-            if (string.IsNullOrEmpty(name)) throw new ArgumentException("Object name cannot be empty", nameof(name));
-            if (properties == null) throw new ArgumentNullException(nameof(properties));
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentException("Object name cannot be empty", nameof(name));
+            }
+
+            if (properties == null)
+            {
+                throw new ArgumentNullException(nameof(properties));
+            }
+
             Contract.EndContractBlock();
 
             Name = name;
@@ -71,15 +79,9 @@ namespace Realms.Schema
         /// Property enumerator factory for an iterator to be called explicitly or used in a foreach loop.
         /// </summary>
         /// <returns>An enumerator over the list of Property instances described in the schema.</returns>
-        public IEnumerator<Property> GetEnumerator()
-        {
-            return _properties.Values.GetEnumerator();
-        }
+        public IEnumerator<Property> GetEnumerator() => _properties.Values.GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         /// <summary>
         /// Creates a schema describing a RealmObject subclass in terms of its persisted members.
@@ -89,16 +91,27 @@ namespace Realms.Schema
         /// <param name="type">Type of a RealmObject descendant for which you want a schema.</param>
         public static ObjectSchema FromType(Type type)
         {
-            if (type == null) throw new ArgumentNullException(nameof(type));
-            if (type.BaseType != typeof(RealmObject)) throw new ArgumentException($"The class {type.FullName} must descend directly from RealmObject");
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
+            if (type.BaseType != typeof(RealmObject))
+            {
+                throw new ArgumentException($"The class {type.FullName} must descend directly from RealmObject");
+            }
+
             Contract.EndContractBlock();
 
             var builder = new Builder(type.Name);
             foreach (var property in type.GetProperties(BindingFlags.Instance | BindingFlags.DeclaredOnly | BindingFlags.NonPublic | BindingFlags.Public))
             {
-                if (property.GetCustomAttribute<WovenPropertyAttribute>() == null) continue;
+                if (property.GetCustomAttribute<WovenPropertyAttribute>() == null)
+                {
+                    continue;
+                }
 
-                bool isPrimaryKey = property.GetCustomAttribute<PrimaryKeyAttribute>() != null;
+                var isPrimaryKey = property.GetCustomAttribute<PrimaryKeyAttribute>() != null;
                 var schemaProperty = new Property
                 {
                     Name = property.GetCustomAttribute<MapToAttribute>()?.Mapping ?? property.Name,
@@ -126,11 +139,18 @@ namespace Realms.Schema
         /// </summary>
         public class Builder : List<Property>
         {
+            /// <summary>
+            /// Gets the name of the class to be returned in the ObjectSchema.
+            /// </summary>
             public string Name { get; }
 
             public Builder(string name)
             {
-                if (string.IsNullOrEmpty(name)) throw new ArgumentException("Object name cannot be empty", nameof(name));
+                if (string.IsNullOrEmpty(name))
+                {
+                    throw new ArgumentException("Object name cannot be empty", nameof(name));
+                }
+
                 Contract.EndContractBlock();
 
                 Name = name;
@@ -143,11 +163,12 @@ namespace Realms.Schema
             /// <returns>A completed ObjectSchema, suitable for composing a RealmSchema that will be used to create a new Realm.</returns>
             public ObjectSchema Build()
             {
-                if (Count == 0) 
+                if (Count == 0)
                 {
                     throw new InvalidOperationException(
                         $"No properties in {Name}, has linker stripped it? See https://realm.io/docs/xamarin/latest/#linker-stripped-schema");
                 }
+
                 Contract.EndContractBlock();
 
                 return new ObjectSchema(Name, this.ToDictionary(p => p.Name));
@@ -155,4 +176,3 @@ namespace Realms.Schema
         }
     }
 }
-

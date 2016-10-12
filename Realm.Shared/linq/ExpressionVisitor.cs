@@ -15,13 +15,11 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 
 namespace Realms
 {
@@ -30,7 +28,10 @@ namespace Realms
         internal virtual Expression Visit(Expression exp)
         {
             if (exp == null)
+            {
                 return exp;
+            }
+
             switch (exp.NodeType)
             {
                 case ExpressionType.Add:
@@ -103,11 +104,11 @@ namespace Realms
             switch (binding.BindingType)
             {
                 case MemberBindingType.Assignment:
-                    return (MemberBinding)this.VisitMemberAssignment((MemberAssignment)binding);
+                    return this.VisitMemberAssignment((MemberAssignment)binding);
                 case MemberBindingType.MemberBinding:
-                    return (MemberBinding)this.VisitMemberMemberBinding((MemberMemberBinding)binding);
+                    return this.VisitMemberMemberBinding((MemberMemberBinding)binding);
                 case MemberBindingType.ListBinding:
-                    return (MemberBinding)this.VisitMemberListBinding((MemberListBinding)binding);
+                    return this.VisitMemberListBinding((MemberListBinding)binding);
                 default:
                     throw new ArgumentException(binding.BindingType.ToString());
             }
@@ -115,241 +116,288 @@ namespace Realms
 
         internal virtual ElementInit VisitElementInitializer(ElementInit initializer)
         {
-            ReadOnlyCollection<Expression> readOnlyCollection = this.VisitExpressionList(initializer.Arguments);
+            var readOnlyCollection = this.VisitExpressionList(initializer.Arguments);
             if (readOnlyCollection != initializer.Arguments)
-                return Expression.ElementInit(initializer.AddMethod, (IEnumerable<Expression>)readOnlyCollection);
+            {
+                return Expression.ElementInit(initializer.AddMethod, readOnlyCollection);
+            }
+
             return initializer;
         }
 
         internal virtual Expression VisitUnary(UnaryExpression u)
         {
-            Expression operand = this.Visit(u.Operand);
+            var operand = this.Visit(u.Operand);
             if (operand != u.Operand)
-                return (Expression)Expression.MakeUnary(u.NodeType, operand, u.Type, u.Method);
-            return (Expression)u;
+            {
+                return Expression.MakeUnary(u.NodeType, operand, u.Type, u.Method);
+            }
+
+            return u;
         }
 
         internal virtual Expression VisitBinary(BinaryExpression b)
         {
-            Expression left = this.Visit(b.Left);
-            Expression right = this.Visit(b.Right);
-            Expression expression = this.Visit((Expression)b.Conversion);
+            var left = this.Visit(b.Left);
+            var right = this.Visit(b.Right);
+            var expression = this.Visit(b.Conversion);
             if (left == b.Left && right == b.Right && expression == b.Conversion)
-                return (Expression)b;
+            {
+                return b;
+            }
+
             if (b.NodeType == ExpressionType.Coalesce && b.Conversion != null)
-                return (Expression)Expression.Coalesce(left, right, expression as LambdaExpression);
-            return (Expression)Expression.MakeBinary(b.NodeType, left, right, b.IsLiftedToNull, b.Method);
+            {
+                return Expression.Coalesce(left, right, expression as LambdaExpression);
+            }
+
+            return Expression.MakeBinary(b.NodeType, left, right, b.IsLiftedToNull, b.Method);
         }
 
         internal virtual Expression VisitTypeIs(TypeBinaryExpression b)
         {
-            Expression expression = this.Visit(b.Expression);
+            var expression = this.Visit(b.Expression);
             if (expression != b.Expression)
-                return (Expression)Expression.TypeIs(expression, b.TypeOperand);
-            return (Expression)b;
+            {
+                return Expression.TypeIs(expression, b.TypeOperand);
+            }
+
+            return b;
         }
 
-        internal virtual Expression VisitConstant(ConstantExpression c)
-        {
-            return (Expression)c;
-        }
+        internal virtual Expression VisitConstant(ConstantExpression c) => c;
 
         internal virtual Expression VisitConditional(ConditionalExpression c)
         {
-            Expression test = this.Visit(c.Test);
-            Expression ifTrue = this.Visit(c.IfTrue);
-            Expression ifFalse = this.Visit(c.IfFalse);
+            var test = this.Visit(c.Test);
+            var ifTrue = this.Visit(c.IfTrue);
+            var ifFalse = this.Visit(c.IfFalse);
             if (test != c.Test || ifTrue != c.IfTrue || ifFalse != c.IfFalse)
-                return (Expression)Expression.Condition(test, ifTrue, ifFalse);
-            return (Expression)c;
+            {
+                return Expression.Condition(test, ifTrue, ifFalse);
+            }
+
+            return c;
         }
 
-        internal virtual Expression VisitParameter(ParameterExpression p)
-        {
-            return (Expression)p;
-        }
+        internal virtual Expression VisitParameter(ParameterExpression p) => p;
 
         internal virtual Expression VisitMemberAccess(MemberExpression m)
         {
-            Expression expression = this.Visit(m.Expression);
+            var expression = this.Visit(m.Expression);
             if (expression != m.Expression)
-                return (Expression)Expression.MakeMemberAccess(expression, m.Member);
-            return (Expression)m;
+            {
+                return Expression.MakeMemberAccess(expression, m.Member);
+            }
+
+            return m;
         }
 
         internal virtual Expression VisitMethodCall(MethodCallExpression m)
         {
-            Expression instance = this.Visit(m.Object);
-            IEnumerable<Expression> arguments = (IEnumerable<Expression>)this.VisitExpressionList(m.Arguments);
+            var instance = this.Visit(m.Object);
+            var arguments = this.VisitExpressionList(m.Arguments);
             if (instance != m.Object || arguments != m.Arguments)
-                return (Expression)Expression.Call(instance, m.Method, arguments);
-            return (Expression)m;
+            {
+                return Expression.Call(instance, m.Method, arguments);
+            }
+
+            return m;
         }
 
         internal virtual ReadOnlyCollection<Expression> VisitExpressionList(ReadOnlyCollection<Expression> original)
         {
-            List<Expression> list = (List<Expression>)null;
-            int index1 = 0;
-            for (int count = original.Count; index1 < count; ++index1)
+            List<Expression> list = null;
+            var count = original.Count;
+            for (var index1 = 0; index1 < count; ++index1)
             {
-                Expression expression = this.Visit(original[index1]);
+                var expression = this.Visit(original[index1]);
                 if (list != null)
+                {
                     list.Add(expression);
+                }
                 else if (expression != original[index1])
                 {
                     list = new List<Expression>(count);
                     for (int index2 = 0; index2 < index1; ++index2)
+                    {
                         list.Add(original[index2]);
+                    }
+
                     list.Add(expression);
                 }
             }
+
             if (list != null)
-                return ReadOnlyCollectionExtensions.ToReadOnlyCollection<Expression>((IEnumerable<Expression>)list);
+            {
+                return list.ToReadOnlyCollection();
+            }
+
             return original;
         }
 
         internal virtual MemberAssignment VisitMemberAssignment(MemberAssignment assignment)
         {
-            Expression expression = this.Visit(assignment.Expression);
+            var expression = this.Visit(assignment.Expression);
             if (expression != assignment.Expression)
+            {
                 return Expression.Bind(assignment.Member, expression);
+            }
+
             return assignment;
         }
 
         internal virtual MemberMemberBinding VisitMemberMemberBinding(MemberMemberBinding binding)
         {
-            IEnumerable<MemberBinding> bindings = this.VisitBindingList(binding.Bindings);
+            var bindings = this.VisitBindingList(binding.Bindings);
             if (bindings != binding.Bindings)
+            {
                 return Expression.MemberBind(binding.Member, bindings);
+            }
+
             return binding;
         }
 
         internal virtual MemberListBinding VisitMemberListBinding(MemberListBinding binding)
         {
-            IEnumerable<ElementInit> initializers = this.VisitElementInitializerList(binding.Initializers);
+            var initializers = this.VisitElementInitializerList(binding.Initializers);
             if (initializers != binding.Initializers)
+            {
                 return Expression.ListBind(binding.Member, initializers);
+            }
+
             return binding;
         }
 
         internal virtual IEnumerable<MemberBinding> VisitBindingList(ReadOnlyCollection<MemberBinding> original)
         {
-            List<MemberBinding> list = (List<MemberBinding>)null;
-            int index1 = 0;
-            for (int count = original.Count; index1 < count; ++index1)
+            List<MemberBinding> list = null;
+            var count = original.Count;
+            for (var index1 = 0; index1 < count; ++index1)
             {
-                MemberBinding memberBinding = this.VisitBinding(original[index1]);
+                var memberBinding = this.VisitBinding(original[index1]);
                 if (list != null)
+                {
                     list.Add(memberBinding);
+                }
                 else if (memberBinding != original[index1])
                 {
                     list = new List<MemberBinding>(count);
                     for (int index2 = 0; index2 < index1; ++index2)
+                    {
                         list.Add(original[index2]);
+                    }
+
                     list.Add(memberBinding);
                 }
             }
-            return (IEnumerable<MemberBinding>)list ?? (IEnumerable<MemberBinding>)original;
+
+            return list ?? (IEnumerable<MemberBinding>)original;
         }
 
         internal virtual IEnumerable<ElementInit> VisitElementInitializerList(ReadOnlyCollection<ElementInit> original)
         {
-            List<ElementInit> list = (List<ElementInit>)null;
-            int index1 = 0;
-            for (int count = original.Count; index1 < count; ++index1)
+            List<ElementInit> list = null;
+            var count = original.Count;
+            for (var index1 = 0; index1 < count; ++index1)
             {
-                ElementInit elementInit = this.VisitElementInitializer(original[index1]);
+                var elementInit = this.VisitElementInitializer(original[index1]);
                 if (list != null)
+                {
                     list.Add(elementInit);
+                }
                 else if (elementInit != original[index1])
                 {
                     list = new List<ElementInit>(count);
-                    for (int index2 = 0; index2 < index1; ++index2)
+                    for (var index2 = 0; index2 < index1; ++index2)
+                    {
                         list.Add(original[index2]);
+                    }
+
                     list.Add(elementInit);
                 }
             }
-            return (IEnumerable<ElementInit>)list ?? (IEnumerable<ElementInit>)original;
+
+            return list ?? (IEnumerable<ElementInit>)original;
         }
 
         internal virtual Expression VisitLambda(LambdaExpression lambda)
         {
-            Expression body = this.Visit(lambda.Body);
+            var body = this.Visit(lambda.Body);
             if (body != lambda.Body)
-                return (Expression)Expression.Lambda(lambda.Type, body, (IEnumerable<ParameterExpression>)lambda.Parameters);
-            return (Expression)lambda;
+            {
+                return Expression.Lambda(lambda.Type, body, lambda.Parameters);
+            }
+
+            return lambda;
         }
 
         internal virtual NewExpression VisitNew(NewExpression nex)
         {
-            IEnumerable<Expression> arguments = (IEnumerable<Expression>)this.VisitExpressionList(nex.Arguments);
+            var arguments = this.VisitExpressionList(nex.Arguments);
             if (arguments == nex.Arguments)
+            {
                 return nex;
+            }
+
             if (nex.Members != null)
-                return Expression.New(nex.Constructor, arguments, (IEnumerable<MemberInfo>)nex.Members);
+            {
+                return Expression.New(nex.Constructor, arguments, nex.Members);
+            }
+
             return Expression.New(nex.Constructor, arguments);
         }
 
         internal virtual Expression VisitMemberInit(MemberInitExpression init)
         {
-            NewExpression newExpression = this.VisitNew(init.NewExpression);
-            IEnumerable<MemberBinding> bindings = this.VisitBindingList(init.Bindings);
+            var newExpression = this.VisitNew(init.NewExpression);
+            var bindings = this.VisitBindingList(init.Bindings);
             if (newExpression != init.NewExpression || bindings != init.Bindings)
-                return (Expression)Expression.MemberInit(newExpression, bindings);
-            return (Expression)init;
+            {
+                return Expression.MemberInit(newExpression, bindings);
+            }
+
+            return init;
         }
 
         internal virtual Expression VisitListInit(ListInitExpression init)
         {
-            NewExpression newExpression = this.VisitNew(init.NewExpression);
-            IEnumerable<ElementInit> initializers = this.VisitElementInitializerList(init.Initializers);
+            var newExpression = this.VisitNew(init.NewExpression);
+            var initializers = this.VisitElementInitializerList(init.Initializers);
             if (newExpression != init.NewExpression || initializers != init.Initializers)
-                return (Expression)Expression.ListInit(newExpression, initializers);
-            return (Expression)init;
+            {
+                return Expression.ListInit(newExpression, initializers);
+            }
+
+            return init;
         }
 
         internal virtual Expression VisitNewArray(NewArrayExpression na)
         {
-            IEnumerable<Expression> enumerable = (IEnumerable<Expression>)this.VisitExpressionList(na.Expressions);
+            var enumerable = this.VisitExpressionList(na.Expressions);
             if (enumerable == na.Expressions)
-                return (Expression)na;
+            {
+                return na;
+            }
+
             if (na.NodeType == ExpressionType.NewArrayInit)
-                return (Expression)Expression.NewArrayInit(na.Type.GetElementType(), enumerable);
-            return (Expression)Expression.NewArrayBounds(na.Type.GetElementType(), enumerable);
+            {
+                return Expression.NewArrayInit(na.Type.GetElementType(), enumerable);
+            }
+
+            return Expression.NewArrayBounds(na.Type.GetElementType(), enumerable);
         }
 
         internal virtual Expression VisitInvocation(InvocationExpression iv)
         {
-            IEnumerable<Expression> arguments = (IEnumerable<Expression>)this.VisitExpressionList(iv.Arguments);
-            Expression expression = this.Visit(iv.Expression);
+            var arguments = this.VisitExpressionList(iv.Arguments);
+            var expression = this.Visit(iv.Expression);
             if (arguments != iv.Arguments || expression != iv.Expression)
-                return (Expression)Expression.Invoke(expression, arguments);
-            return (Expression)iv;
-        }
-    }
-
-    internal static class ReadOnlyCollectionExtensions
-    {
-        internal static ReadOnlyCollection<T> ToReadOnlyCollection<T>(this IEnumerable<T> sequence)
-        {
-            if (sequence == null)
-                return ReadOnlyCollectionExtensions.DefaultReadOnlyCollection<T>.Empty;
-            return sequence as ReadOnlyCollection<T> ?? new ReadOnlyCollection<T>((IList<T>)Enumerable.ToArray<T>(sequence));
-        }
-
-        private static class DefaultReadOnlyCollection<T>
-        {
-            private static ReadOnlyCollection<T> _defaultCollection;
-
-            internal static ReadOnlyCollection<T> Empty
             {
-                get
-                {
-                    if (ReadOnlyCollectionExtensions.DefaultReadOnlyCollection<T>._defaultCollection == null)
-                        ReadOnlyCollectionExtensions.DefaultReadOnlyCollection<T>._defaultCollection = new ReadOnlyCollection<T>((IList<T>)new T[0]);
-                    return ReadOnlyCollectionExtensions.DefaultReadOnlyCollection<T>._defaultCollection;
-                }
+                return Expression.Invoke(expression, arguments);
             }
+
+            return iv;
         }
     }
 }

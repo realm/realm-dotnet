@@ -27,15 +27,14 @@ namespace Realms
     /// </summary>
     /// <remarks>
     /// By default this will be all the RealmObjects in all your assemblies unless you restrict with RealmConfiguration.ObjectClasses. 
-    /// Just because a given class <em>may</em> be stored in a Realm doesn't imply much overhead. There will be a small amount of metadata 
-    /// but objects only start to take up space once written. 
+    /// Just because a given class <em>may</em> be stored in a Realm doesn't imply much overhead. There will be a small amount of metadata
+    /// but objects only start to take up space once written.
     /// </remarks>
     public class RealmSchema : IReadOnlyCollection<ObjectSchema>
     {
         /// <summary>
-        /// Number of known classes in the schema.
+        /// Gets the number of known classes in the schema.
         /// </summary>
-        /// <value>Count of known classes specified in this Schema.</value>
         public int Count { get; }
 
         private RealmSchema()
@@ -47,7 +46,7 @@ namespace Realms
         /// Finds the definition of a class in this schema.
         /// </summary>
         /// <param name="name">A valid class name which may be in this schema.</param>
-        /// <exception cref="ArgumentException">Thrown if a name is not supplied.</exception>
+        /// <exception cref="System.ArgumentException">Thrown if a name is not supplied.</exception>
         /// <returns>An object or null to indicate not found.</returns>
         public ObjectSchema Find(string name)
         {
@@ -75,7 +74,7 @@ namespace Realms
             /// <summary>
             /// Build the RealmSchema to include all ObjectSchema added to this Builder.
             /// </summary>
-            /// <exception cref="InvalidOperationException">Thrown if the Builder is empty.</exception>
+            /// <exception cref="System.InvalidOperationException">Thrown if the Builder is empty.</exception>
             /// <returns>A completed RealmSchema, suitable for creating a new Realm.</returns>
             public RealmSchema Build()
             {
@@ -85,4 +84,3 @@ namespace Realms
         }
     }
 }
-

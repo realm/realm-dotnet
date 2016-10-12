@@ -15,14 +15,17 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
-using Realms.native;
+using Realms.Native;
 
 namespace Realms
 {
+    [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:ElementMustBeginWithUpperCaseLetter")]
+    [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1121:UseBuiltInTypeAlias")]
     internal static class NativeTable
     {
         public static IntPtr AddEmptyRow(TableHandle tableHandle)
@@ -53,7 +56,10 @@ namespace Realms
                 set_timestamp_ticks(tableHandle, columnIndex, rowIndex, ticks, out nativeException);
             }
             else
+            {
                 set_null(tableHandle, columnIndex, rowIndex, out nativeException);
+            }
+
             nativeException.ThrowIfNecessary();
         }
 
@@ -76,21 +82,26 @@ namespace Realms
         {
             NativeException nativeException;
             long ticks;
-            var hasValue = MarshalHelpers.IntPtrToBool(NativeTable.get_nullable_timestamp_ticks(tableHandle, columnIndex, rowIndex, out ticks, out nativeException));
+            var hasValue = MarshalHelpers.IntPtrToBool(get_nullable_timestamp_ticks(tableHandle, columnIndex, rowIndex, out ticks, out nativeException));
             nativeException.ThrowIfNecessary();
             return hasValue ? new DateTimeOffset(ticks, TimeSpan.Zero) : (DateTimeOffset?)null;
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_nullable_timestamp_ticks", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr get_nullable_timestamp_ticks(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex, out long retVal, out NativeException ex);
+        private static extern IntPtr get_nullable_timestamp_ticks(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex, out Int64 retVal, out NativeException ex);
 
         public static void SetString(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex, string value)
         {
             NativeException nativeException;
             if (value != null)
+            {
                 set_string(tableHandle, columnIndex, rowIndex, value, (IntPtr)value.Length, out nativeException);
+            }
             else
+            {
                 set_null(tableHandle, columnIndex, rowIndex, out nativeException);
+            }
+
             nativeException.ThrowIfNecessary();
         }
 
@@ -101,7 +112,9 @@ namespace Realms
         public static void SetStringUnique(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex, string value)
         {
             if (value == null)
+            {
                 throw new ArgumentException("Object identifiers cannot be null");
+            }
 
             NativeException nativeException;
             set_string_unique(tableHandle, columnIndex, rowIndex, value, (IntPtr)value.Length, out nativeException);
@@ -115,8 +128,8 @@ namespace Realms
         public static string GetString(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex)
         {
             var bufferSizeNeededChars = 128;
+            
             // First alloc this thread
-
             var stringGetBuffer = Marshal.AllocHGlobal((IntPtr)(bufferSizeNeededChars * sizeof(char)));
             var stringGetBufferLen = bufferSizeNeededChars;
 
@@ -131,21 +144,26 @@ namespace Realms
             {
                 throw new RealmInvalidDatabaseException("Corrupted string data");
             }
+
             if (bytesRead > stringGetBufferLen)  // need a bigger buffer
             {
                 Marshal.FreeHGlobal(stringGetBuffer);
                 stringGetBuffer = Marshal.AllocHGlobal((IntPtr)(bytesRead * sizeof(char)));
                 stringGetBufferLen = bytesRead;
+
                 // try to read with big buffer
                 bytesRead = (int)get_string(tableHandle, columnIndex, rowIndex, stringGetBuffer,
                     (IntPtr)stringGetBufferLen, out isNull, out nativeException);
                 nativeException.ThrowIfNecessary();
                 if (bytesRead == -1)  // bad UTF-8 in full string
+                {
                     throw new RealmInvalidDatabaseException("Corrupted string data");
-                Debug.Assert(bytesRead <= stringGetBufferLen);
+                }
+
+                Debug.Assert(bytesRead <= stringGetBufferLen, "Buffer must have overflowed.");
             }  // needed re-read with expanded buffer
 
-            return bytesRead != 0 ? Marshal.PtrToStringUni(stringGetBuffer, bytesRead) : (isNull ? null : "");
+            return bytesRead != 0 ? Marshal.PtrToStringUni(stringGetBuffer, bytesRead) : (isNull ? null : string.Empty);
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_string", CallingConvention = CallingConvention.Cdecl)]
@@ -219,9 +237,14 @@ namespace Realms
         {
             NativeException nativeException;
             if (value.HasValue)
+            {
                 set_bool(tableHandle, columnIndex, rowIndex, MarshalHelpers.BoolToIntPtr(value.Value), out nativeException);
+            }
             else
+            {
                 set_null(tableHandle, columnIndex, rowIndex, out nativeException);
+            }
+
             nativeException.ThrowIfNecessary();
         }
 
@@ -262,9 +285,14 @@ namespace Realms
         {
             NativeException nativeException;
             if (value.HasValue)
+            {
                 set_int64(tableHandle, columnIndex, rowIndex, value.Value, out nativeException);
+            }
             else
+            {
                 set_null(tableHandle, columnIndex, rowIndex, out nativeException);
+            }
+
             nativeException.ThrowIfNecessary();
         }
 
@@ -315,14 +343,19 @@ namespace Realms
         {
             NativeException nativeException;
             if (value.HasValue)
+            {
                 set_float(tableHandle, columnIndex, rowIndex, value.Value, out nativeException);
+            }
             else
+            {
                 set_null(tableHandle, columnIndex, rowIndex, out nativeException);
+            }
+
             nativeException.ThrowIfNecessary();
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_float", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void set_float(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, float value, out NativeException ex);
+        private static extern void set_float(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, Single value, out NativeException ex);
 
         public static float GetSingle(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex)
         {
@@ -333,7 +366,7 @@ namespace Realms
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_float", CallingConvention = CallingConvention.Cdecl)]
-        private static extern float get_float(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex, out NativeException ex);
+        private static extern Single get_float(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex, out NativeException ex);
 
         public static float? GetNullableSingle(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex)
         {
@@ -345,7 +378,7 @@ namespace Realms
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_nullable_float", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr get_nullable_float(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex, out float retVal, out NativeException ex);
+        private static extern IntPtr get_nullable_float(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex, out Single retVal, out NativeException ex);
 
         public static void SetDouble(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex, double value)
         {
@@ -358,14 +391,19 @@ namespace Realms
         {
             NativeException nativeException;
             if (value.HasValue)
+            {
                 set_double(tableHandle, columnIndex, rowIndex, value.Value, out nativeException);
+            }
             else
+            {
                 set_null(tableHandle, columnIndex, rowIndex, out nativeException);
+            }
+
             nativeException.ThrowIfNecessary();
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_set_double", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void set_double(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, double value, out NativeException ex);
+        private static extern void set_double(TableHandle tablePtr, IntPtr columnNdx, IntPtr rowNdx, Double value, out NativeException ex);
 
         public static double GetDouble(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex)
         {
@@ -376,7 +414,7 @@ namespace Realms
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_double", CallingConvention = CallingConvention.Cdecl)]
-        private static extern double get_double(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex, out NativeException ex);
+        private static extern Double get_double(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex, out NativeException ex);
 
         public static double? GetNullableDouble(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex)
         {
@@ -388,7 +426,7 @@ namespace Realms
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_nullable_double", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr get_nullable_double(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex, out double retVal, out NativeException ex);
+        private static extern IntPtr get_nullable_double(TableHandle handle, IntPtr columnIndex, IntPtr rowIndex, out Double retVal, out NativeException ex);
 
         public static unsafe void SetByteArray(TableHandle tableHandle, IntPtr columnIndex, IntPtr rowIndex, byte[] value)
         {
@@ -410,6 +448,7 @@ namespace Realms
                     set_binary(tableHandle, columnIndex, rowIndex, (IntPtr)buffer, (IntPtr)value.LongLength, out nativeException);
                 }
             }
+
             nativeException.ThrowIfNecessary();
         }
 
@@ -481,7 +520,7 @@ namespace Realms
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_remove_row", CallingConvention = CallingConvention.Cdecl)]
         private static extern void remove_row(TableHandle tableHandle, RowHandle rowHandle, out NativeException ex);
 
-         //returns -1 if the column string does not match a column index
+        // returns -1 if the column string does not match a column index
         public static IntPtr GetColumnIndex(TableHandle tableHandle, string name)
         {
             NativeException nativeException;
@@ -532,8 +571,7 @@ namespace Realms
         private static extern IntPtr row_for_string_primarykey(TableHandle handle, IntPtr columnIndex,
             [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen, out NativeException ex);
 
-
-        internal static IntPtr RowForPrimaryKey(TableHandle tableHandle, int primaryKeyColumnIndex, Int64 id)
+        internal static IntPtr RowForPrimaryKey(TableHandle tableHandle, int primaryKeyColumnIndex, long id)
         {
             NativeException nativeException;
             var result = row_for_int_primarykey(tableHandle, (IntPtr)primaryKeyColumnIndex, id,  out nativeException);
@@ -543,6 +581,5 @@ namespace Realms
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "row_for_int_primarykey", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr row_for_int_primarykey(TableHandle handle, IntPtr columnIndex, Int64 value, out NativeException ex);
-
     }
 }

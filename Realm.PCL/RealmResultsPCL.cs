@@ -15,11 +15,10 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
-// PROXY VERSION OF CLASS USED IN PCL FOR BAIT AND SWITCH PATTERN 
- 
+
+// PROXY VERSION OF CLASS USED IN PCL FOR BAIT AND SWITCH PATTERN
+
 using System;
-using System.Diagnostics;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -66,12 +65,14 @@ namespace Realms
         /// A callback that will be invoked each time the contents of a <see cref="RealmResults{T}"/> have changed.
         /// </summary>
         /// <param name="sender">The <see cref="RealmResults{T}"/> being monitored for changes.</param>
-        /// <param name="changes">The <see cref="ChangeSet"/> describing the changes to a <see cref="RealmResults{T}"/>, or <c>null</c> if an error occured.</param>
-        /// <param name="error">An exception that might have occured while asynchronously monitoring a <see cref="RealmResults{T}"/> for changes, or <c>null</c> if no errors occured.</param>
+        /// <param name="changes">The <see cref="ChangeSet"/> describing the changes to a <see cref="RealmResults{T}"/>, or <c>null</c> if an error occurred.</param>
+        /// <param name="error">An exception that might have occurred while asynchronously monitoring a <see cref="RealmResults{T}"/> for changes, or <c>null</c> if no errors occurred.</param>
         public delegate void NotificationCallback(RealmResults<T> sender, ChangeSet changes, Exception error);
 
-        public Type ElementType => typeof (T);
+        public Type ElementType => typeof(T);
+
         public Expression Expression { get; }
+
         public IQueryProvider Provider => null;
 
         /// <summary>
@@ -90,13 +91,17 @@ namespace Realms
             return null;
         }
 
-
         /// <summary>
-        /// Count all objects if created by <see cref="Realm.All"/> of the parameterised type, faster than a search.
+        /// Fast count all objects of a given class, or in a RealmResults after casting.
         /// </summary>
         /// <remarks>
-        /// Resolves to this method instead of the static extension <c>Count&lt;T&gt;(this IEnumerable&lt;T&gt;)</c>.
+        /// Resolves to this method instead of the LINQ static extension <c>Count&lt;T&gt;(this IEnumerable&lt;T&gt;)</c>, when used directly on Realm.All.
+        /// <br/>
+        /// if someone CASTS a RealmResults&lt;T&gt; variable from a Where call to
+        /// a RealmResults&lt;T&gt; they change its compile-time type from IQueryable&lt;T&gt; (which invokes LINQ)
+        /// to RealmResults&lt;T&gt; and thus ends up here.
         /// </remarks>
+        /// <returns>Count of all objects in a class or in the results of a search, without instantiating them.</returns>
         public int Count()
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
@@ -108,7 +113,7 @@ namespace Realms
         /// </summary>
         /// <remarks>
         /// <para>
-        /// The callback will be asynchronously invoked with the initial <see cref="RealmResults{T}" />, and then called again after each write transaction 
+        /// The callback will be asynchronously invoked with the initial <see cref="RealmResults{T}" />, and then called again after each write transaction
         /// which changes either any of the objects in the collection, or which objects are in the collection.
         /// The <c>changes</c> parameter will be <c>null</c> the first time the callback is invoked with the initial results.
         /// For each call after that, it will contain information about which rows in the results were added, removed or modified.

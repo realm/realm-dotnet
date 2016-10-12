@@ -15,19 +15,19 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Linq;
+using System.Text;
+using IntegrationTests.Shared;
 using NUnit.Framework;
 using Realms;
-using IntegrationTests.Shared;
 
 namespace IntegrationTests
 {
     [TestFixture, Preserve(AllMembers = true)]
-    class SimpleLINQtests : PeopleTestsBase
+    internal class SimpleLINQtests : PeopleTestsBase
     {
         // see comment on base method why this isn't decorated with [SetUp]
         public override void Setup()
@@ -41,21 +41,19 @@ namespace IntegrationTests
         {
             var s0 = _realm.All<Person>().Where(p => p.Score == 42.42f).ToList();
             Assert.That(s0.Count(), Is.EqualTo(1));
-            Assert.That(s0 [0].Score, Is.EqualTo(42.42f));
-
+            Assert.That(s0[0].Score, Is.EqualTo(42.42f));
 
             var s1 = _realm.All<Person>().Where(p => p.Longitude < -70.0 && p.Longitude > -90.0).ToList();
-            Assert.That(s1 [0].Email, Is.EqualTo("john@doe.com"));
+            Assert.That(s1[0].Email, Is.EqualTo("john@doe.com"));
 
             var s2 = _realm.All<Person>().Where(p => p.Longitude < 0).ToList();
             Assert.That(s2.Count(), Is.EqualTo(2));
-            Assert.That(s2 [0].Email, Is.EqualTo("john@doe.com"));
-            Assert.That(s2 [1].Email, Is.EqualTo("peter@jameson.net"));
+            Assert.That(s2[0].Email, Is.EqualTo("john@doe.com"));
+            Assert.That(s2[1].Email, Is.EqualTo("peter@jameson.net"));
 
             var s3 = _realm.All<Person>().Where(p => p.Email != "");
             Assert.That(s3.Count(), Is.EqualTo(3));
         }
-
 
         [Test]
         public void CountWithNot()
@@ -72,7 +70,6 @@ namespace IntegrationTests
             var countNotComplex = _realm.All<Person>().Where(p => !(p.Longitude < -70.0 && p.Longitude > -90.0)).Count();
             Assert.That(countNotComplex, Is.EqualTo(2));
         }
-
 
         [Test]
         public void CountFoundItems()
@@ -94,7 +91,6 @@ namespace IntegrationTests
             Assert.That(c4, Is.EqualTo(2));
         }
 
-
         // added to pick up a nasty side-effect from casting
         [Test]
         public void CountFoundWithCasting()
@@ -104,7 +100,6 @@ namespace IntegrationTests
             var c0 = r1.Count();  // invokes RealmResults<T>.Count() shortcut method
             Assert.That(c0, Is.EqualTo(1));
         }
-
 
         [Test]
         public void CountFails()
@@ -119,7 +114,6 @@ namespace IntegrationTests
             Assert.That(c3, Is.EqualTo(0));
         }
 
-
         // Extension method rather than SQL-style LINQ
         // Also tests the Count on results, ElementOf, First and Single methods
         [Test]
@@ -128,29 +122,29 @@ namespace IntegrationTests
             var s0 = _realm.All<Person>().Where(p => p.Score == 42.42f);
             var s0l = s0.ToList();
             Assert.That(s0.Count(), Is.EqualTo(1));
-            Assert.That(s0l [0].Score, Is.EqualTo(42.42f));
+            Assert.That(s0l[0].Score, Is.EqualTo(42.42f));
 
             var s1 = _realm.All<Person>().Where(p => p.Score != 100.0f).ToList();
             Assert.That(s1.Count, Is.EqualTo(2));
-            Assert.That(s1 [0].Score, Is.EqualTo(-0.9907f));
-            Assert.That(s1 [1].Score, Is.EqualTo(42.42f));
+            Assert.That(s1[0].Score, Is.EqualTo(-0.9907f));
+            Assert.That(s1[1].Score, Is.EqualTo(42.42f));
 
             var s2 = _realm.All<Person>().Where(p => p.Score < 0).ToList();
             Assert.That(s2.Count, Is.EqualTo(1));
-            Assert.That(s2 [0].Score, Is.EqualTo(-0.9907f));
+            Assert.That(s2[0].Score, Is.EqualTo(-0.9907f));
 
             var s3 = _realm.All<Person>().Where(p => p.Score <= 42.42f).ToList();
             Assert.That(s3.Count, Is.EqualTo(2));
-            Assert.That(s3 [0].Score, Is.EqualTo(-0.9907f));
-            Assert.That(s3 [1].Score, Is.EqualTo(42.42f));
+            Assert.That(s3[0].Score, Is.EqualTo(-0.9907f));
+            Assert.That(s3[1].Score, Is.EqualTo(42.42f));
 
             var s4 = _realm.All<Person>().Where(p => p.Score > 99.0f).ToList();
             Assert.That(s4.Count, Is.EqualTo(1));
-            Assert.That(s4 [0].Score, Is.EqualTo(100.0f));
+            Assert.That(s4[0].Score, Is.EqualTo(100.0f));
 
             var s5 = _realm.All<Person>().Where(p => p.Score >= 100).ToList();
             Assert.That(s5.Count, Is.EqualTo(1));
-            Assert.That(s5 [0].Score, Is.EqualTo(100.0f));
+            Assert.That(s5[0].Score, Is.EqualTo(100.0f));
         }
 
         [Test]
@@ -158,29 +152,29 @@ namespace IntegrationTests
         {
             var s0 = _realm.All<Person>().Where(p => p.Latitude == 40.7637286);
             Assert.That(s0.Count, Is.EqualTo(1));
-            Assert.That(s0.ToList() [0].Latitude, Is.EqualTo(40.7637286));
+            Assert.That(s0.ToList()[0].Latitude, Is.EqualTo(40.7637286));
 
             var s1 = _realm.All<Person>().Where(p => p.Latitude != 40.7637286).ToList();
             Assert.That(s1.Count, Is.EqualTo(2));
-            Assert.That(s1 [0].Latitude, Is.EqualTo(51.508530));
-            Assert.That(s1 [1].Latitude, Is.EqualTo(37.7798657));
+            Assert.That(s1[0].Latitude, Is.EqualTo(51.508530));
+            Assert.That(s1[1].Latitude, Is.EqualTo(37.7798657));
 
             var s2 = _realm.All<Person>().Where(p => p.Latitude < 40).ToList();
             Assert.That(s2.Count, Is.EqualTo(1));
-            Assert.That(s2 [0].Latitude, Is.EqualTo(37.7798657));
+            Assert.That(s2[0].Latitude, Is.EqualTo(37.7798657));
 
             var s3 = _realm.All<Person>().Where(p => p.Latitude <= 40.7637286).ToList();
             Assert.That(s3.Count, Is.EqualTo(2));
-            Assert.That(s3 [0].Latitude, Is.EqualTo(40.7637286));
-            Assert.That(s3 [1].Latitude, Is.EqualTo(37.7798657));
+            Assert.That(s3[0].Latitude, Is.EqualTo(40.7637286));
+            Assert.That(s3[1].Latitude, Is.EqualTo(37.7798657));
 
             var s4 = _realm.All<Person>().Where(p => p.Latitude > 50).ToList();
             Assert.That(s4.Count, Is.EqualTo(1));
-            Assert.That(s4 [0].Latitude, Is.EqualTo(51.508530));
+            Assert.That(s4[0].Latitude, Is.EqualTo(51.508530));
 
             var s5 = _realm.All<Person>().Where(p => p.Latitude >= 51.508530).ToList();
             Assert.That(s5.Count, Is.EqualTo(1));
-            Assert.That(s5 [0].Latitude, Is.EqualTo(51.508530));
+            Assert.That(s5[0].Latitude, Is.EqualTo(51.508530));
         }
 
         [Test]
@@ -188,11 +182,11 @@ namespace IntegrationTests
         {
             var equality = _realm.All<Person>().Where(p => p.Salary == 60000).ToArray();
             Assert.That(equality.Length, Is.EqualTo(1));
-            Assert.That(equality [0].FullName, Is.EqualTo("John Doe"));
+            Assert.That(equality[0].FullName, Is.EqualTo("John Doe"));
 
             var lessThan = _realm.All<Person>().Where(p => p.Salary < 50000).ToArray();
             Assert.That(lessThan.Length, Is.EqualTo(1));
-            Assert.That(lessThan [0].FullName, Is.EqualTo("John Smith"));
+            Assert.That(lessThan[0].FullName, Is.EqualTo("John Smith"));
 
             var lessOrEqualThan = _realm.All<Person>().Where(p => p.Salary <= 60000).ToArray();
             Assert.That(lessOrEqualThan.Length, Is.EqualTo(2));
@@ -200,7 +194,7 @@ namespace IntegrationTests
 
             var greaterThan = _realm.All<Person>().Where(p => p.Salary > 80000).ToArray();
             Assert.That(greaterThan.Length, Is.EqualTo(1));
-            Assert.That(greaterThan [0].FullName, Is.EqualTo("Peter Jameson"));
+            Assert.That(greaterThan[0].FullName, Is.EqualTo("Peter Jameson"));
 
             var greaterOrEqualThan = _realm.All<Person>().Where(p => p.Salary >= 60000).ToArray();
             Assert.That(greaterOrEqualThan.Length, Is.EqualTo(2));
@@ -208,7 +202,7 @@ namespace IntegrationTests
 
             var between = _realm.All<Person>().Where(p => p.Salary > 30000 && p.Salary < 87000).ToArray();
             Assert.That(between.Length, Is.EqualTo(1));
-            Assert.That(between [0].FullName, Is.EqualTo("John Doe"));
+            Assert.That(between[0].FullName, Is.EqualTo("John Doe"));
         }
 
         [Test]
@@ -216,11 +210,11 @@ namespace IntegrationTests
         {
             var equality = _realm.All<Person>().Where(p => p.LastName == "Smith").ToArray();
             Assert.That(equality.Length, Is.EqualTo(1));
-            Assert.That(equality [0].FullName, Is.EqualTo("John Smith"));
+            Assert.That(equality[0].FullName, Is.EqualTo("John Smith"));
 
             var contains = _realm.All<Person>().Where(p => p.FirstName.Contains("et")).ToArray();
             Assert.That(contains.Length, Is.EqualTo(1));
-            Assert.That(contains [0].FullName, Is.EqualTo("Peter Jameson"));
+            Assert.That(contains[0].FullName, Is.EqualTo("Peter Jameson"));
 
             var startsWith = _realm.All<Person>().Where(p => p.Email.StartsWith("john@")).ToArray();
             Assert.That(startsWith.Length, Is.EqualTo(2));
@@ -228,13 +222,13 @@ namespace IntegrationTests
 
             var endsWith = _realm.All<Person>().Where(p => p.Email.EndsWith(".net")).ToArray();
             Assert.That(endsWith.Length, Is.EqualTo(1));
-            Assert.That(endsWith [0].FullName, Is.EqualTo("Peter Jameson"));
+            Assert.That(endsWith[0].FullName, Is.EqualTo("Peter Jameson"));
 
             var @null = _realm.All<Person>().Where(p => p.OptionalAddress == null).ToArray();
-            Assert.That(@null [0].FullName, Is.EqualTo("Peter Jameson"));
+            Assert.That(@null[0].FullName, Is.EqualTo("Peter Jameson"));
 
             var empty = _realm.All<Person>().Where(p => p.OptionalAddress == "").ToArray();
-            Assert.That(empty [0].FullName, Is.EqualTo("John Doe"));
+            Assert.That(empty[0].FullName, Is.EqualTo("John Doe"));
 
             var null_or_empty = _realm.All<Person>().Where(p => string.IsNullOrEmpty(p.OptionalAddress));
             Assert.That(null_or_empty.Count(), Is.EqualTo(2));
@@ -250,11 +244,11 @@ namespace IntegrationTests
 
             var equality = _realm.All<Person>().Where(p => p.Birthday == bdayPeterJameson).ToArray();
             Assert.That(equality.Length, Is.EqualTo(1));
-            Assert.That(equality [0].FullName, Is.EqualTo("Peter Jameson"));
+            Assert.That(equality[0].FullName, Is.EqualTo("Peter Jameson"));
 
             var lessThan = _realm.All<Person>().Where(p => p.Birthday < d1960).ToArray();
             Assert.That(lessThan.Length, Is.EqualTo(1));
-            Assert.That(lessThan [0].FullName, Is.EqualTo("John Smith"));
+            Assert.That(lessThan[0].FullName, Is.EqualTo("John Smith"));
 
             var lessOrEqualThan = _realm.All<Person>().Where(p => p.Birthday <= bdayJohnDoe).ToArray();
             Assert.That(lessOrEqualThan.Length, Is.EqualTo(2));
@@ -262,7 +256,7 @@ namespace IntegrationTests
 
             var greaterThan = _realm.All<Person>().Where(p => p.Birthday > d1970).ToArray();
             Assert.That(greaterThan.Length, Is.EqualTo(1));
-            Assert.That(greaterThan [0].FullName, Is.EqualTo("Peter Jameson"));
+            Assert.That(greaterThan[0].FullName, Is.EqualTo("Peter Jameson"));
 
             var greaterOrEqualThan = _realm.All<Person>().Where(p => p.Birthday >= bdayJohnDoe).ToArray();
             Assert.That(greaterOrEqualThan.Length, Is.EqualTo(2));
@@ -270,7 +264,7 @@ namespace IntegrationTests
 
             var between = _realm.All<Person>().Where(p => p.Birthday > d1960 && p.Birthday < d1970).ToArray();
             Assert.That(between.Length, Is.EqualTo(1));
-            Assert.That(between [0].FullName, Is.EqualTo("John Doe"));
+            Assert.That(between[0].FullName, Is.EqualTo("John Doe"));
         }
 
         [Test]
@@ -292,28 +286,29 @@ namespace IntegrationTests
         [Test]
         public void SearchComparingByteArrays()
         {
-            var DEADBEEF = new byte [] { 0xde, 0xad, 0xbe, 0xef };
-            var CAFEBABE = new byte [] { 0xca, 0xfe, 0xba, 0xbe };
-            var EMPTY = new byte [0];
+            var deadbeef = new byte[] { 0xde, 0xad, 0xbe, 0xef };
+            var cafebabe = new byte[] { 0xca, 0xfe, 0xba, 0xbe };
+            var empty = new byte[0];
 
-            var equality = _realm.All<Person>().Where(p => p.PublicCertificateBytes == CAFEBABE);
-            Assert.That(equality.Single().PublicCertificateBytes, Is.EqualTo(CAFEBABE));
+            var equality = _realm.All<Person>().Where(p => p.PublicCertificateBytes == cafebabe);
+            Assert.That(equality.Single().PublicCertificateBytes, Is.EqualTo(cafebabe));
 
-            var unequality = _realm.All<Person>().Where(p => p.PublicCertificateBytes != DEADBEEF);
+            var unequality = _realm.All<Person>().Where(p => p.PublicCertificateBytes != deadbeef);
             Assert.That(unequality.Count(), Is.EqualTo(2));
 
-            var empty = _realm.All<Person>().Where(p => p.PublicCertificateBytes == EMPTY);
-            Assert.That(empty, Is.Empty);
+            var emptyness = _realm.All<Person>().Where(p => p.PublicCertificateBytes == empty);
+            Assert.That(emptyness, Is.Empty);
 
             // we should support this as well - see #570
-            //var @null = _realm.All<Person>().Where(p => p.PublicCertificateBytes == null);
-            //Assert.That(@null.Count(), Is.EqualTo(1));
+            // var @null = _realm.All<Person>().Where(p => p.PublicCertificateBytes == null);
+            // Assert.That(@null.Count(), Is.EqualTo(1));
         }
 
         [Test]
         public void SearchComparingChar()
         {
-            _realm.Write( () => {
+            _realm.Write(() =>
+            {
                 var c1 = _realm.CreateObject<PrimaryKeyCharObject>();
                 c1.CharProperty = 'A';
                 var c2 = _realm.CreateObject<PrimaryKeyCharObject>();
@@ -324,38 +319,29 @@ namespace IntegrationTests
                 c4.CharProperty = 'a';
             });
             var equality = _realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty == 'A').ToArray();
-            Assert.That(equality.Select(p => p.CharProperty), Is.EquivalentTo(
-                new []{'A'}));
-            
+            Assert.That(equality.Select(p => p.CharProperty), Is.EquivalentTo(new[] { 'A' }));
 
-            var inequality =_realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty != 'c').ToArray();
-            Assert.That(inequality.Select(p => p.CharProperty), Is.EquivalentTo(
-                new []{'A', 'B', 'a'}));
+            var inequality = _realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty != 'c').ToArray();
+            Assert.That(inequality.Select(p => p.CharProperty), Is.EquivalentTo(new[] { 'A', 'B', 'a' }));
 
-            var lessThan =_realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty < 'c').ToArray();
-            Assert.That(lessThan.Select(p => p.CharProperty), Is.EquivalentTo(
-                new []{'A', 'B', 'a'}));
+            var lessThan = _realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty < 'c').ToArray();
+            Assert.That(lessThan.Select(p => p.CharProperty), Is.EquivalentTo(new[] { 'A', 'B', 'a' }));
 
-            var lessOrEqualThan =_realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty <= 'c').ToArray();
-            Assert.That(lessOrEqualThan.Select(p => p.CharProperty), Is.EquivalentTo(
-                new []{'A', 'B', 'a', 'c'}));
+            var lessOrEqualThan = _realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty <= 'c').ToArray();
+            Assert.That(lessOrEqualThan.Select(p => p.CharProperty), Is.EquivalentTo(new[] { 'A', 'B', 'a', 'c' }));
 
-            var greaterThan =_realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty > 'a').ToArray();
-            Assert.That(greaterThan.Select(p => p.CharProperty), Is.EquivalentTo(
-                new []{'c'}));
+            var greaterThan = _realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty > 'a').ToArray();
+            Assert.That(greaterThan.Select(p => p.CharProperty), Is.EquivalentTo(new[] { 'c' }));
 
-            var greaterOrEqualThan =_realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty >= 'B').ToArray();
-            Assert.That(greaterOrEqualThan.Select(p => p.CharProperty), Is.EquivalentTo(
-                new []{'B', 'a', 'c'}));
+            var greaterOrEqualThan = _realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty >= 'B').ToArray();
+            Assert.That(greaterOrEqualThan.Select(p => p.CharProperty), Is.EquivalentTo(new[] { 'B', 'a', 'c' }));
 
-            var between =_realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty > 'A' && p.CharProperty < 'a').ToArray();
-            Assert.That(between.Select(p => p.CharProperty), Is.EquivalentTo(
-                new []{'B'}));
-            
+            var between = _realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty > 'A' && p.CharProperty < 'a').ToArray();
+            Assert.That(between.Select(p => p.CharProperty), Is.EquivalentTo(new[] { 'B' }));
+
             var missing = _realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty == 'X').ToArray();
             Assert.That(missing.Length, Is.EqualTo(0));
         }
-
 
         [Test]
         public void AnySucceeds()
@@ -366,7 +352,6 @@ namespace IntegrationTests
             Assert.That(_realm.All<Person>().Where(p => p.FirstName == "John").Any());
         }
 
-
         [Test]
         public void AnyFails()
         {
@@ -374,7 +359,6 @@ namespace IntegrationTests
             Assert.False(_realm.All<Person>().Where(p => p.Score > 50000).Any());
             Assert.False(_realm.All<Person>().Where(p => p.FirstName == "Samantha").Any());
         }
-
 
         [Test]
         public void SingleFailsToFind()
@@ -385,7 +369,6 @@ namespace IntegrationTests
             Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().Single(p => p.FirstName == "Samantha"));
         }
 
-
         [Test]
         public void SingleFindsTooMany()
         {
@@ -393,7 +376,6 @@ namespace IntegrationTests
             Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().Single(p => p.Score != 100.0f));
             Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().Single(p => p.FirstName == "John"));
         }
-
 
         [Test]
         public void SingleWorks()
@@ -408,7 +390,6 @@ namespace IntegrationTests
             Assert.That(s2.FirstName, Is.EqualTo("Peter"));
         }
 
-
         [Test]
         public void SingleOrDefaultWorks()
         {
@@ -422,7 +403,6 @@ namespace IntegrationTests
             Assert.That(s2.FirstName, Is.EqualTo("Peter"));
         }
 
-
         [Test]
         public void SingleOrDefaultReturnsDefault()
         {
@@ -433,7 +413,6 @@ namespace IntegrationTests
             Assert.That(expectedDef, Is.Null);
         }
 
-
         [Test]
         public void FirstFailsToFind()
         {
@@ -441,7 +420,6 @@ namespace IntegrationTests
             Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().Where(p => p.Latitude > 100).First());
             Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().First(p => p.FirstName == "Samantha"));
         }
-
 
         [Test]
         public void FirstWorks()
@@ -456,7 +434,6 @@ namespace IntegrationTests
             Assert.That(s2.FirstName, Is.EqualTo("John"));
         }
 
-
         [Test]
         public void FirstOrDefaultWorks()
         {
@@ -470,7 +447,6 @@ namespace IntegrationTests
             Assert.That(s2.FirstName, Is.EqualTo("John"));
         }
 
-
         [Test]
         public void FirstOrDefaultReturnsDefault()
         {
@@ -481,7 +457,6 @@ namespace IntegrationTests
             Assert.That(expectedDef, Is.Null);
         }
 
-
         [Test]
         public void LastFailsToFind()
         {
@@ -489,7 +464,6 @@ namespace IntegrationTests
             Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().Where(p => p.Latitude > 100).Last());
             Assert.Throws<InvalidOperationException>(() => _realm.All<Person>().Last(p => p.LastName == "Samantha"));
         }
-
 
         [Test]
         public void LastWorks()
@@ -504,7 +478,6 @@ namespace IntegrationTests
             Assert.That(s2.FirstName, Is.EqualTo("John"));  // order not guaranteed in two items but know they match this
         }
 
-
         [Test]
         public void LastOrDefaultWorks()
         {
@@ -518,7 +491,6 @@ namespace IntegrationTests
             Assert.That(s2.FirstName, Is.EqualTo("John"));  // order not guaranteed in two items but know they match this
         }
 
-
         [Test]
         public void LastOrDefaultReturnsDefault()
         {
@@ -528,7 +500,6 @@ namespace IntegrationTests
             expectedDef = _realm.All<Person>().Where(p => p.FirstName == "Just Some Guy").LastOrDefault();
             Assert.That(expectedDef, Is.Null);
         }
-
 
         [Test]
         public void ElementAtOutOfRange()
@@ -540,40 +511,37 @@ namespace IntegrationTests
             Assert.Throws<ArgumentOutOfRangeException>(() => _realm.All<Person>().ElementAt(-1));
         }
 
-
         [Test]
         public void ElementAtInRange()
         {
             var s0 = _realm.All<Person>().Where(p => p.Longitude < -70.0 && p.Longitude > -90.0).ElementAt(0);
-            Assert.That(s0.Email, Is.EqualTo("john@doe.com")); 
+            Assert.That(s0.Email, Is.EqualTo("john@doe.com"));
 
             var s1 = _realm.All<Person>().Where(p => p.Score == 100.0f).ElementAt(0);
             Assert.That(s1.Email, Is.EqualTo("john@doe.com"));
 
             var s2 = _realm.All<Person>().Where(p => p.FirstName == "John").ElementAt(1);
-            Assert.That(s2.FirstName, Is.EqualTo("John")); 
+            Assert.That(s2.FirstName, Is.EqualTo("John"));
 
             var s3 = _realm.All<Person>().ElementAt(2);
-            Assert.That(s3.FirstName, Is.EqualTo("Peter")); 
+            Assert.That(s3.FirstName, Is.EqualTo("Peter"));
         }
-
 
         [Test]
         public void ElementAtOrDefaultInRange()
         {
             var s0 = _realm.All<Person>().Where(p => p.Longitude < -70.0 && p.Longitude > -90.0).ElementAtOrDefault(0);
-            Assert.That(s0.Email, Is.EqualTo("john@doe.com")); 
+            Assert.That(s0.Email, Is.EqualTo("john@doe.com"));
 
             var s1 = _realm.All<Person>().Where(p => p.Score == 100.0f).ElementAtOrDefault(0);
             Assert.That(s1.Email, Is.EqualTo("john@doe.com"));
 
             var s2 = _realm.All<Person>().Where(p => p.FirstName == "John").ElementAtOrDefault(1);
-            Assert.That(s2.FirstName, Is.EqualTo("John")); 
+            Assert.That(s2.FirstName, Is.EqualTo("John"));
 
             var s3 = _realm.All<Person>().ElementAtOrDefault(2);
-            Assert.That(s3.FirstName, Is.EqualTo("Peter")); 
+            Assert.That(s3.FirstName, Is.EqualTo("Peter"));
         }
-
 
         [Test]
         public void ElementAtOrDefaultReturnsDefault()
@@ -581,7 +549,6 @@ namespace IntegrationTests
             var expectedDef = _realm.All<Person>().Where(p => p.FirstName == "Just Some Guy").ElementAtOrDefault(0);
             Assert.That(expectedDef, Is.Null);
         }
-
 
         // note that DefaultIfEmpty returns a collection of one item
         [Test, Explicit("Currently broken and hard to implement")]
@@ -600,7 +567,6 @@ namespace IntegrationTests
             Assert.That(expectedDef, Is.Null);
         }
 
-
         [Test]
         public void ChainedSearch()
         {
@@ -610,6 +576,5 @@ namespace IntegrationTests
             Assert.That(johnScorer.Score, Is.EqualTo(100.0f));
             Assert.That(johnScorer.FullName, Is.EqualTo("John Doe"));
         }
-
-    } // SimpleLINQtests
+    }
 }

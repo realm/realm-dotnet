@@ -16,10 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using Mono.Cecil;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Mono.Cecil;
 
 [EditorBrowsable(EditorBrowsableState.Never)]
 internal static class PropertyDefinitionExtensions

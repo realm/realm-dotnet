@@ -18,16 +18,16 @@
 
 #if ENABLE_INTERNAL_NON_PCL_TESTS
 using System;
-using System.Linq;
-using NUnit.Framework;
-using Realms;
-using System.Threading;
-using System.IO;
-using System.Threading.Tasks;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Collections;
+using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
+using NUnit.Framework;
+using Realms;
 
 namespace IntegrationTests.Shared
 {
@@ -79,7 +79,6 @@ namespace IntegrationTests.Shared
             // Assert
             Assert.That(wasNotified, "RealmChanged notification was not triggered");
         }
-
 
         [Test]
         public void ResultsShouldSendNotifications()
@@ -175,7 +174,8 @@ namespace IntegrationTests.Shared
 
         public IEnumerable<TestCaseData> CollectionChangedTestCases()
         {
-            var cases = new object[][] {
+            var cases = new object[][] 
+            {
                 new object[] { new int[] { }, NotifyCollectionChangedAction.Add, new int[] { 1 } },
                 new object[] { new int[] { }, NotifyCollectionChangedAction.Add, new int[] { 1, 2, 3 } },
                 new object[] { new int[] { 1, 2, 3 }, NotifyCollectionChangedAction.Remove, new int[] { 1, 2, 3 } },

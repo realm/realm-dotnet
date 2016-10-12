@@ -15,14 +15,10 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.InteropServices;
 
 namespace Realms
 {
@@ -32,7 +28,7 @@ namespace Realms
     /// <remarks>
     /// Has a Preserve attribute to attempt to preserve all subtypes without having to weave.
     /// </remarks>
-    [Preserve(AllMembers=true, Conditional=false)]
+    [Preserve(AllMembers = true, Conditional = false)]
     public class RealmObject
     {
         private Realm _realm;
@@ -40,6 +36,7 @@ namespace Realms
         private Metadata _metadata;
 
         internal RowHandle RowHandle => _rowHandle;
+
         internal Metadata ObjectMetadata => _metadata;
 
         /// <summary>
@@ -87,11 +84,12 @@ namespace Realms
 
         internal void _CopyDataFromBackingFieldsToRow()
         {
-            Debug.Assert(this.IsManaged);
+            Debug.Assert(this.IsManaged, "Can't copy from unmanaged object.");
             _metadata.Helper.CopyToRealm(this);
         }
 
         #region Getters
+
         protected string GetStringValue(string propertyName)
         {
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
@@ -103,126 +101,126 @@ namespace Realms
         {
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
-            return (char) NativeTable.GetInt64(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex);
+            return (char)NativeTable.GetInt64(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex);
         }
 
         protected char? GetNullableCharValue(string propertyName)
         {
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
-            return (char?) NativeTable.GetNullableInt64(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex);
+            return (char?)NativeTable.GetNullableInt64(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex);
         }
 
         protected byte GetByteValue(string propertyName)
         {
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
-            return (byte)NativeTable.GetInt64(_metadata.Table, _metadata.ColumnIndices[propertyName],  _rowHandle.RowIndex);
+            return (byte)NativeTable.GetInt64(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex);
         }
 
         protected byte? GetNullableByteValue(string propertyName)
         {
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
-            return (byte?)NativeTable.GetNullableInt64(_metadata.Table, _metadata.ColumnIndices[propertyName],  _rowHandle.RowIndex);
+            return (byte?)NativeTable.GetNullableInt64(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex);
         }
 
         protected short GetInt16Value(string propertyName)
         {
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
-            return (short)NativeTable.GetInt64(_metadata.Table, _metadata.ColumnIndices[propertyName],  _rowHandle.RowIndex);
+            return (short)NativeTable.GetInt64(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex);
         }
 
         protected short? GetNullableInt16Value(string propertyName)
         {
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
-            return (short?)NativeTable.GetNullableInt64(_metadata.Table, _metadata.ColumnIndices[propertyName],  _rowHandle.RowIndex);
+            return (short?)NativeTable.GetNullableInt64(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex);
         }
 
         protected int GetInt32Value(string propertyName)
         {
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
-            return (int)NativeTable.GetInt64(_metadata.Table, _metadata.ColumnIndices[propertyName],  _rowHandle.RowIndex);
+            return (int)NativeTable.GetInt64(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex);
         }
 
         protected int? GetNullableInt32Value(string propertyName)
         {
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
-            return (int?)NativeTable.GetNullableInt64(_metadata.Table, _metadata.ColumnIndices[propertyName],  _rowHandle.RowIndex);
+            return (int?)NativeTable.GetNullableInt64(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex);
         }
 
         protected long GetInt64Value(string propertyName)
         {
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
-            return NativeTable.GetInt64(_metadata.Table, _metadata.ColumnIndices[propertyName],  _rowHandle.RowIndex);
+            return NativeTable.GetInt64(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex);
         }
 
         protected long? GetNullableInt64Value(string propertyName)
         {
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
-            return NativeTable.GetNullableInt64(_metadata.Table, _metadata.ColumnIndices[propertyName],  _rowHandle.RowIndex);
+            return NativeTable.GetNullableInt64(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex);
         }
 
         protected float GetSingleValue(string propertyName)
         {
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
-            return NativeTable.GetSingle(_metadata.Table, _metadata.ColumnIndices[propertyName],  _rowHandle.RowIndex);
+            return NativeTable.GetSingle(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex);
         }
 
         protected float? GetNullableSingleValue(string propertyName)
         {
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
-            return NativeTable.GetNullableSingle(_metadata.Table, _metadata.ColumnIndices[propertyName],  _rowHandle.RowIndex);
+            return NativeTable.GetNullableSingle(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex);
         }
 
         protected double GetDoubleValue(string propertyName)
         {
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
-            return NativeTable.GetDouble(_metadata.Table, _metadata.ColumnIndices[propertyName],  _rowHandle.RowIndex);
+            return NativeTable.GetDouble(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex);
         }
 
         protected double? GetNullableDoubleValue(string propertyName)
         {
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
-            return NativeTable.GetNullableDouble(_metadata.Table, _metadata.ColumnIndices[propertyName],  _rowHandle.RowIndex);
+            return NativeTable.GetNullableDouble(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex);
         }
 
         protected bool GetBooleanValue(string propertyName)
         {
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
-            return NativeTable.GetBoolean(_metadata.Table, _metadata.ColumnIndices[propertyName],  _rowHandle.RowIndex);
+            return NativeTable.GetBoolean(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex);
         }
 
         protected bool? GetNullableBooleanValue(string propertyName)
         {
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
-            return NativeTable.GetNullableBoolean(_metadata.Table, _metadata.ColumnIndices[propertyName],  _rowHandle.RowIndex);
+            return NativeTable.GetNullableBoolean(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex);
         }
 
         protected DateTimeOffset GetDateTimeOffsetValue(string propertyName)
         {
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
-            return NativeTable.GetDateTimeOffset(_metadata.Table, _metadata.ColumnIndices[propertyName],  _rowHandle.RowIndex);
+            return NativeTable.GetDateTimeOffset(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex);
         }
 
         protected DateTimeOffset? GetNullableDateTimeOffsetValue(string propertyName)
         {
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
-            return NativeTable.GetNullableDateTimeOffset(_metadata.Table, _metadata.ColumnIndices[propertyName],  _rowHandle.RowIndex);
+            return NativeTable.GetNullableDateTimeOffset(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex);
         }
 
         protected IList<T> GetListValue<T>(string propertyName) where T : RealmObject
@@ -233,7 +231,7 @@ namespace Realms
             _metadata.Schema.TryFindProperty(propertyName, out property);
             var relatedMeta = _realm.Metadata[property.ObjectType];
 
-            var listHandle = _metadata.Table.TableLinkList (_metadata.ColumnIndices[propertyName], _rowHandle.RowIndex);
+            var listHandle = _metadata.Table.TableLinkList(_metadata.ColumnIndices[propertyName], _rowHandle.RowIndex);
             return new RealmList<T>(_realm, listHandle, relatedMeta);
         }
 
@@ -242,9 +240,11 @@ namespace Realms
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             var rowIndex = _rowHandle.RowIndex;
-            var linkedRowPtr = NativeTable.GetLink (_metadata.Table, _metadata.ColumnIndices[propertyName], rowIndex);
+            var linkedRowPtr = NativeTable.GetLink(_metadata.Table, _metadata.ColumnIndices[propertyName], rowIndex);
             if (linkedRowPtr == IntPtr.Zero)
+            {
                 return null;
+            }
 
             Schema.Property property;
             _metadata.Schema.TryFindProperty(propertyName, out property);
@@ -268,7 +268,9 @@ namespace Realms
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
+            {
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
+            }
 
             NativeTable.SetString(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value);
         }
@@ -278,7 +280,9 @@ namespace Realms
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
+            {
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
+            }
 
             NativeTable.SetStringUnique(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value);
         }
@@ -288,7 +292,9 @@ namespace Realms
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
+            {
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
+            }
 
             NativeTable.SetNullableInt64(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value);
         }
@@ -298,10 +304,11 @@ namespace Realms
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
+            {
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
+            }
 
             NativeTable.SetInt64Unique(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value);
-
         }
 
         protected void SetNullableCharValue(string propertyName, char? value)
@@ -309,7 +316,9 @@ namespace Realms
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
+            {
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
+            }
 
             NativeTable.SetNullableInt64(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value);
         }
@@ -319,7 +328,9 @@ namespace Realms
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
+            {
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
+            }
 
             NativeTable.SetNullableInt64(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value);
         }
@@ -329,7 +340,9 @@ namespace Realms
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
+            {
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
+            }
 
             NativeTable.SetInt64Unique(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value);
         }
@@ -339,7 +352,9 @@ namespace Realms
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
+            {
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
+            }
 
             NativeTable.SetNullableInt64(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value);
         }
@@ -349,7 +364,9 @@ namespace Realms
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
+            {
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
+            }
 
             NativeTable.SetNullableInt64(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value);
         }
@@ -359,7 +376,9 @@ namespace Realms
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
+            {
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
+            }
 
             NativeTable.SetInt64Unique(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value);
         }
@@ -369,7 +388,9 @@ namespace Realms
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
+            {
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
+            }
 
             NativeTable.SetNullableInt64(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value);
         }
@@ -379,7 +400,9 @@ namespace Realms
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
+            {
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
+            }
 
             NativeTable.SetNullableInt64(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value);
         }
@@ -389,7 +412,9 @@ namespace Realms
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
+            {
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
+            }
 
             NativeTable.SetInt64Unique(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value);
         }
@@ -399,7 +424,9 @@ namespace Realms
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
+            {
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
+            }
 
             NativeTable.SetNullableInt64(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value);
         }
@@ -409,7 +436,9 @@ namespace Realms
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
+            {
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
+            }
 
             NativeTable.SetNullableInt64(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value);
         }
@@ -419,7 +448,9 @@ namespace Realms
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
+            {
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
+            }
 
             NativeTable.SetInt64Unique(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value);
         }
@@ -429,7 +460,9 @@ namespace Realms
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
+            {
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
+            }
 
             NativeTable.SetNullableInt64(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value);
         }
@@ -439,7 +472,9 @@ namespace Realms
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
+            {
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
+            }
 
             NativeTable.SetSingle(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value);
         }
@@ -449,7 +484,9 @@ namespace Realms
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
+            {
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
+            }
 
             NativeTable.SetNullableSingle(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value);
         }
@@ -459,7 +496,9 @@ namespace Realms
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
+            {
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
+            }
 
             NativeTable.SetDouble(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value);
         }
@@ -469,7 +508,9 @@ namespace Realms
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
+            {
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
+            }
 
             NativeTable.SetNullableDouble(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value);
         }
@@ -479,7 +520,9 @@ namespace Realms
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
+            {
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
+            }
 
             NativeTable.SetBoolean(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value);
         }
@@ -489,7 +532,9 @@ namespace Realms
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
+            {
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
+            }
 
             NativeTable.SetNullableBoolean(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value);
         }
@@ -499,7 +544,9 @@ namespace Realms
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
+            {
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
+            }
 
             NativeTable.SetDateTimeOffset(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value);
         }
@@ -509,11 +556,12 @@ namespace Realms
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
+            {
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
+            }
 
             NativeTable.SetNullableDateTimeOffset(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value);
         }
-
 
         // Originally a generic fallback, now used only for RealmObject To-One relationship properties
         // most other properties handled with woven type-specific setters above
@@ -522,7 +570,9 @@ namespace Realms
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
+            {
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
+            }
 
             var rowIndex = _rowHandle.RowIndex;
             if (value == null)
@@ -532,7 +582,10 @@ namespace Realms
             else
             {
                 if (!value.IsManaged)
+                {
                     _realm.Manage(value);
+                }
+
                 NativeTable.SetLink(_metadata.Table, _metadata.ColumnIndices[propertyName], rowIndex, value.RowHandle.RowIndex);
             }
         }
@@ -542,7 +595,9 @@ namespace Realms
             Debug.Assert(_realm != null, "Object is not managed, but managed access was attempted");
 
             if (!_realm.IsInTransaction)
+            {
                 throw new RealmOutsideTransactionException("Cannot set values outside transaction");
+            }
 
             NativeTable.SetByteArray(_metadata.Table, _metadata.ColumnIndices[propertyName], _rowHandle.RowIndex, value);
         }
@@ -571,17 +626,20 @@ namespace Realms
 
             // If run-time types are not exactly the same, return false. 
             if (this.GetType() != obj.GetType())
+            {
                 return false;
+            }
 
             // standalone objects cannot participate in the same store check
             if (!IsManaged)
+            {
                 return false;
+            }
 
             // Return true if the fields match. 
             // Note that the base class is not invoked because it is 
             // System.Object, which defines Equals as reference equality. 
             return RowHandle.Equals(((RealmObject)obj).RowHandle);
         }
-
     }
 }

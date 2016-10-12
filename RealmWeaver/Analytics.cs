@@ -15,7 +15,7 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -126,13 +126,21 @@ namespace RealmWeaver
             get
             {
                 if (_moduleDefinition.AssemblyReferences.Any(r => r.Name == "Xamarin.iOS"))
+                {
                     return "ios";
-                else if (_moduleDefinition.AssemblyReferences.Any(r => r.Name == "Xamarin.Mac"))
+                }
+
+                if (_moduleDefinition.AssemblyReferences.Any(r => r.Name == "Xamarin.Mac"))
+                {
                     return "osx";
-                else if (_moduleDefinition.AssemblyReferences.Any(r => r.Name == "Mono.Android"))
+                }
+
+                if (_moduleDefinition.AssemblyReferences.Any(r => r.Name == "Mono.Android"))
+                {
                     return "android";
-                else
-                    return "windows";  // in theory is generic .Net but Tim requested we use windows for now
+                }
+
+                return "windows";  // in theory is generic .Net but Tim requested we use windows for now
                 // TODO: figure out a way to tell whether we're building for Windows, UWP, PCL, Unity(?), etc. if we wanted to
             }
         }
@@ -166,9 +174,9 @@ namespace RealmWeaver
 
         internal void SubmitAnalytics()
         {
-        // uncomment next two lines to inspect the payload under Windows VS build
-        //    var load = JsonPayload;
-        //    Debugger.Launch();  
+            // uncomment next two lines to inspect the payload under Windows VS build
+            //    var load = JsonPayload;
+            //    Debugger.Launch();  
 
             var base64Payload = Convert.ToBase64String(Encoding.UTF8.GetBytes(JsonPayload));
             var request = HttpWebRequest.CreateHttp(new Uri("https://api.mixpanel.com/track/?data=" + base64Payload + "&ip=1"));
@@ -190,22 +198,23 @@ namespace RealmWeaver
         {
             switch (Environment.OSVersion.Platform)
             {
-            // Mono completely messes up reporting the OS name and version for OS X, so...
-             /*   case PlatformID.MacOSX:
-                    name = "osx";
-                    break;
-                case PlatformID.Unix:
-                    name = "linux";
-                    break; */
+                // Mono completely messes up reporting the OS name and version for OS X, so...
+                /*   case PlatformID.MacOSX:
+                       name = "osx";
+                       break;
+                   case PlatformID.Unix:
+                       name = "linux";
+                       break; */
                 case PlatformID.Win32Windows:
                 case PlatformID.Win32NT:
                     name = "windows";
                     break;
                 default:
                     name = "osx";  // proved "windows" detected so default to "osx" for now
-//                    name = Environment.OSVersion.Platform.ToString();
+                                   //                    name = Environment.OSVersion.Platform.ToString();
                     break;
             }
+
             version = Environment.OSVersion.Version.ToString();
         }
 
@@ -214,10 +223,10 @@ namespace RealmWeaver
             private static bool RunSwVersion(string argument, out string output)
             {
                 var process = Process.Start(new ProcessStartInfo("sw_vers", argument)
-                    {
-                        UseShellExecute = false,
-                        RedirectStandardOutput = true
-                    });
+                {
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true
+                });
                 output = process.StandardOutput.ReadToEnd().Trim();
                 process.WaitForExit();
                 return process.ExitCode == 0;
@@ -231,4 +240,3 @@ namespace RealmWeaver
         }
     }
 }
-

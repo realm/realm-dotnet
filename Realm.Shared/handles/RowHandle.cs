@@ -15,13 +15,13 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
 using System;
 using System.Runtime.InteropServices;
 
 namespace Realms
 {
-    internal class RowHandle: RealmHandle
+    internal class RowHandle : RealmHandle
     {
         private static class NativeMethods
         {
@@ -34,11 +34,10 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "row_destroy", CallingConvention = CallingConvention.Cdecl)]
             public static extern void destroy(IntPtr rowHandle);
-
         }
 
-        //keep this one even though warned that it is not used. It is in fact used by marshalling
-        //used by P/Invoke to automatically construct a TableHandle when returning a size_t as a TableHandle
+        // keep this one even though warned that it is not used. It is in fact used by marshalling
+        // used by P/Invoke to automatically construct a TableHandle when returning a size_t as a TableHandle
         [Preserve]
         public RowHandle(SharedRealmHandle sharedRealmHandle) : base(sharedRealmHandle)
         {
@@ -60,10 +59,13 @@ namespace Realms
                     if (type == RealmExceptionCodes.RealmRowDetached)
                     {
                         if (Root.IsClosed)
+                        {
                             return new RealmClosedException("This object belongs to a closed realm.");
-                        else
-                            return new RealmInvalidObjectException("This object is detached. Was it deleted from the realm?");
+                        }
+
+                        return new RealmInvalidObjectException("This object is detached. Was it deleted from the realm?");
                     }
+
                     return null;
                 });
                 return result;
@@ -77,7 +79,7 @@ namespace Realms
                 NativeException nativeException;
                 var result = NativeMethods.get_is_attached(this, out nativeException);
                 nativeException.ThrowIfNecessary();
-                return result == (IntPtr) 1;  // inline equiv of IntPtrToBool
+                return result == (IntPtr)1;  // inline equiv of IntPtrToBool
             }
         }
 
@@ -95,7 +97,7 @@ namespace Realms
                 return true;
             }
 
-            return ((RowHandle) p).RowIndex == RowIndex;
+            return ((RowHandle)p).RowIndex == RowIndex;
         }
     }
 }

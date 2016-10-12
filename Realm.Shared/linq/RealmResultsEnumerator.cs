@@ -17,23 +17,18 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Linq;
-using System.Collections.Generic;
 using System.Collections;
-using System.Linq.Expressions;
+using System.Collections.Generic;
 
 namespace Realms
 {
-    /// <summary>
-    ///  This is now more of a skinny wrapper on top of the ObjectStore Results class.
-    /// </summary>
-    internal class RealmResultsEnumerator<T> : IEnumerator<T> 
+    // This is now more of a skinny wrapper on top of the ObjectStore Results class.
+    internal class RealmResultsEnumerator<T> : IEnumerator<T>
     {
         private long _index = -1;  // must match Reset(), zero-based with no gaps indexing an ObjectStore Results
         private ResultsHandle _enumeratingResults = null;
         private Realm _realm;
         private readonly Schema.ObjectSchema _schema;
-
 
         internal RealmResultsEnumerator(Realm realm, ResultsHandle rh, Schema.ObjectSchema schema)
         {
@@ -43,16 +38,13 @@ namespace Realms
         }
 
         /// <summary>
-        /// Return the current related object when iterating a related set.
+        /// Gets the current related object when iterating a related set.
         /// </summary>
         /// <exception cref="ArgumentOutOfRangeException">When we are not currently pointing at a valid item, either MoveNext has not been called for the first time or have iterated through all the items.</exception>
         public T Current { get; private set; }
 
         // also needed - https://msdn.microsoft.com/en-us/library/s793z9y2.aspx
-        object IEnumerator.Current
-        {
-            get { return this.Current; }
-        }
+        object IEnumerator.Current => this.Current;
 
         /// <summary>
         ///  Move the iterator to the next related object, starting "before" the first object.
@@ -64,22 +56,24 @@ namespace Realms
         public bool MoveNext()
         {
             if (_enumeratingResults == null)
+            {
                 return false;
-            
+            }
+
             ++_index;
             var rowPtr = _enumeratingResults.GetRow(_index);
-            if (rowPtr == IntPtr.Zero) 
+            if (rowPtr == IntPtr.Zero)
             {
                 Current = (T)(object)null;
                 return false;
             }
-            Current = (T)(object) _realm.MakeObjectForRow(_schema.Name, rowPtr);
+
+            Current = (T)(object)_realm.MakeObjectForRow(_schema.Name, rowPtr);
             return true;
         }
 
-
         /// <summary>
-        /// Reset the iter to before the first object, so MoveNext will move to it.
+        /// Reset the iterator to before the first object, so MoveNext will move to it.
         /// </summary>
         public void Reset()
         {
@@ -89,9 +83,8 @@ namespace Realms
         /// <summary>
         /// Standard Dispose with no side-effects.
         /// </summary>
-        public void Dispose() 
+        public void Dispose()
         {
         }
     }
 }
-

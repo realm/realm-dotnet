@@ -18,15 +18,13 @@
 
 namespace Realms
 {
-/// <summary>
-/// Exception thrown when you're trying to use Manage but the object is already managed by a different Realm.
-/// </summary>
-public class RealmObjectManagedByAnotherRealmException : RealmException
-{
-    internal RealmObjectManagedByAnotherRealmException(string detailMessage) : base(detailMessage)
+    /// <summary>
+    /// Exception thrown when you're trying to use Manage but the object is already managed by a different Realm.
+    /// </summary>
+    public class RealmObjectManagedByAnotherRealmException : RealmException
     {
-
+        internal RealmObjectManagedByAnotherRealmException(string detailMessage) : base(detailMessage)
+        {
+        }
     }
-}
-
 }

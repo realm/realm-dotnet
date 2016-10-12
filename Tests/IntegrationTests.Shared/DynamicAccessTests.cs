@@ -18,14 +18,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.IO;
+using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
+using Microsoft.CSharp.RuntimeBinder;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 using Realms;
-using System.Linq.Expressions;
-using Microsoft.CSharp.RuntimeBinder;
-using System.Dynamic;
-using System.Runtime.CompilerServices;
 
 namespace IntegrationTests.Shared
 {
@@ -70,8 +70,8 @@ namespace IntegrationTests.Shared
                 transaction.Commit();
             }
 
-            Assert.That((char)(allTypesObject.CharProperty), Is.EqualTo('F'));
-            Assert.That((char)(allTypesObject.NullableCharProperty), Is.EqualTo('o'));
+            Assert.That((char)allTypesObject.CharProperty, Is.EqualTo('F'));
+            Assert.That((char)allTypesObject.NullableCharProperty, Is.EqualTo('o'));
             Assert.That(allTypesObject.StringProperty, Is.EqualTo("o"));
         }
 

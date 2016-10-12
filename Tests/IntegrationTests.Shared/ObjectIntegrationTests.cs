@@ -19,22 +19,21 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using Realms;
-using System.Threading.Tasks;
 
 namespace IntegrationTests
 {
     [TestFixture, Preserve(AllMembers = true)]
     public class ObjectIntegrationTests : PeopleTestsBase
     {
-
         [Test, Explicit("Manual test for debugging")]
         public void SimpleTest()
         {
-            MakeThreePeople ();
+            MakeThreePeople();
             var allPeople = _realm.All<Person>().Count();
             Debug.WriteLine($"There are {allPeople} in total");
 
@@ -42,12 +41,16 @@ namespace IntegrationTests
 
             Debug.WriteLine("Interesting people include:");
             foreach (var p in interestingPeople)
+            {
                 Debug.WriteLine(" - " + p.FullName + " (" + p.Email + ")");
+            }
 
             var johns = from p in _realm.All<Person>() where p.FirstName == "John" select p;
             Debug.WriteLine("People named John:");
             foreach (var p in johns)
+            {
                 Debug.WriteLine(" - " + p.FullName + " (" + p.Email + ")");
+            }
         }
 
         [Test]
@@ -85,7 +88,7 @@ namespace IntegrationTests
                 p1.Score = 99.0f;
                 Assert.That(p2.Score, Is.EqualTo(99.0f));  // value propagates despite transaction not finished
                 Assert.That(p1.Equals(p2));  // identity-based comparison holds
-                transaction.Commit(); 
+                transaction.Commit();
             }
 
             // Assert
@@ -109,6 +112,7 @@ namespace IntegrationTests
                 p.Longitude = 0.076132;
                 transaction.Commit();
             }
+
             var allPeople = _realm.All<Person>().ToList();
             Person p2 = allPeople[0];  // pull it back out of the database otherwise can't tell if just a dumb property
             var receivedFirstName = p2.FirstName;
@@ -137,6 +141,7 @@ namespace IntegrationTests
 
                 transaction.Commit();
             }
+
             var receivedEmail = p.Email;
 
             // Assert
@@ -209,13 +214,14 @@ namespace IntegrationTests
             Assert.Throws<RealmOutsideTransactionException>(() => p.FirstName = "John");
         }
 
-
 #if ENABLE_INTERNAL_NON_PCL_TESTS
+
         [Test]
         public void NonAutomaticPropertiesShouldNotBeWoven()
         {
             Assert.That(typeof(Person).GetProperty("Nickname").GetCustomAttributes(typeof(WovenPropertyAttribute), false), Is.Empty);
         }
+
 #endif
         [Test]
         public void NonAutomaticPropertiesShouldBeIgnored()
@@ -234,7 +240,6 @@ namespace IntegrationTests
             Assert.That(string.IsNullOrEmpty(vinnie.Nickname));
         }
 
-
         [Test]
         public void CanSimplyCountAll()
         {
@@ -245,16 +250,18 @@ namespace IntegrationTests
         [Test]
         public void IteratePeople()
         {
-            MakeThreePeople ();
+            MakeThreePeople();
 
             // primarily just testing we iterate through all the people in the realm
             int iterCount = 0;
-            string[] emails = {"john@smith.com", "john@doe.com", "peter@jameson.net"};
-            foreach (var p in _realm.All<Person>()) {
+            string[] emails = { "john@smith.com", "john@doe.com", "peter@jameson.net" };
+            foreach (var p in _realm.All<Person>())
+            {
                 Assert.That(p.Email, Is.EqualTo(emails[iterCount]));
                 iterCount++;
             }
-            Assert.That (iterCount, Is.EqualTo (3));
+
+            Assert.That(iterCount, Is.EqualTo(3));
         }
 
         [Test]
@@ -273,6 +280,5 @@ namespace IntegrationTests
             var p2 = new Person();
             Assert.That(p2.IsValid);
         }
-
-    }  // ObjectIntegrationTests
+    }
 }

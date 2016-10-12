@@ -111,7 +111,7 @@ namespace IntegrationTests.Shared
             new object[] { "ByteArrayProperty", new byte[] { 0xde, 0xad, 0xbe, 0xef } },
             new object[] { "ByteArrayProperty", new byte[0] },
             new object[] { "StringProperty", "hello" },
-            new object[] { "StringProperty", "" },
+            new object[] { "StringProperty", string.Empty },
             new object[] { "NullableDateTimeOffsetProperty", new DateTimeOffset(1956, 6, 1, 0, 0, 0, TimeSpan.Zero) }
         };
 

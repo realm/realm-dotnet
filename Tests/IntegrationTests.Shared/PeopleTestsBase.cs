@@ -16,10 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using NUnit.Framework;
 using System;
 using System.Diagnostics;
 using System.IO;
+using NUnit.Framework;
 using Realms;
 
 namespace IntegrationTests
@@ -44,7 +44,6 @@ namespace IntegrationTests
             _realm.Close();
             Realm.DeleteRealm(_realm.Config);
         }
-
 
         protected void MakeThreePeople()
         {

@@ -17,9 +17,9 @@
 ////////////////////////////////////////////////////////////////////////////
  
 using System;
-using UIKit;
-using Foundation;
 using System.IO;
+using Foundation;
+using UIKit;
 
 namespace Realms
 {
@@ -28,24 +28,28 @@ namespace Realms
     /// </summary>
     internal static class InteropConfig
     {
-    
         /// <summary>
-        /// Compile-time test of platform being 64bit.
+        /// Gets a value indicating whether the platform is 64 bit.
         /// </summary>
         public static bool Is64Bit
         {
 #if REALM_32       
-            get {
-                Debug.Assert(IntPtr.Size == 4);
+            get
+            {
+                Debug.Assert(IntPtr.Size == 4, "REALM_32 symbol is defined, but we're in a 64 bit process.");
                 return false;
             }
 #elif REALM_64
-            get {
-                Debug.Assert(IntPtr.Size == 8);
+            get
+            {
+                Debug.Assert(IntPtr.Size == 8, "REALM_64 symbol is defined, but we're in a 32 bit process.");
                 return true;
             }
 #else
-            get { return (IntPtr.Size == 8); }
+            get
+            {
+                return IntPtr.Size == 8;
+            }
 #endif
         }
 
@@ -53,6 +57,5 @@ namespace Realms
         /// Name of the DLL used in native declarations, constant varying per-platform.
         /// </summary>
         public const string DLL_NAME = "__Internal";
-
     }
 }

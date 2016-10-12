@@ -22,8 +22,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Realms
 {
@@ -36,14 +36,17 @@ namespace Realms
     /// <typeparam name="T">Type of the RealmObject which is being returned.</typeparam>
     public class RealmResults<T> : IOrderedQueryable<T>, RealmResultsNativeHelper.Interface, IRealmResults
     {
-        public Type ElementType => typeof(T);
-        public Expression Expression { get; } = null; // null if _allRecords
-        private readonly RealmResultsProvider _provider = null;  // null if _allRecords
-        private readonly bool _allRecords = false;
+        private readonly RealmResultsProvider _provider;  // null if _allRecords
+        private readonly bool _allRecords;
         private readonly Realm _realm;
         private readonly RealmObject.Metadata _targetMetadata;
         private readonly List<NotificationCallback> _callbacks = new List<NotificationCallback>();
         private NotificationTokenHandle _notificationToken;
+        private ResultsHandle _resultsHandle;
+
+        public Type ElementType => typeof(T);
+
+        public Expression Expression { get; } // null if _allRecords
 
         /// <summary>
         /// The <see cref="Schema.ObjectSchema"/> that describes the type of item this collection can contain.
@@ -51,7 +54,6 @@ namespace Realms
         public Schema.ObjectSchema ObjectSchema => _targetMetadata.Schema;
 
         internal ResultsHandle ResultsHandle => _resultsHandle ?? (_resultsHandle = CreateResultsHandle());
-        private ResultsHandle _resultsHandle = null;
 
         public IQueryProvider Provider => _provider;
 
@@ -60,7 +62,10 @@ namespace Realms
             get
             {
                 if (index < 0)
+                {
                     throw new ArgumentOutOfRangeException();
+                }
+
                 var rowPtr = ResultsHandle.GetRow(index);
                 return (T)(object)_realm.MakeObjectForRow(_targetMetadata, rowPtr);
             }
@@ -74,20 +79,20 @@ namespace Realms
             /// <summary>
             /// The indices in the new version of the <see cref="RealmResults{T}" /> which were newly inserted.
             /// </summary>
-            public readonly int [] InsertedIndices;
+            public readonly int[] InsertedIndices;
 
             /// <summary>
             /// The indices in the new version of the <see cref="RealmResults{T}"/> which were modified. This means that the property of an object at that index was modified
             /// or the property of another object it's related to.
             /// </summary>
-            public readonly int [] ModifiedIndices;
+            public readonly int[] ModifiedIndices;
 
             /// <summary>
             /// The indices of objects in the previous version of the <see cref="RealmResults{T}"/> which have been removed from this one.
             /// </summary>
-            public readonly int [] DeletedIndices;
+            public readonly int[] DeletedIndices;
 
-            internal ChangeSet(int [] insertedIndices, int [] modifiedIndices, int [] deletedIndices)
+            internal ChangeSet(int[] insertedIndices, int[] modifiedIndices, int[] deletedIndices)
             {
                 InsertedIndices = insertedIndices;
                 ModifiedIndices = modifiedIndices;
@@ -99,8 +104,8 @@ namespace Realms
         /// A callback that will be invoked each time the contents of a <see cref="RealmResults{T}"/> have changed.
         /// </summary>
         /// <param name="sender">The <see cref="RealmResults{T}"/> being monitored for changes.</param>
-        /// <param name="changes">The <see cref="ChangeSet"/> describing the changes to a <see cref="RealmResults{T}"/>, or <c>null</c> if an error occured.</param>
-        /// <param name="error">An exception that might have occured while asynchronously monitoring a <see cref="RealmResults{T}"/> for changes, or <c>null</c> if no errors occured.</param>
+        /// <param name="changes">The <see cref="ChangeSet"/> describing the changes to a <see cref="RealmResults{T}"/>, or <c>null</c> if an error occurred.</param>
+        /// <param name="error">An exception that might have occurred while asynchronously monitoring a <see cref="RealmResults{T}"/> for changes, or <c>null</c> if no errors occurred.</param>
         public delegate void NotificationCallback(RealmResults<T> sender, ChangeSet changes, Exception error);
 
         internal RealmResults(Realm realm, RealmResultsProvider realmResultsProvider, Expression expression, RealmObject.Metadata metadata, bool createdByAll)
@@ -110,7 +115,6 @@ namespace Realms
             Expression = expression ?? Expression.Constant(this);
             _targetMetadata = metadata;
             _allRecords = createdByAll;
-
         }
 
         internal RealmResults(Realm realm, RealmObject.Metadata metadata, bool createdByAll)
@@ -128,7 +132,7 @@ namespace Realms
             // do all the LINQ expression evaluation to build a query
             var qv = _provider.MakeVisitor();
             qv.Visit(Expression);
-            var queryHandle = qv._coreQueryHandle; // grab out the built query definition
+            var queryHandle = qv.CoreQueryHandle; // grab out the built query definition
             var sortHandle = qv.OptionalSortDescriptorBuilder;
             return _realm.MakeResultsForQuery(queryHandle, sortHandle);
         }
@@ -142,21 +146,17 @@ namespace Realms
             return new RealmResultsEnumerator<T>(_realm, ResultsHandle, ObjectSchema);
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return (IEnumerator)GetEnumerator();  // using our class generic type, just redirect the legacy get
-        }
-
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator(); // using our class generic type, just redirect the legacy get
 
         /// <summary>
         /// Fast count all objects of a given class, or in a RealmResults after casting.
         /// </summary>
         /// <remarks>
-        /// Resolves to this method instead of the LINQ static extension <c>Count<T>(this IEnumerable<T>)</c>, when used directly on Realm.All.
-        /// <br>
-        /// if someone CASTS a RealmResults<T> variable from a Where call to 
-        /// a RealmResults<T> they change its compile-time type from IQueryable<blah> (which invokes LINQ)
-        /// to RealmResults<T> and thus ends up here.
+        /// Resolves to this method instead of the LINQ static extension <c>Count&lt;T&gt;(this IEnumerable&lt;T&gt;)</c>, when used directly on Realm.All.
+        /// <br/>
+        /// if someone CASTS a RealmResults&lt;T&gt; variable from a Where call to
+        /// a RealmResults&lt;T&gt; they change its compile-time type from IQueryable&lt;T&gt; (which invokes LINQ)
+        /// to RealmResults&lt;T&gt; and thus ends up here.
         /// </remarks>
         /// <returns>Count of all objects in a class or in the results of a search, without instantiating them.</returns>
         public int Count()
@@ -164,7 +164,7 @@ namespace Realms
             if (_allRecords)
             {
                 // use the type captured at build based on generic T
-                var tableHandle = _realm.Metadata [ObjectSchema.Name].Table;
+                var tableHandle = _realm.Metadata[ObjectSchema.Name].Table;
                 return (int)NativeTable.CountAll(tableHandle);
             }
 
@@ -174,10 +174,10 @@ namespace Realms
             return (int)ResultsHandle.Count();
         }
 
-        class NotificationToken : IDisposable
+        private class NotificationToken : IDisposable
         {
-            RealmResults<T> _results;
-            NotificationCallback _callback;
+            private RealmResults<T> _results;
+            private NotificationCallback _callback;
 
             internal NotificationToken(RealmResults<T> results, NotificationCallback callback)
             {
@@ -198,7 +198,7 @@ namespace Realms
         /// </summary>
         /// <remarks>
         /// <para>
-        /// The callback will be asynchronously invoked with the initial <see cref="RealmResults{T}" />, and then called again after each write transaction 
+        /// The callback will be asynchronously invoked with the initial <see cref="RealmResults{T}" />, and then called again after each write transaction
         /// which changes either any of the objects in the collection, or which objects are in the collection.
         /// The <c>changes</c> parameter will be <c>null</c> the first time the callback is invoked with the initial results.
         /// For each call after that, it will contain information about which rows in the results were added, removed or modified.
@@ -247,7 +247,7 @@ namespace Realms
 
         private void SubscribeForNotifications()
         {
-            Debug.Assert(_notificationToken == null);
+            Debug.Assert(_notificationToken == null, "_notificationToken must be null before subscribing.");
 
             var managedResultsHandle = GCHandle.Alloc(this);
             var token = new NotificationTokenHandle(ResultsHandle);
@@ -255,7 +255,8 @@ namespace Realms
 
             RuntimeHelpers.PrepareConstrainedRegions();
             try
-            { }
+            {
+            }
             finally
             {
                 token.SetHandle(tokenHandle);
@@ -266,7 +267,7 @@ namespace Realms
 
         private void UnsubscribeFromNotifications()
         {
-            Debug.Assert(_notificationToken != null);
+            Debug.Assert(_notificationToken != null, "_notificationToken must not be null to unsubscribe.");
 
             _notificationToken.Dispose();
             _notificationToken = null;
@@ -282,37 +283,13 @@ namespace Realms
                 changeset = new ChangeSet(
                     insertedIndices: actualChanges.Insertions.AsEnumerable().Select(i => (int)i).ToArray(),
                     modifiedIndices: actualChanges.Modifications.AsEnumerable().Select(i => (int)i).ToArray(),
-                    deletedIndices: actualChanges.Deletions.AsEnumerable().Select(i => (int)i).ToArray()
-                );
+                    deletedIndices: actualChanges.Deletions.AsEnumerable().Select(i => (int)i).ToArray());
             }
 
             foreach (var callback in _callbacks)
             {
                 callback(this, changeset, managedException);
             }
-        }
-
-    }  // RealmResults
-
-    internal interface IRealmResults
-    {
-        Schema.ObjectSchema ObjectSchema { get; }
-    }
-
-    internal static class RealmResultsNativeHelper
-    {
-        internal interface Interface
-        {
-            void NotifyCallbacks(ResultsHandle.CollectionChangeSet? changes, NativeException? exception);
-        }
-
-#if __IOS__
-        [ObjCRuntime.MonoPInvokeCallback(typeof(ResultsHandle.NotificationCallback))]
-#endif
-        internal static void NotificationCallback(IntPtr managedResultsHandle, IntPtr changes, IntPtr exception)
-        {
-            var results = (Interface)GCHandle.FromIntPtr(managedResultsHandle).Target;
-            results.NotifyCallbacks(new PtrTo<ResultsHandle.CollectionChangeSet>(changes).Value, new PtrTo<NativeException>(exception).Value);
         }
     }
 }

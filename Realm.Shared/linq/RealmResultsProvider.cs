@@ -48,7 +48,7 @@ namespace Realms
 
         public IQueryable CreateQuery(Expression expression)
         {
-            Type elementType = TypeSystem.GetElementType(expression.Type);
+            var elementType = TypeSystem.GetElementType(expression.Type);
             try
             {
                 return (IQueryable)Activator.CreateInstance(typeof(RealmResults<>).MakeGenericType(elementType), new object[] { this, expression });
@@ -63,10 +63,9 @@ namespace Realms
         {
             expression = PartialEvaluatingExpressionVisitor.EvaluateIndependentSubtrees(expression, new EvaluatableExpressionFilter());
             var v = MakeVisitor();
-            Expression visitResult = v.Visit(expression);
+            var visitResult = v.Visit(expression);
             var constExp = visitResult as ConstantExpression;
-            T ret = (T)constExp?.Value;
-            return ret;
+            return (T)constExp?.Value;
         }
 
         public object Execute(Expression expression)
@@ -77,6 +76,5 @@ namespace Realms
         private class EvaluatableExpressionFilter : EvaluatableExpressionFilterBase
         {
         }
-
     }
 }

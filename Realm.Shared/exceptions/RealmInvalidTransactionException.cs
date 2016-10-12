@@ -16,8 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
-
 namespace Realms
 {
     public class RealmInvalidTransactionException : RealmException
@@ -27,4 +25,3 @@ namespace Realms
         }
     }
 }
-

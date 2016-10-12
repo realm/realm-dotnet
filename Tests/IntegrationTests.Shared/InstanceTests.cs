@@ -15,26 +15,26 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
 using System;
 using System.IO;
-using NUnit.Framework;
-using System.Threading.Tasks;
-using Realms;
 using System.Threading;
+using System.Threading.Tasks;
+using NUnit.Framework;
+using Realms;
 
 namespace IntegrationTests
 {
     [TestFixture, Preserve(AllMembers = true)]
     public class InstanceTests
     {
-        const string specialRealmName = "EnterTheMagic.realm";
+        private const string SpecialRealmName = "EnterTheMagic.realm";
 
         [TestFixtureSetUp]
         public void Setup()
         {
             Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
-            var uniqueConfig = new RealmConfiguration(specialRealmName);  // for when need 2 realms or want to not use default
+            var uniqueConfig = new RealmConfiguration(SpecialRealmName);  // for when need 2 realms or want to not use default
             Realm.DeleteRealm(uniqueConfig);
         }
 
@@ -53,6 +53,7 @@ namespace IntegrationTests
             {
                 Assert.That(!temp.IsClosed);
             }
+
             Assert.That(temp.IsClosed);
         }
 
@@ -60,14 +61,15 @@ namespace IntegrationTests
         public void GetInstanceWithJustFilenameTest()
         {
             // Arrange, act and "assert" that no exception is thrown, using default location + unique name
-            Realm.GetInstance(specialRealmName).Close();
+            Realm.GetInstance(SpecialRealmName).Close();
         }
-        
+
         [Test]
         public void GetInstanceFromPCLTest()
         {
             // Arrange, act and "assert" that no exception is thrown, using default location + unique name
-            using (var realmFromPCL = PurePCLBuildableTest.TestBuildingRealmFromPCL.MakeARealmWithPCL()) {
+            using (var realmFromPCL = PurePCLBuildableTest.TestBuildingRealmFromPCL.MakeARealmWithPCL())
+            {
                 Assert.IsNotNull(realmFromPCL);
                 Assert.That(realmFromPCL.IsClosed, Is.False);
             }
@@ -88,7 +90,6 @@ namespace IntegrationTests
             Assert.DoesNotThrow(() => Realm.DeleteRealm(config));
             Assert.False(File.Exists(config.DatabasePath));
         }
-
 
         [Test]
         public void GetUniqueInstancesDifferentThreads()
@@ -114,7 +115,6 @@ namespace IntegrationTests
             realm2.Close();
         }
 
-
         [Test]
         public void GetCachedInstancesSameThread()
         {
@@ -130,7 +130,6 @@ namespace IntegrationTests
             }
         }
 
-
         [Test]
         public void InstancesHaveDifferentHashes()
         {
@@ -140,8 +139,8 @@ namespace IntegrationTests
             {
                 // Assert
                 Assert.False(GC.ReferenceEquals(realm1, realm2));
-                Assert.That(realm1.GetHashCode(), Is.Not.EqualTo(0));  
-                Assert.That(realm1.GetHashCode(), Is.Not.EqualTo(realm2.GetHashCode())); 
+                Assert.That(realm1.GetHashCode(), Is.Not.EqualTo(0));
+                Assert.That(realm1.GetHashCode(), Is.Not.EqualTo(realm2.GetHashCode()));
             }
         }
 
@@ -175,10 +174,9 @@ namespace IntegrationTests
             Assert.Throws<RealmPermissionDeniedException>(() => Realm.GetInstance("/"));
         }
 
-
-        class LoneClass : RealmObject
+        private class LoneClass : RealmObject
         {
-            public string Name { get; set;}
+            public string Name { get; set; }
         }
 
         [Test]
@@ -187,14 +185,16 @@ namespace IntegrationTests
             // Arrange
             var config = new RealmConfiguration("RealmWithOneClass.realm");
             Realm.DeleteRealm(config);
-            config.ObjectClasses = new Type[] {typeof(LoneClass)};
+            config.ObjectClasses = new Type[] { typeof(LoneClass) };
 
             // Act
-            using (var lonelyRealm = Realm.GetInstance(config)) {
-                lonelyRealm.Write( () => {
+            using (var lonelyRealm = Realm.GetInstance(config))
+            {
+                lonelyRealm.Write(() =>
+                {
                     var p = lonelyRealm.CreateObject<LoneClass>();
                     p.Name = "The Singular";
-                }); 
+                });
 
                 // Assert
                 Assert.That(lonelyRealm.All<LoneClass>().Count(), Is.EqualTo(1));
@@ -207,21 +207,21 @@ namespace IntegrationTests
             // Arrange
             var config = new RealmConfiguration("RealmWithOneClass.realm");
             Realm.DeleteRealm(config);
-            config.ObjectClasses = new Type[] {typeof(LoneClass)};
+            config.ObjectClasses = new Type[] { typeof(LoneClass) };
 
             // Act and assert
-            using (var lonelyRealm = Realm.GetInstance(config)) {
+            using (var lonelyRealm = Realm.GetInstance(config))
+            {
                 using (var trans = lonelyRealm.BeginWrite())
                 {
                     Assert.Throws<ArgumentException>(() =>
                         {
-                            lonelyRealm.CreateObject<Person>(); 
-                        }, 
-                        "Can't create an object with a class not included in this Realm"); 
-                } // transaction
-            }  // realm
+                            lonelyRealm.CreateObject<Person>();
+                        },
+                        "Can't create an object with a class not included in this Realm");
+                }
+            }
         }
-
 
         [Test]
         public void RealmObjectClassesOnlyAllowRealmObjects()
@@ -229,15 +229,14 @@ namespace IntegrationTests
             // Arrange
             var config = new RealmConfiguration("RealmWithOneClass.realm");
             Realm.DeleteRealm(config);
-            config.ObjectClasses = new Type[] {typeof(LoneClass), typeof(object)};
+            config.ObjectClasses = new Type[] { typeof(LoneClass), typeof(object) };
 
             // Act and assert
             Assert.Throws<ArgumentException>(() =>
-                {
-                    Realm.GetInstance(config); 
-                }, 
-                "Can't have classes in the list which are not RealmObjects"); 
+            {
+                Realm.GetInstance(config);
+            },
+            "Can't have classes in the list which are not RealmObjects");
         }
-
     }
 }

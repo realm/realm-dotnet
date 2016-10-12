@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using Mono.Cecil;
 using System.ComponentModel;
+using Mono.Cecil;
 
 [EditorBrowsable(EditorBrowsableState.Never)]
 internal static class MethodReferenceExtensions

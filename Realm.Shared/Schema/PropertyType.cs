@@ -16,12 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System;
-using System.Diagnostics.Contracts;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-
 namespace Realms.Schema
 {
     public enum PropertyType : byte
@@ -38,4 +32,3 @@ namespace Realms.Schema
         Array = 13
     }
 }
-

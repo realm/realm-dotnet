@@ -20,7 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
-namespace Realms.native
+namespace Realms.Native
 {
     internal class SortDescriptorBuilder
     {
@@ -60,7 +60,7 @@ namespace Realms.native
         public void AddClause(string columnName, bool @ascending)
         {
             var columnIndex = _metadata.ColumnIndices[columnName];
-            _clauses.Add(new Clause {ColumnIndexChain = new List<IntPtr> { columnIndex }, Ascending = @ascending});
+            _clauses.Add(new Clause { ColumnIndexChain = new List<IntPtr> { columnIndex }, Ascending = @ascending });
         }
 
         /// <summary>
@@ -81,8 +81,8 @@ namespace Realms.native
                     Offset = (IntPtr)columnIndexFlattener.Count,
                     Count = (IntPtr)clause.ColumnIndexChain.Count,
                     Ascending = clause.Ascending
-
                 });
+
                 columnIndexFlattener.AddRange(clause.ColumnIndexChain);
             }
 

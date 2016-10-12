@@ -15,16 +15,11 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
 // PROXY VERSION OF CLASS USED IN PCL FOR BAIT AND SWITCH PATTERN 
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.InteropServices;
 
 namespace Realms
 {
@@ -48,13 +43,12 @@ namespace Realms
         /// </summary>
         public bool IsValid => false;
 
-
         #region Getters
 
         protected string GetStringValue(string propertyName)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
-            return "";
+            return string.Empty;
         }
 
         protected char GetCharValue(string propertyName)
@@ -335,6 +329,5 @@ namespace Realms
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return false;
         }
-
     }
 }

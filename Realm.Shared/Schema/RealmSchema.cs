@@ -33,20 +33,19 @@ namespace Realms
     /// </summary>
     /// <remarks>
     /// By default this will be all the RealmObjects in all your assemblies unless you restrict with RealmConfiguration.ObjectClasses. 
-    /// Just because a given class <em>may</em> be stored in a Realm doesn't imply much overhead. There will be a small amount of metadata 
+    /// Just because a given class <em>may</em> be stored in a Realm doesn't imply much overhead. There will be a small amount of metadata
     /// but objects only start to take up space once written. 
     /// </remarks>
     public class RealmSchema : IReadOnlyCollection<ObjectSchema>
     {
         private readonly ReadOnlyDictionary<string, ObjectSchema> _objects;
+        private static readonly Lazy<RealmSchema> _default = new Lazy<RealmSchema>(BuildDefaultSchema);
 
         /// <summary>
-        /// Number of known classes in the schema.
+        /// Gets the number of known classes in the schema.
         /// </summary>
-        /// <value>Count of known classes specified in this Schema.</value>
         public int Count => _objects.Count;
 
-        private static readonly Lazy<RealmSchema> _default = new Lazy<RealmSchema>(BuildDefaultSchema);
         internal static RealmSchema Default => _default.Value;
 
         private RealmSchema(IEnumerable<ObjectSchema> objects)
@@ -62,7 +61,11 @@ namespace Realms
         /// <returns>An object or null to indicate not found.</returns>
         public ObjectSchema Find(string name)
         {
-            if (string.IsNullOrEmpty(name)) throw new ArgumentException("Object schema name must be a non-empty string", nameof(name));
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentException("Object schema name must be a non-empty string", nameof(name));
+            }
+
             Contract.EndContractBlock();
 
             ObjectSchema obj;
@@ -155,6 +158,7 @@ namespace Realms
                     throw new InvalidOperationException(
                         "No RealmObjects. Has linker stripped them? See https://realm.io/docs/xamarin/latest/#linker-stripped-schema");
                 }
+
                 Contract.EndContractBlock();
 
                 var objects = new List<Native.SchemaObject>();
@@ -192,4 +196,3 @@ namespace Realms
         }
     }
 }
-
