@@ -18,7 +18,7 @@
 
 using System;
 
-namespace Realms
+namespace Realms.Sync
 {
     public class SyncConfiguration : RealmConfiguration
     {

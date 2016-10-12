@@ -19,7 +19,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Realms
+namespace Realms.Sync
 {
     public class Credentials
     {
