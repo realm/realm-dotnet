@@ -17,23 +17,17 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Runtime.InteropServices;
-using Realms.Native;
 
-namespace Realms
+namespace Realms.Native
 {
-    internal static class RealmResultsNativeHelper
+    /// <summary>
+    /// This attribute is replaced with <c>ObjCRuntime.MonoPInvokeCallback</c> on iOS and ignored otherwise.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Method)]
+    internal class NativeCallbackAttribute : Attribute
     {
-        internal interface Interface
+        public NativeCallbackAttribute(Type type)
         {
-            void NotifyCallbacks(ResultsHandle.CollectionChangeSet? changes, NativeException? exception);
-        }
-
-        [NativeCallback(typeof(ResultsHandle.NotificationCallback))]
-        internal static void NotificationCallback(IntPtr managedResultsHandle, IntPtr changes, IntPtr exception)
-        {
-            var results = (Interface)GCHandle.FromIntPtr(managedResultsHandle).Target;
-            results.NotifyCallbacks(new PtrTo<ResultsHandle.CollectionChangeSet>(changes).Value, new PtrTo<NativeException>(exception).Value);
         }
     }
 }

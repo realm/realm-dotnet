@@ -23,10 +23,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Text;
-
-#if __IOS__
-using ObjCRuntime;
-#endif
+using Realms.Native;
 
 namespace Realms
 {
@@ -38,9 +35,7 @@ namespace Realms
 #if DEBUG
         public delegate void DebugLoggerCallback(IntPtr utf8String, IntPtr stringLen);
 
-#if __IOS__
-        [MonoPInvokeCallback(typeof(DebugLoggerCallback))]
-#endif
+        [NativeCallback(typeof(DebugLoggerCallback))]
         private static unsafe void DebugLogger(IntPtr utf8String, IntPtr stringLen)
         {
             var message = new string((sbyte*)utf8String, 0 /* start offset */, (int)stringLen, Encoding.UTF8);

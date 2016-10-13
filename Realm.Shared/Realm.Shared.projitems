@@ -31,6 +31,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Linq\RealmResultsNativeHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\TypeSystem.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MarshalHelpers.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Native\NativeCallbackAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Native\SortDescriptorBuilder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Native\MarshaledVector.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Native\NativeCommon.cs" />
