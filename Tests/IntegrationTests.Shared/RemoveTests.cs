@@ -75,7 +75,7 @@ namespace IntegrationTests.Shared
             _realm.Write(() => p = _realm.CreateObject<Person>());
 
             // Act and assert
-            Assert.Throws<RealmOutsideTransactionException>(() => _realm.Remove(p));
+            Assert.Throws<RealmInvalidTransactionException>(() => _realm.Remove(p));
         }
 
         [Test]

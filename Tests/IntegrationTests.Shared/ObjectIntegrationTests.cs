@@ -152,14 +152,14 @@ namespace IntegrationTests
         public void CreateObjectOutsideTransactionShouldFail()
         {
             // Arrange, act and assert
-            Assert.Throws<RealmOutsideTransactionException>(() => _realm.CreateObject<Person>());
+            Assert.Throws<RealmInvalidTransactionException>(() => _realm.CreateObject<Person>());
         }
 
         [Test]
         public void ManageOutsideTransactionShouldFail()
         {
             var obj = new Person();
-            Assert.Throws<RealmOutsideTransactionException>(() => _realm.Manage(obj));
+            Assert.Throws<RealmInvalidTransactionException>(() => _realm.Manage(obj));
         }
 
         [Test]
@@ -211,7 +211,7 @@ namespace IntegrationTests
             }
 
             // Act and assert
-            Assert.Throws<RealmOutsideTransactionException>(() => p.FirstName = "John");
+            Assert.Throws<RealmInvalidTransactionException>(() => p.FirstName = "John");
         }
 
 #if ENABLE_INTERNAL_NON_PCL_TESTS

@@ -33,12 +33,12 @@ extern "C" {
         });
     }
     
-    REALM_EXPORT void row_destroy(Object* object_ptr)
+    REALM_EXPORT void object_destroy(Object* object_ptr)
     {
         delete object_ptr;
     }
     
-    REALM_EXPORT size_t row_get_row_index(const Object* object_ptr, NativeException::Marshallable& ex)
+    REALM_EXPORT size_t object_get_row_index(const Object* object_ptr, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
             if (!object_ptr->is_valid())

@@ -28,16 +28,16 @@ namespace Realms
     [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1121:UseBuiltInTypeAlias")]
     internal static class NativeTable
     {
-        public static IntPtr AddEmptyRow(TableHandle tableHandle)
+        public static IntPtr AddEmptyRow(TableHandle tableHandle, SharedRealmHandle sharedRealm)
         {
             NativeException nativeException;
-            var result = add_empty_row(tableHandle, out nativeException);
+            var result = add_empty_row(tableHandle, sharedRealm, out nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_add_empty_row", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr add_empty_row(TableHandle tableHandle, out NativeException ex);
+        private static extern IntPtr add_empty_row(TableHandle tableHandle, SharedRealmHandle sharedRealm, out NativeException ex);
 
         public static void SetDateTimeOffset(ObjectHandle handle, IntPtr propertyIndex, DateTimeOffset value)
         {
@@ -558,27 +558,27 @@ namespace Realms
                 [MarshalAs(UnmanagedType.LPArray), In]IntPtr[] flattenedColumnIndices,
                 out NativeException ex);
 
-        internal static IntPtr RowForPrimaryKey(TableHandle tableHandle, int primaryKeyColumnIndex, string id)
+        internal static IntPtr RowForPrimaryKey(SharedRealmHandle realmHandle, TableHandle tableHandle, int primaryKeyColumnIndex, string id)
         {
             NativeException nativeException;
-            var result = row_for_string_primarykey(tableHandle, (IntPtr)primaryKeyColumnIndex, id, (IntPtr)id.Length, out nativeException);
+            var result = row_for_string_primarykey(realmHandle, tableHandle, (IntPtr)primaryKeyColumnIndex, id, (IntPtr)id.Length, out nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "row_for_string_primarykey", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr row_for_string_primarykey(TableHandle handle, IntPtr propertyIndex,
+        private static extern IntPtr row_for_string_primarykey(SharedRealmHandle realmHandle, TableHandle handle, IntPtr propertyIndex,
             [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen, out NativeException ex);
 
-        internal static IntPtr RowForPrimaryKey(TableHandle tableHandle, int primaryKeyColumnIndex, long id)
+        internal static IntPtr RowForPrimaryKey(SharedRealmHandle realmHandle, TableHandle tableHandle, int primaryKeyColumnIndex, long id)
         {
             NativeException nativeException;
-            var result = row_for_int_primarykey(tableHandle, (IntPtr)primaryKeyColumnIndex, id,  out nativeException);
+            var result = row_for_int_primarykey(realmHandle, tableHandle, (IntPtr)primaryKeyColumnIndex, id,  out nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
 
         [DllImport(InteropConfig.DLL_NAME, EntryPoint = "row_for_int_primarykey", CallingConvention = CallingConvention.Cdecl)]
-        private static extern IntPtr row_for_int_primarykey(TableHandle handle, IntPtr propertyIndex, Int64 value, out NativeException ex);
+        private static extern IntPtr row_for_int_primarykey(SharedRealmHandle realmHandle, TableHandle handle, IntPtr propertyIndex, Int64 value, out NativeException ex);
     }
 }

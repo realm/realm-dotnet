@@ -166,7 +166,7 @@ namespace Realms
             public static extern void null_not_equal(QueryHandle queryPtr, IntPtr columnIndex, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_find", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr findDirect(QueryHandle queryHandle, IntPtr beginAtRow, out NativeException ex);
+            public static extern IntPtr findDirect(QueryHandle queryHandle, IntPtr beginAtRow, SharedRealmHandle realmHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_get_column_index", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_column_index(QueryHandle queryPtr,
@@ -196,7 +196,7 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_create_sorted_results", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr create_sorted_results(QueryHandle queryPtr, SharedRealmHandle sharedRealm, TableHandle tablePtr,
                 [MarshalAs(UnmanagedType.LPArray), In]SortDescriptorBuilder.Clause.Marshalable[] sortClauses, IntPtr clauseCount,
-                [MarshalAs(UnmanagedType.LPArray), In]IntPtr[] flattenedColumnIndices,
+                [MarshalAs(UnmanagedType.LPArray), In]IntPtr[] flattenedPropertyIndices,
                 out NativeException ex);
         }
 
@@ -496,10 +496,10 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public IntPtr FindDirect(IntPtr beginAtRow)
+        public IntPtr FindDirect(IntPtr beginAtRow, SharedRealmHandle sharedRealm)
         {
             NativeException nativeException;
-            var result = NativeMethods.findDirect(this, beginAtRow, out nativeException);
+            var result = NativeMethods.findDirect(this, beginAtRow, sharedRealm, out nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }

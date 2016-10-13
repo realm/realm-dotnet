@@ -427,11 +427,6 @@ namespace Realms
 
         private RealmObject CreateObject(string className, out RealmObject.Metadata metadata)
         {
-            if (!IsInTransaction)
-            {
-                throw new RealmOutsideTransactionException("Cannot create Realm object outside write transactions");
-            }
-
             if (!Metadata.TryGetValue(className, out metadata))
             {
                 throw new ArgumentException($"The class {className} is not in the limited set of classes for this realm");
@@ -439,9 +434,8 @@ namespace Realms
 
             var result = metadata.Helper.CreateInstance();
 
-            var objectPtr = NativeTable.AddEmptyRow(metadata.Table);
+            var objectPtr = NativeTable.AddEmptyRow(metadata.Table, SharedRealmHandle);
             var objectHandle = CreateObjectHandle(objectPtr, SharedRealmHandle);
-
             result._Manage(this, objectHandle, metadata);
             return result;
         }
@@ -499,7 +493,7 @@ namespace Realms
         /// </summary>
         /// <typeparam name="T">The Type T must not only be a RealmObject but also have been processed by the Fody weaver, so it has persistent properties.</typeparam>
         /// <param name="obj">Must be a standalone object, null not allowed.</param>
-        /// <exception cref="RealmOutsideTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
+        /// <exception cref="RealmInvalidTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
         /// <exception cref="RealmObjectAlreadyManagedByRealmException">You can't manage the same object twice. This exception is thrown, rather than silently detecting the mistake, to help you debug your code</exception>
         /// <exception cref="RealmObjectManagedByAnotherRealmException">You can't manage an object with more than one realm</exception>
         public void Manage<T>(T obj) where T : RealmObject
@@ -519,15 +513,10 @@ namespace Realms
                 throw new RealmObjectManagedByAnotherRealmException("Cannot start to manage an object with a realm when it's already managed by another realm");
             }
 
-            if (!IsInTransaction)
-            {
-                throw new RealmOutsideTransactionException("Cannot start managing a Realm object outside write transactions");
-            }
-
             var metadata = Metadata[typeof(T).Name];
             var tableHandle = metadata.Table;
 
-            var objectPtr = NativeTable.AddEmptyRow(tableHandle);
+            var objectPtr = NativeTable.AddEmptyRow(tableHandle, SharedRealmHandle);
             var objectHandle = CreateObjectHandle(objectPtr, SharedRealmHandle);
 
             obj._Manage(this, objectHandle, metadata);
@@ -718,7 +707,7 @@ namespace Realms
         {
             // TODO
             var metadata = Metadata[typeof(T).Name];
-            var rowPtr = NativeTable.RowForPrimaryKey(metadata.Table, metadata.PrimaryKeyColumnIndex, id);
+            var rowPtr = NativeTable.RowForPrimaryKey(SharedRealmHandle, metadata.Table, metadata.PrimaryKeyColumnIndex, id);
             if (rowPtr == IntPtr.Zero)
             {
                 return null;
@@ -737,7 +726,7 @@ namespace Realms
         public T ObjectForPrimaryKey<T>(string id) where T : RealmObject
         {
             var metadata = Metadata[typeof(T).Name];
-            var rowPtr = NativeTable.RowForPrimaryKey(metadata.Table, metadata.PrimaryKeyColumnIndex, id);
+            var rowPtr = NativeTable.RowForPrimaryKey(SharedRealmHandle, metadata.Table, metadata.PrimaryKeyColumnIndex, id);
             if (rowPtr == IntPtr.Zero)
             {
                 return null;
@@ -756,7 +745,7 @@ namespace Realms
         public RealmObject ObjectForPrimaryKey(string className, long id)
         {
             var metadata = Metadata[className];
-            var rowPtr = NativeTable.RowForPrimaryKey(metadata.Table, metadata.PrimaryKeyColumnIndex, id);
+            var rowPtr = NativeTable.RowForPrimaryKey(SharedRealmHandle, metadata.Table, metadata.PrimaryKeyColumnIndex, id);
             if (rowPtr == IntPtr.Zero)
             {
                 return null;
@@ -775,7 +764,7 @@ namespace Realms
         public RealmObject ObjectForPrimaryKey(string className, string id)
         {
             var metadata = Metadata[className];
-            var rowPtr = NativeTable.RowForPrimaryKey(metadata.Table, metadata.PrimaryKeyColumnIndex, id);
+            var rowPtr = NativeTable.RowForPrimaryKey(SharedRealmHandle, metadata.Table, metadata.PrimaryKeyColumnIndex, id);
             if (rowPtr == IntPtr.Zero)
             {
                 return null;
@@ -790,15 +779,10 @@ namespace Realms
         /// Removes a persistent object from this realm, effectively deleting it.
         /// </summary>
         /// <param name="obj">Must be an object persisted in this realm.</param>
-        /// <exception cref="RealmOutsideTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
+        /// <exception cref="RealmInvalidTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
         /// <exception cref="System.ArgumentNullException">If you invoke this with a standalone object.</exception>
         public void Remove(RealmObject obj)
         {
-            if (!IsInTransaction)
-            {
-                throw new RealmOutsideTransactionException("Cannot remove Realm object outside write transactions");
-            }
-
             NativeTable.RemoveRow(obj.ObjectHandle);
         }
 
@@ -812,11 +796,6 @@ namespace Realms
             if (range == null)
             {
                 throw new ArgumentNullException(nameof(range));
-            }
-
-            if (!IsInTransaction)
-            {
-                throw new RealmOutsideTransactionException("Cannot remove Realm objects outside write transactions");
             }
 
             range.ResultsHandle.Clear();
@@ -845,11 +824,6 @@ namespace Realms
         /// </summary>
         public void RemoveAll()
         {
-            if (!IsInTransaction)
-            {
-                throw new RealmOutsideTransactionException("Cannot remove all Realm objects outside write transactions");
-            }
-
             foreach (var metadata in Metadata.Values)
             {
                 var resultsHandle = MakeResultsForTable(metadata);

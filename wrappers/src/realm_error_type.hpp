@@ -70,7 +70,9 @@ namespace realm {
         RealmTableHasNoPrimaryKey = 22,
 
         RealmDuplicatePrimaryKeyValue = 23,
-
+        
+        RealmClosed = 24,
+        
         RealmDotNetExceptionDuringMigration = 30,
 
         StdArgumentOutOfRange = 100,

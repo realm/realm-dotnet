@@ -60,7 +60,11 @@ namespace Realms.Native
         public void AddClause(string columnName, bool @ascending)
         {
             var propertyIndex = _metadata.PropertyIndices[columnName];
-            _clauses.Add(new Clause { PropertyIndexChain = new List<IntPtr> { propertyIndex }, Ascending = @ascending });
+            _clauses.Add(new Clause
+            {
+                PropertyIndexChain = new List<IntPtr> { propertyIndex }, 
+                Ascending = @ascending 
+            });
         }
 
         /// <summary>

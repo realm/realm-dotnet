@@ -75,9 +75,6 @@
     <Compile Include="..\Realm.Shared\exceptions\RealmOutOfMemoryException.cs">
       <Link>Exceptions\RealmOutOfMemoryException.cs</Link>
     </Compile>
-    <Compile Include="..\Realm.Shared\exceptions\RealmOutsideTransactionException.cs">
-      <Link>Exceptions\RealmOutsideTransactionException.cs</Link>
-    </Compile>
     <Compile Include="..\Realm.Shared\exceptions\RealmPermissionDeniedException.cs">
       <Link>Exceptions\RealmPermissionDeniedException.cs</Link>
     </Compile>
@@ -119,6 +116,9 @@
       <Link>Exceptions\ManagedExceptionDuringMigrationException.cs</Link>
     </Compile>
     <Compile Include="MigrationPCL.cs" />
+    <Compile Include="..\Realm.Shared\Exceptions\RealmClosedException.cs">
+      <Link>Exceptions\RealmClosedException.cs</Link>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <Import Project="..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets" Condition="Exists('..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets')" />

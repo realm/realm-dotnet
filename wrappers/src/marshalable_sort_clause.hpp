@@ -20,6 +20,9 @@
 #define REALM_MARSHALABLE_SORT_CLAUSE_HPP
 
 #include <vector>
+#include "property.hpp"
+
+using namespace realm;
 
 struct MarshalableSortClause {
     size_t offset;
@@ -27,16 +30,23 @@ struct MarshalableSortClause {
     bool ascending;
 };
 
-inline void unflatten_sort_clauses(MarshalableSortClause* sort_clauses, size_t clause_count, size_t* flattened_column_indices, 
-    std::vector<std::vector<size_t>>& column_indices, std::vector<bool>& ascending)
+inline void unflatten_sort_clauses(MarshalableSortClause* sort_clauses, size_t clause_count, size_t* flattened_property_indices,
+                                   std::vector<std::vector<size_t>>& column_indices, std::vector<bool>& ascending, const std::vector<Property>& properties)
 {
     ascending.reserve(clause_count);
     column_indices.reserve(clause_count);
 
+    std::vector<size_t> current_indices;
     for(auto i = 0; i < clause_count; ++i) {
         ascending.push_back(sort_clauses[i].ascending);
-        column_indices.push_back(std::vector<size_t>(flattened_column_indices + sort_clauses[i].offset, 
-            flattened_column_indices + sort_clauses[i].offset + sort_clauses[i].count));
+        
+        current_indices.clear();
+        current_indices.reserve(sort_clauses[i].count);
+        for(auto j = sort_clauses[i].offset; j < sort_clauses[i].offset + sort_clauses[i].count; ++j) {
+            size_t column_index = properties[flattened_property_indices[j]].table_column;
+            current_indices.push_back(column_index);
+        }
+        column_indices.push_back(current_indices);
     }
 }
 

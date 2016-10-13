@@ -51,7 +51,11 @@ class RowDetachedException : public std::runtime_error {
 public:
     RowDetachedException() : std::runtime_error("Attempted to access detached row") {}
 };
-
+    
+class RealmClosedException : public std::runtime_error {
+public:
+    RealmClosedException() : std::runtime_error("This object belongs to a closed realm.") {}
+};
 
 class SetDuplicatePrimaryKeyValueException : public std::runtime_error {
 public:
