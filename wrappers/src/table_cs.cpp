@@ -332,7 +332,7 @@ REALM_EXPORT size_t table_get_nullable_timestamp_ticks(const Object* object_ptr,
     });
 }
 
-REALM_EXPORT void table_set_link(const Object* object_ptr, size_t property_ndx, size_t target_row_ndx, NativeException::Marshallable& ex)
+REALM_EXPORT void table_set_link(const Object* object_ptr, size_t property_ndx, const Object* target_object_ptr, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         if (object_ptr->realm()->is_closed())
@@ -344,7 +344,7 @@ REALM_EXPORT void table_set_link(const Object* object_ptr, size_t property_ndx, 
         object_ptr->realm()->verify_in_write();
         
         const size_t column_ndx = object_ptr->get_object_schema().persisted_properties[property_ndx].table_column;
-        object_ptr->row().set_link(column_ndx, target_row_ndx);
+        object_ptr->row().set_link(column_ndx, target_object_ptr->row().get_index());
     });
 }
 

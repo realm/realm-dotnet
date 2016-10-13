@@ -162,13 +162,13 @@ namespace Realms
                     throw new ArgumentOutOfRangeException();
                 }
 
-                var linkedRowPtr = _listHandle.Get((IntPtr)index);
+                var linkedRowPtr = _listHandle.Get((IntPtr)index, _realm.SharedRealmHandle);
                 return (T)_realm.MakeObjectForRow(_targetMetadata, linkedRowPtr);
             }
 
             set
             {
-                throw new NotImplementedException();
+                throw new NotSupportedException("Setting items directlye is not supported.");
             }
         }
 

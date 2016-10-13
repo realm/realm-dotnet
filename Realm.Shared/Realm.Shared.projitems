@@ -22,7 +22,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ReadOnlyCollectionExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Handles\QueryHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Handles\RealmHandle.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Handles\RowHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Handles\SharedRealmHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Handles\TableHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\ExpressionVisitor.cs" />
