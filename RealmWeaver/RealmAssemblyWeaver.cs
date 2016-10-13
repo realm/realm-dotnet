@@ -25,15 +25,14 @@ internal static class RealmAssemblyWeaver
 {
     internal static void PrepareRealmAssemblyForIos(AssemblyDefinition realmAssembly, IAssemblyResolver assemblyResolver)
     {
-        Debug.WriteLine("Adjusting Realm assembly: " + realmAssembly.MainModule.FullyQualifiedName);
-
         UpdateWrappersReference(realmAssembly, "__Internal");
 
-        var monotouchModule = assemblyResolver.Resolve("monotouch").MainModule;
+        var monotouchModule = assemblyResolver.Resolve("Xamarin.iOS").MainModule;
         var linkWithAttributeType = monotouchModule.GetTypes().First(t => t.Name == "LinkWithAttribute");
 
         var ctorDefinition = linkWithAttributeType.GetConstructors().Single(c => c.Parameters.Count == 1);
-        var ctorReference = monotouchModule.ImportReference(ctorDefinition);
+        var ctorReference = realmAssembly.MainModule.ImportReference(ctorDefinition);
+        realmAssembly.MainModule.ImportReference(ctorReference);
         var linkWithAttribute = new CustomAttribute(ctorReference);
         linkWithAttribute.ConstructorArguments.Add(new CustomAttributeArgument(monotouchModule.TypeSystem.String, "libwrappers.a"));
 
@@ -46,12 +45,13 @@ internal static class RealmAssemblyWeaver
 
         var callbackAttributeType = monotouchModule.GetTypes().Single(t => t.Name == "MonoPInvokeCallbackAttribute");
         var monoPInvokeCallbackConstructor = callbackAttributeType.GetConstructors().First();
+        var monoPInvokeCallbackConstructorRef = realmAssembly.MainModule.ImportReference(monoPInvokeCallbackConstructor);
 
         var classes = realmAssembly.MainModule.GetTypes();
         foreach (var method in classes.Select(c => c.Methods.Where(m => m.CustomAttributes.Any(a => a.AttributeType.Name == "NativeCallbackAttribute"))).SelectMany(methods => methods))
         {
             Debug.WriteLine("Method to apply callback to: " + method.Name);
-            var monoPInvokeCallbackAttribute = new CustomAttribute(monoPInvokeCallbackConstructor);
+            var monoPInvokeCallbackAttribute = new CustomAttribute(monoPInvokeCallbackConstructorRef);
             monoPInvokeCallbackAttribute.ConstructorArguments.Add(method.CustomAttributes.Single(a => a.AttributeType.Name == "NativeCallbackAttribute").ConstructorArguments[0]);
             method.CustomAttributes.Add(monoPInvokeCallbackAttribute);
         }
