@@ -30,8 +30,7 @@ namespace Realms.Dynamic
         private readonly RealmObject.Metadata _metadata;
 
         private static readonly FieldInfo RealmObjectRealmField = typeof(RealmObject).GetTypeInfo().GetField("_realm", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-        private static readonly FieldInfo RealmObjectRowHandleField = typeof(RealmObject).GetTypeInfo().GetField("_rowHandle", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-        private static readonly PropertyInfo RowHandleRowIndexProperty = typeof(RowHandle).GetTypeInfo().GetProperty("RowIndex", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+        private static readonly FieldInfo RealmObjectObjectHandleField = typeof(RealmObject).GetTypeInfo().GetField("_objectHandle", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 
         public MetaRealmObject(Expression expression, DynamicRealmObject value)
             : base(expression, BindingRestrictions.Empty, value)
@@ -50,9 +49,8 @@ namespace Realms.Dynamic
 
             var arguments = new List<Expression>
             {
-                WeakConstant(_metadata.Table),
-                Expression.Constant(_metadata.PropertyIndices[property.Name]),
-                Expression.Property(Expression.Field(GetLimitedSelf(), RealmObjectRowHandleField), RowHandleRowIndexProperty),
+                Expression.Field(GetLimitedSelf(), RealmObjectObjectHandleField),
+                Expression.Constant(_metadata.PropertyIndices[property.Name])
             };
 
             MethodInfo getter = null;
@@ -153,9 +151,8 @@ namespace Realms.Dynamic
 
             var arguments = new List<Expression>
             {
-                WeakConstant(_metadata.Table),
-                Expression.Constant(_metadata.PropertyIndices[property.Name]),
-                Expression.Property(Expression.Field(GetLimitedSelf(), RealmObjectRowHandleField), RowHandleRowIndexProperty),
+                Expression.Field(GetLimitedSelf(), RealmObjectObjectHandleField),
+                Expression.Constant(_metadata.PropertyIndices[property.Name])
             };
 
             MethodInfo setter = null;
