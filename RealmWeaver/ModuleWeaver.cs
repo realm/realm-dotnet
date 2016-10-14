@@ -152,6 +152,23 @@ public class ModuleWeaver
 
         _realmAssembly = AssemblyResolver.Resolve("Realm");  // Note that the assembly is Realm but the namespace Realms with the s
 
+        if (ModuleDefinition.AssemblyReferences.Any(r => r.Name == "Xamarin.iOS"))
+        {
+            RealmAssemblyWeaver.PrepareRealmAssemblyForIos(_realmAssembly, AssemblyResolver);
+        }
+        else if (ModuleDefinition.AssemblyReferences.Any(r => r.Name == "Xamarin.Mac"))
+        {
+            RealmAssemblyWeaver.PrepareRealmAssemblyForOsx(_realmAssembly);
+        }
+        else if (ModuleDefinition.AssemblyReferences.Any(r => r.Name == "Mono.Android"))
+        {
+            RealmAssemblyWeaver.PrepareRealmAssemblyForAndroid(_realmAssembly);
+        }
+        else
+        {
+            RealmAssemblyWeaver.PrepareRealmAssemblyForWindows(_realmAssembly);
+        }
+
         _realmObject = _realmAssembly.MainModule.GetTypes().First(x => x.Name == "RealmObject");
         _realmObjectIsManagedGetter = ModuleDefinition.ImportReference(_realmObject.Properties.Single(x => x.Name == "IsManaged").GetMethod);
 
@@ -197,10 +214,10 @@ public class ModuleWeaver
         var systemAssembly = AssemblyResolver.Resolve("System");
         var systemObjectModelAssembly = AssemblyResolver.Resolve("System.ObjectModel");
 
-        var propertyChangedEventArgs = LookupType("PropertyChangedEventArgs", systemObjectModelAssembly, systemAssembly);
+        var propertyChangedEventArgs = TypeHelpers.LookupType("PropertyChangedEventArgs", systemObjectModelAssembly, systemAssembly);
         _propChangedEventArgsConstructor = ModuleDefinition.ImportReference(propertyChangedEventArgs.GetConstructors().First());
 
-        var propChangedEventHandlerDefinition = LookupType("PropertyChangedEventHandler", systemObjectModelAssembly, systemAssembly);
+        var propChangedEventHandlerDefinition = TypeHelpers.LookupType("PropertyChangedEventHandler", systemObjectModelAssembly, systemAssembly);
         _propChangedEventHandlerReference = ModuleDefinition.ImportReference(propChangedEventHandlerDefinition);
         _propChangedEventHandlerInvokeReference = ModuleDefinition.ImportReference(propChangedEventHandlerDefinition.Methods.First(x => x.Name == "Invoke"));
 
@@ -309,7 +326,7 @@ public class ModuleWeaver
             columnName = (string)mapToAttribute.ConstructorArguments[0].Value;
         }
 
-        backingField = GetBackingField(prop);
+        backingField = TypeHelpers.GetBackingField(prop);
         var isIndexed = prop.CustomAttributes.Any(a => a.AttributeType.Name == "IndexedAttribute");
         if (isIndexed && (!_indexableTypes.Contains(prop.PropertyType.FullName)))
         {
@@ -363,7 +380,7 @@ public class ModuleWeaver
 
         // treat IList and RealmList similarly but IList gets a default so is useable as standalone
         // IList or RealmList allows people to declare lists only of _realmObject due to the class definition
-        else if (IsIList(prop))
+        else if (TypeHelpers.IsIList(prop))
         {
             var elementType = ((GenericInstanceType)prop.PropertyType).GenericArguments.Single();
             if (!elementType.Resolve().BaseType.IsSameAs(_realmObject))
@@ -397,7 +414,7 @@ public class ModuleWeaver
                 new GenericInstanceMethod(_genericGetListValueReference) { GenericArguments = { elementType } },
                              ModuleDefinition.ImportReference(concreteListConstructor));
         }
-        else if (IsRealmList(prop))
+        else if (TypeHelpers.IsRealmList(prop))
         {
             var elementType = ((GenericInstanceType)prop.PropertyType).GenericArguments.Single();
             if (prop.SetMethod != null)
@@ -461,46 +478,9 @@ public class ModuleWeaver
         return true;
     }
 
-    private static TypeDefinition LookupType(string typeName, params AssemblyDefinition[] assemblies)
-    {
-        if (typeName == null)
-        {
-            throw new ArgumentNullException(nameof(typeName));
-        }
-
-        if (assemblies.Length == 0)
-        {
-            throw new ArgumentException("One or more assemblies must be specified to look up type: " + typeName, nameof(assemblies));
-        }
-
-        foreach (var assembly in assemblies)
-        {
-            var type = assembly?.MainModule.Types.FirstOrDefault(x => x.Name == typeName);
-
-            if (type != null)
-            {
-                return type;
-            }
-        }
-
-        throw new ApplicationException("Unable to find type: " + typeName);
-    }
-
-    private static MethodDefinition LookupMethod(TypeDefinition typeDefinition, string methodName)
-    {
-        var method = typeDefinition.Methods.FirstOrDefault(x => x.Name == methodName);
-
-        if (method == null)
-        {
-            throw new ApplicationException("Unable to find method: " + methodName);
-        }
-
-        return method;
-    }
-
     private MethodReference LookupMethodAndImport(TypeDefinition typeDefinition, string methodName)
     {
-        return ModuleDefinition.ImportReference(LookupMethod(typeDefinition, methodName));
+        return ModuleDefinition.ImportReference(TypeHelpers.LookupMethod(typeDefinition, methodName));
     }
 
     private void ReplaceGetter(PropertyDefinition prop, string columnName, MethodReference getValueReference)
@@ -701,11 +681,6 @@ public class ModuleWeaver
                 throw new ArgumentNullException(nameof(_realmObjectIsManagedGetter));
             }
 
-            if (setValueReference == null)
-            {
-                throw new ArgumentNullException(nameof(setValueReference));
-            }
-
             if (_propChangedEventArgsConstructor == null)
             {
                 throw new ArgumentNullException(nameof(_propChangedEventArgsConstructor));
@@ -830,45 +805,6 @@ public class ModuleWeaver
         Debug.Write("[set] ");
     }
 
-    private static FieldReference GetBackingField(PropertyDefinition property)
-    {
-        return property.GetMethod.Body.Instructions
-            .Where(o => o.OpCode == OpCodes.Ldfld)
-            .Select(o => o.Operand)
-            .OfType<FieldReference>()
-            .SingleOrDefault();
-    }
-
-    private static bool IsIList(PropertyDefinition property)
-    {
-        return property.PropertyType.Name == "IList`1" && property.PropertyType.Namespace == "System.Collections.Generic";
-    }
-
-    private static bool IsRealmList(PropertyDefinition property)
-    {
-        return property.PropertyType.Name == "RealmList`1" && property.PropertyType.Namespace == "Realms";
-    }
-
-    private static bool IsDateTimeOffset(PropertyDefinition property)
-    {
-        return property.PropertyType.Name == "DateTimeOffset" && property.PropertyType.Namespace == "System";
-    }
-
-    private static bool IsNullable(PropertyDefinition property)
-    {
-        return property.PropertyType.Name.Contains("Nullable`1") && property.PropertyType.Namespace == "System";
-    }
-
-    private static bool IsSingle(PropertyDefinition property)
-    {
-        return property.PropertyType.Name == "Single" && property.PropertyType.Namespace == "System";
-    }
-
-    private static bool IsDouble(PropertyDefinition property)
-    {
-        return property.PropertyType.Name == "Double" && property.PropertyType.Namespace == "System";
-    }
-
     private MethodReference GetIListMethodReference(TypeDefinition interfaceType, string methodName, GenericInstanceType genericInstance)
     {
         MethodReference reference = null;
@@ -948,13 +884,13 @@ public class ModuleWeaver
             copyToRealm.Body.Variables.Add(new VariableDefinition(ModuleDefinition.ImportReference(realmObjectType)));
 
             byte currentStloc = 1;
-            if (properties.Any(p => IsDateTimeOffset(p.Key)))
+            if (properties.Any(p => TypeHelpers.IsDateTimeOffset(p.Key)))
             {
                 copyToRealm.Body.Variables.Add(new VariableDefinition(_system_DateTimeOffset));
                 currentStloc++;
             }
 
-            foreach (var kvp in properties.Where(kvp => IsIList(kvp.Key) || IsRealmList(kvp.Key)))
+            foreach (var kvp in properties.Where(kvp => TypeHelpers.IsIList(kvp.Key) || TypeHelpers.IsRealmList(kvp.Key)))
             {
                 copyToRealm.Body.Variables.Add(new VariableDefinition(ModuleDefinition.ImportReference(kvp.Value.FieldType)));
                 copyToRealm.Body.Variables.Add(new VariableDefinition(_system_Int32));
@@ -972,23 +908,23 @@ public class ModuleWeaver
 
                 if (property.SetMethod != null)
                 {
-                    if (!IsNullable(property))
+                    if (!TypeHelpers.IsNullable(property))
                     {
                         il.Append(il.Create(OpCodes.Ldloc_0));
                         il.Append(il.Create(OpCodes.Ldfld, field));
 
-                        if (IsDateTimeOffset(property))
+                        if (TypeHelpers.IsDateTimeOffset(property))
                         {
                             il.Append(il.Create(OpCodes.Ldloca_S, (byte)1));
                             il.Append(il.Create(OpCodes.Initobj, field.FieldType));
                             il.Append(il.Create(OpCodes.Ldloc_1));
                             il.Append(il.Create(OpCodes.Call, _system_DatetimeOffset_Op_Inequality));
                         }
-                        else if (IsSingle(property))
+                        else if (TypeHelpers.IsSingle(property))
                         {
                             il.Append(il.Create(OpCodes.Ldc_R4, 0f));
                         }
-                        else if (IsDouble(property))
+                        else if (TypeHelpers.IsDouble(property))
                         {
                             il.Append(il.Create(OpCodes.Ldc_R8, 0.0));
                         }
@@ -1003,9 +939,9 @@ public class ModuleWeaver
                     var label = il.Create(OpCodes.Nop);
                     il.Append(label);
 
-                    if (!IsNullable(property))
+                    if (!TypeHelpers.IsNullable(property))
                     {
-                        if (IsSingle(property) || IsDouble(property))
+                        if (TypeHelpers.IsSingle(property) || TypeHelpers.IsDouble(property))
                         {
                             il.Replace(jumpLabel, il.Create(OpCodes.Beq_S, label));
                         }
@@ -1015,7 +951,7 @@ public class ModuleWeaver
                         }
                     }
                 }
-                else if (IsIList(property) || IsRealmList(property))
+                else if (TypeHelpers.IsIList(property) || TypeHelpers.IsRealmList(property))
                 {
                     var propertyTypeDefinition = property.PropertyType.Resolve();
                     var genericType = (GenericInstanceType)property.PropertyType;
