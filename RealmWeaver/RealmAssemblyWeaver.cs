@@ -81,6 +81,9 @@ internal static class RealmAssemblyWeaver
 
     internal static void PrepareRealmAssemblyForAndroid(AssemblyDefinition realmAssembly)
     {
+        UpdateWrappersReference(realmAssembly, "wrappers");
+
+        realmAssembly.Write(realmAssembly.MainModule.FullyQualifiedName);
     }
 
     internal static void PrepareRealmAssemblyForWindows(AssemblyDefinition realmAssembly)
