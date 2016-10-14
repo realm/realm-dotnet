@@ -38,7 +38,7 @@ namespace Realms
         [NativeCallback(typeof(DebugLoggerCallback))]
         private static unsafe void DebugLogger(IntPtr utf8String, IntPtr stringLen)
         {
-            var message = new string((sbyte*)utf8String, 0 /* start offset */, (int)stringLen, Encoding.UTF8);
+            var message = new string((char*)utf8String, 0 /* start offset */, (int)stringLen/*, Encoding.UTF8*/);
             Console.WriteLine(message);
         }
 

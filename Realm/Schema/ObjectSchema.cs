@@ -96,7 +96,7 @@ namespace Realms.Schema
                 throw new ArgumentNullException(nameof(type));
             }
 
-            if (type.BaseType != typeof(RealmObject))
+            if (type.GetTypeInfo().BaseType != typeof(RealmObject))
             {
                 throw new ArgumentException($"The class {type.FullName} must descend directly from RealmObject");
             }

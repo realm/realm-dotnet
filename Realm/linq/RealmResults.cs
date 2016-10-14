@@ -253,14 +253,7 @@ namespace Realms
             var token = new NotificationTokenHandle(ResultsHandle);
             var tokenHandle = ResultsHandle.AddNotificationCallback(GCHandle.ToIntPtr(managedResultsHandle), RealmResultsNativeHelper.NotificationCallback);
 
-            RuntimeHelpers.PrepareConstrainedRegions();
-            try
-            {
-            }
-            finally
-            {
-                token.SetHandle(tokenHandle);
-            }
+            token.SetHandle(tokenHandle);
 
             _notificationToken = token;
         }

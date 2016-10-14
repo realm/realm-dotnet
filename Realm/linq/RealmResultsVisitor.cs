@@ -552,7 +552,7 @@ namespace Realms
                 {
                     fixed (byte* bufferPtr = (byte[])value)
                     {
-                        queryHandle.BinaryEqual(columnIndex, (IntPtr)bufferPtr, (IntPtr)buffer.LongLength);
+                        queryHandle.BinaryEqual(columnIndex, (IntPtr)bufferPtr, (IntPtr)buffer.LongCount());
                     }
                 }
             }
@@ -616,7 +616,7 @@ namespace Realms
                 {
                     fixed (byte* bufferPtr = (byte[])value)
                     {
-                        queryHandle.BinaryNotEqual(columnIndex, (IntPtr)bufferPtr, (IntPtr)buffer.LongLength);
+                        queryHandle.BinaryNotEqual(columnIndex, (IntPtr)bufferPtr, (IntPtr)buffer.LongCount());
                     }
                 }
             }
@@ -824,14 +824,7 @@ namespace Realms
             // a finalize at this point will not leak anything and the handle will not do anything
 
             // now, set the TableView handle...
-            RuntimeHelpers.PrepareConstrainedRegions(); // the following finally will run with no out-of-band exceptions
-            try
-            {
-            }
-            finally
-            {
-                queryHandle.SetHandle(NativeTable.Where(tableHandle));
-            } // at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
+            queryHandle.SetHandle(NativeTable.Where(tableHandle));
 
             return queryHandle;
         }

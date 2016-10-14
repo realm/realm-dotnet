@@ -90,15 +90,8 @@ namespace Realms
             var oldRealmHandle = new UnownedRealmHandle();
             var newRealmHandle = new UnownedRealmHandle();
 
-            RuntimeHelpers.PrepareConstrainedRegions();
-            try
-            {
-            }
-            finally
-            {
-                oldRealmHandle.SetHandle(oldRealmPtr);
-                newRealmHandle.SetHandle(newRealmPtr);
-            }
+            oldRealmHandle.SetHandle(oldRealmPtr);
+            newRealmHandle.SetHandle(newRealmPtr);
 
             var oldConfiguration = new RealmConfiguration(migration._configuration.DatabasePath) { SchemaVersion = schemaVersion, ReadOnly = true };
             var oldRealm = new Realm(oldRealmHandle, oldConfiguration, RealmSchema.CreateFromObjectStoreSchema(oldSchema));

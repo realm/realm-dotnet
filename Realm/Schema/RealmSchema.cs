@@ -22,8 +22,10 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics.Contracts;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Microsoft.Extensions.DependencyModel;
 using Realms.Schema;
 
 namespace Realms
@@ -98,6 +100,27 @@ namespace Realms
             return builder.Build();
         }
 
+        public static IEnumerable<Assembly> GetReferencingAssemblies(string assemblyName)
+        {
+            var assemblies = new List<Assembly>();
+            var dependencies = DependencyContext.Default.RuntimeLibraries;
+            foreach (var library in dependencies)
+            {
+                if (IsCandidateLibrary(library, assemblyName))
+                {
+                    var assembly = Assembly.Load(new AssemblyName(library.Name));
+                    assemblies.Add(assembly);
+                }
+            }
+            return assemblies;
+        }
+
+        private static bool IsCandidateLibrary(RuntimeLibrary library, string assemblyName)
+        {
+            return library.Name == (assemblyName)
+                || library.Dependencies.Any(d => d.Name.StartsWith(assemblyName));
+        }
+
         internal static RealmSchema CreateFromObjectStoreSchema(Native.Schema nativeSchema)
         {
             var objects = new ObjectSchema[nativeSchema.objects_len];
@@ -128,15 +151,15 @@ namespace Realms
 
         private static RealmSchema BuildDefaultSchema()
         {
-            var realmObjectClasses = AppDomain.CurrentDomain.GetAssemblies()
-                                              #if !__IOS__
-                                              // we need to exclude dynamic assemblies. see https://bugzilla.xamarin.com/show_bug.cgi?id=39679
-                                              .Where(a => !(a is System.Reflection.Emit.AssemblyBuilder))
-                                              #endif
+            var realmObjectClasses = GetReferencingAssemblies(typeof(Realm).AssemblyQualifiedName)
+                                              //#if !__IOS__
+                                              //// we need to exclude dynamic assemblies. see https://bugzilla.xamarin.com/show_bug.cgi?id=39679
+                                              //.Where(a => !(a is System.Reflection.Emit.AssemblyBuilder))
+                                              //#endif
                                               // exclude the Realm assembly
-                                              .Where(a => a != typeof(Realm).Assembly)
+                                              .Where(a => a.FullName != typeof(Realm).AssemblyQualifiedName)
                                               .SelectMany(a => a.GetTypes())
-                                              .Where(t => t.IsSubclassOf(typeof(RealmObject)));
+                                              .Where(t => t.GetTypeInfo().IsSubclassOf(typeof(RealmObject)));
 
             return CreateSchemaForClasses(realmObjectClasses);
         }

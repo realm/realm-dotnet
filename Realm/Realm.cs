@@ -22,7 +22,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Realms.Native;
@@ -88,7 +87,6 @@ namespace Realms
             return GetInstance(config, null);
         }
 
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         internal static Realm GetInstance(RealmConfiguration config, RealmSchema schema)
         {
             config = config ?? RealmConfiguration.DefaultConfiguration;
@@ -132,15 +130,7 @@ namespace Realms
                 throw new AggregateException("Exception occurred in a Realm migration callback. See inner exception for more details.", migration?.MigrationException);
             }
 
-            RuntimeHelpers.PrepareConstrainedRegions();
-            try
-            {
-                /* Retain handle in a constrained execution region */
-            }
-            finally
-            {
-                srHandle.SetHandle(srPtr);
-            }
+            srHandle.SetHandle(srPtr);
 
             return new Realm(srHandle, config, schema);
         }
@@ -173,7 +163,7 @@ namespace Realms
 
             if (schema.Type != null && !Config.Dynamic)
             {
-                var wovenAtt = schema.Type.GetCustomAttribute<WovenAttribute>();
+                var wovenAtt = schema.Type.GetTypeInfo().GetCustomAttribute<WovenAttribute>();
                 if (wovenAtt == null)
                 {
                     throw new RealmException($"Fody not properly installed. {schema.Type.FullName} is a RealmObject but has not been woven.");
@@ -366,22 +356,13 @@ namespace Realms
             }
         }
 
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         private TableHandle GetTable(Schema.ObjectSchema schema)
         {
             var result = new TableHandle();
             var tableName = schema.Name;
 
-            RuntimeHelpers.PrepareConstrainedRegions();
-            try
-            {
-                /* Retain handle in a constrained execution region */
-            }
-            finally
-            {
-                var tablePtr = SharedRealmHandle.GetTable(tableName);
-                result.SetHandle(tablePtr);
-            }
+            var tablePtr = SharedRealmHandle.GetTable(tableName);
+            result.SetHandle(tablePtr);
 
             return result;
         }
@@ -529,38 +510,20 @@ namespace Realms
             obj._CopyDataFromBackingFieldsToRow();
         }
 
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         internal static ResultsHandle CreateResultsHandle(IntPtr resultsPtr)
         {
             var resultsHandle = new ResultsHandle();
 
-            RuntimeHelpers.PrepareConstrainedRegions();
-            try
-            {
-                /* Retain handle in a constrained execution region */
-            }
-            finally
-            {
-                resultsHandle.SetHandle(resultsPtr);
-            }
+            resultsHandle.SetHandle(resultsPtr);
 
             return resultsHandle;
         }
 
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         internal static RowHandle CreateRowHandle(IntPtr rowPtr, SharedRealmHandle sharedRealmHandle)
         {
             var rowHandle = new RowHandle(sharedRealmHandle);
 
-            RuntimeHelpers.PrepareConstrainedRegions();
-            try
-            {
-                /* Retain handle in a constrained execution region */
-            }
-            finally
-            {
-                rowHandle.SetHandle(rowPtr);
-            }
+            rowHandle.SetHandle(rowPtr);
 
             return rowHandle;
         }

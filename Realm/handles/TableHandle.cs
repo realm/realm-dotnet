@@ -79,14 +79,7 @@ namespace Realms
             // a finalize at this point will not leak anything and the handle will not do anything
 
             // now, set the TableView handle...
-            RuntimeHelpers.PrepareConstrainedRegions(); // the following finally will run with no out-of-band exceptions
-            try
-            {
-            }
-            finally
-            {
-                queryHandle.SetHandle(NativeTable.Where(this));
-            } // at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
+            queryHandle.SetHandle(NativeTable.Where(this));
 
             return queryHandle;
         }
@@ -101,14 +94,7 @@ namespace Realms
             // a finalize at this point will not leak anything and the handle will not do anything
 
             // now, set the TableView handle...
-            RuntimeHelpers.PrepareConstrainedRegions(); // the following finally will run with no out-of-band exceptions
-            try
-            {
-            }
-            finally
-            {
-                listHandle.SetHandle(NativeTable.GetLinklist(this, columnIndex, rowIndex));
-            } // at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
+            listHandle.SetHandle(NativeTable.GetLinklist(this, columnIndex, rowIndex));
             return listHandle;
         }
     }

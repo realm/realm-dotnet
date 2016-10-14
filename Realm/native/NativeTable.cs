@@ -19,6 +19,7 @@
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Realms.Native;
 
@@ -445,7 +446,7 @@ namespace Realms
             {
                 fixed (byte* buffer = value)
                 {
-                    set_binary(tableHandle, columnIndex, rowIndex, (IntPtr)buffer, (IntPtr)value.LongLength, out nativeException);
+                    set_binary(tableHandle, columnIndex, rowIndex, (IntPtr)buffer, (IntPtr)value.LongCount(), out nativeException);
                 }
             }
 

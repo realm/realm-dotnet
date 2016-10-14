@@ -20,8 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Runtime.ConstrainedExecution;
-using System.Security.Permissions;
+using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 
 // Replaces IntPtr as a handle to a c++ realm class
@@ -50,10 +49,10 @@ using Microsoft.Win32.SafeHandles;
 
 namespace Realms
 {
-    [SecurityPermission(SecurityAction.InheritanceDemand, UnmanagedCode = true)]
-    [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
-    internal abstract class RealmHandle : SafeHandleZeroOrMinusOneIsInvalid
+    internal abstract class RealmHandle : SafeHandle
     {
+        public override bool IsInvalid => handle == IntPtr.Zero;
+
         // Every handle can potentially have an unbind list
         // If the unbind list is instantiated, this handle is a handle for a root object
         // and the unbind list will get filled with handles from finalizer threads
@@ -127,7 +126,7 @@ namespace Realms
         // we expect to be in the user thread always in a constructor.
         // therefore we take the opportunity to clear root's unbindlist when we set our root to point to it
         [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
-        internal RealmHandle(RealmHandle root) : base(true)
+        internal RealmHandle(RealmHandle root) : base(IntPtr.Zero, true)
         {
             if (root == null) // if we are a root object, we need a list for our children and Root is already null
             {
@@ -209,10 +208,14 @@ namespace Realms
         }
 
         [SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands"), SuppressMessage("Microsoft.Security", "CA2122:DoNotIndirectlyExposeMethodsWithLinkDemands")]
-        [ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
-        protected RealmHandle() : base(true)
+        protected RealmHandle() : base(IntPtr.Zero, true)
         {
             _unbindList = GetUnbindList(); // we are a root object, we need a list for our children
+        }
+
+        public void Close()
+        {
+            Dispose(true);
         }
 
         // called automatically but only once from criticalhandle when this handle is disposing or finalizing

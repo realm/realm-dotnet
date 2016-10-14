@@ -19,6 +19,7 @@
 using System.Dynamic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Realms.Dynamic
 {
@@ -36,7 +37,7 @@ namespace Realms.Dynamic
                 limitedSelf = Expression.Convert(limitedSelf, LimitType);
             }
 
-            var indexer = LimitType.GetProperty("Item");
+            var indexer = LimitType.GetTypeInfo().GetProperty("Item");
             Expression expression = Expression.Call(limitedSelf, indexer.GetGetMethod(), indexes.Select(i => i.Expression));
             if (binder.ReturnType != expression.Type)
             {

@@ -250,7 +250,7 @@ namespace Realms.Dynamic
                     break;
             }
 
-            if (property.IsNullable && argumentType.IsValueType)
+            if (property.IsNullable && argumentType.GetTypeInfo().IsValueType)
             {
                 argumentType = typeof(Nullable<>).MakeGenericType(argumentType);
             }
@@ -294,12 +294,12 @@ namespace Realms.Dynamic
             return convertedExpression;
         }
 
-        private static MethodInfo GetGetMethod<TResult>(Func<TableHandle, IntPtr, IntPtr, TResult> @delegate) => @delegate.Method;
+        private static MethodInfo GetGetMethod<TResult>(Func<TableHandle, IntPtr, IntPtr, TResult> @delegate) => @delegate.GetMethodInfo();
 
-        private static MethodInfo GetGetMethod<TResult>(Func<Realm, TableHandle, IntPtr, IntPtr, string, TResult> @delegate) => @delegate.Method;
+        private static MethodInfo GetGetMethod<TResult>(Func<Realm, TableHandle, IntPtr, IntPtr, string, TResult> @delegate) => @delegate.GetMethodInfo();
 
-        private static MethodInfo GetSetMethod<TValue>(Action<TableHandle, IntPtr, IntPtr, TValue> @delegate) => @delegate.Method;
+        private static MethodInfo GetSetMethod<TValue>(Action<TableHandle, IntPtr, IntPtr, TValue> @delegate) => @delegate.GetMethodInfo();
 
-        private static MethodInfo GetSetMethod<TValue>(Action<Realm, TableHandle, IntPtr, IntPtr, TValue> @delegate) => @delegate.Method;
+        private static MethodInfo GetSetMethod<TValue>(Action<Realm, TableHandle, IntPtr, IntPtr, TValue> @delegate) => @delegate.GetMethodInfo();
     }
 }

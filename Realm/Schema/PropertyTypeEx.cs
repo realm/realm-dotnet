@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
+using System.Reflection;
 
 namespace Realms.Schema
 {
@@ -73,14 +74,14 @@ namespace Realms.Schema
                 return PropertyType.Data;
             }
 
-            if (type.BaseType == typeof(RealmObject))
+            if (type.GetTypeInfo().BaseType == typeof(RealmObject))
             {
                 isNullable = true;
                 innerType = type;
                 return PropertyType.Object;
             }
 
-            if (type.IsGenericType)
+            if (type.GetTypeInfo().IsGenericType)
             {
                 var definition = type.GetGenericTypeDefinition();
                 if (definition == typeof(IList<>) || definition == typeof(RealmList<>))

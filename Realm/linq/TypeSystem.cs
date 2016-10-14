@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace Realms
 {
@@ -32,7 +33,7 @@ namespace Realms
                 return seqType;
             }
 
-            return ienum.GetGenericArguments()[0];
+            return ienum.GetTypeInfo().GetGenericArguments()[0];
         }
 
         private static Type FindIEnumerable(Type seqType)
@@ -47,7 +48,7 @@ namespace Realms
                 return typeof(IEnumerable<>).MakeGenericType(seqType.GetElementType());
             }
 
-            if (seqType.IsGenericType)
+            if (seqType.GetTypeInfo().IsGenericType)
             {
                 foreach (Type arg in seqType.GetGenericArguments())
                 {
@@ -72,9 +73,9 @@ namespace Realms
                 }
             }
 
-            if (seqType.BaseType != null && seqType.BaseType != typeof(object))
+            if (seqType.GetTypeInfo().BaseType != null && seqType.GetTypeInfo().BaseType != typeof(object))
             {
-                return FindIEnumerable(seqType.BaseType);
+                return FindIEnumerable(seqType.GetTypeInfo().BaseType);
             }
 
             return null;
