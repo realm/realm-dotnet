@@ -66,7 +66,7 @@
     <ClCompile Include="src\realm-csharp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\row_cs.cpp">
+    <ClCompile Include="src\object_cs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\shared_realm_cs.cpp">
@@ -270,6 +270,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\schema_cs.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\object_cs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
