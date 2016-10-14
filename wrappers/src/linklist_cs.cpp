@@ -30,21 +30,21 @@ using namespace realm::binding;
 
 extern "C" {
   
-REALM_EXPORT void linklist_add(SharedLinkViewRef* linklist_ptr, size_t row_ndx, NativeException::Marshallable& ex)
+REALM_EXPORT void linklist_add(SharedLinkViewRef* linklist_ptr, const Object& object_ptr, NativeException::Marshallable& ex)
 {
-  handle_errors(ex, [&]() {
-    (**linklist_ptr)->add(row_ndx);
-  });
+    handle_errors(ex, [&]() {
+        (**linklist_ptr)->add(object_ptr.row().get_index());
+    });
 }
 
-REALM_EXPORT void linklist_insert(SharedLinkViewRef* linklist_ptr, size_t link_ndx, size_t row_ndx, NativeException::Marshallable& ex)
+REALM_EXPORT void linklist_insert(SharedLinkViewRef* linklist_ptr, size_t link_ndx, const Object& object_ptr, NativeException::Marshallable& ex)
 {
-  handle_errors(ex, [&]() {
-    const size_t count = (**linklist_ptr)->size();
-    if (link_ndx >= count)
-      throw IndexOutOfRangeException("Insert into RealmList", link_ndx, count);
-    (**linklist_ptr)->insert(link_ndx, row_ndx);
-  });
+    handle_errors(ex, [&]() {
+        const size_t count = (**linklist_ptr)->size();
+        if (link_ndx >= count)
+            throw IndexOutOfRangeException("Insert into RealmList", link_ndx, count);
+        (**linklist_ptr)->insert(link_ndx, object_ptr.row().get_index());
+    });
 }
 
 REALM_EXPORT Object* linklist_get(SharedLinkViewRef* linklist_ptr, SharedRealm* realm, size_t link_ndx, NativeException::Marshallable& ex)
@@ -60,30 +60,29 @@ REALM_EXPORT Object* linklist_get(SharedLinkViewRef* linklist_ptr, SharedRealm* 
     });
 }
 
-REALM_EXPORT size_t linklist_find(SharedLinkViewRef* linklist_ptr, size_t row_ndx, size_t start_from, NativeException::Marshallable& ex)
+REALM_EXPORT size_t linklist_find(SharedLinkViewRef* linklist_ptr, const Object& object_ptr, size_t start_from, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-        return (**linklist_ptr)->find(row_ndx, start_from);
+        return (**linklist_ptr)->find(object_ptr.row().get_index(), start_from);
     });
 }
 
 REALM_EXPORT void linklist_erase(SharedLinkViewRef* linklist_ptr, size_t link_ndx, NativeException::Marshallable& ex)
 {
-  handle_errors(ex, [&]() {
-    const size_t count = (**linklist_ptr)->size();
-    if (link_ndx >= count)
-      throw IndexOutOfRangeException("Erase item in RealmList", link_ndx, count);
-    _impl::LinkListFriend::do_remove(***linklist_ptr,  link_ndx);
-  });
+    handle_errors(ex, [&]() {
+        const size_t count = (**linklist_ptr)->size();
+        if (link_ndx >= count)
+            throw IndexOutOfRangeException("Erase item in RealmList", link_ndx, count);
+        _impl::LinkListFriend::do_remove(***linklist_ptr,  link_ndx);
+    });
 }
 
 REALM_EXPORT void linklist_clear(SharedLinkViewRef* linklist_ptr, NativeException::Marshallable& ex)
 {
-  handle_errors(ex, [&]() {
-    (**linklist_ptr)->clear();
-  });
+    handle_errors(ex, [&]() {
+        (**linklist_ptr)->clear();
+    });
 }
-
 
 REALM_EXPORT size_t linklist_size(SharedLinkViewRef* linklist_ptr, NativeException::Marshallable& ex)
 {
@@ -91,7 +90,6 @@ REALM_EXPORT size_t linklist_size(SharedLinkViewRef* linklist_ptr, NativeExcepti
         return (**linklist_ptr)->size();
     });
 }
-
   
 REALM_EXPORT void linklist_destroy(SharedLinkViewRef* linklist_ptr)
 {

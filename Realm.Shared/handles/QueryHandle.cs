@@ -168,6 +168,9 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_find", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr findDirect(QueryHandle queryHandle, IntPtr beginAtIndex, SharedRealmHandle realmHandle, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_find_next", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr findNext(QueryHandle queryHandle, ObjectHandle previousObject, SharedRealmHandle realmHandle, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_get_column_index", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_column_index(QueryHandle queryPtr,
                         [MarshalAs(UnmanagedType.LPWStr)] string columnName, IntPtr columnNameLen, out NativeException ex);
@@ -496,10 +499,23 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public IntPtr FindDirect(IntPtr beginAtIndex, SharedRealmHandle sharedRealm)
+        public IntPtr FindNext(SharedRealmHandle sharedRealm, ObjectHandle afterObject)
+        {
+            if (afterObject == null)
+            {
+                return FindDirect(sharedRealm);
+            }
+
+            NativeException nativeException;
+            var result = NativeMethods.findNext(this, afterObject, sharedRealm, out nativeException);
+            nativeException.ThrowIfNecessary();
+            return result;
+        }
+
+        public IntPtr FindDirect(SharedRealmHandle sharedRealm, IntPtr? beginAtIndex = null)
         {
             NativeException nativeException;
-            var result = NativeMethods.findDirect(this, beginAtIndex, sharedRealm, out nativeException);
+            var result = NativeMethods.findDirect(this, beginAtIndex ?? IntPtr.Zero, sharedRealm, out nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }

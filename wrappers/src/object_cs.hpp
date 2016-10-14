@@ -19,27 +19,27 @@
 #include "object_accessor.hpp"
 
 namespace realm {
-    inline void verify_can_get(const Object* object_ptr) {
-        if (object_ptr->realm()->is_closed())
+    inline void verify_can_get(const Object& object_ptr) {
+        if (object_ptr.realm()->is_closed())
             throw RealmClosedException();
         
-        if (!object_ptr->is_valid())
+        if (!object_ptr.is_valid())
             throw RowDetachedException();
         
-        object_ptr->realm()->verify_thread();
+        object_ptr.realm()->verify_thread();
     }
     
-    inline void verify_can_set(const Object* object_ptr) {
-        if (object_ptr->realm()->is_closed())
+    inline void verify_can_set(const Object& object_ptr) {
+        if (object_ptr.realm()->is_closed())
             throw RealmClosedException();
         
-        if (!object_ptr->is_valid())
+        if (!object_ptr.is_valid())
             throw RowDetachedException();
         
-        object_ptr->realm()->verify_in_write();
+        object_ptr.realm()->verify_in_write();
     }
     
-    inline size_t get_column_index(const Object* object_ptr, size_t property_index) {
-        return object_ptr->get_object_schema().persisted_properties[property_index].table_column;
+    inline size_t get_column_index(const Object& object_ptr, size_t property_index) {
+        return object_ptr.get_object_schema().persisted_properties[property_index].table_column;
     }
 }

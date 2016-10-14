@@ -26,13 +26,13 @@ namespace Realms
         private static class NativeMethods
         {
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "linklist_add", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void add(LinkListHandle linklistHandle, IntPtr row_ndx, out NativeException ex);
+            public static extern void add(LinkListHandle linklistHandle, ObjectHandle objectHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "linklist_insert", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void insert(LinkListHandle linklistHandle, IntPtr link_ndx, IntPtr row_ndx, out NativeException ex);
+            public static extern void insert(LinkListHandle linklistHandle, IntPtr targetIndex, ObjectHandle objectHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "linklist_erase", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void erase(LinkListHandle linklistHandle, IntPtr row_ndx, out NativeException ex);
+            public static extern void erase(LinkListHandle linklistHandle, IntPtr rowIndex, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "linklist_clear", CallingConvention = CallingConvention.Cdecl)]
             public static extern void clear(LinkListHandle linklistHandle, out NativeException ex);
@@ -41,7 +41,7 @@ namespace Realms
             public static extern IntPtr get(LinkListHandle linklistHandle, SharedRealmHandle realmHandle, IntPtr link_ndx, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "linklist_find", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr find(LinkListHandle linklistHandle, IntPtr link_ndx, IntPtr start_from, out NativeException ex);
+            public static extern IntPtr find(LinkListHandle linklistHandle, ObjectHandle objectHandle, IntPtr start_from, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "linklist_size", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr size(LinkListHandle linklistHandle, out NativeException ex);
@@ -59,17 +59,17 @@ namespace Realms
             NativeMethods.destroy(handle);
         }
 
-        public void Add(IntPtr rowIndex)
+        public void Add(ObjectHandle objectHandle)
         {
             NativeException nativeException;
-            NativeMethods.add(this, rowIndex, out nativeException);
+            NativeMethods.add(this, objectHandle, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public void Insert(IntPtr linkIndex, IntPtr rowIndex)
+        public void Insert(IntPtr targetIndex, ObjectHandle objectHandle)
         {
             NativeException nativeException;
-            NativeMethods.insert(this, linkIndex, rowIndex, out nativeException);
+            NativeMethods.insert(this, targetIndex, objectHandle, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
@@ -95,10 +95,10 @@ namespace Realms
             return result;
         }
 
-        public IntPtr Find(IntPtr linkIndex, IntPtr startFrom)
+        public IntPtr Find(ObjectHandle objectHandle, IntPtr startFrom)
         {
             NativeException nativeException;
-            var result = NativeMethods.find(this, linkIndex, startFrom, out nativeException);
+            var result = NativeMethods.find(this, objectHandle, startFrom, out nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
