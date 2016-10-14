@@ -16,8 +16,16 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-using System.Reflection;
-using System.Runtime.CompilerServices;
+using System;
+using System.Diagnostics;
 
-[assembly: AssemblyTitle("Realm.XamarinAndroid")]
-[assembly: InternalsVisibleTo("IntegrationTests.XamarinAndroid")]
+namespace Realms
+{
+    /// <summary>
+    /// Per-platform utility functions. A copy of this file exists in each platform project such as Realm.Win32.
+    /// </summary>
+    internal static class InteropConfig
+    {
+        public const string DLL_NAME = "**Error: realm.dll was not woven properly.";
+    }
+}

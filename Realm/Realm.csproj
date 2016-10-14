@@ -1,0 +1,137 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{9135528A-DD95-4EB0-9C48-29D15ECBBC31}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Realm</RootNamespace>
+    <AssemblyName>Realm</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="DotNetCross.Memory.Unsafe, Version=0.2.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\DotNetCross.Memory.Unsafe.0.2.3.4\lib\netstandard1.0\DotNetCross.Memory.Unsafe.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Remotion.Linq, Version=2.1.0.0, Culture=neutral, PublicKeyToken=fee00910d6e5f53b, processorArchitecture=MSIL">
+      <HintPath>..\packages\Remotion.Linq.2.1.1\lib\net45\Remotion.Linq.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Attributes.cs" />
+    <Compile Include="Dynamic\DynamicRealmObject.cs" />
+    <Compile Include="Dynamic\DynamicRealmObjectHelper.cs" />
+    <Compile Include="Dynamic\MetaRealmList.cs" />
+    <Compile Include="Dynamic\MetaRealmObject.cs" />
+    <Compile Include="exceptions\ManagedExceptionDuringMigrationException.cs" />
+    <Compile Include="exceptions\RealmClassLacksPrimaryKeyException.cs" />
+    <Compile Include="exceptions\RealmClosedException.cs" />
+    <Compile Include="exceptions\RealmDecryptionFailedException.cs" />
+    <Compile Include="exceptions\RealmDuplicatePrimaryKeyValueException.cs" />
+    <Compile Include="exceptions\RealmException.cs" />
+    <Compile Include="exceptions\RealmExceptionCodes.cs" />
+    <Compile Include="exceptions\RealmFileAccessErrorException.cs" />
+    <Compile Include="exceptions\RealmFileExistsException.cs" />
+    <Compile Include="exceptions\RealmFileNotFoundException.cs" />
+    <Compile Include="exceptions\RealmInvalidDatabaseException.cs" />
+    <Compile Include="exceptions\RealmInvalidObjectException.cs" />
+    <Compile Include="exceptions\RealmInvalidTransactionException.cs" />
+    <Compile Include="exceptions\RealmMigrationNeededException.cs" />
+    <Compile Include="exceptions\RealmMismatchedConfigException.cs" />
+    <Compile Include="exceptions\RealmObjectAlreadyManagedByRealmException.cs" />
+    <Compile Include="exceptions\RealmObjectManagedByAnotherRealmException.cs" />
+    <Compile Include="exceptions\RealmOutOfMemoryException.cs" />
+    <Compile Include="exceptions\RealmOutsideTransactionException.cs" />
+    <Compile Include="exceptions\RealmPermissionDeniedException.cs" />
+    <Compile Include="extensions\ReadOnlyCollectionExtensions.cs" />
+    <Compile Include="extensions\RealmResultsCollectionChanged.cs" />
+    <Compile Include="handles\LinkListHandle.cs" />
+    <Compile Include="handles\NotificationTokenHandle.cs" />
+    <Compile Include="handles\QueryHandle.cs" />
+    <Compile Include="handles\RealmHandle.cs" />
+    <Compile Include="handles\ResultsHandle.cs" />
+    <Compile Include="handles\RowHandle.cs" />
+    <Compile Include="handles\SharedRealmHandle.cs" />
+    <Compile Include="handles\TableHandle.cs" />
+    <Compile Include="handles\UnownedRealmHandle.cs" />
+    <Compile Include="InteropConfig.cs" />
+    <Compile Include="linq\ExpressionVisitor.cs" />
+    <Compile Include="linq\IRealmResults.cs" />
+    <Compile Include="linq\RealmResults.cs" />
+    <Compile Include="linq\RealmResultsEnumerator.cs" />
+    <Compile Include="linq\RealmResultsNativeHelper.cs" />
+    <Compile Include="linq\RealmResultsProvider.cs" />
+    <Compile Include="linq\RealmResultsVisitor.cs" />
+    <Compile Include="linq\TypeSystem.cs" />
+    <Compile Include="MarshalHelpers.cs" />
+    <Compile Include="Migration.cs" />
+    <Compile Include="native\Configuration.cs" />
+    <Compile Include="native\MarshaledVector.cs" />
+    <Compile Include="native\NativeCallbackAttribute.cs" />
+    <Compile Include="native\NativeCommon.cs" />
+    <Compile Include="native\NativeException.cs" />
+    <Compile Include="native\NativeTable.cs" />
+    <Compile Include="native\PtrTo.cs" />
+    <Compile Include="native\Schema.cs" />
+    <Compile Include="native\SchemaObject.cs" />
+    <Compile Include="native\SchemaProperty.cs" />
+    <Compile Include="native\SortDescriptorBuilder.cs" />
+    <Compile Include="PreserveAttribute.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Realm.cs" />
+    <Compile Include="RealmConfiguration.cs" />
+    <Compile Include="RealmList.cs" />
+    <Compile Include="RealmObject.cs" />
+    <Compile Include="RealmObjectOps.cs" />
+    <Compile Include="Schema\ObjectSchema.cs" />
+    <Compile Include="Schema\Property.cs" />
+    <Compile Include="Schema\PropertyType.cs" />
+    <Compile Include="Schema\PropertyTypeEx.cs" />
+    <Compile Include="Schema\RealmSchema.cs" />
+    <Compile Include="Transaction.cs" />
+    <Compile Include="weaving\IRealmObjectHelper.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
