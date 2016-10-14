@@ -81,9 +81,6 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="InteropConfig.cs" />
-    <Compile Include="libwrappers.linkwith.cs">
-      <DependentUpon>libwrappers.a</DependentUpon>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ObjcBindingApiDefinition Include="ApiDefinition.cs" />
@@ -93,16 +90,6 @@
   <!-- Instead of including macro inline, which seems unreliably to work only on load, use a conditional so absolute paths are selected
      <ObjcBindingNativeLibrary Include="..\wrappers\build\$(Configuration)-ios-universal\libwrappers.a">
  -->
-  <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <ObjcBindingNativeLibrary Include="..\wrappers\build\Debug-ios-universal\libwrappers.a">
-      <Link>libwrappers.a</Link>
-    </ObjcBindingNativeLibrary>
-  </ItemGroup>
-  <ItemGroup Condition=" '$(Configuration)' == 'Release' ">
-    <ObjcBindingNativeLibrary Include="..\wrappers\build\Release-ios-universal\libwrappers.a">
-      <Link>libwrappers.a</Link>
-    </ObjcBindingNativeLibrary>
-  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\RealmWeaver\RealmWeaver.Fody.csproj">
       <Project>{C3578A7B-09A6-4444-9383-0DEAFA4958BD}</Project>
@@ -111,6 +98,18 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(Configuration)' == 'Release' ">
+    <None Include="..\wrappers\build\Release-ios-universal\libwrappers.a">
+      <Link>libwrappers.a</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <None Include="..\wrappers\build\Debug-ios-universal\libwrappers.a">
+      <Link>libwrappers.a</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets" Condition="Exists('..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets')" />
 </Project>

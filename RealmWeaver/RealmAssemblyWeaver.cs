@@ -16,6 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Diagnostics;
 using System.Linq;
 using Mono.Cecil;
@@ -27,34 +28,49 @@ internal static class RealmAssemblyWeaver
     {
         UpdateWrappersReference(realmAssembly, "__Internal");
 
-        var monotouchModule = assemblyResolver.Resolve("Xamarin.iOS").MainModule;
-        var linkWithAttributeType = monotouchModule.GetTypes().First(t => t.Name == "LinkWithAttribute");
+        var iOSModule = assemblyResolver.Resolve("Xamarin.iOS").MainModule;
+        var linkWithAttributeType = iOSModule.GetTypes().First(t => t.Name == "LinkWithAttribute");
 
-        var ctorDefinition = linkWithAttributeType.GetConstructors().Single(c => c.Parameters.Count == 1);
+        var ctorDefinition = linkWithAttributeType.GetConstructors().Single(c => c.Parameters.Count == 3);
         var ctorReference = realmAssembly.MainModule.ImportReference(ctorDefinition);
         realmAssembly.MainModule.ImportReference(ctorReference);
         var linkWithAttribute = new CustomAttribute(ctorReference);
-        linkWithAttribute.ConstructorArguments.Add(new CustomAttributeArgument(monotouchModule.TypeSystem.String, "libwrappers.a"));
+        linkWithAttribute.ConstructorArguments.Add(new CustomAttributeArgument(iOSModule.TypeSystem.String, "libwrappers.a"));
 
-        // var linkTargetDefinition = monotouchModule.GetTypes().Single(t => t.Name == "LinkTarget");
-        // linkWithAttribute.ConstructorArguments.Add(new CustomAttributeArgument(linkTargetType, linkTargetValue));
-        // linkWithAttribute.ConstructorArguments.Add(new CustomAttributeArgument(monotouchModule.TypeSystem.String, "-lstdc++ -lz"));
+        var linkTargetDefinition = iOSModule.GetTypes().Single(t => t.Name == "LinkTarget");
+        var linkTargetType = iOSModule.ImportReference(linkTargetDefinition);
+
+        var linkTargetValue = 0;
+        foreach (var platform in new[] { "ArmV7", "ArmV7s", "Arm64", "Simulator", "Simulator64" })
+        {
+            linkTargetValue |= (int)linkTargetDefinition.Fields.Single(f => f.Name == platform).Constant;
+        }
+
+        linkWithAttribute.ConstructorArguments.Add(new CustomAttributeArgument(iOSModule.TypeSystem.Int32, linkTargetValue));
+        linkWithAttribute.ConstructorArguments.Add(new CustomAttributeArgument(iOSModule.TypeSystem.String, "-lstdc++ -lz"));
+
         // TODO: linkWith.SmartLink = true
 
         realmAssembly.CustomAttributes.Add(linkWithAttribute);
 
-        var callbackAttributeType = monotouchModule.GetTypes().Single(t => t.Name == "MonoPInvokeCallbackAttribute");
+        var callbackAttributeType = iOSModule.GetTypes().Single(t => t.Name == "MonoPInvokeCallbackAttribute");
         var monoPInvokeCallbackConstructor = callbackAttributeType.GetConstructors().First();
         var monoPInvokeCallbackConstructorRef = realmAssembly.MainModule.ImportReference(monoPInvokeCallbackConstructor);
 
         var classes = realmAssembly.MainModule.GetTypes();
         foreach (var method in classes.Select(c => c.Methods.Where(m => m.CustomAttributes.Any(a => a.AttributeType.Name == "NativeCallbackAttribute"))).SelectMany(methods => methods))
         {
-            Debug.WriteLine("Method to apply callback to: " + method.Name);
             var monoPInvokeCallbackAttribute = new CustomAttribute(monoPInvokeCallbackConstructorRef);
             monoPInvokeCallbackAttribute.ConstructorArguments.Add(method.CustomAttributes.Single(a => a.AttributeType.Name == "NativeCallbackAttribute").ConstructorArguments[0]);
             method.CustomAttributes.Add(monoPInvokeCallbackAttribute);
         }
+
+        var outputFolder = System.IO.Path.GetDirectoryName(realmAssembly.MainModule.FullyQualifiedName);
+        var wrappersPath = System.IO.Path.Combine(outputFolder, "libwrappers.a");
+
+        var wrappersLibBinary = System.IO.File.ReadAllBytes(wrappersPath);
+        var wrappersLib = new EmbeddedResource("libwrappers.a", ManifestResourceAttributes.Public, wrappersLibBinary);
+        realmAssembly.MainModule.Resources.Add(wrappersLib);
 
         realmAssembly.Write(realmAssembly.MainModule.FullyQualifiedName);
     }
