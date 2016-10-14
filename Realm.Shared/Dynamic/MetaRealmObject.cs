@@ -33,8 +33,6 @@ namespace Realms.Dynamic
         private static readonly FieldInfo RealmObjectRealmField = typeof(RealmObject).GetTypeInfo().GetField("_realm", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
         private static readonly FieldInfo RealmObjectObjectHandleField = typeof(RealmObject).GetTypeInfo().GetField("_objectHandle", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 
-        private static readonly ConcurrentDictionary<string, MethodInfo> ObjectHandleAccessors = new ConcurrentDictionary<string, MethodInfo>();
-
         private static readonly ObjectHandle dummyHandle = new ObjectHandle(null);
 
         public MetaRealmObject(Expression expression, DynamicRealmObject value)
@@ -292,11 +290,6 @@ namespace Realms.Dynamic
             }
 
             return convertedExpression;
-        }
-
-        private static MethodInfo GetObjectHandleMethod(string methodName)
-        {
-            return ObjectHandleAccessors.GetOrAdd(methodName, typeof(ObjectHandle).GetMethod);
         }
 
         private static MethodInfo GetGetMethod<TResult>(Func<IntPtr, TResult> @delegate) => @delegate.Method;
