@@ -54,9 +54,9 @@ REALM_EXPORT Object* linklist_get(SharedLinkViewRef* linklist_ptr, SharedRealm* 
         if (link_ndx >= count)
             throw IndexOutOfRangeException("Get from RealmList", link_ndx, count);
         auto rowExpr = (**linklist_ptr)->get(link_ndx);
-        StringData object_name = ObjectStore::object_type_for_table_name((**linklist_ptr)->get_target_table().get_name());
-        auto object_schema = realm->get()->schema().find(object_name);
-        return new Object(*realm, *object_schema, *new Row(rowExpr));
+        const std::string object_name(ObjectStore::object_type_for_table_name((**linklist_ptr)->get_target_table().get_name()));
+        auto& object_schema = *realm->get()->schema().find(object_name);
+        return new Object(*realm, object_schema, Row(rowExpr));
     });
 }
 

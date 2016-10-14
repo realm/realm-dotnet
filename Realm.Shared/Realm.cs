@@ -193,15 +193,10 @@ namespace Realms
 
             // build up column index in a loop so can spot and cache primary key index on the way
             var initPropertyMap = new Dictionary<string, IntPtr>();
-            var initPrimaryKeyIndex = -1;
             var propertyIndex = -1;
             foreach (var prop in schema)
             {
                 initPropertyMap[prop.Name] = (IntPtr)(++propertyIndex);
-                if (prop.IsPrimaryKey)
-                {
-                    initPrimaryKeyIndex = propertyIndex;
-                }
             }
 
             return new RealmObject.Metadata
@@ -209,7 +204,6 @@ namespace Realms
                 Table = table,
                 Helper = helper,
                 PropertyIndices = initPropertyMap,
-                PrimaryKeyColumnIndex = initPrimaryKeyIndex,
                 Schema = schema
             };
         }
@@ -434,28 +428,28 @@ namespace Realms
 
             var result = metadata.Helper.CreateInstance();
 
-            var objectPtr = NativeTable.AddEmptyRow(metadata.Table, SharedRealmHandle);
+            var objectPtr = metadata.Table.AddEmptyObject(SharedRealmHandle);
             var objectHandle = CreateObjectHandle(objectPtr, SharedRealmHandle);
             result._Manage(this, objectHandle, metadata);
             return result;
         }
 
-        internal RealmObject MakeObjectForRow(RealmObject.Metadata metadata, IntPtr objectPtr)
+        internal RealmObject MakeObject(RealmObject.Metadata metadata, IntPtr objectPtr)
         {
-            return MakeObjectForRow(metadata, CreateObjectHandle(objectPtr, SharedRealmHandle));
+            return MakeObject(metadata, CreateObjectHandle(objectPtr, SharedRealmHandle));
         }
 
-        internal RealmObject MakeObjectForRow(string className, IntPtr objectPtr)
+        internal RealmObject MakeObject(string className, IntPtr objectPtr)
         {
-            return MakeObjectForRow(Metadata[className], CreateObjectHandle(objectPtr, SharedRealmHandle));
+            return MakeObject(Metadata[className], CreateObjectHandle(objectPtr, SharedRealmHandle));
         }
 
-        internal RealmObject MakeObjectForRow(string className, ObjectHandle objectHandle)
+        internal RealmObject MakeObject(string className, ObjectHandle objectHandle)
         {
-            return MakeObjectForRow(Metadata[className], objectHandle);
+            return MakeObject(Metadata[className], objectHandle);
         }
 
-        internal RealmObject MakeObjectForRow(RealmObject.Metadata metadata, ObjectHandle objectHandle)
+        internal RealmObject MakeObject(RealmObject.Metadata metadata, ObjectHandle objectHandle)
         {
             var ret = metadata.Helper.CreateInstance();
             ret._Manage(this, objectHandle, metadata);
@@ -464,7 +458,7 @@ namespace Realms
 
         internal ResultsHandle MakeResultsForTable(RealmObject.Metadata metadata)
         {
-            var resultsPtr = NativeTable.CreateResults(metadata.Table, SharedRealmHandle);
+            var resultsPtr = metadata.Table.CreateResults(SharedRealmHandle);
             return CreateResultsHandle(resultsPtr);
         }
 
@@ -516,11 +510,11 @@ namespace Realms
             var metadata = Metadata[typeof(T).Name];
             var tableHandle = metadata.Table;
 
-            var objectPtr = NativeTable.AddEmptyRow(tableHandle, SharedRealmHandle);
+            var objectPtr = metadata.Table.AddEmptyObject(SharedRealmHandle);
             var objectHandle = CreateObjectHandle(objectPtr, SharedRealmHandle);
 
             obj._Manage(this, objectHandle, metadata);
-            obj._CopyDataFromBackingFieldsToRow();
+            obj._CopyDataFromBackingFields();
         }
 
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
@@ -705,15 +699,14 @@ namespace Realms
         /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class T lacks an [PrimaryKey].</exception>
         public T ObjectForPrimaryKey<T>(long id) where T : RealmObject
         {
-            // TODO
             var metadata = Metadata[typeof(T).Name];
-            var rowPtr = NativeTable.RowForPrimaryKey(SharedRealmHandle, metadata.Table, metadata.PrimaryKeyColumnIndex, id);
-            if (rowPtr == IntPtr.Zero)
+            var objectPtr = metadata.Table.ObjectForPrimaryKey(SharedRealmHandle, id);
+            if (objectPtr == IntPtr.Zero)
             {
                 return null;
             }
 
-            return (T)MakeObjectForRow(metadata, rowPtr);
+            return (T)MakeObject(metadata, objectPtr);
         }
 
         /// <summary>
@@ -726,13 +719,13 @@ namespace Realms
         public T ObjectForPrimaryKey<T>(string id) where T : RealmObject
         {
             var metadata = Metadata[typeof(T).Name];
-            var rowPtr = NativeTable.RowForPrimaryKey(SharedRealmHandle, metadata.Table, metadata.PrimaryKeyColumnIndex, id);
-            if (rowPtr == IntPtr.Zero)
+            var objectPtr = metadata.Table.ObjectForPrimaryKey(SharedRealmHandle, id);
+            if (objectPtr == IntPtr.Zero)
             {
                 return null;
             }
 
-            return (T)MakeObjectForRow(metadata, rowPtr);
+            return (T)MakeObject(metadata, objectPtr);
         }
 
         /// <summary>
@@ -745,13 +738,13 @@ namespace Realms
         public RealmObject ObjectForPrimaryKey(string className, long id)
         {
             var metadata = Metadata[className];
-            var rowPtr = NativeTable.RowForPrimaryKey(SharedRealmHandle, metadata.Table, metadata.PrimaryKeyColumnIndex, id);
-            if (rowPtr == IntPtr.Zero)
+            var objectPtr = metadata.Table.ObjectForPrimaryKey(SharedRealmHandle, id);
+            if (objectPtr == IntPtr.Zero)
             {
                 return null;
             }
 
-            return MakeObjectForRow(metadata, rowPtr);
+            return MakeObject(metadata, objectPtr);
         }
 
         /// <summary>
@@ -764,13 +757,13 @@ namespace Realms
         public RealmObject ObjectForPrimaryKey(string className, string id)
         {
             var metadata = Metadata[className];
-            var rowPtr = NativeTable.RowForPrimaryKey(SharedRealmHandle, metadata.Table, metadata.PrimaryKeyColumnIndex, id);
-            if (rowPtr == IntPtr.Zero)
+            var objectPtr = metadata.Table.ObjectForPrimaryKey(SharedRealmHandle, id);
+            if (objectPtr == IntPtr.Zero)
             {
                 return null;
             }
 
-            return MakeObjectForRow(metadata, rowPtr);
+            return MakeObject(metadata, objectPtr);
         }
 
         #endregion ObjectForPrimaryKey
@@ -783,7 +776,7 @@ namespace Realms
         /// <exception cref="System.ArgumentNullException">If you invoke this with a standalone object.</exception>
         public void Remove(RealmObject obj)
         {
-            NativeTable.RemoveRow(obj.ObjectHandle);
+            obj.ObjectHandle.RemoveFromRealm();
         }
 
         /// <summary>

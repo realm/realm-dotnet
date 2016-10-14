@@ -265,7 +265,7 @@ namespace IntegrationTests
         }
 
         [Test]
-        public void IsValidReturnsTrueWhenObjectRowIsAttached()
+        public void IsValidReturnsTrueWhenObjectIsAttached()
         {
             _realm.Write(() =>
             {

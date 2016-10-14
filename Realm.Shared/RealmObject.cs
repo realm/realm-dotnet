@@ -77,12 +77,10 @@ namespace Realms
 
             internal Dictionary<string, IntPtr> PropertyIndices;
 
-            internal int PrimaryKeyColumnIndex;
-
             internal Schema.ObjectSchema Schema;
         }
 
-        internal void _CopyDataFromBackingFieldsToRow()
+        internal void _CopyDataFromBackingFields()
         {
             Debug.Assert(IsManaged, "Can't copy from unmanaged object.");
             _metadata.Helper.CopyToRealm(this);
@@ -94,133 +92,133 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return NativeTable.GetString(_objectHandle, _metadata.PropertyIndices[propertyName]);
+            return _objectHandle.GetString(_metadata.PropertyIndices[propertyName]);
         }
 
         protected char GetCharValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return (char)NativeTable.GetInt64(_objectHandle, _metadata.PropertyIndices[propertyName]);
+            return (char)_objectHandle.GetInt64(_metadata.PropertyIndices[propertyName]);
         }
 
         protected char? GetNullableCharValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return (char?)NativeTable.GetNullableInt64(_objectHandle, _metadata.PropertyIndices[propertyName]);
+            return (char?)_objectHandle.GetNullableInt64(_metadata.PropertyIndices[propertyName]);
         }
 
         protected byte GetByteValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return (byte)NativeTable.GetInt64(_objectHandle, _metadata.PropertyIndices[propertyName]);
+            return (byte)_objectHandle.GetInt64(_metadata.PropertyIndices[propertyName]);
         }
 
         protected byte? GetNullableByteValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return (byte?)NativeTable.GetNullableInt64(_objectHandle, _metadata.PropertyIndices[propertyName]);
+            return (byte?)_objectHandle.GetNullableInt64(_metadata.PropertyIndices[propertyName]);
         }
 
         protected short GetInt16Value(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return (short)NativeTable.GetInt64(_objectHandle, _metadata.PropertyIndices[propertyName]);
+            return (short)_objectHandle.GetInt64(_metadata.PropertyIndices[propertyName]);
         }
 
         protected short? GetNullableInt16Value(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return (short?)NativeTable.GetNullableInt64(_objectHandle, _metadata.PropertyIndices[propertyName]);
+            return (short?)_objectHandle.GetNullableInt64(_metadata.PropertyIndices[propertyName]);
         }
 
         protected int GetInt32Value(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return (int)NativeTable.GetInt64(_objectHandle, _metadata.PropertyIndices[propertyName]);
+            return (int)_objectHandle.GetInt64(_metadata.PropertyIndices[propertyName]);
         }
 
         protected int? GetNullableInt32Value(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return (int?)NativeTable.GetNullableInt64(_objectHandle, _metadata.PropertyIndices[propertyName]);
+            return (int?)_objectHandle.GetNullableInt64(_metadata.PropertyIndices[propertyName]);
         }
 
         protected long GetInt64Value(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return NativeTable.GetInt64(_objectHandle, _metadata.PropertyIndices[propertyName]);
+            return _objectHandle.GetInt64(_metadata.PropertyIndices[propertyName]);
         }
 
         protected long? GetNullableInt64Value(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return NativeTable.GetNullableInt64(_objectHandle, _metadata.PropertyIndices[propertyName]);
+            return _objectHandle.GetNullableInt64(_metadata.PropertyIndices[propertyName]);
         }
 
         protected float GetSingleValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return NativeTable.GetSingle(_objectHandle, _metadata.PropertyIndices[propertyName]);
+            return _objectHandle.GetSingle(_metadata.PropertyIndices[propertyName]);
         }
 
         protected float? GetNullableSingleValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return NativeTable.GetNullableSingle(_objectHandle, _metadata.PropertyIndices[propertyName]);
+            return _objectHandle.GetNullableSingle(_metadata.PropertyIndices[propertyName]);
         }
 
         protected double GetDoubleValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return NativeTable.GetDouble(_objectHandle, _metadata.PropertyIndices[propertyName]);
+            return _objectHandle.GetDouble(_metadata.PropertyIndices[propertyName]);
         }
 
         protected double? GetNullableDoubleValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return NativeTable.GetNullableDouble(_objectHandle, _metadata.PropertyIndices[propertyName]);
+            return _objectHandle.GetNullableDouble(_metadata.PropertyIndices[propertyName]);
         }
 
         protected bool GetBooleanValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return NativeTable.GetBoolean(_objectHandle, _metadata.PropertyIndices[propertyName]);
+            return _objectHandle.GetBoolean(_metadata.PropertyIndices[propertyName]);
         }
 
         protected bool? GetNullableBooleanValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return NativeTable.GetNullableBoolean(_objectHandle, _metadata.PropertyIndices[propertyName]);
+            return _objectHandle.GetNullableBoolean(_metadata.PropertyIndices[propertyName]);
         }
 
         protected DateTimeOffset GetDateTimeOffsetValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return NativeTable.GetDateTimeOffset(_objectHandle, _metadata.PropertyIndices[propertyName]);
+            return _objectHandle.GetDateTimeOffset(_metadata.PropertyIndices[propertyName]);
         }
 
         protected DateTimeOffset? GetNullableDateTimeOffsetValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return NativeTable.GetNullableDateTimeOffset(_objectHandle, _metadata.PropertyIndices[propertyName]);
+            return _objectHandle.GetNullableDateTimeOffset(_metadata.PropertyIndices[propertyName]);
         }
 
         protected IList<T> GetListValue<T>(string propertyName) where T : RealmObject
@@ -239,8 +237,8 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            var linkedRowPtr = NativeTable.GetLink(_objectHandle, _metadata.PropertyIndices[propertyName]);
-            if (linkedRowPtr == IntPtr.Zero)
+            var linkedObjectPtr = _objectHandle.GetLink(_metadata.PropertyIndices[propertyName]);
+            if (linkedObjectPtr == IntPtr.Zero)
             {
                 return null;
             }
@@ -248,14 +246,14 @@ namespace Realms
             Schema.Property property;
             _metadata.Schema.TryFindProperty(propertyName, out property);
             var objectType = property.ObjectType;
-            return (T)_realm.MakeObjectForRow(objectType, linkedRowPtr);
+            return (T)_realm.MakeObject(objectType, linkedObjectPtr);
         }
 
         protected byte[] GetByteArrayValue(string propertyName)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            return NativeTable.GetByteArray(_objectHandle, _metadata.PropertyIndices[propertyName]);
+            return _objectHandle.GetByteArray(_metadata.PropertyIndices[propertyName]);
         }
 
         #endregion
@@ -266,175 +264,175 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            NativeTable.SetString(_objectHandle, _metadata.PropertyIndices[propertyName], value);
+            _objectHandle.SetString(_metadata.PropertyIndices[propertyName], value);
         }
 
         protected void SetStringValueUnique(string propertyName, string value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            NativeTable.SetStringUnique(_objectHandle, _metadata.PropertyIndices[propertyName], value);
+            _objectHandle.SetStringUnique(_metadata.PropertyIndices[propertyName], value);
         }
 
         protected void SetCharValue(string propertyName, char value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            NativeTable.SetNullableInt64(_objectHandle, _metadata.PropertyIndices[propertyName], value);
+            _objectHandle.SetNullableInt64(_metadata.PropertyIndices[propertyName], value);
         }
 
         protected void SetCharValueUnique(string propertyName, char value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            NativeTable.SetInt64Unique(_objectHandle, _metadata.PropertyIndices[propertyName], value);
+            _objectHandle.SetInt64Unique(_metadata.PropertyIndices[propertyName], value);
         }
 
         protected void SetNullableCharValue(string propertyName, char? value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            NativeTable.SetNullableInt64(_objectHandle, _metadata.PropertyIndices[propertyName], value);
+            _objectHandle.SetNullableInt64(_metadata.PropertyIndices[propertyName], value);
         }
 
         protected void SetByteValue(string propertyName, byte value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            NativeTable.SetNullableInt64(_objectHandle, _metadata.PropertyIndices[propertyName], value);
+            _objectHandle.SetNullableInt64(_metadata.PropertyIndices[propertyName], value);
         }
 
         protected void SetByteValueUnique(string propertyName, byte value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            NativeTable.SetInt64Unique(_objectHandle, _metadata.PropertyIndices[propertyName], value);
+            _objectHandle.SetInt64Unique(_metadata.PropertyIndices[propertyName], value);
         }
 
         protected void SetNullableByteValue(string propertyName, byte? value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            NativeTable.SetNullableInt64(_objectHandle, _metadata.PropertyIndices[propertyName], value);
+            _objectHandle.SetNullableInt64(_metadata.PropertyIndices[propertyName], value);
         }
 
         protected void SetInt16Value(string propertyName, short value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            NativeTable.SetNullableInt64(_objectHandle, _metadata.PropertyIndices[propertyName], value);
+            _objectHandle.SetNullableInt64(_metadata.PropertyIndices[propertyName], value);
         }
 
         protected void SetInt16ValueUnique(string propertyName, short value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            NativeTable.SetInt64Unique(_objectHandle, _metadata.PropertyIndices[propertyName], value);
+            _objectHandle.SetInt64Unique(_metadata.PropertyIndices[propertyName], value);
         }
 
         protected void SetNullableInt16Value(string propertyName, short? value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            NativeTable.SetNullableInt64(_objectHandle, _metadata.PropertyIndices[propertyName], value);
+            _objectHandle.SetNullableInt64(_metadata.PropertyIndices[propertyName], value);
         }
 
         protected void SetInt32Value(string propertyName, int value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            NativeTable.SetNullableInt64(_objectHandle, _metadata.PropertyIndices[propertyName], value);
+            _objectHandle.SetNullableInt64(_metadata.PropertyIndices[propertyName], value);
         }
 
         protected void SetInt32ValueUnique(string propertyName, int value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            NativeTable.SetInt64Unique(_objectHandle, _metadata.PropertyIndices[propertyName], value);
+            _objectHandle.SetInt64Unique(_metadata.PropertyIndices[propertyName], value);
         }
 
         protected void SetNullableInt32Value(string propertyName, int? value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            NativeTable.SetNullableInt64(_objectHandle, _metadata.PropertyIndices[propertyName], value);
+            _objectHandle.SetNullableInt64(_metadata.PropertyIndices[propertyName], value);
         }
 
         protected void SetInt64Value(string propertyName, long value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            NativeTable.SetNullableInt64(_objectHandle, _metadata.PropertyIndices[propertyName], value);
+            _objectHandle.SetNullableInt64(_metadata.PropertyIndices[propertyName], value);
         }
 
         protected void SetInt64ValueUnique(string propertyName, long value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            NativeTable.SetInt64Unique(_objectHandle, _metadata.PropertyIndices[propertyName], value);
+            _objectHandle.SetInt64Unique(_metadata.PropertyIndices[propertyName], value);
         }
 
         protected void SetNullableInt64Value(string propertyName, long? value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            NativeTable.SetNullableInt64(_objectHandle, _metadata.PropertyIndices[propertyName], value);
+            _objectHandle.SetNullableInt64(_metadata.PropertyIndices[propertyName], value);
         }
 
         protected void SetSingleValue(string propertyName, float value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            NativeTable.SetSingle(_objectHandle, _metadata.PropertyIndices[propertyName], value);
+            _objectHandle.SetSingle(_metadata.PropertyIndices[propertyName], value);
         }
 
         protected void SetNullableSingleValue(string propertyName, float? value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            NativeTable.SetNullableSingle(_objectHandle, _metadata.PropertyIndices[propertyName], value);
+            _objectHandle.SetNullableSingle(_metadata.PropertyIndices[propertyName], value);
         }
 
         protected void SetDoubleValue(string propertyName, double value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            NativeTable.SetDouble(_objectHandle, _metadata.PropertyIndices[propertyName], value);
+            _objectHandle.SetDouble(_metadata.PropertyIndices[propertyName], value);
         }
 
         protected void SetNullableDoubleValue(string propertyName, double? value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            NativeTable.SetNullableDouble(_objectHandle, _metadata.PropertyIndices[propertyName], value);
+            _objectHandle.SetNullableDouble(_metadata.PropertyIndices[propertyName], value);
         }
 
         protected void SetBooleanValue(string propertyName, bool value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            NativeTable.SetBoolean(_objectHandle, _metadata.PropertyIndices[propertyName], value);
+            _objectHandle.SetBoolean(_metadata.PropertyIndices[propertyName], value);
         }
 
         protected void SetNullableBooleanValue(string propertyName, bool? value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            NativeTable.SetNullableBoolean(_objectHandle, _metadata.PropertyIndices[propertyName], value);
+            _objectHandle.SetNullableBoolean(_metadata.PropertyIndices[propertyName], value);
         }
 
         protected void SetDateTimeOffsetValue(string propertyName, DateTimeOffset value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            NativeTable.SetDateTimeOffset(_objectHandle, _metadata.PropertyIndices[propertyName], value);
+            _objectHandle.SetDateTimeOffset(_metadata.PropertyIndices[propertyName], value);
         }
 
         protected void SetNullableDateTimeOffsetValue(string propertyName, DateTimeOffset? value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            NativeTable.SetNullableDateTimeOffset(_objectHandle, _metadata.PropertyIndices[propertyName], value);
+            _objectHandle.SetNullableDateTimeOffset(_metadata.PropertyIndices[propertyName], value);
         }
 
         // Originally a generic fallback, now used only for RealmObject To-One relationship properties
@@ -445,7 +443,7 @@ namespace Realms
 
             if (value == null)
             {
-                NativeTable.ClearLink(_objectHandle, _metadata.PropertyIndices[propertyName]);
+                _objectHandle.ClearLink(_metadata.PropertyIndices[propertyName]);
             }
             else
             {
@@ -454,7 +452,7 @@ namespace Realms
                     _realm.Manage(value);
                 }
 
-                NativeTable.SetLink(_objectHandle, _metadata.PropertyIndices[propertyName], value.ObjectHandle);
+                _objectHandle.SetLink(_metadata.PropertyIndices[propertyName], value.ObjectHandle);
             }
         }
 
@@ -462,7 +460,7 @@ namespace Realms
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
-            NativeTable.SetByteArray(_objectHandle, _metadata.PropertyIndices[propertyName], value);
+            _objectHandle.SetByteArray(_metadata.PropertyIndices[propertyName], value);
         }
 
         #endregion

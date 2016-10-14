@@ -133,22 +133,22 @@ namespace Realms
 
             var index = (int)argument;
 
-            ObjectHandle row;
+            ObjectHandle obj;
             if (OptionalSortDescriptorBuilder == null)
             {
                 var objectPtr = CoreQueryHandle.FindDirect((IntPtr)index, _realm.SharedRealmHandle);
-                row = Realm.CreateObjectHandle(objectPtr, _realm.SharedRealmHandle);
+                obj = Realm.CreateObjectHandle(objectPtr, _realm.SharedRealmHandle);
             }
             else
             {
-                using (ResultsHandle rh = _realm.MakeResultsForQuery(CoreQueryHandle, OptionalSortDescriptorBuilder))
+                using (var rh = _realm.MakeResultsForQuery(CoreQueryHandle, OptionalSortDescriptorBuilder))
                 {
                     var objectPtr = rh.GetObject(index);
-                    row = Realm.CreateObjectHandle(objectPtr, _realm.SharedRealmHandle);
+                    obj = Realm.CreateObjectHandle(objectPtr, _realm.SharedRealmHandle);
                 }
             }
 
-            return row;
+            return obj;
         }
 
         internal override Expression VisitMethodCall(MethodCallExpression m)
@@ -208,22 +208,22 @@ namespace Realms
                 if (m.Method.Name.StartsWith(nameof(Queryable.First)))
                 {
                     RecurseToWhereOrRunLambda(m);
-                    var firstRowPtr = IntPtr.Zero;
+                    var firstObjectPtr = IntPtr.Zero;
                     if (OptionalSortDescriptorBuilder == null)
                     {
-                        firstRowPtr = CoreQueryHandle.FindDirect(IntPtr.Zero, _realm.SharedRealmHandle);
+                        firstObjectPtr = CoreQueryHandle.FindDirect(IntPtr.Zero, _realm.SharedRealmHandle);
                     }
                     else
                     {
                         using (ResultsHandle rh = _realm.MakeResultsForQuery(CoreQueryHandle, OptionalSortDescriptorBuilder))
                         {
-                            firstRowPtr = rh.GetObject(0);
+                            firstObjectPtr = rh.GetObject(0);
                         }
                     }
 
-                    if (firstRowPtr != IntPtr.Zero)
+                    if (firstObjectPtr != IntPtr.Zero)
                     {
-                        return Expression.Constant(_realm.MakeObjectForRow(_metadata, firstRowPtr));
+                        return Expression.Constant(_realm.MakeObject(_metadata, firstObjectPtr));
                     }
 
                     if (m.Method.Name == nameof(Queryable.First))
@@ -242,8 +242,8 @@ namespace Realms
                                 if (m.Method.Name == nameof(Queryable.DefaultIfEmpty))
                                 {
                                     RecurseToWhereOrRunLambda(m);
-                                    IntPtr firstRowPtr = _coreQueryHandle.FindDirect(IntPtr.Zero);
-                                    if (firstRowPtr != IntPtr.Zero)
+                                    IntPtr firstObjectPtr = _coreQueryHandle.FindDirect(IntPtr.Zero);
+                                    if (firstObjectPtr != IntPtr.Zero)
                                         return m;  // as if just a "Where"
                                     var innerType = m.Type.GetGenericArguments()[0];
                                     var listType = typeof(List<>).MakeGenericType(innerType);
@@ -255,8 +255,8 @@ namespace Realms
                 if (m.Method.Name.StartsWith(nameof(Queryable.Single)))  // same as unsorted First with extra checks
                 {
                     RecurseToWhereOrRunLambda(m);
-                    var firstRowPtr = CoreQueryHandle.FindDirect(IntPtr.Zero, _realm.SharedRealmHandle);
-                    if (firstRowPtr == IntPtr.Zero)
+                    var firstObjectPtr = CoreQueryHandle.FindDirect(IntPtr.Zero, _realm.SharedRealmHandle);
+                    if (firstObjectPtr == IntPtr.Zero)
                     {
                         if (m.Method.Name == nameof(Queryable.Single))
                         {
@@ -267,34 +267,34 @@ namespace Realms
                         return Expression.Constant(null);
                     }
 
-                    var firstRow = Realm.CreateObjectHandle(firstRowPtr, _realm.SharedRealmHandle);
-                    var nextIndex = firstRow.RowIndex + 1;
-                    var nextRowPtr = CoreQueryHandle.FindDirect(nextIndex, _realm.SharedRealmHandle);
-                    if (nextRowPtr != IntPtr.Zero)
+                    var firstObject = Realm.CreateObjectHandle(firstObjectPtr, _realm.SharedRealmHandle);
+                    var nextIndex = firstObject.RowIndex + 1;
+                    var nextObjectPtr = CoreQueryHandle.FindDirect(nextIndex, _realm.SharedRealmHandle);
+                    if (nextObjectPtr != IntPtr.Zero)
                     {
                         throw new InvalidOperationException("Sequence contains more than one matching element");
                     }
 
-                    return Expression.Constant(_realm.MakeObjectForRow(_metadata, firstRow));
+                    return Expression.Constant(_realm.MakeObject(_metadata, firstObject));
                 }
 
                 if (m.Method.Name.StartsWith(nameof(Queryable.Last)))
                 {
                     RecurseToWhereOrRunLambda(m);
 
-                    var lastRowPtr = IntPtr.Zero;
+                    var lastObjectPtr = IntPtr.Zero;
                     using (ResultsHandle rh = _realm.MakeResultsForQuery(CoreQueryHandle, OptionalSortDescriptorBuilder))
                     {
                         var lastIndex = rh.Count() - 1;
                         if (lastIndex >= 0)
                         {
-                            lastRowPtr = rh.GetObject(lastIndex);
+                            lastObjectPtr = rh.GetObject(lastIndex);
                         }
                     }
 
-                    if (lastRowPtr != IntPtr.Zero)
+                    if (lastObjectPtr != IntPtr.Zero)
                     {
-                        return Expression.Constant(_realm.MakeObjectForRow(_metadata, lastRowPtr));
+                        return Expression.Constant(_realm.MakeObject(_metadata, lastObjectPtr));
                     }
 
                     if (m.Method.Name == nameof(Queryable.Last))
@@ -320,7 +320,7 @@ namespace Realms
                         return Expression.Constant(null);
                     }
 
-                    return Expression.Constant(_realm.MakeObjectForRow(_metadata, objectHandle));
+                    return Expression.Constant(_realm.MakeObject(_metadata, objectHandle));
                 }
             }
 
@@ -830,7 +830,7 @@ namespace Realms
             }
             finally
             {
-                queryHandle.SetHandle(NativeTable.Where(tableHandle));
+                queryHandle.SetHandle(tableHandle.Where());
             } // at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
 
             return queryHandle;

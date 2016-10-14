@@ -41,18 +41,18 @@ REALM_EXPORT void query_destroy(Query* query_ptr)
 
 REALM_EXPORT Object* query_find(Query* query_ptr, size_t begin_at_table_row, SharedRealm* realm, NativeException::Marshallable& ex)
 {
-    return handle_errors(ex, [&]() {
+    return handle_errors(ex, [&]() -> Object* {
         if (begin_at_table_row >= query_ptr->get_table()->size())
-            return (Object*)nullptr;
+            return nullptr;
 
         size_t row_ndx = query_ptr->find(begin_at_table_row);
 
         if (row_ndx == not_found)
-            return (Object*)nullptr;
+            return nullptr;
 
-        const StringData object_name = ObjectStore::object_type_for_table_name(query_ptr->get_table()->get_name());
-        auto object_schema = realm->get()->schema().find(object_name);
-        return new Object(*realm, *object_schema, *new Row((*query_ptr->get_table())[row_ndx]));
+        const std::string object_name(ObjectStore::object_type_for_table_name(query_ptr->get_table()->get_name()));
+        auto& object_schema = *realm->get()->schema().find(object_name);
+        return new Object(*realm, object_schema, Row((*query_ptr->get_table())[row_ndx]));
     });
 }
 
@@ -407,53 +407,13 @@ REALM_EXPORT Results* query_create_sorted_results(Query* query_ptr, SharedRealm*
         std::vector<std::vector<size_t>> column_indices;
         std::vector<bool> ascending;
 
-        StringData object_name = ObjectStore::object_type_for_table_name(table_ptr->get_name());
+        const std::string object_name(ObjectStore::object_type_for_table_name(table_ptr->get_name()));
         auto& properties = realm->get()->schema().find(object_name)->persisted_properties;
         unflatten_sort_clauses(sort_clauses, clause_count, flattened_property_indices, column_indices, ascending, properties);
 
         auto sort_descriptor = SortDescriptor(*table_ptr, column_indices, ascending);
         return new Results(*realm, *query_ptr, sort_descriptor);
     });
-}
-
-
-#pragma mark  PrimaryKey Searches
-    
-Object* row_for_primarykey(SharedRealm* realm, Table* table_ptr, size_t columnIndex, std::function<size_t(Table*)> finder, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        if (columnIndex >= table_ptr->get_column_count()) {
-            const std::string name {table_ptr->get_name()};
-            throw MissingPrimaryKeyException( name, name + " does not have a primary key");
-        }
-        
-        realm->get()->verify_thread();
-        
-        const size_t row_ndx = finder(table_ptr);
-        if (row_ndx == not_found)
-            return (Object*)nullptr;
-        StringData object_name = ObjectStore::object_type_for_table_name(table_ptr->get_name());
-        auto object_schema = realm->get()->schema().find(object_name);
-
-        return new Object(*realm, *object_schema, *new Row(table_ptr->get(row_ndx)));
-    });
-}
-
-
-REALM_EXPORT Object* row_for_int_primarykey(SharedRealm* realm, Table* table_ptr, size_t columnIndex, int64_t value, NativeException::Marshallable& ex)
-{
-    return row_for_primarykey(realm, table_ptr, columnIndex, [=](Table* table) {
-        return table->find_first_int(columnIndex, value);
-    }, ex);
-}
-  
-
-REALM_EXPORT Object* row_for_string_primarykey(SharedRealm* realm, Table* table_ptr, size_t columnIndex, uint16_t* value, size_t value_len, NativeException::Marshallable& ex)
-{
-    Utf16StringAccessor str(value, value_len);
-    return row_for_primarykey(realm, table_ptr, columnIndex, [&](Table* table) {
-        return table->find_first_string(columnIndex, str);
-    }, ex);
 }
 
 }   // extern "C"

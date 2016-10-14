@@ -44,502 +44,15 @@ REALM_EXPORT void table_unbind(const Table* table_ptr, NativeException::Marshall
     });
 }
 
-REALM_EXPORT Object* table_add_empty_row(Table* table_ptr, SharedRealm* realm, NativeException::Marshallable& ex)
+REALM_EXPORT Object* table_add_empty_object(Table* table_ptr, SharedRealm* realm, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
         realm->get()->verify_in_write();
         
         size_t row_ndx = table_ptr->add_empty_row(1);
-        const StringData object_name = ObjectStore::object_type_for_table_name(table_ptr->get_name());
-        auto object_schema = realm->get()->schema().find(object_name);
-        return new Object(*realm, *object_schema, *new Row((*table_ptr)[row_ndx]));
-    });
-}
-
-REALM_EXPORT Object* table_get_link(const Object* object_ptr, size_t property_ndx, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() -> Object* {
-        if (object_ptr->realm()->is_closed())
-            throw RealmClosedException();
-        
-        if (!object_ptr->is_valid())
-            throw RowDetachedException();
-
-        object_ptr->realm()->verify_thread();
-        
-        const size_t column_ndx = object_ptr->get_object_schema().persisted_properties[property_ndx].table_column;
-        const size_t link_row_ndx = object_ptr->row().get_link(column_ndx);
-        if (link_row_ndx == realm::npos)
-            return nullptr;
-        
-        auto target_table_ptr = object_ptr->row().get_table()->get_link_target(column_ndx);
-        const StringData target_name = ObjectStore::object_type_for_table_name(target_table_ptr->get_name());
-        const ObjectSchema& target_schema = *object_ptr->realm()->schema().find(target_name);
-        return new Object(object_ptr->realm(), target_schema, *new Row((*target_table_ptr)[link_row_ndx]));
-    });
-}
-
-REALM_EXPORT SharedLinkViewRef* table_get_linklist(const Object* object_ptr, size_t property_ndx, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() -> SharedLinkViewRef* {
-        if (object_ptr->realm()->is_closed())
-            throw RealmClosedException();
-        
-        if (!object_ptr->is_valid())
-            throw RowDetachedException();
-
-        object_ptr->realm()->verify_thread();
-        
-        const size_t column_ndx = object_ptr->get_object_schema().persisted_properties[property_ndx].table_column;
-        return new SharedLinkViewRef {
-            std::make_shared<LinkViewRef>(object_ptr->row().get_linklist(column_ndx))
-        };  // weird double-layering necessary to get a raw pointer to a shared_ptr
-    });
-}
-
-REALM_EXPORT size_t table_linklist_is_empty(const Object* object_ptr, size_t property_ndx, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        if (object_ptr->realm()->is_closed())
-            throw RealmClosedException();
-        
-        if (!object_ptr->is_valid())
-            throw RowDetachedException();
-        
-        object_ptr->realm()->verify_thread();
-
-        const size_t column_ndx = object_ptr->get_object_schema().persisted_properties[property_ndx].table_column;
-        return bool_to_size_t(object_ptr->row().linklist_is_empty(column_ndx));
-    });
-}
-
-
-REALM_EXPORT size_t table_get_bool(const Object* object_ptr, size_t property_ndx, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        if (object_ptr->realm()->is_closed())
-            throw RealmClosedException();
-            
-        if (!object_ptr->is_valid())
-            throw RowDetachedException();
-        
-        object_ptr->realm()->verify_thread();
-        
-        const size_t column_ndx = object_ptr->get_object_schema().persisted_properties[property_ndx].table_column;
-        return bool_to_size_t(object_ptr->row().get_bool(column_ndx));
-    });
-}
-
-// Return value is a boolean indicating whether result has a value (i.e. is not null). If true (1), ret_value will contain the actual value.
-REALM_EXPORT size_t table_get_nullable_bool(const Object* object_ptr, size_t property_ndx, size_t& ret_value, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        if (object_ptr->realm()->is_closed())
-            throw RealmClosedException();
-        
-        if (!object_ptr->is_valid())
-            throw RowDetachedException();
-        
-        object_ptr->realm()->verify_thread();
-
-        const size_t column_ndx = object_ptr->get_object_schema().persisted_properties[property_ndx].table_column;
-        if (object_ptr->row().is_null(column_ndx))
-            return 0;
-
-        ret_value = bool_to_size_t(object_ptr->row().get_bool(column_ndx));
-        return 1;
-    });
-}
-
-REALM_EXPORT int64_t table_get_int64(const Object* object_ptr, size_t property_ndx, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        if (!object_ptr->is_valid())
-            throw RowDetachedException();
-        
-        object_ptr->realm()->verify_thread();
-
-        const size_t column_ndx = object_ptr->get_object_schema().persisted_properties[property_ndx].table_column;
-        return object_ptr->row().get_int(column_ndx);
-    });
-}
-
-REALM_EXPORT size_t table_get_nullable_int64(const Object* object_ptr, size_t property_ndx, int64_t& ret_value, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        if (object_ptr->realm()->is_closed())
-            throw RealmClosedException();
-        
-        if (!object_ptr->is_valid())
-            throw RowDetachedException();
-        
-        object_ptr->realm()->verify_thread();
-
-        const size_t column_ndx = object_ptr->get_object_schema().persisted_properties[property_ndx].table_column;
-        if (object_ptr->row().is_null(column_ndx))
-            return 0;
-
-        ret_value = object_ptr->row().get_int(column_ndx);
-        return 1;
-    });
-}
-
-REALM_EXPORT float table_get_float(const Object* object_ptr, size_t property_ndx, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        if (object_ptr->realm()->is_closed())
-            throw RealmClosedException();
-        
-        if (!object_ptr->is_valid())
-            throw RowDetachedException();
-        
-        object_ptr->realm()->verify_thread();
-        
-        const size_t column_ndx = object_ptr->get_object_schema().persisted_properties[property_ndx].table_column;
-        return object_ptr->row().get_float(column_ndx);
-    });
-}
-
-REALM_EXPORT size_t table_get_nullable_float(const Object* object_ptr, size_t property_ndx, float& ret_value, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        if (object_ptr->realm()->is_closed())
-            throw RealmClosedException();
-        
-        if (!object_ptr->is_valid())
-            throw RowDetachedException();
-        
-        object_ptr->realm()->verify_thread();
-
-        const size_t column_ndx = object_ptr->get_object_schema().persisted_properties[property_ndx].table_column;
-        if (object_ptr->row().is_null(column_ndx))
-            return 0;
-
-        ret_value = object_ptr->row().get_float(column_ndx);
-        return 1;
-    });
-}
-
-REALM_EXPORT double table_get_double(const Object* object_ptr, size_t property_ndx, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        if (object_ptr->realm()->is_closed())
-            throw RealmClosedException();
-        
-        if (!object_ptr->is_valid())
-            throw RowDetachedException();
-        
-        object_ptr->realm()->verify_thread();
-
-        size_t column_ndx = object_ptr->get_object_schema().persisted_properties[property_ndx].table_column;
-        return object_ptr->row().get_double(column_ndx);
-    });
-}
-
-REALM_EXPORT size_t table_get_nullable_double(const Object* object_ptr, size_t property_ndx, double& ret_value, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        if (object_ptr->realm()->is_closed())
-            throw RealmClosedException();
-        
-        if (!object_ptr->is_valid())
-            throw RowDetachedException();
-        
-        object_ptr->realm()->verify_thread();
-
-        const size_t column_ndx = object_ptr->get_object_schema().persisted_properties[property_ndx].table_column;
-        if (object_ptr->row().is_null(column_ndx))
-            return 0;
-
-        ret_value = object_ptr->row().get_double(column_ndx);
-        return 1;
-    });
-}
-
-REALM_EXPORT size_t table_get_string(const Object* object_ptr, size_t property_ndx, uint16_t * datatochsarp, size_t bufsize, bool* is_null, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() -> size_t {
-        if (object_ptr->realm()->is_closed())
-            throw RealmClosedException();
-        
-        if (!object_ptr->is_valid())
-            throw RowDetachedException();
-        
-        object_ptr->realm()->verify_thread();
-
-        const size_t column_ndx = object_ptr->get_object_schema().persisted_properties[property_ndx].table_column;
-        StringData fielddata = object_ptr->row().get_string(column_ndx);
-        if ((*is_null = fielddata.is_null()))
-            return 0;
-        
-        return stringdata_to_csharpstringbuffer(fielddata, datatochsarp, bufsize);
-    });
-}
-
-REALM_EXPORT size_t table_get_binary(const Object* object_ptr, size_t property_ndx, const char*& return_buffer, size_t& return_size, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        if (object_ptr->realm()->is_closed())
-            throw RealmClosedException();
-        
-        if (!object_ptr->is_valid())
-            throw RowDetachedException();
-        
-        object_ptr->realm()->verify_thread();
-
-        const size_t column_ndx = object_ptr->get_object_schema().persisted_properties[property_ndx].table_column;
-        BinaryData fielddata = object_ptr->row().get_binary(column_ndx);
-
-        if (fielddata.is_null())
-            return 0;
-
-        return_buffer = fielddata.data();
-        return_size = fielddata.size();
-        return 1;
-    });
-}
-
-REALM_EXPORT int64_t table_get_timestamp_ticks(const Object* object_ptr, size_t property_ndx, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        if (object_ptr->realm()->is_closed())
-            throw RealmClosedException();
-        
-        if (!object_ptr->is_valid())
-            throw RowDetachedException();
-        
-        object_ptr->realm()->verify_thread();
-
-        const size_t column_ndx = object_ptr->get_object_schema().persisted_properties[property_ndx].table_column;
-        return to_ticks(object_ptr->row().get_timestamp(column_ndx));
-    });
-}
-
-REALM_EXPORT size_t table_get_nullable_timestamp_ticks(const Object* object_ptr, size_t property_ndx, int64_t& ret_value, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        if (!object_ptr->is_valid())
-            throw RowDetachedException();
-        
-        object_ptr->realm()->verify_thread();
-
-        const size_t column_ndx = object_ptr->get_object_schema().persisted_properties[property_ndx].table_column;
-        if (object_ptr->row().is_null(column_ndx))
-            return 0;
-
-        ret_value = to_ticks(object_ptr->row().get_timestamp(column_ndx));
-        return 1;
-    });
-}
-
-REALM_EXPORT void table_set_link(const Object* object_ptr, size_t property_ndx, const Object* target_object_ptr, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        if (object_ptr->realm()->is_closed())
-            throw RealmClosedException();
-        
-        if (!object_ptr->is_valid())
-            throw RowDetachedException();
-        
-        object_ptr->realm()->verify_in_write();
-        
-        const size_t column_ndx = object_ptr->get_object_schema().persisted_properties[property_ndx].table_column;
-        object_ptr->row().set_link(column_ndx, target_object_ptr->row().get_index());
-    });
-}
-
-REALM_EXPORT void table_clear_link(const Object* object_ptr, size_t property_ndx, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        if (object_ptr->realm()->is_closed())
-            throw RealmClosedException();
-        
-        if (!object_ptr->is_valid())
-            throw RowDetachedException();
-        
-        object_ptr->realm()->verify_in_write();
-        
-        const size_t column_ndx = object_ptr->get_object_schema().persisted_properties[property_ndx].table_column;
-        object_ptr->row().nullify_link(column_ndx);
-    });
-}
-
-REALM_EXPORT void table_set_null(const Object* object_ptr, size_t property_ndx, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        if (object_ptr->realm()->is_closed())
-            throw RealmClosedException();
-        
-        if (!object_ptr->is_valid())
-            throw RowDetachedException();
-        
-        object_ptr->realm()->verify_in_write();
-        
-        const size_t column_ndx = object_ptr->get_object_schema().persisted_properties[property_ndx].table_column;
-        if (!object_ptr->row().get_table()->is_nullable(column_ndx))
-            throw std::invalid_argument("Column is not nullable");
-
-        object_ptr->row().set_null(column_ndx);
-    });
-}
-
-REALM_EXPORT void table_set_bool(const Object* object_ptr, size_t property_ndx, size_t value, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        if (object_ptr->realm()->is_closed())
-            throw RealmClosedException();
-        
-        if (!object_ptr->is_valid())
-            throw RowDetachedException();
-        
-        object_ptr->realm()->verify_in_write();
-        
-        const size_t column_ndx = object_ptr->get_object_schema().persisted_properties[property_ndx].table_column;
-        object_ptr->row().set_bool(column_ndx, size_t_to_bool(value));
-    });
-}
-
-REALM_EXPORT void table_set_int64(const Object* object_ptr, size_t property_ndx, int64_t value, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        if (object_ptr->realm()->is_closed())
-            throw RealmClosedException();
-        
-        if (!object_ptr->is_valid())
-            throw RowDetachedException();
-        
-        object_ptr->realm()->verify_in_write();
-        
-        const size_t column_ndx = object_ptr->get_object_schema().persisted_properties[property_ndx].table_column;
-        object_ptr->row().set_int(column_ndx, value);
-    });
-}
-
-REALM_EXPORT void table_set_int64_unique(const Object* object_ptr, size_t property_ndx, int64_t value, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        if (object_ptr->realm()->is_closed())
-            throw RealmClosedException();
-        
-        if (!object_ptr->is_valid())
-            throw RowDetachedException();
-        
-        object_ptr->realm()->verify_in_write();
-        
-        size_t column_ndx = object_ptr->get_object_schema().persisted_properties[property_ndx].table_column;
-        if (object_ptr->row().get_table()->find_first_int(column_ndx, value) != not_found) {
-            throw SetDuplicatePrimaryKeyValueException(
-                    object_ptr->row().get_table()->get_name(),
-                    object_ptr->row().get_table()->get_column_name(column_ndx),
-                    util::format("%1", value)
-            );
-        }
-        object_ptr->row().set_int_unique(column_ndx, value);
-    });
-}
-
-REALM_EXPORT void table_set_float(const Object* object_ptr, size_t property_ndx, float value, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        if (object_ptr->realm()->is_closed())
-            throw RealmClosedException();
-        
-        if (!object_ptr->is_valid())
-            throw RowDetachedException();
-        
-        object_ptr->realm()->verify_in_write();
-        
-        const size_t column_ndx = object_ptr->get_object_schema().persisted_properties[property_ndx].table_column;
-        object_ptr->row().set_float(column_ndx, value);
-    });
-}
-
-REALM_EXPORT void table_set_double(const Object* object_ptr, size_t property_ndx, double value, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        if (object_ptr->realm()->is_closed())
-            throw RealmClosedException();
-        
-        if (!object_ptr->is_valid())
-            throw RowDetachedException();
-        
-        object_ptr->realm()->verify_in_write();
-        
-        const size_t column_ndx = object_ptr->get_object_schema().persisted_properties[property_ndx].table_column;
-        object_ptr->row().set_double(column_ndx, value);
-    });
-}
-
-REALM_EXPORT void table_set_string(const Object* object_ptr, size_t property_ndx, uint16_t* value, size_t value_len, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        if (object_ptr->realm()->is_closed())
-            throw RealmClosedException();
-        
-        if (!object_ptr->is_valid())
-            throw RowDetachedException();
-        
-        object_ptr->realm()->verify_in_write();
-        
-        const size_t column_ndx = object_ptr->get_object_schema().persisted_properties[property_ndx].table_column;
-        Utf16StringAccessor str(value, value_len);
-        object_ptr->row().set_string(column_ndx, str);
-    });
-}
-
-REALM_EXPORT void table_set_string_unique(const Object* object_ptr, size_t property_ndx, uint16_t* value, size_t value_len, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        if (object_ptr->realm()->is_closed())
-            throw RealmClosedException();
-        
-        if (!object_ptr->is_valid())
-            throw RowDetachedException();
-        
-        object_ptr->realm()->verify_in_write();
-        
-        const size_t column_ndx = object_ptr->get_object_schema().persisted_properties[property_ndx].table_column;
-        Utf16StringAccessor str(value, value_len);
-        if (object_ptr->row().get_table()->find_first_string(column_ndx, str) != not_found) {
-            throw SetDuplicatePrimaryKeyValueException(
-                    object_ptr->row().get_table()->get_name(),
-                    object_ptr->row().get_table()->get_column_name(column_ndx),
-                    str.to_string()
-            );
-        }
-        object_ptr->row().set_string_unique(column_ndx, str);
-    });
-}
-
-REALM_EXPORT void table_set_binary(const Object* object_ptr, size_t property_ndx, char* value, size_t value_len, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        if (object_ptr->realm()->is_closed())
-            throw RealmClosedException();
-        
-        if (!object_ptr->is_valid())
-            throw RowDetachedException();
-        
-        object_ptr->realm()->verify_in_write();
-        
-        const size_t column_ndx = object_ptr->get_object_schema().persisted_properties[property_ndx].table_column;
-        object_ptr->row().set_binary(column_ndx, BinaryData(value, value_len));
-    });
-}
-
-REALM_EXPORT void table_set_timestamp_ticks(const Object* object_ptr, size_t property_ndx, int64_t value, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&]() {
-        if (object_ptr->realm()->is_closed())
-            throw RealmClosedException();
-        
-        if (!object_ptr->is_valid())
-            throw RowDetachedException();
-        
-        object_ptr->realm()->verify_in_write();
-        
-        const size_t column_ndx = object_ptr->get_object_schema().persisted_properties[property_ndx].table_column;
-        object_ptr->row().set_timestamp(column_ndx, from_ticks(value));
+        const std::string object_name(ObjectStore::object_type_for_table_name(table_ptr->get_name()));
+        auto& object_schema = *realm->get()->schema().find(object_name);
+        return new Object(*realm, object_schema, Row((*table_ptr)[row_ndx]));
     });
 }
 
@@ -573,21 +86,6 @@ REALM_EXPORT size_t tableview_get_column_index(TableView* tableView_ptr, uint16_
     });
 }
 
-REALM_EXPORT void table_remove_row(Object* object_ptr, NativeException::Marshallable& ex)
-{
-    handle_errors(ex, [&]() {
-        if (object_ptr->realm()->is_closed())
-            throw RealmClosedException();
-        
-        if (!object_ptr->is_valid())
-            throw RowDetachedException();
-        
-        object_ptr->realm()->verify_in_write();
-        
-        object_ptr->row().get_table()->move_last_over(object_ptr -> row().get_index());
-    });
-}
-
 REALM_EXPORT Results* table_create_results(Table* table_ptr, SharedRealm* realm, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
@@ -610,6 +108,45 @@ REALM_EXPORT Results* table_create_sorted_results(Table* table_ptr, SharedRealm*
         return new Results(*realm, table_ptr->where(), sort_descriptor);
     });
 }
+    
+#pragma mark  PrimaryKey Searches
+    
+Object* object_for_primarykey(Table* table_ptr, SharedRealm* realm, std::function<size_t(size_t, Table*)> finder, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() -> Object*{
+        realm->get()->verify_thread();
+        
+        const std::string object_name(ObjectStore::object_type_for_table_name(table_ptr->get_name()));
+        auto& object_schema = *realm->get()->schema().find(object_name);
+        if (object_schema.primary_key.empty()) {
+            const std::string name(table_ptr->get_name());
+            throw MissingPrimaryKeyException(name, name + " does not have a primary key");
+        }
+        
+        const size_t column_index = object_schema.primary_key_property()->table_column;
+        const size_t row_ndx = finder(column_index, table_ptr);
+        if (row_ndx == not_found)
+            return nullptr;
+        
+        return new Object(*realm, object_schema, Row(table_ptr->get(row_ndx)));
+    });
+}
 
+
+REALM_EXPORT Object* object_for_int_primarykey(Table* table_ptr, SharedRealm* realm, int64_t value, NativeException::Marshallable& ex)
+{
+    return object_for_primarykey(table_ptr, realm, [=](size_t column_index, Table* table) {
+        return table->find_first_int(column_index, value);
+    }, ex);
+}
+
+
+REALM_EXPORT Object* object_for_string_primarykey(Table* table_ptr, SharedRealm* realm, uint16_t* value, size_t value_len, NativeException::Marshallable& ex)
+{
+    Utf16StringAccessor str(value, value_len);
+    return object_for_primarykey(table_ptr, realm, [&](size_t column_index, Table* table) {
+        return table->find_first_string(column_index, str);
+    }, ex);
+}
 
 }   // extern "C"

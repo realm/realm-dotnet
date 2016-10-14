@@ -166,7 +166,7 @@ namespace Realms
             public static extern void null_not_equal(QueryHandle queryPtr, IntPtr columnIndex, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_find", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr findDirect(QueryHandle queryHandle, IntPtr beginAtRow, SharedRealmHandle realmHandle, out NativeException ex);
+            public static extern IntPtr findDirect(QueryHandle queryHandle, IntPtr beginAtIndex, SharedRealmHandle realmHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_get_column_index", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr get_column_index(QueryHandle queryPtr,
@@ -496,10 +496,10 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public IntPtr FindDirect(IntPtr beginAtRow, SharedRealmHandle sharedRealm)
+        public IntPtr FindDirect(IntPtr beginAtIndex, SharedRealmHandle sharedRealm)
         {
             NativeException nativeException;
-            var result = NativeMethods.findDirect(this, beginAtRow, sharedRealm, out nativeException);
+            var result = NativeMethods.findDirect(this, beginAtIndex, sharedRealm, out nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }

@@ -66,8 +66,8 @@ namespace Realms
                     throw new ArgumentOutOfRangeException();
                 }
 
-                var rowPtr = ResultsHandle.GetObject(index);
-                return (T)(object)_realm.MakeObjectForRow(_targetMetadata, rowPtr);
+                var objectPtr = ResultsHandle.GetObject(index);
+                return (T)(object)_realm.MakeObject(_targetMetadata, objectPtr);
             }
         }
 
@@ -165,7 +165,7 @@ namespace Realms
             {
                 // use the type captured at build based on generic T
                 var tableHandle = _realm.Metadata[ObjectSchema.Name].Table;
-                return (int)NativeTable.CountAll(tableHandle);
+                return (int)tableHandle.CountAll();
             }
 
             // normally we would  be in RealmQRealmResultsr.VisitMethodCall, not here

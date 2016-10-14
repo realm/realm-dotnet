@@ -558,7 +558,7 @@ public class ModuleWeaver
                      <backingField> = new List<T>();
             }
             // original auto-generated getter starts here
-            return <backingField>;  // supplied by the generated getter OR RealmObject._CopyDataFromBackingFieldsToRow
+            return <backingField>; // supplied by the generated getter OR RealmObject._CopyDataFromBackingFields
         */
 
         var start = prop.GetMethod.Body.Instructions.First();  // this is a label for return <backingField>;

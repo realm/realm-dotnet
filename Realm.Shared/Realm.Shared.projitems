@@ -33,7 +33,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Native\MarshaledVector.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Native\NativeCommon.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Native\NativeException.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Native\NativeTable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Native\PtrTo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Native\SchemaObject.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Native\SchemaProperty.cs" />
@@ -46,7 +45,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\RealmFileAccessErrorException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\RealmFileNotFoundException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\RealmOutOfMemoryException.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)RealmObjectOps.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transaction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Handles\LinkListHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RealmConfiguration.cs" />

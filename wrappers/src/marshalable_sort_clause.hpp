@@ -46,7 +46,7 @@ inline void unflatten_sort_clauses(MarshalableSortClause* sort_clauses, size_t c
             size_t column_index = properties[flattened_property_indices[j]].table_column;
             current_indices.push_back(column_index);
         }
-        column_indices.push_back(current_indices);
+        column_indices.push_back(std::move(current_indices));
     }
 }
 

@@ -19,11 +19,50 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using Realms.Native;
 
 namespace Realms
 {
     internal class TableHandle : RealmHandle
     {
+        [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1300:ElementMustBeginWithUpperCaseLetter")]
+        [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1121:UseBuiltInTypeAlias")]
+        private static class NativeMethods
+        {
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_add_empty_object", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr add_empty_object(TableHandle tableHandle, SharedRealmHandle sharedRealm, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_where", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr where(TableHandle handle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_count_all", CallingConvention = CallingConvention.Cdecl)]
+            public static extern Int64 count_all(TableHandle handle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_unbind", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void unbind(IntPtr tableHandle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_get_column_index", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr get_column_index(TableHandle tablehandle,
+                [MarshalAs(UnmanagedType.LPWStr)] string name, IntPtr nameLen, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_create_results", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr create_results(TableHandle handle, SharedRealmHandle sharedRealm, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "table_create_sorted_results", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr create_sorted_results(TableHandle handle, SharedRealmHandle sharedRealm,
+                    [MarshalAs(UnmanagedType.LPArray), In]SortDescriptorBuilder.Clause.Marshalable[] sortClauses, IntPtr clauseCount,
+                    [MarshalAs(UnmanagedType.LPArray), In]IntPtr[] flattenedColumnIndices,
+                    out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_for_string_primarykey", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr object_for_string_primarykey(TableHandle handle, SharedRealmHandle realmHandle,
+                [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_for_int_primarykey", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr object_for_int_primarykey(TableHandle handle, SharedRealmHandle realmHandle, Int64 value, out NativeException ex);
+        }
+
         private TableHandle(RealmHandle root) : base(root)
         {
         }
@@ -37,7 +76,9 @@ namespace Realms
 
         protected override void Unbind()
         {
-            NativeTable.Unbind(handle);
+            NativeException nativeException;
+            NativeMethods.unbind(handle, out nativeException);
+            nativeException.ThrowIfNecessary();
         }
 
         // if root is null the this tablehandle is responsible for cleaning up the tableView and its children
@@ -80,10 +121,76 @@ namespace Realms
             }
             finally
             {
-                queryHandle.SetHandle(NativeTable.Where(this));
+                queryHandle.SetHandle(this.Where());
             } // at this point we have atomically acquired a handle and also set the root correctly so it can be unbound correctly
 
             return queryHandle;
+        }
+
+        public IntPtr AddEmptyObject(SharedRealmHandle sharedRealm)
+        {
+            NativeException nativeException;
+            var result = NativeMethods.add_empty_object(this, sharedRealm, out nativeException);
+            nativeException.ThrowIfNecessary();
+            return result;
+        }
+
+        public IntPtr Where()
+        {
+            NativeException nativeException;
+            var result = NativeMethods.where(this, out nativeException);
+            nativeException.ThrowIfNecessary();
+            return result;
+        }
+
+        public long CountAll()
+        {
+            NativeException nativeException;
+            var result = NativeMethods.count_all(this, out nativeException);
+            nativeException.ThrowIfNecessary();
+            return result;
+        }
+
+        // returns -1 if the column string does not match a column index
+        public IntPtr GetColumnIndex(string name)
+        {
+            NativeException nativeException;
+            var result = NativeMethods.get_column_index(this, name, (IntPtr)name.Length, out nativeException);
+            nativeException.ThrowIfNecessary();
+            return result;
+        }
+
+        public IntPtr CreateResults(SharedRealmHandle sharedRealmHandle)
+        {
+            NativeException nativeException;
+            var result = NativeMethods.create_results(this, sharedRealmHandle, out nativeException);
+            nativeException.ThrowIfNecessary();
+            return result;
+        }
+
+        public IntPtr CreateSortedResults(SharedRealmHandle sharedRealmHandle, SortDescriptorBuilder sortDescriptorBuilder)
+        {
+            NativeException nativeException;
+            var marshaledValues = sortDescriptorBuilder.Flatten();
+            var result = NativeMethods.create_sorted_results(this, sharedRealmHandle, marshaledValues.Item2, (IntPtr)marshaledValues.Item2.Length, marshaledValues.Item1, out nativeException);
+            nativeException.ThrowIfNecessary();
+            return result;
+        }
+
+        internal IntPtr ObjectForPrimaryKey(SharedRealmHandle realmHandle, string id)
+        {
+            NativeException nativeException;
+            var result = NativeMethods.object_for_string_primarykey(this, realmHandle, id, (IntPtr)id.Length, out nativeException);
+            nativeException.ThrowIfNecessary();
+            return result;
+        }
+
+        internal IntPtr ObjectForPrimaryKey(SharedRealmHandle realmHandle, long id)
+        {
+            NativeException nativeException;
+            var result = NativeMethods.object_for_int_primarykey(this, realmHandle, id, out nativeException);
+            nativeException.ThrowIfNecessary();
+            return result;
         }
     }
 }

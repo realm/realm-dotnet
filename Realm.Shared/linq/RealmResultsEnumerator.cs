@@ -68,7 +68,7 @@ namespace Realms
                 return false;
             }
 
-            Current = (T)(object)_realm.MakeObjectForRow(_schema.Name, rowPtr);
+            Current = (T)(object)_realm.MakeObject(_schema.Name, rowPtr);
             return true;
         }
 
