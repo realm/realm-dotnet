@@ -129,10 +129,9 @@ namespace Realms
             public static extern void remove_row(ObjectHandle handle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_equals_object", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr equals_object(ObjectHandle handle, ObjectHandle otherHandle, out NativeException ex);
+            [return: MarshalAs(UnmanagedType.I1)]
+            public static extern bool equals_object(ObjectHandle handle, ObjectHandle otherHandle, out NativeException ex);
         }
-
-        public static readonly ObjectHandle Null = new ObjectHandle(null);
 
         public bool IsValid
         {
@@ -176,7 +175,7 @@ namespace Realms
             var result = NativeMethods.equals_object(this, otherHandle, out nativeException);
             nativeException.ThrowIfNecessary();
 
-            return MarshalHelpers.IntPtrToBool(result);
+            return result;
         }
 
         protected override void Unbind()

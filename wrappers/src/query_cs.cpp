@@ -56,9 +56,10 @@ REALM_EXPORT Object* query_find(Query* query_ptr, size_t begin_at_table_row, Sha
     });
 }
     
-REALM_EXPORT Object* query_find_next(Query* query_ptr, const Object& after_object, SharedRealm* realm, NativeException::Marshallable& ex)
+REALM_EXPORT Object* query_find_next(Query* query_ptr, const Object& after_object, NativeException::Marshallable& ex)
 {
-    return query_find(query_ptr, after_object.row().get_index() + 1, realm, ex);
+    auto realm = after_object.realm();
+    return query_find(query_ptr, after_object.row().get_index() + 1, &realm, ex);
 }
     
 REALM_EXPORT size_t query_count(Query * query_ptr, NativeException::Marshallable& ex)

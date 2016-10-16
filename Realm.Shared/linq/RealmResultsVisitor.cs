@@ -268,7 +268,7 @@ namespace Realms
                     }
 
                     var firstObject = Realm.CreateObjectHandle(firstObjectPtr, _realm.SharedRealmHandle);
-                    var nextObjectPtr = CoreQueryHandle.FindNext(_realm.SharedRealmHandle, firstObject);
+                    var nextObjectPtr = CoreQueryHandle.FindNext(firstObject);
                     if (nextObjectPtr != IntPtr.Zero)
                     {
                         throw new InvalidOperationException("Sequence contains more than one matching element");
