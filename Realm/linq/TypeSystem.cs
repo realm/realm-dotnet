@@ -50,17 +50,17 @@ namespace Realms
 
             if (seqType.GetTypeInfo().IsGenericType)
             {
-                foreach (Type arg in seqType.GetGenericArguments())
+                foreach (Type arg in seqType.GetTypeInfo().GetGenericArguments())
                 {
-                    var ienum = typeof(IEnumerable<>).MakeGenericType(arg);
+                    var ienum = typeof(IEnumerable<>).MakeGenericType(arg).GetTypeInfo();
                     if (ienum.IsAssignableFrom(seqType))
                     {
-                        return ienum;
+                        return ienum.AsType();
                     }
                 }
             }
 
-            var ifaces = seqType.GetInterfaces().ToArray();
+            var ifaces = seqType.GetTypeInfo().GetInterfaces().ToArray();
             if (ifaces != null && ifaces.Length > 0)
             {
                 foreach (Type iface in ifaces)

@@ -104,7 +104,7 @@ namespace Realms.Schema
             Contract.EndContractBlock();
 
             var builder = new Builder(type.Name);
-            foreach (var property in type.GetProperties(BindingFlags.Instance | BindingFlags.DeclaredOnly | BindingFlags.NonPublic | BindingFlags.Public))
+            foreach (var property in type.GetTypeInfo().GetProperties(BindingFlags.Instance | BindingFlags.DeclaredOnly | BindingFlags.NonPublic | BindingFlags.Public))
             {
                 if (property.GetCustomAttribute<WovenPropertyAttribute>() == null)
                 {

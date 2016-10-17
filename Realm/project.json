@@ -2,21 +2,16 @@
   "supports": {},
   "dependencies": {
     "DotNetCross.Memory.Unsafe": "0.2.3.4",
-    "Microsoft.Extensions.DependencyModel": "1.0.0",
     "Microsoft.NETCore.Portable.Compatibility": "1.0.1",
     "NETStandard.Library": "1.6.0",
     "Remotion.Linq": "2.1.1",
     "System.Diagnostics.Contracts": "4.0.1",
     "System.Dynamic.Runtime": "4.0.11",
+    "System.Reflection": "4.1.0",
     "System.Runtime.Extensions": "4.1.0",
     "System.Runtime.Handles": "4.0.1"
   },
   "frameworks": {
-    "netstandard1.6": {
-      "imports": "dnxcore50"
-    }
-  },
-  "buildOptions": {
-    "allowUnsafe": true
+    "netstandard1.5": {}
   }
 }
