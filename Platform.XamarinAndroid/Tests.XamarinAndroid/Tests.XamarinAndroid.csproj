@@ -6,14 +6,14 @@
     <ProjectTypeGuids>{EFBA0AD7-5A72-4C68-AF49-83D382785DCF};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <ProjectGuid>{ED17479C-2CFE-4E6D-A592-82C491FFBE4E}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>IntegrationTests.XamarinAndroid</RootNamespace>
+    <RootNamespace>Tests.XamarinAndroid</RootNamespace>
     <MonoAndroidAssetsPrefix>Assets</MonoAndroidAssetsPrefix>
     <MonoAndroidResourcePrefix>Resources</MonoAndroidResourcePrefix>
     <AndroidResgenClass>Resource</AndroidResgenClass>
     <AndroidResgenFile>Resources\Resource.designer.cs</AndroidResgenFile>
     <AndroidApplication>True</AndroidApplication>
     <AndroidUseLatestPlatformSdk>False</AndroidUseLatestPlatformSdk>
-    <AssemblyName>IntegrationTests.XamarinAndroid</AssemblyName>
+    <AssemblyName>Tests.XamarinAndroid</AssemblyName>
     <TargetFrameworkVersion>v5.1</TargetFrameworkVersion>
     <AndroidManifest>Properties\AndroidManifest.xml</AndroidManifest>
     <AndroidSupportedAbis>armeabi-v7a;x86;arm64-v8a;x86_64</AndroidSupportedAbis>
@@ -45,7 +45,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="DotNetCross.Memory.Unsafe, Version=0.2.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\DotNetCross.Memory.Unsafe.0.2.2\lib\dotnet\DotNetCross.Memory.Unsafe.dll</HintPath>
+      <HintPath>$(SolutionDir)packages\DotNetCross.Memory.Unsafe.0.2.2\lib\dotnet\DotNetCross.Memory.Unsafe.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -55,7 +55,7 @@
     <Reference Include="Xamarin.Android.NUnitLite" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Remotion.Linq">
-      <HintPath>..\..\packages\Remotion.Linq.2.1.1\lib\portable-net45+win+wpa81+wp80\Remotion.Linq.dll</HintPath>
+      <HintPath>$(SolutionDir)packages\Remotion.Linq.2.1.1\lib\portable-net45+win+wpa81+wp80\Remotion.Linq.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -78,9 +78,9 @@
     <AndroidResource Include="Resources\drawable-xxhdpi\Icon.png" />
     <AndroidResource Include="Resources\drawable-xxxhdpi\Icon.png" />
   </ItemGroup>
-  <Import Project="..\IntegrationTests.Shared\IntegrationTests.Shared.projitems" Label="Shared" Condition="Exists('..\IntegrationTests.Shared\IntegrationTests.Shared.projitems')" />
+  <Import Project="..\..\Shared\Tests.Shared\Tests.Shared.projitems" Label="Shared" Condition="Exists('..\..\Shared\Tests.Shared\Tests.Shared.projitems')" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
-  <Import Project="..\..\packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets" Condition="Exists('..\..\packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets')" />
+  <Import Project="$(SolutionDir)packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets" Condition="Exists('$(SolutionDir)packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets')" />
   <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
     <AndroidNativeLibrary Include="..\..\wrappers\build\Debug-android\armeabi-v7a\libwrappers.so">
       <Link>wrappers\armeabi-v7\libwrappers.so</Link>
@@ -110,19 +110,19 @@
     </AndroidNativeLibrary>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Realm.XamarinAndroid\Realm.XamarinAndroid.csproj">
+    <ProjectReference Include="..\Realm.XamarinAndroid\Realm.XamarinAndroid.csproj">
       <Project>{2379D669-4F4B-4FF6-AF8A-49FEA981EFC3}</Project>
       <Name>Realm.XamarinAndroid</Name>
     </ProjectReference>
-    <ProjectReference Include="..\PurePCLBuildableTest\PurePCLBuildableTest.csproj">
+    <ProjectReference Include="..\..\Platform.PCL\PurePCLBuildableTest\PurePCLBuildableTest.csproj">
       <Project>{C33439AD-387D-4F86-9DB8-9D4B48EC6750}</Project>
       <Name>PurePCLBuildableTest</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="..\IntegrationTests.Shared\ForMigrationsToCopyAndMigrate.realm">
+    <AndroidAsset Include="..\Tests.Shared\ForMigrationsToCopyAndMigrate.realm">
       <Link>Assets\ForMigrationsToCopyAndMigrate.realm</Link>
     </AndroidAsset>
   </ItemGroup>
-  <Import Project="..\..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets" Condition="Exists('..\..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets')" />
+  <Import Project="$(SolutionDir)packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets" Condition="Exists('$(SolutionDir)packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets')" />
 </Project>

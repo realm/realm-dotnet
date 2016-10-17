@@ -65,18 +65,18 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="DotNetCross.Memory.Unsafe, Version=0.2.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\DotNetCross.Memory.Unsafe.0.2.2\lib\dotnet\DotNetCross.Memory.Unsafe.dll</HintPath>
+      <HintPath>$(SolutionDir)packages\DotNetCross.Memory.Unsafe.0.2.2\lib\dotnet\DotNetCross.Memory.Unsafe.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="Xamarin.iOS" />
     <Reference Include="Remotion.Linq">
-      <HintPath>..\packages\Remotion.Linq.2.1.1\lib\portable-net45+win+wpa81+wp80\Remotion.Linq.dll</HintPath>
+      <HintPath>$(SolutionDir)packages\Remotion.Linq.2.1.1\lib\portable-net45+win+wpa81+wp80\Remotion.Linq.dll</HintPath>
     </Reference>
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\RealmAssemblyInfo.cs">
+    <Compile Include="$(SolutionDir)RealmAssemblyInfo.cs">
       <Link>Properties\RealmAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -88,23 +88,23 @@
   <ItemGroup>
     <ObjcBindingApiDefinition Include="ApiDefinition.cs" />
   </ItemGroup>
-  <Import Project="..\Realm.Shared\Realm.Shared.projitems" Label="Shared" Condition="Exists('..\Realm.Shared\Realm.Shared.projitems')" />
+  <Import Project="..\..\Shared\Realm.Shared\Realm.Shared.projitems" Label="Shared" Condition="Exists('..\Realm.Shared\Realm.Shared.projitems')" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.ObjCBinding.CSharp.targets" />
   <!-- Instead of including macro inline, which seems unreliably to work only on load, use a conditional so absolute paths are selected
-     <ObjcBindingNativeLibrary Include="..\wrappers\build\$(Configuration)-ios-universal\libwrappers.a">
+     <ObjcBindingNativeLibrary Include="..\..\wrappers\build\$(Configuration)-ios-universal\libwrappers.a">
  -->
   <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <ObjcBindingNativeLibrary Include="..\wrappers\build\Debug-ios-universal\libwrappers.a">
+    <ObjcBindingNativeLibrary Include="..\..\wrappers\build\Debug-ios-universal\libwrappers.a">
       <Link>libwrappers.a</Link>
     </ObjcBindingNativeLibrary>
   </ItemGroup>
   <ItemGroup Condition=" '$(Configuration)' == 'Release' ">
-    <ObjcBindingNativeLibrary Include="..\wrappers\build\Release-ios-universal\libwrappers.a">
+    <ObjcBindingNativeLibrary Include="..\..\wrappers\build\Release-ios-universal\libwrappers.a">
       <Link>libwrappers.a</Link>
     </ObjcBindingNativeLibrary>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\RealmWeaver\RealmWeaver.Fody.csproj">
+    <ProjectReference Include="..\..\Weaver\RealmWeaver.Fody\RealmWeaver.Fody.csproj">
       <Project>{C3578A7B-09A6-4444-9383-0DEAFA4958BD}</Project>
       <Name>RealmWeaver.Fody</Name>
     </ProjectReference>
@@ -112,5 +112,5 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <Import Project="..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets" Condition="Exists('..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets')" />
+  <Import Project="$(SolutionDir)packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets" Condition="Exists('$(SolutionDir)packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets')" />
 </Project>

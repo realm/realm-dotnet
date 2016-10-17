@@ -32,7 +32,7 @@
     <DocumentationFile>bin\Release\Realm.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\RealmAssemblyInfo.cs">
+    <Compile Include="$(SolutionDir)RealmAssemblyInfo.cs">
       <Link>Properties\RealmAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -42,84 +42,84 @@
     <Compile Include="RealmConfigurationPCL.cs" />
     <Compile Include="RealmObjectPCL.cs" />
     <Compile Include="RealmPCL.cs" />
-    <Compile Include="..\Realm.Shared\exceptions\RealmDecryptionFailedException.cs">
+    <Compile Include="..\..\Shared\Realm.Shared\exceptions\RealmDecryptionFailedException.cs">
       <Link>Exceptions\RealmDecryptionFailedException.cs</Link>
     </Compile>
-    <Compile Include="..\Realm.Shared\exceptions\RealmException.cs">
+    <Compile Include="..\..\Shared\Realm.Shared\exceptions\RealmException.cs">
       <Link>Exceptions\RealmException.cs</Link>
     </Compile>
-    <Compile Include="..\Realm.Shared\exceptions\RealmExceptionCodes.cs">
+    <Compile Include="..\..\Shared\Realm.Shared\exceptions\RealmExceptionCodes.cs">
       <Link>Exceptions\RealmExceptionCodes.cs</Link>
     </Compile>
-    <Compile Include="..\Realm.Shared\exceptions\RealmFileAccessErrorException.cs">
+    <Compile Include="..\..\Shared\Realm.Shared\exceptions\RealmFileAccessErrorException.cs">
       <Link>Exceptions\RealmFileAccessErrorException.cs</Link>
     </Compile>
-    <Compile Include="..\Realm.Shared\exceptions\RealmFileExistsException.cs">
+    <Compile Include="..\..\Shared\Realm.Shared\exceptions\RealmFileExistsException.cs">
       <Link>Exceptions\RealmFileExistsException.cs</Link>
     </Compile>
-    <Compile Include="..\Realm.Shared\exceptions\RealmFileNotFoundException.cs">
+    <Compile Include="..\..\Shared\Realm.Shared\exceptions\RealmFileNotFoundException.cs">
       <Link>Exceptions\RealmFileNotFoundException.cs</Link>
     </Compile>
-    <Compile Include="..\Realm.Shared\exceptions\RealmInvalidDatabaseException.cs">
+    <Compile Include="..\..\Shared\Realm.Shared\exceptions\RealmInvalidDatabaseException.cs">
       <Link>Exceptions\RealmInvalidDatabaseException.cs</Link>
     </Compile>
-    <Compile Include="..\Realm.Shared\exceptions\RealmMigrationNeededException.cs">
+    <Compile Include="..\..\Shared\Realm.Shared\exceptions\RealmMigrationNeededException.cs">
       <Link>Exceptions\RealmMigrationNeededException.cs</Link>
     </Compile>
-    <Compile Include="..\Realm.Shared\exceptions\RealmObjectAlreadyManagedByRealmException.cs">
+    <Compile Include="..\..\Shared\Realm.Shared\exceptions\RealmObjectAlreadyManagedByRealmException.cs">
       <Link>Exceptions\RealmObjectAlreadyManagedByRealmException.cs</Link>
     </Compile>
-    <Compile Include="..\Realm.Shared\exceptions\RealmObjectManagedByAnotherRealmException.cs">
+    <Compile Include="..\..\Shared\Realm.Shared\exceptions\RealmObjectManagedByAnotherRealmException.cs">
       <Link>Exceptions\RealmObjectManagedByAnotherRealmException.cs</Link>
     </Compile>
-    <Compile Include="..\Realm.Shared\exceptions\RealmOutOfMemoryException.cs">
+    <Compile Include="..\..\Shared\Realm.Shared\exceptions\RealmOutOfMemoryException.cs">
       <Link>Exceptions\RealmOutOfMemoryException.cs</Link>
     </Compile>
-    <Compile Include="..\Realm.Shared\exceptions\RealmPermissionDeniedException.cs">
+    <Compile Include="..\..\Shared\Realm.Shared\exceptions\RealmPermissionDeniedException.cs">
       <Link>Exceptions\RealmPermissionDeniedException.cs</Link>
     </Compile>
-    <Compile Include="..\Realm.Shared\Attributes.cs">
+    <Compile Include="..\..\Shared\Realm.Shared\Attributes.cs">
       <Link>Attributes.cs</Link>
     </Compile>
     <Compile Include="RealmResultsPCL.cs" />
-    <Compile Include="..\Realm.Shared\exceptions\RealmMismatchedConfigException.cs">
+    <Compile Include="..\..\Shared\Realm.Shared\exceptions\RealmMismatchedConfigException.cs">
       <Link>Exceptions\RealmMismatchedConfigException.cs</Link>
     </Compile>
-    <Compile Include="..\Realm.Shared\weaving\IRealmObjectHelper.cs">
+    <Compile Include="..\..\Shared\Realm.Shared\weaving\IRealmObjectHelper.cs">
       <Link>IRealmObjectHelper.cs</Link>
     </Compile>
-    <Compile Include="..\Realm.Shared\exceptions\RealmInvalidTransactionException.cs">
+    <Compile Include="..\..\Shared\Realm.Shared\exceptions\RealmInvalidTransactionException.cs">
       <Link>Exceptions\RealmInvalidTransactionException.cs</Link>
     </Compile>
-    <Compile Include="..\Realm.Shared\PreserveAttribute.cs">
+    <Compile Include="..\..\Shared\Realm.Shared\PreserveAttribute.cs">
       <Link>PreserveAttribute.cs</Link>
     </Compile>
     <Compile Include="Extensions\RealmResultsCollectionChangedPCL.cs" />
-    <Compile Include="..\Realm.Shared\exceptions\RealmInvalidObjectException.cs">
+    <Compile Include="..\..\Shared\Realm.Shared\exceptions\RealmInvalidObjectException.cs">
       <Link>Exceptions\RealmInvalidObjectException.cs</Link>
     </Compile>
-    <Compile Include="..\Realm.Shared\Schema\Property.cs">
+    <Compile Include="..\..\Shared\Realm.Shared\Schema\Property.cs">
       <Link>Schema\Property.cs</Link>
     </Compile>
-    <Compile Include="..\Realm.Shared\Schema\PropertyType.cs">
+    <Compile Include="..\..\Shared\Realm.Shared\Schema\PropertyType.cs">
       <Link>Schema\PropertyType.cs</Link>
     </Compile>
     <Compile Include="Schema\ObjectSchemaPCL.cs" />
     <Compile Include="Schema\RealmSchemaPCL.cs" />
-    <Compile Include="..\Realm.Shared\exceptions\RealmClassLacksPrimaryKeyException.cs">
+    <Compile Include="..\..\Shared\Realm.Shared\exceptions\RealmClassLacksPrimaryKeyException.cs">
       <Link>Exceptions\RealmClassLacksPrimaryKeyException.cs</Link>
     </Compile>
-    <Compile Include="..\Realm.Shared\exceptions\RealmDuplicatePrimaryKeyValueException.cs">
+    <Compile Include="..\..\Shared\Realm.Shared\exceptions\RealmDuplicatePrimaryKeyValueException.cs">
       <Link>Exceptions\RealmDuplicatePrimaryKeyValueException.cs</Link>
     </Compile>
-    <Compile Include="..\Realm.Shared\exceptions\ManagedExceptionDuringMigrationException.cs">
+    <Compile Include="..\..\Shared\Realm.Shared\exceptions\ManagedExceptionDuringMigrationException.cs">
       <Link>Exceptions\ManagedExceptionDuringMigrationException.cs</Link>
     </Compile>
     <Compile Include="MigrationPCL.cs" />
-    <Compile Include="..\Realm.Shared\Exceptions\RealmClosedException.cs">
+    <Compile Include="..\..\Shared\Realm.Shared\Exceptions\RealmClosedException.cs">
       <Link>Exceptions\RealmClosedException.cs</Link>
     </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
-  <Import Project="..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets" Condition="Exists('..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets')" />
+  <Import Project="$(SolutionDir)packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets" Condition="Exists('$(SolutionDir)packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets')" />
 </Project>

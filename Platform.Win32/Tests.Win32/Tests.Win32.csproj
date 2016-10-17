@@ -7,8 +7,8 @@
     <ProjectGuid>{BFC1C1B7-2864-4456-9DEC-309A3F006B66}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>IntegrationTests.Win32</RootNamespace>
-    <AssemblyName>IntegrationTests.Win32</AssemblyName>
+    <RootNamespace>Tests.Win32</RootNamespace>
+    <AssemblyName>Tests.Win32</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <StyleCopTreatErrorsAsWarnings>false</StyleCopTreatErrorsAsWarnings>
@@ -68,11 +68,11 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
     <Reference Include="nunit.framework, Version=2.6.4.14350, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77">
-      <HintPath>..\..\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
+      <HintPath>$(SolutionDir)packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="Remotion.Linq">
-      <HintPath>..\..\packages\Remotion.Linq.2.1.1\lib\net45\Remotion.Linq.dll</HintPath>
+      <HintPath>$(SolutionDir)packages\Remotion.Linq.2.1.1\lib\net45\Remotion.Linq.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -89,7 +89,7 @@
       <Project>{A1E763AD-24B9-4D6B-AACA-282BB33E350F}</Project>
       <Name>wrappers</Name>
     </ProjectReference>
-    <ProjectReference Include="..\PurePCLBuildableTest\PurePCLBuildableTest.csproj">
+    <ProjectReference Include="..\..\Platform.PCL\PurePCLBuildableTest\PurePCLBuildableTest.csproj">
       <Project>{c33439ad-387d-4f86-9db8-9d4b48ec6750}</Project>
       <Name>PurePCLBuildableTest</Name>
     </ProjectReference>
@@ -98,7 +98,7 @@
     <Content Include="FodyWeavers.xml" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\IntegrationTests.Shared\ForMigrationsToCopyAndMigrate.realm">
+    <None Include="..\..\Shared\Tests.Shared\ForMigrationsToCopyAndMigrate.realm">
       <Link>ForMigrationsToCopyAndMigrate.realm</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -107,7 +107,7 @@
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
-  <Import Project="..\IntegrationTests.Shared\IntegrationTests.Shared.projitems" Label="Shared" />
+  <Import Project="..\..\Shared\Tests.Shared\Tests.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>
@@ -118,6 +118,6 @@
     <Copy SourceFiles="$(SolutionDir)wrappers\build\wrappers.pdb" DestinationFolder="$(TargetDir)" OverwriteReadOnlyFiles="true" SkipUnchangedFiles="true" />
     <!-- note the wrappers.pdb is common to both x86 and x64 dlls -->
   </Target>
-  <Import Project="..\..\packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets" Condition="Exists('..\..\packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets')" />
-  <Import Project="..\..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets" Condition="Exists('..\..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets')" />
+  <Import Project="$(SolutionDir)packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets" Condition="Exists('$(SolutionDir)packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets')" />
+  <Import Project="$(SolutionDir)packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets" Condition="Exists('$(SolutionDir)packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets')" />
 </Project>

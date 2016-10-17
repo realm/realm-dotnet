@@ -8,7 +8,7 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>Tests.XamarinIOS</RootNamespace>
     <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
-    <AssemblyName>TestsXamarinIOS</AssemblyName>
+    <AssemblyName>Tests.XamarinIOS</AssemblyName>
     <StyleCopTreatErrorsAsWarnings>false</StyleCopTreatErrorsAsWarnings>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhoneSimulator' ">

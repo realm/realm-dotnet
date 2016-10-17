@@ -67,7 +67,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="DotNetCross.Memory.Unsafe, Version=0.2.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\DotNetCross.Memory.Unsafe.0.2.2\lib\net11\DotNetCross.Memory.Unsafe.dll</HintPath>
+      <HintPath>$(SolutionDir)packages\DotNetCross.Memory.Unsafe.0.2.2\lib\net11\DotNetCross.Memory.Unsafe.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -78,34 +78,34 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="Remotion.Linq">
-      <HintPath>..\packages\Remotion.Linq.2.1.1\lib\net45\Remotion.Linq.dll</HintPath>
+      <HintPath>$(SolutionDir)packages\Remotion.Linq.2.1.1\lib\net45\Remotion.Linq.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\RealmAssemblyInfo.cs">
+    <Compile Include="$(SolutionDir)RealmAssemblyInfo.cs">
       <Link>Properties\RealmAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="InteropConfig.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup Condition="'$(Platform)' == 'x64'">
-    <Content Include="..\wrappers\build\wrappersx64-Debug.dll">
+    <Content Include="..\..\wrappers\build\wrappersx64-Debug.dll">
       <Link>wrappersx64-Debug.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup Condition="'$(Platform)' == 'x86'">
-    <Content Include="..\wrappers\build\wrappersx86-Debug.dll">
+    <Content Include="..\..\wrappers\build\wrappersx86-Debug.dll">
       <Link>wrappersx86-Debug.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\RealmWeaver\RealmWeaver.Fody.csproj">
+    <ProjectReference Include="..\..\Weaver\RealmWeaver.Fody\RealmWeaver.Fody.csproj">
       <Project>{C3578A7B-09A6-4444-9383-0DEAFA4958BD}</Project>
       <Name>RealmWeaver.Fody</Name>
     </ProjectReference>
-    <ProjectReference Include="..\wrappers\wrappers.vcxproj">
+    <ProjectReference Include="..\..\wrappers\wrappers.vcxproj">
       <Project>{A1E763AD-24B9-4D6B-AACA-282BB33E350F}</Project>
       <Name>wrappers</Name>
     </ProjectReference>
@@ -113,7 +113,7 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <Import Project="..\Realm.Shared\Realm.Shared.projitems" Label="Shared" />
+  <Import Project="..\..\Shared\Realm.Shared\Realm.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets" Condition="Exists('..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets')" />
+  <Import Project="$(SolutionDir)packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets" Condition="Exists('$(SolutionDir)packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets')" />
 </Project>
