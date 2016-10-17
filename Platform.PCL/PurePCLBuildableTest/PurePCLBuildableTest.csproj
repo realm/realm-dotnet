@@ -36,7 +36,7 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .NET Framework is automatically included -->
-    <ProjectReference Include="..\..\Realm.PCL\Realm.PCL.csproj">
+    <ProjectReference Include="..\Realm.PCL\Realm.PCL.csproj">
       <Project>{261c8eb6-9508-4d6a-9bed-39a544aa2736}</Project>
       <Name>Realm.PCL</Name>
     </ProjectReference>

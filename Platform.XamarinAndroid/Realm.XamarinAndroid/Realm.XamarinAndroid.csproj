@@ -59,7 +59,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Weaver\RealmWeaver\RealmWeaver.Fody.csproj">
+    <ProjectReference Include="..\..\Weaver\RealmWeaver.Fody\RealmWeaver.Fody.csproj">
       <Project>{C3578A7B-09A6-4444-9383-0DEAFA4958BD}</Project>
       <Name>RealmWeaver.Fody</Name>
     </ProjectReference>
