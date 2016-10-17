@@ -243,7 +243,7 @@ extern "C" {
         });
     }
     
-    REALM_EXPORT void object_set_link(const Object& object, size_t property_ndx, const Object& target_object, NativeException::Marshallable& ex)
+    REALM_EXPORT void object_set_link(Object& object, size_t property_ndx, const Object& target_object, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
             verify_can_set(object);
@@ -253,7 +253,7 @@ extern "C" {
         });
     }
     
-    REALM_EXPORT void object_clear_link(const Object& object, size_t property_ndx, NativeException::Marshallable& ex)
+    REALM_EXPORT void object_clear_link(Object& object, size_t property_ndx, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
             verify_can_set(object);
@@ -263,7 +263,7 @@ extern "C" {
         });
     }
     
-    REALM_EXPORT void object_set_null(const Object& object, size_t property_ndx, NativeException::Marshallable& ex)
+    REALM_EXPORT void object_set_null(Object& object, size_t property_ndx, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
             verify_can_set(object);
@@ -276,7 +276,7 @@ extern "C" {
         });
     }
     
-    REALM_EXPORT void object_set_bool(const Object& object, size_t property_ndx, size_t value, NativeException::Marshallable& ex)
+    REALM_EXPORT void object_set_bool(Object& object, size_t property_ndx, size_t value, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
             verify_can_set(object);
@@ -286,7 +286,7 @@ extern "C" {
         });
     }
     
-    REALM_EXPORT void object_set_int64(const Object& object, size_t property_ndx, int64_t value, NativeException::Marshallable& ex)
+    REALM_EXPORT void object_set_int64(Object& object, size_t property_ndx, int64_t value, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
             verify_can_set(object);
@@ -296,7 +296,7 @@ extern "C" {
         });
     }
     
-    REALM_EXPORT void object_set_int64_unique(const Object& object, size_t property_ndx, int64_t value, NativeException::Marshallable& ex)
+    REALM_EXPORT void object_set_int64_unique(Object& object, size_t property_ndx, int64_t value, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
             verify_can_set(object);
@@ -313,7 +313,7 @@ extern "C" {
         });
     }
     
-    REALM_EXPORT void object_set_float(const Object& object, size_t property_ndx, float value, NativeException::Marshallable& ex)
+    REALM_EXPORT void object_set_float(Object& object, size_t property_ndx, float value, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
             verify_can_set(object);
@@ -323,7 +323,7 @@ extern "C" {
         });
     }
     
-    REALM_EXPORT void object_set_double(const Object& object, size_t property_ndx, double value, NativeException::Marshallable& ex)
+    REALM_EXPORT void object_set_double(Object& object, size_t property_ndx, double value, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
             verify_can_set(object);
@@ -333,7 +333,7 @@ extern "C" {
         });
     }
     
-    REALM_EXPORT void object_set_string(const Object& object, size_t property_ndx, uint16_t* value, size_t value_len, NativeException::Marshallable& ex)
+    REALM_EXPORT void object_set_string(Object& object, size_t property_ndx, uint16_t* value, size_t value_len, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
             verify_can_set(object);
@@ -344,7 +344,7 @@ extern "C" {
         });
     }
     
-    REALM_EXPORT void object_set_string_unique(const Object& object, size_t property_ndx, uint16_t* value, size_t value_len, NativeException::Marshallable& ex)
+    REALM_EXPORT void object_set_string_unique(Object& object, size_t property_ndx, uint16_t* value, size_t value_len, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
             verify_can_set(object);
@@ -362,7 +362,7 @@ extern "C" {
         });
     }
     
-    REALM_EXPORT void object_set_binary(const Object& object, size_t property_ndx, char* value, size_t value_len, NativeException::Marshallable& ex)
+    REALM_EXPORT void object_set_binary(Object& object, size_t property_ndx, char* value, size_t value_len, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
             verify_can_set(object);
@@ -372,7 +372,7 @@ extern "C" {
         });
     }
     
-    REALM_EXPORT void object_set_timestamp_ticks(const Object& object, size_t property_ndx, int64_t value, NativeException::Marshallable& ex)
+    REALM_EXPORT void object_set_timestamp_ticks(Object& object, size_t property_ndx, int64_t value, NativeException::Marshallable& ex)
     {
         return handle_errors(ex, [&]() {
             verify_can_set(object);
@@ -382,7 +382,7 @@ extern "C" {
         });
     }
     
-    REALM_EXPORT void object_remove_row(const Object& object, NativeException::Marshallable& ex)
+    REALM_EXPORT void object_remove_row(Object& object, NativeException::Marshallable& ex)
     {
         handle_errors(ex, [&]() {
             verify_can_set(object);
