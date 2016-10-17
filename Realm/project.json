@@ -12,7 +12,9 @@
     "System.Runtime.Handles": "4.0.1"
   },
   "frameworks": {
-    "netstandard1.6": {}
+    "netstandard1.6": {
+      "imports": "dnxcore50"
+    }
   },
   "buildOptions": {
     "allowUnsafe": true
