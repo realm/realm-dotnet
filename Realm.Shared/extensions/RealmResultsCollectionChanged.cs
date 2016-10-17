@@ -109,7 +109,7 @@ namespace Realms
                     foreach (var removed in change.DeletedIndices.Reverse())
                     {
                         // the row has been deleted, we need to recreate the adapter's contents
-                        if (!this[removed].RowHandle.IsAttached)
+                        if (!this[removed].ObjectHandle.IsValid)
                         {
                             Recreate();
                             return;

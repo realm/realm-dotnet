@@ -61,14 +61,14 @@ namespace Realms
             }
 
             ++_index;
-            var rowPtr = _enumeratingResults.GetRow(_index);
+            var rowPtr = _enumeratingResults.GetObject(_index);
             if (rowPtr == IntPtr.Zero)
             {
                 Current = (T)(object)null;
                 return false;
             }
 
-            Current = (T)(object)_realm.MakeObjectForRow(_schema.Name, rowPtr);
+            Current = (T)(object)_realm.MakeObject(_schema.Name, rowPtr);
             return true;
         }
 

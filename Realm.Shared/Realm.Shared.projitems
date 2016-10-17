@@ -16,14 +16,12 @@
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\RealmDecryptionFailedException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\RealmObjectAlreadyManagedByRealmException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\RealmObjectManagedByAnotherRealmException.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Exceptions\RealmOutsideTransactionException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\RealmFileExistsException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\RealmInvalidDatabaseException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\RealmPermissionDeniedException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ReadOnlyCollectionExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Handles\QueryHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Handles\RealmHandle.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Handles\RowHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Handles\SharedRealmHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Handles\TableHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\ExpressionVisitor.cs" />
@@ -35,7 +33,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Native\MarshaledVector.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Native\NativeCommon.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Native\NativeException.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Native\NativeTable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Native\PtrTo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Native\SchemaObject.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Native\SchemaProperty.cs" />
@@ -48,7 +45,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\RealmFileAccessErrorException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\RealmFileNotFoundException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\RealmOutOfMemoryException.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)RealmObjectOps.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transaction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Handles\LinkListHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RealmConfiguration.cs" />
@@ -81,6 +77,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Migration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\ManagedExceptionDuringMigrationException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Handles\UnownedRealmHandle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Handles\ObjectHandle.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Weaving\" />

@@ -162,13 +162,13 @@ namespace Realms
                     throw new ArgumentOutOfRangeException();
                 }
 
-                var linkedRowPtr = _listHandle.Get((IntPtr)index);
-                return (T)_realm.MakeObjectForRow(_targetMetadata, linkedRowPtr);
+                var linkedObjectPtr = _listHandle.Get((IntPtr)index, _realm.SharedRealmHandle);
+                return (T)_realm.MakeObject(_targetMetadata, linkedObjectPtr);
             }
 
             set
             {
-                throw new NotImplementedException();
+                throw new NotSupportedException("Setting items directly is not supported.");
             }
         }
 
@@ -183,7 +183,7 @@ namespace Realms
         public void Add(T item)
         {
             this.ManageObjectIfNeeded(item);
-            var rowIndex = item.RowHandle.RowIndex;
+            var rowIndex = item.ObjectHandle.RowIndex;
             _listHandle.Add(rowIndex);
         }
 
@@ -257,7 +257,7 @@ namespace Realms
                 throw new ArgumentException("Value does not belong to a realm", nameof(item));
             }
 
-            var rowIndex = item.RowHandle.RowIndex;
+            var rowIndex = item.ObjectHandle.RowIndex;
             return (int)_listHandle.Find(rowIndex, IntPtr.Zero);
         }
 
@@ -275,7 +275,7 @@ namespace Realms
             }
 
             this.ManageObjectIfNeeded(item);
-            var rowIndex = item.RowHandle.RowIndex;
+            var rowIndex = item.ObjectHandle.RowIndex;
             _listHandle.Insert((IntPtr)index, rowIndex);
         }
 

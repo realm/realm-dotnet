@@ -38,7 +38,7 @@ namespace Realms
             public static extern void clear(LinkListHandle linklistHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "linklist_get", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr get(LinkListHandle linklistHandle, IntPtr link_ndx, out NativeException ex);
+            public static extern IntPtr get(LinkListHandle linklistHandle, SharedRealmHandle realmHandle, IntPtr link_ndx, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "linklist_find", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr find(LinkListHandle linklistHandle, IntPtr link_ndx, IntPtr start_from, out NativeException ex);
@@ -87,10 +87,10 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public IntPtr Get(IntPtr linkIndex)
+        public IntPtr Get(IntPtr linkIndex, SharedRealmHandle realmHandle)
         {
             NativeException nativeException;
-            var result = NativeMethods.get(this, linkIndex, out nativeException);
+            var result = NativeMethods.get(this, realmHandle, linkIndex, out nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }

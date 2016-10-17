@@ -199,7 +199,7 @@ namespace IntegrationTests.Shared
         [Test]
         public void TimAddsADogByInsert()
         {
-            var tim = realm.All<Owner>().Single(p => p.Name == "Tim");  // use Single for a change
+            var tim = realm.All<Owner>().Single(p => p.Name == "Tim"); // use Single for a change
             Assert.That(tim.Dogs.Count(), Is.EqualTo(2));
             using (var trans = realm.BeginWrite())
             {

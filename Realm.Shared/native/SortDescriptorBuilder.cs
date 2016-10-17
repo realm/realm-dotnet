@@ -31,7 +31,7 @@ namespace Realms.Native
             // I.e. if sort is being applied to Dog.Owner.Name, there will
             // be two indices, the first pointing to Dog.Owner and the second
             // to Person.Name (given Owner is an instance of Person).
-            public List<IntPtr> ColumnIndexChain;
+            public List<IntPtr> PropertyIndexChain;
             public bool Ascending;
 
             [StructLayout(LayoutKind.Sequential)]
@@ -59,8 +59,12 @@ namespace Realms.Native
         // any links.
         public void AddClause(string columnName, bool @ascending)
         {
-            var columnIndex = _metadata.ColumnIndices[columnName];
-            _clauses.Add(new Clause { ColumnIndexChain = new List<IntPtr> { columnIndex }, Ascending = @ascending });
+            var propertyIndex = _metadata.PropertyIndices[columnName];
+            _clauses.Add(new Clause
+            {
+                PropertyIndexChain = new List<IntPtr> { propertyIndex }, 
+                Ascending = @ascending 
+            });
         }
 
         /// <summary>
@@ -72,21 +76,21 @@ namespace Realms.Native
         /// </returns>
         public Tuple<IntPtr[], Clause.Marshalable[]> Flatten()
         {
-            var columnIndexFlattener = new List<IntPtr>();
+            var propertyIndexFlattener = new List<IntPtr>();
             var sortClauses = new List<Clause.Marshalable>();
             foreach (var clause in _clauses)
             {
                 sortClauses.Add(new Clause.Marshalable
                 {
-                    Offset = (IntPtr)columnIndexFlattener.Count,
-                    Count = (IntPtr)clause.ColumnIndexChain.Count,
+                    Offset = (IntPtr)propertyIndexFlattener.Count,
+                    Count = (IntPtr)clause.PropertyIndexChain.Count,
                     Ascending = clause.Ascending
                 });
 
-                columnIndexFlattener.AddRange(clause.ColumnIndexChain);
+                propertyIndexFlattener.AddRange(clause.PropertyIndexChain);
             }
 
-            return Tuple.Create(columnIndexFlattener.ToArray(), sortClauses.ToArray());
+            return Tuple.Create(propertyIndexFlattener.ToArray(), sortClauses.ToArray());
         }
     }
 }

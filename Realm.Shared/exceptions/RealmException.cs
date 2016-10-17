@@ -82,6 +82,9 @@ namespace Realms
                 case RealmExceptionCodes.RealmDotNetExceptionDuringMigration:
                     return new ManagedExceptionDuringMigrationException(message);
 
+                case RealmExceptionCodes.RealmClosed:
+                    return new RealmClosedException(message);
+
                 case RealmExceptionCodes.StdArgumentOutOfRange:
                     return new ArgumentOutOfRangeException(message);
 

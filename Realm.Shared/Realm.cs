@@ -192,24 +192,18 @@ namespace Realms
             }
 
             // build up column index in a loop so can spot and cache primary key index on the way
-            var initColumnMap = new Dictionary<string, IntPtr>();
-            var initPrimaryKeyIndex = -1;
+            var initPropertyMap = new Dictionary<string, IntPtr>();
+            var propertyIndex = -1;
             foreach (var prop in schema)
             {
-                var colIndex = NativeTable.GetColumnIndex(table, prop.Name);
-                initColumnMap.Add(prop.Name, colIndex);
-                if (prop.IsPrimaryKey)
-                {
-                    initPrimaryKeyIndex = (int)colIndex;
-                }
+                initPropertyMap[prop.Name] = (IntPtr)(++propertyIndex);
             }
 
             return new RealmObject.Metadata
             {
                 Table = table,
                 Helper = helper,
-                ColumnIndices = initColumnMap,
-                PrimaryKeyColumnIndex = initPrimaryKeyIndex,
+                PropertyIndices = initPropertyMap,
                 Schema = schema
             };
         }
@@ -427,11 +421,6 @@ namespace Realms
 
         private RealmObject CreateObject(string className, out RealmObject.Metadata metadata)
         {
-            if (!IsInTransaction)
-            {
-                throw new RealmOutsideTransactionException("Cannot create Realm object outside write transactions");
-            }
-
             if (!Metadata.TryGetValue(className, out metadata))
             {
                 throw new ArgumentException($"The class {className} is not in the limited set of classes for this realm");
@@ -439,38 +428,37 @@ namespace Realms
 
             var result = metadata.Helper.CreateInstance();
 
-            var rowPtr = NativeTable.AddEmptyRow(metadata.Table);
-            var rowHandle = CreateRowHandle(rowPtr, SharedRealmHandle);
-
-            result._Manage(this, rowHandle, metadata);
+            var objectPtr = metadata.Table.AddEmptyObject(SharedRealmHandle);
+            var objectHandle = CreateObjectHandle(objectPtr, SharedRealmHandle);
+            result._Manage(this, objectHandle, metadata);
             return result;
         }
 
-        internal RealmObject MakeObjectForRow(RealmObject.Metadata metadata, IntPtr rowPtr)
+        internal RealmObject MakeObject(RealmObject.Metadata metadata, IntPtr objectPtr)
         {
-            return MakeObjectForRow(metadata, CreateRowHandle(rowPtr, SharedRealmHandle));
+            return MakeObject(metadata, CreateObjectHandle(objectPtr, SharedRealmHandle));
         }
 
-        internal RealmObject MakeObjectForRow(string className, IntPtr rowPtr)
+        internal RealmObject MakeObject(string className, IntPtr objectPtr)
         {
-            return MakeObjectForRow(Metadata[className], CreateRowHandle(rowPtr, SharedRealmHandle));
+            return MakeObject(Metadata[className], CreateObjectHandle(objectPtr, SharedRealmHandle));
         }
 
-        internal RealmObject MakeObjectForRow(string className, RowHandle row)
+        internal RealmObject MakeObject(string className, ObjectHandle objectHandle)
         {
-            return MakeObjectForRow(Metadata[className], row);
+            return MakeObject(Metadata[className], objectHandle);
         }
 
-        internal RealmObject MakeObjectForRow(RealmObject.Metadata metadata, RowHandle row)
+        internal RealmObject MakeObject(RealmObject.Metadata metadata, ObjectHandle objectHandle)
         {
             var ret = metadata.Helper.CreateInstance();
-            ret._Manage(this, row, metadata);
+            ret._Manage(this, objectHandle, metadata);
             return ret;
         }
 
         internal ResultsHandle MakeResultsForTable(RealmObject.Metadata metadata)
         {
-            var resultsPtr = NativeTable.CreateResults(metadata.Table, SharedRealmHandle);
+            var resultsPtr = metadata.Table.CreateResults(SharedRealmHandle);
             return CreateResultsHandle(resultsPtr);
         }
 
@@ -499,7 +487,7 @@ namespace Realms
         /// </summary>
         /// <typeparam name="T">The Type T must not only be a RealmObject but also have been processed by the Fody weaver, so it has persistent properties.</typeparam>
         /// <param name="obj">Must be a standalone object, null not allowed.</param>
-        /// <exception cref="RealmOutsideTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
+        /// <exception cref="RealmInvalidTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
         /// <exception cref="RealmObjectAlreadyManagedByRealmException">You can't manage the same object twice. This exception is thrown, rather than silently detecting the mistake, to help you debug your code</exception>
         /// <exception cref="RealmObjectManagedByAnotherRealmException">You can't manage an object with more than one realm</exception>
         public void Manage<T>(T obj) where T : RealmObject
@@ -519,19 +507,14 @@ namespace Realms
                 throw new RealmObjectManagedByAnotherRealmException("Cannot start to manage an object with a realm when it's already managed by another realm");
             }
 
-            if (!IsInTransaction)
-            {
-                throw new RealmOutsideTransactionException("Cannot start managing a Realm object outside write transactions");
-            }
-
             var metadata = Metadata[typeof(T).Name];
             var tableHandle = metadata.Table;
 
-            var rowPtr = NativeTable.AddEmptyRow(tableHandle);
-            var rowHandle = CreateRowHandle(rowPtr, SharedRealmHandle);
+            var objectPtr = metadata.Table.AddEmptyObject(SharedRealmHandle);
+            var objectHandle = CreateObjectHandle(objectPtr, SharedRealmHandle);
 
-            obj._Manage(this, rowHandle, metadata);
-            obj._CopyDataFromBackingFieldsToRow();
+            obj._Manage(this, objectHandle, metadata);
+            obj._CopyDataFromBackingFields();
         }
 
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
@@ -553,9 +536,9 @@ namespace Realms
         }
 
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-        internal static RowHandle CreateRowHandle(IntPtr rowPtr, SharedRealmHandle sharedRealmHandle)
+        internal static ObjectHandle CreateObjectHandle(IntPtr objectPtr, SharedRealmHandle sharedRealmHandle)
         {
-            var rowHandle = new RowHandle(sharedRealmHandle);
+            var objectHandle = new ObjectHandle(sharedRealmHandle);
 
             RuntimeHelpers.PrepareConstrainedRegions();
             try
@@ -564,10 +547,10 @@ namespace Realms
             }
             finally
             {
-                rowHandle.SetHandle(rowPtr);
+                objectHandle.SetHandle(objectPtr);
             }
 
-            return rowHandle;
+            return objectHandle;
         }
 
         /// <summary>
@@ -717,13 +700,13 @@ namespace Realms
         public T ObjectForPrimaryKey<T>(long id) where T : RealmObject
         {
             var metadata = Metadata[typeof(T).Name];
-            var rowPtr = NativeTable.RowForPrimaryKey(metadata.Table, metadata.PrimaryKeyColumnIndex, id);
-            if (rowPtr == IntPtr.Zero)
+            var objectPtr = metadata.Table.ObjectForPrimaryKey(SharedRealmHandle, id);
+            if (objectPtr == IntPtr.Zero)
             {
                 return null;
             }
 
-            return (T)MakeObjectForRow(metadata, rowPtr);
+            return (T)MakeObject(metadata, objectPtr);
         }
 
         /// <summary>
@@ -736,13 +719,13 @@ namespace Realms
         public T ObjectForPrimaryKey<T>(string id) where T : RealmObject
         {
             var metadata = Metadata[typeof(T).Name];
-            var rowPtr = NativeTable.RowForPrimaryKey(metadata.Table, metadata.PrimaryKeyColumnIndex, id);
-            if (rowPtr == IntPtr.Zero)
+            var objectPtr = metadata.Table.ObjectForPrimaryKey(SharedRealmHandle, id);
+            if (objectPtr == IntPtr.Zero)
             {
                 return null;
             }
 
-            return (T)MakeObjectForRow(metadata, rowPtr);
+            return (T)MakeObject(metadata, objectPtr);
         }
 
         /// <summary>
@@ -755,13 +738,13 @@ namespace Realms
         public RealmObject ObjectForPrimaryKey(string className, long id)
         {
             var metadata = Metadata[className];
-            var rowPtr = NativeTable.RowForPrimaryKey(metadata.Table, metadata.PrimaryKeyColumnIndex, id);
-            if (rowPtr == IntPtr.Zero)
+            var objectPtr = metadata.Table.ObjectForPrimaryKey(SharedRealmHandle, id);
+            if (objectPtr == IntPtr.Zero)
             {
                 return null;
             }
 
-            return MakeObjectForRow(metadata, rowPtr);
+            return MakeObject(metadata, objectPtr);
         }
 
         /// <summary>
@@ -774,13 +757,13 @@ namespace Realms
         public RealmObject ObjectForPrimaryKey(string className, string id)
         {
             var metadata = Metadata[className];
-            var rowPtr = NativeTable.RowForPrimaryKey(metadata.Table, metadata.PrimaryKeyColumnIndex, id);
-            if (rowPtr == IntPtr.Zero)
+            var objectPtr = metadata.Table.ObjectForPrimaryKey(SharedRealmHandle, id);
+            if (objectPtr == IntPtr.Zero)
             {
                 return null;
             }
 
-            return MakeObjectForRow(metadata, rowPtr);
+            return MakeObject(metadata, objectPtr);
         }
 
         #endregion ObjectForPrimaryKey
@@ -789,17 +772,11 @@ namespace Realms
         /// Removes a persistent object from this realm, effectively deleting it.
         /// </summary>
         /// <param name="obj">Must be an object persisted in this realm.</param>
-        /// <exception cref="RealmOutsideTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
+        /// <exception cref="RealmInvalidTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
         /// <exception cref="System.ArgumentNullException">If you invoke this with a standalone object.</exception>
         public void Remove(RealmObject obj)
         {
-            if (!IsInTransaction)
-            {
-                throw new RealmOutsideTransactionException("Cannot remove Realm object outside write transactions");
-            }
-
-            var tableHandle = obj.ObjectMetadata.Table;
-            NativeTable.RemoveRow(tableHandle, obj.RowHandle);
+            obj.ObjectHandle.RemoveFromRealm();
         }
 
         /// <summary>
@@ -812,11 +789,6 @@ namespace Realms
             if (range == null)
             {
                 throw new ArgumentNullException(nameof(range));
-            }
-
-            if (!IsInTransaction)
-            {
-                throw new RealmOutsideTransactionException("Cannot remove Realm objects outside write transactions");
             }
 
             range.ResultsHandle.Clear();
@@ -845,11 +817,6 @@ namespace Realms
         /// </summary>
         public void RemoveAll()
         {
-            if (!IsInTransaction)
-            {
-                throw new RealmOutsideTransactionException("Cannot remove all Realm objects outside write transactions");
-            }
-
             foreach (var metadata in Metadata.Values)
             {
                 var resultsHandle = MakeResultsForTable(metadata);

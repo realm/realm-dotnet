@@ -165,7 +165,7 @@ REALM_EXPORT Table* shared_realm_get_table(SharedRealm* realm, uint16_t* object_
 REALM_EXPORT uint64_t  shared_realm_get_schema_version(SharedRealm* realm, NativeException::Marshallable& ex)
 {
     return handle_errors(ex, [&]() {
-      return (*realm)->schema_version();
+        return (*realm)->schema_version();
     });
 }
 

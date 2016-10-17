@@ -78,7 +78,7 @@ namespace Realms
             NativeMethods.destroy(handle);
         }
 
-        public IntPtr GetRow(long index)
+        public IntPtr GetObject(long index)
         {
             NativeException nativeException;
             var result = NativeMethods.get_row(this, (IntPtr)index, out nativeException);

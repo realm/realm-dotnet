@@ -111,6 +111,9 @@ namespace realm {
         catch (const SetDuplicatePrimaryKeyValueException& e) {
             return { RealmErrorType::RealmDuplicatePrimaryKeyValue, e.what() };  // map to same as DuplicatePrimaryKeyValueException
         }
+        catch (const RealmClosedException& e) {
+            return { RealmErrorType::RealmClosed, e.what() };
+        }
         catch (const std::bad_alloc& e) {
             return { RealmErrorType::RealmOutOfMemory, e.what() };
         }

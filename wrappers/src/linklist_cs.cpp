@@ -23,6 +23,7 @@
 #include "realm_export_decls.hpp"
 #include "shared_linklist.hpp"
 #include "wrapper_exceptions.hpp"
+#include "object_accessor.hpp"
 
 using namespace realm;
 using namespace realm::binding;
@@ -46,22 +47,24 @@ REALM_EXPORT void linklist_insert(SharedLinkViewRef* linklist_ptr, size_t link_n
   });
 }
 
-REALM_EXPORT Row* linklist_get(SharedLinkViewRef* linklist_ptr, size_t link_ndx, NativeException::Marshallable& ex)
+REALM_EXPORT Object* linklist_get(SharedLinkViewRef* linklist_ptr, SharedRealm* realm, size_t link_ndx, NativeException::Marshallable& ex)
 {
-  return handle_errors(ex, [&]() -> Row* {
-    const size_t count = (**linklist_ptr)->size();
-    if (link_ndx >= count)
-      throw IndexOutOfRangeException("Get from RealmList", link_ndx, count);
-    auto rowExpr = (**linklist_ptr)->get(link_ndx);
-    return new Row(rowExpr);
-  });
+    return handle_errors(ex, [&]() -> Object* {
+        const size_t count = (**linklist_ptr)->size();
+        if (link_ndx >= count)
+            throw IndexOutOfRangeException("Get from RealmList", link_ndx, count);
+        auto rowExpr = (**linklist_ptr)->get(link_ndx);
+        const std::string object_name(ObjectStore::object_type_for_table_name((**linklist_ptr)->get_target_table().get_name()));
+        auto& object_schema = *realm->get()->schema().find(object_name);
+        return new Object(*realm, object_schema, Row(rowExpr));
+    });
 }
 
 REALM_EXPORT size_t linklist_find(SharedLinkViewRef* linklist_ptr, size_t row_ndx, size_t start_from, NativeException::Marshallable& ex)
 {
-  return handle_errors(ex, [&]() {
-    return (**linklist_ptr)->find(row_ndx, start_from);
-  });
+    return handle_errors(ex, [&]() {
+        return (**linklist_ptr)->find(row_ndx, start_from);
+    });
 }
 
 REALM_EXPORT void linklist_erase(SharedLinkViewRef* linklist_ptr, size_t link_ndx, NativeException::Marshallable& ex)
