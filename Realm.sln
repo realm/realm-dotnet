@@ -7,9 +7,13 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Realm.Shared", "Shared\Real
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{9F639E1B-3A3A-4AD0-B9B4-5B4B9A93A603}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Tests.Shared", "Shared\Tests.Shared\Tests.Shared.shproj", "{06146619-D21C-414C-BFE3-2F59ACBA412E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.Win32", "Platform.Win32\Tests.Win32\Tests.Win32.csproj", "{BFC1C1B7-2864-4456-9DEC-309A3F006B66}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.XamarinIOS", "Platform.XamarinIOS\Tests.XamarinIOS\Tests.XamarinIOS.csproj", "{B9450AD4-E48B-479B-98BA-4563B32E278A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.XamarinAndroid", "Platform.XamarinAndroid\Tests.XamarinAndroid\Tests.XamarinAndroid.csproj", "{ED17479C-2CFE-4E6D-A592-82C491FFBE4E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WeaverTests", "WeaverTests", "{64B2E00E-D5D7-474B-9947-6ABC51070E7B}"
 EndProject
