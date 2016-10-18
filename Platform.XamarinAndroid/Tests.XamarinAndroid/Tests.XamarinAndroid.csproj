@@ -79,7 +79,7 @@
   </ItemGroup>
   <Import Project="..\..\Shared\Tests.Shared\Tests.Shared.projitems" Label="Shared" Condition="Exists('..\..\Shared\Tests.Shared\Tests.Shared.projitems')" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
-  <Import Project="$(SolutionDir)packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets" Condition="Exists('$(SolutionDir)packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets')" />
+  <Import Project="..\..\packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets" Condition="Exists('..\..\packages\Fody.1.29.4\build\portable-net+sl+win+wpa+wp\Fody.targets')" />
   <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
     <AndroidNativeLibrary Include="..\..\wrappers\build\Debug-android\armeabi-v7a\libwrappers.so">
       <Link>wrappers\armeabi-v7\libwrappers.so</Link>
@@ -123,5 +123,5 @@
       <Link>Assets\ForMigrationsToCopyAndMigrate.realm</Link>
     </AndroidAsset>
   </ItemGroup>
-  <Import Project="$(SolutionDir)packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets" Condition="Exists('$(SolutionDir)packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets')" />
+  <Import Project="..\..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets" Condition="Exists('..\..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets')" />
 </Project>

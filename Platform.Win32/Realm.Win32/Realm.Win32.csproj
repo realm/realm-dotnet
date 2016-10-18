@@ -67,7 +67,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="DotNetCross.Memory.Unsafe, Version=0.2.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>$(SolutionDir)packages\DotNetCross.Memory.Unsafe.0.2.2\lib\net11\DotNetCross.Memory.Unsafe.dll</HintPath>
+      <HintPath>..\..\packages\DotNetCross.Memory.Unsafe.0.2.2\lib\net11\DotNetCross.Memory.Unsafe.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -78,11 +78,11 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="Remotion.Linq">
-      <HintPath>$(SolutionDir)packages\Remotion.Linq.2.1.1\lib\net45\Remotion.Linq.dll</HintPath>
+      <HintPath>..\..\packages\Remotion.Linq.2.1.1\lib\net45\Remotion.Linq.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="$(SolutionDir)RealmAssemblyInfo.cs">
+    <Compile Include="..\..\RealmAssemblyInfo.cs">
       <Link>Properties\RealmAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="InteropConfig.cs" />
@@ -115,5 +115,5 @@
   </ItemGroup>
   <Import Project="..\..\Shared\Realm.Shared\Realm.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(SolutionDir)packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets" Condition="Exists('$(SolutionDir)packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets')" />
+  <Import Project="..\..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets" Condition="Exists('..\..\packages\StyleCop.MSBuild.4.7.54.0\build\StyleCop.MSBuild.Targets')" />
 </Project>
