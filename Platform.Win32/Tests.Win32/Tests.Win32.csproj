@@ -81,7 +81,7 @@
     <Compile Include="RunSpecificTest.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Realm.Win32\Realm.Win32.csproj">
+    <ProjectReference Include="..\Realm.Win32\Realm.Win32.csproj">
       <Project>{C211EDE7-CC8E-4F53-A9DF-0B105A350BBF}</Project>
       <Name>Realm.Win32</Name>
     </ProjectReference>

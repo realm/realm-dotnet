@@ -88,7 +88,7 @@
   <ItemGroup>
     <ObjcBindingApiDefinition Include="ApiDefinition.cs" />
   </ItemGroup>
-  <Import Project="..\..\Shared\Realm.Shared\Realm.Shared.projitems" Label="Shared" Condition="Exists('..\Realm.Shared\Realm.Shared.projitems')" />
+  <Import Project="..\..\Shared\Realm.Shared\Realm.Shared.projitems" Label="Shared" Condition="Exists('..\..\Shared\Realm.Shared\Realm.Shared.projitems')" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.ObjCBinding.CSharp.targets" />
   <!-- Instead of including macro inline, which seems unreliably to work only on load, use a conditional so absolute paths are selected
      <ObjcBindingNativeLibrary Include="..\..\wrappers\build\$(Configuration)-ios-universal\libwrappers.a">
