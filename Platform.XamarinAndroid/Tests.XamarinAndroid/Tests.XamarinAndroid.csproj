@@ -120,7 +120,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="..\Tests.Shared\ForMigrationsToCopyAndMigrate.realm">
+    <AndroidAsset Include="..\..\Shared\Tests.Shared\ForMigrationsToCopyAndMigrate.realm">
       <Link>Assets\ForMigrationsToCopyAndMigrate.realm</Link>
     </AndroidAsset>
   </ItemGroup>
