@@ -25,4 +25,4 @@ using System.Runtime.CompilerServices;
 [assembly: Foundation.LinkerSafe]
 
 [assembly: AssemblyTitle("Realm.XamarinIOS")]
-[assembly: InternalsVisibleTo("IntegrationTestsXamarinIOS")]
+[assembly: InternalsVisibleTo("Tests.XamarinIOS")]

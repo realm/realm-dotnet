@@ -20,4 +20,4 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 
 [assembly: AssemblyTitle("Realm.XamarinAndroid")]
-[assembly: InternalsVisibleTo("IntegrationTests.XamarinAndroid")]
+[assembly: InternalsVisibleTo("Tests.XamarinAndroid")]

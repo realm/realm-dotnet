@@ -20,4 +20,4 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 
 [assembly: AssemblyTitle("Realm.Win32")]
-[assembly: InternalsVisibleTo("IntegrationTests.Win32")]
+[assembly: InternalsVisibleTo("Tests.Win32")]
