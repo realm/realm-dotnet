@@ -25,7 +25,7 @@ namespace Realms.Dynamic
     {
         internal static readonly DynamicRealmObjectHelper Instance = new DynamicRealmObjectHelper();
 
-        public void CopyToRealm(RealmObject instance)
+        public void CopyToRealm(RealmObject instance, bool update)
         {
             throw new NotSupportedException("DynamicRealmObjectHelper cannot exist in unmanaged state, so CopyToRealm should not be called ever.");
         }
@@ -33,6 +33,18 @@ namespace Realms.Dynamic
         public RealmObject CreateInstance()
         {
             return new DynamicRealmObject();
+        }
+
+        public bool TryGetPrimaryKeyValue(RealmObject instance, out object value)
+        {
+            if (!instance.ObjectSchema.PrimaryKeyProperty.HasValue)
+            {
+                value = null;
+                return false;
+            }
+
+            value = instance.ObjectSchema.PrimaryKeyProperty.Value.PropertyInfo.GetValue(instance);
+            return true;
         }
     }
 }

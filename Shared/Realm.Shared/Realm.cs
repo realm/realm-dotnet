@@ -487,10 +487,10 @@ namespace Realms
         /// </summary>
         /// <typeparam name="T">The Type T must not only be a RealmObject but also have been processed by the Fody weaver, so it has persistent properties.</typeparam>
         /// <param name="obj">Must be a standalone object, null not allowed.</param>
+        /// <param name="update">If true, and an object with the same primary key already exists, performs an update.</param>
         /// <exception cref="RealmInvalidTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
-        /// <exception cref="RealmObjectAlreadyManagedByRealmException">You can't manage the same object twice. This exception is thrown, rather than silently detecting the mistake, to help you debug your code</exception>
         /// <exception cref="RealmObjectManagedByAnotherRealmException">You can't manage an object with more than one realm</exception>
-        public void Manage<T>(T obj) where T : RealmObject
+        public void Manage<T>(T obj, bool update = false) where T : RealmObject
         {
             if (obj == null)
             {
@@ -501,20 +501,40 @@ namespace Realms
             {
                 if (obj.Realm.SharedRealmHandle == this.SharedRealmHandle)
                 {
-                    throw new RealmObjectAlreadyManagedByRealmException("The object is already managed by this realm");
+                    // Already managed by this realm, so nothing to do.
+                    return;
                 }
 
                 throw new RealmObjectManagedByAnotherRealmException("Cannot start to manage an object with a realm when it's already managed by another realm");
             }
 
             var metadata = Metadata[typeof(T).Name];
-            var tableHandle = metadata.Table;
 
-            var objectPtr = metadata.Table.AddEmptyObject(SharedRealmHandle);
+            var objectPtr = IntPtr.Zero;
+
+            object pkValue;
+            if (update && metadata.Helper.TryGetPrimaryKeyValue(obj, out pkValue))
+            {
+                if (pkValue is string)
+                {
+                    objectPtr = metadata.Table.ObjectForPrimaryKey(SharedRealmHandle, (string)pkValue);
+                }
+                else
+                {
+                    // We know it must be castable to long, so optimistically do it.
+                    objectPtr = metadata.Table.ObjectForPrimaryKey(SharedRealmHandle, (long)pkValue);
+                }
+            }
+
+            if (objectPtr == IntPtr.Zero)
+            {
+                objectPtr = metadata.Table.AddEmptyObject(SharedRealmHandle);
+            }
+
             var objectHandle = CreateObjectHandle(objectPtr, SharedRealmHandle);
 
             obj._Manage(this, objectHandle, metadata);
-            obj._CopyDataFromBackingFields();
+            metadata.Helper.CopyToRealm(obj, update);
         }
 
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]

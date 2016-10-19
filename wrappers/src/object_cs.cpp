@@ -302,14 +302,18 @@ extern "C" {
             verify_can_set(object);
             
             const size_t column_ndx = get_column_index(object, property_ndx);
-            if (object.row().get_table()->find_first_int(column_ndx, value) != not_found) {
-                throw SetDuplicatePrimaryKeyValueException(
-                                                           object.row().get_table()->get_name(),
-                                                           object.row().get_table()->get_column_name(column_ndx),
-                                                           util::format("%1", value)
-                                                           );
+            auto existing = object.row().get_table()->find_first_int(column_ndx, value);
+            if (existing != object.row().get_index()) {
+                if (existing != not_found) {
+                    throw SetDuplicatePrimaryKeyValueException(
+                                                               object.row().get_table()->get_name(),
+                                                               object.row().get_table()->get_column_name(column_ndx),
+                                                               util::format("%1", value)
+                                                               );
+                }
+                
+                object.row().set_int_unique(column_ndx, value);
             }
-            object.row().set_int_unique(column_ndx, value);
         });
     }
     
@@ -351,14 +355,18 @@ extern "C" {
             
             const size_t column_ndx = get_column_index(object, property_ndx);
             Utf16StringAccessor str(value, value_len);
-            if (object.row().get_table()->find_first_string(column_ndx, str) != not_found) {
-                throw SetDuplicatePrimaryKeyValueException(
-                                                           object.row().get_table()->get_name(),
-                                                           object.row().get_table()->get_column_name(column_ndx),
-                                                           str.to_string()
-                                                           );
+            auto existing = object.row().get_table()->find_first_string(column_ndx, str);
+            if (existing != object.row().get_index()) {
+                if (object.row().get_table()->find_first_string(column_ndx, str) != not_found) {
+                    throw SetDuplicatePrimaryKeyValueException(
+                                                               object.row().get_table()->get_name(),
+                                                               object.row().get_table()->get_column_name(column_ndx),
+                                                               str.to_string()
+                                                               );
+                }
+                
+                object.row().set_string_unique(column_ndx, str);
             }
-            object.row().set_string_unique(column_ndx, str);
         });
     }
     

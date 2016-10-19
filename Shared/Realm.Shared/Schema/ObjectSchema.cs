@@ -45,6 +45,8 @@ namespace Realms.Schema
         /// </summary>
         public int Count => _properties.Count;
 
+        public Property? PrimaryKeyProperty { get; }
+
         internal Type Type;
 
         internal IEnumerable<string> PropertyNames => _properties.Keys;
@@ -65,6 +67,11 @@ namespace Realms.Schema
 
             Name = name;
             _properties = new ReadOnlyDictionary<string, Property>(properties);
+            var primaryKeyKvp = properties.FirstOrDefault(kvp => kvp.Value.IsPrimaryKey);
+            if (primaryKeyKvp.Key != null)
+            {
+                PrimaryKeyProperty = primaryKeyKvp.Value;
+            }
         }
 
         /// <summary>
