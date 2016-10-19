@@ -127,6 +127,10 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_remove_row", CallingConvention = CallingConvention.Cdecl)]
             public static extern void remove_row(ObjectHandle handle, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_equals_object", CallingConvention = CallingConvention.Cdecl)]
+            [return: MarshalAs(UnmanagedType.I1)]
+            public static extern bool equals_object(ObjectHandle handle, ObjectHandle otherHandle, out NativeException ex);
         }
 
         public bool IsValid
@@ -137,18 +141,6 @@ namespace Realms
                 var result = NativeMethods.get_is_valid(this, out nativeException);
                 nativeException.ThrowIfNecessary();
                 return result == (IntPtr)1;  // inline equiv of IntPtrToBool
-            }
-        }
-
-        public IntPtr RowIndex
-        {
-            get
-            {
-                NativeException nativeException;
-                var result = NativeMethods.get_row_index(this, out nativeException);
-                nativeException.ThrowIfNecessary();
-
-                return result;
             }
         }
 
@@ -173,7 +165,17 @@ namespace Realms
                 return true;
             }
 
-            return RowIndex == (obj as ObjectHandle)?.RowIndex;
+            var otherHandle = obj as ObjectHandle;
+            if (ReferenceEquals(otherHandle, null))
+            {
+                return false;
+            }
+
+            NativeException nativeException;
+            var result = NativeMethods.equals_object(this, otherHandle, out nativeException);
+            nativeException.ThrowIfNecessary();
+
+            return result;
         }
 
         protected override void Unbind()

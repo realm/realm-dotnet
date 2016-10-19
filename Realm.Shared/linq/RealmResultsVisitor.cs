@@ -136,7 +136,7 @@ namespace Realms
             ObjectHandle obj;
             if (OptionalSortDescriptorBuilder == null)
             {
-                var objectPtr = CoreQueryHandle.FindDirect((IntPtr)index, _realm.SharedRealmHandle);
+                var objectPtr = CoreQueryHandle.FindDirect(_realm.SharedRealmHandle, (IntPtr)index);
                 obj = Realm.CreateObjectHandle(objectPtr, _realm.SharedRealmHandle);
             }
             else
@@ -201,7 +201,7 @@ namespace Realms
                 if (m.Method.Name == nameof(Queryable.Any))
                 {
                     RecurseToWhereOrRunLambda(m);
-                    var foundAny = CoreQueryHandle.FindDirect(IntPtr.Zero, _realm.SharedRealmHandle) != IntPtr.Zero;
+                    var foundAny = CoreQueryHandle.FindDirect(_realm.SharedRealmHandle) != IntPtr.Zero;
                     return Expression.Constant(foundAny);
                 }
 
@@ -211,7 +211,7 @@ namespace Realms
                     var firstObjectPtr = IntPtr.Zero;
                     if (OptionalSortDescriptorBuilder == null)
                     {
-                        firstObjectPtr = CoreQueryHandle.FindDirect(IntPtr.Zero, _realm.SharedRealmHandle);
+                        firstObjectPtr = CoreQueryHandle.FindDirect(_realm.SharedRealmHandle);
                     }
                     else
                     {
@@ -255,7 +255,7 @@ namespace Realms
                 if (m.Method.Name.StartsWith(nameof(Queryable.Single)))  // same as unsorted First with extra checks
                 {
                     RecurseToWhereOrRunLambda(m);
-                    var firstObjectPtr = CoreQueryHandle.FindDirect(IntPtr.Zero, _realm.SharedRealmHandle);
+                    var firstObjectPtr = CoreQueryHandle.FindDirect(_realm.SharedRealmHandle);
                     if (firstObjectPtr == IntPtr.Zero)
                     {
                         if (m.Method.Name == nameof(Queryable.Single))
@@ -268,8 +268,7 @@ namespace Realms
                     }
 
                     var firstObject = Realm.CreateObjectHandle(firstObjectPtr, _realm.SharedRealmHandle);
-                    var nextIndex = firstObject.RowIndex + 1;
-                    var nextObjectPtr = CoreQueryHandle.FindDirect(nextIndex, _realm.SharedRealmHandle);
+                    var nextObjectPtr = CoreQueryHandle.FindNext(firstObject);
                     if (nextObjectPtr != IntPtr.Zero)
                     {
                         throw new InvalidOperationException("Sequence contains more than one matching element");
