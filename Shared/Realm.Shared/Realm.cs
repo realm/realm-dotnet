@@ -490,6 +490,10 @@ namespace Realms
         /// <param name="update">If true, and an object with the same primary key already exists, performs an update.</param>
         /// <exception cref="RealmInvalidTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
         /// <exception cref="RealmObjectManagedByAnotherRealmException">You can't manage an object with more than one realm</exception>
+        /// <remarks>
+        /// If the object is already managed by this realm, this method does nothing.
+        /// Cyclic graphs (<c>Parent</c> has <c>Child</c> that has a <c>Parent</c>) will result in undefined behavior. You have to break the cycle manually and assign relationships after all object have been managed.
+        /// </remarks>
         public void Manage<T>(T obj, bool update = false) where T : RealmObject
         {
             // This is not obsoleted because the compiler will always pick it for specific types, generating a bunch of warnings
@@ -503,6 +507,10 @@ namespace Realms
         /// <param name="update">If true, and an object with the same primary key already exists, performs an update.</param>
         /// <exception cref="RealmInvalidTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
         /// <exception cref="RealmObjectManagedByAnotherRealmException">You can't manage an object with more than one realm</exception>
+        /// <remarks>
+        /// If the object is already managed by this realm, this method does nothing.
+        /// Cyclic graphs (<c>Parent</c> has <c>Child</c> that has a <c>Parent</c>) will result in undefined behavior. You have to break the cycle manually and assign relationships after all object have been managed.
+        /// </remarks>
         public void Manage(RealmObject obj, bool update = false)
         {
             ManageInternal(obj, obj?.GetType(), update);
