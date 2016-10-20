@@ -55,7 +55,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="$(SolutionDir)RealmAssemblyInfo.cs">
+    <Compile Include="..\..\RealmAssemblyInfo.cs">
       <Link>Properties\RealmAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
