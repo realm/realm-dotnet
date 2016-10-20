@@ -492,6 +492,24 @@ namespace Realms
         /// <exception cref="RealmObjectManagedByAnotherRealmException">You can't manage an object with more than one realm</exception>
         public void Manage<T>(T obj, bool update = false) where T : RealmObject
         {
+            // This is not obsoleted because the compiler will always pick it for specific types, generating a bunch of warnings
+            ManageInternal(obj, typeof(T), update);
+        }
+
+        /// <summary>
+        /// This realm will start managing a RealmObject which has been created as a standalone object.
+        /// </summary>
+        /// <param name="obj">Must be a standalone object, null not allowed.</param>
+        /// <param name="update">If true, and an object with the same primary key already exists, performs an update.</param>
+        /// <exception cref="RealmInvalidTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
+        /// <exception cref="RealmObjectManagedByAnotherRealmException">You can't manage an object with more than one realm</exception>
+        public void Manage(RealmObject obj, bool update = false)
+        {
+            ManageInternal(obj, obj.GetType(), update);
+        }
+
+        private void ManageInternal(RealmObject obj, Type objectType, bool update)
+        {
             if (obj == null)
             {
                 throw new ArgumentNullException(nameof(obj));
@@ -508,7 +526,7 @@ namespace Realms
                 throw new RealmObjectManagedByAnotherRealmException("Cannot start to manage an object with a realm when it's already managed by another realm");
             }
 
-            var metadata = Metadata[typeof(T).Name];
+            var metadata = Metadata[objectType.Name];
 
             var objectPtr = IntPtr.Zero;
 

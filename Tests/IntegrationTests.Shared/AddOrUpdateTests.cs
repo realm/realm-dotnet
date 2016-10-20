@@ -312,8 +312,6 @@ namespace IntegrationTests.Shared
             Assert.AreEqual("child2", _realm.ObjectForPrimaryKey<PrimaryKeyObject>(1).StringValue);
         }
 
-        // TODO: add tests for IRealmObjectHelper.TryGetPrimaryKeyValue
-
         private class NonPrimaryKeyObject : RealmObject
         {
             public string StringValue { get; set; }
