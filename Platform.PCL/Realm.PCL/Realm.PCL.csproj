@@ -70,7 +70,6 @@
       <Link>Exceptions\RealmObjectAlreadyManagedByRealmException.cs</Link>
     </Compile>
     <Compile Include="..\..\Shared\Realm.Shared\exceptions\RealmObjectManagedByAnotherRealmException.cs">
-    <Compile Include="..\Realm.Shared\exceptions\RealmObjectManagedByAnotherRealmException.cs">
       <Link>Exceptions\RealmObjectManagedByAnotherRealmException.cs</Link>
     </Compile>
     <Compile Include="..\..\Shared\Realm.Shared\exceptions\RealmOutOfMemoryException.cs">

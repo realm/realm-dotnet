@@ -50,9 +50,6 @@
     <Compile Include="..\..\..\Shared\Realm.Shared\weaving\IRealmObjectHelper.cs">
       <Link>IRealmObjectHelper.cs</Link>
     </Compile>
-    <Compile Include="..\..\..\Realm.Shared\Exceptions\RealmClassLacksPrimaryKeyException.cs">
-      <Link>Exceptions\RealmClassLacksPrimaryKeyException.cs</Link>
-    </Compile>
     <Compile Include="Exceptions\RealmException.cs" />
     <Compile Include="Realm.cs" />
   </ItemGroup>
