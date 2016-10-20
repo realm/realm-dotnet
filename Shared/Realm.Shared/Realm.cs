@@ -505,7 +505,7 @@ namespace Realms
         /// <exception cref="RealmObjectManagedByAnotherRealmException">You can't manage an object with more than one realm</exception>
         public void Manage(RealmObject obj, bool update = false)
         {
-            ManageInternal(obj, obj.GetType(), update);
+            ManageInternal(obj, obj?.GetType(), update);
         }
 
         private void ManageInternal(RealmObject obj, Type objectType, bool update)
@@ -513,6 +513,11 @@ namespace Realms
             if (obj == null)
             {
                 throw new ArgumentNullException(nameof(obj));
+            }
+
+            if (objectType == null)
+            {
+                throw new ArgumentNullException(nameof(objectType));
             }
 
             if (obj.IsManaged)

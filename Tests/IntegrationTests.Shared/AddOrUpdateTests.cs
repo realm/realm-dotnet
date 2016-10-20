@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using NUnit.Framework;
 using Realms;
 
@@ -312,6 +313,208 @@ namespace IntegrationTests.Shared
             Assert.AreEqual("child2", _realm.ObjectForPrimaryKey<PrimaryKeyObject>(1).StringValue);
         }
 
+        [Test]
+        public void AddOrUpdate_WhenListHasPK_ShouldUpdateListItems()
+        {
+            var first = new PrimaryKeyWithPKList
+            {
+                Id = 1,
+                StringValue = "first"
+            };
+
+            first.ListValue.Add(new PrimaryKeyObject
+            {
+                Id = 1,
+                StringValue = "child"
+            });
+
+            _realm.Write(() =>
+            {
+                _realm.Manage(first, update: true);
+            });
+
+            var second = new PrimaryKeyWithPKList
+            {
+                Id = 2,
+                StringValue = "second"
+            };
+
+            second.ListValue.Add(new PrimaryKeyObject
+            {
+                Id = 1,
+                StringValue = "secondChild"
+            });
+
+            _realm.Write(() =>
+            {
+                _realm.Manage(second, update: true);
+            });
+
+            Assert.That(first.ListValue, Is.EqualTo(second.ListValue));
+            Assert.AreEqual(1, _realm.All<PrimaryKeyObject>().Count());
+            Assert.AreEqual("secondChild", _realm.ObjectForPrimaryKey<PrimaryKeyObject>(1).StringValue);
+        }
+
+        [Test]
+        public void AddOrUpdate_WhenListHasNoPK_ShouldAddListItems()
+        {
+            var first = new PrimaryKeyWithNoPKList
+            {
+                Id = 1,
+                StringValue = "first"
+            };
+
+            first.ListValue.Add(new NonPrimaryKeyObject
+            {
+                StringValue = "child"
+            });
+
+            _realm.Write(() =>
+            {
+                _realm.Manage(first, update: true);
+            });
+
+            var second = new PrimaryKeyWithNoPKList
+            {
+                Id = 2,
+                StringValue = "second"
+            };
+
+            second.ListValue.Add(new NonPrimaryKeyObject
+            {
+                StringValue = "secondChild"
+            });
+
+            _realm.Write(() =>
+            {
+                _realm.Manage(second, update: true);
+            });
+
+            Assert.That(first.ListValue, Is.Not.EqualTo(second.ListValue));
+            Assert.AreEqual(2, _realm.All<PrimaryKeyObject>().Count());
+        }
+
+        [Test]
+        public void AddOrUpdate_WhenListHasPK_ShouldAddNewAndUpdateOldItems()
+        {
+            var first = new PrimaryKeyWithPKList
+            {
+                Id = 1,
+                StringValue = "first"
+            };
+
+            first.ListValue.Add(new PrimaryKeyObject
+            {
+                Id = 1,
+                StringValue = "child"
+            });
+
+            _realm.Write(() =>
+            {
+                _realm.Manage(first, update: true);
+            });
+
+            var updatedFirst = new PrimaryKeyWithPKList
+            {
+                Id = 1,
+                StringValue = "updated first"
+            };
+
+            updatedFirst.ListValue.Add(new PrimaryKeyObject
+            {
+                Id = 1,
+                StringValue = "updated child"
+            });
+
+            updatedFirst.ListValue.Add(new PrimaryKeyObject
+            {
+                Id = 2,
+                StringValue = "new child"
+            });
+
+            _realm.Write(() =>
+            {
+                _realm.Manage(updatedFirst, update: true);
+            });
+
+            Assert.AreEqual(2, _realm.All<PrimaryKeyObject>().Count());
+            Assert.AreEqual("updated child", _realm.ObjectForPrimaryKey<PrimaryKeyObject>(1).StringValue);
+            Assert.AreEqual("new child", _realm.ObjectForPrimaryKey<PrimaryKeyObject>(2).StringValue);
+        }
+
+        [Test]
+        public void AddOrUpdate_WhenParentHasNoPKChildHasPK_ShouldAddParentUpdateChild()
+        {
+            var first = new NonPrimaryKeyWithPKRelation
+            {
+                StringValue = "first parent",
+                OtherObject = new PrimaryKeyObject
+                {
+                    Id = 1,
+                    StringValue = "child"
+                }
+            };
+
+            _realm.Write(() =>
+            {
+                _realm.Manage(first, update: true);
+            });
+
+            var second = new NonPrimaryKeyWithPKRelation
+            {
+                StringValue = "second parent",
+                OtherObject = new PrimaryKeyObject
+                {
+                    Id = 1,
+                    StringValue = "updated child"
+                }
+            };
+
+            _realm.Write(() =>
+            {
+                _realm.Manage(second, update: true);
+            });
+
+            Assert.AreEqual(2, _realm.All<NonPrimaryKeyWithPKRelation>().Count());
+            Assert.AreEqual(1, _realm.All<PrimaryKeyObject>().Count());
+            Assert.AreEqual("updated child", _realm.ObjectForPrimaryKey<PrimaryKeyObject>(1).StringValue);
+        }
+
+        [Test]
+        public void AddOrUpdate_WhenParentHasNoPKChildHasNOPK_ShouldAddBoth()
+        {
+            var first = new NonPrimaryKeyWithNonPKRelation
+            {
+                StringValue = "first parent",
+                OtherObject = new NonPrimaryKeyObject
+                {
+                    StringValue = "child"
+                }
+            };
+
+            _realm.Write(() =>
+            {
+                _realm.Manage(first, update: true);
+            });
+
+            var second = new NonPrimaryKeyWithNonPKRelation
+            {
+                StringValue = "second parent",
+                OtherObject = new NonPrimaryKeyObject
+                {
+                    StringValue = "second child"
+                }
+            };
+
+            _realm.Write(() =>
+            {
+                _realm.Manage(second, update: true);
+            });
+
+            Assert.AreEqual(2, _realm.All<NonPrimaryKeyWithNonPKRelation>().Count());
+            Assert.AreEqual(2, _realm.All<NonPrimaryKeyObject>().Count());
+        }
+
         private class NonPrimaryKeyObject : RealmObject
         {
             public string StringValue { get; set; }
@@ -340,6 +543,40 @@ namespace IntegrationTests.Shared
             [PrimaryKey]
             public long Id { get; set; }
 
+            public string StringValue { get; set; }
+
+            public NonPrimaryKeyObject OtherObject { get; set; }
+        }
+
+        private class PrimaryKeyWithPKList : RealmObject
+        {
+            [PrimaryKey]
+            public long Id { get; set; }
+
+            public string StringValue { get; set; }
+
+            public IList<PrimaryKeyObject> ListValue { get; }
+        }
+
+        private class PrimaryKeyWithNoPKList : RealmObject
+        {
+            [PrimaryKey]
+            public long Id { get; set; }
+
+            public string StringValue { get; set; }
+
+            public IList<NonPrimaryKeyObject> ListValue { get; }
+        }
+
+        private class NonPrimaryKeyWithPKRelation : RealmObject
+        {
+            public string StringValue { get; set; }
+
+            public PrimaryKeyObject OtherObject { get; set; }
+        }
+
+        private class NonPrimaryKeyWithNonPKRelation : RealmObject
+        {
             public string StringValue { get; set; }
 
             public NonPrimaryKeyObject OtherObject { get; set; }
