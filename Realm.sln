@@ -3,55 +3,65 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Realm.Shared", "Realm.Shared\Realm.Shared.shproj", "{826C8753-5C4A-4E95-B483-179B9892C008}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Realm.Shared", "Shared\Realm.Shared\Realm.Shared.shproj", "{826C8753-5C4A-4E95-B483-179B9892C008}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{9F639E1B-3A3A-4AD0-B9B4-5B4B9A93A603}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Tests.Shared", "Shared\Tests.Shared\Tests.Shared.shproj", "{06146619-D21C-414C-BFE3-2F59ACBA412E}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "IntegrationTests.Shared", "Tests\IntegrationTests.Shared\IntegrationTests.Shared.shproj", "{06146619-D21C-414C-BFE3-2F59ACBA412E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.Win32", "Platform.Win32\Tests.Win32\Tests.Win32.csproj", "{BFC1C1B7-2864-4456-9DEC-309A3F006B66}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationTests.Win32", "Tests\IntegrationTests.Win32\IntegrationTests.Win32.csproj", "{BFC1C1B7-2864-4456-9DEC-309A3F006B66}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.XamarinIOS", "Platform.XamarinIOS\Tests.XamarinIOS\Tests.XamarinIOS.csproj", "{B9450AD4-E48B-479B-98BA-4563B32E278A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationTests.XamarinIOS", "Tests\IntegrationTests.XamarinIOS\IntegrationTests.XamarinIOS.csproj", "{B9450AD4-E48B-479B-98BA-4563B32E278A}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationTests.XamarinAndroid", "Tests\IntegrationTests.XamarinAndroid\IntegrationTests.XamarinAndroid.csproj", "{ED17479C-2CFE-4E6D-A592-82C491FFBE4E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.XamarinAndroid", "Platform.XamarinAndroid\Tests.XamarinAndroid\Tests.XamarinAndroid.csproj", "{ED17479C-2CFE-4E6D-A592-82C491FFBE4E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WeaverTests", "WeaverTests", "{64B2E00E-D5D7-474B-9947-6ABC51070E7B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RealmWeaver.Tests", "Tests\WeaverTests\RealmWeaver.Tests\RealmWeaver.Tests.csproj", "{C0DB15DA-0C51-408D-A386-A69880083B93}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RealmWeaver.Tests", "Weaver\WeaverTests\RealmWeaver.Tests\RealmWeaver.Tests.csproj", "{C0DB15DA-0C51-408D-A386-A69880083B93}"
 	ProjectSection(ProjectDependencies) = postProject
 		{E97E649F-B703-47E3-B18A-0871D3498742} = {E97E649F-B703-47E3-B18A-0871D3498742}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssemblyToProcess", "Tests\WeaverTests\AssemblyToProcess\AssemblyToProcess.csproj", "{E97E649F-B703-47E3-B18A-0871D3498742}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssemblyToProcess", "Weaver\WeaverTests\AssemblyToProcess\AssemblyToProcess.csproj", "{E97E649F-B703-47E3-B18A-0871D3498742}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Realm.Win32", "Realm.Win32\Realm.Win32.csproj", "{C211EDE7-CC8E-4F53-A9DF-0B105A350BBF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Realm.Win32", "Platform.Win32\Realm.Win32\Realm.Win32.csproj", "{C211EDE7-CC8E-4F53-A9DF-0B105A350BBF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Realm.XamarinIOS", "Realm.XamarinIOS\Realm.XamarinIOS.csproj", "{A55BD773-5A29-4B2A-9DB7-1AB1DD38B537}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Realm.XamarinIOS", "Platform.XamarinIOS\Realm.XamarinIOS\Realm.XamarinIOS.csproj", "{A55BD773-5A29-4B2A-9DB7-1AB1DD38B537}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Realm.XamarinAndroid", "Realm.XamarinAndroid\Realm.XamarinAndroid.csproj", "{2379D669-4F4B-4FF6-AF8A-49FEA981EFC3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Realm.XamarinAndroid", "Platform.XamarinAndroid\Realm.XamarinAndroid\Realm.XamarinAndroid.csproj", "{2379D669-4F4B-4FF6-AF8A-49FEA981EFC3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RealmWeaver.Fody", "RealmWeaver\RealmWeaver.Fody.csproj", "{C3578A7B-09A6-4444-9383-0DEAFA4958BD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RealmWeaver.Fody", "Weaver\RealmWeaver.Fody\RealmWeaver.Fody.csproj", "{C3578A7B-09A6-4444-9383-0DEAFA4958BD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Realm.PCL", "Realm.PCL\Realm.PCL.csproj", "{261C8EB6-9508-4D6A-9BED-39A544AA2736}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Realm.PCL", "Platform.PCL\Realm.PCL\Realm.PCL.csproj", "{261C8EB6-9508-4D6A-9BED-39A544AA2736}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wrappers", "wrappers\wrappers.vcxproj", "{A1E763AD-24B9-4D6B-AACA-282BB33E350F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PCLAssemblyToProcess", "Tests\WeaverTests\PCLAssemblyToProcess\PCLAssemblyToProcess.csproj", "{F65E66C8-A3A0-40DC-AEE4-1BFF3174B9E7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PCLAssemblyToProcess", "Weaver\WeaverTests\PCLAssemblyToProcess\PCLAssemblyToProcess.csproj", "{F65E66C8-A3A0-40DC-AEE4-1BFF3174B9E7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Realm.FakeForWeaverTests", "Tests\WeaverTests\Realm.FakeForWeaverTests\Realm.FakeForWeaverTests.csproj", "{A80A308A-3AFF-43F8-9186-383AAF148CA4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Realm.FakeForWeaverTests", "Weaver\WeaverTests\Realm.FakeForWeaverTests\Realm.FakeForWeaverTests.csproj", "{A80A308A-3AFF-43F8-9186-383AAF148CA4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PurePCLBuildableTest", "Tests\PurePCLBuildableTest\PurePCLBuildableTest.csproj", "{C33439AD-387D-4F86-9DB8-9D4B48EC6750}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PurePCLBuildableTest", "Platform.PCL\PurePCLBuildableTest\PurePCLBuildableTest.csproj", "{C33439AD-387D-4F86-9DB8-9D4B48EC6750}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Platform.PCL", "Platform.PCL", "{1CC5276B-0F47-49B2-BB78-E7F3D21F7801}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Platform.Win32", "Platform.Win32", "{47976A90-8275-430B-AB85-2999A4C32098}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Platform.XamarinIOS", "Platform.XamarinIOS", "{37790E13-06C3-447C-9EAB-C31CA5FC21D7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Platform.XamarinAndroid", "Platform.XamarinAndroid", "{F16C2351-0BCB-474C-9949-C2ED714257D8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{C17A26A1-9F41-45A7-93E7-FB1D2AC7E5C1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Weaver", "Weaver", "{45F181B2-CBDC-41DD-BF97-8CA114F0E53B}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		Tests\IntegrationTests.Shared\IntegrationTests.Shared.projitems*{06146619-d21c-414c-bfe3-2f59acba412e}*SharedItemsImports = 13
-		Realm.Shared\Realm.Shared.projitems*{2379d669-4f4b-4ff6-af8a-49fea981efc3}*SharedItemsImports = 4
-		Realm.Shared\Realm.Shared.projitems*{826c8753-5c4a-4e95-b483-179b9892c008}*SharedItemsImports = 13
-		Realm.Shared\Realm.Shared.projitems*{a55bd773-5a29-4b2a-9db7-1ab1dd38b537}*SharedItemsImports = 4
-		Tests\IntegrationTests.Shared\IntegrationTests.Shared.projitems*{b9450ad4-e48b-479b-98ba-4563b32e278a}*SharedItemsImports = 4
-		Tests\IntegrationTests.Shared\IntegrationTests.Shared.projitems*{bfc1c1b7-2864-4456-9dec-309a3f006b66}*SharedItemsImports = 4
-		Realm.Shared\Realm.Shared.projitems*{c211ede7-cc8e-4f53-a9df-0b105a350bbf}*SharedItemsImports = 4
-		Tests\IntegrationTests.Shared\IntegrationTests.Shared.projitems*{ed17479c-2cfe-4e6d-a592-82c491ffbe4e}*SharedItemsImports = 4
+		Shared\Tests.Shared\Tests.Shared.projitems*{06146619-d21c-414c-bfe3-2f59acba412e}*SharedItemsImports = 13
+		Shared\Realm.Shared\Realm.Shared.projitems*{2379d669-4f4b-4ff6-af8a-49fea981efc3}*SharedItemsImports = 4
+		Shared\Realm.Shared\Realm.Shared.projitems*{826c8753-5c4a-4e95-b483-179b9892c008}*SharedItemsImports = 13
+		Shared\Realm.Shared\Realm.Shared.projitems*{a55bd773-5a29-4b2a-9db7-1ab1dd38b537}*SharedItemsImports = 4
+		Shared\Tests.Shared\Tests.Shared.projitems*{b9450ad4-e48b-479b-98ba-4563b32e278a}*SharedItemsImports = 4
+		Shared\Tests.Shared\Tests.Shared.projitems*{bfc1c1b7-2864-4456-9dec-309a3f006b66}*SharedItemsImports = 4
+		Shared\Realm.Shared\Realm.Shared.projitems*{c211ede7-cc8e-4f53-a9df-0b105a350bbf}*SharedItemsImports = 4
+		Shared\Tests.Shared\Tests.Shared.projitems*{ed17479c-2cfe-4e6d-a592-82c491ffbe4e}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -359,15 +369,21 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{06146619-D21C-414C-BFE3-2F59ACBA412E} = {9F639E1B-3A3A-4AD0-B9B4-5B4B9A93A603}
-		{BFC1C1B7-2864-4456-9DEC-309A3F006B66} = {9F639E1B-3A3A-4AD0-B9B4-5B4B9A93A603}
-		{B9450AD4-E48B-479B-98BA-4563B32E278A} = {9F639E1B-3A3A-4AD0-B9B4-5B4B9A93A603}
-		{ED17479C-2CFE-4E6D-A592-82C491FFBE4E} = {9F639E1B-3A3A-4AD0-B9B4-5B4B9A93A603}
-		{64B2E00E-D5D7-474B-9947-6ABC51070E7B} = {9F639E1B-3A3A-4AD0-B9B4-5B4B9A93A603}
+		{826C8753-5C4A-4E95-B483-179B9892C008} = {C17A26A1-9F41-45A7-93E7-FB1D2AC7E5C1}
+		{06146619-D21C-414C-BFE3-2F59ACBA412E} = {C17A26A1-9F41-45A7-93E7-FB1D2AC7E5C1}
+		{BFC1C1B7-2864-4456-9DEC-309A3F006B66} = {47976A90-8275-430B-AB85-2999A4C32098}
+		{B9450AD4-E48B-479B-98BA-4563B32E278A} = {37790E13-06C3-447C-9EAB-C31CA5FC21D7}
+		{ED17479C-2CFE-4E6D-A592-82C491FFBE4E} = {F16C2351-0BCB-474C-9949-C2ED714257D8}
+		{64B2E00E-D5D7-474B-9947-6ABC51070E7B} = {45F181B2-CBDC-41DD-BF97-8CA114F0E53B}
 		{C0DB15DA-0C51-408D-A386-A69880083B93} = {64B2E00E-D5D7-474B-9947-6ABC51070E7B}
 		{E97E649F-B703-47E3-B18A-0871D3498742} = {64B2E00E-D5D7-474B-9947-6ABC51070E7B}
+		{C211EDE7-CC8E-4F53-A9DF-0B105A350BBF} = {47976A90-8275-430B-AB85-2999A4C32098}
+		{A55BD773-5A29-4B2A-9DB7-1AB1DD38B537} = {37790E13-06C3-447C-9EAB-C31CA5FC21D7}
+		{2379D669-4F4B-4FF6-AF8A-49FEA981EFC3} = {F16C2351-0BCB-474C-9949-C2ED714257D8}
+		{C3578A7B-09A6-4444-9383-0DEAFA4958BD} = {45F181B2-CBDC-41DD-BF97-8CA114F0E53B}
+		{261C8EB6-9508-4D6A-9BED-39A544AA2736} = {1CC5276B-0F47-49B2-BB78-E7F3D21F7801}
 		{F65E66C8-A3A0-40DC-AEE4-1BFF3174B9E7} = {64B2E00E-D5D7-474B-9947-6ABC51070E7B}
 		{A80A308A-3AFF-43F8-9186-383AAF148CA4} = {64B2E00E-D5D7-474B-9947-6ABC51070E7B}
-		{C33439AD-387D-4F86-9DB8-9D4B48EC6750} = {9F639E1B-3A3A-4AD0-B9B4-5B4B9A93A603}
+		{C33439AD-387D-4F86-9DB8-9D4B48EC6750} = {1CC5276B-0F47-49B2-BB78-E7F3D21F7801}
 	EndGlobalSection
 EndGlobal
