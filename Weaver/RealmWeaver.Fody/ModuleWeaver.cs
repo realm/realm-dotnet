@@ -1085,13 +1085,18 @@ public class ModuleWeaver
                     var iList_Get_CountMethodReference = GetIListMethodReference(propertyTypeDefinition, "get_Count", genericType);
 
                     var iteratorStLoc = (byte)(currentStloc + 1);
-                    il.Append(il.Create(OpCodes.Ldloc_0));
-                    il.Append(il.Create(OpCodes.Ldfld, field));
 
-                    var jumpPlaceholder = il.Create(OpCodes.Nop);
-                    il.Append(jumpPlaceholder);
+                    // if (update ||
+                    var isUpdateCheck = il.Create(OpCodes.Ldarg_2);
+                    il.Append(isUpdateCheck);
 
+                    // castInstance.field != null)
                     il.Append(il.Create(OpCodes.Ldloc_0));
+                    var nullCheck = il.Create(OpCodes.Ldfld, field);
+                    il.Append(nullCheck);
+
+                    var setterStart = il.Create(OpCodes.Ldloc_0);
+                    il.Append(setterStart);
                     il.Append(il.Create(OpCodes.Ldfld, field));
                     il.Append(il.Create(OpCodes.Stloc_S, currentStloc));
                     il.Append(il.Create(OpCodes.Ldloc_0));
@@ -1103,9 +1108,17 @@ public class ModuleWeaver
                     var cyclePlaceholder = il.Create(OpCodes.Nop);
                     il.Append(cyclePlaceholder);
 
-                    var cycleStart = il.Create(OpCodes.Nop);
+                    // this.Realm.Manage(list[i], update)
+                    var cycleStart = il.Create(OpCodes.Ldloc_0);
                     il.Append(cycleStart);
+                    il.Append(il.Create(OpCodes.Call, _realmObjectRealmGetter));
+                    il.Append(il.Create(OpCodes.Ldloc_S, currentStloc));
+                    il.Append(il.Create(OpCodes.Ldloc_S, iteratorStLoc));
+                    il.Append(il.Create(OpCodes.Callvirt, iList_Get_ItemMethodReference));
+                    il.Append(il.Create(OpCodes.Ldarg_2));
+                    il.Append(il.Create(OpCodes.Call, new GenericInstanceMethod(_realmManageGenericReference) { GenericArguments = { genericType.GenericArguments.Single() } }));
 
+                    // Property.Add(list[i]);
                     il.Append(il.Create(OpCodes.Ldloc_0));
                     il.Append(il.Create(OpCodes.Callvirt, ModuleDefinition.ImportReference(property.GetMethod)));
                     il.Append(il.Create(OpCodes.Ldloc_S, currentStloc));
@@ -1126,9 +1139,11 @@ public class ModuleWeaver
                     il.Append(il.Create(OpCodes.Callvirt, iList_Get_CountMethodReference));
                     il.Append(il.Create(OpCodes.Blt_S, cycleStart));
 
-                    var jumpLabel = il.Create(OpCodes.Nop);
-                    il.Append(jumpLabel);
-                    il.Replace(jumpPlaceholder, il.Create(OpCodes.Brfalse_S, jumpLabel));
+                    var setterEnd = il.Create(OpCodes.Nop);
+                    il.Append(setterEnd);
+                    il.InsertAfter(nullCheck, il.Create(OpCodes.Brfalse_S, setterEnd));
+
+                    il.InsertAfter(isUpdateCheck, il.Create(OpCodes.Brtrue_S, setterStart));
 
                     currentStloc += 2;
                 }
