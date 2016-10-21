@@ -80,12 +80,6 @@ namespace Realms
             internal Schema.ObjectSchema Schema;
         }
 
-        internal void _CopyDataFromBackingFields()
-        {
-            Debug.Assert(IsManaged, "Can't copy from unmanaged object.");
-            _metadata.Helper.CopyToRealm(this);
-        }
-
         #region Getters
 
         protected string GetStringValue(string propertyName)

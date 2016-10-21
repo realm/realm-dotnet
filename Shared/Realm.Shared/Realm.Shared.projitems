@@ -14,7 +14,6 @@
       <ExcludeFromStyleCop>True</ExcludeFromStyleCop>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\RealmDecryptionFailedException.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Exceptions\RealmObjectAlreadyManagedByRealmException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\RealmObjectManagedByAnotherRealmException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\RealmFileExistsException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\RealmInvalidDatabaseException.cs" />

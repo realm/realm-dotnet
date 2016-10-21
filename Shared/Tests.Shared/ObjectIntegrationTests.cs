@@ -196,7 +196,7 @@ namespace IntegrationTests
                 transaction.Commit();
             }
 
-            Assert.Throws<RealmObjectAlreadyManagedByRealmException>(() => _realm.Manage(p));
+            Assert.DoesNotThrow(() => _realm.Manage(p));
         }
 
         [Test]

@@ -203,12 +203,32 @@ namespace Realms
         /// <summary>
         /// This realm will start managing a RealmObject which has been created as a standalone object.
         /// </summary>
-        /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
+        /// <typeparam name="T">The Type T must not only be a RealmObject but also have been processed by the Fody weaver, so it has persistent properties.</typeparam>
         /// <param name="obj">Must be a standalone object, null not allowed.</param>
+        /// <param name="update">If true, and an object with the same primary key already exists, performs an update.</param>
         /// <exception cref="RealmOutsideTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
-        /// <exception cref="RealmObjectAlreadyManagedByRealmException">You can't manage the same object twice. This exception is thrown, rather than silently detecting the mistake, to help you debug your code</exception>
         /// <exception cref="RealmObjectManagedByAnotherRealmException">You can't manage an object with more than one realm</exception>
-        public void Manage<T>(T obj) where T : RealmObject
+        /// <remarks>
+        /// If the object is already managed by this realm, this method does nothing.
+        /// Cyclic graphs (<c>Parent</c> has <c>Child</c> that has a <c>Parent</c>) will result in undefined behavior. You have to break the cycle manually and assign relationships after all object have been managed.
+        /// </remarks>
+        public void Manage<T>(T obj, bool update) where T : RealmObject
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+        }
+
+        /// <summary>
+        /// This realm will start managing a RealmObject which has been created as a standalone object.
+        /// </summary>
+        /// <param name="obj">Must be a standalone object, null not allowed.</param>
+        /// <param name="update">If true, and an object with the same primary key already exists, performs an update.</param>
+        /// <exception cref="RealmInvalidTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
+        /// <exception cref="RealmObjectManagedByAnotherRealmException">You can't manage an object with more than one realm</exception>
+        /// <remarks>
+        /// If the object is already managed by this realm, this method does nothing.
+        /// Cyclic graphs (<c>Parent</c> has <c>Child</c> that has a <c>Parent</c>) will result in undefined behavior. You have to break the cycle manually and assign relationships after all object have been managed.
+        /// </remarks>
+        public void Manage(RealmObject obj, bool update = false)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }

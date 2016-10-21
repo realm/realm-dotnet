@@ -487,34 +487,85 @@ namespace Realms
         /// </summary>
         /// <typeparam name="T">The Type T must not only be a RealmObject but also have been processed by the Fody weaver, so it has persistent properties.</typeparam>
         /// <param name="obj">Must be a standalone object, null not allowed.</param>
+        /// <param name="update">If true, and an object with the same primary key already exists, performs an update.</param>
         /// <exception cref="RealmInvalidTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
-        /// <exception cref="RealmObjectAlreadyManagedByRealmException">You can't manage the same object twice. This exception is thrown, rather than silently detecting the mistake, to help you debug your code</exception>
         /// <exception cref="RealmObjectManagedByAnotherRealmException">You can't manage an object with more than one realm</exception>
-        public void Manage<T>(T obj) where T : RealmObject
+        /// <remarks>
+        /// If the object is already managed by this realm, this method does nothing.
+        /// Cyclic graphs (<c>Parent</c> has <c>Child</c> that has a <c>Parent</c>) will result in undefined behavior. You have to break the cycle manually and assign relationships after all object have been managed.
+        /// </remarks>
+        public void Manage<T>(T obj, bool update = false) where T : RealmObject
+        {
+            // This is not obsoleted because the compiler will always pick it for specific types, generating a bunch of warnings
+            ManageInternal(obj, typeof(T), update);
+        }
+
+        /// <summary>
+        /// This realm will start managing a RealmObject which has been created as a standalone object.
+        /// </summary>
+        /// <param name="obj">Must be a standalone object, null not allowed.</param>
+        /// <param name="update">If true, and an object with the same primary key already exists, performs an update.</param>
+        /// <exception cref="RealmInvalidTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
+        /// <exception cref="RealmObjectManagedByAnotherRealmException">You can't manage an object with more than one realm</exception>
+        /// <remarks>
+        /// If the object is already managed by this realm, this method does nothing.
+        /// Cyclic graphs (<c>Parent</c> has <c>Child</c> that has a <c>Parent</c>) will result in undefined behavior. You have to break the cycle manually and assign relationships after all object have been managed.
+        /// </remarks>
+        public void Manage(RealmObject obj, bool update = false)
+        {
+            ManageInternal(obj, obj?.GetType(), update);
+        }
+
+        private void ManageInternal(RealmObject obj, Type objectType, bool update)
         {
             if (obj == null)
             {
                 throw new ArgumentNullException(nameof(obj));
             }
 
+            if (objectType == null)
+            {
+                throw new ArgumentNullException(nameof(objectType));
+            }
+
             if (obj.IsManaged)
             {
                 if (obj.Realm.SharedRealmHandle == this.SharedRealmHandle)
                 {
-                    throw new RealmObjectAlreadyManagedByRealmException("The object is already managed by this realm");
+                    // Already managed by this realm, so nothing to do.
+                    return;
                 }
 
                 throw new RealmObjectManagedByAnotherRealmException("Cannot start to manage an object with a realm when it's already managed by another realm");
             }
 
-            var metadata = Metadata[typeof(T).Name];
-            var tableHandle = metadata.Table;
+            var metadata = Metadata[objectType.Name];
 
-            var objectPtr = metadata.Table.AddEmptyObject(SharedRealmHandle);
+            var objectPtr = IntPtr.Zero;
+
+            object pkValue;
+            if (update && metadata.Helper.TryGetPrimaryKeyValue(obj, out pkValue))
+            {
+                if (pkValue is string)
+                {
+                    objectPtr = metadata.Table.ObjectForPrimaryKey(SharedRealmHandle, (string)pkValue);
+                }
+                else
+                {
+                    // We know it must be castable to long, so optimistically do it.
+                    objectPtr = metadata.Table.ObjectForPrimaryKey(SharedRealmHandle, (long)pkValue);
+                }
+            }
+
+            if (objectPtr == IntPtr.Zero)
+            {
+                objectPtr = metadata.Table.AddEmptyObject(SharedRealmHandle);
+            }
+
             var objectHandle = CreateObjectHandle(objectPtr, SharedRealmHandle);
 
             obj._Manage(this, objectHandle, metadata);
-            obj._CopyDataFromBackingFields();
+            metadata.Helper.CopyToRealm(obj, update);
         }
 
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]

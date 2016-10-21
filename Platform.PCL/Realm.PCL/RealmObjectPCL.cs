@@ -43,6 +43,11 @@ namespace Realms
         /// </summary>
         public bool IsValid => false;
 
+        /// <summary>
+        /// The <see cref="Realm"/> instance this object belongs to, or <code>null</code> if it is unmanaged.
+        /// </summary>
+        public Realm Realm => _realm;
+
         #region Getters
 
         protected string GetStringValue(string propertyName)

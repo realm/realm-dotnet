@@ -17,34 +17,34 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using Realms.Weaving;
+using System.Linq;
+using Mono.Cecil;
+using Mono.Cecil.Cil;
 
-namespace Realms.Dynamic
+internal static class TypeHelper
 {
-    internal class DynamicRealmObjectHelper : IRealmObjectHelper
+    internal static TypeDefinition LookupType(string typeName, params AssemblyDefinition[] assemblies)
     {
-        internal static readonly DynamicRealmObjectHelper Instance = new DynamicRealmObjectHelper();
-
-        public void CopyToRealm(RealmObject instance, bool update)
+        if (typeName == null)
         {
-            throw new NotSupportedException("DynamicRealmObjectHelper cannot exist in unmanaged state, so CopyToRealm should not be called ever.");
+            throw new ArgumentNullException(nameof(typeName));
         }
 
-        public RealmObject CreateInstance()
+        if (assemblies.Length == 0)
         {
-            return new DynamicRealmObject();
+            throw new ArgumentException("One or more assemblies must be specified to look up type: " + typeName, nameof(assemblies));
         }
 
-        public bool TryGetPrimaryKeyValue(RealmObject instance, out object value)
+        foreach (var assembly in assemblies)
         {
-            if (!instance.ObjectSchema.PrimaryKeyProperty.HasValue)
+            var type = assembly?.MainModule.Types.FirstOrDefault(x => x.Name == typeName);
+
+            if (type != null)
             {
-                value = null;
-                return false;
+                return type;
             }
-
-            value = instance.ObjectSchema.PrimaryKeyProperty.Value.PropertyInfo.GetValue(instance);
-            return true;
         }
+
+        throw new ApplicationException("Unable to find type: " + typeName);
     }
 }

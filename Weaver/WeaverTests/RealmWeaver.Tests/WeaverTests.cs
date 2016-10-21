@@ -457,17 +457,18 @@ namespace RealmWeaver
 
             var expectedErrors = new List<string>()
             {
-                "RealmListWithSetter.People has a setter but its type is a IList which only supports getters",
-                "IndexedProperties.SingleProperty is marked as [Indexed] which is only allowed on integral types as well as string, bool and DateTimeOffset, not on System.Single",
-                "PrimaryKeyProperties.BooleanProperty is marked as [PrimaryKey] which is only allowed on integral and string types, not on System.Boolean",
-                "PrimaryKeyProperties.DateTimeOffsetProperty is marked as [PrimaryKey] which is only allowed on integral and string types, not on System.DateTimeOffset",
-                "PrimaryKeyProperties.SingleProperty is marked as [PrimaryKey] which is only allowed on integral and string types, not on System.Single",
-                "The type AssemblyToProcess.Employee indirectly inherits from RealmObject which is not supported",
-                "class DefaultConstructorMissing must have a public constructor that takes no parameters",
-                "class NoPersistedProperties is a RealmObject but has no persisted properties",
-                "class 'NotSupportedProperties' field 'DateTimeProperty' is a DateTime which is not supported - use DateTimeOffset instead.",
-                "class 'NotSupportedProperties' field 'NullableDateTimeProperty' is a DateTime? which is not supported - use DateTimeOffset? instead.",
-                "class 'NotSupportedProperties' field 'EnumProperty' is a 'AssemblyToProcess.NotSupportedProperties/MyEnum' which is not yet supported"
+                "RealmListWithSetter.People has a setter but its type is a IList which only supports getters.",
+                "IndexedProperties.SingleProperty is marked as [Indexed] which is only allowed on integral types as well as string, bool and DateTimeOffset, not on System.Single.",
+                "PrimaryKeyProperties.BooleanProperty is marked as [PrimaryKey] which is only allowed on integral and string types, not on System.Boolean.",
+                "PrimaryKeyProperties.DateTimeOffsetProperty is marked as [PrimaryKey] which is only allowed on integral and string types, not on System.DateTimeOffset.",
+                "PrimaryKeyProperties.SingleProperty is marked as [PrimaryKey] which is only allowed on integral and string types, not on System.Single.",
+                "The type AssemblyToProcess.Employee indirectly inherits from RealmObject which is not supported.",
+                "Class DefaultConstructorMissing must have a public constructor that takes no parameters.",
+                "Class NoPersistedProperties is a RealmObject but has no persisted properties.",
+                "Class 'NotSupportedProperties' field 'DateTimeProperty' is a DateTime which is not supported - use DateTimeOffset instead.",
+                "Class 'NotSupportedProperties' field 'NullableDateTimeProperty' is a DateTime? which is not supported - use DateTimeOffset? instead.",
+                "Class 'NotSupportedProperties' field 'EnumProperty' is a 'AssemblyToProcess.NotSupportedProperties/MyEnum' which is not yet supported.",
+                "Class PrimaryKeyProperties has more than one property marked with [PrimaryKey]."
             };
 
             Assert.That(_errors, Is.EquivalentTo(expectedErrors));
@@ -523,7 +524,7 @@ namespace RealmWeaver
             CopyToRealm(objectType, instance);
 
             var properties = ((Type)instance.GetType()).GetProperties(BindingFlags.Public | BindingFlags.Instance);
-            var targetList = properties.Where(p => p.Name != "IsManaged")
+            var targetList = properties.Where(p => p.Name != "IsManaged" && p.Name != "Realm")
                                        .SelectMany(p =>
                                        {
                                            return new[]
@@ -542,7 +543,7 @@ namespace RealmWeaver
             var wovenAttribute = objectType.CustomAttributes.Single(a => a.AttributeType.Name == "WovenAttribute");
             var helperType = (Type)wovenAttribute.ConstructorArguments[0].Value;
             var helper = (IRealmObjectHelper)Activator.CreateInstance(helperType);
-            helper.CopyToRealm(instance);
+            helper.CopyToRealm(instance, false);
         }
 
 #if(DEBUG)

@@ -16,14 +16,16 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-namespace Realms.Weaving
+namespace Realms
 {
-    public interface IRealmObjectHelper
+    public class Realm
     {
-        RealmObject CreateInstance();
+        public void Manage<T>(T obj, bool update) where T : RealmObject
+        {
+        }
 
-        void CopyToRealm(RealmObject instance, bool update);
-
-        bool TryGetPrimaryKeyValue(RealmObject instance, out object value);
+        public void Manage(RealmObject obj, bool update)
+        {
+        }
     }
 }

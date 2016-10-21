@@ -34,6 +34,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)LifetimeTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PrimaryKeyTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MigrationTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AddOrUpdateTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)GetPrimaryKeyTests.cs" />
   </ItemGroup>
   <ItemGroup Condition=" '$(ProjectName)' != 'IntegrationTests.Win32' ">
     <Compile Include="$(MSBuildThisFileDirectory)TestRunner.cs" />

@@ -16,14 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-namespace Realms.Weaving
+using System;
+
+namespace Realms
 {
-    public interface IRealmObjectHelper
+    public class RealmException : Exception
     {
-        RealmObject CreateInstance();
-
-        void CopyToRealm(RealmObject instance, bool update);
-
-        bool TryGetPrimaryKeyValue(RealmObject instance, out object value);
+        public RealmException(string message) : base(message)
+        {
+        }
     }
 }

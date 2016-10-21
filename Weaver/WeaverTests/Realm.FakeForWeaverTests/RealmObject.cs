@@ -52,6 +52,17 @@ namespace Realms
             }
         }
 
+        private Realm _realm;
+
+        public Realm Realm
+        {
+            get
+            {
+                LogString("Realm");
+                return _realm;
+            }
+        }
+
         protected string GetStringValue(string propertyName)
         {
             LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
