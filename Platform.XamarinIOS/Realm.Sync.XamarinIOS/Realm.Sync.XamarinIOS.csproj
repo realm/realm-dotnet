@@ -72,7 +72,6 @@
       <Link>Properties\RealmAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="InteropConfig.cs" />
     <Compile Include="libwrappers.linkwith.cs">
       <DependentUpon>libwrappers.a</DependentUpon>
     </Compile>
