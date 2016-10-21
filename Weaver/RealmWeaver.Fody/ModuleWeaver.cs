@@ -1001,8 +1001,27 @@ public class ModuleWeaver
 
                 if (property.SetMethod != null)
                 {
-                    Instruction updatePlaceholder = null;
+                    // If the property is RealmObject, we want the following code to execute:
+                    // if (castInstance.field != null)
+                    // {
+                    //     castInstance.Realm.Manage(castInstance.field, update)
+                    // }
+                    // castInstance.Property = castInstance.field;
+                    //
+                    // *managePlaceholder* will be the Brfalse instruction that will skip the call to Manage if the field is null.
                     Instruction managePlaceholder = null;
+
+                    // If the property is non-nullable, we want the following code to execute:
+                    // if (update || castInstance.field != default(fieldType))
+                    // {
+                    //     castInstance.Property = castInstance.field
+                    // }
+                    //
+                    // This ensures that if we're updating, we'll be copy each value to realm, even if it's the default value for the property,
+                    // because we have no idea what the previous value was. If it's an add, we're certain that the row will contain the default value, so no need to set it.
+                    // *updatePlaceholder* will be the Brtrue instruction that will skip the default check and move to the property setting logic.
+                    // The default check branching instruction is inserted above the *setStartPoint* instruction later on.
+                    Instruction updatePlaceholder = null;
                     if (IsRealmObjectDescendant(property))
                     {
                         il.Append(il.Create(OpCodes.Ldloc_0));
@@ -1029,6 +1048,7 @@ public class ModuleWeaver
 
                         if (IsDateTimeOffset(property))
                         {
+                            // DateTimeOffset's default value is not falsy, so we need to create a new instance and compare to that.
                             il.Append(il.Create(OpCodes.Ldloca_S, (byte)1));
                             il.Append(il.Create(OpCodes.Initobj, field.FieldType));
                             il.Append(il.Create(OpCodes.Ldloc_1));
@@ -1049,8 +1069,9 @@ public class ModuleWeaver
                     il.Append(il.Create(OpCodes.Ldloc_0));
                     il.Append(il.Create(OpCodes.Ldfld, field));
                     il.Append(il.Create(OpCodes.Call, ModuleDefinition.ImportReference(property.SetMethod)));
-                    var jumpLabel = il.Create(OpCodes.Nop);
-                    il.Append(jumpLabel);
+
+                    var setEndPoint = il.Create(OpCodes.Nop);
+                    il.Append(setEndPoint);
 
                     if (IsRealmObjectDescendant(property))
                     {
@@ -1061,13 +1082,14 @@ public class ModuleWeaver
                     }
                     else if (!IsNullable(property))
                     {
+                        // Branching instruction to check if we're trying to set the default value of a property.
                         if (IsSingle(property) || IsDouble(property))
                         {
-                            il.InsertBefore(setStartPoint, il.Create(OpCodes.Beq_S, jumpLabel));
+                            il.InsertBefore(setStartPoint, il.Create(OpCodes.Beq_S, setEndPoint));
                         }
                         else
                         {
-                            il.InsertBefore(setStartPoint, il.Create(OpCodes.Brfalse_S, jumpLabel));
+                            il.InsertBefore(setStartPoint, il.Create(OpCodes.Brfalse_S, setEndPoint));
                         }
 
                         if (updatePlaceholder != null)
