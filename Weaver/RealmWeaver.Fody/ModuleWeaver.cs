@@ -171,7 +171,7 @@ public class ModuleWeaver
         _realmObjectRealmGetter = ModuleDefinition.ImportReference(_realmObject.Properties.Single(p => p.Name == "Realm").GetMethod);
 
         var realm = _realmAssembly.MainModule.GetTypes().First(x => x.Name == "Realm");
-        _realmAddGenericReference = ModuleDefinition.ImportReference(realm.Methods.First(x => x.Name == "Manage" && x.HasGenericParameters));
+        _realmAddGenericReference = ModuleDefinition.ImportReference(realm.Methods.First(x => x.Name == "Add" && x.HasGenericParameters));
 
         // Cache of getter and setter methods for the various types.
         var methodTable = new Dictionary<string, Tuple<MethodReference, MethodReference>>();
