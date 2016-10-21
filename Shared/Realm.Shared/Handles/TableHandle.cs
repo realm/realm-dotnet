@@ -186,6 +186,7 @@ namespace Realms
             {
                 throw new ArgumentNullException(nameof(id));
             }
+
             NativeException nativeException;
             var result = NativeMethods.object_for_string_primarykey(this, realmHandle, id, (IntPtr)id.Length, out nativeException);
             nativeException.ThrowIfNecessary();
