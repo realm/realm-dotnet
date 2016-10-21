@@ -106,6 +106,10 @@
       <Project>{C33439AD-387D-4F86-9DB8-9D4B48EC6750}</Project>
       <Name>PurePCLBuildableTest</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Realm.Sync.XamarinIOS\Realm.Sync.XamarinIOS.csproj">
+      <Project>{355BD773-5A29-4B2A-9DB7-1AB1DD38B537}</Project>
+      <Name>Realm.Sync.XamarinIOS</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <ImageAsset Include="Resources\Images.xcassets\AppIcons.appiconset\Contents.json">
