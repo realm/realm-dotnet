@@ -46,7 +46,7 @@ public class ModuleWeaver
     private TypeDefinition _realmObject;
     private MethodReference _realmObjectIsManagedGetter;
     private MethodReference _realmObjectRealmGetter;
-    private MethodReference _realmManageGenericReference;
+    private MethodReference _realmAddGenericReference;
 
     private AssemblyDefinition _corLib;
     private TypeReference _system_Object;
@@ -171,7 +171,7 @@ public class ModuleWeaver
         _realmObjectRealmGetter = ModuleDefinition.ImportReference(_realmObject.Properties.Single(p => p.Name == "Realm").GetMethod);
 
         var realm = _realmAssembly.MainModule.GetTypes().First(x => x.Name == "Realm");
-        _realmManageGenericReference = ModuleDefinition.ImportReference(realm.Methods.First(x => x.Name == "Manage" && x.HasGenericParameters));
+        _realmAddGenericReference = ModuleDefinition.ImportReference(realm.Methods.First(x => x.Name == "Manage" && x.HasGenericParameters));
 
         // Cache of getter and setter methods for the various types.
         var methodTable = new Dictionary<string, Tuple<MethodReference, MethodReference>>();
@@ -857,7 +857,7 @@ public class ModuleWeaver
                 
                 *foreach* non-list woven property in castInstance's schema
                 *if* castInstace.field is a RealmObject descendant
-                    castInstance.Realm.Manage(castInstance.field, update);
+                    castInstance.Realm.Add(castInstance.field, update);
                     castInstance.Field = castInstance.field;
                 *else*
                     if (castInstance.field != default(fieldType))
@@ -870,7 +870,7 @@ public class ModuleWeaver
                 castInstance.field = null;
                 for (var i = 0; i < list.Count; i++)
                 {
-                    castInstance.Realm.Manage(list[i], update);
+                    castInstance.Realm.Add(list[i], update);
                     castInstance.Property.Add(list[i]);
                 }
             */
@@ -911,12 +911,12 @@ public class ModuleWeaver
                     // If the property is RealmObject, we want the following code to execute:
                     // if (castInstance.field != null)
                     // {
-                    //     castInstance.Realm.Manage(castInstance.field, update)
+                    //     castInstance.Realm.Add(castInstance.field, update)
                     // }
                     // castInstance.Property = castInstance.field;
                     //
-                    // *managePlaceholder* will be the Brfalse instruction that will skip the call to Manage if the field is null.
-                    Instruction managePlaceholder = null;
+                    // *addPlaceholder* will be the Brfalse instruction that will skip the call to Add if the field is null.
+                    Instruction addPlaceholder = null;
 
                     // If the property is non-nullable, we want the following code to execute:
                     // if (update || castInstance.field != default(fieldType))
@@ -934,15 +934,15 @@ public class ModuleWeaver
                         il.Append(il.Create(OpCodes.Ldloc_0));
                         il.Append(il.Create(OpCodes.Ldfld, field));
 
-                        managePlaceholder = il.Create(OpCodes.Nop);
-                        il.Append(managePlaceholder);
+                        addPlaceholder = il.Create(OpCodes.Nop);
+                        il.Append(addPlaceholder);
 
                         il.Append(il.Create(OpCodes.Ldloc_0));
                         il.Append(il.Create(OpCodes.Call, _realmObjectRealmGetter));
                         il.Append(il.Create(OpCodes.Ldloc_0));
                         il.Append(il.Create(OpCodes.Ldfld, field));
                         il.Append(il.Create(OpCodes.Ldarg_2));
-                        il.Append(il.Create(OpCodes.Call, new GenericInstanceMethod(_realmManageGenericReference) { GenericArguments = { field.FieldType } }));
+                        il.Append(il.Create(OpCodes.Call, new GenericInstanceMethod(_realmAddGenericReference) { GenericArguments = { field.FieldType } }));
                     }
                     else if (!property.IsNullable())
                     {
@@ -982,9 +982,9 @@ public class ModuleWeaver
 
                     if (property.IsDescendantOf(_realmObject))
                     {
-                        if (managePlaceholder != null)
+                        if (addPlaceholder != null)
                         {
-                            il.Replace(managePlaceholder, il.Create(OpCodes.Brfalse_S, setStartPoint));
+                            il.Replace(addPlaceholder, il.Create(OpCodes.Brfalse_S, setStartPoint));
                         }
                     }
                     else if (!property.IsNullable())
@@ -1039,7 +1039,7 @@ public class ModuleWeaver
                     var cyclePlaceholder = il.Create(OpCodes.Nop);
                     il.Append(cyclePlaceholder);
 
-                    // this.Realm.Manage(list[i], update)
+                    // this.Realm.Add(list[i], update)
                     var cycleStart = il.Create(OpCodes.Ldloc_0);
                     il.Append(cycleStart);
                     il.Append(il.Create(OpCodes.Call, _realmObjectRealmGetter));
@@ -1047,7 +1047,7 @@ public class ModuleWeaver
                     il.Append(il.Create(OpCodes.Ldloc_S, iteratorStLoc));
                     il.Append(il.Create(OpCodes.Callvirt, iList_Get_ItemMethodReference));
                     il.Append(il.Create(OpCodes.Ldarg_2));
-                    il.Append(il.Create(OpCodes.Call, new GenericInstanceMethod(_realmManageGenericReference) { GenericArguments = { genericType.GenericArguments.Single() } }));
+                    il.Append(il.Create(OpCodes.Call, new GenericInstanceMethod(_realmAddGenericReference) { GenericArguments = { genericType.GenericArguments.Single() } }));
 
                     // Property.Add(list[i]);
                     il.Append(il.Create(OpCodes.Ldloc_0));

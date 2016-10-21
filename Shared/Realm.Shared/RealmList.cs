@@ -176,7 +176,7 @@ namespace Realms
         /// <param name="item">RealmObject being added to the relationship.</param>
         public void Add(T item)
         {
-            this.ManageObjectIfNeeded(item);
+            this.AddObjectToRealmIfNeeded(item);
             _listHandle.Add(item.ObjectHandle);
         }
 
@@ -266,7 +266,7 @@ namespace Realms
                 throw new ArgumentOutOfRangeException();
             }
 
-            this.ManageObjectIfNeeded(item);
+            this.AddObjectToRealmIfNeeded(item);
             _listHandle.Insert((IntPtr)index, item.ObjectHandle);
         }
 

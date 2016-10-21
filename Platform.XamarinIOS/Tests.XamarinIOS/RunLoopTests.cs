@@ -43,7 +43,7 @@ namespace IntegrationTests.XamarinIOS
             {
                 var r = Realm.GetInstance(_databasePath);
                 r.Write(() => action(r));
-                r.Close();
+                r.Dispose();
             });
             thread.Start();
             thread.Join();
@@ -78,7 +78,7 @@ namespace IntegrationTests.XamarinIOS
                 var ql2 = q.ToList();
                 Assert.That(ql2.Select(p => p.FullName), Is.EquivalentTo(new[] { "Person 1", "Person 2" }));
 
-                r.Close();
+                r.Dispose();
                 Realm.DeleteRealm(r.Config);
             });
 

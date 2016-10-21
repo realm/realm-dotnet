@@ -159,7 +159,7 @@ namespace IntegrationTests
         public void AddOutsideTransactionShouldFail()
         {
             var obj = new Person();
-            Assert.Throws<RealmOutsideTransactionException>(() => _realm.Add(obj));
+            Assert.Throws<RealmInvalidTransactionException>(() => _realm.Add(obj));
         }
 
         [Test]
@@ -184,19 +184,6 @@ namespace IntegrationTests
             {
                 Assert.Throws<RealmObjectManagedByAnotherRealmException>(() => otherRealm.Add(p));
             }
-        }
-
-        [Test]
-        public void AddAnObjectToRealmItAlreadyBelongsToShouldFail()
-        {
-            Person p;
-            using (var transaction = _realm.BeginWrite())
-            {
-                p = _realm.CreateObject<Person>();
-                transaction.Commit();
-            }
-
-            Assert.Throws<RealmObjectAlreadyManagedByRealmException>(() => _realm.Add(p));
         }
 
         [Test]

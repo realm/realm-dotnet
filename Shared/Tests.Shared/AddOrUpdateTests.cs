@@ -38,7 +38,7 @@ namespace IntegrationTests.Shared
         [TearDown]
         public void TearDown()
         {
-            _realm.Close();
+            _realm.Dispose();
             Realm.DeleteRealm(_realm.Config);
         }
 
@@ -53,12 +53,12 @@ namespace IntegrationTests.Shared
 
             _realm.Write(() =>
             {
-                _realm.Manage(standalone, update: true);
+                _realm.Add(standalone, update: true);
             });
 
             Assert.That(standalone.IsManaged, Is.True);
 
-            var queried = _realm.ObjectForPrimaryKey<PrimaryKeyObject>(1);
+            var queried = _realm.Find<PrimaryKeyObject>(1);
             Assert.That(queried, Is.EqualTo(standalone));
         }
 
@@ -73,7 +73,7 @@ namespace IntegrationTests.Shared
 
             _realm.Write(() =>
             {
-                _realm.Manage(first, update: true);
+                _realm.Add(first, update: true);
             });
 
             var second = new PrimaryKeyObject
@@ -84,10 +84,10 @@ namespace IntegrationTests.Shared
 
             _realm.Write(() =>
             {
-                _realm.Manage(second, update: true);
+                _realm.Add(second, update: true);
             });
 
-            var queried = _realm.ObjectForPrimaryKey<PrimaryKeyObject>(1);
+            var queried = _realm.Find<PrimaryKeyObject>(1);
             Assert.That(queried.StringValue, Is.EqualTo("second"));
             Assert.That(first.StringValue, Is.EqualTo("second"));
             Assert.That(second.StringValue, Is.EqualTo("second"));
@@ -103,7 +103,7 @@ namespace IntegrationTests.Shared
 
             _realm.Write(() =>
             {
-                _realm.Manage(noPK, update: true);
+                _realm.Add(noPK, update: true);
             });
 
             var noPK2 = new NonPrimaryKeyObject
@@ -113,11 +113,11 @@ namespace IntegrationTests.Shared
 
             _realm.Write(() =>
             {
-                _realm.Manage(noPK2, update: true);
+                _realm.Add(noPK2, update: true);
             });
 
             Assert.That(noPK2, Is.Not.EqualTo(noPK));
-            Assert.That(_realm.All<NonPrimaryKeyObject>().Count(), Is.EqualTo(2));
+            Assert.That(_realm.GetAll<NonPrimaryKeyObject>().Count(), Is.EqualTo(2));
         }
 
         [Test]
@@ -136,10 +136,10 @@ namespace IntegrationTests.Shared
 
             _realm.Write(() =>
             {
-                _realm.Manage(first, update: true);
+                _realm.Add(first, update: true);
             });
 
-            var queried = _realm.ObjectForPrimaryKey<PrimaryKeyWithPKRelation>(1);
+            var queried = _realm.Find<PrimaryKeyWithPKRelation>(1);
             Assert.That(queried.OtherObject, Is.Not.Null);
             Assert.That(queried.StringValue, Is.EqualTo("parent"));
             Assert.That(queried.OtherObject.StringValue, Is.EqualTo("child"));
@@ -161,7 +161,7 @@ namespace IntegrationTests.Shared
 
             _realm.Write(() =>
             {
-                _realm.Manage(first, update: true);
+                _realm.Add(first, update: true);
             });
 
             var second = new PrimaryKeyWithPKRelation
@@ -177,18 +177,18 @@ namespace IntegrationTests.Shared
 
             _realm.Write(() =>
             {
-                _realm.Manage(second, update: true);
+                _realm.Add(second, update: true);
             });
 
-            var queried = _realm.ObjectForPrimaryKey<PrimaryKeyWithPKRelation>(1);
+            var queried = _realm.Find<PrimaryKeyWithPKRelation>(1);
             Assert.That(queried.OtherObject, Is.Not.Null);
             Assert.That(queried.StringValue, Is.EqualTo("parent"));
             Assert.That(queried.OtherObject.StringValue, Is.EqualTo("child2"));
 
-            var child1 = _realm.ObjectForPrimaryKey<PrimaryKeyObject>(1);
+            var child1 = _realm.Find<PrimaryKeyObject>(1);
             Assert.That(child1.StringValue, Is.EqualTo("child"));
 
-            var child2 = _realm.ObjectForPrimaryKey<PrimaryKeyObject>(2);
+            var child2 = _realm.Find<PrimaryKeyObject>(2);
             Assert.That(child2.StringValue, Is.EqualTo("child2"));
         }
 
@@ -208,7 +208,7 @@ namespace IntegrationTests.Shared
 
             _realm.Write(() =>
             {
-                _realm.Manage(first, update: true);
+                _realm.Add(first, update: true);
             });
 
             var second = new PrimaryKeyWithPKRelation
@@ -224,15 +224,15 @@ namespace IntegrationTests.Shared
 
             _realm.Write(() =>
             {
-                _realm.Manage(second, update: true);
+                _realm.Add(second, update: true);
             });
 
-            var queried = _realm.ObjectForPrimaryKey<PrimaryKeyWithPKRelation>(1);
+            var queried = _realm.Find<PrimaryKeyWithPKRelation>(1);
             Assert.That(queried.OtherObject, Is.Not.Null);
             Assert.That(queried.StringValue, Is.EqualTo("parent2"));
             Assert.That(queried.OtherObject.StringValue, Is.EqualTo("child2"));
 
-            var child1 = _realm.ObjectForPrimaryKey<PrimaryKeyObject>(1);
+            var child1 = _realm.Find<PrimaryKeyObject>(1);
             Assert.That(child1.StringValue, Is.EqualTo("child2"));
         }
 
@@ -251,7 +251,7 @@ namespace IntegrationTests.Shared
 
             _realm.Write(() =>
             {
-                _realm.Manage(first, update: true);
+                _realm.Add(first, update: true);
             });
 
             var second = new PrimaryKeyWithNonPKRelation
@@ -266,11 +266,11 @@ namespace IntegrationTests.Shared
 
             _realm.Write(() =>
             {
-                _realm.Manage(second, update: true);
+                _realm.Add(second, update: true);
             });
 
             Assert.That(second.OtherObject, Is.Not.EqualTo(first.OtherObject));
-            Assert.That(_realm.All<NonPrimaryKeyObject>().Count(), Is.EqualTo(2));
+            Assert.That(_realm.GetAll<NonPrimaryKeyObject>().Count(), Is.EqualTo(2));
         }
 
         [Test]
@@ -289,7 +289,7 @@ namespace IntegrationTests.Shared
 
             _realm.Write(() =>
             {
-                _realm.Manage(first, update: true);
+                _realm.Add(first, update: true);
             });
 
             var second = new PrimaryKeyWithPKRelation
@@ -305,12 +305,12 @@ namespace IntegrationTests.Shared
 
             _realm.Write(() =>
             {
-                _realm.Manage(second, update: true);
+                _realm.Add(second, update: true);
             });
 
             Assert.That(second.OtherObject, Is.EqualTo(first.OtherObject));
-            Assert.That(_realm.All<PrimaryKeyObject>().Count(), Is.EqualTo(1));
-            Assert.That(_realm.ObjectForPrimaryKey<PrimaryKeyObject>(1).StringValue, Is.EqualTo("child2"));
+            Assert.That(_realm.GetAll<PrimaryKeyObject>().Count(), Is.EqualTo(1));
+            Assert.That(_realm.Find<PrimaryKeyObject>(1).StringValue, Is.EqualTo("child2"));
         }
 
         [Test]
@@ -330,7 +330,7 @@ namespace IntegrationTests.Shared
 
             _realm.Write(() =>
             {
-                _realm.Manage(first, update: true);
+                _realm.Add(first, update: true);
             });
 
             var second = new PrimaryKeyWithPKList
@@ -347,12 +347,12 @@ namespace IntegrationTests.Shared
 
             _realm.Write(() =>
             {
-                _realm.Manage(second, update: true);
+                _realm.Add(second, update: true);
             });
 
             Assert.That(first.ListValue, Is.EqualTo(second.ListValue));
-            Assert.That(_realm.All<PrimaryKeyObject>().Count(), Is.EqualTo(1));
-            Assert.That(_realm.ObjectForPrimaryKey<PrimaryKeyObject>(1).StringValue, Is.EqualTo("secondChild"));
+            Assert.That(_realm.GetAll<PrimaryKeyObject>().Count(), Is.EqualTo(1));
+            Assert.That(_realm.Find<PrimaryKeyObject>(1).StringValue, Is.EqualTo("secondChild"));
         }
 
         [Test]
@@ -371,7 +371,7 @@ namespace IntegrationTests.Shared
 
             _realm.Write(() =>
             {
-                _realm.Manage(first, update: true);
+                _realm.Add(first, update: true);
             });
 
             var second = new PrimaryKeyWithNoPKList
@@ -387,11 +387,11 @@ namespace IntegrationTests.Shared
 
             _realm.Write(() =>
             {
-                _realm.Manage(second, update: true);
+                _realm.Add(second, update: true);
             });
 
             Assert.That(first.ListValue, Is.Not.EqualTo(second.ListValue));
-            Assert.That(_realm.All<NonPrimaryKeyObject>().Count(), Is.EqualTo(2));
+            Assert.That(_realm.GetAll<NonPrimaryKeyObject>().Count(), Is.EqualTo(2));
         }
 
         [Test]
@@ -411,7 +411,7 @@ namespace IntegrationTests.Shared
 
             _realm.Write(() =>
             {
-                _realm.Manage(first, update: true);
+                _realm.Add(first, update: true);
             });
 
             var updatedFirst = new PrimaryKeyWithPKList
@@ -434,12 +434,12 @@ namespace IntegrationTests.Shared
 
             _realm.Write(() =>
             {
-                _realm.Manage(updatedFirst, update: true);
+                _realm.Add(updatedFirst, update: true);
             });
 
-            Assert.That(_realm.All<PrimaryKeyObject>().Count(), Is.EqualTo(2));
-            Assert.That(_realm.ObjectForPrimaryKey<PrimaryKeyObject>(1).StringValue, Is.EqualTo("updated child"));
-            Assert.That(_realm.ObjectForPrimaryKey<PrimaryKeyObject>(2).StringValue, Is.EqualTo("new child"));
+            Assert.That(_realm.GetAll<PrimaryKeyObject>().Count(), Is.EqualTo(2));
+            Assert.That(_realm.Find<PrimaryKeyObject>(1).StringValue, Is.EqualTo("updated child"));
+            Assert.That(_realm.Find<PrimaryKeyObject>(2).StringValue, Is.EqualTo("new child"));
         }
 
         [Test]
@@ -457,7 +457,7 @@ namespace IntegrationTests.Shared
 
             _realm.Write(() =>
             {
-                _realm.Manage(first, update: true);
+                _realm.Add(first, update: true);
             });
 
             var second = new NonPrimaryKeyWithPKRelation
@@ -472,12 +472,12 @@ namespace IntegrationTests.Shared
 
             _realm.Write(() =>
             {
-                _realm.Manage(second, update: true);
+                _realm.Add(second, update: true);
             });
 
-            Assert.That(_realm.All<NonPrimaryKeyWithPKRelation>().Count(), Is.EqualTo(2));
-            Assert.That(_realm.All<PrimaryKeyObject>().Count(), Is.EqualTo(1));
-            Assert.That(_realm.ObjectForPrimaryKey<PrimaryKeyObject>(1).StringValue, Is.EqualTo("updated child"));
+            Assert.That(_realm.GetAll<NonPrimaryKeyWithPKRelation>().Count(), Is.EqualTo(2));
+            Assert.That(_realm.GetAll<PrimaryKeyObject>().Count(), Is.EqualTo(1));
+            Assert.That(_realm.Find<PrimaryKeyObject>(1).StringValue, Is.EqualTo("updated child"));
         }
 
         [Test]
@@ -494,7 +494,7 @@ namespace IntegrationTests.Shared
 
             _realm.Write(() =>
             {
-                _realm.Manage(first, update: true);
+                _realm.Add(first, update: true);
             });
 
             var second = new NonPrimaryKeyWithNonPKRelation
@@ -508,11 +508,11 @@ namespace IntegrationTests.Shared
 
             _realm.Write(() =>
             {
-                _realm.Manage(second, update: true);
+                _realm.Add(second, update: true);
             });
 
-            Assert.That(_realm.All<NonPrimaryKeyWithNonPKRelation>().Count(), Is.EqualTo(2));
-            Assert.That(_realm.All<NonPrimaryKeyObject>().Count(), Is.EqualTo(2));
+            Assert.That(_realm.GetAll<NonPrimaryKeyWithNonPKRelation>().Count(), Is.EqualTo(2));
+            Assert.That(_realm.GetAll<NonPrimaryKeyObject>().Count(), Is.EqualTo(2));
         }
 
         [Test]
@@ -531,7 +531,7 @@ namespace IntegrationTests.Shared
 
             _realm.Write(() =>
             {
-                _realm.Manage(first, update: true);
+                _realm.Add(first, update: true);
             });
 
             var updatedFirst = new PrimaryKeyWithPKRelation
@@ -542,12 +542,12 @@ namespace IntegrationTests.Shared
 
             _realm.Write(() =>
             {
-                _realm.Manage(updatedFirst, update: true);
+                _realm.Add(updatedFirst, update: true);
             });
 
             Assert.That(first.OtherObject, Is.Null);
             Assert.That(updatedFirst.OtherObject, Is.Null);
-            Assert.That(_realm.ObjectForPrimaryKey<PrimaryKeyWithPKRelation>(1).OtherObject, Is.Null);
+            Assert.That(_realm.Find<PrimaryKeyWithPKRelation>(1).OtherObject, Is.Null);
         }
 
         [Test, Ignore("Cyclic relations don't work yet.")]
@@ -570,11 +570,11 @@ namespace IntegrationTests.Shared
 
             _realm.Write(() =>
             {
-                _realm.Manage(parent, update: true);
+                _realm.Add(parent, update: true);
             });
 
-            var persistedParent = _realm.ObjectForPrimaryKey<Parent>(1);
-            var persistedChild = _realm.ObjectForPrimaryKey<Child>(1);
+            var persistedParent = _realm.Find<Parent>(1);
+            var persistedChild = _realm.Find<Child>(1);
 
             Assert.That(persistedParent.Name, Is.EqualTo("Peter"));
             Assert.That(persistedChild.Name, Is.EqualTo("Kate"));
@@ -604,7 +604,7 @@ namespace IntegrationTests.Shared
 
             _realm.Write(() =>
             {
-                _realm.Manage(parent, update: true);
+                _realm.Add(parent, update: true);
             });
 
             var updatedParent = new PrimaryKeyWithNonPKChildWithPKGrandChild
@@ -624,19 +624,19 @@ namespace IntegrationTests.Shared
 
             _realm.Write(() =>
             {
-                _realm.Manage(updatedParent, update: true);
+                _realm.Add(updatedParent, update: true);
             });
 
-            var persistedParent = _realm.ObjectForPrimaryKey<PrimaryKeyWithNonPKChildWithPKGrandChild>(1);
+            var persistedParent = _realm.Find<PrimaryKeyWithNonPKChildWithPKGrandChild>(1);
             Assert.That(persistedParent.StringValue, Is.EqualTo("updated parent"));
             Assert.That(persistedParent.NonPKChild, Is.Not.Null);
             Assert.That(persistedParent.NonPKChild.StringValue, Is.EqualTo("new child"));
             Assert.That(persistedParent.NonPKChild.OtherObject, Is.Not.Null);
             Assert.That(persistedParent.NonPKChild.OtherObject.StringValue, Is.EqualTo("updated grandchild"));
 
-            Assert.That(_realm.All<PrimaryKeyWithNonPKChildWithPKGrandChild>().Count(), Is.EqualTo(1));
-            Assert.That(_realm.All<NonPrimaryKeyWithPKRelation>().Count(), Is.EqualTo(2));
-            Assert.That(_realm.All<PrimaryKeyObject>().Count(), Is.EqualTo(1));
+            Assert.That(_realm.GetAll<PrimaryKeyWithNonPKChildWithPKGrandChild>().Count(), Is.EqualTo(1));
+            Assert.That(_realm.GetAll<NonPrimaryKeyWithPKRelation>().Count(), Is.EqualTo(2));
+            Assert.That(_realm.GetAll<PrimaryKeyObject>().Count(), Is.EqualTo(1));
         }
 
         [Test]

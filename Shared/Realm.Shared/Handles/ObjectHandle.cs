@@ -609,7 +609,7 @@ namespace Realms
             {
                 if (!@object.IsManaged)
                 {
-                    realm.Manage(@object);
+                    realm.Add(@object);
                 }
 
                 this.SetLink(propertyIndex, @object.ObjectHandle);

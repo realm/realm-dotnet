@@ -376,7 +376,7 @@ namespace Realms
         /// <remarks>Using CreateObject is more efficient than creating standalone objects, assigning their values, then using Add because it avoids copying properties to the realm.</remarks>
         /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
         /// <returns>An object which is already managed.</returns>
-        /// <exception cref="RealmOutsideTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
+        /// <exception cref="RealmInvalidTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
         public T CreateObject<T>() where T : RealmObject, new()
         {
             RealmObject.Metadata metadata;
@@ -415,7 +415,7 @@ namespace Realms
 
             var objectPtr = metadata.Table.AddEmptyObject(SharedRealmHandle);
             var objectHandle = CreateObjectHandle(objectPtr, SharedRealmHandle);
-            result._Manage(this, objectHandle, metadata);
+            result._SetOwner(this, objectHandle, metadata);
             return result;
         }
 
@@ -437,7 +437,7 @@ namespace Realms
         internal RealmObject MakeObject(RealmObject.Metadata metadata, ObjectHandle objectHandle)
         {
             var ret = metadata.Helper.CreateInstance();
-            ret._Manage(this, objectHandle, metadata);
+            ret._SetOwner(this, objectHandle, metadata);
             return ret;
         }
 
@@ -475,10 +475,14 @@ namespace Realms
         /// <param name="update">If true, and an object with the same primary key already exists, performs an update.</param>
         /// <exception cref="RealmInvalidTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
         /// <exception cref="RealmObjectManagedByAnotherRealmException">You can't manage an object with more than one realm</exception>
-        public void Add<T>(T obj) where T : RealmObject
+        /// <remarks>
+        /// If the object is already managed by this realm, this method does nothing.
+        /// Cyclic graphs (<c>Parent</c> has <c>Child</c> that has a <c>Parent</c>) will result in undefined behavior. You have to break the cycle manually and assign relationships after all object have been managed.
+        /// </remarks>
+        public void Add<T>(T obj, bool update = false) where T : RealmObject
         {
             // This is not obsoleted because the compiler will always pick it for specific types, generating a bunch of warnings
-            ManageInternal(obj, typeof(T), update);
+            AddInternal(obj, typeof(T), update);
         }
 
         /// <summary>
@@ -492,12 +496,12 @@ namespace Realms
         /// If the object is already managed by this realm, this method does nothing.
         /// Cyclic graphs (<c>Parent</c> has <c>Child</c> that has a <c>Parent</c>) will result in undefined behavior. You have to break the cycle manually and assign relationships after all object have been managed.
         /// </remarks>
-        public void Manage(RealmObject obj, bool update = false)
+        public void Add(RealmObject obj, bool update = false)
         {
-            ManageInternal(obj, obj?.GetType(), update);
+            AddInternal(obj, obj?.GetType(), update);
         }
 
-        private void ManageInternal(RealmObject obj, Type objectType, bool update)
+        private void AddInternal(RealmObject obj, Type objectType, bool update)
         {
             if (obj == null)
             {
@@ -529,7 +533,7 @@ namespace Realms
             {
                 if (pkValue is string)
                 {
-                    objectPtr = metadata.Table.ObjectForPrimaryKey(SharedRealmHandle, (string)pkValue);
+                    objectPtr = metadata.Table.Find(SharedRealmHandle, (string)pkValue);
                 }
                 else if (pkValue == null)
                 {
@@ -549,8 +553,8 @@ namespace Realms
 
             var objectHandle = CreateObjectHandle(objectPtr, SharedRealmHandle);
 
-            obj._SetOwner(this, rowHandle, metadata);
-            obj._CopyDataFromBackingFieldsToRow();
+            obj._SetOwner(this, objectHandle, metadata);
+            metadata.Helper.CopyToRealm(obj, update);
         }
 
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
@@ -736,7 +740,7 @@ namespace Realms
         public T Find<T>(long? id) where T : RealmObject
         {
             var metadata = Metadata[typeof(T).Name];
-            var objectPtr = metadata.Table.ObjectForPrimaryKey(SharedRealmHandle, id);
+            var objectPtr = metadata.Table.Find(SharedRealmHandle, id);
             if (objectPtr == IntPtr.Zero)
             {
                 return null;
@@ -755,7 +759,7 @@ namespace Realms
         public T Find<T>(string id) where T : RealmObject
         {
             var metadata = Metadata[typeof(T).Name];
-            var objectPtr = metadata.Table.ObjectForPrimaryKey(SharedRealmHandle, id);
+            var objectPtr = metadata.Table.Find(SharedRealmHandle, id);
             if (objectPtr == IntPtr.Zero)
             {
                 return null;
@@ -774,7 +778,7 @@ namespace Realms
         public RealmObject Find(string className, long? id)
         {
             var metadata = Metadata[className];
-            var objectPtr = metadata.Table.ObjectForPrimaryKey(SharedRealmHandle, id);
+            var objectPtr = metadata.Table.Find(SharedRealmHandle, id);
             if (objectPtr == IntPtr.Zero)
             {
                 return null;
@@ -793,7 +797,7 @@ namespace Realms
         public RealmObject Find(string className, string id)
         {
             var metadata = Metadata[className];
-            var objectPtr = metadata.Table.ObjectForPrimaryKey(SharedRealmHandle, id);
+            var objectPtr = metadata.Table.Find(SharedRealmHandle, id);
             if (objectPtr == IntPtr.Zero)
             {
                 return null;
@@ -952,8 +956,7 @@ namespace Realms
         /// </summary>
         /// <typeparam name="T">The Type T must not only be a RealmObject but also have been processed by the Fody weaver, so it has persistent properties.</typeparam>
         /// <param name="obj">Must be a standalone object, null not allowed.</param>
-        /// <exception cref="RealmOutsideTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
-        /// <exception cref="RealmObjectAlreadyManagedByRealmException">You can't manage the same object twice. This exception is thrown, rather than silently detecting the mistake, to help you debug your code</exception>
+        /// <exception cref="RealmInvalidTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
         /// <exception cref="RealmObjectManagedByAnotherRealmException">You can't manage an object with more than one realm</exception>
         [Obsolete("This method has been renamed. Use Add for the same results.")]
         public void Manage<T>(T obj) where T : RealmObject

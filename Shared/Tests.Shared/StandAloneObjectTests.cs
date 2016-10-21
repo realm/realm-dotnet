@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -93,37 +93,37 @@ namespace IntegrationTests.Shared
             {
                 Assert.DoesNotThrow(() => realm.Write(() =>
                 {
-                    realm.Manage(new NoListProperties());
+                    realm.Add(new NoListProperties());
                 }), $"{nameof(NoListProperties)} manage failed.");
 
                 Assert.DoesNotThrow(() => realm.Write(() =>
                 {
-                    realm.Manage(new OnlyListProperties());
+                    realm.Add(new OnlyListProperties());
                 }), $"{nameof(OnlyListProperties)} manage failed.");
 
                 Assert.DoesNotThrow(() => realm.Write(() =>
                 {
-                    realm.Manage(new MixedProperties1());
+                    realm.Add(new MixedProperties1());
                 }), $"{nameof(MixedProperties1)} manage failed.");
 
                 Assert.DoesNotThrow(() => realm.Write(() =>
                 {
-                    realm.Manage(new MixedProperties2());
+                    realm.Add(new MixedProperties2());
                 }), $"{nameof(MixedProperties2)} manage failed.");
 
                 Assert.DoesNotThrow(() => realm.Write(() =>
                 {
-                    realm.Manage(new OneNonListProperty());
+                    realm.Add(new OneNonListProperty());
                 }), $"{nameof(OneNonListProperty)} manage failed.");
 
                 Assert.DoesNotThrow(() => realm.Write(() =>
                 {
-                    realm.Manage(new OneListProperty());
+                    realm.Add(new OneListProperty());
                 }), $"{nameof(OneListProperty)} manage failed.");
 
                 Assert.DoesNotThrow(() => realm.Write(() =>
                 {
-                    realm.Manage(new AllTypesObject());
+                    realm.Add(new AllTypesObject());
                 }), $"{nameof(AllTypesObject)} manage failed.");
             }
         }

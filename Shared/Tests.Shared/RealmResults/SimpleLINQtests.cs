@@ -338,7 +338,7 @@ namespace IntegrationTests
             var between = _realm.GetAll<PrimaryKeyCharObject>().Where(p => p.CharProperty > 'A' && p.CharProperty < 'a').ToArray();
             Assert.That(between.Select(p => p.CharProperty), Is.EquivalentTo(new[] { 'B' }));
 
-            var missing = _realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty == 'X').ToArray();
+            var missing = _realm.GetAll<PrimaryKeyCharObject>().Where(p => p.CharProperty == 'X').ToArray();
             Assert.That(missing.Length, Is.EqualTo(0));
         }
 
@@ -814,7 +814,7 @@ namespace IntegrationTests
         [Test]
         public void ChainedWhereFirstWithPredicate()
         {
-            var moderateScorers = _realm.All<Person>().Where(p => p.Score >= 20.0f && p.Score <= 100.0f);
+            var moderateScorers = _realm.GetAll<Person>().Where(p => p.Score >= 20.0f && p.Score <= 100.0f);
             var johnScorer = moderateScorers.First(p => p.FirstName == "John");
             Assert.That(johnScorer, Is.Not.Null);
             Assert.That(johnScorer.Score, Is.EqualTo(100.0f));
@@ -824,7 +824,7 @@ namespace IntegrationTests
         [Test]
         public void ChainedWhereAnyTrue()
         {
-            var moderateScorers = _realm.All<Person>().Where(p => p.Score >= 20.0f && p.Score <= 100.0f);
+            var moderateScorers = _realm.GetAll<Person>().Where(p => p.Score >= 20.0f && p.Score <= 100.0f);
             var hasJohn = moderateScorers.Where(p => p.FirstName == "John").Any();
             Assert.That(hasJohn, Is.True);
         }
@@ -832,7 +832,7 @@ namespace IntegrationTests
         [Test]
         public void ChainedWhereAnyFalse()
         {
-            var moderateScorers = _realm.All<Person>().Where(p => p.Score >= 20.0f && p.Score <= 100.0f);
+            var moderateScorers = _realm.GetAll<Person>().Where(p => p.Score >= 20.0f && p.Score <= 100.0f);
             var hasJohnSmith = moderateScorers.Where(p => p.LastName == "Smith").Any();
             Assert.That(hasJohnSmith, Is.False);
         }
@@ -840,7 +840,7 @@ namespace IntegrationTests
         [Test]
         public void ChainedWhereAnyWithPredicateTrue()
         {
-            var moderateScorers = _realm.All<Person>().Where(p => p.Score >= 20.0f && p.Score <= 100.0f);
+            var moderateScorers = _realm.GetAll<Person>().Where(p => p.Score >= 20.0f && p.Score <= 100.0f);
             var hasJohn = moderateScorers.Any(p => p.FirstName == "John");
             Assert.That(hasJohn, Is.True);
         }
@@ -848,7 +848,7 @@ namespace IntegrationTests
         [Test]
         public void ChainedWhereAnyWithPredicateFalse()
         {
-            var moderateScorers = _realm.All<Person>().Where(p => p.Score >= 20.0f && p.Score <= 100.0f);
+            var moderateScorers = _realm.GetAll<Person>().Where(p => p.Score >= 20.0f && p.Score <= 100.0f);
             var hasJohnSmith = moderateScorers.Any(p => p.LastName == "Smith");
             Assert.That(hasJohnSmith, Is.False);
         }

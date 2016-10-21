@@ -40,7 +40,7 @@ namespace IntegrationTests.Shared
         [TearDown]
         public void TearDown()
         {
-            _realm.Close();
+            _realm.Dispose();
             Realm.DeleteRealm(_realm.Config);
         }
 
@@ -54,7 +54,7 @@ namespace IntegrationTests.Shared
 
             _realm.Write(() =>
             {
-                _realm.Manage(obj);
+                _realm.Add(obj);
             });
 
             object pk;
@@ -92,7 +92,7 @@ namespace IntegrationTests.Shared
 
             _realm.Write(() =>
             {
-                _realm.Manage(obj);
+                _realm.Add(obj);
             });
 
             object pk;
