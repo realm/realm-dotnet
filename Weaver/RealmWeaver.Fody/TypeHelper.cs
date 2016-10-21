@@ -16,16 +16,35 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-namespace Realms
+using System;
+using System.Linq;
+using Mono.Cecil;
+using Mono.Cecil.Cil;
+
+internal static class TypeHelper
 {
-    public class Realm
+    internal static TypeDefinition LookupType(string typeName, params AssemblyDefinition[] assemblies)
     {
-        public void Manage<T>(T obj, bool update) where T : RealmObject
+        if (typeName == null)
         {
+            throw new ArgumentNullException(nameof(typeName));
         }
 
-        public void Manage(RealmObject obj, bool update)
+        if (assemblies.Length == 0)
         {
+            throw new ArgumentException("One or more assemblies must be specified to look up type: " + typeName, nameof(assemblies));
         }
+
+        foreach (var assembly in assemblies)
+        {
+            var type = assembly?.MainModule.Types.FirstOrDefault(x => x.Name == typeName);
+
+            if (type != null)
+            {
+                return type;
+            }
+        }
+
+        throw new ApplicationException("Unable to find type: " + typeName);
     }
 }

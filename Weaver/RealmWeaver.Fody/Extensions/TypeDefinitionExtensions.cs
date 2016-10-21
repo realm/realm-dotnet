@@ -16,16 +16,28 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
-namespace Realms
+using System;
+using System.ComponentModel;
+using System.Linq;
+using Mono.Cecil;
+
+[EditorBrowsable(EditorBrowsableState.Never)]
+internal static class TypeDefinitionExtensions
 {
-    public class Realm
+    internal static MethodDefinition LookupMethodDefinition(this TypeDefinition typeDefinition, string methodName)
     {
-        public void Manage<T>(T obj, bool update) where T : RealmObject
+        var method = typeDefinition.Methods.FirstOrDefault(x => x.Name == methodName);
+
+        if (method == null)
         {
+            throw new ApplicationException("Unable to find method: " + methodName);
         }
 
-        public void Manage(RealmObject obj, bool update)
-        {
-        }
+        return method;
+    }
+
+    internal static MethodReference LookupMethodReference(this TypeDefinition typeDefinition, string methodName, ModuleDefinition moduleDefinition)
+    {
+        return moduleDefinition.ImportReference(typeDefinition.LookupMethodDefinition(methodName));
     }
 }
