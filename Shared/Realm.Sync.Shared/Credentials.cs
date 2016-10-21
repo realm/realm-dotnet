@@ -50,6 +50,7 @@ namespace Realms.Sync
         }
 
         public string IdentityProvider { get; private set; }
+
         public IDictionary<string, object> UserInfo { get; private set; }
     }
 }

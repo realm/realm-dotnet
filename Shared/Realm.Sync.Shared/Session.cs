@@ -33,8 +33,11 @@ namespace Realms.Sync
     public class Session
     {
         public SyncConfiguration Configuration { get; private set; }
+
         public Uri ServerUri { get; private set; }
+
         public SessionState State { get; private set; }
+
         public User User { get; private set; }
     }
 }

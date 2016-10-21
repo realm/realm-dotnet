@@ -23,7 +23,9 @@ namespace Realms.Sync
     public class SyncConfiguration : RealmConfiguration
     {
         public Uri ServerUri { get; private set; }
+
         public User User { get; private set; }
+
         public bool ShouldDeleteRealmOnLogOut { get; private set; }
     }
 }
