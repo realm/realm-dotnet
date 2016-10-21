@@ -7,7 +7,7 @@ This repository holds the source code for the .NET / C# versions of Realm. Curre
 ## Features
 
 * **Mobile-first:** Realm is the first database built from the ground up to run directly inside phones, tablets and wearables.
-* **Simple:** Data is directly [exposed as objects](https://realm.io/docs/xamarin/latest/#models) and [queryable by code](https://realm.io/docs/xamarin/latest/#queries), removing the need for ORM's riddled with performance & maintenance issues. Plus, we've worked hard to [keep our API down to just 4 common classes](https://realm.io/docs/xamarin/latest/api/) (RealmObject, RealmList, RealmQuery and Realm): most of our users pick it up intuitively, getting simple apps up & running in minutes.
+* **Simple:** Data is directly [exposed as objects](https://realm.io/docs/xamarin/latest/#models) and [queryable by code](https://realm.io/docs/xamarin/latest/#queries), removing the need for ORM's riddled with performance & maintenance issues. Plus, we've worked hard to [keep our API down to just 3 common classes](https://realm.io/docs/xamarin/latest/api/) (RealmObject, RealmResults and Realm): most of our users pick it up intuitively, getting simple apps up & running in minutes.
 * **Modern:** Realm supports relationships, generics, vectorization and modern C# idioms.
 * **Fast:** Realm is faster than even raw SQLite on common operations, while maintaining an extremely rich feature set.
 
@@ -29,7 +29,7 @@ The API reference is located at [realm.io/docs/xamarin/latest/api](https://realm
 
 ## Building Realm
 
-We highly recommend [using our pre-build binaries via NuGet](https://realm.io/docs/xamarin/latest/#installation) but you can also build from source.
+We highly recommend [using our pre-built binaries via NuGet](https://realm.io/docs/xamarin/latest/#installation) but you can also build from source.
 
 Prerequisites:
 
@@ -37,6 +37,7 @@ Prerequisites:
 * **Windows platforms:** Visual Studio 2015.
 * Building Xamarin iOS apps also requires Xcode 7.1.
 * Building Realm documentation requires [Doxygen](http:/www.doxygen.org) and [Graphviz](http://www.graphviz.org)
+* If you are using Xamarin Studio, the [StyleCop Support](http://addins.monodevelop.com/Project/Index/54) add-in is required.
 
 We support the current Xamarin _Stable_ update channel, at the time of release this corresponded to:
 
@@ -47,19 +48,19 @@ We support the current Xamarin _Stable_ update channel, at the time of release t
 **Note for Debugging** that the following steps mention building for **Release.** If you are debugging, just substitute **Debug** and you probably also want to choose **Debug | iPhoneSimulator** as a platform.
 
 1. Open a terminal window in the `wrappers` directory
-2. `make clean`
-3. `make all` - this will probably download a current version of core binaries, unless you have built recently. The download and subsequent builds will take some time, depending on your system, as it builds a binary wrapper library for each platform including all Android CPU variations.
-4. Open the `Realm.sln` in `Xamarin Studio` on OS X 
+1. `make clean`
+1. `make all` - this will probably download a current version of core binaries, unless you have built recently. The download and subsequent builds will take some time, depending on your system, as it builds a binary wrapper library for each platform including all Android CPU variations.
+1. Open the `Realm.sln` in `Xamarin Studio` on OS X 
     1. Choose the Solution `Realm` in the Solution navigator and context menu to `Clean Realm`
-    2. platform popup **Release | Default**
-    3. select `Realm.PCL` project and Build
-    4. select `RealmWeaver.Fody` project and Build
-    5. select platform popup **Release | ARM**
-    6. select `Realm.XamarinAndroid` project and Build
-    7. ensure you have an iOS device attached
-    8. select platform popup **Release | iPhone**
-    9. select `Realm.XamarinIOS` project and Build
-5. If you want to build the NuGet packages, go on from this point and follow the steps in  `internals/RealmDotnetNugetBuild.md`
+    1. platform popup **Release | Default**
+    1. select `Realm.PCL` project and Build
+    1. select `RealmWeaver.Fody` project and Build
+    1. select platform popup **Release | ARM**
+    1. select `Realm.XamarinAndroid` project and Build
+    1. ensure you have an iOS device attached
+    1. select platform popup **Release | iPhone**
+    1. select `Realm.XamarinIOS` project and Build
+1. If you want to build the NuGet packages, go on from this point and follow the steps in  `internals/RealmDotnetNugetBuild.md`
 
 If you are actively testing code against the Realm source, see also the unit test projects and other tests under the Tests folder.
 
