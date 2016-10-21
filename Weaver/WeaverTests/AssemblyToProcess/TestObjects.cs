@@ -146,4 +146,39 @@ namespace AssemblyToProcess
         [PrimaryKey]
         public string StringProperty { get; set; }
     }
+
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    public class PrimaryKeyNullableCharObject : RealmObject
+    {
+        [PrimaryKey]
+        public char? CharProperty { get; set; }
+    }
+
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    public class PrimaryKeyNullableByteObject : RealmObject
+    {
+        [PrimaryKey]
+        public byte? ByteProperty { get; set; }
+    }
+
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    public class PrimaryKeyNullableInt16Object : RealmObject
+    {
+        [PrimaryKey]
+        public short? Int16Property { get; set; }
+    }
+
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    public class PrimaryKeyNullableInt32Object : RealmObject
+    {
+        [PrimaryKey]
+        public int? Int32Property { get; set; }
+    }
+
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    public class PrimaryKeyNullableInt64Object : RealmObject
+    {
+        [PrimaryKey]
+        public long? Int64Property { get; set; }
+    }
 }

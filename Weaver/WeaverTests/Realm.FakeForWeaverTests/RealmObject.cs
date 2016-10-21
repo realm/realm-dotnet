@@ -95,6 +95,11 @@ namespace Realms
             LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
         }
 
+        protected void SetNullableCharValueUnique(string propertyName, char? value)
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
+        }
+
         protected byte GetByteValue(string propertyName)
         {
             LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
@@ -107,6 +112,11 @@ namespace Realms
         }
 
         protected void SetByteValueUnique(string propertyName, byte value)
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
+        }
+
+        protected void SetNullableByteValueUnique(string propertyName, byte? value)
         {
             LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
         }
@@ -127,6 +137,11 @@ namespace Realms
             LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
         }
 
+        protected void SetNullableInt16ValueUnique(string propertyName, short? value)
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
+        }
+
         protected int GetInt32Value(string propertyName)
         {
             LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
@@ -143,6 +158,11 @@ namespace Realms
             LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
         }
 
+        protected void SetNullableInt32ValueUnique(string propertyName, int? value)
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
+        }
+
         protected long GetInt64Value(string propertyName)
         {
             LogCall($"{nameof(propertyName)} = \"{propertyName}\"");
@@ -155,6 +175,11 @@ namespace Realms
         }
 
         protected void SetInt64ValueUnique(string propertyName, long value)
+        {
+            LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
+        }
+
+        protected void SetNullableInt64ValueUnique(string propertyName, long? value)
         {
             LogCall($"{nameof(propertyName)} = \"{propertyName}\", {nameof(value)} = {value}");
         }

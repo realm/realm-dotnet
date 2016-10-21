@@ -139,7 +139,14 @@ REALM_EXPORT Object* object_for_int_primarykey(Table* table_ptr, SharedRealm* re
         return table->find_first_int(column_index, value);
     }, ex);
 }
-
+    
+    
+REALM_EXPORT Object* object_for_null_primarykey(Table* table_ptr, SharedRealm* realm, NativeException::Marshallable& ex)
+{
+    return object_for_primarykey(table_ptr, realm, [=](size_t column_index, Table* table) {
+        return table->find_first_null(column_index);
+    }, ex);
+}
 
 REALM_EXPORT Object* object_for_string_primarykey(Table* table_ptr, SharedRealm* realm, uint16_t* value, size_t value_len, NativeException::Marshallable& ex)
 {
