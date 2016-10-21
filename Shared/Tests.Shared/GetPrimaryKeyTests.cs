@@ -59,8 +59,8 @@ namespace IntegrationTests.Shared
             object pk;
             var success = obj.ObjectMetadata.Helper.TryGetPrimaryKeyValue(obj, out pk);
 
-            Assert.IsFalse(success);
-            Assert.IsNull(pk);
+            Assert.That(success, Is.False);
+            Assert.That(pk, Is.Null);
         }
 
         [Test]
@@ -74,8 +74,8 @@ namespace IntegrationTests.Shared
             object pk;
             var success = _realm.Metadata[obj.GetType().Name].Helper.TryGetPrimaryKeyValue(obj, out pk);
 
-            Assert.IsFalse(success);
-            Assert.IsNull(pk);
+            Assert.That(success, Is.False);
+            Assert.That(pk, Is.Null);
         }
 
         [TestCase(typeof(PrimaryKeyCharObject), 'a')]
@@ -98,8 +98,8 @@ namespace IntegrationTests.Shared
             object pk;
             var success = obj.ObjectMetadata.Helper.TryGetPrimaryKeyValue(obj, out pk);
 
-            Assert.IsTrue(success);
-            Assert.AreEqual(pkValue, pk);
+            Assert.That(success, Is.True);
+            Assert.That(pk, Is.EqualTo(pkValue));
         }
 
         [TestCase(typeof(PrimaryKeyCharObject), 'a')]
@@ -117,8 +117,8 @@ namespace IntegrationTests.Shared
             object pk;
             var success = _realm.Metadata[objectType.Name].Helper.TryGetPrimaryKeyValue(obj, out pk);
 
-            Assert.IsTrue(success);
-            Assert.AreEqual(pkValue, pk);
+            Assert.That(success, Is.True);
+            Assert.That(pk, Is.EqualTo(pkValue));
         }
     }
 }

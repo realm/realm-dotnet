@@ -56,10 +56,10 @@ namespace IntegrationTests.Shared
                 _realm.Manage(standalone, update: true);
             });
 
-            Assert.IsTrue(standalone.IsManaged);
+            Assert.That(standalone.IsManaged, Is.True);
 
             var queried = _realm.ObjectForPrimaryKey<PrimaryKeyObject>(1);
-            Assert.AreEqual(standalone, queried);
+            Assert.That(queried, Is.EqualTo(standalone));
         }
 
         [Test]
@@ -88,9 +88,9 @@ namespace IntegrationTests.Shared
             });
 
             var queried = _realm.ObjectForPrimaryKey<PrimaryKeyObject>(1);
-            Assert.AreEqual("second", queried.StringValue);
-            Assert.AreEqual("second", first.StringValue);
-            Assert.AreEqual("second", second.StringValue);
+            Assert.That(queried.StringValue, Is.EqualTo("second"));
+            Assert.That(first.StringValue, Is.EqualTo("second"));
+            Assert.That(second.StringValue, Is.EqualTo("second"));
         }
 
         [Test]
@@ -116,8 +116,8 @@ namespace IntegrationTests.Shared
                 _realm.Manage(noPK2, update: true);
             });
 
-            Assert.AreNotEqual(noPK, noPK2);
-            Assert.AreEqual(2, _realm.All<NonPrimaryKeyObject>().Count());
+            Assert.That(noPK2, Is.Not.EqualTo(noPK));
+            Assert.That(_realm.All<NonPrimaryKeyObject>().Count(), Is.EqualTo(2));
         }
 
         [Test]
@@ -140,9 +140,9 @@ namespace IntegrationTests.Shared
             });
 
             var queried = _realm.ObjectForPrimaryKey<PrimaryKeyWithPKRelation>(1);
-            Assert.IsNotNull(queried.OtherObject);
-            Assert.AreEqual(queried.StringValue, "parent");
-            Assert.AreEqual(queried.OtherObject.StringValue, "child");
+            Assert.That(queried.OtherObject, Is.Not.Null);
+            Assert.That(queried.StringValue, Is.EqualTo("parent"));
+            Assert.That(queried.OtherObject.StringValue, Is.EqualTo("child"));
         }
 
         [Test]
@@ -181,15 +181,15 @@ namespace IntegrationTests.Shared
             });
 
             var queried = _realm.ObjectForPrimaryKey<PrimaryKeyWithPKRelation>(1);
-            Assert.IsNotNull(queried.OtherObject);
-            Assert.AreEqual("parent", queried.StringValue);
-            Assert.AreEqual("child2", queried.OtherObject.StringValue);
+            Assert.That(queried.OtherObject, Is.Not.Null);
+            Assert.That(queried.StringValue, Is.EqualTo("parent"));
+            Assert.That(queried.OtherObject.StringValue, Is.EqualTo("child2"));
 
             var child1 = _realm.ObjectForPrimaryKey<PrimaryKeyObject>(1);
-            Assert.AreEqual("child", child1.StringValue);
+            Assert.That(child1.StringValue, Is.EqualTo("child"));
 
             var child2 = _realm.ObjectForPrimaryKey<PrimaryKeyObject>(2);
-            Assert.AreEqual("child2", child2.StringValue);
+            Assert.That(child2.StringValue, Is.EqualTo("child2"));
         }
 
         [Test]
@@ -228,12 +228,12 @@ namespace IntegrationTests.Shared
             });
 
             var queried = _realm.ObjectForPrimaryKey<PrimaryKeyWithPKRelation>(1);
-            Assert.IsNotNull(queried.OtherObject);
-            Assert.AreEqual("parent2", queried.StringValue);
-            Assert.AreEqual("child2", queried.OtherObject.StringValue);
+            Assert.That(queried.OtherObject, Is.Not.Null);
+            Assert.That(queried.StringValue, Is.EqualTo("parent2"));
+            Assert.That(queried.OtherObject.StringValue, Is.EqualTo("child2"));
 
             var child1 = _realm.ObjectForPrimaryKey<PrimaryKeyObject>(1);
-            Assert.AreEqual("child2", child1.StringValue);
+            Assert.That(child1.StringValue, Is.EqualTo("child2"));
         }
 
         [Test]
@@ -269,8 +269,8 @@ namespace IntegrationTests.Shared
                 _realm.Manage(second, update: true);
             });
 
-            Assert.AreNotEqual(first.OtherObject, second.OtherObject);
-            Assert.AreEqual(2, _realm.All<NonPrimaryKeyObject>().Count());
+            Assert.That(second.OtherObject, Is.Not.EqualTo(first.OtherObject));
+            Assert.That(_realm.All<NonPrimaryKeyObject>().Count(), Is.EqualTo(2));
         }
 
         [Test]
@@ -308,9 +308,9 @@ namespace IntegrationTests.Shared
                 _realm.Manage(second, update: true);
             });
 
-            Assert.AreEqual(first.OtherObject, second.OtherObject);
-            Assert.AreEqual(1, _realm.All<PrimaryKeyObject>().Count());
-            Assert.AreEqual("child2", _realm.ObjectForPrimaryKey<PrimaryKeyObject>(1).StringValue);
+            Assert.That(second.OtherObject, Is.EqualTo(first.OtherObject));
+            Assert.That(_realm.All<PrimaryKeyObject>().Count(), Is.EqualTo(1));
+            Assert.That(_realm.ObjectForPrimaryKey<PrimaryKeyObject>(1).StringValue, Is.EqualTo("child2"));
         }
 
         [Test]
@@ -351,8 +351,8 @@ namespace IntegrationTests.Shared
             });
 
             Assert.That(first.ListValue, Is.EqualTo(second.ListValue));
-            Assert.AreEqual(1, _realm.All<PrimaryKeyObject>().Count());
-            Assert.AreEqual("secondChild", _realm.ObjectForPrimaryKey<PrimaryKeyObject>(1).StringValue);
+            Assert.That(_realm.All<PrimaryKeyObject>().Count(), Is.EqualTo(1));
+            Assert.That(_realm.ObjectForPrimaryKey<PrimaryKeyObject>(1).StringValue, Is.EqualTo("secondChild"));
         }
 
         [Test]
@@ -391,7 +391,7 @@ namespace IntegrationTests.Shared
             });
 
             Assert.That(first.ListValue, Is.Not.EqualTo(second.ListValue));
-            Assert.AreEqual(2, _realm.All<NonPrimaryKeyObject>().Count());
+            Assert.That(_realm.All<NonPrimaryKeyObject>().Count(), Is.EqualTo(2));
         }
 
         [Test]
@@ -437,9 +437,9 @@ namespace IntegrationTests.Shared
                 _realm.Manage(updatedFirst, update: true);
             });
 
-            Assert.AreEqual(2, _realm.All<PrimaryKeyObject>().Count());
-            Assert.AreEqual("updated child", _realm.ObjectForPrimaryKey<PrimaryKeyObject>(1).StringValue);
-            Assert.AreEqual("new child", _realm.ObjectForPrimaryKey<PrimaryKeyObject>(2).StringValue);
+            Assert.That(_realm.All<PrimaryKeyObject>().Count(), Is.EqualTo(2));
+            Assert.That(_realm.ObjectForPrimaryKey<PrimaryKeyObject>(1).StringValue, Is.EqualTo("updated child"));
+            Assert.That(_realm.ObjectForPrimaryKey<PrimaryKeyObject>(2).StringValue, Is.EqualTo("new child"));
         }
 
         [Test]
@@ -475,9 +475,9 @@ namespace IntegrationTests.Shared
                 _realm.Manage(second, update: true);
             });
 
-            Assert.AreEqual(2, _realm.All<NonPrimaryKeyWithPKRelation>().Count());
-            Assert.AreEqual(1, _realm.All<PrimaryKeyObject>().Count());
-            Assert.AreEqual("updated child", _realm.ObjectForPrimaryKey<PrimaryKeyObject>(1).StringValue);
+            Assert.That(_realm.All<NonPrimaryKeyWithPKRelation>().Count(), Is.EqualTo(2));
+            Assert.That(_realm.All<PrimaryKeyObject>().Count(), Is.EqualTo(1));
+            Assert.That(_realm.ObjectForPrimaryKey<PrimaryKeyObject>(1).StringValue, Is.EqualTo("updated child"));
         }
 
         [Test]
@@ -511,8 +511,8 @@ namespace IntegrationTests.Shared
                 _realm.Manage(second, update: true);
             });
 
-            Assert.AreEqual(2, _realm.All<NonPrimaryKeyWithNonPKRelation>().Count());
-            Assert.AreEqual(2, _realm.All<NonPrimaryKeyObject>().Count());
+            Assert.That(_realm.All<NonPrimaryKeyWithNonPKRelation>().Count(), Is.EqualTo(2));
+            Assert.That(_realm.All<NonPrimaryKeyObject>().Count(), Is.EqualTo(2));
         }
 
         [Test]
@@ -545,9 +545,9 @@ namespace IntegrationTests.Shared
                 _realm.Manage(updatedFirst, update: true);
             });
 
-            Assert.IsNull(first.OtherObject);
-            Assert.IsNull(updatedFirst.OtherObject);
-            Assert.IsNull(_realm.ObjectForPrimaryKey<PrimaryKeyWithPKRelation>(1).OtherObject);
+            Assert.That(first.OtherObject, Is.Null);
+            Assert.That(updatedFirst.OtherObject, Is.Null);
+            Assert.That(_realm.ObjectForPrimaryKey<PrimaryKeyWithPKRelation>(1).OtherObject, Is.Null);
         }
 
         [Test, Ignore("Cyclic relations don't work yet.")]
@@ -576,12 +576,12 @@ namespace IntegrationTests.Shared
             var persistedParent = _realm.ObjectForPrimaryKey<Parent>(1);
             var persistedChild = _realm.ObjectForPrimaryKey<Child>(1);
 
-            Assert.AreEqual("Peter", persistedParent.Name);
-            Assert.AreEqual("Kate", persistedChild.Name);
-            Assert.IsNotNull(persistedParent.Child);
-            Assert.IsNotNull(persistedChild.Parent);
-            Assert.AreEqual("Peter", persistedChild.Parent.Name);
-            Assert.AreEqual("Kate", persistedParent.Child.Name);
+            Assert.That(persistedParent.Name, Is.EqualTo("Peter"));
+            Assert.That(persistedChild.Name, Is.EqualTo("Kate"));
+            Assert.That(persistedParent.Child, Is.Not.Null);
+            Assert.That(persistedChild.Parent, Is.Not.Null);
+            Assert.That(persistedChild.Parent.Name, Is.EqualTo("Peter"));
+            Assert.That(persistedParent.Child.Name, Is.EqualTo("Kate"));
         }
 
         [Test]
@@ -628,15 +628,15 @@ namespace IntegrationTests.Shared
             });
 
             var persistedParent = _realm.ObjectForPrimaryKey<PrimaryKeyWithNonPKChildWithPKGrandChild>(1);
-            Assert.AreEqual("updated parent", persistedParent.StringValue);
-            Assert.IsNotNull(persistedParent.NonPKChild);
-            Assert.AreEqual("new child", persistedParent.NonPKChild.StringValue);
-            Assert.IsNotNull(persistedParent.NonPKChild.OtherObject);
-            Assert.AreEqual("updated grandchild", persistedParent.NonPKChild.OtherObject.StringValue);
+            Assert.That(persistedParent.StringValue, Is.EqualTo("updated parent"));
+            Assert.That(persistedParent.NonPKChild, Is.Not.Null);
+            Assert.That(persistedParent.NonPKChild.StringValue, Is.EqualTo("new child"));
+            Assert.That(persistedParent.NonPKChild.OtherObject, Is.Not.Null);
+            Assert.That(persistedParent.NonPKChild.OtherObject.StringValue, Is.EqualTo("updated grandchild"));
 
-            Assert.AreEqual(1, _realm.All<PrimaryKeyWithNonPKChildWithPKGrandChild>().Count());
-            Assert.AreEqual(2, _realm.All<NonPrimaryKeyWithPKRelation>().Count());
-            Assert.AreEqual(1, _realm.All<PrimaryKeyObject>().Count());
+            Assert.That(_realm.All<PrimaryKeyWithNonPKChildWithPKGrandChild>().Count(), Is.EqualTo(1));
+            Assert.That(_realm.All<NonPrimaryKeyWithPKRelation>().Count(), Is.EqualTo(2));
+            Assert.That(_realm.All<PrimaryKeyObject>().Count(), Is.EqualTo(1));
         }
 
         private class Parent : RealmObject
