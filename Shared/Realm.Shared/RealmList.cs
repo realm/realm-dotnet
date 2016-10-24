@@ -20,6 +20,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
+using Realms.Dynamic;
 
 namespace Realms
 {
@@ -35,7 +38,7 @@ namespace Realms
     /// </remarks>
     /// <typeparam name="T">Type of the RealmObject which is the target of the relationship.</typeparam>
     [Preserve(AllMembers = true)]
-    public class RealmList<T> : IList<T>, IRealmList, IDynamicMetaObjectProvider where T : RealmObject
+    internal class RealmList<T> : IList<T>, IDynamicMetaObjectProvider where T : RealmObject
     {
         public class Enumerator : IEnumerator<T>
         {
@@ -97,10 +100,6 @@ namespace Realms
         private LinkListHandle _listHandle;
         private RealmObject.Metadata _targetMetadata;
 
-        Realm IRealmList.Realm => _realm;
-
-        LinkListHandle IRealmList.Handle => _listHandle;
-
         internal RealmList(Realm realm, LinkListHandle adoptedList, RealmObject.Metadata metadata)
         {
             _realm = realm;
@@ -152,7 +151,7 @@ namespace Realms
         /// <typeparam name="T">Type of the RealmObject which is the target of the relationship.</typeparam>
         /// <returns>A related item, if exception not thrown.</returns>
         /// <exception cref="ArgumentOutOfRangeException">When the index is out of range for the related items.</exception>
-        [System.Runtime.CompilerServices.IndexerName("Item")]
+        [IndexerName("Item")]
         public T this[int index]
         {
             get
@@ -322,14 +321,6 @@ namespace Realms
 
         #endregion
 
-        DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(System.Linq.Expressions.Expression expression) => new Dynamic.MetaRealmList(expression, this);
-    }
-
-    [Preserve(AllMembers = true)]
-    internal interface IRealmList
-    {
-        Realm Realm { get; }
-
-        LinkListHandle Handle { get; }
+        DynamicMetaObject IDynamicMetaObjectProvider.GetMetaObject(Expression expression) => new MetaRealmList(expression, this);
     }
 }

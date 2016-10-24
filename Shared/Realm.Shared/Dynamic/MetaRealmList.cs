@@ -24,7 +24,7 @@ namespace Realms.Dynamic
 {
     internal class MetaRealmList : DynamicMetaObject
     {
-        internal MetaRealmList(Expression expression, IRealmList value) : base(expression, BindingRestrictions.Empty, value)
+        internal MetaRealmList(Expression expression, object value) : base(expression, BindingRestrictions.Empty, value)
         {
         }
 

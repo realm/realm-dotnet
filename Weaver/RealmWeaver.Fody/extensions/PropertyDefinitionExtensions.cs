@@ -35,11 +35,6 @@ internal static class PropertyDefinitionExtensions
         return property.IsType("IList`1", "System.Collections.Generic");
     }
 
-    internal static bool IsRealmList(this PropertyDefinition property)
-    {
-        return property.IsType("RealmList`1", "Realms");
-    }
-
     internal static bool IsDateTimeOffset(this PropertyDefinition property)
     {
         return property.IsType("DateTimeOffset", "System");

@@ -429,17 +429,6 @@ public class ModuleWeaver
                 new GenericInstanceMethod(_genericGetListValueReference) { GenericArguments = { elementType } },
                              ModuleDefinition.ImportReference(concreteListConstructor));
         }
-        else if (prop.IsRealmList())
-        {
-            var elementType = ((GenericInstanceType)prop.PropertyType).GenericArguments.Single();
-            if (prop.SetMethod != null)
-            {
-                return WeaveResult.Error($"{type.Name}.{columnName} has a setter but its type is a RealmList which only supports getters.");
-            }
-
-            ReplaceGetter(prop, columnName,
-                new GenericInstanceMethod(_genericGetListValueReference) { GenericArguments = { elementType } });
-        }
         else if (prop.PropertyType.Resolve().BaseType.IsSameAs(_realmObject))
         {
             if (!prop.IsAutomatic())
@@ -901,7 +890,7 @@ public class ModuleWeaver
                 currentStloc++;
             }
 
-            foreach (var prop in properties.Where(p => p.Property.IsIList() || p.Property.IsRealmList()))
+            foreach (var prop in properties.Where(p => p.Property.IsIList()))
             {
                 copyToRealm.Body.Variables.Add(new VariableDefinition(ModuleDefinition.ImportReference(prop.Field.FieldType)));
                 copyToRealm.Body.Variables.Add(new VariableDefinition(_system_Int32));
@@ -1016,7 +1005,7 @@ public class ModuleWeaver
                         }
                     }
                 }
-                else if (property.IsIList() || property.IsRealmList())
+                else if (property.IsIList())
                 {
                     var propertyTypeDefinition = property.PropertyType.Resolve();
                     var genericType = (GenericInstanceType)property.PropertyType;
