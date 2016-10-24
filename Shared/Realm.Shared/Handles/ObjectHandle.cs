@@ -272,7 +272,7 @@ namespace Realms
             }
 
             NativeException nativeException;
-                NativeMethods.set_string_unique(this, propertyIndex, value, (IntPtr)value.Length, out nativeException);
+            NativeMethods.set_string_unique(this, propertyIndex, value, (IntPtr)value.Length, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 

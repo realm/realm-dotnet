@@ -639,6 +639,34 @@ namespace IntegrationTests.Shared
             Assert.That(_realm.All<PrimaryKeyObject>().Count(), Is.EqualTo(1));
         }
 
+        [Test]
+        public void AddOrUpdate_WhenPKIsNull_ShouldUpdate()
+        {
+            var first = new NullablePrimaryKeyObject
+            {
+                StringValue = "first"
+            };
+
+            _realm.Write(() =>
+            {
+                _realm.Manage(first, update: true);
+            });
+
+            var second = new NullablePrimaryKeyObject
+            {
+                StringValue = "second"
+            };
+
+            _realm.Write(() =>
+            {
+                _realm.Manage(second, update: true);
+            });
+
+            Assert.That(first.StringValue, Is.EqualTo("second"));
+            Assert.That(second.StringValue, Is.EqualTo("second"));
+            Assert.That(_realm.All<NullablePrimaryKeyObject>().Count(), Is.EqualTo(1));
+        }
+
         private class Parent : RealmObject
         {
             [PrimaryKey]
@@ -678,6 +706,14 @@ namespace IntegrationTests.Shared
         {
             [PrimaryKey]
             public long Id { get; set; }
+
+            public string StringValue { get; set; }
+        }
+
+        private class NullablePrimaryKeyObject : RealmObject
+        {
+            [PrimaryKey]
+            public long? Id { get; set; }
 
             public string StringValue { get; set; }
         }
