@@ -16,7 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////////////
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Threading;
 using NUnit.Framework;
 using Realms;
@@ -43,144 +46,153 @@ namespace IntegrationTests.Shared
             Realm.DeleteRealm(_realm.Config);
         }
 
-        [Test]
-        public void FindByCharPrimaryKey()
+        [TestCase(typeof(PrimaryKeyCharObject), 'x', true)]
+        [TestCase(typeof(PrimaryKeyNullableCharObject), 'x', true)]
+        [TestCase(typeof(PrimaryKeyNullableCharObject), null, true)]
+        [TestCase(typeof(PrimaryKeyByteObject), (byte)42, true)]
+        [TestCase(typeof(PrimaryKeyNullableByteObject), (byte)42, true)]
+        [TestCase(typeof(PrimaryKeyNullableByteObject), null, true)]
+        [TestCase(typeof(PrimaryKeyInt16Object), (short)4242, true)]
+        [TestCase(typeof(PrimaryKeyNullableInt16Object), (short)4242, true)]
+        [TestCase(typeof(PrimaryKeyNullableInt16Object), null, true)]
+        [TestCase(typeof(PrimaryKeyInt32Object), 42000042, true)]
+        [TestCase(typeof(PrimaryKeyNullableInt32Object), 42000042, true)]
+        [TestCase(typeof(PrimaryKeyNullableInt32Object), null, true)]
+        [TestCase(typeof(PrimaryKeyInt64Object), 42000042L, true)]
+        [TestCase(typeof(PrimaryKeyNullableInt64Object), 42000042L, true)]
+        [TestCase(typeof(PrimaryKeyNullableInt64Object), null, true)]
+        [TestCase(typeof(PrimaryKeyStringObject), "key", false)]
+        public void FindByPrimaryKeyDynamicTests(Type type, object primaryKeyValue, bool isIntegerPK)
         {
-            _realm.Write(() =>
+            var obj = (RealmObject)Activator.CreateInstance(type);
+            var pkProperty = type.GetProperties().Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
+            pkProperty.SetValue(obj, primaryKeyValue);
+
+            _realm.Write(() => _realm.Manage(obj));
+
+            var foundObj = FindByPKDynamic(type, primaryKeyValue, isIntegerPK);
+
+            Assert.That(foundObj, Is.Not.Null);
+            Assert.That(pkProperty.GetValue(foundObj), Is.EqualTo(primaryKeyValue));
+        }
+
+        [TestCase(typeof(PrimaryKeyCharObject), 'x', true)]
+        [TestCase(typeof(PrimaryKeyNullableCharObject), 'x', true)]
+        [TestCase(typeof(PrimaryKeyNullableCharObject), null, true)]
+        [TestCase(typeof(PrimaryKeyByteObject), (byte)42, true)]
+        [TestCase(typeof(PrimaryKeyNullableByteObject), (byte)42, true)]
+        [TestCase(typeof(PrimaryKeyNullableByteObject), null, true)]
+        [TestCase(typeof(PrimaryKeyInt16Object), (short)4242, true)]
+        [TestCase(typeof(PrimaryKeyNullableInt16Object), (short)4242, true)]
+        [TestCase(typeof(PrimaryKeyNullableInt16Object), null, true)]
+        [TestCase(typeof(PrimaryKeyInt32Object), 42000042, true)]
+        [TestCase(typeof(PrimaryKeyNullableInt32Object), 42000042, true)]
+        [TestCase(typeof(PrimaryKeyNullableInt32Object), null, true)]
+        [TestCase(typeof(PrimaryKeyInt64Object), 42000042L, true)]
+        [TestCase(typeof(PrimaryKeyNullableInt64Object), 42000042L, true)]
+        [TestCase(typeof(PrimaryKeyNullableInt64Object), null, true)]
+        [TestCase(typeof(PrimaryKeyStringObject), "key", false)]
+        public void FailToFindByPrimaryKeyDynamicTests(Type type, object primaryKeyValue, bool isIntegerPK)
+        {
+            var foundObj = FindByPKDynamic(type, primaryKeyValue, isIntegerPK);
+            Assert.That(foundObj, Is.Null);
+        }
+
+        private RealmObject FindByPKDynamic(Type type, object primaryKeyValue, bool isIntegerPK)
+        {
+            if (isIntegerPK)
             {
-                var obj = _realm.CreateObject<PrimaryKeyCharObject>();
-                obj.CharProperty = 'x';
-            });
+                long? castPKValue;
+                if (primaryKeyValue == null)
+                {
+                    castPKValue = null;
+                }
+                else
+                {
+                    castPKValue = Convert.ToInt64(primaryKeyValue);
+                }
 
-            var foundObj = _realm.ObjectForPrimaryKey<PrimaryKeyCharObject>('x');
-            Assert.IsNotNull(foundObj);
-            Assert.That(foundObj.CharProperty, Is.EqualTo('x'));
+                return _realm.ObjectForPrimaryKey(type.Name, castPKValue);
+            }
+
+            return _realm.ObjectForPrimaryKey(type.Name, (string)primaryKeyValue);
         }
 
-        [Test]
-        public void FindByBytePrimaryKey()
+        [TestCase(typeof(PrimaryKeyCharObject), 'x', true)]
+        [TestCase(typeof(PrimaryKeyNullableCharObject), 'x', true)]
+        [TestCase(typeof(PrimaryKeyNullableCharObject), null, true)]
+        [TestCase(typeof(PrimaryKeyByteObject), (byte)42, true)]
+        [TestCase(typeof(PrimaryKeyNullableByteObject), (byte)42, true)]
+        [TestCase(typeof(PrimaryKeyNullableByteObject), null, true)]
+        [TestCase(typeof(PrimaryKeyInt16Object), (short)4242, true)]
+        [TestCase(typeof(PrimaryKeyNullableInt16Object), (short)4242, true)]
+        [TestCase(typeof(PrimaryKeyNullableInt16Object), null, true)]
+        [TestCase(typeof(PrimaryKeyInt32Object), 42000042, true)]
+        [TestCase(typeof(PrimaryKeyNullableInt32Object), 42000042, true)]
+        [TestCase(typeof(PrimaryKeyNullableInt32Object), null, true)]
+        [TestCase(typeof(PrimaryKeyInt64Object), 42000042L, true)]
+        [TestCase(typeof(PrimaryKeyNullableInt64Object), 42000042L, true)]
+        [TestCase(typeof(PrimaryKeyNullableInt64Object), null, true)]
+        [TestCase(typeof(PrimaryKeyStringObject), "key", false)]
+        public void FindByPrimaryKeyGenericTests(Type type, object primaryKeyValue, bool isIntegerPK)
         {
-            _realm.Write(() =>
+            var obj = (RealmObject)Activator.CreateInstance(type);
+            var pkProperty = type.GetProperties().Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
+            pkProperty.SetValue(obj, primaryKeyValue);
+
+            _realm.Write(() => _realm.Manage(obj));
+
+            var foundObj = FindByPKGeneric(type, primaryKeyValue, isIntegerPK);
+
+            Assert.That(foundObj, Is.Not.Null);
+            Assert.That(pkProperty.GetValue(foundObj), Is.EqualTo(primaryKeyValue));
+        }
+
+        [TestCase(typeof(PrimaryKeyCharObject), 'x', true)]
+        [TestCase(typeof(PrimaryKeyNullableCharObject), 'x', true)]
+        [TestCase(typeof(PrimaryKeyNullableCharObject), null, true)]
+        [TestCase(typeof(PrimaryKeyByteObject), (byte)42, true)]
+        [TestCase(typeof(PrimaryKeyNullableByteObject), (byte)42, true)]
+        [TestCase(typeof(PrimaryKeyNullableByteObject), null, true)]
+        [TestCase(typeof(PrimaryKeyInt16Object), (short)4242, true)]
+        [TestCase(typeof(PrimaryKeyNullableInt16Object), (short)4242, true)]
+        [TestCase(typeof(PrimaryKeyNullableInt16Object), null, true)]
+        [TestCase(typeof(PrimaryKeyInt32Object), 42000042, true)]
+        [TestCase(typeof(PrimaryKeyNullableInt32Object), 42000042, true)]
+        [TestCase(typeof(PrimaryKeyNullableInt32Object), null, true)]
+        [TestCase(typeof(PrimaryKeyInt64Object), 42000042L, true)]
+        [TestCase(typeof(PrimaryKeyNullableInt64Object), 42000042L, true)]
+        [TestCase(typeof(PrimaryKeyNullableInt64Object), null, true)]
+        [TestCase(typeof(PrimaryKeyStringObject), "key", false)]
+        public void FailToFindByPrimaryKeyGenericTests(Type type, object primaryKeyValue, bool isIntegerPK)
+        {
+            var foundObj = FindByPKGeneric(type, primaryKeyValue, isIntegerPK);
+            Assert.That(foundObj, Is.Null);
+        }
+
+        private RealmObject FindByPKGeneric(Type type, object primaryKeyValue, bool isIntegerPK)
+        {
+            var genericArgument = isIntegerPK ? typeof(long?) : typeof(string);
+            var genericMethod = _realm.GetType().GetMethod(nameof(Realm.ObjectForPrimaryKey), new[] { genericArgument });
+
+            object castPKValue;
+            if (isIntegerPK)
             {
-                var obj = _realm.CreateObject<PrimaryKeyByteObject>();
-                obj.ByteProperty = 42;
-            });
-
-            var foundObj = _realm.ObjectForPrimaryKey<PrimaryKeyByteObject>(42);
-            Assert.IsNotNull(foundObj);
-            Assert.That(foundObj.ByteProperty, Is.EqualTo(42));
-        }
-
-        [Test]
-        public void FindByInt16PrimaryKey()
-        {
-            _realm.Write(() =>
+                if (primaryKeyValue == null)
+                {
+                    castPKValue = (long?)null;
+                }
+                else
+                {
+                    castPKValue = Convert.ToInt64(primaryKeyValue);
+                }
+            }
+            else
             {
-                var obj = _realm.CreateObject<PrimaryKeyInt16Object>();
-                obj.Int16Property = 4242;
-            });
+                castPKValue = (string)primaryKeyValue;
+            }
 
-            var foundObj = _realm.ObjectForPrimaryKey<PrimaryKeyInt16Object>(4242);
-            Assert.IsNotNull(foundObj);
-            Assert.That(foundObj.Int16Property, Is.EqualTo(4242));
-        }
-
-        [Test]
-        public void FindByInt32PrimaryKey()
-        {
-            _realm.Write(() =>
-            {
-                var obj = _realm.CreateObject<PrimaryKeyInt32Object>();
-                obj.Int32Property = 42000042;
-            });
-
-            var foundObj = _realm.ObjectForPrimaryKey<PrimaryKeyInt32Object>(42000042);
-            Assert.IsNotNull(foundObj);
-            Assert.That(foundObj.Int32Property, Is.EqualTo(42000042));
-        }
-
-        [Test]
-        public void FindByInt64PrimaryKey()
-        {
-            _realm.Write(() =>
-            {
-                var obj = _realm.CreateObject<PrimaryKeyInt64Object>();
-                obj.Int64Property = 42000042;
-            });
-
-            var foundObj = _realm.ObjectForPrimaryKey<PrimaryKeyInt64Object>(42000042);
-            Assert.IsNotNull(foundObj);
-            Assert.That(foundObj.Int64Property, Is.EqualTo(42000042));
-        }
-
-        [Test]
-        public void DontFindByInt64PrimaryKey()
-        {
-            var foundObj = _realm.ObjectForPrimaryKey<PrimaryKeyInt64Object>(3);
-            Assert.IsNull(foundObj);
-        }
-
-        [Test]
-        public void FindByStringPrimaryKey()
-        {
-            _realm.Write(() =>
-            {
-                var obj = _realm.CreateObject<PrimaryKeyStringObject>();
-                obj.StringProperty = "Zaphod";
-            });
-
-            var foundObj = _realm.ObjectForPrimaryKey<PrimaryKeyStringObject>("Zaphod");
-            Assert.IsNotNull(foundObj);
-            Assert.That(foundObj.StringProperty, Is.EqualTo("Zaphod"));
-        }
-
-        [Test]
-        public void DontFindByStringPrimaryKey()
-        {
-            var foundObj = _realm.ObjectForPrimaryKey<PrimaryKeyStringObject>("Ford");
-            Assert.IsNull(foundObj);
-        }
-
-        [Test]
-        public void FindDynamicByInt64PrimaryKey()
-        {
-            _realm.Write(() =>
-            {
-                var obj = _realm.CreateObject("PrimaryKeyInt64Object");
-                obj.Int64Property = 42000042;
-            });
-
-            dynamic foundObj = _realm.ObjectForPrimaryKey("PrimaryKeyInt64Object", 42000042);
-            Assert.IsNotNull(foundObj);
-            Assert.That(foundObj.Int64Property, Is.EqualTo(42000042));
-        }
-
-        [Test]
-        public void DontFindDynamicByInt64PrimaryKey()
-        {
-            dynamic foundObj = _realm.ObjectForPrimaryKey("PrimaryKeyInt64Object", 33);
-            Assert.IsNull(foundObj);
-        }
-
-        [Test]
-        public void FindDynamicByStringPrimaryKey()
-        {
-            _realm.Write(() =>
-            {
-                var obj = _realm.CreateObject("PrimaryKeyStringObject");
-                obj.StringProperty = "Zaphod";
-            });
-
-            dynamic foundObj = _realm.ObjectForPrimaryKey("PrimaryKeyStringObject", "Zaphod");
-            Assert.IsNotNull(foundObj);
-            Assert.That(foundObj.StringProperty, Is.EqualTo("Zaphod"));
-        }
-
-        [Test]
-        public void DontFindDynamicByStringPrimaryKey()
-        {
-            dynamic foundObj = _realm.ObjectForPrimaryKey("PrimaryKeyStringObject", "Dent");
-            Assert.IsNull(foundObj);
+            return (RealmObject)genericMethod.MakeGenericMethod(type).Invoke(_realm, new[] { castPKValue });
         }
 
         [Test]
@@ -193,7 +205,7 @@ namespace IntegrationTests.Shared
         }
 
         [Test]
-        public void ExceptionIfNoDynamicIPrimaryKeyDeclared()
+        public void ExceptionIfNoDynamicPrimaryKeyDeclared()
         {
             Assert.Throws<RealmClassLacksPrimaryKeyException>(() =>
             {
@@ -247,6 +259,19 @@ namespace IntegrationTests.Shared
         }
 
         [Test]
+        public void NullPrimaryKeyStringObjectThrows()
+        {
+            Assert.Throws<ArgumentNullException>(() =>
+            {
+                _realm.Write(() =>
+                {
+                    var o2 = _realm.CreateObject<PrimaryKeyStringObject>();
+                    o2.StringProperty = null;
+                });
+            });
+        }
+
+        [Test]
         public void PrimaryKeyIntObjectIsUnique()
         {
             _realm.Write(() =>
@@ -263,6 +288,58 @@ namespace IntegrationTests.Shared
                     o2.Int64Property = 9999000; // deliberately reuse id
                 });
             });
+        }
+
+        [Test]
+        public void PrimaryKeyNullableIntObjectIsUnique()
+        {
+            _realm.Write(() =>
+            {
+                var o1 = _realm.CreateObject<PrimaryKeyNullableInt64Object>();
+                o1.Int64Property = 123;
+            });
+
+            Assert.Throws<RealmDuplicatePrimaryKeyValueException>(() =>
+            {
+                _realm.Write(() =>
+                {
+                    var o2 = _realm.CreateObject<PrimaryKeyNullableInt64Object>();
+                    o2.Int64Property = 123;
+                });
+            });
+        }
+
+        [Test]
+        public void NullPrimaryKeyNullableIntObjectIsUnique()
+        {
+            _realm.Write(() =>
+            {
+                var o1 = _realm.CreateObject<PrimaryKeyNullableInt64Object>();
+                o1.Int64Property = null;
+            });
+
+            Assert.Throws<RealmDuplicatePrimaryKeyValueException>(() =>
+            {
+                _realm.Write(() =>
+                {
+                    var o2 = _realm.CreateObject<PrimaryKeyNullableInt64Object>();
+                    o2.Int64Property = null;
+                });
+            });
+        }
+
+        [Test]
+        public void NullAndNotNullIntPKsWorkTogether()
+        {
+            _realm.Write(() =>
+            {
+                var o1 = _realm.CreateObject<PrimaryKeyNullableInt64Object>();
+                o1.Int64Property = null;
+                var o2 = _realm.CreateObject<PrimaryKeyNullableInt64Object>();
+                o2.Int64Property = 123;
+            });
+
+            Assert.That(_realm.All<PrimaryKeyNullableInt64Object>().Count, Is.EqualTo(2));
         }
 
         [Test]

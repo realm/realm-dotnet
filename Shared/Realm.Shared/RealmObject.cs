@@ -289,6 +289,13 @@ namespace Realms
             _objectHandle.SetNullableInt64(_metadata.PropertyIndices[propertyName], value);
         }
 
+        protected void SetNullableCharValueUnique(string propertyName, char? value)
+        {
+            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
+
+            _objectHandle.SetNullableInt64Unique(_metadata.PropertyIndices[propertyName], value);
+        }
+
         protected void SetByteValue(string propertyName, byte value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
@@ -308,6 +315,13 @@ namespace Realms
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
             _objectHandle.SetNullableInt64(_metadata.PropertyIndices[propertyName], value);
+        }
+
+        protected void SetNullableByteValueUnique(string propertyName, byte? value)
+        {
+            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
+
+            _objectHandle.SetNullableInt64Unique(_metadata.PropertyIndices[propertyName], value);
         }
 
         protected void SetInt16Value(string propertyName, short value)
@@ -331,6 +345,13 @@ namespace Realms
             _objectHandle.SetNullableInt64(_metadata.PropertyIndices[propertyName], value);
         }
 
+        protected void SetNullableInt16ValueUnique(string propertyName, short? value)
+        {
+            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
+
+            _objectHandle.SetNullableInt64Unique(_metadata.PropertyIndices[propertyName], value);
+        }
+
         protected void SetInt32Value(string propertyName, int value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
@@ -352,6 +373,13 @@ namespace Realms
             _objectHandle.SetNullableInt64(_metadata.PropertyIndices[propertyName], value);
         }
 
+        protected void SetNullableInt32ValueUnique(string propertyName, int? value)
+        {
+            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
+
+            _objectHandle.SetNullableInt64Unique(_metadata.PropertyIndices[propertyName], value);
+        }
+
         protected void SetInt64Value(string propertyName, long value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
@@ -371,6 +399,13 @@ namespace Realms
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
 
             _objectHandle.SetNullableInt64(_metadata.PropertyIndices[propertyName], value);
+        }
+
+        protected void SetNullableInt64ValueUnique(string propertyName, long? value)
+        {
+            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
+
+            _objectHandle.SetNullableInt64Unique(_metadata.PropertyIndices[propertyName], value);
         }
 
         protected void SetSingleValue(string propertyName, float value)

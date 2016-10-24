@@ -550,10 +550,14 @@ namespace Realms
                 {
                     objectPtr = metadata.Table.ObjectForPrimaryKey(SharedRealmHandle, (string)pkValue);
                 }
+                else if (pkValue == null)
+                {
+                    objectPtr = metadata.Table.ObjectForPrimaryKey(SharedRealmHandle, (long?)null);
+                }
                 else
                 {
-                    // We know it must be castable to long, so optimistically do it.
-                    objectPtr = metadata.Table.ObjectForPrimaryKey(SharedRealmHandle, (long)pkValue);
+                    // We know it must be convertible to long, so optimistically do it.
+                    objectPtr = metadata.Table.ObjectForPrimaryKey(SharedRealmHandle, Convert.ToInt64(pkValue));
                 }
             }
 
@@ -745,10 +749,10 @@ namespace Realms
         /// Fast lookup of an object from a class which has a PrimaryKey property.
         /// </summary>
         /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
-        /// <param name="id">Id to be matched exactly, same as an == search. An argument of type <c>long</c> works for all integer properties, supported as PrimaryKey.</param>
+        /// <param name="id">Id to be matched exactly, same as an == search. An argument of type <c>long?</c> works for all integer properties, supported as PrimaryKey.</param>
         /// <returns>Null or an object matching the id.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class T lacks an [PrimaryKey].</exception>
-        public T ObjectForPrimaryKey<T>(long id) where T : RealmObject
+        public T ObjectForPrimaryKey<T>(long? id) where T : RealmObject
         {
             var metadata = Metadata[typeof(T).Name];
             var objectPtr = metadata.Table.ObjectForPrimaryKey(SharedRealmHandle, id);
@@ -783,10 +787,10 @@ namespace Realms
         /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.
         /// </summary>
         /// <param name="className">Name of class in dynamic situation.</param>
-        /// <param name="id">Id to be matched exactly, same as an == search.</param>
+        /// <param name="id">Id to be matched exactly, same as an == search. An argument of type <c>long?</c> works for all integer properties, supported as PrimaryKey.</param>
         /// <returns>Null or an object matching the id.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class lacks an [PrimaryKey].</exception>
-        public RealmObject ObjectForPrimaryKey(string className, long id)
+        public RealmObject ObjectForPrimaryKey(string className, long? id)
         {
             var metadata = Metadata[className];
             var objectPtr = metadata.Table.ObjectForPrimaryKey(SharedRealmHandle, id);

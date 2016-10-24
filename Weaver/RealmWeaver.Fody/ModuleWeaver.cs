@@ -95,6 +95,11 @@ public class ModuleWeaver
         "System.Int16",
         "System.Int32",
         "System.Int64",
+        "System.Nullable`1<System.Char>",
+        "System.Nullable`1<System.Byte>",
+        "System.Nullable`1<System.Int16>",
+        "System.Nullable`1<System.Int32>",
+        "System.Nullable`1<System.Int64>",
     };
 
     private readonly List<string> _indexableTypes = new List<string>

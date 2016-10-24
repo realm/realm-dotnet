@@ -78,6 +78,9 @@ namespace Realms
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_null", CallingConvention = CallingConvention.Cdecl)]
             public static extern void set_null(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
 
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_null_unique", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void set_null_unique(ObjectHandle handle, IntPtr propertyIndex, out NativeException ex);
+
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_set_bool", CallingConvention = CallingConvention.Cdecl)]
             public static extern void set_bool(ObjectHandle handle, IntPtr propertyIndex, IntPtr value, out NativeException ex);
 
@@ -265,7 +268,7 @@ namespace Realms
         {
             if (value == null)
             {
-                throw new ArgumentException("Object identifiers cannot be null");
+                throw new ArgumentNullException(nameof(value), "Object identifiers cannot be null");
             }
 
             NativeException nativeException;
@@ -417,6 +420,21 @@ namespace Realms
         {
             NativeException nativeException;
             NativeMethods.set_int64_unique(this, propertyIndex, value, out nativeException);
+            nativeException.ThrowIfNecessary();
+        }
+
+        public void SetNullableInt64Unique(IntPtr propertyIndex, long? value)
+        {
+            NativeException nativeException;
+            if (value.HasValue)
+            {
+                NativeMethods.set_int64_unique(this, propertyIndex, value.Value, out nativeException);
+            }
+            else
+            {
+                NativeMethods.set_null_unique(this, propertyIndex, out nativeException);
+            }
+
             nativeException.ThrowIfNecessary();
         }
 

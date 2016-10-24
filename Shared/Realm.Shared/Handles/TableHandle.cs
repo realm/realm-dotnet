@@ -61,6 +61,9 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_for_int_primarykey", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr object_for_int_primarykey(TableHandle handle, SharedRealmHandle realmHandle, Int64 value, out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_for_null_primarykey", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr object_for_null_primarykey(TableHandle handle, SharedRealmHandle realmHandle, out NativeException ex);
         }
 
         private TableHandle(RealmHandle root) : base(root)
@@ -179,16 +182,30 @@ namespace Realms
 
         internal IntPtr ObjectForPrimaryKey(SharedRealmHandle realmHandle, string id)
         {
+            if (id == null)
+            {
+                throw new ArgumentNullException(nameof(id));
+            }
+
             NativeException nativeException;
             var result = NativeMethods.object_for_string_primarykey(this, realmHandle, id, (IntPtr)id.Length, out nativeException);
             nativeException.ThrowIfNecessary();
             return result;
         }
 
-        internal IntPtr ObjectForPrimaryKey(SharedRealmHandle realmHandle, long id)
+        internal IntPtr ObjectForPrimaryKey(SharedRealmHandle realmHandle, long? id)
         {
             NativeException nativeException;
-            var result = NativeMethods.object_for_int_primarykey(this, realmHandle, id, out nativeException);
+            IntPtr result;
+            if (id.HasValue)
+            {
+                result = NativeMethods.object_for_int_primarykey(this, realmHandle, id.Value, out nativeException);
+            }
+            else
+            {
+                result = NativeMethods.object_for_null_primarykey(this, realmHandle, out nativeException);
+            }
+
             nativeException.ThrowIfNecessary();
             return result;
         }
