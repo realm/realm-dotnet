@@ -31,26 +31,6 @@ namespace IntegrationTests.Shared
     [TestFixture, Preserve(AllMembers = true)]
     public class RelationshipTests
     {
-        private class Dog : RealmObject
-        {
-            public string Name { get; set; }
-
-            public string Color { get; set; }
-
-            public bool Vaccinated { get; set; }
-            
-            // Owner Owner { get; set; }  will uncomment when verifying that we have back-links from ToMany relationships
-        }
-
-        private class Owner : RealmObject
-        {
-            public string Name { get; set; }
-
-            public Dog TopDog { get; set; }
-
-            public IList<Dog> Dogs { get; }
-        }
-
         protected Realm realm;
 
         [SetUp]

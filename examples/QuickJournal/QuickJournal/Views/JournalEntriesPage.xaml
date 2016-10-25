@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms" 
 		xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
 		x:Class="QuickJournal.JournalEntriesPage"
@@ -10,7 +10,7 @@
 		<ListView ItemsSource="{Binding Entries}" x:Name="EntriesListView" ItemTapped="OnItemTapped" ItemSelected="OnItemSelected">
 			<ListView.ItemTemplate>
 				<DataTemplate>
-					<TextCell Text="{Binding Title}" Detail="{Binding Date, StringFormat='{0:dddd, MMMM d yyyy}'}">
+					<TextCell Text="{Binding Title}" Detail="{Binding Metadata.Date, StringFormat='{0:dddd, MMMM d yyyy}'}">
 						<TextCell.ContextActions>
 							<MenuItem Text="Delete" IsDestructive="true" 
 									  Command="{Binding BindingContext.DeleteEntryCommand, Source={x:Reference EntriesListView}" 

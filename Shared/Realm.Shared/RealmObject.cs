@@ -19,6 +19,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.Reflection;
 
 namespace Realms
 {
@@ -29,7 +32,7 @@ namespace Realms
     /// Has a Preserve attribute to attempt to preserve all subtypes without having to weave.
     /// </remarks>
     [Preserve(AllMembers = true, Conditional = false)]
-    public class RealmObject
+    public class RealmObject : IReflectableType
     {
         private Realm _realm;
         private ObjectHandle _objectHandle;
@@ -530,6 +533,11 @@ namespace Realms
             // Note that the base class is not invoked because it is 
             // System.Object, which defines Equals as reference equality. 
             return ObjectHandle.Equals(((RealmObject)obj).ObjectHandle);
+        }
+
+        public TypeInfo GetTypeInfo()
+        {
+            return new RealmObjectTypeInfo(this.GetType());
         }
     }
 }

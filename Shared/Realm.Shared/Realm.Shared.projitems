@@ -77,10 +77,14 @@
     <Compile Include="$(MSBuildThisFileDirectory)Exceptions\ManagedExceptionDuringMigrationException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Handles\UnownedRealmHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Handles\ObjectHandle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ReflectableType\RealmObjectTypeInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ReflectableType\WovenPropertyInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ReflectableType\WovenGetterMethodInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Weaving\" />
     <Folder Include="$(MSBuildThisFileDirectory)Schema\" />
     <Folder Include="$(MSBuildThisFileDirectory)Dynamic\" />
+    <Folder Include="$(MSBuildThisFileDirectory)ReflectableType\" />
   </ItemGroup>
 </Project>

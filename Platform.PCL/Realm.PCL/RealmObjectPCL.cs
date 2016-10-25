@@ -20,13 +20,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace Realms
 {
     /// <summary>
     /// Base for any object that can be persisted in a Realm.
     /// </summary>
-    public class RealmObject
+    public class RealmObject : IReflectableType
     {
         private Realm _realm;  // may not be used but wanted it included in definition of IsManaged below.
 
@@ -333,6 +334,12 @@ namespace Realms
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return false;
+        }
+
+        public TypeInfo GetTypeInfo()
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+            return null;
         }
     }
 }
