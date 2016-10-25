@@ -53,7 +53,7 @@ namespace IntegrationTests.Shared
         }
 
         [SetUp]
-        public void Setup()
+        public void SetUp()
         {
             _databasePath = Path.GetTempFileName();
             _realm = Realm.GetInstance(_databasePath);

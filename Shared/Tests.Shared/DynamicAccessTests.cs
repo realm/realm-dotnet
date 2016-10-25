@@ -41,7 +41,7 @@ namespace IntegrationTests.Shared
         };
 
         [SetUp]
-        public void Setup()
+        public void SetUp()
         {
             Realm.DeleteRealm(_configuration);
             _realm = Realm.GetInstance(_configuration);

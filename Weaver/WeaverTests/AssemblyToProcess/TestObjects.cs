@@ -61,6 +61,8 @@ namespace AssemblyToProcess
         public double? NullableDoubleProperty { get; set; }
 
         public bool? NullableBooleanProperty { get; set; }
+
+        public DateTimeOffset? NullableDateTimeOffsetProperty { get; set; }
     }
 
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]

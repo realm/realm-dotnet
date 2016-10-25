@@ -32,7 +32,7 @@ namespace IntegrationTests.Shared
         protected Realm _realm;
 
         [SetUp]
-        public void Setup()
+        public void SetUp()
         {
             Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
             _realm = Realm.GetInstance();

@@ -31,7 +31,7 @@ namespace IntegrationTests
 
         // Override this method in your test class instead of adding another <code>[SetUp]</code> because then NUnit will invoke both.
         [SetUp]
-        public virtual void Setup()
+        public virtual void SetUp()
         {
             Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
             _realm = Realm.GetInstance();
