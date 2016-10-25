@@ -58,7 +58,7 @@ namespace IntegrationTests.Shared
 
             public DynamicDog TopDog { get; set; }
 
-            public RealmList<DynamicDog> Dogs { get; }
+            public IList<DynamicDog> Dogs { get; }
         }
 
         private RealmConfiguration _configuration;
