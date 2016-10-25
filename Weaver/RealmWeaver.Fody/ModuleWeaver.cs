@@ -294,7 +294,7 @@ public class ModuleWeaver
                         
                         if (realmAttributeNames.Any())
                         {
-                            LogWarningPoint($"{type.Name}.{prop.Name} has {string.Join(", ", realmAttributeNames)} applied, but it's not persisted, so those attributes will be ignored.", sequencePoint);
+                            LogErrorPoint($"{type.Name}.{prop.Name} has {string.Join(", ", realmAttributeNames)} applied, but it's not persisted, so those attributes will be ignored.", sequencePoint);
                         }
                     }
                 }

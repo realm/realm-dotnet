@@ -451,13 +451,7 @@ namespace RealmWeaver
             // All warnings and errors are gathered once, so in order to ensure only the correct ones
             // were produced, we make one assertion on all of them here.
 
-            var expectedWarnings = new[]
-            {
-                "IncorrectAttributes.AutomaticId has [PrimaryKey] applied, but it's not persisted, so those attributes will be ignored.",
-                "IncorrectAttributes.AutomaticDate has [Indexed] applied, but it's not persisted, so those attributes will be ignored.",
-                "IncorrectAttributes.Email_ has [MapTo] applied, but it's not persisted, so those attributes will be ignored.",
-                "IncorrectAttributes.Date_ has [Indexed], [MapTo] applied, but it's not persisted, so those attributes will be ignored."
-            };
+            var expectedWarnings = new string[0];
 
             var expectedErrors = new[]
             {
@@ -472,7 +466,11 @@ namespace RealmWeaver
                 "Class 'NotSupportedProperties' field 'DateTimeProperty' is a DateTime which is not supported - use DateTimeOffset instead.",
                 "Class 'NotSupportedProperties' field 'NullableDateTimeProperty' is a DateTime? which is not supported - use DateTimeOffset? instead.",
                 "Class 'NotSupportedProperties' field 'EnumProperty' is a 'AssemblyToProcess.NotSupportedProperties/MyEnum' which is not yet supported.",
-                "Class PrimaryKeyProperties has more than one property marked with [PrimaryKey]."
+                "Class PrimaryKeyProperties has more than one property marked with [PrimaryKey].",
+                "IncorrectAttributes.AutomaticId has [PrimaryKey] applied, but it's not persisted, so those attributes will be ignored.",
+                "IncorrectAttributes.AutomaticDate has [Indexed] applied, but it's not persisted, so those attributes will be ignored.",
+                "IncorrectAttributes.Email_ has [MapTo] applied, but it's not persisted, so those attributes will be ignored.",
+                "IncorrectAttributes.Date_ has [Indexed], [MapTo] applied, but it's not persisted, so those attributes will be ignored."
             };
 
             Assert.That(_errors, Is.EquivalentTo(expectedErrors));
