@@ -32,7 +32,7 @@ namespace IntegrationTests.XamarinIOS
         protected string _databasePath;
 
         [SetUp]
-        public void Setup()
+        public void SetUp()
         {
             _databasePath = Path.GetTempFileName();
         }

@@ -33,7 +33,7 @@ namespace IntegrationTests.Shared
         protected Realm _realm;
 
         [SetUp]
-        public void Setup()
+        public void SetUp()
         {
             Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
             _realm = Realm.GetInstance();
@@ -96,6 +96,80 @@ namespace IntegrationTests.Shared
         {
             var foundObj = FindByPKDynamic(type, primaryKeyValue, isIntegerPK);
             Assert.That(foundObj, Is.Null);
+        }
+
+        [TestCase(typeof(PrimaryKeyCharObject), 'x')]
+        [TestCase(typeof(PrimaryKeyNullableCharObject), 'x')]
+        [TestCase(typeof(PrimaryKeyNullableCharObject), null)]
+        [TestCase(typeof(PrimaryKeyByteObject), (byte)42)]
+        [TestCase(typeof(PrimaryKeyNullableByteObject), (byte)42)]
+        [TestCase(typeof(PrimaryKeyNullableByteObject), null)]
+        [TestCase(typeof(PrimaryKeyInt16Object), (short)4242)]
+        [TestCase(typeof(PrimaryKeyNullableInt16Object), (short)4242)]
+        [TestCase(typeof(PrimaryKeyNullableInt16Object), null)]
+        [TestCase(typeof(PrimaryKeyInt32Object), 42000042)]
+        [TestCase(typeof(PrimaryKeyNullableInt32Object), 42000042)]
+        [TestCase(typeof(PrimaryKeyNullableInt32Object), null)]
+        [TestCase(typeof(PrimaryKeyInt64Object), 42000042L)]
+        [TestCase(typeof(PrimaryKeyNullableInt64Object), 42000042L)]
+        [TestCase(typeof(PrimaryKeyNullableInt64Object), null)]
+        [TestCase(typeof(PrimaryKeyStringObject), "key")]
+        public void CreateObject_WhenPKExists_ShouldFail(Type type, object primaryKeyValue)
+        {
+            var pkProperty = type.GetProperties().Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
+
+            _realm.Write(() =>
+            {
+                var first = _realm.CreateObject(type.Name);
+                pkProperty.SetValue(first, primaryKeyValue);
+            });
+
+            Assert.That(() =>
+            {
+                _realm.Write(() =>
+                {
+                    var second = _realm.CreateObject(type.Name);
+                    pkProperty.SetValue(second, primaryKeyValue);
+                });
+            }, Throws.InnerException.TypeOf<RealmDuplicatePrimaryKeyValueException>());
+        }
+
+        [TestCase(typeof(PrimaryKeyCharObject), 'x')]
+        [TestCase(typeof(PrimaryKeyNullableCharObject), 'x')]
+        [TestCase(typeof(PrimaryKeyNullableCharObject), null)]
+        [TestCase(typeof(PrimaryKeyByteObject), (byte)42)]
+        [TestCase(typeof(PrimaryKeyNullableByteObject), (byte)42)]
+        [TestCase(typeof(PrimaryKeyNullableByteObject), null)]
+        [TestCase(typeof(PrimaryKeyInt16Object), (short)4242)]
+        [TestCase(typeof(PrimaryKeyNullableInt16Object), (short)4242)]
+        [TestCase(typeof(PrimaryKeyNullableInt16Object), null)]
+        [TestCase(typeof(PrimaryKeyInt32Object), 42000042)]
+        [TestCase(typeof(PrimaryKeyNullableInt32Object), 42000042)]
+        [TestCase(typeof(PrimaryKeyNullableInt32Object), null)]
+        [TestCase(typeof(PrimaryKeyInt64Object), 42000042L)]
+        [TestCase(typeof(PrimaryKeyNullableInt64Object), 42000042L)]
+        [TestCase(typeof(PrimaryKeyNullableInt64Object), null)]
+        [TestCase(typeof(PrimaryKeyStringObject), "key")]
+        public void ManageObject_WhenPKExists_ShouldFail(Type type, object primaryKeyValue)
+        {
+            var pkProperty = type.GetProperties().Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
+            var first = (RealmObject)Activator.CreateInstance(type);
+            pkProperty.SetValue(first, primaryKeyValue);
+
+            _realm.Write(() =>
+            {
+                _realm.Manage(first);
+            });
+
+            Assert.That(() =>
+            {
+                var second = (RealmObject)Activator.CreateInstance(type);
+                pkProperty.SetValue(second, primaryKeyValue);
+                _realm.Write(() =>
+                {
+                    _realm.Manage(second);
+                });
+            }, Throws.TypeOf<RealmDuplicatePrimaryKeyValueException>());
         }
 
         private RealmObject FindByPKDynamic(Type type, object primaryKeyValue, bool isIntegerPK)
@@ -267,63 +341,6 @@ namespace IntegrationTests.Shared
                 {
                     var o2 = _realm.CreateObject<PrimaryKeyStringObject>();
                     o2.StringProperty = null;
-                });
-            });
-        }
-
-        [Test]
-        public void PrimaryKeyIntObjectIsUnique()
-        {
-            _realm.Write(() =>
-            {
-                var o1 = _realm.CreateObject<PrimaryKeyInt64Object>();
-                o1.Int64Property = 9999000;
-            });
-
-            Assert.Throws<RealmDuplicatePrimaryKeyValueException>(() =>
-            {
-                _realm.Write(() =>
-                {
-                    var o2 = _realm.CreateObject<PrimaryKeyInt64Object>();
-                    o2.Int64Property = 9999000; // deliberately reuse id
-                });
-            });
-        }
-
-        [Test]
-        public void PrimaryKeyNullableIntObjectIsUnique()
-        {
-            _realm.Write(() =>
-            {
-                var o1 = _realm.CreateObject<PrimaryKeyNullableInt64Object>();
-                o1.Int64Property = 123;
-            });
-
-            Assert.Throws<RealmDuplicatePrimaryKeyValueException>(() =>
-            {
-                _realm.Write(() =>
-                {
-                    var o2 = _realm.CreateObject<PrimaryKeyNullableInt64Object>();
-                    o2.Int64Property = 123;
-                });
-            });
-        }
-
-        [Test]
-        public void NullPrimaryKeyNullableIntObjectIsUnique()
-        {
-            _realm.Write(() =>
-            {
-                var o1 = _realm.CreateObject<PrimaryKeyNullableInt64Object>();
-                o1.Int64Property = null;
-            });
-
-            Assert.Throws<RealmDuplicatePrimaryKeyValueException>(() =>
-            {
-                _realm.Write(() =>
-                {
-                    var o2 = _realm.CreateObject<PrimaryKeyNullableInt64Object>();
-                    o2.Int64Property = null;
                 });
             });
         }

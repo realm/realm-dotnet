@@ -123,8 +123,8 @@ namespace IntegrationTests.Shared
 
                 Assert.DoesNotThrow(() => realm.Write(() =>
                 {
-                    realm.Manage(new AllPropsClass());
-                }), $"{nameof(AllPropsClass)} manage failed.");
+                    realm.Manage(new AllTypesObject());
+                }), $"{nameof(AllTypesObject)} manage failed.");
             }
         }
 
@@ -172,49 +172,6 @@ namespace IntegrationTests.Shared
         public class OneListProperty : RealmObject
         {
             public IList<Person> People { get; }
-        }
-
-        public class AllPropsClass : RealmObject
-        {
-            public string String { get; set; }
-
-            public char Char { get; set; }
-
-            public byte Byte { get; set; }
-
-            public short Int16 { get; set; }
-
-            public int Int32 { get; set; }
-
-            public long Int64 { get; set; }
-
-            public float Single { get; set; }
-
-            public double Double { get; set; }
-
-            public DateTimeOffset DateTimeOffset { get; set; }
-
-            public bool Boolean { get; set; }
-
-            public byte[] ByteArray { get; set; }
-
-            public char? NullableChar { get; set; }
-
-            public byte? NullableByte { get; set; }
-
-            public short? NullableInt16 { get; set; }
-
-            public int? NullableInt32 { get; set; }
-
-            public long? NullableInt64 { get; set; }
-
-            public float? NullableSingle { get; set; }
-
-            public double? NullableDouble { get; set; }
-
-            public DateTimeOffset? NullableDateTimeOffset { get; set; }
-
-            public bool? NullableBoolean { get; set; }
         }
     }
 }

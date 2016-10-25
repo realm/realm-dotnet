@@ -33,7 +33,7 @@ namespace IntegrationTests.Win32
         public void RunTest()
         {
             var testFixture = new NotificationTests();
-            testFixture.Setup();
+            testFixture.SetUp();
 
             testFixture.CollectionChangedAdapter_DeletingItemFromRealm_ShouldRaiseReset();
 

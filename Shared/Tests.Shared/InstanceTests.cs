@@ -31,7 +31,7 @@ namespace IntegrationTests
         private const string SpecialRealmName = "EnterTheMagic.realm";
 
         [TestFixtureSetUp]
-        public void Setup()
+        public void SetUp()
         {
             Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
             var uniqueConfig = new RealmConfiguration(SpecialRealmName);  // for when need 2 realms or want to not use default

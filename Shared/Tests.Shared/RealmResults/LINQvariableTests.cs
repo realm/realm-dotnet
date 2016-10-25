@@ -26,9 +26,9 @@ namespace IntegrationTests
     public class LINQvariableTests : PeopleTestsBase
     {
         // see comment on base method why this isn't decorated with [SetUp]
-        public override void Setup()
+        public override void SetUp()
         {
-            base.Setup();
+            base.SetUp();
             MakeThreePeople();
         }
 

@@ -54,7 +54,7 @@ namespace IntegrationTests.Shared
         protected Realm realm;
 
         [SetUp]
-        public void Setup()
+        public void SetUp()
         {
             Realm.DeleteRealm(RealmConfiguration.DefaultConfiguration);
             realm = Realm.GetInstance();
