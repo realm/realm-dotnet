@@ -19,6 +19,7 @@
 using System;
 using System.Globalization;
 using System.Reflection;
+using System.Security;
 
 namespace Realms
 {
@@ -66,10 +67,57 @@ namespace Realms
 
         public override MethodInfo GetSetMethod(bool nonPublic) => _pi.GetSetMethod(nonPublic);
 
-        public override object GetValue(object obj, BindingFlags invokeAttr, Binder binder, object[] index, CultureInfo culture) => _pi.GetValue(obj, invokeAttr, binder, index, culture);
+        // From https://github.com/mono/mono/blob/master/mcs/class/corlib/System.Reflection/MonoProperty.cs#L408
+        public override object GetValue(object obj, BindingFlags invokeAttr, Binder binder, object[] index, CultureInfo culture)
+        {
+            var method = GetGetMethod(true);
+            if (method == null)
+            {
+                throw new ArgumentException("Get Method not found for '" + Name + "'");
+            }
+
+            try
+            {
+                if (index == null || index.Length == 0)
+                {
+                    return method.Invoke(obj, invokeAttr, binder, null, culture);
+                }
+                else
+                {
+                    return method.Invoke(obj, invokeAttr, binder, index, culture);
+                }
+            }
+            catch (SecurityException se)
+            {
+                throw new TargetInvocationException(se);
+            }
+        }
 
         public override bool IsDefined(Type attributeType, bool inherit) => _pi.IsDefined(attributeType, inherit);
 
-        public override void SetValue(object obj, object value, BindingFlags invokeAttr, Binder binder, object[] index, CultureInfo culture) => _pi.SetValue(obj, value, invokeAttr, binder, index, culture);
+        // From https://github.com/mono/mono/blob/master/mcs/class/corlib/System.Reflection/MonoProperty.cs#L429
+        public override void SetValue(object obj, object value, BindingFlags invokeAttr, Binder binder, object[] index, CultureInfo culture)
+        {
+            var method = GetSetMethod(true);
+            if (method == null)
+            {
+                throw new ArgumentException("Set Method not found for '" + Name + "'");
+            }
+
+            object[] parms;
+            var ilen = index?.Length ?? 0;
+            if (ilen == 0)
+            {
+                parms = new object[] { value };
+            }
+            else
+            {
+                parms = new object[ilen + 1];
+                index.CopyTo(parms, 0);
+                parms[ilen] = value;
+            }
+
+            method.Invoke(obj, invokeAttr, binder, parms, culture);
+        }
     }
 }

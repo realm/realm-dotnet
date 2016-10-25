@@ -26,6 +26,9 @@ namespace IntegrationTests.Shared
     [TestFixture, Preserve(AllMembers = true)]
     public class ReflectableTypeTests
     {
+        private const string DogName = "Sharo";
+        private const string OwnerName = "Peter";
+
         protected Realm _realm;
 
         [SetUp]
@@ -43,15 +46,186 @@ namespace IntegrationTests.Shared
         }
 
         [Test]
-        public void ReflectedGetter_WhenObjectIsRemoved_ShouldReturnNull()
+        public void ReflectedGetRelatedObject_WhenObjectIsValid_ShouldReturnObject()
+        {
+            var owner = AddDogAndOwner();
+
+            var typeInfo = owner.GetTypeInfo();
+            var topDogProperty = typeInfo.GetDeclaredProperty(nameof(Owner.TopDog));
+            var getter = topDogProperty.GetMethod;
+
+            var topDog = getter.Invoke(owner, null) as Dog;
+            Assert.That(topDog, Is.Not.Null);
+            Assert.That(topDog.Name, Is.EqualTo(DogName));
+        }
+
+        [Test]
+        public void ReflectedPropertyGetValue_WhenObjectIsValid_ShouldReturnObject()
+        {
+            var owner = AddDogAndOwner();
+
+            var typeInfo = owner.GetTypeInfo();
+            var topDogProperty = typeInfo.GetDeclaredProperty(nameof(Owner.TopDog));
+
+            var topDog = topDogProperty.GetValue(owner, null) as Dog;
+            Assert.That(topDog, Is.Not.Null);
+            Assert.That(topDog.Name, Is.EqualTo(DogName));
+        }
+
+        [Test]
+        public void RegularGetRelatedObject_WhenObjectIsValid_ShouldReturnObject()
+        {
+            var owner = AddDogAndOwner();
+            var topDog = owner.TopDog;
+            Assert.That(topDog, Is.Not.Null);
+            Assert.That(topDog.Name, Is.EqualTo(DogName));
+        }
+
+        [Test]
+        public void ReflectedGetRelatedObject_WhenObjectIsRemoved_ShouldReturnNull()
+        {
+            var owner = AddDogAndOwner();
+
+            _realm.Write(() =>
+            {
+                _realm.Remove(owner);
+            });
+
+            var typeInfo = owner.GetTypeInfo();
+            var topDogProperty = typeInfo.GetDeclaredProperty(nameof(Owner.TopDog));
+            var getter = topDogProperty.GetMethod;
+
+            var topDog = getter.Invoke(owner, null);
+            Assert.That(topDog, Is.Null);
+        }
+
+        [Test]
+        public void ReflectedPropertyGetValue_WhenObjectIsRemoved_ShouldReturnNull()
+        {
+            var owner = AddDogAndOwner();
+
+            _realm.Write(() =>
+            {
+                _realm.Remove(owner);
+            });
+
+            var typeInfo = owner.GetTypeInfo();
+            var topDogProperty = typeInfo.GetDeclaredProperty(nameof(Owner.TopDog));
+
+            var topDog = topDogProperty.GetValue(owner, null);
+            Assert.That(topDog, Is.Null);
+        }
+
+        [Test]
+        public void RegularGetRelatedObject_WhenObjectIsRemoved_ShouldThrow()
+        {
+            var owner = AddDogAndOwner();
+            _realm.Write(() =>
+            {
+                _realm.Remove(owner);
+            });
+
+            Assert.Throws<RealmInvalidObjectException>(() =>
+            {
+                var topDog = owner.TopDog;
+            });
+        }
+
+        [Test]
+        public void ReflectedGetTopLevelProperty_WhenObjectIsValid_ShouldReturnValue()
+        {
+            var owner = AddDogAndOwner();
+
+            var typeInfo = owner.GetTypeInfo();
+            var nameGetter = typeInfo.GetDeclaredProperty(nameof(Owner.Name)).GetMethod;
+
+            var name = nameGetter.Invoke(owner, null);
+            Assert.That(name, Is.EqualTo(OwnerName));
+        }
+
+        [Test]
+        public void RegularGetTopLevelProperty_WhenObjectIsValid_ShouldReturnValue()
+        {
+            var owner = AddDogAndOwner();
+            Assert.That(owner.Name, Is.EqualTo(OwnerName));
+        }
+
+        [Test]
+        public void ReflectedGetTopLevelProperty_WhenObjectIsRemoved_ShouldReturnDefault()
+        {
+            var owner = AddDogAndOwner();
+            _realm.Write(() =>
+            {
+                _realm.Remove(owner);
+            });
+
+            var typeInfo = owner.GetTypeInfo();
+            var nameGetter = typeInfo.GetDeclaredProperty(nameof(Owner.Name)).GetMethod;
+
+            var name = nameGetter.Invoke(owner, null);
+            Assert.That(name, Is.EqualTo(default(string)));
+        }
+
+        [Test]
+        public void RegularGetTopLevelProperty_WhenObjectIsRemoved_ShouldReturnDefault()
+        {
+            var owner = AddDogAndOwner();
+            _realm.Write(() =>
+            {
+                _realm.Remove(owner);
+            });
+
+            Assert.Throws<RealmInvalidObjectException>(() =>
+            {
+                var name = owner.Name;
+            });
+        }
+
+        [Test]
+        public void ReflectedSetter_WhenObjectIsValid_ShouldSetValue()
+        {
+            var owner = AddDogAndOwner();
+            var typeInfo = owner.GetTypeInfo();
+            var nameSetter = typeInfo.GetDeclaredProperty(nameof(Owner.Name)).SetMethod;
+
+            _realm.Write(() =>
+            {
+                nameSetter.Invoke(owner, new[] { "John" });
+            });
+
+            Assert.That(owner.Name, Is.EqualTo("John"));
+        }
+
+        [Test]
+        public void ReflectedSetter_WhenObjectIsInvalid_ShouldThrow()
+        {
+            var owner = AddDogAndOwner();
+            _realm.Write(() =>
+            {
+                _realm.Remove(owner);
+            });
+
+            var typeInfo = owner.GetTypeInfo();
+            var nameSetter = typeInfo.GetDeclaredProperty(nameof(Owner.Name)).SetMethod;
+
+            Assert.Throws<TargetInvocationException>(() =>
+            {
+                _realm.Write(() =>
+                {
+                    nameSetter.Invoke(owner, new[] { "John" });
+                });
+            });
+        }
+
+        private Owner AddDogAndOwner()
         {
             var owner = new Owner
             {
                 TopDog = new Dog
                 {
-                    Name = "Sharo"
+                    Name = DogName
                 },
-                Name = "Peter"
+                Name = OwnerName
             };
 
             _realm.Write(() =>
@@ -59,25 +233,7 @@ namespace IntegrationTests.Shared
                 _realm.Manage(owner);
             });
 
-            var typeInfo = owner.GetTypeInfo();
-            var topDogProperty = typeInfo.GetDeclaredProperty("TopDog");
-            var getter = topDogProperty.GetMethod;
-
-            var topDogBeforeRemove = getter.Invoke(owner, null) as Dog;
-            Assert.That(topDogBeforeRemove, Is.Not.Null);
-            Assert.That(topDogBeforeRemove.Name, Is.EqualTo("Sharo"));
-
-            _realm.Write(() =>
-            {
-                _realm.Remove(owner);
-            });
-
-            var topDogAfterRemove = getter.Invoke(owner, null);
-            Assert.That(topDogAfterRemove, Is.Null);
-            Assert.Throws<RealmInvalidObjectException>(() =>
-            {
-                var directDog = owner.TopDog;
-            });
+            return owner;
         }
     }
 }
