@@ -451,11 +451,9 @@ namespace RealmWeaver
             // All warnings and errors are gathered once, so in order to ensure only the correct ones
             // were produced, we make one assertion on all of them here.
 
-            var expectedWarnings = new List<string>()
-            {
-            };
+            var expectedWarnings = new string[0];
 
-            var expectedErrors = new List<string>()
+            var expectedErrors = new[]
             {
                 "RealmListWithSetter.People has a setter but its type is a IList which only supports getters.",
                 "IndexedProperties.SingleProperty is marked as [Indexed] which is only allowed on integral types as well as string, bool and DateTimeOffset, not on System.Single.",
@@ -468,7 +466,11 @@ namespace RealmWeaver
                 "Class 'NotSupportedProperties' field 'DateTimeProperty' is a DateTime which is not supported - use DateTimeOffset instead.",
                 "Class 'NotSupportedProperties' field 'NullableDateTimeProperty' is a DateTime? which is not supported - use DateTimeOffset? instead.",
                 "Class 'NotSupportedProperties' field 'EnumProperty' is a 'AssemblyToProcess.NotSupportedProperties/MyEnum' which is not yet supported.",
-                "Class PrimaryKeyProperties has more than one property marked with [PrimaryKey]."
+                "Class PrimaryKeyProperties has more than one property marked with [PrimaryKey].",
+                "IncorrectAttributes.AutomaticId has [PrimaryKey] applied, but it's not persisted, so those attributes will be ignored.",
+                "IncorrectAttributes.AutomaticDate has [Indexed] applied, but it's not persisted, so those attributes will be ignored.",
+                "IncorrectAttributes.Email_ has [MapTo] applied, but it's not persisted, so those attributes will be ignored.",
+                "IncorrectAttributes.Date_ has [Indexed], [MapTo] applied, but it's not persisted, so those attributes will be ignored."
             };
 
             Assert.That(_errors, Is.EquivalentTo(expectedErrors));

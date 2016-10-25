@@ -98,6 +98,26 @@ namespace AssemblyToProcess
         public int IgnoredProperty { get; set; }
     }
 
+    // This class has realm attributes applied on non-persisted properties
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    public class IncorrectAttributes : RealmObject
+    {
+        [PrimaryKey]
+        public int AutomaticId { get; }
+
+        [Indexed]
+        public DateTimeOffset AutomaticDate { get; }
+
+        [MapTo("Email")]
+        public string Email_ { get; }
+
+        [Indexed]
+        [MapTo("Date")]
+        public DateTimeOffset Date_ { get; }
+
+        public string PersistedProperty { get; set; }
+    }
+
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     public class NotSupportedProperties : RealmObject
     {
@@ -106,6 +126,8 @@ namespace AssemblyToProcess
         public DateTime? NullableDateTimeProperty { get; set; }
 
         public MyEnum EnumProperty { get; set; }
+
+        public string PersistedProperty { get; set; }
 
         public enum MyEnum
         {

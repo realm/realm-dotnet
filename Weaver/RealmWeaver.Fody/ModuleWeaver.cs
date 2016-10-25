@@ -63,7 +63,7 @@ public class ModuleWeaver
 
     private MethodReference _propChangedDoNotNotifyAttributeConstructorDefinition;
 
-    private readonly Dictionary<string, string> _typeTable = new Dictionary<string, string>
+    private static readonly Dictionary<string, string> _typeTable = new Dictionary<string, string>
     {
         { "System.String", "String" },
         { "System.Char", "Char" },
@@ -87,7 +87,7 @@ public class ModuleWeaver
         { "System.Nullable`1<System.DateTimeOffset>", "NullableDateTimeOffset" }
     };
 
-    private readonly List<string> _primaryKeyTypes = new List<string>
+    private static readonly List<string> _primaryKeyTypes = new List<string>
     {
         "System.String",
         "System.Char",
@@ -102,7 +102,7 @@ public class ModuleWeaver
         "System.Nullable`1<System.Int64>",
     };
 
-    private readonly List<string> _indexableTypes = new List<string>
+    private static readonly List<string> _indexableTypes = new List<string>
     {
         "System.String",
         "System.Char",
@@ -112,6 +112,13 @@ public class ModuleWeaver
         "System.Int64",
         "System.Boolean",
         "System.DateTimeOffset"
+    };
+
+    private static readonly HashSet<string> RealmPropertyAttributes = new HashSet<string>
+    {
+        "PrimaryKeyAttribute",
+        "IndexedAttribute",
+        "MapToAttribute"
     };
 
     private MethodReference _genericGetObjectValueReference;
@@ -261,9 +268,35 @@ public class ModuleWeaver
             try
             {
                 var weaveResult = WeaveProperty(prop, type, methodTable, typeImplementsPropertyChanged, propChangedEventDefinition, propChangedFieldDefinition);
-                if (weaveResult != null)
+                if (weaveResult.Woven)
                 {
                     persistedProperties.Add(weaveResult);
+                }
+                else
+                {
+                    var sequencePoint = prop.GetMethod.Body.Instructions.First().SequencePoint;
+                    if (!string.IsNullOrEmpty(weaveResult.ErrorMessage))
+                    {
+                        // We only want one error point, so even though there may be more problems, we only log the first one.
+                        LogErrorPoint(weaveResult.ErrorMessage, sequencePoint);
+                    }
+                    else
+                    {
+                        if (!string.IsNullOrEmpty(weaveResult.WarningMessage))
+                        {
+                            LogWarningPoint(weaveResult.WarningMessage, sequencePoint);
+                        }
+
+                        var realmAttributeNames = prop.CustomAttributes
+                                                      .Select(a => a.AttributeType.Name)
+                                                      .Intersect(RealmPropertyAttributes)
+                                                      .Select(a => $"[{a.Replace("Attribute", string.Empty)}]");
+                        
+                        if (realmAttributeNames.Any())
+                        {
+                            LogErrorPoint($"{type.Name}.{prop.Name} has {string.Join(", ", realmAttributeNames)} applied, but it's not persisted, so those attributes will be ignored.", sequencePoint);
+                        }
+                    }
                 }
             }
             catch (Exception e)
@@ -299,9 +332,9 @@ public class ModuleWeaver
 
         var preserveAttribute = new CustomAttribute(_preserveAttributeConstructor);
         objectConstructor.CustomAttributes.Add(preserveAttribute);
-        preserveAttribute = new CustomAttribute(_preserveAttributeConstructorWithParams);  // recreate so has new instance
-        preserveAttribute.ConstructorArguments.Add(new CustomAttributeArgument(_system_Boolean, true));  // AllMembers
-        preserveAttribute.ConstructorArguments.Add(new CustomAttributeArgument(_system_Boolean, false));  // Conditional
+        preserveAttribute = new CustomAttribute(_preserveAttributeConstructorWithParams); // recreate so has new instance
+        preserveAttribute.ConstructorArguments.Add(new CustomAttributeArgument(_system_Boolean, true)); // AllMembers
+        preserveAttribute.ConstructorArguments.Add(new CustomAttributeArgument(_system_Boolean, false)); // Conditional
         type.CustomAttributes.Add(preserveAttribute);
         LogDebug($"Added [Preserve] to {type.Name} and its constructor.");
 
@@ -316,8 +349,6 @@ public class ModuleWeaver
                                bool typeImplementsPropertyChanged, EventDefinition propChangedEventDefinition,
                                FieldDefinition propChangedFieldDefinition)
     {
-        var sequencePoint = prop.GetMethod.Body.Instructions.First().SequencePoint;
-
         var columnName = prop.Name;
         var mapToAttribute = prop.CustomAttributes.FirstOrDefault(a => a.AttributeType.Name == "MapToAttribute");
         if (mapToAttribute != null)
@@ -329,31 +360,23 @@ public class ModuleWeaver
         var isIndexed = prop.CustomAttributes.Any(a => a.AttributeType.Name == "IndexedAttribute");
         if (isIndexed && (!_indexableTypes.Contains(prop.PropertyType.FullName)))
         {
-            LogErrorPoint(
-                $"{type.Name}.{prop.Name} is marked as [Indexed] which is only allowed on integral types as well as string, bool and DateTimeOffset, not on {prop.PropertyType.FullName}.",
-                sequencePoint);
-            return null;
+            return WeaveResult.Error($"{type.Name}.{prop.Name} is marked as [Indexed] which is only allowed on integral types as well as string, bool and DateTimeOffset, not on {prop.PropertyType.FullName}.");
         }
 
         var isPrimaryKey = prop.CustomAttributes.Any(a => a.AttributeType.Name == "PrimaryKeyAttribute");
         if (isPrimaryKey && (!_primaryKeyTypes.Contains(prop.PropertyType.FullName)))
         {
-            LogErrorPoint(
-                $"{type.Name}.{prop.Name} is marked as [PrimaryKey] which is only allowed on integral and string types, not on {prop.PropertyType.FullName}.",
-                sequencePoint);
-            return null;
+            return WeaveResult.Error($"{type.Name}.{prop.Name} is marked as [PrimaryKey] which is only allowed on integral and string types, not on {prop.PropertyType.FullName}.");
         }
 
         if (!prop.IsAutomatic())
         {
             if (prop.PropertyType.Resolve().BaseType.IsSameAs(_realmObject))
             {
-                LogWarningPoint(
-                   $"{type.Name}.{columnName} is not an automatic property but its type is a RealmObject which normally indicates a relationship.",
-                   sequencePoint);
+                return WeaveResult.Warning($"{type.Name}.{columnName} is not an automatic property but its type is a RealmObject which normally indicates a relationship.");
             }
 
-            return null;
+            return WeaveResult.Skipped();
         }
 
         if (_typeTable.ContainsKey(prop.PropertyType.FullName))
@@ -361,7 +384,7 @@ public class ModuleWeaver
             // If the property is automatic but doesn't have a setter, we should still ignore it.
             if (prop.SetMethod == null)
             {
-                return null;
+                return WeaveResult.Skipped();
             }
 
             var typeId = prop.PropertyType.FullName + (isPrimaryKey ? " unique" : string.Empty);
@@ -383,18 +406,12 @@ public class ModuleWeaver
             var elementType = ((GenericInstanceType)prop.PropertyType).GenericArguments.Single();
             if (!elementType.Resolve().BaseType.IsSameAs(_realmObject))
             {
-                LogWarningPoint(
-                    $"SKIPPING {type.Name}.{columnName} because it is an IList but its generic type is not a RealmObject subclass, so will not persist.",
-                    sequencePoint);
-                return null;
+                return WeaveResult.Warning($"SKIPPING {type.Name}.{columnName} because it is an IList but its generic type is not a RealmObject subclass, so will not persist.");
             }
 
             if (prop.SetMethod != null)
             {
-                LogErrorPoint(
-                    $"{type.Name}.{columnName} has a setter but its type is a IList which only supports getters.",
-                    sequencePoint);
-                return null;
+                return WeaveResult.Error($"{type.Name}.{columnName} has a setter but its type is a IList which only supports getters.");
             }
 
             var concreteListType = new GenericInstanceType(_system_IList) { GenericArguments = { elementType } };
@@ -417,10 +434,7 @@ public class ModuleWeaver
             var elementType = ((GenericInstanceType)prop.PropertyType).GenericArguments.Single();
             if (prop.SetMethod != null)
             {
-                LogErrorPoint(
-                    $"{type.Name}.{columnName} has a setter but its type is a RealmList which only supports getters.",
-                    sequencePoint);
-                return null;
+                return WeaveResult.Error($"{type.Name}.{columnName} has a setter but its type is a RealmList which only supports getters.");
             }
 
             ReplaceGetter(prop, columnName,
@@ -430,10 +444,7 @@ public class ModuleWeaver
         {
             if (!prop.IsAutomatic())
             {
-                LogWarningPoint(
-                    $"{type.Name}.{columnName} is not an automatic property but its type is a RealmObject which normally indicates a relationship.",
-                    sequencePoint);
-                return null;
+                return WeaveResult.Warning($"{type.Name}.{columnName} is not an automatic property but its type is a RealmObject which normally indicates a relationship.");
             }
 
             // with casting in the _realmObject methods, should just work
@@ -445,21 +456,15 @@ public class ModuleWeaver
         }
         else if (prop.PropertyType.FullName == "System.DateTime")
         {
-            LogErrorPoint(
-                $"Class '{type.Name}' field '{prop.Name}' is a DateTime which is not supported - use DateTimeOffset instead.",
-                sequencePoint);
+            return WeaveResult.Error($"Class '{type.Name}' field '{prop.Name}' is a DateTime which is not supported - use DateTimeOffset instead.");
         }
         else if (prop.PropertyType.FullName == "System.Nullable`1<System.DateTime>")
         {
-            LogErrorPoint(
-                $"Class '{type.Name}' field '{prop.Name}' is a DateTime? which is not supported - use DateTimeOffset? instead.",
-                sequencePoint);
+            return WeaveResult.Error($"Class '{type.Name}' field '{prop.Name}' is a DateTime? which is not supported - use DateTimeOffset? instead.");
         }
         else
         {
-            LogErrorPoint(
-                $"Class '{type.Name}' field '{columnName}' is a '{prop.PropertyType}' which is not yet supported.",
-                sequencePoint);
+            return WeaveResult.Error($"Class '{type.Name}' field '{columnName}' is a '{prop.PropertyType}' which is not yet supported.");
         }
 
         var preserveAttribute = new CustomAttribute(_preserveAttributeConstructor);
@@ -473,7 +478,7 @@ public class ModuleWeaver
         var primaryKeyMsg = isPrimaryKey ? "[PrimaryKey]" : string.Empty;
         var indexedMsg = isIndexed ? "[Indexed]" : string.Empty;
         LogDebug($"Woven {type.Name}.{prop.Name} as a {prop.PropertyType.FullName} {primaryKeyMsg} {indexedMsg}.");
-        return new WeaveResult(prop, backingField, isPrimaryKey);
+        return WeaveResult.Success(prop, backingField, isPrimaryKey);
     }
 
     private void ReplaceGetter(PropertyDefinition prop, string columnName, MethodReference getValueReference)
@@ -1164,17 +1169,50 @@ public class ModuleWeaver
 
     private class WeaveResult
     {
+        public static WeaveResult Success(PropertyDefinition property, FieldReference field, bool isPrimaryKey)
+        {
+            return new WeaveResult(property, field, isPrimaryKey);
+        }
+
+        public static WeaveResult Warning(string warning)
+        {
+            return new WeaveResult(warning: warning);
+        }
+
+        public static WeaveResult Error(string error)
+        {
+            return new WeaveResult(error: error);
+        }
+
+        public static WeaveResult Skipped()
+        {
+            return new WeaveResult();
+        }
+
+        public readonly string ErrorMessage;
+
+        public readonly string WarningMessage;
+
+        public bool Woven;
+
         public readonly PropertyDefinition Property;
 
         public readonly FieldReference Field;
 
         public readonly bool IsPrimaryKey;
 
-        public WeaveResult(PropertyDefinition property, FieldReference field, bool isPrimaryKey)
+        private WeaveResult(PropertyDefinition property, FieldReference field, bool isPrimaryKey)
         {
             Property = property;
             Field = field;
             IsPrimaryKey = isPrimaryKey;
+            Woven = true;
+        }
+
+        private WeaveResult(string error = null, string warning = null)
+        {
+            ErrorMessage = error;
+            WarningMessage = warning;
         }
     }
 }
