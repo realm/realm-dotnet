@@ -8,6 +8,9 @@ namespace QuickJournal
 {
     public class JournalEntriesViewModel
     {
+        // TODO: add UI for changing that.
+        private const string AuthorName = "Me";
+
         private Realm _realm;
 
         public IEnumerable<JournalEntry> Entries { get; private set; }
@@ -37,7 +40,10 @@ namespace QuickJournal
         {
             var transaction = _realm.BeginWrite();
             var entry = _realm.CreateObject<JournalEntry>();
-            entry.Date = DateTimeOffset.Now;
+            var metadata = _realm.CreateObject<EntryMetadata>();
+            metadata.Date = DateTimeOffset.Now;
+            metadata.Author = AuthorName;
+            entry.Metadata = metadata;
 
             var page = new JournalEntryDetailsPage(new JournalEntryDetailsViewModel(entry, transaction));
 
