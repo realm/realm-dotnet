@@ -1,11 +1,32 @@
-0.7x.x (TBD)
+0.80.0 (TBD)
 -------------------
 ### Breaking Changes
 * This version updates the file format. Older versions will not be able to open files created with this version. (#846)
+* `RealmList<T>` is now marked as internal. If you were using it anywhere, you should migrate to `IList<T>`. (#880)
 
 ### Enhancements
-* IOS Linking all should work - we now add a [Preserve] attribue to all woven members of your `RealmObject` subclasses so you do not need to manually add `[Preserve(allMembers=true)]`  (#822)
+* iOS Linking all should work - we now add a [Preserve] attribue to all woven members of your `RealmObject` subclasses so you do not need to manually add `[Preserve(allMembers=true)]`  (#822)
+* `Realm.Manage` calls are now much faster. You should prefer that to `Realm.CreateObject` unless you are setting only a few properties, while leaving the rest with default values. (#857)
+* Added `bool update` argument to `Realm.Manage`. When `update: true` is passed, Realm will try to find and update a persisted object with the same PrimaryKey. If an object with the same PrimaryKey is not found, the umnamaged object is added. If the passed in object does not have a PrimaryKey, it will be added. Any related objects will be added or updated depending on whether they have PrimaryKeys. (#871)
+    
+    **NOTE**: cyclic relationships, where object references are not identical, will not be reconciled. E.g. this will work as expected:
+    ```csharp
+    var person = new Person { Name = "Peter", Id = 1 };
+    person.Dog = new Dog();
+    person.Dog.Owner = person;
+    ```
+    However this will not - it will set the Person's properties to the ones from the last instance it sees:
+    ```csharp
+    var person = new Person { Name = "Peter", Id = 1 };
+    person.Dog = new Dog();
+    person.Dog.Owner = new Person { Id = 1 };
+    ```
+    This is important when deserializing data from json, where you may have multiple instances of object with the same Id, but with different properties.
 
+* `Realm.Manage` will no longer throw an exception if a managed object is passed. Instead, it will immediately return. (#871)
+* Added non-generic version of `Realm.Manage`. (#871)
+* Added support for nullable integer PrimaryKeys. Now you can have `long?` PrimaryKey property where `null` is a valid unique value. (#877)
+* Added a weaver warning when applying Realm attributes (e.g. `[Indexed]` or `[PrimaryKey]`) on non-persisted properties. (#882)
 
 
 0.78.1 (2016-09-15)
