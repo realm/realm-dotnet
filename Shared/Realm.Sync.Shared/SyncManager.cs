@@ -17,32 +17,12 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Runtime.Serialization;
-using System.Threading.Tasks;
 
 namespace Realms.Sync
 {
-    public class User : ISerializable
+    public static class SyncManager
     {
-        public static User CurrentUser { get; private set; }
-
-        public static async Task<User> LoginAsync(Credentials credentials, string serverUrl)
-        {
-            throw new NotImplementedException();
-        }
-
-        public string AccessToken { get; private set; }
-
-        public string Identity { get; private set; }
-
-        public bool IsValid { get; private set; }
-
-        public void LogOut()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void GetObjectData(SerializationInfo info, StreamingContext context)
+        public static Session GetSession(SyncConfiguration configuration)
         {
             throw new NotImplementedException();
         }
