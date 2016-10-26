@@ -32,7 +32,7 @@
     var peter = realm.All<Person>().FirstOrDefault(d => d.Name == "Peter");
     var petersDogs = realm.All<Dog>().Where(d => d.Owner == peter);
     ```
-* Added support for `StarsWith(string, StringComparison)`, `EndsWith(string, StringComparison)`, and `Equals(string, StringComparison)` filtering in LINQ. (#893)
+* Added support for `StartsWith(string, StringComparison)`, `EndsWith(string, StringComparison)`, and `Equals(string, StringComparison)` filtering in LINQ. (#893)
 
     **NOTE**: Currently only `Ordinal` and `OrdinalIgnoreCase` comparisons are supported. Trying to pass in a different one will result in runtime error. If no argument is supplied, `Ordinal` will be used.
 
