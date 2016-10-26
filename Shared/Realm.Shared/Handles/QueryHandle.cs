@@ -45,23 +45,23 @@ namespace Realms
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_string_contains", CallingConvention = CallingConvention.Cdecl)]
             public static extern void string_contains(QueryHandle queryPtr, IntPtr columnIndex,
-                        [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen, out NativeException ex);
+                        [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen, [MarshalAs(UnmanagedType.I1)] bool caseSensitive, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_string_starts_with", CallingConvention = CallingConvention.Cdecl)]
             public static extern void string_starts_with(QueryHandle queryPtr, IntPtr columnIndex,
-                        [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen, out NativeException ex);
+                        [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen, [MarshalAs(UnmanagedType.I1)] bool caseSensitive, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_string_ends_with", CallingConvention = CallingConvention.Cdecl)]
             public static extern void string_ends_with(QueryHandle queryPtr, IntPtr columnIndex,
-                        [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen, out NativeException ex);
+                        [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen, [MarshalAs(UnmanagedType.I1)] bool caseSensitive, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_string_equal", CallingConvention = CallingConvention.Cdecl)]
             public static extern void string_equal(QueryHandle queryPtr, IntPtr columnIndex,
-                        [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen, out NativeException ex);
+                        [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen, [MarshalAs(UnmanagedType.I1)] bool caseSensitive, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_string_not_equal", CallingConvention = CallingConvention.Cdecl)]
             public static extern void string_not_equal(QueryHandle queryPtr, IntPtr columnIndex,
-                        [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen, out NativeException ex);
+                        [MarshalAs(UnmanagedType.LPWStr)] string value, IntPtr valueLen, [MarshalAs(UnmanagedType.I1)] bool caseSensitive, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "query_bool_equal", CallingConvention = CallingConvention.Cdecl)]
             public static extern void bool_equal(QueryHandle queryPtr, IntPtr columnIndex, IntPtr value, out NativeException ex);
@@ -229,38 +229,38 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public void StringContains(IntPtr columnIndex, string value)
+        public void StringContains(IntPtr columnIndex, string value, bool caseSensitive = true)
         {
             NativeException nativeException;
-            NativeMethods.string_contains(this, columnIndex, value, (IntPtr)value.Length, out nativeException);
+            NativeMethods.string_contains(this, columnIndex, value, (IntPtr)value.Length, caseSensitive, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public void StringStartsWith(IntPtr columnIndex, string value)
+        public void StringStartsWith(IntPtr columnIndex, string value, bool caseSensitive = true)
         {
             NativeException nativeException;
-            NativeMethods.string_starts_with(this, columnIndex, value, (IntPtr)value.Length, out nativeException);
+            NativeMethods.string_starts_with(this, columnIndex, value, (IntPtr)value.Length, caseSensitive, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public void StringEndsWith(IntPtr columnIndex, string value)
+        public void StringEndsWith(IntPtr columnIndex, string value, bool caseSensitive = true)
         {
             NativeException nativeException;
-            NativeMethods.string_ends_with(this, columnIndex, value, (IntPtr)value.Length, out nativeException);
+            NativeMethods.string_ends_with(this, columnIndex, value, (IntPtr)value.Length, caseSensitive, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public void StringEqual(IntPtr columnIndex, string value)
+        public void StringEqual(IntPtr columnIndex, string value, bool caseSensitive = true)
         {
             NativeException nativeException;
-            NativeMethods.string_equal(this, columnIndex, value, (IntPtr)value.Length, out nativeException);
+            NativeMethods.string_equal(this, columnIndex, value, (IntPtr)value.Length, caseSensitive, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public void StringNotEqual(IntPtr columnIndex, string value)
+        public void StringNotEqual(IntPtr columnIndex, string value, bool caseSensitive = true)
         {
             NativeException nativeException;
-            NativeMethods.string_not_equal(this, columnIndex, value, (IntPtr)value.Length, out nativeException);
+            NativeMethods.string_not_equal(this, columnIndex, value, (IntPtr)value.Length, caseSensitive, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 

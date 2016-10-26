@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using IntegrationTests.Shared;
 using NUnit.Framework;
@@ -459,6 +460,124 @@ namespace IntegrationTests
         }
 
         [Test]
+        public void StringSearch_Equals_CaseSensitivityTests()
+        {
+            MakeThreePatricks();
+
+            // case sensitive
+            var equalequal_patrick = _realm.All<Person>().Where(p => p.FirstName == "patrick").Count();
+            Assert.That(equalequal_patrick, Is.EqualTo(2));
+
+            // case sensitive
+            var notequal_patrick = _realm.All<Person>().Where(p => p.FirstName != "patrick").Count();
+            Assert.That(notequal_patrick, Is.EqualTo(1));
+
+            // case sensitive
+            var equals_patrick = _realm.All<Person>().Where(p => p.FirstName.Equals("patrick")).Count();
+            Assert.That(equals_patrick, Is.EqualTo(2));
+
+            // case sensitive
+            var notequals_patrick = _realm.All<Person>().Where(p => !p.FirstName.Equals("patrick")).Count();
+            Assert.That(notequals_patrick, Is.EqualTo(1));
+
+            // ignore case
+            var equals_ignorecase_patrick = _realm.All<Person>().Where(p => p.FirstName.Equals("patrick", StringComparison.OrdinalIgnoreCase)).Count();
+            Assert.That(equals_ignorecase_patrick, Is.EqualTo(3));
+
+            // ignore case
+            var notequals_ignorecase_patrick = _realm.All<Person>().Where(p => !p.FirstName.Equals("patrick", StringComparison.OrdinalIgnoreCase)).Count();
+            Assert.That(notequals_ignorecase_patrick, Is.EqualTo(0));
+
+            // case sensitive
+            var equals_ordinal_patrick = _realm.All<Person>().Where(p => p.FirstName.Equals("patrick", StringComparison.Ordinal)).Count();
+            Assert.That(equals_ordinal_patrick, Is.EqualTo(2));
+
+            // case sensitive
+            var equals_ordinal_Patrick = _realm.All<Person>().Where(p => p.FirstName.Equals("Patrick", StringComparison.Ordinal)).Count();
+            Assert.That(equals_ordinal_Patrick, Is.EqualTo(0));
+
+            // case sensitive
+            var equals_ordinal_patRick = _realm.All<Person>().Where(p => p.FirstName.Equals("patRick", StringComparison.Ordinal)).Count();
+            Assert.That(equals_ordinal_patRick, Is.EqualTo(1));
+
+            // case sensitive
+            var notequals_ordinal_patrick = _realm.All<Person>().Where(p => !p.FirstName.Equals("patrick", StringComparison.Ordinal)).Count();
+            Assert.That(notequals_ordinal_patrick, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void StringSearch_StartsWith_CaseSensitivityTests()
+        {
+            MakeThreePatricks();
+
+            // case sensitive
+            var startswith_patr = _realm.All<Person>().Where(p => p.FirstName.StartsWith("patr")).Count();
+            Assert.That(startswith_patr, Is.EqualTo(2));
+
+            // case sensitive
+            var startswith_ordinal_patr = _realm.All<Person>().Where(p => p.FirstName.StartsWith("patr", StringComparison.Ordinal)).Count();
+            Assert.That(startswith_ordinal_patr, Is.EqualTo(2));
+
+            // ignore case
+            var startswith_ignorecase_patr = _realm.All<Person>().Where(p => p.FirstName.StartsWith("patr", StringComparison.OrdinalIgnoreCase)).Count();
+            Assert.That(startswith_ignorecase_patr, Is.EqualTo(3));
+        }
+
+        [Test]
+        public void StringSearch_EndsWith_CaseSensitivityTests()
+        {
+            MakeThreePatricks();
+
+            // case sensitive
+            var endswith_rick = _realm.All<Person>().Where(p => p.FirstName.EndsWith("rick")).Count();
+            Assert.That(endswith_rick, Is.EqualTo(2));
+
+            // case sensitive
+            var endswith_ordinal_rick = _realm.All<Person>().Where(p => p.FirstName.EndsWith("rick", StringComparison.Ordinal)).Count();
+            Assert.That(endswith_ordinal_rick, Is.EqualTo(2));
+
+            // ignore case
+            var endswith_ignorecase_rick = _realm.All<Person>().Where(p => p.FirstName.EndsWith("rick", StringComparison.OrdinalIgnoreCase)).Count();
+            Assert.That(endswith_ignorecase_rick, Is.EqualTo(3));
+        }
+
+        [Test]
+        public void StringSearch_InvalidStringComparisonTests()
+        {
+            MakeThreePatricks();
+
+            Assert.That(() =>
+            {
+                _realm.All<Person>().Where(p => p.FirstName.Equals("patrick", StringComparison.CurrentCulture)).Count();
+            }, Throws.TypeOf<NotSupportedException>());
+
+            Assert.That(() =>
+            {
+                _realm.All<Person>().Where(p => p.FirstName.Equals("patrick", StringComparison.CurrentCultureIgnoreCase)).Count();
+            }, Throws.TypeOf<NotSupportedException>());
+
+            Assert.That(() =>
+            {
+                _realm.All<Person>().Where(p => p.FirstName.Equals("patrick", StringComparison.InvariantCulture)).Count();
+            }, Throws.TypeOf<NotSupportedException>());
+
+            Assert.That(() =>
+            {
+                _realm.All<Person>().Where(p => p.FirstName.Equals("patrick", StringComparison.InvariantCultureIgnoreCase)).Count();
+            }, Throws.TypeOf<NotSupportedException>());
+
+            Assert.That(() =>
+            {
+                _realm.All<Person>().Where(p => p.FirstName.StartsWith("pat", StringComparison.CurrentCulture)).Count();
+            }, Throws.TypeOf<NotSupportedException>());
+
+            Assert.That(() =>
+            {
+                _realm.All<Person>().Where(p => p.FirstName.EndsWith("rick", StringComparison.CurrentCulture)).Count();
+            }, Throws.TypeOf<NotSupportedException>());
+        }
+
+        [Test]
         public void AnySucceeds()
         {
             Assert.That(_realm.All<Person>().Where(p => p.Latitude > 50).Any());
@@ -733,7 +852,30 @@ namespace IntegrationTests
             var hasJohnSmith = moderateScorers.Any(p => p.LastName == "Smith");
             Assert.That(hasJohnSmith, Is.False);
         }
-    
+
+        private void MakeThreePatricks()
+        {
+            _realm.Write(() =>
+            {
+                _realm.RemoveAll<Person>();
+
+                _realm.Manage(new Person
+                {
+                    FirstName = "patRick"
+                });
+
+                _realm.Manage(new Person
+                {
+                    FirstName = "patrick"
+                });
+
+                _realm.Manage(new Person
+                {
+                    FirstName = "patrick"
+                });
+            });
+        }
+
         private static class Constants
         {
             public const long SixtyThousandConstant = 60000;
