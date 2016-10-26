@@ -565,7 +565,7 @@ namespace Realms
             {
                 queryHandle.TimestampTicksEqual(columnIndex, (DateTimeOffset)value);
             }
-            else if (value.GetType() == typeof(byte[]))
+            else if (value is byte[])
             {
                 var buffer = (byte[])value;
                 if (buffer.Length == 0)
@@ -582,6 +582,10 @@ namespace Realms
                         queryHandle.BinaryEqual(columnIndex, (IntPtr)bufferPtr, (IntPtr)buffer.LongLength);
                     }
                 }
+            }
+            else if (value is RealmObject)
+            {
+                queryHandle.ObjectEqual(columnIndex, ((RealmObject)value).ObjectHandle);
             }
             else
             {
@@ -629,7 +633,7 @@ namespace Realms
             {
                 queryHandle.TimestampTicksNotEqual(columnIndex, (DateTimeOffset)value);
             }
-            else if (value.GetType() == typeof(byte[]))
+            else if (value is byte[])
             {
                 var buffer = (byte[])value;
                 if (buffer.Length == 0)
@@ -646,6 +650,11 @@ namespace Realms
                         queryHandle.BinaryNotEqual(columnIndex, (IntPtr)bufferPtr, (IntPtr)buffer.LongLength);
                     }
                 }
+            }
+            else if (value is RealmObject)
+            {
+                queryHandle.Not();
+                queryHandle.ObjectEqual(columnIndex, ((RealmObject)value).ObjectHandle);
             }
             else
             {
