@@ -413,6 +413,52 @@ namespace IntegrationTests
         }
 
         [Test]
+        public void SearchComparingObjects()
+        {
+            var rex = new Dog
+            {
+                Name = "Rex"
+            };
+
+            var peter = new Owner
+            {
+                Name = "Peter",
+                TopDog = rex
+            };
+
+            var george = new Owner
+            {
+                Name = "George",
+                TopDog = rex
+            };
+
+            var sharo = new Dog
+            {
+                Name = "Sharo"
+            };
+
+            var ivan = new Owner
+            {
+                Name = "Ivan",
+                TopDog = sharo
+            };
+
+            _realm.Write(() =>
+            {
+                _realm.Manage(peter);
+                _realm.Manage(george);
+                _realm.Manage(ivan);
+            });
+
+            var rexOwners = _realm.All<Owner>().Where(o => o.TopDog == rex);
+            Assert.That(rexOwners.Count(), Is.EqualTo(2));
+
+            var sharoOwners = _realm.All<Owner>().Where(o => o.TopDog != rex);
+            Assert.That(sharoOwners.Count(), Is.EqualTo(1));
+            Assert.That(sharoOwners.Single().Name, Is.EqualTo("Ivan"));
+        }
+
+        [Test]
         public void AnySucceeds()
         {
             Assert.That(_realm.All<Person>().Where(p => p.Latitude > 50).Any());

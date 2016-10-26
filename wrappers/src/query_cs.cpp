@@ -385,7 +385,14 @@ REALM_EXPORT void query_binary_not_equal(Query* query_ptr, size_t columnIndex, c
         query_ptr->not_equal(columnIndex, BinaryData(buffer, buffer_length));
     });
 }
-
+    
+REALM_EXPORT void query_object_equal(Query* query_ptr, size_t columnIndex, Object& object, NativeException::Marshallable& ex)
+{
+    handle_errors(ex, [&]() {
+        query_ptr->links_to(columnIndex, object.row());
+    });
+}
+    
 REALM_EXPORT void query_null_equal(Query* query_ptr, size_t columnIndex, NativeException::Marshallable& ex)   
 {   
     handle_errors(ex, [&]() {   
