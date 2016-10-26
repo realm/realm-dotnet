@@ -146,5 +146,84 @@ namespace IntegrationTests.Shared
             Assert.That(_realm.All<Person>().Count(), Is.EqualTo(0));
             Assert.That(_realm.All<AllTypesObject>().Count(), Is.EqualTo(0));
         }
+
+        [Test]
+        public void RemoveObject_FromAnotherRealm_ShouldThrow()
+        {
+            PerformWithOtherRealm(null, other =>
+            {
+                Person otherPerson = null;
+                other.Write(() =>
+                {
+                    otherPerson = other.CreateObject<Person>();
+                });
+
+                Assert.That(() =>
+                {
+                    _realm.Write(() => _realm.Remove(otherPerson));
+                }, Throws.TypeOf<RealmObjectManagedByAnotherRealmException>());
+            });
+        }
+
+        [Test]
+        public void RemoveResults_FromAnotherRealm_ShouldThrow()
+        {
+            PerformWithOtherRealm(null, other =>
+            {
+                other.Write(() => other.CreateObject<Person>());
+
+                var people = other.All<Person>();
+
+                Assert.That(() =>
+                {
+                    _realm.Write(() => _realm.RemoveRange(people));
+                }, Throws.TypeOf<RealmObjectManagedByAnotherRealmException>());
+            });
+        }
+
+        [Test]
+        public void RemoveObject_FromSameRealm_ShouldWork()
+        {
+            PerformWithOtherRealm(_databasePath, other =>
+            {
+                Person otherPerson = null;
+                other.Write(() =>
+                {
+                    otherPerson = other.CreateObject<Person>();
+                });
+
+                Assert.That(() =>
+                {
+                    _realm.Write(() => _realm.Remove(otherPerson));
+                }, Throws.Nothing);
+            });
+        }
+
+        [Test]
+        public void RemoveResults_FromTheSameRealm_ShouldWork()
+        {
+            PerformWithOtherRealm(_databasePath, other =>
+            {
+                other.Write(() => other.CreateObject<Person>());
+
+                var people = other.All<Person>();
+
+                Assert.That(() =>
+                {
+                    _realm.Write(() => _realm.RemoveRange(people));
+                }, Throws.Nothing);
+            });
+        }
+
+        private void PerformWithOtherRealm(string path, Action<Realm> action)
+        {
+            Realm otherRealm;
+            using (otherRealm = Realm.GetInstance(path ?? Path.GetTempFileName()))
+            {
+                action(otherRealm);
+            }
+
+            Realm.DeleteRealm(otherRealm.Config);
+        }
     }
 }

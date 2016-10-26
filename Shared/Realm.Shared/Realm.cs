@@ -831,6 +831,16 @@ namespace Realms
         /// <exception cref="System.ArgumentNullException">If you invoke this with a standalone object.</exception>
         public void Remove(RealmObject obj)
         {
+            if (obj == null)
+            {
+                throw new ArgumentNullException(nameof(obj));
+            }
+
+            if (!this.Equals(obj.Realm))
+            {
+                throw new RealmObjectManagedByAnotherRealmException("This object is managed by another realm. You should call Remove on the other realm.");
+            }
+
             obj.ObjectHandle.RemoveFromRealm();
         }
 
@@ -844,6 +854,11 @@ namespace Realms
             if (range == null)
             {
                 throw new ArgumentNullException(nameof(range));
+            }
+
+            if (!this.Equals(range.Realm))
+            {
+                throw new RealmObjectManagedByAnotherRealmException("These results are managed by another realm. You should call Remove on the other realm.");
             }
 
             range.ResultsHandle.Clear();

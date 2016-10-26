@@ -48,6 +48,8 @@ namespace Realms
 
         public Expression Expression { get; } // null if _allRecords
 
+        internal Realm Realm => _realm;
+
         /// <summary>
         /// The <see cref="Schema.ObjectSchema"/> that describes the type of item this collection can contain.
         /// </summary>
