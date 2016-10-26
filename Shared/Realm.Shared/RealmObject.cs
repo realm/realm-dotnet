@@ -535,7 +535,7 @@ namespace Realms
             return ObjectHandle.Equals(((RealmObject)obj).ObjectHandle);
         }
 
-        public TypeInfo GetTypeInfo()
+        TypeInfo IReflectableType.GetTypeInfo()
         {
             return new RealmObjectTypeInfo(this.GetType());
         }

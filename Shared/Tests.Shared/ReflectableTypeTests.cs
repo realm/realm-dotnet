@@ -50,7 +50,7 @@ namespace IntegrationTests.Shared
         {
             var owner = AddDogAndOwner();
 
-            var typeInfo = owner.GetTypeInfo();
+            var typeInfo = ((IReflectableType)owner).GetTypeInfo();
             var topDogProperty = typeInfo.GetDeclaredProperty(nameof(Owner.TopDog));
             var getter = topDogProperty.GetMethod;
 
@@ -64,7 +64,7 @@ namespace IntegrationTests.Shared
         {
             var owner = AddDogAndOwner();
 
-            var typeInfo = owner.GetTypeInfo();
+            var typeInfo = ((IReflectableType)owner).GetTypeInfo();
             var topDogProperty = typeInfo.GetDeclaredProperty(nameof(Owner.TopDog));
 
             var topDog = topDogProperty.GetValue(owner, null) as Dog;
@@ -91,7 +91,7 @@ namespace IntegrationTests.Shared
                 _realm.Remove(owner);
             });
 
-            var typeInfo = owner.GetTypeInfo();
+            var typeInfo = ((IReflectableType)owner).GetTypeInfo();
             var topDogProperty = typeInfo.GetDeclaredProperty(nameof(Owner.TopDog));
             var getter = topDogProperty.GetMethod;
 
@@ -109,7 +109,7 @@ namespace IntegrationTests.Shared
                 _realm.Remove(owner);
             });
 
-            var typeInfo = owner.GetTypeInfo();
+            var typeInfo = ((IReflectableType)owner).GetTypeInfo();
             var topDogProperty = typeInfo.GetDeclaredProperty(nameof(Owner.TopDog));
 
             var topDog = topDogProperty.GetValue(owner, null);
@@ -136,7 +136,7 @@ namespace IntegrationTests.Shared
         {
             var owner = AddDogAndOwner();
 
-            var typeInfo = owner.GetTypeInfo();
+            var typeInfo = ((IReflectableType)owner).GetTypeInfo();
             var nameGetter = typeInfo.GetDeclaredProperty(nameof(Owner.Name)).GetMethod;
 
             var name = nameGetter.Invoke(owner, null);
@@ -159,7 +159,7 @@ namespace IntegrationTests.Shared
                 _realm.Remove(owner);
             });
 
-            var typeInfo = owner.GetTypeInfo();
+            var typeInfo = ((IReflectableType)owner).GetTypeInfo();
             var nameGetter = typeInfo.GetDeclaredProperty(nameof(Owner.Name)).GetMethod;
 
             var name = nameGetter.Invoke(owner, null);
@@ -185,7 +185,7 @@ namespace IntegrationTests.Shared
         public void ReflectedSetter_WhenObjectIsValid_ShouldSetValue()
         {
             var owner = AddDogAndOwner();
-            var typeInfo = owner.GetTypeInfo();
+            var typeInfo = ((IReflectableType)owner).GetTypeInfo();
             var nameSetter = typeInfo.GetDeclaredProperty(nameof(Owner.Name)).SetMethod;
 
             _realm.Write(() =>
@@ -205,16 +205,16 @@ namespace IntegrationTests.Shared
                 _realm.Remove(owner);
             });
 
-            var typeInfo = owner.GetTypeInfo();
+            var typeInfo = ((IReflectableType)owner).GetTypeInfo();
             var nameSetter = typeInfo.GetDeclaredProperty(nameof(Owner.Name)).SetMethod;
 
-            Assert.Throws<TargetInvocationException>(() =>
+            Assert.That(() =>
             {
                 _realm.Write(() =>
                 {
                     nameSetter.Invoke(owner, new[] { "John" });
                 });
-            });
+            }, Throws.InnerException.TypeOf<RealmInvalidObjectException>());
         }
 
         private Owner AddDogAndOwner()

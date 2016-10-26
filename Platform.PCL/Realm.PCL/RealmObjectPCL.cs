@@ -336,7 +336,7 @@ namespace Realms
             return false;
         }
 
-        public TypeInfo GetTypeInfo()
+        TypeInfo IReflectableType.GetTypeInfo()
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return null;
