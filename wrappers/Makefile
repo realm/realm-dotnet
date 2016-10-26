@@ -1,5 +1,23 @@
 # vim:fdm=marker
 
+# Dependencies
+
+CORE_APPLE_VER=2.1.1
+SYNC_APPLE_VER=1.0.0-BETA-3.1
+
+SYNC_ANDROID_VER=1.0.0-BETA-3.1
+
+ANDROID_BUNDLE_NAME=realm-sync-android-$(SYNC_ANDROID_VER).tar.gz
+ANDROID_BUNDLE_URL="http://static.realm.io/downloads/sync/$(ANDROID_BUNDLE_NAME)"
+
+ifdef REALM_ENABLE_SYNC
+	APPLE_BUNDLE_NAME=realm-sync-cocoa-$(SYNC_APPLE_VER).tar.xz
+	APPLE_BUNDLE_URL="http://static.realm.io/downloads/sync/$(APPLE_BUNDLE_NAME)"
+else
+	APPLE_BUNDLE_NAME=realm-core-dotnet-cocoa-$(CORE_APPLE_VER).tar.bz2
+	APPLE_BUNDLE_URL="http://static.realm.io/downloads/core/$(APPLE_BUNDLE_NAME)"
+endif
+
 OS_SRCS=$(wildcard src/object-store/src/*.cpp) $(wildcard src/object-store/src/impl/*.cpp)
 APPLE_SRCS=$(wildcard src/object-store/src/impl/apple/*.cpp)
 ANDROID_SRCS=$(wildcard src/object-store/src/impl/android/*.cpp)
@@ -8,8 +26,6 @@ SRCS=$(wildcard src/*.cpp) $(OS_SRCS)
 SDKROOT=$(shell xcrun --sdk iphoneos --show-sdk-path)
 CXX=$(shell xcrun --sdk iphoneos --find clang++)
 FLAGS=-Icore/include -Isrc/object-store/src -Isrc/object-store/src/impl -Isrc/object-store/src/impl/apple -std=c++14 -stdlib=libc++  
-CORE_APPLE_VER=2.1.1
-CORE_ANDROID_VER=2.1.1
 
 help: ## Show this help.
 	@fgrep -h "##" $(MAKEFILE_LIST) | fgrep -v fgrep | sed -e 's/\\$$//' | sed -e 's/##//'
@@ -79,91 +95,49 @@ build/Debug-ios-universal/libwrappers.a: build/Debug-iphoneos/libwrappers.a buil
 
 # Android ==================== {{{
 
-android: \
-	build/Release-android/armeabi-v7a/libwrappers.so \
-	build/Release-android/x86/libwrappers.so \
-	build/Release-android/x86_64/libwrappers.so \
-	build/Release-android/arm64-v8a/libwrappers.so 
+android: | libs
+	cp -r ./libs/ ./build/Release-android
 
-androiddbg: \
-	build/Debug-android/armeabi-v7a/libwrappers.so \
-	build/Debug-android/x86/libwrappers.so \
-	build/Debug-android/x86_64/libwrappers.so \
-	build/Debug-android/arm64-v8a/libwrappers.so 
+androiddbg: | libs-dbg
+	cp -r ./libs-dbg/ ./build/Debug-android
 
-core-android: realm-core-android-$(CORE_ANDROID_VER).tar.gz | jni/Android.mk jni/Application.mk
+core-android: $(ANDROID_BUNDLE_NAME) | jni/Android.mk jni/Application.mk
 	mkdir -p core-android
-	tar xzf realm-core-android-$(CORE_ANDROID_VER).tar.gz -C core-android/
+	tar xzf $(ANDROID_BUNDLE_NAME) -C core-android/
 	mkdir -p core-android/armeabi
 	mv core-android/librealm-android-arm.a core-android/armeabi/librealm-android.a
 	mv core-android/librealm-android-arm-dbg.a core-android/armeabi/librealm-android-dbg.a
+	mv core-android/librealm-sync-android-arm.a core-android/armeabi/librealm-sync-android.a
+	mv core-android/librealm-sync-android-arm-dbg.a core-android/armeabi/librealm-sync-android-dbg.a
 	mkdir -p core-android/armeabi-v7a
 	mv core-android/librealm-android-arm-v7a.a core-android/armeabi-v7a/librealm-android.a
 	mv core-android/librealm-android-arm-v7a-dbg.a core-android/armeabi-v7a/librealm-android-dbg.a
+	mv core-android/librealm-sync-android-arm-v7a.a core-android/armeabi-v7a/librealm-sync-android.a
+	mv core-android/librealm-sync-android-arm-v7a-dbg.a core-android/armeabi-v7a/librealm-sync-android-dbg.a
 	mkdir -p core-android/x86
 	mv core-android/librealm-android-x86.a core-android/x86/librealm-android.a
 	mv core-android/librealm-android-x86-dbg.a core-android/x86/librealm-android-dbg.a
+	mv core-android/librealm-sync-android-x86.a core-android/x86/librealm-sync-android.a
+	mv core-android/librealm-sync-android-x86-dbg.a core-android/x86/librealm-sync-android-dbg.a
 	mkdir -p core-android/arm64-v8a
 	mv core-android/librealm-android-arm64.a core-android/arm64-v8a/librealm-android.a
 	mv core-android/librealm-android-arm64-dbg.a core-android/arm64-v8a/librealm-android-dbg.a
+	mv core-android/librealm-sync-android-arm64.a core-android/arm64-v8a/librealm-sync-android.a
+	mv core-android/librealm-sync-android-arm64-dbg.a core-android/arm64-v8a/librealm-sync-android-dbg.a
 	mkdir -p core-android/x86_64
 	mv core-android/librealm-android-x86_64.a core-android/x86_64/librealm-android.a
 	mv core-android/librealm-android-x86_64-dbg.a core-android/x86_64/librealm-android-dbg.a
+	mv core-android/librealm-sync-android-x86_64.a core-android/x86_64/librealm-sync-android.a
+	mv core-android/librealm-sync-android-x86_64-dbg.a core-android/x86_64/librealm-sync-android-dbg.a
 	mkdir -p core-android/mips
 	mv core-android/librealm-android-mips.a core-android/mips/librealm-android.a
 	mv core-android/librealm-android-mips-dbg.a core-android/mips/librealm-android-dbg.a
+	mv core-android/librealm-sync-android-mips.a core-android/mips/librealm-sync-android.a
+	mv core-android/librealm-sync-android-mips-dbg.a core-android/mips/librealm-sync-android-dbg.a
 	touch core-android
 
-realm-core-android-$(CORE_ANDROID_VER).tar.gz:
-	curl -o realm-core-android-$(CORE_ANDROID_VER).tar.gz "http://static.realm.io/downloads/core/realm-core-android-$(CORE_ANDROID_VER).tar.gz"
-
-build/Release-android/armeabi/libwrappers.so: | libs
-	mkdir -p build/Release-android/armeabi
-	cp ./libs/armeabi/librealm-android.so ./build/Release-android/armeabi/libwrappers.so
-
-build/Debug-android/armeabi/libwrappers.so: | libs-dbg
-	mkdir -p build/Debug-android/armeabi
-	cp ./libs-dbg/armeabi/librealm-android-dbg.so ./build/Debug-android/armeabi/libwrappers.so
-
-build/Release-android/armeabi-v7a/libwrappers.so: | libs
-	mkdir -p build/Release-android/armeabi-v7a
-	cp ./libs/armeabi-v7a/librealm-android.so ./build/Release-android/armeabi-v7a/libwrappers.so
-
-build/Debug-android/armeabi-v7a/libwrappers.so: | libs-dbg
-	mkdir -p build/Debug-android/armeabi-v7a
-	cp ./libs-dbg/armeabi-v7a/librealm-android-dbg.so ./build/Debug-android/armeabi-v7a/libwrappers.so
-
-build/Release-android/x86/libwrappers.so: | libs
-	mkdir -p build/Release-android/x86
-	cp ./libs/x86/librealm-android.so ./build/Release-android/x86/libwrappers.so
-
-build/Debug-android/x86/libwrappers.so: | libs-dbg
-	mkdir -p build/Debug-android/x86
-	cp ./libs-dbg/x86/librealm-android-dbg.so ./build/Debug-android/x86/libwrappers.so
-
-build/Release-android/x86_64/libwrappers.so: | libs
-	mkdir -p build/Release-android/x86_64
-	cp ./libs/x86_64/librealm-android.so ./build/Release-android/x86_64/libwrappers.so
-
-build/Debug-android/x86_64/libwrappers.so: | libs-dbg
-	mkdir -p build/Debug-android/x86_64
-	cp ./libs-dbg/x86_64/librealm-android-dbg.so ./build/Debug-android/x86_64/libwrappers.so
-
-build/Release-android/arm64-v8a/libwrappers.so: | libs
-	mkdir -p build/Release-android/arm64-v8a
-	cp ./libs/arm64-v8a/librealm-android.so ./build/Release-android/arm64-v8a/libwrappers.so
-
-build/Debug-android/arm64-v8a/libwrappers.so: | libs-dbg
-	mkdir -p build/Debug-android/arm64-v8a
-	cp ./libs-dbg/arm64-v8a/librealm-android-dbg.so ./build/Debug-android/arm64-v8a/libwrappers.so
-
-build/Release-android/mips/libwrappers.so: | libs
-	mkdir -p build/Release-android/mips
-	cp ./libs/mips/librealm-android.so ./build/Release-android/mips/libwrappers.so
-
-build/Debug-android/mips/libwrappers.so: | libs-dbg
-	mkdir -p build/Debug-android/mips
-	cp ./libs-dbg/mips/librealm-android-dbg.so ./build/Debug-android/mips/libwrappers.so
+$(ANDROID_BUNDLE_NAME):
+	curl -o $(ANDROID_BUNDLE_NAME) $(ANDROID_BUNDLE_URL)
 
 libs: | core-android $(SRCS) $(ANDROID_SRCS)
 	$(NDK_ROOT)/ndk-build APP_PLATFORM=android-10 V=1 -j$(shell sysctl -n hw.ncpu)
