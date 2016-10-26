@@ -10,4 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
   </ItemGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)CredentialsTests.cs" />
+  </ItemGroup>
 </Project>

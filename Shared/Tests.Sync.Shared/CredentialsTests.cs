@@ -17,34 +17,24 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Runtime.Serialization;
-using System.Threading.Tasks;
+using NUnit.Framework;
+using Realms;
+using Realms.Sync;
 
-namespace Realms.Sync
+namespace Tests.Sync.Shared
 {
-    public class User : ISerializable
+    [TestFixture, Preserve(AllMembers = true)]
+    public class CredentialsTests
     {
-        public static User CurrentUser { get; private set; }
-
-        public static async Task<User> LoginAsync(Credentials credentials, string serverUrl)
+        [Test]
+        public void BasicTests()
         {
-            throw new NotImplementedException();
-        }
+            // Arrange and Act
+            var fb = Credentials.Facebook("token");
 
-        public string AccessToken { get; private set; }
-
-        public string Identity { get; private set; }
-
-        public bool IsValid { get; private set; }
-
-        public void LogOut()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void GetObjectData(SerializationInfo info, StreamingContext context)
-        {
-            throw new NotImplementedException();
+            // Assert
+            Assert.That(fb.IdentityProvider, Is.EqualTo("facebook"));
+            Assert.That(fb.UserInfo, Is.Empty);
         }
     }
 }
