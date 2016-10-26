@@ -344,115 +344,28 @@ namespace IntegrationTests
         [Test]
         public void SearchComparingConstants()
         {
+            // Verify that constants in LINQ work
             var equality = _realm.All<Person>().Where(p => p.Salary == Constants.SixtyThousandConstant).ToArray();
             Assert.That(equality.Length, Is.EqualTo(1));
             Assert.That(equality[0].FullName, Is.EqualTo("John Doe"));
-
-            var lessThan = _realm.All<Person>().Where(p => p.Salary < Constants.FiftyThousandConstant).ToArray();
-            Assert.That(lessThan.Length, Is.EqualTo(1));
-            Assert.That(lessThan[0].FullName, Is.EqualTo("John Smith"));
-
-            var lessOrEqualThan = _realm.All<Person>().Where(p => p.Salary <= Constants.SixtyThousandConstant).ToArray();
-            Assert.That(lessOrEqualThan.Length, Is.EqualTo(2));
-            Assert.That(lessOrEqualThan.All(p => p.FirstName == "John"), Is.True);
-
-            var greaterThan = _realm.All<Person>().Where(p => p.Salary > Constants.EightyThousandConstant).ToArray();
-            Assert.That(greaterThan.Length, Is.EqualTo(1));
-            Assert.That(greaterThan[0].FullName, Is.EqualTo("Peter Jameson"));
-
-            var greaterOrEqualThan = _realm.All<Person>().Where(p => p.Salary >= Constants.SixtyThousandConstant).ToArray();
-            Assert.That(greaterOrEqualThan.Length, Is.EqualTo(2));
-            Assert.That(greaterOrEqualThan.Any(p => p.FullName == "John Doe") && greaterOrEqualThan.Any(p => p.FullName == "Peter Jameson"), Is.True);
-
-            var between = _realm.All<Person>().Where(p => p.Salary > Constants.ThirtyThousandConstant && p.Salary < Constants.EightySevenThousandConstant).ToArray();
-            Assert.That(between.Length, Is.EqualTo(1));
-            Assert.That(between[0].FullName, Is.EqualTo("John Doe"));
         }
 
         [Test]
         public void SearchComparingStaticFields()
         {
+            // Verify that static field in LINQ work
             var equality = _realm.All<Person>().Where(p => p.Salary == Constants.SixtyThousandField).ToArray();
             Assert.That(equality.Length, Is.EqualTo(1));
             Assert.That(equality[0].FullName, Is.EqualTo("John Doe"));
-
-            var lessThan = _realm.All<Person>().Where(p => p.Salary < Constants.FiftyThousandField).ToArray();
-            Assert.That(lessThan.Length, Is.EqualTo(1));
-            Assert.That(lessThan[0].FullName, Is.EqualTo("John Smith"));
-
-            var lessOrEqualThan = _realm.All<Person>().Where(p => p.Salary <= Constants.SixtyThousandField).ToArray();
-            Assert.That(lessOrEqualThan.Length, Is.EqualTo(2));
-            Assert.That(lessOrEqualThan.All(p => p.FirstName == "John"), Is.True);
-
-            var greaterThan = _realm.All<Person>().Where(p => p.Salary > Constants.EightyThousandField).ToArray();
-            Assert.That(greaterThan.Length, Is.EqualTo(1));
-            Assert.That(greaterThan[0].FullName, Is.EqualTo("Peter Jameson"));
-
-            var greaterOrEqualThan = _realm.All<Person>().Where(p => p.Salary >= Constants.SixtyThousandField).ToArray();
-            Assert.That(greaterOrEqualThan.Length, Is.EqualTo(2));
-            Assert.That(greaterOrEqualThan.Any(p => p.FullName == "John Doe") && greaterOrEqualThan.Any(p => p.FullName == "Peter Jameson"), Is.True);
-
-            var between = _realm.All<Person>().Where(p => p.Salary > Constants.ThirtyThousandField && p.Salary < Constants.EightySevenThousandField).ToArray();
-            Assert.That(between.Length, Is.EqualTo(1));
-            Assert.That(between[0].FullName, Is.EqualTo("John Doe"));
         }
 
         [Test]
         public void SearchComparingStaticProperties()
         {
+            // Verify that static properties in LINQ work
             var equality = _realm.All<Person>().Where(p => p.Salary == Constants.SixtyThousandProperty).ToArray();
             Assert.That(equality.Length, Is.EqualTo(1));
             Assert.That(equality[0].FullName, Is.EqualTo("John Doe"));
-
-            var lessThan = _realm.All<Person>().Where(p => p.Salary < Constants.FiftyThousandProperty).ToArray();
-            Assert.That(lessThan.Length, Is.EqualTo(1));
-            Assert.That(lessThan[0].FullName, Is.EqualTo("John Smith"));
-
-            var lessOrEqualThan = _realm.All<Person>().Where(p => p.Salary <= Constants.SixtyThousandProperty).ToArray();
-            Assert.That(lessOrEqualThan.Length, Is.EqualTo(2));
-            Assert.That(lessOrEqualThan.All(p => p.FirstName == "John"), Is.True);
-
-            var greaterThan = _realm.All<Person>().Where(p => p.Salary > Constants.EightyThousandProperty).ToArray();
-            Assert.That(greaterThan.Length, Is.EqualTo(1));
-            Assert.That(greaterThan[0].FullName, Is.EqualTo("Peter Jameson"));
-
-            var greaterOrEqualThan = _realm.All<Person>().Where(p => p.Salary >= Constants.SixtyThousandProperty).ToArray();
-            Assert.That(greaterOrEqualThan.Length, Is.EqualTo(2));
-            Assert.That(greaterOrEqualThan.Any(p => p.FullName == "John Doe") && greaterOrEqualThan.Any(p => p.FullName == "Peter Jameson"), Is.True);
-
-            var between = _realm.All<Person>().Where(p => p.Salary > Constants.ThirtyThousandProperty && p.Salary < Constants.EightySevenThousandProperty).ToArray();
-            Assert.That(between.Length, Is.EqualTo(1));
-            Assert.That(between[0].FullName, Is.EqualTo("John Doe"));
-        }
-       
-        [Test]
-        public void SearchComparingInstanceProperties()
-        {
-            var constants = new InstanceConstants();
-
-            var equality = _realm.All<Person>().Where(p => p.Salary == constants.SixtyThousandProperty).ToArray();
-            Assert.That(equality.Length, Is.EqualTo(1));
-            Assert.That(equality[0].FullName, Is.EqualTo("John Doe"));
-
-            var lessThan = _realm.All<Person>().Where(p => p.Salary < constants.FiftyThousandProperty).ToArray();
-            Assert.That(lessThan.Length, Is.EqualTo(1));
-            Assert.That(lessThan[0].FullName, Is.EqualTo("John Smith"));
-
-            var lessOrEqualThan = _realm.All<Person>().Where(p => p.Salary <= constants.SixtyThousandProperty).ToArray();
-            Assert.That(lessOrEqualThan.Length, Is.EqualTo(2));
-            Assert.That(lessOrEqualThan.All(p => p.FirstName == "John"), Is.True);
-
-            var greaterThan = _realm.All<Person>().Where(p => p.Salary > constants.EightyThousandProperty).ToArray();
-            Assert.That(greaterThan.Length, Is.EqualTo(1));
-            Assert.That(greaterThan[0].FullName, Is.EqualTo("Peter Jameson"));
-
-            var greaterOrEqualThan = _realm.All<Person>().Where(p => p.Salary >= constants.SixtyThousandProperty).ToArray();
-            Assert.That(greaterOrEqualThan.Length, Is.EqualTo(2));
-            Assert.That(greaterOrEqualThan.Any(p => p.FullName == "John Doe") && greaterOrEqualThan.Any(p => p.FullName == "Peter Jameson"), Is.True);
-
-            var between = _realm.All<Person>().Where(p => p.Salary > constants.ThirtyThousandProperty && p.Salary < constants.EightySevenThousandProperty).ToArray();
-            Assert.That(between.Length, Is.EqualTo(1));
-            Assert.That(between[0].FullName, Is.EqualTo("John Doe"));
         }
 
         [Test]
@@ -460,59 +373,21 @@ namespace IntegrationTests
         {
             var constants = new InstanceConstants();
 
+            // Verify that instance fields in LINQ work
             var equality = _realm.All<Person>().Where(p => p.Salary == constants.SixtyThousandField).ToArray();
             Assert.That(equality.Length, Is.EqualTo(1));
             Assert.That(equality[0].FullName, Is.EqualTo("John Doe"));
-
-            var lessThan = _realm.All<Person>().Where(p => p.Salary < constants.FiftyThousandField).ToArray();
-            Assert.That(lessThan.Length, Is.EqualTo(1));
-            Assert.That(lessThan[0].FullName, Is.EqualTo("John Smith"));
-
-            var lessOrEqualThan = _realm.All<Person>().Where(p => p.Salary <= constants.SixtyThousandField).ToArray();
-            Assert.That(lessOrEqualThan.Length, Is.EqualTo(2));
-            Assert.That(lessOrEqualThan.All(p => p.FirstName == "John"), Is.True);
-
-            var greaterThan = _realm.All<Person>().Where(p => p.Salary > constants.EightyThousandField).ToArray();
-            Assert.That(greaterThan.Length, Is.EqualTo(1));
-            Assert.That(greaterThan[0].FullName, Is.EqualTo("Peter Jameson"));
-
-            var greaterOrEqualThan = _realm.All<Person>().Where(p => p.Salary >= constants.SixtyThousandField).ToArray();
-            Assert.That(greaterOrEqualThan.Length, Is.EqualTo(2));
-            Assert.That(greaterOrEqualThan.Any(p => p.FullName == "John Doe") && greaterOrEqualThan.Any(p => p.FullName == "Peter Jameson"), Is.True);
-
-            var between = _realm.All<Person>().Where(p => p.Salary > constants.ThirtyThousandField && p.Salary < constants.EightySevenThousandField).ToArray();
-            Assert.That(between.Length, Is.EqualTo(1));
-            Assert.That(between[0].FullName, Is.EqualTo("John Doe"));
         }
-
+       
         [Test]
-        public void SearchComparingNestedInstanceProperties()
+        public void SearchComparingInstanceProperties()
         {
-            var constants = new NestedConstants();
+            var constants = new InstanceConstants();
 
-            var equality = _realm.All<Person>().Where(p => p.Salary == constants.InstanceConstants.SixtyThousandProperty).ToArray();
+            // Verify that instance properties in LINQ work
+            var equality = _realm.All<Person>().Where(p => p.Salary == constants.SixtyThousandProperty).ToArray();
             Assert.That(equality.Length, Is.EqualTo(1));
             Assert.That(equality[0].FullName, Is.EqualTo("John Doe"));
-
-            var lessThan = _realm.All<Person>().Where(p => p.Salary < constants.InstanceConstants.FiftyThousandProperty).ToArray();
-            Assert.That(lessThan.Length, Is.EqualTo(1));
-            Assert.That(lessThan[0].FullName, Is.EqualTo("John Smith"));
-
-            var lessOrEqualThan = _realm.All<Person>().Where(p => p.Salary <= constants.InstanceConstants.SixtyThousandProperty).ToArray();
-            Assert.That(lessOrEqualThan.Length, Is.EqualTo(2));
-            Assert.That(lessOrEqualThan.All(p => p.FirstName == "John"), Is.True);
-
-            var greaterThan = _realm.All<Person>().Where(p => p.Salary > constants.InstanceConstants.EightyThousandProperty).ToArray();
-            Assert.That(greaterThan.Length, Is.EqualTo(1));
-            Assert.That(greaterThan[0].FullName, Is.EqualTo("Peter Jameson"));
-
-            var greaterOrEqualThan = _realm.All<Person>().Where(p => p.Salary >= constants.InstanceConstants.SixtyThousandProperty).ToArray();
-            Assert.That(greaterOrEqualThan.Length, Is.EqualTo(2));
-            Assert.That(greaterOrEqualThan.Any(p => p.FullName == "John Doe") && greaterOrEqualThan.Any(p => p.FullName == "Peter Jameson"), Is.True);
-
-            var between = _realm.All<Person>().Where(p => p.Salary > constants.InstanceConstants.ThirtyThousandProperty && p.Salary < constants.InstanceConstants.EightySevenThousandProperty).ToArray();
-            Assert.That(between.Length, Is.EqualTo(1));
-            Assert.That(between[0].FullName, Is.EqualTo("John Doe"));
         }
 
         [Test]
@@ -520,29 +395,21 @@ namespace IntegrationTests
         {
             var constants = new NestedConstants();
 
+            // Verify that nested instance fields in LINQ work
             var equality = _realm.All<Person>().Where(p => p.Salary == constants.InstanceConstants.SixtyThousandField).ToArray();
             Assert.That(equality.Length, Is.EqualTo(1));
             Assert.That(equality[0].FullName, Is.EqualTo("John Doe"));
+        }
 
-            var lessThan = _realm.All<Person>().Where(p => p.Salary < constants.InstanceConstants.FiftyThousandField).ToArray();
-            Assert.That(lessThan.Length, Is.EqualTo(1));
-            Assert.That(lessThan[0].FullName, Is.EqualTo("John Smith"));
+        [Test]
+        public void SearchComparingNestedInstanceProperties()
+        {
+            var constants = new NestedConstants();
 
-            var lessOrEqualThan = _realm.All<Person>().Where(p => p.Salary <= constants.InstanceConstants.SixtyThousandField).ToArray();
-            Assert.That(lessOrEqualThan.Length, Is.EqualTo(2));
-            Assert.That(lessOrEqualThan.All(p => p.FirstName == "John"), Is.True);
-
-            var greaterThan = _realm.All<Person>().Where(p => p.Salary > constants.InstanceConstants.EightyThousandField).ToArray();
-            Assert.That(greaterThan.Length, Is.EqualTo(1));
-            Assert.That(greaterThan[0].FullName, Is.EqualTo("Peter Jameson"));
-
-            var greaterOrEqualThan = _realm.All<Person>().Where(p => p.Salary >= constants.InstanceConstants.SixtyThousandField).ToArray();
-            Assert.That(greaterOrEqualThan.Length, Is.EqualTo(2));
-            Assert.That(greaterOrEqualThan.Any(p => p.FullName == "John Doe") && greaterOrEqualThan.Any(p => p.FullName == "Peter Jameson"), Is.True);
-
-            var between = _realm.All<Person>().Where(p => p.Salary > constants.InstanceConstants.ThirtyThousandField && p.Salary < constants.InstanceConstants.EightySevenThousandField).ToArray();
-            Assert.That(between.Length, Is.EqualTo(1));
-            Assert.That(between[0].FullName, Is.EqualTo("John Doe"));
+            // Verify that nested instance properties in LINQ work
+            var equality = _realm.All<Person>().Where(p => p.Salary == constants.InstanceConstants.SixtyThousandProperty).ToArray();
+            Assert.That(equality.Length, Is.EqualTo(1));
+            Assert.That(equality[0].FullName, Is.EqualTo("John Doe"));
         }
 
         [Test]
@@ -823,27 +690,11 @@ namespace IntegrationTests
     
         private static class Constants
         {
-            public const long ThirtyThousandConstant = 30000;
-            public const long FiftyThousandConstant = 50000;
             public const long SixtyThousandConstant = 60000;
-            public const long EightyThousandConstant = 80000;
-            public const long EightySevenThousandConstant = 87000;
 
-            public static readonly long ThirtyThousandField = 30000;
-            public static readonly long FiftyThousandField = 50000;
             public static readonly long SixtyThousandField = 60000;
-            public static readonly long EightyThousandField = 80000;
-            public static readonly long EightySevenThousandField = 87000;
-
-            public static long ThirtyThousandProperty { get; } = 30000;
-
-            public static long FiftyThousandProperty { get; } = 50000;
 
             public static long SixtyThousandProperty { get; } = 60000;
-
-            public static long EightyThousandProperty { get; } = 80000;
-
-            public static long EightySevenThousandProperty { get; } = 87000;
         }
 
         private class NestedConstants
@@ -853,21 +704,9 @@ namespace IntegrationTests
 
         private class InstanceConstants
         {
-            public readonly long ThirtyThousandField = 30000;
-            public readonly long FiftyThousandField = 50000;
             public readonly long SixtyThousandField = 60000;
-            public readonly long EightyThousandField = 80000;
-            public readonly long EightySevenThousandField = 87000;
-
-            public long ThirtyThousandProperty { get; } = 30000;
-
-            public long FiftyThousandProperty { get; } = 50000;
-
+           
             public long SixtyThousandProperty { get; } = 60000;
-
-            public long EightyThousandProperty { get; } = 80000;
-
-            public long EightySevenThousandProperty { get; } = 87000;
         }
     }
 }
