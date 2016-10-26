@@ -98,56 +98,7 @@ namespace Realms
         {
             config = config ?? RealmConfiguration.DefaultConfiguration;
 
-            var srHandle = new SharedRealmHandle();
-
-            if (schema == null)
-            {
-                if (config.ObjectClasses != null)
-                {
-                    schema = RealmSchema.CreateSchemaForClasses(config.ObjectClasses);
-                }
-                else
-                {
-                    schema = RealmSchema.Default;
-                }
-            }
-
-            var configuration = new Native.Configuration
-            {
-                Path = config.DatabasePath,
-                read_only = config.ReadOnly,
-                delete_if_migration_needed = config.ShouldDeleteIfMigrationNeeded,
-                schema_version = config.SchemaVersion
-            };
-
-            Migration migration = null;
-            if (config.MigrationCallback != null)
-            {
-                migration = new Migration(config, schema);
-                migration.PopulateConfiguration(ref configuration);
-            }
-
-            var srPtr = IntPtr.Zero;
-            try
-            {
-                srPtr = srHandle.Open(configuration, schema, config.EncryptionKey);
-            }
-            catch (ManagedExceptionDuringMigrationException)
-            {
-                throw new AggregateException("Exception occurred in a Realm migration callback. See inner exception for more details.", migration?.MigrationException);
-            }
-
-            RuntimeHelpers.PrepareConstrainedRegions();
-            try
-            {
-                /* Retain handle in a constrained execution region */
-            }
-            finally
-            {
-                srHandle.SetHandle(srPtr);
-            }
-
-            return new Realm(srHandle, config, schema);
+            return config.CreateRealm(schema);
         }
 
         #endregion
