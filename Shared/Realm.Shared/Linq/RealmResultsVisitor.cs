@@ -415,11 +415,39 @@ namespace Realms
             }
 
             var memberAccess = expr as MemberExpression;
-            if (memberAccess != null && memberAccess.Expression is ConstantExpression && memberAccess.Member is System.Reflection.FieldInfo)
+            var fieldInfo = memberAccess?.Member as FieldInfo;
+            if (fieldInfo != null)
             {
-                // handle closure variables
-                value = ((System.Reflection.FieldInfo)memberAccess.Member).GetValue(((ConstantExpression)memberAccess.Expression).Value);
-                return true;
+                if (fieldInfo.Attributes.HasFlag(FieldAttributes.Static))
+                {
+                    // Handle static fields (e.g. string.Empty)
+                    value = fieldInfo.GetValue(null);
+                    return true;
+                }
+
+                object targetObject;
+                if (TryExtractConstantValue(memberAccess.Expression, out targetObject))
+                {
+                    value = fieldInfo.GetValue(targetObject);
+                    return true;
+                }
+            }
+
+            var propertyInfo = memberAccess?.Member as PropertyInfo;
+            if (propertyInfo != null)
+            {
+                if (propertyInfo.GetMethod != null && propertyInfo.GetMethod.Attributes.HasFlag(MethodAttributes.Static))
+                {
+                    value = propertyInfo.GetValue(null);
+                    return true;
+                }
+
+                object targetObject;
+                if (TryExtractConstantValue(memberAccess.Expression, out targetObject))
+                {
+                    value = propertyInfo.GetValue(targetObject);
+                    return true;
+                }
             }
 
             value = null;

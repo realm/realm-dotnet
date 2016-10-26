@@ -49,7 +49,7 @@ namespace IntegrationTests
             Assert.That(s2[0].Email, Is.EqualTo("john@doe.com"));
             Assert.That(s2[1].Email, Is.EqualTo("peter@jameson.net"));
 
-            var s3 = _realm.All<Person>().Where(p => p.Email != "");
+            var s3 = _realm.All<Person>().Where(p => p.Email != string.Empty);
             Assert.That(s3.Count(), Is.EqualTo(3));
         }
 
@@ -225,7 +225,7 @@ namespace IntegrationTests
             var @null = _realm.All<Person>().Where(p => p.OptionalAddress == null).ToArray();
             Assert.That(@null[0].FullName, Is.EqualTo("Peter Jameson"));
 
-            var empty = _realm.All<Person>().Where(p => p.OptionalAddress == "").ToArray();
+            var empty = _realm.All<Person>().Where(p => p.OptionalAddress == string.Empty).ToArray();
             Assert.That(empty[0].FullName, Is.EqualTo("John Doe"));
 
             var null_or_empty = _realm.All<Person>().Where(p => string.IsNullOrEmpty(p.OptionalAddress));
@@ -339,6 +339,77 @@ namespace IntegrationTests
 
             var missing = _realm.All<PrimaryKeyCharObject>().Where(p => p.CharProperty == 'X').ToArray();
             Assert.That(missing.Length, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void SearchComparingConstants()
+        {
+            // Verify that constants in LINQ work
+            var equality = _realm.All<Person>().Where(p => p.Salary == Constants.SixtyThousandConstant).ToArray();
+            Assert.That(equality.Length, Is.EqualTo(1));
+            Assert.That(equality[0].FullName, Is.EqualTo("John Doe"));
+        }
+
+        [Test]
+        public void SearchComparingStaticFields()
+        {
+            // Verify that static field in LINQ work
+            var equality = _realm.All<Person>().Where(p => p.Salary == Constants.SixtyThousandField).ToArray();
+            Assert.That(equality.Length, Is.EqualTo(1));
+            Assert.That(equality[0].FullName, Is.EqualTo("John Doe"));
+        }
+
+        [Test]
+        public void SearchComparingStaticProperties()
+        {
+            // Verify that static properties in LINQ work
+            var equality = _realm.All<Person>().Where(p => p.Salary == Constants.SixtyThousandProperty).ToArray();
+            Assert.That(equality.Length, Is.EqualTo(1));
+            Assert.That(equality[0].FullName, Is.EqualTo("John Doe"));
+        }
+
+        [Test]
+        public void SearchComparingInstanceFields()
+        {
+            var constants = new InstanceConstants();
+
+            // Verify that instance fields in LINQ work
+            var equality = _realm.All<Person>().Where(p => p.Salary == constants.SixtyThousandField).ToArray();
+            Assert.That(equality.Length, Is.EqualTo(1));
+            Assert.That(equality[0].FullName, Is.EqualTo("John Doe"));
+        }
+       
+        [Test]
+        public void SearchComparingInstanceProperties()
+        {
+            var constants = new InstanceConstants();
+
+            // Verify that instance properties in LINQ work
+            var equality = _realm.All<Person>().Where(p => p.Salary == constants.SixtyThousandProperty).ToArray();
+            Assert.That(equality.Length, Is.EqualTo(1));
+            Assert.That(equality[0].FullName, Is.EqualTo("John Doe"));
+        }
+
+        [Test]
+        public void SearchComparingNestedInstanceFields()
+        {
+            var constants = new NestedConstants();
+
+            // Verify that nested instance fields in LINQ work
+            var equality = _realm.All<Person>().Where(p => p.Salary == constants.InstanceConstants.SixtyThousandField).ToArray();
+            Assert.That(equality.Length, Is.EqualTo(1));
+            Assert.That(equality[0].FullName, Is.EqualTo("John Doe"));
+        }
+
+        [Test]
+        public void SearchComparingNestedInstanceProperties()
+        {
+            var constants = new NestedConstants();
+
+            // Verify that nested instance properties in LINQ work
+            var equality = _realm.All<Person>().Where(p => p.Salary == constants.InstanceConstants.SixtyThousandProperty).ToArray();
+            Assert.That(equality.Length, Is.EqualTo(1));
+            Assert.That(equality[0].FullName, Is.EqualTo("John Doe"));
         }
 
         [Test]
@@ -615,6 +686,27 @@ namespace IntegrationTests
             var moderateScorers = _realm.All<Person>().Where(p => p.Score >= 20.0f && p.Score <= 100.0f);
             var hasJohnSmith = moderateScorers.Any(p => p.LastName == "Smith");
             Assert.That(hasJohnSmith, Is.False);
+        }
+    
+        private static class Constants
+        {
+            public const long SixtyThousandConstant = 60000;
+
+            public static readonly long SixtyThousandField = 60000;
+
+            public static long SixtyThousandProperty { get; } = 60000;
+        }
+
+        private class NestedConstants
+        {
+            public InstanceConstants InstanceConstants { get; } = new InstanceConstants();
+        }
+
+        private class InstanceConstants
+        {
+            public readonly long SixtyThousandField = 60000;
+           
+            public long SixtyThousandProperty { get; } = 60000;
         }
     }
 }
