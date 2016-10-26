@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Realms;
 
@@ -169,5 +170,27 @@ namespace IntegrationTests.Shared
         }
 
         public Person RealmObjectProperty { get; set; }
+    }
+
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    public class Dog : RealmObject
+    {
+        public string Name { get; set; }
+
+        public string Color { get; set; }
+
+        public bool Vaccinated { get; set; }
+
+        // Owner Owner { get; set; }  will uncomment when verifying that we have back-links from ToMany relationships
+    }
+
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    public class Owner : RealmObject
+    {
+        public string Name { get; set; }
+
+        public Dog TopDog { get; set; }
+
+        public IList<Dog> Dogs { get; }
     }
 }
