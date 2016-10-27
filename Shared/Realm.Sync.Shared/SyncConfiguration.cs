@@ -27,5 +27,10 @@ namespace Realms.Sync
         public User User { get; private set; }
 
         public bool ShouldDeleteRealmOnLogOut { get; private set; }
+
+        internal override Realm CreateRealm(RealmSchema schema)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

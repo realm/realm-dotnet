@@ -96,9 +96,11 @@ build/Debug-ios-universal/libwrappers.a: build/Debug-iphoneos/libwrappers.a buil
 # Android ==================== {{{
 
 android: | libs
+	mkdir -p build/Release-android
 	cp -r ./libs/ ./build/Release-android
 
 androiddbg: | libs-dbg
+	mkdir -p build/Debug-android
 	cp -r ./libs-dbg/ ./build/Debug-android
 
 core-android: $(ANDROID_BUNDLE_NAME) | jni/Android.mk jni/Application.mk

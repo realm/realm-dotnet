@@ -63,24 +63,23 @@ LOCAL_SRC_FILES += src/schema_cs.cpp
 LOCAL_SRC_FILES += src/debug.cpp
 LOCAL_SRC_FILES += src/object_cs.cpp
 
-LOCAL_STATIC_LIBRARIES := realm-android
 
 # ifdef REALM_ENABLE_SYNC
-#LOCAL_SRC_FILES += src/object-store/src/sync_manager.cpp 
-#LOCAL_SRC_FILES += src/object-store/src/sync_metadata.cpp 
-#LOCAL_SRC_FILES += src/object-store/src/sync_session.cpp
-#LOCAL_SRC_FILES += src/sync_manager_cs.cpp
+LOCAL_SRC_FILES += src/object-store/src/sync_manager.cpp 
+LOCAL_SRC_FILES += src/object-store/src/sync_metadata.cpp 
+LOCAL_SRC_FILES += src/object-store/src/sync_session.cpp
+LOCAL_SRC_FILES += src/sync_manager_cs.cpp
 
-#LOCAL_STATIC_LIBRARIES += realm-sync-android
+LOCAL_STATIC_LIBRARIES := realm-sync-android
 # endif
+
+LOCAL_STATIC_LIBRARIES += realm-android
 
 LOCAL_LDLIBS := -llog
 LOCAL_LDLIBS += -lm
 LOCAL_LDLIBS += -landroid
 LOCAL_LDLIBS += -lz
 LOCAL_CPPFLAGS := -DHAVE_PTHREADS
-LOCAL_CPPFLAGS += -DREALM_HAVE_CONFIG=1
-#LOCAL_CPPFLAGS += -DREALM_ENABLE_SYNC
 LOCAL_C_INCLUDES += core-android/include
 LOCAL_C_INCLUDES += src/object-store/src/
 
