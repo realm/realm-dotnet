@@ -239,18 +239,6 @@ namespace Realms
         {
             var srHandle = new SharedRealmHandle();
 
-            if (schema == null)
-            {
-                if (ObjectClasses != null)
-                {
-                    schema = RealmSchema.CreateSchemaForClasses(ObjectClasses);
-                }
-                else
-                {
-                    schema = RealmSchema.Default;
-                }
-            }
-
             var configuration = new Native.Configuration
             {
                 Path = DatabasePath,
@@ -276,16 +264,7 @@ namespace Realms
                 throw new AggregateException("Exception occurred in a Realm migration callback. See inner exception for more details.", migration?.MigrationException);
             }
 
-            RuntimeHelpers.PrepareConstrainedRegions();
-            try
-            {
-                /* Retain handle in a constrained execution region */
-            }
-            finally
-            {
-                srHandle.SetHandle(srPtr);
-            }
-
+            srHandle.SetHandle(srPtr);
             return new Realm(srHandle, this, schema);
         }
 
