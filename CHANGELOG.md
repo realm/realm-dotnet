@@ -27,6 +27,11 @@
 * Added non-generic version of `Realm.Manage`. (#871)
 * Added support for nullable integer PrimaryKeys. Now you can have `long?` PrimaryKey property where `null` is a valid unique value. (#877)
 * Added a weaver warning when applying Realm attributes (e.g. `[Indexed]` or `[PrimaryKey]`) on non-persisted properties. (#882)
+* Added support for `==` and `!=` comparisons to realm objects in LINQ (#896), e.g.:
+    ```csharp
+    var peter = realm.All<Person>().FirstOrDefault(d => d.Name == "Peter");
+    var petersDogs = realm.All<Dog>().Where(d => d.Owner == peter);
+    ```
 
 
 0.78.1 (2016-09-15)
