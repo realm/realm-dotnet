@@ -57,7 +57,7 @@ namespace Realms
             public static extern IntPtr count(ResultsHandle results, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_clear", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void clear(ResultsHandle results, out NativeException ex);
+            public static extern void clear(ResultsHandle results, SharedRealmHandle realmHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_add_notification_callback", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr add_notification_callback(ResultsHandle results, IntPtr managedResultsHandle, NotificationCallback callback, out NativeException ex);
@@ -94,10 +94,10 @@ namespace Realms
             return (int)result;
         }
 
-        public void Clear()
+        public void Clear(SharedRealmHandle realmHandle)
         {
             NativeException nativeException;
-            NativeMethods.clear(this, out nativeException);
+            NativeMethods.clear(this, realmHandle, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 

@@ -114,6 +114,9 @@ namespace realm {
         catch (const RealmClosedException& e) {
             return { RealmErrorType::RealmClosed, e.what() };
         }
+        catch (const ObjectManagedByAnotherRealmException& e) {
+            return { RealmErrorType::ObjectManagedByAnotherRealm, e.what() };
+        }
         catch (const std::bad_alloc& e) {
             return { RealmErrorType::RealmOutOfMemory, e.what() };
         }

@@ -94,6 +94,9 @@ namespace Realms
                 case RealmExceptionCodes.StdInvalidOperation:
                     return new InvalidOperationException(message);
 
+                case RealmExceptionCodes.ObjectManagedByAnotherRealm:
+                    return new RealmObjectManagedByAnotherRealmException(message);
+
                 default:
                     return new Exception(message);
             }

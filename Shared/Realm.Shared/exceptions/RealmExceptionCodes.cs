@@ -40,6 +40,7 @@ namespace Realms
         RealmTableHasNoPrimaryKey = 22,
         RealmDuplicatePrimaryKeyValue = 23,
         RealmClosed = 24,
+        ObjectManagedByAnotherRealm = 25,
 
         RealmDotNetExceptionDuringMigration = 30,
 

@@ -73,6 +73,8 @@ namespace realm {
         
         RealmClosed = 24,
         
+        ObjectManagedByAnotherRealm = 25,
+        
         RealmDotNetExceptionDuringMigration = 30,
 
         StdArgumentOutOfRange = 100,

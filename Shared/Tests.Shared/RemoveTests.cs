@@ -182,6 +182,17 @@ namespace IntegrationTests.Shared
         }
 
         [Test]
+        public void RemoveObject_WhenStandalone_ShouldThrow()
+        {
+            var person = new Person();
+
+            Assert.That(() =>
+            {
+                _realm.Write(() => _realm.Remove(person));
+            }, Throws.TypeOf<ArgumentException>());
+        }
+
+        [Test]
         public void RemoveObject_FromSameRealm_ShouldWork()
         {
             PerformWithOtherRealm(_databasePath, other =>

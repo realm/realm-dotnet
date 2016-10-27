@@ -836,12 +836,12 @@ namespace Realms
                 throw new ArgumentNullException(nameof(obj));
             }
 
-            if (!this.Equals(obj.Realm))
+            if (!obj.IsManaged)
             {
-                throw new RealmObjectManagedByAnotherRealmException("This object is managed by another realm. You should call Remove on the other realm.");
+                throw new ArgumentException("Object is not managed by Realm, so it cannot be removed.", nameof(obj));
             }
 
-            obj.ObjectHandle.RemoveFromRealm();
+            obj.ObjectHandle.RemoveFromRealm(SharedRealmHandle);
         }
 
         /// <summary>
@@ -856,12 +856,7 @@ namespace Realms
                 throw new ArgumentNullException(nameof(range));
             }
 
-            if (!this.Equals(range.Realm))
-            {
-                throw new RealmObjectManagedByAnotherRealmException("These results are managed by another realm. You should call Remove on the other realm.");
-            }
-
-            range.ResultsHandle.Clear();
+            range.ResultsHandle.Clear(SharedRealmHandle);
         }
 
         /// <summary>
@@ -890,7 +885,7 @@ namespace Realms
             foreach (var metadata in Metadata.Values)
             {
                 var resultsHandle = MakeResultsForTable(metadata);
-                resultsHandle.Clear();
+                resultsHandle.Clear(SharedRealmHandle);
             }
         }
     }
