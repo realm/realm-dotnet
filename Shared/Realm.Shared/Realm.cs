@@ -831,7 +831,17 @@ namespace Realms
         /// <exception cref="System.ArgumentNullException">If you invoke this with a standalone object.</exception>
         public void Remove(RealmObject obj)
         {
-            obj.ObjectHandle.RemoveFromRealm();
+            if (obj == null)
+            {
+                throw new ArgumentNullException(nameof(obj));
+            }
+
+            if (!obj.IsManaged)
+            {
+                throw new ArgumentException("Object is not managed by Realm, so it cannot be removed.", nameof(obj));
+            }
+
+            obj.ObjectHandle.RemoveFromRealm(SharedRealmHandle);
         }
 
         /// <summary>
@@ -846,7 +856,7 @@ namespace Realms
                 throw new ArgumentNullException(nameof(range));
             }
 
-            range.ResultsHandle.Clear();
+            range.ResultsHandle.Clear(SharedRealmHandle);
         }
 
         /// <summary>
@@ -875,7 +885,7 @@ namespace Realms
             foreach (var metadata in Metadata.Values)
             {
                 var resultsHandle = MakeResultsForTable(metadata);
-                resultsHandle.Clear();
+                resultsHandle.Clear(SharedRealmHandle);
             }
         }
     }

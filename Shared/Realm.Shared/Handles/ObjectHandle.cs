@@ -129,7 +129,7 @@ namespace Realms
                 out IntPtr retBuffer, out int retBufferLength, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_remove_row", CallingConvention = CallingConvention.Cdecl)]
-            public static extern void remove_row(ObjectHandle handle, out NativeException ex);
+            public static extern void remove_row(ObjectHandle handle, RealmHandle realmHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "object_equals_object", CallingConvention = CallingConvention.Cdecl)]
             [return: MarshalAs(UnmanagedType.I1)]
@@ -575,10 +575,10 @@ namespace Realms
             return null;
         }
 
-        public void RemoveFromRealm()
+        public void RemoveFromRealm(SharedRealmHandle realmHandle)
         {
             NativeException nativeException;
-            NativeMethods.remove_row(this, out nativeException);
+            NativeMethods.remove_row(this, realmHandle, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 

@@ -412,9 +412,13 @@ extern "C" {
         });
     }
     
-    REALM_EXPORT void object_remove_row(Object& object, NativeException::Marshallable& ex)
+    REALM_EXPORT void object_remove_row(Object& object, SharedRealm& realm, NativeException::Marshallable& ex)
     {
         handle_errors(ex, [&]() {
+            if (object.realm() != realm) {
+                throw ObjectManagedByAnotherRealmException("Can only delete an object from the Realm it belongs to.");
+            }
+            
             verify_can_set(object);
             
             object.row().get_table()->move_last_over(object.row().get_index());

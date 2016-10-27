@@ -61,6 +61,11 @@ class SetDuplicatePrimaryKeyValueException : public std::runtime_error {
 public:
     SetDuplicatePrimaryKeyValueException(std::string object_type, std::string property, std::string value);
 };
+    
+class ObjectManagedByAnotherRealmException : public std::runtime_error {
+public:
+    ObjectManagedByAnotherRealmException(std::string message) : std::runtime_error(message) {}
+};
 
 
 NativeException convert_exception();

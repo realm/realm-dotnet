@@ -57,9 +57,13 @@ REALM_EXPORT Object* results_get_row(Results* results_ptr, size_t ndx, NativeExc
     });
 }
 
-REALM_EXPORT void results_clear(Results* results_ptr, NativeException::Marshallable& ex)
+REALM_EXPORT void results_clear(Results* results_ptr, SharedRealm& realm, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
+        if (results_ptr->get_realm() != realm) {
+            throw ObjectManagedByAnotherRealmException("Can only delete results from the Realm they belong to.");
+        }
+        
         results_ptr->get_realm()->verify_in_write();
       
         results_ptr->clear();
