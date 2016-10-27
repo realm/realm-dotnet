@@ -90,13 +90,28 @@ namespace Realms
         /// <exception cref="RealmFileAccessErrorException">Throws error if the file system returns an error, preventing file creation.</exception>
         public static Realm GetInstance(RealmConfiguration config = null)
         {
-            return GetInstance(config, null);
+            return GetInstance(config ?? RealmConfiguration.DefaultConfiguration, null);
         }
 
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
         internal static Realm GetInstance(RealmConfiguration config, RealmSchema schema)
         {
-            config = config ?? RealmConfiguration.DefaultConfiguration;
+            if (config == null)
+            {
+                throw new ArgumentNullException(nameof(config));
+            }
+
+            if (schema == null)
+            {
+                if (config.ObjectClasses != null)
+                {
+                    schema = RealmSchema.CreateSchemaForClasses(config.ObjectClasses);
+                }
+                else
+                {
+                    schema = RealmSchema.Default;
+                }
+            }
 
             return config.CreateRealm(schema);
         }
