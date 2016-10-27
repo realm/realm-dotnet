@@ -62,10 +62,10 @@
     <AndroidResource Include="Resources\drawable-xxhdpi\Icon.png" />
     <AndroidResource Include="Resources\drawable-xxxhdpi\Icon.png" />
   </ItemGroup>
-  <Import Project="..\..\IntegrationTests.Shared\IntegrationTests.Shared.projitems" Label="Shared" Condition="Exists('..\..\IntegrationTests.Shared\IntegrationTests.Shared.projitems')" />
+  <Import Project="..\..\..\Shared\Tests.Shared\Tests.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <ItemGroup>
-    <AndroidAsset Include="..\..\IntegrationTests.Shared\ForMigrationsToCopyAndMigrate.realm">
+    <AndroidAsset Include="..\..\..\Shared\Tests.Shared\ForMigrationsToCopyAndMigrate.realm">
       <Link>Assets\ForMigrationsToCopyAndMigrate.realm</Link>
     </AndroidAsset>
   </ItemGroup>

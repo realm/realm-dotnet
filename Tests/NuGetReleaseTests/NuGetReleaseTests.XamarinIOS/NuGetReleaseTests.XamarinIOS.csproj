@@ -96,7 +96,7 @@
     <Compile Include="Main.cs" />
     <Compile Include="UnitTestAppDelegate.cs" />
   </ItemGroup>
-  <Import Project="..\..\IntegrationTests.Shared\IntegrationTests.Shared.projitems" Label="Shared" Condition="Exists('..\..\IntegrationTests.Shared\IntegrationTests.Shared.projitems')" />
+  <Import Project="..\..\..\Shared\Tests.Shared\Tests.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
   <ItemGroup>
     <ImageAsset Include="Resources\Images.xcassets\AppIcons.appiconset\Contents.json">
@@ -110,7 +110,7 @@
     </ImageAsset>
   </ItemGroup>
   <ItemGroup>
-    <BundleResource Include="..\..\IntegrationTests.Shared\ForMigrationsToCopyAndMigrate.realm">
+    <BundleResource Include="..\..\..\Shared\Tests.Shared\ForMigrationsToCopyAndMigrate.realm">
       <Link>Resources\ForMigrationsToCopyAndMigrate.realm</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </BundleResource>

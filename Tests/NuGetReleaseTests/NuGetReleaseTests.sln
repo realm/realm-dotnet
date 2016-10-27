@@ -5,7 +5,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGetReleaseTests.XamarinIO
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGetReleaseTests.XamarinAndroid", "NuGetReleaseTests.XamarinAndroid\NuGetReleaseTests.XamarinAndroid.csproj", "{72BA4D29-0AAE-4A52-94D9-2E13E6427BDC}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "IntegrationTests.Shared", "..\IntegrationTests.Shared\IntegrationTests.Shared.shproj", "{06146619-D21C-414C-BFE3-2F59ACBA412E}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Tests.Shared", "..\..\Shared\Tests.Shared\Tests.Shared.shproj", "{06146619-D21C-414C-BFE3-2F59ACBA412E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
