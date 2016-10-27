@@ -1,4 +1,4 @@
-0.80.0 (TBD)
+0.80.0 (2016-10-27)
 -------------------
 ### Breaking Changes
 * This version updates the file format. Older versions will not be able to open files created with this version. (#846)

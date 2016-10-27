@@ -363,7 +363,11 @@ namespace IntegrationTests.Shared
                 trans.Commit();
             }
 
+#if ENABLE_INTERNAL_NON_PCL_TESTS
             Assert.That(person.Friends is RealmList<Person>);
+#else
+            Assert.That(person.Friends.GetType().ToString() == "Realms.RealmList`1[IntegrationTests.Person]");
+#endif
             Assert.That(realm.All<Person>().ToList().Select(p => p.FirstName),
                         Is.EquivalentTo(new[] { "Jack", "Christian", "Frederick" }));
         }

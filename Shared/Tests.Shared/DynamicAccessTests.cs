@@ -15,6 +15,7 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
+#if ENABLE_INTERNAL_NON_PCL_TESTS
 
 using System;
 using System.Collections.Generic;
@@ -29,7 +30,6 @@ using Realms;
 
 namespace IntegrationTests.Shared
 {
-#if ENABLE_INTERNAL_NON_PCL_TESTS
     [TestFixture, Preserve(AllMembers = true)]
     public class DynamicAccessTests
     {
@@ -129,5 +129,5 @@ namespace IntegrationTests.Shared
             return (self, value) => callsite.Target(callsite, self, value);
         }
     }
-#endif
 }
+#endif
