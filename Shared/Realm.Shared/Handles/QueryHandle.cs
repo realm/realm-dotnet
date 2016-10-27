@@ -29,6 +29,7 @@ namespace Realms
     // so these handles always represent a qeury object that should be released when not used anymore
     // the C# binding methods on query simply return self to add the . nottation again
     // A query will be a child of whatever root its creator has as root (queries are usually created by tableviews and tables)
+    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1611:ElementParametersMustBeDocumented")]
     internal class QueryHandle : RealmHandle
     {
         // This is a delegate type meant to represent one of the "query operator" methods such as float_less and bool_equal
@@ -229,35 +230,50 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public void StringContains(IntPtr columnIndex, string value, bool caseSensitive = true)
+        /// <summary>
+        /// If the user hasn't specified it, should be caseSensitive=true
+        /// </summary>
+        public void StringContains(IntPtr columnIndex, string value, bool caseSensitive)
         {
             NativeException nativeException;
             NativeMethods.string_contains(this, columnIndex, value, (IntPtr)value.Length, caseSensitive, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public void StringStartsWith(IntPtr columnIndex, string value, bool caseSensitive = true)
+        /// <summary>
+        /// If the user hasn't specified it, should be <c>caseSensitive = true</c>.
+        /// </summary>
+        public void StringStartsWith(IntPtr columnIndex, string value, bool caseSensitive)
         {
             NativeException nativeException;
             NativeMethods.string_starts_with(this, columnIndex, value, (IntPtr)value.Length, caseSensitive, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public void StringEndsWith(IntPtr columnIndex, string value, bool caseSensitive = true)
+        /// <summary>
+        /// If the user hasn't specified it, should be <c>caseSensitive = true</c>.
+        /// </summary>
+        public void StringEndsWith(IntPtr columnIndex, string value, bool caseSensitive)
         {
             NativeException nativeException;
             NativeMethods.string_ends_with(this, columnIndex, value, (IntPtr)value.Length, caseSensitive, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public void StringEqual(IntPtr columnIndex, string value, bool caseSensitive = true)
+        /// <summary>
+        /// If the user hasn't specified it, should be <c>caseSensitive = true</c>.
+        /// </summary>
+        public void StringEqual(IntPtr columnIndex, string value, bool caseSensitive)
         {
             NativeException nativeException;
             NativeMethods.string_equal(this, columnIndex, value, (IntPtr)value.Length, caseSensitive, out nativeException);
             nativeException.ThrowIfNecessary();
         }
 
-        public void StringNotEqual(IntPtr columnIndex, string value, bool caseSensitive = true)
+        /// <summary>
+        /// If the user hasn't specified it, should be <c>caseSensitive = true</c>.
+        /// </summary>
+        public void StringNotEqual(IntPtr columnIndex, string value, bool caseSensitive)
         {
             NativeException nativeException;
             NativeMethods.string_not_equal(this, columnIndex, value, (IntPtr)value.Length, caseSensitive, out nativeException);

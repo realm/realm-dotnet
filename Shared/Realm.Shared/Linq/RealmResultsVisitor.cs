@@ -337,11 +337,11 @@ namespace Realms
 
                 if (m.Method == Methods.String.Contains.Value)
                 {
-                    queryMethod = (q, c, v) => q.StringContains(c, v);
+                    queryMethod = (q, c, v) => q.StringContains(c, v, caseSensitive: true);
                 }
                 else if (m.Method == Methods.String.StartsWith.Value)
                 {
-                    queryMethod = (q, c, v) => q.StringStartsWith(c, v);
+                    queryMethod = (q, c, v) => q.StringStartsWith(c, v, caseSensitive: true);
                 }
                 else if (m.Method == Methods.String.StartsWithStringComparison.Value)
                 {
@@ -349,7 +349,7 @@ namespace Realms
                 }
                 else if (m.Method == Methods.String.EndsWith.Value)
                 {
-                    queryMethod = (q, c, v) => q.StringEndsWith(c, v);
+                    queryMethod = (q, c, v) => q.StringEndsWith(c, v, caseSensitive: true);
                 }
                 else if (m.Method == Methods.String.EndsWithStringComparison.Value)
                 {
@@ -368,13 +368,13 @@ namespace Realms
                     CoreQueryHandle.GroupBegin();
                     CoreQueryHandle.NullEqual(columnIndex);
                     CoreQueryHandle.Or();
-                    CoreQueryHandle.StringEqual(columnIndex, string.Empty);
+                    CoreQueryHandle.StringEqual(columnIndex, string.Empty, caseSensitive: true);
                     CoreQueryHandle.GroupEnd();
                     return m;
                 }
                 else if (m.Method == Methods.String.EqualsMethod.Value)
                 {
-                    queryMethod = (q, c, v) => q.StringEqual(c, v);
+                    queryMethod = (q, c, v) => q.StringEqual(c, v, caseSensitive: true);
                 }
                 else if (m.Method == Methods.String.EqualsStringComparison.Value)
                 {
@@ -559,7 +559,7 @@ namespace Realms
             }
             else if (value is string)
             {
-                queryHandle.StringEqual(columnIndex, (string)value);
+                queryHandle.StringEqual(columnIndex, (string)value, caseSensitive: true);
             }
             else if (value is bool)
             {
@@ -627,7 +627,7 @@ namespace Realms
             }
             else if (value is string)
             {
-                queryHandle.StringNotEqual(columnIndex, (string)value);
+                queryHandle.StringNotEqual(columnIndex, (string)value, caseSensitive: true);
             }
             else if (value is bool)
             {
