@@ -30,7 +30,45 @@ namespace Realms.Sync
 
         internal override Realm CreateRealm(RealmSchema schema)
         {
-            throw new NotImplementedException();
+            var srHandle = new SharedRealmHandle();
+
+            var configuration = new Native.Configuration
+            {
+                Path = DatabasePath,
+                read_only = ReadOnly,
+                delete_if_migration_needed = ShouldDeleteIfMigrationNeeded,
+                schema_version = SchemaVersion
+            };
+
+            Migration migration = null;
+            if (MigrationCallback != null)
+            {
+                migration = new Migration(this, schema);
+                migration.PopulateConfiguration(ref configuration);
+            }
+
+            var srPtr = IntPtr.Zero;
+            try
+            {
+                srPtr = srHandle.Open(configuration, schema, EncryptionKey);
+            }
+            catch (ManagedExceptionDuringMigrationException)
+            {
+                throw new AggregateException("Exception occurred in a Realm migration callback. See inner exception for more details.", migration?.MigrationException);
+            }
+
+            RuntimeHelpers.PrepareConstrainedRegions();
+            try
+            {
+                /* Retain handle in a constrained execution region */
+            }
+            finally
+            {
+                srHandle.SetHandle(srPtr);
+            }
+
+            return new Realm(srHandle, this, schema);
+
         }
     }
 }
