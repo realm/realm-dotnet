@@ -15,7 +15,7 @@
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
     <AndroidManifest>Properties\AndroidManifest.xml</AndroidManifest>
     <AndroidUseLatestPlatformSdk>True</AndroidUseLatestPlatformSdk>
-    <TargetFrameworkVersion>v6.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v7.0</TargetFrameworkVersion>
     <MandroidI18n />
     <JavaMaximumHeapSize>
     </JavaMaximumHeapSize>
@@ -82,8 +82,11 @@
     <Reference Include="DotNetCross.Memory.Unsafe">
       <HintPath>..\..\packages\DotNetCross.Memory.Unsafe.0.2.2\lib\dotnet\DotNetCross.Memory.Unsafe.dll</HintPath>
     </Reference>
+    <Reference Include="Remotion.Linq">
+      <HintPath>..\..\packages\Remotion.Linq.2.1.1\lib\portable-net45+win+wpa81+wp80\Remotion.Linq.dll</HintPath>
+    </Reference>
     <Reference Include="Realm">
-      <HintPath>..\..\packages\Realm.0.77.2\lib\MonoAndroid44\Realm.dll</HintPath>
+      <HintPath>..\..\packages\Realm.0.80.0\lib\MonoAndroid44\Realm.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -122,8 +125,8 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-  <Import Project="..\..\packages\Realm.0.77.2\build\Realm.targets" Condition="Exists('..\..\packages\Realm.0.77.2\build\Realm.targets')" />
   <ItemGroup>
     <Folder Include="NativeLibs\" />
   </ItemGroup>
+  <Import Project="..\..\packages\Realm.0.80.0\build\Realm.targets" Condition="Exists('..\..\packages\Realm.0.80.0\build\Realm.targets')" />
 </Project>
