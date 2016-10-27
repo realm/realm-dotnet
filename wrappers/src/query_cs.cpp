@@ -108,43 +108,43 @@ REALM_EXPORT void query_or(Query * query_ptr, NativeException::Marshallable& ex)
     });
 }
 
-REALM_EXPORT void query_string_contains(Query* query_ptr, size_t columnIndex, uint16_t* value, size_t value_len, NativeException::Marshallable& ex)
+REALM_EXPORT void query_string_contains(Query* query_ptr, size_t columnIndex, uint16_t* value, size_t value_len, bool case_sensitive, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         Utf16StringAccessor str(value, value_len);
-        query_ptr->contains(columnIndex, str);
+        query_ptr->contains(columnIndex, str, case_sensitive);
     });
 }
 
-REALM_EXPORT void query_string_starts_with(Query* query_ptr, size_t columnIndex, uint16_t* value, size_t value_len, NativeException::Marshallable& ex)
+REALM_EXPORT void query_string_starts_with(Query* query_ptr, size_t columnIndex, uint16_t* value, size_t value_len, bool case_sensitive, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         Utf16StringAccessor str(value, value_len);
-        query_ptr->begins_with(columnIndex, str);
+        query_ptr->begins_with(columnIndex, str, case_sensitive);
     });
 }
 
-REALM_EXPORT void query_string_ends_with(Query* query_ptr, size_t columnIndex, uint16_t* value, size_t value_len, NativeException::Marshallable& ex)
+REALM_EXPORT void query_string_ends_with(Query* query_ptr, size_t columnIndex, uint16_t* value, size_t value_len, bool case_sensitive, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         Utf16StringAccessor str(value, value_len);
-        query_ptr->ends_with(columnIndex, str);
+        query_ptr->ends_with(columnIndex, str, case_sensitive);
     });
 }
     
-REALM_EXPORT void query_string_equal(Query * query_ptr, size_t columnIndex, uint16_t* value, size_t value_len, NativeException::Marshallable& ex)
+REALM_EXPORT void query_string_equal(Query * query_ptr, size_t columnIndex, uint16_t* value, size_t value_len, bool case_sensitive, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         Utf16StringAccessor str(value, value_len);
-        query_ptr->equal(columnIndex, str);
+        query_ptr->equal(columnIndex, str, case_sensitive);
     });
 }
 
-REALM_EXPORT void query_string_not_equal(Query * query_ptr, size_t columnIndex, uint16_t* value, size_t value_len, NativeException::Marshallable& ex)
+REALM_EXPORT void query_string_not_equal(Query * query_ptr, size_t columnIndex, uint16_t* value, size_t value_len, bool case_sensitive, NativeException::Marshallable& ex)
 {
     handle_errors(ex, [&]() {
         Utf16StringAccessor str(value, value_len);
-        query_ptr->not_equal(columnIndex, str);
+        query_ptr->not_equal(columnIndex, str, case_sensitive);
     });
 }
 

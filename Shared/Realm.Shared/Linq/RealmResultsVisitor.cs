@@ -57,9 +57,17 @@ namespace Realms
 
                 internal static readonly LazyMethod StartsWith = Capture<string>(s => s.StartsWith(string.Empty));
 
+                internal static readonly LazyMethod StartsWithStringComparison = Capture<string>(s => s.StartsWith(string.Empty, StringComparison.Ordinal));
+
                 internal static readonly LazyMethod EndsWith = Capture<string>(s => s.EndsWith(string.Empty));
 
+                internal static readonly LazyMethod EndsWithStringComparison = Capture<string>(s => s.EndsWith(string.Empty, StringComparison.Ordinal));
+                
                 internal static readonly LazyMethod IsNullOrEmpty = Capture<string>(s => string.IsNullOrEmpty(s));
+
+                internal static readonly LazyMethod EqualsMethod = Capture<string>(s => s.Equals(string.Empty));
+
+                internal static readonly LazyMethod EqualsStringComparison = Capture<string>(s => s.Equals(string.Empty, StringComparison.Ordinal));
             }
         }
 
@@ -329,15 +337,23 @@ namespace Realms
 
                 if (m.Method == Methods.String.Contains.Value)
                 {
-                    queryMethod = (q, c, v) => q.StringContains(c, v);
+                    queryMethod = (q, c, v) => q.StringContains(c, v, caseSensitive: true);
                 }
                 else if (m.Method == Methods.String.StartsWith.Value)
                 {
-                    queryMethod = (q, c, v) => q.StringStartsWith(c, v);
+                    queryMethod = (q, c, v) => q.StringStartsWith(c, v, caseSensitive: true);
+                }
+                else if (m.Method == Methods.String.StartsWithStringComparison.Value)
+                {
+                    queryMethod = (q, c, v) => q.StringStartsWith(c, v, GetComparisonCaseSensitive(m));
                 }
                 else if (m.Method == Methods.String.EndsWith.Value)
                 {
-                    queryMethod = (q, c, v) => q.StringEndsWith(c, v);
+                    queryMethod = (q, c, v) => q.StringEndsWith(c, v, caseSensitive: true);
+                }
+                else if (m.Method == Methods.String.EndsWithStringComparison.Value)
+                {
+                    queryMethod = (q, c, v) => q.StringEndsWith(c, v, GetComparisonCaseSensitive(m));
                 }
                 else if (m.Method == Methods.String.IsNullOrEmpty.Value)
                 {
@@ -352,9 +368,17 @@ namespace Realms
                     CoreQueryHandle.GroupBegin();
                     CoreQueryHandle.NullEqual(columnIndex);
                     CoreQueryHandle.Or();
-                    CoreQueryHandle.StringEqual(columnIndex, string.Empty);
+                    CoreQueryHandle.StringEqual(columnIndex, string.Empty, caseSensitive: true);
                     CoreQueryHandle.GroupEnd();
                     return m;
+                }
+                else if (m.Method == Methods.String.EqualsMethod.Value)
+                {
+                    queryMethod = (q, c, v) => q.StringEqual(c, v, caseSensitive: true);
+                }
+                else if (m.Method == Methods.String.EqualsStringComparison.Value)
+                {
+                    queryMethod = (q, c, v) => q.StringEqual(c, v, GetComparisonCaseSensitive(m));
                 }
 
                 if (queryMethod != null)
@@ -368,7 +392,7 @@ namespace Realms
                     var columnIndex = CoreQueryHandle.GetColumnIndex(member.Member.Name);
 
                     object argument;
-                    if (!TryExtractConstantValue(m.Arguments.SingleOrDefault(), out argument) || argument.GetType() != typeof(string))
+                    if (!TryExtractConstantValue(m.Arguments[0], out argument) || argument.GetType() != typeof(string))
                     {
                         throw new NotSupportedException($"The method '{m.Method}' has to be invoked with a single string constant argument or closure variable");
                     }
@@ -535,7 +559,7 @@ namespace Realms
             }
             else if (value is string)
             {
-                queryHandle.StringEqual(columnIndex, (string)value);
+                queryHandle.StringEqual(columnIndex, (string)value, caseSensitive: true);
             }
             else if (value is bool)
             {
@@ -603,7 +627,7 @@ namespace Realms
             }
             else if (value is string)
             {
-                queryHandle.StringNotEqual(columnIndex, (string)value);
+                queryHandle.StringNotEqual(columnIndex, (string)value, caseSensitive: true);
             }
             else if (value is bool)
             {
@@ -812,6 +836,31 @@ namespace Realms
             {
                 throw new NotImplementedException();
             }
+        }
+
+        private static bool GetComparisonCaseSensitive(MethodCallExpression m)
+        {
+            object argument;
+            if (!TryExtractConstantValue(m.Arguments[1], out argument) || !(argument is StringComparison))
+            {
+                throw new NotSupportedException($"The method '{m.Method}' has to be invoked with a string and StringComparison constant arguments.");
+            }
+
+            var comparison = (StringComparison)argument;
+            bool caseSensitive;
+            switch (comparison)
+            {
+                case StringComparison.Ordinal:
+                    caseSensitive = true;
+                    break;
+                case StringComparison.OrdinalIgnoreCase:
+                    caseSensitive = false;
+                    break;
+                default:
+                    throw new NotSupportedException($"The comparison {comparison} is not yet supported. Use {StringComparison.Ordinal} or {StringComparison.OrdinalIgnoreCase}.");
+            }
+
+            return caseSensitive;
         }
 
         // strange as it may seem, this is also called for the LHS when simply iterating All<T>()
