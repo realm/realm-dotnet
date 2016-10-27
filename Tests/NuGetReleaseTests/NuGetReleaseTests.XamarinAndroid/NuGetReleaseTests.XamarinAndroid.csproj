@@ -44,6 +44,7 @@
     <Reference Include="System.Core" />
     <Reference Include="Mono.Android" />
     <Reference Include="Xamarin.Android.NUnitLite" />
+    <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MainActivity.cs" />
@@ -68,5 +69,11 @@
     <AndroidAsset Include="..\..\..\Shared\Tests.Shared\ForMigrationsToCopyAndMigrate.realm">
       <Link>Assets\ForMigrationsToCopyAndMigrate.realm</Link>
     </AndroidAsset>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Platform.PCL\PurePCLBuildableTest\PurePCLBuildableTest.csproj">
+      <Project>{C33439AD-387D-4F86-9DB8-9D4B48EC6750}</Project>
+      <Name>PurePCLBuildableTest</Name>
+    </ProjectReference>
   </ItemGroup>
 </Project>

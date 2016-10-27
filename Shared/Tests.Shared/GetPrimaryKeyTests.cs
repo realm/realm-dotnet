@@ -21,6 +21,7 @@ using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
 using Realms;
+using Realms.Weaving;
 
 namespace IntegrationTests.Shared
 {
@@ -57,8 +58,7 @@ namespace IntegrationTests.Shared
             });
 
             object pk;
-            var success = obj.ObjectMetadata.Helper.TryGetPrimaryKeyValue(obj, out pk);
-
+            var success = GetHelper(obj).TryGetPrimaryKeyValue(obj, out pk);
             Assert.That(success, Is.False);
             Assert.That(pk, Is.Null);
         }
@@ -72,7 +72,7 @@ namespace IntegrationTests.Shared
             };
 
             object pk;
-            var success = _realm.Metadata[obj.GetType().Name].Helper.TryGetPrimaryKeyValue(obj, out pk);
+            var success = GetHelper(obj.GetType()).TryGetPrimaryKeyValue(obj, out pk);
 
             Assert.That(success, Is.False);
             Assert.That(pk, Is.Null);
@@ -96,7 +96,7 @@ namespace IntegrationTests.Shared
             });
 
             object pk;
-            var success = obj.ObjectMetadata.Helper.TryGetPrimaryKeyValue(obj, out pk);
+            var success = GetHelper(obj).TryGetPrimaryKeyValue(obj, out pk);
 
             Assert.That(success, Is.True);
             Assert.That(pk, Is.EqualTo(pkValue));
@@ -115,10 +115,30 @@ namespace IntegrationTests.Shared
             pkProperty.SetValue(obj, pkValue);
 
             object pk;
-            var success = _realm.Metadata[objectType.Name].Helper.TryGetPrimaryKeyValue(obj, out pk);
+            var success = GetHelper(objectType).TryGetPrimaryKeyValue(obj, out pk);
 
             Assert.That(success, Is.True);
             Assert.That(pk, Is.EqualTo(pkValue));
+        }
+
+        private IRealmObjectHelper GetHelper(RealmObject obj)
+        {
+#if ENABLE_INTERNAL_NON_PCL_TESTS
+            return obj.ObjectMetadata.Helper;
+#else
+            return GetHelper(obj.GetType());
+#endif
+        }
+
+        private IRealmObjectHelper GetHelper(Type type)
+        {
+#if ENABLE_INTERNAL_NON_PCL_TESTS
+            return _realm.Metadata[objectType.Name].Helper;
+#else
+            var attribute = type.GetCustomAttribute<WovenAttribute>();
+            var helperType = (Type)typeof(WovenAttribute).GetProperty("HelperType", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(attribute);
+            return (IRealmObjectHelper)Activator.CreateInstance(helperType);
+#endif
         }
     }
 }
