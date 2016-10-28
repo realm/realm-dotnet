@@ -197,6 +197,93 @@ namespace IntegrationTests.Shared
         }
 
         [Test]
+        public void ReflectedSetter_WhenNotInTransaction_ShouldCreateTransactionAndCommit()
+        {
+            var owner = AddDogAndOwner();
+            var typeInfo = ((IReflectableType)owner).GetTypeInfo();
+            var nameSetter = typeInfo.GetDeclaredProperty(nameof(Owner.Name)).SetMethod;
+
+            nameSetter.Invoke(owner, new[] { "John" });
+
+            Assert.That(owner.Name, Is.EqualTo("John"));
+        }
+
+        [Test]
+        public void ReflectedSetValue_WhenObjectIsValid_ShouldSetValue()
+        {
+            var owner = AddDogAndOwner();
+            var typeInfo = ((IReflectableType)owner).GetTypeInfo();
+            var pi = typeInfo.GetDeclaredProperty(nameof(Owner.Name));
+
+            _realm.Write(() =>
+            {
+                pi.SetValue(owner, "John");
+            });
+
+            Assert.That(owner.Name, Is.EqualTo("John"));
+        }
+
+        [Test]
+        public void ReflectedSetValue_WhenNotInTransaction_ShouldCreateTransactionAndCommit()
+        {
+            var owner = AddDogAndOwner();
+            var typeInfo = ((IReflectableType)owner).GetTypeInfo();
+            var pi = typeInfo.GetDeclaredProperty(nameof(Owner.Name));
+
+            pi.SetValue(owner, "John");
+
+            Assert.That(owner.Name, Is.EqualTo("John"));
+        }
+
+        [Test]
+        public void Setter_WhenNotInTransaction_ShouldThrow()
+        {
+            var owner = AddDogAndOwner();
+            var setter = owner.GetType().GetProperty(nameof(Owner.Name)).SetMethod;
+
+            Assert.That(() =>
+            {
+                setter.Invoke(owner, new[] { "John" });
+            }, Throws.InnerException.TypeOf<RealmInvalidTransactionException>());
+        }
+
+        [Test]
+        public void Setter_WhenInTransaction_ShouldSetValue()
+        {
+            var owner = AddDogAndOwner();
+            var setter = owner.GetType().GetProperty(nameof(Owner.Name)).SetMethod;
+
+            _realm.Write(() =>
+            {
+                setter.Invoke(owner, new[] { "John" });
+            });
+        }
+
+        [Test]
+        public void SetValue_WhenNotInTransaction_ShouldThrow()
+        {
+            var owner = AddDogAndOwner();
+            var pi = owner.GetType().GetProperty(nameof(Owner.Name));
+
+            Assert.That(() =>
+            {
+                pi.SetValue(owner, "John");
+            }, Throws.InnerException.TypeOf<RealmInvalidTransactionException>());
+        }
+
+        [Test]
+        public void SetValue_WhenInTransaction_ShouldSetValue()
+        {
+            var owner = AddDogAndOwner();
+            var pi = owner.GetType().GetProperty(nameof(Owner.Name));
+
+            _realm.Write(() =>
+            {
+                pi.SetValue(owner, "John");
+            });
+        }
+
+        [Test]
         public void ReflectedSetter_WhenObjectIsInvalid_ShouldThrow()
         {
             var owner = AddDogAndOwner();
@@ -217,7 +304,33 @@ namespace IntegrationTests.Shared
             }, Throws.InnerException.TypeOf<RealmInvalidObjectException>());
         }
 
-        private Owner AddDogAndOwner()
+        [Test]
+        public void ReflectedSetter_WhenObjectIsStandalone_ShouldSetValue()
+        {
+            var owner = AddDogAndOwner(manage: false);
+
+            var typeInfo = ((IReflectableType)owner).GetTypeInfo();
+            var pi = typeInfo.GetDeclaredProperty(nameof(Owner.Name));
+
+            pi.SetValue(owner, "John");
+
+            Assert.That(owner.Name, Is.EqualTo("John"));
+        }
+
+        [Test]
+        public void RefelectedGetter_WhenObjectIsStandalone_ShouldGetValue()
+        {
+            var owner = AddDogAndOwner(manage: false);
+
+            var typeInfo = ((IReflectableType)owner).GetTypeInfo();
+            var pi = typeInfo.GetDeclaredProperty(nameof(Owner.Name));
+
+            var name = pi.GetValue(owner);
+
+            Assert.That(name, Is.EqualTo(OwnerName));
+        }
+
+        private Owner AddDogAndOwner(bool manage = true)
         {
             var owner = new Owner
             {
@@ -228,10 +341,13 @@ namespace IntegrationTests.Shared
                 Name = OwnerName
             };
 
-            _realm.Write(() =>
+            if (manage)
             {
-                _realm.Manage(owner);
-            });
+                _realm.Write(() =>
+                {
+                    _realm.Manage(owner);
+                });
+            }
 
             return owner;
         }

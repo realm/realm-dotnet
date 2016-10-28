@@ -65,7 +65,11 @@ namespace Realms
 
         public override ParameterInfo[] GetIndexParameters() => _pi.GetIndexParameters();
 
-        public override MethodInfo GetSetMethod(bool nonPublic) => _pi.GetSetMethod(nonPublic);
+        public override MethodInfo GetSetMethod(bool nonPublic)
+        {
+            var mi = _pi.GetSetMethod(nonPublic);
+            return new WovenSetterMethodInfo(mi);
+        }
 
         // From https://github.com/mono/mono/blob/master/mcs/class/corlib/System.Reflection/MonoProperty.cs#L408
         public override object GetValue(object obj, BindingFlags invokeAttr, Binder binder, object[] index, CultureInfo culture)
@@ -82,10 +86,8 @@ namespace Realms
                 {
                     return method.Invoke(obj, invokeAttr, binder, null, culture);
                 }
-                else
-                {
-                    return method.Invoke(obj, invokeAttr, binder, index, culture);
-                }
+
+                return method.Invoke(obj, invokeAttr, binder, index, culture);
             }
             catch (SecurityException se)
             {

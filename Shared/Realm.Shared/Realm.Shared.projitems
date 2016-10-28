@@ -80,6 +80,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)ReflectableType\RealmObjectTypeInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ReflectableType\WovenPropertyInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ReflectableType\WovenGetterMethodInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ReflectableType\WovenSetterMethodInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Weaving\" />
