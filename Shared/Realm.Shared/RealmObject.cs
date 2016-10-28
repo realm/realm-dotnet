@@ -537,7 +537,7 @@ namespace Realms
 
         TypeInfo IReflectableType.GetTypeInfo()
         {
-            return new RealmObjectTypeInfo(this.GetType());
+            return RealmObjectTypeInfo.FromType(this.GetType());
         }
     }
 }

@@ -189,6 +189,9 @@ namespace IntegrationTests.Shared
     {
         public string Name { get; set; }
 
+        [ThrottleSetter(200)]
+        public int Age { get; set; }
+
         public Dog TopDog { get; set; }
 
         public IList<Dog> Dogs { get; }

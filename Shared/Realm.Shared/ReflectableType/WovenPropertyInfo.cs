@@ -26,6 +26,10 @@ namespace Realms
     internal class WovenPropertyInfo : PropertyInfo
     {
         private readonly PropertyInfo _pi;
+        private readonly Lazy<MethodInfo> _publicGetter;
+        private readonly Lazy<MethodInfo> _nonPublicGetter;
+        private readonly Lazy<MethodInfo> _publicSetter;
+        private readonly Lazy<MethodInfo> _nonPublicSetter;
 
         public override PropertyAttributes Attributes => _pi.Attributes;
 
@@ -49,6 +53,10 @@ namespace Realms
             }
 
             _pi = pi;
+            _publicGetter = GetGetterLazy(nonPublic: false);
+            _nonPublicGetter = GetGetterLazy(nonPublic: true);
+            _publicSetter = GetSetterLazy(nonPublic: false);
+            _nonPublicSetter = GetSetterLazy(nonPublic: true);
         }
 
         public override MethodInfo[] GetAccessors(bool nonPublic) => _pi.GetAccessors(nonPublic);
@@ -59,16 +67,14 @@ namespace Realms
 
         public override MethodInfo GetGetMethod(bool nonPublic)
         {
-            var mi = _pi.GetGetMethod(nonPublic);
-            return new WovenGetterMethodInfo(mi);
+            return nonPublic ? _nonPublicGetter.Value : _publicGetter.Value;
         }
 
         public override ParameterInfo[] GetIndexParameters() => _pi.GetIndexParameters();
 
         public override MethodInfo GetSetMethod(bool nonPublic)
         {
-            var mi = _pi.GetSetMethod(nonPublic);
-            return new WovenSetterMethodInfo(mi);
+            return nonPublic ? _nonPublicSetter.Value : _publicSetter.Value;
         }
 
         // From https://github.com/mono/mono/blob/master/mcs/class/corlib/System.Reflection/MonoProperty.cs#L408
@@ -120,6 +126,25 @@ namespace Realms
             }
 
             method.Invoke(obj, invokeAttr, binder, parms, culture);
+        }
+
+        private Lazy<MethodInfo> GetGetterLazy(bool nonPublic)
+        {
+            return new Lazy<MethodInfo>(() =>
+            {
+                var mi = _pi.GetGetMethod(nonPublic);
+                return new WovenGetterMethodInfo(mi);
+            });
+        }
+
+        private Lazy<MethodInfo> GetSetterLazy(bool nonPublic)
+        {
+            return new Lazy<MethodInfo>(() =>
+            {
+                var mi = _pi.GetSetMethod(nonPublic);
+                var throttleAttribute = _pi.GetCustomAttribute<ThrottleSetterAttribute>();
+                return new WovenSetterMethodInfo(mi, throttleAttribute?.Milliseconds);
+            });
         }
     }
 }

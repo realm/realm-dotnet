@@ -25,6 +25,7 @@ namespace Realms
     internal class WovenSetterMethodInfo : MethodInfo
     {
         private readonly MethodInfo _mi;
+        private readonly LazyExecutor _lazySetter;
 
         public override MethodAttributes Attributes => _mi.Attributes;
 
@@ -40,7 +41,7 @@ namespace Realms
 
         public override Type ReturnType => _mi.ReturnType;
 
-        public WovenSetterMethodInfo(MethodInfo mi)
+        public WovenSetterMethodInfo(MethodInfo mi, int? throttle)
         {
             if (mi == null)
             {
@@ -48,6 +49,11 @@ namespace Realms
             }
 
             _mi = mi;
+
+            if (throttle.HasValue)
+            {
+                _lazySetter = new LazyExecutor(throttle.Value);
+            }
         }
 
         public override MethodInfo GetBaseDefinition() => _mi.GetBaseDefinition();
@@ -62,24 +68,36 @@ namespace Realms
 
         public override object Invoke(object obj, BindingFlags invokeAttr, Binder binder, object[] parameters, CultureInfo culture)
         {
-            Transaction writeTransaction = null;
             var managingRealm = (obj as RealmObject)?.Realm;
-            if (managingRealm != null && !managingRealm.IsInTransaction)
+            if (_lazySetter == null || managingRealm == null || managingRealm.IsInTransaction)
             {
-                writeTransaction = managingRealm.BeginWrite();
+                SetInTransaction(managingRealm, obj, invokeAttr, binder, parameters, culture);
+            }
+            else
+            {
+                _lazySetter.Run(() => SetInTransaction(managingRealm, obj, invokeAttr, binder, parameters, culture));
             }
 
-            var result = _mi.Invoke(obj, invokeAttr, binder, parameters, culture);
+            return null;
+        }
+
+        public override bool IsDefined(Type attributeType, bool inherit) => _mi.IsDefined(attributeType, inherit);
+
+        private void SetInTransaction(Realm realm, object obj, BindingFlags invokeAttr, Binder binder, object[] parameters, CultureInfo culture)
+        {
+            Transaction writeTransaction = null;
+            if (realm != null && !realm.IsInTransaction)
+            {
+                writeTransaction = realm.BeginWrite();
+            }
+
+            _mi.Invoke(obj, invokeAttr, binder, parameters, culture);
 
             if (writeTransaction != null)
             {
                 writeTransaction.Commit();
                 writeTransaction.Dispose();
             }
-
-            return result;
         }
-
-        public override bool IsDefined(Type attributeType, bool inherit) => _mi.IsDefined(attributeType, inherit);
     }
 }

@@ -17,26 +17,42 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Reflection;
 
 namespace Realms
 {
     internal class RealmObjectTypeInfo : TypeDelegator
     {
-        public RealmObjectTypeInfo(Type type) : base(type)
+        private static readonly ConcurrentDictionary<Type, RealmObjectTypeInfo> typeCache = new ConcurrentDictionary<Type, RealmObjectTypeInfo>();
+        private readonly IDictionary<string, PropertyInfo> _cache = new Dictionary<string, PropertyInfo>();
+
+        public static TypeInfo FromType(Type type)
+        {
+            return typeCache.GetOrAdd(type, t => new RealmObjectTypeInfo(t));
+        }
+
+        private RealmObjectTypeInfo(Type type) : base(type)
         {
         }
 
         public override PropertyInfo GetDeclaredProperty(string name)
         {
-            var pi = base.GetDeclaredProperty(name);
-            var wovenAttribute = pi.GetCustomAttribute<WovenPropertyAttribute>();
-            if (wovenAttribute != null)
+            PropertyInfo result;
+            if (!_cache.TryGetValue(name, out result))
             {
-                return new WovenPropertyInfo(pi);
+                result = base.GetDeclaredProperty(name);
+                var wovenAttribute = result.GetCustomAttribute<WovenPropertyAttribute>();
+                if (wovenAttribute != null)
+                {
+                    result = new WovenPropertyInfo(result);
+                }
+
+                _cache[name] = result;
             }
 
-            return pi;
+            return result;
         }
     }
 }
