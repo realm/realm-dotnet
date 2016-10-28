@@ -65,9 +65,12 @@ LOCAL_SRC_FILES += src/object_cs.cpp
 
 
 # ifdef REALM_ENABLE_SYNC
-LOCAL_SRC_FILES += src/object-store/src/sync_manager.cpp 
-LOCAL_SRC_FILES += src/object-store/src/sync_metadata.cpp 
-LOCAL_SRC_FILES += src/object-store/src/sync_session.cpp
+LOCAL_SRC_FILES += src/object-store/src/sync/sync_manager.cpp 
+LOCAL_SRC_FILES += src/object-store/src/sync/sync_session.cpp
+LOCAL_SRC_FILES += src/object-store/src/sync/sync_user.cpp
+LOCAL_SRC_FILES += src/object-store/src/sync/impl/sync_file.cpp
+LOCAL_SRC_FILES += src/object-store/src/sync/impl/sync_metadata.cpp
+
 LOCAL_SRC_FILES += src/sync_manager_cs.cpp
 
 LOCAL_STATIC_LIBRARIES := realm-sync-android
