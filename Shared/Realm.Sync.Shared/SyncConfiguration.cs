@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Runtime.CompilerServices;
 
 namespace Realms.Sync
 {
@@ -68,7 +69,6 @@ namespace Realms.Sync
             }
 
             return new Realm(srHandle, this, schema);
-
         }
     }
 }
