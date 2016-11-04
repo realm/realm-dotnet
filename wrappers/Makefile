@@ -11,10 +11,14 @@ ANDROID_BUNDLE_NAME=realm-sync-android-$(SYNC_ANDROID_VER).tar.gz
 ANDROID_BUNDLE_URL="http://static.realm.io/downloads/sync/$(ANDROID_BUNDLE_NAME)"
 
 ifdef REALM_ENABLE_SYNC
+	APPLE_PREPROCESSOR_DEFINITIONS="REALM_ENABLE_SYNC=true"
+	WRAPPERS_XCODE_TARGET=wrappers-sync
 	APPLE_BUNDLE_NAME=realm-sync-cocoa-$(SYNC_APPLE_VER).tar.xz
 	APPLE_BUNDLE_URL="http://static.realm.io/downloads/sync/$(APPLE_BUNDLE_NAME)"
 else
-	APPLE_BUNDLE_NAME=realm-core-dotnet-cocoa-$(CORE_APPLE_VER).tar.bz2
+	APPLE_PREPROCESSOR_DEFINITIONS=""
+	WRAPPERS_XCODE_TARGET=wrappers
+	APPLE_BUNDLE_NAME=realm-core-$(CORE_APPLE_VER).tar.xz
 	APPLE_BUNDLE_URL="http://static.realm.io/downloads/core/$(APPLE_BUNDLE_NAME)"
 endif
 
@@ -49,12 +53,12 @@ ios: build/Release-ios-universal/libwrappers.a
 
 iosdbg: build/Debug-ios-universal/libwrappers.a  
 
-core: realm-core-dotnet-cocoa-$(CORE_APPLE_VER).tar.bz2
-	tar xjf realm-core-dotnet-cocoa-$(CORE_APPLE_VER).tar.bz2
-	touch core
+$(APPLE_BUNDLE_NAME):
+	curl -o $(APPLE_BUNDLE_NAME) $(APPLE_BUNDLE_URL)
 
-realm-core-dotnet-cocoa-$(CORE_APPLE_VER).tar.bz2:
-	curl -o realm-core-dotnet-cocoa-$(CORE_APPLE_VER).tar.bz2 "http://static.realm.io/downloads/core/realm-core-dotnet-cocoa-$(CORE_APPLE_VER).tar.bz2"
+core: $(APPLE_BUNDLE_NAME)
+	tar xjf $(APPLE_BUNDLE_NAME)
+	touch core
 
 build/Release-osx:
 	mkdir -p build/Release-osx
@@ -62,11 +66,12 @@ build/Release-osx:
 build/Release-osx/libwrappers.dylib: core $(SRCS) $(APPLE_SRCS) | build/Release-osx
 	$(CXX) $(FLAGS) -DDYNAMIC -Lcore -lc++ -lrealm $(SRCS) $(APPLE_SRCS) -dynamiclib -arch i386 -o build/Release-osx/libwrappers.dylib -framework CoreFoundation
 
-build/Release-iphoneos/libwrappers.a: core $(SRCS) $(APPLE_SRCS)
-	xcodebuild -sdk iphoneos -configuration Release -target "wrappers"
+build/Release-iphoneos/lib$(WRAPPERS_XCODE_TARGET).a: core $(SRCS) $(APPLE_SRCS)
+	xcodebuild -sdk iphoneos -configuration Release -target $(WRAPPERS_XCODE_TARGET) EXTRA_PREPROCESSOR_DEFINITIONS="$(APPLE_PREPROCESSOR_DEFINITIONS)"
+	xcrun --sdk iphoneos bitcode_strip build/Release-iphoneos/lib$(WRAPPERS_XCODE_TARGET).a -r -o build/Release-iphoneos/lib$(WRAPPERS_XCODE_TARGET).a
 
-build/Release-iphonesimulator/libwrappers.a: core $(SRCS) $(APPLE_SRCS)
-	xcodebuild -sdk iphonesimulator -configuration Release -target "wrappers"
+build/Release-iphonesimulator/lib$(WRAPPERS_XCODE_TARGET).a: core $(SRCS) $(APPLE_SRCS)
+	xcodebuild -sdk iphonesimulator -configuration Release -target $(WRAPPERS_XCODE_TARGET) EXTRA_PREPROCESSOR_DEFINITIONS="$(APPLE_PREPROCESSOR_DEFINITIONS)"
 
 build:
 	mkdir build
@@ -74,20 +79,20 @@ build:
 build/Release-ios-universal: | build
 	mkdir -p build/Release-ios-universal
 
-build/Release-ios-universal/libwrappers.a: build/Release-iphoneos/libwrappers.a build/Release-iphonesimulator/libwrappers.a | build/Release-ios-universal
-	lipo -create -output "build/Release-ios-universal/libwrappers.a" "build/Release-iphoneos/libwrappers.a" "build/Release-iphonesimulator/libwrappers.a"
+build/Release-ios-universal/libwrappers.a: build/Release-iphoneos/lib$(WRAPPERS_XCODE_TARGET).a build/Release-iphonesimulator/lib$(WRAPPERS_XCODE_TARGET).a | build/Release-ios-universal
+	lipo -create -output "build/Release-ios-universal/libwrappers.a" "build/Release-iphoneos/lib$(WRAPPERS_XCODE_TARGET).a" "build/Release-iphonesimulator/lib$(WRAPPERS_XCODE_TARGET).a"
 
-build/Debug-iphoneos/libwrappers.a: core $(SRCS) $(APPLE_SRCS)
-	xcodebuild -sdk iphoneos -configuration Debug -target "wrappers"
+build/Debug-iphoneos/lib$(WRAPPERS_XCODE_TARGET).a: core $(SRCS) $(APPLE_SRCS)
+	xcodebuild -sdk iphoneos -configuration Debug -target $(WRAPPERS_XCODE_TARGET) EXTRA_PREPROCESSOR_DEFINITIONS="$(APPLE_PREPROCESSOR_DEFINITIONS)"
 
-build/Debug-iphonesimulator/libwrappers.a: core $(SRCS) $(APPLE_SRCS)
-	xcodebuild -sdk iphonesimulator -configuration Debug -target "wrappers"
+build/Debug-iphonesimulator/lib$(WRAPPERS_XCODE_TARGET).a: core $(SRCS) $(APPLE_SRCS)
+	xcodebuild -sdk iphonesimulator -configuration Debug -target $(WRAPPERS_XCODE_TARGET) EXTRA_PREPROCESSOR_DEFINITIONS="$(APPLE_PREPROCESSOR_DEFINITIONS)"
 
 build/Debug-ios-universal: | build
 	mkdir -p build/Debug-ios-universal
 
-build/Debug-ios-universal/libwrappers.a: build/Debug-iphoneos/libwrappers.a build/Debug-iphonesimulator/libwrappers.a | build/Debug-ios-universal
-	lipo -create -output "build/Debug-ios-universal/libwrappers.a" "build/Debug-iphoneos/libwrappers.a" "build/Debug-iphonesimulator/libwrappers.a"
+build/Debug-ios-universal/libwrappers.a: build/Debug-iphoneos/lib$(WRAPPERS_XCODE_TARGET).a build/Debug-iphonesimulator/lib$(WRAPPERS_XCODE_TARGET).a | build/Debug-ios-universal
+	lipo -create -output "build/Debug-ios-universal/libwrappers.a" "build/Debug-iphoneos/lib$(WRAPPERS_XCODE_TARGET).a" "build/Debug-iphonesimulator/lib$(WRAPPERS_XCODE_TARGET).a"
 
 .PHONY: osx ios iosdbg
 
