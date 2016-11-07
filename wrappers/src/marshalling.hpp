@@ -27,7 +27,7 @@ namespace binding {
 
 class Utf16StringAccessor {
 public:
-    Utf16StringAccessor(uint16_t* csbuffer, size_t csbufsize)
+    Utf16StringAccessor(const uint16_t* csbuffer, size_t csbufsize)
     {
         // For efficiency, if the incoming UTF-16 string is sufficiently
         // small, we will choose an UTF-8 output buffer whose size (in
@@ -77,6 +77,11 @@ public:
         return std::string(m_data.get(), m_size);
     }
 
+    operator std::string() const noexcept
+    {
+        return std::string(m_data.get(), m_size);
+    }
+    
     const char* data() const { return m_data.get();  }
     size_t size() const { return m_size;  }
 

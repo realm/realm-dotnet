@@ -12,7 +12,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Credentials.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SyncConfiguration.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)User.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)SyncManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Handles\SyncUserHandle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Handles\SharedRealmHandleExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Session.cs" />

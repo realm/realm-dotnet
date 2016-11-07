@@ -22,13 +22,8 @@
 #include "realm_export_decls.hpp"
 #include "marshalling.hpp"
 #include "object-store/src/object_store.hpp"
-#include "object-store/src/shared_realm.hpp"
-#include "object-store/src/schema.hpp"
-#include "object-store/src/property.hpp"
-#include "object-store/src/object_schema.hpp"
 #include "object-store/src/binding_context.hpp"
 #include <list>
-#include "schema_cs.hpp"
 #include "shared_realm_cs.hpp"
 
 using namespace realm;
@@ -62,23 +57,6 @@ REALM_EXPORT void register_notify_realm_changed(NotifyRealmChangedT notifier)
 {
     notify_realm_changed = notifier;
 }
-
-struct Configuration
-{
-    uint16_t* path;
-    size_t path_len;
-    
-    bool read_only;
-    
-    bool in_memory;
-    
-    bool delete_if_migration_needed;
-
-    uint64_t schema_version;
-    
-    bool (*migration_callback)(SharedRealm* old_realm, SharedRealm* new_realm, SchemaForMarshaling, uint64_t schema_version, void* managed_migration_handle);
-    void* managed_migration_handle;
-};
     
 REALM_EXPORT SharedRealm* shared_realm_open(Configuration configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key, NativeException::Marshallable& ex)
 {
