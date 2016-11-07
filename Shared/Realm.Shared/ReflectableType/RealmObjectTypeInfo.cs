@@ -25,12 +25,15 @@ namespace Realms
 {
     internal class RealmObjectTypeInfo : TypeDelegator
     {
-        private static readonly ConcurrentDictionary<Type, RealmObjectTypeInfo> typeCache = new ConcurrentDictionary<Type, RealmObjectTypeInfo>();
-        private readonly IDictionary<string, PropertyInfo> _cache = new Dictionary<string, PropertyInfo>();
+        // Holds Type -> RealmObjectTypeInfo map to avoid creating a new TypeDelegator for each IReflectableType.GetTypeInfo invocation.
+        private static readonly ConcurrentDictionary<Type, RealmObjectTypeInfo> TypeCache = new ConcurrentDictionary<Type, RealmObjectTypeInfo>();
+
+        // Holds property name -> PropertyInfo map to avoid creating a new WovenPropertyInfo for each GetDeclaredProperty call.
+        private readonly IDictionary<string, PropertyInfo> _propertyCache = new Dictionary<string, PropertyInfo>();
 
         public static TypeInfo FromType(Type type)
         {
-            return typeCache.GetOrAdd(type, t => new RealmObjectTypeInfo(t));
+            return TypeCache.GetOrAdd(type, t => new RealmObjectTypeInfo(t));
         }
 
         private RealmObjectTypeInfo(Type type) : base(type)
@@ -40,7 +43,7 @@ namespace Realms
         public override PropertyInfo GetDeclaredProperty(string name)
         {
             PropertyInfo result;
-            if (!_cache.TryGetValue(name, out result))
+            if (!_propertyCache.TryGetValue(name, out result))
             {
                 result = base.GetDeclaredProperty(name);
                 var wovenAttribute = result.GetCustomAttribute<WovenPropertyAttribute>();
@@ -49,7 +52,7 @@ namespace Realms
                     result = new WovenPropertyInfo(result);
                 }
 
-                _cache[name] = result;
+                _propertyCache[name] = result;
             }
 
             return result;
