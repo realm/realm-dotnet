@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -117,7 +117,7 @@ namespace IntegrationTests.Shared
             });
 
             Assert.That(noPK2, Is.Not.EqualTo(noPK));
-            Assert.That(_realm.GetAll<NonPrimaryKeyObject>().Count(), Is.EqualTo(2));
+            Assert.That(_realm.All<NonPrimaryKeyObject>().Count(), Is.EqualTo(2));
         }
 
         [Test]
@@ -270,7 +270,7 @@ namespace IntegrationTests.Shared
             });
 
             Assert.That(second.OtherObject, Is.Not.EqualTo(first.OtherObject));
-            Assert.That(_realm.GetAll<NonPrimaryKeyObject>().Count(), Is.EqualTo(2));
+            Assert.That(_realm.All<NonPrimaryKeyObject>().Count(), Is.EqualTo(2));
         }
 
         [Test]
@@ -309,7 +309,7 @@ namespace IntegrationTests.Shared
             });
 
             Assert.That(second.OtherObject, Is.EqualTo(first.OtherObject));
-            Assert.That(_realm.GetAll<PrimaryKeyObject>().Count(), Is.EqualTo(1));
+            Assert.That(_realm.All<PrimaryKeyObject>().Count(), Is.EqualTo(1));
             Assert.That(_realm.Find<PrimaryKeyObject>(1).StringValue, Is.EqualTo("child2"));
         }
 
@@ -351,7 +351,7 @@ namespace IntegrationTests.Shared
             });
 
             Assert.That(first.ListValue, Is.EqualTo(second.ListValue));
-            Assert.That(_realm.GetAll<PrimaryKeyObject>().Count(), Is.EqualTo(1));
+            Assert.That(_realm.All<PrimaryKeyObject>().Count(), Is.EqualTo(1));
             Assert.That(_realm.Find<PrimaryKeyObject>(1).StringValue, Is.EqualTo("secondChild"));
         }
 
@@ -391,7 +391,7 @@ namespace IntegrationTests.Shared
             });
 
             Assert.That(first.ListValue, Is.Not.EqualTo(second.ListValue));
-            Assert.That(_realm.GetAll<NonPrimaryKeyObject>().Count(), Is.EqualTo(2));
+            Assert.That(_realm.All<NonPrimaryKeyObject>().Count(), Is.EqualTo(2));
         }
 
         [Test]
@@ -437,7 +437,7 @@ namespace IntegrationTests.Shared
                 _realm.Add(updatedFirst, update: true);
             });
 
-            Assert.That(_realm.GetAll<PrimaryKeyObject>().Count(), Is.EqualTo(2));
+            Assert.That(_realm.All<PrimaryKeyObject>().Count(), Is.EqualTo(2));
             Assert.That(_realm.Find<PrimaryKeyObject>(1).StringValue, Is.EqualTo("updated child"));
             Assert.That(_realm.Find<PrimaryKeyObject>(2).StringValue, Is.EqualTo("new child"));
         }
@@ -475,8 +475,8 @@ namespace IntegrationTests.Shared
                 _realm.Add(second, update: true);
             });
 
-            Assert.That(_realm.GetAll<NonPrimaryKeyWithPKRelation>().Count(), Is.EqualTo(2));
-            Assert.That(_realm.GetAll<PrimaryKeyObject>().Count(), Is.EqualTo(1));
+            Assert.That(_realm.All<NonPrimaryKeyWithPKRelation>().Count(), Is.EqualTo(2));
+            Assert.That(_realm.All<PrimaryKeyObject>().Count(), Is.EqualTo(1));
             Assert.That(_realm.Find<PrimaryKeyObject>(1).StringValue, Is.EqualTo("updated child"));
         }
 
@@ -511,8 +511,8 @@ namespace IntegrationTests.Shared
                 _realm.Add(second, update: true);
             });
 
-            Assert.That(_realm.GetAll<NonPrimaryKeyWithNonPKRelation>().Count(), Is.EqualTo(2));
-            Assert.That(_realm.GetAll<NonPrimaryKeyObject>().Count(), Is.EqualTo(2));
+            Assert.That(_realm.All<NonPrimaryKeyWithNonPKRelation>().Count(), Is.EqualTo(2));
+            Assert.That(_realm.All<NonPrimaryKeyObject>().Count(), Is.EqualTo(2));
         }
 
         [Test]
@@ -634,9 +634,9 @@ namespace IntegrationTests.Shared
             Assert.That(persistedParent.NonPKChild.OtherObject, Is.Not.Null);
             Assert.That(persistedParent.NonPKChild.OtherObject.StringValue, Is.EqualTo("updated grandchild"));
 
-            Assert.That(_realm.GetAll<PrimaryKeyWithNonPKChildWithPKGrandChild>().Count(), Is.EqualTo(1));
-            Assert.That(_realm.GetAll<NonPrimaryKeyWithPKRelation>().Count(), Is.EqualTo(2));
-            Assert.That(_realm.GetAll<PrimaryKeyObject>().Count(), Is.EqualTo(1));
+            Assert.That(_realm.All<PrimaryKeyWithNonPKChildWithPKGrandChild>().Count(), Is.EqualTo(1));
+            Assert.That(_realm.All<NonPrimaryKeyWithPKRelation>().Count(), Is.EqualTo(2));
+            Assert.That(_realm.All<PrimaryKeyObject>().Count(), Is.EqualTo(1));
         }
 
         [Test]
@@ -649,7 +649,7 @@ namespace IntegrationTests.Shared
 
             _realm.Write(() =>
             {
-                _realm.Manage(first, update: true);
+                _realm.Add(first, update: true);
             });
 
             var second = new NullablePrimaryKeyObject
@@ -659,7 +659,7 @@ namespace IntegrationTests.Shared
 
             _realm.Write(() =>
             {
-                _realm.Manage(second, update: true);
+                _realm.Add(second, update: true);
             });
 
             Assert.That(first.StringValue, Is.EqualTo("second"));

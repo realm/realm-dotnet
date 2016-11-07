@@ -537,12 +537,12 @@ namespace Realms
                 }
                 else if (pkValue == null)
                 {
-                    objectPtr = metadata.Table.ObjectForPrimaryKey(SharedRealmHandle, (long?)null);
+                    objectPtr = metadata.Table.Find(SharedRealmHandle, (long?)null);
                 }
                 else
                 {
                     // We know it must be convertible to long, so optimistically do it.
-                    objectPtr = metadata.Table.ObjectForPrimaryKey(SharedRealmHandle, Convert.ToInt64(pkValue));
+                    objectPtr = metadata.Table.Find(SharedRealmHandle, Convert.ToInt64(pkValue));
                 }
             }
 
@@ -649,8 +649,8 @@ namespace Realms
         /// <example>
         /// await realm.WriteAsync(tempRealm =&gt; 
         /// {
-        ///     var pongo = tempRealm.GetAll&lt;Dog&gt;().Single(d =&gt; d.Name == "Pongo");
-        ///     var missis = tempRealm.GetAll&lt;Dog&gt;().Single(d =&gt; d.Name == "Missis");
+        ///     var pongo = tempRealm.All&lt;Dog&gt;().Single(d =&gt; d.Name == "Pongo");
+        ///     var missis = tempRealm.All&lt;Dog&gt;().Single(d =&gt; d.Name == "Missis");
         ///     for (var i = 0; i &lt; 15; i++)
         ///     {
         ///         var pup = tempRealm.CreateObject&lt;Dog&gt;();
@@ -699,7 +699,7 @@ namespace Realms
         /// </summary>
         /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
         /// <returns>A RealmResults that without further filtering, allows iterating all objects of class T, in this realm.</returns>
-        public RealmResults<T> GetAll<T>() where T : RealmObject
+        public RealmResults<T> All<T>() where T : RealmObject
         {
             var type = typeof(T);
             RealmObject.Metadata metadata;
@@ -717,7 +717,7 @@ namespace Realms
         /// <param name="className">The type of the objects as defined in the schema.</param>
         /// <remarks>Because the objects inside the view are accessed dynamically, the view cannot be queried into using LINQ or other expression predicates.</remarks>
         /// <returns>A RealmResults that without further filtering, allows iterating all objects of className, in this realm.</returns>
-        public RealmResults<dynamic> GetAll(string className)
+        public RealmResults<dynamic> All(string className)
         {
             RealmObject.Metadata metadata;
             if (!Metadata.TryGetValue(className, out metadata))
@@ -850,7 +850,7 @@ namespace Realms
         /// <typeparam name="T">Type of the objects to remove.</typeparam>
         public void RemoveAll<T>() where T : RealmObject
         {
-            RemoveRange(GetAll<T>());
+            RemoveRange(All<T>());
         }
 
         /// <summary>
@@ -859,7 +859,7 @@ namespace Realms
         /// <param name="className">Type of the objects to remove as defined in the schema.</param>
         public void RemoveAll(string className)
         {
-            RemoveRange(GetAll(className));
+            RemoveRange(All(className));
         }
 
         /// <summary>
@@ -875,29 +875,6 @@ namespace Realms
         }
 
         #region Obsolete methods
-
-        /// <summary>
-        /// Extract an iterable set of objects for direct use or further query.
-        /// </summary>
-        /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
-        /// <returns>A RealmResults that without further filtering, allows iterating all objects of class T, in this realm.</returns>
-        [Obsolete("This method has been renamed. Use GetAll for the same results.")]
-        public RealmResults<T> All<T>() where T : RealmObject
-        {
-            return GetAll<T>();
-        }
-
-        /// <summary>
-        /// Get a view of all the objects of a particular type
-        /// </summary>
-        /// <param name="className">The type of the objects as defined in the schema.</param>
-        /// <remarks>Because the objects inside the view are accessed dynamically, the view cannot be queried into using LINQ or other expression predicates.</remarks>
-        /// <returns>A RealmResults that without further filtering, allows iterating all objects of className, in this realm.</returns>
-        [Obsolete("This method has been renamed. Use GetAll for the same results.")]
-        public RealmResults<dynamic> All(string className)
-        {
-            return GetAll(className);
-        }
 
         /// <summary>
         /// Fast lookup of an object from a class which has a PrimaryKey property.
@@ -959,9 +936,9 @@ namespace Realms
         /// <exception cref="RealmInvalidTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
         /// <exception cref="RealmObjectManagedByAnotherRealmException">You can't manage an object with more than one realm</exception>
         [Obsolete("This method has been renamed. Use Add for the same results.")]
-        public void Manage<T>(T obj) where T : RealmObject
+        public void Manage<T>(T obj, bool update = false) where T : RealmObject
         {
-            Add(obj);
+            Add(obj, update);
         }
 
         /// <summary>

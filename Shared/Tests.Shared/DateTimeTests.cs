@@ -65,7 +65,7 @@ namespace IntegrationTests.Shared
             }
 
             // perform a db fetch
-            var turingAgain = _realm.GetAll<Person>().First();
+            var turingAgain = _realm.All<Person>().First();
 
             Assert.That(turingAgain.Birthday, Is.EqualTo(turingsBirthday));
         }
@@ -89,7 +89,7 @@ namespace IntegrationTests.Shared
             }
 
             // Assert
-            var sortedTurings = _realm.GetAll<Person>().OrderBy(p => p.Birthday);
+            var sortedTurings = _realm.All<Person>().OrderBy(p => p.Birthday);
             var prevB = new DateTimeOffset();
             foreach (var t in sortedTurings)
             {
@@ -114,10 +114,10 @@ namespace IntegrationTests.Shared
             }
 
             // Assert
-            Assert.That(_realm.GetAll<Person>().Count(p => p.Birthday < birthday), Is.EqualTo(1));
-            Assert.That(_realm.GetAll<Person>().Count(p => p.Birthday == birthday), Is.EqualTo(1));
-            Assert.That(_realm.GetAll<Person>().Count(p => p.Birthday >= birthday), Is.EqualTo(2));
-            Assert.That(_realm.GetAll<Person>().Count(p => p.Birthday > birthday), Is.EqualTo(1));
+            Assert.That(_realm.All<Person>().Count(p => p.Birthday < birthday), Is.EqualTo(1));
+            Assert.That(_realm.All<Person>().Count(p => p.Birthday == birthday), Is.EqualTo(1));
+            Assert.That(_realm.All<Person>().Count(p => p.Birthday >= birthday), Is.EqualTo(2));
+            Assert.That(_realm.All<Person>().Count(p => p.Birthday > birthday), Is.EqualTo(1));
         }
 
         // Issue #294: At one point, simply having an object with an indexed DateTimeOffset property

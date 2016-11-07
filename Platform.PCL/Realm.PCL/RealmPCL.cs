@@ -277,8 +277,8 @@ namespace Realms
         /// <example>
         /// await realm.WriteAsync(tempRealm =&gt; 
         /// {
-        ///     var pongo = tempRealm.GetAll&lt;Dog&gt;().Single(d =&gt; d.Name == "Pongo");
-        ///     var missis = tempRealm.GetAll&lt;Dog&gt;().Single(d =&gt; d.Name == "Missis");
+        ///     var pongo = tempRealm.All&lt;Dog&gt;().Single(d =&gt; d.Name == "Pongo");
+        ///     var missis = tempRealm.All&lt;Dog&gt;().Single(d =&gt; d.Name == "Missis");
         ///     for (var i = 0; i &lt; 15; i++)
         ///     {
         ///         var pup = tempRealm.CreateObject&lt;Dog&gt;();
@@ -313,7 +313,7 @@ namespace Realms
         /// </summary>
         /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
         /// <returns>A RealmResults that without further filtering, allows iterating all objects of class T, in this realm.</returns>
-        public RealmResults<T> GetAll<T>() where T : RealmObject
+        public RealmResults<T> All<T>() where T : RealmObject
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return null;
@@ -325,7 +325,7 @@ namespace Realms
         /// <param name="className">The type of the objects as defined in the schema.</param>
         /// <remarks>Because the objects inside the view are accessed dynamically, the view cannot be queried into using LINQ or other expression predicates.</remarks>
         /// <returns>A RealmResults that without further filtering, allows iterating all objects of className, in this realm.</returns>
-        public RealmResults<dynamic> GetAll(string className)
+        public RealmResults<dynamic> All(string className)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return null;
@@ -430,29 +430,6 @@ namespace Realms
         }
 
         #region Obsolete methods
-
-        /// <summary>
-        /// Extract an iterable set of objects for direct use or further query.
-        /// </summary>
-        /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
-        /// <returns>A RealmResults that without further filtering, allows iterating all objects of class T, in this realm.</returns>
-        [Obsolete("This method has been renamed. Use GetAll for the same results.")]
-        public RealmResults<T> All<T>() where T : RealmObject
-        {
-            return GetAll<T>();
-        }
-
-        /// <summary>
-        /// Get a view of all the objects of a particular type
-        /// </summary>
-        /// <param name="className">The type of the objects as defined in the schema.</param>
-        /// <remarks>Because the objects inside the view are accessed dynamically, the view cannot be queried into using LINQ or other expression predicates.</remarks>
-        /// <returns>A RealmResults that without further filtering, allows iterating all objects of className, in this realm.</returns>
-        [Obsolete("This method has been renamed. Use GetAll for the same results.")]
-        public RealmResults<dynamic> All(string className)
-        {
-            return GetAll(className);
-        }
 
         /// <summary>
         /// Fast lookup of an object from a class which has a PrimaryKey property.

@@ -68,7 +68,7 @@ namespace IntegrationTests.Shared
             var pkProperty = type.GetProperties().Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
             pkProperty.SetValue(obj, primaryKeyValue);
 
-            _realm.Write(() => _realm.Manage(obj));
+            _realm.Write(() => _realm.Add(obj));
 
             var foundObj = FindByPKDynamic(type, primaryKeyValue, isIntegerPK);
 
@@ -158,7 +158,7 @@ namespace IntegrationTests.Shared
 
             _realm.Write(() =>
             {
-                _realm.Manage(first);
+                _realm.Add(first);
             });
 
             Assert.That(() =>
@@ -167,7 +167,7 @@ namespace IntegrationTests.Shared
                 pkProperty.SetValue(second, primaryKeyValue);
                 _realm.Write(() =>
                 {
-                    _realm.Manage(second);
+                    _realm.Add(second);
                 });
             }, Throws.TypeOf<RealmDuplicatePrimaryKeyValueException>());
         }
@@ -186,10 +186,10 @@ namespace IntegrationTests.Shared
                     castPKValue = Convert.ToInt64(primaryKeyValue);
                 }
 
-                return _realm.ObjectForPrimaryKey(type.Name, castPKValue);
+                return _realm.Find(type.Name, castPKValue);
             }
 
-            return _realm.ObjectForPrimaryKey(type.Name, (string)primaryKeyValue);
+            return _realm.Find(type.Name, (string)primaryKeyValue);
         }
 
         [TestCase(typeof(PrimaryKeyCharObject), 'x', true)]
@@ -214,7 +214,7 @@ namespace IntegrationTests.Shared
             var pkProperty = type.GetProperties().Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
             pkProperty.SetValue(obj, primaryKeyValue);
 
-            _realm.Write(() => _realm.Manage(obj));
+            _realm.Write(() => _realm.Add(obj));
 
             var foundObj = FindByPKGeneric(type, primaryKeyValue, isIntegerPK);
 

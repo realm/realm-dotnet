@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -69,7 +69,7 @@ namespace IntegrationTests.Shared
                 p2.FullName = "Person 2";
             });
 
-            var q = _realm.GetAll<Person>();
+            var q = _realm.All<Person>();
             var ql1 = q.ToList().Select(p => p.FullName);
             Assert.That(ql1, Is.EquivalentTo(new[] { "Person 1", "Person 2" }));
 
@@ -96,7 +96,7 @@ namespace IntegrationTests.Shared
                 p1.FullName = "Person 1";
             });
 
-            var q = _realm.GetAll<Person>();
+            var q = _realm.All<Person>();
             Assert.That(q.Count, Is.EqualTo(1));
 
             WriteOnDifferentThread(newRealm =>

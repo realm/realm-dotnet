@@ -27,7 +27,7 @@ using System.Linq.Expressions;
 namespace Realms
 {
     /// <summary>
-    /// Iterable collection of one kind of RealmObject resulting from Realm.GetAll or from a LINQ query expression.
+    /// Iterable collection of one kind of RealmObject resulting from Realm.All or from a LINQ query expression.
     /// </summary>
     /// <typeparam name="T">Type of the RealmObject which is being returned.</typeparam>
     public class RealmResults<T> : IOrderedQueryable<T>
@@ -92,7 +92,7 @@ namespace Realms
         }
 
         /// <summary>
-        /// Count all objects if created by <see cref="Realm.GetAll"/> of the parameterised type, faster than a search.
+        /// Count all objects if created by <see cref="Realm.All"/> of the parameterised type, faster than a search.
         /// </summary>
         /// <remarks>
         /// Resolves to this method instead of the LINQ static extension <c>Count&lt;T&gt;(this IEnumerable&lt;T&gt;)</c>, when used directly on Realm.All.

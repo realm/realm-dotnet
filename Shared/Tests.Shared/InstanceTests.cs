@@ -197,7 +197,7 @@ namespace IntegrationTests
                 });
 
                 // Assert
-                Assert.That(lonelyRealm.GetAll<LoneClass>().Count(), Is.EqualTo(1));
+                Assert.That(lonelyRealm.All<LoneClass>().Count(), Is.EqualTo(1));
             }
         }
 

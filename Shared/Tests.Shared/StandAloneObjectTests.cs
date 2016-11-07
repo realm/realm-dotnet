@@ -69,7 +69,7 @@ namespace IntegrationTests.Shared
 
                 Assert.That(_person.IsManaged);
 
-                var p = realm.GetAll<Person>().Single();
+                var p = realm.All<Person>().Single();
                 Assert.That(p.FirstName, Is.EqualTo("Arthur"));
                 Assert.That(p.LastName, Is.EqualTo("Dent"));
                 Assert.That(p.IsInteresting);
@@ -94,37 +94,37 @@ namespace IntegrationTests.Shared
                 Assert.DoesNotThrow(() => realm.Write(() =>
                 {
                     realm.Add(new NoListProperties());
-                }), $"{nameof(NoListProperties)} manage failed.");
+                }), $"{nameof(NoListProperties)} add failed.");
 
                 Assert.DoesNotThrow(() => realm.Write(() =>
                 {
                     realm.Add(new OnlyListProperties());
-                }), $"{nameof(OnlyListProperties)} manage failed.");
+                }), $"{nameof(OnlyListProperties)} add failed.");
 
                 Assert.DoesNotThrow(() => realm.Write(() =>
                 {
                     realm.Add(new MixedProperties1());
-                }), $"{nameof(MixedProperties1)} manage failed.");
+                }), $"{nameof(MixedProperties1)} add failed.");
 
                 Assert.DoesNotThrow(() => realm.Write(() =>
                 {
                     realm.Add(new MixedProperties2());
-                }), $"{nameof(MixedProperties2)} manage failed.");
+                }), $"{nameof(MixedProperties2)} add failed.");
 
                 Assert.DoesNotThrow(() => realm.Write(() =>
                 {
                     realm.Add(new OneNonListProperty());
-                }), $"{nameof(OneNonListProperty)} manage failed.");
+                }), $"{nameof(OneNonListProperty)} add failed.");
 
                 Assert.DoesNotThrow(() => realm.Write(() =>
                 {
                     realm.Add(new OneListProperty());
-                }), $"{nameof(OneListProperty)} manage failed.");
+                }), $"{nameof(OneListProperty)} add failed.");
 
                 Assert.DoesNotThrow(() => realm.Write(() =>
                 {
                     realm.Add(new AllTypesObject());
-                }), $"{nameof(AllTypesObject)} manage failed.");
+                }), $"{nameof(AllTypesObject)} add failed.");
             }
         }
 

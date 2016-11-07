@@ -38,7 +38,7 @@ namespace AssemblyToProcess
                 // {
                 //     return myDog;
                 // }
-                // var dogs = Realm.GetInstance().GetAll<Dog>();
+                // var dogs = Realm.GetInstance().All<Dog>();
                 // if (dogs.Count() == 0)
                 // {
                 //     Realm.GetInstance().Write(() =>

@@ -117,14 +117,14 @@ namespace IntegrationTests.Shared
         [Test]
         public void TimHasATopDog()
         {
-            var tim = _realm.GetAll("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
+            var tim = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
             Assert.That(tim.TopDog.Name, Is.EqualTo("Bilbo Fleabaggins"));
         }
 
         [Test]
         public void TimHasTwoIterableDogs()
         {
-            var tim = _realm.GetAll("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
+            var tim = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
             var dogNames = new List<string>();
             foreach (var dog in tim.Dogs)  // using foreach here is deliberately testing that syntax
             {
@@ -140,7 +140,7 @@ namespace IntegrationTests.Shared
         [Test]
         public void TimHasTwoIterableDogsListed()
         {
-            var tim = _realm.GetAll("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
+            var tim = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
             var dogNames = new List<string>();
             var dogList = Enumerable.ToList<dynamic>(tim.Dogs);  // this used to crash - issue 299
             foreach (var dog in dogList)
@@ -154,30 +154,30 @@ namespace IntegrationTests.Shared
         [Test]
         public void TimRetiredHisTopDog()
         {
-            var tim = _realm.GetAll("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
+            var tim = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
             using (var trans = _realm.BeginWrite())
             {
                 tim.TopDog = null;
                 trans.Commit();
             }
 
-            var tim2 = _realm.GetAll("DynamicOwner").ToArray().First(p => p.Name == "Tim");
+            var tim2 = _realm.All("DynamicOwner").ToArray().First(p => p.Name == "Tim");
             Assert.That(tim2.TopDog, Is.Null);  // the dog departure was saved
         }
 
         [Test]
         public void TimAddsADogLater()
         {
-            var tim = _realm.GetAll("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
+            var tim = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
             Assert.That(tim.Dogs.Count, Is.EqualTo(2));
             using (var trans = _realm.BeginWrite())
             {
-                var dog3 = _realm.GetAll("DynamicDog").ToArray().First(p => p.Name == "Maggie Mongrel");
+                var dog3 = _realm.All("DynamicDog").ToArray().First(p => p.Name == "Maggie Mongrel");
                 tim.Dogs.Add(dog3);
                 trans.Commit();
             }
 
-            var tim2 = _realm.GetAll("DynamicOwner").ToArray().First(p => p.Name == "Tim");
+            var tim2 = _realm.All("DynamicOwner").ToArray().First(p => p.Name == "Tim");
             Assert.That(tim2.Dogs.Count, Is.EqualTo(3));
             Assert.That(tim2.Dogs[2].Name, Is.EqualTo("Maggie Mongrel"));
         }
@@ -185,16 +185,16 @@ namespace IntegrationTests.Shared
         [Test]
         public void TimAddsADogByInsert()
         {
-            var tim = _realm.GetAll("DynamicOwner").ToArray().Single(p => p.Name == "Tim");  // use Single for a change
+            var tim = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");  // use Single for a change
             Assert.That(tim.Dogs.Count, Is.EqualTo(2));
             using (var trans = _realm.BeginWrite())
             {
-                var dog3 = _realm.GetAll("DynamicDog").ToArray().First(p => p.Name == "Maggie Mongrel");
+                var dog3 = _realm.All("DynamicDog").ToArray().First(p => p.Name == "Maggie Mongrel");
                 tim.Dogs.Insert(1, dog3);
                 trans.Commit();
             }
 
-            var tim2 = _realm.GetAll("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
+            var tim2 = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
             Assert.That(tim2.Dogs.Count, Is.EqualTo(3));
             Assert.That(tim2.Dogs[1].Name, Is.EqualTo("Maggie Mongrel"));
             Assert.That(tim2.Dogs[2].Name, Is.EqualTo("Earl Yippington III"));
@@ -203,7 +203,7 @@ namespace IntegrationTests.Shared
         [Test]
         public void TimLosesHisDogsByOrder()
         {
-            var tim = _realm.GetAll("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
+            var tim = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
             Assert.That(tim.Dogs.Count, Is.EqualTo(2));
             using (var trans = _realm.BeginWrite())
             {
@@ -211,7 +211,7 @@ namespace IntegrationTests.Shared
                 trans.Commit();
             }
 
-            var tim2 = _realm.GetAll("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
+            var tim2 = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
             Assert.That(tim2.Dogs.Count, Is.EqualTo(1));
             Assert.That(tim2.Dogs[0].Name, Is.EqualTo("Earl Yippington III"));
             using (var trans = _realm.BeginWrite())
@@ -220,7 +220,7 @@ namespace IntegrationTests.Shared
                 trans.Commit();
             }
 
-            var tim3 = _realm.GetAll("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
+            var tim3 = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
             Assert.That(tim2.Dogs.Count, Is.EqualTo(0));
             Assert.That(tim3.Dogs.Count, Is.EqualTo(0)); // reloaded object has same empty related set
         }
@@ -228,7 +228,7 @@ namespace IntegrationTests.Shared
         [Test]
         public void TimLosesHisDogsInOneClear()
         {
-            var tim = _realm.GetAll("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
+            var tim = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
             Assert.That(tim.Dogs.Count, Is.EqualTo(2));
             using (var trans = _realm.BeginWrite())
             {
@@ -236,15 +236,15 @@ namespace IntegrationTests.Shared
                 trans.Commit();
             }
 
-            var tim2 = _realm.GetAll("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
+            var tim2 = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
             Assert.That(tim2.Dogs.Count, Is.EqualTo(0));
         }
 
         [Test]
         public void TimLosesBilbo()
         {
-            var bilbo = _realm.GetAll("DynamicDog").ToArray().Single(p => p.Name == "Bilbo Fleabaggins");
-            var tim = _realm.GetAll("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
+            var bilbo = _realm.All("DynamicDog").ToArray().Single(p => p.Name == "Bilbo Fleabaggins");
+            var tim = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
             Assert.That(tim.Dogs.Count, Is.EqualTo(2));
             using (var trans = _realm.BeginWrite())
             {
@@ -252,7 +252,7 @@ namespace IntegrationTests.Shared
                 trans.Commit();
             }
 
-            var tim2 = _realm.GetAll("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
+            var tim2 = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
             Assert.That(tim2.Dogs.Count, Is.EqualTo(1));
             Assert.That(tim2.Dogs[0].Name, Is.EqualTo("Earl Yippington III"));
         }
@@ -260,14 +260,14 @@ namespace IntegrationTests.Shared
         [Test]
         public void DaniHasNoTopDog()
         {
-            var dani = _realm.GetAll("DynamicOwner").ToArray().Single(p => p.Name == "Dani");
+            var dani = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Dani");
             Assert.That(dani.TopDog, Is.Null);
         }
 
         [Test]
         public void DaniHasNoDogs()
         {
-            var dani = _realm.GetAll("DynamicOwner").ToArray().Single(p => p.Name == "Dani");
+            var dani = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Dani");
             Assert.That(dani.Dogs.Count, Is.EqualTo(0));  // ToMany relationships always return a RealmList
             var dogsIterated = 0;
             foreach (var d in dani.Dogs)
@@ -281,9 +281,9 @@ namespace IntegrationTests.Shared
         [Test]
         public void TestExceptionsFromEmptyListOutOfRange()
         {
-            var dani = _realm.GetAll("DynamicOwner").ToArray().Single(p => p.Name == "Dani");
+            var dani = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Dani");
             Assert.Throws<ArgumentOutOfRangeException>(() => dani.Dogs.RemoveAt(0));
-            var bilbo = _realm.GetAll("DynamicDog").ToArray().Single(p => p.Name == "Bilbo Fleabaggins");
+            var bilbo = _realm.All("DynamicDog").ToArray().Single(p => p.Name == "Bilbo Fleabaggins");
             dynamic scratch;  // for assignment in following getters
             Assert.Throws<ArgumentOutOfRangeException>(() => dani.Dogs.Insert(-1, bilbo));
             Assert.Throws<ArgumentOutOfRangeException>(() => dani.Dogs.Insert(0, bilbo));
@@ -293,7 +293,7 @@ namespace IntegrationTests.Shared
         [Test]
         public void TestExceptionsFromIteratingEmptyList()
         {
-            var dani = _realm.GetAll("DynamicOwner").ToArray().Single(p => p.Name == "Dani");
+            var dani = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Dani");
             var iter = dani.Dogs.GetEnumerator();
             Assert.IsNotNull(iter);
             var movedOnToFirstItem = iter.MoveNext();
@@ -305,9 +305,9 @@ namespace IntegrationTests.Shared
         [Test]
         public void TestExceptionsFromTimsDogsOutOfRange()
         {
-            var tim = _realm.GetAll("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
+            var tim = _realm.All("DynamicOwner").ToArray().Single(p => p.Name == "Tim");
             Assert.Throws<ArgumentOutOfRangeException>(() => tim.Dogs.RemoveAt(4));
-            var bilbo = _realm.GetAll("DynamicDog").ToArray().Single(p => p.Name == "Bilbo Fleabaggins");
+            var bilbo = _realm.All("DynamicDog").ToArray().Single(p => p.Name == "Bilbo Fleabaggins");
             dynamic scratch;  // for assignment in following getters
             Assert.Throws<ArgumentOutOfRangeException>(() => tim.Dogs.Insert(-1, bilbo));
             Assert.Throws<ArgumentOutOfRangeException>(() => tim.Dogs.Insert(3, bilbo));

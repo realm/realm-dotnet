@@ -34,10 +34,10 @@ namespace IntegrationTests
         public void SimpleTest()
         {
             MakeThreePeople();
-            var allPeople = _realm.GetAll<Person>().Count();
+            var allPeople = _realm.All<Person>().Count();
             Debug.WriteLine($"There are {allPeople} in total");
 
-            var interestingPeople = from p in _realm.GetAll<Person>() where p.IsInteresting == true select p;
+            var interestingPeople = from p in _realm.All<Person>() where p.IsInteresting == true select p;
 
             Debug.WriteLine("Interesting people include:");
             foreach (var p in interestingPeople)
@@ -45,7 +45,7 @@ namespace IntegrationTests
                 Debug.WriteLine(" - " + p.FullName + " (" + p.Email + ")");
             }
 
-            var johns = from p in _realm.GetAll<Person>() where p.FirstName == "John" select p;
+            var johns = from p in _realm.All<Person>() where p.FirstName == "John" select p;
             Debug.WriteLine("People named John:");
             foreach (var p in johns)
             {
@@ -60,7 +60,7 @@ namespace IntegrationTests
             _realm.Write(() => _realm.CreateObject<Person>());
 
             // Assert
-            Assert.That(_realm.GetAll<Person>().Count(), Is.EqualTo(1));
+            Assert.That(_realm.All<Person>().Count(), Is.EqualTo(1));
         }
 
         [Test]
@@ -70,7 +70,7 @@ namespace IntegrationTests
             _realm.Write(() => _realm.CreateObject<PurePCLBuildableTest.ObjectInPCL>());
 
             // Assert
-            Assert.That(_realm.GetAll<PurePCLBuildableTest.ObjectInPCL>().Count(), Is.EqualTo(1));
+            Assert.That(_realm.All<PurePCLBuildableTest.ObjectInPCL>().Count(), Is.EqualTo(1));
         }
 
         [Test]
@@ -78,8 +78,8 @@ namespace IntegrationTests
         {
             // Arrange
             MakeThreePeople();
-            var p1 = _realm.GetAll<Person>().First(p => p.Score >= 100);
-            var p2 = _realm.GetAll<Person>().First(p => p.Score >= 100);
+            var p1 = _realm.All<Person>().First(p => p.Score >= 100);
+            var p2 = _realm.All<Person>().First(p => p.Score >= 100);
             Assert.That(p1.Equals(p2));
 
             // Act
@@ -113,7 +113,7 @@ namespace IntegrationTests
                 transaction.Commit();
             }
 
-            var allPeople = _realm.GetAll<Person>().ToList();
+            var allPeople = _realm.All<Person>().ToList();
             Person p2 = allPeople[0];  // pull it back out of the database otherwise can't tell if just a dumb property
             var receivedFirstName = p2.FirstName;
             var receivedIsInteresting = p2.IsInteresting;
@@ -222,7 +222,7 @@ namespace IntegrationTests
                 trans.Commit();
             }
 
-            var vinnie = _realm.GetAll<Person>().ToList().Single();
+            var vinnie = _realm.All<Person>().ToList().Single();
             Assert.That(vinnie.FullName, Is.EqualTo("Vincent Adultman"));
             Assert.That(string.IsNullOrEmpty(vinnie.Nickname));
         }
@@ -231,7 +231,7 @@ namespace IntegrationTests
         public void CanSimplyCountAll()
         {
             MakeThreePeople();
-            Assert.That(_realm.GetAll<Person>().Count(), Is.EqualTo(3));
+            Assert.That(_realm.All<Person>().Count(), Is.EqualTo(3));
         }
 
         [Test]
@@ -242,7 +242,7 @@ namespace IntegrationTests
             // primarily just testing we iterate through all the people in the realm
             int iterCount = 0;
             var emails = new[] { "john@smith.com", "john@doe.com", "peter@jameson.net" };
-            foreach (var p in _realm.GetAll<Person>())
+            foreach (var p in _realm.All<Person>())
             {
                 Assert.That(p.Email, Is.EqualTo(emails[iterCount]));
                 iterCount++;

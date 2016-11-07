@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -63,7 +63,7 @@ namespace IntegrationTests.XamarinIOS
                     p1.FullName = "Person 1";
                 });
 
-                var q = r.GetAll<Person>();
+                var q = r.All<Person>();
                 Assert.That(q.Count, Is.EqualTo(1));
 
                 WriteOnDifferentThread(newRealm =>

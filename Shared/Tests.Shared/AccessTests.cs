@@ -184,7 +184,7 @@ namespace IntegrationTests.Shared
         public void RealmObjectProperties_WhenNotSetAfterManage_ShouldHaveDefaultValues()
         {
             var obj = new AllTypesObject();
-            _realm.Write(() => _realm.Manage(obj));
+            _realm.Write(() => _realm.Add(obj));
 
             Assert.That(obj.ByteArrayProperty, Is.EqualTo(default(byte[])));
             Assert.That(obj.StringProperty, Is.EqualTo(default(string)));
