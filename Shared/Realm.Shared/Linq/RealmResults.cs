@@ -239,9 +239,8 @@ namespace Realms
 
         internal void RemoveCallback(NotificationCallbackDelegate callback)
         {
-            _callbacks.Remove(callback);
-
-            if (_callbacks.Count == 0)
+            if (_callbacks.Remove(callback) &&
+                _callbacks.Count == 0)
             {
                 UnsubscribeFromNotifications();
             }
@@ -271,7 +270,7 @@ namespace Realms
         {
             Debug.Assert(_notificationToken != null, "_notificationToken must not be null to unsubscribe.");
 
-            _notificationToken.Dispose();
+            _notificationToken?.Dispose();
             _notificationToken = null;
         }
 
