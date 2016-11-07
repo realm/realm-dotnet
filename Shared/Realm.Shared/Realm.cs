@@ -311,24 +311,26 @@ namespace Realms
         }
 
         /// <summary>
+        /// Deletes all files associated with a realm. 
+        /// </summary>
+        /// <param name="databasePath"></param>
+        public static void DeleteRealm(string databasePath)
+        {
+            if (databasePath == null)
+            {
+                throw new ArgumentNullException(nameof(databasePath));
+            }
+
+            DeleteRealm(RealmConfiguration.DefaultConfiguration.ConfigWithPath(databasePath));
+        }
+
+        /// <summary>
         ///  Deletes all the files associated with a realm. Hides knowledge of the auxiliary filenames from the programmer.
         /// </summary>
         /// <param name="configuration">A configuration which supplies the realm path.</param>
         public static void DeleteRealm(RealmConfiguration configuration)
         {
-            // TODO add cache checking when implemented, https://github.com/realm/realm-dotnet/issues/308
-            // when cache checking, uncomment in IntegrationTests.cs RealmInstanceTests.DeleteRealmFailsIfOpenSameThread and add a variant to test open on different thread
-            var lockOnWhileDeleting = new object();
-            lock (lockOnWhileDeleting)
-            {
-                var fullpath = configuration.DatabasePath;
-                File.Delete(fullpath);
-                File.Delete(fullpath + ".log_a");  // eg: name at end of path is EnterTheMagic.realm.log_a   
-                File.Delete(fullpath + ".log_b");
-                File.Delete(fullpath + ".log");
-                File.Delete(fullpath + ".lock");
-                File.Delete(fullpath + ".note");
-            }
+            configuration.DeleteRealm();
         }
 
         [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]

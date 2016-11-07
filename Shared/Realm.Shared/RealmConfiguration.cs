@@ -256,5 +256,22 @@ namespace Realms
             srHandle.SetHandle(srPtr);
             return new Realm(srHandle, this, schema);
         }
+
+        internal virtual void DeleteRealm()
+        {
+            // TODO add cache checking when implemented, https://github.com/realm/realm-dotnet/issues/308
+            // when cache checking, uncomment in IntegrationTests.cs RealmInstanceTests.DeleteRealmFailsIfOpenSameThread and add a variant to test open on different thread
+            var lockOnWhileDeleting = new object();
+            lock (lockOnWhileDeleting)
+            {
+                var fullpath = DatabasePath;
+                File.Delete(fullpath);
+                File.Delete(fullpath + ".log_a");  // eg: name at end of path is EnterTheMagic.realm.log_a   
+                File.Delete(fullpath + ".log_b");
+                File.Delete(fullpath + ".log");
+                File.Delete(fullpath + ".lock");
+                File.Delete(fullpath + ".note");
+            }
+        }
     }
 }
