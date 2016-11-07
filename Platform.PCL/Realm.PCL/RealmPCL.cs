@@ -488,13 +488,14 @@ namespace Realms
         /// </summary>
         /// <typeparam name="T">The Type T must not only be a RealmObject but also have been processed by the Fody weaver, so it has persistent properties.</typeparam>
         /// <param name="obj">Must be a standalone object, null not allowed.</param>
+        /// <param name="update">If true, and an object with the same primary key already exists, performs an update.</param>
         /// <exception cref="RealmInvalidTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
         /// <exception cref="RealmObjectAlreadyManagedByRealmException">You can't manage the same object twice. This exception is thrown, rather than silently detecting the mistake, to help you debug your code</exception>
         /// <exception cref="RealmObjectManagedByAnotherRealmException">You can't manage an object with more than one realm</exception>
         [Obsolete("This method has been renamed. Use Add for the same results.")]
-        public void Manage<T>(T obj) where T : RealmObject
+        public void Manage<T>(T obj, bool update) where T : RealmObject
         {
-            Add(obj);
+            Add(obj, update);
         }
 
         /// <summary>
