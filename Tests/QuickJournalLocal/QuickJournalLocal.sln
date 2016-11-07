@@ -7,13 +7,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuickJournalLocal.iOS", "iO
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuickJournalLocal.Droid", "Droid\QuickJournalLocal.Droid.csproj", "{3475C117-C5FE-47C2-8F65-5B54C6FA0F77}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Realm.XamarinAndroid", "..\..\Realm.XamarinAndroid\Realm.XamarinAndroid.csproj", "{2379D669-4F4B-4FF6-AF8A-49FEA981EFC3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Realm.XamarinAndroid", "..\..\Platform.XamarinAndroid\Realm.XamarinAndroid\Realm.XamarinAndroid.csproj", "{2379D669-4F4B-4FF6-AF8A-49FEA981EFC3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Realm.XamarinIOS", "..\..\Realm.XamarinIOS\Realm.XamarinIOS.csproj", "{A55BD773-5A29-4B2A-9DB7-1AB1DD38B537}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Realm.XamarinIOS", "..\..\Platform.XamarinIOS\Realm.XamarinIOS\Realm.XamarinIOS.csproj", "{A55BD773-5A29-4B2A-9DB7-1AB1DD38B537}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Realm.PCL", "..\..\Realm.PCL\Realm.PCL.csproj", "{261C8EB6-9508-4D6A-9BED-39A544AA2736}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Realm.PCL", "..\..\Platform.PCL\Realm.PCL\Realm.PCL.csproj", "{261C8EB6-9508-4D6A-9BED-39A544AA2736}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Realm.Shared", "..\..\Realm.Shared\Realm.Shared.shproj", "{826C8753-5C4A-4E95-B483-179B9892C008}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Realm.Shared", "..\..\Shared\Realm.Shared\Realm.Shared.shproj", "{826C8753-5C4A-4E95-B483-179B9892C008}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
