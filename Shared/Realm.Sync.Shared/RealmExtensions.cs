@@ -17,14 +17,13 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-
 namespace Realms.Sync
 {
-    public static class SyncManager
+    public static class RealmExtensions
     {
-        //public static Session GetSession(SyncConfiguration configuration)
-        //{
-        //    throw new NotImplementedException();
-        //}
+        public static Session GetSession(this Realm @this)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

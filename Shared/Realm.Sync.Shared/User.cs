@@ -22,11 +22,18 @@ using System.Threading.Tasks;
 
 namespace Realms.Sync
 {
+    [Flags]
+    public enum LoginMode
+    {
+        UseExistingAccount = 1,
+        CreateAccount = 2
+    }
+
     public class User : ISerializable
     {
         public static User CurrentUser { get; private set; }
 
-        public static async Task<User> LoginAsync(Credentials credentials, string serverUrl)
+        public static async Task<User> LoginAsync(Credentials credentials, string serverUrl, LoginMode loginMode = LoginMode.UseExistingAccount)
         {
             throw new NotImplementedException();
         }
@@ -46,5 +53,9 @@ namespace Realms.Sync
         {
             throw new NotImplementedException();
         }
+
+        private SyncUserHandle _syncUserHandle;
+
+        internal SyncUserHandle SyncUserHandle => _syncUserHandle;
     }
 }

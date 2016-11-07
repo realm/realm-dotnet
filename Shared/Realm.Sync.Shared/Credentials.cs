@@ -26,31 +26,58 @@ namespace Realms.Sync
         public static Credentials Custom(string identityProvider, string userIdentifier,
             IDictionary<string, object> userInfo)
         {
-            throw new NotImplementedException();
+            return new Credentials
+            {
+                IdentityProvider = identityProvider,
+                UserIdentifier = userIdentifier,
+                UserInfo = userInfo
+            };
         }
 
         public static Credentials Facebook(string facebookToken)
         {
-            throw new NotImplementedException();
+            if (facebookToken == null)
+            {
+                throw new ArgumentNullException(nameof(facebookToken));
+            }
+
+            return new Credentials { IdentityProvider = "facebook", UserIdentifier = facebookToken };
         }
 
         public static Credentials Google(string googleToken)
         {
-            throw new NotImplementedException();
+            if (googleToken == null)
+            {
+                throw new ArgumentNullException(nameof(googleToken));
+            }
+
+            return new Credentials { IdentityProvider = "google", UserIdentifier = googleToken };
         }
 
         public static Credentials Twitter(string twitterToken)
         {
-            throw new NotImplementedException();
+            if (twitterToken == null)
+            {
+                throw new ArgumentNullException(nameof(twitterToken));
+            }
+
+            return new Credentials { IdentityProvider = "twitter", UserIdentifier = twitterToken };
         }
 
         public static Credentials UsernamePassword(string username, string password, bool createUser)
         {
-            throw new NotImplementedException();
+            return new Credentials 
+            { 
+                IdentityProvider = "password",
+                UserIdentifier = username,
+                UserInfo = new Dictionary<string, object> { { "register", createUser }, { "password", password } }
+            };
         }
 
         public string IdentityProvider { get; private set; }
 
-        public IDictionary<string, object> UserInfo { get; private set; }
+        public string UserIdentifier { get; private set; }
+
+        public IDictionary<string, object> UserInfo { get; private set; } = new Dictionary<string, object>();
     }
 }
