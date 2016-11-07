@@ -17,14 +17,27 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using NUnit.Framework;
+using Realms;
+using Realms.Sync;
 
-namespace Realms.Sync
+namespace Tests.Sync.Shared
 {
-    public static class SyncManager
+    [TestFixture, Preserve(AllMembers = true)]
+    public class SyncConfigurationTests
     {
-        //public static Session GetSession(SyncConfiguration configuration)
-        //{
-        //    throw new NotImplementedException();
-        //}
+        private Realm _realm;
+
+        [SetUp]
+        public void SetUp()
+        {
+            var user = User.AdminUser("token");
+            _realm = Realm.GetInstance(new SyncConfiguration(user, new Uri("realm://localhost:9080/__admin")));
+        }
+
+        [Test]
+        public void Foo()
+        {
+        }
     }
 }

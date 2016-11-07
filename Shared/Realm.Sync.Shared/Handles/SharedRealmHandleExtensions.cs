@@ -27,22 +27,29 @@ namespace Realms.Sync
         private static class NativeMethods
         {
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "shared_realm_open_with_sync", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr open_with_sync(Realms.Native.Configuration configuration,
+            public static extern IntPtr open_with_sync(Realms.Native.Configuration configuration, Native.SyncConfiguration sync_configuration,
                 [MarshalAs(UnmanagedType.LPArray), In] Realms.Native.SchemaObject[] objects, int objects_length,
                 [MarshalAs(UnmanagedType.LPArray), In] Realms.Native.SchemaProperty[] properties,
                 byte[] encryptionKey,
-                Native.SyncConfiguration sync_configuration,
                 out NativeException ex);
+
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "realm_initialize_sync", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void initialize_sync([MarshalAs(UnmanagedType.LPWStr)] string base_path, IntPtr base_path_leth);
         }
 
-        public static IntPtr OpenWithSync(this SharedRealmHandle sharedRealmHandle, Realms.Native.Configuration configuration, RealmSchema schema, byte[] encryptionKey, Native.SyncConfiguration syncConfiguration)
+        public static IntPtr OpenWithSync(this SharedRealmHandle sharedRealmHandle, Realms.Native.Configuration configuration, Native.SyncConfiguration syncConfiguration, RealmSchema schema, byte[] encryptionKey)
         {
             var marshaledSchema = new SharedRealmHandle.SchemaMarshaler(schema);
 
             NativeException nativeException;
-            var result = NativeMethods.open_with_sync(configuration, marshaledSchema.Objects, marshaledSchema.Objects.Length, marshaledSchema.Properties, encryptionKey, syncConfiguration, out nativeException);
+            var result = NativeMethods.open_with_sync(configuration, syncConfiguration, marshaledSchema.Objects, marshaledSchema.Objects.Length, marshaledSchema.Properties, encryptionKey, out nativeException);
             nativeException.ThrowIfNecessary();
             return result;
+        }
+
+        public static void InitializeSync(string basePath)
+        {
+            NativeMethods.initialize_sync(basePath, (IntPtr)basePath.Length);
         }
     }
 }

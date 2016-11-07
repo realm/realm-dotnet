@@ -38,6 +38,11 @@ namespace Realms.Sync
             throw new NotImplementedException();
         }
 
+        public static User AdminUser(string adminToken)
+        {
+            return new User(SyncUserHandle.GetSyncUser(Guid.NewGuid().ToString(), adminToken, null, true));
+        }
+
         public string AccessToken { get; private set; }
 
         public string Identity { get; private set; }
@@ -57,5 +62,10 @@ namespace Realms.Sync
         private SyncUserHandle _syncUserHandle;
 
         internal SyncUserHandle SyncUserHandle => _syncUserHandle;
+
+        private User(SyncUserHandle userHandle)
+        {
+            this._syncUserHandle = userHandle;
+        }
     }
 }

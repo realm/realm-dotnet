@@ -15,9 +15,88 @@
 // limitations under the License.
 //
 ////////////////////////////////////////////////////////////////////////////
- 
+
+#include <future>
 #include <realm.hpp>
+#include "error_handling.hpp"
+#include "marshalling.hpp"
+#include "realm_export_decls.hpp"
+#include "shared_realm_cs.hpp"
+#include "shared_realm.hpp"
+#include "sync/sync_manager.hpp"
+#include "sync/sync_user.hpp"
+#include "sync/sync_config.hpp"
+#include "sync/sync_session.hpp"
+
+using namespace realm;
+using namespace realm::binding;
+
+using SharedSyncUser = std::shared_ptr<SyncUser>;
+
+struct SyncConfiguration
+{
+    std::shared_ptr<SyncUser>* user;
+
+    uint16_t* url;
+    size_t url_len;
+};
 
 extern "C" {
+REALM_EXPORT void realm_initialize_sync(const uint16_t* base_path_buf, size_t base_path_len)
+{
+    Utf16StringAccessor base_path(base_path_buf, base_path_len);
+    SyncManager::shared().configure_file_system(base_path);
+}
+    
+REALM_EXPORT SharedSyncUser* realm_get_sync_user(const uint16_t* identity_buf, size_t identity_len,
+                                                 const uint16_t* refresh_token_buf, size_t refresh_token_len,
+                                                 const uint16_t* auth_server_url_buf, size_t auth_server_url_len,
+                                                 bool is_admin, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&] {
+        Utf16StringAccessor identity(identity_buf, identity_len);
+        Utf16StringAccessor refresh_token(refresh_token_buf, refresh_token_len);
+        
+        util::Optional<std::string> auth_server_url;
+        if (auth_server_url_buf) {
+            auth_server_url.emplace(Utf16StringAccessor(auth_server_url_buf, auth_server_url_len));
+        }
+        
+        return new SharedSyncUser(SyncManager::shared().get_user(identity, refresh_token, auth_server_url, is_admin));
+    });
+}
+    
+REALM_EXPORT SharedRealm* shared_realm_open_with_sync(Configuration configuration, SyncConfiguration sync_configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key, NativeException::Marshallable& ex)
+{
+    return handle_errors(ex, [&]() {
+        Realm::Config config;
+        config.schema_mode = SchemaMode::Additive;
+
+        // by definition the key is only allowwed to be 64 bytes long, enforced by C# code
+        if (encryption_key)
+          config.encryption_key = std::vector<char>(encryption_key, encryption_key+64);
+
+        config.schema = create_schema(objects, objects_length, properties);
+        config.schema_version = configuration.schema_version;
+
+        Utf16StringAccessor realm_url(sync_configuration.url, sync_configuration.url_len);
+        auto handler = [=](const std::string& path, const realm::SyncConfig& config, std::shared_ptr<SyncSession> session) {
+            if (config.user->is_admin()) {
+                std::async([session, user=config.user]() {
+                    session->refresh_access_token(user->refresh_token(), user->server_url());
+                });
+            }
+            //TODO
+        };
+        config.sync_config = std::make_shared<SyncConfig>(*sync_configuration.user, realm_url.to_string(), SyncSessionStopPolicy::AfterChangesUploaded, handler);
+        config.path = SyncManager::shared().path_for_realm((*sync_configuration.user)->identity(), realm_url.to_string());
+        return new SharedRealm(Realm::get_shared_realm(config));
+    });
+}
+
+REALM_EXPORT void syncuser_destroy(SharedSyncUser* user)
+{
+    delete user;
+}
 }
 
