@@ -81,7 +81,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)ReflectableType\WovenPropertyInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ReflectableType\WovenGetterMethodInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ReflectableType\WovenSetterMethodInfo.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)LazyExecutor.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Weaving\" />

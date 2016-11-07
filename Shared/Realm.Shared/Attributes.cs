@@ -39,23 +39,6 @@ namespace Realms
     {
     }
 
-    /// <summary>
-    /// Delays persisting the value in data-binding scenarios. This is useful when you have string fields, or other UI controls where values change rapidly.
-    /// If a transaction is already opened, the value is persisted as soon as the transaction is committed. Otherwise, all changes will be throttled and the final value will be persisted <c>milliseconds</c> ms after the last change.
-    /// /// NOTE: When using [Throttle], make sure that the realm instance on the UI thread will remain open for at least the throttle period after the last change of a throttled property.
-    /// </summary>
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
-    [AttributeUsage(AttributeTargets.Property)]
-    public class ThrottleSetterAttribute : Attribute
-    {
-        public int Milliseconds { get; set; }
-
-        public ThrottleSetterAttribute(int milliseconds)
-        {
-            this.Milliseconds = milliseconds;
-        }
-    }
-
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property)]
     public class MapToAttribute : Attribute

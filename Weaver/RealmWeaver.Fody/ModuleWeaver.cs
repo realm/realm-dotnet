@@ -119,7 +119,6 @@ public class ModuleWeaver
         "PrimaryKeyAttribute",
         "IndexedAttribute",
         "MapToAttribute",
-        "ThrottleSetterAttribute",
     };
 
     private MethodReference _genericGetObjectValueReference;

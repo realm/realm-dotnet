@@ -142,8 +142,7 @@ namespace Realms
             return new Lazy<MethodInfo>(() =>
             {
                 var mi = _pi.GetSetMethod(nonPublic);
-                var throttleAttribute = _pi.GetCustomAttribute<ThrottleSetterAttribute>();
-                return new WovenSetterMethodInfo(mi, throttleAttribute?.Milliseconds);
+                return new WovenSetterMethodInfo(mi);
             });
         }
     }
