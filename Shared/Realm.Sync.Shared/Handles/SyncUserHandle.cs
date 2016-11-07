@@ -17,14 +17,21 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
+using System.Runtime.InteropServices;
 
 namespace Realms.Sync
 {
-    public static class SyncManager
+    internal class SyncUserHandle : RealmHandle
     {
-        //public static Session GetSession(SyncConfiguration configuration)
-        //{
-        //    throw new NotImplementedException();
-        //}
+        private static class NativeMethods
+        {
+            [DllImport(InteropConfig.DLL_NAME, EntryPoint = "syncuser_destroy", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void destroy(IntPtr syncuserHandle);
+        }
+
+        protected override void Unbind()
+        {
+            NativeMethods.destroy(handle);
+        }
     }
 }

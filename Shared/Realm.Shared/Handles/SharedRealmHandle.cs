@@ -174,7 +174,7 @@ namespace Realms
             return result;
         }
 
-        private class SchemaMarshaler
+        internal class SchemaMarshaler
         {
             internal readonly Native.SchemaObject[] Objects;
             internal readonly Native.SchemaProperty[] Properties;
@@ -199,7 +199,7 @@ namespace Realms
                 Properties = properties.ToArray();
             }
 
-            private static Native.SchemaProperty ForMarshalling(Schema.Property property)
+            internal static Native.SchemaProperty ForMarshalling(Schema.Property property)
             {
                 return new Native.SchemaProperty
                 {

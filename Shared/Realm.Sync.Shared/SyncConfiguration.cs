@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using System;
-using System.Runtime.CompilerServices;
+using Realms;
 
 namespace Realms.Sync
 {
@@ -33,7 +33,7 @@ namespace Realms.Sync
         {
             var srHandle = new SharedRealmHandle();
 
-            var configuration = new Native.Configuration
+            var configuration = new Realms.Native.Configuration
             {
                 Path = DatabasePath,
                 read_only = ReadOnly,
@@ -48,26 +48,23 @@ namespace Realms.Sync
                 migration.PopulateConfiguration(ref configuration);
             }
 
+            var syncConfiguration = new Native.SyncConfiguration
+            {
+                SyncUserHandle = User.SyncUserHandle,
+                Url = ServerUri.ToString()
+            };
+
             var srPtr = IntPtr.Zero;
             try
             {
-                srPtr = srHandle.Open(configuration, schema, EncryptionKey);
+                srPtr = srHandle.OpenWithSync(configuration, schema, EncryptionKey, syncConfiguration);
             }
             catch (ManagedExceptionDuringMigrationException)
             {
                 throw new AggregateException("Exception occurred in a Realm migration callback. See inner exception for more details.", migration?.MigrationException);
             }
 
-            RuntimeHelpers.PrepareConstrainedRegions();
-            try
-            {
-                /* Retain handle in a constrained execution region */
-            }
-            finally
-            {
-                srHandle.SetHandle(srPtr);
-            }
-
+            srHandle.SetHandle(srPtr);
             return new Realm(srHandle, this, schema);
         }
     }
