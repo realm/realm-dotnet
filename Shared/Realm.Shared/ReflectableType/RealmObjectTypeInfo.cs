@@ -29,7 +29,7 @@ namespace Realms
         private static readonly ConcurrentDictionary<Type, RealmObjectTypeInfo> TypeCache = new ConcurrentDictionary<Type, RealmObjectTypeInfo>();
 
         // Holds property name -> PropertyInfo map to avoid creating a new WovenPropertyInfo for each GetDeclaredProperty call.
-        private readonly IDictionary<string, PropertyInfo> _propertyCache = new Dictionary<string, PropertyInfo>();
+        private readonly ConcurrentDictionary<string, PropertyInfo> _propertyCache = new ConcurrentDictionary<string, PropertyInfo>();
 
         public static TypeInfo FromType(Type type)
         {
@@ -42,20 +42,17 @@ namespace Realms
 
         public override PropertyInfo GetDeclaredProperty(string name)
         {
-            PropertyInfo result;
-            if (!_propertyCache.TryGetValue(name, out result))
+            return _propertyCache.GetOrAdd(name, n =>
             {
-                result = base.GetDeclaredProperty(name);
+                var result = base.GetDeclaredProperty(name);
                 var wovenAttribute = result.GetCustomAttribute<WovenPropertyAttribute>();
                 if (wovenAttribute != null)
                 {
                     result = new WovenPropertyInfo(result);
                 }
 
-                _propertyCache[name] = result;
-            }
-
-            return result;
+                return result;
+            });
         }
     }
 }

@@ -69,7 +69,7 @@ namespace Realms
                 writeTransaction = managingRealm.BeginWrite();
             }
 
-            _mi.Invoke(obj, invokeAttr, binder, parameters, culture);
+            var result = _mi.Invoke(obj, invokeAttr, binder, parameters, culture);
 
             if (writeTransaction != null)
             {
@@ -77,7 +77,7 @@ namespace Realms
                 writeTransaction.Dispose();
             }
 
-            return null;
+            return result;
         }
 
         public override bool IsDefined(Type attributeType, bool inherit) => _mi.IsDefined(attributeType, inherit);
