@@ -734,13 +734,13 @@ namespace Realms
         /// Fast lookup of an object from a class which has a PrimaryKey property.
         /// </summary>
         /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
-        /// <param name="id">Id to be matched exactly, same as an == search. An argument of type <c>long?</c> works for all integer properties, supported as PrimaryKey.</param>
-        /// <returns>Null or an object matching the id.</returns>
+        /// <param name="primaryKey">Primary key to be matched exactly, same as an == search. An argument of type <c>long?</c> works for all integer properties, supported as PrimaryKey.</param>
+        /// <returns>Null or an object matching the primary key.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class T lacks an [PrimaryKey].</exception>
-        public T Find<T>(long? id) where T : RealmObject
+        public T Find<T>(long? primaryKey) where T : RealmObject
         {
             var metadata = Metadata[typeof(T).Name];
-            var objectPtr = metadata.Table.Find(SharedRealmHandle, id);
+            var objectPtr = metadata.Table.Find(SharedRealmHandle, primaryKey);
             if (objectPtr == IntPtr.Zero)
             {
                 return null;
@@ -753,13 +753,13 @@ namespace Realms
         /// Fast lookup of an object from a class which has a PrimaryKey property.
         /// </summary>
         /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
-        /// <param name="id">Id to be matched exactly, same as an == search.</param>
-        /// <returns>Null or an object matching the id.</returns>
+        /// <param name="primaryKey">Primary key to be matched exactly, same as an == search.</param>
+        /// <returns>Null or an object matching the primary key.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class T lacks an [PrimaryKey].</exception>
-        public T Find<T>(string id) where T : RealmObject
+        public T Find<T>(string primaryKey) where T : RealmObject
         {
             var metadata = Metadata[typeof(T).Name];
-            var objectPtr = metadata.Table.Find(SharedRealmHandle, id);
+            var objectPtr = metadata.Table.Find(SharedRealmHandle, primaryKey);
             if (objectPtr == IntPtr.Zero)
             {
                 return null;
@@ -772,13 +772,13 @@ namespace Realms
         /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.
         /// </summary>
         /// <param name="className">Name of class in dynamic situation.</param>
-        /// <param name="id">Id to be matched exactly, same as an == search. An argument of type <c>long?</c> works for all integer properties, supported as PrimaryKey.</param>
-        /// <returns>Null or an object matching the id.</returns>
+        /// <param name="primaryKey">Primary key to be matched exactly, same as an == search. An argument of type <c>long?</c> works for all integer properties, supported as PrimaryKey.</param>
+        /// <returns>Null or an object matching the primary key.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class lacks an [PrimaryKey].</exception>
-        public RealmObject Find(string className, long? id)
+        public RealmObject Find(string className, long? primaryKey)
         {
             var metadata = Metadata[className];
-            var objectPtr = metadata.Table.Find(SharedRealmHandle, id);
+            var objectPtr = metadata.Table.Find(SharedRealmHandle, primaryKey);
             if (objectPtr == IntPtr.Zero)
             {
                 return null;
@@ -791,13 +791,13 @@ namespace Realms
         /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.
         /// </summary>
         /// <param name="className">Name of class in dynamic situation.</param>
-        /// <param name="id">Id to be matched exactly, same as an == search.</param>
-        /// <returns>Null or an object matching the id.</returns>
+        /// <param name="primaryKey">Primary key to be matched exactly, same as an == search.</param>
+        /// <returns>Null or an object matching the primary key.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class lacks an [PrimaryKey].</exception>
-        public RealmObject Find(string className, string id)
+        public RealmObject Find(string className, string primaryKey)
         {
             var metadata = Metadata[className];
-            var objectPtr = metadata.Table.Find(SharedRealmHandle, id);
+            var objectPtr = metadata.Table.Find(SharedRealmHandle, primaryKey);
             if (objectPtr == IntPtr.Zero)
             {
                 return null;
