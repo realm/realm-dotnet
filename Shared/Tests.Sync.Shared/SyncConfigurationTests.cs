@@ -29,10 +29,17 @@ namespace Tests.Sync.Shared
         private Realm _realm;
 
         [SetUp]
-        public void SetUp()
+        public async void SetUp()
         {
-            var user = User.AdminUser("token");
-            _realm = Realm.GetInstance(new SyncConfiguration(user, new Uri("realm://localhost:9080/__admin")));
+            var credentials = Credentials.AccessToken("token", Guid.NewGuid().ToString());
+            var user = await User.LoginAsync(credentials, null);
+            _realm = Realm.GetInstance(new SyncConfiguration(user, new Uri("realm://localhost:9080")));
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            _realm.Dispose();
         }
 
         [Test]
