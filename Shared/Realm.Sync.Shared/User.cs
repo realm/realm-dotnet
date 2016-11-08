@@ -29,38 +29,50 @@ namespace Realms.Sync
         CreateAccount = 2
     }
 
+    public enum UserState
+    {
+        LoggedOut,
+        Active,
+        Error
+    }
+
     public class User
     {
-        public static User CurrentUser { get; private set; }
+        public string RefreshToken => Handle.RefreshToken;
+
+        public string Identity => Handle.Identity;
+
+        public Uri ServerUri
+        {
+            get
+            {
+                var serverUrl = Handle.ServerUrl;
+                if (string.IsNullOrEmpty(serverUrl))
+                {
+                    return null;
+                }
+
+                return new Uri(serverUrl);
+            }
+        }
+
+        public UserState State => Handle.State;
+
+        internal readonly SyncUserHandle Handle;
+
+        internal User(SyncUserHandle handle)
+        {
+            Handle = handle;
+        }
 
         public static async Task<User> LoginAsync(Credentials credentials, string serverUrl, LoginMode loginMode = LoginMode.UseExistingAccount)
         {
             throw new NotImplementedException();
         }
 
-        public static User AdminUser(string adminToken)
-        {
-            return new User(SyncUserHandle.GetSyncUser(Guid.NewGuid().ToString(), adminToken, null, true));
-        }
-
-        public string AccessToken { get; private set; }
-
-        public string Identity { get; private set; }
-
-        public bool IsValid { get; private set; }
-
         public void LogOut()
         {
-            throw new NotImplementedException();
-        }
-
-        private SyncUserHandle _syncUserHandle;
-
-        internal SyncUserHandle SyncUserHandle => _syncUserHandle;
-
-        private User(SyncUserHandle userHandle)
-        {
-            this._syncUserHandle = userHandle;
+            Handle.LogOut();
         }
     }
 }
