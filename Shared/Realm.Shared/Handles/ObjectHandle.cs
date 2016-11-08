@@ -278,43 +278,7 @@ namespace Realms
 
         public string GetString(IntPtr propertyIndex)
         {
-            var bufferSizeNeededChars = 128;
-
-            // First alloc this thread
-            var stringGetBuffer = Marshal.AllocHGlobal((IntPtr)(bufferSizeNeededChars * sizeof(char)));
-            var stringGetBufferLen = bufferSizeNeededChars;
-
-            bool isNull;
-            NativeException nativeException;
-
-            // try to read
-            var bytesRead = (int)NativeMethods.get_string(this, propertyIndex, stringGetBuffer,
-                (IntPtr)stringGetBufferLen, out isNull, out nativeException);
-            nativeException.ThrowIfNecessary();
-            if (bytesRead == -1)
-            {
-                throw new RealmInvalidDatabaseException("Corrupted string data");
-            }
-
-            if (bytesRead > stringGetBufferLen) // need a bigger buffer
-            {
-                Marshal.FreeHGlobal(stringGetBuffer);
-                stringGetBuffer = Marshal.AllocHGlobal((IntPtr)(bytesRead * sizeof(char)));
-                stringGetBufferLen = bytesRead;
-
-                // try to read with big buffer
-                bytesRead = (int)NativeMethods.get_string(this, propertyIndex, stringGetBuffer,
-                    (IntPtr)stringGetBufferLen, out isNull, out nativeException);
-                nativeException.ThrowIfNecessary();
-                if (bytesRead == -1) // bad UTF-8 in full string
-                {
-                    throw new RealmInvalidDatabaseException("Corrupted string data");
-                }
-
-                Debug.Assert(bytesRead <= stringGetBufferLen, "Buffer must have overflowed.");
-            } // needed re-read with expanded buffer
-
-            return bytesRead != 0 ? Marshal.PtrToStringUni(stringGetBuffer, bytesRead) : (isNull ? null : string.Empty);
+            return MarshalHelpers.GetString((IntPtr buffer, IntPtr length, out bool isNull, out NativeException ex) => NativeMethods.get_string(this, propertyIndex, buffer, length, out isNull, out ex));
         }
 
         public void SetLink(IntPtr propertyIndex, ObjectHandle targetHandle)
