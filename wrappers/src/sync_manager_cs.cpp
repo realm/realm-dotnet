@@ -31,8 +31,6 @@
 using namespace realm;
 using namespace realm::binding;
 
-using SharedSyncUser = std::shared_ptr<SyncUser>;
-
 struct SyncConfiguration
 {
     std::shared_ptr<SyncUser>* user;
@@ -48,23 +46,6 @@ REALM_EXPORT void realm_initialize_sync(const uint16_t* base_path_buf, size_t ba
     SyncManager::shared().configure_file_system(base_path);
 }
     
-REALM_EXPORT SharedSyncUser* realm_get_sync_user(const uint16_t* identity_buf, size_t identity_len,
-                                                 const uint16_t* refresh_token_buf, size_t refresh_token_len,
-                                                 const uint16_t* auth_server_url_buf, size_t auth_server_url_len,
-                                                 bool is_admin, NativeException::Marshallable& ex)
-{
-    return handle_errors(ex, [&] {
-        Utf16StringAccessor identity(identity_buf, identity_len);
-        Utf16StringAccessor refresh_token(refresh_token_buf, refresh_token_len);
-        
-        util::Optional<std::string> auth_server_url;
-        if (auth_server_url_buf) {
-            auth_server_url.emplace(Utf16StringAccessor(auth_server_url_buf, auth_server_url_len));
-        }
-        
-        return new SharedSyncUser(SyncManager::shared().get_user(identity, refresh_token, auth_server_url, is_admin));
-    });
-}
     
 REALM_EXPORT SharedRealm* shared_realm_open_with_sync(Configuration configuration, SyncConfiguration sync_configuration, SchemaObject* objects, int objects_length, SchemaProperty* properties, uint8_t* encryption_key, NativeException::Marshallable& ex)
 {
@@ -94,9 +75,5 @@ REALM_EXPORT SharedRealm* shared_realm_open_with_sync(Configuration configuratio
     });
 }
 
-REALM_EXPORT void syncuser_destroy(SharedSyncUser* user)
-{
-    delete user;
-}
 }
 

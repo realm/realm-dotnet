@@ -47,6 +47,7 @@
 		85C0412C1DCCE98A00CBF37B /* sync_file.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 85C041261DCCE98700CBF37B /* sync_file.cpp */; };
 		85C0412D1DCCE98E00CBF37B /* sync_metadata.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 85C041281DCCE98700CBF37B /* sync_metadata.cpp */; };
 		85C041301DCCEA3700CBF37B /* sync_manager_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 85C0412E1DCCEA3000CBF37B /* sync_manager_cs.cpp */; };
+		85C041321DD229C100CBF37B /* sync_user_cs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 85C041311DD229C100CBF37B /* sync_user_cs.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -148,6 +149,7 @@
 		85C041281DCCE98700CBF37B /* sync_metadata.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = sync_metadata.cpp; path = "src/object-store/src/sync/impl/sync_metadata.cpp"; sourceTree = "<group>"; };
 		85C041291DCCE98700CBF37B /* sync_metadata.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = sync_metadata.hpp; path = "src/object-store/src/sync/impl/sync_metadata.hpp"; sourceTree = "<group>"; };
 		85C0412E1DCCEA3000CBF37B /* sync_manager_cs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = sync_manager_cs.cpp; path = src/sync_manager_cs.cpp; sourceTree = "<group>"; };
+		85C041311DD229C100CBF37B /* sync_user_cs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = sync_user_cs.cpp; path = src/sync_user_cs.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -209,6 +211,7 @@
 				48ED7C631C16F9C200AF23A4 /* shared_realm_cs.cpp */,
 				48ED7C641C16F9C200AF23A4 /* table_cs.cpp */,
 				85C0412E1DCCEA3000CBF37B /* sync_manager_cs.cpp */,
+				85C041311DD229C100CBF37B /* sync_user_cs.cpp */,
 				424267201C070BE500670B1C /* librealm-ios-dbg.a */,
 				48D101431B3991B6004A4B2C /* librealm-ios.a */,
 				48D101391B39902E004A4B2C /* Products */,
@@ -449,6 +452,7 @@
 				85C041221DCCE96C00CBF37B /* sync_session.cpp in Sources */,
 				85C0412D1DCCE98E00CBF37B /* sync_metadata.cpp in Sources */,
 				85C041231DCCE97000CBF37B /* sync_user.cpp in Sources */,
+				85C041321DD229C100CBF37B /* sync_user_cs.cpp in Sources */,
 				85C041211DCCE96600CBF37B /* sync_manager.cpp in Sources */,
 				85C0412C1DCCE98A00CBF37B /* sync_file.cpp in Sources */,
 			);

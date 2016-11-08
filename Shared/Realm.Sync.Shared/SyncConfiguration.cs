@@ -51,7 +51,7 @@ namespace Realms.Sync
 
             var syncConfiguration = new Native.SyncConfiguration
             {
-                SyncUserHandle = User.SyncUserHandle,
+                SyncUserHandle = User.Handle,
                 Url = ServerUri.ToString()
             };
 
