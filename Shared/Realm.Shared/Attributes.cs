@@ -40,6 +40,12 @@ namespace Realms
     }
 
     [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
+    [AttributeUsage(AttributeTargets.Property)]
+    public class RequiredAttribute : Attribute
+    {
+    }
+
+    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass")]
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property)]
     public class MapToAttribute : Attribute
     {

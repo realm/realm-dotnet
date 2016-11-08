@@ -264,6 +264,13 @@ namespace Realms
             _objectHandle.SetString(_metadata.PropertyIndices[propertyName], value);
         }
 
+        protected void SetRequiredStringValue(string propertyName, string value)
+        {
+            Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");
+
+            _objectHandle.SetRequiredString(_metadata.PropertyIndices[propertyName], value);
+        }
+
         protected void SetStringValueUnique(string propertyName, string value)
         {
             Debug.Assert(IsManaged, "Object is not managed, but managed access was attempted");

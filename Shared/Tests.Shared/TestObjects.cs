@@ -44,6 +44,9 @@ namespace IntegrationTests.Shared
 
         public DateTimeOffset DateTimeOffsetProperty { get; set; }
 
+        [Required]
+        public string RequiredStringProperty { get; set; }
+
         public string StringProperty { get; set; }
 
         public byte[] ByteArrayProperty { get; set; }
