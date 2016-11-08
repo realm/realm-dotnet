@@ -67,7 +67,14 @@ namespace Realms.Sync
 
         public static async Task<User> LoginAsync(Credentials credentials, string serverUrl, LoginMode loginMode = LoginMode.UseExistingAccount)
         {
-            throw new NotImplementedException();
+            if (credentials.IdentityProvider == Credentials.Providers.AccessToken)
+            {
+                var identity = (string)credentials.UserInfo[Credentials.Keys.Identity];
+                var isAdmin = (bool)credentials.UserInfo[Credentials.Keys.IsAdmin];
+                return new User(SyncUserHandle.GetSyncUser(identity, credentials.Token, serverUrl, isAdmin));
+            }
+
+            return null;
         }
 
         public void LogOut()

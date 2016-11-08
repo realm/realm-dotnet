@@ -23,14 +23,48 @@ namespace Realms.Sync
 {
     public class Credentials
     {
+        internal static class Providers
+        {
+            internal const string Debug = "debug";
+
+            internal const string Facebook = "facebook";
+
+            internal const string Google = "google";
+
+            internal const string Twitter = "twitter";
+
+            internal const string Password = "password";
+
+            internal const string AccessToken = "accessToken";
+        }
+
+        internal static class Keys
+        {
+            internal const string CreateUser = "register";
+
+            internal const string Password = "password";
+
+            internal const string Identity = "identity";
+
+            internal const string IsAdmin = "isAdmin";
+        }
+
         public static Credentials Custom(string identityProvider, string userIdentifier,
-            IDictionary<string, object> userInfo)
+            IReadOnlyDictionary<string, object> userInfo)
         {
             return new Credentials
             {
                 IdentityProvider = identityProvider,
-                UserIdentifier = userIdentifier,
+                Token = userIdentifier,
                 UserInfo = userInfo
+            };
+        }
+
+        public static Credentials Debug()
+        {
+            return new Credentials
+            {
+                IdentityProvider = Providers.Debug
             };
         }
 
@@ -41,7 +75,7 @@ namespace Realms.Sync
                 throw new ArgumentNullException(nameof(facebookToken));
             }
 
-            return new Credentials { IdentityProvider = "facebook", UserIdentifier = facebookToken };
+            return new Credentials { IdentityProvider = Providers.Facebook, Token = facebookToken };
         }
 
         public static Credentials Google(string googleToken)
@@ -51,7 +85,7 @@ namespace Realms.Sync
                 throw new ArgumentNullException(nameof(googleToken));
             }
 
-            return new Credentials { IdentityProvider = "google", UserIdentifier = googleToken };
+            return new Credentials { IdentityProvider = Providers.Google, Token = googleToken };
         }
 
         public static Credentials Twitter(string twitterToken)
@@ -61,23 +95,33 @@ namespace Realms.Sync
                 throw new ArgumentNullException(nameof(twitterToken));
             }
 
-            return new Credentials { IdentityProvider = "twitter", UserIdentifier = twitterToken };
+            return new Credentials { IdentityProvider = Providers.Twitter, Token = twitterToken };
         }
 
         public static Credentials UsernamePassword(string username, string password, bool createUser)
         {
             return new Credentials 
             { 
-                IdentityProvider = "password",
-                UserIdentifier = username,
-                UserInfo = new Dictionary<string, object> { { "register", createUser }, { "password", password } }
+                IdentityProvider = Providers.Password,
+                Token = username,
+                UserInfo = new Dictionary<string, object> { [Keys.CreateUser] = createUser, [Keys.Password] = password }
+            };
+        }
+
+        public static Credentials AccessToken(string accessToken, string identity, bool isAdmin = false)
+        {
+            return new Credentials
+            {
+                IdentityProvider = Providers.AccessToken,
+                Token = accessToken,
+                UserInfo = new Dictionary<string, object> { [Keys.Identity] = identity, [Keys.IsAdmin] = isAdmin }
             };
         }
 
         public string IdentityProvider { get; private set; }
 
-        public string UserIdentifier { get; private set; }
+        public string Token { get; private set; }
 
-        public IDictionary<string, object> UserInfo { get; private set; } = new Dictionary<string, object>();
+        public IReadOnlyDictionary<string, object> UserInfo { get; private set; } = new Dictionary<string, object>();
     }
 }
