@@ -279,11 +279,14 @@ namespace RealmWeaver
         }
 
         [TestCaseSource(nameof(RandomAndDefaultValues))]
-        public void SetValueManagedShouldRaisePropertyChanged(string typeName, object propertyValue, object defaultPropertyValue)
+        public void SetValueManagedShouldNotRaisePropertyChanged(string typeName, object propertyValue, object defaultPropertyValue)
         {
+            // We no longer manually raise PropertyChanged in the setter for managed objects.
+            // Instead, we subscribe for notificaitons from core, and propagate those.
+
             // Arrange
             var propertyName = typeName + "Property";
-            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.AllTypesObjectPropertyChanged"));
+            var o = (dynamic)Activator.CreateInstance(_assembly.GetType("AssemblyToProcess.AllTypesObject"));
             o.IsManaged = true;
 
             var eventRaised = false;
@@ -302,7 +305,7 @@ namespace RealmWeaver
                 "RealmObject.Set" + typeName + "Value(propertyName = \"" + propertyName + "\", value = " + propertyValue + ")"
             }));
             Assert.That(GetAutoPropertyBackingFieldValue(o, propertyName), Is.EqualTo(defaultPropertyValue));
-            Assert.That(eventRaised, Is.True);
+            Assert.That(eventRaised, Is.False);
         }
 
         [TestCase("Char", '0', char.MinValue)]
@@ -402,6 +405,8 @@ namespace RealmWeaver
 
             // Act
             o.Email = "a@b.com";
+
+            var a = o.LogList;
 
             // Assert
             Assert.That(o.LogList, Is.EqualTo(new List<string>
@@ -527,16 +532,9 @@ namespace RealmWeaver
 
             var properties = ((Type)instance.GetType()).GetProperties(BindingFlags.Public | BindingFlags.Instance);
             var targetList = properties.Where(p => p.Name != "IsManaged" && p.Name != "Realm")
-                                       .SelectMany(p =>
-                                       {
-                                           return new[]
-                                           {
-                                               "IsManaged",
-                                               $"RealmObject.SetNullable{p.Name}Value(propertyName = \"{p.Name}\", value = )"
-                                           };
-                                       })
+                                       .Select(p => $"RealmObject.SetNullable{p.Name}Value(propertyName = \"{p.Name}\", value = )")
                                        .ToList();
-
+            var a = instance.LogList;
             Assert.That(instance.LogList, Is.EqualTo(targetList));
         }
 

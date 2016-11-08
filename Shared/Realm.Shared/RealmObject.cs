@@ -18,10 +18,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace Realms
 {
@@ -32,11 +32,13 @@ namespace Realms
     /// Has a Preserve attribute to attempt to preserve all subtypes without having to weave.
     /// </remarks>
     [Preserve(AllMembers = true, Conditional = false)]
-    public class RealmObject : IReflectableType
+    public class RealmObject : IReflectableType, INotifyPropertyChanged
     {
         private Realm _realm;
         private ObjectHandle _objectHandle;
         private Metadata _metadata;
+
+        public event PropertyChangedEventHandler PropertyChanged;
 
         internal ObjectHandle ObjectHandle => _objectHandle;
 
@@ -533,6 +535,11 @@ namespace Realms
             // Note that the base class is not invoked because it is 
             // System.Object, which defines Equals as reference equality. 
             return ObjectHandle.Equals(((RealmObject)obj).ObjectHandle);
+        }
+
+        protected void RaisePropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         TypeInfo IReflectableType.GetTypeInfo()
