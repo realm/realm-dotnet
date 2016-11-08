@@ -29,7 +29,7 @@ namespace Realms.Sync
         CreateAccount = 2
     }
 
-    public class User : ISerializable
+    public class User
     {
         public static User CurrentUser { get; private set; }
 
@@ -50,11 +50,6 @@ namespace Realms.Sync
         public bool IsValid { get; private set; }
 
         public void LogOut()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             throw new NotImplementedException();
         }
