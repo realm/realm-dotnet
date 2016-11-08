@@ -3,7 +3,8 @@
 ### Breaking Changes
 
 ### Enhancements
-* In data-binding scenarios, if a setter is invoked by the binding outside of write transaction, we'll create an implicit one and commit it. This enables two-way data bindings without keeping around long-lived transactions. (#901) 
+* In data-binding scenarios, if a setter is invoked by the binding outside of write transaction, we'll create an implicit one and commit it. This enables two-way data bindings without keeping around long-lived transactions. (#901)
+* The Realm schema can now express non-nullable reference type properties with the new `[Required]` attribute. (#349)
 
 ### Bug fixes
 
