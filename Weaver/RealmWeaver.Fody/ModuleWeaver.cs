@@ -118,7 +118,7 @@ public class ModuleWeaver
     {
         "PrimaryKeyAttribute",
         "IndexedAttribute",
-        "MapToAttribute"
+        "MapToAttribute",
     };
 
     private MethodReference _genericGetObjectValueReference;

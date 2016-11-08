@@ -1,3 +1,12 @@
+0.8x.x (TBD)
+-------------------
+### Breaking Changes
+
+### Enhancements
+* In data-binding scenarios, if a setter is invoked by the binding outside of write transaction, we'll create an implicit one and commit it. This enables two-way data bindings without keeping around long-lived transactions. (#901) 
+
+### Bug fixes
+
 0.80.0 (2016-10-27)
 -------------------
 ### Breaking Changes

@@ -46,7 +46,7 @@ namespace IntegrationTests.Shared
         }
 
         [Test]
-        public void ReflectedGetRelatedObject_WhenObjectIsValid_ShouldReturnObject()
+        public void ReflectableGetRelatedObject_WhenObjectIsValid_ShouldReturnObject()
         {
             var owner = AddDogAndOwner();
 
@@ -60,7 +60,7 @@ namespace IntegrationTests.Shared
         }
 
         [Test]
-        public void ReflectedPropertyGetValue_WhenObjectIsValid_ShouldReturnObject()
+        public void ReflectablePropertyGetValue_WhenObjectIsValid_ShouldReturnObject()
         {
             var owner = AddDogAndOwner();
 
@@ -82,7 +82,7 @@ namespace IntegrationTests.Shared
         }
 
         [Test]
-        public void ReflectedGetRelatedObject_WhenObjectIsRemoved_ShouldReturnNull()
+        public void ReflectableGetRelatedObject_WhenObjectIsRemoved_ShouldReturnNull()
         {
             var owner = AddDogAndOwner();
 
@@ -100,7 +100,7 @@ namespace IntegrationTests.Shared
         }
 
         [Test]
-        public void ReflectedPropertyGetValue_WhenObjectIsRemoved_ShouldReturnNull()
+        public void ReflectablePropertyGetValue_WhenObjectIsRemoved_ShouldReturnNull()
         {
             var owner = AddDogAndOwner();
 
@@ -132,7 +132,7 @@ namespace IntegrationTests.Shared
         }
 
         [Test]
-        public void ReflectedGetTopLevelProperty_WhenObjectIsValid_ShouldReturnValue()
+        public void ReflectableGetTopLevelProperty_WhenObjectIsValid_ShouldReturnValue()
         {
             var owner = AddDogAndOwner();
 
@@ -151,7 +151,7 @@ namespace IntegrationTests.Shared
         }
 
         [Test]
-        public void ReflectedGetTopLevelProperty_WhenObjectIsRemoved_ShouldReturnDefault()
+        public void ReflectableGetTopLevelProperty_WhenObjectIsRemoved_ShouldReturnDefault()
         {
             var owner = AddDogAndOwner();
             _realm.Write(() =>
@@ -182,7 +182,7 @@ namespace IntegrationTests.Shared
         }
 
         [Test]
-        public void ReflectedSetter_WhenObjectIsValid_ShouldSetValue()
+        public void ReflectableSetter_WhenObjectIsValid_ShouldSetValue()
         {
             var owner = AddDogAndOwner();
             var typeInfo = ((IReflectableType)owner).GetTypeInfo();
@@ -197,7 +197,98 @@ namespace IntegrationTests.Shared
         }
 
         [Test]
-        public void ReflectedSetter_WhenObjectIsInvalid_ShouldThrow()
+        public void ReflectableSetter_WhenNotInTransaction_ShouldCreateTransactionAndCommit()
+        {
+            var owner = AddDogAndOwner();
+            var typeInfo = ((IReflectableType)owner).GetTypeInfo();
+            var nameSetter = typeInfo.GetDeclaredProperty(nameof(Owner.Name)).SetMethod;
+
+            nameSetter.Invoke(owner, new[] { "John" });
+
+            Assert.That(owner.Name, Is.EqualTo("John"));
+        }
+
+        [Test]
+        public void ReflectableSetValue_WhenObjectIsValid_ShouldSetValue()
+        {
+            var owner = AddDogAndOwner();
+            var typeInfo = ((IReflectableType)owner).GetTypeInfo();
+            var pi = typeInfo.GetDeclaredProperty(nameof(Owner.Name));
+
+            _realm.Write(() =>
+            {
+                pi.SetValue(owner, "John");
+            });
+
+            Assert.That(owner.Name, Is.EqualTo("John"));
+        }
+
+        [Test]
+        public void ReflectableSetValue_WhenNotInTransaction_ShouldCreateTransactionAndCommit()
+        {
+            var owner = AddDogAndOwner();
+            var typeInfo = ((IReflectableType)owner).GetTypeInfo();
+            var pi = typeInfo.GetDeclaredProperty(nameof(Owner.Name));
+
+            pi.SetValue(owner, "John");
+
+            Assert.That(owner.Name, Is.EqualTo("John"));
+        }
+
+        [Test]
+        public void Setter_WhenNotInTransaction_ShouldThrow()
+        {
+            var owner = AddDogAndOwner();
+            var setter = owner.GetType().GetProperty(nameof(Owner.Name)).SetMethod;
+
+            Assert.That(() =>
+            {
+                setter.Invoke(owner, new[] { "John" });
+            }, Throws.InnerException.TypeOf<RealmInvalidTransactionException>());
+        }
+
+        [Test]
+        public void Setter_WhenInTransaction_ShouldSetValue()
+        {
+            var owner = AddDogAndOwner();
+            var setter = owner.GetType().GetProperty(nameof(Owner.Name)).SetMethod;
+
+            _realm.Write(() =>
+            {
+                setter.Invoke(owner, new[] { "John" });
+            });
+
+            Assert.That(owner.Name, Is.EqualTo("John"));
+        }
+
+        [Test]
+        public void SetValue_WhenNotInTransaction_ShouldThrow()
+        {
+            var owner = AddDogAndOwner();
+            var pi = owner.GetType().GetProperty(nameof(Owner.Name));
+
+            Assert.That(() =>
+            {
+                pi.SetValue(owner, "John");
+            }, Throws.InnerException.TypeOf<RealmInvalidTransactionException>());
+        }
+
+        [Test]
+        public void SetValue_WhenInTransaction_ShouldSetValue()
+        {
+            var owner = AddDogAndOwner();
+            var pi = owner.GetType().GetProperty(nameof(Owner.Name));
+
+            _realm.Write(() =>
+            {
+                pi.SetValue(owner, "John");
+            });
+
+            Assert.That(owner.Name, Is.EqualTo("John"));
+        }
+
+        [Test]
+        public void ReflectableSetter_WhenObjectIsInvalid_ShouldThrow()
         {
             var owner = AddDogAndOwner();
             _realm.Write(() =>
@@ -217,7 +308,33 @@ namespace IntegrationTests.Shared
             }, Throws.InnerException.TypeOf<RealmInvalidObjectException>());
         }
 
-        private Owner AddDogAndOwner()
+        [Test]
+        public void ReflectableSetter_WhenObjectIsStandalone_ShouldSetValue()
+        {
+            var owner = AddDogAndOwner(manage: false);
+
+            var typeInfo = ((IReflectableType)owner).GetTypeInfo();
+            var pi = typeInfo.GetDeclaredProperty(nameof(Owner.Name));
+
+            pi.SetValue(owner, "John");
+
+            Assert.That(owner.Name, Is.EqualTo("John"));
+        }
+
+        [Test]
+        public void ReflectableGetter_WhenObjectIsStandalone_ShouldGetValue()
+        {
+            var owner = AddDogAndOwner(manage: false);
+
+            var typeInfo = ((IReflectableType)owner).GetTypeInfo();
+            var pi = typeInfo.GetDeclaredProperty(nameof(Owner.Name));
+
+            var name = pi.GetValue(owner);
+
+            Assert.That(name, Is.EqualTo(OwnerName));
+        }
+
+        private Owner AddDogAndOwner(bool manage = true)
         {
             var owner = new Owner
             {
@@ -228,10 +345,13 @@ namespace IntegrationTests.Shared
                 Name = OwnerName
             };
 
-            _realm.Write(() =>
+            if (manage)
             {
-                _realm.Manage(owner);
-            });
+                _realm.Write(() =>
+                {
+                    _realm.Manage(owner);
+                });
+            }
 
             return owner;
         }
