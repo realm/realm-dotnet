@@ -116,23 +116,6 @@ namespace IntegrationTests.Shared
         };
 
         [Test]
-        public void SetRequiredStringToNullShouldFail()
-        {
-            // Arrange
-            var o = new AllTypesObject { RequiredStringProperty = "Initial value" };
-            _realm.Write(() =>
-            {
-                _realm.Manage(o);
-            });
-
-            // Act and assert
-            Assert.That(() =>
-            {
-                _realm.Write(() => { o.RequiredStringProperty = null; });
-            }, Throws.Exception);
-        }
-
-        [Test]
         public void AccessingRemovedObjectShouldThrow()
         {
             // Arrange

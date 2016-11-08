@@ -192,11 +192,6 @@ namespace Realms
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }
 
-        protected void SetRequiredStringValue(string propertyName, string value)
-        {
-            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
-        }
-
         protected void SetStringValueUnique(string propertyName, string value)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();

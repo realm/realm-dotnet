@@ -214,11 +214,7 @@ namespace Realms.Dynamic
                     break;
                 case Schema.PropertyType.String:
                     argumentType = typeof(string);
-                    if (!property.IsNullable)
-                    {
-                        setter = GetSetMethod<string>(dummyHandle.SetRequiredString);
-                    }
-                    else if (property.IsPrimaryKey)
+                    if (property.IsPrimaryKey)
                     {
                         setter = GetSetMethod<string>(dummyHandle.SetStringUnique);
                     }
