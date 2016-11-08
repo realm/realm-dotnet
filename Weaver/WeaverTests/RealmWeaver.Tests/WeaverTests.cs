@@ -26,6 +26,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Xml.Linq;
 using Mono.Cecil;
 using NUnit.Framework;
 using Realms.Weaving;
@@ -81,11 +82,14 @@ namespace RealmWeaver
 
         private void WeavePropertyChanged(ModuleDefinition moduleDefinition)
         {
+            var config = new XElement("PropertyChanged");
+            config.SetAttributeValue("CheckForEquality", false);
             new propertychanged::ModuleWeaver
             {
                 ModuleDefinition = moduleDefinition,
                 AssemblyResolver = moduleDefinition.AssemblyResolver,
-                LogWarning = s => _warnings.Add(s)
+                LogWarning = s => _warnings.Add(s),
+                Config = config
             }.Execute();
         }
 
@@ -406,8 +410,6 @@ namespace RealmWeaver
             // Act
             o.Email = "a@b.com";
 
-            var a = o.LogList;
-
             // Assert
             Assert.That(o.LogList, Is.EqualTo(new List<string>
             {
@@ -532,9 +534,15 @@ namespace RealmWeaver
 
             var properties = ((Type)instance.GetType()).GetProperties(BindingFlags.Public | BindingFlags.Instance);
             var targetList = properties.Where(p => p.Name != "IsManaged" && p.Name != "Realm")
-                                       .Select(p => $"RealmObject.SetNullable{p.Name}Value(propertyName = \"{p.Name}\", value = )")
+                                       .SelectMany(p =>
+                                       {
+                                           return new[]
+                                           {
+                                               "IsManaged",
+                                               $"RealmObject.SetNullable{p.Name}Value(propertyName = \"{p.Name}\", value = )"
+                                           };
+                                       })
                                        .ToList();
-            var a = instance.LogList;
             Assert.That(instance.LogList, Is.EqualTo(targetList));
         }
 
