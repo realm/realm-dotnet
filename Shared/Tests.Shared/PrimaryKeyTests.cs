@@ -247,7 +247,7 @@ namespace IntegrationTests.Shared
         private RealmObject FindByPKGeneric(Type type, object primaryKeyValue, bool isIntegerPK)
         {
             var genericArgument = isIntegerPK ? typeof(long?) : typeof(string);
-            var genericMethod = _realm.GetType().GetMethod(nameof(Realm.ObjectForPrimaryKey), new[] { genericArgument });
+            var genericMethod = _realm.GetType().GetMethod(nameof(Realm.Find), new[] { genericArgument });
 
             object castPKValue;
             if (isIntegerPK)
