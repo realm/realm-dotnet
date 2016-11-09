@@ -38,7 +38,31 @@ namespace Realms
         private ObjectHandle _objectHandle;
         private Metadata _metadata;
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        private event PropertyChangedEventHandler _propertyChanged;
+
+        public event PropertyChangedEventHandler PropertyChanged
+        {
+            add
+            {
+                if (IsManaged && _propertyChanged == null)
+                {
+                    // TODO: Subscribe
+                }
+
+                _propertyChanged += value;
+            }
+
+            remove
+            {
+                _propertyChanged -= value;
+
+                if (IsManaged &&
+                    _propertyChanged == null)
+                {
+                    // TODO: Unsubscribe
+                }
+            }
+        }
 
         internal ObjectHandle ObjectHandle => _objectHandle;
 
@@ -72,6 +96,19 @@ namespace Realms
             _realm = realm;
             _objectHandle = objectHandle;
             _metadata = metadata;
+
+            if (_propertyChanged != null)
+            {
+                // TODO: subscribe
+            }
+        }
+
+        internal void RemoveFromRealm()
+        {
+            if (_propertyChanged != null)
+            {
+                // TODO: unsubscribe
+            }
         }
 
         internal class Metadata
@@ -539,7 +576,7 @@ namespace Realms
 
         protected void RaisePropertyChanged([CallerMemberName] string propertyName = null)
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            _propertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         TypeInfo IReflectableType.GetTypeInfo()
