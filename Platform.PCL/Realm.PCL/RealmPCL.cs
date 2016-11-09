@@ -100,15 +100,6 @@ namespace Realms
         public bool IsClosed => false;
 
         /// <summary>
-        ///  Closes the Realm if not already closed. Safe to call repeatedly.
-        /// </summary>
-        //// [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-        public void Close()
-        {
-            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
-        }
-
-        /// <summary>
         ///  Dispose automatically closes the Realm if not already closed.
         /// </summary>
         public void Dispose()
@@ -175,10 +166,10 @@ namespace Realms
         /// <summary>
         /// Factory for a managed object in a realm. Only valid within a Write transaction.
         /// </summary>
-        /// <remarks>Using CreateObject is more efficient than creating standalone objects, assigning their values, then using Manage because it avoids copying properties to the realm.</remarks>
+        /// <remarks>Using CreateObject is more efficient than creating standalone objects, assigning their values, then using Add because it avoids copying properties to the realm.</remarks>
         /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
         /// <returns>An object which is already managed.</returns>
-        /// <exception cref="RealmOutsideTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
+        /// <exception cref="RealmInvalidTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
         public T CreateObject<T>() where T : RealmObject, new()
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
@@ -206,13 +197,13 @@ namespace Realms
         /// <typeparam name="T">The Type T must not only be a RealmObject but also have been processed by the Fody weaver, so it has persistent properties.</typeparam>
         /// <param name="obj">Must be a standalone object, null not allowed.</param>
         /// <param name="update">If true, and an object with the same primary key already exists, performs an update.</param>
-        /// <exception cref="RealmOutsideTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
+        /// <exception cref="RealmInvalidTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
         /// <exception cref="RealmObjectManagedByAnotherRealmException">You can't manage an object with more than one realm</exception>
         /// <remarks>
         /// If the object is already managed by this realm, this method does nothing.
         /// Cyclic graphs (<c>Parent</c> has <c>Child</c> that has a <c>Parent</c>) will result in undefined behavior. You have to break the cycle manually and assign relationships after all object have been managed.
         /// </remarks>
-        public void Manage<T>(T obj, bool update) where T : RealmObject
+        public void Add<T>(T obj, bool update) where T : RealmObject
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }
@@ -228,7 +219,7 @@ namespace Realms
         /// If the object is already managed by this realm, this method does nothing.
         /// Cyclic graphs (<c>Parent</c> has <c>Child</c> that has a <c>Parent</c>) will result in undefined behavior. You have to break the cycle manually and assign relationships after all object have been managed.
         /// </remarks>
-        public void Manage(RealmObject obj, bool update = false)
+        public void Add(RealmObject obj, bool update = false)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
         }
@@ -344,10 +335,10 @@ namespace Realms
         /// Fast lookup of an object from a class which has a PrimaryKey property.
         /// </summary>
         /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
-        /// <param name="id">Id to be matched exactly, same as an == search. An argument of type <c>long?</c> works for all integer properties, supported as PrimaryKey.</param>
-        /// <returns>Null or an object matching the id.</returns>
+        /// <param name="primaryKey">Primary key to be matched exactly, same as an == search. An argument of type <c>long?</c> works for all integer properties, supported as PrimaryKey.</param>
+        /// <returns>Null or an object matching the primary key.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class T lacks an [PrimaryKey].</exception>
-        public T ObjectForPrimaryKey<T>(long? id) where T : RealmObject
+        public T Find<T>(long? primaryKey) where T : RealmObject
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return null;
@@ -357,10 +348,10 @@ namespace Realms
         /// Fast lookup of an object from a class which has a PrimaryKey property.
         /// </summary>
         /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
-        /// <param name="id">Id to be matched exactly, same as an == search.</param>
-        /// <returns>Null or an object matching the id.</returns>
+        /// <param name="primaryKey">Primary key to be matched exactly, same as an == search.</param>
+        /// <returns>Null or an object matching the primary key.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class T lacks an [PrimaryKey].</exception>
-        public T ObjectForPrimaryKey<T>(string id) where T : RealmObject
+        public T Find<T>(string primaryKey) where T : RealmObject
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return null;
@@ -370,10 +361,10 @@ namespace Realms
         /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.
         /// </summary>
         /// <param name="className">Name of class in dynamic situation.</param>
-        /// <param name="id">Id to be matched exactly, same as an == search. An argument of type <c>long?</c> works for all integer properties, supported as PrimaryKey.</param>
-        /// <returns>Null or an object matching the id.</returns>
+        /// <param name="primaryKey">Primary key to be matched exactly, same as an == search. An argument of type <c>long?</c> works for all integer properties, supported as PrimaryKey.</param>
+        /// <returns>Null or an object matching the primary key.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class lacks an [PrimaryKey].</exception>
-        public RealmObject ObjectForPrimaryKey(string className, long? id)
+        public RealmObject Find(string className, long? primaryKey)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return null;
@@ -383,10 +374,10 @@ namespace Realms
         /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.
         /// </summary>
         /// <param name="className">Name of class in dynamic situation.</param>
-        /// <param name="id">Id to be matched exactly, same as an == search.</param>
-        /// <returns>Null or an object matching the id.</returns>
+        /// <param name="primaryKey">Primary key to be matched exactly, same as an == search.</param>
+        /// <returns>Null or an object matching the primary key.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class lacks an [PrimaryKey].</exception>
-        public RealmObject ObjectForPrimaryKey(string className, string id)
+        public RealmObject Find(string className, string primaryKey)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return null;
@@ -396,7 +387,7 @@ namespace Realms
         /// Removes a persistent object from this realm, effectively deleting it.
         /// </summary>
         /// <param name="obj">Must be an object persisted in this realm.</param>
-        /// <exception cref="RealmOutsideTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
+        /// <exception cref="RealmInvalidTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
         /// <exception cref="System.ArgumentNullException">If you invoke this with a standalone object.</exception>
         public void Remove(RealmObject obj)
         {
@@ -437,5 +428,86 @@ namespace Realms
         public void RemoveAll()
         {
         }
+
+        #region Obsolete methods
+
+        /// <summary>
+        /// Fast lookup of an object from a class which has a PrimaryKey property.
+        /// </summary>
+        /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
+        /// <param name="id">Id to be matched exactly, same as an == search. Int64 argument works for all integer properties supported as PrimaryKey.</param>
+        /// <returns>Null or an object matching the id.</returns>
+        /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class T lacks an [PrimaryKey].</exception>
+        [Obsolete("This method has been renamed. Use Find for the same results.")]
+        public T ObjectForPrimaryKey<T>(long id) where T : RealmObject
+        {
+            return Find<T>(id);
+        }
+
+        /// <summary>
+        /// Fast lookup of an object from a class which has a PrimaryKey property.
+        /// </summary>
+        /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
+        /// <param name="id">Id to be matched exactly, same as an == search.</param>
+        /// <returns>Null or an object matdhing the id.</returns>
+        /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class T lacks an [PrimaryKey].</exception>
+        [Obsolete("This method has been renamed. Use Find for the same results.")]
+        public T ObjectForPrimaryKey<T>(string id) where T : RealmObject
+        {
+            return Find<T>(id);
+        }
+
+        /// <summary>
+        /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.
+        /// </summary>
+        /// <param name="className">Name of class in dynamic situation.</param>
+        /// <param name="id">Id to be matched exactly, same as an == search.</param>
+        /// <returns>Null or an object matdhing the id.</returns>
+        /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class lacks an [PrimaryKey].</exception>
+        [Obsolete("This method has been renamed. Use Find for the same results.")]
+        public RealmObject ObjectForPrimaryKey(string className, long id)
+        {
+            return Find(className, id);
+        }
+
+        /// <summary>
+        /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.
+        /// </summary>
+        /// <param name="className">Name of class in dynamic situation.</param>
+        /// <param name="id">Id to be matched exactly, same as an == search.</param>
+        /// <returns>Null or an object matdhing the id.</returns>
+        /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class lacks an [PrimaryKey].</exception>
+        [Obsolete("This method has been renamed. Use Find for the same results.")]
+        public RealmObject ObjectForPrimaryKey(string className, string id)
+        {
+            return Find(className, id);
+        }
+
+        /// <summary>
+        /// This realm will start managing a RealmObject which has been created as a standalone object.
+        /// </summary>
+        /// <typeparam name="T">The Type T must not only be a RealmObject but also have been processed by the Fody weaver, so it has persistent properties.</typeparam>
+        /// <param name="obj">Must be a standalone object, null not allowed.</param>
+        /// <param name="update">If true, and an object with the same primary key already exists, performs an update.</param>
+        /// <exception cref="RealmInvalidTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
+        /// <exception cref="RealmObjectAlreadyManagedByRealmException">You can't manage the same object twice. This exception is thrown, rather than silently detecting the mistake, to help you debug your code</exception>
+        /// <exception cref="RealmObjectManagedByAnotherRealmException">You can't manage an object with more than one realm</exception>
+        [Obsolete("This method has been renamed. Use Add for the same results.")]
+        public void Manage<T>(T obj, bool update) where T : RealmObject
+        {
+            Add(obj, update);
+        }
+
+        /// <summary>
+        ///  Closes the Realm if not already closed. Safe to call repeatedly.
+        /// </summary>
+        //// [ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
+        [Obsolete("This method has been deprecated. Instead, dispose the realm to close it.")]
+        public void Close()
+        {
+            RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
+        }
+
+        #endregion
     }
 }

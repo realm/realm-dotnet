@@ -31,7 +31,7 @@ namespace Realms
         /// <param name="errorCallback">An error callback that will be invoked if the observing thread raises an error.</param>
         /// <typeparam name="T">Type of the RealmObject in the results.</typeparam>
         /// <returns>An <see cref="ObservableCollection{T}" />-like object useful for MVVM databinding.</returns>
-        /// <seealso cref="RealmResults{T}.SubscribeForNotifications(RealmResults{T}.NotificationCallback)"/>
+        /// <seealso cref="RealmResults{T}.SubscribeForNotifications(RealmResults{T}.NotificationCallbackDelegate)"/>
         public static INotifyCollectionChanged ToNotifyCollectionChanged<T>(this IOrderedQueryable<T> results, Action<Exception> errorCallback) where T : RealmObject
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
@@ -49,7 +49,7 @@ namespace Realms
         /// </param>
         /// <typeparam name="T">Type of the RealmObject in the results.</typeparam>
         /// <returns>An <see cref="ObservableCollection{T}" />-like object useful for MVVM databinding.</returns>
-        /// <seealso cref="RealmResults{T}.SubscribeForNotifications(RealmResults{T}.NotificationCallback)"/>
+        /// <seealso cref="RealmResults{T}.SubscribeForNotifications(RealmResults{T}.NotificationCallbackDelegate)"/>
         public static INotifyCollectionChanged ToNotifyCollectionChanged<T>(this IOrderedQueryable<T> results, Action<Exception> errorCallback, bool coalesceMultipleChangesIntoReset) where T : RealmObject
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();

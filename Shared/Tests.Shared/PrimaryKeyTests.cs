@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -42,7 +42,7 @@ namespace IntegrationTests.Shared
         [TearDown]
         public void TearDown()
         {
-            _realm.Close();
+            _realm.Dispose();
             Realm.DeleteRealm(_realm.Config);
         }
 
@@ -68,7 +68,7 @@ namespace IntegrationTests.Shared
             var pkProperty = type.GetProperties().Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
             pkProperty.SetValue(obj, primaryKeyValue);
 
-            _realm.Write(() => _realm.Manage(obj));
+            _realm.Write(() => _realm.Add(obj));
 
             var foundObj = FindByPKDynamic(type, primaryKeyValue, isIntegerPK);
 
@@ -158,7 +158,7 @@ namespace IntegrationTests.Shared
 
             _realm.Write(() =>
             {
-                _realm.Manage(first);
+                _realm.Add(first);
             });
 
             Assert.That(() =>
@@ -167,7 +167,7 @@ namespace IntegrationTests.Shared
                 pkProperty.SetValue(second, primaryKeyValue);
                 _realm.Write(() =>
                 {
-                    _realm.Manage(second);
+                    _realm.Add(second);
                 });
             }, Throws.TypeOf<RealmDuplicatePrimaryKeyValueException>());
         }
@@ -186,10 +186,10 @@ namespace IntegrationTests.Shared
                     castPKValue = Convert.ToInt64(primaryKeyValue);
                 }
 
-                return _realm.ObjectForPrimaryKey(type.Name, castPKValue);
+                return _realm.Find(type.Name, castPKValue);
             }
 
-            return _realm.ObjectForPrimaryKey(type.Name, (string)primaryKeyValue);
+            return _realm.Find(type.Name, (string)primaryKeyValue);
         }
 
         [TestCase(typeof(PrimaryKeyCharObject), 'x', true)]
@@ -214,7 +214,7 @@ namespace IntegrationTests.Shared
             var pkProperty = type.GetProperties().Single(p => p.GetCustomAttribute<PrimaryKeyAttribute>() != null);
             pkProperty.SetValue(obj, primaryKeyValue);
 
-            _realm.Write(() => _realm.Manage(obj));
+            _realm.Write(() => _realm.Add(obj));
 
             var foundObj = FindByPKGeneric(type, primaryKeyValue, isIntegerPK);
 
@@ -247,7 +247,7 @@ namespace IntegrationTests.Shared
         private RealmObject FindByPKGeneric(Type type, object primaryKeyValue, bool isIntegerPK)
         {
             var genericArgument = isIntegerPK ? typeof(long?) : typeof(string);
-            var genericMethod = _realm.GetType().GetMethod(nameof(Realm.ObjectForPrimaryKey), new[] { genericArgument });
+            var genericMethod = _realm.GetType().GetMethod(nameof(Realm.Find), new[] { genericArgument });
 
             object castPKValue;
             if (isIntegerPK)
@@ -274,7 +274,7 @@ namespace IntegrationTests.Shared
         {
             Assert.Throws<RealmClassLacksPrimaryKeyException>(() =>
             {
-                var foundObj = _realm.ObjectForPrimaryKey<Person>("Zaphod");
+                var foundObj = _realm.Find<Person>("Zaphod");
             });
         }
 
@@ -283,7 +283,7 @@ namespace IntegrationTests.Shared
         {
             Assert.Throws<RealmClassLacksPrimaryKeyException>(() =>
             {
-                var foundObj = _realm.ObjectForPrimaryKey("Person", "Zaphod");
+                var foundObj = _realm.Find("Person", "Zaphod");
             });
         }
 
@@ -303,7 +303,7 @@ namespace IntegrationTests.Shared
             {
                 using (var realm2 = Realm.GetInstance())
                 {
-                    var foundObj = realm2.ObjectForPrimaryKey<PrimaryKeyInt64Object>(42000042);
+                    var foundObj = realm2.Find<PrimaryKeyInt64Object>(42000042);
                     foundValue = foundObj.Int64Property;
                 }
             });
@@ -367,7 +367,7 @@ namespace IntegrationTests.Shared
             var skinny = Realm.GetInstance(conf);
             Assert.Throws<KeyNotFoundException>(() =>
             {
-                var obj = skinny.ObjectForPrimaryKey<PrimaryKeyInt64Object>(42);
+                var obj = skinny.Find<PrimaryKeyInt64Object>(42);
             });
         }
     }

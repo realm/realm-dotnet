@@ -40,7 +40,7 @@ namespace Realms
             public MarshaledVector<Move> Moves;
         }
 
-        internal delegate void NotificationCallback(IntPtr managedResultsHandle, IntPtr collectionChanges, IntPtr notficiationException);
+        internal delegate void NotificationCallbackDelegate(IntPtr managedResultsHandle, IntPtr collectionChanges, IntPtr notficiationException);
 
         public static class NativeMethods
         {
@@ -60,7 +60,7 @@ namespace Realms
             public static extern void clear(ResultsHandle results, SharedRealmHandle realmHandle, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_add_notification_callback", CallingConvention = CallingConvention.Cdecl)]
-            public static extern IntPtr add_notification_callback(ResultsHandle results, IntPtr managedResultsHandle, NotificationCallback callback, out NativeException ex);
+            public static extern IntPtr add_notification_callback(ResultsHandle results, IntPtr managedResultsHandle, NotificationCallbackDelegate callback, out NativeException ex);
 
             [DllImport(InteropConfig.DLL_NAME, EntryPoint = "results_destroy_notificationtoken", CallingConvention = CallingConvention.Cdecl)]
             public static extern IntPtr destroy_notificationtoken(IntPtr token, out NativeException ex);
@@ -101,7 +101,7 @@ namespace Realms
             nativeException.ThrowIfNecessary();
         }
 
-        public IntPtr AddNotificationCallback(IntPtr managedResultsHandle, NotificationCallback callback)
+        public IntPtr AddNotificationCallback(IntPtr managedResultsHandle, NotificationCallbackDelegate callback)
         {
             NativeException nativeException;
             var result = NativeMethods.add_notification_callback(this, managedResultsHandle, callback, out nativeException);

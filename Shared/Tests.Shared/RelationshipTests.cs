@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -94,7 +94,7 @@ namespace IntegrationTests.Shared
         [TearDown]
         public void TearDown()
         {
-            realm.Close();
+            realm.Dispose();
             Realm.DeleteRealm(realm.Config);
         }
 
@@ -179,7 +179,7 @@ namespace IntegrationTests.Shared
         [Test]
         public void TimAddsADogByInsert()
         {
-            var tim = realm.All<Owner>().Single(p => p.Name == "Tim"); // use Single for a change
+            var tim = realm.All<Owner>().Single(p => p.Name == "Tim");  // use Single for a change
             Assert.That(tim.Dogs.Count(), Is.EqualTo(2));
             using (var trans = realm.BeginWrite())
             {
@@ -359,7 +359,7 @@ namespace IntegrationTests.Shared
 
             using (var trans = realm.BeginWrite())
             {
-                realm.Manage(person);
+                realm.Add(person);
                 trans.Commit();
             }
 
@@ -378,18 +378,18 @@ namespace IntegrationTests.Shared
             var sally = new Person
             {
                 FullName = "Sally",
-                Friends =  // see NoteOnListInit above
+                Friends = // see NoteOnListInit above
                 {
                     new Person { FullName = "Alice" },
                     new Person
                     {
                         FullName = "Joan",
-                        Friends =   // see NoteOnListInit above
+                        Friends = // see NoteOnListInit above
                         {
-                            new Person()
+                            new Person
                             {
                                 FullName = "Krystal",
-                                Friends = { new Person { FullName = "Sally" } } // Managees a second Sally
+                                Friends = { new Person { FullName = "Sally" } } // Manages a second Sally
                             }
                         }
                     }
@@ -398,7 +398,7 @@ namespace IntegrationTests.Shared
 
             using (var trans = realm.BeginWrite())
             {
-                realm.Manage(sally); // top person Managees entire tree
+                realm.Add(sally); // top person Manages entire tree
                 trans.Commit();
             }
 
@@ -426,7 +426,7 @@ namespace IntegrationTests.Shared
 
             using (var trans = realm.BeginWrite())
             {
-                realm.Manage(sally);  // top person Managees entire tree
+                realm.Add(sally); // top person Manages entire tree
                 sally.Friends[1].Friends.Add(joanFriend);
 
                 trans.Commit();
@@ -489,14 +489,15 @@ namespace IntegrationTests.Shared
 
             realm.Write(() =>
             {
-                foreach (var r in delP.Reports.ToList())  // use ToList to get static list so can remove items
+                foreach (var r in delP.Reports.ToList()) // use ToList to get static list so can remove items
                 {
-                    realm.Remove(r);  // removes from the realm, and updates delP.Reports so can't just iterate that
+                    realm.Remove(r); // removes from the realm, and updates delP.Reports so can't just iterate that
                 }
             });
 
             Assert.That(delP.Reports.Count, Is.EqualTo(0));
         }
+
         #endregion
     }
 }

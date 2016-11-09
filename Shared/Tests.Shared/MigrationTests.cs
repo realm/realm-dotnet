@@ -37,7 +37,7 @@ namespace IntegrationTests
 
             // new database doesn't push back a version number
             Assert.That(config1.SchemaVersion, Is.EqualTo(0));
-            realm1.Close();
+            realm1.Dispose();
 
             // Act
             var config2 = config1.ConfigWithPath("ChangingVersion.realm");
@@ -47,7 +47,7 @@ namespace IntegrationTests
             // Assert
             Assert.DoesNotThrow(() => realm2 = Realm.GetInstance(config2)); // same path, different version, should auto-migrate quietly
             Assert.That(realm2.Config.SchemaVersion, Is.EqualTo(99));
-            realm2.Close();
+            realm2.Dispose();
         }
 
         [Test]
@@ -103,7 +103,7 @@ namespace IntegrationTests
                 throw dummyException;
             };
 
-            var ex = Assert.Throws<AggregateException>(() => Realm.GetInstance(configuration).Close());
+            var ex = Assert.Throws<AggregateException>(() => Realm.GetInstance(configuration).Dispose());
             Assert.That(ex.Flatten().InnerException, Is.SameAs(dummyException));
         }
 

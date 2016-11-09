@@ -101,7 +101,7 @@ namespace Realms
                 newRealmHandle.SetHandle(newRealmPtr);
             }
 
-            var oldConfiguration = new RealmConfiguration(migration._configuration.DatabasePath) { SchemaVersion = schemaVersion, ReadOnly = true };
+            var oldConfiguration = new RealmConfiguration(migration._configuration.DatabasePath) { SchemaVersion = schemaVersion, IsReadOnly = true };
             var oldRealm = new Realm(oldRealmHandle, oldConfiguration, RealmSchema.CreateFromObjectStoreSchema(oldSchema));
 
             var newRealm = new Realm(newRealmHandle, migration._configuration, migration._schema);

@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -40,7 +40,7 @@ namespace IntegrationTests.Shared
         [TearDown]
         public void TearDown()
         {
-            _realm.Close();
+            _realm.Dispose();
             Realm.DeleteRealm(_realm.Config);
         }
 
@@ -143,7 +143,7 @@ namespace IntegrationTests.Shared
             // Arrange
             Person p1 = null;
             _realm.Write(() => p1 = _realm.CreateObject<Person>());
-            _realm.Close();
+            _realm.Dispose();
 
             // Act and assert
             Assert.Throws<RealmClosedException>(() =>
@@ -184,7 +184,7 @@ namespace IntegrationTests.Shared
         public void RealmObjectProperties_WhenNotSetAfterManage_ShouldHaveDefaultValues()
         {
             var obj = new AllTypesObject();
-            _realm.Write(() => _realm.Manage(obj));
+            _realm.Write(() => _realm.Add(obj));
 
             Assert.That(obj.ByteArrayProperty, Is.EqualTo(default(byte[])));
             Assert.That(obj.StringProperty, Is.EqualTo(default(string)));

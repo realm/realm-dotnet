@@ -20,11 +20,11 @@ namespace Realms
 {
     public class Realm
     {
-        public void Manage<T>(T obj, bool update) where T : RealmObject
+        public void Add<T>(T obj, bool update) where T : RealmObject
         {
         }
 
-        public void Manage(RealmObject obj, bool update)
+        public void Add(RealmObject obj, bool update)
         {
         }
     }

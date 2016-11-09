@@ -32,7 +32,7 @@ namespace Realms
         private Realm _realm;  // may not be used but wanted it included in definition of IsManaged below.
 
         /// <summary>
-        /// Allows you to check if the object has been associated with a Realm, either at creation or via Realm.Manage.
+        /// Allows you to check if the object has been associated with a Realm, either at creation or via Realm.Add.
         /// </summary>
         public bool IsManaged => _realm != null;
 
