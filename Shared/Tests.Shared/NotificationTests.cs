@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -62,7 +62,7 @@ namespace IntegrationTests.Shared
         [TearDown]
         public void TearDown()
         {
-            _realm.Close();
+            _realm.Dispose();
             Realm.DeleteRealm(_realm.Config);
         }
 
@@ -85,7 +85,7 @@ namespace IntegrationTests.Shared
         {
             var query = _realm.All<Person>();
             RealmResults<Person>.ChangeSet changes = null;
-            RealmResults<Person>.NotificationCallback cb = (s, c, e) => changes = c;
+            RealmResults<Person>.NotificationCallbackDelegate cb = (s, c, e) => changes = c;
 
             using (query.SubscribeForNotifications(cb))
             {

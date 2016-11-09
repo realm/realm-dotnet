@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -65,9 +65,9 @@ namespace Realms
         /// A callback that will be invoked each time the contents of a <see cref="RealmResults{T}"/> have changed.
         /// </summary>
         /// <param name="sender">The <see cref="RealmResults{T}"/> being monitored for changes.</param>
-        /// <param name="changes">The <see cref="ChangeSet"/> describing the changes to a <see cref="RealmResults{T}"/>, or <c>null</c> if an error occurred.</param>
-        /// <param name="error">An exception that might have occurred while asynchronously monitoring a <see cref="RealmResults{T}"/> for changes, or <c>null</c> if no errors occurred.</param>
-        public delegate void NotificationCallback(RealmResults<T> sender, ChangeSet changes, Exception error);
+        /// <param name="changes">The <see cref="ChangeSet"/> describing the changes to a <see cref="RealmResults{T}"/>, or <c>null</c> if an error occured.</param>
+        /// <param name="error">An exception that might have occurred while asynchronously monitoring a <see cref="RealmResults{T}"/> for changes, or <c>null</c> if no errors occured.</param>
+        public delegate void NotificationCallbackDelegate(RealmResults<T> sender, ChangeSet changes, Exception error);
 
         public Type ElementType => typeof(T);
 
@@ -92,7 +92,7 @@ namespace Realms
         }
 
         /// <summary>
-        /// Fast count all objects of a given class, or in a RealmResults after casting.
+        /// Count all objects if created by <see cref="Realm.All"/> of the parameterised type, faster than a search.
         /// </summary>
         /// <remarks>
         /// Resolves to this method instead of the LINQ static extension <c>Count&lt;T&gt;(this IEnumerable&lt;T&gt;)</c>, when used directly on Realm.All.
@@ -138,7 +138,7 @@ namespace Realms
         /// A subscription token. It must be kept alive for as long as you want to receive change notifications.
         /// To stop receiving notifications, call <see cref="IDisposable.Dispose" />.
         /// </returns>
-        public IDisposable SubscribeForNotifications(NotificationCallback callback)
+        public IDisposable SubscribeForNotifications(NotificationCallbackDelegate callback)
         {
             RealmPCLHelpers.ThrowProxyShouldNeverBeUsed();
             return null;

@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -42,7 +42,7 @@ namespace IntegrationTests
         public void GetInstanceTest()
         {
             // Arrange, act and "assert" that no exception is thrown, using default location
-            Realm.GetInstance().Close();
+            Realm.GetInstance().Dispose();
         }
 
         [Test]
@@ -61,7 +61,7 @@ namespace IntegrationTests
         public void GetInstanceWithJustFilenameTest()
         {
             // Arrange, act and "assert" that no exception is thrown, using default location + unique name
-            Realm.GetInstance(SpecialRealmName).Close();
+            Realm.GetInstance(SpecialRealmName).Dispose();
         }
 
         [Test]
@@ -83,7 +83,7 @@ namespace IntegrationTests
             var openRealm = Realm.GetInstance(config);
 
             // Act
-            openRealm.Close();
+            openRealm.Dispose();
 
             // Assert 
             Assert.That(File.Exists(config.DatabasePath));
@@ -111,8 +111,8 @@ namespace IntegrationTests
             Assert.False(realm1.IsSameInstance(realm2));
             Assert.That(realm1, Is.EqualTo(realm2));  // equal and same Realm but not same instance
 
-            realm1.Close();
-            realm2.Close();
+            realm1.Dispose();
+            realm2.Dispose();
         }
 
         [Test]

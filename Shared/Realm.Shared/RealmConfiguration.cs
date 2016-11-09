@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -38,14 +38,25 @@ namespace Realms
         public static string DefaultRealmName => "default.realm";
 
         /// <summary>
-        /// Flag indicating that the database will be deleted if the schema mismatches the one in the code. Use this when debugging and developing your app but never release it with this flag set to <c>true</c>.
+        /// Gets a value indicating whether the database will be deleted if the schema mismatches the one in the code. Use this when debugging and developing your app but never release it with this flag set to <c>true</c>.
         /// </summary>
-        public readonly bool ShouldDeleteIfMigrationNeeded;
+        public bool ShouldDeleteIfMigrationNeeded { get; }
 
         /// <summary>
-        /// Flag to indicate Realm is opened readonly so can open from locked locations such as bundled with an application.
+        /// Gets or sets a value indicating whether a Realm is opened as readonly. This allows opening it from locked locations such as resources, bundled with an application.
         /// </summary>
-        public bool ReadOnly;
+        public bool IsReadOnly
+        {
+            get
+            {
+                return ReadOnly;
+            }
+
+            set
+            {
+                ReadOnly = value;
+            }
+        }
 
         /// <summary>
         /// Gets the full path of the realms opened with this configuration, may be overriden by passing in a separate name.
@@ -67,7 +78,7 @@ namespace Realms
         /// </summary>
         /// <param name="optionalPath">Path to the realm, must be a valid full path for the current platform, relative subdirectory, or just filename.</param>
         /// <returns>A full path including name of Realm file.</returns>
-        public static string PathToRealm(string optionalPath = null)
+        public static string GetPathToRealm(string optionalPath = null)
         {
             if (string.IsNullOrEmpty(optionalPath))
             {
@@ -147,7 +158,7 @@ namespace Realms
         public RealmConfiguration(string optionalPath = null, bool shouldDeleteIfMigrationNeeded = false)
         {
             ShouldDeleteIfMigrationNeeded = shouldDeleteIfMigrationNeeded;
-            DatabasePath = PathToRealm(optionalPath);
+            DatabasePath = GetPathToRealm(optionalPath);
         }
 
         /// <summary>
@@ -227,5 +238,26 @@ namespace Realms
         /// <returns>A hash code for this instance that is suitable for use in hashing algorithms and data structures such as a
         /// hash table.</returns>
         public override int GetHashCode() => DatabasePath.GetHashCode();
+
+        #region Obsolete members
+
+        /// <summary>
+        /// Flag to indicate Realm is opened readonly so can open from locked locations such as bundled with an application.
+        /// </summary>
+        [Obsolete("This field has been renamed. Use IsReadOnly instead.")]
+        public bool ReadOnly;
+
+        /// <summary>
+        /// Utility to build a path in which a realm will be created so can consistently use filenames and relative paths.
+        /// </summary>
+        /// <param name="optionalPath">Path to the realm, must be a valid full path for the current platform, relative subdir, or just filename.</param>
+        /// <returns>A full path including name of Realm file.</returns>
+        [Obsolete("This method has been renamed. Use GetPathToRealm instead.")]
+        public static string PathToRealm(string optionalPath = null)
+        {
+            return GetPathToRealm(optionalPath);
+        }
+
+        #endregion
     }
 }

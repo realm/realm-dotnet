@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -446,9 +446,9 @@ namespace IntegrationTests
 
             _realm.Write(() =>
             {
-                _realm.Manage(peter);
-                _realm.Manage(george);
-                _realm.Manage(ivan);
+                _realm.Add(peter);
+                _realm.Add(george);
+                _realm.Add(ivan);
             });
 
             var rexOwners = _realm.All<Owner>().Where(o => o.TopDog == rex);
@@ -859,17 +859,17 @@ namespace IntegrationTests
             {
                 _realm.RemoveAll<Person>();
 
-                _realm.Manage(new Person
+                _realm.Add(new Person
                 {
                     FirstName = "patRick"
                 });
 
-                _realm.Manage(new Person
+                _realm.Add(new Person
                 {
                     FirstName = "patrick"
                 });
 
-                _realm.Manage(new Person
+                _realm.Add(new Person
                 {
                     FirstName = "patrick"
                 });

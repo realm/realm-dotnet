@@ -115,7 +115,7 @@ namespace Realms
             var configuration = new Native.Configuration
             {
                 Path = config.DatabasePath,
-                read_only = config.ReadOnly,
+                read_only = config.IsReadOnly,
                 delete_if_migration_needed = config.ShouldDeleteIfMigrationNeeded,
                 schema_version = config.SchemaVersion
             };
@@ -250,21 +250,6 @@ namespace Realms
         /// <returns>True if closed.</returns>
         public bool IsClosed => SharedRealmHandle.IsClosed;
 
-        /// <summary>
-        /// Closes the Realm if not already closed. Safe to call repeatedly.
-        /// Note that this will close the file. Other references to the same database
-        /// on the same thread will be invalidated.
-        /// </summary>
-        public void Close()
-        {
-            if (IsClosed)
-            {
-                return;
-            }
-
-            Dispose();
-        }
-
         ~Realm()
         {
             Dispose(false);
@@ -283,7 +268,7 @@ namespace Realms
         {
             if (IsClosed)
             {
-                throw new ObjectDisposedException(nameof(Realm));
+                return;
             }
 
             if (disposing && !(SharedRealmHandle is UnownedRealmHandle))
@@ -388,10 +373,10 @@ namespace Realms
         /// <summary>
         /// Factory for a managed object in a realm. Only valid within a Write transaction.
         /// </summary>
-        /// <remarks>Using CreateObject is more efficient than creating standalone objects, assigning their values, then using Manage because it avoids copying properties to the realm.</remarks>
+        /// <remarks>Using CreateObject is more efficient than creating standalone objects, assigning their values, then using Add because it avoids copying properties to the realm.</remarks>
         /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
         /// <returns>An object which is already managed.</returns>
-        /// <exception cref="RealmOutsideTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
+        /// <exception cref="RealmInvalidTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
         public T CreateObject<T>() where T : RealmObject, new()
         {
             RealmObject.Metadata metadata;
@@ -430,7 +415,7 @@ namespace Realms
 
             var objectPtr = metadata.Table.AddEmptyObject(SharedRealmHandle);
             var objectHandle = CreateObjectHandle(objectPtr, SharedRealmHandle);
-            result._Manage(this, objectHandle, metadata);
+            result._SetOwner(this, objectHandle, metadata);
             return result;
         }
 
@@ -452,7 +437,7 @@ namespace Realms
         internal RealmObject MakeObject(RealmObject.Metadata metadata, ObjectHandle objectHandle)
         {
             var ret = metadata.Helper.CreateInstance();
-            ret._Manage(this, objectHandle, metadata);
+            ret._SetOwner(this, objectHandle, metadata);
             return ret;
         }
 
@@ -494,10 +479,10 @@ namespace Realms
         /// If the object is already managed by this realm, this method does nothing.
         /// Cyclic graphs (<c>Parent</c> has <c>Child</c> that has a <c>Parent</c>) will result in undefined behavior. You have to break the cycle manually and assign relationships after all object have been managed.
         /// </remarks>
-        public void Manage<T>(T obj, bool update = false) where T : RealmObject
+        public void Add<T>(T obj, bool update = false) where T : RealmObject
         {
             // This is not obsoleted because the compiler will always pick it for specific types, generating a bunch of warnings
-            ManageInternal(obj, typeof(T), update);
+            AddInternal(obj, typeof(T), update);
         }
 
         /// <summary>
@@ -511,12 +496,12 @@ namespace Realms
         /// If the object is already managed by this realm, this method does nothing.
         /// Cyclic graphs (<c>Parent</c> has <c>Child</c> that has a <c>Parent</c>) will result in undefined behavior. You have to break the cycle manually and assign relationships after all object have been managed.
         /// </remarks>
-        public void Manage(RealmObject obj, bool update = false)
+        public void Add(RealmObject obj, bool update = false)
         {
-            ManageInternal(obj, obj?.GetType(), update);
+            AddInternal(obj, obj?.GetType(), update);
         }
 
-        private void ManageInternal(RealmObject obj, Type objectType, bool update)
+        private void AddInternal(RealmObject obj, Type objectType, bool update)
         {
             if (obj == null)
             {
@@ -548,16 +533,16 @@ namespace Realms
             {
                 if (pkValue is string)
                 {
-                    objectPtr = metadata.Table.ObjectForPrimaryKey(SharedRealmHandle, (string)pkValue);
+                    objectPtr = metadata.Table.Find(SharedRealmHandle, (string)pkValue);
                 }
                 else if (pkValue == null)
                 {
-                    objectPtr = metadata.Table.ObjectForPrimaryKey(SharedRealmHandle, (long?)null);
+                    objectPtr = metadata.Table.Find(SharedRealmHandle, (long?)null);
                 }
                 else
                 {
                     // We know it must be convertible to long, so optimistically do it.
-                    objectPtr = metadata.Table.ObjectForPrimaryKey(SharedRealmHandle, Convert.ToInt64(pkValue));
+                    objectPtr = metadata.Table.Find(SharedRealmHandle, Convert.ToInt64(pkValue));
                 }
             }
 
@@ -568,7 +553,7 @@ namespace Realms
 
             var objectHandle = CreateObjectHandle(objectPtr, SharedRealmHandle);
 
-            obj._Manage(this, objectHandle, metadata);
+            obj._SetOwner(this, objectHandle, metadata);
             metadata.Helper.CopyToRealm(obj, update);
         }
 
@@ -743,19 +728,19 @@ namespace Realms
             return new RealmResults<dynamic>(this, metadata, true);
         }
 
-        #region Quick ObjectForPrimaryKey
+        #region Quick Find using primary key
 
         /// <summary>
         /// Fast lookup of an object from a class which has a PrimaryKey property.
         /// </summary>
         /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
-        /// <param name="id">Id to be matched exactly, same as an == search. An argument of type <c>long?</c> works for all integer properties, supported as PrimaryKey.</param>
-        /// <returns>Null or an object matching the id.</returns>
+        /// <param name="primaryKey">Primary key to be matched exactly, same as an == search. An argument of type <c>long?</c> works for all integer properties, supported as PrimaryKey.</param>
+        /// <returns>Null or an object matching the primary key.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class T lacks an [PrimaryKey].</exception>
-        public T ObjectForPrimaryKey<T>(long? id) where T : RealmObject
+        public T Find<T>(long? primaryKey) where T : RealmObject
         {
             var metadata = Metadata[typeof(T).Name];
-            var objectPtr = metadata.Table.ObjectForPrimaryKey(SharedRealmHandle, id);
+            var objectPtr = metadata.Table.Find(SharedRealmHandle, primaryKey);
             if (objectPtr == IntPtr.Zero)
             {
                 return null;
@@ -768,13 +753,13 @@ namespace Realms
         /// Fast lookup of an object from a class which has a PrimaryKey property.
         /// </summary>
         /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
-        /// <param name="id">Id to be matched exactly, same as an == search.</param>
-        /// <returns>Null or an object matching the id.</returns>
+        /// <param name="primaryKey">Primary key to be matched exactly, same as an == search.</param>
+        /// <returns>Null or an object matching the primary key.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class T lacks an [PrimaryKey].</exception>
-        public T ObjectForPrimaryKey<T>(string id) where T : RealmObject
+        public T Find<T>(string primaryKey) where T : RealmObject
         {
             var metadata = Metadata[typeof(T).Name];
-            var objectPtr = metadata.Table.ObjectForPrimaryKey(SharedRealmHandle, id);
+            var objectPtr = metadata.Table.Find(SharedRealmHandle, primaryKey);
             if (objectPtr == IntPtr.Zero)
             {
                 return null;
@@ -787,13 +772,13 @@ namespace Realms
         /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.
         /// </summary>
         /// <param name="className">Name of class in dynamic situation.</param>
-        /// <param name="id">Id to be matched exactly, same as an == search. An argument of type <c>long?</c> works for all integer properties, supported as PrimaryKey.</param>
-        /// <returns>Null or an object matching the id.</returns>
+        /// <param name="primaryKey">Primary key to be matched exactly, same as an == search. An argument of type <c>long?</c> works for all integer properties, supported as PrimaryKey.</param>
+        /// <returns>Null or an object matching the primary key.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class lacks an [PrimaryKey].</exception>
-        public RealmObject ObjectForPrimaryKey(string className, long? id)
+        public RealmObject Find(string className, long? primaryKey)
         {
             var metadata = Metadata[className];
-            var objectPtr = metadata.Table.ObjectForPrimaryKey(SharedRealmHandle, id);
+            var objectPtr = metadata.Table.Find(SharedRealmHandle, primaryKey);
             if (objectPtr == IntPtr.Zero)
             {
                 return null;
@@ -806,13 +791,13 @@ namespace Realms
         /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.
         /// </summary>
         /// <param name="className">Name of class in dynamic situation.</param>
-        /// <param name="id">Id to be matched exactly, same as an == search.</param>
-        /// <returns>Null or an object matching the id.</returns>
+        /// <param name="primaryKey">Primary key to be matched exactly, same as an == search.</param>
+        /// <returns>Null or an object matching the primary key.</returns>
         /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class lacks an [PrimaryKey].</exception>
-        public RealmObject ObjectForPrimaryKey(string className, string id)
+        public RealmObject Find(string className, string primaryKey)
         {
             var metadata = Metadata[className];
-            var objectPtr = metadata.Table.ObjectForPrimaryKey(SharedRealmHandle, id);
+            var objectPtr = metadata.Table.Find(SharedRealmHandle, primaryKey);
             if (objectPtr == IntPtr.Zero)
             {
                 return null;
@@ -821,7 +806,7 @@ namespace Realms
             return MakeObject(metadata, objectPtr);
         }
 
-        #endregion ObjectForPrimaryKey
+        #endregion Quick Find using primary key
 
         /// <summary>
         /// Removes a persistent object from this realm, effectively deleting it.
@@ -888,5 +873,86 @@ namespace Realms
                 resultsHandle.Clear(SharedRealmHandle);
             }
         }
+
+        #region Obsolete methods
+
+        /// <summary>
+        /// Fast lookup of an object from a class which has a PrimaryKey property.
+        /// </summary>
+        /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
+        /// <param name="id">Id to be matched exactly, same as an == search. Int64 argument works for all integer properties supported as PrimaryKey.</param>
+        /// <returns>Null or an object matching the id.</returns>
+        /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class T lacks an [PrimaryKey].</exception>
+        [Obsolete("This method has been renamed. Use Find for the same results.")]
+        public T ObjectForPrimaryKey<T>(long id) where T : RealmObject
+        {
+            return Find<T>(id);
+        }
+
+        /// <summary>
+        /// Fast lookup of an object from a class which has a PrimaryKey property.
+        /// </summary>
+        /// <typeparam name="T">The Type T must be a RealmObject.</typeparam>
+        /// <param name="id">Id to be matched exactly, same as an == search.</param>
+        /// <returns>Null or an object matdhing the id.</returns>
+        /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class T lacks an [PrimaryKey].</exception>
+        [Obsolete("This method has been renamed. Use Find for the same results.")]
+        public T ObjectForPrimaryKey<T>(string id) where T : RealmObject
+        {
+            return Find<T>(id);
+        }
+
+        /// <summary>
+        /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.
+        /// </summary>
+        /// <param name="className">Name of class in dynamic situation.</param>
+        /// <param name="id">Id to be matched exactly, same as an == search.</param>
+        /// <returns>Null or an object matdhing the id.</returns>
+        /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class lacks an [PrimaryKey].</exception>
+        [Obsolete("This method has been renamed. Use Find for the same results.")]
+        public RealmObject ObjectForPrimaryKey(string className, long id)
+        {
+            return Find(className, id);
+        }
+
+        /// <summary>
+        /// Fast lookup of an object for dynamic use, from a class which has a PrimaryKey property.
+        /// </summary>
+        /// <param name="className">Name of class in dynamic situation.</param>
+        /// <param name="id">Id to be matched exactly, same as an == search.</param>
+        /// <returns>Null or an object matdhing the id.</returns>
+        /// <exception cref="RealmClassLacksPrimaryKeyException">If the RealmObject class lacks an [PrimaryKey].</exception>
+        [Obsolete("This method has been renamed. Use Find for the same results.")]
+        public RealmObject ObjectForPrimaryKey(string className, string id)
+        {
+            return Find(className, id);
+        }
+
+        /// <summary>
+        /// This realm will start managing a RealmObject which has been created as a standalone object.
+        /// </summary>
+        /// <typeparam name="T">The Type T must not only be a RealmObject but also have been processed by the Fody weaver, so it has persistent properties.</typeparam>
+        /// <param name="obj">Must be a standalone object, null not allowed.</param>
+        /// <param name="update">If true, and an object with the same primary key already exists, performs an update.</param>
+        /// <exception cref="RealmInvalidTransactionException">If you invoke this when there is no write Transaction active on the realm.</exception>
+        /// <exception cref="RealmObjectManagedByAnotherRealmException">You can't manage an object with more than one realm</exception>
+        [Obsolete("This method has been renamed. Use Add for the same results.")]
+        public void Manage<T>(T obj, bool update = false) where T : RealmObject
+        {
+            Add(obj, update);
+        }
+
+        /// <summary>
+        /// Closes the Realm if not already closed. Safe to call repeatedly.
+        /// Note that this will close the file. Other references to the same database
+        /// on the same thread will be invalidated.
+        /// </summary>
+        [Obsolete("This method has been deprecated. Instead, dispose the realm to close it.")]
+        public void Close()
+        {
+            Dispose();
+        }
+
+        #endregion
     }
 }

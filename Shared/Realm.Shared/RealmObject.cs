@@ -43,7 +43,7 @@ namespace Realms
         internal Metadata ObjectMetadata => _metadata;
 
         /// <summary>
-        /// Allows you to check if the object has been associated with a Realm, either at creation or via Realm.Manage.
+        /// Allows you to check if the object has been associated with a Realm, either at creation or via Realm.Add.
         /// </summary>
         public bool IsManaged => _realm != null;
 
@@ -65,7 +65,7 @@ namespace Realms
         /// </summary>
         public Schema.ObjectSchema ObjectSchema => _metadata?.Schema;
 
-        internal void _Manage(Realm realm, ObjectHandle objectHandle, Metadata metadata)
+        internal void _SetOwner(Realm realm, ObjectHandle objectHandle, Metadata metadata)
         {
             _realm = realm;
             _objectHandle = objectHandle;
@@ -481,7 +481,7 @@ namespace Realms
             {
                 if (!value.IsManaged)
                 {
-                    _realm.Manage(value);
+                    _realm.Add(value);
                 }
 
                 _objectHandle.SetLink(_metadata.PropertyIndices[propertyName], value.ObjectHandle);

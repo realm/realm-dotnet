@@ -1,4 +1,4 @@
-﻿////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
 //
 // Copyright 2016 Realm Inc.
 //
@@ -41,7 +41,7 @@ namespace IntegrationTests.Shared
         [TearDown]
         public void TearDown()
         {
-            _realm.Close();
+            _realm.Dispose();
             Realm.DeleteRealm(_realm.Config);
         }
 
@@ -311,7 +311,7 @@ namespace IntegrationTests.Shared
         [Test]
         public void ReflectableSetter_WhenObjectIsStandalone_ShouldSetValue()
         {
-            var owner = AddDogAndOwner(manage: false);
+            var owner = AddDogAndOwner(add: false);
 
             var typeInfo = ((IReflectableType)owner).GetTypeInfo();
             var pi = typeInfo.GetDeclaredProperty(nameof(Owner.Name));
@@ -324,7 +324,7 @@ namespace IntegrationTests.Shared
         [Test]
         public void ReflectableGetter_WhenObjectIsStandalone_ShouldGetValue()
         {
-            var owner = AddDogAndOwner(manage: false);
+            var owner = AddDogAndOwner(add: false);
 
             var typeInfo = ((IReflectableType)owner).GetTypeInfo();
             var pi = typeInfo.GetDeclaredProperty(nameof(Owner.Name));
@@ -334,7 +334,7 @@ namespace IntegrationTests.Shared
             Assert.That(name, Is.EqualTo(OwnerName));
         }
 
-        private Owner AddDogAndOwner(bool manage = true)
+        private Owner AddDogAndOwner(bool add = true)
         {
             var owner = new Owner
             {
@@ -345,11 +345,11 @@ namespace IntegrationTests.Shared
                 Name = OwnerName
             };
 
-            if (manage)
+            if (add)
             {
                 _realm.Write(() =>
                 {
-                    _realm.Manage(owner);
+                    _realm.Add(owner);
                 });
             }
 
