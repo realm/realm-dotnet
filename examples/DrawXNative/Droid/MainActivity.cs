@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////////////
 
 using Android.App;
-using Android.Widget;
+using Android.Views;
 using Android.OS;
 using SkiaSharp.Views;
 using DrawXShared;
@@ -28,6 +28,7 @@ namespace DrawX.Droid
     public class MainActivity : Activity
     {
         RealmDraw _drawer;
+        SKCanvasView _canvas;
 
         protected override void OnCreate(Bundle savedInstanceState)
         {
@@ -39,14 +40,42 @@ namespace DrawX.Droid
 
             // Get our button from the layout resource,
             // and attach an event to it
-            SKCanvasView canvas = FindViewById<SKCanvasView>(Resource.Id.canvas);
-            canvas.PaintSurface += OnPaintSample;
-
+            _canvas = FindViewById<SKCanvasView>(Resource.Id.canvas);
+            _canvas.PaintSurface += OnPaintSample;
+            _canvas.Touch += OnTouch;
         }
 
         private void OnPaintSample(object sender, SKPaintSurfaceEventArgs e)
         {
-            _drawer.DrawBackground(e.Surface.Canvas, e.Info.Width, e.Info.Height);
+            _drawer.DrawTouches(e.Surface.Canvas, e.Info.Width, e.Info.Height);
+        }
+
+        private void OnTouch(object sender, View.TouchEventArgs touchEventArgs)
+        {
+            float fx = touchEventArgs.Event.GetX();
+            float fy = touchEventArgs.Event.GetY();
+            bool needsRefresh = false;
+            switch (touchEventArgs.Event.Action & MotionEventActions.Mask)
+            {
+                case MotionEventActions.Down:
+                    _drawer.StartDrawing(fx, fy);
+                    needsRefresh = true;
+                    break;
+
+                case MotionEventActions.Move:
+                    _drawer.AddPoint(fx, fy);
+                    needsRefresh = true;
+                    break;
+
+                case MotionEventActions.Up:
+                    _drawer.StopDrawing(fx, fy);
+                    needsRefresh = true;
+                    break;
+            }
+            if (needsRefresh)
+            {
+                _canvas.Invalidate();
+            }
         }
     }
 }
