@@ -10,6 +10,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)RealmDraw.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)RealmDrawerMedia.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DrawPath.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DrawPoint.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SwatchColor.cs" />
   </ItemGroup>
 </Project>
